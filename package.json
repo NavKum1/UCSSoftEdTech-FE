@@ -9,6 +9,7 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@clerk/nextjs": "^7.8.3",
     "@vapi-ai/web": "^2.7.0",
     "clsx": "^2.1.1",
     "lucide-react": "^1.37.0",
