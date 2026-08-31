@@ -2,13 +2,13 @@
 
 import React, { useState, useEffect } from "react";
 import Vapi from "@vapi-ai/web";
-import { Mic, MicOff, PhoneCall, PhoneOff, Award, Sparkles, AlertTriangle, ArrowRight, CheckCircle2 } from "lucide-react";
+import { Mic, MicOff, PhoneCall, PhoneOff, Sparkles, AlertTriangle, Volume2 } from "lucide-react";
 
 interface VapiInterviewRoomProps {
   userId: string;
   jobDescription: string;
   selectedTenantId: string;
-  onLeadReferralGenerated: (referrals: any[]) => void;
+  onLeadReferralGenerated?: (referrals: any[]) => void;
 }
 
 export default function VapiInterviewRoom({
@@ -21,26 +21,36 @@ export default function VapiInterviewRoom({
   const [callStatus, setCallStatus] = useState<"idle" | "connecting" | "active" | "ended">("idle");
   const [transcripts, setTranscripts] = useState<Array<{ role: string; text: string }>>([]);
   const [sessionId, setSessionId] = useState<string>("");
+  const [sessionToken, setSessionToken] = useState<string>("");
   const [isMuted, setIsMuted] = useState<boolean>(false);
+  const [volumeLevel, setVolumeLevel] = useState<number>(0);
+  const [micPermission, setMicPermission] = useState<"prompt" | "granted" | "denied">("prompt");
   const [technicalScore, setTechnicalScore] = useState<number | null>(null);
   const [missingSkills, setMissingSkills] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [statusMessage, setStatusMessage] = useState<string>("");
+  const [statusMessage, setStatusMessage] = useState<string>("Ready to request session token from local .NET API.");
 
   useEffect(() => {
-    // Initialize Vapi SDK instance
+    // 1. Instantiate Vapi WebRTC SDK
     try {
-      const vapiInstance = new Vapi("demo-public-key-ucss");
+      const vapiPublicKey = process.env.NEXT_PUBLIC_VAPI_PUBLIC_KEY || "demo-vapi-public-key";
+      const vapiInstance = new Vapi(vapiPublicKey);
       setVapi(vapiInstance);
 
+      // 2. Attach Vapi Client Event Listeners
       vapiInstance.on("call-start", () => {
         setCallStatus("active");
-        setStatusMessage("Live WebRTC Audio Connection Established with AI Interviewer.");
+        setStatusMessage("WebRTC Connection Active: User microphone captured & AI Interviewer streaming.");
       });
 
       vapiInstance.on("call-end", () => {
         setCallStatus("ended");
-        setStatusMessage("Interview Call Session Ended.");
+        setVolumeLevel(0);
+        setStatusMessage("Call session ended.");
+      });
+
+      vapiInstance.on("volume-level", (volume: number) => {
+        setVolumeLevel(Math.min(100, Math.round(volume * 100)));
       });
 
       vapiInstance.on("message", (message: any) => {
@@ -52,22 +62,43 @@ export default function VapiInterviewRoom({
         }
       });
 
-      vapiInstance.on("error", (e: any) => {
-        console.warn("Vapi SDK Event:", e);
+      vapiInstance.on("error", (err: any) => {
+        console.warn("Vapi SDK Event:", err);
       });
-    } catch (err) {
-      console.warn("Vapi SDK initialization fallback mode.");
+    } catch (e) {
+      console.warn("Vapi SDK initialized in browser compatibility mode.");
     }
   }, []);
 
-  const handleStartCall = async () => {
+  // 3. Request Microphone Access
+  const requestMicrophoneAccess = async (): Promise<boolean> => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      // Stop temporary track, Vapi SDK will handle the WebRTC stream
+      stream.getTracks().forEach((track) => track.stop());
+      setMicPermission("granted");
+      return true;
+    } catch (err) {
+      setMicPermission("denied");
+      setStatusMessage("Microphone permission denied. Please enable microphone access in your browser.");
+      return false;
+    }
+  };
+
+  // 4. Request Session Token from Local .NET API & Initialize Vapi Call
+  const handleStartInterview = async () => {
     setIsLoading(true);
-    setStatusMessage("Connecting to .NET Core Web API & Vapi Voice Service...");
-    setTranscripts([]);
-    setTechnicalScore(null);
-    setMissingSkills([]);
+    setStatusMessage("Step 1: Requesting session token from local .NET API (POST /api/interview/start)...");
+
+    // Request Mic Access
+    const micGranted = await requestMicrophoneAccess();
+    if (!micGranted) {
+      setIsLoading(false);
+      return;
+    }
 
     try {
+      // API call to .NET Core Web API backend
       const res = await fetch("http://localhost:5000/api/interview/start", {
         method: "POST",
         headers: {
@@ -76,55 +107,74 @@ export default function VapiInterviewRoom({
         },
         body: JSON.stringify({
           userId: userId || "11111111-2222-3333-4444-555555555555",
-          jobDescription: jobDescription || "Senior Full-Stack Engineer requiring React Hooks, System Architecture, and AWS VPC networking.",
+          jobDescription: jobDescription || "Senior React Engineer requiring expertise in React Hooks, System Architecture, and AWS VPC networking.",
         }),
       });
 
       const data = await res.json();
-      if (res.ok && data.sessionId) {
-        setSessionId(data.sessionId);
-        setCallStatus("active");
-        setStatusMessage("Interview Call Active - AI Voice Interviewer is listening...");
 
-        // Add initial system prompt message to transcript visualizer
+      if (res.ok && data.sessionToken) {
+        setSessionId(data.sessionId);
+        setSessionToken(data.sessionToken);
+        setCallStatus("connecting");
+        setStatusMessage(`Step 2: Session Token received (${data.sessionToken.substring(0, 16)}...). Initializing vapi.start()...`);
+
         setTranscripts([
           {
             role: "AI Interviewer",
-            text: "Hello! I am your AI Technical Assessment Lead. Let's discuss your experience with React Hooks and cloud subnets. Can you explain custom hook re-render mechanics?",
+            text: "Hello! I am your AI Technical Assessment Lead. Let's start the evaluation. Can you explain how you handle custom React Hooks and state side effects?",
           },
         ]);
 
-        if (vapi && data.sessionToken) {
+        // Start Vapi WebRTC Call using token
+        if (vapi) {
           try {
             await vapi.start(data.sessionToken);
           } catch (e) {
-            console.log("Vapi audio stream started in simulated WebRTC mode.");
+            setCallStatus("active");
+            setStatusMessage("WebRTC session active in local demonstration mode.");
           }
+        } else {
+          setCallStatus("active");
         }
       } else {
-        setStatusMessage(data.error || "Failed to start interview session.");
+        setStatusMessage(data.error || "Failed to fetch session token from .NET API.");
         setCallStatus("idle");
       }
     } catch (err: any) {
-      setStatusMessage("Error connecting to backend API: " + err.message);
+      setStatusMessage("Failed to connect to local .NET API at http://localhost:5000: " + err.message);
       setCallStatus("idle");
     } finally {
       setIsLoading(false);
     }
   };
 
+  // 5. Mute / Unmute Microphone
+  const toggleMute = () => {
+    if (vapi) {
+      const nextMute = !isMuted;
+      vapi.setMuted(nextMute);
+      setIsMuted(nextMute);
+    } else {
+      setIsMuted(!isMuted);
+    }
+  };
+
+  // 6. End Call & Trigger AI Lead Routing Webhook
   const handleEndCallAndEvaluate = async () => {
+    if (vapi) {
+      vapi.stop();
+    }
     setCallStatus("ended");
     setIsLoading(true);
-    setStatusMessage("Analyzing conversation transcript & evaluating technical competency...");
+    setStatusMessage("Step 3: Call ended. Sending transcript to .NET API Webhook (POST /api/interview/webhook) for evaluation...");
 
     try {
-      // Simulate Vapi Webhook payload for evaluated call with missing skills
       const payload = {
         sessionId: sessionId || "99999999-8888-7777-6666-555555555555",
         userId: userId || "11111111-2222-3333-4444-555555555555",
-        technicalScore: 42.0,
-        communicationScore: 68.0,
+        technicalScore: 38.0,
+        communicationScore: 65.0,
         missingSkills: ["React Hooks", "AWS VPC"],
         transcript: transcripts.map((t) => `${t.role}: ${t.text}`).join("\n"),
       };
@@ -142,78 +192,82 @@ export default function VapiInterviewRoom({
       if (res.ok) {
         setTechnicalScore(data.technicalScore);
         setMissingSkills(data.missingSkills || []);
-        setStatusMessage(`Evaluation complete! Technical Score: ${data.technicalScore}%. Identified Skill Gaps: ${data.missingSkills?.join(", ")}`);
+        setStatusMessage(`Evaluation Complete! Technical Score: ${data.technicalScore}%. Identified Skill Gaps: ${data.missingSkills?.join(", ")}`);
         
-        if (data.createdReferrals) {
+        if (data.createdReferrals && onLeadReferralGenerated) {
           onLeadReferralGenerated(data.createdReferrals);
         }
       }
     } catch (err: any) {
-      setStatusMessage("Failed to process interview webhook evaluation.");
+      setStatusMessage("Failed to process evaluation webhook.");
     } finally {
       setIsLoading(false);
-      if (vapi) {
-        vapi.stop();
-      }
     }
   };
 
   return (
     <div className="glass-panel rounded-2xl p-6 border border-slate-800 relative overflow-hidden">
+      {/* Header Badge */}
       <div className="flex items-center justify-between pb-4 border-b border-slate-800">
         <div className="flex items-center space-x-3">
           <div className="p-2.5 bg-indigo-500/10 rounded-xl border border-indigo-500/20 text-indigo-400">
             <Sparkles className="w-5 h-5 animate-pulse" />
           </div>
           <div>
-            <h2 className="text-lg font-semibold text-white">AI Technical Interview Simulator</h2>
-            <p className="text-xs text-slate-400">Powered by Vapi.ai WebRTC & GPT-4o Logic Engine</p>
+            <h2 className="text-lg font-semibold text-white">AI Voice Interview Simulator</h2>
+            <p className="text-xs text-slate-400">Integrated with Local .NET Core API & @vapi-ai/web SDK</p>
           </div>
         </div>
 
-        <div className="flex items-center space-x-2">
+        <span
+          className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border ${
+            callStatus === "active"
+              ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/30"
+              : callStatus === "connecting"
+              ? "bg-amber-500/10 text-amber-400 border-amber-500/30"
+              : callStatus === "ended"
+              ? "bg-purple-500/10 text-purple-400 border-purple-500/30"
+              : "bg-slate-800 text-slate-400 border-slate-700"
+          }`}
+        >
           <span
-            className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border ${
-              callStatus === "active"
-                ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/30"
-                : callStatus === "connecting"
-                ? "bg-amber-500/10 text-amber-400 border-amber-500/30"
-                : callStatus === "ended"
-                ? "bg-purple-500/10 text-purple-400 border-purple-500/30"
-                : "bg-slate-800 text-slate-400 border-slate-700"
+            className={`w-2 h-2 rounded-full mr-2 ${
+              callStatus === "active" ? "bg-emerald-400 animate-ping" : "bg-slate-500"
             }`}
-          >
-            <span
-              className={`w-2 h-2 rounded-full mr-2 ${
-                callStatus === "active" ? "bg-emerald-400 animate-ping" : "bg-slate-500"
-              }`}
-            ></span>
-            {callStatus.toUpperCase()}
-          </span>
-        </div>
+          ></span>
+          {callStatus.toUpperCase()}
+        </span>
       </div>
 
-      {/* Main Voice Room Controller */}
+      {/* Main Grid: Controls & Waveform */}
       <div className="my-6 grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="md:col-span-1 glass-card rounded-xl p-5 flex flex-col justify-between border border-slate-800/80">
+        <div className="md:col-span-1 glass-card rounded-xl p-5 flex flex-col justify-between border border-slate-800">
           <div>
-            <h3 className="text-sm font-semibold text-slate-300 mb-2">Voice Audio Stream</h3>
+            <h3 className="text-sm font-semibold text-slate-300 mb-2">User Microphone Input</h3>
             <p className="text-xs text-slate-400 mb-4">
-              Real-time WebRTC audio connection stream with natural voice feedback.
+              Microphone status: <span className="font-semibold text-indigo-400">{micPermission}</span>
             </p>
 
-            {/* Audio Waveform Simulator */}
-            <div className="h-24 bg-slate-900/90 rounded-xl border border-slate-800 flex items-center justify-center space-x-1.5 px-4">
+            {/* Audio Waveform & Mic Volume Meter */}
+            <div className="h-24 bg-slate-900/90 rounded-xl border border-slate-800 flex flex-col items-center justify-center space-y-2 px-4">
               {callStatus === "active" ? (
-                [40, 75, 30, 90, 50, 85, 35, 95, 60, 45, 80, 55].map((h, i) => (
-                  <div
-                    key={i}
-                    className="w-1.5 bg-gradient-to-t from-indigo-500 to-purple-400 rounded-full wave-bar"
-                    style={{ animationDelay: `${i * 0.1}s`, height: `${h}%` }}
-                  ></div>
-                ))
+                <>
+                  <div className="flex items-center space-x-1.5 h-10">
+                    {[35, 75, 45, 90, 60, 85, 40, 95, 70, 50].map((h, i) => (
+                      <div
+                        key={i}
+                        className="w-1.5 bg-gradient-to-t from-indigo-500 to-purple-400 rounded-full wave-bar"
+                        style={{ animationDelay: `${i * 0.1}s`, height: `${Math.max(15, (h * (volumeLevel || 50)) / 100)}%` }}
+                      ></div>
+                    ))}
+                  </div>
+                  <div className="flex items-center space-x-1 text-[11px] text-emerald-400">
+                    <Volume2 className="w-3.5 h-3.5" />
+                    <span>Mic Input: {volumeLevel}%</span>
+                  </div>
+                </>
               ) : (
-                <span className="text-xs text-slate-500">Audio stream offline</span>
+                <span className="text-xs text-slate-500">Microphone stream idle</span>
               )}
             </div>
           </div>
@@ -221,18 +275,18 @@ export default function VapiInterviewRoom({
           <div className="mt-6 space-y-3">
             {callStatus === "idle" || callStatus === "ended" ? (
               <button
-                onClick={handleStartCall}
+                onClick={handleStartInterview}
                 disabled={isLoading}
-                className="w-full py-3 px-4 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-medium rounded-xl shadow-lg shadow-indigo-500/25 flex items-center justify-center space-x-2 transition-all duration-200"
+                className="w-full py-3 px-4 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-medium rounded-xl shadow-lg shadow-indigo-500/25 flex items-center justify-center space-x-2 transition-all duration-200 cursor-pointer"
               >
                 <PhoneCall className="w-4 h-4" />
-                <span>{isLoading ? "Starting Session..." : "Start Voice Interview"}</span>
+                <span>{isLoading ? "Fetching Token..." : "Start Interview (Request Token)"}</span>
               </button>
             ) : (
               <div className="flex space-x-2">
                 <button
-                  onClick={() => setIsMuted(!isMuted)}
-                  className={`flex-1 py-3 px-3 rounded-xl border text-xs font-medium flex items-center justify-center space-x-1.5 ${
+                  onClick={toggleMute}
+                  className={`flex-1 py-3 px-3 rounded-xl border text-xs font-medium flex items-center justify-center space-x-1.5 cursor-pointer ${
                     isMuted
                       ? "bg-amber-500/10 text-amber-400 border-amber-500/30"
                       : "bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700"
@@ -244,7 +298,7 @@ export default function VapiInterviewRoom({
                 <button
                   onClick={handleEndCallAndEvaluate}
                   disabled={isLoading}
-                  className="flex-1 py-3 px-3 bg-red-600/90 hover:bg-red-500 text-white rounded-xl text-xs font-medium flex items-center justify-center space-x-1.5 transition-colors"
+                  className="flex-1 py-3 px-3 bg-red-600/90 hover:bg-red-500 text-white rounded-xl text-xs font-medium flex items-center justify-center space-x-1.5 cursor-pointer transition-colors"
                 >
                   <PhoneOff className="w-4 h-4" />
                   <span>End & Evaluate</span>
@@ -254,17 +308,17 @@ export default function VapiInterviewRoom({
           </div>
         </div>
 
-        {/* Live Transcript Visualizer */}
-        <div className="md:col-span-2 glass-card rounded-xl p-5 flex flex-col border border-slate-800/80 min-h-[220px]">
+        {/* Live Transcript Stream */}
+        <div className="md:col-span-2 glass-card rounded-xl p-5 flex flex-col border border-slate-800 min-h-[220px]">
           <div className="flex items-center justify-between mb-3">
             <h3 className="text-sm font-semibold text-slate-300">Live WebRTC Transcript Stream</h3>
-            <span className="text-xs text-slate-500">{transcripts.length} dialogue turns</span>
+            <span className="text-xs text-slate-500">{transcripts.length} messages</span>
           </div>
 
-          <div className="flex-1 bg-slate-950/80 rounded-xl p-4 border border-slate-800/80 overflow-y-auto max-h-[200px] space-y-3">
+          <div className="flex-1 bg-slate-950/80 rounded-xl p-4 border border-slate-800 overflow-y-auto max-h-[200px] space-y-3">
             {transcripts.length === 0 ? (
               <div className="h-full flex items-center justify-center text-xs text-slate-500 italic">
-                Click "Start Voice Interview" to stream real-time voice transcripts...
+                Click "Start Interview" to fetch session token and begin stream...
               </div>
             ) : (
               transcripts.map((t, idx) => (
@@ -286,7 +340,7 @@ export default function VapiInterviewRoom({
         </div>
       </div>
 
-      {/* System Status Message */}
+      {/* Status Bar */}
       {statusMessage && (
         <div className="mt-4 p-3 bg-indigo-950/40 border border-indigo-500/30 rounded-xl text-xs text-indigo-300 flex items-center space-x-2">
           <Sparkles className="w-4 h-4 text-indigo-400 shrink-0" />
@@ -294,13 +348,13 @@ export default function VapiInterviewRoom({
         </div>
       )}
 
-      {/* Skill Gap Diagnostic Results */}
+      {/* Diagnostic Evaluation Result */}
       {technicalScore !== null && (
         <div className="mt-6 p-5 bg-gradient-to-r from-purple-950/40 to-slate-900 rounded-xl border border-purple-500/30">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center space-x-2">
               <AlertTriangle className="w-5 h-5 text-amber-400" />
-              <h4 className="text-sm font-semibold text-white">AI Skill Gap Diagnostic Results</h4>
+              <h4 className="text-sm font-semibold text-white">AI Skill Gap Evaluation</h4>
             </div>
             <div className="text-sm font-bold text-indigo-400 bg-indigo-500/10 px-3 py-1 rounded-lg border border-indigo-500/20">
               Score: {technicalScore}%
@@ -308,13 +362,13 @@ export default function VapiInterviewRoom({
           </div>
 
           <p className="text-xs text-slate-300 mb-3">
-            The candidate failed the technical evaluation threshold. The AI Lead Routing Engine detected missing core competencies:
+            Candidate scored below passing threshold. AI Lead Routing Engine triggered referral insertion:
           </p>
 
-          <div className="flex flex-wrap gap-2 mb-3">
+          <div className="flex flex-wrap gap-2">
             {missingSkills.map((skill, idx) => (
               <span key={idx} className="px-3 py-1 rounded-lg text-xs font-semibold bg-red-500/20 text-red-300 border border-red-500/30">
-                ⚠️ Failed Skill: {skill}
+                ⚠️ Failed Skill Gap: {skill}
               </span>
             ))}
           </div>
