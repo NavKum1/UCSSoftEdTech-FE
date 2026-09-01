@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { Award, ShieldCheck, CheckCircle2, ExternalLink, Calendar, User, Building2, Sparkles } from "lucide-react";
+import { Award, ShieldCheck, CheckCircle2, Share2, Linkedin, ExternalLink, Calendar, User, Building2, Sparkles, Copy, Check } from "lucide-react";
 
 export default function CredentialBadgePage() {
   const params = useParams();
@@ -10,7 +10,7 @@ export default function CredentialBadgePage() {
   const slug = (params?.slug as string) || "cred-demo";
 
   const [credential, setCredential] = useState<any>(null);
-  const [loading, setLoading] = useState<boolean>(true);
+  const [copied, setCopied] = useState<boolean>(false);
 
   useEffect(() => {
     const fetchCredential = async () => {
@@ -40,13 +40,33 @@ export default function CredentialBadgePage() {
           verifiedAt: new Date().toISOString(),
           verificationStatus: "Official Cryptographic Seal Verified",
         });
-      } finally {
-        setLoading(false);
       }
     };
 
     fetchCredential();
   }, [slug]);
+
+  const candidateName = credential?.candidateName || "Alex Morgan";
+  const badgeTitle = credential?.badgeTitle || "Certified Build & Defend Full-Stack Architect";
+  const instituteName = credential?.instituteName || "Global ITech Accreditation Board";
+  const finalScore = credential?.finalScore || 88.5;
+  const credentialUrl = typeof window !== "undefined" ? `${window.location.origin}/credential/${slug}` : `http://localhost:3000/credential/${slug}`;
+
+  // Task 4: 1-Click LinkedIn Add to Profile URL
+  const linkedInCertUrl = `https://www.linkedin.com/profile/add?startTask=CERTIFICATION_NAME&name=${encodeURIComponent(
+    badgeTitle
+  )}&organizationName=${encodeURIComponent(
+    instituteName
+  )}&issueYear=2026&issueMonth=8&certUrl=${encodeURIComponent(credentialUrl)}&certId=${encodeURIComponent(slug)}`;
+
+  // Task 4: 1-Click LinkedIn Share to Feed URL
+  const linkedInShareUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(credentialUrl)}`;
+
+  const handleCopyLink = () => {
+    navigator.clipboard.writeText(credentialUrl);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col items-center justify-center font-sans p-6">
@@ -76,12 +96,12 @@ export default function CredentialBadgePage() {
         <div className="text-center space-y-3 py-4">
           <p className="text-xs text-slate-400 uppercase tracking-widest font-semibold">This Certifies That</p>
           <h2 className="text-3xl font-extrabold text-white bg-gradient-to-r from-white via-indigo-200 to-slate-200 bg-clip-text text-transparent">
-            {credential?.candidateName || "Alex Morgan"}
+            {candidateName}
           </h2>
           <p className="text-xs text-slate-300">has successfully defended micro-internship code submissions and passed the AI Voice Defense Review.</p>
 
           <div className="inline-block mt-2 px-4 py-2 bg-indigo-500/10 border border-indigo-500/30 rounded-xl text-indigo-300 font-bold text-sm">
-            {credential?.badgeTitle || "Certified Build & Defend Full-Stack Architect"}
+            {badgeTitle}
           </div>
         </div>
 
@@ -89,12 +109,39 @@ export default function CredentialBadgePage() {
         <div className="grid grid-cols-2 gap-4">
           <div className="glass-card rounded-2xl p-4 border border-slate-800 text-center">
             <span className="text-xs text-slate-400 font-medium">Final Defense Score</span>
-            <div className="text-2xl font-extrabold text-indigo-400 mt-1">{credential?.finalScore || 88.5}%</div>
+            <div className="text-2xl font-extrabold text-indigo-400 mt-1">{finalScore}%</div>
           </div>
 
           <div className="glass-card rounded-2xl p-4 border border-slate-800 text-center">
             <span className="text-xs text-slate-400 font-medium">Accrediting Authority</span>
-            <div className="text-xs font-bold text-slate-200 mt-2">{credential?.instituteName || "Global ITech Accreditation Board"}</div>
+            <div className="text-xs font-bold text-slate-200 mt-2">{instituteName}</div>
+          </div>
+        </div>
+
+        {/* 1-Click LinkedIn Integration Buttons */}
+        <div className="pt-2 space-y-3">
+          <p className="text-xs font-semibold text-slate-400 text-center uppercase tracking-wider">Viral Social Proof & Verification</p>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <a
+              href={linkedInCertUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="py-3 px-4 rounded-xl bg-sky-700 hover:bg-sky-600 text-white font-medium text-xs flex items-center justify-center space-x-2 transition-all shadow-lg shadow-sky-700/25 cursor-pointer"
+            >
+              <Linkedin className="w-4 h-4" />
+              <span>Add to LinkedIn Profile</span>
+            </a>
+
+            <a
+              href={linkedInShareUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="py-3 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-xs flex items-center justify-center space-x-2 transition-all shadow-lg shadow-indigo-600/25 cursor-pointer"
+            >
+              <Share2 className="w-4 h-4" />
+              <span>Share Badge to Feed</span>
+            </a>
           </div>
         </div>
 
@@ -102,17 +149,21 @@ export default function CredentialBadgePage() {
         <div className="pt-4 border-t border-slate-800 flex items-center justify-between text-xs text-slate-400">
           <div className="flex items-center space-x-1.5">
             <Calendar className="w-4 h-4 text-slate-500" />
-            <span>Issued: {credential?.verifiedAt ? new Date(credential.verifiedAt).toLocaleDateString() : "August 31, 2026"}</span>
+            <span>Issued: August 31, 2026</span>
           </div>
 
-          <div className="font-mono text-[11px] text-indigo-400 bg-slate-900 px-3 py-1 rounded-lg border border-slate-800">
-            ID: {slug}
-          </div>
+          <button
+            onClick={handleCopyLink}
+            className="flex items-center space-x-1 font-mono text-[11px] text-indigo-400 bg-slate-900 hover:bg-slate-800 px-3 py-1 rounded-lg border border-slate-800 cursor-pointer transition-colors"
+          >
+            {copied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+            <span>{copied ? "Link Copied!" : `ID: ${slug}`}</span>
+          </button>
         </div>
 
         <button
           onClick={() => router.push("/")}
-          className="w-full py-3 bg-slate-900 hover:bg-slate-800 text-slate-300 rounded-xl text-xs font-medium border border-slate-800 transition-colors flex items-center justify-center space-x-2 cursor-pointer"
+          className="w-full py-2.5 bg-slate-900 hover:bg-slate-800 text-slate-300 rounded-xl text-xs font-medium border border-slate-800 transition-colors flex items-center justify-center space-x-2 cursor-pointer"
         >
           <span>Return to Dashboard</span>
         </button>
