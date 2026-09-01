@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { Award, ShieldCheck, CheckCircle2, Share2, ExternalLink, Calendar, User, Building2, Sparkles, Copy, Check } from "lucide-react";
+import { Award, ShieldCheck, CheckCircle2, Share2, ExternalLink, Calendar, User, Building2, Sparkles, Copy, Check, AlertTriangle } from "lucide-react";
 
 function LinkedInIcon({ className = "w-4 h-4" }: { className?: string }) {
   return (
@@ -24,8 +24,8 @@ export default function CredentialBadgePage() {
     const fetchCredential = async () => {
       try {
         const res = await fetch(`http://localhost:5000/api/credential/${slug}`);
-        const data = await res.json();
         if (res.ok) {
+          const data = await res.json();
           setCredential(data);
         } else {
           setCredential({
@@ -36,6 +36,7 @@ export default function CredentialBadgePage() {
             publicUrlSlug: slug,
             verifiedAt: new Date().toISOString(),
             verificationStatus: "Official Cryptographic Seal Verified",
+            verificationFlagged: false,
           });
         }
       } catch (e) {
@@ -47,6 +48,7 @@ export default function CredentialBadgePage() {
           publicUrlSlug: slug,
           verifiedAt: new Date().toISOString(),
           verificationStatus: "Official Cryptographic Seal Verified",
+          verificationFlagged: false,
         });
       }
     };
@@ -94,11 +96,33 @@ export default function CredentialBadgePage() {
             </div>
           </div>
 
-          <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
-            <ShieldCheck className="w-3.5 h-3.5 mr-1.5" />
-            VERIFIED
-          </span>
+          <div className="flex items-center space-x-2">
+            <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
+              <ShieldCheck className="w-3.5 h-3.5 mr-1.5" />
+              VERIFIED
+            </span>
+
+            {credential?.verificationFlagged && (
+              <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-amber-500/20 text-amber-400 border border-amber-500/40">
+                <AlertTriangle className="w-3.5 h-3.5 mr-1.5 text-amber-400" />
+                Warning: Verification Flagged
+              </span>
+            )}
+          </div>
         </div>
+
+        {/* Anti-Cheat Warning Alert Box */}
+        {credential?.verificationFlagged && (
+          <div className="p-4 bg-amber-950/40 border border-amber-500/30 rounded-2xl flex items-start space-x-3 text-left">
+            <AlertTriangle className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
+            <div className="space-y-1">
+              <p className="text-xs font-semibold text-amber-300">Anti-Cheat Verification Flagged</p>
+              <p className="text-[11px] text-amber-200/90 leading-relaxed">
+                {credential?.flagReason || "Anomalous code submission patterns (large paste block or synthetic AI boilerplate) were detected during this evaluation session."}
+              </p>
+            </div>
+          </div>
+        )}
 
         {/* Badge Title & Candidate Info */}
         <div className="text-center space-y-3 py-4">

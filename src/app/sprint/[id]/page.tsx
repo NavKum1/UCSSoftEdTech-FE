@@ -37,6 +37,23 @@ export default function SprintWorkspace() {
   const [selectedTenantId, setSelectedTenantId] = useState<string>("");
   const [statusMessage, setStatusMessage] = useState<string>("");
 
+  // Phase 11: Anti-Cheat & Plagiarism Detection — Paste Tracker State
+  const [suspectedPasting, setSuspectedPasting] = useState<boolean>(false);
+  const [pasteWarning, setPasteWarning] = useState<string | null>(null);
+
+  const handlePaste = (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
+    const pastedText = e.clipboardData.getData("text");
+    if (pastedText) {
+      const lineCount = pastedText.split(/\r\n|\r|\n/).length;
+      if (lineCount > 50) {
+        setSuspectedPasting(true);
+        setPasteWarning(
+          `Anti-Cheat Alert: Large block paste detected (${lineCount} lines). This submission will be marked with SuspectedPasting = true for audit verification.`
+        );
+      }
+    }
+  };
+
   // Step 1: Submit Code to .NET Core API using Authenticated JWT Fetch
   const handleSubmitCode = async () => {
     setPipelineState("submitting");
@@ -50,6 +67,7 @@ export default function SprintWorkspace() {
           body: JSON.stringify({
             sprintId: sprintId,
             codePayload: codePayload,
+            suspectedPasting: suspectedPasting,
           }),
         },
         getToken
@@ -180,10 +198,18 @@ export default function SprintWorkspace() {
               Task: Implement payment queue processing. Write your Python implementation below:
             </p>
 
+            {pasteWarning && (
+              <div className="p-3 bg-amber-950/40 border border-amber-500/30 rounded-xl flex items-start space-x-2 text-xs text-amber-300">
+                <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
+                <span>{pasteWarning}</span>
+              </div>
+            )}
+
             <textarea
               rows={12}
               value={codePayload}
               onChange={(e) => setCodePayload(e.target.value)}
+              onPaste={handlePaste}
               disabled={pipelineState !== "editor"}
               className="w-full bg-slate-950 font-mono text-xs text-slate-200 p-4 rounded-xl border border-slate-800 focus:outline-none focus:border-indigo-500 leading-relaxed"
             />
