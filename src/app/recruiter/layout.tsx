@@ -37,7 +37,7 @@ export default function RecruiterLayout({ children }: { children: React.ReactNod
               <ArrowLeft className="w-3.5 h-3.5" />
               <span>Back to Marketplace</span>
             </button>
-            <UserButton afterSignOutUrl="/" />
+            <UserButton />
           </div>
         </div>
       </header>

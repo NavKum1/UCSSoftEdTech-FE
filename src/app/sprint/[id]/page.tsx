@@ -148,7 +148,7 @@ export default function SprintWorkspace() {
             <span className="text-xs px-3 py-1 rounded-full bg-indigo-500/10 text-indigo-300 border border-indigo-500/30 font-medium">
               Sprint ID: {sprintId.substring(0, 8)}
             </span>
-            <UserButton afterSignOutUrl="/" />
+            <UserButton />
           </div>
         </div>
       </header>
