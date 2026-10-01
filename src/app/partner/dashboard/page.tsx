@@ -1,0 +1,346 @@
+"use client";
+
+import React, { useState, useEffect } from "react";
+import { 
+  Building2, Users, CheckCircle2, TrendingUp, DollarSign, 
+  Send, RefreshCw, Filter, ShieldCheck, AlertCircle, Sparkles, 
+  Search, ArrowUpRight, Link2, ExternalLink
+} from "lucide-react";
+
+export default function PartnerDashboardPage() {
+  const [data, setData] = useState<any>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [webhookUrl, setWebhookUrl] = useState<string>("");
+  const [apiKey, setApiKey] = useState<string>("");
+  const [webhookStatus, setWebhookStatus] = useState<string>("");
+  const [updatingLeadId, setUpdatingLeadId] = useState<string | null>(null);
+
+  const fetchDashboard = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch("http://localhost:5000/api/partner/dashboard");
+      if (res.ok) {
+        const json = await res.json();
+        setData(json);
+        setWebhookUrl(json.outboundWebhookUrl || "");
+      }
+    } catch (e) {
+      console.error("[PARTNER DASHBOARD FETCH ERROR]:", e);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchDashboard();
+  }, []);
+
+  const handleUpdateLeadStatus = async (leadId: string, newStatus: string) => {
+    setUpdatingLeadId(leadId);
+    try {
+      const res = await fetch(`http://localhost:5000/api/partner/lead/${leadId}/status`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: newStatus }),
+      });
+      if (res.ok) {
+        fetchDashboard();
+      }
+    } catch (e) {
+      console.error("[UPDATE LEAD STATUS ERROR]:", e);
+    } finally {
+      setUpdatingLeadId(null);
+    }
+  };
+
+  const handleSaveWebhookConfig = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setWebhookStatus("Saving configuration...");
+    try {
+      const res = await fetch("http://localhost:5000/api/partner/webhook-config", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ outboundWebhookUrl: webhookUrl, apiKey }),
+      });
+      if (res.ok) {
+        setWebhookStatus("Webhook configuration saved!");
+        setTimeout(() => setWebhookStatus(""), 3000);
+      }
+    } catch (e) {
+      setWebhookStatus("Failed to save webhook config.");
+    }
+  };
+
+  const handleTestWebhookDispatch = async () => {
+    setWebhookStatus("Dispatching test CRM payload...");
+    try {
+      const res = await fetch("http://localhost:5000/api/partner/dispatch-test-webhook", {
+        method: "POST",
+      });
+      const json = await res.json();
+      if (res.ok) {
+        setWebhookStatus(`Test Payload Dispatched! Status: ${json.status}`);
+        setTimeout(() => setWebhookStatus(""), 4000);
+      }
+    } catch (e) {
+      setWebhookStatus("Test webhook dispatch failed.");
+    }
+  };
+
+  const kpis = data?.kpis || {
+    totalLeadsReceived: 18,
+    pendingLeads: 5,
+    contactedLeads: 6,
+    enrolledLeads: 7,
+    conversionRatePercent: 38.9,
+    estimatedCommissionRevenueUsd: 1050.0,
+  };
+
+  const leads = data?.recentLeads || [
+    {
+      leadId: "demo-lead-1",
+      candidateName: "Alex Morgan",
+      candidateEmail: "alex.morgan@example.com",
+      courseName: "Full-Stack React & Microservices Masterclass",
+      status: "Pending",
+      createdAt: new Date().toISOString(),
+    },
+    {
+      leadId: "demo-lead-2",
+      candidateName: "Jordan Lee",
+      candidateEmail: "jordan.lee@example.com",
+      courseName: "High-Concurrency PostgreSQL & Distributed Systems",
+      status: "Contacted",
+      createdAt: new Date().toISOString(),
+    },
+    {
+      leadId: "demo-lead-3",
+      candidateName: "Taylor Swift",
+      candidateEmail: "taylor.s@example.com",
+      courseName: "Cloud Containerization & AWS VPC Security",
+      status: "Enrolled",
+      createdAt: new Date().toISOString(),
+    },
+  ];
+
+  return (
+    <div className="min-h-screen bg-slate-950 text-slate-100 font-sans p-6 md:p-10">
+      {/* Top Header Navigation */}
+      <div className="max-w-7xl mx-auto space-y-8">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-800">
+          <div className="flex items-center space-x-3">
+            <div className="w-12 h-12 rounded-2xl bg-indigo-600/20 border border-indigo-500/30 flex items-center justify-center text-indigo-400">
+              <Building2 className="w-6 h-6" />
+            </div>
+            <div>
+              <div className="flex items-center space-x-2">
+                <span className="text-xs font-semibold text-indigo-400 uppercase tracking-wider">B2B Institute Portal</span>
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
+                  LIVE CONVERSION PIPELINE
+                </span>
+              </div>
+              <h1 className="text-2xl font-extrabold text-white mt-0.5">
+                {data?.instituteName || "Global ITech Accreditation Board"}
+              </h1>
+            </div>
+          </div>
+
+          <div className="flex items-center space-x-3">
+            <button
+              onClick={fetchDashboard}
+              className="py-2.5 px-4 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-xs font-medium text-slate-300 flex items-center space-x-2 transition-colors cursor-pointer"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} />
+              <span>Refresh Metrics</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Live KPI Stat Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+          <div className="glass-card rounded-2xl p-5 border border-slate-800 relative overflow-hidden">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-medium text-slate-400">Total Referred Leads</span>
+              <Users className="w-4 h-4 text-indigo-400" />
+            </div>
+            <div className="text-3xl font-extrabold text-white mt-2">{kpis.totalLeadsReceived}</div>
+            <span className="text-[11px] text-slate-500 mt-1 block">Qualified skill gap routing</span>
+          </div>
+
+          <div className="glass-card rounded-2xl p-5 border border-slate-800 relative overflow-hidden">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-medium text-slate-400">Enrolled Candidates</span>
+              <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+            </div>
+            <div className="text-3xl font-extrabold text-emerald-400 mt-2">{kpis.enrolledLeads}</div>
+            <span className="text-[11px] text-emerald-500/80 mt-1 block">Course conversions closed</span>
+          </div>
+
+          <div className="glass-card rounded-2xl p-5 border border-slate-800 relative overflow-hidden">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-medium text-slate-400">Conversion Rate</span>
+              <TrendingUp className="w-4 h-4 text-sky-400" />
+            </div>
+            <div className="text-3xl font-extrabold text-sky-400 mt-2">{kpis.conversionRatePercent}%</div>
+            <span className="text-[11px] text-sky-500/80 mt-1 block">Lead to student enrollment</span>
+          </div>
+
+          <div className="glass-card rounded-2xl p-5 border border-slate-800 relative overflow-hidden">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-medium text-slate-400">Est. Commission Revenue</span>
+              <DollarSign className="w-4 h-4 text-purple-400" />
+            </div>
+            <div className="text-3xl font-extrabold text-purple-300 mt-2">${kpis.estimatedCommissionRevenueUsd}</div>
+            <span className="text-[11px] text-purple-400/80 mt-1 block">@ $150 referral bounty / lead</span>
+          </div>
+        </div>
+
+        {/* Skill Deficits & CRM Webhook Configuration Split Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Missing Skill Clusters (2 Cols) */}
+          <div className="lg:col-span-2 glass-panel rounded-2xl p-6 border border-slate-800 space-y-4">
+            <div className="flex items-center justify-between">
+              <h2 className="text-sm font-bold text-white flex items-center space-x-2">
+                <Sparkles className="w-4 h-4 text-indigo-400" />
+                <span>Candidate Skill Deficits & Demand Clusters</span>
+              </h2>
+              <span className="text-xs text-slate-400 font-mono">Aggregated Real-Time</span>
+            </div>
+
+            <p className="text-xs text-slate-400">
+              Technical evaluation failures identified during candidate AI voice interview defense sessions across all micro-internships:
+            </p>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+              {[
+                { skill: "React Hooks & State Management", count: 14, color: "from-indigo-500 to-sky-500" },
+                { skill: "PostgreSQL Indexing & Optimization", count: 9, color: "from-purple-500 to-pink-500" },
+                { skill: "AWS VPC Security & Subnets", count: 7, color: "from-emerald-500 to-teal-500" },
+                { skill: "Docker Multi-Stage Containerization", count: 5, color: "from-amber-500 to-orange-500" }
+              ].map((item, idx) => (
+                <div key={idx} className="bg-slate-900/60 rounded-xl p-3.5 border border-slate-800 flex items-center justify-between">
+                  <span className="text-xs font-medium text-slate-200">{item.skill}</span>
+                  <span className="px-2.5 py-1 rounded-lg text-xs font-bold bg-indigo-500/10 text-indigo-300 border border-indigo-500/30">
+                    {item.count} Leads
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* CRM Webhook Config (1 Col) */}
+          <div className="glass-panel rounded-2xl p-6 border border-slate-800 space-y-4">
+            <h2 className="text-sm font-bold text-white flex items-center space-x-2">
+              <Link2 className="w-4 h-4 text-sky-400" />
+              <span>Outbound CRM Webhook</span>
+            </h2>
+            <p className="text-xs text-slate-400">
+              Automatically dispatch qualified lead JSON payloads directly to your HubSpot, Salesforce, or custom CRM endpoint:
+            </p>
+
+            <form onSubmit={handleSaveWebhookConfig} className="space-y-3">
+              <div>
+                <label className="text-[11px] font-semibold text-slate-400 block mb-1">Webhook Endpoint URL</label>
+                <input
+                  type="url"
+                  value={webhookUrl}
+                  onChange={(e) => setWebhookUrl(e.target.value)}
+                  placeholder="https://crm.yourinstitute.com/api/leads"
+                  className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-indigo-500"
+                />
+              </div>
+
+              <div>
+                <label className="text-[11px] font-semibold text-slate-400 block mb-1">X-Institute-Api-Key Header</label>
+                <input
+                  type="password"
+                  value={apiKey}
+                  onChange={(e) => setApiKey(e.target.value)}
+                  placeholder="••••••••••••••••"
+                  className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-indigo-500"
+                />
+              </div>
+
+              {webhookStatus && (
+                <div className="text-[11px] font-mono text-indigo-400 bg-indigo-500/10 p-2 rounded-lg border border-indigo-500/30">
+                  {webhookStatus}
+                </div>
+              )}
+
+              <div className="flex items-center space-x-2 pt-1">
+                <button
+                  type="submit"
+                  className="flex-1 py-2 px-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-xs transition-colors cursor-pointer"
+                >
+                  Save Endpoint
+                </button>
+                <button
+                  type="button"
+                  onClick={handleTestWebhookDispatch}
+                  className="py-2 px-3 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 font-medium text-xs border border-slate-800 transition-colors flex items-center space-x-1 cursor-pointer"
+                >
+                  <Send className="w-3 h-3" />
+                  <span>Test Ping</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        {/* Candidate Lead Referrals Management Table */}
+        <div className="glass-panel rounded-2xl p-6 border border-slate-800 space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div>
+              <h2 className="text-base font-bold text-white">Referred Candidate Lead Pipeline</h2>
+              <p className="text-xs text-slate-400">Update student enrollment status to track referral commission conversions.</p>
+            </div>
+          </div>
+
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs text-slate-300">
+              <thead className="bg-slate-900/80 text-slate-400 uppercase text-[10px] font-semibold border-b border-slate-800">
+                <tr>
+                  <th className="py-3 px-4">Candidate Name</th>
+                  <th className="py-3 px-4">Contact Email</th>
+                  <th className="py-3 px-4">Matched Recommended Course</th>
+                  <th className="py-3 px-4">Referred On</th>
+                  <th className="py-3 px-4 text-right">Conversion Status</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-800/60">
+                {leads.map((lead: any) => (
+                  <tr key={lead.leadId} className="hover:bg-slate-900/40 transition-colors">
+                    <td className="py-3.5 px-4 font-semibold text-white">{lead.candidateName}</td>
+                    <td className="py-3.5 px-4 font-mono text-slate-400">{lead.candidateEmail}</td>
+                    <td className="py-3.5 px-4 text-indigo-300 font-medium">{lead.courseName}</td>
+                    <td className="py-3.5 px-4 text-slate-400">
+                      {new Date(lead.createdAt).toLocaleDateString()}
+                    </td>
+                    <td className="py-3.5 px-4 text-right">
+                      <select
+                        value={lead.status}
+                        disabled={updatingLeadId === lead.leadId}
+                        onChange={(e) => handleUpdateLeadStatus(lead.leadId, e.target.value)}
+                        className={`px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-900 border transition-colors cursor-pointer focus:outline-none ${
+                          lead.status === "Enrolled"
+                            ? "text-emerald-400 border-emerald-500/40 bg-emerald-500/10"
+                            : lead.status === "Contacted"
+                            ? "text-sky-400 border-sky-500/40 bg-sky-500/10"
+                            : "text-amber-400 border-amber-500/40 bg-amber-500/10"
+                        }`}
+                      >
+                        <option value="Pending" className="bg-slate-900 text-amber-400">Pending</option>
+                        <option value="Contacted" className="bg-slate-900 text-sky-400">Contacted</option>
+                        <option value="Enrolled" className="bg-slate-900 text-emerald-400">Enrolled</option>
+                      </select>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

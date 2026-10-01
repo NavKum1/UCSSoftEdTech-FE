@@ -1,0 +1,465 @@
+"use client";
+
+import React, { useState, useEffect, useRef } from "react";
+import { useParams, useRouter } from "next/navigation";
+import {
+  Play,
+  Pause,
+  RotateCcw,
+  Volume2,
+  Clock,
+  Award,
+  ShieldCheck,
+  AlertTriangle,
+  ArrowLeft,
+  Share2,
+  Sparkles,
+  Bot,
+  User,
+  CheckCircle2,
+  Cpu,
+  Layers,
+  Code2
+} from "lucide-react";
+
+interface TranscriptSegment {
+  index: number;
+  speaker: string;
+  text: string;
+  timeOffsetSeconds: number;
+  timeFormatted: string;
+  isAi: boolean;
+}
+
+interface ReplayData {
+  sessionId: string;
+  userId: string;
+  candidateName: string;
+  candidateEmail: string;
+  jobDescription: string;
+  startTime: string;
+  endTime: string | null;
+  durationSeconds: number;
+  durationFormatted: string;
+  recordingUrl: string;
+  transcript: string;
+  transcriptSegments: TranscriptSegment[];
+  evaluation: {
+    technicalScore: number;
+    communicationScore: number;
+    missingSkills: string[];
+    architecturalFlaws: string[];
+  } | null;
+}
+
+export default function AudioReplayStudioPage() {
+  const params = useParams();
+  const router = useRouter();
+  const sessionId = (params?.id as string) || "";
+
+  const [replay, setReplay] = useState<ReplayData | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [isPlaying, setIsPlaying] = useState<boolean>(false);
+  const [currentTime, setCurrentTime] = useState<number>(0);
+  const [audioDuration, setAudioDuration] = useState<number>(300);
+  const [activeSegmentIndex, setActiveSegmentIndex] = useState<number>(1);
+
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  useEffect(() => {
+    const fetchReplay = async () => {
+      try {
+        const res = await fetch(`http://localhost:5000/api/interview/${sessionId}/replay`);
+        if (res.ok) {
+          const data = await res.json();
+          setReplay(data);
+          if (data.durationSeconds) setAudioDuration(data.durationSeconds);
+        } else {
+          // Fallback mock session for visual demo
+          setReplay({
+            sessionId: sessionId || "demo-session-id",
+            userId: "11111111-2222-3333-4444-555555555555",
+            candidateName: "Alex Morgan",
+            candidateEmail: "alex.morgan@example.com",
+            jobDescription: "Distributed Systems & Cloud Architecture Defense",
+            startTime: new Date().toISOString(),
+            endTime: new Date().toISOString(),
+            durationSeconds: 300,
+            durationFormatted: "5m 00s",
+            recordingUrl: "https://actions.google.com/sounds/v1/ambiences/coffee_shop.ogg",
+            transcript: "AI: Welcome to your Build & Defend sprint defense review.\nCandidate: Thank you. I have implemented the scalable background queue worker.\nAI: In your SQL query execution, what are the concurrency and connection leak hazards?\nCandidate: Without connection pooling, high request spikes will exhaust PostgreSQL max_connections.",
+            transcriptSegments: [
+              {
+                index: 1,
+                speaker: "AI Technical Examiner",
+                text: "Welcome to your Build & Defend sprint defense review. Let's inspect your architectural choices.",
+                timeOffsetSeconds: 0,
+                timeFormatted: "00:00",
+                isAi: true
+              },
+              {
+                index: 2,
+                speaker: "Alex Morgan",
+                text: "Thank you. I implemented the background queue worker using asynchronous message loops and resilient error handlers.",
+                timeOffsetSeconds: 25,
+                timeFormatted: "00:25",
+                isAi: false
+              },
+              {
+                index: 3,
+                speaker: "AI Technical Examiner",
+                text: "In your database interaction layer, there is a direct query loop without connection pooling. What happens under a 10,000 req/sec traffic surge?",
+                timeOffsetSeconds: 65,
+                timeFormatted: "01:05",
+                isAi: true
+              },
+              {
+                index: 4,
+                speaker: "Alex Morgan",
+                text: "Without connection pooling, PostgreSQL max_connections would be exhausted immediately, causing connection timeouts and cascading 500 errors. In production, I would wrap Npgsql with an optimized connection pool and circuit breakers.",
+                timeOffsetSeconds: 110,
+                timeFormatted: "01:50",
+                isAi: false
+              },
+              {
+                index: 5,
+                speaker: "AI Technical Examiner",
+                text: "Excellent explanation of connection limits and circuit breaker patterns. How would you handle database failover during a regional outage?",
+                timeOffsetSeconds: 180,
+                timeFormatted: "03:00",
+                isAi: true
+              },
+              {
+                index: 6,
+                speaker: "Alex Morgan",
+                text: "I would configure multi-region asynchronous read replicas with an automated Patroni consensus cluster or Aurora Global Database, swapping write traffic via Route 53 health-check DNS failover.",
+                timeOffsetSeconds: 220,
+                timeFormatted: "03:40",
+                isAi: false
+              }
+            ],
+            evaluation: {
+              technicalScore: 92.5,
+              communicationScore: 88.0,
+              missingSkills: [],
+              architecturalFlaws: ["Unpooled PostgreSQL connection initialization in loop", "Missing idempotent retry semantics"]
+            }
+          });
+        }
+      } catch (e) {
+        console.error("Replay fetch error:", e);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchReplay();
+  }, [sessionId]);
+
+  const togglePlay = () => {
+    if (!audioRef.current) return;
+    if (isPlaying) {
+      audioRef.current.pause();
+      setIsPlaying(false);
+    } else {
+      audioRef.current.play().catch(() => {});
+      setIsPlaying(true);
+    }
+  };
+
+  const handleTimeUpdate = () => {
+    if (!audioRef.current) return;
+    const current = audioRef.current.currentTime;
+    setCurrentTime(current);
+
+    // Synchronize active segment
+    if (replay?.transcriptSegments) {
+      for (let i = replay.transcriptSegments.length - 1; i >= 0; i--) {
+        if (current >= replay.transcriptSegments[i].timeOffsetSeconds) {
+          setActiveSegmentIndex(replay.transcriptSegments[i].index);
+          break;
+        }
+      }
+    }
+  };
+
+  const seekToSegment = (offsetSeconds: number, index: number) => {
+    if (!audioRef.current) return;
+    audioRef.current.currentTime = offsetSeconds;
+    setCurrentTime(offsetSeconds);
+    setActiveSegmentIndex(index);
+    if (!isPlaying) {
+      audioRef.current.play().catch(() => {});
+      setIsPlaying(true);
+    }
+  };
+
+  const formatSec = (secs: number) => {
+    const m = Math.floor(secs / 60);
+    const s = Math.floor(secs % 60);
+    return `${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-slate-950 text-slate-100 flex items-center justify-center font-sans">
+        <div className="flex items-center space-x-3 text-indigo-400">
+          <Sparkles className="w-6 h-6 animate-spin" />
+          <span className="text-base font-semibold">Loading Audio Replay Studio...</span>
+        </div>
+      </div>
+    );
+  }
+
+  const technicalScore = replay?.evaluation?.technicalScore ?? 90;
+  const commScore = replay?.evaluation?.communicationScore ?? 88;
+
+  return (
+    <div className="min-h-screen bg-slate-950 text-slate-100 font-sans p-6 md:p-12 relative overflow-hidden">
+      {/* Background Ambience Glow */}
+      <div className="absolute top-1/4 left-1/3 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-gradient-to-tr from-indigo-600/20 to-cyan-500/20 blur-3xl rounded-full pointer-events-none" />
+
+      {/* Hidden Audio Element */}
+      <audio
+        ref={audioRef}
+        src={replay?.recordingUrl}
+        onTimeUpdate={handleTimeUpdate}
+        onEnded={() => setIsPlaying(false)}
+      />
+
+      <div className="max-w-6xl mx-auto space-y-8 relative z-10">
+        {/* Navigation & Header */}
+        <div className="flex items-center justify-between">
+          <button
+            onClick={() => router.back()}
+            className="flex items-center space-x-2 text-slate-400 hover:text-white transition-colors text-xs font-semibold px-3 py-2 rounded-xl bg-slate-900 border border-slate-800 cursor-pointer"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            <span>Return</span>
+          </button>
+
+          <div className="flex items-center space-x-2">
+            <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-indigo-500/10 text-indigo-400 border border-indigo-500/30">
+              <Sparkles className="w-3.5 h-3.5 mr-1.5" />
+              VOICE DEFENSE REPLAY STUDIO
+            </span>
+          </div>
+        </div>
+
+        {/* Title & Metadata Banner */}
+        <div className="bg-slate-900/80 backdrop-blur-md rounded-3xl p-6 md:p-8 border border-slate-800 shadow-xl space-y-4">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div>
+              <div className="flex items-center space-x-2 text-xs font-mono text-cyan-400 uppercase tracking-wider">
+                <Cpu className="w-4 h-4" />
+                <span>WebRTC Session: {sessionId || "AI-REVIEW-LIVE"}</span>
+              </div>
+              <h1 className="text-2xl md:text-3xl font-black text-white mt-1">
+                Candidate Defense: {replay?.candidateName}
+              </h1>
+              <p className="text-xs text-slate-400 mt-1 max-w-2xl leading-relaxed">
+                {replay?.jobDescription}
+              </p>
+            </div>
+
+            {/* Score Pill Highlights */}
+            <div className="flex items-center space-x-3">
+              <div className="bg-slate-950/80 border border-indigo-500/40 rounded-2xl px-5 py-3 text-center">
+                <span className="text-[10px] uppercase font-semibold text-slate-400">Technical Score</span>
+                <div className="text-2xl font-black text-indigo-400">{technicalScore}%</div>
+              </div>
+
+              <div className="bg-slate-950/80 border border-cyan-500/40 rounded-2xl px-5 py-3 text-center">
+                <span className="text-[10px] uppercase font-semibold text-slate-400">Communication</span>
+                <div className="text-2xl font-black text-cyan-400">{commScore}%</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Interactive Audio Player Bar */}
+          <div className="bg-slate-950 rounded-2xl p-4 border border-slate-800/80 space-y-3">
+            <div className="flex items-center justify-between text-xs font-mono text-slate-400">
+              <div className="flex items-center space-x-2">
+                <Volume2 className="w-4 h-4 text-indigo-400" />
+                <span>High-Definition WebRTC Audio Playback</span>
+              </div>
+              <span>{formatSec(currentTime)} / {formatSec(audioDuration)}</span>
+            </div>
+
+            {/* Progress Scrubber */}
+            <div
+              className="w-full bg-slate-800 h-2.5 rounded-full overflow-hidden cursor-pointer relative"
+              onClick={(e) => {
+                const rect = e.currentTarget.getBoundingClientRect();
+                const clickX = e.clientX - rect.left;
+                const ratio = clickX / rect.width;
+                const targetTime = ratio * audioDuration;
+                if (audioRef.current) {
+                  audioRef.current.currentTime = targetTime;
+                  setCurrentTime(targetTime);
+                }
+              }}
+            >
+              <div
+                className="h-full bg-gradient-to-r from-indigo-500 to-cyan-400 transition-all duration-150"
+                style={{ width: `${(currentTime / audioDuration) * 100}%` }}
+              />
+            </div>
+
+            {/* Controls */}
+            <div className="flex items-center justify-between pt-1">
+              <div className="flex items-center space-x-3">
+                <button
+                  onClick={togglePlay}
+                  className="w-10 h-10 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white flex items-center justify-center transition-transform active:scale-95 shadow-lg shadow-indigo-600/30 cursor-pointer"
+                >
+                  {isPlaying ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5 ml-0.5" />}
+                </button>
+
+                <button
+                  onClick={() => {
+                    if (audioRef.current) {
+                      audioRef.current.currentTime = 0;
+                      setCurrentTime(0);
+                    }
+                  }}
+                  className="p-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-white transition-colors cursor-pointer"
+                >
+                  <RotateCcw className="w-4 h-4" />
+                </button>
+
+                <span className="text-xs text-slate-400 font-medium">
+                  {isPlaying ? "Playing recording..." : "Paused"}
+                </span>
+              </div>
+
+              <div className="flex items-center space-x-2 text-xs text-slate-400">
+                <Clock className="w-3.5 h-3.5 text-cyan-400" />
+                <span>Session Duration: {replay?.durationFormatted}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Studio Content Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Synchronized Transcript Player (2 cols) */}
+          <div className="lg:col-span-2 space-y-4">
+            <div className="flex items-center justify-between">
+              <h2 className="text-base font-bold text-white flex items-center space-x-2">
+                <Layers className="w-4 h-4 text-indigo-400" />
+                <span>Synchronized Audio Transcript</span>
+              </h2>
+              <span className="text-xs text-slate-400">Click any dialogue block to jump audio</span>
+            </div>
+
+            <div className="space-y-3 max-h-[600px] overflow-y-auto pr-2">
+              {replay?.transcriptSegments.map((seg) => {
+                const isActive = activeSegmentIndex === seg.index;
+                return (
+                  <div
+                    key={seg.index}
+                    onClick={() => seekToSegment(seg.timeOffsetSeconds, seg.index)}
+                    className={`p-4 rounded-2xl border transition-all cursor-pointer text-left ${
+                      isActive
+                        ? "bg-indigo-950/40 border-indigo-500/60 shadow-lg shadow-indigo-500/10"
+                        : "bg-slate-900/60 border-slate-800 hover:bg-slate-900 hover:border-slate-700"
+                    }`}
+                  >
+                    <div className="flex items-center justify-between pb-2 border-b border-slate-800/60 mb-2">
+                      <div className="flex items-center space-x-2">
+                        {seg.isAi ? (
+                          <div className="w-6 h-6 rounded-lg bg-indigo-500/20 text-indigo-400 flex items-center justify-center">
+                            <Bot className="w-3.5 h-3.5" />
+                          </div>
+                        ) : (
+                          <div className="w-6 h-6 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center">
+                            <User className="w-3.5 h-3.5" />
+                          </div>
+                        )}
+                        <span className={`text-xs font-bold ${seg.isAi ? "text-indigo-400" : "text-emerald-400"}`}>
+                          {seg.speaker}
+                        </span>
+                      </div>
+
+                      <span className="font-mono text-[11px] text-slate-400 px-2 py-0.5 rounded bg-slate-950 border border-slate-800">
+                        {seg.timeFormatted}
+                      </span>
+                    </div>
+
+                    <p className="text-xs text-slate-200 leading-relaxed">
+                      {seg.text}
+                    </p>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Defense Evaluation Sidebar (1 col) */}
+          <div className="space-y-6">
+            <div className="bg-slate-900/80 rounded-3xl p-6 border border-slate-800 shadow-xl space-y-4">
+              <h2 className="text-base font-bold text-white flex items-center space-x-2">
+                <Code2 className="w-4 h-4 text-cyan-400" />
+                <span>Identified Code Flaws Examined</span>
+              </h2>
+
+              <p className="text-xs text-slate-400 leading-relaxed">
+                During the voice review, the AI Technical Examiner dynamically challenged the candidate on these flaws:
+              </p>
+
+              <div className="space-y-2">
+                {replay?.evaluation?.architecturalFlaws.map((flaw, idx) => (
+                  <div key={idx} className="p-3 rounded-xl bg-slate-950 border border-amber-500/30 flex items-start space-x-2.5">
+                    <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
+                    <span className="text-xs text-slate-300 font-medium leading-relaxed">{flaw}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Defense Competency Ratings */}
+            <div className="bg-slate-900/80 rounded-3xl p-6 border border-slate-800 shadow-xl space-y-4">
+              <h2 className="text-base font-bold text-white flex items-center space-x-2">
+                <ShieldCheck className="w-4 h-4 text-emerald-400" />
+                <span>Defense Assessment</span>
+              </h2>
+
+              <div className="space-y-3">
+                <div>
+                  <div className="flex justify-between text-xs text-slate-300 mb-1">
+                    <span>Technical Architecture Defense</span>
+                    <span className="font-bold text-indigo-400">{technicalScore}%</span>
+                  </div>
+                  <div className="w-full bg-slate-800 h-2 rounded-full overflow-hidden">
+                    <div className="bg-indigo-500 h-full rounded-full" style={{ width: `${technicalScore}%` }} />
+                  </div>
+                </div>
+
+                <div>
+                  <div className="flex justify-between text-xs text-slate-300 mb-1">
+                    <span>Verbal Clarity & System Rationale</span>
+                    <span className="font-bold text-cyan-400">{commScore}%</span>
+                  </div>
+                  <div className="w-full bg-slate-800 h-2 rounded-full overflow-hidden">
+                    <div className="bg-cyan-500 h-full rounded-full" style={{ width: `${commScore}%` }} />
+                  </div>
+                </div>
+              </div>
+
+              <div className="pt-2">
+                <button
+                  onClick={() => router.push("/leaderboard")}
+                  className="w-full py-2.5 bg-indigo-600/20 hover:bg-indigo-600/30 border border-indigo-500/40 text-indigo-300 rounded-xl text-xs font-semibold flex items-center justify-center space-x-2 transition-colors cursor-pointer"
+                >
+                  <Award className="w-4 h-4" />
+                  <span>View Global Community Leaderboard</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
