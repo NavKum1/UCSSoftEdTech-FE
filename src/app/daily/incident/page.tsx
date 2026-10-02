@@ -155,7 +155,7 @@ export default function DailyIncidentPage() {
     setLoading(true);
     try {
       // 1. Fetch Today's Incident
-      const incRes = await fetch("http://localhost:5000/api/incidents/today");
+      const incRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/incidents/today`);
       if (incRes.ok) {
         const incData: IncidentKata = await incRes.json();
         setIncident(incData);
@@ -183,14 +183,14 @@ export default function DailyIncidentPage() {
       }
 
       // 2. Fetch User Streak
-      const streakRes = await fetch(`http://localhost:5000/api/incidents/streak/${userId}`);
+      const streakRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}`}/api/incidents/streak/${userId}`);
       if (streakRes.ok) {
         const streakData = await streakRes.json();
         setStreak(streakData);
       }
 
       // 3. Fetch Weekly Leagues
-      const leagueRes = await fetch(`http://localhost:5000/api/incidents/leagues?userId=${userId}`);
+      const leagueRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}`}/api/incidents/leagues?userId=${userId}`);
       if (leagueRes.ok) {
         const leagueData = await leagueRes.json();
         setLeagues(leagueData);
@@ -212,7 +212,7 @@ export default function DailyIncidentPage() {
     setTimerActive(false);
 
     try {
-      const res = await fetch("http://localhost:5000/api/incidents/triage", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/incidents/triage`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -230,10 +230,10 @@ export default function DailyIncidentPage() {
         setTriageResult(result);
 
         // Refresh streak and league stats
-        const streakRes = await fetch(`http://localhost:5000/api/incidents/streak/${userId}`);
+        const streakRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}`}/api/incidents/streak/${userId}`);
         if (streakRes.ok) setStreak(await streakRes.json());
 
-        const leagueRes = await fetch(`http://localhost:5000/api/incidents/leagues?userId=${userId}`);
+        const leagueRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}`}/api/incidents/leagues?userId=${userId}`);
         if (leagueRes.ok) setLeagues(await leagueRes.json());
       } else {
         alert("Triage submission evaluation encountered an error.");
@@ -248,7 +248,7 @@ export default function DailyIncidentPage() {
 
   const handleEquipFreezeShield = async () => {
     try {
-      const res = await fetch("http://localhost:5000/api/incidents/streak/freeze", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/incidents/streak/freeze`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userId }),

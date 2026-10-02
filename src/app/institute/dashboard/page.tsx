@@ -364,7 +364,7 @@ export default function InstituteDashboardPage() {
                 </label>
                 <input
                   type="url"
-                  placeholder="https://api.salesforce.com/services/apexrest/leads or http://localhost:5000/api/institute/webhook-test"
+                  placeholder="https://api.salesforce.com/services/apexrest/leads or https://crm.yourdomain.com/webhooks/leads"
                   value={webhookInput}
                   onChange={(e) => setWebhookInput(e.target.value)}
                   required

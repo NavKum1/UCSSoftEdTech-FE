@@ -99,7 +99,7 @@ export default function ExecutiveLeadershipSimulatorPage() {
   const fetchScenarios = async () => {
     try {
       setLoading(true);
-      const res = await fetch("http://localhost:5000/api/leadership/scenarios");
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/leadership/scenarios`);
       if (res.ok) {
         const data = await res.json();
         setScenarios(data);
@@ -119,7 +119,7 @@ export default function ExecutiveLeadershipSimulatorPage() {
     try {
       setEvaluationReport(null);
       setCoachingTip(null);
-      const res = await fetch("http://localhost:5000/api/leadership/session/start", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/leadership/session/start`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -146,7 +146,7 @@ export default function ExecutiveLeadershipSimulatorPage() {
 
     try {
       setSubmittingTurn(true);
-      const res = await fetch("http://localhost:5000/api/leadership/turn", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/leadership/turn`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -162,7 +162,7 @@ export default function ExecutiveLeadershipSimulatorPage() {
         setCandidateInput("");
 
         // Refresh session transcript
-        const sessionRes = await fetch("http://localhost:5000/api/leadership/session/start", {
+        const sessionRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/leadership/session/start`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -177,7 +177,7 @@ export default function ExecutiveLeadershipSimulatorPage() {
 
         if (result.isSimulationFinished) {
           // Finalize session
-          const finalizeRes = await fetch(`http://localhost:5000/api/leadership/session/${session.id}/finalize`, {
+          const finalizeRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}`}/api/leadership/session/${session.id}/finalize`, {
             method: "POST"
           });
           if (finalizeRes.ok) {
@@ -196,7 +196,7 @@ export default function ExecutiveLeadershipSimulatorPage() {
   const handleGeneratePromotionDossier = async () => {
     try {
       setGeneratingDossier(true);
-      const res = await fetch("http://localhost:5000/api/leadership/promotion/defense", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/leadership/promotion/defense`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

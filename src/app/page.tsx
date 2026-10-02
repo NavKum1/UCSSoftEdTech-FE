@@ -38,7 +38,7 @@ export default function Dashboard() {
         headers["X-Institute-Id"] = tenantId;
       }
 
-      const res = await fetch("http://localhost:5000/api/institute", { headers });
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/institute`, { headers });
       const data = await res.json();
       if (res.ok) {
         setInstitutes(data.institutes || []);
@@ -57,7 +57,7 @@ export default function Dashboard() {
   const handleSeedData = async () => {
     setIsSeeding(true);
     try {
-      await fetch("http://localhost:5000/api/institute/seed", { method: "POST" });
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/institute/seed`, { method: "POST" });
       await fetchTenantDetails(selectedTenantId);
     } catch (err) {
       console.log("Error seeding database.");

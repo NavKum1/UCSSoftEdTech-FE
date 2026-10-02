@@ -188,7 +188,7 @@ export default function SuperAdminDashboard() {
         method: "POST",
         body: JSON.stringify({
           name: newInstName.trim(),
-          webhookUrl: newInstWebhook.trim() || "http://localhost:5000/api/institute/webhook-test",
+          webhookUrl: newInstWebhook.trim() || `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/institute/webhook-test`,
           apiKey: newInstApiKey.trim() || `inst_key_${Date.now()}`
         })
       });

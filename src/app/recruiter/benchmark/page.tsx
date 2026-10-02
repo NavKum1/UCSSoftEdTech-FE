@@ -58,7 +58,7 @@ export default function RecruiterBenchmarkPage() {
     setLoading(true);
     setFetchError(null);
     try {
-      const res = await fetch("http://localhost:5000/api/benchmark/cohort/analytics");
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/benchmark/cohort/analytics`);
       if (res.ok) {
         const json = await res.json();
         setAnalytics(json.analytics);
@@ -85,7 +85,7 @@ export default function RecruiterBenchmarkPage() {
   const handleDispatchBatch = async () => {
     setBatchStatus("Dispatching offline evaluation job...");
     try {
-      const res = await fetch("http://localhost:5000/api/benchmark/batch-dispatch", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/benchmark/batch-dispatch`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ modelVersion: selectedModel })
@@ -111,7 +111,7 @@ export default function RecruiterBenchmarkPage() {
     setPlagiarismReport(null);
     setPlagiarismError(null);
     try {
-      const res = await fetch("http://localhost:5000/api/benchmark/plagiarism-check", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/benchmark/plagiarism-check`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

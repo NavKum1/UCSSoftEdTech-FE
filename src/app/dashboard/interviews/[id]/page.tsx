@@ -82,7 +82,7 @@ export default function StudentInterviewReplayPage() {
       setLoading(true);
       setFetchError(null);
       try {
-        const res = await fetch(`http://localhost:5000/api/interview/session/${sessionId}`);
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}`}/api/interview/session/${sessionId}`);
         if (res.ok) {
           const data = await res.json();
           setSessionData(data);

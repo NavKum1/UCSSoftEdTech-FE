@@ -82,7 +82,7 @@ export default function MultiLanguageTranslationStudioPage() {
     setLoading(true);
     setFetchError(null);
     try {
-      const res = await fetch(`http://localhost:5000/api/translation/session/${sessionId}/transcript`);
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}`}/api/translation/session/${sessionId}/transcript`);
       if (res.ok) {
         const json = await res.json();
         setSegments(json.transcript || []);
@@ -130,7 +130,7 @@ export default function MultiLanguageTranslationStudioPage() {
       const start = lastSegment ? lastSegment.endTimeSeconds + 0.5 : 0.0;
       const end = start + Math.max(3.0, inputText.length * 0.08);
 
-      const res = await fetch("http://localhost:5000/api/translation/segment/ingest", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/translation/segment/ingest`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -156,7 +156,7 @@ export default function MultiLanguageTranslationStudioPage() {
   };
 
   const handleDownloadWebVtt = () => {
-    window.open(`http://localhost:5000/api/translation/session/${sessionId}/subtitles.vtt?lang=${selectedLanguage}`, "_blank");
+    window.open(`${process.env.NEXT_PUBLIC_API_URL || `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}`}/api/translation/session/${sessionId}/subtitles.vtt?lang=${selectedLanguage}`, "_blank");
   };
 
   const getTranslatedText = (segment: TranscriptSegment) => {

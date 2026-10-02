@@ -78,7 +78,7 @@ export default function MultiCampusGovernancePage() {
   const fetchSystemRollup = async () => {
     try {
       setIsLoading(true);
-      const res = await fetch(`http://localhost:5000/api/governance/system-rollup/${parentInstituteId}`);
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}`}/api/governance/system-rollup/${parentInstituteId}`);
       const data = await res.json();
       if (data.success && data.report) {
         setRollup(data.report);
@@ -98,7 +98,7 @@ export default function MultiCampusGovernancePage() {
     setSelectedCampus(campus);
     setVerification(null);
     try {
-      const res = await fetch(`http://localhost:5000/api/governance/ledger/${campus.id}`);
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}`}/api/governance/ledger/${campus.id}`);
       const data = await res.json();
       if (data.success) {
         setLedgerBlocks(data.blocks || []);
@@ -113,7 +113,7 @@ export default function MultiCampusGovernancePage() {
     if (!selectedCampus) return;
     try {
       setIsVerifying(true);
-      const res = await fetch(`http://localhost:5000/api/governance/ledger/${selectedCampus.id}/verify`);
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}`}/api/governance/ledger/${selectedCampus.id}/verify`);
       const data = await res.json();
       if (data.success && data.verification) {
         setVerification(data.verification);
@@ -138,7 +138,7 @@ export default function MultiCampusGovernancePage() {
         auditDetails: newNotes,
       };
 
-      const res = await fetch("http://localhost:5000/api/governance/ledger/append", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/governance/ledger/append`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

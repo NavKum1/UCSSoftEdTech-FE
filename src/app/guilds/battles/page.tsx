@@ -73,7 +73,7 @@ export default function EnterpriseGuildBattlesPage() {
     setLoading(true);
     try {
       // 1. Fetch Guilds
-      const guildsRes = await fetch("http://localhost:5000/api/guilds");
+      const guildsRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/guilds`);
       let guildsData: Guild[] = [];
       if (guildsRes.ok) {
         guildsData = await guildsRes.json();
@@ -82,7 +82,7 @@ export default function EnterpriseGuildBattlesPage() {
       }
 
       // 2. Fetch Hackathons
-      const eventsRes = await fetch("http://localhost:5000/api/guilds/hackathons");
+      const eventsRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/guilds/hackathons`);
       if (eventsRes.ok) {
         const eventsData: HackathonEvent[] = await eventsRes.json();
         setHackathons(eventsData);
@@ -101,7 +101,7 @@ export default function EnterpriseGuildBattlesPage() {
 
   const fetchLeaderboard = async (hackathonId: string) => {
     try {
-      const res = await fetch(`http://localhost:5000/api/guilds/hackathons/${hackathonId}/leaderboard`);
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}`}/api/guilds/hackathons/${hackathonId}/leaderboard`);
       if (res.ok) {
         setLeaderboard(await res.json());
       }
@@ -117,7 +117,7 @@ export default function EnterpriseGuildBattlesPage() {
     const selectedGuild = guilds.find((g) => g.id === selectedGuildId);
 
     try {
-      const res = await fetch("http://localhost:5000/api/guilds/hackathons/score", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/guilds/hackathons/score`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -135,7 +135,7 @@ export default function EnterpriseGuildBattlesPage() {
       if (res.ok) {
         // Refresh leaderboard and guilds
         await fetchLeaderboard(activeHackathon.id);
-        const guildsRes = await fetch("http://localhost:5000/api/guilds");
+        const guildsRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/guilds`);
         if (guildsRes.ok) setGuilds(await guildsRes.json());
         alert("Battle performance registered! Squad Elo rating updated.");
       }
@@ -150,7 +150,7 @@ export default function EnterpriseGuildBattlesPage() {
     if (!newGuildName) return;
 
     try {
-      const res = await fetch("http://localhost:5000/api/guilds", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/guilds`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

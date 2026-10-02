@@ -84,7 +84,7 @@ export default function AudioReplayStudioPage() {
       if (!sessionId) return;
       try {
         setFetchError(null);
-        const res = await fetch(`http://localhost:5000/api/interview/${sessionId}/replay`);
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}`}/api/interview/${sessionId}/replay`);
         if (res.ok) {
           const data = await res.json();
           setReplay(data);

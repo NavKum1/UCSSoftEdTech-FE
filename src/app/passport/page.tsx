@@ -54,13 +54,13 @@ export default function SkillPassportPage() {
   const fetchPassportData = async () => {
     try {
       setLoading(true);
-      const res = await fetch("http://localhost:5000/api/passport");
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/passport`);
       if (res.ok) {
         const data = await res.json();
         setPassport(data);
       }
 
-      const radarRes = await fetch("http://localhost:5000/api/passport/radar");
+      const radarRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/passport/radar`);
       if (radarRes.ok) {
         const inquiries = await radarRes.json();
         setRadarInquiries(inquiries);
@@ -81,7 +81,7 @@ export default function SkillPassportPage() {
       setPracticingCategory(category);
       setPracticeSuccessMessage(null);
 
-      const res = await fetch("http://localhost:5000/api/passport/practice", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/passport/practice`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

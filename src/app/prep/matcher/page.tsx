@@ -53,7 +53,7 @@ export default function ResumeMatcherPrepPage() {
     setAnalysisResult(null);
 
     try {
-      const res = await fetch("http://localhost:5000/api/resume/analyze-and-match", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/resume/analyze-and-match`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

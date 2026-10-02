@@ -99,7 +99,7 @@ export default function VapiInterviewRoom({
 
     try {
       // API call to .NET Core Web API backend
-      const res = await fetch("http://localhost:5000/api/interview/start", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/interview/start`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -179,7 +179,7 @@ export default function VapiInterviewRoom({
         transcript: transcripts.map((t) => `${t.role}: ${t.text}`).join("\n"),
       };
 
-      const res = await fetch("http://localhost:5000/api/interview/webhook", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/interview/webhook`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

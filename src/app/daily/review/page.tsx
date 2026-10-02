@@ -96,7 +96,7 @@ export default function DailyCodeReviewDojoPage() {
     setLoading(true);
     try {
       // 1. Fetch Today's PR Kata
-      const kataRes = await fetch("http://localhost:5000/api/codereview/today");
+      const kataRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/codereview/today`);
       if (kataRes.ok) {
         const kataData: PrKata = await kataRes.json();
         setKata(kataData);
@@ -104,7 +104,7 @@ export default function DailyCodeReviewDojoPage() {
       }
 
       // 2. Fetch User Stats
-      const statsRes = await fetch(`http://localhost:5000/api/codereview/stats/${userId}`);
+      const statsRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}`}/api/codereview/stats/${userId}`);
       if (statsRes.ok) {
         setStats(await statsRes.json());
       }
@@ -146,7 +146,7 @@ export default function DailyCodeReviewDojoPage() {
     setTimerActive(false);
 
     try {
-      const res = await fetch("http://localhost:5000/api/codereview/review", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/codereview/review`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -165,7 +165,7 @@ export default function DailyCodeReviewDojoPage() {
         setResult(evalData);
 
         // Refresh stats
-        const statsRes = await fetch(`http://localhost:5000/api/codereview/stats/${userId}`);
+        const statsRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}`}/api/codereview/stats/${userId}`);
         if (statsRes.ok) setStats(await statsRes.json());
       } else {
         alert("Code review evaluation encountered an issue.");

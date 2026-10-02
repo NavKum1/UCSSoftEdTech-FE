@@ -41,7 +41,7 @@ export default function LeaderboardPage() {
     const fetchLeaderboard = async () => {
       try {
         setFetchError(null);
-        const res = await fetch("http://localhost:5000/api/leaderboard");
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/leaderboard`);
         if (res.ok) {
           const data = await res.json();
           setEntries(data.leaderboard || []);

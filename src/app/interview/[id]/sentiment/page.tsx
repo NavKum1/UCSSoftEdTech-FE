@@ -53,7 +53,7 @@ export default function BehavioralSentimentPage() {
 
   const fetchTimeline = async () => {
     try {
-      const res = await fetch(`http://localhost:5000/api/sentiment/timeline/${interviewId}`);
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}`}/api/sentiment/timeline/${interviewId}`);
       if (res.ok) {
         const data = await res.json();
         if (data.success) {
@@ -67,7 +67,7 @@ export default function BehavioralSentimentPage() {
 
   const fetchSummary = async () => {
     try {
-      const res = await fetch(`http://localhost:5000/api/sentiment/summary/${interviewId}`);
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}`}/api/sentiment/summary/${interviewId}`);
       if (res.ok) {
         const data = await res.json();
         if (data.success) {
@@ -88,7 +88,7 @@ export default function BehavioralSentimentPage() {
     setLoading(true);
     setActionMessage(null);
     try {
-      const res = await fetch("http://localhost:5000/api/sentiment/telemetry", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/sentiment/telemetry`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -120,7 +120,7 @@ export default function BehavioralSentimentPage() {
   const handleGenerateSummary = async () => {
     setLoading(true);
     try {
-      const res = await fetch("http://localhost:5000/api/sentiment/summary/generate", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/sentiment/summary/generate`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

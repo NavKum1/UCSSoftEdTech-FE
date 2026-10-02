@@ -17,6 +17,8 @@ import {
   Lock,
 } from "lucide-react";
 
+import { API_BASE_URL } from "@/lib/apiClient";
+
 interface ProctoringHUDProps {
   sessionId: string;
   candidateEmail?: string;
@@ -36,7 +38,7 @@ export default function ProctoringHUD({
   sessionId,
   candidateEmail = "candidate@ucsoft.edu",
   onViolationOccurred,
-  apiBaseUrl = "http://localhost:5000",
+  apiBaseUrl = API_BASE_URL,
 }: ProctoringHUDProps) {
   const [integrityScore, setIntegrityScore] = useState<number>(100);
   const [riskLevel, setRiskLevel] = useState<"Clean" | "Suspicious" | "Flagged">("Clean");
@@ -369,7 +371,7 @@ export default function ProctoringHUD({
           >
             {Array.from({ length: 4 }).map((_, cIdx) => (
               <span key={cIdx} className="px-8">
-                {candidateEmail} • SEC-ID:{sessionId.slice(0, 8)} • {liveTimestamp} • IP:49.207.180.12 • EDX-LSB-SIGNED
+                {candidateEmail} • Session ID: {sessionId.slice(0, 8)} • {liveTimestamp} • Verified Session
               </span>
             ))}
           </div>

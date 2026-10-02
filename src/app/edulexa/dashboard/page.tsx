@@ -56,10 +56,10 @@ export default function EdulexaDashboardPage() {
     try {
       setLoading(true);
       const [metricsRes, campRes, assetsRes, payoutsRes] = await Promise.all([
-        fetch("http://localhost:5000/api/edulexa/dashboard/metrics"),
-        fetch("http://localhost:5000/api/edulexa/voice/campaigns"),
-        fetch("http://localhost:5000/api/edulexa/assets"),
-        fetch("http://localhost:5000/api/edulexa/payouts")
+        fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/edulexa/dashboard/metrics`),
+        fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/edulexa/voice/campaigns`),
+        fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/edulexa/assets`),
+        fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/edulexa/payouts`)
       ]);
 
       if (metricsRes.ok) setMetrics(await metricsRes.json());
@@ -79,7 +79,7 @@ export default function EdulexaDashboardPage() {
 
   const handleSeedData = async () => {
     try {
-      await fetch("http://localhost:5000/api/edulexa/seed", { method: "POST" });
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/edulexa/seed`, { method: "POST" });
       fetchDashboardData();
     } catch (err) {
       console.error(err);
@@ -90,7 +90,7 @@ export default function EdulexaDashboardPage() {
     e.preventDefault();
     setTriggeringCall(true);
     try {
-      const res = await fetch("http://localhost:5000/v1/voice/campaigns", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/v1/voice/campaigns`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -117,7 +117,7 @@ export default function EdulexaDashboardPage() {
     e.preventDefault();
     setSigningAsset(true);
     try {
-      const res = await fetch("http://localhost:5000/v1/assets/sign", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/v1/assets/sign`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -143,7 +143,7 @@ export default function EdulexaDashboardPage() {
     e.preventDefault();
     setInvestigating(true);
     try {
-      const res = await fetch("http://localhost:5000/api/edulexa/assets/leak-attribution", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/edulexa/assets/leak-attribution`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ leakSnippetOrFingerprint: leakSnippet })
@@ -163,7 +163,7 @@ export default function EdulexaDashboardPage() {
     e.preventDefault();
     setProcessingPayout(true);
     try {
-      const res = await fetch("http://localhost:5000/v1/payouts", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/v1/payouts`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -191,7 +191,7 @@ export default function EdulexaDashboardPage() {
 
   const handleExportNeft = async () => {
     try {
-      const res = await fetch("http://localhost:5000/api/edulexa/payouts/export-neft", { method: "POST" });
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/edulexa/payouts/export-neft`, { method: "POST" });
       if (res.ok) {
         const blob = await res.blob();
         const url = window.URL.createObjectURL(blob);
@@ -210,8 +210,8 @@ export default function EdulexaDashboardPage() {
     setLoadingForm16(true);
     try {
       const url = mentorId
-        ? `http://localhost:5000/api/edulexa/payouts/form16a/${mentorId}`
-        : "http://localhost:5000/api/edulexa/payouts/form16a";
+        ? `${process.env.NEXT_PUBLIC_API_URL || `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}`}/api/edulexa/payouts/form16a/${mentorId}`
+        : `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/edulexa/payouts/form16a`;
       const res = await fetch(url);
       if (res.ok) {
         const json = await res.json();
@@ -237,7 +237,7 @@ export default function EdulexaDashboardPage() {
   const handleSimulatePixelDropOff = async () => {
     setTrackingPixel(true);
     try {
-      const res = await fetch("http://localhost:5000/v1/pixel/track", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/v1/pixel/track`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -269,7 +269,7 @@ export default function EdulexaDashboardPage() {
   const handleTestOutgoingWebhook = async () => {
     setDispatchingWebhook(true);
     try {
-      const res = await fetch("http://localhost:5000/api/edulexa/webhooks/test-dispatch", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/edulexa/webhooks/test-dispatch`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -1006,11 +1006,11 @@ export default function EdulexaDashboardPage() {
 
                 <div className="relative">
                   <pre className="p-3 rounded-lg border border-slate-800 bg-slate-900/80 text-[11px] font-mono text-cyan-300 overflow-x-auto">
-{`<script src="http://localhost:5000/v1/pixel.js" data-tenant="6c370735-4615-44f6-9d61-dbbb41d5d5cf" async></script>`}
+{`<script src="${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/v1/pixel.js" data-tenant="6c370735-4615-44f6-9d61-dbbb41d5d5cf" async></script>`}
                   </pre>
                   <button
                     onClick={() => {
-                      navigator.clipboard.writeText(`<script src="http://localhost:5000/v1/pixel.js" data-tenant="6c370735-4615-44f6-9d61-dbbb41d5d5cf" async></script>`);
+                      navigator.clipboard.writeText(`<script src="${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/v1/pixel.js" data-tenant="6c370735-4615-44f6-9d61-dbbb41d5d5cf" async></script>`);
                       setCopiedPixelScript(true);
                       setTimeout(() => setCopiedPixelScript(false), 2000);
                     }}
@@ -1109,7 +1109,7 @@ export default function EdulexaDashboardPage() {
               </div>
               <pre className="p-4 rounded-lg border border-slate-800 bg-slate-950 text-xs font-mono text-indigo-300 overflow-x-auto">
 {`// 1. Recover an Abandoned Bootcamp Cart in 90 Seconds
-await fetch("http://localhost:5000/v1/voice/campaigns", {
+await fetch("https://api.yourdomain.com/v1/voice/campaigns", {
   method: "POST",
   headers: { "Content-Type": "application/json", "Authorization": "Bearer edx_live_sk_..." },
   body: JSON.stringify({

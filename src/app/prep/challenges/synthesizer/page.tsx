@@ -48,7 +48,7 @@ export default function ChallengeSynthesizerPage() {
     setMessage(null);
     setEvaluation(null);
     try {
-      const res = await fetch("http://localhost:5000/api/challenges/synthesize", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/challenges/synthesize`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -77,7 +77,7 @@ export default function ChallengeSynthesizerPage() {
     if (!activeChallenge) return;
     setEvaluating(true);
     try {
-      const res = await fetch("http://localhost:5000/api/challenges/evaluate", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/challenges/evaluate`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

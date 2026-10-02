@@ -94,7 +94,7 @@ export default function Member360CommandCenterPage() {
       try {
         setLoading(true);
         setError(null);
-        const res = await fetch("http://localhost:5000/api/passport/member-360");
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/passport/member-360`);
         if (res.ok) {
           const result = await res.json();
           setData(result);

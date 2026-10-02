@@ -64,8 +64,8 @@ export default function MultiCloudResiliencePage() {
     try {
       setIsLoading(true);
       const [regRes, cbRes] = await Promise.all([
-        fetch("http://localhost:5000/api/resilience/regions"),
-        fetch("http://localhost:5000/api/resilience/circuit-breakers"),
+        fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/resilience/regions`),
+        fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/resilience/circuit-breakers`),
       ]);
 
       const regData = await regRes.json();
@@ -84,7 +84,7 @@ export default function MultiCloudResiliencePage() {
   const testRouting = async (geo: string) => {
     setSelectedGeo(geo);
     try {
-      const res = await fetch(`http://localhost:5000/api/resilience/route?geo=${geo}`);
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}`}/api/resilience/route?geo=${geo}`);
       const data = await res.json();
       if (data.success) {
         setRoutingDecision(data.routing);
@@ -99,7 +99,7 @@ export default function MultiCloudResiliencePage() {
     e.preventDefault();
     try {
       setIsInjecting(true);
-      const res = await fetch("http://localhost:5000/api/resilience/chaos/inject", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/resilience/chaos/inject`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -129,7 +129,7 @@ export default function MultiCloudResiliencePage() {
     if (!activeExperimentId) return;
     try {
       setIsRecovering(true);
-      const res = await fetch(`http://localhost:5000/api/resilience/chaos/recover/${activeExperimentId}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}`}/api/resilience/chaos/recover/${activeExperimentId}`, {
         method: "POST",
       });
 

@@ -49,7 +49,7 @@ export default function ProctoringVideoReviewPage({ params }: { params: Promise<
       try {
         setLoading(true);
         setFetchError(null);
-        const res = await fetch(`http://localhost:5000/api/video/recording/${recordingId}/player`);
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}`}/api/video/recording/${recordingId}/player`);
         if (res.ok) {
           const data = await res.json();
           setPlayerData(data);

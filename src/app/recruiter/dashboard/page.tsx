@@ -24,7 +24,7 @@ export default function RecruiterDashboardPage() {
   const fetchCandidates = async () => {
     setLoading(true);
     try {
-      const res = await fetch("http://localhost:5000/api/recruiter/candidates?companyId=Uber");
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/recruiter/candidates?companyId=Uber`);
       if (res.ok) {
         const json = await res.json();
         setData(json);
@@ -44,7 +44,7 @@ export default function RecruiterDashboardPage() {
     e.preventDefault();
     setCreateStatus("Creating private challenge...");
     try {
-      const res = await fetch("http://localhost:5000/api/recruiter/sprint/create", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/recruiter/sprint/create`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

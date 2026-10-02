@@ -97,7 +97,7 @@ export default function AutonomousCareerAgentPage() {
 
   const fetchConfig = async () => {
     try {
-      const res = await fetch(`http://localhost:5000/api/agent/config/${candidateUserId}`);
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}`}/api/agent/config/${candidateUserId}`);
       if (res.ok) {
         const data = await res.json();
         setConfig(data);
@@ -109,7 +109,7 @@ export default function AutonomousCareerAgentPage() {
 
   const fetchNegotiations = async () => {
     try {
-      const res = await fetch(`http://localhost:5000/api/agent/inquiries/${candidateUserId}`);
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}`}/api/agent/inquiries/${candidateUserId}`);
       if (res.ok) {
         const data: InboundNegotiation[] = await res.json();
         setNegotiations(data);
@@ -124,7 +124,7 @@ export default function AutonomousCareerAgentPage() {
 
   const fetchDetail = async (id: string) => {
     try {
-      const res = await fetch(`http://localhost:5000/api/agent/inquiries/detail/${id}`);
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}`}/api/agent/inquiries/detail/${id}`);
       if (res.ok) {
         const data: NegotiationDetail = await res.json();
         setActiveDetail(data);
@@ -139,7 +139,7 @@ export default function AutonomousCareerAgentPage() {
   useEffect(() => {
     const init = async () => {
       setIsLoading(true);
-      await fetch("http://localhost:5000/api/agent/seed", { method: "POST" });
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/agent/seed`, { method: "POST" });
       await fetchConfig();
       await fetchNegotiations();
       setIsLoading(false);
@@ -158,7 +158,7 @@ export default function AutonomousCareerAgentPage() {
     setIsSavingConfig(true);
     setSaveSuccessMsg(null);
     try {
-      const res = await fetch("http://localhost:5000/api/agent/config", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/agent/config`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(config),
@@ -181,7 +181,7 @@ export default function AutonomousCareerAgentPage() {
     if (!selectedNegId) return;
     setIsSubmittingTurn(true);
     try {
-      const res = await fetch("http://localhost:5000/api/agent/negotiate/turn", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/agent/negotiate/turn`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -209,7 +209,7 @@ export default function AutonomousCareerAgentPage() {
   const handleSimulateInbound = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const res = await fetch("http://localhost:5000/api/agent/inbound", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/agent/inbound`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

@@ -51,7 +51,7 @@ export default function PersonaSelectorPage() {
   const [generatingPreview, setGeneratingPreview] = useState<boolean>(false);
   const [statusMessage, setStatusMessage] = useState<string>("");
 
-  const apiBase = "http://localhost:5000";
+  const apiBase = `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}`;
 
   const dialects = [
     {

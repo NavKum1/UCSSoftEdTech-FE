@@ -93,10 +93,10 @@ export default function SpeedArchitectArenaPage() {
 
   async function initializeArena() {
     try {
-      await fetch("http://localhost:5000/api/duels/seed", { method: "POST" });
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/duels/seed`, { method: "POST" });
       const [presetsRes, lbRes] = await Promise.all([
-        fetch("http://localhost:5000/api/duels/presets"),
-        fetch("http://localhost:5000/api/duels/leaderboard")
+        fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/duels/presets`),
+        fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/duels/leaderboard`)
       ]);
 
       if (presetsRes.ok) {
@@ -139,7 +139,7 @@ export default function SpeedArchitectArenaPage() {
         preferredPresetCode: presetCode || selectedPreset?.presetCode,
         matchWithAiOpponent: true
       };
-      const res = await fetch("http://localhost:5000/api/duels/matchmake", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/duels/matchmake`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload)
@@ -172,7 +172,7 @@ export default function SpeedArchitectArenaPage() {
         topologyGraph_JSON: JSON.stringify({ nodes: placedNodes }),
         addressedChaosConstraint: chaosHandled
       };
-      const res = await fetch("http://localhost:5000/api/duels/submit", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/duels/submit`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload)
@@ -182,7 +182,7 @@ export default function SpeedArchitectArenaPage() {
         setDuelResult(result);
         
         // Refresh leaderboard
-        const lbRes = await fetch("http://localhost:5000/api/duels/leaderboard");
+        const lbRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/duels/leaderboard`);
         if (lbRes.ok) {
           setLeaderboard(await lbRes.json());
         }

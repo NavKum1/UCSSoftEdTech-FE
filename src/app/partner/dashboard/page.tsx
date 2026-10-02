@@ -19,7 +19,7 @@ export default function PartnerDashboardPage() {
   const fetchDashboard = async () => {
     setLoading(true);
     try {
-      const res = await fetch("http://localhost:5000/api/partner/dashboard");
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/partner/dashboard`);
       if (res.ok) {
         const json = await res.json();
         setData(json);
@@ -39,7 +39,7 @@ export default function PartnerDashboardPage() {
   const handleUpdateLeadStatus = async (leadId: string, newStatus: string) => {
     setUpdatingLeadId(leadId);
     try {
-      const res = await fetch(`http://localhost:5000/api/partner/lead/${leadId}/status`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}`}/api/partner/lead/${leadId}/status`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status: newStatus }),
@@ -58,7 +58,7 @@ export default function PartnerDashboardPage() {
     e.preventDefault();
     setWebhookStatus("Saving configuration...");
     try {
-      const res = await fetch("http://localhost:5000/api/partner/webhook-config", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/partner/webhook-config`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ outboundWebhookUrl: webhookUrl, apiKey }),
@@ -75,7 +75,7 @@ export default function PartnerDashboardPage() {
   const handleTestWebhookDispatch = async () => {
     setWebhookStatus("Dispatching test CRM payload...");
     try {
-      const res = await fetch("http://localhost:5000/api/partner/dispatch-test-webhook", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/partner/dispatch-test-webhook`, {
         method: "POST",
       });
       const json = await res.json();

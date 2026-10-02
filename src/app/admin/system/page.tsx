@@ -46,7 +46,7 @@ export default function SystemOperationsDashboard() {
   const [actionLog, setActionLog] = useState<string>("");
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
 
-  const apiBase = "http://localhost:5000";
+  const apiBase = `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}`;
 
   const fetchMetrics = async () => {
     try {
