@@ -1,0 +1,356 @@
+"use client";
+
+import React, { useState, useEffect } from "react";
+import {
+  Server,
+  Zap,
+  Database,
+  RefreshCw,
+  Layers,
+  Activity,
+  Trash2,
+  Play,
+  RotateCcw,
+  CheckCircle2,
+  AlertTriangle,
+  Clock,
+  Cpu,
+  BarChart3,
+  Flame,
+} from "lucide-react";
+
+interface QueueStats {
+  workerNodeId: string;
+  pendingHighPriorityCount: number;
+  pendingStandardCount: number;
+  totalPending: number;
+  totalJobsProcessed: number;
+  totalDeadLetterCount: number;
+  operationalMode: string;
+}
+
+interface CacheStats {
+  hitsCount: number;
+  missesCount: number;
+  hitRatioPercentage: number;
+  totalKeysCount: number;
+  activeTagsCount: number;
+  evictionsCount: number;
+  lastInvalidationTimestamp: string | null;
+}
+
+export default function SystemOperationsDashboard() {
+  const [queueStats, setQueueStats] = useState<QueueStats | null>(null);
+  const [cacheStats, setCacheStats] = useState<CacheStats | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [actionLog, setActionLog] = useState<string>("");
+  const [isProcessing, setIsProcessing] = useState<boolean>(false);
+
+  const apiBase = "http://localhost:5000";
+
+  const fetchMetrics = async () => {
+    try {
+      const [queueRes, cacheRes] = await Promise.all([
+        fetch(`${apiBase}/api/system/queue/status`),
+        fetch(`${apiBase}/api/system/cache/stats`),
+      ]);
+
+      if (queueRes.ok) {
+        setQueueStats(await queueRes.json());
+      }
+      if (cacheRes.ok) {
+        setCacheStats(await cacheRes.json());
+      }
+    } catch (err) {
+      console.error("Failed to fetch system operations metrics:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchMetrics();
+    const interval = setInterval(fetchMetrics, 3000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const handleInvalidateCache = async (tag?: string, flushAll: boolean = false) => {
+    setIsProcessing(true);
+    try {
+      const res = await fetch(`${apiBase}/api/system/cache/invalidate`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: "Bearer superadmin-dev-token",
+        },
+        body: JSON.stringify({ tag, flushAll }),
+      });
+
+      const data = await res.json();
+      setActionLog(data.message || "Cache action completed successfully.");
+      await fetchMetrics();
+    } catch (err: any) {
+      setActionLog(`Invalidation error: ${err.message}`);
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const handleEnqueueBenchmarkJob = async (priority: "HighPriority" | "Standard") => {
+    setIsProcessing(true);
+    try {
+      const res = await fetch(`${apiBase}/api/system/queue/enqueue-test`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ priority, taskName: `Synthetic ${priority} Benchmark` }),
+      });
+
+      const data = await res.json();
+      setActionLog(`Job Enqueued! ID: ${data.jobId} into ${data.priority} channel.`);
+      await fetchMetrics();
+    } catch (err: any) {
+      setActionLog(`Queue error: ${err.message}`);
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const handleRetryDLQ = async () => {
+    setIsProcessing(true);
+    try {
+      const res = await fetch(`${apiBase}/api/system/queue/retry-dlq`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: "Bearer superadmin-dev-token",
+        },
+      });
+
+      const data = await res.json();
+      setActionLog(data.message || `Re-enqueued ${data.reEnqueuedCount} jobs from DLQ.`);
+      await fetchMetrics();
+    } catch (err: any) {
+      setActionLog(`DLQ Retry error: ${err.message}`);
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-slate-950 text-slate-100 p-6 sm:p-10">
+      <div className="max-w-7xl mx-auto space-y-8">
+        {/* Top Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-6 border-b border-slate-800">
+          <div>
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-xl bg-indigo-500/20 text-indigo-400 border border-indigo-500/30">
+                <Cpu className="w-6 h-6" />
+              </div>
+              <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-white">
+                Distributed Operations & Edge Cache Hub
+              </h1>
+            </div>
+            <p className="mt-1 text-sm text-slate-400">
+              Zero-polling priority channels, BullMQ-compatible execution queue, and multi-region edge caching.
+            </p>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <span className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-mono">
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+              Node: {queueStats?.workerNodeId || "Worker-01"}
+            </span>
+            <button
+              onClick={fetchMetrics}
+              className="p-2 rounded-lg bg-slate-900 border border-slate-800 hover:bg-slate-800 text-slate-300 transition-colors"
+              title="Refresh Metrics"
+            >
+              <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
+            </button>
+          </div>
+        </div>
+
+        {/* Action Log Banner */}
+        {actionLog && (
+          <div className="flex items-center gap-2 p-3 rounded-xl bg-indigo-950/40 border border-indigo-500/30 text-indigo-300 text-xs font-mono">
+            <CheckCircle2 className="w-4 h-4 text-indigo-400 shrink-0" />
+            <span>{actionLog}</span>
+          </div>
+        )}
+
+        {/* Primary Metrics Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {/* Card 1: Edge Cache Hit Ratio */}
+          <div className="glass-panel p-6 rounded-2xl border border-slate-800 bg-slate-900/40 space-y-2">
+            <div className="flex items-center justify-between text-slate-400 text-xs">
+              <span className="uppercase tracking-wider font-semibold">Cache Hit Ratio</span>
+              <Flame className="w-4 h-4 text-amber-400" />
+            </div>
+            <div className="text-3xl font-black text-white">
+              {cacheStats ? `${cacheStats.hitRatioPercentage}%` : "—"}
+            </div>
+            <p className="text-[11px] text-slate-400">
+              {cacheStats?.hitsCount || 0} hits vs {cacheStats?.missesCount || 0} misses
+            </p>
+          </div>
+
+          {/* Card 2: High Priority Queue Backlog */}
+          <div className="glass-panel p-6 rounded-2xl border border-slate-800 bg-slate-900/40 space-y-2">
+            <div className="flex items-center justify-between text-slate-400 text-xs">
+              <span className="uppercase tracking-wider font-semibold">High-Priority Queue</span>
+              <Zap className="w-4 h-4 text-indigo-400" />
+            </div>
+            <div className="text-3xl font-black text-indigo-400">
+              {queueStats?.pendingHighPriorityCount ?? 0}
+            </div>
+            <p className="text-[11px] text-slate-400">
+              Pro Subscribers, Recruiters & LMS Exams
+            </p>
+          </div>
+
+          {/* Card 3: Standard Priority Backlog */}
+          <div className="glass-panel p-6 rounded-2xl border border-slate-800 bg-slate-900/40 space-y-2">
+            <div className="flex items-center justify-between text-slate-400 text-xs">
+              <span className="uppercase tracking-wider font-semibold">Standard Backlog</span>
+              <Layers className="w-4 h-4 text-emerald-400" />
+            </div>
+            <div className="text-3xl font-black text-white">
+              {queueStats?.pendingStandardCount ?? 0}
+            </div>
+            <p className="text-[11px] text-slate-400">
+              Free-Tier Candidate Sandbox Runs
+            </p>
+          </div>
+
+          {/* Card 4: Dead Letter Queue Incidents */}
+          <div className="glass-panel p-6 rounded-2xl border border-slate-800 bg-slate-900/40 space-y-2">
+            <div className="flex items-center justify-between text-slate-400 text-xs">
+              <span className="uppercase tracking-wider font-semibold">Dead Letter Queue</span>
+              <AlertTriangle className="w-4 h-4 text-red-400" />
+            </div>
+            <div className="text-3xl font-black text-red-400">
+              {queueStats?.totalDeadLetterCount ?? 0}
+            </div>
+            <p className="text-[11px] text-slate-400">
+              Failed executions (&gt; 3 retry attempts)
+            </p>
+          </div>
+        </div>
+
+        {/* Detailed Operations Control Panels */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          {/* Left Panel: Edge Cache Engine Operations */}
+          <div className="p-6 rounded-2xl border border-slate-800 bg-slate-900/50 space-y-6">
+            <div className="flex items-center justify-between pb-4 border-b border-slate-800">
+              <div className="flex items-center gap-2">
+                <Database className="w-5 h-5 text-indigo-400" />
+                <h2 className="text-lg font-bold text-white">Edge Caching Control Center</h2>
+              </div>
+              <span className="text-xs px-2.5 py-1 rounded bg-indigo-500/10 text-indigo-300 border border-indigo-500/20 font-mono">
+                {cacheStats?.totalKeysCount || 0} Keys Active
+              </span>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4 text-xs">
+              <div className="p-3 rounded-xl bg-slate-800/40 border border-slate-700/50">
+                <span className="text-slate-400 block mb-1">Active Cache Tags</span>
+                <span className="text-lg font-bold text-white font-mono">
+                  {cacheStats?.activeTagsCount || 0}
+                </span>
+              </div>
+              <div className="p-3 rounded-xl bg-slate-800/40 border border-slate-700/50">
+                <span className="text-slate-400 block mb-1">Eviction / Flush Count</span>
+                <span className="text-lg font-bold text-white font-mono">
+                  {cacheStats?.evictionsCount || 0}
+                </span>
+              </div>
+            </div>
+
+            {/* Invalidation Actions */}
+            <div className="space-y-3">
+              <span className="text-xs uppercase tracking-wider text-slate-400 font-semibold block">
+                Instant Tag-Based Invalidation
+              </span>
+              <div className="flex flex-wrap gap-2">
+                <button
+                  disabled={isProcessing}
+                  onClick={() => handleInvalidateCache("credential")}
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs text-white border border-slate-700 transition-colors"
+                >
+                  <Trash2 className="w-3.5 h-3.5 text-amber-400" />
+                  <span>Purge 'credential' Tag</span>
+                </button>
+                <button
+                  disabled={isProcessing}
+                  onClick={() => handleInvalidateCache("leaderboard")}
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs text-white border border-slate-700 transition-colors"
+                >
+                  <Trash2 className="w-3.5 h-3.5 text-amber-400" />
+                  <span>Purge 'leaderboard' Tag</span>
+                </button>
+                <button
+                  disabled={isProcessing}
+                  onClick={() => handleInvalidateCache(undefined, true)}
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-red-950/60 hover:bg-red-900/60 text-xs text-red-300 border border-red-800/60 transition-colors"
+                >
+                  <Trash2 className="w-3.5 h-3.5 text-red-400" />
+                  <span>Flush All Edge Keys</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Right Panel: Distributed Job Queue Operations */}
+          <div className="p-6 rounded-2xl border border-slate-800 bg-slate-900/50 space-y-6">
+            <div className="flex items-center justify-between pb-4 border-b border-slate-800">
+              <div className="flex items-center gap-2">
+                <Server className="w-5 h-5 text-emerald-400" />
+                <h2 className="text-lg font-bold text-white">Distributed Job Queue Dispatcher</h2>
+              </div>
+              <span className="text-xs px-2.5 py-1 rounded bg-emerald-500/10 text-emerald-300 border border-emerald-500/20 font-mono">
+                {queueStats?.totalJobsProcessed || 0} Processed Total
+              </span>
+            </div>
+
+            <p className="text-xs text-slate-400 leading-relaxed">
+              Asynchronous worker backplane with strict priority scheduling. High-priority jobs automatically supersede standard jobs without polling delays.
+            </p>
+
+            {/* Queue Actions */}
+            <div className="space-y-3">
+              <span className="text-xs uppercase tracking-wider text-slate-400 font-semibold block">
+                Queue Simulation & Benchmark Dispatch
+              </span>
+              <div className="flex flex-wrap gap-2">
+                <button
+                  disabled={isProcessing}
+                  onClick={() => handleEnqueueBenchmarkJob("HighPriority")}
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-xs text-white font-medium transition-colors"
+                >
+                  <Play className="w-3.5 h-3.5" />
+                  <span>Enqueue High-Priority Job</span>
+                </button>
+                <button
+                  disabled={isProcessing}
+                  onClick={() => handleEnqueueBenchmarkJob("Standard")}
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs text-white border border-slate-700 transition-colors"
+                >
+                  <Play className="w-3.5 h-3.5 text-emerald-400" />
+                  <span>Enqueue Standard Job</span>
+                </button>
+                <button
+                  disabled={isProcessing || (queueStats?.totalDeadLetterCount ?? 0) === 0}
+                  onClick={handleRetryDLQ}
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-amber-600/30 hover:bg-amber-600/50 text-amber-300 border border-amber-600/40 text-xs transition-colors disabled:opacity-50"
+                >
+                  <RotateCcw className="w-3.5 h-3.5 text-amber-400" />
+                  <span>Retry Dead Letter Queue ({queueStats?.totalDeadLetterCount || 0})</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

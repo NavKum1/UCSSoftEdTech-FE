@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import VapiInterviewRoom from "@/components/VapiInterviewRoom";
+import ProctoringHUD from "./components/ProctoringHUD";
 import { useParams, useRouter } from "next/navigation";
 import { useAuth, UserButton } from "@clerk/nextjs";
 import { authenticatedFetch } from "@/lib/apiClient";
@@ -155,6 +156,9 @@ export default function SprintWorkspace() {
 
       {/* Main Split-Pane Workspace */}
       <main className="max-w-7xl mx-auto px-6 pt-8 flex-1 w-full space-y-6">
+        {/* Phase 18: Zero-Trust Remote Proctoring & Candidate Environment Auditing HUD */}
+        <ProctoringHUD sessionId={submissionId || sprintId} />
+
         {/* Pipeline Progress Bar */}
         <div className="glass-panel rounded-2xl p-4 border border-slate-800 flex items-center justify-between">
           <div className="flex items-center space-x-2 text-xs font-semibold">

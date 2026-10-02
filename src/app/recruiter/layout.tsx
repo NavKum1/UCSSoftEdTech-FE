@@ -29,6 +29,28 @@ export default function RecruiterLayout({ children }: { children: React.ReactNod
             </div>
           </div>
 
+          {/* Sub Navigation Links */}
+          <nav className="hidden md:flex items-center space-x-1 bg-slate-900/80 p-1 rounded-xl border border-slate-800">
+            <button
+              onClick={() => router.push("/recruiter/dashboard")}
+              className="px-3 py-1.5 rounded-lg text-xs font-medium text-slate-300 hover:text-white hover:bg-slate-800 transition-colors"
+            >
+              Candidates & Sprints
+            </button>
+            <button
+              onClick={() => router.push("/recruiter/proctoring")}
+              className="px-3 py-1.5 rounded-lg text-xs font-medium text-slate-300 hover:text-white hover:bg-slate-800 transition-colors"
+            >
+              Video Proctoring
+            </button>
+            <button
+              onClick={() => router.push("/recruiter/benchmark")}
+              className="px-3 py-1.5 rounded-lg text-xs font-semibold text-purple-400 bg-purple-950/40 border border-purple-800/40 hover:bg-purple-900/40 transition-colors"
+            >
+              AI Benchmarking
+            </button>
+          </nav>
+
           <div className="flex items-center space-x-4">
             <button
               onClick={() => router.push("/")}

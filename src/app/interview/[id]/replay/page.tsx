@@ -19,7 +19,9 @@ import {
   CheckCircle2,
   Cpu,
   Layers,
-  Code2
+  Code2,
+  Globe2,
+  Fingerprint
 } from "lucide-react";
 
 interface TranscriptSegment {
@@ -63,8 +65,18 @@ export default function AudioReplayStudioPage() {
   const [currentTime, setCurrentTime] = useState<number>(0);
   const [audioDuration, setAudioDuration] = useState<number>(300);
   const [activeSegmentIndex, setActiveSegmentIndex] = useState<number>(1);
+  const [liveUtcTimestamp, setLiveUtcTimestamp] = useState<string>("");
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  useEffect(() => {
+    const updateTime = () => {
+      setLiveUtcTimestamp(new Date().toISOString().replace("T", " ").substring(0, 19) + " UTC");
+    };
+    updateTime();
+    const timer = setInterval(updateTime, 1000);
+    return () => clearInterval(timer);
+  }, []);
 
   useEffect(() => {
     const fetchReplay = async () => {
@@ -243,6 +255,18 @@ export default function AudioReplayStudioPage() {
               <Sparkles className="w-3.5 h-3.5 mr-1.5" />
               VOICE DEFENSE REPLAY STUDIO
             </span>
+            <button
+              onClick={() => router.push(`/interview/${sessionId}/translation`)}
+              className="inline-flex items-center px-3.5 py-1 rounded-full text-xs font-semibold bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 transition-colors cursor-pointer"
+            >
+              <Globe2 className="w-3.5 h-3.5 mr-1.5" />
+              <span>Multi-Language Subtitles & Dubbing</span>
+            </button>
+
+            <div className="hidden sm:flex items-center space-x-1.5 px-3 py-1 rounded-full text-xs font-mono bg-cyan-950/60 text-cyan-400 border border-cyan-500/30">
+              <Fingerprint className="w-3.5 h-3.5 text-cyan-400 animate-pulse" />
+              <span>FORENSIC WATERMARK ACTIVE</span>
+            </div>
           </div>
         </div>
 
@@ -337,6 +361,17 @@ export default function AudioReplayStudioPage() {
                 <Clock className="w-3.5 h-3.5 text-cyan-400" />
                 <span>Session Duration: {replay?.durationFormatted}</span>
               </div>
+            </div>
+
+            {/* Watermark Protection Security Footprint */}
+            <div className="flex flex-wrap items-center justify-between pt-2 border-t border-slate-900 text-[10px] text-slate-500 font-mono">
+              <span className="flex items-center gap-1.5 text-cyan-400/80">
+                <ShieldCheck className="w-3.5 h-3.5 text-cyan-400" />
+                Edulexa LSB Steganography &amp; Anti-Piracy Watermark Encoded
+              </span>
+              <span>
+                Target: {replay?.candidateEmail || "alex.morgan@example.com"} • Timestamp: {liveUtcTimestamp}
+              </span>
             </div>
           </div>
         </div>
@@ -459,6 +494,22 @@ export default function AudioReplayStudioPage() {
             </div>
           </div>
         </div>
+      </div>
+
+      {/* Dynamic Forensic Watermark Overlay Across Media Player Studio */}
+      <div className="fixed inset-0 pointer-events-none z-30 overflow-hidden select-none opacity-[0.05] flex flex-col justify-around">
+        {Array.from({ length: 7 }).map((_, rIdx) => (
+          <div
+            key={rIdx}
+            className="flex justify-around whitespace-nowrap transform -rotate-12 text-[11px] font-mono tracking-widest text-cyan-300 font-bold"
+          >
+            {Array.from({ length: 4 }).map((_, cIdx) => (
+              <span key={cIdx} className="px-10">
+                {replay?.candidateEmail || "alex.morgan@example.com"} • REPLAY-SESSION:{sessionId.slice(0, 8)} • {liveUtcTimestamp} • EDULEXA-LSB-DRM
+              </span>
+            ))}
+          </div>
+        ))}
       </div>
     </div>
   );

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import Link from "next/link";
 import { 
   Building2, Users, CheckCircle2, TrendingUp, DollarSign, 
   Send, RefreshCw, Filter, ShieldCheck, AlertCircle, Sparkles, 
@@ -146,6 +147,15 @@ export default function PartnerDashboardPage() {
           </div>
 
           <div className="flex items-center space-x-3">
+            <Link
+              href="/edulexa/dashboard"
+              className="py-2.5 px-4 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-xs font-semibold text-white flex items-center space-x-2 transition-all shadow-md shadow-indigo-600/20 cursor-pointer"
+            >
+              <Sparkles className="w-3.5 h-3.5" />
+              <span>Edulexa RevEngine</span>
+              <ArrowUpRight className="w-3.5 h-3.5" />
+            </Link>
+
             <button
               onClick={fetchDashboard}
               className="py-2.5 px-4 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-xs font-medium text-slate-300 flex items-center space-x-2 transition-colors cursor-pointer"
@@ -193,6 +203,34 @@ export default function PartnerDashboardPage() {
             <div className="text-3xl font-extrabold text-purple-300 mt-2">${kpis.estimatedCommissionRevenueUsd}</div>
             <span className="text-[11px] text-purple-400/80 mt-1 block">@ $150 referral bounty / lead</span>
           </div>
+        </div>
+
+        {/* Edulexa Revenue & DRM Bridge Banner */}
+        <div className="rounded-2xl border border-indigo-500/30 bg-gradient-to-r from-indigo-950/40 via-purple-950/30 to-slate-900/60 p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+          <div className="flex items-center space-x-3.5">
+            <div className="w-10 h-10 rounded-xl bg-indigo-500/20 border border-indigo-500/40 flex items-center justify-center text-indigo-400 shrink-0">
+              <Sparkles className="w-5 h-5" />
+            </div>
+            <div>
+              <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                Edulexa Revenue &amp; Compliance Engine Integrated
+                <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                  PARITY ACTIVE
+                </span>
+              </h3>
+              <p className="text-xs text-slate-400 mt-0.5">
+                Automated outbound AI voice cart recovery, Widevine L1 dynamic forensic watermarking, Section 194J TDS mentor payroll &amp; embeddable creator tracking pixels.
+              </p>
+            </div>
+          </div>
+
+          <Link
+            href="/edulexa/dashboard"
+            className="py-2 px-3.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-xs font-semibold text-white flex items-center gap-1.5 transition-colors shrink-0 cursor-pointer"
+          >
+            <span>Launch Edulexa Suite</span>
+            <ArrowUpRight className="w-3.5 h-3.5" />
+          </Link>
         </div>
 
         {/* Skill Deficits & CRM Webhook Configuration Split Grid */}
