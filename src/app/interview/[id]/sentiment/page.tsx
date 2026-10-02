@@ -105,13 +105,13 @@ export default function BehavioralSentimentPage() {
       if (data.success) {
         const evalRes = data.evaluation;
         setActionMessage(
-          `Telemetry logged! State: ${evalRes.psychologicalSafetyState} | Pacing Directive: ${evalRes.pacingDirective}`
+          `Speech sample recorded! Composure: ${evalRes.psychologicalSafetyState} | Interviewer Approach: ${evalRes.pacingDirective}`
         );
         await fetchTimeline();
       }
     } catch (e) {
       console.error("Error ingesting telemetry:", e);
-      setActionMessage("Failed to ingest prosody telemetry.");
+      setActionMessage("Failed to record speech sample.");
     } finally {
       setLoading(false);
     }
@@ -132,7 +132,7 @@ export default function BehavioralSentimentPage() {
       const data = await res.json();
       if (data.success) {
         setSummary(data.summary);
-        setActionMessage("Executive presence and sentiment diagnostic generated successfully!");
+        setActionMessage("Communication and composure summary generated successfully!");
       }
     } catch (e) {
       console.error("Error generating summary:", e);
@@ -172,18 +172,18 @@ export default function BehavioralSentimentPage() {
         <div>
           <div className="flex items-center gap-3">
             <span className="px-2.5 py-1 text-xs font-semibold uppercase tracking-wider bg-violet-500/10 text-violet-400 border border-violet-500/20 rounded">
-              Phase 29 Telemetry Sensor
+              Speaking & Composure Analysis
             </span>
             <span className="flex items-center gap-1.5 text-xs text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-full">
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-              Live Prosody Engine Active
+              Speech Analysis Active
             </span>
           </div>
           <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-white mt-1">
-            AI Behavioral Sentiment & Psychological Safety Sensor
+            AI Communication & Delivery Coach
           </h1>
           <p className="text-sm text-slate-400 mt-0.5">
-            Real-time vocal stress, acoustic prosody tracking, dynamic adaptive interview pacing, and executive presence diagnostics.
+            Real-time speaking pace, confidence tracking, and communication recommendations.
           </p>
         </div>
 
@@ -195,10 +195,10 @@ export default function BehavioralSentimentPage() {
             Audio Replay
           </Link>
           <Link
-            href="/admin/resilience"
+            href="/dashboard"
             className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-sm font-medium rounded-lg transition border border-slate-700"
           >
-            Multi-Cloud Hub
+            Dashboard
           </Link>
         </div>
       </div>
@@ -219,7 +219,7 @@ export default function BehavioralSentimentPage() {
           {/* Live Status Card */}
           <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-lg">
             <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-400 mb-4">
-              Current Psychological Safety State
+              Current Composure State
             </h2>
 
             <div className="text-center py-4 bg-slate-950/60 border border-slate-800 rounded-lg">
@@ -234,30 +234,30 @@ export default function BehavioralSentimentPage() {
                     : "bg-rose-500/20 text-rose-400 border border-rose-500/40 animate-pulse"
                 }`}
               >
-                {latestTelemetry?.psychologicalSafetyState || "Optimal (Nominal)"}
+                {latestTelemetry?.psychologicalSafetyState || "Confident & Steady"}
               </span>
 
               <div className="mt-4 grid grid-cols-2 gap-3 px-4 text-left">
                 <div className="bg-slate-900/80 p-2.5 rounded border border-slate-800">
-                  <div className="text-xs text-slate-400">Acoustic Stress</div>
+                  <div className="text-xs text-slate-400">Vocal Tension</div>
                   <div className="text-lg font-bold text-white">
                     {latestTelemetry ? `${latestTelemetry.acousticStressScore.toFixed(1)}/100` : "15.0/100"}
                   </div>
                 </div>
                 <div className="bg-slate-900/80 p-2.5 rounded border border-slate-800">
-                  <div className="text-xs text-slate-400">Speech Cadence</div>
+                  <div className="text-xs text-slate-400">Speaking Pace</div>
                   <div className="text-lg font-bold text-white">
                     {latestTelemetry ? `${latestTelemetry.speechCadenceWpm.toFixed(0)} WPM` : "135 WPM"}
                   </div>
                 </div>
                 <div className="bg-slate-900/80 p-2.5 rounded border border-slate-800">
-                  <div className="text-xs text-slate-400">Pitch Variance</div>
+                  <div className="text-xs text-slate-400">Voice Variation</div>
                   <div className="text-lg font-bold text-white">
                     {latestTelemetry ? `${latestTelemetry.pitchVarianceHz.toFixed(1)} Hz` : "18.5 Hz"}
                   </div>
                 </div>
                 <div className="bg-slate-900/80 p-2.5 rounded border border-slate-800">
-                  <div className="text-xs text-slate-400">Sentiment Score</div>
+                  <div className="text-xs text-slate-400">Tone / Sentiment</div>
                   <div className="text-lg font-bold text-white">
                     {latestTelemetry ? latestTelemetry.sentimentScore.toFixed(2) : "+0.65"}
                   </div>
@@ -268,21 +268,21 @@ export default function BehavioralSentimentPage() {
             {/* Adaptive Pacing Directive */}
             <div className="mt-5 p-4 bg-violet-950/20 border border-violet-800/40 rounded-lg">
               <div className="text-xs font-semibold uppercase tracking-wider text-violet-300">
-                Adaptive AI Interviewer Directive
+                AI Interviewer Style
               </div>
               <div className="mt-1 text-sm font-bold text-white">
-                {latestTelemetry?.pacingDirective === "IntensifyRigor" && "🚀 Intensify Architectural Rigor"}
-                {latestTelemetry?.pacingDirective === "MaintainPacing" && "⚖️ Maintain Standard Conversational Cadence"}
-                {latestTelemetry?.pacingDirective === "SocraticSupport" && "💡 Deploy Socratic Scaffolding & Encouragement"}
-                {latestTelemetry?.pacingDirective === "DeescalateStress" && "🛡️ Acute Anxiety Intervention: De-escalate Stress"}
-                {!latestTelemetry && "🚀 Intensify Architectural Rigor (High Bandwidth)"}
+                {latestTelemetry?.pacingDirective === "IntensifyRigor" && "🚀 Deep-Dive Exploration"}
+                {latestTelemetry?.pacingDirective === "MaintainPacing" && "⚖️ Steady Conversational Pace"}
+                {latestTelemetry?.pacingDirective === "SocraticSupport" && "💡 Helpful Hints & Guidance"}
+                {latestTelemetry?.pacingDirective === "DeescalateStress" && "🛡️ Calm & Supportive Assistance"}
+                {!latestTelemetry && "🚀 Deep-Dive Exploration"}
               </div>
               <p className="mt-1.5 text-xs text-violet-200/80 leading-relaxed">
                 {latestTelemetry?.pacingDirective === "DeescalateStress"
-                  ? "Candidate entered anxiety freeze. The AI Interviewer actively pauses intense probing and provides a supportive sub-problem."
+                  ? "Tension detected. The interviewer pauses deeper questions and provides a clear, supportive prompt."
                   : latestTelemetry?.pacingDirective === "SocraticSupport"
-                  ? "Cognitive fatigue detected. AI Interviewer provides Socratic hints without penalizing core competency scores."
-                  : "Candidate demonstrates strong psychological safety and cognitive bandwidth. Challenge edge-cases and tradeoffs."}
+                  ? "Hesitation detected. The interviewer provides hints without penalizing your score."
+                  : "Great composure and clarity. The interviewer explores deeper technical topics and trade-offs."}
               </p>
             </div>
           </div>
@@ -290,32 +290,32 @@ export default function BehavioralSentimentPage() {
           {/* Interactive Simulation Preset Tray */}
           <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-lg">
             <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-400 mb-3">
-              Prosody Simulation Presets
+              Practice Speech Presets
             </h2>
             <div className="grid grid-cols-3 gap-2">
               <button
                 onClick={() => applyPreset("optimal")}
                 className="px-2.5 py-2 text-xs font-medium bg-emerald-950/40 hover:bg-emerald-900/60 border border-emerald-800/50 text-emerald-300 rounded transition text-center"
               >
-                Confident Staff
+                Confident & Clear
               </button>
               <button
                 onClick={() => applyPreset("tension")}
                 className="px-2.5 py-2 text-xs font-medium bg-sky-950/40 hover:bg-sky-900/60 border border-sky-800/50 text-sky-300 rounded transition text-center"
               >
-                Normal Tension
+                Standard Pace
               </button>
               <button
                 onClick={() => applyPreset("freeze")}
                 className="px-2.5 py-2 text-xs font-medium bg-rose-950/40 hover:bg-rose-900/60 border border-rose-800/50 text-rose-300 rounded transition text-center"
               >
-                Anxiety Freeze
+                Hesitant / Nervous
               </button>
             </div>
 
             <div className="mt-4 space-y-3 text-xs">
               <div>
-                <label className="text-slate-400">Pitch Variance ({pitchVariance} Hz)</label>
+                <label className="text-slate-400">Voice Variation ({pitchVariance} Hz)</label>
                 <input
                   type="range"
                   min="5"
@@ -326,7 +326,7 @@ export default function BehavioralSentimentPage() {
                 />
               </div>
               <div>
-                <label className="text-slate-400">Speech Cadence ({speechWpm} WPM)</label>
+                <label className="text-slate-400">Speaking Pace ({speechWpm} WPM)</label>
                 <input
                   type="range"
                   min="50"
@@ -337,7 +337,7 @@ export default function BehavioralSentimentPage() {
                 />
               </div>
               <div>
-                <label className="text-slate-400">Hesitations & Stutters ({hesitations})</label>
+                <label className="text-slate-400">Pauses & Hesitations ({hesitations})</label>
                 <input
                   type="range"
                   min="0"
@@ -354,7 +354,7 @@ export default function BehavioralSentimentPage() {
               disabled={loading}
               className="mt-4 w-full py-2.5 bg-violet-600 hover:bg-violet-500 disabled:opacity-50 text-white font-medium text-xs rounded-lg transition shadow"
             >
-              {loading ? "Processing Audio Prosody..." : "Ingest Behavioral Telemetry Point"}
+              {loading ? "Analyzing Speech..." : "Add Speaking Sample"}
             </button>
           </div>
         </div>
@@ -365,15 +365,15 @@ export default function BehavioralSentimentPage() {
           <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-lg">
             <div className="flex items-center justify-between pb-3 border-b border-slate-800">
               <div>
-                <h2 className="text-base font-semibold text-white">Executive Presence & Resilience Diagnostic</h2>
-                <p className="text-xs text-slate-400">Aggregated psychological safety and composure analytics</p>
+                <h2 className="text-base font-semibold text-white">Confidence & Communication Summary</h2>
+                <p className="text-xs text-slate-400">Overall confidence, speaking pace, and delivery insights</p>
               </div>
               <button
                 onClick={handleGenerateSummary}
                 disabled={loading}
                 className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-medium rounded-lg transition"
               >
-                Synthesize Diagnostic Report
+                Generate Summary Report
               </button>
             </div>
 
@@ -387,19 +387,19 @@ export default function BehavioralSentimentPage() {
                     </div>
                   </div>
                   <div className="bg-slate-950 p-3 rounded-lg border border-slate-800 text-center">
-                    <div className="text-xs text-slate-400">Cognitive Resilience</div>
+                    <div className="text-xs text-slate-400">Stress Composure</div>
                     <div className="text-2xl font-black text-indigo-400 mt-0.5">
                       {summary.resilienceScore}%
                     </div>
                   </div>
                   <div className="bg-slate-950 p-3 rounded-lg border border-slate-800 text-center">
-                    <div className="text-xs text-slate-400">Average Cadence</div>
+                    <div className="text-xs text-slate-400">Average Pace</div>
                     <div className="text-2xl font-black text-white mt-0.5">
                       {summary.averageSpeechWpm.toFixed(0)} WPM
                     </div>
                   </div>
                   <div className="bg-slate-950 p-3 rounded-lg border border-slate-800 text-center">
-                    <div className="text-xs text-slate-400">Executive Rating</div>
+                    <div className="text-xs text-slate-400">Overall Rating</div>
                     <div className="text-sm font-bold text-amber-400 mt-2">
                       {summary.executivePresenceRating}
                     </div>
@@ -409,7 +409,7 @@ export default function BehavioralSentimentPage() {
                 {/* Coaching Feedback Notes */}
                 <div className="bg-slate-950 p-4 rounded-lg border border-slate-800">
                   <div className="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">
-                    Actionable Executive Coaching Feedback
+                    Personalized Delivery & Speaking Tips
                   </div>
                   <ul className="space-y-2 text-xs text-slate-300">
                     {summary.executiveCoachingFeedback.map((fb, idx) => (
@@ -423,7 +423,7 @@ export default function BehavioralSentimentPage() {
               </div>
             ) : (
               <div className="text-center py-8 text-slate-500 text-xs">
-                No diagnostic summary synthesized yet. Ingest telemetry points and click &quot;Synthesize Diagnostic Report&quot;.
+                No summary generated yet. Add speaking samples and click &quot;Generate Summary Report&quot;.
               </div>
             )}
           </div>
@@ -431,14 +431,14 @@ export default function BehavioralSentimentPage() {
           {/* Telemetry Chronological Timeline */}
           <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-lg">
             <div className="flex items-center justify-between pb-3 border-b border-slate-800">
-              <h2 className="text-base font-semibold text-white">Chronological Prosody Timeline</h2>
-              <span className="text-xs text-slate-400">{timeline.length} Ingested Samples</span>
+              <h2 className="text-base font-semibold text-white">Speaking Timeline & Highlights</h2>
+              <span className="text-xs text-slate-400">{timeline.length} Recorded Samples</span>
             </div>
 
             <div className="mt-4 space-y-3 max-h-96 overflow-y-auto pr-1">
               {timeline.length === 0 ? (
                 <div className="text-center py-8 text-slate-500 text-xs">
-                  No telemetry logged for this session. Use the simulator panel on the left to inject prosody data.
+                  No speaking samples recorded for this session yet. Use the panel on the left to test or record samples.
                 </div>
               ) : (
                 timeline.map((point) => (
@@ -461,9 +461,9 @@ export default function BehavioralSentimentPage() {
                         >
                           {point.psychologicalSafetyState}
                         </span>
-                        <span className="text-slate-400">Stress: {point.acousticStressScore.toFixed(0)}/100</span>
-                        <span className="text-slate-400">Cadence: {point.speechCadenceWpm.toFixed(0)} WPM</span>
-                        <span className="text-slate-400">Pitch: {point.pitchVarianceHz.toFixed(1)} Hz</span>
+                        <span className="text-slate-400">Tension: {point.acousticStressScore.toFixed(0)}/100</span>
+                        <span className="text-slate-400">Pace: {point.speechCadenceWpm.toFixed(0)} WPM</span>
+                        <span className="text-slate-400">Variation: {point.pitchVarianceHz.toFixed(1)} Hz</span>
                       </div>
                       <p className="text-slate-300 italic">&ldquo;{point.telemetrySnippet}&rdquo;</p>
                     </div>

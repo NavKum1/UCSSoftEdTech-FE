@@ -185,10 +185,10 @@ export default function MultiCampusGovernancePage() {
             <span className="text-xl">🏛️</span>
             <div>
               <h1 className="text-base font-bold bg-gradient-to-r from-emerald-400 via-teal-300 to-cyan-400 bg-clip-text text-transparent">
-                Executive Multi-Campus Governance & Compliance Audit Ledger
+                Executive Multi-Campus Governance &amp; Compliance Records
               </h1>
               <p className="text-[11px] text-slate-400">
-                Institutional Consortium • Cryptographic Immutable Audit Chain (SHA-256)
+                Institutional Consortium • Verified Compliance Record
               </p>
             </div>
           </div>
@@ -308,10 +308,10 @@ export default function MultiCampusGovernancePage() {
             <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800 pb-3">
               <div>
                 <h2 className="text-sm font-bold text-slate-200">
-                  {selectedCampus ? `${selectedCampus.campusName} Audit Chain` : "Campus Audit Ledger"}
+                  {selectedCampus ? `${selectedCampus.campusName} Compliance Records` : "Campus Compliance Records"}
                 </h2>
                 <p className="text-xs text-slate-400">
-                  Cryptographically linked immutable blocks signed by Provost & Academic Deans
+                  Verified compliance records certified by Academic Leadership
                 </p>
               </div>
 
@@ -322,7 +322,7 @@ export default function MultiCampusGovernancePage() {
                   className="px-3.5 py-1.5 rounded-lg bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-300 border border-emerald-500/40 text-xs font-semibold transition flex items-center space-x-1.5"
                 >
                   <span>{isVerifying ? "⏳" : "🛡️"}</span>
-                  <span>{isVerifying ? "Verifying..." : "Verify Hash Chain"}</span>
+                  <span>{isVerifying ? "Verifying..." : "Verify Records Integrity"}</span>
                 </button>
 
                 <button

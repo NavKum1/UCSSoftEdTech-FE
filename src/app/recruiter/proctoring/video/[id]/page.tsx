@@ -42,11 +42,13 @@ export default function ProctoringVideoReviewPage({ params }: { params: Promise<
   const [selectedMarker, setSelectedMarker] = useState<ViolationMarker | null>(null);
   const [playbackSpeed, setPlaybackSpeed] = useState<number>(1.0);
   const [actionNotice, setActionNotice] = useState<string | null>(null);
+  const [fetchError, setFetchError] = useState<string | null>(null);
 
   useEffect(() => {
     async function fetchPlayerData() {
       try {
         setLoading(true);
+        setFetchError(null);
         const res = await fetch(`http://localhost:5000/api/video/recording/${recordingId}/player`);
         if (res.ok) {
           const data = await res.json();
@@ -55,56 +57,13 @@ export default function ProctoringVideoReviewPage({ params }: { params: Promise<
             setSelectedMarker(data.markers[0]);
           }
         } else {
-          // Mock data fallback for demonstration if direct fetch returns 404
-          const mock: PlayerPayload = {
-            recordingId: recordingId,
-            sessionId: '7a1100f9-2533-4df4-8458-1f1480f2d9c1',
-            trackType: 'Webcam',
-            status: 'Ready',
-            transcodedUrl: 'https://cdn.ucsoft.internal/proctoring/hls/demo_stream.mp4',
-            thumbnailUrl: 'https://cdn.ucsoft.internal/proctoring/thumbnails/demo_poster.jpg',
-            durationSeconds: 180,
-            totalMarkers: 3,
-            summary: {
-              criticalViolations: 1,
-              highViolations: 1,
-              mediumViolations: 1,
-            },
-            markers: [
-              {
-                id: 'm1',
-                timestampSeconds: 15,
-                timestampFormatted: '00:15',
-                violationType: 'MultipleFacesDetected',
-                severity: 'High',
-                notes: 'Secondary individual visible in background at desk perimeter.',
-                snapshotUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80',
-              },
-              {
-                id: 'm2',
-                timestampSeconds: 68,
-                timestampFormatted: '01:08',
-                violationType: 'FaceOutOfFrame',
-                severity: 'Medium',
-                notes: 'Candidate leaned completely outside camera frame boundary for 7s.',
-                snapshotUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80',
-              },
-              {
-                id: 'm3',
-                timestampSeconds: 135,
-                timestampFormatted: '02:15',
-                violationType: 'ScreenBlurAttempt',
-                severity: 'Critical',
-                notes: 'Suspicious window blur and browser devtools invocation attempt during algorithm execution.',
-                snapshotUrl: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=400&q=80',
-              },
-            ],
-          };
-          setPlayerData(mock);
-          setSelectedMarker(mock.markers[0]);
+          setFetchError(`Recording not found in forensic vault (HTTP ${res.status}).`);
+          setPlayerData(null);
         }
-      } catch (err) {
+      } catch (err: any) {
         console.error('Failed to load video player payload', err);
+        setFetchError(err.message || 'Failed to connect to video recording service.');
+        setPlayerData(null);
       } finally {
         setLoading(false);
       }
@@ -156,7 +115,29 @@ export default function ProctoringVideoReviewPage({ params }: { params: Promise<
       <div className="min-h-screen bg-slate-950 text-slate-100 flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
           <div className="w-12 h-12 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
-          <p className="text-slate-400 font-mono text-sm">Loading Transcoded Multi-Track Video Stream...</p>
+          <p className="text-slate-400 font-mono text-sm">Loading Assessment Video Recording...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (fetchError || !playerData) {
+    return (
+      <div className="min-h-screen bg-slate-950 text-slate-100 flex items-center justify-center font-sans p-6">
+        <div className="max-w-md w-full p-8 rounded-2xl bg-slate-900 border border-slate-800 text-center space-y-4">
+          <div className="w-12 h-12 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 flex items-center justify-center mx-auto text-lg font-bold">
+            !
+          </div>
+          <h2 className="text-lg font-bold text-white">Recording Not Found</h2>
+          <p className="text-xs text-slate-400">
+            {fetchError || "The requested assessment recording could not be found or has expired."}
+          </p>
+          <Link
+            href="/partner/dashboard"
+            className="inline-block px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-xs transition"
+          >
+            &larr; Return to Dashboard
+          </Link>
         </div>
       </div>
     );
@@ -174,15 +155,15 @@ export default function ProctoringVideoReviewPage({ params }: { params: Promise<
             href="/partner/dashboard"
             className="text-xs px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 font-mono transition"
           >
-            &larr; Back to Audits
+            &larr; Back to Reviews
           </Link>
           <div className="h-4 w-[1px] bg-slate-700"></div>
           <h1 className="text-base font-semibold text-white tracking-tight flex items-center gap-2">
             <span className="w-2.5 h-2.5 rounded-full bg-rose-500 animate-pulse"></span>
-            Proctored Video Audit Studio
+            Assessment Video Review
           </h1>
           <span className="text-xs px-2 py-0.5 rounded font-mono bg-indigo-950/80 text-indigo-300 border border-indigo-700/50">
-            H.264 / 1080p
+            HD Recording
           </span>
         </div>
 
@@ -266,7 +247,7 @@ export default function ProctoringVideoReviewPage({ params }: { params: Promise<
                     Candidate Primary Display (1920x1080)
                   </p>
                   <p className="text-xs text-slate-500 font-mono mt-1">
-                    Keystroke &amp; Window Switch Ledger Ingested
+                    Keystroke &amp; Window Switch Activity Recorded
                   </p>
                 </div>
               )}
@@ -383,7 +364,7 @@ export default function ProctoringVideoReviewPage({ params }: { params: Promise<
           {/* Summary Box */}
           <div className="bg-slate-900 border border-slate-800 rounded-xl p-4">
             <h2 className="text-xs uppercase font-mono tracking-wider text-slate-400 mb-3">
-              Vision &amp; Audio Telemetry Summary
+              Integrity &amp; Audio Summary
             </h2>
             <div className="grid grid-cols-3 gap-2 text-center">
               <div className="bg-rose-950/40 border border-rose-800/40 rounded-lg p-2.5">

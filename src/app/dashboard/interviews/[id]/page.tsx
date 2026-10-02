@@ -56,10 +56,11 @@ export default function StudentInterviewReplayPage() {
   const params = useParams();
   const router = useRouter();
   const { getToken } = useAuth();
-  const sessionId = (params?.id as string) || "demo-session-id";
+  const sessionId = (params?.id as string) || "";
 
   const [sessionData, setSessionData] = useState<InterviewSessionData | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
+  const [fetchError, setFetchError] = useState<string | null>(null);
 
   // Audio Playback State
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -73,7 +74,13 @@ export default function StudentInterviewReplayPage() {
   // Fetch Session & Evaluation
   useEffect(() => {
     const fetchSession = async () => {
+      if (!sessionId) {
+        setFetchError("Invalid session identifier provided.");
+        setLoading(false);
+        return;
+      }
       setLoading(true);
+      setFetchError(null);
       try {
         const res = await fetch(`http://localhost:5000/api/interview/session/${sessionId}`);
         if (res.ok) {
@@ -81,38 +88,13 @@ export default function StudentInterviewReplayPage() {
           setSessionData(data);
           if (data.durationSeconds) setDuration(data.durationSeconds);
         } else {
-          // Fallback demo data
-          setSessionData({
-            sessionId: sessionId,
-            userId: "usr_demo",
-            candidateName: "Alex Morgan",
-            candidateEmail: "alex.morgan@example.com",
-            jobDescription: "Senior Full-Stack Engineer — Payment Queue Sprint Defense",
-            startTime: new Date(Date.now() - 3600000).toISOString(),
-            endTime: new Date().toISOString(),
-            durationSeconds: 300,
-            recordingUrl: "https://actions.google.com/sounds/v1/ambiences/coffee_shop.ogg",
-            transcript: `AI: Let's begin the technical defense of your payment queue processor implementation.
-Candidate: Thank you. I wrote the processor to parse incoming payloads and insert rows into the database.
-AI: Looking at line 4 of your code, you executed: query = f"INSERT INTO Payments (Amount) VALUES ({amount})". Why did you interpolate raw parameters instead of parameterized queries?
-Candidate: In the quick prototype I used an f-string, but I recognize that without query parameterization this creates severe SQL injection risks and bypasses database execution plan caching.
-AI: How would you architect connection pooling and resilience during high traffic surges?
-Candidate: I would use AddDbContextPool in EF Core, configure max connection pools to 128, and implement Polly retry policies with exponential backoff for transient database disconnections.
-AI: Excellent response on connection pooling. Now, how does the system handle transaction isolation if multiple queue workers process payments concurrently?
-Candidate: I would enforce a ReadCommitted isolation level or use optimistic concurrency with a RowVersion column to prevent double-spending race conditions.`,
-            evaluation: {
-              technicalScore: 84.5,
-              communicationScore: 78.0,
-              missingSkills: ["Connection Pooling", "Microservices Resiliency"],
-              architecturalFlaws: [
-                "Did not use connection pooling",
-                "Hardcoded SQL query execution",
-              ],
-            },
-          });
+          setFetchError(`Interview defense record not found (HTTP ${res.status}). The requested session does not exist.`);
+          setSessionData(null);
         }
-      } catch (err) {
+      } catch (err: any) {
         console.error("Failed to load interview session replay:", err);
+        setFetchError(err.message || "Failed to connect to interview session service.");
+        setSessionData(null);
       } finally {
         setLoading(false);
       }
@@ -128,11 +110,12 @@ Candidate: I would enforce a ReadCommitted isolation level or use optimistic con
       audioRef.current.pause();
       setIsPlaying(false);
     } else {
-      audioRef.current.play().catch(() => {
-        // Handle mock sound play
+      audioRef.current.play().then(() => {
         setIsPlaying(true);
+      }).catch((err) => {
+        console.warn("Audio playback blocked or failed:", err);
+        setIsPlaying(false);
       });
-      setIsPlaying(true);
     }
   };
 
@@ -212,13 +195,13 @@ Candidate: I would enforce a ReadCommitted isolation level or use optimistic con
 
       if (isFlagged) {
         if (lower.includes("sql") || lower.includes("injection") || lower.includes("hardcoded")) {
-          flagReason = "Architectural Flaw Challenge: SQL Security & Parameterization";
+          flagReason = "Key Topic: Database Security & Safe Queries";
         } else if (lower.includes("connection") || lower.includes("pooling")) {
-          flagReason = "Identified Gap: Connection Pooling & Resource Lifecycle";
+          flagReason = "Key Topic: Resource Management & Efficiency";
         } else if (lower.includes("concurrency") || lower.includes("race")) {
-          flagReason = "Technical Probe: Concurrency & Transaction Isolation";
+          flagReason = "Key Topic: Handling Concurrent Operations";
         } else {
-          flagReason = "Skill Gap Probe: Core Engineering Concepts";
+          flagReason = "Key Topic: Core Problem Solving Concepts";
         }
       }
 
@@ -228,7 +211,40 @@ Candidate: I would enforce a ReadCommitted isolation level or use optimistic con
     return parsed;
   };
 
-  const dialogues = parseTranscript(sessionData?.transcript || "");
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-slate-950 text-slate-100 flex items-center justify-center font-sans">
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-10 h-10 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin" />
+          <p className="text-sm text-slate-400 font-mono">Loading Interview Recording & Feedback...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (fetchError || !sessionData) {
+    return (
+      <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col items-center justify-center font-sans p-6">
+        <div className="max-w-md w-full p-8 rounded-3xl bg-slate-900/60 border border-slate-800 text-center space-y-4">
+          <div className="w-12 h-12 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center mx-auto">
+            <AlertTriangle className="w-6 h-6" />
+          </div>
+          <h2 className="text-xl font-bold text-white">Interview Recording Not Found</h2>
+          <p className="text-sm text-slate-400">
+            {fetchError || "The requested interview recording could not be found. Please check your interview history."}
+          </p>
+          <button
+            onClick={() => router.push("/dashboard")}
+            className="w-full py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-sm transition-colors cursor-pointer"
+          >
+            Return to Dashboard
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  const dialogues = parseTranscript(sessionData.transcript || "");
   const displayedDialogues = filterFlaggedOnly ? dialogues.filter((d) => d.isFlagged) : dialogues;
 
   return (
@@ -257,10 +273,10 @@ Candidate: I would enforce a ReadCommitted isolation level or use optimistic con
               <div className="flex items-center space-x-2">
                 <span className="font-bold text-base text-white tracking-wide">BUILD & DEFEND</span>
                 <span className="text-[10px] px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 font-semibold border border-indigo-500/30">
-                  Replay & Analytics
+                  Recording & Review
                 </span>
               </div>
-              <p className="text-[11px] text-slate-400">Student Defense Review & Voice AI Transcript</p>
+              <p className="text-[11px] text-slate-400">Interview Review & Discussion Transcript</p>
             </div>
           </div>
 
@@ -273,11 +289,11 @@ Candidate: I would enforce a ReadCommitted isolation level or use optimistic con
               <span>Leaderboard</span>
             </button>
             <button
-              onClick={() => router.push("/")}
+              onClick={() => router.push("/dashboard")}
               className="text-xs text-slate-400 hover:text-slate-200 flex items-center space-x-1.5 transition-colors cursor-pointer"
             >
               <ArrowLeft className="w-3.5 h-3.5" />
-              <span>Exit Replay</span>
+              <span>Back to Dashboard</span>
             </button>
           </div>
         </div>
@@ -290,14 +306,14 @@ Candidate: I would enforce a ReadCommitted isolation level or use optimistic con
           <div className="space-y-1">
             <div className="flex items-center space-x-2">
               <h1 className="text-xl font-bold text-white">
-                {sessionData?.jobDescription || "Sprint Defense Voice Review"}
+                {sessionData?.jobDescription || "Interview Conversation Review"}
               </h1>
               <span className="text-[10px] px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-semibold border border-emerald-500/30">
                 Completed
               </span>
             </div>
             <p className="text-xs text-slate-400">
-              Candidate: <span className="text-slate-200 font-medium">{sessionData?.candidateName}</span> • Session ID:{" "}
+              Candidate: <span className="text-slate-200 font-medium">{sessionData?.candidateName}</span> • Reference ID:{" "}
               <span className="font-mono text-indigo-300">{sessionId.substring(0, 12)}...</span>
             </p>
           </div>
@@ -305,7 +321,7 @@ Candidate: I would enforce a ReadCommitted isolation level or use optimistic con
           {/* Scores Pills */}
           <div className="flex items-center space-x-4">
             <div className="glass-panel rounded-2xl px-4 py-2 border border-slate-700/80 bg-slate-900/60 text-center">
-              <span className="text-[10px] uppercase font-bold text-slate-400">Technical Score</span>
+              <span className="text-[10px] uppercase font-bold text-slate-400">Technical Skills</span>
               <p className="text-lg font-black text-indigo-400">
                 {sessionData?.evaluation?.technicalScore.toFixed(1) || "84.0"}%
               </p>
@@ -325,7 +341,7 @@ Candidate: I would enforce a ReadCommitted isolation level or use optimistic con
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2 text-xs font-semibold text-indigo-300">
               <Sparkles className="w-4 h-4 text-indigo-400" />
-              <span>Voice AI Session Audio Recording</span>
+              <span>Interview Audio Recording</span>
             </div>
             <span className="text-[11px] font-mono text-slate-400">
               {formatTime(currentTime)} / {formatTime(duration)}
@@ -392,9 +408,9 @@ Candidate: I would enforce a ReadCommitted isolation level or use optimistic con
         <div className="glass-panel rounded-3xl p-6 border border-slate-800 space-y-6">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-slate-800 gap-3">
             <div>
-              <h2 className="text-base font-bold text-white">Full Interview Transcript & Moments of Interest</h2>
+              <h2 className="text-base font-bold text-white">Full Interview Transcript & Key Highlights</h2>
               <p className="text-xs text-slate-400 mt-0.5">
-                Review dialogue turns. Moments challenging identified code flaws and skill gaps are highlighted in amber.
+                Review the conversation below. Key topics and areas for discussion are highlighted in amber.
               </p>
             </div>
 
@@ -408,7 +424,7 @@ Candidate: I would enforce a ReadCommitted isolation level or use optimistic con
               }`}
             >
               <Filter className="w-3.5 h-3.5" />
-              <span>{filterFlaggedOnly ? "Showing Flagged Flaws Only" : "Show All Dialogue"}</span>
+              <span>{filterFlaggedOnly ? "Showing Key Moments Only" : "Show Full Conversation"}</span>
             </button>
           </div>
 
@@ -437,14 +453,14 @@ Candidate: I would enforce a ReadCommitted isolation level or use optimistic con
                       </div>
                     )}
                     <span className="text-xs font-bold text-slate-200">
-                      {msg.speaker === "AI" ? "Voice AI Examiner" : sessionData?.candidateName || "Candidate"}
+                      {msg.speaker === "AI" ? "Interviewer" : sessionData?.candidateName || "Candidate"}
                     </span>
                   </div>
 
                   {msg.isFlagged && (
                     <span className="px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-amber-500/20 text-amber-300 border border-amber-500/40 flex items-center space-x-1">
                       <AlertTriangle className="w-3 h-3 text-amber-400" />
-                      <span>{msg.flagReason || "Skill & Flaw Moment"}</span>
+                      <span>{msg.flagReason || "Key Discussion Point"}</span>
                     </span>
                   )}
                 </div>

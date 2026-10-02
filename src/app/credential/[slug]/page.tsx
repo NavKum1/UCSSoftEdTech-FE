@@ -35,7 +35,7 @@ export default function CredentialBadgePage() {
             finalScore: 88.5,
             publicUrlSlug: slug,
             verifiedAt: new Date().toISOString(),
-            verificationStatus: "Official Cryptographic Seal Verified",
+            verificationStatus: "Official Verified Credential",
             verificationFlagged: false,
           });
         }
@@ -47,7 +47,7 @@ export default function CredentialBadgePage() {
           finalScore: 88.5,
           publicUrlSlug: slug,
           verifiedAt: new Date().toISOString(),
-          verificationStatus: "Official Cryptographic Seal Verified",
+          verificationStatus: "Official Verified Credential",
           verificationFlagged: false,
         });
       }
@@ -91,8 +91,8 @@ export default function CredentialBadgePage() {
               <Award className="w-6 h-6 text-white" />
             </div>
             <div>
-              <span className="text-xs font-semibold text-emerald-400 uppercase tracking-wider">Verifiable Digital Badge</span>
-              <h1 className="text-lg font-bold text-white">BUILD & DEFEND ACCREDITATION</h1>
+              <span className="text-xs font-semibold text-emerald-400 uppercase tracking-wider">Verifiable Digital Certificate</span>
+              <h1 className="text-lg font-bold text-white">ACCREDITED CERTIFICATE OF COMPLETION</h1>
             </div>
           </div>
 
@@ -105,20 +105,20 @@ export default function CredentialBadgePage() {
             {credential?.verificationFlagged && (
               <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-amber-500/20 text-amber-400 border border-amber-500/40">
                 <AlertTriangle className="w-3.5 h-3.5 mr-1.5 text-amber-400" />
-                Warning: Verification Flagged
+                Under Review
               </span>
             )}
           </div>
         </div>
 
-        {/* Anti-Cheat Warning Alert Box */}
+        {/* Integrity Warning Alert Box */}
         {credential?.verificationFlagged && (
           <div className="p-4 bg-amber-950/40 border border-amber-500/30 rounded-2xl flex items-start space-x-3 text-left">
             <AlertTriangle className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
             <div className="space-y-1">
-              <p className="text-xs font-semibold text-amber-300">Anti-Cheat Verification Flagged</p>
+              <p className="text-xs font-semibold text-amber-300">Academic Review Notice</p>
               <p className="text-[11px] text-amber-200/90 leading-relaxed">
-                {credential?.flagReason || "Anomalous code submission patterns (large paste block or synthetic AI boilerplate) were detected during this evaluation session."}
+                {credential?.flagReason || "An unusual submission pattern was flagged during this evaluation session and is awaiting review."}
               </p>
             </div>
           </div>
@@ -130,7 +130,7 @@ export default function CredentialBadgePage() {
           <h2 className="text-3xl font-extrabold text-white bg-gradient-to-r from-white via-indigo-200 to-slate-200 bg-clip-text text-transparent">
             {candidateName}
           </h2>
-          <p className="text-xs text-slate-300">has successfully defended micro-internship code submissions and passed the AI Voice Defense Review.</p>
+          <p className="text-xs text-slate-300">has successfully completed the project challenge and demonstrated their skills in the voice assessment.</p>
 
           <div className="inline-block mt-2 px-4 py-2 bg-indigo-500/10 border border-indigo-500/30 rounded-xl text-indigo-300 font-bold text-sm">
             {badgeTitle}
@@ -140,7 +140,7 @@ export default function CredentialBadgePage() {
         {/* Competency & Score Grid */}
         <div className="grid grid-cols-2 gap-4">
           <div className="glass-card rounded-2xl p-4 border border-slate-800 text-center">
-            <span className="text-xs text-slate-400 font-medium">Final Defense Score</span>
+            <span className="text-xs text-slate-400 font-medium">Final Assessment Score</span>
             <div className="text-2xl font-extrabold text-indigo-400 mt-1">{finalScore}%</div>
           </div>
 
@@ -152,7 +152,7 @@ export default function CredentialBadgePage() {
 
         {/* 1-Click LinkedIn Integration Buttons */}
         <div className="pt-2 space-y-3">
-          <p className="text-xs font-semibold text-slate-400 text-center uppercase tracking-wider">Viral Social Proof & Verification</p>
+          <p className="text-xs font-semibold text-slate-400 text-center uppercase tracking-wider">Share Your Achievement</p>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <a
@@ -172,7 +172,7 @@ export default function CredentialBadgePage() {
               className="py-3 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-xs flex items-center justify-center space-x-2 transition-all shadow-lg shadow-indigo-600/25 cursor-pointer"
             >
               <Share2 className="w-4 h-4" />
-              <span>Share Badge to Feed</span>
+              <span>Share on LinkedIn Feed</span>
             </a>
           </div>
         </div>

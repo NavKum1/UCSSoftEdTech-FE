@@ -27,17 +27,17 @@ export default function GlobalErrorPage({
 
         <div className="space-y-2">
           <span className="text-xs font-semibold text-red-400 uppercase tracking-widest">
-            Production System Protection
+            Service Notice
           </span>
-          <h1 className="text-2xl font-extrabold text-white">System Under Maintenance</h1>
+          <h1 className="text-2xl font-extrabold text-white">Something Went Wrong</h1>
           <p className="text-xs text-slate-400 leading-relaxed">
-            An unexpected error occurred while executing client component logic. Our automated telemetry has flagged this exception.
+            We encountered an unexpected issue while loading this page. Please try again or return to your dashboard.
           </p>
         </div>
 
         {error?.digest && (
           <div className="bg-slate-900/80 p-3 rounded-xl border border-slate-800 text-[11px] font-mono text-slate-400 flex items-center justify-between">
-            <span>Error Reference Digest:</span>
+            <span>Reference Code:</span>
             <span className="text-red-400 font-bold">{error.digest}</span>
           </div>
         )}
@@ -48,7 +48,7 @@ export default function GlobalErrorPage({
             className="w-full py-3 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-xs flex items-center justify-center space-x-2 transition-all shadow-lg shadow-indigo-600/25 cursor-pointer"
           >
             <RefreshCw className="w-4 h-4" />
-            <span>Re-attempt System Connection</span>
+            <span>Try Again</span>
           </button>
 
           <a
@@ -56,7 +56,7 @@ export default function GlobalErrorPage({
             className="w-full py-3 px-4 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 font-medium text-xs flex items-center justify-center space-x-2 border border-slate-800 transition-colors cursor-pointer"
           >
             <Home className="w-4 h-4" />
-            <span>Return to Candidate Dashboard</span>
+            <span>Go to Dashboard</span>
           </a>
         </div>
       </div>

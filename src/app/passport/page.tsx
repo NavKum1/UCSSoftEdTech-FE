@@ -498,7 +498,7 @@ export default function SkillPassportPage() {
             </div>
 
             <p className="text-xs text-slate-400 leading-relaxed">
-              Anyone with this cryptographic link can inspect your live, tamper-evident skill passport, real-time vigilance scores, and anti-decay cryptographic signatures.
+              Anyone with this verified link can view your live skill achievements, verified badges, and proficiency scores.
             </p>
 
             <div className="space-y-2">
@@ -522,10 +522,10 @@ export default function SkillPassportPage() {
             <div className="p-3.5 bg-slate-950/60 border border-slate-800/80 rounded-xl space-y-2">
               <div className="text-[11px] font-bold text-slate-300 flex items-center space-x-1.5">
                 <span>🔒</span>
-                <span>Cryptographic Proof Guarantee</span>
+                <span>Official Verification Guarantee</span>
               </div>
               <p className="text-[11px] text-slate-400 font-mono truncate">
-                SHA-256 Ledger Signature: {passport.badges[0]?.verificationSignatureSha256 || "verified-audit-block"}
+                Verification ID: {passport.badges[0]?.verificationSignatureSha256 || "verified-audit-block"}
               </p>
             </div>
 

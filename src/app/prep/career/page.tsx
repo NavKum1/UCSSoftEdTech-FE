@@ -5,7 +5,7 @@ import {
   TrendingUp, DollarSign, Award, Target, Sparkles, 
   ArrowRight, Compass, ShieldCheck, Zap, Layers, 
   Calendar, CheckCircle2, ChevronRight, RefreshCw,
-  Globe2, Building2, Briefcase, Sliders, ArrowUpRight
+  Globe2, Building2, Briefcase, Sliders, ArrowUpRight, AlertTriangle
 } from "lucide-react";
 import Link from "next/link";
 
@@ -59,12 +59,14 @@ export default function CareerTrajectoryStudioPage() {
   const [selectedRegion, setSelectedRegion] = useState<string>("US_Tier1");
   const [data, setData] = useState<CompensationBandData | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
+  const [fetchError, setFetchError] = useState<string | null>(null);
   const [showSimulateModal, setShowSimulateModal] = useState<boolean>(false);
   const [targetRole, setTargetRole] = useState<string>(TRACK_PRESETS[0]);
   const [isSimulating, setIsSimulating] = useState<boolean>(false);
 
   const fetchCompensation = async (region: string) => {
     setLoading(true);
+    setFetchError(null);
     try {
       const testUserId = "44444444-5555-6666-7777-888888888888";
       const res = await fetch(`http://localhost:5000/api/career/compensation/${testUserId}?region=${region}`);
@@ -72,56 +74,16 @@ export default function CareerTrajectoryStudioPage() {
         const json = await res.json();
         setData(json.compensation);
       } else {
-        loadFallback(region);
+        setFetchError(`Career compensation service returned HTTP ${res.status}.`);
+        setData(null);
       }
-    } catch (e) {
+    } catch (e: any) {
       console.warn("[CAREER COMPENSATION FETCH NOTICE]:", e);
-      loadFallback(region);
+      setFetchError(e.message || "Failed to connect to career compensation service.");
+      setData(null);
     } finally {
       setLoading(false);
     }
-  };
-
-  const loadFallback = (region: string) => {
-    const reg = REGIONS.find(r => r.code === region) || REGIONS[0];
-    const isIndia = region === "India_APAC";
-    const isEu = region === "EU_UK";
-    
-    const curr = isIndia ? 2800000 : isEu ? 115000 : 165000;
-    const y1 = isIndia ? 3600000 : isEu ? 145000 : 210000;
-    const y3 = isIndia ? 5200000 : isEu ? 195000 : 285000;
-    const y5 = isIndia ? 7400000 : isEu ? 260000 : 380000;
-
-    setData({
-      userId: "44444444-5555-6666-7777-888888888888",
-      region: reg.code,
-      regionName: reg.name,
-      currencyCode: reg.currency,
-      currencySymbol: reg.symbol,
-      baseMultiplier: parseFloat(reg.multiplier.replace("x", "")),
-      seniorityLevels: {
-        current: "L4_MidLevel",
-        oneYear: "L5_Senior",
-        threeYear: "L6_Staff",
-        fiveYear: "L7_Principal"
-      },
-      compensationBands: {
-        current: curr,
-        oneYear: y1,
-        threeYear: y3,
-        fiveYear: y5,
-        currentFormatted: `${reg.symbol}${curr.toLocaleString()}`,
-        oneYearFormatted: `${reg.symbol}${y1.toLocaleString()}`,
-        threeYearFormatted: `${reg.symbol}${y3.toLocaleString()}`,
-        fiveYearFormatted: `${reg.symbol}${y5.toLocaleString()}`
-      },
-      scores: {
-        skillVelocity: 88.5,
-        leadershipReadiness: 84.0
-      },
-      targetRole: targetRole,
-      simulatedAt: new Date().toISOString()
-    });
   };
 
   useEffect(() => {
@@ -176,14 +138,14 @@ export default function CareerTrajectoryStudioPage() {
               <div>
                 <div className="flex items-center space-x-2">
                   <span className="font-bold text-base text-white tracking-wide">
-                    AI CAREER TRAJECTORY & SALARY PREDICTION ENGINE
+                    AI CAREER PATH & SALARY INSIGHTS
                   </span>
                   <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-semibold border border-emerald-500/40">
-                    Phase 25 Live
+                    Career Insights
                   </span>
                 </div>
                 <p className="text-[11px] text-slate-400">
-                  Seniority milestone projections, regional compensation curves & personalized engineering promotion paths.
+                  Seniority milestone projections, regional salary ranges, and personalized growth paths.
                 </p>
               </div>
             </div>
@@ -195,7 +157,7 @@ export default function CareerTrajectoryStudioPage() {
               className="px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-semibold text-xs shadow-lg shadow-emerald-600/30 flex items-center space-x-1.5 transition-all cursor-pointer"
             >
               <Sparkles className="w-3.5 h-3.5" />
-              <span>Simulate Promotion Track</span>
+              <span>Explore Career Track</span>
             </button>
           </div>
         </div>
@@ -203,12 +165,19 @@ export default function CareerTrajectoryStudioPage() {
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-6 py-8 flex-1 w-full space-y-8 animate-fadeIn">
+        {fetchError && (
+          <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs flex items-center gap-2">
+            <AlertTriangle className="w-4 h-4 shrink-0 text-amber-400" />
+            <span>{fetchError}</span>
+          </div>
+        )}
+
         {/* Geographic Compensation Market Ribbon */}
         <div className="p-4 rounded-2xl bg-slate-900/60 border border-slate-800 space-y-3">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-slate-300 flex items-center space-x-2">
               <Globe2 className="w-4 h-4 text-emerald-400" />
-              <span>Select Geographic Market Index for Dynamic Salary Calibration</span>
+              <span>Select Location for Local Salary Ranges</span>
             </span>
             <span className="text-xs text-slate-500">
               Active: <strong className="text-emerald-400">{REGIONS.find(r => r.code === selectedRegion)?.name}</strong>
@@ -251,19 +220,19 @@ export default function CareerTrajectoryStudioPage() {
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
               <span className="text-[10px] uppercase font-bold tracking-wider text-emerald-400">
-                Machine Learning Seniority Projection
+                Projected Career Growth
               </span>
               <h2 className="text-2xl font-bold text-white mt-1">
                 Target Role: {data?.targetRole || "Distributed Cloud Systems Architect"}
               </h2>
               <p className="text-xs text-slate-400 mt-1 max-w-2xl leading-relaxed">
-                Calibrated against code elegance, cyclomatic complexity benchmarks, and sprint test execution velocity.
+                Estimated based on project challenge performance, problem-solving skills, and code quality.
               </p>
             </div>
 
             <div className="flex items-center space-x-3">
               <div className="p-3.5 rounded-xl bg-slate-950/80 border border-slate-800 text-center">
-                <span className="text-[10px] uppercase font-bold text-slate-400 block">Skill Velocity</span>
+                <span className="text-[10px] uppercase font-bold text-slate-400 block">Skill Growth</span>
                 <span className="text-xl font-black text-emerald-400">{data?.scores?.skillVelocity || 88.5}%</span>
               </div>
               <div className="p-3.5 rounded-xl bg-slate-950/80 border border-slate-800 text-center">
@@ -366,9 +335,9 @@ export default function CareerTrajectoryStudioPage() {
           <div className="flex items-center justify-between">
             <h3 className="text-base font-semibold text-white flex items-center space-x-2">
               <DollarSign className="w-4 h-4 text-emerald-400" />
-              <span>Compensation Trajectory Progression Curve</span>
+              <span>Expected Salary Growth Over Time</span>
             </h3>
-            <span className="text-xs text-slate-400">Base Salary + Equity Grants + Performance Incentive</span>
+            <span className="text-xs text-slate-400">Base Salary + Equity + Bonus Estimates</span>
           </div>
 
           <div className="space-y-4">
@@ -434,10 +403,10 @@ export default function CareerTrajectoryStudioPage() {
         <div className="p-6 rounded-2xl bg-slate-900/60 border border-slate-800 space-y-4">
           <div className="flex items-center space-x-2">
             <Target className="w-5 h-5 text-emerald-400" />
-            <h3 className="text-base font-bold text-white">Recommended High-Leverage Competency Growth Paths</h3>
+            <h3 className="text-base font-bold text-white">Recommended Skills to Accelerate Your Career</h3>
           </div>
           <p className="text-xs text-slate-400">
-            Mastering these architectural areas accelerates promotion velocity to the next compensation tier.
+            Building strengths in these key areas helps accelerate your path to the next level.
           </p>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-2">
@@ -470,7 +439,7 @@ export default function CareerTrajectoryStudioPage() {
                     href="/"
                     className="text-[11px] text-emerald-400 hover:text-emerald-300 font-semibold flex items-center space-x-1"
                   >
-                    <span>Practice Micro-Internship Sprint</span>
+                    <span>Practice Real-World Challenge</span>
                     <ChevronRight className="w-3 h-3" />
                   </Link>
                 </div>
@@ -487,7 +456,7 @@ export default function CareerTrajectoryStudioPage() {
             <div className="flex items-center justify-between border-b border-slate-800 pb-3">
               <div className="flex items-center space-x-2">
                 <Sparkles className="w-5 h-5 text-emerald-400" />
-                <h3 className="text-base font-bold text-white">Simulate Career Trajectory</h3>
+                <h3 className="text-base font-bold text-white">Explore Career Paths</h3>
               </div>
               <button
                 onClick={() => setShowSimulateModal(false)}
@@ -498,7 +467,7 @@ export default function CareerTrajectoryStudioPage() {
             </div>
 
             <p className="text-xs text-slate-400 leading-relaxed">
-              Select your desired specialization track to project your seniority milestones and compensation bands.
+              Select your target specialization to preview career milestones and salary expectations.
             </p>
 
             <div className="space-y-2">
@@ -530,7 +499,7 @@ export default function CareerTrajectoryStudioPage() {
                 disabled={isSimulating}
                 className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white text-xs font-semibold shadow-lg shadow-emerald-600/30 cursor-pointer disabled:opacity-50"
               >
-                {isSimulating ? "Projecting..." : "Run ML Simulation"}
+                {isSimulating ? "Projecting..." : "Explore Growth Path"}
               </button>
             </div>
           </div>

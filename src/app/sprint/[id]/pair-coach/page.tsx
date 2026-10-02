@@ -43,7 +43,7 @@ interface PairSession {
 
 export default function AiPairCoachStudioPage() {
   const params = useParams();
-  const sprintId = (params?.id as string) || "mock-sprint-id";
+  const sprintId = (params?.id as string) || "";
   const [userId] = useState<string>("c89ef120-745a-4b9b-9801-9a776c5b9812");
 
   const [session, setSession] = useState<PairSession | null>(null);
@@ -89,6 +89,10 @@ public class HighThroughputBuffer<T>
 
   // Initialize or fetch active Pair Coach session
   const fetchOrStartSession = async () => {
+    if (!sprintId) {
+      setIsLoading(false);
+      return;
+    }
     try {
       setIsLoading(true);
       const res = await fetch("http://localhost:5000/api/pair-coach/session/start", {
@@ -229,6 +233,28 @@ public class HighThroughputBuffer<T>
     }
   };
 
+  if (!sprintId) {
+    return (
+      <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col items-center justify-center p-6 text-center">
+        <div className="max-w-md p-8 rounded-2xl border border-slate-800 bg-slate-900/60 space-y-4">
+          <div className="w-12 h-12 rounded-xl bg-indigo-500/10 text-indigo-400 flex items-center justify-center mx-auto text-2xl">
+            🤖
+          </div>
+          <h2 className="text-xl font-bold text-white">No Challenge Selected</h2>
+          <p className="text-xs text-slate-400">
+            Please select an active project challenge from your dashboard to begin coaching with your AI assistant.
+          </p>
+          <Link
+            href="/dashboard"
+            className="inline-block px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold transition shadow-lg shadow-indigo-600/20"
+          >
+            Go to Dashboard →
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans">
       {/* Top Navbar */}
@@ -238,7 +264,7 @@ public class HighThroughputBuffer<T>
             href={`/sprint/${sprintId}`}
             className="text-xs font-semibold px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition"
           >
-            ← Back to Sprint IDE
+            ← Back to Challenge
           </Link>
           <div className="h-4 w-px bg-slate-800" />
           <div className="flex items-center space-x-2">
@@ -247,7 +273,7 @@ public class HighThroughputBuffer<T>
               <span className="relative inline-flex rounded-full h-3 w-3 bg-indigo-500"></span>
             </span>
             <h1 className="text-base font-bold bg-gradient-to-r from-indigo-400 via-purple-300 to-pink-400 bg-clip-text text-transparent">
-              Interactive AI Pair-Programmer & Refactoring Coach
+              AI Coding Coach & Interactive Assistant
             </h1>
           </div>
         </div>
@@ -255,7 +281,7 @@ public class HighThroughputBuffer<T>
         {/* Real-time Autonomy Meter */}
         <div className="flex items-center space-x-3">
           <div className="text-right hidden sm:block">
-            <div className="text-xs text-slate-400">Candidate Autonomy Index</div>
+            <div className="text-xs text-slate-400">Independent Problem Solving</div>
             <div className="text-sm font-mono font-bold text-slate-200">
               {session?.autonomyScore ? session.autonomyScore.toFixed(1) : "100.0"} / 100.0
             </div>
@@ -266,14 +292,14 @@ public class HighThroughputBuffer<T>
             )}`}
           >
             <span>🛡️</span>
-            <span>{session?.autonomyTier ? session.autonomyTier.replace("_", " ") : "Autonomous Lead"}</span>
+            <span>{session?.autonomyTier ? session.autonomyTier.replace("_", " ") : "Independent Lead"}</span>
           </div>
         </div>
       </header>
 
       {/* Main Studio Body */}
       <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-0 overflow-hidden">
-        {/* Left Pane: Candidate Code Editor Simulation (7 Cols) */}
+        {/* Left Pane: Candidate Code Editor (7 Cols) */}
         <div className="lg:col-span-7 flex flex-col border-r border-slate-800 bg-slate-950">
           <div className="bg-slate-900/60 px-5 py-3 border-b border-slate-800 flex items-center justify-between">
             <div className="flex items-center space-x-2">
@@ -287,7 +313,7 @@ public class HighThroughputBuffer<T>
                 className="text-xs px-3 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 font-medium transition flex items-center space-x-1"
               >
                 <span>🔍</span>
-                <span>Scan Code Smells</span>
+                <span>Review Code Quality</span>
               </button>
             </div>
           </div>
@@ -297,21 +323,21 @@ public class HighThroughputBuffer<T>
               value={codeSnippet}
               onChange={(e) => setCodeSnippet(e.target.value)}
               className="w-full h-full bg-slate-900/90 text-indigo-100 p-4 rounded-xl border border-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 resize-none font-mono text-xs leading-relaxed"
-              placeholder="// Write or paste candidate code here..."
+              placeholder="// Write or paste your solution code here..."
               spellCheck={false}
             />
           </div>
 
           {/* Quick Action Tray */}
           <div className="p-4 border-t border-slate-800 bg-slate-900/40 flex flex-wrap items-center gap-2">
-            <span className="text-xs font-semibold text-slate-400 mr-2">Coach Actions:</span>
+            <span className="text-xs font-semibold text-slate-400 mr-2">Quick Actions:</span>
             <button
               onClick={() => handleInteraction("Hint")}
               disabled={isSubmitting}
               className="text-xs px-3 py-2 rounded-lg bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-300 border border-indigo-500/40 font-medium transition flex items-center space-x-1"
             >
               <span>💡</span>
-              <span>Need Hint (-3.5 pts)</span>
+              <span>Need a Hint (-3.5 pts)</span>
             </button>
             <button
               onClick={() => handleInteraction("Explain")}
@@ -319,7 +345,7 @@ public class HighThroughputBuffer<T>
               className="text-xs px-3 py-2 rounded-lg bg-cyan-600/20 hover:bg-cyan-600/30 text-cyan-300 border border-cyan-500/40 font-medium transition flex items-center space-x-1"
             >
               <span>🔍</span>
-              <span>Explain Complexity (-2.0 pts)</span>
+              <span>Explain Solution (-2.0 pts)</span>
             </button>
             <button
               onClick={() => handleInteraction("Refactor")}
@@ -327,15 +353,15 @@ public class HighThroughputBuffer<T>
               className="text-xs px-3 py-2 rounded-lg bg-purple-600/20 hover:bg-purple-600/30 text-purple-300 border border-purple-500/40 font-medium transition flex items-center space-x-1"
             >
               <span>✨</span>
-              <span>Refactor & Clean Code (-5.0 pts)</span>
+              <span>Improve Code Quality (-5.0 pts)</span>
             </button>
             <button
-              onClick={() => handleInteraction("Probe", "I used atomic CAS operations to prevent race conditions during high contention")}
+              onClick={() => handleInteraction("Probe", "I used thread-safe concurrency controls to handle high load")}
               disabled={isSubmitting}
               className="text-xs px-3 py-2 rounded-lg bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-300 border border-emerald-500/40 font-medium transition flex items-center space-x-1"
             >
               <span>⚡</span>
-              <span>Defend Architecture (+1.5 bonus)</span>
+              <span>Explain My Approach (+1.5 bonus)</span>
             </button>
           </div>
         </div>
@@ -351,7 +377,7 @@ public class HighThroughputBuffer<T>
                   activeTab === "chat" ? "bg-indigo-600 text-white" : "text-slate-400 hover:text-slate-200"
                 }`}
               >
-                Sidecar Chat ({interactions.length})
+                Coach Assistant ({interactions.length})
               </button>
               <button
                 onClick={() => setActiveTab("smells")}
@@ -359,7 +385,7 @@ public class HighThroughputBuffer<T>
                   activeTab === "smells" ? "bg-indigo-600 text-white" : "text-slate-400 hover:text-slate-200"
                 }`}
               >
-                Code Smells ({codeSmells.length})
+                Code Review ({codeSmells.length})
               </button>
               {activeDiff && (
                 <button
@@ -368,12 +394,12 @@ public class HighThroughputBuffer<T>
                     activeTab === "diff" ? "bg-indigo-600 text-white" : "text-slate-400 hover:text-slate-200"
                   }`}
                 >
-                  Unified Diff Preview
+                  Suggested Changes
                 </button>
               )}
             </div>
             <div className="text-[11px] font-mono text-slate-400">
-              Interactions: {session?.totalInteractions || 0}
+              Questions: {session?.totalInteractions || 0}
             </div>
           </div>
 
@@ -384,9 +410,9 @@ public class HighThroughputBuffer<T>
                 {interactions.length === 0 ? (
                   <div className="h-64 flex flex-col items-center justify-center text-center p-6 border border-dashed border-slate-800 rounded-2xl bg-slate-900/20 text-slate-500">
                     <span className="text-3xl mb-2">🤖</span>
-                    <p className="text-xs font-medium">AI Pair Programmer is ready in your IDE.</p>
+                    <p className="text-xs font-medium">Your AI Coding Coach is ready to assist you.</p>
                     <p className="text-[11px] text-slate-600 mt-1 max-w-xs">
-                      Click any coach action below or enter a prompt to request algorithmic hints, time complexity guidance, or clean code refactoring.
+                      Choose an action above or type a message below to ask questions, request hints, or review recommendations.
                     </p>
                   </div>
                 ) : (
@@ -440,7 +466,7 @@ public class HighThroughputBuffer<T>
                           className="text-[11px] font-semibold text-purple-400 hover:text-purple-300 flex items-center space-x-1"
                         >
                           <span>✨</span>
-                          <span>View Proposed Unified Diff →</span>
+                          <span>View Suggested Changes →</span>
                         </button>
                       )}
                     </div>
@@ -454,9 +480,9 @@ public class HighThroughputBuffer<T>
                 {codeSmells.length === 0 ? (
                   <div className="p-6 text-center border border-dashed border-slate-800 rounded-2xl bg-slate-900/20 text-emerald-400">
                     <span className="text-3xl block mb-2">✅</span>
-                    <p className="text-xs font-semibold">Zero Static Code Smells Detected!</p>
+                    <p className="text-xs font-semibold">Great Job! Zero Code Issues Found</p>
                     <p className="text-[11px] text-slate-500 mt-1">
-                      No cyclomatic nesting, swallowed exceptions, or unmanaged resource leaks detected in current snippet.
+                      Your solution follows clean standards with no structural issues or antipatterns detected.
                     </p>
                   </div>
                 ) : (
@@ -479,12 +505,12 @@ public class HighThroughputBuffer<T>
                       </div>
                       <p className="text-xs text-slate-300 leading-relaxed">{smell.description}</p>
                       <div className="text-[11px] text-indigo-300 bg-indigo-950/30 p-2.5 rounded-lg border border-indigo-900/40">
-                        <span className="font-semibold text-indigo-400">Clean Code Fix: </span>
+                        <span className="font-semibold text-indigo-400">Suggested Fix: </span>
                         {smell.recommendation}
                       </div>
                       {smell.lineNumber && (
                         <div className="text-[10px] text-slate-500 font-mono">
-                          Target Line: #{smell.lineNumber}
+                          Line #{smell.lineNumber}
                         </div>
                       )}
                     </div>
@@ -496,7 +522,7 @@ public class HighThroughputBuffer<T>
             {activeTab === "diff" && activeDiff && (
               <div className="space-y-3">
                 <div className="flex items-center justify-between text-xs text-slate-400">
-                  <span>Side-by-Side Unified Refactoring Diff</span>
+                  <span>Suggested Code Updates</span>
                   <button
                     onClick={() => setActiveTab("chat")}
                     className="text-indigo-400 hover:text-indigo-300 font-semibold"
@@ -539,7 +565,7 @@ public class HighThroughputBuffer<T>
                 value={userPrompt}
                 onChange={(e) => setUserPrompt(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && !isSubmitting && handleInteraction("Hint")}
-                placeholder="Ask pair coach for architectural advice, edge case check, or refactor..."
+                placeholder="Ask your coach for guidance, hints, or alternative approaches..."
                 className="flex-1 bg-slate-950 text-slate-200 px-3.5 py-2 rounded-xl border border-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 text-xs font-sans placeholder-slate-500"
               />
               <button

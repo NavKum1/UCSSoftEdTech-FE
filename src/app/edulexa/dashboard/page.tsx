@@ -305,14 +305,14 @@ export default function EdulexaDashboardPage() {
             <div>
               <div className="flex items-center gap-2">
                 <h1 className="text-2xl font-bold tracking-tight bg-gradient-to-r from-white via-slate-200 to-slate-400 bg-clip-text text-transparent">
-                  Edulexa Revenue & Compliance Engine
+                  Edulexa Partner &amp; Creator Dashboard
                 </h1>
                 <span className="px-2 py-0.5 rounded text-[10px] font-mono font-medium bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
-                  v2.4 Live Infrastructure
+                  Live Dashboard
                 </span>
               </div>
               <p className="text-xs text-slate-400 mt-0.5 font-mono">
-                Conversational Voice Cart Recovery • Anti-Scraping IP Shield • Mentor Statutory TDS Payroll
+                Voice Cart Follow-Up • Course Asset Protection • Mentor Payouts &amp; Tax Documents
               </p>
             </div>
           </div>
@@ -326,7 +326,7 @@ export default function EdulexaDashboardPage() {
             </button>
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border border-emerald-500/30 bg-emerald-500/10 text-emerald-400 text-xs font-mono">
               <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse"></span>
-              {metrics?.edgeStatus || "Edge Active (330+ PoPs, 12ms p50)"}
+              {metrics?.edgeStatus || "Cloud Delivery Active"}
             </div>
           </div>
         </div>
@@ -335,14 +335,14 @@ export default function EdulexaDashboardPage() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <div className="rounded-xl border border-slate-800 bg-slate-900/50 p-5 shadow-sm">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-mono uppercase tracking-wider text-slate-400">Recovered GMV</span>
+              <span className="text-xs font-mono uppercase tracking-wider text-slate-400">Recovered Revenue</span>
               <DollarSign className="h-4 w-4 text-emerald-400" />
             </div>
             <div className="text-2xl font-bold text-white mt-2">
               ₹{(metrics?.totalRecoveredGmv || 3450000).toLocaleString()}
             </div>
             <div className="text-[11px] text-emerald-400 mt-1 font-mono">
-              +24.3% checkout recovery via Vapi AI
+              +24.3% checkout recovery with voice follow-up
             </div>
           </div>
 
@@ -355,7 +355,7 @@ export default function EdulexaDashboardPage() {
               {metrics?.voiceRecoveryRatePercent || 24.3}%
             </div>
             <div className="text-[11px] text-indigo-400 mt-1 font-mono">
-              Sub-300ms outbound calls &lt;90s drop-off
+              Quick outbound calls after checkout drop-off
             </div>
           </div>
 
@@ -368,20 +368,20 @@ export default function EdulexaDashboardPage() {
               {metrics?.protectedAssetsCount || 6} Assets
             </div>
             <div className="text-[11px] text-cyan-400 mt-1 font-mono">
-              0 leaks • LSB DRM + 30-min HMAC URLs
+              Protected against leaks with secure access links
             </div>
           </div>
 
           <div className="rounded-xl border border-slate-800 bg-slate-900/50 p-5 shadow-sm">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-mono uppercase tracking-wider text-slate-400">Mentor TDS Withheld</span>
+              <span className="text-xs font-mono uppercase tracking-wider text-slate-400">Mentor Tax Withheld</span>
               <FileSpreadsheet className="h-4 w-4 text-amber-400" />
             </div>
             <div className="text-2xl font-bold text-white mt-2">
               ₹{(metrics?.totalTdsWithheldRupees || 18500).toLocaleString()}
             </div>
             <div className="text-[11px] text-amber-400 mt-1 font-mono">
-              Section 194J 10% deducted automatically
+              10% tax deducted automatically
             </div>
           </div>
         </div>
@@ -397,7 +397,7 @@ export default function EdulexaDashboardPage() {
             }`}
           >
             <PhoneCall className="h-4 w-4" />
-            Pillar 1: Voice Cart Recovery
+            Voice Cart Recovery
           </button>
           <button
             onClick={() => setActiveTab("shield")}
@@ -408,7 +408,7 @@ export default function EdulexaDashboardPage() {
             }`}
           >
             <Shield className="h-4 w-4" />
-            Pillar 2: IP Shield & DRM Watermark
+            Course Asset Protection
           </button>
           <button
             onClick={() => setActiveTab("hrms")}
@@ -419,7 +419,7 @@ export default function EdulexaDashboardPage() {
             }`}
           >
             <FileSpreadsheet className="h-4 w-4" />
-            Pillar 3: Compliance HRMS (TDS & NEFT)
+            Mentor Payouts &amp; Tax Documents
           </button>
           <button
             onClick={() => setActiveTab("api")}
@@ -430,7 +430,7 @@ export default function EdulexaDashboardPage() {
             }`}
           >
             <Key className="h-4 w-4" />
-            B2B Headless API (/v1/)
+            Developer API &amp; Integrations
           </button>
         </div>
 
@@ -441,10 +441,10 @@ export default function EdulexaDashboardPage() {
               <div>
                 <h3 className="text-base font-semibold text-white flex items-center gap-2">
                   <Play className="h-4 w-4 text-indigo-400" />
-                  Dispatch Autonomous Recovery Call
+                  Start Voice Recovery Call
                 </h3>
                 <p className="text-xs text-slate-400 mt-1">
-                  Triggers an outbound Vapi AI call within 90s of checkout drop-off.
+                  Initiates a voice follow-up call with the student.
                 </p>
               </div>
 
@@ -1064,7 +1064,7 @@ export default function EdulexaDashboardPage() {
 
                 <div className="p-3 rounded-lg border border-slate-800 bg-slate-900/80 text-[11px] font-mono text-slate-300 space-y-1">
                   <div className="text-slate-500 text-[10px]">ACTIVE ENDPOINT:</div>
-                  <div className="text-emerald-400">http://localhost:5000/api/partner/mock-webhook</div>
+                  <div className="text-emerald-400">http://localhost:5000/api/partner/webhook-receiver</div>
                   <div className="text-slate-500 text-[10px] pt-1">HEADER FORMAT:</div>
                   <div className="text-slate-400">X-Edulexa-Signature: t=1790931488,v1=sha256...</div>
                 </div>

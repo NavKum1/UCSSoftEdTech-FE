@@ -190,7 +190,7 @@ export default function DailyCodeReviewDojoPage() {
         <div className="text-center space-y-4">
           <div className="w-12 h-12 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin mx-auto" />
           <p className="text-slate-400 font-mono text-sm tracking-wide">
-            Ingesting Synthetic GitHub Pull Request Diff & CVE Vectors...
+            Loading Daily Pull Request &amp; Security Review Drill...
           </p>
         </div>
       </div>
@@ -207,7 +207,7 @@ export default function DailyCodeReviewDojoPage() {
               href="/"
               className="text-xs font-mono uppercase tracking-widest text-slate-400 hover:text-white transition"
             >
-              ← System Dashboard
+              ← Dashboard
             </Link>
             <span className="text-slate-700">|</span>
             <div className="flex items-center gap-2">

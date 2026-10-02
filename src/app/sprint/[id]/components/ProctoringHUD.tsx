@@ -231,7 +231,7 @@ export default function ProctoringHUD({
           <div>
             <div className="flex items-center gap-2">
               <span className="font-semibold text-xs tracking-wider uppercase text-zinc-200">
-                Zero-Trust Proctor
+                Integrity Monitor
               </span>
               <span
                 className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${
@@ -246,7 +246,7 @@ export default function ProctoringHUD({
               </span>
             </div>
             <p className="text-[11px] text-zinc-400">
-              Active telemetry monitoring (Focus, Tab, Clipboard, Cadence)
+              Session Integrity Active (Focus, Tab, Clipboard)
             </p>
           </div>
         </div>
@@ -255,7 +255,7 @@ export default function ProctoringHUD({
         <div className="flex items-center gap-4 mt-2 sm:mt-0">
           <div className="hidden md:flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-cyan-950/40 border border-cyan-500/30 text-cyan-300 text-[10px] font-mono shadow-sm">
             <Fingerprint className="w-3.5 h-3.5 text-cyan-400 animate-pulse" />
-            <span>FORENSIC WATERMARK ACTIVE</span>
+            <span>VERIFICATION ACTIVE</span>
           </div>
 
           <div className="text-right">
@@ -269,7 +269,7 @@ export default function ProctoringHUD({
 
           <div className="text-right">
             <span className="text-[10px] uppercase tracking-wider text-zinc-400 block">
-              Violations
+              Notices
             </span>
             <span className="text-sm font-semibold text-zinc-300">
               {totalViolations} logged
@@ -295,7 +295,7 @@ export default function ProctoringHUD({
             className="flex items-center gap-1 px-2.5 py-1 text-xs rounded-lg bg-zinc-800/80 hover:bg-zinc-700 text-zinc-300 hover:text-white border border-zinc-700 transition-colors"
           >
             <Activity className="w-3.5 h-3.5 text-zinc-400" />
-            <span>Audit Log</span>
+            <span>Activity Log</span>
             {isExpanded ? (
               <ChevronUp className="w-3.5 h-3.5" />
             ) : (
@@ -311,16 +311,16 @@ export default function ProctoringHUD({
           <div className="flex items-center justify-between pb-2 mb-2 border-b border-zinc-800 text-zinc-400">
             <span className="flex items-center gap-1.5 font-medium">
               <History className="w-3.5 h-3.5 text-indigo-400" />
-              Chronological Security Incident Ledger ({incidents.length})
+              Session Activity History ({incidents.length})
             </span>
             <span className="text-[10px] text-zinc-500">
-              Tamper-proof real-time sensor feed
+              Real-time activity log
             </span>
           </div>
 
           {incidents.length === 0 ? (
             <p className="py-2 text-center text-zinc-500 text-xs italic">
-              No security anomalies detected in this session. Environment pristine.
+              No issues detected in this session. All good!
             </p>
           ) : (
             <div className="space-y-1.5 max-h-48 overflow-y-auto pr-1">

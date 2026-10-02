@@ -51,11 +51,12 @@ const SUPPORTED_LANGUAGES = [
 export default function MultiLanguageTranslationStudioPage() {
   const params = useParams();
   const router = useRouter();
-  const sessionId = (params?.id as string) || "sess-demo-001";
+  const sessionId = (params?.id as string) || "";
 
   const [selectedLanguage, setSelectedLanguage] = useState<string>("es");
   const [segments, setSegments] = useState<TranscriptSegment[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
+  const [fetchError, setFetchError] = useState<string | null>(null);
   const [audioTrackMode, setAudioTrackMode] = useState<"original" | "dubbed">("dubbed");
   
   // Audio playback state
@@ -73,93 +74,29 @@ export default function MultiLanguageTranslationStudioPage() {
   const [candidatePrefLang, setCandidatePrefLang] = useState<string>("en");
 
   const fetchTranscript = async () => {
+    if (!sessionId) {
+      setFetchError("Invalid session identifier provided.");
+      setLoading(false);
+      return;
+    }
     setLoading(true);
+    setFetchError(null);
     try {
       const res = await fetch(`http://localhost:5000/api/translation/session/${sessionId}/transcript`);
       if (res.ok) {
         const json = await res.json();
-        if (json.transcript && json.transcript.length > 0) {
-          setSegments(json.transcript);
-        } else {
-          loadFallbackSegments();
-        }
+        setSegments(json.transcript || []);
       } else {
-        loadFallbackSegments();
+        setFetchError(`Translation service returned HTTP ${res.status}. No transcript recorded for this session.`);
+        setSegments([]);
       }
-    } catch (e) {
+    } catch (e: any) {
       console.warn("[TRANSCRIPT FETCH NOTICE]:", e);
-      loadFallbackSegments();
+      setFetchError(e.message || "Failed to connect to transcript translation service.");
+      setSegments([]);
     } finally {
       setLoading(false);
     }
-  };
-
-  const loadFallbackSegments = () => {
-    setSegments([
-      {
-        id: "seg-01",
-        sessionId,
-        sequenceNumber: 1,
-        speaker: "AiInterviewer",
-        startTimeSeconds: 0.0,
-        endTimeSeconds: 3.5,
-        originalText: "Hello! Welcome to the technical sprint defense. Can you walk me through your memory queue design?",
-        originalLanguage: "en",
-        translatedText_JSON: JSON.stringify({
-          es: "¡Hola! Bienvenido a la defensa técnica. ¿Puedes explicarme el diseño de tu cola de memoria?",
-          zh: "你好！欢迎来到技术冲刺答辩。你能向我介绍一下你的内存队列设计吗？",
-          hi: "नमस्ते! तकनीकी स्प्रिंट रक्षा में आपका स्वागत है। क्या आप मुझे अपने मेमोरी कतार डिज़ाइन के बारे में बता सकते हैं?",
-          de: "Hallo! Willkommen zur Verteidigung des technischen Sprints. Können Sie mir das Design Ihrer Warteschlange erläutern?",
-          fr: "Bonjour! Bienvenue à la soutenance technique. Pouvez-vous me présenter la conception de votre file d'attente?",
-          ja: "こんにちは！技術スプリント防衛へようこそ。メモリキューの設計について説明していただけますか？",
-          pt: "Olá! Bem-vindo à defesa técnica. Você pode me explicar o design da sua fila de memória?",
-          ar: "مرحبًا! مرحبًا بك في الدفاع الفني. هل يمكنك إطلاعي على تصميم قائمة الانتظار المؤقتة الخاصة بك؟",
-          ko: "안녕하세요! 기술 스프린트 방어에 오신 것을 환영합니다. 메모리 대기열 설계에 대해 설명해 주시겠습니까?"
-        })
-      },
-      {
-        id: "seg-02",
-        sessionId,
-        sequenceNumber: 2,
-        speaker: "Candidate",
-        startTimeSeconds: 3.8,
-        endTimeSeconds: 8.5,
-        originalText: "I implemented a concurrent ring buffer queue in C# with lock-free atomics to minimize thread contention.",
-        originalLanguage: "en",
-        translatedText_JSON: JSON.stringify({
-          es: "Implementé una cola de búfer circular concurrente en C# con atómicos sin bloqueo para minimizar la contención de hilos.",
-          zh: "我在C#中实现了一个无锁原子操作的并发环形缓冲区队列，以最大限度地减少线程争用。",
-          hi: "मैंने थ्रेड विवाद को कम करने के लिए लॉक-मुक्त परमाणु संचालन के साथ C# में एक समवर्ती रिंग बफर कतार लागू की।",
-          de: "Ich habe eine nebenläufige Ringpuffer-Warteschlange in C# mit sperrenfreien atomaren Operationen implementiert.",
-          fr: "J'ai implémenté une file d'attente tampon circulaire concurrente en C# avec des opérations atomiques sans verrou.",
-          ja: "スレッドの競合を最小限に抑えるため、ロックフリーのアトミック操作を使用してC#で並行リングバッファキューを実装しました。",
-          pt: "Implementei uma fila de buffer circular simultânea em C# com atômicos sem bloqueio para minimizar a contenção de threads.",
-          ar: "لقد قمت بتنفيذ قائمة انتظار مؤقتة دائرية متزامنة في C# باستخدام عمليات ذرية خالية من الأقفال لتقليل تعارض الخيوط.",
-          ko: "스레드 경합을 최소화하기 위해 락 프리 원자적 연산을 사용하여 C#에서 동시 링 버퍼 대기열을 구현했습니다."
-        })
-      },
-      {
-        id: "seg-03",
-        sessionId,
-        sequenceNumber: 3,
-        speaker: "AiInterviewer",
-        startTimeSeconds: 9.0,
-        endTimeSeconds: 14.0,
-        originalText: "Excellent approach. What happens when the buffer reaches maximum capacity under a high-throughput load spike?",
-        originalLanguage: "en",
-        translatedText_JSON: JSON.stringify({
-          es: "Excelente enfoque. ¿Qué sucede cuando el búfer alcanza su capacidad máxima bajo un pico de carga alta?",
-          zh: "非常出色的方法。当高吞吐量负载高峰导致缓冲区达到最大容量时会发生什么？",
-          hi: "उत्कृष्ट दृष्टिकोण। जब उच्च-थ्रूपुट लोड स्पाइक के तहत बफर अधिकतम क्षमता तक पहुँच जाता है तो क्या होता है?",
-          de: "Hervorragender Ansatz. Was passiert, wenn der Puffer unter Lastspitzen seine maximale Kapazität erreicht?",
-          fr: "Excellente approche. Que se passe-t-il lorsque le tampon atteint sa capacité maximale lors d'un pic de charge?",
-          ja: "素晴らしいアプローチです。高スループットの負荷急増時にバッファが最大容量に達するとどうなりますか？",
-          pt: "Excelente abordagem. O que acontece quando o buffer atinge a capacidade máxima sob um pico de carga alta?",
-          ar: "نهج ممتاز. ماذا يحدث عندما يصل المخزن المؤقت إلى أقصى سعة له أثناء ذروة التحميل العالية؟",
-          ko: "탁월한 접근 방식입니다. 높은 처리량 부하 급증 시 버퍼가 최대 용량에 도달하면 어떻게 됩니까?"
-        })
-      }
-    ]);
   };
 
   useEffect(() => {
@@ -260,14 +197,14 @@ export default function MultiLanguageTranslationStudioPage() {
               <div>
                 <div className="flex items-center space-x-2">
                   <span className="font-bold text-base text-white tracking-wide">
-                    MULTI-LANGUAGE SUBTITLE & AUDIO TRANSLATION STUDIO
+                    MULTI-LANGUAGE SUBTITLES &amp; AUDIO TRANSLATION
                   </span>
                   <span className="text-[10px] px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 font-semibold border border-cyan-500/40">
-                    Phase 24 Live
+                    Live Subtitles
                   </span>
                 </div>
                 <p className="text-[11px] text-slate-400">
-                  Real-time WebVTT stream generation, bilingual transcript timeline & simulated neural dubbing.
+                  Real-time multilingual subtitles, bilingual transcript review, and voice translation.
                 </p>
               </div>
             </div>
@@ -279,7 +216,7 @@ export default function MultiLanguageTranslationStudioPage() {
               className="px-3.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-medium flex items-center space-x-1.5 transition-colors cursor-pointer"
             >
               <Download className="w-3.5 h-3.5 text-cyan-400" />
-              <span>Export WebVTT ({selectedLanguage.toUpperCase()})</span>
+              <span>Download Subtitles ({selectedLanguage.toUpperCase()})</span>
             </button>
           </div>
         </div>
@@ -292,7 +229,7 @@ export default function MultiLanguageTranslationStudioPage() {
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-slate-300 flex items-center space-x-2">
               <Languages className="w-4 h-4 text-cyan-400" />
-              <span>Select Active Subtitle & Dubbing Language (10 Global Locales)</span>
+              <span>Select Subtitle &amp; Audio Language</span>
             </span>
             <span className="text-xs text-slate-500">
               Active: <strong className="text-cyan-400">{SUPPORTED_LANGUAGES.find(l => l.code === selectedLanguage)?.label}</strong>
@@ -405,71 +342,77 @@ export default function MultiLanguageTranslationStudioPage() {
             </span>
           </div>
 
-          <div className="space-y-3">
-            {segments.map((seg) => {
-              const isCurrent = currentTime >= seg.startTimeSeconds && currentTime <= seg.endTimeSeconds;
-              const isAi = seg.speaker === "AiInterviewer";
+          {segments.length === 0 ? (
+            <div className="p-8 text-center rounded-2xl bg-slate-900/60 border border-slate-800 text-slate-400 text-xs">
+              {fetchError || "No translated dialogue segments recorded for this session yet."}
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {segments.map((seg) => {
+                const isCurrent = currentTime >= seg.startTimeSeconds && currentTime <= seg.endTimeSeconds;
+                const isAi = seg.speaker === "AiInterviewer";
 
-              return (
-                <div
-                  key={seg.id || seg.sequenceNumber}
-                  onClick={() => setCurrentTime(seg.startTimeSeconds)}
-                  className={`p-4 rounded-xl border transition-all cursor-pointer space-y-2 ${
-                    isCurrent
-                      ? "bg-cyan-950/30 border-cyan-500/60 shadow-lg shadow-cyan-900/20"
-                      : "bg-slate-900/40 border-slate-800 hover:border-slate-700 hover:bg-slate-900/60"
-                  }`}
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-2">
-                      <span className={`p-1.5 rounded-lg text-xs font-bold flex items-center space-x-1 ${
-                        isAi 
-                          ? "bg-purple-500/20 text-purple-300 border border-purple-500/30"
-                          : "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30"
-                      }`}>
-                        {isAi ? <Bot className="w-3.5 h-3.5 mr-1" /> : <User className="w-3.5 h-3.5 mr-1" />}
-                        <span>{isAi ? "AI Technical Interviewer" : "Candidate"}</span>
-                      </span>
+                return (
+                  <div
+                    key={seg.id || seg.sequenceNumber}
+                    onClick={() => setCurrentTime(seg.startTimeSeconds)}
+                    className={`p-4 rounded-xl border transition-all cursor-pointer space-y-2 ${
+                      isCurrent
+                        ? "bg-cyan-950/30 border-cyan-500/60 shadow-lg shadow-cyan-900/20"
+                        : "bg-slate-900/40 border-slate-800 hover:border-slate-700 hover:bg-slate-900/60"
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-2">
+                        <span className={`p-1.5 rounded-lg text-xs font-bold flex items-center space-x-1 ${
+                          isAi 
+                            ? "bg-purple-500/20 text-purple-300 border border-purple-500/30"
+                            : "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30"
+                        }`}>
+                          {isAi ? <Bot className="w-3.5 h-3.5 mr-1" /> : <User className="w-3.5 h-3.5 mr-1" />}
+                          <span>{isAi ? "AI Technical Interviewer" : "Candidate"}</span>
+                        </span>
 
-                      <span className="text-[11px] font-mono text-slate-500">
-                        [{formatSeconds(seg.startTimeSeconds)} - {formatSeconds(seg.endTimeSeconds)}]
+                        <span className="text-[11px] font-mono text-slate-500">
+                          [{formatSeconds(seg.startTimeSeconds)} - {formatSeconds(seg.endTimeSeconds)}]
+                        </span>
+                      </div>
+
+                      <span className="text-[10px] uppercase font-bold text-slate-500">
+                        Segment #{seg.sequenceNumber}
                       </span>
                     </div>
 
-                    <span className="text-[10px] uppercase font-bold text-slate-500">
-                      Segment #{seg.sequenceNumber}
-                    </span>
-                  </div>
+                    {/* Original Spoken Text */}
+                    <div className="text-xs text-slate-400 leading-relaxed pl-2 border-l-2 border-slate-700">
+                      <span className="text-[10px] uppercase font-semibold text-slate-500 block mb-0.5">
+                        Spoken Original ({seg.originalLanguage.toUpperCase()}):
+                      </span>
+                      {seg.originalText}
+                    </div>
 
-                  {/* Original Spoken Text */}
-                  <div className="text-xs text-slate-400 leading-relaxed pl-2 border-l-2 border-slate-700">
-                    <span className="text-[10px] uppercase font-semibold text-slate-500 block mb-0.5">
-                      Spoken Original ({seg.originalLanguage.toUpperCase()}):
-                    </span>
-                    {seg.originalText}
+                    {/* Translated Text in Active Target Language */}
+                    <div className="text-sm font-medium text-cyan-200 leading-relaxed pl-2 border-l-2 border-cyan-500">
+                      <span className="text-[10px] uppercase font-semibold text-cyan-400 block mb-0.5">
+                        Subtitles / Dubbing ({selectedLanguage.toUpperCase()}):
+                      </span>
+                      {getTranslatedText(seg)}
+                    </div>
                   </div>
-
-                  {/* Translated Text in Active Target Language */}
-                  <div className="text-sm font-medium text-cyan-200 leading-relaxed pl-2 border-l-2 border-cyan-500">
-                    <span className="text-[10px] uppercase font-semibold text-cyan-400 block mb-0.5">
-                      Subtitles / Dubbing ({selectedLanguage.toUpperCase()}):
-                    </span>
-                    {getTranslatedText(seg)}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+                );
+              })}
+            </div>
+          )}
         </div>
 
         {/* Real-time Dialogue Injection Simulator */}
         <div className="p-6 rounded-2xl bg-slate-900/50 border border-slate-800 space-y-4">
           <div className="flex items-center space-x-2">
             <Sparkles className="w-4 h-4 text-cyan-400" />
-            <h3 className="text-base font-bold text-white">Live Dialogue & Subtitle Stream Simulator</h3>
+            <h3 className="text-base font-bold text-white">Live Conversation &amp; Subtitle Preview</h3>
           </div>
           <p className="text-xs text-slate-400">
-            Inject a live candidate answer or interviewer probing question to trigger instant multi-language translation and WebVTT caption synthesis across all 10 locales.
+            Enter a question or response to see real-time translation and captions across supported languages.
           </p>
 
           <form onSubmit={handleIngestSegment} className="space-y-3">
@@ -507,7 +450,7 @@ export default function MultiLanguageTranslationStudioPage() {
                 className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white text-xs font-semibold shadow-lg shadow-cyan-600/30 flex items-center space-x-1.5 cursor-pointer disabled:opacity-50"
               >
                 <Send className="w-3.5 h-3.5" />
-                <span>{isSubmitting ? "Translating..." : "Inject & Translate"}</span>
+                <span>{isSubmitting ? "Translating..." : "Translate"}</span>
               </button>
             </div>
           </form>

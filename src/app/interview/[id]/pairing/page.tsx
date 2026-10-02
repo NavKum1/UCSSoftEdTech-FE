@@ -24,15 +24,14 @@ export default function InterviewPairingStudioPage({ params }: { params: Promise
   const [activeTab, setActiveTab] = useState<"code" | "whiteboard">("code");
   const [copied, setCopied] = useState(false);
   const [role, setRole] = useState<"Candidate" | "Recruiter" | "MentorReviewer">("Candidate");
-  const [userName, setUserName] = useState("Alex Morgan");
+  const [userName, setUserName] = useState("Candidate");
 
   // Collaboration State
   const [code, setCode] = useState<string>(
     "// Real-Time Interview Pairing Studio\n// Write your distributed systems solution below:\n\nfunction processTransactionStream(events: Event[]): ProcessingResult {\n  // Handle concurrent distributed events with idempotency\n  return { success: true, processedCount: events.length };\n}\n"
   );
   const [participants, setParticipants] = useState<Participant[]>([
-    { connectionId: "local-cand", userId: "cand-1", userName: "Candidate (You)", role: "Candidate", color: "#10b981" },
-    { connectionId: "rec-1", userId: "rec-1", userName: "Sarah Chen (Tech Lead)", role: "Recruiter", color: "#f59e0b" },
+    { connectionId: "local-cand", userId: "cand-me", userName: "You (Active Session)", role: "Candidate", color: "#10b981" }
   ]);
   const [isTakeoverActive, setIsTakeoverActive] = useState<boolean>(false);
   const [takeoverName, setTakeoverName] = useState<string | null>(null);

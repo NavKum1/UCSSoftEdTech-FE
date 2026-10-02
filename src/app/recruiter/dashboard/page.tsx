@@ -139,7 +139,7 @@ export default function RecruiterDashboardPage() {
                 </span>
               </div>
               <h1 className="text-2xl font-extrabold text-white mt-0.5">
-                Technical Candidate Defense & Anti-Cheat Review
+                Candidate Technical Assessment &amp; Integrity Review
               </h1>
             </div>
           </div>
@@ -180,16 +180,16 @@ export default function RecruiterDashboardPage() {
               <ShieldCheck className="w-4 h-4 text-emerald-400" />
             </div>
             <div className="text-3xl font-extrabold text-emerald-400 mt-2">{cleanCount}</div>
-            <span className="text-[11px] text-emerald-500/80 mt-1 block">Passed all anti-cheat heuristics</span>
+            <span className="text-[11px] text-emerald-500/80 mt-1 block">Passed all integrity checks</span>
           </div>
 
           <div className="glass-card rounded-2xl p-5 border border-slate-800">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-medium text-slate-400">Plagiarism / AI Flagged</span>
+              <span className="text-xs font-medium text-slate-400">Submissions Under Review</span>
               <ShieldAlert className="w-4 h-4 text-amber-400" />
             </div>
             <div className="text-3xl font-extrabold text-amber-400 mt-2">{flaggedCount}</div>
-            <span className="text-[11px] text-amber-500/80 mt-1 block">Requires manual code audit</span>
+            <span className="text-[11px] text-amber-500/80 mt-1 block">Requires manual review</span>
           </div>
         </div>
 
@@ -198,7 +198,7 @@ export default function RecruiterDashboardPage() {
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
               <h2 className="text-base font-bold text-white">Corporate Applicant Pipeline</h2>
-              <p className="text-xs text-slate-400">Review candidate defense scores, code execution, and anti-cheat indicators.</p>
+              <p className="text-xs text-slate-400">Review candidate assessment scores, project work, and integrity status.</p>
             </div>
           </div>
 

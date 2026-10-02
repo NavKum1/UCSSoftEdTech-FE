@@ -118,7 +118,7 @@ export default function PromotionReviewPage() {
       });
       if (res.ok) {
         const result = await res.json();
-        setMessage(`Sync complete! Ingested ${result.prsIngested} PRs with average blast radius ${result.averageBlastRadius}%.`);
+        setMessage(`Sync complete! Loaded ${result.prsIngested} pull requests with average impact radius ${result.averageBlastRadius}%.`);
         loadPrs(selectedIntegration.id);
       }
     } catch (err) {
@@ -241,18 +241,18 @@ export default function PromotionReviewPage() {
           <div>
             <div className="flex items-center space-x-2 mb-2">
               <span className="px-2.5 py-0.5 rounded-md bg-cyan-500/20 text-cyan-300 text-xs font-bold uppercase tracking-wider border border-cyan-500/30">
-                Phase 36 • Lifelong Career OS
+                Career Growth &amp; Promotion Review
               </span>
               <span className="px-2.5 py-0.5 rounded-md bg-purple-500/20 text-purple-300 text-xs font-bold uppercase tracking-wider border border-purple-500/30">
-                Google/Meta Leveling Rubrics
+                Senior &amp; Staff Leveling Rubrics
               </span>
             </div>
             <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight text-white mb-2">
-              Continuous Promotion Review & Git Impact Simulator
+              Promotion Review &amp; Code Impact Evaluation
             </h1>
             <p className="text-slate-400 text-sm md:text-base max-w-2xl">
-              Ingest real-world GitHub merged PRs, architectural decision records (ADRs), and cross-team RFCs.
-              Benchmark your technical blast radius against Staff (L6) and Principal (L7) promotion committee rubrics before the real review.
+              Review real-world GitHub merged pull requests, architectural decisions, and design proposals.
+              Evaluate your technical scope and impact against Staff and Principal promotion criteria before your actual review.
             </p>
           </div>
           <div className="flex flex-col sm:flex-row gap-3">
@@ -283,7 +283,7 @@ export default function PromotionReviewPage() {
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                   </svg>
-                  <span>Sync Ingested PRs</span>
+                  <span>Sync Pull Requests</span>
                 </>
               )}
             </button>
@@ -340,7 +340,7 @@ export default function PromotionReviewPage() {
                   </div>
                   <div className="flex items-center justify-between mt-3 text-xs text-slate-400">
                     <span>Branch: <span className="text-slate-300">{i.branchTracked}</span></span>
-                    <span>{i.totalPrsIngested} PRs Ingested</span>
+                    <span>{i.totalPrsIngested} PRs Synced</span>
                   </div>
                 </div>
               ))}
@@ -353,11 +353,11 @@ export default function PromotionReviewPage() {
               <div>
                 <h2 className="text-lg font-bold text-white">Merged PR Impact Timeline</h2>
                 <p className="text-xs text-slate-400">
-                  Real code complexity, cross-module blast radius, and architectural design docs
+                  Code quality, cross-module impact, and architectural design documentation
                 </p>
               </div>
               <span className="text-xs font-semibold text-slate-400">
-                {prs.length} Artifacts Verified
+                {prs.length} Pull Requests Reviewed
               </span>
             </div>
 
@@ -388,7 +388,7 @@ export default function PromotionReviewPage() {
                   {/* Metrics Bar */}
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1 text-xs">
                     <div className="p-2 rounded-lg bg-slate-900 border border-slate-800">
-                      <div className="text-[10px] text-slate-400 uppercase font-semibold">Blast Radius</div>
+                      <div className="text-[10px] text-slate-400 uppercase font-semibold">Impact Scope</div>
                       <div className="text-sm font-bold text-cyan-400">{pr.blastRadiusScore}%</div>
                     </div>
                     <div className="p-2 rounded-lg bg-slate-900 border border-slate-800">
@@ -480,7 +480,7 @@ export default function PromotionReviewPage() {
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
-                  <span>Simulate Committee Hearing</span>
+                  <span>Simulate Promotion Review</span>
                 </>
               )}
             </button>

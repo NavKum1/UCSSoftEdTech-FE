@@ -67,6 +67,7 @@ export default function AudioReplayStudioPage() {
   const [activeSegmentIndex, setActiveSegmentIndex] = useState<number>(1);
   const [liveUtcTimestamp, setLiveUtcTimestamp] = useState<string>("");
 
+  const [fetchError, setFetchError] = useState<string | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
@@ -80,86 +81,22 @@ export default function AudioReplayStudioPage() {
 
   useEffect(() => {
     const fetchReplay = async () => {
+      if (!sessionId) return;
       try {
+        setFetchError(null);
         const res = await fetch(`http://localhost:5000/api/interview/${sessionId}/replay`);
         if (res.ok) {
           const data = await res.json();
           setReplay(data);
           if (data.durationSeconds) setAudioDuration(data.durationSeconds);
         } else {
-          // Fallback mock session for visual demo
-          setReplay({
-            sessionId: sessionId || "demo-session-id",
-            userId: "11111111-2222-3333-4444-555555555555",
-            candidateName: "Alex Morgan",
-            candidateEmail: "alex.morgan@example.com",
-            jobDescription: "Distributed Systems & Cloud Architecture Defense",
-            startTime: new Date().toISOString(),
-            endTime: new Date().toISOString(),
-            durationSeconds: 300,
-            durationFormatted: "5m 00s",
-            recordingUrl: "https://actions.google.com/sounds/v1/ambiences/coffee_shop.ogg",
-            transcript: "AI: Welcome to your Build & Defend sprint defense review.\nCandidate: Thank you. I have implemented the scalable background queue worker.\nAI: In your SQL query execution, what are the concurrency and connection leak hazards?\nCandidate: Without connection pooling, high request spikes will exhaust PostgreSQL max_connections.",
-            transcriptSegments: [
-              {
-                index: 1,
-                speaker: "AI Technical Examiner",
-                text: "Welcome to your Build & Defend sprint defense review. Let's inspect your architectural choices.",
-                timeOffsetSeconds: 0,
-                timeFormatted: "00:00",
-                isAi: true
-              },
-              {
-                index: 2,
-                speaker: "Alex Morgan",
-                text: "Thank you. I implemented the background queue worker using asynchronous message loops and resilient error handlers.",
-                timeOffsetSeconds: 25,
-                timeFormatted: "00:25",
-                isAi: false
-              },
-              {
-                index: 3,
-                speaker: "AI Technical Examiner",
-                text: "In your database interaction layer, there is a direct query loop without connection pooling. What happens under a 10,000 req/sec traffic surge?",
-                timeOffsetSeconds: 65,
-                timeFormatted: "01:05",
-                isAi: true
-              },
-              {
-                index: 4,
-                speaker: "Alex Morgan",
-                text: "Without connection pooling, PostgreSQL max_connections would be exhausted immediately, causing connection timeouts and cascading 500 errors. In production, I would wrap Npgsql with an optimized connection pool and circuit breakers.",
-                timeOffsetSeconds: 110,
-                timeFormatted: "01:50",
-                isAi: false
-              },
-              {
-                index: 5,
-                speaker: "AI Technical Examiner",
-                text: "Excellent explanation of connection limits and circuit breaker patterns. How would you handle database failover during a regional outage?",
-                timeOffsetSeconds: 180,
-                timeFormatted: "03:00",
-                isAi: true
-              },
-              {
-                index: 6,
-                speaker: "Alex Morgan",
-                text: "I would configure multi-region asynchronous read replicas with an automated Patroni consensus cluster or Aurora Global Database, swapping write traffic via Route 53 health-check DNS failover.",
-                timeOffsetSeconds: 220,
-                timeFormatted: "03:40",
-                isAi: false
-              }
-            ],
-            evaluation: {
-              technicalScore: 92.5,
-              communicationScore: 88.0,
-              missingSkills: [],
-              architecturalFlaws: ["Unpooled PostgreSQL connection initialization in loop", "Missing idempotent retry semantics"]
-            }
-          });
+          setFetchError(`Interview recording not found (HTTP ${res.status}). The requested session ID does not exist in the database.`);
+          setReplay(null);
         }
-      } catch (e) {
+      } catch (e: any) {
         console.error("Replay fetch error:", e);
+        setFetchError(e.message || "Failed to connect to audio replay service.");
+        setReplay(null);
       } finally {
         setLoading(false);
       }
@@ -218,6 +155,28 @@ export default function AudioReplayStudioPage() {
         <div className="flex items-center space-x-3 text-indigo-400">
           <Sparkles className="w-6 h-6 animate-spin" />
           <span className="text-base font-semibold">Loading Audio Replay Studio...</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (fetchError || !replay) {
+    return (
+      <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col items-center justify-center font-sans p-6">
+        <div className="max-w-md w-full p-8 rounded-3xl bg-slate-900/60 border border-slate-800 text-center space-y-4">
+          <div className="w-12 h-12 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center mx-auto">
+            <AlertTriangle className="w-6 h-6" />
+          </div>
+          <h2 className="text-xl font-bold text-white">Interview Session Record Not Found</h2>
+          <p className="text-sm text-slate-400">
+            {fetchError || "The requested audio defense replay session does not exist in the database or has expired."}
+          </p>
+          <button
+            onClick={() => router.push("/dashboard")}
+            className="w-full py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-sm transition-colors cursor-pointer"
+          >
+            Return to Dashboard
+          </button>
         </div>
       </div>
     );

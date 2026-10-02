@@ -83,141 +83,66 @@ interface Member360Data {
   };
 }
 
-const DEFAULT_MEMBER_360: Member360Data = {
-  memberId: "5a6f76a1-9aef-4cc0-b19c-e3592f87a33a",
-  fullName: "Alex Morgan",
-  targetRole: "Staff Distributed Systems Architect",
-  globalEloRank: 1840,
-  eloTier: "Grandmaster (Top 1.8%)",
-  activeStreakDays: 14,
-  voiceMinutesUsed: 12,
-  voiceMinutesTotal: 60,
-  voiceMinutesRemaining: 48,
-  overallVigilanceIndex: 96.4,
-  publicShareToken: "pub_token_d9f8a42b_2026",
-  badges: [
-    {
-      id: "b1",
-      skillCategory: "Distributed Systems Resilience",
-      baselineScore: 98,
-      currentDecayedScore: 98,
-      decayPercentage: 0,
-      daysSinceLastPractice: 0,
-      status: "Active Gold",
-      lastPracticedAt: new Date().toISOString(),
-      practiceKatasCompleted: 24,
-      verificationSignatureSha256: "3bd1aa2ddb0514b79aae8581d878705a33ba0b093c6c451ad71f8dbcd8b29172",
-      antiDecayWarning: "Active Gold verified. Will start decaying in 14 days without practice.",
-    },
-    {
-      id: "b2",
-      skillCategory: "Database Contention & Lock Triage",
-      baselineScore: 96,
-      currentDecayedScore: 95.8,
-      decayPercentage: 0.2,
-      daysSinceLastPractice: 1,
-      status: "Active Gold",
-      lastPracticedAt: new Date(Date.now() - 86400000).toISOString(),
-      practiceKatasCompleted: 19,
-      verificationSignatureSha256: "790ae992bc66bd03220edf8f51390f74e1d855d9e4210c7a63d85d4aa2291d78",
-      antiDecayWarning: "Active Gold verified. Will start decaying in 13 days without practice.",
-    },
-    {
-      id: "b3",
-      skillCategory: "Zero-Trust Security & CVE Review",
-      baselineScore: 94,
-      currentDecayedScore: 93.5,
-      decayPercentage: 0.5,
-      daysSinceLastPractice: 2,
-      status: "Active Gold",
-      lastPracticedAt: new Date(Date.now() - 172800000).toISOString(),
-      practiceKatasCompleted: 15,
-      verificationSignatureSha256: "dd5b82c6f116b115b0e11192235d11ec34650b451519497eeb2d799b2947da18",
-      antiDecayWarning: "Active Gold verified. Will start decaying in 11 days without practice.",
-    },
-    {
-      id: "b4",
-      skillCategory: "High-Concurrency Low-Latency",
-      baselineScore: 92,
-      currentDecayedScore: 91.2,
-      decayPercentage: 0.8,
-      daysSinceLastPractice: 3,
-      status: "Active Gold",
-      lastPracticedAt: new Date(Date.now() - 259200000).toISOString(),
-      practiceKatasCompleted: 11,
-      verificationSignatureSha256: "2e78e60397d01b76403f0e72f3143fbc033ad0103edc3f7ba77fa8f0bf3eba06",
-      antiDecayWarning: "Active Gold verified. Will start decaying in 9 days without practice.",
-    },
-  ],
-  radarCompetencies: [
-    { dimension: "Distributed Architecture", score: 94, benchmark: 78, level: "Mastery", status: "Active Gold" },
-    { dimension: "Speed-Architecting", score: 88, benchmark: 72, level: "Advanced", status: "Active Gold" },
-    { dimension: "Code Review Vigilance", score: 92, benchmark: 70, level: "Mastery", status: "Active Gold" },
-    { dimension: "Incident MTTR & Chaos", score: 96, benchmark: 68, level: "Staff Commander", status: "Active Gold" },
-    { dimension: "AI Voice Prosody", score: 90, benchmark: 74, level: "High Confidence", status: "Active Gold" },
-    { dimension: "Knowledge Anti-Decay", score: 95, benchmark: 65, level: "Zero Decay", status: "Active Gold" },
-  ],
-  inboundOpportunities: [
-    {
-      id: "opp1",
-      companyTier: "Tier-1 Cloud Provider (Stripe Core)",
-      roleTitle: "Staff Infrastructure Engineer",
-      offeredCompensationUsd: 325000,
-      fastTrackInterviewType: "Direct Architect Onsite (Phone screen bypassed)",
-      inquiryStatus: "Active Inquiry",
-      receivedAt: "Yesterday",
-    },
-    {
-      id: "opp2",
-      companyTier: "Enterprise Observability (Datadog)",
-      roleTitle: "Principal Distributed Systems Architect",
-      offeredCompensationUsd: 295000,
-      fastTrackInterviewType: "CTO Final Round Fast-Track",
-      inquiryStatus: "Active Inquiry",
-      receivedAt: "3 days ago",
-    },
-    {
-      id: "opp3",
-      companyTier: "Cloud Data Cloud (Snowflake)",
-      roleTitle: "Staff Database Core Architect",
-      offeredCompensationUsd: 310000,
-      fastTrackInterviewType: "VIP Technical Deep Dive",
-      inquiryStatus: "Active Inquiry",
-      receivedAt: "4 days ago",
-    },
-  ],
-  dailyRituals: {
-    morningOutageCompleted: false,
-    morningOutageTitle: "Kafka Partition Rebalance Storm (08:00 AM)",
-    cveReviewCompleted: true,
-    cveReviewTitle: "Ledger Double-Spend Concurrency Fix",
-    duelQueueActive: true,
-    voiceDefenseValidUntil: new Date(Date.now() + 28 * 86400000).toISOString(),
-  },
-};
-
 export default function Member360CommandCenterPage() {
-  const [data, setData] = useState<Member360Data>(DEFAULT_MEMBER_360);
+  const [data, setData] = useState<Member360Data | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
   const [copiedShareLink, setCopiedShareLink] = useState<boolean>(false);
 
   useEffect(() => {
     const fetchMemberData = async () => {
       try {
         setLoading(true);
+        setError(null);
         const res = await fetch("http://localhost:5000/api/passport/member-360");
         if (res.ok) {
           const result = await res.json();
           setData(result);
+        } else {
+          setError(`Unable to load Member 360 profile from server (HTTP ${res.status}).`);
         }
-      } catch (err) {
-        console.warn("Using offline fallback data for Member 360", err);
+      } catch (err: any) {
+        console.error("Failed to fetch Member 360 data:", err);
+        setError(err.message || "Failed to connect to Member 360 profile service.");
       } finally {
         setLoading(false);
       }
     };
     fetchMemberData();
   }, []);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-slate-950 text-slate-100 flex items-center justify-center font-sans">
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-10 h-10 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin" />
+          <p className="text-sm text-slate-400">Loading Candidate Dashboard...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !data) {
+    return (
+      <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col items-center justify-center font-sans p-6">
+        <div className="max-w-md w-full p-8 rounded-3xl bg-slate-900/60 border border-slate-800 text-center space-y-4">
+          <div className="w-12 h-12 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center mx-auto">
+            <AlertTriangle className="w-6 h-6" />
+          </div>
+          <h2 className="text-xl font-bold text-white">Profile Unavailable</h2>
+          <p className="text-sm text-slate-400">
+            {error || "Unable to load candidate profile and achievements."}
+          </p>
+          <button
+            onClick={() => window.location.reload()}
+            className="w-full py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-sm transition-colors cursor-pointer"
+          >
+            Try Again
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   const copyPublicShare = () => {
     const shareUrl = `${window.location.origin}/passport?token=${data.publicShareToken}`;
@@ -314,7 +239,7 @@ export default function Member360CommandCenterPage() {
                 <Shield className="w-5 h-5" />
               </div>
               <div>
-                <div className="text-[11px] text-slate-400 font-mono uppercase">Vigilance Index</div>
+                <div className="text-[11px] text-slate-400 font-mono uppercase">Skill Retention</div>
                 <div className="text-sm font-bold text-emerald-400 font-mono">
                   {data.overallVigilanceIndex}% <span className="text-xs text-slate-500 font-normal">(Active Gold)</span>
                 </div>
@@ -569,9 +494,9 @@ export default function Member360CommandCenterPage() {
             <div className="flex items-center justify-between mb-1">
               <h3 className="text-base font-bold text-white flex items-center gap-2">
                 <Activity className="w-4 h-4 text-indigo-400" />
-                Competency Telemetry &amp; Proof of Work
+                Skill Breakdown &amp; Verified Work
               </h3>
-              <span className="text-xs text-slate-400 font-mono">6 Dimensions Calibrated</span>
+              <span className="text-xs text-slate-400 font-mono">6 Key Skill Areas</span>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">

@@ -51,79 +51,23 @@ interface BookingResponse {
   bookedAt: string;
 }
 
-const DEFAULT_MENTORS: MentorProfile[] = [
-  {
-    mentorId: "11111111-aaaa-bbbb-cccc-111111111111",
-    name: "Dr. Ananya Sharma",
-    roleTitle: "Principal Distributed Systems Architect",
-    company: "Ex-AWS DynamoDB Core",
-    email: "ananya.sharma@aws-mentor.buildanddefend.dev",
-    panNumber: "ABCPS1234F",
-    rating: 4.98,
-    totalReviews: 168,
-    ratePerSessionInr: 1500,
-    specialties: ["Kafka Sharding", "Raft Consensus", "CAP Theorem Tradeoffs", "System Design Defense"],
-    availableSlots: ["Today 07:00 PM IST", "Tomorrow 10:00 AM IST", "Saturday 03:00 PM IST"],
-    bio: "14+ years scaling planetary-scale databases. Authored 3 patents on distributed lock-free consensus and fault tolerance.",
-  },
-  {
-    mentorId: "22222222-aaaa-bbbb-cccc-222222222222",
-    name: "Marcus Vance",
-    roleTitle: "Staff SRE & Incident Commander",
-    company: "Stripe Global Infrastructure",
-    email: "marcus.vance@stripe-mentor.buildanddefend.dev",
-    panNumber: "BCDMV5678G",
-    rating: 4.95,
-    totalReviews: 142,
-    ratePerSessionInr: 1800,
-    specialties: ["Chaos Engineering", "Incident MTTR Reduction", "Kubernetes P99 Latency", "Zero-Downtime Migration"],
-    availableSlots: ["Tomorrow 06:00 PM IST", "Friday 08:30 PM IST", "Sunday 11:00 AM IST"],
-    bio: "Leads critical payment gateway resilience. Conducted 400+ real-world production incident postmortems.",
-  },
-  {
-    mentorId: "33333333-aaaa-bbbb-cccc-333333333333",
-    name: "Priya Nambiar",
-    roleTitle: "VP of Engineering & Tech Lead Coach",
-    company: "Razorpay FinTech",
-    email: "priya.nambiar@fintech-mentor.buildanddefend.dev",
-    panNumber: "CDPN9012H",
-    rating: 4.99,
-    totalReviews: 210,
-    ratePerSessionInr: 2000,
-    specialties: ["Staff+ Promotion Defense", "Engineering Strategy", "FinTech Ledgers", "Executive Communication"],
-    availableSlots: ["Today 08:30 PM IST", "Thursday 07:00 PM IST", "Saturday 05:00 PM IST"],
-    bio: "Mentored 80+ engineers from Senior to Staff/Principal. Expert in high-stakes committee defenses and compensation negotiation.",
-  },
-  {
-    mentorId: "44444444-aaaa-bbbb-cccc-444444444444",
-    name: "Chen Wei",
-    roleTitle: "Principal Security Architect",
-    company: "Cloudflare Edge Security",
-    email: "chen.wei@security-mentor.buildanddefend.dev",
-    panNumber: "DEPCW3456K",
-    rating: 4.96,
-    totalReviews: 119,
-    ratePerSessionInr: 1650,
-    specialties: ["Zero-Day CVE Remediation", "OAuth2/OIDC Zero-Trust", "Forensic DRM Steganography", "AppSec Auditing"],
-    availableSlots: ["Tomorrow 04:00 PM IST", "Friday 05:30 PM IST", "Sunday 04:00 PM IST"],
-    bio: "Edge security specialist who stopped 100+ DDoS and data exfiltration breaches. Teaches secure architecture and live forensic defense.",
-  },
-];
-
 export default function BookMentorOfficeHoursPage() {
-  const [mentors, setMentors] = useState<MentorProfile[]>(DEFAULT_MENTORS);
-  const [selectedMentor, setSelectedMentor] = useState<MentorProfile>(DEFAULT_MENTORS[0]);
-  const [sessionTopic, setSessionTopic] = useState<string>("Distributed Architecture & Consensus Mock Defense");
-  const [selectedSlot, setSelectedSlot] = useState<string>(DEFAULT_MENTORS[0].availableSlots[0]);
+  const [mentors, setMentors] = useState<MentorProfile[]>([]);
+  const [selectedMentor, setSelectedMentor] = useState<MentorProfile | null>(null);
+  const [isLoadingMentors, setIsLoadingMentors] = useState<boolean>(true);
+  const [sessionTopic, setSessionTopic] = useState<string>("Distributed Architecture & Consensus Defense");
+  const [selectedSlot, setSelectedSlot] = useState<string>("");
   const [candidateName, setCandidateName] = useState<string>("Alex Morgan");
   const [candidateEmail, setCandidateEmail] = useState<string>("alex.morgan@member360.dev");
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [bookingResult, setBookingResult] = useState<BookingResponse | null>(null);
+  const [bookingError, setBookingError] = useState<string | null>(null);
   const [copiedLink, setCopiedLink] = useState<boolean>(false);
 
   useEffect(() => {
     const fetchMentors = async () => {
       try {
+        setIsLoadingMentors(true);
         const res = await fetch("http://localhost:5000/api/edulexa/mentors");
         if (res.ok) {
           const data = await res.json();
@@ -131,10 +75,16 @@ export default function BookMentorOfficeHoursPage() {
             setMentors(data);
             setSelectedMentor(data[0]);
             setSelectedSlot(data[0].availableSlots[0] || "Tomorrow 10:00 AM IST");
+          } else {
+            setBookingError("No vetted mentors currently available in database.");
           }
+        } else {
+          setBookingError(`Unable to load mentor roster (HTTP ${res.status}).`);
         }
-      } catch (err) {
-        console.warn("Using fallback mentors due to offline API");
+      } catch (err: any) {
+        setBookingError("Failed to connect to mentor service: " + err.message);
+      } finally {
+        setIsLoadingMentors(false);
       }
     };
     fetchMentors();
@@ -146,6 +96,7 @@ export default function BookMentorOfficeHoursPage() {
   };
 
   const handleConfirmBooking = async () => {
+    if (!selectedMentor) return;
     setIsSubmitting(true);
     try {
       const payload = {
@@ -169,27 +120,14 @@ export default function BookMentorOfficeHoursPage() {
       if (res.ok) {
         const data: BookingResponse = await res.json();
         setBookingResult(data);
+        setBookingError(null);
       } else {
-        // Fallback simulation for client preview
-        const gross = selectedMentor.ratePerSessionInr;
-        const tds = Math.round(gross * 0.1);
-        setBookingResult({
-          bookingId: "bk_" + Math.random().toString(36).substring(2, 9),
-          mentorName: selectedMentor.name,
-          candidateName,
-          sessionTopic,
-          scheduledSlot: selectedSlot,
-          meetingUrl: `https://meet.buildanddefend.dev/office-hours/mock-${Date.now()}`,
-          grossFee: gross,
-          tdsWithheldSection194J: tds,
-          mentorNetPayout: gross - tds,
-          batchReference: `OFFICEHOURS-20261002-${Math.random().toString(36).substring(2, 8).toUpperCase()}`,
-          confirmationStatus: "Confirmed",
-          bookedAt: new Date().toISOString(),
-        });
+        const errJson = await res.json().catch(() => ({}));
+        setBookingError(errJson.error || "Failed to process mentor booking with TDS ledger record. Please try again.");
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error("Booking error:", err);
+      setBookingError(err?.message || "Network error contacting booking service. Please verify server connection.");
     } finally {
       setIsSubmitting(false);
     }
@@ -224,6 +162,18 @@ END:VCALENDAR`;
     setCopiedLink(true);
     setTimeout(() => setCopiedLink(false), 2000);
   };
+
+  if (isLoadingMentors || !selectedMentor) {
+    return (
+      <div className="min-h-screen bg-slate-950 text-slate-100 flex items-center justify-center font-sans">
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-10 h-10 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin" />
+          <p className="text-sm text-slate-400">Loading Vetted Staff+ Mentors Roster...</p>
+          {bookingError && <p className="text-xs text-rose-400 max-w-md text-center">{bookingError}</p>}
+        </div>
+      </div>
+    );
+  }
 
   const grossFee = selectedMentor.ratePerSessionInr;
   const statutoryTds = Math.round(grossFee * 0.1);
@@ -473,6 +423,13 @@ END:VCALENDAR`;
                   TAN: BLRE12345T • Section 194J TDS certificate (Form 16A) automatically credited to mentor PAN upon quarterly reconciliation.
                 </div>
               </div>
+
+              {bookingError && (
+                <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-xs flex items-center gap-2">
+                  <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                  <span>{bookingError}</span>
+                </div>
+              )}
 
               {/* Submit CTA */}
               <button

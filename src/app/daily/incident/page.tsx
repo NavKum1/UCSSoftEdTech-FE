@@ -274,7 +274,7 @@ export default function DailyIncidentPage() {
         <div className="text-center space-y-4">
           <div className="w-12 h-12 border-4 border-amber-500 border-t-transparent rounded-full animate-spin mx-auto" />
           <p className="text-slate-400 font-mono text-sm tracking-wide">
-            Decrypting 08:00 AM Morning Incident Kata & SRE Telemetry...
+            Loading Daily Incident Scenario & Live System Metrics...
           </p>
         </div>
       </div>
@@ -434,7 +434,7 @@ export default function DailyIncidentPage() {
                 : "border-transparent text-slate-400 hover:text-slate-200"
             }`}
           >
-            📊 Live Telemetry Dials
+            📊 Live System Metrics
           </button>
           <button
             onClick={() => setActiveTab("logs")}

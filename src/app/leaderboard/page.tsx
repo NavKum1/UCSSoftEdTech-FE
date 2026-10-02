@@ -33,59 +33,26 @@ interface LeaderboardEntry {
 export default function LeaderboardPage() {
   const router = useRouter();
   const [entries, setEntries] = useState<LeaderboardEntry[]>([]);
-  const [searchQuery, setSearchQuery] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(true);
+  const [searchQuery, setSearchQuery] = useState<string>("");
+  const [fetchError, setFetchError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchLeaderboard = async () => {
       try {
+        setFetchError(null);
         const res = await fetch("http://localhost:5000/api/leaderboard");
         if (res.ok) {
           const data = await res.json();
           setEntries(data.leaderboard || []);
         } else {
-          // Fallback mock data
-          setEntries([
-            {
-              rank: 1,
-              credentialId: "c1",
-              candidateName: "Alex Morgan",
-              finalScore: 98.5,
-              badgeTitle: "Certified Build & Defend Full-Stack Architect",
-              publicUrlSlug: "cred-alex-morgan-9921",
-              completionTimeSeconds: 214,
-              completionTimeFormatted: "3m 34s",
-              verificationFlagged: false,
-              verifiedAt: new Date().toISOString(),
-            },
-            {
-              rank: 2,
-              credentialId: "c2",
-              candidateName: "Elena Rostova",
-              finalScore: 95.0,
-              badgeTitle: "Certified Build & Defend Full-Stack Architect",
-              publicUrlSlug: "cred-elena-rostova-4421",
-              completionTimeSeconds: 245,
-              completionTimeFormatted: "4m 05s",
-              verificationFlagged: false,
-              verifiedAt: new Date().toISOString(),
-            },
-            {
-              rank: 3,
-              credentialId: "c3",
-              candidateName: "Marcus Vance",
-              finalScore: 92.0,
-              badgeTitle: "Certified Build & Defend Full-Stack Architect",
-              publicUrlSlug: "cred-marcus-vance-1102",
-              completionTimeSeconds: 280,
-              completionTimeFormatted: "4m 40s",
-              verificationFlagged: false,
-              verifiedAt: new Date().toISOString(),
-            },
-          ]);
+          setFetchError(`Server returned status ${res.status}: Unable to load verified leaderboard.`);
+          setEntries([]);
         }
-      } catch (err) {
+      } catch (err: any) {
         console.error("Failed to load leaderboard:", err);
+        setFetchError(err.message || "Failed to connect to leaderboard service.");
+        setEntries([]);
       } finally {
         setLoading(false);
       }
@@ -144,6 +111,13 @@ export default function LeaderboardPage() {
             Engineers ranked by AI Voice Defense score and sprint completion speed. Only public opt-in credentials are shown.
           </p>
         </div>
+
+        {fetchError && (
+          <div className="max-w-2xl mx-auto p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center space-x-3 text-amber-300 text-xs">
+            <span className="font-bold">Notice:</span>
+            <span>{fetchError}</span>
+          </div>
+        )}
 
         {/* Top 3 Podium Cards */}
         {top3.length >= 3 && (

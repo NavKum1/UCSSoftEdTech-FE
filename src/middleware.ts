@@ -17,8 +17,10 @@ export default clerkMiddleware(async (auth, req) => {
 
   // 1. Super Admin Route Protection
   if (isAdminRoute(req)) {
-    const isDevMock = req.nextUrl.searchParams.get("mockAdmin") === "true" || 
-                      req.cookies.get("mock_admin_role")?.value === "SuperAdmin";
+    const isDevMock = process.env.NODE_ENV === "development" && (
+      req.nextUrl.searchParams.get("mockAdmin") === "true" || 
+      req.cookies.get("mock_admin_role")?.value === "SuperAdmin"
+    );
 
     if (!userId && !isDevMock) {
       await auth.protect();
@@ -32,8 +34,10 @@ export default clerkMiddleware(async (auth, req) => {
   } 
   // 2. Institute Partner Portal Protection
   else if (isInstituteRoute(req)) {
-    const isDevMock = req.nextUrl.searchParams.get("mockInstitute") === "true" || 
-                      req.cookies.get("mock_institute_role")?.value === "InstituteAdmin";
+    const isDevMock = process.env.NODE_ENV === "development" && (
+      req.nextUrl.searchParams.get("mockInstitute") === "true" || 
+      req.cookies.get("mock_institute_role")?.value === "InstituteAdmin"
+    );
 
     if (!userId && !isDevMock) {
       await auth.protect();
@@ -47,8 +51,10 @@ export default clerkMiddleware(async (auth, req) => {
   }
   // 3. Corporate Recruiter Portal Protection
   else if (isRecruiterRoute(req)) {
-    const isDevMock = req.nextUrl.searchParams.get("mockRecruiter") === "true" || 
-                      req.cookies.get("mock_recruiter_role")?.value === "Recruiter";
+    const isDevMock = process.env.NODE_ENV === "development" && (
+      req.nextUrl.searchParams.get("mockRecruiter") === "true" || 
+      req.cookies.get("mock_recruiter_role")?.value === "Recruiter"
+    );
 
     if (!userId && !isDevMock) {
       await auth.protect();
