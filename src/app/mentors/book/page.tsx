@@ -68,7 +68,7 @@ export default function BookMentorOfficeHoursPage() {
     const fetchMentors = async () => {
       try {
         setIsLoadingMentors(true);
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/edulexa/mentors`);
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/v1/mentors`);
         if (res.ok) {
           const data = await res.json();
           if (Array.isArray(data) && data.length > 0) {
@@ -111,7 +111,7 @@ export default function BookMentorOfficeHoursPage() {
         amountInr: selectedMentor.ratePerSessionInr,
       };
 
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/edulexa/mentors/book`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/v1/mentors/book`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),

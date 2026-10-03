@@ -37,7 +37,7 @@ export default function GlobalNavigation() {
 
   const portals = [
     { name: "Candidate 360° Center", href: "/dashboard", desc: "Streaks, Radar, Katas & Voice", icon: Compass },
-    { name: "Edulexa RevEngine", href: "/edulexa/dashboard", desc: "Voice Recovery, DRM & TDS Payroll", icon: DollarSign },
+    { name: "Creator & Partner Studio", href: "/edulexa/dashboard", desc: "Voice Recovery, Content Shield & Payouts", icon: DollarSign },
     { name: "Enterprise Partner Studio", href: "/partner/dashboard", desc: "B2B Sandboxes, Cohorts & Metrics", icon: Building2 },
     { name: "Recruiter Talent Hub", href: "/recruiter/dashboard", desc: "Verified Talent Pipeline & Offers", icon: Briefcase },
     { name: "Campus Governance", href: "/institute/dashboard", desc: "University LTI & Department Analytics", icon: GraduationCap },
@@ -56,7 +56,7 @@ export default function GlobalNavigation() {
             <div>
               <div className="flex items-center gap-2">
                 <span className="font-extrabold text-base tracking-wider bg-gradient-to-r from-white via-slate-100 to-slate-400 bg-clip-text text-transparent">
-                  BUILD & DEFEND
+                  EDULEXA
                 </span>
                 <span className="relative flex h-2 w-2">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
@@ -64,7 +64,7 @@ export default function GlobalNavigation() {
                 </span>
               </div>
               <p className="text-[10px] text-slate-400 font-mono tracking-tight -mt-0.5">
-                MEMBER 360 LIFECYCLE OS
+                AI CAREER & ASSESSMENT PLATFORM
               </p>
             </div>
           </Link>

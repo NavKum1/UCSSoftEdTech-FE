@@ -56,10 +56,10 @@ export default function EdulexaDashboardPage() {
     try {
       setLoading(true);
       const [metricsRes, campRes, assetsRes, payoutsRes] = await Promise.all([
-        fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/edulexa/dashboard/metrics`),
-        fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/edulexa/voice/campaigns`),
-        fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/edulexa/assets`),
-        fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/edulexa/payouts`)
+        fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/v1/dashboard/metrics`),
+        fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/v1/voice/campaigns`),
+        fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/v1/assets`),
+        fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/v1/payouts`)
       ]);
 
       if (metricsRes.ok) setMetrics(await metricsRes.json());
@@ -79,7 +79,7 @@ export default function EdulexaDashboardPage() {
 
   const handleSeedData = async () => {
     try {
-      await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/edulexa/seed`, { method: "POST" });
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/v1/seed`, { method: "POST" });
       fetchDashboardData();
     } catch (err) {
       console.error(err);
@@ -143,7 +143,7 @@ export default function EdulexaDashboardPage() {
     e.preventDefault();
     setInvestigating(true);
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/edulexa/assets/leak-attribution`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/v1/assets/leak-attribution`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ leakSnippetOrFingerprint: leakSnippet })
@@ -191,7 +191,7 @@ export default function EdulexaDashboardPage() {
 
   const handleExportNeft = async () => {
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/edulexa/payouts/export-neft`, { method: "POST" });
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/v1/payouts/export-neft`, { method: "POST" });
       if (res.ok) {
         const blob = await res.blob();
         const url = window.URL.createObjectURL(blob);
@@ -210,8 +210,8 @@ export default function EdulexaDashboardPage() {
     setLoadingForm16(true);
     try {
       const url = mentorId
-        ? `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/edulexa/payouts/form16a/${mentorId}`
-        : `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/edulexa/payouts/form16a`;
+        ? `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/v1/payouts/form16a/${mentorId}`
+        : `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/v1/payouts/form16a`;
       const res = await fetch(url);
       if (res.ok) {
         const json = await res.json();
@@ -269,7 +269,7 @@ export default function EdulexaDashboardPage() {
   const handleTestOutgoingWebhook = async () => {
     setDispatchingWebhook(true);
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/edulexa/webhooks/test-dispatch`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/v1/webhooks/test-dispatch`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

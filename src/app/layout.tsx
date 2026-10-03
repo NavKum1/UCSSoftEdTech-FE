@@ -15,8 +15,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Build & Defend — AI EdTech Platform & Member 360",
-  description: "AI Voice Interview Simulator, Micro-Internships, 1-on-1 Mentorship & Verifiable Certification Marketplace",
+  title: "Edulexa — AI Technical Assessment & Career Platform",
+  description: "AI Voice Interview Simulations, Real-World Sprints, 1-on-1 Mentorship & Verifiable Certificates",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
