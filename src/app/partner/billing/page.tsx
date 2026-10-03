@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useGeo } from '@/context/GeoContext';
 
 interface QuotaMetric {
   monthlyQuota?: number;
@@ -66,6 +67,7 @@ interface DetailedInvoice {
 }
 
 export default function PartnerBillingPage() {
+  const { config } = useGeo();
   const [loading, setLoading] = useState(true);
   const [subData, setSubData] = useState<SubscriptionData | null>(null);
   const [invoices, setInvoices] = useState<InvoiceSummary[]>([]);
@@ -420,10 +422,18 @@ export default function PartnerBillingPage() {
                   onChange={(e) => setSelectedTier(e.target.value)}
                   className="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-xs text-white font-mono focus:border-indigo-500 outline-none"
                 >
-                  <option value="UniversityStandard">University Standard ($249/mo - 20 Seats, 1k Mins)</option>
-                  <option value="UniversityEnterprise">University Enterprise ($499/mo - 50 Seats, 2.5k Mins)</option>
-                  <option value="CorporateScale">Corporate Scale ($999/mo - 100 Seats, 6k Mins)</option>
-                  <option value="CorporateCustom">Corporate Custom ($1,999/mo - 250 Seats, 15k Mins)</option>
+                  <option value="UniversityStandard">
+                    University Standard ({config.currency === "INR" ? "₹19,999/mo" : config.currency === "EUR" ? "€229/mo" : "$249/mo"} - 20 Seats, 1k Mins)
+                  </option>
+                  <option value="UniversityEnterprise">
+                    University Enterprise ({config.currency === "INR" ? "₹39,999/mo" : config.currency === "EUR" ? "€459/mo" : "$499/mo"} - 50 Seats, 2.5k Mins)
+                  </option>
+                  <option value="CorporateScale">
+                    Corporate Scale ({config.currency === "INR" ? "₹79,999/mo" : config.currency === "EUR" ? "€919/mo" : "$999/mo"} - 100 Seats, 6k Mins)
+                  </option>
+                  <option value="CorporateCustom">
+                    Corporate Custom ({config.currency === "INR" ? "₹1,59,999/mo" : config.currency === "EUR" ? "€1,839/mo" : "$1,999/mo"} - 250 Seats, 15k Mins)
+                  </option>
                 </select>
               </div>
 
@@ -496,7 +506,9 @@ export default function PartnerBillingPage() {
                     <p className="text-slate-200 font-medium">{item.description}</p>
                     <p className="text-slate-500 text-[10px]">Qty: {item.quantity}</p>
                   </div>
-                  <span className="text-white font-bold">${(item.totalCents / 100.0).toFixed(2)}</span>
+                  <span className="text-white font-bold">
+                    {config.symbol}{((item.totalCents / 100.0) * (config.currency === "INR" ? 80 : config.currency === "EUR" ? 0.92 : 1.0)).toFixed(2)}
+                  </span>
                 </div>
               ))}
             </div>

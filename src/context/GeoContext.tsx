@@ -132,55 +132,87 @@ interface GeoContextType {
   convertFromInr: (inrAmount: number) => number;
 }
 
+function detectInitialRegion(): Region {
+  if (typeof window === "undefined") return "IN";
+  try {
+    const saved = localStorage.getItem("edulexa_geo_region") as Region | null;
+    if (saved && REGIONS[saved]) return saved;
+
+    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || "";
+    if (
+      tz.includes("Calcutta") ||
+      tz.includes("Kolkata") ||
+      tz.includes("India") ||
+      tz.includes("Asia/Colombo") ||
+      tz.includes("Asia/Karachi") ||
+      tz.includes("Asia/Dhaka") ||
+      tz.includes("Asia/Kathmandu")
+    ) {
+      return "IN";
+    }
+    if (
+      tz.includes("Europe") ||
+      tz.includes("London") ||
+      tz.includes("Paris") ||
+      tz.includes("Berlin") ||
+      tz.includes("Amsterdam") ||
+      tz.includes("Dublin") ||
+      tz.includes("Rome") ||
+      tz.includes("Madrid")
+    ) {
+      return "EU";
+    }
+    if (tz.includes("America") || tz.includes("New_York") || tz.includes("Chicago") || tz.includes("Los_Angeles") || tz.includes("Toronto")) {
+      return "US";
+    }
+  } catch {
+    // ignore
+  }
+  return "IN";
+}
+
 const GeoContext = createContext<GeoContextType>({
-  region: "US",
-  config: REGIONS.US,
+  region: "IN",
+  config: REGIONS.IN,
   setRegion: () => {},
-  formatCurrency: (amt) => `$${amt.toLocaleString()}`,
-  convertFromInr: (amt) => Math.round(amt * 0.05),
+  formatCurrency: (amt) => `₹${amt.toLocaleString("en-IN")}`,
+  convertFromInr: (amt) => amt,
 });
 
 export function GeoProvider({ children }: { children: React.ReactNode }) {
-  const [region, setRegionState] = useState<Region>("US");
+  const [region, setRegionState] = useState<Region>(detectInitialRegion);
 
   useEffect(() => {
-    // 1. Check persistent localStorage (shared key with marketing site)
-    try {
-      const saved = localStorage.getItem("edulexa_geo_region") as Region | null;
-      if (saved && REGIONS[saved]) {
-        setRegionState(saved);
-        return;
-      }
-    } catch {
-      // ignore storage access errors
-    }
+    // 1. Sync on mount
+    const detected = detectInitialRegion();
+    setRegionState(detected);
 
-    // 2. Auto-detect from visitor's timezone
-    try {
-      const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || "";
-      if (tz.includes("Calcutta") || tz.includes("Kolkata") || tz.includes("India")) {
-        setRegionState("IN");
-      } else if (
-        tz.includes("Europe") ||
-        tz.includes("London") ||
-        tz.includes("Paris") ||
-        tz.includes("Berlin") ||
-        tz.includes("Amsterdam") ||
-        tz.includes("Dublin")
-      ) {
-        setRegionState("EU");
-      } else {
-        setRegionState("US");
+    // 2. Cross-tab and window event listener
+    const handleStorage = (e: StorageEvent) => {
+      if (e.key === "edulexa_geo_region" && e.newValue && REGIONS[e.newValue as Region]) {
+        setRegionState(e.newValue as Region);
       }
-    } catch {
-      setRegionState("US");
-    }
+    };
+    const handleCustomChange = (e: Event) => {
+      const customEvt = e as CustomEvent<Region>;
+      if (customEvt.detail && REGIONS[customEvt.detail]) {
+        setRegionState(customEvt.detail);
+      }
+    };
+
+    window.addEventListener("storage", handleStorage);
+    window.addEventListener("edulexa-geo-change", handleCustomChange);
+    return () => {
+      window.removeEventListener("storage", handleStorage);
+      window.removeEventListener("edulexa-geo-change", handleCustomChange);
+    };
   }, []);
 
   const setRegion = (newRegion: Region) => {
     setRegionState(newRegion);
     try {
       localStorage.setItem("edulexa_geo_region", newRegion);
+      window.dispatchEvent(new CustomEvent("edulexa-geo-change", { detail: newRegion }));
     } catch {
       // storage disabled
     }

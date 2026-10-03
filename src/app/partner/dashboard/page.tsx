@@ -202,8 +202,12 @@ export default function PartnerDashboardPage() {
               <span className="text-xs font-medium text-slate-400">Est. Commission Revenue</span>
               <DollarSign className="w-4 h-4 text-purple-400" />
             </div>
-            <div className="text-3xl font-extrabold text-purple-300 mt-2">${kpis.estimatedCommissionRevenueUsd}</div>
-            <span className="text-[11px] text-purple-400/80 mt-1 block">@ $150 referral bounty / lead</span>
+            <div className="text-3xl font-extrabold text-purple-300 mt-2">
+              {config.symbol}{(config.currency === "INR" ? kpis.estimatedCommissionRevenueUsd * 80 : config.currency === "EUR" ? Math.round(kpis.estimatedCommissionRevenueUsd * 0.92) : kpis.estimatedCommissionRevenueUsd).toLocaleString()}
+            </div>
+            <span className="text-[11px] text-purple-400/80 mt-1 block">
+              @ {config.currency === "INR" ? "₹12,000" : config.currency === "EUR" ? "€140" : "$150"} referral bounty / lead
+            </span>
           </div>
         </div>
 

@@ -30,6 +30,7 @@ import {
   Mail
 } from "lucide-react";
 import { authenticatedFetch } from "@/lib/apiClient";
+import { useGeo } from "@/context/GeoContext";
 
 interface AnalyticsData {
   totalUsers: number;
@@ -76,6 +77,7 @@ interface Lead {
 
 export default function SuperAdminDashboard() {
   const { getToken } = useAuth();
+  const { config } = useGeo();
 
   // Tab State
   const [activeTab, setActiveTab] = useState<"analytics" | "partners" | "leads">("analytics");
@@ -458,10 +460,12 @@ export default function SuperAdminDashboard() {
                     {analytics?.activeProSubscriptions ?? (loading ? "..." : 0)}
                   </span>
                   <span className="text-xs font-bold text-purple-400">
-                    (${analytics?.mrrEstimate ?? 0}/mo MRR)
+                    ({config.symbol}{analytics ? (config.id === "IN" ? (analytics.mrrEstimate * 83).toLocaleString("en-IN") : config.id === "EU" ? Math.round(analytics.mrrEstimate * 0.92) : analytics.mrrEstimate) : 0}/mo MRR)
                   </span>
                 </div>
-                <p className="text-[11px] text-slate-400 mt-1">$12/mo active Stripe recurring subscriptions</p>
+                <p className="text-[11px] text-slate-400 mt-1">
+                  {config.id === "IN" ? "₹999/mo active recurring subscriptions" : config.id === "EU" ? "€11/mo active Stripe recurring subscriptions" : "$12/mo active Stripe recurring subscriptions"}
+                </p>
               </div>
             </div>
 

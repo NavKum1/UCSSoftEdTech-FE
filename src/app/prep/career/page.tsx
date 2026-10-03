@@ -8,6 +8,7 @@ import {
   Globe2, Building2, Briefcase, Sliders, ArrowUpRight, AlertTriangle
 } from "lucide-react";
 import Link from "next/link";
+import { useGeo } from "@/context/GeoContext";
 
 interface CompensationBandData {
   userId: string;
@@ -56,12 +57,19 @@ const TRACK_PRESETS = [
 ];
 
 export default function CareerTrajectoryStudioPage() {
-  const [selectedRegion, setSelectedRegion] = useState<string>("US_Tier1");
+  const { region: geoRegion } = useGeo();
+  const initialRegion = geoRegion === "IN" ? "India_APAC" : geoRegion === "EU" ? "EU_UK" : "US_Tier1";
+  const [selectedRegion, setSelectedRegion] = useState<string>(initialRegion);
   const [data, setData] = useState<CompensationBandData | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [fetchError, setFetchError] = useState<string | null>(null);
   const [showSimulateModal, setShowSimulateModal] = useState<boolean>(false);
   const [targetRole, setTargetRole] = useState<string>(TRACK_PRESETS[0]);
+
+  useEffect(() => {
+    const matchedRegion = geoRegion === "IN" ? "India_APAC" : geoRegion === "EU" ? "EU_UK" : "US_Tier1";
+    setSelectedRegion(matchedRegion);
+  }, [geoRegion]);
   const [isSimulating, setIsSimulating] = useState<boolean>(false);
 
   const fetchCompensation = async (region: string) => {
@@ -259,7 +267,7 @@ export default function CareerTrajectoryStudioPage() {
               {getLevelLabel(data?.seniorityLevels?.current || "L4 MidLevel")}
             </div>
             <div className="text-2xl font-extrabold text-emerald-400">
-              {data?.compensationBands?.currentFormatted || "$165,000"}
+              {data?.compensationBands?.currentFormatted || (geoRegion === "IN" ? "₹35,00,000" : geoRegion === "EU" ? "€130,000" : "$165,000")}
             </div>
             <p className="text-xs text-slate-400 leading-relaxed">
               Standard autonomous execution, modular component delivery, and structured API integrations.
@@ -280,7 +288,7 @@ export default function CareerTrajectoryStudioPage() {
               {getLevelLabel(data?.seniorityLevels?.oneYear || "L5 Senior")}
             </div>
             <div className="text-2xl font-extrabold text-teal-400">
-              {data?.compensationBands?.oneYearFormatted || "$210,000"}
+              {data?.compensationBands?.oneYearFormatted || (geoRegion === "IN" ? "₹45,00,000" : geoRegion === "EU" ? "€165,000" : "$210,000")}
             </div>
             <p className="text-xs text-slate-400 leading-relaxed">
               System resilience governance, multi-threaded optimization, and cross-team interface ownership.
@@ -301,7 +309,7 @@ export default function CareerTrajectoryStudioPage() {
               {getLevelLabel(data?.seniorityLevels?.threeYear || "L6 Staff")}
             </div>
             <div className="text-2xl font-extrabold text-emerald-300">
-              {data?.compensationBands?.threeYearFormatted || "$285,000"}
+              {data?.compensationBands?.threeYearFormatted || (geoRegion === "IN" ? "₹65,00,000" : geoRegion === "EU" ? "€220,000" : "$285,000")}
             </div>
             <p className="text-xs text-slate-400 leading-relaxed">
               Enterprise architectural direction, distributed consensus patterns, and organizational technical leverage.
@@ -322,7 +330,7 @@ export default function CareerTrajectoryStudioPage() {
               {getLevelLabel(data?.seniorityLevels?.fiveYear || "L7 Principal")}
             </div>
             <div className="text-2xl font-extrabold text-amber-400">
-              {data?.compensationBands?.fiveYearFormatted || "$380,000"}
+              {data?.compensationBands?.fiveYearFormatted || (geoRegion === "IN" ? "₹95,00,000" : geoRegion === "EU" ? "€295,000" : "$380,000")}
             </div>
             <p className="text-xs text-slate-400 leading-relaxed">
               Company-wide systems vision, multi-datacenter fault-tolerance, and executive technology roadmap stewardship.
@@ -411,10 +419,26 @@ export default function CareerTrajectoryStudioPage() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-2">
             {[
-              { title: "Distributed Consensus & Raft Invariants", impact: "+$35k / yr", desc: "Master leader election, log replication, and split-brain recovery in partition-tolerant clusters." },
-              { title: "Zero-Copy Ring Buffers & Memory Safety", impact: "+$25k / yr", desc: "Build sub-millisecond execution engines eliminating GC pause latency and lock contention." },
-              { title: "Event Sourcing & Cross-Service Saga Choreography", impact: "+$30k / yr", desc: "Implement durable compensating transactions without distributed 2PC locks." },
-              { title: "SLO Error Budget Governance & Tail Latency Trimming", impact: "+$20k / yr", desc: "Design adaptive client-side throttling, hedged requests, and circuit-breaker backoffs." }
+              {
+                title: "Distributed Consensus & Raft Invariants",
+                impact: geoRegion === "IN" ? "+₹28 Lakhs / yr" : geoRegion === "EU" ? "+€32k / yr" : "+$35k / yr",
+                desc: "Master leader election, log replication, and split-brain recovery in partition-tolerant clusters."
+              },
+              {
+                title: "Zero-Copy Ring Buffers & Memory Safety",
+                impact: geoRegion === "IN" ? "+₹20 Lakhs / yr" : geoRegion === "EU" ? "+€23k / yr" : "+$25k / yr",
+                desc: "Build sub-millisecond execution engines eliminating GC pause latency and lock contention."
+              },
+              {
+                title: "Event Sourcing & Cross-Service Saga Choreography",
+                impact: geoRegion === "IN" ? "+₹24 Lakhs / yr" : geoRegion === "EU" ? "+€28k / yr" : "+$30k / yr",
+                desc: "Implement durable compensating transactions without distributed 2PC locks."
+              },
+              {
+                title: "SLO Error Budget Governance & Tail Latency Trimming",
+                impact: geoRegion === "IN" ? "+₹16 Lakhs / yr" : geoRegion === "EU" ? "+€18k / yr" : "+$20k / yr",
+                desc: "Design adaptive client-side throttling, hedged requests, and circuit-breaker backoffs."
+              }
             ].map((gap, idx) => (
               <div
                 key={idx}

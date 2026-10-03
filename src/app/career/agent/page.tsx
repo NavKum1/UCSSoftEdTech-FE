@@ -686,7 +686,7 @@ export default function AutonomousCareerAgentPage() {
                     rows={2}
                     value={counterText}
                     onChange={(e) => setCounterText(e.target.value)}
-                    placeholder="Enter recruiter message (e.g. 'We reviewed Alex's passport and agree to the $485k total compensation and fast-track onsite...')"
+                    placeholder="Enter recruiter message (e.g. 'We reviewed candidate\'s passport and agree to the full compensation package and fast-track onsite...')"
                     className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500"
                   />
 
