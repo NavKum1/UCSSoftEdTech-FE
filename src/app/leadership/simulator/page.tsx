@@ -177,7 +177,7 @@ export default function ExecutiveLeadershipSimulatorPage() {
 
         if (result.isSimulationFinished) {
           // Finalize session
-          const finalizeRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}`}/api/leadership/session/${session.id}/finalize`, {
+          const finalizeRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/leadership/session/${session.id}/finalize`, {
             method: "POST"
           });
           if (finalizeRes.ok) {

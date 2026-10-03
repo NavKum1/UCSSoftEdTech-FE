@@ -28,7 +28,7 @@ export default function EnterpriseSsoLoginPage() {
     setIsDiscovering(true);
 
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}`}/api/sso/discovery?email=${encodeURIComponent(email)}`);
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/sso/discovery?email=${encodeURIComponent(email)}`);
       if (res.ok) {
         const data = await res.json();
         if (data.ssoEnabled) {
@@ -189,7 +189,7 @@ export default function EnterpriseSsoLoginPage() {
 
                   <div className="pt-1 text-center">
                     <a
-                      href={`${process.env.NEXT_PUBLIC_API_URL || `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}`}/api/sso/metadata/${discoveryResult.domain}`}
+                      href={`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/sso/metadata/${discoveryResult.domain}`}
                       target="_blank"
                       rel="noreferrer"
                       className="inline-flex items-center gap-1.5 text-xs text-slate-400 hover:text-indigo-400 transition"

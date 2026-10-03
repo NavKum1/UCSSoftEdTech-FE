@@ -49,16 +49,16 @@ export default function SprintWorkspace() {
       if (lineCount > 50) {
         setSuspectedPasting(true);
         setPasteWarning(
-          `Anti-Cheat Alert: Large block paste detected (${lineCount} lines). This submission will be marked with SuspectedPasting = true for audit verification.`
+          `Notice: Large code paste detected (${lineCount} lines). Be prepared to discuss and explain your implementation during the review.`
         );
       }
     }
   };
 
-  // Step 1: Submit Code to .NET Core API using Authenticated JWT Fetch
+  // Step 1: Submit Code to API
   const handleSubmitCode = async () => {
     setPipelineState("submitting");
-    setStatusMessage("Submitting code payload to local .NET API (POST /api/sprint/submit with Clerk Bearer JWT)...");
+    setStatusMessage("Submitting your solution for automated testing...");
 
     try {
       const res = await authenticatedFetch(
@@ -78,14 +78,14 @@ export default function SprintWorkspace() {
       if ((res.status === 202 || res.status === 200) && data.submissionId) {
         setSubmissionId(data.submissionId);
         setPipelineState("running");
-        setStatusMessage("HTTP 202 Accepted! Piston API MicroVM Sandbox running in background worker...");
+        setStatusMessage("Running test cases in a secure sandbox...");
         startPollingStatus(data.submissionId);
       } else {
         setStatusMessage("Submission failed: " + (data.error || res.statusText));
         setPipelineState("editor");
       }
     } catch (err: any) {
-      setStatusMessage("Error connecting to .NET API: " + err.message);
+      setStatusMessage("Error connecting to server: " + err.message);
       setPipelineState("editor");
     }
   };
@@ -105,11 +105,11 @@ export default function SprintWorkspace() {
             const review = JSON.parse(data.architecturalReview || "{}");
             setArchitecturalFlaws(review.flaws || []);
           } catch (e) {
-            setArchitecturalFlaws(["Did not use connection pooling", "Hardcoded SQL query execution"]);
+            setArchitecturalFlaws(["Database query optimization", "Resource connection management"]);
           }
 
           setPipelineState("completed");
-          setStatusMessage("Piston API execution & GPT-4o static analysis COMPLETE! Preparing Voice Interview...");
+          setStatusMessage("Code analysis complete! Preparing your interactive review session...");
 
           setTimeout(() => {
             setPipelineState("voice_interview");
@@ -140,14 +140,14 @@ export default function SprintWorkspace() {
             <div>
               <span className="font-bold text-lg text-white">BUILD & DEFEND</span>
               <span className="ml-2 text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-semibold border border-emerald-500/30">
-                JWT Auth Secured
+                Verified & Secure
               </span>
             </div>
           </div>
 
           <div className="flex items-center space-x-4">
             <span className="text-xs px-3 py-1 rounded-full bg-indigo-500/10 text-indigo-300 border border-indigo-500/30 font-medium">
-              Sprint ID: {sprintId.substring(0, 8)}
+              Challenge ID: {sprintId.substring(0, 8)}
             </span>
             <UserButton />
           </div>
@@ -156,7 +156,6 @@ export default function SprintWorkspace() {
 
       {/* Main Split-Pane Workspace */}
       <main className="max-w-7xl mx-auto px-6 pt-8 flex-1 w-full space-y-6">
-        {/* Phase 18: Zero-Trust Remote Proctoring & Candidate Environment Auditing HUD */}
         <ProctoringHUD sessionId={submissionId || sprintId} />
 
         {/* Pipeline Progress Bar */}
@@ -167,21 +166,21 @@ export default function SprintWorkspace() {
             </span>
             <ArrowRight className="w-3.5 h-3.5 text-slate-600" />
             <span className={`px-3 py-1 rounded-lg ${pipelineState === "running" || pipelineState === "completed" ? "bg-indigo-600 text-white" : "bg-slate-800 text-slate-400"}`}>
-              2. Piston API Sandbox
+              2. Automated Test Runner
             </span>
             <ArrowRight className="w-3.5 h-3.5 text-slate-600" />
             <span className={`px-3 py-1 rounded-lg ${pipelineState === "voice_interview" ? "bg-indigo-600 text-white" : "bg-slate-800 text-slate-400"}`}>
-              3. Voice AI Defense Review
+              3. Interactive Code Review
             </span>
             <ArrowRight className="w-3.5 h-3.5 text-slate-600" />
             <span className={`px-3 py-1 rounded-lg ${pipelineState === "passed" ? "bg-emerald-600 text-white" : "bg-slate-800 text-slate-400"}`}>
-              4. Public Credential Badge
+              4. Verified Certificate
             </span>
           </div>
 
           <div className="flex items-center space-x-1 text-[11px] text-indigo-400 font-mono">
             <Lock className="w-3.5 h-3.5 mr-1 text-emerald-400" />
-            <span>Clerk JWT Bearer Active</span>
+            <span>Session Authenticated</span>
           </div>
         </div>
 
@@ -228,7 +227,7 @@ export default function SprintWorkspace() {
               }`}
             >
               <Play className="w-4 h-4" />
-              <span>{pipelineState === "submitting" ? "Submitting via JWT Bearer..." : "Submit Code (Authenticated)"}</span>
+              <span>{pipelineState === "submitting" ? "Submitting Code..." : "Submit Code"}</span>
             </button>
           </div>
 
@@ -239,7 +238,7 @@ export default function SprintWorkspace() {
               <div className="flex items-center justify-between pb-3 border-b border-slate-800">
                 <div className="flex items-center space-x-2">
                   <Terminal className="w-5 h-5 text-emerald-400" />
-                  <h3 className="text-sm font-semibold text-white">Live Piston API Output</h3>
+                  <h3 className="text-sm font-semibold text-white">Execution Output & Test Results</h3>
                 </div>
                 {pipelineState === "running" && <RefreshCw className="w-4 h-4 text-amber-400 animate-spin" />}
               </div>
@@ -252,7 +251,7 @@ export default function SprintWorkspace() {
                 <div className="p-3 bg-red-950/40 border border-red-500/30 rounded-xl space-y-1">
                   <div className="flex items-center space-x-2 text-xs font-semibold text-red-300">
                     <AlertTriangle className="w-4 h-4 text-red-400" />
-                    <span>Identified Flaws (Passed to Voice AI):</span>
+                    <span>Review Topics for Discussion:</span>
                   </div>
                   <ul className="list-disc list-inside text-[11px] text-red-200 space-y-0.5 pl-2">
                     {architecturalFlaws.map((flaw, idx) => (
@@ -277,16 +276,16 @@ export default function SprintWorkspace() {
             {pipelineState === "passed" && (
               <div className="glass-panel rounded-2xl p-6 border border-emerald-500/40 bg-emerald-950/20 text-center space-y-4">
                 <ShieldCheck className="w-12 h-12 text-emerald-400 mx-auto" />
-                <h3 className="text-lg font-bold text-white">Congratulations! Credential Issued</h3>
+                <h3 className="text-lg font-bold text-white">Congratulations! Certificate Issued</h3>
                 <p className="text-xs text-slate-300">
-                  You successfully defended your design. Your verifiable credential has been minted.
+                  You successfully defended your implementation. Your verified certificate has been issued.
                 </p>
                 <button
                   onClick={() => router.push(`/credential/${publicUrlSlug || "cred-demo"}`)}
                   className="py-2.5 px-5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-semibold rounded-xl text-xs shadow-lg shadow-emerald-500/25 inline-flex items-center space-x-2 cursor-pointer transition-all"
                 >
                   <Award className="w-4 h-4" />
-                  <span>View Public Verifiable Credential</span>
+                  <span>View Verified Certificate</span>
                 </button>
               </div>
             )}

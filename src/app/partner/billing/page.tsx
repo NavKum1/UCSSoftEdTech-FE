@@ -151,7 +151,7 @@ export default function PartnerBillingPage() {
 
   const handleViewInvoice = async (invoiceId: string) => {
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}`}/api/billing/enterprise/invoices/${invoiceId}`);
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/billing/enterprise/invoices/${invoiceId}`);
       if (res.ok) {
         const detailed = await res.json();
         setSelectedInvoice(detailed);

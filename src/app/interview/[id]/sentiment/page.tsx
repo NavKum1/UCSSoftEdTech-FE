@@ -53,7 +53,7 @@ export default function BehavioralSentimentPage() {
 
   const fetchTimeline = async () => {
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}`}/api/sentiment/timeline/${interviewId}`);
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/sentiment/timeline/${interviewId}`);
       if (res.ok) {
         const data = await res.json();
         if (data.success) {
@@ -67,7 +67,7 @@ export default function BehavioralSentimentPage() {
 
   const fetchSummary = async () => {
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}`}/api/sentiment/summary/${interviewId}`);
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/sentiment/summary/${interviewId}`);
       if (res.ok) {
         const data = await res.json();
         if (data.success) {

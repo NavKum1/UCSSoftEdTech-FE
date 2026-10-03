@@ -210,7 +210,7 @@ export default function EdulexaDashboardPage() {
     setLoadingForm16(true);
     try {
       const url = mentorId
-        ? `${process.env.NEXT_PUBLIC_API_URL || `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}`}/api/edulexa/payouts/form16a/${mentorId}`
+        ? `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/edulexa/payouts/form16a/${mentorId}`
         : `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/edulexa/payouts/form16a`;
       const res = await fetch(url);
       if (res.ok) {

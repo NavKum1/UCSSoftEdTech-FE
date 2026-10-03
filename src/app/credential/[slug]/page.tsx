@@ -23,7 +23,7 @@ export default function CredentialBadgePage() {
   useEffect(() => {
     const fetchCredential = async () => {
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}`}/api/credential/${slug}`);
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/credential/${slug}`);
         if (res.ok) {
           const data = await res.json();
           setCredential(data);

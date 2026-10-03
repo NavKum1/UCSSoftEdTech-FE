@@ -101,7 +101,7 @@ export default function EnterpriseGuildBattlesPage() {
 
   const fetchLeaderboard = async (hackathonId: string) => {
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}`}/api/guilds/hackathons/${hackathonId}/leaderboard`);
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/guilds/hackathons/${hackathonId}/leaderboard`);
       if (res.ok) {
         setLeaderboard(await res.json());
       }

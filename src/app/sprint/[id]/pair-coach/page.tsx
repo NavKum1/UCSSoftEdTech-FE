@@ -109,7 +109,7 @@ public class HighThroughputBuffer<T>
         setSession(data.session);
 
         // Fetch full audit to retrieve previous interaction timeline
-        const auditRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}`}/api/pair-coach/session/${data.session.id}`);
+        const auditRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/pair-coach/session/${data.session.id}`);
         const auditData = await auditRes.json();
         if (auditData.success && auditData.session) {
           setInteractions(auditData.session.interactions || []);
@@ -162,7 +162,7 @@ public class HighThroughputBuffer<T>
         setUserPrompt("");
 
         // Refresh session telemetry
-        const auditRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}`}/api/pair-coach/session/${session.id}`);
+        const auditRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/pair-coach/session/${session.id}`);
         const auditData = await auditRes.json();
         if (auditData.success && auditData.session) {
           setSession(auditData.session);

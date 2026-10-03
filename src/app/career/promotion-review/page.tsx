@@ -82,7 +82,7 @@ export default function PromotionReviewPage() {
       // Seed first
       await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/promotion/seed`, { method: "POST" });
       
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}`}/api/promotion/integrations?userId=${defaultUserId}`);
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/promotion/integrations?userId=${defaultUserId}`);
       if (res.ok) {
         const data: DeveloperGitIntegration[] = await res.json();
         setIntegrations(data);
@@ -98,7 +98,7 @@ export default function PromotionReviewPage() {
 
   async function loadPrs(integrationId: string) {
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}`}/api/promotion/github/prs/${integrationId}`);
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/promotion/github/prs/${integrationId}`);
       if (res.ok) {
         const data = await res.json();
         setPrs(data);
@@ -113,7 +113,7 @@ export default function PromotionReviewPage() {
     setIsSyncing(true);
     setMessage(null);
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}`}/api/promotion/github/sync/${selectedIntegration.id}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/promotion/github/sync/${selectedIntegration.id}`, {
         method: "POST"
       });
       if (res.ok) {

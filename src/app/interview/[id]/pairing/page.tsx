@@ -49,7 +49,7 @@ export default function InterviewPairingStudioPage({ params }: { params: Promise
   useEffect(() => {
     const fetchState = async () => {
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}`}/api/collaboration/${sessionId}/state`);
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/collaboration/${sessionId}/state`);
         if (res.ok) {
           const data = await res.json();
           if (data.currentCode && data.currentCode.trim()) {
@@ -74,7 +74,7 @@ export default function InterviewPairingStudioPage({ params }: { params: Promise
   const handleToggleTakeover = async () => {
     const targetState = !isTakeoverActive;
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}`}/api/collaboration/${sessionId}/takeover`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/collaboration/${sessionId}/takeover`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -207,7 +207,7 @@ export default function InterviewPairingStudioPage({ params }: { params: Promise
 
     try {
       const dataUrl = canvas.toDataURL("image/png");
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}`}/api/collaboration/${sessionId}/whiteboard/save`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/collaboration/${sessionId}/whiteboard/save`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

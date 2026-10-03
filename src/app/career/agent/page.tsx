@@ -97,7 +97,7 @@ export default function AutonomousCareerAgentPage() {
 
   const fetchConfig = async () => {
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}`}/api/agent/config/${candidateUserId}`);
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/agent/config/${candidateUserId}`);
       if (res.ok) {
         const data = await res.json();
         setConfig(data);
@@ -109,7 +109,7 @@ export default function AutonomousCareerAgentPage() {
 
   const fetchNegotiations = async () => {
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}`}/api/agent/inquiries/${candidateUserId}`);
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/agent/inquiries/${candidateUserId}`);
       if (res.ok) {
         const data: InboundNegotiation[] = await res.json();
         setNegotiations(data);
@@ -124,7 +124,7 @@ export default function AutonomousCareerAgentPage() {
 
   const fetchDetail = async (id: string) => {
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}`}/api/agent/inquiries/detail/${id}`);
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/agent/inquiries/detail/${id}`);
       if (res.ok) {
         const data: NegotiationDetail = await res.json();
         setActiveDetail(data);
@@ -284,7 +284,7 @@ export default function AutonomousCareerAgentPage() {
               href="/passport"
               className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg text-xs font-medium border border-slate-700 transition"
             >
-              View Credential Ledger
+              View Verified Credentials
             </Link>
           </div>
         </div>

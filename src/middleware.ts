@@ -68,7 +68,14 @@ export default clerkMiddleware(async (auth, req) => {
   }
   // 4. General Candidate Protected Routes
   else if (isProtectedRoute(req)) {
-    await auth.protect();
+    const isDevMock = process.env.NODE_ENV === "development" && (
+      req.nextUrl.searchParams.get("mockCandidate") === "true" ||
+      req.cookies.get("mock_candidate")?.value === "true"
+    );
+
+    if (!userId && !isDevMock) {
+      await auth.protect();
+    }
   }
 });
 

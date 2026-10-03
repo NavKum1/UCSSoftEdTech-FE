@@ -69,7 +69,7 @@ export default function CareerTrajectoryStudioPage() {
     setFetchError(null);
     try {
       const testUserId = "44444444-5555-6666-7777-888888888888";
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}`}/api/career/compensation/${testUserId}?region=${region}`);
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/career/compensation/${testUserId}?region=${region}`);
       if (res.ok) {
         const json = await res.json();
         setData(json.compensation);

@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
 export async function GET() {
-  const backendApiUrl = process.env.NEXT_PUBLIC_API_URL || `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}`;
+  const backendApiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
   try {
     const res = await fetch(`${backendApiUrl}/health/ready`, {

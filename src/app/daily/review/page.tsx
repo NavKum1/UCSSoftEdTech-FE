@@ -104,7 +104,7 @@ export default function DailyCodeReviewDojoPage() {
       }
 
       // 2. Fetch User Stats
-      const statsRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}`}/api/codereview/stats/${userId}`);
+      const statsRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/codereview/stats/${userId}`);
       if (statsRes.ok) {
         setStats(await statsRes.json());
       }
@@ -165,7 +165,7 @@ export default function DailyCodeReviewDojoPage() {
         setResult(evalData);
 
         // Refresh stats
-        const statsRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}`}/api/codereview/stats/${userId}`);
+        const statsRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/codereview/stats/${userId}`);
         if (statsRes.ok) setStats(await statsRes.json());
       } else {
         alert("Code review evaluation encountered an issue.");

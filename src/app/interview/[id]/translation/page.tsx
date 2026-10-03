@@ -82,7 +82,7 @@ export default function MultiLanguageTranslationStudioPage() {
     setLoading(true);
     setFetchError(null);
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}`}/api/translation/session/${sessionId}/transcript`);
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/translation/session/${sessionId}/transcript`);
       if (res.ok) {
         const json = await res.json();
         setSegments(json.transcript || []);
@@ -156,7 +156,7 @@ export default function MultiLanguageTranslationStudioPage() {
   };
 
   const handleDownloadWebVtt = () => {
-    window.open(`${process.env.NEXT_PUBLIC_API_URL || `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}`}/api/translation/session/${sessionId}/subtitles.vtt?lang=${selectedLanguage}`, "_blank");
+    window.open(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/translation/session/${sessionId}/subtitles.vtt?lang=${selectedLanguage}`, "_blank");
   };
 
   const getTranslatedText = (segment: TranscriptSegment) => {

@@ -183,14 +183,14 @@ export default function DailyIncidentPage() {
       }
 
       // 2. Fetch User Streak
-      const streakRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}`}/api/incidents/streak/${userId}`);
+      const streakRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/incidents/streak/${userId}`);
       if (streakRes.ok) {
         const streakData = await streakRes.json();
         setStreak(streakData);
       }
 
       // 3. Fetch Weekly Leagues
-      const leagueRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}`}/api/incidents/leagues?userId=${userId}`);
+      const leagueRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/incidents/leagues?userId=${userId}`);
       if (leagueRes.ok) {
         const leagueData = await leagueRes.json();
         setLeagues(leagueData);
@@ -230,10 +230,10 @@ export default function DailyIncidentPage() {
         setTriageResult(result);
 
         // Refresh streak and league stats
-        const streakRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}`}/api/incidents/streak/${userId}`);
+        const streakRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/incidents/streak/${userId}`);
         if (streakRes.ok) setStreak(await streakRes.json());
 
-        const leagueRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}`}/api/incidents/leagues?userId=${userId}`);
+        const leagueRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/incidents/leagues?userId=${userId}`);
         if (leagueRes.ok) setLeagues(await leagueRes.json());
       } else {
         alert("Triage submission evaluation encountered an error.");
@@ -608,7 +608,7 @@ export default function DailyIncidentPage() {
             <div className="space-y-6">
               <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-4">
                 <h4 className="text-xs font-mono text-slate-400 uppercase tracking-wider">
-                  ⚡ Outage Telemetry Snapshot
+                  ⚡ Outage System Metrics
                 </h4>
                 <div className="grid grid-cols-2 gap-3">
                   <div className="bg-slate-950 p-3 rounded-lg border border-slate-800">
@@ -670,7 +670,7 @@ export default function DailyIncidentPage() {
         {activeTab === "telemetry" && (
           <div className="bg-slate-900 border border-slate-800 rounded-xl p-6 space-y-6">
             <h3 className="text-base font-bold text-slate-100 flex items-center gap-2">
-              <span>📈</span> Distributed Cluster Telemetry Matrix
+              <span>📈</span> Distributed Cluster System Metrics
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {Object.entries(metrics).map(([key, val]) => (
