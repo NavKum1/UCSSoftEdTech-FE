@@ -16,7 +16,9 @@ import {
   ExternalLink,
   Shield,
   Activity,
+  BarChart3,
 } from "lucide-react";
+import FunnelChart from "@/components/charts/FunnelChart";
 
 interface Lead {
   leadId: string;
@@ -31,7 +33,7 @@ interface Lead {
 
 export default function InstituteDashboardPage() {
   const { getToken } = useAuth();
-  const [activeTab, setActiveTab] = useState<"leads" | "webhook">("leads");
+  const [activeTab, setActiveTab] = useState<"leads" | "webhook" | "analytics">("leads");
 
   const [instituteId, setInstituteId] = useState<string>("");
   const [instituteName, setInstituteName] = useState<string>("Institute Partner");
@@ -158,6 +160,12 @@ export default function InstituteDashboardPage() {
     return matchesSearch && matchesStatus;
   });
 
+  const funnelData = [
+    { name: "Total Leads", value: leads.length, fill: "#06b6d4" },
+    { name: "Contacted", value: leads.filter(l => l.status.toLowerCase() !== "pending").length, fill: "#3b82f6" },
+    { name: "Enrolled", value: leads.filter(l => l.status.toLowerCase() === "enrolled").length, fill: "#10b981" }
+  ];
+
   return (
     <div className="space-y-8">
       {/* Top Welcome Banner */}
@@ -240,6 +248,16 @@ export default function InstituteDashboardPage() {
         >
           <LinkIcon className="w-4 h-4" />
           <span>CRM Webhook Configurator</span>
+        </button>
+
+        <button
+          onClick={() => setActiveTab("analytics")}
+          className={`pb-3 text-sm font-semibold flex items-center space-x-2 transition-all cursor-pointer ${
+            activeTab === "analytics" ? "text-cyan-400 border-b-2 border-cyan-400" : "text-slate-400 hover:text-slate-200"
+          }`}
+        >
+          <BarChart3 className="w-4 h-4" />
+          <span>Analytics</span>
         </button>
       </div>
 
@@ -413,6 +431,20 @@ export default function InstituteDashboardPage() {
   "timestamp": "2026-09-02T10:00:00Z"
 }`}
             </pre>
+          </div>
+        </div>
+      )}
+
+      {/* Tab 3: Analytics Dashboard */}
+      {activeTab === "analytics" && (
+        <div className="space-y-6">
+          <div className="glass-panel rounded-2xl p-6 border border-slate-800">
+            <h3 className="text-base font-bold text-white mb-2">Lead Conversion Funnel</h3>
+            <p className="text-xs text-slate-400 mb-6">Track the progression of your AI-referred candidates from initial lead to final enrollment.</p>
+            
+            <div className="bg-slate-950/50 p-4 rounded-xl border border-slate-800">
+              <FunnelChart data={funnelData} />
+            </div>
           </div>
         </div>
       )}

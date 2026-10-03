@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import VapiInterviewRoom from "@/components/VapiInterviewRoom";
 import ProctoringHUD from "./components/ProctoringHUD";
 import { useParams, useRouter } from "next/navigation";
-import { useAuth, UserButton } from "@clerk/nextjs";
+import { useAuth, UserButton, useUser } from "@clerk/nextjs";
 import { authenticatedFetch } from "@/lib/apiClient";
 import {
   Code,
@@ -20,12 +20,16 @@ import {
   Building2,
   Lock,
 } from "lucide-react";
+import I18nProvider from "@/components/I18nProvider";
+import { useTranslations } from "next-intl";
 
 export default function SprintWorkspace() {
   const params = useParams();
   const router = useRouter();
   const { getToken, isSignedIn } = useAuth();
+  const { user } = useUser();
   const sprintId = (params?.id as string) || "demo-sprint-id";
+  const t = useTranslations("SprintHUD");
 
   const [codePayload, setCodePayload] = useState<string>(
     `def main():\n    # Payment queue processor with hardcoded SQL insertion\n    amount = 250.00\n    query = f"INSERT INTO Payments (Amount) VALUES ({amount})"\n    print("[EXECUTION]: Processing payment record...")\n    print(f"[EXECUTION]: Executed query: {query}")\n    print("[SUCCESS]: Payment processed successfully.")\n\nif __name__ == '__main__':\n    main()`
@@ -41,15 +45,52 @@ export default function SprintWorkspace() {
   // Phase 11: Anti-Cheat & Plagiarism Detection — Paste Tracker State
   const [suspectedPasting, setSuspectedPasting] = useState<boolean>(false);
   const [pasteWarning, setPasteWarning] = useState<string | null>(null);
+  const [totalPastedLines, setTotalPastedLines] = useState<number>(0);
+
+  // Phase 10: Offline Resilience (Service Workers & Local Storage)
+  const [isOffline, setIsOffline] = useState<boolean>(false);
+
+  useEffect(() => {
+    // Check initial online status
+    setIsOffline(!navigator.onLine);
+
+    const handleOffline = () => setIsOffline(true);
+    const handleOnline = () => {
+      setIsOffline(false);
+      setStatusMessage("Connection restored! Your code is safely synced.");
+    };
+
+    window.addEventListener("offline", handleOffline);
+    window.addEventListener("online", handleOnline);
+
+    // Load any offline draft if it exists for this sprint
+    const draft = localStorage.getItem(`sprint_draft_${sprintId}`);
+    if (draft) setCodePayload(draft);
+
+    return () => {
+      window.removeEventListener("offline", handleOffline);
+      window.removeEventListener("online", handleOnline);
+    };
+  }, [sprintId]);
+
+  // Persist code changes to local storage for offline resilience
+  useEffect(() => {
+    if (codePayload) {
+      localStorage.setItem(`sprint_draft_${sprintId}`, codePayload);
+    }
+  }, [codePayload, sprintId]);
 
   const handlePaste = (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
     const pastedText = e.clipboardData.getData("text");
     if (pastedText) {
       const lineCount = pastedText.split(/\r\n|\r|\n/).length;
-      if (lineCount > 50) {
+      const newTotal = totalPastedLines + lineCount;
+      setTotalPastedLines(newTotal);
+      
+      if (newTotal > 50) {
         setSuspectedPasting(true);
         setPasteWarning(
-          `Notice: Large code paste detected (${lineCount} lines). Be prepared to discuss and explain your implementation during the review.`
+          `Notice: Large code paste detected (${newTotal} lines total). Be prepared to discuss and explain your implementation during the review.`
         );
       }
     }
@@ -129,9 +170,15 @@ export default function SprintWorkspace() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans pb-16">
-      {/* Navbar */}
-      <header className="border-b border-slate-800 bg-slate-900/60 backdrop-blur-md sticky top-0 z-50">
+    <I18nProvider>
+      <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans pb-16">
+        {/* Navbar */}
+        <header className="border-b border-slate-800 bg-slate-900/60 backdrop-blur-md sticky top-0 z-50">
+          {isOffline && (
+            <div className="w-full bg-amber-500/10 text-amber-400 text-center text-xs py-1.5 font-semibold border-b border-amber-500/20">
+              No internet connection. Your work is being saved locally.
+            </div>
+          )}
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
           <div className="flex items-center space-x-3 cursor-pointer" onClick={() => router.push("/")}>
             <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-600 to-purple-600 flex items-center justify-center font-bold text-white shadow-lg shadow-indigo-500/20">
@@ -190,7 +237,7 @@ export default function SprintWorkspace() {
             <div className="flex items-center justify-between pb-3 border-b border-slate-800">
               <div className="flex items-center space-x-2">
                 <Code className="w-5 h-5 text-indigo-400" />
-                <h3 className="text-sm font-semibold text-white">Micro-Internship Code Submission</h3>
+                <h3 className="text-sm font-semibold text-white">{t("codeEditor")}</h3>
               </div>
               <span className="text-[10px] px-2.5 py-0.5 rounded bg-indigo-500/10 text-indigo-300 font-semibold border border-indigo-500/20">
                 Language: Python
@@ -219,15 +266,21 @@ export default function SprintWorkspace() {
 
             <button
               onClick={handleSubmitCode}
-              disabled={pipelineState !== "editor"}
+              disabled={pipelineState !== "editor" || isOffline}
               className={`py-3 px-4 rounded-xl font-medium text-xs flex items-center justify-center space-x-2 transition-all cursor-pointer ${
-                pipelineState === "editor"
+                (pipelineState === "editor" && !isOffline)
                   ? "bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white shadow-lg shadow-indigo-500/25"
                   : "bg-slate-800 text-slate-500 cursor-not-allowed"
               }`}
             >
               <Play className="w-4 h-4" />
-              <span>{pipelineState === "submitting" ? "Submitting Code..." : "Submit Code"}</span>
+              <span>
+                {isOffline 
+                  ? "Offline (Code Saved)" 
+                  : pipelineState === "submitting" 
+                  ? t("submitting") 
+                  : t("submitSprint")}
+              </span>
             </button>
           </div>
 
@@ -265,9 +318,9 @@ export default function SprintWorkspace() {
             {/* Voice Defense Simulator Component */}
             {pipelineState === "voice_interview" || pipelineState === "completed" || pipelineState === "passed" ? (
               <VapiInterviewRoom
-                userId="33333333-4444-5555-6666-777777777777"
+                userId={user?.id || "anonymous-user"}
                 jobDescription="Build & Defend Sprint Review"
-                selectedTenantId={selectedTenantId}
+                selectedTenantId={selectedTenantId || "default-tenant"}
                 onLeadReferralGenerated={handleLeadOrCredentialGenerated}
               />
             ) : null}
@@ -293,5 +346,6 @@ export default function SprintWorkspace() {
         </div>
       </main>
     </div>
+    </I18nProvider>
   );
 }

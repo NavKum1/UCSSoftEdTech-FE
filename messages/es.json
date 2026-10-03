@@ -1,0 +1,18 @@
+{
+  "SprintHUD": {
+    "cameraEnabled": "Cámara Activada",
+    "microphoneEnabled": "Micrófono Activo",
+    "screenShared": "Pantalla Compartida",
+    "defenseStatus": "Estado de Defensa",
+    "verifyingIdentity": "Verificando Identidad...",
+    "defenseCommencing": "Comenzando Defensa",
+    "defenseCompleted": "Defensa Completada",
+    "active": "Activo",
+    "timeRemaining": "Tiempo Restante",
+    "integrityScore": "Puntuación de Integridad",
+    "codeEditor": "Editor de Arquitectura",
+    "submitSprint": "Enviar Sprint",
+    "submitting": "Enviando...",
+    "proctoringActive": "Supervisión Zero-Trust Activa"
+  }
+}

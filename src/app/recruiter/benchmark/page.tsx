@@ -108,6 +108,10 @@ export default function RecruiterBenchmarkPage() {
   };
 
   const handleRunPlagiarismScan = async () => {
+    if (!selectedRecord) {
+      setPlagiarismError("No candidate selected for originality check.");
+      return;
+    }
     setPlagiarismScanning(true);
     setPlagiarismReport(null);
     setPlagiarismError(null);
@@ -116,7 +120,7 @@ export default function RecruiterBenchmarkPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          submissionId: selectedRecord?.sprintSubmissionId || "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+          submissionId: selectedRecord.sprintSubmissionId,
           codePayload: plagiarismCode
         })
       });
