@@ -7,8 +7,10 @@ import {
   Send, RefreshCw, Filter, ShieldCheck, AlertCircle, Sparkles, 
   Search, ArrowUpRight, Link2, ExternalLink
 } from "lucide-react";
+import { useGeo } from "@/context/GeoContext";
 
 export default function PartnerDashboardPage() {
+  const { config } = useGeo();
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [webhookUrl, setWebhookUrl] = useState<string>("");
@@ -219,7 +221,7 @@ export default function PartnerDashboardPage() {
                 </span>
               </h3>
               <p className="text-xs text-slate-400 mt-0.5">
-                Automated outbound AI voice cart recovery, Widevine L1 dynamic forensic watermarking, Section 194J TDS mentor payroll &amp; embeddable creator tracking pixels.
+                Automated outbound AI voice cart recovery, Widevine L1 dynamic forensic watermarking, {config.tax.regimeTitle} &amp; embeddable creator tracking pixels.
               </p>
             </div>
           </div>

@@ -7,8 +7,10 @@ import {
   DollarSign, Activity, Lock, Search, FileText, Check, Copy, ArrowUpRight,
   X, Send
 } from "lucide-react";
+import { useGeo } from "@/context/GeoContext";
 
 export default function EdulexaDashboardPage() {
+  const { region, config, formatCurrency, convertFromInr } = useGeo();
   const [activeTab, setActiveTab] = useState<"voice" | "shield" | "hrms" | "api">("voice");
   const [metrics, setMetrics] = useState<any>(null);
   const [campaigns, setCampaigns] = useState<any[]>([]);
@@ -339,7 +341,7 @@ export default function EdulexaDashboardPage() {
               <DollarSign className="h-4 w-4 text-emerald-400" />
             </div>
             <div className="text-2xl font-bold text-white mt-2">
-              ₹{(metrics?.totalRecoveredGmv || 3450000).toLocaleString()}
+              {formatCurrency(convertFromInr(metrics?.totalRecoveredGmv || config.metrics.recoveredGmvSample))}
             </div>
             <div className="text-[11px] text-emerald-400 mt-1 font-mono">
               +24.3% checkout recovery with voice follow-up
@@ -374,14 +376,16 @@ export default function EdulexaDashboardPage() {
 
           <div className="rounded-xl border border-slate-800 bg-slate-900/50 p-5 shadow-sm">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-mono uppercase tracking-wider text-slate-400">Mentor Tax Withheld</span>
+              <span className="text-xs font-mono uppercase tracking-wider text-slate-400">
+                {region === "IN" ? "Mentor TDS Withheld" : region === "US" ? "1099-NEC Tax Total" : "DAC7 Payout Total"}
+              </span>
               <FileSpreadsheet className="h-4 w-4 text-amber-400" />
             </div>
             <div className="text-2xl font-bold text-white mt-2">
-              ₹{(metrics?.totalTdsWithheldRupees || 18500).toLocaleString()}
+              {formatCurrency(convertFromInr(metrics?.totalTdsWithheldRupees || config.metrics.taxWithheldSample))}
             </div>
             <div className="text-[11px] text-amber-400 mt-1 font-mono">
-              10% tax deducted automatically
+              {config.tax.withholdingLabel}
             </div>
           </div>
         </div>
@@ -547,7 +551,7 @@ export default function EdulexaDashboardPage() {
                         </td>
                         <td className="py-3 px-3 max-w-[200px] truncate">{c.cartItemName}</td>
                         <td className="py-3 px-3 font-mono font-medium text-white">
-                          ₹{c.cartAmount.toLocaleString()}
+                          {formatCurrency(convertFromInr(c.cartAmount))}
                         </td>
                         <td className="py-3 px-3">
                           <span className="px-2 py-0.5 rounded font-mono text-[10px] bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
@@ -762,7 +766,7 @@ export default function EdulexaDashboardPage() {
                 Process Mentor Session Payout
               </h3>
               <p className="text-xs text-slate-400">
-                Hourly and per-session compensation with automated Indian Section 194J TDS deduction.
+                Hourly and per-session compensation with automated {config.tax.regimeTitle}.
               </p>
 
               <form onSubmit={handleProcessPayout} className="space-y-3.5">
@@ -785,10 +789,11 @@ export default function EdulexaDashboardPage() {
                   />
                 </div>
                 <div>
-                  <label className="text-xs text-slate-300 font-medium">PAN Card Number</label>
+                  <label className="text-xs text-slate-300 font-medium">{config.tax.taxIdLabel}</label>
                   <input
                     type="text"
                     value={mentorPan}
+                    placeholder={config.tax.taxIdPlaceholder}
                     onChange={(e) => setMentorPan(e.target.value.toUpperCase())}
                     className="w-full mt-1 px-3 py-2 bg-slate-950 border border-slate-700 rounded-lg text-xs text-white font-mono focus:outline-none focus:border-amber-500"
                   />
@@ -804,7 +809,7 @@ export default function EdulexaDashboardPage() {
                     />
                   </div>
                   <div>
-                    <label className="text-xs text-slate-300 font-medium">Rate / Unit (INR)</label>
+                    <label className="text-xs text-slate-300 font-medium">Rate / Unit ({config.currency})</label>
                     <input
                       type="number"
                       value={sessionRate}
@@ -817,15 +822,15 @@ export default function EdulexaDashboardPage() {
                 <div className="p-3 bg-slate-950/80 rounded-lg border border-slate-800 text-xs font-mono space-y-1">
                   <div className="flex justify-between text-slate-400">
                     <span>Gross Calculation:</span>
-                    <span>₹{(parseFloat(sessionsCount || "0") * parseFloat(sessionRate || "0")).toLocaleString()}</span>
+                    <span>{formatCurrency(parseFloat(sessionsCount || "0") * parseFloat(sessionRate || "0"))}</span>
                   </div>
                   <div className="flex justify-between text-amber-400">
-                    <span>10% TDS (Sec 194J):</span>
-                    <span>-₹{((parseFloat(sessionsCount || "0") * parseFloat(sessionRate || "0")) * 0.1).toLocaleString()}</span>
+                    <span>{config.tax.withholdingLabel}:</span>
+                    <span>-{formatCurrency((parseFloat(sessionsCount || "0") * parseFloat(sessionRate || "0")) * (config.tax.withholdingRatePercent / 100))}</span>
                   </div>
                   <div className="flex justify-between font-bold text-white pt-1 border-t border-slate-800">
-                    <span>Net Payout:</span>
-                    <span>₹{((parseFloat(sessionsCount || "0") * parseFloat(sessionRate || "0")) * 0.9).toLocaleString()}</span>
+                    <span>Net Payout ({config.tax.payoutRail}):</span>
+                    <span>{formatCurrency((parseFloat(sessionsCount || "0") * parseFloat(sessionRate || "0")) * (1 - config.tax.withholdingRatePercent / 100))}</span>
                   </div>
                 </div>
 
@@ -853,7 +858,7 @@ export default function EdulexaDashboardPage() {
                     className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-medium transition shadow-sm cursor-pointer"
                   >
                     {loadingForm16 ? <RefreshCw className="h-3.5 w-3.5 animate-spin" /> : <FileText className="h-3.5 w-3.5" />}
-                    <span>Generate Form 16A</span>
+                    <span>Generate {config.tax.certificateName}</span>
                   </button>
 
                   <button
@@ -861,7 +866,7 @@ export default function EdulexaDashboardPage() {
                     className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-medium transition shadow-sm cursor-pointer"
                   >
                     <Download className="h-3.5 w-3.5" />
-                    <span>Export NEFT/RTGS Batch CSV</span>
+                    <span>Export {config.tax.payoutRail.split("/")[0]} Batch CSV</span>
                   </button>
                 </div>
               </div>
@@ -871,9 +876,9 @@ export default function EdulexaDashboardPage() {
                   <thead className="border-b border-slate-800 text-slate-400 font-mono uppercase text-[10px]">
                     <tr>
                       <th className="py-2.5 px-3">Mentor</th>
-                      <th className="py-2.5 px-3">PAN</th>
+                      <th className="py-2.5 px-3">{config.tax.taxIdLabel.split(" ")[0]}</th>
                       <th className="py-2.5 px-3">Gross</th>
-                      <th className="py-2.5 px-3">TDS (10%)</th>
+                      <th className="py-2.5 px-3">{config.tax.withholdingLabel.split("(")[0]}</th>
                       <th className="py-2.5 px-3">Net Payout</th>
                       <th className="py-2.5 px-3">Batch Ref</th>
                       <th className="py-2.5 px-3">Status</th>
@@ -889,13 +894,13 @@ export default function EdulexaDashboardPage() {
                         </td>
                         <td className="py-3 px-3 font-mono text-slate-300">{p.mentorPan}</td>
                         <td className="py-3 px-3 font-mono font-medium text-slate-300">
-                          ₹{p.grossAmount.toLocaleString()}
+                          {formatCurrency(convertFromInr(p.grossAmount))}
                         </td>
                         <td className="py-3 px-3 font-mono text-amber-400 font-medium">
-                          -₹{p.tdsAmount.toLocaleString()}
+                          -{formatCurrency(convertFromInr(p.tdsAmount))}
                         </td>
                         <td className="py-3 px-3 font-mono text-emerald-400 font-bold">
-                          ₹{p.netAmount.toLocaleString()}
+                          {formatCurrency(convertFromInr(p.netAmount))}
                         </td>
                         <td className="py-3 px-3 font-mono text-[10px] text-slate-400">
                           {p.paymentBatchReference}
@@ -966,7 +971,7 @@ export default function EdulexaDashboardPage() {
                   POST /v1/payouts
                 </span>
                 <p className="text-[11px] text-slate-300">
-                  Sec 194J auto-TDS mentor payroll.
+                  Automated mentor compensation &amp; tax compliance.
                 </p>
               </div>
               <div className="p-3.5 rounded-lg border border-slate-800 bg-slate-950 space-y-1.5">
@@ -1167,16 +1172,16 @@ await fetch("https://api.yourdomain.com/v1/voice/campaigns", {
                 <span className="text-slate-400 block text-[10px]">Quarter: {form16ModalData.quarter}</span>
               </div>
               <div>
-                <span className="text-slate-500 block text-[10px]">TAX SECTION</span>
-                <span className="text-amber-400 font-semibold">{form16ModalData.taxSection}</span>
+                <span className="text-slate-500 block text-[10px]">TAX COMPLIANCE FRAMEWORK</span>
+                <span className="text-amber-400 font-semibold">{form16ModalData.taxSection || config.tax.regimeTitle}</span>
               </div>
               <div className="pt-2 border-t border-slate-800">
                 <span className="text-slate-500 block text-[10px]">GROSS AMOUNT PAID</span>
-                <span className="text-white text-sm font-bold">₹{form16ModalData.totalGrossAmountPaid?.toLocaleString()}</span>
+                <span className="text-white text-sm font-bold">{formatCurrency(convertFromInr(form16ModalData.totalGrossAmountPaid || 0))}</span>
               </div>
               <div className="pt-2 border-t border-slate-800">
-                <span className="text-slate-500 block text-[10px]">TOTAL TDS WITHHELD &amp; DEPOSITED</span>
-                <span className="text-emerald-400 text-sm font-bold">₹{form16ModalData.totalTdsDeducted?.toLocaleString()}</span>
+                <span className="text-slate-500 block text-[10px]">TOTAL TAX WITHHELD ({config.tax.withholdingLabel})</span>
+                <span className="text-emerald-400 text-sm font-bold">{formatCurrency(convertFromInr(form16ModalData.totalTdsDeducted || 0))}</span>
               </div>
             </div>
 

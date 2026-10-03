@@ -19,6 +19,7 @@ import {
   GraduationCap,
   Sparkles,
 } from "lucide-react";
+import { ProductRegionSwitcher } from "@/context/GeoContext";
 
 export default function GlobalNavigation() {
   const pathname = usePathname();
@@ -113,6 +114,9 @@ export default function GlobalNavigation() {
             <Mic className="w-3.5 h-3.5 text-indigo-400" />
             <span>48m left</span>
           </Link>
+
+          {/* Country / Currency & Compliance Switcher */}
+          <ProductRegionSwitcher />
 
           {/* Portals Switcher */}
           <div className="relative">

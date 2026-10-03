@@ -25,6 +25,7 @@ import {
   Share2,
   RefreshCw,
 } from "lucide-react";
+import { useGeo } from "@/context/GeoContext";
 
 interface CompetencyDimension {
   dimension: string;
@@ -84,6 +85,7 @@ interface Member360Data {
 }
 
 export default function Member360CommandCenterPage() {
+  const { config } = useGeo();
   const [data, setData] = useState<Member360Data | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -383,7 +385,7 @@ export default function Member360CommandCenterPage() {
               </div>
 
               <div className="mt-4 pt-3 border-t border-slate-800/60 flex items-center justify-between">
-                <span className="text-xs text-indigo-300 font-medium">Sec 194J Verified</span>
+                <span className="text-xs text-indigo-300 font-medium">{config.tax.certificateName.split(" ")[0]} Verified</span>
                 <Link
                   href="/mentors/book"
                   className="px-3 py-1.5 rounded-lg bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white text-xs font-semibold flex items-center gap-1 shadow-md shadow-indigo-500/20 transition-all"
@@ -604,7 +606,7 @@ export default function Member360CommandCenterPage() {
             <div>
               <h3 className="font-bold text-base text-white">Edulexa RevEngine &amp; Compliance Integration</h3>
               <p className="text-xs text-slate-400 mt-1 max-w-xl">
-                Active Member subscription, verified DRM forensic watermarking tokens, and Indian Section 194J TDS certificates (Form 16A) automatically synchronized with government TAN BLRE12345T.
+                Active Member subscription, verified DRM forensic watermarking tokens, and {config.tax.regimeTitle} ({config.tax.certificateName}) synchronized with {config.tax.institutionLegalNotice.split("•")[0]}.
               </p>
             </div>
           </div>

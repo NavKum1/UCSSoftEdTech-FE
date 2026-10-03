@@ -20,6 +20,7 @@ import {
   Copy,
   Download,
 } from "lucide-react";
+import { useGeo } from "@/context/GeoContext";
 
 interface MentorProfile {
   mentorId: string;
@@ -52,6 +53,7 @@ interface BookingResponse {
 }
 
 export default function BookMentorOfficeHoursPage() {
+  const { region, config, formatCurrency, convertFromInr } = useGeo();
   const [mentors, setMentors] = useState<MentorProfile[]>([]);
   const [selectedMentor, setSelectedMentor] = useState<MentorProfile | null>(null);
   const [isLoadingMentors, setIsLoadingMentors] = useState<boolean>(true);
@@ -175,8 +177,8 @@ END:VCALENDAR`;
     );
   }
 
-  const grossFee = selectedMentor.ratePerSessionInr;
-  const statutoryTds = Math.round(grossFee * 0.1);
+  const grossFee = convertFromInr(selectedMentor.ratePerSessionInr);
+  const statutoryTds = Math.round(grossFee * (config.tax.withholdingRatePercent / 100));
   const netTakeHome = grossFee - statutoryTds;
 
   return (
@@ -202,7 +204,7 @@ END:VCALENDAR`;
               <ShieldCheck className="w-6 h-6 text-emerald-400" />
               <div>
                 <div className="text-xs font-bold text-slate-200">Edulexa Payout Engine</div>
-                <div className="text-[11px] text-slate-400">10% Sec 194J Statutory TDS Automated</div>
+                <div className="text-[11px] text-slate-400">{config.tax.withholdingLabel}</div>
               </div>
             </div>
             <Link
@@ -266,7 +268,7 @@ END:VCALENDAR`;
 
                     <div className="text-right">
                       <div className="text-lg font-black text-white">
-                        ₹{m.ratePerSessionInr.toLocaleString("en-IN")}
+                        {formatCurrency(convertFromInr(m.ratePerSessionInr))}
                       </div>
                       <div className="text-[11px] text-slate-400 font-mono">per 45m session</div>
                     </div>
@@ -399,28 +401,31 @@ END:VCALENDAR`;
                 </div>
               </div>
 
-              {/* Transparent Indian Statutory Section 194J Financial Ledger */}
+              {/* Transparent Regional Statutory Financial Ledger */}
               <div className="p-4 rounded-xl bg-slate-950 border border-slate-800/90 space-y-2.5">
+                <div className="text-[11px] font-mono uppercase text-indigo-400 font-semibold mb-1">
+                  {config.tax.regimeTitle}
+                </div>
                 <div className="flex items-center justify-between text-xs text-slate-400">
-                  <span className="font-semibold text-slate-300">Candidate Fee:</span>
-                  <span className="font-bold text-white font-mono">₹{grossFee.toLocaleString("en-IN")}.00</span>
+                  <span className="font-semibold text-slate-300">Candidate Session Fee:</span>
+                  <span className="font-bold text-white font-mono">{formatCurrency(grossFee)}.00</span>
                 </div>
                 <div className="flex items-center justify-between text-xs text-slate-400">
                   <span className="font-semibold text-slate-300">Gross Mentor Earning:</span>
-                  <span className="font-mono text-slate-200">₹{grossFee.toLocaleString("en-IN")}.00</span>
+                  <span className="font-mono text-slate-200">{formatCurrency(grossFee)}.00</span>
                 </div>
                 <div className="flex items-center justify-between text-xs text-amber-400 bg-amber-500/10 px-2.5 py-1.5 rounded-lg border border-amber-500/20">
-                  <span className="font-semibold">Section 194J TDS Withholding (10%):</span>
-                  <span className="font-mono font-bold">-₹{statutoryTds.toLocaleString("en-IN")}.00</span>
+                  <span className="font-semibold">{config.tax.withholdingLabel}:</span>
+                  <span className="font-mono font-bold">-{formatCurrency(statutoryTds)}.00</span>
                 </div>
                 <div className="pt-2 border-t border-slate-800 flex items-center justify-between text-xs">
-                  <span className="font-bold text-emerald-400">Net Mentor Bank Payout (NEFT):</span>
+                  <span className="font-bold text-emerald-400">Net Mentor Bank Payout ({config.tax.payoutRail}):</span>
                   <span className="font-black text-emerald-400 font-mono text-sm">
-                    ₹{netTakeHome.toLocaleString("en-IN")}.00
+                    {formatCurrency(netTakeHome)}.00
                   </span>
                 </div>
                 <div className="text-[10px] text-slate-500 font-mono leading-tight">
-                  TAN: BLRE12345T • Section 194J TDS certificate (Form 16A) automatically credited to mentor PAN upon quarterly reconciliation.
+                  {config.tax.institutionLegalNotice}
                 </div>
               </div>
 
@@ -446,7 +451,7 @@ END:VCALENDAR`;
                 ) : (
                   <>
                     <Video className="w-4 h-4" />
-                    <span>Confirm &amp; Book Office Hours (₹{grossFee})</span>
+                    <span>Confirm &amp; Book Office Hours ({formatCurrency(grossFee)})</span>
                   </>
                 )}
               </button>
@@ -466,7 +471,7 @@ END:VCALENDAR`;
               <div>
                 <h3 className="text-xl font-black text-white">Office Hours Confirmed!</h3>
                 <p className="text-xs text-slate-400 mt-0.5">
-                  Meeting room initialized &amp; Edulexa Section 194J Payout Ledger updated.
+                  Meeting room initialized &amp; Edulexa {config.tax.regimeTitle} updated.
                 </p>
               </div>
             </div>
@@ -489,9 +494,9 @@ END:VCALENDAR`;
                 <span className="font-mono text-slate-300">{bookingResult.batchReference}</span>
               </div>
               <div className="flex items-center justify-between text-xs pt-2 border-t border-slate-800/80">
-                <span className="text-emerald-400 font-semibold">Net Payout to Mentor (After 10% TDS):</span>
+                <span className="text-emerald-400 font-semibold">Net Payout to Mentor ({config.tax.withholdingLabel}):</span>
                 <span className="font-mono text-emerald-400 font-bold">
-                  ₹{bookingResult.mentorNetPayout.toLocaleString("en-IN")}.00
+                  {formatCurrency(convertFromInr(bookingResult.mentorNetPayout))}.00
                 </span>
               </div>
             </div>
