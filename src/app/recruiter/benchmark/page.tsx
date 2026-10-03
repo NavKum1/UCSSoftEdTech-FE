@@ -51,6 +51,7 @@ export default function RecruiterBenchmarkPage() {
     "function solveChallenge(data) {\n  // Quick implementation with heavy branching\n  if (!data) return null;\n  return data.map(item => item * 2);\n}"
   );
   const [plagiarismReport, setPlagiarismReport] = useState<any | null>(null);
+  const [plagiarismScanning, setPlagiarismScanning] = useState<boolean>(false);
   const [fetchError, setFetchError] = useState<string | null>(null);
   const [plagiarismError, setPlagiarismError] = useState<string | null>(null);
 

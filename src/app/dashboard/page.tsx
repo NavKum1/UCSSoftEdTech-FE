@@ -575,7 +575,11 @@ export default function Member360CommandCenterPage() {
                   </div>
                   <h4 className="font-bold text-sm text-white">{opp.roleTitle}</h4>
                   <div className="text-base font-black text-emerald-400 font-mono mt-2">
-                    ${opp.offeredCompensationUsd.toLocaleString()} USD
+                    {config.currency === "INR"
+                      ? `₹${Math.round(opp.offeredCompensationUsd * 0.22).toLocaleString("en-IN")} Lakhs CTC ($${opp.offeredCompensationUsd.toLocaleString()} USD eq.)`
+                      : config.currency === "EUR"
+                      ? `€${Math.round(opp.offeredCompensationUsd * 0.92).toLocaleString()} EUR ($${opp.offeredCompensationUsd.toLocaleString()} USD)`
+                      : `$${opp.offeredCompensationUsd.toLocaleString()} USD`}
                   </div>
                   <p className="text-xs text-slate-400 mt-1 line-clamp-2">
                     {opp.fastTrackInterviewType}

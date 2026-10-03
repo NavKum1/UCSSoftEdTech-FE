@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import { useGeo } from "@/context/GeoContext";
 
 interface CareerAgentConfig {
   id: string;
@@ -65,6 +66,7 @@ interface NegotiationDetail {
 }
 
 export default function AutonomousCareerAgentPage() {
+  const { config: geo } = useGeo();
   const candidateUserId = "6d940ce2-2fc7-4525-9aff-af62f1956550";
   const [config, setConfig] = useState<CareerAgentConfig | null>(null);
   const [negotiations, setNegotiations] = useState<InboundNegotiation[]>([]);
@@ -331,9 +333,18 @@ export default function AutonomousCareerAgentPage() {
 
               <div>
                 <label className="text-xs text-slate-400 flex items-center justify-between mb-1">
-                  <span>Minimum Base Salary (USD)</span>
+                  <span>Minimum Base Salary (USD / Global)</span>
                   <span className="text-white font-mono font-bold">
-                    ${Number(config?.minBaseSalary || 280000).toLocaleString()}
+                    ${Number(config?.minBaseSalary || 280000).toLocaleString()}{" "}
+                    {geo.currency === "INR" ? (
+                      <span className="text-emerald-400 text-[11px] font-normal">
+                        (~₹{Math.round((config?.minBaseSalary || 280000) * 0.22)}L CTC eq.)
+                      </span>
+                    ) : geo.currency === "EUR" ? (
+                      <span className="text-emerald-400 text-[11px] font-normal">
+                        (~€{Math.round(((config?.minBaseSalary || 280000) * 0.92) / 1000)}k eq.)
+                      </span>
+                    ) : null}
                   </span>
                 </label>
                 <input
@@ -359,9 +370,18 @@ export default function AutonomousCareerAgentPage() {
 
               <div>
                 <label className="text-xs text-slate-400 flex items-center justify-between mb-1">
-                  <span>Minimum Annual Equity Grant (USD)</span>
+                  <span>Minimum Annual Equity Grant</span>
                   <span className="text-white font-mono font-bold">
-                    ${Number(config?.minEquityGrant || 140000).toLocaleString()}
+                    ${Number(config?.minEquityGrant || 140000).toLocaleString()}{" "}
+                    {geo.currency === "INR" ? (
+                      <span className="text-emerald-400 text-[11px] font-normal">
+                        (~₹{Math.round((config?.minEquityGrant || 140000) * 0.22)}L eq.)
+                      </span>
+                    ) : geo.currency === "EUR" ? (
+                      <span className="text-emerald-400 text-[11px] font-normal">
+                        (~€{Math.round(((config?.minEquityGrant || 140000) * 0.92) / 1000)}k eq.)
+                      </span>
+                    ) : null}
                   </span>
                 </label>
                 <input
@@ -394,7 +414,16 @@ export default function AutonomousCareerAgentPage() {
                   <div className="text-xs text-slate-400">Enforced by Auto-Decline</div>
                 </div>
                 <div className="text-lg font-bold font-mono text-emerald-300">
-                  ${Number(config?.minTotalComp || 420000).toLocaleString()}
+                  ${Number(config?.minTotalComp || 420000).toLocaleString()}{" "}
+                  {geo.currency === "INR" ? (
+                    <span className="text-xs font-normal text-emerald-400">
+                      (~₹{Math.round((config?.minTotalComp || 420000) * 0.22)}L CTC)
+                    </span>
+                  ) : geo.currency === "EUR" ? (
+                    <span className="text-xs font-normal text-emerald-400">
+                      (~€{Math.round(((config?.minTotalComp || 420000) * 0.92) / 1000)}k)
+                    </span>
+                  ) : null}
                 </div>
               </div>
             </div>
@@ -533,11 +562,29 @@ export default function AutonomousCareerAgentPage() {
                     <div className="pt-2 border-t border-slate-800/80 flex items-center justify-between text-xs font-mono">
                       <span className="text-slate-400">Current Offer:</span>
                       <span className="text-white font-bold">
-                        ${Number(neg.currentTotalComp).toLocaleString()}{" "}
-                        <span className="text-[10px] text-slate-400 font-normal">
-                          (${Number(neg.currentBaseSalary).toLocaleString()}b + $
-                          {Number(neg.currentEquity).toLocaleString()}e)
-                        </span>
+                        {geo.currency === "INR" ? (
+                          <>
+                            ₹{Math.round(Number(neg.currentTotalComp) * 0.22)}L CTC{" "}
+                            <span className="text-[10px] text-slate-400 font-normal">
+                              (${Number(neg.currentTotalComp).toLocaleString()} USD)
+                            </span>
+                          </>
+                        ) : geo.currency === "EUR" ? (
+                          <>
+                            €{Math.round((Number(neg.currentTotalComp) * 0.92) / 1000)}k EUR{" "}
+                            <span className="text-[10px] text-slate-400 font-normal">
+                              (${Number(neg.currentTotalComp).toLocaleString()} USD)
+                            </span>
+                          </>
+                        ) : (
+                          <>
+                            ${Number(neg.currentTotalComp).toLocaleString()}{" "}
+                            <span className="text-[10px] text-slate-400 font-normal">
+                              (${Number(neg.currentBaseSalary).toLocaleString()}b + $
+                              {Number(neg.currentEquity).toLocaleString()}e)
+                            </span>
+                          </>
+                        )}
                       </span>
                     </div>
 
