@@ -185,7 +185,7 @@ export default function Member360CommandCenterPage() {
   return (
     <div className="min-h-screen bg-background text-foreground font-sans pb-24">
       {/* 1. Member Profile & Quick Metric Hero Bar */}
-      <section className="border-b border-border/80 bg-gradient-to-b from-indigo-950/40 via-slate-900/60 to-slate-950 px-6 py-8">
+      <section className="border-b border-border/80 bg-gradient-to-b from-indigo-50/60 via-card to-background dark:from-indigo-950/40 dark:via-slate-900/60 dark:to-slate-950 px-6 py-8">
         <div className="max-w-7xl mx-auto flex flex-col lg:flex-row lg:items-center justify-between gap-6">
           {/* Candidate Identity */}
           <div className="flex items-center gap-5">
@@ -204,12 +204,12 @@ export default function Member360CommandCenterPage() {
                   Pro Fellow
                 </span>
               </div>
-              <p className="text-xs sm:text-sm text-indigo-600 dark:text-indigo-300 font-medium mt-0.5">
+              <p className="text-xs sm:text-sm text-indigo-700 dark:text-indigo-300 font-semibold mt-0.5">
                 {data.targetRole}
               </p>
               <div className="flex items-center gap-4 text-xs text-muted-foreground font-mono mt-2">
-                <span className="flex items-center gap-1.5 text-amber-600 dark:text-amber-300 font-semibold">
-                  <Flame className="w-4 h-4 text-amber-700 dark:text-amber-400 fill-amber-400" />
+                <span className="flex items-center gap-1.5 text-amber-700 dark:text-amber-300 font-semibold">
+                  <Flame className="w-4 h-4 text-amber-600 dark:text-amber-400 fill-amber-400" />
                   {data.activeStreakDays} Days Streak
                 </span>
                 <span className="text-muted-foreground">•</span>
@@ -251,7 +251,7 @@ export default function Member360CommandCenterPage() {
             {/* Share Public Passport */}
             <button
               onClick={copyPublicShare}
-              className="px-4 py-3 rounded-2xl bg-indigo-600/20 hover:bg-indigo-600/30 border border-indigo-500/40 text-indigo-600 dark:text-indigo-300 hover:text-white text-xs font-semibold flex items-center gap-2 transition-all"
+              className="px-4 py-3 rounded-2xl bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-600/20 dark:hover:bg-indigo-600/30 border border-indigo-200 dark:border-indigo-500/40 text-indigo-700 dark:text-indigo-300 text-xs font-semibold flex items-center gap-2 transition-all shadow-sm"
             >
               <Share2 className="w-4 h-4" />
               <span>{copiedShareLink ? "Link Copied!" : "Public Passport"}</span>
@@ -480,7 +480,7 @@ export default function Member360CommandCenterPage() {
 
             {/* Legend */}
             <div className="w-full pt-4 border-t border-border/80 flex items-center justify-around text-xs font-mono">
-              <span className="flex items-center gap-2 text-indigo-600 dark:text-indigo-300">
+              <span className="flex items-center gap-2 text-indigo-700 dark:text-indigo-400 font-medium">
                 <span className="w-3 h-3 rounded-full bg-indigo-500 shadow-sm shadow-indigo-500" />
                 Alex Morgan (Candidate)
               </span>
@@ -512,7 +512,7 @@ export default function Member360CommandCenterPage() {
                     <div className="flex items-start justify-between">
                       <div>
                         <div className="text-xs font-bold text-foreground">{comp.dimension}</div>
-                        <div className="text-[11px] text-indigo-600 dark:text-indigo-300 font-mono mt-0.5">{comp.level}</div>
+                        <div className="text-[11px] text-indigo-700 dark:text-indigo-300 font-mono font-medium mt-0.5">{comp.level}</div>
                       </div>
                       <div className="text-right">
                         <div className="text-base font-black text-foreground font-mono">{comp.score}/100</div>
@@ -532,7 +532,7 @@ export default function Member360CommandCenterPage() {
             </div>
 
             {/* Quick Practice CTA */}
-            <div className="p-4 rounded-2xl bg-gradient-to-r from-indigo-950/40 via-purple-950/20 to-slate-900/60 border border-indigo-500/20 flex items-center justify-between mt-2">
+            <div className="p-4 rounded-2xl bg-card border border-border dark:bg-gradient-to-r dark:from-indigo-950/40 dark:via-purple-950/20 dark:to-slate-900/60 dark:border-indigo-500/20 flex items-center justify-between mt-2">
               <div className="flex items-center gap-3">
                 <Sparkles className="w-5 h-5 text-indigo-700 dark:text-indigo-400" />
                 <div>

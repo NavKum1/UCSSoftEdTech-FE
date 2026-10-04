@@ -310,20 +310,20 @@ export default function DailyIncidentPage() {
           <div className="flex items-center gap-3">
             <Link
               href="/"
-              className="text-xs font-mono uppercase tracking-widest text-muted-foreground hover:text-white transition"
+              className="text-xs font-mono uppercase tracking-widest text-muted-foreground hover:text-foreground transition"
             >
               ← System Dashboard
             </Link>
-            <span className="text-slate-700">|</span>
+            <span className="text-border">|</span>
             <div className="flex items-center gap-2">
               <span className="relative flex h-3 w-3">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
               </span>
-              <h1 className="font-bold text-lg tracking-tight bg-gradient-to-r from-amber-400 via-orange-400 to-red-400 bg-clip-text text-transparent">
+              <h1 className="font-bold text-lg tracking-tight bg-gradient-to-r from-amber-600 via-orange-600 to-red-600 dark:from-amber-400 dark:via-orange-400 dark:to-red-400 bg-clip-text text-transparent">
                 Daily Incident War-Room
               </h1>
-              <span className="px-2 py-0.5 text-xs font-mono font-bold bg-red-950/80 text-red-700 dark:text-red-400 border border-red-800/60 rounded">
+              <span className="px-2 py-0.5 text-xs font-mono font-bold bg-red-100 text-red-700 border-red-300 dark:bg-red-950/80 dark:text-red-400 dark:border-red-800/60 rounded">
                 {incident?.severity || "SEV-1"}
               </span>
             </div>
@@ -332,7 +332,7 @@ export default function DailyIncidentPage() {
               <select
                 value={track}
                 onChange={(e) => setTrack(e.target.value)}
-                className="bg-muted border border-slate-700 text-slate-300 text-xs rounded px-2 py-1 outline-none focus:border-amber-500 transition"
+                className="bg-card border border-border text-foreground text-xs rounded px-2.5 py-1 outline-none focus:border-amber-500 transition"
               >
                 <option value="DevOps">DevOps</option>
                 <option value="Backend">Backend</option>
@@ -341,7 +341,7 @@ export default function DailyIncidentPage() {
               <select
                 value={difficultyTier}
                 onChange={(e) => setDifficultyTier(e.target.value)}
-                className="bg-muted border border-slate-700 text-slate-300 text-xs rounded px-2 py-1 outline-none focus:border-amber-500 transition"
+                className="bg-card border border-border text-foreground text-xs rounded px-2.5 py-1 outline-none focus:border-amber-500 transition"
               >
                 <option value="Bronze">Bronze (L3)</option>
                 <option value="Silver">Silver (L4)</option>
@@ -354,7 +354,7 @@ export default function DailyIncidentPage() {
           {/* Gamification & Streak HUD */}
           <div className="flex items-center gap-4 text-xs font-mono">
             {/* Daily Streak */}
-            <div className="flex items-center gap-2 bg-muted/80 border border-amber-500/30 px-3 py-1.5 rounded-lg shadow-sm">
+            <div className="flex items-center gap-2 bg-card border border-border px-3 py-1.5 rounded-lg shadow-sm">
               <span className="text-base">🔥</span>
               <div>
                 <span className="text-amber-700 dark:text-amber-400 font-bold text-sm">
@@ -367,7 +367,7 @@ export default function DailyIncidentPage() {
             </div>
 
             {/* Streak Freeze Shields */}
-            <div className="flex items-center gap-2 bg-muted/80 border border-cyan-500/30 px-3 py-1.5 rounded-lg">
+            <div className="flex items-center gap-2 bg-card border border-border px-3 py-1.5 rounded-lg">
               <span className="text-base">🛡️</span>
               <div>
                 <div className="flex items-center gap-1">
@@ -376,8 +376,8 @@ export default function DailyIncidentPage() {
                       key={idx}
                       className={`inline-block w-2.5 h-2.5 rounded-full ${
                         idx < (streak?.streakFreezeShields ?? 0)
-                          ? "bg-cyan-400 shadow-[0_0_8px_rgba(34,211,238,0.8)]"
-                          : "bg-slate-700"
+                          ? "bg-cyan-500 shadow-[0_0_8px_rgba(6,182,212,0.8)]"
+                          : "bg-muted border border-border"
                       }`}
                     />
                   ))}
@@ -389,7 +389,7 @@ export default function DailyIncidentPage() {
               {(streak?.streakFreezeShields ?? 0) < 3 && (
                 <button
                   onClick={handleEquipFreezeShield}
-                  className="ml-1 text-[10px] px-2 py-0.5 bg-cyan-950 hover:bg-cyan-900 text-cyan-600 dark:text-cyan-300 border border-cyan-700/50 rounded transition"
+                  className="ml-1 text-[10px] px-2 py-0.5 bg-cyan-100 hover:bg-cyan-200 dark:bg-cyan-950 dark:hover:bg-cyan-900 text-cyan-800 dark:text-cyan-300 border border-cyan-300 dark:border-cyan-700/50 rounded transition font-medium"
                   title="Equip an additional freeze shield"
                 >
                   +Shield
@@ -398,7 +398,7 @@ export default function DailyIncidentPage() {
             </div>
 
             {/* Weekly League */}
-            <div className="flex items-center gap-2 bg-muted/80 border border-indigo-500/30 px-3 py-1.5 rounded-lg">
+            <div className="flex items-center gap-2 bg-card border border-border px-3 py-1.5 rounded-lg">
               <span className="text-base">🏆</span>
               <div>
                 <span className="text-indigo-700 dark:text-indigo-400 font-bold text-sm">
@@ -411,7 +411,7 @@ export default function DailyIncidentPage() {
             </div>
 
             {/* Triage Elapsed Stopwatch */}
-            <div className="flex items-center gap-2 bg-muted/80 border border-emerald-500/30 px-3 py-1.5 rounded-lg">
+            <div className="flex items-center gap-2 bg-card border border-border px-3 py-1.5 rounded-lg">
               <span className="text-base">⏱️</span>
               <div>
                 <span className="text-emerald-700 dark:text-emerald-400 font-bold text-sm">
@@ -429,27 +429,27 @@ export default function DailyIncidentPage() {
       {/* Main War-Room Workspace */}
       <main className="max-w-7xl mx-auto px-6 py-8 space-y-8">
         {/* Outage Banner Alert */}
-        <div className="bg-gradient-to-r from-red-950/60 via-slate-900 to-slate-900 border border-red-800/50 rounded-2xl p-6 shadow-xl relative overflow-hidden">
+        <div className="bg-gradient-to-r from-red-950/80 via-slate-900 to-slate-900 border border-red-800/50 rounded-2xl p-6 shadow-xl relative overflow-hidden">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div className="space-y-1">
               <div className="flex items-center gap-2">
-                <span className="px-2 py-0.5 text-[10px] uppercase font-mono font-bold bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/30 rounded">
+                <span className="px-2 py-0.5 text-[10px] uppercase font-mono font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40 rounded">
                   08:00 AM Daily Incident Kata #{incident?.dayIndex ?? 0}
                 </span>
-                <span className="px-2 py-0.5 text-[10px] font-mono bg-muted text-muted-foreground rounded border border-border">
+                <span className="px-2 py-0.5 text-[10px] font-mono bg-slate-800 text-slate-200 rounded border border-slate-700">
                   Category: {incident?.category}
                 </span>
               </div>
-              <h2 className="text-2xl font-bold text-foreground">{incident?.title}</h2>
-              <p className="text-sm text-muted-foreground leading-relaxed max-w-4xl">
+              <h2 className="text-2xl font-bold text-white tracking-tight">{incident?.title}</h2>
+              <p className="text-sm text-slate-200 leading-relaxed max-w-4xl">
                 {incident?.outageSymptoms}
               </p>
             </div>
 
             {streak?.completedToday && (
-              <div className="bg-emerald-950/80 border border-emerald-500/40 text-emerald-600 dark:text-emerald-300 px-4 py-3 rounded-xl text-center shrink-0">
-                <span className="text-base block">✅ Today&apos;s Kata Completed</span>
-                <span className="text-xs text-muted-foreground font-mono">
+              <div className="bg-emerald-950/90 border border-emerald-500/50 text-emerald-300 px-4 py-3 rounded-xl text-center shrink-0">
+                <span className="text-base font-semibold block">✅ Today&apos;s Kata Completed</span>
+                <span className="text-xs text-emerald-400/80 font-mono">
                   Next outage arrives tomorrow at 08:00 AM
                 </span>
               </div>
@@ -529,8 +529,8 @@ export default function DailyIncidentPage() {
                       key={hyp.id}
                       className={`block p-4 rounded-xl border cursor-pointer transition ${
                         selectedHypothesis === hyp.id
-                          ? "bg-amber-950/30 border-amber-500 text-foreground shadow-[0_0_12px_rgba(245,158,11,0.15)]"
-                          : "bg-background/60 border-border/80 text-muted-foreground hover:border-border"
+                          ? "bg-amber-50 dark:bg-amber-950/30 border-amber-500 text-foreground shadow-[0_0_12px_rgba(245,158,11,0.15)]"
+                          : "bg-card border-border text-foreground hover:border-amber-500/40"
                       }`}
                     >
                       <div className="flex items-start gap-3">
@@ -567,8 +567,8 @@ export default function DailyIncidentPage() {
                         key={act.id}
                         className={`block p-4 rounded-xl border cursor-pointer transition ${
                           selectedAction === act.id
-                            ? "bg-amber-950/30 border-amber-500 text-foreground shadow-[0_0_12px_rgba(245,158,11,0.15)]"
-                            : "bg-background/60 border-border/80 text-muted-foreground hover:border-border"
+                            ? "bg-amber-50 dark:bg-amber-950/30 border-amber-500 text-foreground shadow-[0_0_12px_rgba(245,158,11,0.15)]"
+                            : "bg-card border-border text-foreground hover:border-amber-500/40"
                         }`}
                       >
                         <div className="flex items-start gap-3">
@@ -691,17 +691,17 @@ export default function DailyIncidentPage() {
               </div>
 
               {/* Habit & Retention Motivation Card */}
-              <div className="bg-gradient-to-br from-indigo-950/40 to-slate-900 border border-indigo-800/40 rounded-xl p-5 space-y-3">
-                <span className="text-xs font-mono text-indigo-700 dark:text-indigo-400 uppercase tracking-wider block">
+              <div className="bg-card border border-border dark:bg-gradient-to-br dark:from-indigo-950/40 dark:to-slate-900 dark:border-indigo-800/40 rounded-xl p-5 space-y-3">
+                <span className="text-xs font-mono text-indigo-700 dark:text-indigo-400 uppercase tracking-wider block font-semibold">
                   🛡️ Anti-Decay Credential Engine
                 </span>
-                <p className="text-xs text-muted-foreground leading-relaxed">
+                <p className="text-xs text-foreground/80 dark:text-slate-300 leading-relaxed">
                   Maintaining your daily morning streak keeps your{" "}
-                  <strong className="text-amber-700 dark:text-amber-400">Gold Verified Staff Architect</strong>{" "}
+                  <strong className="text-amber-700 dark:text-amber-400 font-bold">Gold Verified Staff Architect</strong>{" "}
                   credential from decaying. Active streak subscribers are ranked at the top of the
                   Fortune 500 Headhunter Talent Ticker.
                 </p>
-                <div className="text-[11px] font-mono text-muted-foreground bg-background/80 p-2.5 rounded border border-indigo-900/50">
+                <div className="text-[11px] font-mono text-muted-foreground bg-muted/80 p-2.5 rounded border border-border">
                   {streak?.streakStatusDescription}
                 </div>
               </div>
@@ -745,7 +745,7 @@ export default function DailyIncidentPage() {
                 Copy Logs
               </button>
             </div>
-            <pre className="text-red-600 dark:text-red-300/90 leading-relaxed whitespace-pre-wrap overflow-x-auto p-2 bg-black/40 rounded border border-slate-900">
+            <pre className="text-red-400 dark:text-red-300/90 leading-relaxed whitespace-pre-wrap overflow-x-auto p-2 bg-black/80 rounded border border-slate-900">
               {incident?.terminalLogs}
             </pre>
           </div>

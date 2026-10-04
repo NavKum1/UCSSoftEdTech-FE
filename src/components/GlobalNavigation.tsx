@@ -83,10 +83,10 @@ export default function GlobalNavigation() {
                 <Link
                   key={link.name}
                   href={link.href}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
                     isActive
-                      ? "bg-indigo-600/10 dark:bg-indigo-600/20 text-indigo-700 dark:text-indigo-300 border border-indigo-500/30 shadow-sm shadow-indigo-500/10"
-                      : "text-muted-foreground hover:text-foreground hover:bg-card/60"
+                      ? "bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 shadow-sm"
+                      : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
                   }`}
                 >
                   <Icon className={`w-3.5 h-3.5 ${isActive ? "text-indigo-700 dark:text-indigo-400" : "text-muted-foreground"}`} />
@@ -103,7 +103,7 @@ export default function GlobalNavigation() {
           <Link
             href="/daily"
             title="Active 14-Day Streak — Practice daily kata to maintain Gold status"
-            className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-300 text-xs font-semibold hover:bg-amber-500/20 transition-colors"
+            className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-100 dark:bg-amber-500/10 border border-amber-300 dark:border-amber-500/20 text-amber-800 dark:text-amber-300 text-xs font-semibold hover:bg-amber-200 dark:hover:bg-amber-500/20 transition-colors"
           >
             <Flame className="w-3.5 h-3.5 text-amber-700 dark:text-amber-400 fill-amber-400/30 animate-pulse" />
             <span>14d</span>
@@ -113,7 +113,7 @@ export default function GlobalNavigation() {
           <Link
             href="/sprint/1"
             title="48 minutes remaining of monthly AI Voice defense quota"
-            className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-600 dark:text-indigo-300 text-xs font-medium hover:bg-indigo-500/20 transition-colors"
+            className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-indigo-100 dark:bg-indigo-500/10 border border-indigo-300 dark:border-indigo-500/20 text-indigo-800 dark:text-indigo-300 text-xs font-medium hover:bg-indigo-200 dark:hover:bg-indigo-500/20 transition-colors"
           >
             <Mic className="w-3.5 h-3.5 text-indigo-700 dark:text-indigo-400" />
             <span>48m left</span>
@@ -126,7 +126,7 @@ export default function GlobalNavigation() {
           <div className="relative">
             <button
               onClick={() => setPortalsOpen(!portalsOpen)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-card border border-border text-xs font-medium text-muted-foreground hover:text-white hover:border-border transition-colors"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-card border border-border text-xs font-medium text-foreground hover:bg-muted transition-colors"
             >
               <span>Portals</span>
               <ChevronDown className={`w-3.5 h-3.5 transition-transform ${portalsOpen ? "rotate-180" : ""}`} />
