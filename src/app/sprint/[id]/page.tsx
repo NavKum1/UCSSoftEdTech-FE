@@ -321,6 +321,8 @@ function SprintWorkspaceInner() {
                 jobDescription="Build & Defend Sprint Review"
                 selectedTenantId={selectedTenantId || "default-tenant"}
                 onLeadReferralGenerated={handleLeadOrCredentialGenerated}
+                personaCode="StaffArchitectFAANG"
+                dialectCode="US_WestCoast_Tech"
               />
             ) : null}
 

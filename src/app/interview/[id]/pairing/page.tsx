@@ -8,6 +8,7 @@ import {
   Sparkles, RefreshCw, Layers, MousePointer2
 } from "lucide-react";
 import Link from "next/link";
+import * as signalR from "@microsoft/signalr";
 
 interface Participant {
   connectionId: string;
@@ -45,52 +46,119 @@ export default function InterviewPairingStudioPage({ params }: { params: Promise
   const [isDrawing, setIsDrawing] = useState(false);
   const [startPos, setStartPos] = useState<{ x: number; y: number } | null>(null);
 
-  // Fetch initial collaboration state from API
+  // SignalR Connection State
+  const [connection, setConnection] = useState<signalR.HubConnection | null>(null);
+
+  // Establish SignalR Connection
   useEffect(() => {
-    const fetchState = async () => {
-      try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/collaboration/${sessionId}/state`);
-        if (res.ok) {
-          const data = await res.json();
-          if (data.currentCode && data.currentCode.trim()) {
-            setCode(data.currentCode);
-          }
-          if (data.isTakeoverActive) {
-            setIsTakeoverActive(true);
-            setTakeoverName(data.takeoverInterviewerName);
-          }
-          if (data.participants && data.participants.length > 0) {
-            setParticipants(data.participants);
-          }
-        }
-      } catch (e) {
-        console.warn("[COLLABORATION STATE ERROR]:", e);
+    const conn = new signalR.HubConnectionBuilder()
+      .withUrl(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/hubs/collaboration`)
+      .withAutomaticReconnect()
+      .build();
+
+    conn.on("InitialRoomState", (state) => {
+      if (state.currentCode) setCode(state.currentCode);
+      if (state.isTakeoverActive) {
+        setIsTakeoverActive(true);
+        setTakeoverName(state.takeoverInterviewerName);
       }
+      if (state.participants) setParticipants(state.participants);
+    });
+
+    conn.on("UserJoined", (user, allUsers) => {
+      setParticipants(allUsers);
+    });
+
+    conn.on("UserLeft", (user, allUsers) => {
+      setParticipants(allUsers);
+    });
+
+    conn.on("CodeChanged", (data) => {
+      setCode(data.code);
+    });
+
+    conn.on("InterviewerTakeoverToggled", (data) => {
+      setIsTakeoverActive(data.isTakeoverActive);
+      setTakeoverName(data.interviewerName);
+    });
+
+    conn.on("WhiteboardStrokeReceived", (strokeJson) => {
+      const canvas = canvasRef.current;
+      if (!canvas) return;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) return;
+      const stroke = JSON.parse(strokeJson);
+
+      if (stroke.tool === "pen" || stroke.tool === "eraser") {
+        ctx.strokeStyle = stroke.tool === "eraser" ? "#020617" : stroke.color;
+        ctx.lineWidth = stroke.tool === "eraser" ? 18 : 2.5;
+        ctx.lineCap = "round";
+        ctx.beginPath();
+        ctx.moveTo(stroke.startX, stroke.startY);
+        ctx.lineTo(stroke.endX, stroke.endY);
+        ctx.stroke();
+      } else if (stroke.tool === "box") {
+        ctx.strokeStyle = stroke.color;
+        ctx.lineWidth = 2;
+        ctx.fillStyle = stroke.color + "15";
+        ctx.strokeRect(stroke.x, stroke.y, stroke.w, stroke.h);
+        ctx.fillRect(stroke.x, stroke.y, stroke.w, stroke.h);
+        ctx.fillStyle = stroke.color;
+        ctx.font = "12px monospace";
+        ctx.fillText("Microservice Node", stroke.x + 8, stroke.y + 18);
+      } else if (stroke.tool === "database") {
+        ctx.strokeStyle = stroke.color;
+        ctx.lineWidth = 2;
+        ctx.fillStyle = stroke.color + "15";
+        ctx.beginPath();
+        ctx.ellipse(stroke.x + stroke.w / 2, stroke.y + 15, Math.abs(stroke.w / 2), 10, 0, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.fillRect(stroke.x, stroke.y + 15, stroke.w, Math.max(stroke.h - 15, 20));
+        ctx.strokeRect(stroke.x, stroke.y + 15, stroke.w, Math.max(stroke.h - 15, 20));
+        ctx.fillStyle = stroke.color;
+        ctx.font = "12px monospace";
+        ctx.fillText("PostgreSQL Store", stroke.x + 8, stroke.y + 35);
+      } else if (stroke.tool === "cloud") {
+        ctx.strokeStyle = stroke.color;
+        ctx.lineWidth = 2;
+        ctx.fillStyle = stroke.color + "15";
+        ctx.beginPath();
+        ctx.arc(stroke.x + 30, stroke.y + 30, 20, 0, Math.PI * 2);
+        ctx.arc(stroke.x + 60, stroke.y + 25, 25, 0, Math.PI * 2);
+        ctx.arc(stroke.x + 90, stroke.y + 30, 20, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.fillStyle = stroke.color;
+        ctx.font = "12px monospace";
+        ctx.fillText("API Gateway / CDN", stroke.x + 15, stroke.y + 40);
+      }
+    });
+
+    conn.on("WhiteboardCleared", () => {
+      const canvas = canvasRef.current;
+      if (!canvas) return;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) return;
+      ctx.fillStyle = "#020617";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+    });
+
+    conn.start()
+      .then(() => {
+        setConnection(conn);
+        conn.invoke("JoinRoom", sessionId, "Candidate User", "Candidate", "cand-123");
+      })
+      .catch((err) => console.error("SignalR Connection Error:", err));
+
+    return () => {
+      conn.stop();
     };
-    fetchState();
   }, [sessionId]);
 
   // Handle Interviewer Takeover Toggle
   const handleToggleTakeover = async () => {
     const targetState = !isTakeoverActive;
-    try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/collaboration/${sessionId}/takeover`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": "Bearer recruiter-dev-token",
-          "X-Recruiter-Role": "Recruiter"
-        },
-        body: JSON.stringify({ isTakeover: targetState }),
-      });
-
-      if (res.ok) {
-        const data = await res.json();
-        setIsTakeoverActive(data.isTakeoverActive);
-        setTakeoverName(data.interviewerName);
-      }
-    } catch (e) {
-      console.error("[TAKEOVER TOGGLE ERROR]:", e);
+    if (connection) {
+      connection.invoke("BroadcastTakeoverToggle", sessionId, targetState, "Recruiter (You)");
     }
   };
 
@@ -121,17 +189,21 @@ export default function InterviewPairingStudioPage({ params }: { params: Promise
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    if (tool === "pen") {
-      ctx.strokeStyle = strokeColor;
-      ctx.lineWidth = 2.5;
+    if (tool === "pen" || tool === "eraser") {
+      ctx.strokeStyle = tool === "eraser" ? "#020617" : strokeColor;
+      ctx.lineWidth = tool === "eraser" ? 18 : 2.5;
       ctx.lineCap = "round";
+      ctx.beginPath();
+      ctx.moveTo(startPos.x, startPos.y);
       ctx.lineTo(x, y);
       ctx.stroke();
-    } else if (tool === "eraser") {
-      ctx.strokeStyle = "#020617"; // Canvas background
-      ctx.lineWidth = 18;
-      ctx.lineTo(x, y);
-      ctx.stroke();
+
+      if (connection) {
+        connection.invoke("BroadcastWhiteboardStroke", sessionId, JSON.stringify({
+          tool, startX: startPos.x, startY: startPos.y, endX: x, endY: y, color: strokeColor
+        }));
+      }
+      setStartPos({ x, y });
     }
   };
 
@@ -186,6 +258,12 @@ export default function InterviewPairingStudioPage({ params }: { params: Promise
       ctx.fillText("API Gateway / CDN", startPos.x + 15, startPos.y + 40);
     }
 
+    if (tool !== "pen" && tool !== "eraser" && connection) {
+      connection.invoke("BroadcastWhiteboardStroke", sessionId, JSON.stringify({
+        tool, x: startPos.x, y: startPos.y, w, h, color: strokeColor
+      }));
+    }
+
     setIsDrawing(false);
     setStartPos(null);
   };
@@ -197,6 +275,9 @@ export default function InterviewPairingStudioPage({ params }: { params: Promise
     if (!ctx) return;
     ctx.fillStyle = "#020617";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
+    if (connection) {
+      connection.invoke("BroadcastWhiteboardClear", sessionId);
+    }
   };
 
   const handleSaveWhiteboard = async () => {
@@ -383,7 +464,12 @@ export default function InterviewPairingStudioPage({ params }: { params: Promise
 
             <textarea
               value={code}
-              onChange={(e) => setCode(e.target.value)}
+              onChange={(e) => {
+                setCode(e.target.value);
+                if (connection) {
+                  connection.invoke("BroadcastCodeChange", sessionId, e.target.value, 0, 0);
+                }
+              }}
               spellCheck={false}
               className="flex-1 w-full bg-slate-950 p-6 font-mono text-sm text-slate-200 resize-none focus:outline-none leading-relaxed selection:bg-indigo-500/30"
               placeholder="// Type code here to sync live with interviewer..."

@@ -197,6 +197,8 @@ export default function Dashboard() {
               jobDescription={jobDescription}
               selectedTenantId={selectedTenantId}
               onLeadReferralGenerated={handleLeadReferralGenerated}
+              personaCode="StartupCTO"
+              dialectCode="UK_London_Financial"
             />
 
             {/* B2B Partner Institute Certification Marketplace */}
