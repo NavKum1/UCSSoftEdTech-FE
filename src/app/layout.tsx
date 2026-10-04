@@ -29,7 +29,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         suppressHydrationWarning
       >
         <body 
-          className="min-h-full flex flex-col bg-slate-950 text-slate-100" 
+          className="min-h-full flex flex-col bg-slate-950 text-slate-200" 
           suppressHydrationWarning
         >
           <GeoProvider>

@@ -189,13 +189,13 @@ export default function MultiCloudResiliencePage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans">
+    <div className="min-h-screen bg-slate-950 text-slate-200 flex flex-col font-sans">
       {/* Top Navbar */}
       <header className="border-b border-slate-800 bg-slate-900/80 backdrop-blur-md px-6 py-4 flex items-center justify-between sticky top-0 z-40">
         <div className="flex items-center space-x-4">
           <Link
             href="/admin/system"
-            className="text-xs font-semibold px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition"
+            className="text-xs font-semibold px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 border border-slate-800 transition"
           >
             ← System Ops
           </Link>
@@ -239,11 +239,11 @@ export default function MultiCloudResiliencePage() {
                   ? "bg-rose-950/20 border-rose-800/80 shadow-lg shadow-rose-950/20"
                   : r.status === "Degraded"
                   ? "bg-amber-950/20 border-amber-800/80"
-                  : "bg-slate-900/60 border-slate-800/80 hover:border-slate-700"
+                  : "bg-slate-900/60 border-slate-800/80 hover:border-slate-800"
               }`}
             >
               <div className="flex items-center justify-between">
-                <span className="text-[11px] font-mono font-bold text-slate-300">
+                <span className="text-[11px] font-mono font-bold text-slate-400">
                   {getProviderIcon(r.provider)}
                 </span>
                 <span
@@ -256,7 +256,7 @@ export default function MultiCloudResiliencePage() {
               </div>
 
               <div>
-                <h3 className="text-xs font-bold text-slate-100">{r.regionName}</h3>
+                <h3 className="text-xs font-bold text-slate-200">{r.regionName}</h3>
                 <p className="text-[11px] font-mono text-slate-400">{r.regionCode}</p>
               </div>
 
@@ -269,7 +269,7 @@ export default function MultiCloudResiliencePage() {
                 </div>
                 <div className="flex justify-between text-slate-400">
                   <span>Error Rate:</span>
-                  <span className={r.errorRatePercent > 1.0 ? "text-rose-400 font-bold" : "text-slate-300"}>
+                  <span className={r.errorRatePercent > 1.0 ? "text-rose-400 font-bold" : "text-slate-400"}>
                     {r.errorRatePercent.toFixed(2)}%
                   </span>
                 </div>
@@ -280,7 +280,7 @@ export default function MultiCloudResiliencePage() {
               </div>
 
               <div className="pt-2 border-t border-slate-800/60 flex items-center justify-between text-[11px]">
-                <span className="text-slate-500 font-mono">Circuit:</span>
+                <span className="text-slate-400 font-mono">Circuit:</span>
                 <span
                   className={`px-2 py-0.5 rounded border text-[10px] font-mono font-bold uppercase ${getCbBadge(
                     r.circuitBreakerState
@@ -304,7 +304,7 @@ export default function MultiCloudResiliencePage() {
                   Simulate candidate client connection from edge locations
                 </p>
               </div>
-              <span className="text-xs px-2.5 py-1 rounded bg-slate-800 font-mono text-cyan-400 border border-slate-700">
+              <span className="text-xs px-2.5 py-1 rounded bg-slate-800 font-mono text-cyan-400 border border-slate-800">
                 Optimal Path Engine
               </span>
             </div>
@@ -324,7 +324,7 @@ export default function MultiCloudResiliencePage() {
                   className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition ${
                     selectedGeo === geo.code
                       ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/30"
-                      : "bg-slate-800/80 text-slate-300 hover:bg-slate-800 border border-slate-700/60"
+                      : "bg-slate-800/80 text-slate-400 hover:bg-slate-800 border border-slate-800/60"
                   }`}
                 >
                   {geo.label}
@@ -358,7 +358,7 @@ export default function MultiCloudResiliencePage() {
                 <div className="grid grid-cols-2 gap-2 text-[11px]">
                   <div>
                     <span className="text-slate-400">Requested Geo: </span>
-                    <span className="text-slate-100 font-bold">{routingDecision.clientGeo}</span>
+                    <span className="text-slate-200 font-bold">{routingDecision.clientGeo}</span>
                   </div>
                   <div>
                     <span className="text-slate-400">Target Region: </span>
@@ -441,7 +441,7 @@ export default function MultiCloudResiliencePage() {
                       className={`p-2 rounded-lg font-mono text-[11px] font-bold border transition ${
                         chaosSeverity === sev
                           ? "bg-rose-950 text-rose-300 border-rose-600"
-                          : "bg-slate-950 text-slate-400 border-slate-800 hover:border-slate-700"
+                          : "bg-slate-950 text-slate-400 border-slate-800 hover:border-slate-800"
                       }`}
                     >
                       {sev}

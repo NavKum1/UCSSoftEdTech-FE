@@ -115,7 +115,7 @@ export default function Member360CommandCenterPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-950 text-slate-100 flex items-center justify-center font-sans">
+      <div className="min-h-screen bg-slate-950 text-slate-200 flex items-center justify-center font-sans">
         <div className="flex flex-col items-center gap-3">
           <div className="w-10 h-10 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin" />
           <p className="text-sm text-slate-400">Loading Candidate Dashboard...</p>
@@ -126,7 +126,7 @@ export default function Member360CommandCenterPage() {
 
   if (error || !data) {
     return (
-      <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col items-center justify-center font-sans p-6">
+      <div className="min-h-screen bg-slate-950 text-slate-200 flex flex-col items-center justify-center font-sans p-6">
         <div className="max-w-md w-full p-8 rounded-3xl bg-slate-900/60 border border-slate-800 text-center space-y-4">
           <div className="w-12 h-12 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center mx-auto">
             <AlertTriangle className="w-6 h-6" />
@@ -183,7 +183,7 @@ export default function Member360CommandCenterPage() {
     .join(" ");
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 font-sans pb-24">
+    <div className="min-h-screen bg-slate-950 text-slate-200 font-sans pb-24">
       {/* 1. Member Profile & Quick Metric Hero Bar */}
       <section className="border-b border-slate-800/80 bg-gradient-to-b from-indigo-950/40 via-slate-900/60 to-slate-950 px-6 py-8">
         <div className="max-w-7xl mx-auto flex flex-col lg:flex-row lg:items-center justify-between gap-6">
@@ -212,8 +212,8 @@ export default function Member360CommandCenterPage() {
                   <Flame className="w-4 h-4 text-amber-400 fill-amber-400" />
                   {data.activeStreakDays} Days Streak
                 </span>
-                <span className="text-slate-600">•</span>
-                <span className="text-slate-300">
+                <span className="text-slate-400">•</span>
+                <span className="text-slate-400">
                   Global Elo: <strong className="text-white font-bold">{data.globalEloRank}</strong> ({data.eloTier})
                 </span>
               </div>
@@ -230,7 +230,7 @@ export default function Member360CommandCenterPage() {
               <div>
                 <div className="text-[11px] text-slate-400 font-mono uppercase">AI Voice Defense</div>
                 <div className="text-sm font-bold text-white font-mono">
-                  {data.voiceMinutesRemaining}m <span className="text-xs text-slate-500 font-normal">/ {data.voiceMinutesTotal}m quota</span>
+                  {data.voiceMinutesRemaining}m <span className="text-xs text-slate-400 font-normal">/ {data.voiceMinutesTotal}m quota</span>
                 </div>
               </div>
             </div>
@@ -243,7 +243,7 @@ export default function Member360CommandCenterPage() {
               <div>
                 <div className="text-[11px] text-slate-400 font-mono uppercase">Skill Retention</div>
                 <div className="text-sm font-bold text-emerald-400 font-mono">
-                  {data.overallVigilanceIndex}% <span className="text-xs text-slate-500 font-normal">(Active Gold)</span>
+                  {data.overallVigilanceIndex}% <span className="text-xs text-slate-400 font-normal">(Active Gold)</span>
                 </div>
               </div>
             </div>
@@ -281,13 +281,13 @@ export default function Member360CommandCenterPage() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             {/* Morning Incident */}
-            <div className="p-4 rounded-2xl bg-slate-950/80 border border-slate-800/80 flex flex-col justify-between hover:border-slate-700 transition-all group">
+            <div className="p-4 rounded-2xl bg-slate-950/80 border border-slate-800/80 flex flex-col justify-between hover:border-slate-800 transition-all group">
               <div>
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-[10px] font-mono uppercase px-2 py-0.5 rounded bg-red-500/10 text-red-400 border border-red-500/20">
                     08:00 AM Outage
                   </span>
-                  <span className="text-[11px] text-slate-500 font-mono">10m MTTR</span>
+                  <span className="text-[11px] text-slate-400 font-mono">10m MTTR</span>
                 </div>
                 <h3 className="font-bold text-sm text-white group-hover:text-indigo-300 transition-colors">
                   {data.dailyRituals.morningOutageTitle}
@@ -310,13 +310,13 @@ export default function Member360CommandCenterPage() {
             </div>
 
             {/* CVE Review Dojo */}
-            <div className="p-4 rounded-2xl bg-slate-950/80 border border-slate-800/80 flex flex-col justify-between hover:border-slate-700 transition-all group">
+            <div className="p-4 rounded-2xl bg-slate-950/80 border border-slate-800/80 flex flex-col justify-between hover:border-slate-800 transition-all group">
               <div>
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-[10px] font-mono uppercase px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center gap-1">
                     <CheckCircle2 className="w-3 h-3" /> Completed
                   </span>
-                  <span className="text-[11px] text-slate-500 font-mono">+50 XP</span>
+                  <span className="text-[11px] text-slate-400 font-mono">+50 XP</span>
                 </div>
                 <h3 className="font-bold text-sm text-white group-hover:text-indigo-300 transition-colors">
                   {data.dailyRituals.cveReviewTitle}
@@ -339,13 +339,13 @@ export default function Member360CommandCenterPage() {
             </div>
 
             {/* 1v1 Speed Duel */}
-            <div className="p-4 rounded-2xl bg-slate-950/80 border border-slate-800/80 flex flex-col justify-between hover:border-slate-700 transition-all group">
+            <div className="p-4 rounded-2xl bg-slate-950/80 border border-slate-800/80 flex flex-col justify-between hover:border-slate-800 transition-all group">
               <div>
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-[10px] font-mono uppercase px-2 py-0.5 rounded bg-purple-500/10 text-purple-400 border border-purple-500/20">
                     Live Arena
                   </span>
-                  <span className="text-[11px] text-slate-500 font-mono">5m Flash-War</span>
+                  <span className="text-[11px] text-slate-400 font-mono">5m Flash-War</span>
                 </div>
                 <h3 className="font-bold text-sm text-white group-hover:text-indigo-300 transition-colors">
                   1v1 Speed Architecting Duel
@@ -374,7 +374,7 @@ export default function Member360CommandCenterPage() {
                   <span className="text-[10px] font-mono uppercase px-2 py-0.5 rounded bg-amber-500/10 text-amber-400 border border-amber-500/20">
                     Staff+ Mentorship
                   </span>
-                  <span className="text-[11px] text-slate-500 font-mono">45m 1-on-1</span>
+                  <span className="text-[11px] text-slate-400 font-mono">45m 1-on-1</span>
                 </div>
                 <h3 className="font-bold text-sm text-white group-hover:text-indigo-300 transition-colors">
                   Book 1-on-1 Staff Mentor
@@ -507,7 +507,7 @@ export default function Member360CommandCenterPage() {
                 return (
                   <div
                     key={comp.dimension}
-                    className="p-4 rounded-2xl bg-slate-900/60 border border-slate-800 hover:border-slate-700 transition-colors"
+                    className="p-4 rounded-2xl bg-slate-900/60 border border-slate-800 hover:border-slate-800 transition-colors"
                   >
                     <div className="flex items-start justify-between">
                       <div>
@@ -571,7 +571,7 @@ export default function Member360CommandCenterPage() {
                 <div>
                   <div className="flex items-center justify-between text-xs mb-1">
                     <span className="font-mono text-indigo-400 font-semibold">{opp.companyTier}</span>
-                    <span className="text-[10px] text-slate-500">{opp.receivedAt}</span>
+                    <span className="text-[10px] text-slate-400">{opp.receivedAt}</span>
                   </div>
                   <h4 className="font-bold text-sm text-white">{opp.roleTitle}</h4>
                   <div className="text-base font-black text-emerald-400 font-mono mt-2">
@@ -587,7 +587,7 @@ export default function Member360CommandCenterPage() {
                 </div>
 
                 <div className="pt-3 border-t border-slate-800 flex items-center justify-between">
-                  <span className="text-[11px] text-slate-500 font-mono">Bypasses Recruiter Screen</span>
+                  <span className="text-[11px] text-slate-400 font-mono">Bypasses Recruiter Screen</span>
                   <Link
                     href="/career"
                     className="text-xs text-indigo-400 hover:text-indigo-300 font-semibold flex items-center gap-1"

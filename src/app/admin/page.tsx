@@ -373,7 +373,7 @@ export default function SuperAdminDashboard() {
             }}
             disabled={refreshing}
             id="admin-refresh-btn"
-            className="p-2.5 rounded-xl bg-slate-900 border border-slate-800 hover:border-slate-700 text-slate-300 hover:text-white transition-all cursor-pointer shadow-sm disabled:opacity-50"
+            className="p-2.5 rounded-xl bg-slate-900 border border-slate-800 hover:border-slate-800 text-slate-400 hover:text-white transition-all cursor-pointer shadow-sm disabled:opacity-50"
             title="Refresh Dashboard Data"
           >
             <RefreshCw className={`w-4 h-4 ${refreshing ? "animate-spin text-indigo-400" : ""}`} />
@@ -536,7 +536,7 @@ export default function SuperAdminDashboard() {
 
           {/* Real-time Infrastructure & Engine Status Panel */}
           <div className="glass-panel rounded-3xl p-6 border border-slate-800 space-y-4 shadow-xl">
-            <h3 className="text-sm font-bold uppercase tracking-wider text-slate-300 flex items-center space-x-2">
+            <h3 className="text-sm font-bold uppercase tracking-wider text-slate-400 flex items-center space-x-2">
               <Radio className="w-4 h-4 text-emerald-400 animate-pulse" />
               <span>Engine Status &amp; Integration Health</span>
             </h3>
@@ -601,7 +601,7 @@ export default function SuperAdminDashboard() {
               {institutes.map((inst) => (
                 <div
                   key={inst.id}
-                  className="glass-card rounded-2xl p-5 border border-slate-800/90 hover:border-slate-700 transition-all space-y-3"
+                  className="glass-card rounded-2xl p-5 border border-slate-800/90 hover:border-slate-800 transition-all space-y-3"
                 >
                   <div className="flex items-start justify-between">
                     <div>
@@ -620,7 +620,7 @@ export default function SuperAdminDashboard() {
                     </div>
                   </div>
 
-                  <div className="space-y-1.5 text-xs text-slate-300">
+                  <div className="space-y-1.5 text-xs text-slate-400">
                     <div className="flex items-center justify-between py-1 border-t border-slate-800/60">
                       <span className="text-slate-400">Webhook Endpoint:</span>
                       <span className="font-mono text-[11px] text-indigo-300 truncate max-w-[240px]" title={inst.webhookUrl}>
@@ -630,7 +630,7 @@ export default function SuperAdminDashboard() {
 
                     <div className="flex items-center justify-between py-1 border-t border-slate-800/60">
                       <span className="text-slate-400">API Key:</span>
-                      <div className="flex items-center space-x-1 font-mono text-[11px] text-slate-300">
+                      <div className="flex items-center space-x-1 font-mono text-[11px] text-slate-400">
                         <span>{visibleKeys[inst.id] ? inst.apiKey : "••••••••••••••••"}</span>
                         <button
                           type="button"
@@ -710,7 +710,7 @@ export default function SuperAdminDashboard() {
                       </button>
                     </div>
 
-                    <p className="text-xs text-slate-300 leading-relaxed">
+                    <p className="text-xs text-slate-400 leading-relaxed">
                       {course.description || "No description provided."}
                     </p>
                   </div>
@@ -882,7 +882,7 @@ export default function SuperAdminDashboard() {
                     <th className="py-3.5 px-4">Referral ID</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-800/70 text-slate-300">
+                <tbody className="divide-y divide-slate-800/70 text-slate-400">
                   {leads.length > 0 ? (
                     leads.map((lead) => (
                       <tr key={lead.leadId} className="hover:bg-slate-900/40 transition-colors">
@@ -940,7 +940,7 @@ export default function SuperAdminDashboard() {
       {/* ========================================================================= */}
       {showAddInstituteModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-in fade-in">
-          <div className="max-w-md w-full glass-panel rounded-3xl p-6 border border-slate-700 shadow-2xl space-y-4">
+          <div className="max-w-md w-full glass-panel rounded-3xl p-6 border border-slate-800 shadow-2xl space-y-4">
             <div className="flex items-center justify-between pb-3 border-b border-slate-800">
               <h3 className="text-base font-bold text-white flex items-center space-x-2">
                 <Building2 className="w-5 h-5 text-indigo-400" />
@@ -957,7 +957,7 @@ export default function SuperAdminDashboard() {
 
             <form onSubmit={handleCreateInstitute} className="space-y-3 text-xs">
               <div>
-                <label className="block text-slate-300 font-semibold mb-1">Institute Name *</label>
+                <label className="block text-slate-400 font-semibold mb-1">Institute Name *</label>
                 <input
                   type="text"
                   required
@@ -969,7 +969,7 @@ export default function SuperAdminDashboard() {
               </div>
 
               <div>
-                <label className="block text-slate-300 font-semibold mb-1">Webhook Dispatch URL</label>
+                <label className="block text-slate-400 font-semibold mb-1">Webhook Dispatch URL</label>
                 <input
                   type="url"
                   placeholder="https://institute.domain.com/webhooks/leads"
@@ -980,7 +980,7 @@ export default function SuperAdminDashboard() {
               </div>
 
               <div>
-                <label className="block text-slate-300 font-semibold mb-1">API Secret Key (Optional)</label>
+                <label className="block text-slate-400 font-semibold mb-1">API Secret Key (Optional)</label>
                 <input
                   type="text"
                   placeholder="Leave empty to auto-generate secret"
@@ -994,7 +994,7 @@ export default function SuperAdminDashboard() {
                 <button
                   type="button"
                   onClick={() => setShowAddInstituteModal(false)}
-                  className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold cursor-pointer"
+                  className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-400 font-semibold cursor-pointer"
                 >
                   Cancel
                 </button>
@@ -1015,7 +1015,7 @@ export default function SuperAdminDashboard() {
       {/* ========================================================================= */}
       {showAddCourseModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-in fade-in">
-          <div className="max-w-md w-full glass-panel rounded-3xl p-6 border border-slate-700 shadow-2xl space-y-4">
+          <div className="max-w-md w-full glass-panel rounded-3xl p-6 border border-slate-800 shadow-2xl space-y-4">
             <div className="flex items-center justify-between pb-3 border-b border-slate-800">
               <h3 className="text-base font-bold text-white flex items-center space-x-2">
                 <BookOpen className="w-5 h-5 text-purple-400" />
@@ -1032,7 +1032,7 @@ export default function SuperAdminDashboard() {
 
             <form onSubmit={handleCreateCourse} className="space-y-3 text-xs">
               <div>
-                <label className="block text-slate-300 font-semibold mb-1">Partner Institute *</label>
+                <label className="block text-slate-400 font-semibold mb-1">Partner Institute *</label>
                 <select
                   value={newCourseInstId}
                   onChange={(e) => setNewCourseInstId(e.target.value)}
@@ -1048,7 +1048,7 @@ export default function SuperAdminDashboard() {
               </div>
 
               <div>
-                <label className="block text-slate-300 font-semibold mb-1">Course Title *</label>
+                <label className="block text-slate-400 font-semibold mb-1">Course Title *</label>
                 <input
                   type="text"
                   required
@@ -1060,7 +1060,7 @@ export default function SuperAdminDashboard() {
               </div>
 
               <div>
-                <label className="block text-slate-300 font-semibold mb-1">Description</label>
+                <label className="block text-slate-400 font-semibold mb-1">Description</label>
                 <textarea
                   rows={3}
                   placeholder="Brief curriculum overview..."
@@ -1071,7 +1071,7 @@ export default function SuperAdminDashboard() {
               </div>
 
               <div>
-                <label className="block text-slate-300 font-semibold mb-1">
+                <label className="block text-slate-400 font-semibold mb-1">
                   Mapped Skill Gap Tags (comma-separated)
                 </label>
                 <input
@@ -1090,7 +1090,7 @@ export default function SuperAdminDashboard() {
                 <button
                   type="button"
                   onClick={() => setShowAddCourseModal(false)}
-                  className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold cursor-pointer"
+                  className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-400 font-semibold cursor-pointer"
                 >
                   Cancel
                 </button>

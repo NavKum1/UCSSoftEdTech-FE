@@ -137,7 +137,7 @@ export default function SystemOperationsDashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 p-6 sm:p-10">
+    <div className="min-h-screen bg-slate-950 text-slate-200 p-6 sm:p-10">
       <div className="max-w-7xl mx-auto space-y-8">
         {/* Top Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-6 border-b border-slate-800">
@@ -162,7 +162,7 @@ export default function SystemOperationsDashboard() {
             </span>
             <button
               onClick={fetchMetrics}
-              className="p-2 rounded-lg bg-slate-900 border border-slate-800 hover:bg-slate-800 text-slate-300 transition-colors"
+              className="p-2 rounded-lg bg-slate-900 border border-slate-800 hover:bg-slate-800 text-slate-400 transition-colors"
               title="Refresh Metrics"
             >
               <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
@@ -252,13 +252,13 @@ export default function SystemOperationsDashboard() {
             </div>
 
             <div className="grid grid-cols-2 gap-4 text-xs">
-              <div className="p-3 rounded-xl bg-slate-800/40 border border-slate-700/50">
+              <div className="p-3 rounded-xl bg-slate-800/40 border border-slate-800/50">
                 <span className="text-slate-400 block mb-1">Active Cache Tags</span>
                 <span className="text-lg font-bold text-white font-mono">
                   {cacheStats?.activeTagsCount || 0}
                 </span>
               </div>
-              <div className="p-3 rounded-xl bg-slate-800/40 border border-slate-700/50">
+              <div className="p-3 rounded-xl bg-slate-800/40 border border-slate-800/50">
                 <span className="text-slate-400 block mb-1">Eviction / Flush Count</span>
                 <span className="text-lg font-bold text-white font-mono">
                   {cacheStats?.evictionsCount || 0}
@@ -275,7 +275,7 @@ export default function SystemOperationsDashboard() {
                 <button
                   disabled={isProcessing}
                   onClick={() => handleInvalidateCache("credential")}
-                  className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs text-white border border-slate-700 transition-colors"
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs text-white border border-slate-800 transition-colors"
                 >
                   <Trash2 className="w-3.5 h-3.5 text-amber-400" />
                   <span>Purge 'credential' Tag</span>
@@ -283,7 +283,7 @@ export default function SystemOperationsDashboard() {
                 <button
                   disabled={isProcessing}
                   onClick={() => handleInvalidateCache("leaderboard")}
-                  className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs text-white border border-slate-700 transition-colors"
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs text-white border border-slate-800 transition-colors"
                 >
                   <Trash2 className="w-3.5 h-3.5 text-amber-400" />
                   <span>Purge 'leaderboard' Tag</span>
@@ -333,7 +333,7 @@ export default function SystemOperationsDashboard() {
                 <button
                   disabled={isProcessing}
                   onClick={() => handleEnqueueBenchmarkJob("Standard")}
-                  className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs text-white border border-slate-700 transition-colors"
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs text-white border border-slate-800 transition-colors"
                 >
                   <Play className="w-3.5 h-3.5 text-emerald-400" />
                   <span>Enqueue Standard Job</span>

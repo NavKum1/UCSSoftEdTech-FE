@@ -201,12 +201,12 @@ export default function PromotionReviewPage() {
       case "Performance_Optimization":
         return "bg-amber-500/20 text-amber-400 border-amber-500/30";
       default:
-        return "bg-slate-700/30 text-slate-300 border-slate-700/50";
+        return "bg-slate-700/30 text-slate-400 border-slate-800/50";
     }
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 p-4 md:p-8 font-sans">
+    <div className="min-h-screen bg-slate-950 text-slate-200 p-4 md:p-8 font-sans">
       {/* Top Breadcrumb & Navigation */}
       <div className="max-w-7xl mx-auto mb-6 flex flex-wrap items-center justify-between gap-4">
         <div className="flex items-center space-x-2 text-sm text-slate-400">
@@ -223,7 +223,7 @@ export default function PromotionReviewPage() {
         <div className="flex items-center space-x-3">
           <Link
             href="/leadership/simulator"
-            className="px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-xs font-semibold text-slate-300 hover:text-white hover:border-slate-700 transition-all"
+            className="px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-xs font-semibold text-slate-400 hover:text-white hover:border-slate-800 transition-all"
           >
             ← Staff Management Simulator
           </Link>
@@ -258,9 +258,9 @@ export default function PromotionReviewPage() {
           <div className="flex flex-col sm:flex-row gap-3">
             <button
               onClick={() => setShowConnectModal(true)}
-              className="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-semibold text-sm border border-slate-700 transition-all shadow-md flex items-center justify-center space-x-2"
+              className="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-semibold text-sm border border-slate-800 transition-all shadow-md flex items-center justify-center space-x-2"
             >
-              <svg className="w-4 h-4 text-slate-300" fill="currentColor" viewBox="0 0 24 24">
+              <svg className="w-4 h-4 text-slate-400" fill="currentColor" viewBox="0 0 24 24">
                 <path fillRule="evenodd" clipRule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" />
               </svg>
               <span>Connect Repo</span>
@@ -310,7 +310,7 @@ export default function PromotionReviewPage() {
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-bold text-white flex items-center space-x-2">
                 <span>Tracked Repositories</span>
-                <span className="px-2 py-0.5 rounded-full bg-slate-800 text-xs text-slate-300">
+                <span className="px-2 py-0.5 rounded-full bg-slate-800 text-xs text-slate-400">
                   {integrations.length}
                 </span>
               </h2>
@@ -326,7 +326,7 @@ export default function PromotionReviewPage() {
                   className={`p-4 rounded-xl border cursor-pointer transition-all ${
                     selectedIntegration?.id === i.id
                       ? "bg-slate-800/90 border-cyan-500 shadow-md shadow-cyan-500/10"
-                      : "bg-slate-900/60 border-slate-800 hover:border-slate-700 hover:bg-slate-850"
+                      : "bg-slate-900/60 border-slate-800 hover:border-slate-800 hover:bg-slate-850"
                   }`}
                 >
                   <div className="flex items-center justify-between mb-1.5">
@@ -339,7 +339,7 @@ export default function PromotionReviewPage() {
                     {i.repositoryOwner}/{i.repositoryName}
                   </div>
                   <div className="flex items-center justify-between mt-3 text-xs text-slate-400">
-                    <span>Branch: <span className="text-slate-300">{i.branchTracked}</span></span>
+                    <span>Branch: <span className="text-slate-400">{i.branchTracked}</span></span>
                     <span>{i.totalPrsIngested} PRs Synced</span>
                   </div>
                 </div>
@@ -365,7 +365,7 @@ export default function PromotionReviewPage() {
               {prs.map((pr) => (
                 <div
                   key={pr.id}
-                  className="p-4 rounded-xl bg-slate-950/80 border border-slate-800/80 hover:border-slate-700 transition-all space-y-3"
+                  className="p-4 rounded-xl bg-slate-950/80 border border-slate-800/80 hover:border-slate-800 transition-all space-y-3"
                 >
                   <div className="flex flex-wrap items-start justify-between gap-2">
                     <div className="flex items-center space-x-2">
@@ -376,7 +376,7 @@ export default function PromotionReviewPage() {
                         {pr.architecturalCategory.replace("_", " ")}
                       </span>
                     </div>
-                    <span className="text-[11px] text-slate-500">
+                    <span className="text-[11px] text-slate-400">
                       Merged {new Date(pr.mergedAt).toLocaleDateString()}
                     </span>
                   </div>
@@ -397,7 +397,7 @@ export default function PromotionReviewPage() {
                     </div>
                     <div className="p-2 rounded-lg bg-slate-900 border border-slate-800">
                       <div className="text-[10px] text-slate-400 uppercase font-semibold">Files Changed</div>
-                      <div className="text-sm font-bold text-slate-300">{pr.filesChanged} files</div>
+                      <div className="text-sm font-bold text-slate-400">{pr.filesChanged} files</div>
                     </div>
                     <div className="p-2 rounded-lg bg-slate-900 border border-slate-800">
                       <div className="text-[10px] text-slate-400 uppercase font-semibold">Lines Diff</div>
@@ -438,7 +438,7 @@ export default function PromotionReviewPage() {
 
             {/* Level Selector */}
             <div className="space-y-2">
-              <label className="text-xs font-semibold text-slate-300 uppercase tracking-wider">
+              <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
                 Target Promotion Level
               </label>
               <div className="grid grid-cols-3 gap-2">
@@ -453,7 +453,7 @@ export default function PromotionReviewPage() {
                     className={`py-2 px-3 rounded-xl text-xs font-bold border transition-all ${
                       targetLevel === lvl.id
                         ? "bg-purple-600 border-purple-500 text-white shadow-lg shadow-purple-600/30"
-                        : "bg-slate-950 border-slate-800 text-slate-400 hover:text-white hover:border-slate-700"
+                        : "bg-slate-950 border-slate-800 text-slate-400 hover:text-white hover:border-slate-800"
                     }`}
                   >
                     {lvl.label}
@@ -506,7 +506,7 @@ export default function PromotionReviewPage() {
 
                 {/* 4-Vector Breakdown */}
                 <div className="space-y-2 text-xs">
-                  <div className="flex justify-between text-slate-300">
+                  <div className="flex justify-between text-slate-400">
                     <span>Architectural Impact (35%)</span>
                     <span className="font-bold text-cyan-400">{evaluation.architecturalImpactScore}%</span>
                   </div>
@@ -514,7 +514,7 @@ export default function PromotionReviewPage() {
                     <div className="bg-cyan-500 h-full rounded-full" style={{ width: `${evaluation.architecturalImpactScore}%` }} />
                   </div>
 
-                  <div className="flex justify-between text-slate-300 pt-2">
+                  <div className="flex justify-between text-slate-400 pt-2">
                     <span>Organizational Influence (30%)</span>
                     <span className="font-bold text-purple-400">{evaluation.orgInfluenceScore}%</span>
                   </div>
@@ -522,7 +522,7 @@ export default function PromotionReviewPage() {
                     <div className="bg-purple-500 h-full rounded-full" style={{ width: `${evaluation.orgInfluenceScore}%` }} />
                   </div>
 
-                  <div className="flex justify-between text-slate-300 pt-2">
+                  <div className="flex justify-between text-slate-400 pt-2">
                     <span>Technical Leadership (25%)</span>
                     <span className="font-bold text-amber-400">{evaluation.technicalLeadershipScore}%</span>
                   </div>
@@ -530,7 +530,7 @@ export default function PromotionReviewPage() {
                     <div className="bg-amber-500 h-full rounded-full" style={{ width: `${evaluation.technicalLeadershipScore}%` }} />
                   </div>
 
-                  <div className="flex justify-between text-slate-300 pt-2">
+                  <div className="flex justify-between text-slate-400 pt-2">
                     <span>Execution Velocity (10%)</span>
                     <span className="font-bold text-emerald-400">{evaluation.executionVelocityScore}%</span>
                   </div>
@@ -558,7 +558,7 @@ export default function PromotionReviewPage() {
 
                 {/* 360 Peer Feedback Committee */}
                 <div className="space-y-3 pt-2">
-                  <div className="text-xs font-bold text-slate-300 uppercase tracking-wider">
+                  <div className="text-xs font-bold text-slate-400 uppercase tracking-wider">
                     Calibrated 360 Peer Feedback
                   </div>
                   <div className="space-y-2.5">
@@ -569,7 +569,7 @@ export default function PromotionReviewPage() {
                           <span className="text-[10px] font-semibold text-cyan-400">{peer.sentiment}</span>
                         </div>
                         <div className="text-[10px] text-slate-400">{peer.peerRole}</div>
-                        <p className="text-xs text-slate-300 italic pt-1 border-t border-slate-900">
+                        <p className="text-xs text-slate-400 italic pt-1 border-t border-slate-900">
                           "{peer.commentary}"
                         </p>
                       </div>
@@ -594,7 +594,7 @@ export default function PromotionReviewPage() {
             </div>
             <form onSubmit={handleConnectRepo} className="space-y-3 text-xs">
               <div>
-                <label className="text-slate-300 font-semibold block mb-1">Repository Owner</label>
+                <label className="text-slate-400 font-semibold block mb-1">Repository Owner</label>
                 <input
                   type="text"
                   value={newOwner}
@@ -604,7 +604,7 @@ export default function PromotionReviewPage() {
                 />
               </div>
               <div>
-                <label className="text-slate-300 font-semibold block mb-1">Repository Name</label>
+                <label className="text-slate-400 font-semibold block mb-1">Repository Name</label>
                 <input
                   type="text"
                   value={newRepo}
@@ -614,7 +614,7 @@ export default function PromotionReviewPage() {
                 />
               </div>
               <div>
-                <label className="text-slate-300 font-semibold block mb-1">Branch Tracked</label>
+                <label className="text-slate-400 font-semibold block mb-1">Branch Tracked</label>
                 <input
                   type="text"
                   value={newBranch}
@@ -627,7 +627,7 @@ export default function PromotionReviewPage() {
                 <button
                   type="button"
                   onClick={() => setShowConnectModal(false)}
-                  className="px-4 py-2 rounded-lg bg-slate-800 text-slate-300 font-semibold hover:bg-slate-700"
+                  className="px-4 py-2 rounded-lg bg-slate-800 text-slate-400 font-semibold hover:bg-slate-700"
                 >
                   Cancel
                 </button>

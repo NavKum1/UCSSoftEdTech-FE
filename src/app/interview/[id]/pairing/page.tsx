@@ -234,7 +234,7 @@ export default function InterviewPairingStudioPage({ params }: { params: Promise
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans">
+    <div className="min-h-screen bg-slate-950 text-slate-200 flex flex-col font-sans">
       {/* Top Bar */}
       <header className="h-16 border-b border-slate-800 bg-slate-900/80 px-6 flex items-center justify-between backdrop-blur-md sticky top-0 z-30">
         <div className="flex items-center space-x-4">
@@ -373,9 +373,9 @@ export default function InterviewPairingStudioPage({ params }: { params: Promise
                 <span className="w-2.5 h-2.5 rounded-full bg-rose-500" />
                 <span className="w-2.5 h-2.5 rounded-full bg-amber-500" />
                 <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
-                <span className="ml-2 font-mono text-slate-300">DistributedStreamEngine.ts</span>
+                <span className="ml-2 font-mono text-slate-400">DistributedStreamEngine.ts</span>
               </div>
-              <div className="flex items-center gap-2 text-[11px] font-mono text-slate-500">
+              <div className="flex items-center gap-2 text-[11px] font-mono text-slate-400">
                 <MousePointer2 className="w-3 h-3 text-amber-400" />
                 <span>Interviewer Viewing Line 12</span>
               </div>
@@ -475,7 +475,7 @@ export default function InterviewPairingStudioPage({ params }: { params: Promise
       </main>
 
       {/* Footer Info */}
-      <footer className="h-8 bg-slate-950 border-t border-slate-900 px-6 flex items-center justify-between text-[11px] text-slate-500 font-mono">
+      <footer className="h-8 bg-slate-950 border-t border-slate-900 px-6 flex items-center justify-between text-[11px] text-slate-400 font-mono">
         <div className="flex items-center gap-3">
           <span>SignalR WebSocket: Connected</span>
           <span>•</span>

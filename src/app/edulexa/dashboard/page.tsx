@@ -296,7 +296,7 @@ export default function EdulexaDashboardPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 p-6 lg:p-10 font-sans">
+    <div className="min-h-screen bg-slate-950 text-slate-200 p-6 lg:p-10 font-sans">
       {/* Top Banner & Brand */}
       <div className="max-w-7xl mx-auto space-y-8">
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border-b border-slate-800 pb-6">
@@ -321,7 +321,7 @@ export default function EdulexaDashboardPage() {
           <div className="flex items-center gap-3">
             <button
               onClick={handleSeedData}
-              className="inline-flex items-center gap-2 px-3 py-1.5 text-xs font-medium rounded-lg border border-slate-700 bg-slate-900/80 hover:bg-slate-800 text-slate-300 transition"
+              className="inline-flex items-center gap-2 px-3 py-1.5 text-xs font-medium rounded-lg border border-slate-800 bg-slate-900/80 hover:bg-slate-800 text-slate-400 transition"
             >
               <RefreshCw className="h-3.5 w-3.5" />
               Reset Demo Data
@@ -454,58 +454,58 @@ export default function EdulexaDashboardPage() {
 
               <form onSubmit={handleTriggerVoiceCall} className="space-y-4">
                 <div>
-                  <label className="text-xs text-slate-300 font-medium">Candidate Name</label>
+                  <label className="text-xs text-slate-400 font-medium">Candidate Name</label>
                   <input
                     type="text"
                     value={candName}
                     onChange={(e) => setCandName(e.target.value)}
-                    className="w-full mt-1.5 px-3 py-2 bg-slate-950 border border-slate-700 rounded-lg text-xs text-white focus:outline-none focus:border-indigo-500"
+                    className="w-full mt-1.5 px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-xs text-white focus:outline-none focus:border-indigo-500"
                   />
                 </div>
                 <div>
-                  <label className="text-xs text-slate-300 font-medium">Candidate Phone</label>
+                  <label className="text-xs text-slate-400 font-medium">Candidate Phone</label>
                   <input
                     type="text"
                     value={candPhone}
                     onChange={(e) => setCandPhone(e.target.value)}
-                    className="w-full mt-1.5 px-3 py-2 bg-slate-950 border border-slate-700 rounded-lg text-xs text-white font-mono focus:outline-none focus:border-indigo-500"
+                    className="w-full mt-1.5 px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-xs text-white font-mono focus:outline-none focus:border-indigo-500"
                   />
                 </div>
                 <div>
-                  <label className="text-xs text-slate-300 font-medium">Candidate Email</label>
+                  <label className="text-xs text-slate-400 font-medium">Candidate Email</label>
                   <input
                     type="email"
                     value={candEmail}
                     onChange={(e) => setCandEmail(e.target.value)}
-                    className="w-full mt-1.5 px-3 py-2 bg-slate-950 border border-slate-700 rounded-lg text-xs text-white font-mono focus:outline-none focus:border-indigo-500"
+                    className="w-full mt-1.5 px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-xs text-white font-mono focus:outline-none focus:border-indigo-500"
                   />
                 </div>
                 <div>
-                  <label className="text-xs text-slate-300 font-medium">Abandoned Course / Sprint</label>
+                  <label className="text-xs text-slate-400 font-medium">Abandoned Course / Sprint</label>
                   <input
                     type="text"
                     value={cartItem}
                     onChange={(e) => setCartItem(e.target.value)}
-                    className="w-full mt-1.5 px-3 py-2 bg-slate-950 border border-slate-700 rounded-lg text-xs text-white focus:outline-none focus:border-indigo-500"
+                    className="w-full mt-1.5 px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-xs text-white focus:outline-none focus:border-indigo-500"
                   />
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="text-xs text-slate-300 font-medium">Cart Value (INR)</label>
+                    <label className="text-xs text-slate-400 font-medium">Cart Value (INR)</label>
                     <input
                       type="number"
                       value={cartAmount}
                       onChange={(e) => setCartAmount(e.target.value)}
-                      className="w-full mt-1.5 px-3 py-2 bg-slate-950 border border-slate-700 rounded-lg text-xs text-white font-mono focus:outline-none focus:border-indigo-500"
+                      className="w-full mt-1.5 px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-xs text-white font-mono focus:outline-none focus:border-indigo-500"
                     />
                   </div>
                   <div>
-                    <label className="text-xs text-slate-300 font-medium">Voucher Discount %</label>
+                    <label className="text-xs text-slate-400 font-medium">Voucher Discount %</label>
                     <input
                       type="number"
                       value={discountPercent}
                       onChange={(e) => setDiscountPercent(e.target.value)}
-                      className="w-full mt-1.5 px-3 py-2 bg-slate-950 border border-slate-700 rounded-lg text-xs text-white font-mono focus:outline-none focus:border-indigo-500"
+                      className="w-full mt-1.5 px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-xs text-white font-mono focus:outline-none focus:border-indigo-500"
                     />
                   </div>
                 </div>
@@ -542,7 +542,7 @@ export default function EdulexaDashboardPage() {
                       <th className="py-2.5 px-3">Time</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-800 text-slate-300">
+                  <tbody className="divide-y divide-slate-800 text-slate-400">
                     {campaigns.map((c) => (
                       <tr key={c.id} className="hover:bg-slate-800/40">
                         <td className="py-3 px-3">
@@ -565,7 +565,7 @@ export default function EdulexaDashboardPage() {
                                 ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
                                 : c.callStatus === "Calling"
                                 ? "bg-amber-500/10 text-amber-400 border border-amber-500/20 animate-pulse"
-                                : "bg-slate-700/50 text-slate-300"
+                                : "bg-slate-700/50 text-slate-400"
                             }`}
                           >
                             {c.callStatus}
@@ -598,11 +598,11 @@ export default function EdulexaDashboardPage() {
 
                 <form onSubmit={handleSignAsset} className="space-y-4">
                   <div>
-                    <label className="text-xs text-slate-300 font-medium">Select Protected Asset</label>
+                    <label className="text-xs text-slate-400 font-medium">Select Protected Asset</label>
                     <select
                       value={selectedAssetTitle}
                       onChange={(e) => setSelectedAssetTitle(e.target.value)}
-                      className="w-full mt-1.5 px-3 py-2 bg-slate-950 border border-slate-700 rounded-lg text-xs text-white focus:outline-none focus:border-cyan-500"
+                      className="w-full mt-1.5 px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-xs text-white focus:outline-none focus:border-cyan-500"
                     >
                       <option value="Distributed Sharding & Raft Consensus Repo">
                         Distributed Sharding & Raft Consensus Repo
@@ -616,12 +616,12 @@ export default function EdulexaDashboardPage() {
                     </select>
                   </div>
                   <div>
-                    <label className="text-xs text-slate-300 font-medium">Viewer / Student Email</label>
+                    <label className="text-xs text-slate-400 font-medium">Viewer / Student Email</label>
                     <input
                       type="email"
                       value={viewerEmail}
                       onChange={(e) => setViewerEmail(e.target.value)}
-                      className="w-full mt-1.5 px-3 py-2 bg-slate-950 border border-slate-700 rounded-lg text-xs text-white font-mono focus:outline-none focus:border-cyan-500"
+                      className="w-full mt-1.5 px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-xs text-white font-mono focus:outline-none focus:border-cyan-500"
                     />
                   </div>
 
@@ -641,7 +641,7 @@ export default function EdulexaDashboardPage() {
                       <CheckCircle2 className="h-3.5 w-3.5" />
                       HMAC Token Issued
                     </div>
-                    <div className="text-[11px] font-mono text-slate-300 break-all bg-slate-950/60 p-2 rounded border border-slate-800">
+                    <div className="text-[11px] font-mono text-slate-400 break-all bg-slate-950/60 p-2 rounded border border-slate-800">
                       {signedResult.signedToken}
                     </div>
                     <div className="text-[10px] text-slate-400 font-mono">
@@ -667,7 +667,7 @@ export default function EdulexaDashboardPage() {
                     value={leakSnippet}
                     onChange={(e) => setLeakSnippet(e.target.value)}
                     placeholder="Enter email, session ID, or watermark fragment"
-                    className="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-lg text-xs text-white font-mono focus:outline-none focus:border-rose-500"
+                    className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-xs text-white font-mono focus:outline-none focus:border-rose-500"
                   />
                   <button
                     type="submit"
@@ -685,7 +685,7 @@ export default function EdulexaDashboardPage() {
                       <AlertTriangle className="h-3.5 w-3.5" />
                       Attribution Confirmed ({attributionResult.attributionConfidencePercent}%)
                     </div>
-                    <div className="text-slate-300 font-mono">
+                    <div className="text-slate-400 font-mono">
                       <strong>Leaker:</strong> {attributionResult.leakerEmail}
                     </div>
                     <div className="text-slate-400 font-mono text-[11px]">
@@ -713,9 +713,9 @@ export default function EdulexaDashboardPage() {
                 </span>
               </div>
 
-              <div className="relative h-80 rounded-xl overflow-hidden border border-slate-700 bg-slate-950 flex flex-col items-center justify-center shadow-inner">
+              <div className="relative h-80 rounded-xl overflow-hidden border border-slate-800 bg-slate-950 flex flex-col items-center justify-center shadow-inner">
                 {/* Simulated Code / Video Content */}
-                <div className="w-full h-full p-6 font-mono text-xs text-slate-500 space-y-2 opacity-60 pointer-events-none">
+                <div className="w-full h-full p-6 font-mono text-xs text-slate-400 space-y-2 opacity-60 pointer-events-none">
                   <div className="text-indigo-400">// Distributed Sharding Engine v2 - PROPRIETARY INTELLECTUAL PROPERTY</div>
                   <div>public class RaftConsensusCluster : IConsensusController &#123;</div>
                   <div className="pl-4">private readonly Dictionary&lt;NodeId, PeerSocket&gt; _peers;</div>
@@ -741,15 +741,15 @@ export default function EdulexaDashboardPage() {
 
               <div className="grid grid-cols-3 gap-4 pt-2 text-xs font-mono">
                 <div className="p-3 rounded-lg border border-slate-800 bg-slate-950">
-                  <span className="text-slate-500 block text-[10px]">WATERMARK SURVIVAL</span>
+                  <span className="text-slate-400 block text-[10px]">WATERMARK SURVIVAL</span>
                   <span className="text-white font-medium">Re-encoding, Crop &amp; Resize</span>
                 </div>
                 <div className="p-3 rounded-lg border border-slate-800 bg-slate-950">
-                  <span className="text-slate-500 block text-[10px]">TIME TO ATTRIBUTE</span>
+                  <span className="text-slate-400 block text-[10px]">TIME TO ATTRIBUTE</span>
                   <span className="text-emerald-400 font-medium">&lt; 60 Seconds</span>
                 </div>
                 <div className="p-3 rounded-lg border border-slate-800 bg-slate-950">
-                  <span className="text-slate-500 block text-[10px]">HARDWARE DRM</span>
+                  <span className="text-slate-400 block text-[10px]">HARDWARE DRM</span>
                   <span className="text-cyan-400 font-medium">Widevine L1 + FairPlay</span>
                 </div>
               </div>
@@ -771,50 +771,50 @@ export default function EdulexaDashboardPage() {
 
               <form onSubmit={handleProcessPayout} className="space-y-3.5">
                 <div>
-                  <label className="text-xs text-slate-300 font-medium">Mentor Full Name</label>
+                  <label className="text-xs text-slate-400 font-medium">Mentor Full Name</label>
                   <input
                     type="text"
                     value={mentorName}
                     onChange={(e) => setMentorName(e.target.value)}
-                    className="w-full mt-1 px-3 py-2 bg-slate-950 border border-slate-700 rounded-lg text-xs text-white focus:outline-none focus:border-amber-500"
+                    className="w-full mt-1 px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-xs text-white focus:outline-none focus:border-amber-500"
                   />
                 </div>
                 <div>
-                  <label className="text-xs text-slate-300 font-medium">Mentor Email</label>
+                  <label className="text-xs text-slate-400 font-medium">Mentor Email</label>
                   <input
                     type="email"
                     value={mentorEmail}
                     onChange={(e) => setMentorEmail(e.target.value)}
-                    className="w-full mt-1 px-3 py-2 bg-slate-950 border border-slate-700 rounded-lg text-xs text-white font-mono focus:outline-none focus:border-amber-500"
+                    className="w-full mt-1 px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-xs text-white font-mono focus:outline-none focus:border-amber-500"
                   />
                 </div>
                 <div>
-                  <label className="text-xs text-slate-300 font-medium">{config.tax.taxIdLabel}</label>
+                  <label className="text-xs text-slate-400 font-medium">{config.tax.taxIdLabel}</label>
                   <input
                     type="text"
                     value={mentorPan}
                     placeholder={config.tax.taxIdPlaceholder}
                     onChange={(e) => setMentorPan(e.target.value.toUpperCase())}
-                    className="w-full mt-1 px-3 py-2 bg-slate-950 border border-slate-700 rounded-lg text-xs text-white font-mono focus:outline-none focus:border-amber-500"
+                    className="w-full mt-1 px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-xs text-white font-mono focus:outline-none focus:border-amber-500"
                   />
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="text-xs text-slate-300 font-medium">Sessions / Hours</label>
+                    <label className="text-xs text-slate-400 font-medium">Sessions / Hours</label>
                     <input
                       type="number"
                       value={sessionsCount}
                       onChange={(e) => setSessionsCount(e.target.value)}
-                      className="w-full mt-1 px-3 py-2 bg-slate-950 border border-slate-700 rounded-lg text-xs text-white font-mono focus:outline-none focus:border-amber-500"
+                      className="w-full mt-1 px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-xs text-white font-mono focus:outline-none focus:border-amber-500"
                     />
                   </div>
                   <div>
-                    <label className="text-xs text-slate-300 font-medium">Rate / Unit ({config.currency})</label>
+                    <label className="text-xs text-slate-400 font-medium">Rate / Unit ({config.currency})</label>
                     <input
                       type="number"
                       value={sessionRate}
                       onChange={(e) => setSessionRate(e.target.value)}
-                      className="w-full mt-1 px-3 py-2 bg-slate-950 border border-slate-700 rounded-lg text-xs text-white font-mono focus:outline-none focus:border-amber-500"
+                      className="w-full mt-1 px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-xs text-white font-mono focus:outline-none focus:border-amber-500"
                     />
                   </div>
                 </div>
@@ -885,15 +885,15 @@ export default function EdulexaDashboardPage() {
                       <th className="py-2.5 px-3 text-right">Tax Cert</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-800 text-slate-300">
+                  <tbody className="divide-y divide-slate-800 text-slate-400">
                     {payouts.map((p) => (
                       <tr key={p.id} className="hover:bg-slate-800/40">
                         <td className="py-3 px-3">
                           <div className="font-medium text-white">{p.mentorName}</div>
                           <div className="text-[10px] text-slate-400 font-mono">{p.mentorEmail}</div>
                         </td>
-                        <td className="py-3 px-3 font-mono text-slate-300">{p.mentorPan}</td>
-                        <td className="py-3 px-3 font-mono font-medium text-slate-300">
+                        <td className="py-3 px-3 font-mono text-slate-400">{p.mentorPan}</td>
+                        <td className="py-3 px-3 font-mono font-medium text-slate-400">
                           {formatCurrency(convertFromInr(p.grossAmount))}
                         </td>
                         <td className="py-3 px-3 font-mono text-amber-400 font-medium">
@@ -954,7 +954,7 @@ export default function EdulexaDashboardPage() {
                 <span className="px-2 py-0.5 rounded font-mono text-[10px] bg-indigo-500/10 text-indigo-400 font-bold">
                   POST /v1/voice/campaigns
                 </span>
-                <p className="text-[11px] text-slate-300">
+                <p className="text-[11px] text-slate-400">
                   Sub-300ms outbound recovery calls.
                 </p>
               </div>
@@ -962,7 +962,7 @@ export default function EdulexaDashboardPage() {
                 <span className="px-2 py-0.5 rounded font-mono text-[10px] bg-cyan-500/10 text-cyan-400 font-bold">
                   POST /v1/assets/sign
                 </span>
-                <p className="text-[11px] text-slate-300">
+                <p className="text-[11px] text-slate-400">
                   HMAC expiring DRM signed URLs.
                 </p>
               </div>
@@ -970,7 +970,7 @@ export default function EdulexaDashboardPage() {
                 <span className="px-2 py-0.5 rounded font-mono text-[10px] bg-amber-500/10 text-amber-400 font-bold">
                   POST /v1/payouts
                 </span>
-                <p className="text-[11px] text-slate-300">
+                <p className="text-[11px] text-slate-400">
                   Automated mentor compensation &amp; tax compliance.
                 </p>
               </div>
@@ -978,7 +978,7 @@ export default function EdulexaDashboardPage() {
                 <span className="px-2 py-0.5 rounded font-mono text-[10px] bg-emerald-500/10 text-emerald-400 font-bold">
                   POST /v1/tenants
                 </span>
-                <p className="text-[11px] text-slate-300">
+                <p className="text-[11px] text-slate-400">
                   Sub-400ms schema &amp; API key provisioning.
                 </p>
               </div>
@@ -986,7 +986,7 @@ export default function EdulexaDashboardPage() {
                 <span className="px-2 py-0.5 rounded font-mono text-[10px] bg-rose-500/10 text-rose-400 font-bold">
                   GET /v1/pixel.js
                 </span>
-                <p className="text-[11px] text-slate-300">
+                <p className="text-[11px] text-slate-400">
                   Embeddable creator drop-off tracker.
                 </p>
               </div>
@@ -1019,7 +1019,7 @@ export default function EdulexaDashboardPage() {
                       setCopiedPixelScript(true);
                       setTimeout(() => setCopiedPixelScript(false), 2000);
                     }}
-                    className="absolute top-2 right-2 p-1.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition-colors cursor-pointer"
+                    className="absolute top-2 right-2 p-1.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white transition-colors cursor-pointer"
                   >
                     {copiedPixelScript ? <Check className="h-3.5 w-3.5 text-emerald-400" /> : <Copy className="h-3.5 w-3.5" />}
                   </button>
@@ -1040,7 +1040,7 @@ export default function EdulexaDashboardPage() {
                       <CheckCircle2 className="h-3.5 w-3.5" />
                       Pixel Event Logged Successfully
                     </div>
-                    <div className="text-slate-300 text-[11px]">
+                    <div className="text-slate-400 text-[11px]">
                       Auto-Recovery Triggered: {pixelTrackResult.recoveryCampaignTriggered ? "Yes (Vapi Dispatch)" : "Queued"}
                     </div>
                     {pixelTrackResult.recoveryCampaign && (
@@ -1067,10 +1067,10 @@ export default function EdulexaDashboardPage() {
                   Real-time events delivered to your endpoints with Stripe-compatible timestamped HMAC-SHA256 signature verification.
                 </p>
 
-                <div className="p-3 rounded-lg border border-slate-800 bg-slate-900/80 text-[11px] font-mono text-slate-300 space-y-1">
-                  <div className="text-slate-500 text-[10px]">ACTIVE ENDPOINT:</div>
+                <div className="p-3 rounded-lg border border-slate-800 bg-slate-900/80 text-[11px] font-mono text-slate-400 space-y-1">
+                  <div className="text-slate-400 text-[10px]">ACTIVE ENDPOINT:</div>
                   <div className="text-emerald-400">http://localhost:5000/api/partner/webhook-receiver</div>
-                  <div className="text-slate-500 text-[10px] pt-1">HEADER FORMAT:</div>
+                  <div className="text-slate-400 text-[10px] pt-1">HEADER FORMAT:</div>
                   <div className="text-slate-400">X-Edulexa-Signature: t=1790931488,v1=sha256...</div>
                 </div>
 
@@ -1089,7 +1089,7 @@ export default function EdulexaDashboardPage() {
                       <CheckCircle2 className="h-3.5 w-3.5" />
                       Webhook Delivered (HTTP {webhookDispatchResult.responseStatusCode})
                     </div>
-                    <div className="text-slate-300 text-[10px] break-all">
+                    <div className="text-slate-400 text-[10px] break-all">
                       Signature: {webhookDispatchResult.hmacSignatureHeader}
                     </div>
                   </div>
@@ -1134,7 +1134,7 @@ await fetch("https://api.yourdomain.com/v1/voice/campaigns", {
       {/* Form 16A Statutory TDS Certificate Modal */}
       {form16ModalData && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-          <div className="bg-slate-900 border border-slate-700 rounded-2xl max-w-2xl w-full p-6 space-y-5 shadow-2xl relative">
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl max-w-2xl w-full p-6 space-y-5 shadow-2xl relative">
             <div className="flex items-center justify-between pb-3 border-b border-slate-800">
               <div className="flex items-center gap-2.5">
                 <div className="h-8 w-8 rounded-lg bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400">
@@ -1157,49 +1157,49 @@ await fetch("https://api.yourdomain.com/v1/voice/campaigns", {
 
             <div className="grid grid-cols-2 gap-4 text-xs font-mono bg-slate-950/60 p-4 rounded-xl border border-slate-800">
               <div>
-                <span className="text-slate-500 block text-[10px]">DEDUCTOR</span>
+                <span className="text-slate-400 block text-[10px]">DEDUCTOR</span>
                 <span className="text-white font-semibold">{form16ModalData.deductorName}</span>
                 <span className="text-indigo-400 block text-[11px]">TAN: {form16ModalData.deductorTan}</span>
               </div>
               <div>
-                <span className="text-slate-500 block text-[10px]">DEDUCTEE / MENTOR</span>
+                <span className="text-slate-400 block text-[10px]">DEDUCTEE / MENTOR</span>
                 <span className="text-white font-semibold">{form16ModalData.deducteeName}</span>
                 <span className="text-cyan-400 block text-[11px]">PAN: {form16ModalData.deducteePan}</span>
               </div>
               <div>
-                <span className="text-slate-500 block text-[10px]">FINANCIAL &amp; ASSESSMENT YEAR</span>
-                <span className="text-slate-300">FY: {form16ModalData.financialYear} • AY: {form16ModalData.assessmentYear}</span>
+                <span className="text-slate-400 block text-[10px]">FINANCIAL &amp; ASSESSMENT YEAR</span>
+                <span className="text-slate-400">FY: {form16ModalData.financialYear} • AY: {form16ModalData.assessmentYear}</span>
                 <span className="text-slate-400 block text-[10px]">Quarter: {form16ModalData.quarter}</span>
               </div>
               <div>
-                <span className="text-slate-500 block text-[10px]">TAX COMPLIANCE FRAMEWORK</span>
+                <span className="text-slate-400 block text-[10px]">TAX COMPLIANCE FRAMEWORK</span>
                 <span className="text-amber-400 font-semibold">{form16ModalData.taxSection || config.tax.regimeTitle}</span>
               </div>
               <div className="pt-2 border-t border-slate-800">
-                <span className="text-slate-500 block text-[10px]">GROSS AMOUNT PAID</span>
+                <span className="text-slate-400 block text-[10px]">GROSS AMOUNT PAID</span>
                 <span className="text-white text-sm font-bold">{formatCurrency(convertFromInr(form16ModalData.totalGrossAmountPaid || 0))}</span>
               </div>
               <div className="pt-2 border-t border-slate-800">
-                <span className="text-slate-500 block text-[10px]">TOTAL TAX WITHHELD ({config.tax.withholdingLabel})</span>
+                <span className="text-slate-400 block text-[10px]">TOTAL TAX WITHHELD ({config.tax.withholdingLabel})</span>
                 <span className="text-emerald-400 text-sm font-bold">{formatCurrency(convertFromInr(form16ModalData.totalTdsDeducted || 0))}</span>
               </div>
             </div>
 
             <div className="p-3 bg-slate-950 rounded-xl border border-slate-800 max-h-48 overflow-y-auto">
-              <span className="text-[10px] uppercase font-mono text-slate-500 block mb-1">Official Statement Preview</span>
-              <pre className="text-[10px] font-mono text-slate-300 whitespace-pre-wrap leading-relaxed">
+              <span className="text-[10px] uppercase font-mono text-slate-400 block mb-1">Official Statement Preview</span>
+              <pre className="text-[10px] font-mono text-slate-400 whitespace-pre-wrap leading-relaxed">
                 {form16ModalData.certificateText}
               </pre>
             </div>
 
             <div className="flex items-center justify-between pt-2">
-              <span className="text-[11px] text-slate-500 font-mono">
+              <span className="text-[11px] text-slate-400 font-mono">
                 BSR Code: {form16ModalData.challanBsrcode} • Challan Date: {form16ModalData.challanTenderDate}
               </span>
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => setForm16ModalData(null)}
-                  className="px-3 py-1.5 rounded-lg border border-slate-700 hover:bg-slate-800 text-xs text-slate-300 transition-colors cursor-pointer"
+                  className="px-3 py-1.5 rounded-lg border border-slate-800 hover:bg-slate-800 text-xs text-slate-400 transition-colors cursor-pointer"
                 >
                   Close
                 </button>

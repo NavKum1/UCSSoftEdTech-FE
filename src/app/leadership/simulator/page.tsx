@@ -237,7 +237,7 @@ export default function ExecutiveLeadershipSimulatorPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans selection:bg-indigo-500/30">
+    <div className="min-h-screen bg-slate-950 text-slate-200 flex flex-col font-sans selection:bg-indigo-500/30">
       {/* Top Header */}
       <header className="border-b border-slate-800 bg-slate-900/60 backdrop-blur-md sticky top-0 z-40 px-6 py-4">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
@@ -327,7 +327,7 @@ export default function ExecutiveLeadershipSimulatorPage() {
                       className={`text-left p-4 rounded-xl border transition-all flex flex-col justify-between ${
                         isSelected
                           ? "bg-indigo-950/40 border-indigo-500 shadow-lg shadow-indigo-500/10"
-                          : "bg-slate-900/60 border-slate-800 hover:border-slate-700"
+                          : "bg-slate-900/60 border-slate-800 hover:border-slate-800"
                       }`}
                     >
                       <div>
@@ -337,7 +337,7 @@ export default function ExecutiveLeadershipSimulatorPage() {
                           </span>
                           <span className="text-[10px] text-slate-400 font-mono">{sc.scenarioType}</span>
                         </div>
-                        <h3 className="font-bold text-sm text-slate-100 leading-snug line-clamp-2">{sc.title}</h3>
+                        <h3 className="font-bold text-sm text-slate-200 leading-snug line-clamp-2">{sc.title}</h3>
                       </div>
                       <p className="text-[11px] text-slate-400 mt-2 line-clamp-2">{sc.contextBackground}</p>
                     </button>
@@ -391,7 +391,7 @@ export default function ExecutiveLeadershipSimulatorPage() {
                   </div>
                 </div>
 
-                <p className="text-xs text-slate-300 leading-relaxed bg-slate-950/60 p-3 rounded-lg border border-slate-800">
+                <p className="text-xs text-slate-400 leading-relaxed bg-slate-950/60 p-3 rounded-lg border border-slate-800">
                   <strong className="text-purple-300 font-bold">Committee Feedback: </strong>
                   {promotionDossier.promotionCommitteeFeedback}
                 </p>
@@ -431,7 +431,7 @@ export default function ExecutiveLeadershipSimulatorPage() {
                           </div>
                           <p className="text-[11px] text-amber-400/90 font-medium">Stance: {sh.stance}</p>
                           <p className="text-[11px] text-slate-400 leading-relaxed">
-                            <strong className="text-slate-300">Concern: </strong>
+                            <strong className="text-slate-400">Concern: </strong>
                             {sh.primaryConcern}
                           </p>
                         </div>
@@ -444,7 +444,7 @@ export default function ExecutiveLeadershipSimulatorPage() {
                     <h3 className="font-bold text-sm text-white flex items-center space-x-2">
                       <span>🎯 Staff Evaluation Rubric</span>
                     </h3>
-                    <div className="text-xs space-y-2.5 text-slate-300">
+                    <div className="text-xs space-y-2.5 text-slate-400">
                       <div>
                         <strong className="text-indigo-400 block mb-0.5">Executive Presence:</strong>
                         <p className="text-[11px] text-slate-400">{selectedScenario.rubric.executivePresence}</p>
@@ -485,9 +485,9 @@ export default function ExecutiveLeadershipSimulatorPage() {
                             className={`flex flex-col ${isCandidate ? "items-end" : "items-start"}`}
                           >
                             <div className="flex items-center space-x-2 mb-1">
-                              <span className="text-[11px] font-bold text-slate-300">{item.speaker}</span>
-                              <span className="text-[10px] text-slate-500 font-mono">{item.role}</span>
-                              <span className="text-[10px] text-slate-500 font-mono">{item.timestamp}</span>
+                              <span className="text-[11px] font-bold text-slate-400">{item.speaker}</span>
+                              <span className="text-[10px] text-slate-400 font-mono">{item.role}</span>
+                              <span className="text-[10px] text-slate-400 font-mono">{item.timestamp}</span>
                             </div>
                             <div
                               className={`max-w-[85%] rounded-2xl p-4 text-xs leading-relaxed shadow-md ${
@@ -544,11 +544,11 @@ export default function ExecutiveLeadershipSimulatorPage() {
                           value={candidateInput}
                           onChange={(e) => setCandidateInput(e.target.value)}
                           placeholder="Formulate your Staff+ response addressing stakeholder trade-offs, blameless architecture, and concrete action items..."
-                          className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-slate-100 placeholder:text-slate-600 focus:outline-none focus:border-indigo-500 transition-all font-mono leading-relaxed"
+                          className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-slate-200 placeholder:text-slate-400 focus:outline-none focus:border-indigo-500 transition-all font-mono leading-relaxed"
                         ></textarea>
 
                         <div className="flex items-center justify-between">
-                          <span className="text-[11px] text-slate-500 font-mono">
+                          <span className="text-[11px] text-slate-400 font-mono">
                             Press Submit to progress simulation dialogue
                           </span>
                           <button
@@ -612,7 +612,7 @@ export default function ExecutiveLeadershipSimulatorPage() {
                             <span>✅</span>
                             <span>Key Executive Strengths</span>
                           </span>
-                          <ul className="list-disc list-inside space-y-1 text-slate-300 pl-1">
+                          <ul className="list-disc list-inside space-y-1 text-slate-400 pl-1">
                             {evaluationReport.executiveStrengths.map((s, idx) => (
                               <li key={idx} className="leading-relaxed">{s}</li>
                             ))}
@@ -624,7 +624,7 @@ export default function ExecutiveLeadershipSimulatorPage() {
                             <span>🔍</span>
                             <span>Staff Competency Blindspots</span>
                           </span>
-                          <ul className="list-disc list-inside space-y-1 text-slate-300 pl-1">
+                          <ul className="list-disc list-inside space-y-1 text-slate-400 pl-1">
                             {evaluationReport.competencyBlindspots.map((b, idx) => (
                               <li key={idx} className="leading-relaxed">{b}</li>
                             ))}

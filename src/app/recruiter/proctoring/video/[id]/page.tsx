@@ -112,7 +112,7 @@ export default function ProctoringVideoReviewPage({ params }: { params: Promise<
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-950 text-slate-100 flex items-center justify-center">
+      <div className="min-h-screen bg-slate-950 text-slate-200 flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
           <div className="w-12 h-12 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
           <p className="text-slate-400 font-mono text-sm">Loading Assessment Video Recording...</p>
@@ -123,7 +123,7 @@ export default function ProctoringVideoReviewPage({ params }: { params: Promise<
 
   if (fetchError || !playerData) {
     return (
-      <div className="min-h-screen bg-slate-950 text-slate-100 flex items-center justify-center font-sans p-6">
+      <div className="min-h-screen bg-slate-950 text-slate-200 flex items-center justify-center font-sans p-6">
         <div className="max-w-md w-full p-8 rounded-2xl bg-slate-900 border border-slate-800 text-center space-y-4">
           <div className="w-12 h-12 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 flex items-center justify-center mx-auto text-lg font-bold">
             !
@@ -147,13 +147,13 @@ export default function ProctoringVideoReviewPage({ params }: { params: Promise<
   const progressPercent = (currentTime / duration) * 100;
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans">
+    <div className="min-h-screen bg-slate-950 text-slate-200 flex flex-col font-sans">
       {/* Top Header */}
       <header className="border-b border-slate-800 bg-slate-900/80 backdrop-blur px-6 py-4 flex items-center justify-between sticky top-0 z-50">
         <div className="flex items-center gap-3">
           <Link
             href="/partner/dashboard"
-            className="text-xs px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 font-mono transition"
+            className="text-xs px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-400 font-mono transition"
           >
             &larr; Back to Reviews
           </Link>
@@ -234,7 +234,7 @@ export default function ProctoringVideoReviewPage({ params }: { params: Promise<
                   <p className="text-sm font-semibold text-slate-200">
                     Proctored Webcam Candidate Feed
                   </p>
-                  <p className="text-xs text-slate-500 font-mono mt-1">
+                  <p className="text-xs text-slate-400 font-mono mt-1">
                     Continuous AI Face &amp; Eye Gaze Tracking Active
                   </p>
                 </div>
@@ -246,15 +246,15 @@ export default function ProctoringVideoReviewPage({ params }: { params: Promise<
                   <p className="text-sm font-semibold text-slate-200">
                     Candidate Primary Display (1920x1080)
                   </p>
-                  <p className="text-xs text-slate-500 font-mono mt-1">
+                  <p className="text-xs text-slate-400 font-mono mt-1">
                     Keystroke &amp; Window Switch Activity Recorded
                   </p>
                 </div>
               )}
 
               {/* PiP Inset (Picture in Picture for other track) */}
-              <div className="absolute bottom-4 right-4 w-44 aspect-video bg-slate-900/90 rounded-lg border border-slate-700 overflow-hidden shadow-lg flex items-center justify-center cursor-pointer hover:border-indigo-500 transition">
-                <span className="text-[10px] font-mono text-slate-300">
+              <div className="absolute bottom-4 right-4 w-44 aspect-video bg-slate-900/90 rounded-lg border border-slate-800 overflow-hidden shadow-lg flex items-center justify-center cursor-pointer hover:border-indigo-500 transition">
+                <span className="text-[10px] font-mono text-slate-400">
                   {activeTrack === 'Webcam' ? 'Screen (PiP)' : 'Webcam (PiP)'}
                 </span>
               </div>
@@ -271,7 +271,7 @@ export default function ProctoringVideoReviewPage({ params }: { params: Promise<
             {/* Play/Pause Center Overlay */}
             <button
               onClick={() => setIsPlaying(!isPlaying)}
-              className="absolute z-20 w-16 h-16 rounded-full bg-slate-900/80 hover:bg-indigo-600 text-white flex items-center justify-center text-xl transition shadow-xl border border-slate-700 hover:scale-105"
+              className="absolute z-20 w-16 h-16 rounded-full bg-slate-900/80 hover:bg-indigo-600 text-white flex items-center justify-center text-xl transition shadow-xl border border-slate-800 hover:scale-105"
             >
               {isPlaying ? '⏸' : '▶'}
             </button>
@@ -327,7 +327,7 @@ export default function ProctoringVideoReviewPage({ params }: { params: Promise<
                 </button>
                 <button
                   onClick={() => jumpToSeconds(0)}
-                  className="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 transition"
+                  className="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-400 transition"
                 >
                   Rewind
                 </button>
@@ -340,7 +340,7 @@ export default function ProctoringVideoReviewPage({ params }: { params: Promise<
 
               {/* Speed Controls */}
               <div className="flex items-center gap-1.5">
-                <span className="text-slate-500">Speed:</span>
+                <span className="text-slate-400">Speed:</span>
                 {[1.0, 1.5, 2.0].map((s) => (
                   <button
                     key={s}
@@ -348,7 +348,7 @@ export default function ProctoringVideoReviewPage({ params }: { params: Promise<
                     className={`px-2 py-0.5 rounded text-xs transition ${
                       playbackSpeed === s
                         ? 'bg-indigo-600 text-white font-semibold'
-                        : 'bg-slate-800 hover:bg-slate-700 text-slate-300'
+                        : 'bg-slate-800 hover:bg-slate-700 text-slate-400'
                     }`}
                   >
                     {s}x
@@ -416,7 +416,7 @@ export default function ProctoringVideoReviewPage({ params }: { params: Promise<
                     className={`p-3 rounded-lg border cursor-pointer transition ${
                       isSelected
                         ? 'bg-slate-800/90 border-indigo-500 shadow-md ring-1 ring-indigo-500/50'
-                        : 'bg-slate-950/60 border-slate-800 hover:border-slate-700'
+                        : 'bg-slate-950/60 border-slate-800 hover:border-slate-800'
                     }`}
                   >
                     <div className="flex items-center justify-between mb-1">
@@ -456,7 +456,7 @@ export default function ProctoringVideoReviewPage({ params }: { params: Promise<
                   </div>
                 </div>
               ) : (
-                <p className="text-xs text-slate-500 font-mono">No snapshot frame captured.</p>
+                <p className="text-xs text-slate-400 font-mono">No snapshot frame captured.</p>
               )}
             </div>
           )}

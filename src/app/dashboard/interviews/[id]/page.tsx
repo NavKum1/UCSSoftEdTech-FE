@@ -213,7 +213,7 @@ export default function StudentInterviewReplayPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-950 text-slate-100 flex items-center justify-center font-sans">
+      <div className="min-h-screen bg-slate-950 text-slate-200 flex items-center justify-center font-sans">
         <div className="flex flex-col items-center gap-3">
           <div className="w-10 h-10 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin" />
           <p className="text-sm text-slate-400 font-mono">Loading Interview Recording & Feedback...</p>
@@ -224,7 +224,7 @@ export default function StudentInterviewReplayPage() {
 
   if (fetchError || !sessionData) {
     return (
-      <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col items-center justify-center font-sans p-6">
+      <div className="min-h-screen bg-slate-950 text-slate-200 flex flex-col items-center justify-center font-sans p-6">
         <div className="max-w-md w-full p-8 rounded-3xl bg-slate-900/60 border border-slate-800 text-center space-y-4">
           <div className="w-12 h-12 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center mx-auto">
             <AlertTriangle className="w-6 h-6" />
@@ -248,7 +248,7 @@ export default function StudentInterviewReplayPage() {
   const displayedDialogues = filterFlaggedOnly ? dialogues.filter((d) => d.isFlagged) : dialogues;
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans pb-16">
+    <div className="min-h-screen bg-slate-950 text-slate-200 flex flex-col font-sans pb-16">
       {/* Hidden Audio Tag */}
       <audio
         ref={audioRef}
@@ -320,14 +320,14 @@ export default function StudentInterviewReplayPage() {
 
           {/* Scores Pills */}
           <div className="flex items-center space-x-4">
-            <div className="glass-panel rounded-2xl px-4 py-2 border border-slate-700/80 bg-slate-900/60 text-center">
+            <div className="glass-panel rounded-2xl px-4 py-2 border border-slate-800/80 bg-slate-900/60 text-center">
               <span className="text-[10px] uppercase font-bold text-slate-400">Technical Skills</span>
               <p className="text-lg font-black text-indigo-400">
                 {sessionData?.evaluation?.technicalScore.toFixed(1) || "84.0"}%
               </p>
             </div>
 
-            <div className="glass-panel rounded-2xl px-4 py-2 border border-slate-700/80 bg-slate-900/60 text-center">
+            <div className="glass-panel rounded-2xl px-4 py-2 border border-slate-800/80 bg-slate-900/60 text-center">
               <span className="text-[10px] uppercase font-bold text-slate-400">Communication</span>
               <p className="text-lg font-black text-purple-400">
                 {sessionData?.evaluation?.communicationScore.toFixed(1) || "78.0"}%
@@ -378,7 +378,7 @@ export default function StudentInterviewReplayPage() {
                   setCurrentTime(0);
                   if (audioRef.current) audioRef.current.currentTime = 0;
                 }}
-                className="p-2 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 transition-colors cursor-pointer"
+                className="p-2 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-400 transition-colors cursor-pointer"
               >
                 <RotateCcw className="w-3.5 h-3.5" />
               </button>
@@ -386,7 +386,7 @@ export default function StudentInterviewReplayPage() {
               {/* Mute Toggle */}
               <button
                 onClick={toggleMute}
-                className="p-2 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 transition-colors cursor-pointer"
+                className="p-2 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-400 transition-colors cursor-pointer"
               >
                 {isMuted ? <VolumeX className="w-3.5 h-3.5 text-red-400" /> : <Volume2 className="w-3.5 h-3.5" />}
               </button>
@@ -396,7 +396,7 @@ export default function StudentInterviewReplayPage() {
             <div className="flex items-center space-x-2">
               <button
                 onClick={cycleSpeed}
-                className="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold font-mono border border-slate-700 transition-all cursor-pointer"
+                className="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold font-mono border border-slate-800 transition-all cursor-pointer"
               >
                 {playbackSpeed}x Speed
               </button>
@@ -465,7 +465,7 @@ export default function StudentInterviewReplayPage() {
                   )}
                 </div>
 
-                <p className="text-xs text-slate-300 leading-relaxed pl-8 whitespace-pre-line">{msg.text}</p>
+                <p className="text-xs text-slate-400 leading-relaxed pl-8 whitespace-pre-line">{msg.text}</p>
               </div>
             ))}
           </div>

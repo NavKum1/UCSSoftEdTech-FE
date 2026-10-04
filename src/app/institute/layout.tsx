@@ -9,7 +9,7 @@ export default function InstituteLayout({ children }: { children: React.ReactNod
   const router = useRouter();
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans">
+    <div className="min-h-screen bg-slate-950 text-slate-200 flex flex-col font-sans">
       {/* Top Navigation Bar */}
       <header className="border-b border-slate-800 bg-slate-900/60 backdrop-blur-md sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">

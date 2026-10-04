@@ -166,7 +166,7 @@ export default function BehavioralSentimentPage() {
   const latestTelemetry = timeline.length > 0 ? timeline[timeline.length - 1] : null;
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 p-6 font-sans">
+    <div className="min-h-screen bg-slate-950 text-slate-200 p-6 font-sans">
       {/* Top Header */}
       <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-start md:items-center justify-between pb-6 border-b border-slate-800 gap-4">
         <div>
@@ -190,13 +190,13 @@ export default function BehavioralSentimentPage() {
         <div className="flex items-center gap-3">
           <Link
             href={`/interview/${interviewId}/replay`}
-            className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-sm font-medium rounded-lg transition border border-slate-700"
+            className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-sm font-medium rounded-lg transition border border-slate-800"
           >
             Audio Replay
           </Link>
           <Link
             href="/dashboard"
-            className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-sm font-medium rounded-lg transition border border-slate-700"
+            className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-sm font-medium rounded-lg transition border border-slate-800"
           >
             Dashboard
           </Link>
@@ -411,7 +411,7 @@ export default function BehavioralSentimentPage() {
                   <div className="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">
                     Personalized Delivery & Speaking Tips
                   </div>
-                  <ul className="space-y-2 text-xs text-slate-300">
+                  <ul className="space-y-2 text-xs text-slate-400">
                     {summary.executiveCoachingFeedback.map((fb, idx) => (
                       <li key={idx} className="flex items-start gap-2">
                         <span className="text-emerald-400 font-bold">✓</span>
@@ -422,7 +422,7 @@ export default function BehavioralSentimentPage() {
                 </div>
               </div>
             ) : (
-              <div className="text-center py-8 text-slate-500 text-xs">
+              <div className="text-center py-8 text-slate-400 text-xs">
                 No summary generated yet. Add speaking samples and click &quot;Generate Summary Report&quot;.
               </div>
             )}
@@ -437,7 +437,7 @@ export default function BehavioralSentimentPage() {
 
             <div className="mt-4 space-y-3 max-h-96 overflow-y-auto pr-1">
               {timeline.length === 0 ? (
-                <div className="text-center py-8 text-slate-500 text-xs">
+                <div className="text-center py-8 text-slate-400 text-xs">
                   No speaking samples recorded for this session yet. Use the panel on the left to test or record samples.
                 </div>
               ) : (
@@ -465,12 +465,12 @@ export default function BehavioralSentimentPage() {
                         <span className="text-slate-400">Pace: {point.speechCadenceWpm.toFixed(0)} WPM</span>
                         <span className="text-slate-400">Variation: {point.pitchVarianceHz.toFixed(1)} Hz</span>
                       </div>
-                      <p className="text-slate-300 italic">&ldquo;{point.telemetrySnippet}&rdquo;</p>
+                      <p className="text-slate-400 italic">&ldquo;{point.telemetrySnippet}&rdquo;</p>
                     </div>
 
                     <div className="text-right shrink-0">
                       <span className="text-[11px] font-mono text-violet-400 block">{point.pacingDirective}</span>
-                      <span className="text-[10px] text-slate-500">
+                      <span className="text-[10px] text-slate-400">
                         {new Date(point.timestamp).toLocaleTimeString()}
                       </span>
                     </div>

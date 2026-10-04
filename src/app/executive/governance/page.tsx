@@ -170,13 +170,13 @@ export default function MultiCampusGovernancePage() {
   }, [parentInstituteId]);
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans">
+    <div className="min-h-screen bg-slate-950 text-slate-200 flex flex-col font-sans">
       {/* Top Header */}
       <header className="border-b border-slate-800 bg-slate-900/80 backdrop-blur-md px-6 py-4 flex items-center justify-between sticky top-0 z-40">
         <div className="flex items-center space-x-4">
           <Link
             href="/partner/dashboard"
-            className="text-xs font-semibold px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition"
+            className="text-xs font-semibold px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 border border-slate-800 transition"
           >
             ← Partner Portal
           </Link>
@@ -220,7 +220,7 @@ export default function MultiCampusGovernancePage() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <div className="p-4 rounded-2xl bg-slate-900/60 border border-slate-800/80 shadow-sm">
             <div className="text-slate-400 text-xs font-medium">Chartered Campuses</div>
-            <div className="text-2xl font-black text-slate-100 mt-1">
+            <div className="text-2xl font-black text-slate-200 mt-1">
               {rollup?.totalCampuses || 0}
             </div>
             <div className="text-[11px] text-emerald-400 mt-1 font-mono">100% Fully Isolated</div>
@@ -278,12 +278,12 @@ export default function MultiCampusGovernancePage() {
                     className={`p-4 rounded-xl border cursor-pointer transition relative ${
                       isSelected
                         ? "bg-slate-900 border-emerald-500 shadow-md shadow-emerald-500/10 ring-1 ring-emerald-500/50"
-                        : "bg-slate-900/40 border-slate-800/80 hover:bg-slate-900/70 hover:border-slate-700"
+                        : "bg-slate-900/40 border-slate-800/80 hover:bg-slate-900/70 hover:border-slate-800"
                     }`}
                   >
                     <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold text-slate-100">{c.campusName}</span>
-                      <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-800 text-emerald-400 font-semibold border border-slate-700">
+                      <span className="text-xs font-bold text-slate-200">{c.campusName}</span>
+                      <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-800 text-emerald-400 font-semibold border border-slate-800">
                         {c.campusCode}
                       </span>
                     </div>
@@ -293,7 +293,7 @@ export default function MultiCampusGovernancePage() {
                       <span className="font-mono text-emerald-400 font-bold">{c.complianceScore}%</span>
                     </div>
 
-                    <div className="mt-2 text-[11px] text-slate-500 flex items-center justify-between font-mono">
+                    <div className="mt-2 text-[11px] text-slate-400 flex items-center justify-between font-mono">
                       <span>Students: {c.studentCount.toLocaleString()}</span>
                       <span>Tier: {c.accreditationTier}</span>
                     </div>
@@ -363,7 +363,7 @@ export default function MultiCampusGovernancePage() {
             {/* Block Chain Timeline */}
             <div className="space-y-3 max-h-[600px] overflow-y-auto pr-1">
               {ledgerBlocks.length === 0 ? (
-                <div className="p-8 text-center border border-dashed border-slate-800 rounded-2xl bg-slate-900/30 text-slate-500 text-xs">
+                <div className="p-8 text-center border border-dashed border-slate-800 rounded-2xl bg-slate-900/30 text-slate-400 text-xs">
                   No audit blocks recorded for this campus.
                 </div>
               ) : (
@@ -374,7 +374,7 @@ export default function MultiCampusGovernancePage() {
                   >
                     <div className="flex items-center justify-between text-xs">
                       <div className="flex items-center space-x-2">
-                        <span className="px-2 py-0.5 rounded font-mono font-bold bg-slate-800 text-cyan-300 border border-slate-700">
+                        <span className="px-2 py-0.5 rounded font-mono font-bold bg-slate-800 text-cyan-300 border border-slate-800">
                           #{b.blockIndex}
                         </span>
                         <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-indigo-950 text-indigo-300 border border-indigo-700/50">
@@ -382,21 +382,21 @@ export default function MultiCampusGovernancePage() {
                         </span>
                         <span className="text-slate-400 text-xs">by {b.actorEmail}</span>
                       </div>
-                      <span className="text-[11px] text-slate-500 font-mono">
+                      <span className="text-[11px] text-slate-400 font-mono">
                         {new Date(b.createdAt).toLocaleString()}
                       </span>
                     </div>
 
-                    <p className="text-xs text-slate-300">{b.notes}</p>
+                    <p className="text-xs text-slate-400">{b.notes}</p>
 
                     {/* Cryptographic Hashes Bar */}
                     <div className="pt-2 border-t border-slate-800/80 grid grid-cols-1 md:grid-cols-2 gap-2 text-[10px] font-mono text-slate-400">
                       <div className="truncate">
-                        <span className="text-slate-500">Block Hash: </span>
+                        <span className="text-slate-400">Block Hash: </span>
                         <span className="text-emerald-400">{b.blockHash}</span>
                       </div>
                       <div className="truncate">
-                        <span className="text-slate-500">Prev Hash: </span>
+                        <span className="text-slate-400">Prev Hash: </span>
                         <span className="text-slate-400">{b.previousBlockHash}</span>
                       </div>
                     </div>
@@ -413,7 +413,7 @@ export default function MultiCampusGovernancePage() {
         <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl">
             <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-              <h3 className="text-sm font-bold text-slate-100">
+              <h3 className="text-sm font-bold text-slate-200">
                 Certify Audit Block: {selectedCampus?.campusName}
               </h3>
               <button
@@ -480,7 +480,7 @@ export default function MultiCampusGovernancePage() {
                 <button
                   type="button"
                   onClick={() => setShowAppendModal(false)}
-                  className="px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold"
+                  className="px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 font-semibold"
                 >
                   Cancel
                 </button>

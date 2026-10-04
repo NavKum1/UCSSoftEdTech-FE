@@ -176,7 +176,7 @@ export default function RecruiterBenchmarkPage() {
         <div className="flex items-center space-x-3">
           <button
             onClick={() => setShowPlagiarismModal(true)}
-            className="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-medium text-xs border border-slate-700 flex items-center space-x-2 transition-all cursor-pointer shadow-sm hover:border-slate-600"
+            className="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-medium text-xs border border-slate-800 flex items-center space-x-2 transition-all cursor-pointer shadow-sm hover:border-slate-600"
           >
             <GitCompare className="w-4 h-4 text-purple-400" />
             <span>Code Originality Check</span>
@@ -192,7 +192,7 @@ export default function RecruiterBenchmarkPage() {
 
           <button
             onClick={fetchAnalytics}
-            className="p-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-800 text-slate-400 hover:text-slate-200 border border-slate-700/80 cursor-pointer transition-colors"
+            className="p-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-800 text-slate-400 hover:text-slate-200 border border-slate-800/80 cursor-pointer transition-colors"
             title="Refresh Metrics"
           >
             <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
@@ -317,28 +317,28 @@ export default function RecruiterBenchmarkPage() {
           <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 pt-2">
             <div className="flex items-center space-x-2 text-xs">
               <span className="w-3 h-3 rounded-full bg-emerald-500 shrink-0" />
-              <span className="text-slate-300 font-medium">Staff Level</span>
-              <span className="text-slate-500">({analytics?.tierDistribution?.FAANG_Staff ?? 12})</span>
+              <span className="text-slate-400 font-medium">Staff Level</span>
+              <span className="text-slate-400">({analytics?.tierDistribution?.FAANG_Staff ?? 12})</span>
             </div>
             <div className="flex items-center space-x-2 text-xs">
               <span className="w-3 h-3 rounded-full bg-indigo-500 shrink-0" />
-              <span className="text-slate-300 font-medium">Senior Level</span>
-              <span className="text-slate-500">({analytics?.tierDistribution?.Tier1_Senior ?? 38})</span>
+              <span className="text-slate-400 font-medium">Senior Level</span>
+              <span className="text-slate-400">({analytics?.tierDistribution?.Tier1_Senior ?? 38})</span>
             </div>
             <div className="flex items-center space-x-2 text-xs">
               <span className="w-3 h-3 rounded-full bg-sky-500 shrink-0" />
-              <span className="text-slate-300 font-medium">Mid Level</span>
-              <span className="text-slate-500">({analytics?.tierDistribution?.MidLevel_Enterprise ?? 64})</span>
+              <span className="text-slate-400 font-medium">Mid Level</span>
+              <span className="text-slate-400">({analytics?.tierDistribution?.MidLevel_Enterprise ?? 64})</span>
             </div>
             <div className="flex items-center space-x-2 text-xs">
               <span className="w-3 h-3 rounded-full bg-amber-500 shrink-0" />
-              <span className="text-slate-300 font-medium">Associate Level</span>
-              <span className="text-slate-500">({analytics?.tierDistribution?.Junior_Competent ?? 22})</span>
+              <span className="text-slate-400 font-medium">Associate Level</span>
+              <span className="text-slate-400">({analytics?.tierDistribution?.Junior_Competent ?? 22})</span>
             </div>
             <div className="flex items-center space-x-2 text-xs">
               <span className="w-3 h-3 rounded-full bg-rose-500 shrink-0" />
-              <span className="text-slate-300 font-medium">Needs Practice</span>
-              <span className="text-slate-500">({analytics?.tierDistribution?.Needs_Remediation ?? 6})</span>
+              <span className="text-slate-400 font-medium">Needs Practice</span>
+              <span className="text-slate-400">({analytics?.tierDistribution?.Needs_Remediation ?? 6})</span>
             </div>
           </div>
         </div>
@@ -366,11 +366,11 @@ export default function RecruiterBenchmarkPage() {
                   className={`p-4 rounded-xl border transition-all cursor-pointer flex items-center justify-between ${
                     isSelected
                       ? "bg-purple-950/20 border-purple-500/50 shadow-md shadow-purple-900/20"
-                      : "bg-slate-900/40 border-slate-800 hover:border-slate-700 hover:bg-slate-900/60"
+                      : "bg-slate-900/40 border-slate-800 hover:border-slate-800 hover:bg-slate-900/60"
                   }`}
                 >
                   <div className="flex items-center space-x-4">
-                    <div className="w-10 h-10 rounded-xl bg-slate-800 border border-slate-700 flex items-center justify-center font-bold text-white text-xs">
+                    <div className="w-10 h-10 rounded-xl bg-slate-800 border border-slate-800 flex items-center justify-center font-bold text-white text-xs">
                       #{candidate.sprintSubmissionId.substring(0, 4)}
                     </div>
                     <div>
@@ -393,11 +393,11 @@ export default function RecruiterBenchmarkPage() {
                       <div className="text-xs font-semibold text-purple-400">
                         {candidate.overallBenchmarkPercentile.toFixed(1)}th %ile
                       </div>
-                      <div className="text-[10px] text-slate-500">
+                      <div className="text-[10px] text-slate-400">
                         Top {(100 - candidate.overallBenchmarkPercentile).toFixed(1)}% of cohort
                       </div>
                     </div>
-                    <ChevronRight className={`w-4 h-4 ${isSelected ? "text-purple-400" : "text-slate-600"}`} />
+                    <ChevronRight className={`w-4 h-4 ${isSelected ? "text-purple-400" : "text-slate-400"}`} />
                   </div>
                 </div>
               );
@@ -428,7 +428,7 @@ export default function RecruiterBenchmarkPage() {
           <div className="space-y-4">
             <div>
               <div className="flex justify-between text-xs mb-1.5">
-                <span className="text-slate-300 font-medium flex items-center space-x-1.5">
+                <span className="text-slate-400 font-medium flex items-center space-x-1.5">
                   <Cpu className="w-3.5 h-3.5 text-indigo-400" />
                   <span>Code Structure & Maintainability</span>
                 </span>
@@ -446,7 +446,7 @@ export default function RecruiterBenchmarkPage() {
 
             <div>
               <div className="flex justify-between text-xs mb-1.5">
-                <span className="text-slate-300 font-medium flex items-center space-x-1.5">
+                <span className="text-slate-400 font-medium flex items-center space-x-1.5">
                   <Sparkles className="w-3.5 h-3.5 text-purple-400" />
                   <span>System Design & Modularity</span>
                 </span>
@@ -464,7 +464,7 @@ export default function RecruiterBenchmarkPage() {
 
             <div>
               <div className="flex justify-between text-xs mb-1.5">
-                <span className="text-slate-300 font-medium flex items-center space-x-1.5">
+                <span className="text-slate-400 font-medium flex items-center space-x-1.5">
                   <ShieldAlert className="w-3.5 h-3.5 text-emerald-400" />
                   <span>Reliability & Error Handling</span>
                 </span>
@@ -482,7 +482,7 @@ export default function RecruiterBenchmarkPage() {
 
             <div>
               <div className="flex justify-between text-xs mb-1.5">
-                <span className="text-slate-300 font-medium flex items-center space-x-1.5">
+                <span className="text-slate-400 font-medium flex items-center space-x-1.5">
                   <Zap className="w-3.5 h-3.5 text-amber-400" />
                   <span>Performance & Efficiency</span>
                 </span>
@@ -500,7 +500,7 @@ export default function RecruiterBenchmarkPage() {
           </div>
 
           {/* AI Evaluator Summary */}
-          <div className="p-3.5 rounded-xl bg-slate-950/80 border border-slate-800 text-xs text-slate-300 leading-relaxed">
+          <div className="p-3.5 rounded-xl bg-slate-950/80 border border-slate-800 text-xs text-slate-400 leading-relaxed">
             <span className="font-semibold text-white block mb-1">Evaluation Summary:</span>
             {selectedRecord?.benchmarkSummary || "No benchmark summary available."}
           </div>
@@ -509,7 +509,7 @@ export default function RecruiterBenchmarkPage() {
             onClick={() => {
               setShowPlagiarismModal(true);
             }}
-            className="w-full py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium border border-slate-700 flex items-center justify-center space-x-2 transition-colors cursor-pointer"
+            className="w-full py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium border border-slate-800 flex items-center justify-center space-x-2 transition-colors cursor-pointer"
           >
             <GitCompare className="w-3.5 h-3.5 text-purple-400" />
             <span>Review Code Originality</span>
@@ -539,7 +539,7 @@ export default function RecruiterBenchmarkPage() {
             </p>
 
             <div className="space-y-3">
-              <label className="text-xs font-medium text-slate-300 block">
+              <label className="text-xs font-medium text-slate-400 block">
                 Evaluation Standard
               </label>
               {[
@@ -553,7 +553,7 @@ export default function RecruiterBenchmarkPage() {
                   className={`p-3 rounded-xl border transition-all cursor-pointer flex items-center justify-between ${
                     selectedModel === model.id
                       ? "bg-purple-950/30 border-purple-500/60"
-                      : "bg-slate-950/60 border-slate-800 hover:border-slate-700"
+                      : "bg-slate-950/60 border-slate-800 hover:border-slate-800"
                   }`}
                 >
                   <div>
@@ -578,7 +578,7 @@ export default function RecruiterBenchmarkPage() {
             <div className="flex items-center space-x-3 pt-2">
               <button
                 onClick={() => setShowBatchModal(false)}
-                className="flex-1 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-medium cursor-pointer"
+                className="flex-1 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-400 text-xs font-medium cursor-pointer"
               >
                 Cancel
               </button>
@@ -615,7 +615,7 @@ export default function RecruiterBenchmarkPage() {
             </p>
 
             <div className="space-y-2">
-              <label className="text-xs font-medium text-slate-300 block">
+              <label className="text-xs font-medium text-slate-400 block">
                 Candidate Code to Review
               </label>
               <textarea
@@ -640,7 +640,7 @@ export default function RecruiterBenchmarkPage() {
                     Similarity: {(plagiarismReport.similarityScore * 100).toFixed(1)}%
                   </span>
                 </div>
-                <p className="text-xs leading-relaxed text-slate-300">
+                <p className="text-xs leading-relaxed text-slate-400">
                   {plagiarismReport.flaggedReason}
                 </p>
                 {plagiarismReport.crossCohortMatchUserEmail && (
@@ -661,7 +661,7 @@ export default function RecruiterBenchmarkPage() {
             <div className="flex items-center space-x-3 pt-2">
               <button
                 onClick={() => setShowPlagiarismModal(false)}
-                className="flex-1 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-medium cursor-pointer"
+                className="flex-1 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-400 text-xs font-medium cursor-pointer"
               >
                 Close
               </button>

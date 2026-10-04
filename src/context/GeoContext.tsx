@@ -180,7 +180,7 @@ const GeoContext = createContext<GeoContextType>({
 });
 
 export function GeoProvider({ children }: { children: React.ReactNode }) {
-  const [region, setRegionState] = useState<Region>(detectInitialRegion);
+  const [region, setRegionState] = useState<Region>("IN");
 
   useEffect(() => {
     // 1. Sync on mount
@@ -258,12 +258,12 @@ export function ProductRegionSwitcher({ className = "" }: { className?: string }
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-900 border border-slate-800 text-xs font-medium text-slate-300 hover:text-white hover:border-slate-700 transition-colors shadow-sm"
+        className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-900 border border-slate-800 text-xs font-medium text-slate-400 hover:text-white hover:border-slate-800 transition-colors shadow-sm"
         title="Change Country & Compliance Jurisdiction"
       >
         <span>{REGIONS[region].flag}</span>
         <span className="font-semibold text-slate-200">{REGIONS[region].currency}</span>
-        <span className="text-[10px] text-slate-500">▼</span>
+        <span className="text-[10px] text-slate-400">▼</span>
       </button>
 
       {isOpen && (
@@ -290,7 +290,7 @@ export function ProductRegionSwitcher({ className = "" }: { className?: string }
                   className={`flex w-full items-center justify-between rounded-lg px-2.5 py-2 text-xs transition ${
                     isSelected
                       ? "bg-indigo-600/20 text-indigo-300 font-semibold border border-indigo-500/30"
-                      : "text-slate-300 hover:bg-slate-800 hover:text-white"
+                      : "text-slate-400 hover:bg-slate-800 hover:text-white"
                   }`}
                 >
                   <span className="flex items-center gap-2">

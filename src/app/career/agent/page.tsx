@@ -247,7 +247,7 @@ export default function AutonomousCareerAgentPage() {
   });
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans">
+    <div className="min-h-screen bg-slate-950 text-slate-200 flex flex-col font-sans">
       {/* Top Cyber Navigation Bar */}
       <header className="border-b border-slate-800 bg-slate-900/80 backdrop-blur-md px-6 py-4 sticky top-0 z-40">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
@@ -284,7 +284,7 @@ export default function AutonomousCareerAgentPage() {
             </button>
             <Link
               href="/passport"
-              className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg text-xs font-medium border border-slate-700 transition"
+              className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg text-xs font-medium border border-slate-800 transition"
             >
               View Verified Credentials
             </Link>
@@ -316,7 +316,7 @@ export default function AutonomousCareerAgentPage() {
                 <span>{config?.candidateName || "Alex Chen"}</span>
                 <span className="text-xs font-mono text-amber-300 font-normal">Active Gold</span>
               </div>
-              <div className="text-xs text-slate-300">{config?.currentTitle}</div>
+              <div className="text-xs text-slate-400">{config?.currentTitle}</div>
               <div className="pt-2 text-[11px] font-mono text-slate-400 flex items-center justify-between">
                 <span>Passport Token:</span>
                 <span className="text-emerald-400 underline cursor-pointer">
@@ -327,7 +327,7 @@ export default function AutonomousCareerAgentPage() {
 
             {/* Compensation Minimum Floor Form */}
             <div className="space-y-4">
-              <div className="text-xs font-semibold text-slate-300 uppercase tracking-wider">
+              <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
                 Reservation Price & Floors
               </div>
 
@@ -439,9 +439,9 @@ export default function AutonomousCareerAgentPage() {
                       config ? { ...config, requireFastTrackScreeningSkip: e.target.checked } : null
                     )
                   }
-                  className="mt-1 rounded accent-emerald-500 bg-slate-800 border-slate-700"
+                  className="mt-1 rounded accent-emerald-500 bg-slate-800 border-slate-800"
                 />
-                <span className="text-xs text-slate-300">
+                <span className="text-xs text-slate-400">
                   <strong>Enforce Screening Bypass:</strong> Demand skipping HR and initial coding calls directly to Staff Onsite
                 </span>
               </label>
@@ -453,9 +453,9 @@ export default function AutonomousCareerAgentPage() {
                   onChange={(e) =>
                     setConfig(config ? { ...config, autoDeclineBelowFloor: e.target.checked } : null)
                   }
-                  className="mt-1 rounded accent-emerald-500 bg-slate-800 border-slate-700"
+                  className="mt-1 rounded accent-emerald-500 bg-slate-800 border-slate-800"
                 />
-                <span className="text-xs text-slate-300">
+                <span className="text-xs text-slate-400">
                   <strong>Auto-Decline Under Floor:</strong> Send courteous automated decline to offers &lt; 65% of compensation floor
                 </span>
               </label>
@@ -523,7 +523,7 @@ export default function AutonomousCareerAgentPage() {
                     className={`p-4 rounded-xl border transition-all cursor-pointer relative overflow-hidden ${
                       isSelected
                         ? "bg-slate-800/90 border-emerald-500 shadow-md shadow-emerald-950/40"
-                        : "bg-slate-950/60 border-slate-800 hover:border-slate-700"
+                        : "bg-slate-950/60 border-slate-800 hover:border-slate-800"
                     }`}
                   >
                     {isSelected && (
@@ -552,7 +552,7 @@ export default function AutonomousCareerAgentPage() {
                       </span>
                     </div>
 
-                    <div className="text-xs text-slate-300 mb-3 flex items-center justify-between">
+                    <div className="text-xs text-slate-400 mb-3 flex items-center justify-between">
                       <span>Recruiter: {neg.recruiterName}</span>
                       <span className="font-mono text-emerald-400 font-semibold">
                         Alignment: {neg.candidateAlignmentScore}%
@@ -662,7 +662,7 @@ export default function AutonomousCareerAgentPage() {
                       <div
                         className={`p-4 rounded-2xl max-w-xl text-xs leading-relaxed ${
                           isAgent
-                            ? "bg-emerald-950/40 border border-emerald-800/60 text-slate-100 rounded-tr-none"
+                            ? "bg-emerald-950/40 border border-emerald-800/60 text-slate-200 rounded-tr-none"
                             : "bg-slate-950/80 border border-slate-800 text-slate-200 rounded-tl-none"
                         }`}
                       >
@@ -713,7 +713,7 @@ export default function AutonomousCareerAgentPage() {
                         type="number"
                         value={counterBase}
                         onChange={(e) => setCounterBase(Number(e.target.value))}
-                        className="w-full mt-1 bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs font-mono text-white focus:outline-none focus:border-emerald-500"
+                        className="w-full mt-1 bg-slate-900 border border-slate-800 rounded-lg px-3 py-1.5 text-xs font-mono text-white focus:outline-none focus:border-emerald-500"
                       />
                     </div>
                     <div>
@@ -724,7 +724,7 @@ export default function AutonomousCareerAgentPage() {
                         type="number"
                         value={counterEquity}
                         onChange={(e) => setCounterEquity(Number(e.target.value))}
-                        className="w-full mt-1 bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs font-mono text-white focus:outline-none focus:border-emerald-500"
+                        className="w-full mt-1 bg-slate-900 border border-slate-800 rounded-lg px-3 py-1.5 text-xs font-mono text-white focus:outline-none focus:border-emerald-500"
                       />
                     </div>
                   </div>
@@ -734,16 +734,16 @@ export default function AutonomousCareerAgentPage() {
                     value={counterText}
                     onChange={(e) => setCounterText(e.target.value)}
                     placeholder="Enter recruiter message (e.g. 'We reviewed candidate\'s passport and agree to the full compensation package and fast-track onsite...')"
-                    className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500"
+                    className="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500"
                   />
 
                   <div className="flex items-center justify-between pt-1">
-                    <label className="flex items-center gap-2 cursor-pointer text-xs text-slate-300">
+                    <label className="flex items-center gap-2 cursor-pointer text-xs text-slate-400">
                       <input
                         type="checkbox"
                         checked={concedeBypass}
                         onChange={(e) => setConcedeBypass(e.target.checked)}
-                        className="rounded accent-emerald-500 bg-slate-800 border-slate-700"
+                        className="rounded accent-emerald-500 bg-slate-800 border-slate-800"
                       />
                       <span>Concede Screening Bypass to Direct Onsite</span>
                     </label>
@@ -766,7 +766,7 @@ export default function AutonomousCareerAgentPage() {
       {/* Inbound Recruiter Simulator Modal */}
       {showSimModal && (
         <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-slate-900 border border-slate-700 rounded-2xl max-w-lg w-full p-6 space-y-4 shadow-2xl">
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl max-w-lg w-full p-6 space-y-4 shadow-2xl">
             <div className="flex items-center justify-between border-b border-slate-800 pb-3">
               <h3 className="text-base font-bold text-white flex items-center gap-2">
                 <span>Simulate Inbound Recruiter Inquiry</span>
@@ -787,7 +787,7 @@ export default function AutonomousCareerAgentPage() {
                     type="text"
                     value={simCompany}
                     onChange={(e) => setSimCompany(e.target.value)}
-                    className="w-full mt-1 bg-slate-950 border border-slate-700 rounded-lg px-3 py-1.5 text-white"
+                    className="w-full mt-1 bg-slate-950 border border-slate-800 rounded-lg px-3 py-1.5 text-white"
                   />
                 </div>
                 <div>
@@ -796,7 +796,7 @@ export default function AutonomousCareerAgentPage() {
                     type="text"
                     value={simRole}
                     onChange={(e) => setSimRole(e.target.value)}
-                    className="w-full mt-1 bg-slate-950 border border-slate-700 rounded-lg px-3 py-1.5 text-white"
+                    className="w-full mt-1 bg-slate-950 border border-slate-800 rounded-lg px-3 py-1.5 text-white"
                   />
                 </div>
               </div>
@@ -808,7 +808,7 @@ export default function AutonomousCareerAgentPage() {
                     type="text"
                     value={simRecruiter}
                     onChange={(e) => setSimRecruiter(e.target.value)}
-                    className="w-full mt-1 bg-slate-950 border border-slate-700 rounded-lg px-3 py-1.5 text-white"
+                    className="w-full mt-1 bg-slate-950 border border-slate-800 rounded-lg px-3 py-1.5 text-white"
                   />
                 </div>
                 <div>
@@ -817,7 +817,7 @@ export default function AutonomousCareerAgentPage() {
                     type="email"
                     value={simEmail}
                     onChange={(e) => setSimEmail(e.target.value)}
-                    className="w-full mt-1 bg-slate-950 border border-slate-700 rounded-lg px-3 py-1.5 text-white"
+                    className="w-full mt-1 bg-slate-950 border border-slate-800 rounded-lg px-3 py-1.5 text-white"
                   />
                 </div>
               </div>
@@ -829,7 +829,7 @@ export default function AutonomousCareerAgentPage() {
                     type="number"
                     value={simBase}
                     onChange={(e) => setSimBase(Number(e.target.value))}
-                    className="w-full mt-1 bg-slate-950 border border-slate-700 rounded-lg px-3 py-1.5 text-white font-mono"
+                    className="w-full mt-1 bg-slate-950 border border-slate-800 rounded-lg px-3 py-1.5 text-white font-mono"
                   />
                 </div>
                 <div>
@@ -838,7 +838,7 @@ export default function AutonomousCareerAgentPage() {
                     type="number"
                     value={simEquity}
                     onChange={(e) => setSimEquity(Number(e.target.value))}
-                    className="w-full mt-1 bg-slate-950 border border-slate-700 rounded-lg px-3 py-1.5 text-white font-mono"
+                    className="w-full mt-1 bg-slate-950 border border-slate-800 rounded-lg px-3 py-1.5 text-white font-mono"
                   />
                 </div>
                 <div>
@@ -846,7 +846,7 @@ export default function AutonomousCareerAgentPage() {
                   <select
                     value={simSeniority}
                     onChange={(e) => setSimSeniority(e.target.value)}
-                    className="w-full mt-1 bg-slate-950 border border-slate-700 rounded-lg px-2 py-1.5 text-white"
+                    className="w-full mt-1 bg-slate-950 border border-slate-800 rounded-lg px-2 py-1.5 text-white"
                   >
                     <option value="L5_Senior">L5 Senior</option>
                     <option value="L6_Staff">L6 Staff</option>
@@ -861,7 +861,7 @@ export default function AutonomousCareerAgentPage() {
                   rows={3}
                   value={simMessage}
                   onChange={(e) => setSimMessage(e.target.value)}
-                  className="w-full mt-1 bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-white"
+                  className="w-full mt-1 bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-white"
                 />
               </div>
 
@@ -869,7 +869,7 @@ export default function AutonomousCareerAgentPage() {
                 <button
                   type="button"
                   onClick={() => setShowSimModal(false)}
-                  className="px-4 py-2 bg-slate-800 text-slate-300 rounded-lg hover:bg-slate-700"
+                  className="px-4 py-2 bg-slate-800 text-slate-400 rounded-lg hover:bg-slate-700"
                 >
                   Cancel
                 </button>

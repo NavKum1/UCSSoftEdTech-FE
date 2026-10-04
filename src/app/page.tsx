@@ -72,7 +72,7 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans pb-16">
+    <div className="min-h-screen bg-slate-950 text-slate-200 flex flex-col font-sans pb-16">
       {/* Top Navbar */}
       <header className="border-b border-slate-800/80 bg-slate-900/60 backdrop-blur-md sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
@@ -114,7 +114,7 @@ export default function Dashboard() {
             <button
               onClick={handleSeedData}
               disabled={isSeeding}
-              className="text-xs px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl border border-slate-700 flex items-center space-x-1.5 transition-colors"
+              className="text-xs px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-400 rounded-xl border border-slate-800 flex items-center space-x-1.5 transition-colors"
             >
               <Database className="w-3.5 h-3.5 text-emerald-400" />
               <span>{isSeeding ? "Seeding DB..." : "Seed Institutes"}</span>
@@ -135,7 +135,7 @@ export default function Dashboard() {
             <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-white mb-3 leading-tight">
               Evaluate Tech Candidates & Bridge Skill Gaps with Partner Certifications
             </h1>
-            <p className="text-sm text-slate-300 leading-relaxed">
+            <p className="text-sm text-slate-400 leading-relaxed">
               When a candidate fails a technical evaluation during their AI voice interview, our system automatically routes them to partner institutes (e.g. Global ITech) for targeted certification courses.
             </p>
           </div>
@@ -167,7 +167,7 @@ export default function Dashboard() {
                   rows={3}
                   value={resumeText}
                   onChange={(e) => setResumeText(e.target.value)}
-                  className="w-full bg-slate-900 border border-slate-800 rounded-xl p-3 text-xs text-slate-300 focus:outline-none focus:border-indigo-500"
+                  className="w-full bg-slate-900 border border-slate-800 rounded-xl p-3 text-xs text-slate-400 focus:outline-none focus:border-indigo-500"
                 />
               </div>
             </div>
@@ -184,7 +184,7 @@ export default function Dashboard() {
                   rows={4}
                   value={jobDescription}
                   onChange={(e) => setJobDescription(e.target.value)}
-                  className="w-full bg-slate-900 border border-slate-800 rounded-xl p-3 text-xs text-slate-300 focus:outline-none focus:border-indigo-500"
+                  className="w-full bg-slate-900 border border-slate-800 rounded-xl p-3 text-xs text-slate-400 focus:outline-none focus:border-indigo-500"
                 />
               </div>
             </div>
@@ -230,7 +230,7 @@ export default function Dashboard() {
                 </h4>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {tenantCourses.length === 0 ? (
-                    <div className="col-span-2 p-4 bg-slate-900/50 rounded-xl text-xs text-slate-500 italic text-center">
+                    <div className="col-span-2 p-4 bg-slate-900/50 rounded-xl text-xs text-slate-400 italic text-center">
                       No courses mapped yet. Click "Seed Institutes" to populate Global ITech.
                     </div>
                   ) : (
@@ -242,7 +242,7 @@ export default function Dashboard() {
                             Partner Course
                           </span>
                         </div>
-                        <p className="text-xs text-slate-300 line-clamp-2">{c.description}</p>
+                        <p className="text-xs text-slate-400 line-clamp-2">{c.description}</p>
                       </div>
                     ))
                   )}
@@ -255,7 +255,7 @@ export default function Dashboard() {
                   Generated Skill Gap Lead Referrals
                 </h4>
                 <div className="bg-slate-950/80 rounded-xl border border-slate-800 overflow-hidden">
-                  <table className="w-full text-left text-xs text-slate-300">
+                  <table className="w-full text-left text-xs text-slate-400">
                     <thead className="bg-slate-900 text-slate-400 border-b border-slate-800 uppercase text-[10px] tracking-wider">
                       <tr>
                         <th className="px-4 py-3">Lead ID</th>
@@ -268,7 +268,7 @@ export default function Dashboard() {
                     <tbody className="divide-y divide-slate-800/60">
                       {leadReferrals.length === 0 ? (
                         <tr>
-                          <td colSpan={5} className="px-4 py-6 text-center text-slate-500 italic">
+                          <td colSpan={5} className="px-4 py-6 text-center text-slate-400 italic">
                             No lead referrals generated yet. Complete an interview call to trigger lead routing.
                           </td>
                         </tr>

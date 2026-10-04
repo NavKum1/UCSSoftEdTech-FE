@@ -40,7 +40,7 @@ export default function I18nProvider({ children }: I18nProviderProps) {
               localStorage.setItem("preferredLanguage", newLocale);
               setLocale(newLocale);
             }}
-            className="bg-slate-900 border border-slate-700 text-xs text-slate-300 rounded-md px-2 py-1"
+            className="bg-slate-900 border border-slate-800 text-xs text-slate-400 rounded-md px-2 py-1"
           >
             <option value="en">English (US)</option>
             <option value="es">Español (ES)</option>

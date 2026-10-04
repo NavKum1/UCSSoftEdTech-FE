@@ -224,7 +224,7 @@ export default function SpeedArchitectArenaPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 p-4 md:p-8 font-sans">
+    <div className="min-h-screen bg-slate-950 text-slate-200 p-4 md:p-8 font-sans">
       {/* Top Breadcrumb & Actions */}
       <div className="max-w-7xl mx-auto mb-6 flex flex-wrap items-center justify-between gap-4">
         <div className="flex items-center space-x-2 text-sm text-slate-400">
@@ -241,7 +241,7 @@ export default function SpeedArchitectArenaPage() {
         <div className="flex items-center space-x-3">
           <button
             onClick={() => setShowLeaderboard(!showLeaderboard)}
-            className="px-3.5 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-xs font-semibold text-slate-300 hover:text-white hover:border-slate-700 transition-all flex items-center space-x-1.5"
+            className="px-3.5 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-xs font-semibold text-slate-400 hover:text-white hover:border-slate-800 transition-all flex items-center space-x-1.5"
           >
             <span>🏆 Global Elo Leaderboard</span>
           </button>
@@ -304,12 +304,12 @@ export default function SpeedArchitectArenaPage() {
           <span>{selectedPreset?.injectedChaosEvent || "Minute 3: US-East-1 datacenter goes dark + 10M QPS cache stampede injected into US-West-2."}</span>
         </div>
         <div className="flex items-center space-x-2">
-          <label className="text-xs font-semibold text-slate-300 flex items-center space-x-2 cursor-pointer">
+          <label className="text-xs font-semibold text-slate-400 flex items-center space-x-2 cursor-pointer">
             <input
               type="checkbox"
               checked={chaosHandled}
               onChange={(e) => setChaosHandled(e.target.checked)}
-              className="rounded bg-slate-900 border-slate-700 text-amber-500 focus:ring-0"
+              className="rounded bg-slate-900 border-slate-800 text-amber-500 focus:ring-0"
             />
             <span className="text-amber-400 font-bold">Chaos Auto-Failover Route Engaged</span>
           </label>
@@ -382,7 +382,7 @@ export default function SpeedArchitectArenaPage() {
         <div className="lg:col-span-8 space-y-6">
           {/* Component Palette */}
           <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-xl">
-            <div className="text-xs font-bold text-slate-300 uppercase tracking-wider mb-3">
+            <div className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">
               Add Component to Active Topology
             </div>
             <div className="flex flex-wrap gap-2">
@@ -408,7 +408,7 @@ export default function SpeedArchitectArenaPage() {
                     Arranged pipeline flow with failover routing & state replication
                   </p>
                 </div>
-                <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-slate-800 text-cyan-300 border border-slate-700">
+                <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-slate-800 text-cyan-300 border border-slate-800">
                   {placedNodes.length} Active Nodes
                 </span>
               </div>
@@ -422,7 +422,7 @@ export default function SpeedArchitectArenaPage() {
                   >
                     <button
                       onClick={() => removeNode(node.id)}
-                      className="absolute top-2 right-2 text-slate-500 hover:text-rose-400 text-xs opacity-0 group-hover:opacity-100 transition-opacity"
+                      className="absolute top-2 right-2 text-slate-400 hover:text-rose-400 text-xs opacity-0 group-hover:opacity-100 transition-opacity"
                     >
                       ✕
                     </button>
@@ -475,7 +475,7 @@ export default function SpeedArchitectArenaPage() {
         <div className="lg:col-span-4 space-y-6">
           {/* Preset Selector */}
           <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
-            <h3 className="text-sm font-bold text-slate-300 uppercase tracking-wider">
+            <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider">
               Duel Arena Scenarios
             </h3>
             <div className="space-y-2">
@@ -489,7 +489,7 @@ export default function SpeedArchitectArenaPage() {
                   className={`p-3 rounded-xl border cursor-pointer transition-all ${
                     selectedPreset?.id === p.id
                       ? "bg-slate-800/90 border-amber-500 shadow-md shadow-amber-500/10"
-                      : "bg-slate-950/60 border-slate-800 hover:border-slate-700"
+                      : "bg-slate-950/60 border-slate-800 hover:border-slate-800"
                   }`}
                 >
                   <div className="font-bold text-slate-200 text-xs">{p.title}</div>
@@ -551,7 +551,7 @@ export default function SpeedArchitectArenaPage() {
               </div>
 
               {/* Feedback Quote */}
-              <div className="p-3 rounded-xl bg-slate-950 border border-slate-800 text-xs text-slate-300 italic">
+              <div className="p-3 rounded-xl bg-slate-950 border border-slate-800 text-xs text-slate-400 italic">
                 "{duelResult.evaluationFeedback}"
               </div>
             </div>
@@ -579,7 +579,7 @@ export default function SpeedArchitectArenaPage() {
                     </div>
                     <div className="text-right">
                       <span className="font-black text-cyan-400">{entry.currentElo} Elo</span>
-                      <span className="text-[10px] text-slate-500 ml-2">({entry.winRate}%)</span>
+                      <span className="text-[10px] text-slate-400 ml-2">({entry.winRate}%)</span>
                     </div>
                   </div>
                 ))}

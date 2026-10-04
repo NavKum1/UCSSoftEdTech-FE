@@ -179,14 +179,14 @@ export default function MultiLanguageTranslationStudioPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans pb-16">
+    <div className="min-h-screen bg-slate-950 text-slate-200 flex flex-col font-sans pb-16">
       {/* Header */}
       <header className="border-b border-slate-800 bg-slate-900/60 backdrop-blur-md sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
           <div className="flex items-center space-x-3">
             <button
               onClick={() => router.back()}
-              className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors cursor-pointer"
+              className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-400 transition-colors cursor-pointer"
             >
               <ArrowLeft className="w-4 h-4" />
             </button>
@@ -213,7 +213,7 @@ export default function MultiLanguageTranslationStudioPage() {
           <div className="flex items-center space-x-3">
             <button
               onClick={handleDownloadWebVtt}
-              className="px-3.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-medium flex items-center space-x-1.5 transition-colors cursor-pointer"
+              className="px-3.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-800 text-xs font-medium flex items-center space-x-1.5 transition-colors cursor-pointer"
             >
               <Download className="w-3.5 h-3.5 text-cyan-400" />
               <span>Download Subtitles ({selectedLanguage.toUpperCase()})</span>
@@ -227,11 +227,11 @@ export default function MultiLanguageTranslationStudioPage() {
         {/* Language Selection Ribbon */}
         <div className="p-4 rounded-2xl bg-slate-900/60 border border-slate-800 space-y-3">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-slate-300 flex items-center space-x-2">
+            <span className="text-xs font-semibold text-slate-400 flex items-center space-x-2">
               <Languages className="w-4 h-4 text-cyan-400" />
               <span>Select Subtitle &amp; Audio Language</span>
             </span>
-            <span className="text-xs text-slate-500">
+            <span className="text-xs text-slate-400">
               Active: <strong className="text-cyan-400">{SUPPORTED_LANGUAGES.find(l => l.code === selectedLanguage)?.label}</strong>
             </span>
           </div>
@@ -246,14 +246,14 @@ export default function MultiLanguageTranslationStudioPage() {
                   className={`p-2.5 rounded-xl border flex flex-col items-center space-y-1 transition-all cursor-pointer ${
                     isActive
                       ? "bg-cyan-950/40 border-cyan-500/70 shadow-md shadow-cyan-900/30"
-                      : "bg-slate-950/40 border-slate-800 hover:border-slate-700 hover:bg-slate-900/60"
+                      : "bg-slate-950/40 border-slate-800 hover:border-slate-800 hover:bg-slate-900/60"
                   }`}
                 >
                   <span className="text-xl">{lang.flag}</span>
-                  <span className={`text-[11px] font-bold ${isActive ? "text-cyan-300" : "text-slate-300"}`}>
+                  <span className={`text-[11px] font-bold ${isActive ? "text-cyan-300" : "text-slate-400"}`}>
                     {lang.code.toUpperCase()}
                   </span>
-                  <span className="text-[9px] text-slate-500 truncate w-full text-center">
+                  <span className="text-[9px] text-slate-400 truncate w-full text-center">
                     {lang.native}
                   </span>
                 </button>
@@ -322,7 +322,7 @@ export default function MultiLanguageTranslationStudioPage() {
                 className="h-full bg-gradient-to-r from-cyan-500 to-blue-500 rounded-full transition-all duration-200"
               />
             </div>
-            <div className="flex justify-between text-[11px] text-slate-500 font-mono">
+            <div className="flex justify-between text-[11px] text-slate-400 font-mono">
               <span>00:00.0</span>
               <span>Timeline synchronized with WebVTT captions</span>
               <span>00:20.0</span>
@@ -359,7 +359,7 @@ export default function MultiLanguageTranslationStudioPage() {
                     className={`p-4 rounded-xl border transition-all cursor-pointer space-y-2 ${
                       isCurrent
                         ? "bg-cyan-950/30 border-cyan-500/60 shadow-lg shadow-cyan-900/20"
-                        : "bg-slate-900/40 border-slate-800 hover:border-slate-700 hover:bg-slate-900/60"
+                        : "bg-slate-900/40 border-slate-800 hover:border-slate-800 hover:bg-slate-900/60"
                     }`}
                   >
                     <div className="flex items-center justify-between">
@@ -373,19 +373,19 @@ export default function MultiLanguageTranslationStudioPage() {
                           <span>{isAi ? "AI Technical Interviewer" : "Candidate"}</span>
                         </span>
 
-                        <span className="text-[11px] font-mono text-slate-500">
+                        <span className="text-[11px] font-mono text-slate-400">
                           [{formatSeconds(seg.startTimeSeconds)} - {formatSeconds(seg.endTimeSeconds)}]
                         </span>
                       </div>
 
-                      <span className="text-[10px] uppercase font-bold text-slate-500">
+                      <span className="text-[10px] uppercase font-bold text-slate-400">
                         Segment #{seg.sequenceNumber}
                       </span>
                     </div>
 
                     {/* Original Spoken Text */}
-                    <div className="text-xs text-slate-400 leading-relaxed pl-2 border-l-2 border-slate-700">
-                      <span className="text-[10px] uppercase font-semibold text-slate-500 block mb-0.5">
+                    <div className="text-xs text-slate-400 leading-relaxed pl-2 border-l-2 border-slate-800">
+                      <span className="text-[10px] uppercase font-semibold text-slate-400 block mb-0.5">
                         Spoken Original ({seg.originalLanguage.toUpperCase()}):
                       </span>
                       {seg.originalText}
@@ -417,7 +417,7 @@ export default function MultiLanguageTranslationStudioPage() {
 
           <form onSubmit={handleIngestSegment} className="space-y-3">
             <div className="flex items-center space-x-3">
-              <label className="text-xs text-slate-300 font-medium">Speaker:</label>
+              <label className="text-xs text-slate-400 font-medium">Speaker:</label>
               <div className="flex items-center space-x-2">
                 {["Candidate", "AiInterviewer", "Mentor"].map((spk) => (
                   <button
@@ -427,7 +427,7 @@ export default function MultiLanguageTranslationStudioPage() {
                     className={`px-3 py-1 rounded-lg text-xs font-medium cursor-pointer border ${
                       inputSpeaker === spk
                         ? "bg-cyan-600 text-white border-cyan-500"
-                        : "bg-slate-800 text-slate-300 border-slate-700"
+                        : "bg-slate-800 text-slate-400 border-slate-800"
                     }`}
                   >
                     {spk}

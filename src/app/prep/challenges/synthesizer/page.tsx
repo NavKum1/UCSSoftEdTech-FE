@@ -103,7 +103,7 @@ export default function ChallengeSynthesizerPage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 p-6 font-sans">
+    <div className="min-h-screen bg-slate-950 text-slate-200 p-6 font-sans">
       {/* Top Header */}
       <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-start md:items-center justify-between pb-6 border-b border-slate-800 gap-4">
         <div>
@@ -127,13 +127,13 @@ export default function ChallengeSynthesizerPage() {
         <div className="flex items-center gap-3">
           <Link
             href="/prep/career"
-            className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-sm font-medium rounded-lg transition border border-slate-700"
+            className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-sm font-medium rounded-lg transition border border-slate-800"
           >
             Career Trajectory
           </Link>
           <Link
             href="/admin/resilience"
-            className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-sm font-medium rounded-lg transition border border-slate-700"
+            className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-sm font-medium rounded-lg transition border border-slate-800"
           >
             Resilience Hub
           </Link>
@@ -157,7 +157,7 @@ export default function ChallengeSynthesizerPage() {
             <select
               value={baseSlug}
               onChange={(e) => setBaseSlug(e.target.value)}
-              className="bg-slate-950 border border-slate-700 text-white rounded px-3 py-1.5 focus:outline-none focus:border-indigo-500"
+              className="bg-slate-950 border border-slate-800 text-white rounded px-3 py-1.5 focus:outline-none focus:border-indigo-500"
             >
               <option value="distributed-lru">Distributed LRU Cache</option>
               <option value="rate-limiter">Sliding Token Rate Limiter</option>
@@ -170,7 +170,7 @@ export default function ChallengeSynthesizerPage() {
             <select
               value={language}
               onChange={(e) => setLanguage(e.target.value)}
-              className="bg-slate-950 border border-slate-700 text-white rounded px-3 py-1.5 focus:outline-none focus:border-indigo-500"
+              className="bg-slate-950 border border-slate-800 text-white rounded px-3 py-1.5 focus:outline-none focus:border-indigo-500"
             >
               <option value="csharp">C# (.NET 10)</option>
               <option value="typescript">TypeScript (Node.js)</option>
@@ -185,7 +185,7 @@ export default function ChallengeSynthesizerPage() {
             <select
               value={weakness}
               onChange={(e) => setWeakness(e.target.value)}
-              className="bg-slate-950 border border-slate-700 text-amber-300 font-medium rounded px-3 py-1.5 focus:outline-none focus:border-indigo-500"
+              className="bg-slate-950 border border-slate-800 text-amber-300 font-medium rounded px-3 py-1.5 focus:outline-none focus:border-indigo-500"
             >
               <option value="ConcurrentRaceCondition">Concurrent Race Condition</option>
               <option value="OffByOneBoundary">Off-By-One Boundary Flaw</option>
@@ -199,7 +199,7 @@ export default function ChallengeSynthesizerPage() {
             <select
               value={difficulty}
               onChange={(e) => setDifficulty(e.target.value)}
-              className="bg-slate-950 border border-slate-700 text-white rounded px-3 py-1.5 focus:outline-none focus:border-indigo-500"
+              className="bg-slate-950 border border-slate-800 text-white rounded px-3 py-1.5 focus:outline-none focus:border-indigo-500"
             >
               <option value="Medium">Senior (L5)</option>
               <option value="Hard">Staff Architect (L6)</option>
@@ -234,7 +234,7 @@ export default function ChallengeSynthesizerPage() {
               </div>
 
               <h2 className="text-lg font-bold text-white mt-3">{activeChallenge.title}</h2>
-              <p className="mt-2 text-sm text-slate-300 leading-relaxed bg-slate-950/60 p-4 rounded-lg border border-slate-800">
+              <p className="mt-2 text-sm text-slate-400 leading-relaxed bg-slate-950/60 p-4 rounded-lg border border-slate-800">
                 {activeChallenge.mutatedStoryNarrative}
               </p>
 
@@ -253,7 +253,7 @@ export default function ChallengeSynthesizerPage() {
               <h3 className="text-sm font-semibold uppercase tracking-wider text-slate-400 mb-2">
                 Synthesized Torture Test Suite
               </h3>
-              <pre className="p-3 bg-slate-950 rounded-lg text-xs font-mono text-slate-300 border border-slate-800 overflow-x-auto whitespace-pre-wrap">
+              <pre className="p-3 bg-slate-950 rounded-lg text-xs font-mono text-slate-400 border border-slate-800 overflow-x-auto whitespace-pre-wrap">
                 {activeChallenge.synthesizedTestHarness}
               </pre>
             </div>
@@ -311,7 +311,7 @@ export default function ChallengeSynthesizerPage() {
                 </div>
 
                 <div className="mt-3 text-xs space-y-2">
-                  <div className="text-slate-300">
+                  <div className="text-slate-400">
                     <strong className="text-white">Diagnostic Output:</strong> {evaluation.remediationHint}
                   </div>
                   {evaluation.selfHealingGuidance && (

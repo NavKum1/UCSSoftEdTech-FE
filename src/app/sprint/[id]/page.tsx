@@ -170,7 +170,7 @@ function SprintWorkspaceInner() {
   };
 
   return (
-      <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans pb-16">
+      <div className="min-h-screen bg-slate-950 text-slate-200 flex flex-col font-sans pb-16">
         {/* Navbar */}
         <header className="border-b border-slate-800 bg-slate-900/60 backdrop-blur-md sticky top-0 z-50">
           {isOffline && (
@@ -210,15 +210,15 @@ function SprintWorkspaceInner() {
             <span className={`px-3 py-1 rounded-lg ${pipelineState === "editor" ? "bg-indigo-600 text-white" : "bg-slate-800 text-slate-400"}`}>
               1. Code Submission
             </span>
-            <ArrowRight className="w-3.5 h-3.5 text-slate-600" />
+            <ArrowRight className="w-3.5 h-3.5 text-slate-400" />
             <span className={`px-3 py-1 rounded-lg ${pipelineState === "running" || pipelineState === "completed" ? "bg-indigo-600 text-white" : "bg-slate-800 text-slate-400"}`}>
               2. Automated Test Runner
             </span>
-            <ArrowRight className="w-3.5 h-3.5 text-slate-600" />
+            <ArrowRight className="w-3.5 h-3.5 text-slate-400" />
             <span className={`px-3 py-1 rounded-lg ${pipelineState === "voice_interview" ? "bg-indigo-600 text-white" : "bg-slate-800 text-slate-400"}`}>
               3. Interactive Code Review
             </span>
-            <ArrowRight className="w-3.5 h-3.5 text-slate-600" />
+            <ArrowRight className="w-3.5 h-3.5 text-slate-400" />
             <span className={`px-3 py-1 rounded-lg ${pipelineState === "passed" ? "bg-emerald-600 text-white" : "bg-slate-800 text-slate-400"}`}>
               4. Verified Certificate
             </span>
@@ -243,7 +243,7 @@ function SprintWorkspaceInner() {
               </span>
             </div>
 
-            <p className="text-xs text-slate-300">
+            <p className="text-xs text-slate-400">
               Task: Implement payment queue processing. Write your Python implementation below:
             </p>
 
@@ -269,7 +269,7 @@ function SprintWorkspaceInner() {
               className={`py-3 px-4 rounded-xl font-medium text-xs flex items-center justify-center space-x-2 transition-all cursor-pointer ${
                 (pipelineState === "editor" && !isOffline)
                   ? "bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white shadow-lg shadow-indigo-500/25"
-                  : "bg-slate-800 text-slate-500 cursor-not-allowed"
+                  : "bg-slate-800 text-slate-400 cursor-not-allowed"
               }`}
             >
               <Play className="w-4 h-4" />
@@ -329,7 +329,7 @@ function SprintWorkspaceInner() {
               <div className="glass-panel rounded-2xl p-6 border border-emerald-500/40 bg-emerald-950/20 text-center space-y-4">
                 <ShieldCheck className="w-12 h-12 text-emerald-400 mx-auto" />
                 <h3 className="text-lg font-bold text-white">Congratulations! Certificate Issued</h3>
-                <p className="text-xs text-slate-300">
+                <p className="text-xs text-slate-400">
                   You successfully defended your implementation. Your verified certificate has been issued.
                 </p>
                 <button

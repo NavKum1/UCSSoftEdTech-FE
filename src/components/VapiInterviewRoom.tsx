@@ -227,7 +227,7 @@ export default function VapiInterviewRoom({
               ? "bg-amber-500/10 text-amber-400 border-amber-500/30"
               : callStatus === "ended"
               ? "bg-purple-500/10 text-purple-400 border-purple-500/30"
-              : "bg-slate-800 text-slate-400 border-slate-700"
+              : "bg-slate-800 text-slate-400 border-slate-800"
           }`}
         >
           <span
@@ -243,7 +243,7 @@ export default function VapiInterviewRoom({
       <div className="my-6 grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="md:col-span-1 glass-card rounded-xl p-5 flex flex-col justify-between border border-slate-800">
           <div>
-            <h3 className="text-sm font-semibold text-slate-300 mb-2">User Microphone Input</h3>
+            <h3 className="text-sm font-semibold text-slate-400 mb-2">User Microphone Input</h3>
             <p className="text-xs text-slate-400 mb-4">
               Microphone status: <span className="font-semibold text-indigo-400">{micPermission}</span>
             </p>
@@ -267,7 +267,7 @@ export default function VapiInterviewRoom({
                   </div>
                 </>
               ) : (
-                <span className="text-xs text-slate-500">Microphone stream idle</span>
+                <span className="text-xs text-slate-400">Microphone stream idle</span>
               )}
             </div>
           </div>
@@ -289,7 +289,7 @@ export default function VapiInterviewRoom({
                   className={`flex-1 py-3 px-3 rounded-xl border text-xs font-medium flex items-center justify-center space-x-1.5 cursor-pointer ${
                     isMuted
                       ? "bg-amber-500/10 text-amber-400 border-amber-500/30"
-                      : "bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700"
+                      : "bg-slate-800 text-slate-400 border-slate-800 hover:bg-slate-700"
                   }`}
                 >
                   {isMuted ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
@@ -311,13 +311,13 @@ export default function VapiInterviewRoom({
         {/* Live Transcript Stream */}
         <div className="md:col-span-2 glass-card rounded-xl p-5 flex flex-col border border-slate-800 min-h-[220px]">
           <div className="flex items-center justify-between mb-3">
-            <h3 className="text-sm font-semibold text-slate-300">Live WebRTC Transcript Stream</h3>
-            <span className="text-xs text-slate-500">{transcripts.length} messages</span>
+            <h3 className="text-sm font-semibold text-slate-400">Live WebRTC Transcript Stream</h3>
+            <span className="text-xs text-slate-400">{transcripts.length} messages</span>
           </div>
 
           <div className="flex-1 bg-slate-950/80 rounded-xl p-4 border border-slate-800 overflow-y-auto max-h-[200px] space-y-3">
             {transcripts.length === 0 ? (
-              <div className="h-full flex items-center justify-center text-xs text-slate-500 italic">
+              <div className="h-full flex items-center justify-center text-xs text-slate-400 italic">
                 Click "Start Interview" to fetch session token and begin stream...
               </div>
             ) : (
@@ -328,7 +328,7 @@ export default function VapiInterviewRoom({
                     className={`max-w-[85%] rounded-xl px-3 py-2 text-xs ${
                       t.role === "Candidate"
                         ? "bg-indigo-600 text-white rounded-tr-none"
-                        : "bg-slate-800 text-slate-200 border border-slate-700 rounded-tl-none"
+                        : "bg-slate-800 text-slate-200 border border-slate-800 rounded-tl-none"
                     }`}
                   >
                     {t.text}
@@ -361,7 +361,7 @@ export default function VapiInterviewRoom({
             </div>
           </div>
 
-          <p className="text-xs text-slate-300 mb-3">
+          <p className="text-xs text-slate-400 mb-3">
             Candidate scored below passing threshold. AI Lead Routing Engine triggered referral insertion:
           </p>
 

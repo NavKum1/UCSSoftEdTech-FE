@@ -85,7 +85,7 @@ export default function GlobalNavigation() {
                       : "text-slate-400 hover:text-slate-200 hover:bg-slate-900/60"
                   }`}
                 >
-                  <Icon className={`w-3.5 h-3.5 ${isActive ? "text-indigo-400" : "text-slate-500"}`} />
+                  <Icon className={`w-3.5 h-3.5 ${isActive ? "text-indigo-400" : "text-slate-400"}`} />
                   {link.name}
                 </Link>
               );
@@ -122,7 +122,7 @@ export default function GlobalNavigation() {
           <div className="relative">
             <button
               onClick={() => setPortalsOpen(!portalsOpen)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-xs font-medium text-slate-300 hover:text-white hover:border-slate-700 transition-colors"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-xs font-medium text-slate-400 hover:text-white hover:border-slate-800 transition-colors"
             >
               <span>Portals</span>
               <ChevronDown className={`w-3.5 h-3.5 transition-transform ${portalsOpen ? "rotate-180" : ""}`} />

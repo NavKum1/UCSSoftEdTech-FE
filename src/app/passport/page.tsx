@@ -114,7 +114,7 @@ export default function SkillPassportPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans selection:bg-amber-500/30">
+    <div className="min-h-screen bg-slate-950 text-slate-200 flex flex-col font-sans selection:bg-amber-500/30">
       {/* Top Navigation */}
       <header className="border-b border-slate-800 bg-slate-900/60 backdrop-blur-md sticky top-0 z-40 px-6 py-4">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
@@ -163,7 +163,7 @@ export default function SkillPassportPage() {
               <span>🔗</span>
               <span>Share Passport</span>
             </button>
-            <div className="h-8 w-8 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-xs font-bold text-slate-300">
+            <div className="h-8 w-8 rounded-full bg-slate-800 border border-slate-800 flex items-center justify-center text-xs font-bold text-slate-400">
               AC
             </div>
           </div>
@@ -198,7 +198,7 @@ export default function SkillPassportPage() {
                     </span>
                   </div>
                   <p className="text-slate-400 text-sm font-medium">{passport.targetRole}</p>
-                  <p className="text-xs text-slate-500 font-mono mt-2">
+                  <p className="text-xs text-slate-400 font-mono mt-2">
                     Public Verification Token:{" "}
                     <span className="text-slate-400 select-all">{passport.publicShareToken}</span>
                   </p>
@@ -324,7 +324,7 @@ export default function SkillPassportPage() {
                         <div>
                           {/* Badge Header */}
                           <div className="flex items-start justify-between gap-2 mb-3">
-                            <h3 className="font-bold text-sm text-slate-100 leading-snug">{badge.skillCategory}</h3>
+                            <h3 className="font-bold text-sm text-slate-200 leading-snug">{badge.skillCategory}</h3>
                             <span
                               className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider shrink-0 ${
                                 isGold
@@ -381,7 +381,7 @@ export default function SkillPassportPage() {
 
                         {/* Card Footer: Metadata & Practice Action */}
                         <div className="pt-3 border-t border-slate-800/80 space-y-3">
-                          <div className="flex items-center justify-between text-[11px] text-slate-500 font-mono">
+                          <div className="flex items-center justify-between text-[11px] text-slate-400 font-mono">
                             <span>Practiced: {badge.daysSinceLastPractice}d ago</span>
                             <span>{badge.practiceKatasCompleted} katas completed</span>
                           </div>
@@ -392,7 +392,7 @@ export default function SkillPassportPage() {
                               disabled={practicingCategory === badge.skillCategory}
                               className={`flex-1 py-1.5 px-3 rounded-lg text-xs font-semibold transition-all flex items-center justify-center space-x-1.5 shadow-sm ${
                                 isGold
-                                  ? "bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700"
+                                  ? "bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-800"
                                   : "bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold"
                               }`}
                             >
@@ -438,7 +438,7 @@ export default function SkillPassportPage() {
                     {radarInquiries.map((inquiry) => (
                       <div
                         key={inquiry.id}
-                        className="bg-slate-950/80 border border-slate-800/90 rounded-lg p-3.5 space-y-2 hover:border-slate-700 transition-all shadow-inner"
+                        className="bg-slate-950/80 border border-slate-800/90 rounded-lg p-3.5 space-y-2 hover:border-slate-800 transition-all shadow-inner"
                       >
                         <div className="flex items-start justify-between gap-2">
                           <div>
@@ -457,7 +457,7 @@ export default function SkillPassportPage() {
                           <span className="truncate">{inquiry.fastTrackInterviewType}</span>
                         </p>
 
-                        <div className="flex items-center justify-between text-[10px] text-slate-500 font-mono pt-1">
+                        <div className="flex items-center justify-between text-[10px] text-slate-400 font-mono pt-1">
                           <span>Status: {inquiry.inquiryStatus}</span>
                           <span>{new Date(inquiry.receivedAt).toLocaleDateString()}</span>
                         </div>
@@ -502,7 +502,7 @@ export default function SkillPassportPage() {
             </p>
 
             <div className="space-y-2">
-              <label className="text-xs font-semibold text-slate-300">Public Verification URL</label>
+              <label className="text-xs font-semibold text-slate-400">Public Verification URL</label>
               <div className="flex items-center space-x-2">
                 <input
                   type="text"
@@ -520,7 +520,7 @@ export default function SkillPassportPage() {
             </div>
 
             <div className="p-3.5 bg-slate-950/60 border border-slate-800/80 rounded-xl space-y-2">
-              <div className="text-[11px] font-bold text-slate-300 flex items-center space-x-1.5">
+              <div className="text-[11px] font-bold text-slate-400 flex items-center space-x-1.5">
                 <span>🔒</span>
                 <span>Official Verification Guarantee</span>
               </div>

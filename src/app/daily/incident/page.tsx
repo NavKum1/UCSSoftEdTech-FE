@@ -270,7 +270,7 @@ export default function DailyIncidentPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-950 text-slate-100 flex items-center justify-center p-6">
+      <div className="min-h-screen bg-slate-950 text-slate-200 flex items-center justify-center p-6">
         <div className="text-center space-y-4">
           <div className="w-12 h-12 border-4 border-amber-500 border-t-transparent rounded-full animate-spin mx-auto" />
           <p className="text-slate-400 font-mono text-sm tracking-wide">
@@ -282,7 +282,7 @@ export default function DailyIncidentPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 antialiased selection:bg-amber-500 selection:text-black">
+    <div className="min-h-screen bg-slate-950 text-slate-200 antialiased selection:bg-amber-500 selection:text-black">
       {/* Top Navigation HUD */}
       <header className="border-b border-slate-800 bg-slate-900/80 backdrop-blur sticky top-0 z-50 px-6 py-4">
         <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-4">
@@ -393,12 +393,12 @@ export default function DailyIncidentPage() {
                 <span className="px-2 py-0.5 text-[10px] uppercase font-mono font-bold bg-amber-500/10 text-amber-400 border border-amber-500/30 rounded">
                   08:00 AM Daily Incident Kata #{incident?.dayIndex ?? 0}
                 </span>
-                <span className="px-2 py-0.5 text-[10px] font-mono bg-slate-800 text-slate-300 rounded border border-slate-700">
+                <span className="px-2 py-0.5 text-[10px] font-mono bg-slate-800 text-slate-400 rounded border border-slate-800">
                   Category: {incident?.category}
                 </span>
               </div>
-              <h2 className="text-2xl font-bold text-slate-100">{incident?.title}</h2>
-              <p className="text-sm text-slate-300 leading-relaxed max-w-4xl">
+              <h2 className="text-2xl font-bold text-slate-200">{incident?.title}</h2>
+              <p className="text-sm text-slate-400 leading-relaxed max-w-4xl">
                 {incident?.outageSymptoms}
               </p>
             </div>
@@ -474,7 +474,7 @@ export default function DailyIncidentPage() {
               {/* Triage Decision Canvas */}
               <div className="bg-slate-900 border border-slate-800 rounded-xl p-6 space-y-6">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-lg font-bold text-slate-100 flex items-center gap-2">
+                  <h3 className="text-lg font-bold text-slate-200 flex items-center gap-2">
                     <span>🔬</span> Step 1: Diagnose Root Cause Hypothesis
                   </h3>
                   <span className="text-xs font-mono text-slate-400">Select 1 Hypothesis</span>
@@ -486,8 +486,8 @@ export default function DailyIncidentPage() {
                       key={hyp.id}
                       className={`block p-4 rounded-xl border cursor-pointer transition ${
                         selectedHypothesis === hyp.id
-                          ? "bg-amber-950/30 border-amber-500 text-slate-100 shadow-[0_0_12px_rgba(245,158,11,0.15)]"
-                          : "bg-slate-950/60 border-slate-800/80 text-slate-300 hover:border-slate-700"
+                          ? "bg-amber-950/30 border-amber-500 text-slate-200 shadow-[0_0_12px_rgba(245,158,11,0.15)]"
+                          : "bg-slate-950/60 border-slate-800/80 text-slate-400 hover:border-slate-800"
                       }`}
                     >
                       <div className="flex items-start gap-3">
@@ -512,7 +512,7 @@ export default function DailyIncidentPage() {
 
                 <div className="border-t border-slate-800 pt-6">
                   <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-lg font-bold text-slate-100 flex items-center gap-2">
+                    <h3 className="text-lg font-bold text-slate-200 flex items-center gap-2">
                       <span>⚡</span> Step 2: Select Surgical Mitigation Action
                     </h3>
                     <span className="text-xs font-mono text-slate-400">Assess Blast Radius Risk</span>
@@ -524,8 +524,8 @@ export default function DailyIncidentPage() {
                         key={act.id}
                         className={`block p-4 rounded-xl border cursor-pointer transition ${
                           selectedAction === act.id
-                            ? "bg-amber-950/30 border-amber-500 text-slate-100 shadow-[0_0_12px_rgba(245,158,11,0.15)]"
-                            : "bg-slate-950/60 border-slate-800/80 text-slate-300 hover:border-slate-700"
+                            ? "bg-amber-950/30 border-amber-500 text-slate-200 shadow-[0_0_12px_rgba(245,158,11,0.15)]"
+                            : "bg-slate-950/60 border-slate-800/80 text-slate-400 hover:border-slate-800"
                         }`}
                       >
                         <div className="flex items-start gap-3">
@@ -582,7 +582,7 @@ export default function DailyIncidentPage() {
                     disabled={submitting || !selectedHypothesis || !selectedAction}
                     className={`w-full py-4 rounded-xl font-bold text-sm tracking-wide transition flex items-center justify-center gap-2 ${
                       submitting || !selectedHypothesis || !selectedAction
-                        ? "bg-slate-800 text-slate-500 cursor-not-allowed"
+                        ? "bg-slate-800 text-slate-400 cursor-not-allowed"
                         : "bg-gradient-to-r from-amber-500 to-orange-500 text-black hover:from-amber-400 hover:to-orange-400 shadow-lg shadow-orange-500/20"
                     }`}
                   >
@@ -612,25 +612,25 @@ export default function DailyIncidentPage() {
                 </h4>
                 <div className="grid grid-cols-2 gap-3">
                   <div className="bg-slate-950 p-3 rounded-lg border border-slate-800">
-                    <span className="text-[10px] font-mono text-slate-500 block">P99 Latency</span>
+                    <span className="text-[10px] font-mono text-slate-400 block">P99 Latency</span>
                     <span className="text-lg font-bold text-red-400">
                       {metrics.p99LatencyMs ? `${metrics.p99LatencyMs}ms` : "N/A"}
                     </span>
                   </div>
                   <div className="bg-slate-950 p-3 rounded-lg border border-slate-800">
-                    <span className="text-[10px] font-mono text-slate-500 block">Error Rate</span>
+                    <span className="text-[10px] font-mono text-slate-400 block">Error Rate</span>
                     <span className="text-lg font-bold text-red-400">
                       {metrics.errorRatePercent ? `${metrics.errorRatePercent}%` : "N/A"}
                     </span>
                   </div>
                   <div className="bg-slate-950 p-3 rounded-lg border border-slate-800">
-                    <span className="text-[10px] font-mono text-slate-500 block">CPU Load</span>
+                    <span className="text-[10px] font-mono text-slate-400 block">CPU Load</span>
                     <span className="text-lg font-bold text-amber-400">
                       {metrics.cpuLoadPercent ? `${metrics.cpuLoadPercent}%` : "N/A"}
                     </span>
                   </div>
                   <div className="bg-slate-950 p-3 rounded-lg border border-slate-800">
-                    <span className="text-[10px] font-mono text-slate-500 block">Active Pods</span>
+                    <span className="text-[10px] font-mono text-slate-400 block">Active Pods</span>
                     <span className="text-lg font-bold text-cyan-400">
                       {metrics.activeConsumerPods ?? 1}
                     </span>
@@ -638,7 +638,7 @@ export default function DailyIncidentPage() {
                 </div>
 
                 <div className="bg-slate-950 p-3 rounded-lg border border-slate-800 space-y-1">
-                  <span className="text-[10px] font-mono text-slate-500 block">
+                  <span className="text-[10px] font-mono text-slate-400 block">
                     Throughput Under Outage
                   </span>
                   <span className="text-sm font-bold text-slate-200">
@@ -652,7 +652,7 @@ export default function DailyIncidentPage() {
                 <span className="text-xs font-mono text-indigo-400 uppercase tracking-wider block">
                   🛡️ Anti-Decay Credential Engine
                 </span>
-                <p className="text-xs text-slate-300 leading-relaxed">
+                <p className="text-xs text-slate-400 leading-relaxed">
                   Maintaining your daily morning streak keeps your{" "}
                   <strong className="text-amber-400">Gold Verified Staff Architect</strong>{" "}
                   credential from decaying. Active streak subscribers are ranked at the top of the
@@ -669,7 +669,7 @@ export default function DailyIncidentPage() {
         {/* Tab 2: Full Telemetry Dials */}
         {activeTab === "telemetry" && (
           <div className="bg-slate-900 border border-slate-800 rounded-xl p-6 space-y-6">
-            <h3 className="text-base font-bold text-slate-100 flex items-center gap-2">
+            <h3 className="text-base font-bold text-slate-200 flex items-center gap-2">
               <span>📈</span> Distributed Cluster System Metrics
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -697,7 +697,7 @@ export default function DailyIncidentPage() {
               </span>
               <button
                 onClick={() => navigator.clipboard.writeText(incident?.terminalLogs || "")}
-                className="px-2.5 py-1 bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-700 rounded text-[11px] transition"
+                className="px-2.5 py-1 bg-slate-900 hover:bg-slate-800 text-slate-400 border border-slate-800 rounded text-[11px] transition"
               >
                 Copy Logs
               </button>
@@ -713,7 +713,7 @@ export default function DailyIncidentPage() {
           <div className="bg-slate-900 border border-slate-800 rounded-xl p-6 space-y-6">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-800 pb-4">
               <div>
-                <h3 className="text-lg font-bold text-slate-100 flex items-center gap-2">
+                <h3 className="text-lg font-bold text-slate-200 flex items-center gap-2">
                   <span>🏆</span> {leagues.league} League Leaderboard
                 </h3>
                 <p className="text-xs text-slate-400">
@@ -794,14 +794,14 @@ export default function DailyIncidentPage() {
         {/* Triage Post-Mortem Modal */}
         {triageResult && (
           <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-6 overflow-y-auto">
-            <div className="bg-slate-900 border border-slate-700 rounded-2xl max-w-2xl w-full p-6 space-y-6 shadow-2xl my-8">
+            <div className="bg-slate-900 border border-slate-800 rounded-2xl max-w-2xl w-full p-6 space-y-6 shadow-2xl my-8">
               <div className="flex items-center justify-between border-b border-slate-800 pb-4">
                 <div className="flex items-center gap-3">
                   <span className="text-3xl">
                     {triageResult.isResolved ? "🎉" : "⚠️"}
                   </span>
                   <div>
-                    <h3 className="text-xl font-bold text-slate-100">
+                    <h3 className="text-xl font-bold text-slate-200">
                       {triageResult.isResolved
                         ? "Outage Successfully Mitigated!"
                         : "Outage Partial Resolution"}
@@ -826,7 +826,7 @@ export default function DailyIncidentPage() {
                   <span className="text-xl font-bold text-emerald-400">
                     +{triageResult.totalXpAwarded} XP
                   </span>
-                  <span className="text-[10px] text-slate-500 block">
+                  <span className="text-[10px] text-slate-400 block">
                     ({triageResult.baseXp} base + {triageResult.speedBonusXp} speed) × {triageResult.streakMultiplier}x
                   </span>
                 </div>
@@ -835,7 +835,7 @@ export default function DailyIncidentPage() {
                   <span className="text-xl font-bold text-amber-400">
                     🔥 {triageResult.currentStreak} Days
                   </span>
-                  <span className="text-[10px] text-slate-500 block">
+                  <span className="text-[10px] text-slate-400 block">
                     {triageResult.shieldConsumed ? "Shield Saved Streak!" : "Consecutive"}
                   </span>
                 </div>
@@ -844,7 +844,7 @@ export default function DailyIncidentPage() {
                   <span className="text-xl font-bold text-indigo-400">
                     🏆 {triageResult.currentLeague}
                   </span>
-                  <span className="text-[10px] text-slate-500 block">Weekly Promotion Active</span>
+                  <span className="text-[10px] text-slate-400 block">Weekly Promotion Active</span>
                 </div>
               </div>
 
@@ -853,7 +853,7 @@ export default function DailyIncidentPage() {
                 <h4 className="text-xs font-mono text-amber-400 uppercase tracking-wider">
                   👔 Senior Principal SRE Feedback
                 </h4>
-                <p className="text-xs text-slate-300 leading-relaxed">
+                <p className="text-xs text-slate-400 leading-relaxed">
                   {triageResult.seniorArchitectRecommendation}
                 </p>
               </div>
@@ -863,7 +863,7 @@ export default function DailyIncidentPage() {
                 <h4 className="text-xs font-mono text-cyan-400 uppercase tracking-wider">
                   📑 Google/Meta Caliber Post-Mortem Root Cause & Prevention
                 </h4>
-                <p className="text-xs text-slate-300 leading-relaxed font-sans">
+                <p className="text-xs text-slate-400 leading-relaxed font-sans">
                   {triageResult.postMortemAnalysis}
                 </p>
               </div>

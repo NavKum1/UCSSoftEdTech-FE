@@ -16,7 +16,7 @@ export default function GlobalErrorPage({
   }, [error]);
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col items-center justify-center p-6 font-sans">
+    <div className="min-h-screen bg-slate-950 text-slate-200 flex flex-col items-center justify-center p-6 font-sans">
       {/* Ambient Red Glow */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-red-600/20 blur-3xl rounded-full pointer-events-none"></div>
 
@@ -53,7 +53,7 @@ export default function GlobalErrorPage({
 
           <a
             href="/"
-            className="w-full py-3 px-4 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 font-medium text-xs flex items-center justify-center space-x-2 border border-slate-800 transition-colors cursor-pointer"
+            className="w-full py-3 px-4 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-400 font-medium text-xs flex items-center justify-center space-x-2 border border-slate-800 transition-colors cursor-pointer"
           >
             <Home className="w-4 h-4" />
             <span>Go to Dashboard</span>

@@ -235,7 +235,7 @@ public class HighThroughputBuffer<T>
 
   if (!sprintId) {
     return (
-      <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col items-center justify-center p-6 text-center">
+      <div className="min-h-screen bg-slate-950 text-slate-200 flex flex-col items-center justify-center p-6 text-center">
         <div className="max-w-md p-8 rounded-2xl border border-slate-800 bg-slate-900/60 space-y-4">
           <div className="w-12 h-12 rounded-xl bg-indigo-500/10 text-indigo-400 flex items-center justify-center mx-auto text-2xl">
             🤖
@@ -256,13 +256,13 @@ public class HighThroughputBuffer<T>
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans">
+    <div className="min-h-screen bg-slate-950 text-slate-200 flex flex-col font-sans">
       {/* Top Navbar */}
       <header className="border-b border-slate-800 bg-slate-900/80 backdrop-blur-md px-6 py-4 flex items-center justify-between sticky top-0 z-40">
         <div className="flex items-center space-x-4">
           <Link
             href={`/sprint/${sprintId}`}
-            className="text-xs font-semibold px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition"
+            className="text-xs font-semibold px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 border border-slate-800 transition"
           >
             ← Back to Challenge
           </Link>
@@ -310,7 +310,7 @@ public class HighThroughputBuffer<T>
               <button
                 onClick={handleAnalyzeSmells}
                 disabled={isSubmitting}
-                className="text-xs px-3 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 font-medium transition flex items-center space-x-1"
+                className="text-xs px-3 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-400 border border-slate-800 font-medium transition flex items-center space-x-1"
               >
                 <span>🔍</span>
                 <span>Review Code Quality</span>
@@ -408,10 +408,10 @@ public class HighThroughputBuffer<T>
             {activeTab === "chat" && (
               <>
                 {interactions.length === 0 ? (
-                  <div className="h-64 flex flex-col items-center justify-center text-center p-6 border border-dashed border-slate-800 rounded-2xl bg-slate-900/20 text-slate-500">
+                  <div className="h-64 flex flex-col items-center justify-center text-center p-6 border border-dashed border-slate-800 rounded-2xl bg-slate-900/20 text-slate-400">
                     <span className="text-3xl mb-2">🤖</span>
                     <p className="text-xs font-medium">Your AI Coding Coach is ready to assist you.</p>
-                    <p className="text-[11px] text-slate-600 mt-1 max-w-xs">
+                    <p className="text-[11px] text-slate-400 mt-1 max-w-xs">
                       Choose an action above or type a message below to ask questions, request hints, or review recommendations.
                     </p>
                   </div>
@@ -442,13 +442,13 @@ public class HighThroughputBuffer<T>
                               : `+${Math.abs(item.autonomyPenalty)} pts`}
                           </span>
                         </div>
-                        <span className="text-[11px] text-slate-500 font-mono">
+                        <span className="text-[11px] text-slate-400 font-mono">
                           {new Date(item.createdAt).toLocaleTimeString()}
                         </span>
                       </div>
 
                       {item.prompt && (
-                        <div className="text-xs text-slate-300 font-medium italic">
+                        <div className="text-xs text-slate-400 font-medium italic">
                           "{item.prompt}"
                         </div>
                       )}
@@ -481,7 +481,7 @@ public class HighThroughputBuffer<T>
                   <div className="p-6 text-center border border-dashed border-slate-800 rounded-2xl bg-slate-900/20 text-emerald-400">
                     <span className="text-3xl block mb-2">✅</span>
                     <p className="text-xs font-semibold">Great Job! Zero Code Issues Found</p>
-                    <p className="text-[11px] text-slate-500 mt-1">
+                    <p className="text-[11px] text-slate-400 mt-1">
                       Your solution follows clean standards with no structural issues or antipatterns detected.
                     </p>
                   </div>
@@ -503,13 +503,13 @@ public class HighThroughputBuffer<T>
                           {smell.severity}
                         </span>
                       </div>
-                      <p className="text-xs text-slate-300 leading-relaxed">{smell.description}</p>
+                      <p className="text-xs text-slate-400 leading-relaxed">{smell.description}</p>
                       <div className="text-[11px] text-indigo-300 bg-indigo-950/30 p-2.5 rounded-lg border border-indigo-900/40">
                         <span className="font-semibold text-indigo-400">Suggested Fix: </span>
                         {smell.recommendation}
                       </div>
                       {smell.lineNumber && (
-                        <div className="text-[10px] text-slate-500 font-mono">
+                        <div className="text-[10px] text-slate-400 font-mono">
                           Line #{smell.lineNumber}
                         </div>
                       )}
@@ -545,7 +545,7 @@ public class HighThroughputBuffer<T>
                             ? "text-rose-400 bg-rose-950/30 -mx-4 px-4 line-through opacity-80"
                             : isHeader
                             ? "text-cyan-400 font-bold"
-                            : "text-slate-300"
+                            : "text-slate-400"
                         }`}
                       >
                         {line}

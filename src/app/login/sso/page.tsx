@@ -83,7 +83,7 @@ export default function EnterpriseSsoLoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col justify-center items-center px-4 py-12 relative overflow-hidden">
+    <div className="min-h-screen bg-slate-950 text-slate-200 flex flex-col justify-center items-center px-4 py-12 relative overflow-hidden">
       {/* Background Glow */}
       <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-96 h-96 bg-indigo-600/10 blur-[120px] rounded-full pointer-events-none" />
 
@@ -107,7 +107,7 @@ export default function EnterpriseSsoLoginPage() {
             <>
               <form onSubmit={handleDiscovery} className="space-y-4">
                 <div>
-                  <label htmlFor="email" className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
+                  <label htmlFor="email" className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
                     Work or University Email
                   </label>
                   <div className="relative">
@@ -118,9 +118,9 @@ export default function EnterpriseSsoLoginPage() {
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder="e.g. alex@stanford.edu or dev@uber.com"
                       required
-                      className="w-full bg-slate-950/80 border border-slate-700/80 rounded-xl px-4 py-3 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition"
+                      className="w-full bg-slate-950/80 border border-slate-800/80 rounded-xl px-4 py-3 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition"
                     />
-                    <Globe className="absolute right-3.5 top-3.5 w-4 h-4 text-slate-500 pointer-events-none" />
+                    <Globe className="absolute right-3.5 top-3.5 w-4 h-4 text-slate-400 pointer-events-none" />
                   </div>
                 </div>
 
@@ -218,8 +218,8 @@ export default function EnterpriseSsoLoginPage() {
               </div>
 
               <div className="p-3 bg-slate-950 rounded-xl border border-slate-800 text-left text-xs font-mono text-slate-400 break-all space-y-1">
-                <div className="text-slate-500 text-[10px] uppercase font-semibold">JWT Bearer Token</div>
-                <div className="line-clamp-2 text-slate-300">{authSuccess.token}</div>
+                <div className="text-slate-400 text-[10px] uppercase font-semibold">JWT Bearer Token</div>
+                <div className="line-clamp-2 text-slate-400">{authSuccess.token}</div>
               </div>
 
               <div className="pt-2 flex flex-col gap-2">
@@ -245,7 +245,7 @@ export default function EnterpriseSsoLoginPage() {
         </div>
 
         {/* Footer Links */}
-        <div className="text-center text-xs text-slate-500">
+        <div className="text-center text-xs text-slate-400">
           Not an enterprise user?{" "}
           <a href="/login" className="text-indigo-400 hover:text-indigo-300 underline underline-offset-4">
             Sign in with Standard Account

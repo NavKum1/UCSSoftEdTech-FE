@@ -157,7 +157,7 @@ export default function PersonaSelectorPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 p-6 sm:p-10">
+    <div className="min-h-screen bg-slate-950 text-slate-200 p-6 sm:p-10">
       <div className="max-w-7xl mx-auto space-y-8">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-6 border-b border-slate-800">
@@ -209,11 +209,11 @@ export default function PersonaSelectorPage() {
                   className={`cursor-pointer p-5 rounded-2xl border transition-all space-y-3 relative ${
                     isSelected
                       ? "border-indigo-500 bg-indigo-950/30 shadow-lg shadow-indigo-500/10 ring-1 ring-indigo-500"
-                      : "border-slate-800 bg-slate-900/40 hover:border-slate-700 hover:bg-slate-900/70"
+                      : "border-slate-800 bg-slate-900/40 hover:border-slate-800 hover:bg-slate-900/70"
                   }`}
                 >
                   <div className="flex items-center justify-between">
-                    <div className="p-2 rounded-xl bg-slate-800/80 border border-slate-700/50">
+                    <div className="p-2 rounded-xl bg-slate-800/80 border border-slate-800/50">
                       {getPersonaIcon(persona.code)}
                     </div>
                     <span
@@ -265,12 +265,12 @@ export default function PersonaSelectorPage() {
                   className={`cursor-pointer p-4 rounded-xl border transition-all space-y-1.5 ${
                     isSelected
                       ? "border-emerald-500 bg-emerald-950/20 ring-1 ring-emerald-500"
-                      : "border-slate-800 bg-slate-900/40 hover:border-slate-700"
+                      : "border-slate-800 bg-slate-900/40 hover:border-slate-800"
                   }`}
                 >
                   <div className="flex items-center justify-between">
                     <span className="font-semibold text-xs text-white">{d.label}</span>
-                    <span className="text-[10px] text-slate-500 font-mono">{d.region}</span>
+                    <span className="text-[10px] text-slate-400 font-mono">{d.region}</span>
                   </div>
                   <p className="text-[11px] text-slate-400 leading-relaxed">{d.desc}</p>
                 </div>
@@ -292,7 +292,7 @@ export default function PersonaSelectorPage() {
             <button
               onClick={() => handleGeneratePreview(selectedPersona, selectedDialect)}
               disabled={generatingPreview}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs text-slate-300 transition-colors"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs text-slate-400 transition-colors"
             >
               <RotateCw className={`w-3.5 h-3.5 ${generatingPreview ? "animate-spin" : ""}`} />
               <span>Recompile Prompt</span>
@@ -303,29 +303,29 @@ export default function PersonaSelectorPage() {
             <div className="space-y-4">
               <div className="flex flex-wrap items-center gap-4 text-xs font-mono bg-slate-950 p-3 rounded-xl border border-slate-800">
                 <div>
-                  <span className="text-slate-500 block">Persona:</span>
+                  <span className="text-slate-400 block">Persona:</span>
                   <span className="text-indigo-400 font-bold">{previewConfig.displayName}</span>
                 </div>
                 <div>
-                  <span className="text-slate-500 block">Scrutiny:</span>
+                  <span className="text-slate-400 block">Scrutiny:</span>
                   <span className="text-white font-bold">{previewConfig.scrutinyLevel}</span>
                 </div>
                 <div>
-                  <span className="text-slate-500 block">Dialect:</span>
+                  <span className="text-slate-400 block">Dialect:</span>
                   <span className="text-emerald-400 font-bold">{previewConfig.dialectCode}</span>
                 </div>
                 <div>
-                  <span className="text-slate-500 block">Voice ID:</span>
+                  <span className="text-slate-400 block">Voice ID:</span>
                   <span className="text-amber-400 font-bold">{previewConfig.voiceId}</span>
                 </div>
               </div>
 
-              <div className="p-4 rounded-xl bg-slate-950 border border-slate-800 text-xs font-mono text-slate-300 leading-relaxed max-h-72 overflow-y-auto whitespace-pre-wrap">
+              <div className="p-4 rounded-xl bg-slate-950 border border-slate-800 text-xs font-mono text-slate-400 leading-relaxed max-h-72 overflow-y-auto whitespace-pre-wrap">
                 {previewConfig.injectedSystemPrompt}
               </div>
             </div>
           ) : (
-            <div className="py-8 text-center text-slate-500 text-xs italic">
+            <div className="py-8 text-center text-slate-400 text-xs italic">
               Loading adapted prompt directives...
             </div>
           )}

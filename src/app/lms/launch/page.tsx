@@ -28,7 +28,7 @@ export default function LmsLaunchTransitionPage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col justify-center items-center px-4 py-12 relative overflow-hidden font-sans">
+    <div className="min-h-screen bg-slate-950 text-slate-200 flex flex-col justify-center items-center px-4 py-12 relative overflow-hidden font-sans">
       {/* Background Ambient Glow */}
       <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-[500px] h-[500px] bg-indigo-600/10 blur-[140px] rounded-full pointer-events-none" />
 
@@ -67,7 +67,7 @@ export default function LmsLaunchTransitionPage() {
                     {courseInfo.courseTitle}
                   </div>
                   <div className="text-xs text-slate-400 flex items-center gap-2">
-                    <span className="font-mono text-slate-300">Assignment:</span>
+                    <span className="font-mono text-slate-400">Assignment:</span>
                     <span className="text-emerald-400 font-medium">{courseInfo.assignmentTitle}</span>
                   </div>
                 </div>
@@ -78,7 +78,7 @@ export default function LmsLaunchTransitionPage() {
                     <Sparkles className="w-4 h-4" />
                     <span>Academic Pro Tier License Active</span>
                   </div>
-                  <p className="text-xs text-slate-300 leading-relaxed">
+                  <p className="text-xs text-slate-400 leading-relaxed">
                     Your university enrollment unlocks full access to polyglot compiler runtimes, AI voice defense evaluations, and verified credentials at zero cost.
                   </p>
                 </div>
@@ -105,7 +105,7 @@ export default function LmsLaunchTransitionPage() {
                 <div className="text-center">
                   <Link
                     href="/institute/dashboard"
-                    className="text-xs text-slate-500 hover:text-slate-400 inline-flex items-center gap-1 transition"
+                    className="text-xs text-slate-400 hover:text-slate-400 inline-flex items-center gap-1 transition"
                   >
                     <span>Are you an instructor or teaching assistant? Open Instructor Analytics</span>
                     <ExternalLink className="w-3 h-3" />
@@ -117,7 +117,7 @@ export default function LmsLaunchTransitionPage() {
         </div>
 
         {/* Footer */}
-        <div className="text-center text-xs text-slate-600 font-mono">
+        <div className="text-center text-xs text-slate-400 font-mono">
           IMS Global / 1EdTech LTI 1.3 Core & Assignment Grade Services (AGS) v2.0
         </div>
       </div>

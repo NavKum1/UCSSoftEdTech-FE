@@ -127,7 +127,7 @@ export default function PartnerDashboardPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 font-sans p-6 md:p-10">
+    <div className="min-h-screen bg-slate-950 text-slate-200 font-sans p-6 md:p-10">
       {/* Top Header Navigation */}
       <div className="max-w-7xl mx-auto space-y-8">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-800">
@@ -160,7 +160,7 @@ export default function PartnerDashboardPage() {
 
             <button
               onClick={fetchDashboard}
-              className="py-2.5 px-4 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-xs font-medium text-slate-300 flex items-center space-x-2 transition-colors cursor-pointer"
+              className="py-2.5 px-4 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-xs font-medium text-slate-400 flex items-center space-x-2 transition-colors cursor-pointer"
             >
               <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} />
               <span>Refresh Metrics</span>
@@ -176,7 +176,7 @@ export default function PartnerDashboardPage() {
               <Users className="w-4 h-4 text-indigo-400" />
             </div>
             <div className="text-3xl font-extrabold text-white mt-2">{kpis.totalLeadsReceived}</div>
-            <span className="text-[11px] text-slate-500 mt-1 block">Qualified skill gap routing</span>
+            <span className="text-[11px] text-slate-400 mt-1 block">Qualified skill gap routing</span>
           </div>
 
           <div className="glass-card rounded-2xl p-5 border border-slate-800 relative overflow-hidden">
@@ -321,7 +321,7 @@ export default function PartnerDashboardPage() {
                 <button
                   type="button"
                   onClick={handleTestWebhookDispatch}
-                  className="py-2 px-3 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 font-medium text-xs border border-slate-800 transition-colors flex items-center space-x-1 cursor-pointer"
+                  className="py-2 px-3 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-400 font-medium text-xs border border-slate-800 transition-colors flex items-center space-x-1 cursor-pointer"
                 >
                   <Send className="w-3 h-3" />
                   <span>Test Ping</span>
@@ -341,7 +341,7 @@ export default function PartnerDashboardPage() {
           </div>
 
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs text-slate-300">
+            <table className="w-full text-left text-xs text-slate-400">
               <thead className="bg-slate-900/80 text-slate-400 uppercase text-[10px] font-semibold border-b border-slate-800">
                 <tr>
                   <th className="py-3 px-4">Candidate Name</th>

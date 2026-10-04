@@ -165,7 +165,7 @@ export default function PartnerBillingPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-950 text-slate-100 flex items-center justify-center">
+      <div className="min-h-screen bg-slate-950 text-slate-200 flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
           <div className="w-12 h-12 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
           <p className="text-slate-400 font-mono text-sm">Loading Enterprise Usage &amp; Billing Ledger...</p>
@@ -175,13 +175,13 @@ export default function PartnerBillingPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans">
+    <div className="min-h-screen bg-slate-950 text-slate-200 flex flex-col font-sans">
       {/* Top Navigation */}
       <header className="border-b border-slate-800 bg-slate-900/80 backdrop-blur px-6 py-4 flex items-center justify-between sticky top-0 z-50">
         <div className="flex items-center gap-3">
           <Link
             href="/partner/dashboard"
-            className="text-xs px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 font-mono transition"
+            className="text-xs px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-400 font-mono transition"
           >
             &larr; Back to Dashboard
           </Link>
@@ -203,7 +203,7 @@ export default function PartnerBillingPage() {
           )}
           <button
             onClick={handleGenerateInvoice}
-            className="px-3 py-1.5 rounded text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition"
+            className="px-3 py-1.5 rounded text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-800 transition"
           >
             Generate Statement
           </button>
@@ -257,7 +257,7 @@ export default function PartnerBillingPage() {
                 <span className="text-indigo-400 font-semibold">{subData?.seats.utilizationPercent}%</span>
               </div>
               <div className="text-2xl font-bold text-white mb-2">
-                {subData?.seats.used} <span className="text-xs text-slate-500 font-normal">/ {subData?.seats.purchased} Seats</span>
+                {subData?.seats.used} <span className="text-xs text-slate-400 font-normal">/ {subData?.seats.purchased} Seats</span>
               </div>
             </div>
             <div className="w-full bg-slate-800 rounded-full h-2 overflow-hidden">
@@ -276,7 +276,7 @@ export default function PartnerBillingPage() {
                 <span className="text-cyan-400 font-semibold">{subData?.voiceMinutes.utilizationPercent}%</span>
               </div>
               <div className="text-2xl font-bold text-white mb-2">
-                {subData?.voiceMinutes.used} <span className="text-xs text-slate-500 font-normal">/ {subData?.voiceMinutes.monthlyQuota} Mins</span>
+                {subData?.voiceMinutes.used} <span className="text-xs text-slate-400 font-normal">/ {subData?.voiceMinutes.monthlyQuota} Mins</span>
               </div>
             </div>
             <div className="w-full bg-slate-800 rounded-full h-2 overflow-hidden">
@@ -295,7 +295,7 @@ export default function PartnerBillingPage() {
                 <span className="text-emerald-400 font-semibold">{subData?.candidateEvaluations.utilizationPercent}%</span>
               </div>
               <div className="text-2xl font-bold text-white mb-2">
-                {subData?.candidateEvaluations.used} <span className="text-xs text-slate-500 font-normal">/ {subData?.candidateEvaluations.monthlyQuota} Runs</span>
+                {subData?.candidateEvaluations.used} <span className="text-xs text-slate-400 font-normal">/ {subData?.candidateEvaluations.monthlyQuota} Runs</span>
               </div>
             </div>
             <div className="w-full bg-slate-800 rounded-full h-2 overflow-hidden">
@@ -314,7 +314,7 @@ export default function PartnerBillingPage() {
                 <span className="text-amber-400 font-semibold">{subData?.videoStorage.utilizationPercent}%</span>
               </div>
               <div className="text-2xl font-bold text-white mb-2">
-                {subData?.videoStorage.usedGB} <span className="text-xs text-slate-500 font-normal">/ {subData?.videoStorage.quotaGB} GB</span>
+                {subData?.videoStorage.usedGB} <span className="text-xs text-slate-400 font-normal">/ {subData?.videoStorage.quotaGB} GB</span>
               </div>
             </div>
             <div className="w-full bg-slate-800 rounded-full h-2 overflow-hidden">
@@ -335,7 +335,7 @@ export default function PartnerBillingPage() {
                 Automated monthly statements with itemized usage overage breakdowns.
               </p>
             </div>
-            <span className="text-xs font-mono text-slate-500">
+            <span className="text-xs font-mono text-slate-400">
               {invoices.length} Total Statements
             </span>
           </div>
@@ -367,7 +367,7 @@ export default function PartnerBillingPage() {
                   {invoices.map((inv) => (
                     <tr key={inv.invoiceId} className="hover:bg-slate-800/40 transition">
                       <td className="py-3 font-bold text-white">{inv.invoiceNumber}</td>
-                      <td className="py-3 text-slate-300">{inv.billingPeriod}</td>
+                      <td className="py-3 text-slate-400">{inv.billingPeriod}</td>
                       <td className="py-3 text-slate-400">{new Date(inv.createdAt).toLocaleDateString()}</td>
                       <td className="py-3 text-emerald-400 font-bold">{inv.totalFormatted}</td>
                       <td className="py-3">
@@ -386,7 +386,7 @@ export default function PartnerBillingPage() {
                           href={inv.pdfStorageUrl}
                           target="_blank"
                           rel="noreferrer"
-                          className="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 font-medium transition"
+                          className="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-400 font-medium transition"
                         >
                           PDF
                         </a>
@@ -467,7 +467,7 @@ export default function PartnerBillingPage() {
             <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-800">
               <button
                 onClick={() => setIsUpgrading(false)}
-                className="px-3 py-1.5 text-xs font-mono rounded bg-slate-800 hover:bg-slate-700 text-slate-300"
+                className="px-3 py-1.5 text-xs font-mono rounded bg-slate-800 hover:bg-slate-700 text-slate-400"
               >
                 Cancel
               </button>
@@ -504,7 +504,7 @@ export default function PartnerBillingPage() {
                 <div key={idx} className="flex items-center justify-between p-2.5 rounded bg-slate-950 border border-slate-800/80 text-xs font-mono">
                   <div>
                     <p className="text-slate-200 font-medium">{item.description}</p>
-                    <p className="text-slate-500 text-[10px]">Qty: {item.quantity}</p>
+                    <p className="text-slate-400 text-[10px]">Qty: {item.quantity}</p>
                   </div>
                   <span className="text-white font-bold">
                     {config.symbol}{((item.totalCents / 100.0) * (config.currency === "INR" ? 80 : config.currency === "EUR" ? 0.92 : 1.0)).toFixed(2)}

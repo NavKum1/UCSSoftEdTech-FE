@@ -68,7 +68,7 @@ export default function LeaderboardPage() {
   const top3 = entries.slice(0, 3);
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans pb-16">
+    <div className="min-h-screen bg-slate-950 text-slate-200 flex flex-col font-sans pb-16">
       {/* Top Navbar */}
       <header className="border-b border-slate-800 bg-slate-900/60 backdrop-blur-md sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
@@ -123,7 +123,7 @@ export default function LeaderboardPage() {
         {top3.length >= 3 && (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4 max-w-4xl mx-auto items-end">
             {/* 2nd Place (Silver) */}
-            <div className="glass-panel rounded-3xl p-6 border border-slate-700/80 bg-slate-900/40 flex flex-col items-center text-center space-y-3 order-2 md:order-1 relative shadow-xl">
+            <div className="glass-panel rounded-3xl p-6 border border-slate-800/80 bg-slate-900/40 flex flex-col items-center text-center space-y-3 order-2 md:order-1 relative shadow-xl">
               <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-slate-400 to-slate-200 flex items-center justify-center font-extrabold text-slate-900 text-lg shadow-lg">
                 2
               </div>
@@ -135,7 +135,7 @@ export default function LeaderboardPage() {
                 {top3[1].finalScore.toFixed(1)}% Score
               </div>
               <span className="text-[11px] text-slate-400 flex items-center space-x-1">
-                <Clock className="w-3.5 h-3.5 text-slate-500" />
+                <Clock className="w-3.5 h-3.5 text-slate-400" />
                 <span>Speed: {top3[1].completionTimeFormatted}</span>
               </span>
               <button
@@ -163,7 +163,7 @@ export default function LeaderboardPage() {
               <div className="px-5 py-2 rounded-full bg-amber-500/20 border border-amber-500/40 text-amber-300 text-base font-black">
                 {top3[0].finalScore.toFixed(1)}% Score
               </div>
-              <span className="text-xs text-slate-300 flex items-center space-x-1">
+              <span className="text-xs text-slate-400 flex items-center space-x-1">
                 <Clock className="w-3.5 h-3.5 text-amber-400" />
                 <span>Speed: {top3[0].completionTimeFormatted}</span>
               </span>
@@ -177,7 +177,7 @@ export default function LeaderboardPage() {
             </div>
 
             {/* 3rd Place (Bronze) */}
-            <div className="glass-panel rounded-3xl p-6 border border-slate-700/80 bg-slate-900/40 flex flex-col items-center text-center space-y-3 order-3 relative shadow-xl">
+            <div className="glass-panel rounded-3xl p-6 border border-slate-800/80 bg-slate-900/40 flex flex-col items-center text-center space-y-3 order-3 relative shadow-xl">
               <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-amber-700 to-yellow-800 flex items-center justify-center font-extrabold text-white text-lg shadow-lg">
                 3
               </div>
@@ -189,7 +189,7 @@ export default function LeaderboardPage() {
                 {top3[2].finalScore.toFixed(1)}% Score
               </div>
               <span className="text-[11px] text-slate-400 flex items-center space-x-1">
-                <Clock className="w-3.5 h-3.5 text-slate-500" />
+                <Clock className="w-3.5 h-3.5 text-slate-400" />
                 <span>Speed: {top3[2].completionTimeFormatted}</span>
               </span>
               <button
@@ -208,7 +208,7 @@ export default function LeaderboardPage() {
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
             <h2 className="text-lg font-bold text-white">Full Standings ({entries.length})</h2>
             <div className="relative w-full sm:w-72">
-              <Search className="w-4 h-4 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2" />
+              <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
               <input
                 type="text"
                 placeholder="Search candidate name..."
@@ -221,7 +221,7 @@ export default function LeaderboardPage() {
 
           <div className="glass-panel rounded-2xl border border-slate-800 overflow-hidden">
             <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs text-slate-300">
+              <table className="w-full text-left text-xs text-slate-400">
                 <thead className="bg-slate-900/80 border-b border-slate-800 text-slate-400 font-semibold uppercase text-[10px] tracking-wider">
                   <tr>
                     <th className="px-6 py-3 w-16 text-center">Rank</th>
@@ -235,13 +235,13 @@ export default function LeaderboardPage() {
                 <tbody className="divide-y divide-slate-800/60">
                   {loading ? (
                     <tr>
-                      <td colSpan={6} className="px-6 py-12 text-center text-slate-500">
+                      <td colSpan={6} className="px-6 py-12 text-center text-slate-400">
                         Loading community leaderboard...
                       </td>
                     </tr>
                   ) : filtered.length === 0 ? (
                     <tr>
-                      <td colSpan={6} className="px-6 py-12 text-center text-slate-500">
+                      <td colSpan={6} className="px-6 py-12 text-center text-slate-400">
                         No candidates found. Complete an interview and sprint defense to join the Hall of Fame!
                       </td>
                     </tr>
