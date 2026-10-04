@@ -114,9 +114,9 @@ export default function SkillPassportPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-200 flex flex-col font-sans selection:bg-amber-500/30">
+    <div className="min-h-screen bg-background text-foreground flex flex-col font-sans selection:bg-amber-500/30">
       {/* Top Navigation */}
-      <header className="border-b border-slate-800 bg-slate-900/60 backdrop-blur-md sticky top-0 z-40 px-6 py-4">
+      <header className="border-b border-border bg-card/60 backdrop-blur-md sticky top-0 z-40 px-6 py-4">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="flex items-center space-x-3">
             <div className="h-9 w-9 rounded-lg bg-gradient-to-tr from-amber-600 via-amber-500 to-yellow-400 flex items-center justify-center font-bold text-slate-950 shadow-lg shadow-amber-500/20">
@@ -132,24 +132,24 @@ export default function SkillPassportPage() {
             </div>
           </div>
 
-          <nav className="flex items-center space-x-6 text-sm font-medium text-slate-400">
+          <nav className="flex items-center space-x-6 text-sm font-medium text-muted-foreground">
             <Link href="/passport" className="text-amber-400 font-semibold flex items-center space-x-1.5">
               <span>🪪</span>
               <span>Skill Passport</span>
             </Link>
-            <Link href="/daily/incident" className="hover:text-slate-200 transition-colors flex items-center space-x-1.5">
+            <Link href="/daily/incident" className="hover:text-foreground transition-colors flex items-center space-x-1.5">
               <span>🚨</span>
               <span>War-Room</span>
             </Link>
-            <Link href="/daily/review" className="hover:text-slate-200 transition-colors flex items-center space-x-1.5">
+            <Link href="/daily/review" className="hover:text-foreground transition-colors flex items-center space-x-1.5">
               <span>🔍</span>
               <span>PR Dojo</span>
             </Link>
-            <Link href="/guilds/battles" className="hover:text-slate-200 transition-colors flex items-center space-x-1.5">
+            <Link href="/guilds/battles" className="hover:text-foreground transition-colors flex items-center space-x-1.5">
               <span>⚔️</span>
               <span>Guild Battles</span>
             </Link>
-            <Link href="/leaderboard" className="hover:text-slate-200 transition-colors flex items-center space-x-1.5">
+            <Link href="/leaderboard" className="hover:text-foreground transition-colors flex items-center space-x-1.5">
               <span>🏆</span>
               <span>Leaderboard</span>
             </Link>
@@ -163,7 +163,7 @@ export default function SkillPassportPage() {
               <span>🔗</span>
               <span>Share Passport</span>
             </button>
-            <div className="h-8 w-8 rounded-full bg-slate-800 border border-slate-800 flex items-center justify-center text-xs font-bold text-slate-400">
+            <div className="h-8 w-8 rounded-full bg-muted border border-border flex items-center justify-center text-xs font-bold text-muted-foreground">
               AC
             </div>
           </div>
@@ -176,14 +176,14 @@ export default function SkillPassportPage() {
         {loading && (
           <div className="flex flex-col items-center justify-center py-20 space-y-4">
             <div className="w-12 h-12 border-4 border-amber-500/20 border-t-amber-500 rounded-full animate-spin"></div>
-            <p className="text-sm font-mono text-slate-400">Loading dynamic verified skill passport...</p>
+            <p className="text-sm font-mono text-muted-foreground">Loading dynamic verified skill passport...</p>
           </div>
         )}
 
         {!loading && passport && (
           <>
             {/* Engineer Profile & Streak HUD Banner */}
-            <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-900 via-slate-900/90 to-amber-950/20 border border-slate-800 p-8 shadow-2xl">
+            <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-900 via-slate-900/90 to-amber-950/20 border border-border p-8 shadow-2xl">
               <div className="absolute top-0 right-0 w-96 h-96 bg-amber-500/5 rounded-full blur-3xl pointer-events-none"></div>
 
               <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
@@ -197,41 +197,41 @@ export default function SkillPassportPage() {
                       Subscriber Active
                     </span>
                   </div>
-                  <p className="text-slate-400 text-sm font-medium">{passport.targetRole}</p>
-                  <p className="text-xs text-slate-400 font-mono mt-2">
+                  <p className="text-muted-foreground text-sm font-medium">{passport.targetRole}</p>
+                  <p className="text-xs text-muted-foreground font-mono mt-2">
                     Public Verification Token:{" "}
-                    <span className="text-slate-400 select-all">{passport.publicShareToken}</span>
+                    <span className="text-muted-foreground select-all">{passport.publicShareToken}</span>
                   </p>
                 </div>
 
                 {/* Live Metrics Quad */}
                 <div className="flex flex-wrap items-center gap-4">
                   {/* Streak Card */}
-                  <div className="bg-slate-950/80 border border-slate-800 rounded-xl px-5 py-3.5 flex items-center space-x-3 shadow-inner">
+                  <div className="bg-background/80 border border-border rounded-xl px-5 py-3.5 flex items-center space-x-3 shadow-inner">
                     <span className="text-3xl">🔥</span>
                     <div>
                       <div className="text-2xl font-black text-amber-400">{passport.activeStreakDays} Days</div>
-                      <div className="text-[11px] uppercase tracking-wider text-slate-400 font-semibold">Active Streak</div>
+                      <div className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold">Active Streak</div>
                     </div>
                   </div>
 
                   {/* Vigilance Index Card */}
-                  <div className="bg-slate-950/80 border border-slate-800 rounded-xl px-5 py-3.5 flex items-center space-x-3 shadow-inner">
+                  <div className="bg-background/80 border border-border rounded-xl px-5 py-3.5 flex items-center space-x-3 shadow-inner">
                     <span className="text-3xl">🛡️</span>
                     <div>
                       <div className="text-2xl font-black text-emerald-400">{passport.overallVigilanceIndex}%</div>
-                      <div className="text-[11px] uppercase tracking-wider text-slate-400 font-semibold">Overall Vigilance</div>
+                      <div className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold">Overall Vigilance</div>
                     </div>
                   </div>
 
                   {/* Badges Status Card */}
-                  <div className="bg-slate-950/80 border border-slate-800 rounded-xl px-5 py-3.5 flex items-center space-x-3 shadow-inner">
+                  <div className="bg-background/80 border border-border rounded-xl px-5 py-3.5 flex items-center space-x-3 shadow-inner">
                     <span className="text-3xl">🏅</span>
                     <div>
                       <div className="text-2xl font-black text-yellow-300">
-                        {passport.goldBadgeCount} <span className="text-xs font-normal text-slate-400">Gold</span>
+                        {passport.goldBadgeCount} <span className="text-xs font-normal text-muted-foreground">Gold</span>
                       </div>
-                      <div className="text-[11px] uppercase tracking-wider text-slate-400 font-semibold">
+                      <div className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold">
                         {passport.warningBadgeCount > 0 ? (
                           <span className="text-amber-400">{passport.warningBadgeCount} Decaying</span>
                         ) : (
@@ -293,9 +293,9 @@ export default function SkillPassportPage() {
                   <div>
                     <h2 className="text-xl font-bold text-white flex items-center space-x-2">
                       <span>Verified Skill Half-Life Badges</span>
-                      <span className="text-xs text-slate-400 font-normal">({passport.badges.length} categories)</span>
+                      <span className="text-xs text-muted-foreground font-normal">({passport.badges.length} categories)</span>
                     </h2>
-                    <p className="text-xs text-slate-400 mt-0.5">
+                    <p className="text-xs text-muted-foreground mt-0.5">
                       Dynamic credentials decay 5% monthly without active katas. Practice freezes decay for 14 days.
                     </p>
                   </div>
@@ -315,7 +315,7 @@ export default function SkillPassportPage() {
                         key={badge.id}
                         className={`rounded-xl border p-5 transition-all duration-200 flex flex-col justify-between ${
                           isGold
-                            ? "bg-slate-900/70 border-slate-800 hover:border-amber-500/30"
+                            ? "bg-card/70 border-border hover:border-amber-500/30"
                             : isWarning
                             ? "bg-amber-950/20 border-amber-700/50 hover:border-amber-500/50"
                             : "bg-rose-950/20 border-rose-800/40 hover:border-rose-600/50"
@@ -324,7 +324,7 @@ export default function SkillPassportPage() {
                         <div>
                           {/* Badge Header */}
                           <div className="flex items-start justify-between gap-2 mb-3">
-                            <h3 className="font-bold text-sm text-slate-200 leading-snug">{badge.skillCategory}</h3>
+                            <h3 className="font-bold text-sm text-foreground leading-snug">{badge.skillCategory}</h3>
                             <span
                               className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider shrink-0 ${
                                 isGold
@@ -341,7 +341,7 @@ export default function SkillPassportPage() {
                           {/* Score and Decay Visualizer */}
                           <div className="space-y-2 mb-4">
                             <div className="flex items-baseline justify-between text-xs">
-                              <span className="text-slate-400">Current Decayed Score:</span>
+                              <span className="text-muted-foreground">Current Decayed Score:</span>
                               <div className="flex items-baseline space-x-1.5 font-mono">
                                 <span
                                   className={`text-lg font-extrabold ${
@@ -359,7 +359,7 @@ export default function SkillPassportPage() {
                             </div>
 
                             {/* Progress Bar */}
-                            <div className="w-full bg-slate-950 rounded-full h-2 overflow-hidden border border-slate-800">
+                            <div className="w-full bg-background rounded-full h-2 overflow-hidden border border-border">
                               <div
                                 className={`h-full rounded-full transition-all duration-500 ${
                                   isGold
@@ -373,15 +373,15 @@ export default function SkillPassportPage() {
                             </div>
 
                             {/* Warning or Status Text */}
-                            <p className="text-[11px] text-slate-400 italic leading-relaxed pt-1">
+                            <p className="text-[11px] text-muted-foreground italic leading-relaxed pt-1">
                               {badge.antiDecayWarning}
                             </p>
                           </div>
                         </div>
 
                         {/* Card Footer: Metadata & Practice Action */}
-                        <div className="pt-3 border-t border-slate-800/80 space-y-3">
-                          <div className="flex items-center justify-between text-[11px] text-slate-400 font-mono">
+                        <div className="pt-3 border-t border-border/80 space-y-3">
+                          <div className="flex items-center justify-between text-[11px] text-muted-foreground font-mono">
                             <span>Practiced: {badge.daysSinceLastPractice}d ago</span>
                             <span>{badge.practiceKatasCompleted} katas completed</span>
                           </div>
@@ -392,7 +392,7 @@ export default function SkillPassportPage() {
                               disabled={practicingCategory === badge.skillCategory}
                               className={`flex-1 py-1.5 px-3 rounded-lg text-xs font-semibold transition-all flex items-center justify-center space-x-1.5 shadow-sm ${
                                 isGold
-                                  ? "bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-800"
+                                  ? "bg-muted hover:bg-slate-700 text-foreground border border-border"
                                   : "bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold"
                               }`}
                             >
@@ -422,15 +422,15 @@ export default function SkillPassportPage() {
                   <span className="h-2.5 w-2.5 rounded-full bg-emerald-500 animate-ping"></span>
                 </div>
 
-                <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-5 space-y-4">
-                  <div className="flex items-center justify-between text-xs pb-3 border-b border-slate-800">
-                    <span className="text-slate-400">Radar Status:</span>
+                <div className="bg-card/60 border border-border rounded-xl p-5 space-y-4">
+                  <div className="flex items-center justify-between text-xs pb-3 border-b border-border">
+                    <span className="text-muted-foreground">Radar Status:</span>
                     <span className="font-semibold text-emerald-400 flex items-center space-x-1">
                       <span className="h-2 w-2 rounded-full bg-emerald-400"></span>
                       <span>Active Fortune 500 Broadcast</span>
                     </span>
                   </div>
-                  <p className="text-xs text-slate-400 leading-relaxed">
+                  <p className="text-xs text-muted-foreground leading-relaxed">
                     Recruiters pay continuous subscription access to view candidates maintaining an Active Gold streak. Inquiries skip standard HR screens.
                   </p>
 
@@ -438,26 +438,26 @@ export default function SkillPassportPage() {
                     {radarInquiries.map((inquiry) => (
                       <div
                         key={inquiry.id}
-                        className="bg-slate-950/80 border border-slate-800/90 rounded-lg p-3.5 space-y-2 hover:border-slate-800 transition-all shadow-inner"
+                        className="bg-background/80 border border-border/90 rounded-lg p-3.5 space-y-2 hover:border-border transition-all shadow-inner"
                       >
                         <div className="flex items-start justify-between gap-2">
                           <div>
                             <span className="text-[10px] font-bold uppercase tracking-wider text-amber-400 bg-amber-500/10 px-1.5 py-0.5 rounded">
                               {inquiry.companyTier}
                             </span>
-                            <h4 className="text-xs font-bold text-slate-200 mt-1">{inquiry.roleTitle}</h4>
+                            <h4 className="text-xs font-bold text-foreground mt-1">{inquiry.roleTitle}</h4>
                           </div>
                           <span className="text-sm font-extrabold text-emerald-400 font-mono shrink-0">
                             ${(inquiry.offeredCompensationUsd / 1000).toFixed(0)}k/yr
                           </span>
                         </div>
 
-                        <p className="text-[11px] text-slate-400 flex items-center space-x-1">
+                        <p className="text-[11px] text-muted-foreground flex items-center space-x-1">
                           <span>🚀</span>
                           <span className="truncate">{inquiry.fastTrackInterviewType}</span>
                         </p>
 
-                        <div className="flex items-center justify-between text-[10px] text-slate-400 font-mono pt-1">
+                        <div className="flex items-center justify-between text-[10px] text-muted-foreground font-mono pt-1">
                           <span>Status: {inquiry.inquiryStatus}</span>
                           <span>{new Date(inquiry.receivedAt).toLocaleDateString()}</span>
                         </div>
@@ -482,33 +482,33 @@ export default function SkillPassportPage() {
 
       {/* Share Passport Modal */}
       {showShareModal && passport && (
-        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl max-w-lg w-full p-6 space-y-5 shadow-2xl relative">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+        <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-card border border-border rounded-2xl max-w-lg w-full p-6 space-y-5 shadow-2xl relative">
+            <div className="flex items-center justify-between pb-3 border-b border-border">
               <h3 className="text-lg font-bold text-white flex items-center space-x-2">
                 <span>🪪</span>
                 <span>Share Verified Skill Passport</span>
               </h3>
               <button
                 onClick={() => setShowShareModal(false)}
-                className="text-slate-400 hover:text-white text-lg font-bold"
+                className="text-muted-foreground hover:text-white text-lg font-bold"
               >
                 ✕
               </button>
             </div>
 
-            <p className="text-xs text-slate-400 leading-relaxed">
+            <p className="text-xs text-muted-foreground leading-relaxed">
               Anyone with this verified link can view your live skill achievements, verified badges, and proficiency scores.
             </p>
 
             <div className="space-y-2">
-              <label className="text-xs font-semibold text-slate-400">Public Verification URL</label>
+              <label className="text-xs font-semibold text-muted-foreground">Public Verification URL</label>
               <div className="flex items-center space-x-2">
                 <input
                   type="text"
                   readOnly
                   value={typeof window !== "undefined" ? `${window.location.origin}/passport/public/${passport.publicShareToken}` : ""}
-                  className="flex-1 bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs font-mono text-amber-300 select-all focus:outline-none"
+                  className="flex-1 bg-background border border-border rounded-lg px-3 py-2 text-xs font-mono text-amber-300 select-all focus:outline-none"
                 />
                 <button
                   onClick={handleCopyShareLink}
@@ -519,12 +519,12 @@ export default function SkillPassportPage() {
               </div>
             </div>
 
-            <div className="p-3.5 bg-slate-950/60 border border-slate-800/80 rounded-xl space-y-2">
-              <div className="text-[11px] font-bold text-slate-400 flex items-center space-x-1.5">
+            <div className="p-3.5 bg-background/60 border border-border/80 rounded-xl space-y-2">
+              <div className="text-[11px] font-bold text-muted-foreground flex items-center space-x-1.5">
                 <span>🔒</span>
                 <span>Official Verification Guarantee</span>
               </div>
-              <p className="text-[11px] text-slate-400 font-mono truncate">
+              <p className="text-[11px] text-muted-foreground font-mono truncate">
                 Verification ID: {passport.badges[0]?.verificationSignatureSha256 || "verified-audit-block"}
               </p>
             </div>
@@ -532,7 +532,7 @@ export default function SkillPassportPage() {
             <div className="pt-2 flex justify-end">
               <button
                 onClick={() => setShowShareModal(false)}
-                className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold rounded-lg"
+                className="px-4 py-2 bg-muted hover:bg-slate-700 text-foreground text-xs font-semibold rounded-lg"
               >
                 Close
               </button>

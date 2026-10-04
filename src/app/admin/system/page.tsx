@@ -137,10 +137,10 @@ export default function SystemOperationsDashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-200 p-6 sm:p-10">
+    <div className="min-h-screen bg-background text-foreground p-6 sm:p-10">
       <div className="max-w-7xl mx-auto space-y-8">
         {/* Top Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-6 border-b border-slate-800">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-6 border-b border-border">
           <div>
             <div className="flex items-center gap-3">
               <div className="p-2 rounded-xl bg-indigo-500/20 text-indigo-400 border border-indigo-500/30">
@@ -150,7 +150,7 @@ export default function SystemOperationsDashboard() {
                 Distributed Operations & Edge Cache Hub
               </h1>
             </div>
-            <p className="mt-1 text-sm text-slate-400">
+            <p className="mt-1 text-sm text-muted-foreground">
               Zero-polling priority channels, BullMQ-compatible execution queue, and multi-region edge caching.
             </p>
           </div>
@@ -162,7 +162,7 @@ export default function SystemOperationsDashboard() {
             </span>
             <button
               onClick={fetchMetrics}
-              className="p-2 rounded-lg bg-slate-900 border border-slate-800 hover:bg-slate-800 text-slate-400 transition-colors"
+              className="p-2 rounded-lg bg-card border border-border hover:bg-muted text-muted-foreground transition-colors"
               title="Refresh Metrics"
             >
               <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
@@ -181,57 +181,57 @@ export default function SystemOperationsDashboard() {
         {/* Primary Metrics Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {/* Card 1: Edge Cache Hit Ratio */}
-          <div className="glass-panel p-6 rounded-2xl border border-slate-800 bg-slate-900/40 space-y-2">
-            <div className="flex items-center justify-between text-slate-400 text-xs">
+          <div className="glass-panel p-6 rounded-2xl border border-border bg-card/40 space-y-2">
+            <div className="flex items-center justify-between text-muted-foreground text-xs">
               <span className="uppercase tracking-wider font-semibold">Cache Hit Ratio</span>
               <Flame className="w-4 h-4 text-amber-400" />
             </div>
             <div className="text-3xl font-black text-white">
               {cacheStats ? `${cacheStats.hitRatioPercentage}%` : "—"}
             </div>
-            <p className="text-[11px] text-slate-400">
+            <p className="text-[11px] text-muted-foreground">
               {cacheStats?.hitsCount || 0} hits vs {cacheStats?.missesCount || 0} misses
             </p>
           </div>
 
           {/* Card 2: High Priority Queue Backlog */}
-          <div className="glass-panel p-6 rounded-2xl border border-slate-800 bg-slate-900/40 space-y-2">
-            <div className="flex items-center justify-between text-slate-400 text-xs">
+          <div className="glass-panel p-6 rounded-2xl border border-border bg-card/40 space-y-2">
+            <div className="flex items-center justify-between text-muted-foreground text-xs">
               <span className="uppercase tracking-wider font-semibold">High-Priority Queue</span>
               <Zap className="w-4 h-4 text-indigo-400" />
             </div>
             <div className="text-3xl font-black text-indigo-400">
               {queueStats?.pendingHighPriorityCount ?? 0}
             </div>
-            <p className="text-[11px] text-slate-400">
+            <p className="text-[11px] text-muted-foreground">
               Pro Subscribers, Recruiters & LMS Exams
             </p>
           </div>
 
           {/* Card 3: Standard Priority Backlog */}
-          <div className="glass-panel p-6 rounded-2xl border border-slate-800 bg-slate-900/40 space-y-2">
-            <div className="flex items-center justify-between text-slate-400 text-xs">
+          <div className="glass-panel p-6 rounded-2xl border border-border bg-card/40 space-y-2">
+            <div className="flex items-center justify-between text-muted-foreground text-xs">
               <span className="uppercase tracking-wider font-semibold">Standard Backlog</span>
               <Layers className="w-4 h-4 text-emerald-400" />
             </div>
             <div className="text-3xl font-black text-white">
               {queueStats?.pendingStandardCount ?? 0}
             </div>
-            <p className="text-[11px] text-slate-400">
+            <p className="text-[11px] text-muted-foreground">
               Free-Tier Candidate Sandbox Runs
             </p>
           </div>
 
           {/* Card 4: Dead Letter Queue Incidents */}
-          <div className="glass-panel p-6 rounded-2xl border border-slate-800 bg-slate-900/40 space-y-2">
-            <div className="flex items-center justify-between text-slate-400 text-xs">
+          <div className="glass-panel p-6 rounded-2xl border border-border bg-card/40 space-y-2">
+            <div className="flex items-center justify-between text-muted-foreground text-xs">
               <span className="uppercase tracking-wider font-semibold">Dead Letter Queue</span>
               <AlertTriangle className="w-4 h-4 text-red-400" />
             </div>
             <div className="text-3xl font-black text-red-400">
               {queueStats?.totalDeadLetterCount ?? 0}
             </div>
-            <p className="text-[11px] text-slate-400">
+            <p className="text-[11px] text-muted-foreground">
               Failed executions (&gt; 3 retry attempts)
             </p>
           </div>
@@ -240,8 +240,8 @@ export default function SystemOperationsDashboard() {
         {/* Detailed Operations Control Panels */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Left Panel: Edge Cache Engine Operations */}
-          <div className="p-6 rounded-2xl border border-slate-800 bg-slate-900/50 space-y-6">
-            <div className="flex items-center justify-between pb-4 border-b border-slate-800">
+          <div className="p-6 rounded-2xl border border-border bg-card/50 space-y-6">
+            <div className="flex items-center justify-between pb-4 border-b border-border">
               <div className="flex items-center gap-2">
                 <Database className="w-5 h-5 text-indigo-400" />
                 <h2 className="text-lg font-bold text-white">Edge Caching Control Center</h2>
@@ -252,14 +252,14 @@ export default function SystemOperationsDashboard() {
             </div>
 
             <div className="grid grid-cols-2 gap-4 text-xs">
-              <div className="p-3 rounded-xl bg-slate-800/40 border border-slate-800/50">
-                <span className="text-slate-400 block mb-1">Active Cache Tags</span>
+              <div className="p-3 rounded-xl bg-muted/40 border border-border/50">
+                <span className="text-muted-foreground block mb-1">Active Cache Tags</span>
                 <span className="text-lg font-bold text-white font-mono">
                   {cacheStats?.activeTagsCount || 0}
                 </span>
               </div>
-              <div className="p-3 rounded-xl bg-slate-800/40 border border-slate-800/50">
-                <span className="text-slate-400 block mb-1">Eviction / Flush Count</span>
+              <div className="p-3 rounded-xl bg-muted/40 border border-border/50">
+                <span className="text-muted-foreground block mb-1">Eviction / Flush Count</span>
                 <span className="text-lg font-bold text-white font-mono">
                   {cacheStats?.evictionsCount || 0}
                 </span>
@@ -268,14 +268,14 @@ export default function SystemOperationsDashboard() {
 
             {/* Invalidation Actions */}
             <div className="space-y-3">
-              <span className="text-xs uppercase tracking-wider text-slate-400 font-semibold block">
+              <span className="text-xs uppercase tracking-wider text-muted-foreground font-semibold block">
                 Instant Tag-Based Invalidation
               </span>
               <div className="flex flex-wrap gap-2">
                 <button
                   disabled={isProcessing}
                   onClick={() => handleInvalidateCache("credential")}
-                  className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs text-white border border-slate-800 transition-colors"
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-muted hover:bg-slate-700 text-xs text-white border border-border transition-colors"
                 >
                   <Trash2 className="w-3.5 h-3.5 text-amber-400" />
                   <span>Purge 'credential' Tag</span>
@@ -283,7 +283,7 @@ export default function SystemOperationsDashboard() {
                 <button
                   disabled={isProcessing}
                   onClick={() => handleInvalidateCache("leaderboard")}
-                  className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs text-white border border-slate-800 transition-colors"
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-muted hover:bg-slate-700 text-xs text-white border border-border transition-colors"
                 >
                   <Trash2 className="w-3.5 h-3.5 text-amber-400" />
                   <span>Purge 'leaderboard' Tag</span>
@@ -301,8 +301,8 @@ export default function SystemOperationsDashboard() {
           </div>
 
           {/* Right Panel: Distributed Job Queue Operations */}
-          <div className="p-6 rounded-2xl border border-slate-800 bg-slate-900/50 space-y-6">
-            <div className="flex items-center justify-between pb-4 border-b border-slate-800">
+          <div className="p-6 rounded-2xl border border-border bg-card/50 space-y-6">
+            <div className="flex items-center justify-between pb-4 border-b border-border">
               <div className="flex items-center gap-2">
                 <Server className="w-5 h-5 text-emerald-400" />
                 <h2 className="text-lg font-bold text-white">Distributed Job Queue Dispatcher</h2>
@@ -312,13 +312,13 @@ export default function SystemOperationsDashboard() {
               </span>
             </div>
 
-            <p className="text-xs text-slate-400 leading-relaxed">
+            <p className="text-xs text-muted-foreground leading-relaxed">
               Asynchronous worker backplane with strict priority scheduling. High-priority jobs automatically supersede standard jobs without polling delays.
             </p>
 
             {/* Queue Actions */}
             <div className="space-y-3">
-              <span className="text-xs uppercase tracking-wider text-slate-400 font-semibold block">
+              <span className="text-xs uppercase tracking-wider text-muted-foreground font-semibold block">
                 Queue Simulation & Benchmark Dispatch
               </span>
               <div className="flex flex-wrap gap-2">
@@ -333,7 +333,7 @@ export default function SystemOperationsDashboard() {
                 <button
                   disabled={isProcessing}
                   onClick={() => handleEnqueueBenchmarkJob("Standard")}
-                  className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs text-white border border-slate-800 transition-colors"
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-muted hover:bg-slate-700 text-xs text-white border border-border transition-colors"
                 >
                   <Play className="w-3.5 h-3.5 text-emerald-400" />
                   <span>Enqueue Standard Job</span>

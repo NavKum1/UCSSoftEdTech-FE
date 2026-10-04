@@ -16,7 +16,7 @@ export default function GlobalErrorPage({
   }, [error]);
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-200 flex flex-col items-center justify-center p-6 font-sans">
+    <div className="min-h-screen bg-background text-foreground flex flex-col items-center justify-center p-6 font-sans">
       {/* Ambient Red Glow */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-red-600/20 blur-3xl rounded-full pointer-events-none"></div>
 
@@ -30,13 +30,13 @@ export default function GlobalErrorPage({
             Service Notice
           </span>
           <h1 className="text-2xl font-extrabold text-white">Something Went Wrong</h1>
-          <p className="text-xs text-slate-400 leading-relaxed">
+          <p className="text-xs text-muted-foreground leading-relaxed">
             We encountered an unexpected issue while loading this page. Please try again or return to your dashboard.
           </p>
         </div>
 
         {error?.digest && (
-          <div className="bg-slate-900/80 p-3 rounded-xl border border-slate-800 text-[11px] font-mono text-slate-400 flex items-center justify-between">
+          <div className="bg-card/80 p-3 rounded-xl border border-border text-[11px] font-mono text-muted-foreground flex items-center justify-between">
             <span>Reference Code:</span>
             <span className="text-red-400 font-bold">{error.digest}</span>
           </div>
@@ -53,7 +53,7 @@ export default function GlobalErrorPage({
 
           <a
             href="/"
-            className="w-full py-3 px-4 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-400 font-medium text-xs flex items-center justify-center space-x-2 border border-slate-800 transition-colors cursor-pointer"
+            className="w-full py-3 px-4 rounded-xl bg-card hover:bg-muted text-muted-foreground font-medium text-xs flex items-center justify-center space-x-2 border border-border transition-colors cursor-pointer"
           >
             <Home className="w-4 h-4" />
             <span>Go to Dashboard</span>

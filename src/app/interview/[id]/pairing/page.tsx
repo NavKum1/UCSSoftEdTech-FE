@@ -315,13 +315,13 @@ export default function InterviewPairingStudioPage({ params }: { params: Promise
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-200 flex flex-col font-sans">
+    <div className="min-h-screen bg-background text-foreground flex flex-col font-sans">
       {/* Top Bar */}
-      <header className="h-16 border-b border-slate-800 bg-slate-900/80 px-6 flex items-center justify-between backdrop-blur-md sticky top-0 z-30">
+      <header className="h-16 border-b border-border bg-card/80 px-6 flex items-center justify-between backdrop-blur-md sticky top-0 z-30">
         <div className="flex items-center space-x-4">
           <Link
             href="/recruiter/dashboard"
-            className="p-2 rounded-xl hover:bg-slate-800 text-slate-400 hover:text-slate-200 transition"
+            className="p-2 rounded-xl hover:bg-muted text-muted-foreground hover:text-foreground transition"
           >
             <ArrowLeft className="w-5 h-5" />
           </Link>
@@ -337,9 +337,9 @@ export default function InterviewPairingStudioPage({ params }: { params: Promise
                   Live Sync
                 </span>
               </h1>
-              <div className="text-xs text-slate-400 flex items-center gap-1 font-mono">
+              <div className="text-xs text-muted-foreground flex items-center gap-1 font-mono">
                 <span>Room:</span>
-                <span className="text-slate-200">{sessionId.substring(0, 12)}...</span>
+                <span className="text-foreground">{sessionId.substring(0, 12)}...</span>
                 <button onClick={copySessionId} className="hover:text-indigo-400 p-0.5">
                   {copied ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
                 </button>
@@ -372,14 +372,14 @@ export default function InterviewPairingStudioPage({ params }: { params: Promise
                 key={idx}
                 title={`${p.userName} (${p.role})`}
                 style={{ borderColor: p.color }}
-                className="w-8 h-8 rounded-full bg-slate-800 border-2 flex items-center justify-center text-xs font-bold shadow-md cursor-pointer hover:scale-110 transition"
+                className="w-8 h-8 rounded-full bg-muted border-2 flex items-center justify-center text-xs font-bold shadow-md cursor-pointer hover:scale-110 transition"
               >
                 {p.userName.charAt(0)}
               </div>
             ))}
           </div>
 
-          <div className="h-6 w-[1px] bg-slate-800" />
+          <div className="h-6 w-[1px] bg-muted" />
 
           {/* Takeover Toggle Button */}
           <button
@@ -397,14 +397,14 @@ export default function InterviewPairingStudioPage({ params }: { params: Promise
       </header>
 
       {/* Mode Navigation Tabs */}
-      <div className="bg-slate-900/50 border-b border-slate-800 px-6 py-2 flex items-center justify-between">
+      <div className="bg-card/50 border-b border-border px-6 py-2 flex items-center justify-between">
         <div className="flex items-center space-x-2">
           <button
             onClick={() => setActiveTab("code")}
             className={`flex items-center gap-2 px-4 py-1.5 rounded-xl text-xs font-medium transition ${
               activeTab === "code"
                 ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/20"
-                : "text-slate-400 hover:text-slate-200 hover:bg-slate-800/60"
+                : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
             }`}
           >
             <Code2 className="w-3.5 h-3.5" />
@@ -415,7 +415,7 @@ export default function InterviewPairingStudioPage({ params }: { params: Promise
             className={`flex items-center gap-2 px-4 py-1.5 rounded-xl text-xs font-medium transition ${
               activeTab === "whiteboard"
                 ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/20"
-                : "text-slate-400 hover:text-slate-200 hover:bg-slate-800/60"
+                : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
             }`}
           >
             <Layers className="w-3.5 h-3.5" />
@@ -427,7 +427,7 @@ export default function InterviewPairingStudioPage({ params }: { params: Promise
           <div className="flex items-center space-x-2">
             <button
               onClick={handleClearCanvas}
-              className="flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 border border-slate-800 transition"
+              className="flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs text-muted-foreground hover:text-rose-400 hover:bg-rose-500/10 border border-border transition"
             >
               <Eraser className="w-3.5 h-3.5" />
               Clear
@@ -448,15 +448,15 @@ export default function InterviewPairingStudioPage({ params }: { params: Promise
       <main className="flex-1 p-4 flex flex-col">
         {activeTab === "code" ? (
           /* Real-Time Code Pairing Editor */
-          <div className="flex-1 bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden flex flex-col shadow-2xl relative">
-            <div className="h-9 bg-slate-950/80 border-b border-slate-800 px-4 flex items-center justify-between text-xs text-slate-400">
+          <div className="flex-1 bg-card border border-border rounded-2xl overflow-hidden flex flex-col shadow-2xl relative">
+            <div className="h-9 bg-background/80 border-b border-border px-4 flex items-center justify-between text-xs text-muted-foreground">
               <div className="flex items-center gap-2">
                 <span className="w-2.5 h-2.5 rounded-full bg-rose-500" />
                 <span className="w-2.5 h-2.5 rounded-full bg-amber-500" />
                 <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
-                <span className="ml-2 font-mono text-slate-400">DistributedStreamEngine.ts</span>
+                <span className="ml-2 font-mono text-muted-foreground">DistributedStreamEngine.ts</span>
               </div>
-              <div className="flex items-center gap-2 text-[11px] font-mono text-slate-400">
+              <div className="flex items-center gap-2 text-[11px] font-mono text-muted-foreground">
                 <MousePointer2 className="w-3 h-3 text-amber-400" />
                 <span>Interviewer Viewing Line 12</span>
               </div>
@@ -471,20 +471,20 @@ export default function InterviewPairingStudioPage({ params }: { params: Promise
                 }
               }}
               spellCheck={false}
-              className="flex-1 w-full bg-slate-950 p-6 font-mono text-sm text-slate-200 resize-none focus:outline-none leading-relaxed selection:bg-indigo-500/30"
+              className="flex-1 w-full bg-background p-6 font-mono text-sm text-foreground resize-none focus:outline-none leading-relaxed selection:bg-indigo-500/30"
               placeholder="// Type code here to sync live with interviewer..."
             />
           </div>
         ) : (
           /* Interactive Whiteboard Canvas */
-          <div className="flex-1 bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden flex flex-col shadow-2xl relative">
+          <div className="flex-1 bg-card border border-border rounded-2xl overflow-hidden flex flex-col shadow-2xl relative">
             {/* Whiteboard Toolbar */}
-            <div className="h-12 bg-slate-950/90 border-b border-slate-800 px-4 flex items-center justify-between">
+            <div className="h-12 bg-background/90 border-b border-border px-4 flex items-center justify-between">
               <div className="flex items-center space-x-2">
                 <button
                   onClick={() => setTool("pen")}
                   className={`p-2 rounded-xl text-xs transition ${
-                    tool === "pen" ? "bg-indigo-600 text-white" : "text-slate-400 hover:bg-slate-800"
+                    tool === "pen" ? "bg-indigo-600 text-white" : "text-muted-foreground hover:bg-muted"
                   }`}
                   title="Freehand Pen"
                 >
@@ -493,7 +493,7 @@ export default function InterviewPairingStudioPage({ params }: { params: Promise
                 <button
                   onClick={() => setTool("box")}
                   className={`p-2 rounded-xl text-xs transition ${
-                    tool === "box" ? "bg-indigo-600 text-white" : "text-slate-400 hover:bg-slate-800"
+                    tool === "box" ? "bg-indigo-600 text-white" : "text-muted-foreground hover:bg-muted"
                   }`}
                   title="Microservice Box"
                 >
@@ -502,7 +502,7 @@ export default function InterviewPairingStudioPage({ params }: { params: Promise
                 <button
                   onClick={() => setTool("database")}
                   className={`p-2 rounded-xl text-xs transition ${
-                    tool === "database" ? "bg-indigo-600 text-white" : "text-slate-400 hover:bg-slate-800"
+                    tool === "database" ? "bg-indigo-600 text-white" : "text-muted-foreground hover:bg-muted"
                   }`}
                   title="Database Cylinder"
                 >
@@ -511,7 +511,7 @@ export default function InterviewPairingStudioPage({ params }: { params: Promise
                 <button
                   onClick={() => setTool("cloud")}
                   className={`p-2 rounded-xl text-xs transition ${
-                    tool === "cloud" ? "bg-indigo-600 text-white" : "text-slate-400 hover:bg-slate-800"
+                    tool === "cloud" ? "bg-indigo-600 text-white" : "text-muted-foreground hover:bg-muted"
                   }`}
                   title="API Gateway / Cloud"
                 >
@@ -520,7 +520,7 @@ export default function InterviewPairingStudioPage({ params }: { params: Promise
                 <button
                   onClick={() => setTool("eraser")}
                   className={`p-2 rounded-xl text-xs transition ${
-                    tool === "eraser" ? "bg-indigo-600 text-white" : "text-slate-400 hover:bg-slate-800"
+                    tool === "eraser" ? "bg-indigo-600 text-white" : "text-muted-foreground hover:bg-muted"
                   }`}
                   title="Eraser"
                 >
@@ -561,7 +561,7 @@ export default function InterviewPairingStudioPage({ params }: { params: Promise
       </main>
 
       {/* Footer Info */}
-      <footer className="h-8 bg-slate-950 border-t border-slate-900 px-6 flex items-center justify-between text-[11px] text-slate-400 font-mono">
+      <footer className="h-8 bg-background border-t border-slate-900 px-6 flex items-center justify-between text-[11px] text-muted-foreground font-mono">
         <div className="flex items-center gap-3">
           <span>SignalR WebSocket: Connected</span>
           <span>•</span>

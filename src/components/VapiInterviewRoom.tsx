@@ -261,16 +261,16 @@ export default function VapiInterviewRoom({
   };
 
   return (
-    <div className="glass-panel rounded-2xl p-6 border border-slate-800 relative overflow-hidden">
+    <div className="glass-panel rounded-2xl p-6 border border-border relative overflow-hidden">
       {/* Header Badge */}
-      <div className="flex items-center justify-between pb-4 border-b border-slate-800">
+      <div className="flex items-center justify-between pb-4 border-b border-border">
         <div className="flex items-center space-x-3">
           <div className="p-2.5 bg-indigo-500/10 rounded-xl border border-indigo-500/20 text-indigo-400">
             <Sparkles className="w-5 h-5 animate-pulse" />
           </div>
           <div>
             <h2 className="text-lg font-semibold text-white">AI Voice Interview Simulator</h2>
-            <p className="text-xs text-slate-400">Powered by Real-Time Voice Intelligence</p>
+            <p className="text-xs text-muted-foreground">Powered by Real-Time Voice Intelligence</p>
           </div>
         </div>
 
@@ -281,7 +281,7 @@ export default function VapiInterviewRoom({
                 ? "bg-amber-500/10 text-amber-400 border-amber-500/30"
                 : callStatus === "ended"
                   ? "bg-purple-500/10 text-purple-400 border-purple-500/30"
-                  : "bg-slate-800 text-slate-400 border-slate-800"
+                  : "bg-muted text-muted-foreground border-border"
             }`}
         >
           <span
@@ -294,15 +294,15 @@ export default function VapiInterviewRoom({
 
       {/* Main Grid: Controls & Waveform */}
       <div className="my-6 grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="md:col-span-1 glass-card rounded-xl p-5 flex flex-col justify-between border border-slate-800">
+        <div className="md:col-span-1 glass-card rounded-xl p-5 flex flex-col justify-between border border-border">
           <div>
-            <h3 className="text-sm font-semibold text-slate-400 mb-2">User Microphone Input</h3>
-            <p className="text-xs text-slate-400 mb-4">
+            <h3 className="text-sm font-semibold text-muted-foreground mb-2">User Microphone Input</h3>
+            <p className="text-xs text-muted-foreground mb-4">
               Microphone status: <span className="font-semibold text-indigo-400">{micPermission}</span>
             </p>
 
             {/* Audio Waveform & Mic Volume Meter */}
-            <div className="h-24 bg-slate-900/90 rounded-xl border border-slate-800 flex flex-col items-center justify-center space-y-2 px-4">
+            <div className="h-24 bg-card/90 rounded-xl border border-border flex flex-col items-center justify-center space-y-2 px-4">
               {callStatus === "active" ? (
                 <>
                   <div className="flex items-center space-x-1.5 h-10">
@@ -320,7 +320,7 @@ export default function VapiInterviewRoom({
                   </div>
                 </>
               ) : (
-                <span className="text-xs text-slate-400">Microphone stream idle</span>
+                <span className="text-xs text-muted-foreground">Microphone stream idle</span>
               )}
             </div>
           </div>
@@ -341,7 +341,7 @@ export default function VapiInterviewRoom({
                   onClick={toggleMute}
                   className={`flex-1 py-3 px-3 rounded-xl border text-xs font-medium flex items-center justify-center space-x-1.5 cursor-pointer ${isMuted
                       ? "bg-amber-500/10 text-amber-400 border-amber-500/30"
-                      : "bg-slate-800 text-slate-400 border-slate-800 hover:bg-slate-700"
+                      : "bg-muted text-muted-foreground border-border hover:bg-slate-700"
                     }`}
                 >
                   {isMuted ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
@@ -361,25 +361,25 @@ export default function VapiInterviewRoom({
         </div>
 
         {/* Live Transcript Stream */}
-        <div className="md:col-span-2 glass-card rounded-xl p-5 flex flex-col border border-slate-800 min-h-[220px]">
+        <div className="md:col-span-2 glass-card rounded-xl p-5 flex flex-col border border-border min-h-[220px]">
           <div className="flex items-center justify-between mb-3">
-            <h3 className="text-sm font-semibold text-slate-400">Live Transcript Stream</h3>
-            <span className="text-xs text-slate-400">{transcripts.length} messages</span>
+            <h3 className="text-sm font-semibold text-muted-foreground">Live Transcript Stream</h3>
+            <span className="text-xs text-muted-foreground">{transcripts.length} messages</span>
           </div>
 
-          <div className="flex-1 bg-slate-950/80 rounded-xl p-4 border border-slate-800 overflow-y-auto max-h-[200px] space-y-3">
+          <div className="flex-1 bg-background/80 rounded-xl p-4 border border-border overflow-y-auto max-h-[200px] space-y-3">
             {transcripts.length === 0 ? (
-              <div className="h-full flex items-center justify-center text-xs text-slate-400 italic">
+              <div className="h-full flex items-center justify-center text-xs text-muted-foreground italic">
                 Click "Start Interview" to fetch session token and begin stream...
               </div>
             ) : (
               transcripts.map((t, idx) => (
                 <div key={idx} className={`flex flex-col ${t.role === "Candidate" ? "items-end" : "items-start"}`}>
-                  <span className="text-[10px] text-slate-400 mb-0.5 font-medium">{t.role}</span>
+                  <span className="text-[10px] text-muted-foreground mb-0.5 font-medium">{t.role}</span>
                   <div
                     className={`max-w-[85%] rounded-xl px-3 py-2 text-xs ${t.role === "Candidate"
                         ? "bg-indigo-600 text-white rounded-tr-none"
-                        : "bg-slate-800 text-slate-200 border border-slate-800 rounded-tl-none"
+                        : "bg-muted text-foreground border border-border rounded-tl-none"
                       }`}
                   >
                     {t.text}
@@ -412,7 +412,7 @@ export default function VapiInterviewRoom({
             </div>
           </div>
 
-          <p className="text-xs text-slate-400 mb-3">
+          <p className="text-xs text-muted-foreground mb-3">
             Candidate scored below passing threshold. AI Lead Routing Engine triggered referral insertion:
           </p>
 

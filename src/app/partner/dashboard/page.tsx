@@ -127,10 +127,10 @@ export default function PartnerDashboardPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-200 font-sans p-6 md:p-10">
+    <div className="min-h-screen bg-background text-foreground font-sans p-6 md:p-10">
       {/* Top Header Navigation */}
       <div className="max-w-7xl mx-auto space-y-8">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-800">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-border">
           <div className="flex items-center space-x-3">
             <div className="w-12 h-12 rounded-2xl bg-indigo-600/20 border border-indigo-500/30 flex items-center justify-center text-indigo-400">
               <Building2 className="w-6 h-6" />
@@ -160,7 +160,7 @@ export default function PartnerDashboardPage() {
 
             <button
               onClick={fetchDashboard}
-              className="py-2.5 px-4 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-xs font-medium text-slate-400 flex items-center space-x-2 transition-colors cursor-pointer"
+              className="py-2.5 px-4 rounded-xl bg-card hover:bg-muted border border-border text-xs font-medium text-muted-foreground flex items-center space-x-2 transition-colors cursor-pointer"
             >
               <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} />
               <span>Refresh Metrics</span>
@@ -170,36 +170,36 @@ export default function PartnerDashboardPage() {
 
         {/* Live KPI Stat Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-          <div className="glass-card rounded-2xl p-5 border border-slate-800 relative overflow-hidden">
+          <div className="glass-card rounded-2xl p-5 border border-border relative overflow-hidden">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-medium text-slate-400">Total Referred Leads</span>
+              <span className="text-xs font-medium text-muted-foreground">Total Referred Leads</span>
               <Users className="w-4 h-4 text-indigo-400" />
             </div>
             <div className="text-3xl font-extrabold text-white mt-2">{kpis.totalLeadsReceived}</div>
-            <span className="text-[11px] text-slate-400 mt-1 block">Qualified skill gap routing</span>
+            <span className="text-[11px] text-muted-foreground mt-1 block">Qualified skill gap routing</span>
           </div>
 
-          <div className="glass-card rounded-2xl p-5 border border-slate-800 relative overflow-hidden">
+          <div className="glass-card rounded-2xl p-5 border border-border relative overflow-hidden">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-medium text-slate-400">Enrolled Candidates</span>
+              <span className="text-xs font-medium text-muted-foreground">Enrolled Candidates</span>
               <CheckCircle2 className="w-4 h-4 text-emerald-400" />
             </div>
             <div className="text-3xl font-extrabold text-emerald-400 mt-2">{kpis.enrolledLeads}</div>
             <span className="text-[11px] text-emerald-500/80 mt-1 block">Course conversions closed</span>
           </div>
 
-          <div className="glass-card rounded-2xl p-5 border border-slate-800 relative overflow-hidden">
+          <div className="glass-card rounded-2xl p-5 border border-border relative overflow-hidden">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-medium text-slate-400">Conversion Rate</span>
+              <span className="text-xs font-medium text-muted-foreground">Conversion Rate</span>
               <TrendingUp className="w-4 h-4 text-sky-400" />
             </div>
             <div className="text-3xl font-extrabold text-sky-400 mt-2">{kpis.conversionRatePercent}%</div>
             <span className="text-[11px] text-sky-500/80 mt-1 block">Lead to student enrollment</span>
           </div>
 
-          <div className="glass-card rounded-2xl p-5 border border-slate-800 relative overflow-hidden">
+          <div className="glass-card rounded-2xl p-5 border border-border relative overflow-hidden">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-medium text-slate-400">Est. Commission Revenue</span>
+              <span className="text-xs font-medium text-muted-foreground">Est. Commission Revenue</span>
               <DollarSign className="w-4 h-4 text-purple-400" />
             </div>
             <div className="text-3xl font-extrabold text-purple-300 mt-2">
@@ -224,7 +224,7 @@ export default function PartnerDashboardPage() {
                   PARITY ACTIVE
                 </span>
               </h3>
-              <p className="text-xs text-slate-400 mt-0.5">
+              <p className="text-xs text-muted-foreground mt-0.5">
                 Automated outbound AI voice cart recovery, Widevine L1 dynamic forensic watermarking, {config.tax.regimeTitle} &amp; embeddable creator tracking pixels.
               </p>
             </div>
@@ -242,16 +242,16 @@ export default function PartnerDashboardPage() {
         {/* Skill Deficits & CRM Webhook Configuration Split Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Missing Skill Clusters (2 Cols) */}
-          <div className="lg:col-span-2 glass-panel rounded-2xl p-6 border border-slate-800 space-y-4">
+          <div className="lg:col-span-2 glass-panel rounded-2xl p-6 border border-border space-y-4">
             <div className="flex items-center justify-between">
               <h2 className="text-sm font-bold text-white flex items-center space-x-2">
                 <Sparkles className="w-4 h-4 text-indigo-400" />
                 <span>Candidate Skill Deficits & Demand Clusters</span>
               </h2>
-              <span className="text-xs text-slate-400 font-mono">Aggregated Real-Time</span>
+              <span className="text-xs text-muted-foreground font-mono">Aggregated Real-Time</span>
             </div>
 
-            <p className="text-xs text-slate-400">
+            <p className="text-xs text-muted-foreground">
               Technical evaluation failures identified during candidate AI voice interview defense sessions across all micro-internships:
             </p>
 
@@ -262,8 +262,8 @@ export default function PartnerDashboardPage() {
                 { skill: "AWS VPC Security & Subnets", count: 7, color: "from-emerald-500 to-teal-500" },
                 { skill: "Docker Multi-Stage Containerization", count: 5, color: "from-amber-500 to-orange-500" }
               ].map((item, idx) => (
-                <div key={idx} className="bg-slate-900/60 rounded-xl p-3.5 border border-slate-800 flex items-center justify-between">
-                  <span className="text-xs font-medium text-slate-200">{item.skill}</span>
+                <div key={idx} className="bg-card/60 rounded-xl p-3.5 border border-border flex items-center justify-between">
+                  <span className="text-xs font-medium text-foreground">{item.skill}</span>
                   <span className="px-2.5 py-1 rounded-lg text-xs font-bold bg-indigo-500/10 text-indigo-300 border border-indigo-500/30">
                     {item.count} Leads
                   </span>
@@ -273,35 +273,35 @@ export default function PartnerDashboardPage() {
           </div>
 
           {/* CRM Webhook Config (1 Col) */}
-          <div className="glass-panel rounded-2xl p-6 border border-slate-800 space-y-4">
+          <div className="glass-panel rounded-2xl p-6 border border-border space-y-4">
             <h2 className="text-sm font-bold text-white flex items-center space-x-2">
               <Link2 className="w-4 h-4 text-sky-400" />
               <span>Outbound CRM Webhook</span>
             </h2>
-            <p className="text-xs text-slate-400">
+            <p className="text-xs text-muted-foreground">
               Automatically dispatch qualified lead JSON payloads directly to your HubSpot, Salesforce, or custom CRM endpoint:
             </p>
 
             <form onSubmit={handleSaveWebhookConfig} className="space-y-3">
               <div>
-                <label className="text-[11px] font-semibold text-slate-400 block mb-1">Webhook Endpoint URL</label>
+                <label className="text-[11px] font-semibold text-muted-foreground block mb-1">Webhook Endpoint URL</label>
                 <input
                   type="url"
                   value={webhookUrl}
                   onChange={(e) => setWebhookUrl(e.target.value)}
                   placeholder="https://crm.yourinstitute.com/api/leads"
-                  className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-indigo-500"
+                  className="w-full bg-card border border-border rounded-xl px-3 py-2 text-xs text-foreground focus:outline-none focus:border-indigo-500"
                 />
               </div>
 
               <div>
-                <label className="text-[11px] font-semibold text-slate-400 block mb-1">X-Institute-Api-Key Header</label>
+                <label className="text-[11px] font-semibold text-muted-foreground block mb-1">X-Institute-Api-Key Header</label>
                 <input
                   type="password"
                   value={apiKey}
                   onChange={(e) => setApiKey(e.target.value)}
                   placeholder="••••••••••••••••"
-                  className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-indigo-500"
+                  className="w-full bg-card border border-border rounded-xl px-3 py-2 text-xs text-foreground focus:outline-none focus:border-indigo-500"
                 />
               </div>
 
@@ -321,7 +321,7 @@ export default function PartnerDashboardPage() {
                 <button
                   type="button"
                   onClick={handleTestWebhookDispatch}
-                  className="py-2 px-3 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-400 font-medium text-xs border border-slate-800 transition-colors flex items-center space-x-1 cursor-pointer"
+                  className="py-2 px-3 rounded-xl bg-card hover:bg-muted text-muted-foreground font-medium text-xs border border-border transition-colors flex items-center space-x-1 cursor-pointer"
                 >
                   <Send className="w-3 h-3" />
                   <span>Test Ping</span>
@@ -332,17 +332,17 @@ export default function PartnerDashboardPage() {
         </div>
 
         {/* Candidate Lead Referrals Management Table */}
-        <div className="glass-panel rounded-2xl p-6 border border-slate-800 space-y-4">
+        <div className="glass-panel rounded-2xl p-6 border border-border space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
               <h2 className="text-base font-bold text-white">Referred Candidate Lead Pipeline</h2>
-              <p className="text-xs text-slate-400">Update student enrollment status to track referral commission conversions.</p>
+              <p className="text-xs text-muted-foreground">Update student enrollment status to track referral commission conversions.</p>
             </div>
           </div>
 
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs text-slate-400">
-              <thead className="bg-slate-900/80 text-slate-400 uppercase text-[10px] font-semibold border-b border-slate-800">
+            <table className="w-full text-left text-xs text-muted-foreground">
+              <thead className="bg-card/80 text-muted-foreground uppercase text-[10px] font-semibold border-b border-border">
                 <tr>
                   <th className="py-3 px-4">Candidate Name</th>
                   <th className="py-3 px-4">Contact Email</th>
@@ -353,11 +353,11 @@ export default function PartnerDashboardPage() {
               </thead>
               <tbody className="divide-y divide-slate-800/60">
                 {leads.map((lead: any) => (
-                  <tr key={lead.leadId} className="hover:bg-slate-900/40 transition-colors">
+                  <tr key={lead.leadId} className="hover:bg-card/40 transition-colors">
                     <td className="py-3.5 px-4 font-semibold text-white">{lead.candidateName}</td>
-                    <td className="py-3.5 px-4 font-mono text-slate-400">{lead.candidateEmail}</td>
+                    <td className="py-3.5 px-4 font-mono text-muted-foreground">{lead.candidateEmail}</td>
                     <td className="py-3.5 px-4 text-indigo-300 font-medium">{lead.courseName}</td>
-                    <td className="py-3.5 px-4 text-slate-400">
+                    <td className="py-3.5 px-4 text-muted-foreground">
                       {new Date(lead.createdAt).toLocaleDateString()}
                     </td>
                     <td className="py-3.5 px-4 text-right">
@@ -365,7 +365,7 @@ export default function PartnerDashboardPage() {
                         value={lead.status}
                         disabled={updatingLeadId === lead.leadId}
                         onChange={(e) => handleUpdateLeadStatus(lead.leadId, e.target.value)}
-                        className={`px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-900 border transition-colors cursor-pointer focus:outline-none ${
+                        className={`px-3 py-1.5 rounded-xl text-xs font-semibold bg-card border transition-colors cursor-pointer focus:outline-none ${
                           lead.status === "Enrolled"
                             ? "text-emerald-400 border-emerald-500/40 bg-emerald-500/10"
                             : lead.status === "Contacted"
@@ -373,9 +373,9 @@ export default function PartnerDashboardPage() {
                             : "text-amber-400 border-amber-500/40 bg-amber-500/10"
                         }`}
                       >
-                        <option value="Pending" className="bg-slate-900 text-amber-400">Pending</option>
-                        <option value="Contacted" className="bg-slate-900 text-sky-400">Contacted</option>
-                        <option value="Enrolled" className="bg-slate-900 text-emerald-400">Enrolled</option>
+                        <option value="Pending" className="bg-card text-amber-400">Pending</option>
+                        <option value="Contacted" className="bg-card text-sky-400">Contacted</option>
+                        <option value="Enrolled" className="bg-card text-emerald-400">Enrolled</option>
                       </select>
                     </td>
                   </tr>

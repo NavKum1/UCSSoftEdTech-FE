@@ -247,9 +247,9 @@ export default function AutonomousCareerAgentPage() {
   });
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-200 flex flex-col font-sans">
+    <div className="min-h-screen bg-background text-foreground flex flex-col font-sans">
       {/* Top Cyber Navigation Bar */}
-      <header className="border-b border-slate-800 bg-slate-900/80 backdrop-blur-md px-6 py-4 sticky top-0 z-40">
+      <header className="border-b border-border bg-card/80 backdrop-blur-md px-6 py-4 sticky top-0 z-40">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="flex items-center space-x-4">
             <Link
@@ -258,7 +258,7 @@ export default function AutonomousCareerAgentPage() {
             >
               <span>&larr;</span> Skill Passport
             </Link>
-            <div className="h-4 w-px bg-slate-800" />
+            <div className="h-4 w-px bg-muted" />
             <div>
               <h1 className="text-xl font-bold tracking-tight text-white flex items-center gap-2.5">
                 <span>Autonomous Career Agent</span>
@@ -266,7 +266,7 @@ export default function AutonomousCareerAgentPage() {
                   24/7 Live Radar
                 </span>
               </h1>
-              <p className="text-xs text-slate-400">
+              <p className="text-xs text-muted-foreground">
                 Personal AI Inbound Screener & Multi-Turn Executive Recruiter Negotiator
               </p>
             </div>
@@ -284,7 +284,7 @@ export default function AutonomousCareerAgentPage() {
             </button>
             <Link
               href="/passport"
-              className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg text-xs font-medium border border-slate-800 transition"
+              className="px-3 py-1.5 bg-muted hover:bg-slate-700 text-foreground rounded-lg text-xs font-medium border border-border transition"
             >
               View Verified Credentials
             </Link>
@@ -296,8 +296,8 @@ export default function AutonomousCareerAgentPage() {
       <main className="max-w-7xl mx-auto px-6 py-6 flex-1 w-full grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Left Column: Autonomous Policy & Compensation Floor (3 cols) */}
         <section className="lg:col-span-4 space-y-5">
-          <div className="bg-slate-900/90 border border-slate-800 rounded-xl p-5 shadow-xl space-y-5">
-            <div className="flex items-center justify-between border-b border-slate-800/80 pb-3">
+          <div className="bg-card/90 border border-border rounded-xl p-5 shadow-xl space-y-5">
+            <div className="flex items-center justify-between border-b border-border/80 pb-3">
               <h2 className="text-sm font-semibold text-white uppercase tracking-wider flex items-center gap-2">
                 <span className="w-2 h-2 rounded-full bg-emerald-400" />
                 Agent Autonomy Policy
@@ -308,16 +308,16 @@ export default function AutonomousCareerAgentPage() {
             </div>
 
             {/* Candidate Identity */}
-            <div className="bg-slate-950/60 border border-slate-800/80 rounded-lg p-3.5 space-y-1.5">
-              <div className="text-[11px] uppercase tracking-wider text-slate-400 font-mono">
+            <div className="bg-background/60 border border-border/80 rounded-lg p-3.5 space-y-1.5">
+              <div className="text-[11px] uppercase tracking-wider text-muted-foreground font-mono">
                 Represented Candidate
               </div>
               <div className="text-sm font-bold text-white flex items-center justify-between">
                 <span>{config?.candidateName || "Alex Chen"}</span>
                 <span className="text-xs font-mono text-amber-300 font-normal">Active Gold</span>
               </div>
-              <div className="text-xs text-slate-400">{config?.currentTitle}</div>
-              <div className="pt-2 text-[11px] font-mono text-slate-400 flex items-center justify-between">
+              <div className="text-xs text-muted-foreground">{config?.currentTitle}</div>
+              <div className="pt-2 text-[11px] font-mono text-muted-foreground flex items-center justify-between">
                 <span>Passport Token:</span>
                 <span className="text-emerald-400 underline cursor-pointer">
                   {config?.passportVerificationToken}
@@ -327,12 +327,12 @@ export default function AutonomousCareerAgentPage() {
 
             {/* Compensation Minimum Floor Form */}
             <div className="space-y-4">
-              <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+              <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                 Reservation Price & Floors
               </div>
 
               <div>
-                <label className="text-xs text-slate-400 flex items-center justify-between mb-1">
+                <label className="text-xs text-muted-foreground flex items-center justify-between mb-1">
                   <span>Minimum Base Salary (USD / Global)</span>
                   <span className="text-white font-mono font-bold">
                     ${Number(config?.minBaseSalary || 280000).toLocaleString()}{" "}
@@ -364,12 +364,12 @@ export default function AutonomousCareerAgentPage() {
                         : null
                     )
                   }
-                  className="w-full accent-emerald-500 bg-slate-800 rounded-lg cursor-pointer"
+                  className="w-full accent-emerald-500 bg-muted rounded-lg cursor-pointer"
                 />
               </div>
 
               <div>
-                <label className="text-xs text-slate-400 flex items-center justify-between mb-1">
+                <label className="text-xs text-muted-foreground flex items-center justify-between mb-1">
                   <span>Minimum Annual Equity Grant</span>
                   <span className="text-white font-mono font-bold">
                     ${Number(config?.minEquityGrant || 140000).toLocaleString()}{" "}
@@ -401,7 +401,7 @@ export default function AutonomousCareerAgentPage() {
                         : null
                     )
                   }
-                  className="w-full accent-emerald-500 bg-slate-800 rounded-lg cursor-pointer"
+                  className="w-full accent-emerald-500 bg-muted rounded-lg cursor-pointer"
                 />
               </div>
 
@@ -411,7 +411,7 @@ export default function AutonomousCareerAgentPage() {
                   <div className="text-[11px] font-mono text-emerald-400 uppercase">
                     Minimum Total Comp Floor
                   </div>
-                  <div className="text-xs text-slate-400">Enforced by Auto-Decline</div>
+                  <div className="text-xs text-muted-foreground">Enforced by Auto-Decline</div>
                 </div>
                 <div className="text-lg font-bold font-mono text-emerald-300">
                   ${Number(config?.minTotalComp || 420000).toLocaleString()}{" "}
@@ -429,7 +429,7 @@ export default function AutonomousCareerAgentPage() {
             </div>
 
             {/* Fast-Track & Screening Skip Policies */}
-            <div className="space-y-3 pt-2 border-t border-slate-800/80">
+            <div className="space-y-3 pt-2 border-t border-border/80">
               <label className="flex items-start gap-2.5 cursor-pointer">
                 <input
                   type="checkbox"
@@ -439,9 +439,9 @@ export default function AutonomousCareerAgentPage() {
                       config ? { ...config, requireFastTrackScreeningSkip: e.target.checked } : null
                     )
                   }
-                  className="mt-1 rounded accent-emerald-500 bg-slate-800 border-slate-800"
+                  className="mt-1 rounded accent-emerald-500 bg-muted border-border"
                 />
-                <span className="text-xs text-slate-400">
+                <span className="text-xs text-muted-foreground">
                   <strong>Enforce Screening Bypass:</strong> Demand skipping HR and initial coding calls directly to Staff Onsite
                 </span>
               </label>
@@ -453,9 +453,9 @@ export default function AutonomousCareerAgentPage() {
                   onChange={(e) =>
                     setConfig(config ? { ...config, autoDeclineBelowFloor: e.target.checked } : null)
                   }
-                  className="mt-1 rounded accent-emerald-500 bg-slate-800 border-slate-800"
+                  className="mt-1 rounded accent-emerald-500 bg-muted border-border"
                 />
-                <span className="text-xs text-slate-400">
+                <span className="text-xs text-muted-foreground">
                   <strong>Auto-Decline Under Floor:</strong> Send courteous automated decline to offers &lt; 65% of compensation floor
                 </span>
               </label>
@@ -480,13 +480,13 @@ export default function AutonomousCareerAgentPage() {
         {/* Middle & Right: Inbound Triage Feed + Live Multi-Turn Transcript (8 cols) */}
         <section className="lg:col-span-8 flex flex-col space-y-6">
           {/* Top Inbound Radar Feed */}
-          <div className="bg-slate-900/90 border border-slate-800 rounded-xl p-5 shadow-xl space-y-4">
-            <div className="flex items-center justify-between border-b border-slate-800/80 pb-3">
+          <div className="bg-card/90 border border-border rounded-xl p-5 shadow-xl space-y-4">
+            <div className="flex items-center justify-between border-b border-border/80 pb-3">
               <div className="flex items-center space-x-3">
                 <h2 className="text-sm font-semibold text-white uppercase tracking-wider">
                   Inbound Recruiter Inquiries
                 </h2>
-                <span className="text-xs font-mono text-slate-400 bg-slate-800 px-2 py-0.5 rounded-full">
+                <span className="text-xs font-mono text-muted-foreground bg-muted px-2 py-0.5 rounded-full">
                   {negotiations.length} total
                 </span>
               </div>
@@ -500,7 +500,7 @@ export default function AutonomousCareerAgentPage() {
                     className={`px-2.5 py-1 rounded-md transition ${
                       filterTab === tab
                         ? "bg-slate-700 text-white font-semibold"
-                        : "text-slate-400 hover:text-slate-200"
+                        : "text-muted-foreground hover:text-foreground"
                     }`}
                   >
                     {tab}
@@ -522,8 +522,8 @@ export default function AutonomousCareerAgentPage() {
                     onClick={() => setSelectedNegId(neg.id)}
                     className={`p-4 rounded-xl border transition-all cursor-pointer relative overflow-hidden ${
                       isSelected
-                        ? "bg-slate-800/90 border-emerald-500 shadow-md shadow-emerald-950/40"
-                        : "bg-slate-950/60 border-slate-800 hover:border-slate-800"
+                        ? "bg-muted/90 border-emerald-500 shadow-md shadow-emerald-950/40"
+                        : "bg-background/60 border-border hover:border-border"
                     }`}
                   >
                     {isSelected && (
@@ -532,7 +532,7 @@ export default function AutonomousCareerAgentPage() {
 
                     <div className="flex items-start justify-between mb-2">
                       <div>
-                        <span className="text-[11px] font-mono uppercase tracking-wider text-slate-400">
+                        <span className="text-[11px] font-mono uppercase tracking-wider text-muted-foreground">
                           {neg.recruiterCompany}
                         </span>
                         <h3 className="text-sm font-bold text-white leading-tight">
@@ -552,34 +552,34 @@ export default function AutonomousCareerAgentPage() {
                       </span>
                     </div>
 
-                    <div className="text-xs text-slate-400 mb-3 flex items-center justify-between">
+                    <div className="text-xs text-muted-foreground mb-3 flex items-center justify-between">
                       <span>Recruiter: {neg.recruiterName}</span>
                       <span className="font-mono text-emerald-400 font-semibold">
                         Alignment: {neg.candidateAlignmentScore}%
                       </span>
                     </div>
 
-                    <div className="pt-2 border-t border-slate-800/80 flex items-center justify-between text-xs font-mono">
-                      <span className="text-slate-400">Current Offer:</span>
+                    <div className="pt-2 border-t border-border/80 flex items-center justify-between text-xs font-mono">
+                      <span className="text-muted-foreground">Current Offer:</span>
                       <span className="text-white font-bold">
                         {geo.currency === "INR" ? (
                           <>
                             ₹{Math.round(Number(neg.currentTotalComp) * 0.22)}L CTC{" "}
-                            <span className="text-[10px] text-slate-400 font-normal">
+                            <span className="text-[10px] text-muted-foreground font-normal">
                               (${Number(neg.currentTotalComp).toLocaleString()} USD)
                             </span>
                           </>
                         ) : geo.currency === "EUR" ? (
                           <>
                             €{Math.round((Number(neg.currentTotalComp) * 0.92) / 1000)}k EUR{" "}
-                            <span className="text-[10px] text-slate-400 font-normal">
+                            <span className="text-[10px] text-muted-foreground font-normal">
                               (${Number(neg.currentTotalComp).toLocaleString()} USD)
                             </span>
                           </>
                         ) : (
                           <>
                             ${Number(neg.currentTotalComp).toLocaleString()}{" "}
-                            <span className="text-[10px] text-slate-400 font-normal">
+                            <span className="text-[10px] text-muted-foreground font-normal">
                               (${Number(neg.currentBaseSalary).toLocaleString()}b + $
                               {Number(neg.currentEquity).toLocaleString()}e)
                             </span>
@@ -608,15 +608,15 @@ export default function AutonomousCareerAgentPage() {
 
           {/* Bottom Live Negotiation Transcript */}
           {activeDetail && (
-            <div className="bg-slate-900/90 border border-slate-800 rounded-xl p-5 shadow-xl space-y-5 flex-1">
-              <div className="flex items-center justify-between border-b border-slate-800/80 pb-3">
+            <div className="bg-card/90 border border-border rounded-xl p-5 shadow-xl space-y-5 flex-1">
+              <div className="flex items-center justify-between border-b border-border/80 pb-3">
                 <div>
                   <div className="text-[11px] font-mono text-emerald-400 uppercase tracking-wider">
                     Multi-Turn Negotiation Thread
                   </div>
                   <h3 className="text-base font-bold text-white">
                     {activeDetail.negotiation.roleTitle} &bull;{" "}
-                    <span className="text-slate-400 font-normal">
+                    <span className="text-muted-foreground font-normal">
                       {activeDetail.negotiation.recruiterCompany}
                     </span>
                   </h3>
@@ -647,7 +647,7 @@ export default function AutonomousCareerAgentPage() {
                         isAgent ? "items-end" : "items-start"
                       } space-y-1`}
                     >
-                      <div className="flex items-center space-x-2 text-[11px] font-mono text-slate-400">
+                      <div className="flex items-center space-x-2 text-[11px] font-mono text-muted-foreground">
                         <span
                           className={`font-semibold ${
                             isAgent ? "text-emerald-400" : "text-amber-300"
@@ -662,18 +662,18 @@ export default function AutonomousCareerAgentPage() {
                       <div
                         className={`p-4 rounded-2xl max-w-xl text-xs leading-relaxed ${
                           isAgent
-                            ? "bg-emerald-950/40 border border-emerald-800/60 text-slate-200 rounded-tr-none"
-                            : "bg-slate-950/80 border border-slate-800 text-slate-200 rounded-tl-none"
+                            ? "bg-emerald-950/40 border border-emerald-800/60 text-foreground rounded-tr-none"
+                            : "bg-background/80 border border-border text-foreground rounded-tl-none"
                         }`}
                       >
                         <p className="whitespace-pre-wrap">{msg.messageBody}</p>
 
                         {(msg.proposedTotalComp > 0 || msg.passportProofAttached) && (
-                          <div className="mt-3 pt-2.5 border-t border-slate-800/60 flex items-center justify-between text-[11px] font-mono">
+                          <div className="mt-3 pt-2.5 border-t border-border/60 flex items-center justify-between text-[11px] font-mono">
                             {msg.proposedTotalComp > 0 && (
                               <span className="text-white font-semibold">
                                 Proposed: ${Number(msg.proposedTotalComp).toLocaleString()}{" "}
-                                <span className="text-slate-400 font-normal">
+                                <span className="text-muted-foreground font-normal">
                                   (${Number(msg.proposedBase).toLocaleString()}b + $
                                   {Number(msg.proposedEquity).toLocaleString()}e)
                                 </span>
@@ -693,38 +693,38 @@ export default function AutonomousCareerAgentPage() {
               </div>
 
               {/* Interactive Multi-Turn Simulator Box */}
-              <div className="pt-4 border-t border-slate-800/80">
-                <form onSubmit={handleSubmitCounterTurn} className="space-y-3 bg-slate-950/60 p-4 rounded-xl border border-slate-800">
+              <div className="pt-4 border-t border-border/80">
+                <form onSubmit={handleSubmitCounterTurn} className="space-y-3 bg-background/60 p-4 rounded-xl border border-border">
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-semibold text-white uppercase tracking-wider">
                       Simulate Recruiter Response / Counter-Turn
                     </span>
-                    <span className="text-[11px] font-mono text-slate-400">
+                    <span className="text-[11px] font-mono text-muted-foreground">
                       Tests AI Agent counter-evaluation
                     </span>
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
-                      <label className="text-[11px] font-mono text-slate-400">
+                      <label className="text-[11px] font-mono text-muted-foreground">
                         Adjusted Base Salary ($)
                       </label>
                       <input
                         type="number"
                         value={counterBase}
                         onChange={(e) => setCounterBase(Number(e.target.value))}
-                        className="w-full mt-1 bg-slate-900 border border-slate-800 rounded-lg px-3 py-1.5 text-xs font-mono text-white focus:outline-none focus:border-emerald-500"
+                        className="w-full mt-1 bg-card border border-border rounded-lg px-3 py-1.5 text-xs font-mono text-white focus:outline-none focus:border-emerald-500"
                       />
                     </div>
                     <div>
-                      <label className="text-[11px] font-mono text-slate-400">
+                      <label className="text-[11px] font-mono text-muted-foreground">
                         Adjusted Equity Grant ($)
                       </label>
                       <input
                         type="number"
                         value={counterEquity}
                         onChange={(e) => setCounterEquity(Number(e.target.value))}
-                        className="w-full mt-1 bg-slate-900 border border-slate-800 rounded-lg px-3 py-1.5 text-xs font-mono text-white focus:outline-none focus:border-emerald-500"
+                        className="w-full mt-1 bg-card border border-border rounded-lg px-3 py-1.5 text-xs font-mono text-white focus:outline-none focus:border-emerald-500"
                       />
                     </div>
                   </div>
@@ -734,16 +734,16 @@ export default function AutonomousCareerAgentPage() {
                     value={counterText}
                     onChange={(e) => setCounterText(e.target.value)}
                     placeholder="Enter recruiter message (e.g. 'We reviewed candidate\'s passport and agree to the full compensation package and fast-track onsite...')"
-                    className="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500"
+                    className="w-full bg-card border border-border rounded-lg px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500"
                   />
 
                   <div className="flex items-center justify-between pt-1">
-                    <label className="flex items-center gap-2 cursor-pointer text-xs text-slate-400">
+                    <label className="flex items-center gap-2 cursor-pointer text-xs text-muted-foreground">
                       <input
                         type="checkbox"
                         checked={concedeBypass}
                         onChange={(e) => setConcedeBypass(e.target.checked)}
-                        className="rounded accent-emerald-500 bg-slate-800 border-slate-800"
+                        className="rounded accent-emerald-500 bg-muted border-border"
                       />
                       <span>Concede Screening Bypass to Direct Onsite</span>
                     </label>
@@ -766,14 +766,14 @@ export default function AutonomousCareerAgentPage() {
       {/* Inbound Recruiter Simulator Modal */}
       {showSimModal && (
         <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl max-w-lg w-full p-6 space-y-4 shadow-2xl">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+          <div className="bg-card border border-border rounded-2xl max-w-lg w-full p-6 space-y-4 shadow-2xl">
+            <div className="flex items-center justify-between border-b border-border pb-3">
               <h3 className="text-base font-bold text-white flex items-center gap-2">
                 <span>Simulate Inbound Recruiter Inquiry</span>
               </h3>
               <button
                 onClick={() => setShowSimModal(false)}
-                className="text-slate-400 hover:text-white"
+                className="text-muted-foreground hover:text-white"
               >
                 &times;
               </button>
@@ -782,71 +782,71 @@ export default function AutonomousCareerAgentPage() {
             <form onSubmit={handleSimulateInbound} className="space-y-3.5 text-xs">
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-slate-400 font-mono">Company Name</label>
+                  <label className="text-muted-foreground font-mono">Company Name</label>
                   <input
                     type="text"
                     value={simCompany}
                     onChange={(e) => setSimCompany(e.target.value)}
-                    className="w-full mt-1 bg-slate-950 border border-slate-800 rounded-lg px-3 py-1.5 text-white"
+                    className="w-full mt-1 bg-background border border-border rounded-lg px-3 py-1.5 text-white"
                   />
                 </div>
                 <div>
-                  <label className="text-slate-400 font-mono">Role Title</label>
+                  <label className="text-muted-foreground font-mono">Role Title</label>
                   <input
                     type="text"
                     value={simRole}
                     onChange={(e) => setSimRole(e.target.value)}
-                    className="w-full mt-1 bg-slate-950 border border-slate-800 rounded-lg px-3 py-1.5 text-white"
+                    className="w-full mt-1 bg-background border border-border rounded-lg px-3 py-1.5 text-white"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-slate-400 font-mono">Recruiter Name</label>
+                  <label className="text-muted-foreground font-mono">Recruiter Name</label>
                   <input
                     type="text"
                     value={simRecruiter}
                     onChange={(e) => setSimRecruiter(e.target.value)}
-                    className="w-full mt-1 bg-slate-950 border border-slate-800 rounded-lg px-3 py-1.5 text-white"
+                    className="w-full mt-1 bg-background border border-border rounded-lg px-3 py-1.5 text-white"
                   />
                 </div>
                 <div>
-                  <label className="text-slate-400 font-mono">Recruiter Email</label>
+                  <label className="text-muted-foreground font-mono">Recruiter Email</label>
                   <input
                     type="email"
                     value={simEmail}
                     onChange={(e) => setSimEmail(e.target.value)}
-                    className="w-full mt-1 bg-slate-950 border border-slate-800 rounded-lg px-3 py-1.5 text-white"
+                    className="w-full mt-1 bg-background border border-border rounded-lg px-3 py-1.5 text-white"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-3 gap-3">
                 <div>
-                  <label className="text-slate-400 font-mono">Base Salary ($)</label>
+                  <label className="text-muted-foreground font-mono">Base Salary ($)</label>
                   <input
                     type="number"
                     value={simBase}
                     onChange={(e) => setSimBase(Number(e.target.value))}
-                    className="w-full mt-1 bg-slate-950 border border-slate-800 rounded-lg px-3 py-1.5 text-white font-mono"
+                    className="w-full mt-1 bg-background border border-border rounded-lg px-3 py-1.5 text-white font-mono"
                   />
                 </div>
                 <div>
-                  <label className="text-slate-400 font-mono">Equity Grant ($)</label>
+                  <label className="text-muted-foreground font-mono">Equity Grant ($)</label>
                   <input
                     type="number"
                     value={simEquity}
                     onChange={(e) => setSimEquity(Number(e.target.value))}
-                    className="w-full mt-1 bg-slate-950 border border-slate-800 rounded-lg px-3 py-1.5 text-white font-mono"
+                    className="w-full mt-1 bg-background border border-border rounded-lg px-3 py-1.5 text-white font-mono"
                   />
                 </div>
                 <div>
-                  <label className="text-slate-400 font-mono">Seniority Level</label>
+                  <label className="text-muted-foreground font-mono">Seniority Level</label>
                   <select
                     value={simSeniority}
                     onChange={(e) => setSimSeniority(e.target.value)}
-                    className="w-full mt-1 bg-slate-950 border border-slate-800 rounded-lg px-2 py-1.5 text-white"
+                    className="w-full mt-1 bg-background border border-border rounded-lg px-2 py-1.5 text-white"
                   >
                     <option value="L5_Senior">L5 Senior</option>
                     <option value="L6_Staff">L6 Staff</option>
@@ -856,20 +856,20 @@ export default function AutonomousCareerAgentPage() {
               </div>
 
               <div>
-                <label className="text-slate-400 font-mono">Inbound Message Pitch</label>
+                <label className="text-muted-foreground font-mono">Inbound Message Pitch</label>
                 <textarea
                   rows={3}
                   value={simMessage}
                   onChange={(e) => setSimMessage(e.target.value)}
-                  className="w-full mt-1 bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-white"
+                  className="w-full mt-1 bg-background border border-border rounded-lg px-3 py-2 text-white"
                 />
               </div>
 
-              <div className="flex justify-end space-x-2 pt-2 border-t border-slate-800">
+              <div className="flex justify-end space-x-2 pt-2 border-t border-border">
                 <button
                   type="button"
                   onClick={() => setShowSimModal(false)}
-                  className="px-4 py-2 bg-slate-800 text-slate-400 rounded-lg hover:bg-slate-700"
+                  className="px-4 py-2 bg-muted text-muted-foreground rounded-lg hover:bg-slate-700"
                 >
                   Cancel
                 </button>

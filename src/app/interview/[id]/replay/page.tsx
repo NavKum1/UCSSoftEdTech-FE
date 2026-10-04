@@ -151,7 +151,7 @@ export default function AudioReplayStudioPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-950 text-slate-200 flex items-center justify-center font-sans">
+      <div className="min-h-screen bg-background text-foreground flex items-center justify-center font-sans">
         <div className="flex items-center space-x-3 text-indigo-400">
           <Sparkles className="w-6 h-6 animate-spin" />
           <span className="text-base font-semibold">Loading Audio Replay Studio...</span>
@@ -162,13 +162,13 @@ export default function AudioReplayStudioPage() {
 
   if (fetchError || !replay) {
     return (
-      <div className="min-h-screen bg-slate-950 text-slate-200 flex flex-col items-center justify-center font-sans p-6">
-        <div className="max-w-md w-full p-8 rounded-3xl bg-slate-900/60 border border-slate-800 text-center space-y-4">
+      <div className="min-h-screen bg-background text-foreground flex flex-col items-center justify-center font-sans p-6">
+        <div className="max-w-md w-full p-8 rounded-3xl bg-card/60 border border-border text-center space-y-4">
           <div className="w-12 h-12 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center mx-auto">
             <AlertTriangle className="w-6 h-6" />
           </div>
           <h2 className="text-xl font-bold text-white">Interview Session Record Not Found</h2>
-          <p className="text-sm text-slate-400">
+          <p className="text-sm text-muted-foreground">
             {fetchError || "The requested audio defense replay session does not exist in the database or has expired."}
           </p>
           <button
@@ -186,7 +186,7 @@ export default function AudioReplayStudioPage() {
   const commScore = replay?.evaluation?.communicationScore ?? 88;
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-200 font-sans p-6 md:p-12 relative overflow-hidden">
+    <div className="min-h-screen bg-background text-foreground font-sans p-6 md:p-12 relative overflow-hidden">
       {/* Background Ambience Glow */}
       <div className="absolute top-1/4 left-1/3 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-gradient-to-tr from-indigo-600/20 to-cyan-500/20 blur-3xl rounded-full pointer-events-none" />
 
@@ -203,7 +203,7 @@ export default function AudioReplayStudioPage() {
         <div className="flex items-center justify-between">
           <button
             onClick={() => router.back()}
-            className="flex items-center space-x-2 text-slate-400 hover:text-white transition-colors text-xs font-semibold px-3 py-2 rounded-xl bg-slate-900 border border-slate-800 cursor-pointer"
+            className="flex items-center space-x-2 text-muted-foreground hover:text-white transition-colors text-xs font-semibold px-3 py-2 rounded-xl bg-card border border-border cursor-pointer"
           >
             <ArrowLeft className="w-4 h-4" />
             <span>Return</span>
@@ -230,7 +230,7 @@ export default function AudioReplayStudioPage() {
         </div>
 
         {/* Title & Metadata Banner */}
-        <div className="bg-slate-900/80 backdrop-blur-md rounded-3xl p-6 md:p-8 border border-slate-800 shadow-xl space-y-4">
+        <div className="bg-card/80 backdrop-blur-md rounded-3xl p-6 md:p-8 border border-border shadow-xl space-y-4">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
               <div className="flex items-center space-x-2 text-xs font-mono text-cyan-400 uppercase tracking-wider">
@@ -240,28 +240,28 @@ export default function AudioReplayStudioPage() {
               <h1 className="text-2xl md:text-3xl font-black text-white mt-1">
                 Candidate Defense: {replay?.candidateName}
               </h1>
-              <p className="text-xs text-slate-400 mt-1 max-w-2xl leading-relaxed">
+              <p className="text-xs text-muted-foreground mt-1 max-w-2xl leading-relaxed">
                 {replay?.jobDescription}
               </p>
             </div>
 
             {/* Score Pill Highlights */}
             <div className="flex items-center space-x-3">
-              <div className="bg-slate-950/80 border border-indigo-500/40 rounded-2xl px-5 py-3 text-center">
-                <span className="text-[10px] uppercase font-semibold text-slate-400">Technical Score</span>
+              <div className="bg-background/80 border border-indigo-500/40 rounded-2xl px-5 py-3 text-center">
+                <span className="text-[10px] uppercase font-semibold text-muted-foreground">Technical Score</span>
                 <div className="text-2xl font-black text-indigo-400">{technicalScore}%</div>
               </div>
 
-              <div className="bg-slate-950/80 border border-cyan-500/40 rounded-2xl px-5 py-3 text-center">
-                <span className="text-[10px] uppercase font-semibold text-slate-400">Communication</span>
+              <div className="bg-background/80 border border-cyan-500/40 rounded-2xl px-5 py-3 text-center">
+                <span className="text-[10px] uppercase font-semibold text-muted-foreground">Communication</span>
                 <div className="text-2xl font-black text-cyan-400">{commScore}%</div>
               </div>
             </div>
           </div>
 
           {/* Interactive Audio Player Bar */}
-          <div className="bg-slate-950 rounded-2xl p-4 border border-slate-800/80 space-y-3">
-            <div className="flex items-center justify-between text-xs font-mono text-slate-400">
+          <div className="bg-background rounded-2xl p-4 border border-border/80 space-y-3">
+            <div className="flex items-center justify-between text-xs font-mono text-muted-foreground">
               <div className="flex items-center space-x-2">
                 <Volume2 className="w-4 h-4 text-indigo-400" />
                 <span>High-Definition WebRTC Audio Playback</span>
@@ -271,7 +271,7 @@ export default function AudioReplayStudioPage() {
 
             {/* Progress Scrubber */}
             <div
-              className="w-full bg-slate-800 h-2.5 rounded-full overflow-hidden cursor-pointer relative"
+              className="w-full bg-muted h-2.5 rounded-full overflow-hidden cursor-pointer relative"
               onClick={(e) => {
                 const rect = e.currentTarget.getBoundingClientRect();
                 const clickX = e.clientX - rect.left;
@@ -306,24 +306,24 @@ export default function AudioReplayStudioPage() {
                       setCurrentTime(0);
                     }
                   }}
-                  className="p-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-white transition-colors cursor-pointer"
+                  className="p-2 rounded-xl bg-card hover:bg-muted text-muted-foreground hover:text-white transition-colors cursor-pointer"
                 >
                   <RotateCcw className="w-4 h-4" />
                 </button>
 
-                <span className="text-xs text-slate-400 font-medium">
+                <span className="text-xs text-muted-foreground font-medium">
                   {isPlaying ? "Playing recording..." : "Paused"}
                 </span>
               </div>
 
-              <div className="flex items-center space-x-2 text-xs text-slate-400">
+              <div className="flex items-center space-x-2 text-xs text-muted-foreground">
                 <Clock className="w-3.5 h-3.5 text-cyan-400" />
                 <span>Session Duration: {replay?.durationFormatted}</span>
               </div>
             </div>
 
             {/* Watermark Protection Security Footprint */}
-            <div className="flex flex-wrap items-center justify-between pt-2 border-t border-slate-900 text-[10px] text-slate-400 font-mono">
+            <div className="flex flex-wrap items-center justify-between pt-2 border-t border-slate-900 text-[10px] text-muted-foreground font-mono">
               <span className="flex items-center gap-1.5 text-cyan-400/80">
                 <ShieldCheck className="w-3.5 h-3.5 text-cyan-400" />
                 Edulexa LSB Steganography &amp; Anti-Piracy Watermark Encoded
@@ -344,7 +344,7 @@ export default function AudioReplayStudioPage() {
                 <Layers className="w-4 h-4 text-indigo-400" />
                 <span>Synchronized Audio Transcript</span>
               </h2>
-              <span className="text-xs text-slate-400">Click any dialogue block to jump audio</span>
+              <span className="text-xs text-muted-foreground">Click any dialogue block to jump audio</span>
             </div>
 
             <div className="space-y-3 max-h-[600px] overflow-y-auto pr-2">
@@ -357,10 +357,10 @@ export default function AudioReplayStudioPage() {
                     className={`p-4 rounded-2xl border transition-all cursor-pointer text-left ${
                       isActive
                         ? "bg-indigo-950/40 border-indigo-500/60 shadow-lg shadow-indigo-500/10"
-                        : "bg-slate-900/60 border-slate-800 hover:bg-slate-900 hover:border-slate-800"
+                        : "bg-card/60 border-border hover:bg-card hover:border-border"
                     }`}
                   >
-                    <div className="flex items-center justify-between pb-2 border-b border-slate-800/60 mb-2">
+                    <div className="flex items-center justify-between pb-2 border-b border-border/60 mb-2">
                       <div className="flex items-center space-x-2">
                         {seg.isAi ? (
                           <div className="w-6 h-6 rounded-lg bg-indigo-500/20 text-indigo-400 flex items-center justify-center">
@@ -376,12 +376,12 @@ export default function AudioReplayStudioPage() {
                         </span>
                       </div>
 
-                      <span className="font-mono text-[11px] text-slate-400 px-2 py-0.5 rounded bg-slate-950 border border-slate-800">
+                      <span className="font-mono text-[11px] text-muted-foreground px-2 py-0.5 rounded bg-background border border-border">
                         {seg.timeFormatted}
                       </span>
                     </div>
 
-                    <p className="text-xs text-slate-200 leading-relaxed">
+                    <p className="text-xs text-foreground leading-relaxed">
                       {seg.text}
                     </p>
                   </div>
@@ -392,28 +392,28 @@ export default function AudioReplayStudioPage() {
 
           {/* Defense Evaluation Sidebar (1 col) */}
           <div className="space-y-6">
-            <div className="bg-slate-900/80 rounded-3xl p-6 border border-slate-800 shadow-xl space-y-4">
+            <div className="bg-card/80 rounded-3xl p-6 border border-border shadow-xl space-y-4">
               <h2 className="text-base font-bold text-white flex items-center space-x-2">
                 <Code2 className="w-4 h-4 text-cyan-400" />
                 <span>Identified Code Flaws Examined</span>
               </h2>
 
-              <p className="text-xs text-slate-400 leading-relaxed">
+              <p className="text-xs text-muted-foreground leading-relaxed">
                 During the voice review, the AI Technical Examiner dynamically challenged the candidate on these flaws:
               </p>
 
               <div className="space-y-2">
                 {replay?.evaluation?.architecturalFlaws.map((flaw, idx) => (
-                  <div key={idx} className="p-3 rounded-xl bg-slate-950 border border-amber-500/30 flex items-start space-x-2.5">
+                  <div key={idx} className="p-3 rounded-xl bg-background border border-amber-500/30 flex items-start space-x-2.5">
                     <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
-                    <span className="text-xs text-slate-400 font-medium leading-relaxed">{flaw}</span>
+                    <span className="text-xs text-muted-foreground font-medium leading-relaxed">{flaw}</span>
                   </div>
                 ))}
               </div>
             </div>
 
             {/* Defense Competency Ratings */}
-            <div className="bg-slate-900/80 rounded-3xl p-6 border border-slate-800 shadow-xl space-y-4">
+            <div className="bg-card/80 rounded-3xl p-6 border border-border shadow-xl space-y-4">
               <h2 className="text-base font-bold text-white flex items-center space-x-2">
                 <ShieldCheck className="w-4 h-4 text-emerald-400" />
                 <span>Defense Assessment</span>
@@ -421,21 +421,21 @@ export default function AudioReplayStudioPage() {
 
               <div className="space-y-3">
                 <div>
-                  <div className="flex justify-between text-xs text-slate-400 mb-1">
+                  <div className="flex justify-between text-xs text-muted-foreground mb-1">
                     <span>Technical Architecture Defense</span>
                     <span className="font-bold text-indigo-400">{technicalScore}%</span>
                   </div>
-                  <div className="w-full bg-slate-800 h-2 rounded-full overflow-hidden">
+                  <div className="w-full bg-muted h-2 rounded-full overflow-hidden">
                     <div className="bg-indigo-500 h-full rounded-full" style={{ width: `${technicalScore}%` }} />
                   </div>
                 </div>
 
                 <div>
-                  <div className="flex justify-between text-xs text-slate-400 mb-1">
+                  <div className="flex justify-between text-xs text-muted-foreground mb-1">
                     <span>Verbal Clarity & System Rationale</span>
                     <span className="font-bold text-cyan-400">{commScore}%</span>
                   </div>
-                  <div className="w-full bg-slate-800 h-2 rounded-full overflow-hidden">
+                  <div className="w-full bg-muted h-2 rounded-full overflow-hidden">
                     <div className="bg-cyan-500 h-full rounded-full" style={{ width: `${commScore}%` }} />
                   </div>
                 </div>

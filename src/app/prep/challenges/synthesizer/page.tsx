@@ -103,9 +103,9 @@ export default function ChallengeSynthesizerPage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-200 p-6 font-sans">
+    <div className="min-h-screen bg-background text-foreground p-6 font-sans">
       {/* Top Header */}
-      <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-start md:items-center justify-between pb-6 border-b border-slate-800 gap-4">
+      <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-start md:items-center justify-between pb-6 border-b border-border gap-4">
         <div>
           <div className="flex items-center gap-3">
             <span className="px-2.5 py-1 text-xs font-semibold uppercase tracking-wider bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 rounded">
@@ -119,7 +119,7 @@ export default function ChallengeSynthesizerPage() {
           <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-white mt-1">
             Autonomous Self-Healing Coding Challenges
           </h1>
-          <p className="text-sm text-slate-400 mt-0.5">
+          <p className="text-sm text-muted-foreground mt-0.5">
             Generates novel algorithmic story narratives, mutated variables, and weakness-targeted test harnesses rendering cheat repos obsolete.
           </p>
         </div>
@@ -127,13 +127,13 @@ export default function ChallengeSynthesizerPage() {
         <div className="flex items-center gap-3">
           <Link
             href="/prep/career"
-            className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-sm font-medium rounded-lg transition border border-slate-800"
+            className="px-4 py-2 bg-muted hover:bg-slate-700 text-foreground text-sm font-medium rounded-lg transition border border-border"
           >
             Career Trajectory
           </Link>
           <Link
             href="/admin/resilience"
-            className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-sm font-medium rounded-lg transition border border-slate-800"
+            className="px-4 py-2 bg-muted hover:bg-slate-700 text-foreground text-sm font-medium rounded-lg transition border border-border"
           >
             Resilience Hub
           </Link>
@@ -150,14 +150,14 @@ export default function ChallengeSynthesizerPage() {
       )}
 
       {/* Synthesis Config Bar */}
-      <div className="max-w-7xl mx-auto mt-6 bg-slate-900 border border-slate-800 rounded-xl p-4 shadow-lg flex flex-wrap items-center justify-between gap-4">
+      <div className="max-w-7xl mx-auto mt-6 bg-card border border-border rounded-xl p-4 shadow-lg flex flex-wrap items-center justify-between gap-4">
         <div className="flex flex-wrap items-center gap-4 text-xs">
           <div>
-            <label className="text-slate-400 block mb-1">Base Archetype</label>
+            <label className="text-muted-foreground block mb-1">Base Archetype</label>
             <select
               value={baseSlug}
               onChange={(e) => setBaseSlug(e.target.value)}
-              className="bg-slate-950 border border-slate-800 text-white rounded px-3 py-1.5 focus:outline-none focus:border-indigo-500"
+              className="bg-background border border-border text-white rounded px-3 py-1.5 focus:outline-none focus:border-indigo-500"
             >
               <option value="distributed-lru">Distributed LRU Cache</option>
               <option value="rate-limiter">Sliding Token Rate Limiter</option>
@@ -166,11 +166,11 @@ export default function ChallengeSynthesizerPage() {
           </div>
 
           <div>
-            <label className="text-slate-400 block mb-1">Language</label>
+            <label className="text-muted-foreground block mb-1">Language</label>
             <select
               value={language}
               onChange={(e) => setLanguage(e.target.value)}
-              className="bg-slate-950 border border-slate-800 text-white rounded px-3 py-1.5 focus:outline-none focus:border-indigo-500"
+              className="bg-background border border-border text-white rounded px-3 py-1.5 focus:outline-none focus:border-indigo-500"
             >
               <option value="csharp">C# (.NET 10)</option>
               <option value="typescript">TypeScript (Node.js)</option>
@@ -181,11 +181,11 @@ export default function ChallengeSynthesizerPage() {
           </div>
 
           <div>
-            <label className="text-slate-400 block mb-1">Targeted Weakness Trap</label>
+            <label className="text-muted-foreground block mb-1">Targeted Weakness Trap</label>
             <select
               value={weakness}
               onChange={(e) => setWeakness(e.target.value)}
-              className="bg-slate-950 border border-slate-800 text-amber-300 font-medium rounded px-3 py-1.5 focus:outline-none focus:border-indigo-500"
+              className="bg-background border border-border text-amber-300 font-medium rounded px-3 py-1.5 focus:outline-none focus:border-indigo-500"
             >
               <option value="ConcurrentRaceCondition">Concurrent Race Condition</option>
               <option value="OffByOneBoundary">Off-By-One Boundary Flaw</option>
@@ -195,11 +195,11 @@ export default function ChallengeSynthesizerPage() {
           </div>
 
           <div>
-            <label className="text-slate-400 block mb-1">Seniority Tier</label>
+            <label className="text-muted-foreground block mb-1">Seniority Tier</label>
             <select
               value={difficulty}
               onChange={(e) => setDifficulty(e.target.value)}
-              className="bg-slate-950 border border-slate-800 text-white rounded px-3 py-1.5 focus:outline-none focus:border-indigo-500"
+              className="bg-background border border-border text-white rounded px-3 py-1.5 focus:outline-none focus:border-indigo-500"
             >
               <option value="Medium">Senior (L5)</option>
               <option value="Hard">Staff Architect (L6)</option>
@@ -223,18 +223,18 @@ export default function ChallengeSynthesizerPage() {
           {/* Left Column: Mission Narrative & Synthesized Test Harness */}
           <div className="space-y-6">
             {/* Story Card */}
-            <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-lg">
-              <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+            <div className="bg-card border border-border rounded-xl p-5 shadow-lg">
+              <div className="flex items-center justify-between pb-3 border-b border-border">
                 <span className="text-xs uppercase font-bold tracking-wider text-indigo-400">
                   {activeChallenge.difficultyRating} Engineering Challenge
                 </span>
-                <span className="text-[11px] font-mono text-slate-400 bg-slate-950 px-2 py-0.5 rounded border border-slate-800">
+                <span className="text-[11px] font-mono text-muted-foreground bg-background px-2 py-0.5 rounded border border-border">
                   Entropy: {activeChallenge.antiCheatEntropyHash.slice(0, 16)}...
                 </span>
               </div>
 
               <h2 className="text-lg font-bold text-white mt-3">{activeChallenge.title}</h2>
-              <p className="mt-2 text-sm text-slate-400 leading-relaxed bg-slate-950/60 p-4 rounded-lg border border-slate-800">
+              <p className="mt-2 text-sm text-muted-foreground leading-relaxed bg-background/60 p-4 rounded-lg border border-border">
                 {activeChallenge.mutatedStoryNarrative}
               </p>
 
@@ -249,11 +249,11 @@ export default function ChallengeSynthesizerPage() {
             </div>
 
             {/* Synthesized Test Harness */}
-            <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-lg">
-              <h3 className="text-sm font-semibold uppercase tracking-wider text-slate-400 mb-2">
+            <div className="bg-card border border-border rounded-xl p-5 shadow-lg">
+              <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground mb-2">
                 Synthesized Torture Test Suite
               </h3>
-              <pre className="p-3 bg-slate-950 rounded-lg text-xs font-mono text-slate-400 border border-slate-800 overflow-x-auto whitespace-pre-wrap">
+              <pre className="p-3 bg-background rounded-lg text-xs font-mono text-muted-foreground border border-border overflow-x-auto whitespace-pre-wrap">
                 {activeChallenge.synthesizedTestHarness}
               </pre>
             </div>
@@ -261,9 +261,9 @@ export default function ChallengeSynthesizerPage() {
 
           {/* Right Column: Code Editor & Self-Healing Evaluation */}
           <div className="space-y-6">
-            <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-lg flex flex-col h-[520px]">
-              <div className="flex items-center justify-between pb-3 border-b border-slate-800 mb-3">
-                <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+            <div className="bg-card border border-border rounded-xl p-5 shadow-lg flex flex-col h-[520px]">
+              <div className="flex items-center justify-between pb-3 border-b border-border mb-3">
+                <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                   Candidate Implementation ({activeChallenge.language})
                 </span>
                 <button
@@ -278,7 +278,7 @@ export default function ChallengeSynthesizerPage() {
               <textarea
                 value={candidateCode}
                 onChange={(e) => setCandidateCode(e.target.value)}
-                className="w-full flex-1 bg-slate-950 text-emerald-300 font-mono text-xs p-4 rounded-lg border border-slate-800 focus:outline-none focus:border-indigo-500 resize-none"
+                className="w-full flex-1 bg-background text-emerald-300 font-mono text-xs p-4 rounded-lg border border-border focus:outline-none focus:border-indigo-500 resize-none"
                 spellCheck={false}
               />
             </div>
@@ -292,7 +292,7 @@ export default function ChallengeSynthesizerPage() {
                     : "bg-rose-950/20 border-rose-700/50"
                 }`}
               >
-                <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+                <div className="flex items-center justify-between pb-3 border-b border-border">
                   <div className="flex items-center gap-2">
                     <span
                       className={`w-2.5 h-2.5 rounded-full ${
@@ -305,17 +305,17 @@ export default function ChallengeSynthesizerPage() {
                         : "SELF-HEALING VARIATION TRIGGERED"}
                     </span>
                   </div>
-                  <span className="text-xs text-slate-400 font-mono">
+                  <span className="text-xs text-muted-foreground font-mono">
                     {evaluation.testsPassed} / {evaluation.totalTests} Passed ({evaluation.performanceMs}ms)
                   </span>
                 </div>
 
                 <div className="mt-3 text-xs space-y-2">
-                  <div className="text-slate-400">
+                  <div className="text-muted-foreground">
                     <strong className="text-white">Diagnostic Output:</strong> {evaluation.remediationHint}
                   </div>
                   {evaluation.selfHealingGuidance && (
-                    <div className="p-3 bg-slate-950 rounded border border-slate-800 text-amber-300">
+                    <div className="p-3 bg-background rounded border border-border text-amber-300">
                       <strong className="text-white">Self-Healing Guidance:</strong> {evaluation.selfHealingGuidance}
                     </div>
                   )}

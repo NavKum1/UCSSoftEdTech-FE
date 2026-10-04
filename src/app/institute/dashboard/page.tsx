@@ -169,7 +169,7 @@ export default function InstituteDashboardPage() {
   return (
     <div className="space-y-8">
       {/* Top Welcome Banner */}
-      <div className="glass-panel rounded-3xl p-6 border border-slate-800 flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="glass-panel rounded-3xl p-6 border border-border flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <div className="flex items-center space-x-2">
             <h1 className="text-2xl font-bold text-white tracking-tight">{instituteName}</h1>
@@ -177,7 +177,7 @@ export default function InstituteDashboardPage() {
               Active Partner
             </span>
           </div>
-          <p className="text-xs text-slate-400 mt-1">
+          <p className="text-xs text-muted-foreground mt-1">
             Manage your incoming student referrals and configure direct CRM webhook integration (Salesforce, HubSpot, or Custom HTTP endpoint).
           </p>
         </div>
@@ -185,7 +185,7 @@ export default function InstituteDashboardPage() {
         <button
           onClick={fetchData}
           disabled={loading}
-          className="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-slate-200 text-xs font-semibold rounded-xl border border-slate-800 flex items-center space-x-2 transition-all self-start md:self-auto cursor-pointer"
+          className="px-4 py-2 bg-card hover:bg-muted text-foreground text-xs font-semibold rounded-xl border border-border flex items-center space-x-2 transition-all self-start md:self-auto cursor-pointer"
         >
           <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} />
           <span>Sync Data</span>
@@ -194,8 +194,8 @@ export default function InstituteDashboardPage() {
 
       {/* KPI Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="glass-panel rounded-2xl p-5 border border-slate-800 space-y-1">
-          <div className="flex items-center justify-between text-xs text-slate-400">
+        <div className="glass-panel rounded-2xl p-5 border border-border space-y-1">
+          <div className="flex items-center justify-between text-xs text-muted-foreground">
             <span>Total Student Leads</span>
             <Users className="w-4 h-4 text-cyan-400" />
           </div>
@@ -203,8 +203,8 @@ export default function InstituteDashboardPage() {
           <p className="text-[11px] text-cyan-400 font-medium">Referred via AI Voice Skill Gap Engine</p>
         </div>
 
-        <div className="glass-panel rounded-2xl p-5 border border-slate-800 space-y-1">
-          <div className="flex items-center justify-between text-xs text-slate-400">
+        <div className="glass-panel rounded-2xl p-5 border border-border space-y-1">
+          <div className="flex items-center justify-between text-xs text-muted-foreground">
             <span>Pending Outreach</span>
             <Inbox className="w-4 h-4 text-amber-400" />
           </div>
@@ -214,26 +214,26 @@ export default function InstituteDashboardPage() {
           <p className="text-[11px] text-amber-400 font-medium">Awaiting contact or enrollment</p>
         </div>
 
-        <div className="glass-panel rounded-2xl p-5 border border-slate-800 space-y-1">
-          <div className="flex items-center justify-between text-xs text-slate-400">
+        <div className="glass-panel rounded-2xl p-5 border border-border space-y-1">
+          <div className="flex items-center justify-between text-xs text-muted-foreground">
             <span>CRM Webhook Status</span>
             <Activity className="w-4 h-4 text-emerald-400" />
           </div>
           <p className="text-base font-bold text-white truncate">
             {outboundWebhookUrl ? "Configured & Live" : "Not Configured"}
           </p>
-          <p className="text-[11px] text-slate-400 truncate">
+          <p className="text-[11px] text-muted-foreground truncate">
             {outboundWebhookUrl ? outboundWebhookUrl : "Enter CRM webhook to automate leads"}
           </p>
         </div>
       </div>
 
       {/* Tab Navigation */}
-      <div className="flex border-b border-slate-800 space-x-8">
+      <div className="flex border-b border-border space-x-8">
         <button
           onClick={() => setActiveTab("leads")}
           className={`pb-3 text-sm font-semibold flex items-center space-x-2 transition-all cursor-pointer ${
-            activeTab === "leads" ? "text-cyan-400 border-b-2 border-cyan-400" : "text-slate-400 hover:text-slate-200"
+            activeTab === "leads" ? "text-cyan-400 border-b-2 border-cyan-400" : "text-muted-foreground hover:text-foreground"
           }`}
         >
           <Inbox className="w-4 h-4" />
@@ -243,7 +243,7 @@ export default function InstituteDashboardPage() {
         <button
           onClick={() => setActiveTab("webhook")}
           className={`pb-3 text-sm font-semibold flex items-center space-x-2 transition-all cursor-pointer ${
-            activeTab === "webhook" ? "text-cyan-400 border-b-2 border-cyan-400" : "text-slate-400 hover:text-slate-200"
+            activeTab === "webhook" ? "text-cyan-400 border-b-2 border-cyan-400" : "text-muted-foreground hover:text-foreground"
           }`}
         >
           <LinkIcon className="w-4 h-4" />
@@ -253,7 +253,7 @@ export default function InstituteDashboardPage() {
         <button
           onClick={() => setActiveTab("analytics")}
           className={`pb-3 text-sm font-semibold flex items-center space-x-2 transition-all cursor-pointer ${
-            activeTab === "analytics" ? "text-cyan-400 border-b-2 border-cyan-400" : "text-slate-400 hover:text-slate-200"
+            activeTab === "analytics" ? "text-cyan-400 border-b-2 border-cyan-400" : "text-muted-foreground hover:text-foreground"
           }`}
         >
           <BarChart3 className="w-4 h-4" />
@@ -266,13 +266,13 @@ export default function InstituteDashboardPage() {
         <div className="space-y-4">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="relative w-full sm:w-80">
-              <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+              <Search className="w-4 h-4 text-muted-foreground absolute left-3 top-1/2 -translate-y-1/2" />
               <input
                 type="text"
                 placeholder="Search candidate name, email, or course..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full bg-slate-900 border border-slate-800 rounded-xl pl-9 pr-4 py-2 text-xs text-slate-200 focus:outline-none focus:border-cyan-500"
+                className="w-full bg-card border border-border rounded-xl pl-9 pr-4 py-2 text-xs text-foreground focus:outline-none focus:border-cyan-500"
               />
             </div>
 
@@ -280,7 +280,7 @@ export default function InstituteDashboardPage() {
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
-                className="bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-400 focus:outline-none focus:border-cyan-500"
+                className="bg-card border border-border rounded-xl px-3 py-2 text-xs text-muted-foreground focus:outline-none focus:border-cyan-500"
               >
                 <option value="all">All Statuses</option>
                 <option value="pending">Pending</option>
@@ -290,10 +290,10 @@ export default function InstituteDashboardPage() {
             </div>
           </div>
 
-          <div className="glass-panel rounded-2xl border border-slate-800 overflow-hidden">
+          <div className="glass-panel rounded-2xl border border-border overflow-hidden">
             <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs text-slate-400">
-                <thead className="bg-slate-900/80 border-b border-slate-800 text-slate-400 font-semibold uppercase text-[10px] tracking-wider">
+              <table className="w-full text-left text-xs text-muted-foreground">
+                <thead className="bg-card/80 border-b border-border text-muted-foreground font-semibold uppercase text-[10px] tracking-wider">
                   <tr>
                     <th className="px-6 py-3">Candidate Name</th>
                     <th className="px-6 py-3">Email</th>
@@ -305,23 +305,23 @@ export default function InstituteDashboardPage() {
                 <tbody className="divide-y divide-slate-800/60">
                   {loading ? (
                     <tr>
-                      <td colSpan={5} className="px-6 py-12 text-center text-slate-400">
+                      <td colSpan={5} className="px-6 py-12 text-center text-muted-foreground">
                         Loading lead referrals...
                       </td>
                     </tr>
                   ) : filteredLeads.length === 0 ? (
                     <tr>
-                      <td colSpan={5} className="px-6 py-12 text-center text-slate-400">
+                      <td colSpan={5} className="px-6 py-12 text-center text-muted-foreground">
                         No student lead referrals found matching criteria.
                       </td>
                     </tr>
                   ) : (
                     filteredLeads.map((lead) => (
-                      <tr key={lead.leadId} className="hover:bg-slate-900/40 transition-colors">
+                      <tr key={lead.leadId} className="hover:bg-card/40 transition-colors">
                         <td className="px-6 py-4 font-semibold text-white">{lead.candidateName}</td>
                         <td className="px-6 py-4 font-mono text-[11px] text-cyan-300">{lead.candidateEmail}</td>
-                        <td className="px-6 py-4 text-slate-200">{lead.courseName}</td>
-                        <td className="px-6 py-4 text-slate-400">
+                        <td className="px-6 py-4 text-foreground">{lead.courseName}</td>
+                        <td className="px-6 py-4 text-muted-foreground">
                           {new Date(lead.createdAt).toLocaleDateString("en-US", {
                             month: "short",
                             day: "numeric",
@@ -354,10 +354,10 @@ export default function InstituteDashboardPage() {
       {/* Tab 2: CRM Webhook Configurator */}
       {activeTab === "webhook" && (
         <div className="max-w-2xl space-y-6">
-          <div className="glass-panel rounded-2xl p-6 border border-slate-800 space-y-4">
+          <div className="glass-panel rounded-2xl p-6 border border-border space-y-4">
             <div>
               <h3 className="text-base font-bold text-white">Outbound CRM Webhook Configuration</h3>
-              <p className="text-xs text-slate-400 mt-1 leading-relaxed">
+              <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
                 Connect your CRM (Salesforce, HubSpot, Zapier, Make, or custom HTTP server). Whenever an AI voice evaluation reveals a skill gap matching your courses, our Automated B2B Lead Dispatcher will push the lead payload in real-time.
               </p>
             </div>
@@ -377,7 +377,7 @@ export default function InstituteDashboardPage() {
 
             <form onSubmit={handleSaveWebhook} className="space-y-4">
               <div>
-                <label className="block text-xs font-semibold text-slate-400 mb-1.5">
+                <label className="block text-xs font-semibold text-muted-foreground mb-1.5">
                   CRM Outbound Webhook URL
                 </label>
                 <input
@@ -386,7 +386,7 @@ export default function InstituteDashboardPage() {
                   value={webhookInput}
                   onChange={(e) => setWebhookInput(e.target.value)}
                   required
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-cyan-500 font-mono"
+                  className="w-full bg-background border border-border rounded-xl px-4 py-2.5 text-xs text-foreground focus:outline-none focus:border-cyan-500 font-mono"
                 />
               </div>
 
@@ -404,7 +404,7 @@ export default function InstituteDashboardPage() {
                   type="button"
                   onClick={handleTestPing}
                   disabled={testingPing || !outboundWebhookUrl}
-                  className="px-4 py-2.5 bg-slate-900 hover:bg-slate-800 text-slate-200 text-xs font-semibold rounded-xl border border-slate-800 flex items-center space-x-2 transition-all cursor-pointer disabled:opacity-50"
+                  className="px-4 py-2.5 bg-card hover:bg-muted text-foreground text-xs font-semibold rounded-xl border border-border flex items-center space-x-2 transition-all cursor-pointer disabled:opacity-50"
                 >
                   <Activity className="w-3.5 h-3.5 text-cyan-400" />
                   <span>{testingPing ? "Pinging..." : "Test Webhook Ping"}</span>
@@ -414,9 +414,9 @@ export default function InstituteDashboardPage() {
           </div>
 
           {/* Sample JSON Payload Card */}
-          <div className="glass-panel rounded-2xl p-6 border border-slate-800 space-y-2">
-            <h4 className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Dispatched Lead JSON Payload Schema</h4>
-            <pre className="bg-slate-950 p-4 rounded-xl text-[11px] font-mono text-cyan-300 border border-slate-900 overflow-x-auto">
+          <div className="glass-panel rounded-2xl p-6 border border-border space-y-2">
+            <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Dispatched Lead JSON Payload Schema</h4>
+            <pre className="bg-background p-4 rounded-xl text-[11px] font-mono text-cyan-300 border border-slate-900 overflow-x-auto">
 {`{
   "event": "lead.skill_gap_referral",
   "leadId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
@@ -438,11 +438,11 @@ export default function InstituteDashboardPage() {
       {/* Tab 3: Analytics Dashboard */}
       {activeTab === "analytics" && (
         <div className="space-y-6">
-          <div className="glass-panel rounded-2xl p-6 border border-slate-800">
+          <div className="glass-panel rounded-2xl p-6 border border-border">
             <h3 className="text-base font-bold text-white mb-2">Lead Conversion Funnel</h3>
-            <p className="text-xs text-slate-400 mb-6">Track the progression of your AI-referred candidates from initial lead to final enrollment.</p>
+            <p className="text-xs text-muted-foreground mb-6">Track the progression of your AI-referred candidates from initial lead to final enrollment.</p>
             
-            <div className="bg-slate-950/50 p-4 rounded-xl border border-slate-800">
+            <div className="bg-background/50 p-4 rounded-xl border border-border">
               <FunnelChart data={funnelData} />
             </div>
           </div>

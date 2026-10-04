@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
 import GlobalNavigation from "@/components/GlobalNavigation";
 import { GeoProvider } from "@/context/GeoContext";
+import { ThemeProvider } from "@/components/ThemeProvider";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -29,13 +30,15 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         suppressHydrationWarning
       >
         <body 
-          className="min-h-full flex flex-col bg-slate-950 text-slate-200" 
+          className="min-h-full flex flex-col bg-background text-foreground" 
           suppressHydrationWarning
         >
-          <GeoProvider>
-            <GlobalNavigation />
-            <main className="flex-1">{children}</main>
-          </GeoProvider>
+          <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+            <GeoProvider>
+              <GlobalNavigation />
+              <main className="flex-1">{children}</main>
+            </GeoProvider>
+          </ThemeProvider>
         </body>
       </html>
     </ClerkProvider>

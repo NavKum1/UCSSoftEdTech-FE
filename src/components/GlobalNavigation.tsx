@@ -20,6 +20,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import { ProductRegionSwitcher } from "@/context/GeoContext";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 export default function GlobalNavigation() {
   const pathname = usePathname();
@@ -46,7 +47,7 @@ export default function GlobalNavigation() {
   ];
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-slate-800/80 bg-slate-950/80 backdrop-blur-xl transition-all">
+    <header className="sticky top-0 z-50 w-full border-b border-border/80 bg-background/80 backdrop-blur-xl transition-all">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
         {/* Logo & Brand */}
         <div className="flex items-center gap-6">
@@ -64,7 +65,7 @@ export default function GlobalNavigation() {
                   <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
                 </span>
               </div>
-              <p className="text-[10px] text-slate-400 font-mono tracking-tight -mt-0.5">
+              <p className="text-[10px] text-muted-foreground font-mono tracking-tight -mt-0.5">
                 AI CAREER & ASSESSMENT PLATFORM
               </p>
             </div>
@@ -85,10 +86,10 @@ export default function GlobalNavigation() {
                   className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
                     isActive
                       ? "bg-indigo-600/20 text-indigo-300 border border-indigo-500/30 shadow-sm shadow-indigo-500/10"
-                      : "text-slate-400 hover:text-slate-200 hover:bg-slate-900/60"
+                      : "text-muted-foreground hover:text-foreground hover:bg-card/60"
                   }`}
                 >
-                  <Icon className={`w-3.5 h-3.5 ${isActive ? "text-indigo-400" : "text-slate-400"}`} />
+                  <Icon className={`w-3.5 h-3.5 ${isActive ? "text-indigo-400" : "text-muted-foreground"}`} />
                   {link.name}
                 </Link>
               );
@@ -125,7 +126,7 @@ export default function GlobalNavigation() {
           <div className="relative">
             <button
               onClick={() => setPortalsOpen(!portalsOpen)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-xs font-medium text-slate-400 hover:text-white hover:border-slate-800 transition-colors"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-card border border-border text-xs font-medium text-muted-foreground hover:text-white hover:border-border transition-colors"
             >
               <span>Portals</span>
               <ChevronDown className={`w-3.5 h-3.5 transition-transform ${portalsOpen ? "rotate-180" : ""}`} />
@@ -133,10 +134,10 @@ export default function GlobalNavigation() {
 
             {portalsOpen && (
               <div
-                className="absolute right-0 mt-2 w-72 rounded-2xl bg-slate-900/95 border border-slate-800/90 shadow-2xl backdrop-blur-2xl p-2 z-50 animate-in fade-in zoom-in-95 duration-100"
+                className="absolute right-0 mt-2 w-72 rounded-2xl bg-card/95 border border-border/90 shadow-2xl backdrop-blur-2xl p-2 z-50 animate-in fade-in zoom-in-95 duration-100"
                 onClick={() => setPortalsOpen(false)}
               >
-                <div className="px-3 py-1.5 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
+                <div className="px-3 py-1.5 text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
                   Platform Studios &amp; Portals
                 </div>
                 <div className="space-y-1">
@@ -146,16 +147,16 @@ export default function GlobalNavigation() {
                       <Link
                         key={p.name}
                         href={p.href}
-                        className="flex items-start gap-3 p-2.5 rounded-xl hover:bg-slate-800/70 transition-colors group"
+                        className="flex items-start gap-3 p-2.5 rounded-xl hover:bg-muted/70 transition-colors group"
                       >
-                        <div className="p-2 rounded-lg bg-slate-800 text-indigo-400 group-hover:bg-indigo-600 group-hover:text-white transition-colors">
+                        <div className="p-2 rounded-lg bg-muted text-indigo-400 group-hover:bg-indigo-600 group-hover:text-white transition-colors">
                           <Icon className="w-4 h-4" />
                         </div>
                         <div>
-                          <div className="text-xs font-semibold text-slate-200 group-hover:text-white">
+                          <div className="text-xs font-semibold text-foreground group-hover:text-white">
                             {p.name}
                           </div>
-                          <div className="text-[11px] text-slate-400 line-clamp-1">
+                          <div className="text-[11px] text-muted-foreground line-clamp-1">
                             {p.desc}
                           </div>
                         </div>
@@ -166,6 +167,8 @@ export default function GlobalNavigation() {
               </div>
             )}
           </div>
+
+          <ThemeToggle />
 
           {/* Book Mentor CTA button */}
           <Link

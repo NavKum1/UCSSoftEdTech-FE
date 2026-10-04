@@ -258,12 +258,12 @@ export function ProductRegionSwitcher({ className = "" }: { className?: string }
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-900 border border-slate-800 text-xs font-medium text-slate-400 hover:text-white hover:border-slate-800 transition-colors shadow-sm"
+        className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-card border border-border text-xs font-medium text-muted-foreground hover:text-white hover:border-border transition-colors shadow-sm"
         title="Change Country & Compliance Jurisdiction"
       >
         <span>{REGIONS[region].flag}</span>
-        <span className="font-semibold text-slate-200">{REGIONS[region].currency}</span>
-        <span className="text-[10px] text-slate-400">▼</span>
+        <span className="font-semibold text-foreground">{REGIONS[region].currency}</span>
+        <span className="text-[10px] text-muted-foreground">▼</span>
       </button>
 
       {isOpen && (
@@ -272,8 +272,8 @@ export function ProductRegionSwitcher({ className = "" }: { className?: string }
             className="fixed inset-0 z-40"
             onClick={() => setIsOpen(false)}
           />
-          <div className="absolute right-0 mt-2 z-50 w-56 rounded-xl border border-slate-800 bg-slate-900/95 p-1.5 shadow-2xl backdrop-blur-xl">
-            <div className="px-2.5 py-1.5 font-mono text-[10px] uppercase text-slate-400 border-b border-slate-800/80 mb-1">
+          <div className="absolute right-0 mt-2 z-50 w-56 rounded-xl border border-border bg-card/95 p-1.5 shadow-2xl backdrop-blur-xl">
+            <div className="px-2.5 py-1.5 font-mono text-[10px] uppercase text-muted-foreground border-b border-border/80 mb-1">
               Select Region &amp; Currency
             </div>
             {(Object.keys(REGIONS) as Region[]).map((rKey) => {
@@ -290,14 +290,14 @@ export function ProductRegionSwitcher({ className = "" }: { className?: string }
                   className={`flex w-full items-center justify-between rounded-lg px-2.5 py-2 text-xs transition ${
                     isSelected
                       ? "bg-indigo-600/20 text-indigo-300 font-semibold border border-indigo-500/30"
-                      : "text-slate-400 hover:bg-slate-800 hover:text-white"
+                      : "text-muted-foreground hover:bg-muted hover:text-white"
                   }`}
                 >
                   <span className="flex items-center gap-2">
                     <span className="text-base">{r.flag}</span>
                     <span className="text-left">
                       <div className="font-medium">{r.name}</div>
-                      <div className="text-[10px] text-slate-400 font-mono">
+                      <div className="text-[10px] text-muted-foreground font-mono">
                         {r.symbol} {r.currency} • {r.complianceBadges[0].label}
                       </div>
                     </span>

@@ -189,24 +189,24 @@ export default function MultiCloudResiliencePage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-200 flex flex-col font-sans">
+    <div className="min-h-screen bg-background text-foreground flex flex-col font-sans">
       {/* Top Navbar */}
-      <header className="border-b border-slate-800 bg-slate-900/80 backdrop-blur-md px-6 py-4 flex items-center justify-between sticky top-0 z-40">
+      <header className="border-b border-border bg-card/80 backdrop-blur-md px-6 py-4 flex items-center justify-between sticky top-0 z-40">
         <div className="flex items-center space-x-4">
           <Link
             href="/admin/system"
-            className="text-xs font-semibold px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 border border-slate-800 transition"
+            className="text-xs font-semibold px-3 py-1.5 rounded-lg bg-muted hover:bg-slate-700 text-muted-foreground border border-border transition"
           >
             ← System Ops
           </Link>
-          <div className="h-4 w-px bg-slate-800" />
+          <div className="h-4 w-px bg-muted" />
           <div className="flex items-center space-x-2">
             <span className="text-xl">🌐</span>
             <div>
               <h1 className="text-base font-bold bg-gradient-to-r from-blue-400 via-indigo-300 to-purple-400 bg-clip-text text-transparent">
                 Multi-Cloud Active-Active Resilience & Chaos Failover Hub
               </h1>
-              <p className="text-[11px] text-slate-400">
+              <p className="text-[11px] text-muted-foreground">
                 Cross-Cloud Federation (AWS • GCP • Azure) • Global Anycast Routing • Automatic Circuit Breaker
               </p>
             </div>
@@ -216,8 +216,8 @@ export default function MultiCloudResiliencePage() {
         {/* Global Fleet Status */}
         <div className="flex items-center space-x-3">
           <div className="text-right hidden sm:block">
-            <div className="text-xs text-slate-400">Active Clouds Serving Traffic</div>
-            <div className="text-sm font-mono font-bold text-slate-200">
+            <div className="text-xs text-muted-foreground">Active Clouds Serving Traffic</div>
+            <div className="text-sm font-mono font-bold text-foreground">
               {regions.filter((r) => r.circuitBreakerState === "Closed").length} / {regions.length} Regions
             </div>
           </div>
@@ -239,11 +239,11 @@ export default function MultiCloudResiliencePage() {
                   ? "bg-rose-950/20 border-rose-800/80 shadow-lg shadow-rose-950/20"
                   : r.status === "Degraded"
                   ? "bg-amber-950/20 border-amber-800/80"
-                  : "bg-slate-900/60 border-slate-800/80 hover:border-slate-800"
+                  : "bg-card/60 border-border/80 hover:border-border"
               }`}
             >
               <div className="flex items-center justify-between">
-                <span className="text-[11px] font-mono font-bold text-slate-400">
+                <span className="text-[11px] font-mono font-bold text-muted-foreground">
                   {getProviderIcon(r.provider)}
                 </span>
                 <span
@@ -256,31 +256,31 @@ export default function MultiCloudResiliencePage() {
               </div>
 
               <div>
-                <h3 className="text-xs font-bold text-slate-200">{r.regionName}</h3>
-                <p className="text-[11px] font-mono text-slate-400">{r.regionCode}</p>
+                <h3 className="text-xs font-bold text-foreground">{r.regionName}</h3>
+                <p className="text-[11px] font-mono text-muted-foreground">{r.regionCode}</p>
               </div>
 
-              <div className="space-y-1.5 pt-2 border-t border-slate-800/60 text-xs font-mono">
-                <div className="flex justify-between text-slate-400">
+              <div className="space-y-1.5 pt-2 border-t border-border/60 text-xs font-mono">
+                <div className="flex justify-between text-muted-foreground">
                   <span>Latency:</span>
                   <span className={r.latencyMs > 100 ? "text-rose-400 font-bold" : "text-emerald-400"}>
                     {r.latencyMs.toFixed(1)}ms
                   </span>
                 </div>
-                <div className="flex justify-between text-slate-400">
+                <div className="flex justify-between text-muted-foreground">
                   <span>Error Rate:</span>
-                  <span className={r.errorRatePercent > 1.0 ? "text-rose-400 font-bold" : "text-slate-400"}>
+                  <span className={r.errorRatePercent > 1.0 ? "text-rose-400 font-bold" : "text-muted-foreground"}>
                     {r.errorRatePercent.toFixed(2)}%
                   </span>
                 </div>
-                <div className="flex justify-between text-slate-400">
+                <div className="flex justify-between text-muted-foreground">
                   <span>Traffic Share:</span>
-                  <span className="text-slate-200 font-bold">{r.trafficWeightPercent}%</span>
+                  <span className="text-foreground font-bold">{r.trafficWeightPercent}%</span>
                 </div>
               </div>
 
-              <div className="pt-2 border-t border-slate-800/60 flex items-center justify-between text-[11px]">
-                <span className="text-slate-400 font-mono">Circuit:</span>
+              <div className="pt-2 border-t border-border/60 flex items-center justify-between text-[11px]">
+                <span className="text-muted-foreground font-mono">Circuit:</span>
                 <span
                   className={`px-2 py-0.5 rounded border text-[10px] font-mono font-bold uppercase ${getCbBadge(
                     r.circuitBreakerState
@@ -296,15 +296,15 @@ export default function MultiCloudResiliencePage() {
         {/* Section: Live Anycast Routing Simulator & Chaos Engineering Controls */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           {/* Left: Active-Active Traffic Router (6 Cols) */}
-          <div className="lg:col-span-6 p-5 rounded-2xl bg-slate-900/60 border border-slate-800/80 space-y-4">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+          <div className="lg:col-span-6 p-5 rounded-2xl bg-card/60 border border-border/80 space-y-4">
+            <div className="flex items-center justify-between border-b border-border pb-3">
               <div>
-                <h2 className="text-sm font-bold text-slate-200">Global Anycast Edge Routing Simulator</h2>
-                <p className="text-xs text-slate-400">
+                <h2 className="text-sm font-bold text-foreground">Global Anycast Edge Routing Simulator</h2>
+                <p className="text-xs text-muted-foreground">
                   Simulate candidate client connection from edge locations
                 </p>
               </div>
-              <span className="text-xs px-2.5 py-1 rounded bg-slate-800 font-mono text-cyan-400 border border-slate-800">
+              <span className="text-xs px-2.5 py-1 rounded bg-muted font-mono text-cyan-400 border border-border">
                 Optimal Path Engine
               </span>
             </div>
@@ -324,7 +324,7 @@ export default function MultiCloudResiliencePage() {
                   className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition ${
                     selectedGeo === geo.code
                       ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/30"
-                      : "bg-slate-800/80 text-slate-400 hover:bg-slate-800 border border-slate-800/60"
+                      : "bg-muted/80 text-muted-foreground hover:bg-muted border border-border/60"
                   }`}
                 >
                   {geo.label}
@@ -338,10 +338,10 @@ export default function MultiCloudResiliencePage() {
                 className={`p-4 rounded-xl border space-y-3 font-mono text-xs ${
                   routingDecision.isFailoverRerouted
                     ? "bg-rose-950/30 border-rose-600/60 text-rose-200"
-                    : "bg-slate-950/70 border-slate-800 text-slate-200"
+                    : "bg-background/70 border-border text-foreground"
                 }`}
               >
-                <div className="flex items-center justify-between border-b border-slate-800/60 pb-2">
+                <div className="flex items-center justify-between border-b border-border/60 pb-2">
                   <div className="flex items-center space-x-2">
                     <span className="text-sm">{routingDecision.isFailoverRerouted ? "⚠️" : "🚀"}</span>
                     <span className="font-bold">
@@ -350,27 +350,27 @@ export default function MultiCloudResiliencePage() {
                         : "DIRECT OPTIMAL ROUTE"}
                     </span>
                   </div>
-                  <span className="text-[10px] text-slate-400">
+                  <span className="text-[10px] text-muted-foreground">
                     Latency: {routingDecision.latencyEstimatedMs.toFixed(1)}ms
                   </span>
                 </div>
 
                 <div className="grid grid-cols-2 gap-2 text-[11px]">
                   <div>
-                    <span className="text-slate-400">Requested Geo: </span>
-                    <span className="text-slate-200 font-bold">{routingDecision.clientGeo}</span>
+                    <span className="text-muted-foreground">Requested Geo: </span>
+                    <span className="text-foreground font-bold">{routingDecision.clientGeo}</span>
                   </div>
                   <div>
-                    <span className="text-slate-400">Target Region: </span>
+                    <span className="text-muted-foreground">Target Region: </span>
                     <span className="text-cyan-400 font-bold">{routingDecision.routedRegion}</span>
                   </div>
                   <div>
-                    <span className="text-slate-400">Cloud Provider: </span>
+                    <span className="text-muted-foreground">Cloud Provider: </span>
                     <span className="text-indigo-400 font-bold">{routingDecision.provider}</span>
                   </div>
                   <div>
-                    <span className="text-slate-400">Datacenter: </span>
-                    <span className="text-slate-200 font-bold">{routingDecision.regionName}</span>
+                    <span className="text-muted-foreground">Datacenter: </span>
+                    <span className="text-foreground font-bold">{routingDecision.regionName}</span>
                   </div>
                 </div>
 
@@ -385,11 +385,11 @@ export default function MultiCloudResiliencePage() {
           </div>
 
           {/* Right: Chaos Engineering Fault Injector (6 Cols) */}
-          <div className="lg:col-span-6 p-5 rounded-2xl bg-slate-900/60 border border-slate-800/80 space-y-4">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+          <div className="lg:col-span-6 p-5 rounded-2xl bg-card/60 border border-border/80 space-y-4">
+            <div className="flex items-center justify-between border-b border-border pb-3">
               <div>
-                <h2 className="text-sm font-bold text-slate-200">Chaos Engineering & Fault Injection</h2>
-                <p className="text-xs text-slate-400">
+                <h2 className="text-sm font-bold text-foreground">Chaos Engineering & Fault Injection</h2>
+                <p className="text-xs text-muted-foreground">
                   Inject network partitions, latency spikes, or regional cloud outages
                 </p>
               </div>
@@ -401,11 +401,11 @@ export default function MultiCloudResiliencePage() {
             <form onSubmit={handleInjectChaos} className="space-y-3 text-xs">
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-slate-400 mb-1">Target Cloud Region</label>
+                  <label className="block text-muted-foreground mb-1">Target Cloud Region</label>
                   <select
                     value={chaosRegion}
                     onChange={(e) => setChaosRegion(e.target.value)}
-                    className="w-full bg-slate-950 text-slate-200 p-2.5 rounded-lg border border-slate-800 focus:outline-none focus:ring-1 focus:ring-rose-500 font-mono"
+                    className="w-full bg-background text-foreground p-2.5 rounded-lg border border-border focus:outline-none focus:ring-1 focus:ring-rose-500 font-mono"
                   >
                     <option value="us-east-1">us-east-1 (AWS N. Virginia)</option>
                     <option value="us-west-2">us-west-2 (AWS Oregon)</option>
@@ -416,11 +416,11 @@ export default function MultiCloudResiliencePage() {
                 </div>
 
                 <div>
-                  <label className="block text-slate-400 mb-1">Simulated Fault Type</label>
+                  <label className="block text-muted-foreground mb-1">Simulated Fault Type</label>
                   <select
                     value={chaosFault}
                     onChange={(e) => setChaosFault(e.target.value)}
-                    className="w-full bg-slate-950 text-slate-200 p-2.5 rounded-lg border border-slate-800 focus:outline-none focus:ring-1 focus:ring-rose-500 font-mono"
+                    className="w-full bg-background text-foreground p-2.5 rounded-lg border border-border focus:outline-none focus:ring-1 focus:ring-rose-500 font-mono"
                   >
                     <option value="LatencySpike">Latency Spike (+680ms)</option>
                     <option value="NetworkPartition">Network Partition (48% Drops)</option>
@@ -431,7 +431,7 @@ export default function MultiCloudResiliencePage() {
               </div>
 
               <div>
-                <label className="block text-slate-400 mb-1">Fault Severity Tier</label>
+                <label className="block text-muted-foreground mb-1">Fault Severity Tier</label>
                 <div className="grid grid-cols-3 gap-2">
                   {["Minor", "Major", "Catastrophic"].map((sev) => (
                     <button
@@ -441,7 +441,7 @@ export default function MultiCloudResiliencePage() {
                       className={`p-2 rounded-lg font-mono text-[11px] font-bold border transition ${
                         chaosSeverity === sev
                           ? "bg-rose-950 text-rose-300 border-rose-600"
-                          : "bg-slate-950 text-slate-400 border-slate-800 hover:border-slate-800"
+                          : "bg-background text-muted-foreground border-border hover:border-border"
                       }`}
                     >
                       {sev}

@@ -123,10 +123,10 @@ export default function RecruiterDashboardPage() {
   const cleanCount = totalApplicants - flaggedCount;
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-200 font-sans p-6 md:p-10">
+    <div className="min-h-screen bg-background text-foreground font-sans p-6 md:p-10">
       <div className="max-w-7xl mx-auto space-y-8">
         {/* Header Navigation */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-800">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-border">
           <div className="flex items-center space-x-3">
             <div className="w-12 h-12 rounded-2xl bg-indigo-600/20 border border-indigo-500/30 flex items-center justify-center text-indigo-400">
               <Briefcase className="w-6 h-6" />
@@ -155,7 +155,7 @@ export default function RecruiterDashboardPage() {
 
             <button
               onClick={fetchCandidates}
-              className="py-2.5 px-4 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-xs font-medium text-slate-400 flex items-center space-x-2 transition-colors cursor-pointer"
+              className="py-2.5 px-4 rounded-xl bg-card hover:bg-muted border border-border text-xs font-medium text-muted-foreground flex items-center space-x-2 transition-colors cursor-pointer"
             >
               <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} />
               <span>Refresh Pipeline</span>
@@ -165,27 +165,27 @@ export default function RecruiterDashboardPage() {
 
         {/* Live KPI Stat Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
-          <div className="glass-card rounded-2xl p-5 border border-slate-800">
+          <div className="glass-card rounded-2xl p-5 border border-border">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-medium text-slate-400">Total Applicants</span>
+              <span className="text-xs font-medium text-muted-foreground">Total Applicants</span>
               <Users className="w-4 h-4 text-indigo-400" />
             </div>
             <div className="text-3xl font-extrabold text-white mt-2">{totalApplicants}</div>
-            <span className="text-[11px] text-slate-400 mt-1 block">Completed voice defense review</span>
+            <span className="text-[11px] text-muted-foreground mt-1 block">Completed voice defense review</span>
           </div>
 
-          <div className="glass-card rounded-2xl p-5 border border-slate-800">
+          <div className="glass-card rounded-2xl p-5 border border-border">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-medium text-slate-400">Verified Clean Submissions</span>
+              <span className="text-xs font-medium text-muted-foreground">Verified Clean Submissions</span>
               <ShieldCheck className="w-4 h-4 text-emerald-400" />
             </div>
             <div className="text-3xl font-extrabold text-emerald-400 mt-2">{cleanCount}</div>
             <span className="text-[11px] text-emerald-500/80 mt-1 block">Passed all integrity checks</span>
           </div>
 
-          <div className="glass-card rounded-2xl p-5 border border-slate-800">
+          <div className="glass-card rounded-2xl p-5 border border-border">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-medium text-slate-400">Submissions Under Review</span>
+              <span className="text-xs font-medium text-muted-foreground">Submissions Under Review</span>
               <ShieldAlert className="w-4 h-4 text-amber-400" />
             </div>
             <div className="text-3xl font-extrabold text-amber-400 mt-2">{flaggedCount}</div>
@@ -194,17 +194,17 @@ export default function RecruiterDashboardPage() {
         </div>
 
         {/* Candidate Applicant Review Table */}
-        <div className="glass-panel rounded-2xl p-6 border border-slate-800 space-y-4">
+        <div className="glass-panel rounded-2xl p-6 border border-border space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
               <h2 className="text-base font-bold text-white">Corporate Applicant Pipeline</h2>
-              <p className="text-xs text-slate-400">Review candidate assessment scores, project work, and integrity status.</p>
+              <p className="text-xs text-muted-foreground">Review candidate assessment scores, project work, and integrity status.</p>
             </div>
           </div>
 
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs text-slate-400">
-              <thead className="bg-slate-900/80 text-slate-400 uppercase text-[10px] font-semibold border-b border-slate-800">
+            <table className="w-full text-left text-xs text-muted-foreground">
+              <thead className="bg-card/80 text-muted-foreground uppercase text-[10px] font-semibold border-b border-border">
                 <tr>
                   <th className="py-3 px-4">Candidate</th>
                   <th className="py-3 px-4">Corporate Challenge</th>
@@ -215,12 +215,12 @@ export default function RecruiterDashboardPage() {
               </thead>
               <tbody className="divide-y divide-slate-800/60">
                 {candidates.map((cand: any, idx: number) => (
-                  <tr key={idx} className="hover:bg-slate-900/40 transition-colors">
+                  <tr key={idx} className="hover:bg-card/40 transition-colors">
                     <td className="py-3.5 px-4">
                       <div className="font-semibold text-white">{cand.candidateName}</div>
-                      <div className="font-mono text-[11px] text-slate-400">{cand.candidateEmail}</div>
+                      <div className="font-mono text-[11px] text-muted-foreground">{cand.candidateEmail}</div>
                     </td>
-                    <td className="py-3.5 px-4 text-slate-400 max-w-xs truncate">
+                    <td className="py-3.5 px-4 text-muted-foreground max-w-xs truncate">
                       {cand.sprintTitle}
                     </td>
                     <td className="py-3.5 px-4 font-bold text-indigo-400">
@@ -251,7 +251,7 @@ export default function RecruiterDashboardPage() {
                           <ExternalLink className="w-3 h-3" />
                         </a>
                       ) : (
-                        <span className="text-slate-400">No Credential</span>
+                        <span className="text-muted-foreground">No Credential</span>
                       )}
                     </td>
                   </tr>
@@ -266,14 +266,14 @@ export default function RecruiterDashboardPage() {
       {showCreateModal && (
         <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="glass-panel rounded-3xl p-6 max-w-md w-full border border-indigo-500/30 space-y-4 shadow-2xl">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+            <div className="flex items-center justify-between pb-3 border-b border-border">
               <h3 className="text-base font-bold text-white flex items-center space-x-2">
                 <Code2 className="w-4 h-4 text-indigo-400" />
                 <span>Create Corporate Challenge</span>
               </h3>
               <button
                 onClick={() => setShowCreateModal(false)}
-                className="text-slate-400 hover:text-white text-xs cursor-pointer"
+                className="text-muted-foreground hover:text-white text-xs cursor-pointer"
               >
                 ✕
               </button>
@@ -281,35 +281,35 @@ export default function RecruiterDashboardPage() {
 
             <form onSubmit={handleCreateChallenge} className="space-y-3">
               <div>
-                <label className="text-[11px] font-semibold text-slate-400 block mb-1">Company / Team Name</label>
+                <label className="text-[11px] font-semibold text-muted-foreground block mb-1">Company / Team Name</label>
                 <input
                   type="text"
                   value={newCompany}
                   onChange={(e) => setNewCompany(e.target.value)}
                   placeholder="e.g. Uber"
                   required
-                  className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500"
+                  className="w-full bg-card border border-border rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500"
                 />
               </div>
 
               <div>
-                <label className="text-[11px] font-semibold text-slate-400 block mb-1">Challenge Title</label>
+                <label className="text-[11px] font-semibold text-muted-foreground block mb-1">Challenge Title</label>
                 <input
                   type="text"
                   value={newTitle}
                   onChange={(e) => setNewTitle(e.target.value)}
                   placeholder="e.g. Real-Time Geospatial Driver Dispatcher"
                   required
-                  className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500"
+                  className="w-full bg-card border border-border rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500"
                 />
               </div>
 
               <div>
-                <label className="text-[11px] font-semibold text-slate-400 block mb-1">Language</label>
+                <label className="text-[11px] font-semibold text-muted-foreground block mb-1">Language</label>
                 <select
                   value={newLanguage}
                   onChange={(e) => setNewLanguage(e.target.value)}
-                  className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500"
+                  className="w-full bg-card border border-border rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500"
                 >
                   <option value="python">Python</option>
                   <option value="csharp">C# (.NET)</option>
@@ -318,25 +318,25 @@ export default function RecruiterDashboardPage() {
               </div>
 
               <div>
-                <label className="text-[11px] font-semibold text-slate-400 block mb-1">Technical Problem Description</label>
+                <label className="text-[11px] font-semibold text-muted-foreground block mb-1">Technical Problem Description</label>
                 <textarea
                   value={newDescription}
                   onChange={(e) => setNewDescription(e.target.value)}
                   placeholder="Describe technical constraints, architecture expectations, and defense criteria..."
                   rows={3}
                   required
-                  className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500"
+                  className="w-full bg-card border border-border rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500"
                 />
               </div>
 
               <div>
-                <label className="text-[11px] font-semibold text-slate-400 block mb-1">Custom Invite Code (Optional)</label>
+                <label className="text-[11px] font-semibold text-muted-foreground block mb-1">Custom Invite Code (Optional)</label>
                 <input
                   type="text"
                   value={newInviteCode}
                   onChange={(e) => setNewInviteCode(e.target.value)}
                   placeholder="e.g. UBER-GEO-2026 (Auto-generated if blank)"
-                  className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500 font-mono"
+                  className="w-full bg-card border border-border rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500 font-mono"
                 />
               </div>
 
@@ -350,7 +350,7 @@ export default function RecruiterDashboardPage() {
                 <button
                   type="button"
                   onClick={() => setShowCreateModal(false)}
-                  className="flex-1 py-2 px-3 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-400 font-medium text-xs border border-slate-800 cursor-pointer"
+                  className="flex-1 py-2 px-3 rounded-xl bg-card hover:bg-muted text-muted-foreground font-medium text-xs border border-border cursor-pointer"
                 >
                   Cancel
                 </button>

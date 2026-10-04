@@ -79,13 +79,13 @@ export default function CredentialBadgePage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-200 flex flex-col items-center justify-center font-sans p-6">
+    <div className="min-h-screen bg-background text-foreground flex flex-col items-center justify-center font-sans p-6">
       {/* Background Glow */}
       <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-gradient-to-tr from-indigo-600/30 to-purple-600/30 blur-3xl rounded-full pointer-events-none"></div>
 
       <div className="max-w-2xl w-full glass-panel rounded-3xl p-8 border border-indigo-500/30 relative z-10 space-y-6 shadow-2xl">
         {/* Top Seal Badge Header */}
-        <div className="flex items-center justify-between pb-6 border-b border-slate-800">
+        <div className="flex items-center justify-between pb-6 border-b border-border">
           <div className="flex items-center space-x-3">
             <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-emerald-500 to-teal-500 flex items-center justify-center font-bold text-white shadow-lg shadow-emerald-500/20">
               <Award className="w-6 h-6 text-white" />
@@ -126,11 +126,11 @@ export default function CredentialBadgePage() {
 
         {/* Badge Title & Candidate Info */}
         <div className="text-center space-y-3 py-4">
-          <p className="text-xs text-slate-400 uppercase tracking-widest font-semibold">This Certifies That</p>
+          <p className="text-xs text-muted-foreground uppercase tracking-widest font-semibold">This Certifies That</p>
           <h2 className="text-3xl font-extrabold text-white bg-gradient-to-r from-white via-indigo-200 to-slate-200 bg-clip-text text-transparent">
             {candidateName}
           </h2>
-          <p className="text-xs text-slate-400">has successfully completed the project challenge and demonstrated their skills in the voice assessment.</p>
+          <p className="text-xs text-muted-foreground">has successfully completed the project challenge and demonstrated their skills in the voice assessment.</p>
 
           <div className="inline-block mt-2 px-4 py-2 bg-indigo-500/10 border border-indigo-500/30 rounded-xl text-indigo-300 font-bold text-sm">
             {badgeTitle}
@@ -139,20 +139,20 @@ export default function CredentialBadgePage() {
 
         {/* Competency & Score Grid */}
         <div className="grid grid-cols-2 gap-4">
-          <div className="glass-card rounded-2xl p-4 border border-slate-800 text-center">
-            <span className="text-xs text-slate-400 font-medium">Final Assessment Score</span>
+          <div className="glass-card rounded-2xl p-4 border border-border text-center">
+            <span className="text-xs text-muted-foreground font-medium">Final Assessment Score</span>
             <div className="text-2xl font-extrabold text-indigo-400 mt-1">{finalScore}%</div>
           </div>
 
-          <div className="glass-card rounded-2xl p-4 border border-slate-800 text-center">
-            <span className="text-xs text-slate-400 font-medium">Accrediting Authority</span>
-            <div className="text-xs font-bold text-slate-200 mt-2">{instituteName}</div>
+          <div className="glass-card rounded-2xl p-4 border border-border text-center">
+            <span className="text-xs text-muted-foreground font-medium">Accrediting Authority</span>
+            <div className="text-xs font-bold text-foreground mt-2">{instituteName}</div>
           </div>
         </div>
 
         {/* 1-Click LinkedIn Integration Buttons */}
         <div className="pt-2 space-y-3">
-          <p className="text-xs font-semibold text-slate-400 text-center uppercase tracking-wider">Share Your Achievement</p>
+          <p className="text-xs font-semibold text-muted-foreground text-center uppercase tracking-wider">Share Your Achievement</p>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <a
@@ -178,15 +178,15 @@ export default function CredentialBadgePage() {
         </div>
 
         {/* Verification Footer Details */}
-        <div className="pt-4 border-t border-slate-800 flex items-center justify-between text-xs text-slate-400">
+        <div className="pt-4 border-t border-border flex items-center justify-between text-xs text-muted-foreground">
           <div className="flex items-center space-x-1.5">
-            <Calendar className="w-4 h-4 text-slate-400" />
+            <Calendar className="w-4 h-4 text-muted-foreground" />
             <span>Issued: August 31, 2026</span>
           </div>
 
           <button
             onClick={handleCopyLink}
-            className="flex items-center space-x-1 font-mono text-[11px] text-indigo-400 bg-slate-900 hover:bg-slate-800 px-3 py-1 rounded-lg border border-slate-800 cursor-pointer transition-colors"
+            className="flex items-center space-x-1 font-mono text-[11px] text-indigo-400 bg-card hover:bg-muted px-3 py-1 rounded-lg border border-border cursor-pointer transition-colors"
           >
             {copied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
             <span>{copied ? "Link Copied!" : `ID: ${slug}`}</span>
@@ -195,7 +195,7 @@ export default function CredentialBadgePage() {
 
         <button
           onClick={() => router.push("/")}
-          className="w-full py-2.5 bg-slate-900 hover:bg-slate-800 text-slate-400 rounded-xl text-xs font-medium border border-slate-800 transition-colors flex items-center justify-center space-x-2 cursor-pointer"
+          className="w-full py-2.5 bg-card hover:bg-muted text-muted-foreground rounded-xl text-xs font-medium border border-border transition-colors flex items-center justify-center space-x-2 cursor-pointer"
         >
           <span>Return to Dashboard</span>
         </button>

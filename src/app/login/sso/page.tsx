@@ -83,7 +83,7 @@ export default function EnterpriseSsoLoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-200 flex flex-col justify-center items-center px-4 py-12 relative overflow-hidden">
+    <div className="min-h-screen bg-background text-foreground flex flex-col justify-center items-center px-4 py-12 relative overflow-hidden">
       {/* Background Glow */}
       <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-96 h-96 bg-indigo-600/10 blur-[120px] rounded-full pointer-events-none" />
 
@@ -96,18 +96,18 @@ export default function EnterpriseSsoLoginPage() {
           <h1 className="text-2xl font-bold tracking-tight text-white">
             Enterprise Single Sign-On
           </h1>
-          <p className="text-sm text-slate-400">
+          <p className="text-sm text-muted-foreground">
             Sign in with your organization's SAML 2.0 or OIDC Identity Provider (Okta, Azure AD, PingIdentity).
           </p>
         </div>
 
         {/* Card */}
-        <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-6 sm:p-8 backdrop-blur-xl shadow-2xl space-y-6">
+        <div className="bg-card/90 border border-border rounded-2xl p-6 sm:p-8 backdrop-blur-xl shadow-2xl space-y-6">
           {!authSuccess ? (
             <>
               <form onSubmit={handleDiscovery} className="space-y-4">
                 <div>
-                  <label htmlFor="email" className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
+                  <label htmlFor="email" className="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
                     Work or University Email
                   </label>
                   <div className="relative">
@@ -118,9 +118,9 @@ export default function EnterpriseSsoLoginPage() {
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder="e.g. alex@stanford.edu or dev@uber.com"
                       required
-                      className="w-full bg-slate-950/80 border border-slate-800/80 rounded-xl px-4 py-3 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition"
+                      className="w-full bg-background/80 border border-border/80 rounded-xl px-4 py-3 text-sm text-foreground placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition"
                     />
-                    <Globe className="absolute right-3.5 top-3.5 w-4 h-4 text-slate-400 pointer-events-none" />
+                    <Globe className="absolute right-3.5 top-3.5 w-4 h-4 text-muted-foreground pointer-events-none" />
                   </div>
                 </div>
 
@@ -153,7 +153,7 @@ export default function EnterpriseSsoLoginPage() {
 
               {/* Discovered IdP Card */}
               {discoveryResult && (
-                <div className="p-4 rounded-xl bg-slate-950/90 border border-indigo-500/30 space-y-4 animate-in fade-in duration-300">
+                <div className="p-4 rounded-xl bg-background/90 border border-indigo-500/30 space-y-4 animate-in fade-in duration-300">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2 text-indigo-400 font-semibold text-sm">
                       <ShieldCheck className="w-4 h-4" />
@@ -164,9 +164,9 @@ export default function EnterpriseSsoLoginPage() {
                     </span>
                   </div>
 
-                  <div className="text-xs text-slate-400 space-y-1">
-                    <div>Domain: <span className="text-slate-200 font-mono">@{discoveryResult.domain}</span></div>
-                    <div>Default Role: <span className="text-slate-200 font-mono">{discoveryResult.defaultRole}</span></div>
+                  <div className="text-xs text-muted-foreground space-y-1">
+                    <div>Domain: <span className="text-foreground font-mono">@{discoveryResult.domain}</span></div>
+                    <div>Default Role: <span className="text-foreground font-mono">{discoveryResult.defaultRole}</span></div>
                   </div>
 
                   <button
@@ -192,7 +192,7 @@ export default function EnterpriseSsoLoginPage() {
                       href={`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/sso/metadata/${discoveryResult.domain}`}
                       target="_blank"
                       rel="noreferrer"
-                      className="inline-flex items-center gap-1.5 text-xs text-slate-400 hover:text-indigo-400 transition"
+                      className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-indigo-400 transition"
                     >
                       <Download className="w-3 h-3" />
                       Download SAML SP Metadata XML
@@ -209,7 +209,7 @@ export default function EnterpriseSsoLoginPage() {
               </div>
               <div className="space-y-1">
                 <h3 className="text-lg font-bold text-white">Federation Authenticated!</h3>
-                <p className="text-xs text-slate-400">
+                <p className="text-xs text-muted-foreground">
                   Welcome, <span className="text-indigo-300 font-medium">{authSuccess.user.name}</span>. Your enterprise role is:
                 </p>
                 <div className="inline-block px-3 py-1 rounded-full bg-indigo-500/20 border border-indigo-500/40 text-indigo-300 text-xs font-semibold mt-1">
@@ -217,9 +217,9 @@ export default function EnterpriseSsoLoginPage() {
                 </div>
               </div>
 
-              <div className="p-3 bg-slate-950 rounded-xl border border-slate-800 text-left text-xs font-mono text-slate-400 break-all space-y-1">
-                <div className="text-slate-400 text-[10px] uppercase font-semibold">JWT Bearer Token</div>
-                <div className="line-clamp-2 text-slate-400">{authSuccess.token}</div>
+              <div className="p-3 bg-background rounded-xl border border-border text-left text-xs font-mono text-muted-foreground break-all space-y-1">
+                <div className="text-muted-foreground text-[10px] uppercase font-semibold">JWT Bearer Token</div>
+                <div className="line-clamp-2 text-muted-foreground">{authSuccess.token}</div>
               </div>
 
               <div className="pt-2 flex flex-col gap-2">
@@ -235,7 +235,7 @@ export default function EnterpriseSsoLoginPage() {
                     setDiscoveryResult(null);
                     setEmail("");
                   }}
-                  className="w-full py-2 text-xs text-slate-400 hover:text-slate-200 transition"
+                  className="w-full py-2 text-xs text-muted-foreground hover:text-foreground transition"
                 >
                   Sign Out / Switch Account
                 </button>
@@ -245,7 +245,7 @@ export default function EnterpriseSsoLoginPage() {
         </div>
 
         {/* Footer Links */}
-        <div className="text-center text-xs text-slate-400">
+        <div className="text-center text-xs text-muted-foreground">
           Not an enterprise user?{" "}
           <a href="/login" className="text-indigo-400 hover:text-indigo-300 underline underline-offset-4">
             Sign in with Standard Account

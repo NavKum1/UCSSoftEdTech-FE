@@ -166,9 +166,9 @@ export default function BehavioralSentimentPage() {
   const latestTelemetry = timeline.length > 0 ? timeline[timeline.length - 1] : null;
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-200 p-6 font-sans">
+    <div className="min-h-screen bg-background text-foreground p-6 font-sans">
       {/* Top Header */}
-      <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-start md:items-center justify-between pb-6 border-b border-slate-800 gap-4">
+      <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-start md:items-center justify-between pb-6 border-b border-border gap-4">
         <div>
           <div className="flex items-center gap-3">
             <span className="px-2.5 py-1 text-xs font-semibold uppercase tracking-wider bg-violet-500/10 text-violet-400 border border-violet-500/20 rounded">
@@ -182,7 +182,7 @@ export default function BehavioralSentimentPage() {
           <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-white mt-1">
             AI Communication & Delivery Coach
           </h1>
-          <p className="text-sm text-slate-400 mt-0.5">
+          <p className="text-sm text-muted-foreground mt-0.5">
             Real-time speaking pace, confidence tracking, and communication recommendations.
           </p>
         </div>
@@ -190,13 +190,13 @@ export default function BehavioralSentimentPage() {
         <div className="flex items-center gap-3">
           <Link
             href={`/interview/${interviewId}/replay`}
-            className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-sm font-medium rounded-lg transition border border-slate-800"
+            className="px-4 py-2 bg-muted hover:bg-slate-700 text-foreground text-sm font-medium rounded-lg transition border border-border"
           >
             Audio Replay
           </Link>
           <Link
             href="/dashboard"
-            className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-sm font-medium rounded-lg transition border border-slate-800"
+            className="px-4 py-2 bg-muted hover:bg-slate-700 text-foreground text-sm font-medium rounded-lg transition border border-border"
           >
             Dashboard
           </Link>
@@ -217,12 +217,12 @@ export default function BehavioralSentimentPage() {
         {/* Left Column: Live Gauges & Adaptive Directive */}
         <div className="space-y-6">
           {/* Live Status Card */}
-          <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-lg">
-            <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-400 mb-4">
+          <div className="bg-card border border-border rounded-xl p-5 shadow-lg">
+            <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground mb-4">
               Current Composure State
             </h2>
 
-            <div className="text-center py-4 bg-slate-950/60 border border-slate-800 rounded-lg">
+            <div className="text-center py-4 bg-background/60 border border-border rounded-lg">
               <span
                 className={`inline-block px-4 py-1.5 rounded-full text-sm font-bold uppercase tracking-wider ${
                   latestTelemetry?.psychologicalSafetyState === "Optimal"
@@ -238,26 +238,26 @@ export default function BehavioralSentimentPage() {
               </span>
 
               <div className="mt-4 grid grid-cols-2 gap-3 px-4 text-left">
-                <div className="bg-slate-900/80 p-2.5 rounded border border-slate-800">
-                  <div className="text-xs text-slate-400">Vocal Tension</div>
+                <div className="bg-card/80 p-2.5 rounded border border-border">
+                  <div className="text-xs text-muted-foreground">Vocal Tension</div>
                   <div className="text-lg font-bold text-white">
                     {latestTelemetry ? `${latestTelemetry.acousticStressScore.toFixed(1)}/100` : "15.0/100"}
                   </div>
                 </div>
-                <div className="bg-slate-900/80 p-2.5 rounded border border-slate-800">
-                  <div className="text-xs text-slate-400">Speaking Pace</div>
+                <div className="bg-card/80 p-2.5 rounded border border-border">
+                  <div className="text-xs text-muted-foreground">Speaking Pace</div>
                   <div className="text-lg font-bold text-white">
                     {latestTelemetry ? `${latestTelemetry.speechCadenceWpm.toFixed(0)} WPM` : "135 WPM"}
                   </div>
                 </div>
-                <div className="bg-slate-900/80 p-2.5 rounded border border-slate-800">
-                  <div className="text-xs text-slate-400">Voice Variation</div>
+                <div className="bg-card/80 p-2.5 rounded border border-border">
+                  <div className="text-xs text-muted-foreground">Voice Variation</div>
                   <div className="text-lg font-bold text-white">
                     {latestTelemetry ? `${latestTelemetry.pitchVarianceHz.toFixed(1)} Hz` : "18.5 Hz"}
                   </div>
                 </div>
-                <div className="bg-slate-900/80 p-2.5 rounded border border-slate-800">
-                  <div className="text-xs text-slate-400">Tone / Sentiment</div>
+                <div className="bg-card/80 p-2.5 rounded border border-border">
+                  <div className="text-xs text-muted-foreground">Tone / Sentiment</div>
                   <div className="text-lg font-bold text-white">
                     {latestTelemetry ? latestTelemetry.sentimentScore.toFixed(2) : "+0.65"}
                   </div>
@@ -288,8 +288,8 @@ export default function BehavioralSentimentPage() {
           </div>
 
           {/* Interactive Simulation Preset Tray */}
-          <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-lg">
-            <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-400 mb-3">
+          <div className="bg-card border border-border rounded-xl p-5 shadow-lg">
+            <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground mb-3">
               Practice Speech Presets
             </h2>
             <div className="grid grid-cols-3 gap-2">
@@ -315,7 +315,7 @@ export default function BehavioralSentimentPage() {
 
             <div className="mt-4 space-y-3 text-xs">
               <div>
-                <label className="text-slate-400">Voice Variation ({pitchVariance} Hz)</label>
+                <label className="text-muted-foreground">Voice Variation ({pitchVariance} Hz)</label>
                 <input
                   type="range"
                   min="5"
@@ -326,7 +326,7 @@ export default function BehavioralSentimentPage() {
                 />
               </div>
               <div>
-                <label className="text-slate-400">Speaking Pace ({speechWpm} WPM)</label>
+                <label className="text-muted-foreground">Speaking Pace ({speechWpm} WPM)</label>
                 <input
                   type="range"
                   min="50"
@@ -337,7 +337,7 @@ export default function BehavioralSentimentPage() {
                 />
               </div>
               <div>
-                <label className="text-slate-400">Pauses & Hesitations ({hesitations})</label>
+                <label className="text-muted-foreground">Pauses & Hesitations ({hesitations})</label>
                 <input
                   type="range"
                   min="0"
@@ -362,11 +362,11 @@ export default function BehavioralSentimentPage() {
         {/* Center & Right Column: Telemetry Timeline & Executive Presence Summary */}
         <div className="lg:col-span-2 space-y-6">
           {/* Executive Presence Summary Card */}
-          <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-lg">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+          <div className="bg-card border border-border rounded-xl p-5 shadow-lg">
+            <div className="flex items-center justify-between pb-3 border-b border-border">
               <div>
                 <h2 className="text-base font-semibold text-white">Confidence & Communication Summary</h2>
-                <p className="text-xs text-slate-400">Overall confidence, speaking pace, and delivery insights</p>
+                <p className="text-xs text-muted-foreground">Overall confidence, speaking pace, and delivery insights</p>
               </div>
               <button
                 onClick={handleGenerateSummary}
@@ -380,26 +380,26 @@ export default function BehavioralSentimentPage() {
             {summary ? (
               <div className="mt-4 space-y-4">
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                  <div className="bg-slate-950 p-3 rounded-lg border border-slate-800 text-center">
-                    <div className="text-xs text-slate-400">Confidence Score</div>
+                  <div className="bg-background p-3 rounded-lg border border-border text-center">
+                    <div className="text-xs text-muted-foreground">Confidence Score</div>
                     <div className="text-2xl font-black text-emerald-400 mt-0.5">
                       {summary.overallConfidenceScore}%
                     </div>
                   </div>
-                  <div className="bg-slate-950 p-3 rounded-lg border border-slate-800 text-center">
-                    <div className="text-xs text-slate-400">Stress Composure</div>
+                  <div className="bg-background p-3 rounded-lg border border-border text-center">
+                    <div className="text-xs text-muted-foreground">Stress Composure</div>
                     <div className="text-2xl font-black text-indigo-400 mt-0.5">
                       {summary.resilienceScore}%
                     </div>
                   </div>
-                  <div className="bg-slate-950 p-3 rounded-lg border border-slate-800 text-center">
-                    <div className="text-xs text-slate-400">Average Pace</div>
+                  <div className="bg-background p-3 rounded-lg border border-border text-center">
+                    <div className="text-xs text-muted-foreground">Average Pace</div>
                     <div className="text-2xl font-black text-white mt-0.5">
                       {summary.averageSpeechWpm.toFixed(0)} WPM
                     </div>
                   </div>
-                  <div className="bg-slate-950 p-3 rounded-lg border border-slate-800 text-center">
-                    <div className="text-xs text-slate-400">Overall Rating</div>
+                  <div className="bg-background p-3 rounded-lg border border-border text-center">
+                    <div className="text-xs text-muted-foreground">Overall Rating</div>
                     <div className="text-sm font-bold text-amber-400 mt-2">
                       {summary.executivePresenceRating}
                     </div>
@@ -407,11 +407,11 @@ export default function BehavioralSentimentPage() {
                 </div>
 
                 {/* Coaching Feedback Notes */}
-                <div className="bg-slate-950 p-4 rounded-lg border border-slate-800">
-                  <div className="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">
+                <div className="bg-background p-4 rounded-lg border border-border">
+                  <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">
                     Personalized Delivery & Speaking Tips
                   </div>
-                  <ul className="space-y-2 text-xs text-slate-400">
+                  <ul className="space-y-2 text-xs text-muted-foreground">
                     {summary.executiveCoachingFeedback.map((fb, idx) => (
                       <li key={idx} className="flex items-start gap-2">
                         <span className="text-emerald-400 font-bold">✓</span>
@@ -422,29 +422,29 @@ export default function BehavioralSentimentPage() {
                 </div>
               </div>
             ) : (
-              <div className="text-center py-8 text-slate-400 text-xs">
+              <div className="text-center py-8 text-muted-foreground text-xs">
                 No summary generated yet. Add speaking samples and click &quot;Generate Summary Report&quot;.
               </div>
             )}
           </div>
 
           {/* Telemetry Chronological Timeline */}
-          <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-lg">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+          <div className="bg-card border border-border rounded-xl p-5 shadow-lg">
+            <div className="flex items-center justify-between pb-3 border-b border-border">
               <h2 className="text-base font-semibold text-white">Speaking Timeline & Highlights</h2>
-              <span className="text-xs text-slate-400">{timeline.length} Recorded Samples</span>
+              <span className="text-xs text-muted-foreground">{timeline.length} Recorded Samples</span>
             </div>
 
             <div className="mt-4 space-y-3 max-h-96 overflow-y-auto pr-1">
               {timeline.length === 0 ? (
-                <div className="text-center py-8 text-slate-400 text-xs">
+                <div className="text-center py-8 text-muted-foreground text-xs">
                   No speaking samples recorded for this session yet. Use the panel on the left to test or record samples.
                 </div>
               ) : (
                 timeline.map((point) => (
                   <div
                     key={point.id}
-                    className="p-3 bg-slate-950 rounded-lg border border-slate-800/80 flex flex-col md:flex-row items-start md:items-center justify-between gap-3 text-xs"
+                    className="p-3 bg-background rounded-lg border border-border/80 flex flex-col md:flex-row items-start md:items-center justify-between gap-3 text-xs"
                   >
                     <div className="space-y-1">
                       <div className="flex items-center gap-2">
@@ -461,16 +461,16 @@ export default function BehavioralSentimentPage() {
                         >
                           {point.psychologicalSafetyState}
                         </span>
-                        <span className="text-slate-400">Tension: {point.acousticStressScore.toFixed(0)}/100</span>
-                        <span className="text-slate-400">Pace: {point.speechCadenceWpm.toFixed(0)} WPM</span>
-                        <span className="text-slate-400">Variation: {point.pitchVarianceHz.toFixed(1)} Hz</span>
+                        <span className="text-muted-foreground">Tension: {point.acousticStressScore.toFixed(0)}/100</span>
+                        <span className="text-muted-foreground">Pace: {point.speechCadenceWpm.toFixed(0)} WPM</span>
+                        <span className="text-muted-foreground">Variation: {point.pitchVarianceHz.toFixed(1)} Hz</span>
                       </div>
-                      <p className="text-slate-400 italic">&ldquo;{point.telemetrySnippet}&rdquo;</p>
+                      <p className="text-muted-foreground italic">&ldquo;{point.telemetrySnippet}&rdquo;</p>
                     </div>
 
                     <div className="text-right shrink-0">
                       <span className="text-[11px] font-mono text-violet-400 block">{point.pacingDirective}</span>
-                      <span className="text-[10px] text-slate-400">
+                      <span className="text-[10px] text-muted-foreground">
                         {new Date(point.timestamp).toLocaleTimeString()}
                       </span>
                     </div>

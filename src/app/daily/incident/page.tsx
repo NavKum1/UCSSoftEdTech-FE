@@ -114,6 +114,9 @@ export default function DailyIncidentPage() {
   const [streak, setStreak] = useState<UserStreak | null>(null);
   const [leagues, setLeagues] = useState<WeeklyLeagues | null>(null);
 
+  const [track, setTrack] = useState<string>("DevOps");
+  const [difficultyTier, setDifficultyTier] = useState<string>("Bronze");
+
   const [selectedHypothesis, setSelectedHypothesis] = useState<string>("");
   const [selectedAction, setSelectedAction] = useState<string>("");
   const [customNotes, setCustomNotes] = useState<string>("");
@@ -139,7 +142,7 @@ export default function DailyIncidentPage() {
 
   useEffect(() => {
     fetchInitialData();
-  }, []);
+  }, [track, difficultyTier]);
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
@@ -155,7 +158,7 @@ export default function DailyIncidentPage() {
     setLoading(true);
     try {
       // 1. Fetch Today's Incident
-      const incRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/incidents/today`);
+      const incRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/incidents/today?track=${track}&difficultyTier=${difficultyTier}`);
       if (incRes.ok) {
         const incData: IncidentKata = await incRes.json();
         setIncident(incData);
@@ -270,10 +273,10 @@ export default function DailyIncidentPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-950 text-slate-200 flex items-center justify-center p-6">
+      <div className="min-h-screen bg-background text-foreground flex items-center justify-center p-6">
         <div className="text-center space-y-4">
           <div className="w-12 h-12 border-4 border-amber-500 border-t-transparent rounded-full animate-spin mx-auto" />
-          <p className="text-slate-400 font-mono text-sm tracking-wide">
+          <p className="text-muted-foreground font-mono text-sm tracking-wide">
             Loading Daily Incident Scenario & Live System Metrics...
           </p>
         </div>
@@ -281,15 +284,33 @@ export default function DailyIncidentPage() {
     );
   }
 
+  if (!incident) {
+    return (
+      <div className="min-h-screen bg-background text-foreground flex flex-col items-center justify-center p-6">
+        <div className="text-center space-y-4">
+          <div className="text-6xl mb-4">🛡️</div>
+          <h2 className="text-2xl font-bold text-foreground">No Incident Kata Available</h2>
+          <p className="text-muted-foreground font-mono text-sm tracking-wide">
+            You have successfully prevented all outages for {track} at the {difficultyTier} tier.
+          </p>
+          <div className="flex gap-4 justify-center mt-6">
+            <button onClick={() => setTrack("DevOps")} className="px-4 py-2 bg-muted hover:bg-slate-700 rounded transition text-sm">Switch to DevOps</button>
+            <button onClick={() => setDifficultyTier("Bronze")} className="px-4 py-2 bg-muted hover:bg-slate-700 rounded transition text-sm">Switch to Bronze</button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-200 antialiased selection:bg-amber-500 selection:text-black">
+    <div className="min-h-screen bg-background text-foreground antialiased selection:bg-amber-500 selection:text-black">
       {/* Top Navigation HUD */}
-      <header className="border-b border-slate-800 bg-slate-900/80 backdrop-blur sticky top-0 z-50 px-6 py-4">
+      <header className="border-b border-border bg-card/80 backdrop-blur sticky top-0 z-50 px-6 py-4">
         <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <Link
               href="/"
-              className="text-xs font-mono uppercase tracking-widest text-slate-400 hover:text-white transition"
+              className="text-xs font-mono uppercase tracking-widest text-muted-foreground hover:text-white transition"
             >
               ← System Dashboard
             </Link>
@@ -306,25 +327,47 @@ export default function DailyIncidentPage() {
                 {incident?.severity || "SEV-1"}
               </span>
             </div>
+            
+            <div className="flex items-center gap-2 ml-4">
+              <select
+                value={track}
+                onChange={(e) => setTrack(e.target.value)}
+                className="bg-muted border border-slate-700 text-slate-300 text-xs rounded px-2 py-1 outline-none focus:border-amber-500 transition"
+              >
+                <option value="DevOps">DevOps</option>
+                <option value="Backend">Backend</option>
+                <option value="Frontend">Frontend</option>
+              </select>
+              <select
+                value={difficultyTier}
+                onChange={(e) => setDifficultyTier(e.target.value)}
+                className="bg-muted border border-slate-700 text-slate-300 text-xs rounded px-2 py-1 outline-none focus:border-amber-500 transition"
+              >
+                <option value="Bronze">Bronze (L3)</option>
+                <option value="Silver">Silver (L4)</option>
+                <option value="Gold">Gold (L5)</option>
+                <option value="Diamond">Diamond (L6+)</option>
+              </select>
+            </div>
           </div>
 
           {/* Gamification & Streak HUD */}
           <div className="flex items-center gap-4 text-xs font-mono">
             {/* Daily Streak */}
-            <div className="flex items-center gap-2 bg-slate-800/80 border border-amber-500/30 px-3 py-1.5 rounded-lg shadow-sm">
+            <div className="flex items-center gap-2 bg-muted/80 border border-amber-500/30 px-3 py-1.5 rounded-lg shadow-sm">
               <span className="text-base">🔥</span>
               <div>
                 <span className="text-amber-400 font-bold text-sm">
                   {streak?.currentStreak ?? 1} Day Streak
                 </span>
-                <span className="text-slate-400 text-[10px] block">
+                <span className="text-muted-foreground text-[10px] block">
                   Best: {streak?.highestStreak ?? 1}d
                 </span>
               </div>
             </div>
 
             {/* Streak Freeze Shields */}
-            <div className="flex items-center gap-2 bg-slate-800/80 border border-cyan-500/30 px-3 py-1.5 rounded-lg">
+            <div className="flex items-center gap-2 bg-muted/80 border border-cyan-500/30 px-3 py-1.5 rounded-lg">
               <span className="text-base">🛡️</span>
               <div>
                 <div className="flex items-center gap-1">
@@ -339,7 +382,7 @@ export default function DailyIncidentPage() {
                     />
                   ))}
                 </div>
-                <span className="text-slate-400 text-[10px] block">
+                <span className="text-muted-foreground text-[10px] block">
                   {streak?.streakFreezeShields ?? 0}/3 Shields
                 </span>
               </div>
@@ -355,26 +398,26 @@ export default function DailyIncidentPage() {
             </div>
 
             {/* Weekly League */}
-            <div className="flex items-center gap-2 bg-slate-800/80 border border-indigo-500/30 px-3 py-1.5 rounded-lg">
+            <div className="flex items-center gap-2 bg-muted/80 border border-indigo-500/30 px-3 py-1.5 rounded-lg">
               <span className="text-base">🏆</span>
               <div>
                 <span className="text-indigo-400 font-bold text-sm">
                   {streak?.currentLeague ?? "Bronze"} League
                 </span>
-                <span className="text-slate-400 text-[10px] block">
+                <span className="text-muted-foreground text-[10px] block">
                   {streak?.weeklyXp ?? 0} Weekly XP
                 </span>
               </div>
             </div>
 
             {/* Triage Elapsed Stopwatch */}
-            <div className="flex items-center gap-2 bg-slate-800/80 border border-emerald-500/30 px-3 py-1.5 rounded-lg">
+            <div className="flex items-center gap-2 bg-muted/80 border border-emerald-500/30 px-3 py-1.5 rounded-lg">
               <span className="text-base">⏱️</span>
               <div>
                 <span className="text-emerald-400 font-bold text-sm">
                   {formatTimer(timerSeconds)}
                 </span>
-                <span className="text-slate-400 text-[10px] block">
+                <span className="text-muted-foreground text-[10px] block">
                   {timerSeconds <= 180 ? "+50 XP Rapid SRE" : "+25 XP"}
                 </span>
               </div>
@@ -393,12 +436,12 @@ export default function DailyIncidentPage() {
                 <span className="px-2 py-0.5 text-[10px] uppercase font-mono font-bold bg-amber-500/10 text-amber-400 border border-amber-500/30 rounded">
                   08:00 AM Daily Incident Kata #{incident?.dayIndex ?? 0}
                 </span>
-                <span className="px-2 py-0.5 text-[10px] font-mono bg-slate-800 text-slate-400 rounded border border-slate-800">
+                <span className="px-2 py-0.5 text-[10px] font-mono bg-muted text-muted-foreground rounded border border-border">
                   Category: {incident?.category}
                 </span>
               </div>
-              <h2 className="text-2xl font-bold text-slate-200">{incident?.title}</h2>
-              <p className="text-sm text-slate-400 leading-relaxed max-w-4xl">
+              <h2 className="text-2xl font-bold text-foreground">{incident?.title}</h2>
+              <p className="text-sm text-muted-foreground leading-relaxed max-w-4xl">
                 {incident?.outageSymptoms}
               </p>
             </div>
@@ -406,7 +449,7 @@ export default function DailyIncidentPage() {
             {streak?.completedToday && (
               <div className="bg-emerald-950/80 border border-emerald-500/40 text-emerald-300 px-4 py-3 rounded-xl text-center shrink-0">
                 <span className="text-base block">✅ Today&apos;s Kata Completed</span>
-                <span className="text-xs text-slate-400 font-mono">
+                <span className="text-xs text-muted-foreground font-mono">
                   Next outage arrives tomorrow at 08:00 AM
                 </span>
               </div>
@@ -415,13 +458,13 @@ export default function DailyIncidentPage() {
         </div>
 
         {/* Navigation Tabs */}
-        <div className="flex items-center gap-2 border-b border-slate-800">
+        <div className="flex items-center gap-2 border-b border-border">
           <button
             onClick={() => setActiveTab("briefing")}
             className={`px-4 py-2 text-sm font-medium border-b-2 transition ${
               activeTab === "briefing"
                 ? "border-amber-500 text-amber-400 bg-amber-500/5"
-                : "border-transparent text-slate-400 hover:text-slate-200"
+                : "border-transparent text-muted-foreground hover:text-foreground"
             }`}
           >
             📋 Outage Briefing & Topology
@@ -431,7 +474,7 @@ export default function DailyIncidentPage() {
             className={`px-4 py-2 text-sm font-medium border-b-2 transition ${
               activeTab === "telemetry"
                 ? "border-amber-500 text-amber-400 bg-amber-500/5"
-                : "border-transparent text-slate-400 hover:text-slate-200"
+                : "border-transparent text-muted-foreground hover:text-foreground"
             }`}
           >
             📊 Live System Metrics
@@ -441,7 +484,7 @@ export default function DailyIncidentPage() {
             className={`px-4 py-2 text-sm font-medium border-b-2 transition ${
               activeTab === "logs"
                 ? "border-amber-500 text-amber-400 bg-amber-500/5"
-                : "border-transparent text-slate-400 hover:text-slate-200"
+                : "border-transparent text-muted-foreground hover:text-foreground"
             }`}
           >
             💻 Terminal Crash Logs
@@ -451,7 +494,7 @@ export default function DailyIncidentPage() {
             className={`px-4 py-2 text-sm font-medium border-b-2 transition ${
               activeTab === "leagues"
                 ? "border-amber-500 text-amber-400 bg-amber-500/5"
-                : "border-transparent text-slate-400 hover:text-slate-200"
+                : "border-transparent text-muted-foreground hover:text-foreground"
             }`}
           >
             🏆 Weekly Promotion League
@@ -462,22 +505,22 @@ export default function DailyIncidentPage() {
         {activeTab === "briefing" && (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div className="lg:col-span-2 space-y-6">
-              <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-3">
-                <h3 className="text-sm font-mono text-slate-400 uppercase tracking-wider">
+              <div className="bg-card border border-border rounded-xl p-5 space-y-3">
+                <h3 className="text-sm font-mono text-muted-foreground uppercase tracking-wider">
                   🏗️ Production Topology Under Fire
                 </h3>
-                <p className="text-slate-200 text-sm leading-relaxed font-sans bg-slate-950 p-4 rounded-lg border border-slate-800/80">
+                <p className="text-foreground text-sm leading-relaxed font-sans bg-background p-4 rounded-lg border border-border/80">
                   {incident?.topologyDescription}
                 </p>
               </div>
 
               {/* Triage Decision Canvas */}
-              <div className="bg-slate-900 border border-slate-800 rounded-xl p-6 space-y-6">
+              <div className="bg-card border border-border rounded-xl p-6 space-y-6">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-lg font-bold text-slate-200 flex items-center gap-2">
+                  <h3 className="text-lg font-bold text-foreground flex items-center gap-2">
                     <span>🔬</span> Step 1: Diagnose Root Cause Hypothesis
                   </h3>
-                  <span className="text-xs font-mono text-slate-400">Select 1 Hypothesis</span>
+                  <span className="text-xs font-mono text-muted-foreground">Select 1 Hypothesis</span>
                 </div>
 
                 <div className="space-y-3">
@@ -486,8 +529,8 @@ export default function DailyIncidentPage() {
                       key={hyp.id}
                       className={`block p-4 rounded-xl border cursor-pointer transition ${
                         selectedHypothesis === hyp.id
-                          ? "bg-amber-950/30 border-amber-500 text-slate-200 shadow-[0_0_12px_rgba(245,158,11,0.15)]"
-                          : "bg-slate-950/60 border-slate-800/80 text-slate-400 hover:border-slate-800"
+                          ? "bg-amber-950/30 border-amber-500 text-foreground shadow-[0_0_12px_rgba(245,158,11,0.15)]"
+                          : "bg-background/60 border-border/80 text-muted-foreground hover:border-border"
                       }`}
                     >
                       <div className="flex items-start gap-3">
@@ -501,7 +544,7 @@ export default function DailyIncidentPage() {
                         />
                         <div className="space-y-1">
                           <span className="font-semibold text-sm block">{hyp.label}</span>
-                          <span className="text-xs text-slate-400 leading-normal block">
+                          <span className="text-xs text-muted-foreground leading-normal block">
                             {hyp.rationale}
                           </span>
                         </div>
@@ -510,12 +553,12 @@ export default function DailyIncidentPage() {
                   ))}
                 </div>
 
-                <div className="border-t border-slate-800 pt-6">
+                <div className="border-t border-border pt-6">
                   <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-lg font-bold text-slate-200 flex items-center gap-2">
+                    <h3 className="text-lg font-bold text-foreground flex items-center gap-2">
                       <span>⚡</span> Step 2: Select Surgical Mitigation Action
                     </h3>
-                    <span className="text-xs font-mono text-slate-400">Assess Blast Radius Risk</span>
+                    <span className="text-xs font-mono text-muted-foreground">Assess Blast Radius Risk</span>
                   </div>
 
                   <div className="space-y-3">
@@ -524,8 +567,8 @@ export default function DailyIncidentPage() {
                         key={act.id}
                         className={`block p-4 rounded-xl border cursor-pointer transition ${
                           selectedAction === act.id
-                            ? "bg-amber-950/30 border-amber-500 text-slate-200 shadow-[0_0_12px_rgba(245,158,11,0.15)]"
-                            : "bg-slate-950/60 border-slate-800/80 text-slate-400 hover:border-slate-800"
+                            ? "bg-amber-950/30 border-amber-500 text-foreground shadow-[0_0_12px_rgba(245,158,11,0.15)]"
+                            : "bg-background/60 border-border/80 text-muted-foreground hover:border-border"
                         }`}
                       >
                         <div className="flex items-start gap-3">
@@ -552,10 +595,10 @@ export default function DailyIncidentPage() {
                                 {act.risk.split(" ")[0]} Risk
                               </span>
                             </div>
-                            <pre className="text-[11px] font-mono bg-slate-950 p-2.5 rounded border border-slate-800 text-amber-300/90 overflow-x-auto">
+                            <pre className="text-[11px] font-mono bg-background p-2.5 rounded border border-border text-amber-300/90 overflow-x-auto">
                               $ {act.command}
                             </pre>
-                            <span className="text-[11px] text-slate-400 block">{act.risk}</span>
+                            <span className="text-[11px] text-muted-foreground block">{act.risk}</span>
                           </div>
                         </div>
                       </label>
@@ -563,8 +606,8 @@ export default function DailyIncidentPage() {
                   </div>
                 </div>
 
-                <div className="border-t border-slate-800 pt-6 space-y-2">
-                  <label className="text-xs font-mono text-slate-400 uppercase tracking-wider block">
+                <div className="border-t border-border pt-6 space-y-2">
+                  <label className="text-xs font-mono text-muted-foreground uppercase tracking-wider block">
                     📝 Optional Architect Post-Mortem Notes
                   </label>
                   <textarea
@@ -572,7 +615,7 @@ export default function DailyIncidentPage() {
                     value={customNotes}
                     onChange={(e) => setCustomNotes(e.target.value)}
                     placeholder="Provide additional architectural reasoning, long-term SRE prevention recommendations..."
-                    className="w-full bg-slate-950 border border-slate-800 rounded-lg p-3 text-xs text-slate-200 font-mono focus:border-amber-500 focus:outline-none"
+                    className="w-full bg-background border border-border rounded-lg p-3 text-xs text-foreground font-mono focus:border-amber-500 focus:outline-none"
                   />
                 </div>
 
@@ -582,7 +625,7 @@ export default function DailyIncidentPage() {
                     disabled={submitting || !selectedHypothesis || !selectedAction}
                     className={`w-full py-4 rounded-xl font-bold text-sm tracking-wide transition flex items-center justify-center gap-2 ${
                       submitting || !selectedHypothesis || !selectedAction
-                        ? "bg-slate-800 text-slate-400 cursor-not-allowed"
+                        ? "bg-muted text-muted-foreground cursor-not-allowed"
                         : "bg-gradient-to-r from-amber-500 to-orange-500 text-black hover:from-amber-400 hover:to-orange-400 shadow-lg shadow-orange-500/20"
                     }`}
                   >
@@ -606,42 +649,42 @@ export default function DailyIncidentPage() {
 
             {/* Sidebar: Real-Time SRE Telemetry & Status HUD */}
             <div className="space-y-6">
-              <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-4">
-                <h4 className="text-xs font-mono text-slate-400 uppercase tracking-wider">
+              <div className="bg-card border border-border rounded-xl p-5 space-y-4">
+                <h4 className="text-xs font-mono text-muted-foreground uppercase tracking-wider">
                   ⚡ Outage System Metrics
                 </h4>
                 <div className="grid grid-cols-2 gap-3">
-                  <div className="bg-slate-950 p-3 rounded-lg border border-slate-800">
-                    <span className="text-[10px] font-mono text-slate-400 block">P99 Latency</span>
+                  <div className="bg-background p-3 rounded-lg border border-border">
+                    <span className="text-[10px] font-mono text-muted-foreground block">P99 Latency</span>
                     <span className="text-lg font-bold text-red-400">
                       {metrics.p99LatencyMs ? `${metrics.p99LatencyMs}ms` : "N/A"}
                     </span>
                   </div>
-                  <div className="bg-slate-950 p-3 rounded-lg border border-slate-800">
-                    <span className="text-[10px] font-mono text-slate-400 block">Error Rate</span>
+                  <div className="bg-background p-3 rounded-lg border border-border">
+                    <span className="text-[10px] font-mono text-muted-foreground block">Error Rate</span>
                     <span className="text-lg font-bold text-red-400">
                       {metrics.errorRatePercent ? `${metrics.errorRatePercent}%` : "N/A"}
                     </span>
                   </div>
-                  <div className="bg-slate-950 p-3 rounded-lg border border-slate-800">
-                    <span className="text-[10px] font-mono text-slate-400 block">CPU Load</span>
+                  <div className="bg-background p-3 rounded-lg border border-border">
+                    <span className="text-[10px] font-mono text-muted-foreground block">CPU Load</span>
                     <span className="text-lg font-bold text-amber-400">
                       {metrics.cpuLoadPercent ? `${metrics.cpuLoadPercent}%` : "N/A"}
                     </span>
                   </div>
-                  <div className="bg-slate-950 p-3 rounded-lg border border-slate-800">
-                    <span className="text-[10px] font-mono text-slate-400 block">Active Pods</span>
+                  <div className="bg-background p-3 rounded-lg border border-border">
+                    <span className="text-[10px] font-mono text-muted-foreground block">Active Pods</span>
                     <span className="text-lg font-bold text-cyan-400">
                       {metrics.activeConsumerPods ?? 1}
                     </span>
                   </div>
                 </div>
 
-                <div className="bg-slate-950 p-3 rounded-lg border border-slate-800 space-y-1">
-                  <span className="text-[10px] font-mono text-slate-400 block">
+                <div className="bg-background p-3 rounded-lg border border-border space-y-1">
+                  <span className="text-[10px] font-mono text-muted-foreground block">
                     Throughput Under Outage
                   </span>
-                  <span className="text-sm font-bold text-slate-200">
+                  <span className="text-sm font-bold text-foreground">
                     {metrics.throughputRps ?? 0} Requests/sec
                   </span>
                 </div>
@@ -652,13 +695,13 @@ export default function DailyIncidentPage() {
                 <span className="text-xs font-mono text-indigo-400 uppercase tracking-wider block">
                   🛡️ Anti-Decay Credential Engine
                 </span>
-                <p className="text-xs text-slate-400 leading-relaxed">
+                <p className="text-xs text-muted-foreground leading-relaxed">
                   Maintaining your daily morning streak keeps your{" "}
                   <strong className="text-amber-400">Gold Verified Staff Architect</strong>{" "}
                   credential from decaying. Active streak subscribers are ranked at the top of the
                   Fortune 500 Headhunter Talent Ticker.
                 </p>
-                <div className="text-[11px] font-mono text-slate-400 bg-slate-950/80 p-2.5 rounded border border-indigo-900/50">
+                <div className="text-[11px] font-mono text-muted-foreground bg-background/80 p-2.5 rounded border border-indigo-900/50">
                   {streak?.streakStatusDescription}
                 </div>
               </div>
@@ -668,14 +711,14 @@ export default function DailyIncidentPage() {
 
         {/* Tab 2: Full Telemetry Dials */}
         {activeTab === "telemetry" && (
-          <div className="bg-slate-900 border border-slate-800 rounded-xl p-6 space-y-6">
-            <h3 className="text-base font-bold text-slate-200 flex items-center gap-2">
+          <div className="bg-card border border-border rounded-xl p-6 space-y-6">
+            <h3 className="text-base font-bold text-foreground flex items-center gap-2">
               <span>📈</span> Distributed Cluster System Metrics
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {Object.entries(metrics).map(([key, val]) => (
-                <div key={key} className="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-1">
-                  <span className="text-xs font-mono text-slate-400 uppercase tracking-wider">
+                <div key={key} className="bg-background p-4 rounded-xl border border-border space-y-1">
+                  <span className="text-xs font-mono text-muted-foreground uppercase tracking-wider">
                     {key.replace(/([A-Z])/g, " $1")}
                   </span>
                   <div className="text-xl font-bold text-amber-400 font-mono">
@@ -689,15 +732,15 @@ export default function DailyIncidentPage() {
 
         {/* Tab 3: Terminal Crash Logs */}
         {activeTab === "logs" && (
-          <div className="bg-slate-950 border border-slate-800 rounded-xl p-6 font-mono text-xs space-y-4">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-              <span className="text-slate-400 flex items-center gap-2">
+          <div className="bg-background border border-border rounded-xl p-6 font-mono text-xs space-y-4">
+            <div className="flex items-center justify-between border-b border-border pb-3">
+              <span className="text-muted-foreground flex items-center gap-2">
                 <span className="w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse" />
                 Live Container Crashdump (/var/log/syslog & stderr)
               </span>
               <button
                 onClick={() => navigator.clipboard.writeText(incident?.terminalLogs || "")}
-                className="px-2.5 py-1 bg-slate-900 hover:bg-slate-800 text-slate-400 border border-slate-800 rounded text-[11px] transition"
+                className="px-2.5 py-1 bg-card hover:bg-muted text-muted-foreground border border-border rounded text-[11px] transition"
               >
                 Copy Logs
               </button>
@@ -710,13 +753,13 @@ export default function DailyIncidentPage() {
 
         {/* Tab 4: Weekly Leagues */}
         {activeTab === "leagues" && leagues && (
-          <div className="bg-slate-900 border border-slate-800 rounded-xl p-6 space-y-6">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-800 pb-4">
+          <div className="bg-card border border-border rounded-xl p-6 space-y-6">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-border pb-4">
               <div>
-                <h3 className="text-lg font-bold text-slate-200 flex items-center gap-2">
+                <h3 className="text-lg font-bold text-foreground flex items-center gap-2">
                   <span>🏆</span> {leagues.league} League Leaderboard
                 </h3>
-                <p className="text-xs text-slate-400">
+                <p className="text-xs text-muted-foreground">
                   Week identifier: {leagues.weekIdentifier} • Top 3 engineers promote to next tier on
                   Sunday 23:59 UTC
                 </p>
@@ -733,7 +776,7 @@ export default function DailyIncidentPage() {
 
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs font-mono">
-                <thead className="text-slate-400 bg-slate-950/60 border-b border-slate-800">
+                <thead className="text-muted-foreground bg-background/60 border-b border-border">
                   <tr>
                     <th className="py-3 px-4">Rank</th>
                     <th className="py-3 px-4">Engineer</th>
@@ -749,7 +792,7 @@ export default function DailyIncidentPage() {
                       className={
                         entry.isCurrentUser
                           ? "bg-amber-950/30 border-l-4 border-amber-500 font-bold"
-                          : "hover:bg-slate-800/40"
+                          : "hover:bg-muted/40"
                       }
                     >
                       <td className="py-3 px-4">
@@ -763,14 +806,14 @@ export default function DailyIncidentPage() {
                           <img
                             src={entry.avatarUrl}
                             alt="avatar"
-                            className="w-6 h-6 rounded-full bg-slate-800"
+                            className="w-6 h-6 rounded-full bg-muted"
                           />
                         ) : (
                           <div className="w-6 h-6 rounded-full bg-slate-700 flex items-center justify-center text-[10px] text-white font-bold">
                             {entry.userName.charAt(0).toUpperCase()}
                           </div>
                         )}
-                        <span className={entry.isCurrentUser ? "text-amber-400" : "text-slate-200"}>
+                        <span className={entry.isCurrentUser ? "text-amber-400" : "text-foreground"}>
                           {entry.userName} {entry.isCurrentUser && "(You)"}
                         </span>
                       </td>
@@ -783,7 +826,7 @@ export default function DailyIncidentPage() {
                               ? "bg-emerald-950 text-emerald-400 border border-emerald-800"
                               : entry.tierStatus === "DemotionZone"
                               ? "bg-red-950 text-red-400 border border-red-800"
-                              : "bg-slate-800 text-slate-400"
+                              : "bg-muted text-muted-foreground"
                           }`}
                         >
                           {entry.tierStatus}
@@ -800,26 +843,26 @@ export default function DailyIncidentPage() {
         {/* Triage Post-Mortem Modal */}
         {triageResult && (
           <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-6 overflow-y-auto">
-            <div className="bg-slate-900 border border-slate-800 rounded-2xl max-w-2xl w-full p-6 space-y-6 shadow-2xl my-8">
-              <div className="flex items-center justify-between border-b border-slate-800 pb-4">
+            <div className="bg-card border border-border rounded-2xl max-w-2xl w-full p-6 space-y-6 shadow-2xl my-8">
+              <div className="flex items-center justify-between border-b border-border pb-4">
                 <div className="flex items-center gap-3">
                   <span className="text-3xl">
                     {triageResult.isResolved ? "🎉" : "⚠️"}
                   </span>
                   <div>
-                    <h3 className="text-xl font-bold text-slate-200">
+                    <h3 className="text-xl font-bold text-foreground">
                       {triageResult.isResolved
                         ? "Outage Successfully Mitigated!"
                         : "Outage Partial Resolution"}
                     </h3>
-                    <p className="text-xs text-slate-400">
+                    <p className="text-xs text-muted-foreground">
                       Triage Score: {triageResult.score}/100 • MTTR: {formatTimer(timerSeconds)}
                     </p>
                   </div>
                 </div>
                 <button
                   onClick={() => setTriageResult(null)}
-                  className="text-slate-400 hover:text-white text-lg font-mono p-1"
+                  className="text-muted-foreground hover:text-white text-lg font-mono p-1"
                 >
                   ✕
                 </button>
@@ -827,49 +870,49 @@ export default function DailyIncidentPage() {
 
               {/* XP & Streak Rewards */}
               <div className="grid grid-cols-3 gap-3 text-center">
-                <div className="bg-slate-950 p-3 rounded-xl border border-slate-800">
-                  <span className="text-[10px] font-mono text-slate-400 block">Total XP Earned</span>
+                <div className="bg-background p-3 rounded-xl border border-border">
+                  <span className="text-[10px] font-mono text-muted-foreground block">Total XP Earned</span>
                   <span className="text-xl font-bold text-emerald-400">
                     +{triageResult.totalXpAwarded} XP
                   </span>
-                  <span className="text-[10px] text-slate-400 block">
+                  <span className="text-[10px] text-muted-foreground block">
                     ({triageResult.baseXp} base + {triageResult.speedBonusXp} speed) × {triageResult.streakMultiplier}x
                   </span>
                 </div>
-                <div className="bg-slate-950 p-3 rounded-xl border border-slate-800">
-                  <span className="text-[10px] font-mono text-slate-400 block">Daily Streak</span>
+                <div className="bg-background p-3 rounded-xl border border-border">
+                  <span className="text-[10px] font-mono text-muted-foreground block">Daily Streak</span>
                   <span className="text-xl font-bold text-amber-400">
                     🔥 {triageResult.currentStreak} Days
                   </span>
-                  <span className="text-[10px] text-slate-400 block">
+                  <span className="text-[10px] text-muted-foreground block">
                     {triageResult.shieldConsumed ? "Shield Saved Streak!" : "Consecutive"}
                   </span>
                 </div>
-                <div className="bg-slate-950 p-3 rounded-xl border border-slate-800">
-                  <span className="text-[10px] font-mono text-slate-400 block">Current League</span>
+                <div className="bg-background p-3 rounded-xl border border-border">
+                  <span className="text-[10px] font-mono text-muted-foreground block">Current League</span>
                   <span className="text-xl font-bold text-indigo-400">
                     🏆 {triageResult.currentLeague}
                   </span>
-                  <span className="text-[10px] text-slate-400 block">Weekly Promotion Active</span>
+                  <span className="text-[10px] text-muted-foreground block">Weekly Promotion Active</span>
                 </div>
               </div>
 
               {/* Senior Principal Architect Feedback */}
-              <div className="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-2">
+              <div className="bg-background p-4 rounded-xl border border-border space-y-2">
                 <h4 className="text-xs font-mono text-amber-400 uppercase tracking-wider">
                   👔 Senior Principal SRE Feedback
                 </h4>
-                <p className="text-xs text-slate-400 leading-relaxed">
+                <p className="text-xs text-muted-foreground leading-relaxed">
                   {triageResult.seniorArchitectRecommendation}
                 </p>
               </div>
 
               {/* Comprehensive Post-Mortem Analysis */}
-              <div className="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-2">
+              <div className="bg-background p-4 rounded-xl border border-border space-y-2">
                 <h4 className="text-xs font-mono text-cyan-400 uppercase tracking-wider">
                   📑 Google/Meta Caliber Post-Mortem Root Cause & Prevention
                 </h4>
-                <p className="text-xs text-slate-400 leading-relaxed font-sans">
+                <p className="text-xs text-muted-foreground leading-relaxed font-sans">
                   {triageResult.postMortemAnalysis}
                 </p>
               </div>
@@ -886,7 +929,7 @@ export default function DailyIncidentPage() {
                 </button>
                 <button
                   onClick={() => setTriageResult(null)}
-                  className="py-3 px-5 bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs uppercase tracking-wider rounded-xl transition"
+                  className="py-3 px-5 bg-muted hover:bg-slate-700 text-foreground font-bold text-xs uppercase tracking-wider rounded-xl transition"
                 >
                   Close War-Room
                 </button>

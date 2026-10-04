@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import VapiInterviewRoom from "@/components/VapiInterviewRoom";
+import OpenAIRealtimeInterviewRoom from "@/components/OpenAIRealtimeInterviewRoom";
 import Link from "next/link";
 import {
   ShieldAlert,
@@ -89,9 +89,9 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-200 flex flex-col font-sans pb-16">
+    <div className="flex flex-col font-sans pb-16">
       {/* Top Navbar */}
-      <header className="border-b border-slate-800/80 bg-slate-900/60 backdrop-blur-md sticky top-0 z-50">
+      <header className="border-b border-border/80 bg-card/60 backdrop-blur-md sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
           <div className="flex items-center space-x-3">
             <Link href="/dashboard" className="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-600 to-purple-600 flex items-center justify-center font-bold text-white shadow-lg shadow-indigo-500/20 hover:scale-105 transition-transform">
@@ -115,16 +115,16 @@ export default function Dashboard() {
             </Link>
 
             {/* Demo Mode Toggle */}
-            <div className="flex items-center space-x-1 bg-slate-900 border border-slate-800 rounded-xl p-1 mr-4">
+            <div className="flex items-center space-x-1 bg-card border border-border rounded-xl p-1 mr-4">
               <button
                 onClick={() => setDemoMode("Enterprise")}
-                className={`text-xs px-3 py-1.5 rounded-lg font-medium transition-colors ${demoMode === "Enterprise" ? "bg-indigo-500 text-white shadow" : "text-slate-400 hover:text-white"}`}
+                className={`text-xs px-3 py-1.5 rounded-lg font-medium transition-colors ${demoMode === "Enterprise" ? "bg-indigo-500 text-white shadow" : "text-muted-foreground hover:text-white"}`}
               >
                 Enterprise B2B
               </button>
               <button
                 onClick={() => setDemoMode("University")}
-                className={`text-xs px-3 py-1.5 rounded-lg font-medium transition-colors ${demoMode === "University" ? "bg-indigo-500 text-white shadow" : "text-slate-400 hover:text-white"}`}
+                className={`text-xs px-3 py-1.5 rounded-lg font-medium transition-colors ${demoMode === "University" ? "bg-indigo-500 text-white shadow" : "text-muted-foreground hover:text-white"}`}
               >
                 University
               </button>
@@ -132,19 +132,19 @@ export default function Dashboard() {
 
             {demoMode === "Enterprise" && (
               <>
-                <div className="flex items-center space-x-2 bg-slate-900 border border-slate-800 rounded-xl px-3 py-1.5">
+                <div className="flex items-center space-x-2 bg-card border border-border rounded-xl px-3 py-1.5">
                   <Building2 className="w-4 h-4 text-indigo-400" />
-                  <span className="text-xs text-slate-400 font-medium">B2B Tenant Context:</span>
+                  <span className="text-xs text-muted-foreground font-medium">B2B Tenant Context:</span>
                   <select
                     value={selectedTenantId}
                     onChange={(e) => setSelectedTenantId(e.target.value)}
                     className="bg-transparent text-xs text-white font-semibold focus:outline-none cursor-pointer"
                   >
-                    <option value="" className="bg-slate-900 text-white">
+                    <option value="" className="bg-card text-white">
                       🌐 All Partner Institutes (Platform View)
                     </option>
                     {institutes.map((inst) => (
-                      <option key={inst.id} value={inst.id} className="bg-slate-900 text-white">
+                      <option key={inst.id} value={inst.id} className="bg-card text-white">
                         🏢 {inst.name}
                       </option>
                     ))}
@@ -154,7 +154,7 @@ export default function Dashboard() {
                 <button
                   onClick={handleSeedData}
                   disabled={isSeeding}
-                  className="text-xs px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-400 rounded-xl border border-slate-800 flex items-center space-x-1.5 transition-colors"
+                  className="text-xs px-3 py-1.5 bg-muted hover:bg-slate-700 text-muted-foreground rounded-xl border border-border flex items-center space-x-1.5 transition-colors"
                 >
                   <Database className="w-3.5 h-3.5 text-emerald-400" />
                   <span>{isSeeding ? "Seeding DB..." : "Seed Institutes"}</span>
@@ -179,7 +179,7 @@ export default function Dashboard() {
               <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-white mb-3 leading-tight">
                 Evaluate Tech Candidates & Bridge Skill Gaps with Partner Certifications
               </h1>
-              <p className="text-sm text-slate-400 leading-relaxed">
+              <p className="text-sm text-muted-foreground leading-relaxed">
                 When a candidate fails a technical evaluation during their AI voice interview, our system automatically routes them to partner institutes (e.g. Global ITech) for targeted certification courses.
               </p>
             </div>
@@ -190,25 +190,25 @@ export default function Dashboard() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Left Column: Candidate & Job Spec Setup */}
           <div className="lg:col-span-1 space-y-6">
-            <div className="glass-panel rounded-2xl p-6 border border-slate-800 space-y-4">
-              <div className="flex items-center space-x-2 pb-3 border-b border-slate-800">
+            <div className="glass-panel rounded-2xl p-6 border border-border space-y-4">
+              <div className="flex items-center space-x-2 pb-3 border-b border-border">
                 <FileText className="w-5 h-5 text-indigo-400" />
                 <h3 className="text-sm font-semibold text-white">1. Candidate Resume & Profile</h3>
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-slate-400 mb-1">Candidate Name</label>
+                <label className="block text-xs font-medium text-muted-foreground mb-1">Candidate Name</label>
                 <input
                   type="text"
                   value={candidateName}
                   onChange={(e) => setCandidateName(e.target.value)}
-                  className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500"
+                  className="w-full bg-card border border-border rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500"
                 />
               </div>
 
               <div>
                 <div className="flex items-center justify-between mb-1">
-                  <label className="block text-xs font-medium text-slate-400">Parsed Resume Content</label>
+                  <label className="block text-xs font-medium text-muted-foreground">Parsed Resume Content</label>
                   <label className="cursor-pointer flex items-center space-x-1 text-[10px] text-indigo-400 hover:text-indigo-300 font-semibold bg-indigo-500/10 px-2 py-0.5 rounded border border-indigo-500/20 transition-colors">
                     <Upload className="w-3 h-3" />
                     <span>Upload Text File</span>
@@ -219,24 +219,24 @@ export default function Dashboard() {
                   rows={3}
                   value={resumeText}
                   onChange={(e) => setResumeText(e.target.value)}
-                  className="w-full bg-slate-900 border border-slate-800 rounded-xl p-3 text-xs text-slate-400 focus:outline-none focus:border-indigo-500"
+                  className="w-full bg-card border border-border rounded-xl p-3 text-xs text-muted-foreground focus:outline-none focus:border-indigo-500"
                 />
               </div>
             </div>
 
-            <div className="glass-panel rounded-2xl p-6 border border-slate-800 space-y-4">
-              <div className="flex items-center space-x-2 pb-3 border-b border-slate-800">
+            <div className="glass-panel rounded-2xl p-6 border border-border space-y-4">
+              <div className="flex items-center space-x-2 pb-3 border-b border-border">
                 <Briefcase className="w-5 h-5 text-purple-400" />
                 <h3 className="text-sm font-semibold text-white">2. Job Description & Technical Requirements</h3>
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-slate-400 mb-1">Job Description Specification</label>
+                <label className="block text-xs font-medium text-muted-foreground mb-1">Job Description Specification</label>
                 <textarea
                   rows={4}
                   value={jobDescription}
                   onChange={(e) => setJobDescription(e.target.value)}
-                  className="w-full bg-slate-900 border border-slate-800 rounded-xl p-3 text-xs text-slate-400 focus:outline-none focus:border-indigo-500"
+                  className="w-full bg-card border border-border rounded-xl p-3 text-xs text-muted-foreground focus:outline-none focus:border-indigo-500"
                 />
               </div>
             </div>
@@ -244,7 +244,7 @@ export default function Dashboard() {
 
           {/* Right Column: Voice Room Simulator & Lead Marketplace */}
           <div className="lg:col-span-2 space-y-8">
-            <VapiInterviewRoom
+            <OpenAIRealtimeInterviewRoom
               userId={userId}
               jobDescription={jobDescription}
               selectedTenantId={selectedTenantId}
@@ -255,8 +255,8 @@ export default function Dashboard() {
 
             {/* B2B Partner Institute Certification Marketplace */}
             {demoMode === "Enterprise" && (
-              <div className="glass-panel rounded-2xl p-6 border border-slate-800 space-y-6">
-              <div className="flex items-center justify-between pb-4 border-b border-slate-800">
+              <div className="glass-panel rounded-2xl p-6 border border-border space-y-6">
+              <div className="flex items-center justify-between pb-4 border-b border-border">
                 <div className="flex items-center space-x-3">
                   <div className="p-2.5 bg-emerald-500/10 rounded-xl border border-emerald-500/20 text-emerald-400">
                     <Building2 className="w-5 h-5" />
@@ -265,7 +265,7 @@ export default function Dashboard() {
                     <h3 className="text-base font-semibold text-white">
                       B2B Partner Lead Referrals & Certification Marketplace
                     </h3>
-                    <p className="text-xs text-slate-400">
+                    <p className="text-xs text-muted-foreground">
                       {selectedTenantId
                         ? "Filtered view (EF Core Global Query Filter applied for tenant)"
                         : "Global view across all partner institutes"}
@@ -280,24 +280,24 @@ export default function Dashboard() {
 
               {/* Mapped Courses */}
               <div>
-                <h4 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">
+                <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">
                   Partner Certification Courses
                 </h4>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {tenantCourses.length === 0 ? (
-                    <div className="col-span-2 p-4 bg-slate-900/50 rounded-xl text-xs text-slate-400 italic text-center">
+                    <div className="col-span-2 p-4 bg-card/50 rounded-xl text-xs text-muted-foreground italic text-center">
                       No courses mapped yet. Click "Seed Institutes" to populate Global ITech.
                     </div>
                   ) : (
                     tenantCourses.map((c) => (
-                      <div key={c.id} className="glass-card rounded-xl p-4 border border-slate-800 space-y-2">
+                      <div key={c.id} className="glass-card rounded-xl p-4 border border-border space-y-2">
                         <div className="flex items-center justify-between">
                           <span className="text-xs font-bold text-indigo-400">{c.courseName}</span>
                           <span className="text-[10px] px-2 py-0.5 rounded bg-indigo-500/10 text-indigo-300 border border-indigo-500/20">
                             Partner Course
                           </span>
                         </div>
-                        <p className="text-xs text-slate-400 line-clamp-2">{c.description}</p>
+                        <p className="text-xs text-muted-foreground line-clamp-2">{c.description}</p>
                       </div>
                     ))
                   )}
@@ -306,12 +306,12 @@ export default function Dashboard() {
 
               {/* Lead Referrals Table */}
               <div>
-                <h4 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">
+                <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">
                   Generated Skill Gap Lead Referrals
                 </h4>
-                <div className="bg-slate-950/80 rounded-xl border border-slate-800 overflow-hidden">
-                  <table className="w-full text-left text-xs text-slate-400">
-                    <thead className="bg-slate-900 text-slate-400 border-b border-slate-800 uppercase text-[10px] tracking-wider">
+                <div className="bg-background/80 rounded-xl border border-border overflow-hidden">
+                  <table className="w-full text-left text-xs text-muted-foreground">
+                    <thead className="bg-card text-muted-foreground border-b border-border uppercase text-[10px] tracking-wider">
                       <tr>
                         <th className="px-4 py-3">Lead ID</th>
                         <th className="px-4 py-3">Candidate</th>
@@ -323,13 +323,13 @@ export default function Dashboard() {
                     <tbody className="divide-y divide-slate-800/60">
                       {leadReferrals.length === 0 ? (
                         <tr>
-                          <td colSpan={5} className="px-4 py-6 text-center text-slate-400 italic">
+                          <td colSpan={5} className="px-4 py-6 text-center text-muted-foreground italic">
                             No lead referrals generated yet. Complete an interview call to trigger lead routing.
                           </td>
                         </tr>
                       ) : (
                         leadReferrals.map((l) => (
-                          <tr key={l.id} className="hover:bg-slate-900/50 transition-colors">
+                          <tr key={l.id} className="hover:bg-card/50 transition-colors">
                             <td className="px-4 py-3 font-mono text-[11px] text-indigo-400">
                               {l.id ? l.id.substring(0, 8) + "..." : "REF-1092"}
                             </td>
@@ -345,7 +345,7 @@ export default function Dashboard() {
                                 {l.status || "Pending"}
                               </span>
                             </td>
-                            <td className="px-4 py-3 text-slate-400 text-[11px]">
+                            <td className="px-4 py-3 text-muted-foreground text-[11px]">
                               {l.createdAt ? new Date(l.createdAt).toLocaleTimeString() : "Just now"}
                             </td>
                           </tr>

@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Editor from "@monaco-editor/react";
-import VapiInterviewRoom from "@/components/VapiInterviewRoom";
+import OpenAIRealtimeInterviewRoom from "@/components/OpenAIRealtimeInterviewRoom";
 import ProctoringHUD from "./components/ProctoringHUD";
 import { useParams, useRouter } from "next/navigation";
 import { useAuth, UserButton, useUser } from "@clerk/nextjs";
@@ -21,6 +21,7 @@ import {
   Building2,
   Lock,
 } from "lucide-react";
+import { useTheme } from "next-themes";
 import I18nProvider from "@/components/I18nProvider";
 import { useTranslations } from "next-intl";
 
@@ -31,6 +32,7 @@ function SprintWorkspaceInner() {
   const { user } = useUser();
   const sprintId = (params?.id as string) || "demo-sprint-id";
   const t = useTranslations("SprintHUD");
+  const { theme } = useTheme();
 
   const [candidateTrack, setCandidateTrack] = useState<"Backend" | "Frontend">("Backend");
   const [difficultyTier, setDifficultyTier] = useState<"Bronze (Junior)" | "Diamond (Staff)">("Diamond (Staff)");
@@ -239,9 +241,9 @@ function SprintWorkspaceInner() {
   };
 
   return (
-      <div className="min-h-screen bg-slate-950 text-slate-200 flex flex-col font-sans pb-16">
+      <div className="flex flex-col font-sans pb-16">
         {/* Navbar */}
-        <header className="border-b border-slate-800 bg-slate-900/60 backdrop-blur-md sticky top-0 z-50">
+        <header className="border-b border-border bg-card/60 backdrop-blur-md sticky top-0 z-50">
           {isOffline && (
             <div className="w-full bg-amber-500/10 text-amber-400 text-center text-xs py-1.5 font-semibold border-b border-amber-500/20">
               No internet connection. Your work is being saved locally.
@@ -253,15 +255,15 @@ function SprintWorkspaceInner() {
               BD
             </div>
             <div>
-              <span className="font-bold text-lg text-white">BUILD & DEFEND</span>
-              <span className="ml-2 text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-semibold border border-emerald-500/30">
+              <span className="font-bold text-lg text-foreground">BUILD & DEFEND</span>
+              <span className="ml-2 text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-600 dark:text-emerald-300 font-semibold border border-emerald-500/30">
                 Verified & Secure
               </span>
             </div>
           </div>
 
           <div className="flex items-center space-x-4">
-            <div className="hidden lg:flex items-center space-x-2 bg-slate-900 border border-slate-800 rounded-xl px-3 py-1.5 shadow-sm">
+            <div className="hidden lg:flex items-center space-x-2 bg-card border border-border rounded-xl px-3 py-1.5 shadow-sm">
               <select value={candidateTrack} onChange={(e) => setCandidateTrack(e.target.value as any)} className="bg-transparent text-xs text-indigo-300 font-semibold focus:outline-none cursor-pointer">
                 <option value="Backend">Backend Track</option>
                 <option value="Frontend">Frontend Track</option>
@@ -295,21 +297,21 @@ function SprintWorkspaceInner() {
         <ProctoringHUD sessionId={submissionId || sprintId} />
 
         {/* Pipeline Progress Bar */}
-        <div className="glass-panel rounded-2xl p-4 border border-slate-800 flex items-center justify-between">
+        <div className="glass-panel rounded-2xl p-4 border border-border flex items-center justify-between">
           <div className="flex items-center space-x-2 text-xs font-semibold">
-            <span className={`px-3 py-1 rounded-lg ${pipelineState === "editor" ? "bg-indigo-600 text-white" : "bg-slate-800 text-slate-400"}`}>
+            <span className={`px-3 py-1 rounded-lg ${pipelineState === "editor" ? "bg-indigo-600 text-white" : "bg-muted text-muted-foreground"}`}>
               1. Code Submission
             </span>
-            <ArrowRight className="w-3.5 h-3.5 text-slate-400" />
-            <span className={`px-3 py-1 rounded-lg ${pipelineState === "running" || pipelineState === "completed" ? "bg-indigo-600 text-white" : "bg-slate-800 text-slate-400"}`}>
+            <ArrowRight className="w-3.5 h-3.5 text-muted-foreground" />
+            <span className={`px-3 py-1 rounded-lg ${pipelineState === "running" || pipelineState === "completed" ? "bg-indigo-600 text-white" : "bg-muted text-muted-foreground"}`}>
               2. Automated Test Runner
             </span>
-            <ArrowRight className="w-3.5 h-3.5 text-slate-400" />
-            <span className={`px-3 py-1 rounded-lg ${pipelineState === "voice_interview" ? "bg-indigo-600 text-white" : "bg-slate-800 text-slate-400"}`}>
+            <ArrowRight className="w-3.5 h-3.5 text-muted-foreground" />
+            <span className={`px-3 py-1 rounded-lg ${pipelineState === "voice_interview" ? "bg-indigo-600 text-white" : "bg-muted text-muted-foreground"}`}>
               3. Interactive Code Review
             </span>
-            <ArrowRight className="w-3.5 h-3.5 text-slate-400" />
-            <span className={`px-3 py-1 rounded-lg ${pipelineState === "passed" ? "bg-emerald-600 text-white" : "bg-slate-800 text-slate-400"}`}>
+            <ArrowRight className="w-3.5 h-3.5 text-muted-foreground" />
+            <span className={`px-3 py-1 rounded-lg ${pipelineState === "passed" ? "bg-emerald-600 text-white" : "bg-muted text-muted-foreground"}`}>
               4. Verified Certificate
             </span>
           </div>
@@ -322,18 +324,18 @@ function SprintWorkspaceInner() {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Left Pane: Code Editor */}
-          <div className="glass-panel rounded-2xl p-6 border border-slate-800 flex flex-col space-y-4">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+          <div className="glass-panel rounded-2xl p-6 border border-border flex flex-col space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-border">
               <div className="flex items-center space-x-2">
                 <Code className="w-5 h-5 text-indigo-400" />
-                <h3 className="text-sm font-semibold text-white">{t("codeEditor")}</h3>
+                <h3 className="text-sm font-semibold text-foreground">{t("codeEditor")}</h3>
               </div>
               <span className="text-[10px] px-2.5 py-0.5 rounded bg-indigo-500/10 text-indigo-300 font-semibold border border-indigo-500/20">
                 Language: {language}
               </span>
             </div>
 
-            <p className="text-xs text-slate-300 font-medium bg-slate-900/80 p-3 rounded-lg border border-slate-800/80 leading-relaxed shadow-inner">
+            <p className="text-xs text-slate-300 font-medium bg-card/80 p-3 rounded-lg border border-border/80 leading-relaxed shadow-inner">
               {taskDescription}
             </p>
 
@@ -344,11 +346,11 @@ function SprintWorkspaceInner() {
               </div>
             )}
 
-            <div className="border border-slate-800 rounded-xl overflow-hidden mt-2 bg-slate-950" onPaste={handlePaste}>
+            <div className="border border-border rounded-xl overflow-hidden mt-2 bg-background" onPaste={handlePaste}>
               <Editor
                 height="350px"
                 language={getMonacoLanguage()}
-                theme="vs-dark"
+                theme={theme === "light" ? "vs-light" : "vs-dark"}
                 value={codePayload}
                 onChange={(val) => setCodePayload(val || "")}
                 options={{
@@ -367,7 +369,7 @@ function SprintWorkspaceInner() {
               className={`py-3 px-4 rounded-xl font-medium text-xs flex items-center justify-center space-x-2 transition-all cursor-pointer ${
                 (pipelineState === "editor" && !isOffline)
                   ? "bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white shadow-lg shadow-indigo-500/25"
-                  : "bg-slate-800 text-slate-400 cursor-not-allowed"
+                  : "bg-muted text-muted-foreground cursor-not-allowed"
               }`}
             >
               <Play className="w-4 h-4" />
@@ -384,11 +386,11 @@ function SprintWorkspaceInner() {
           {/* Right Pane: Execution Output & Voice Defense Room */}
           <div className="space-y-6">
             {/* Terminal Console Output */}
-            <div className="glass-panel rounded-2xl p-6 border border-slate-800 space-y-4">
-              <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+            <div className="glass-panel rounded-2xl p-6 border border-border space-y-4">
+              <div className="flex items-center justify-between pb-3 border-b border-border">
                 <div className="flex items-center space-x-2">
                   <Terminal className="w-5 h-5 text-emerald-400" />
-                  <h3 className="text-sm font-semibold text-white">Execution Output & Test Results</h3>
+                  <h3 className="text-sm font-semibold text-foreground">Execution Output & Test Results</h3>
                 </div>
                 {pipelineState === "running" && <RefreshCw className="w-4 h-4 text-amber-400 animate-spin" />}
               </div>
@@ -414,7 +416,7 @@ function SprintWorkspaceInner() {
 
             {/* Voice Defense Simulator Component */}
             {pipelineState === "voice_interview" || pipelineState === "completed" || pipelineState === "passed" ? (
-              <VapiInterviewRoom
+              <OpenAIRealtimeInterviewRoom
                 userId={user?.id || "anonymous-user"}
                 jobDescription="Build & Defend Sprint Review"
                 selectedTenantId={selectedTenantId || "default-tenant"}
@@ -428,8 +430,8 @@ function SprintWorkspaceInner() {
             {pipelineState === "passed" && (
               <div className="glass-panel rounded-2xl p-6 border border-emerald-500/40 bg-emerald-950/20 text-center space-y-4">
                 <ShieldCheck className="w-12 h-12 text-emerald-400 mx-auto" />
-                <h3 className="text-lg font-bold text-white">Congratulations! Certificate Issued</h3>
-                <p className="text-xs text-slate-400">
+                <h3 className="text-lg font-bold text-foreground">Congratulations! Certificate Issued</h3>
+                <p className="text-xs text-muted-foreground">
                   You successfully defended your implementation. Your verified certificate has been issued.
                 </p>
                 <button

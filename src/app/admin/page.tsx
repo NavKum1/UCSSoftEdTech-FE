@@ -355,12 +355,12 @@ export default function SuperAdminDashboard() {
       )}
 
       {/* Dashboard Top Header & Tabs Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-800">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-border">
         <div>
           <h1 className="text-2xl font-black tracking-tight text-white flex items-center space-x-2">
             <span>Enterprise Operations Center</span>
           </h1>
-          <p className="text-xs text-slate-400 mt-1">
+          <p className="text-xs text-muted-foreground mt-1">
             B2B Partner Institute Management, Course Skill Gap Mappings, and Monetization Routing.
           </p>
         </div>
@@ -373,21 +373,21 @@ export default function SuperAdminDashboard() {
             }}
             disabled={refreshing}
             id="admin-refresh-btn"
-            className="p-2.5 rounded-xl bg-slate-900 border border-slate-800 hover:border-slate-800 text-slate-400 hover:text-white transition-all cursor-pointer shadow-sm disabled:opacity-50"
+            className="p-2.5 rounded-xl bg-card border border-border hover:border-border text-muted-foreground hover:text-white transition-all cursor-pointer shadow-sm disabled:opacity-50"
             title="Refresh Dashboard Data"
           >
             <RefreshCw className={`w-4 h-4 ${refreshing ? "animate-spin text-indigo-400" : ""}`} />
           </button>
 
           {/* Tab Selection Buttons */}
-          <div className="flex items-center p-1 rounded-2xl bg-slate-900/90 border border-slate-800 shadow-inner">
+          <div className="flex items-center p-1 rounded-2xl bg-card/90 border border-border shadow-inner">
             <button
               onClick={() => setActiveTab("analytics")}
               id="admin-tab-analytics"
               className={`flex items-center space-x-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                 activeTab === "analytics"
                   ? "bg-gradient-to-r from-indigo-600 to-indigo-500 text-white shadow-lg shadow-indigo-600/30"
-                  : "text-slate-400 hover:text-slate-200"
+                  : "text-muted-foreground hover:text-foreground"
               }`}
             >
               <BarChart3 className="w-3.5 h-3.5" />
@@ -400,7 +400,7 @@ export default function SuperAdminDashboard() {
               className={`flex items-center space-x-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                 activeTab === "partners"
                   ? "bg-gradient-to-r from-indigo-600 to-indigo-500 text-white shadow-lg shadow-indigo-600/30"
-                  : "text-slate-400 hover:text-slate-200"
+                  : "text-muted-foreground hover:text-foreground"
               }`}
             >
               <Building2 className="w-3.5 h-3.5" />
@@ -413,7 +413,7 @@ export default function SuperAdminDashboard() {
               className={`flex items-center space-x-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                 activeTab === "leads"
                   ? "bg-gradient-to-r from-indigo-600 to-indigo-500 text-white shadow-lg shadow-indigo-600/30"
-                  : "text-slate-400 hover:text-slate-200"
+                  : "text-muted-foreground hover:text-foreground"
               }`}
             >
               <FileSpreadsheet className="w-3.5 h-3.5" />
@@ -431,9 +431,9 @@ export default function SuperAdminDashboard() {
           {/* Key Metric Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {/* Total Users */}
-            <div className="glass-card rounded-2xl p-5 border border-slate-800 hover:border-indigo-500/40 transition-all shadow-xl">
+            <div className="glass-card rounded-2xl p-5 border border-border hover:border-indigo-500/40 transition-all shadow-xl">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Users</span>
+                <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Total Users</span>
                 <div className="w-9 h-9 rounded-xl bg-indigo-500/15 border border-indigo-500/30 flex items-center justify-center text-indigo-400">
                   <Users className="w-4 h-4" />
                 </div>
@@ -442,14 +442,14 @@ export default function SuperAdminDashboard() {
                 <span className="text-3xl font-extrabold text-white tracking-tight">
                   {analytics?.totalUsers ?? (loading ? "..." : 0)}
                 </span>
-                <p className="text-[11px] text-slate-400 mt-1">Registered candidate &amp; engineer accounts</p>
+                <p className="text-[11px] text-muted-foreground mt-1">Registered candidate &amp; engineer accounts</p>
               </div>
             </div>
 
             {/* Active Pro Subscriptions */}
-            <div className="glass-card rounded-2xl p-5 border border-slate-800 hover:border-purple-500/40 transition-all shadow-xl">
+            <div className="glass-card rounded-2xl p-5 border border-border hover:border-purple-500/40 transition-all shadow-xl">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Active Pro Tier</span>
+                <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Active Pro Tier</span>
                 <div className="w-9 h-9 rounded-xl bg-purple-500/15 border border-purple-500/30 flex items-center justify-center text-purple-400">
                   <Sparkles className="w-4 h-4" />
                 </div>
@@ -463,16 +463,16 @@ export default function SuperAdminDashboard() {
                     ({config.symbol}{analytics ? (config.id === "IN" ? (analytics.mrrEstimate * 83).toLocaleString("en-IN") : config.id === "EU" ? Math.round(analytics.mrrEstimate * 0.92) : analytics.mrrEstimate) : 0}/mo MRR)
                   </span>
                 </div>
-                <p className="text-[11px] text-slate-400 mt-1">
+                <p className="text-[11px] text-muted-foreground mt-1">
                   {config.id === "IN" ? "₹999/mo active recurring subscriptions" : config.id === "EU" ? "€11/mo active Stripe recurring subscriptions" : "$12/mo active Stripe recurring subscriptions"}
                 </p>
               </div>
             </div>
 
             {/* Total Leads Generated */}
-            <div className="glass-card rounded-2xl p-5 border border-slate-800 hover:border-emerald-500/40 transition-all shadow-xl">
+            <div className="glass-card rounded-2xl p-5 border border-border hover:border-emerald-500/40 transition-all shadow-xl">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">B2B Leads Routed</span>
+                <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">B2B Leads Routed</span>
                 <div className="w-9 h-9 rounded-xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
                   <Send className="w-4 h-4" />
                 </div>
@@ -481,14 +481,14 @@ export default function SuperAdminDashboard() {
                 <span className="text-3xl font-extrabold text-white tracking-tight">
                   {analytics?.totalLeadsGenerated ?? (loading ? "..." : 0)}
                 </span>
-                <p className="text-[11px] text-slate-400 mt-1">Qualified candidate skill gap referrals dispatched</p>
+                <p className="text-[11px] text-muted-foreground mt-1">Qualified candidate skill gap referrals dispatched</p>
               </div>
             </div>
 
             {/* Partner Institutes */}
-            <div className="glass-card rounded-2xl p-5 border border-slate-800 hover:border-sky-500/40 transition-all shadow-xl">
+            <div className="glass-card rounded-2xl p-5 border border-border hover:border-sky-500/40 transition-all shadow-xl">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Partner Institutes</span>
+                <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Partner Institutes</span>
                 <div className="w-9 h-9 rounded-xl bg-sky-500/15 border border-sky-500/30 flex items-center justify-center text-sky-400">
                   <Building2 className="w-4 h-4" />
                 </div>
@@ -497,14 +497,14 @@ export default function SuperAdminDashboard() {
                 <span className="text-3xl font-extrabold text-white tracking-tight">
                   {analytics?.totalInstitutes ?? (loading ? "..." : 0)}
                 </span>
-                <p className="text-[11px] text-slate-400 mt-1">Affiliate academies &amp; bootcamps connected</p>
+                <p className="text-[11px] text-muted-foreground mt-1">Affiliate academies &amp; bootcamps connected</p>
               </div>
             </div>
 
             {/* Courses & Skill Tags */}
-            <div className="glass-card rounded-2xl p-5 border border-slate-800 hover:border-amber-500/40 transition-all shadow-xl">
+            <div className="glass-card rounded-2xl p-5 border border-border hover:border-amber-500/40 transition-all shadow-xl">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Active Courses</span>
+                <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Active Courses</span>
                 <div className="w-9 h-9 rounded-xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400">
                   <BookOpen className="w-4 h-4" />
                 </div>
@@ -513,14 +513,14 @@ export default function SuperAdminDashboard() {
                 <span className="text-3xl font-extrabold text-white tracking-tight">
                   {analytics?.totalCourses ?? (loading ? "..." : 0)}
                 </span>
-                <p className="text-[11px] text-slate-400 mt-1">Curated programs mapped to technical failure tags</p>
+                <p className="text-[11px] text-muted-foreground mt-1">Curated programs mapped to technical failure tags</p>
               </div>
             </div>
 
             {/* Public Credentials Minted */}
-            <div className="glass-card rounded-2xl p-5 border border-slate-800 hover:border-teal-500/40 transition-all shadow-xl">
+            <div className="glass-card rounded-2xl p-5 border border-border hover:border-teal-500/40 transition-all shadow-xl">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Minted Credentials</span>
+                <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Minted Credentials</span>
                 <div className="w-9 h-9 rounded-xl bg-teal-500/15 border border-teal-500/30 flex items-center justify-center text-teal-400">
                   <Award className="w-4 h-4" />
                 </div>
@@ -529,40 +529,40 @@ export default function SuperAdminDashboard() {
                 <span className="text-3xl font-extrabold text-white tracking-tight">
                   {analytics?.totalCredentials ?? (loading ? "..." : 0)}
                 </span>
-                <p className="text-[11px] text-slate-400 mt-1">Official tamper-evident digital certifications issued</p>
+                <p className="text-[11px] text-muted-foreground mt-1">Official tamper-evident digital certifications issued</p>
               </div>
             </div>
           </div>
 
           {/* Real-time Infrastructure & Engine Status Panel */}
-          <div className="glass-panel rounded-3xl p-6 border border-slate-800 space-y-4 shadow-xl">
-            <h3 className="text-sm font-bold uppercase tracking-wider text-slate-400 flex items-center space-x-2">
+          <div className="glass-panel rounded-3xl p-6 border border-border space-y-4 shadow-xl">
+            <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground flex items-center space-x-2">
               <Radio className="w-4 h-4 text-emerald-400 animate-pulse" />
               <span>Engine Status &amp; Integration Health</span>
             </h3>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
-              <div className="p-4 rounded-xl bg-slate-900/60 border border-slate-800/80 flex items-start space-x-3">
+              <div className="p-4 rounded-xl bg-card/60 border border-border/80 flex items-start space-x-3">
                 <div className="w-2.5 h-2.5 rounded-full bg-emerald-400 mt-1 shrink-0" />
                 <div>
-                  <p className="font-bold text-slate-200">Clerk RBAC &amp; Public Metadata</p>
-                  <p className="text-slate-400 mt-0.5">Policy enforcement: [Authorize(Policy = &quot;SuperAdmin&quot;)] verified.</p>
+                  <p className="font-bold text-foreground">Clerk RBAC &amp; Public Metadata</p>
+                  <p className="text-muted-foreground mt-0.5">Policy enforcement: [Authorize(Policy = &quot;SuperAdmin&quot;)] verified.</p>
                 </div>
               </div>
 
-              <div className="p-4 rounded-xl bg-slate-900/60 border border-slate-800/80 flex items-start space-x-3">
+              <div className="p-4 rounded-xl bg-card/60 border border-border/80 flex items-start space-x-3">
                 <div className="w-2.5 h-2.5 rounded-full bg-emerald-400 mt-1 shrink-0" />
                 <div>
-                  <p className="font-bold text-slate-200">Transactional Email Engine</p>
-                  <p className="text-slate-400 mt-0.5">Dual Resend &amp; SendGrid hooks connected on Vapi end-of-call.</p>
+                  <p className="font-bold text-foreground">Transactional Email Engine</p>
+                  <p className="text-muted-foreground mt-0.5">Dual Resend &amp; SendGrid hooks connected on Vapi end-of-call.</p>
                 </div>
               </div>
 
-              <div className="p-4 rounded-xl bg-slate-900/60 border border-slate-800/80 flex items-start space-x-3">
+              <div className="p-4 rounded-xl bg-card/60 border border-border/80 flex items-start space-x-3">
                 <div className="w-2.5 h-2.5 rounded-full bg-emerald-400 mt-1 shrink-0" />
                 <div>
-                  <p className="font-bold text-slate-200">B2B Multi-Tenant Lead Router</p>
-                  <p className="text-slate-400 mt-0.5">Global Query Filters enabled with isolated tenant connection strings.</p>
+                  <p className="font-bold text-foreground">B2B Multi-Tenant Lead Router</p>
+                  <p className="text-muted-foreground mt-0.5">Global Query Filters enabled with isolated tenant connection strings.</p>
                 </div>
               </div>
             </div>
@@ -583,7 +583,7 @@ export default function SuperAdminDashboard() {
                   <Building2 className="w-5 h-5 text-indigo-400" />
                   <span>Partner Institutes ({institutes.length})</span>
                 </h2>
-                <p className="text-xs text-slate-400">B2B affiliate education providers receiving qualified candidate leads.</p>
+                <p className="text-xs text-muted-foreground">B2B affiliate education providers receiving qualified candidate leads.</p>
               </div>
 
               <button
@@ -601,18 +601,18 @@ export default function SuperAdminDashboard() {
               {institutes.map((inst) => (
                 <div
                   key={inst.id}
-                  className="glass-card rounded-2xl p-5 border border-slate-800/90 hover:border-slate-800 transition-all space-y-3"
+                  className="glass-card rounded-2xl p-5 border border-border/90 hover:border-border transition-all space-y-3"
                 >
                   <div className="flex items-start justify-between">
                     <div>
                       <h3 className="text-base font-bold text-white">{inst.name}</h3>
-                      <p className="text-[11px] text-slate-400 font-mono mt-0.5">ID: {inst.id}</p>
+                      <p className="text-[11px] text-muted-foreground font-mono mt-0.5">ID: {inst.id}</p>
                     </div>
 
                     <div className="flex items-center space-x-1">
                       <button
                         onClick={() => handleDeleteInstitute(inst.id, inst.name)}
-                        className="p-1.5 rounded-lg text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 transition-all cursor-pointer"
+                        className="p-1.5 rounded-lg text-muted-foreground hover:text-rose-400 hover:bg-rose-500/10 transition-all cursor-pointer"
                         title="Delete Institute"
                       >
                         <Trash2 className="w-4 h-4" />
@@ -620,30 +620,30 @@ export default function SuperAdminDashboard() {
                     </div>
                   </div>
 
-                  <div className="space-y-1.5 text-xs text-slate-400">
-                    <div className="flex items-center justify-between py-1 border-t border-slate-800/60">
-                      <span className="text-slate-400">Webhook Endpoint:</span>
+                  <div className="space-y-1.5 text-xs text-muted-foreground">
+                    <div className="flex items-center justify-between py-1 border-t border-border/60">
+                      <span className="text-muted-foreground">Webhook Endpoint:</span>
                       <span className="font-mono text-[11px] text-indigo-300 truncate max-w-[240px]" title={inst.webhookUrl}>
                         {inst.webhookUrl || "No webhook URL configured"}
                       </span>
                     </div>
 
-                    <div className="flex items-center justify-between py-1 border-t border-slate-800/60">
-                      <span className="text-slate-400">API Key:</span>
-                      <div className="flex items-center space-x-1 font-mono text-[11px] text-slate-400">
+                    <div className="flex items-center justify-between py-1 border-t border-border/60">
+                      <span className="text-muted-foreground">API Key:</span>
+                      <div className="flex items-center space-x-1 font-mono text-[11px] text-muted-foreground">
                         <span>{visibleKeys[inst.id] ? inst.apiKey : "••••••••••••••••"}</span>
                         <button
                           type="button"
                           onClick={() => setVisibleKeys(prev => ({ ...prev, [inst.id]: !prev[inst.id] }))}
-                          className="p-1 text-slate-400 hover:text-slate-200 cursor-pointer"
+                          className="p-1 text-muted-foreground hover:text-foreground cursor-pointer"
                         >
                           {visibleKeys[inst.id] ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
                         </button>
                       </div>
                     </div>
 
-                    <div className="flex items-center justify-between pt-1 border-t border-slate-800/60">
-                      <span className="text-slate-400">Catalog &amp; Activity:</span>
+                    <div className="flex items-center justify-between pt-1 border-t border-border/60">
+                      <span className="text-muted-foreground">Catalog &amp; Activity:</span>
                       <div className="flex items-center space-x-3">
                         <span className="px-2 py-0.5 rounded-md bg-indigo-500/10 text-indigo-400 font-semibold text-[11px]">
                           {inst.courseCount ?? 0} Courses
@@ -660,14 +660,14 @@ export default function SuperAdminDashboard() {
           </div>
 
           {/* Section 2: Courses & Skill Tag Mappings */}
-          <div className="space-y-4 pt-6 border-t border-slate-800">
+          <div className="space-y-4 pt-6 border-t border-border">
             <div className="flex items-center justify-between">
               <div>
                 <h2 className="text-lg font-bold text-white flex items-center space-x-2">
                   <BookOpen className="w-5 h-5 text-purple-400" />
                   <span>Courses &amp; Skill Gap Mappings ({courses.length})</span>
                 </h2>
-                <p className="text-xs text-slate-400">
+                <p className="text-xs text-muted-foreground">
                   Map failed interview skill tags (e.g. &quot;React Hooks&quot;, &quot;AWS VPC&quot;) to partner courses for automated routing.
                 </p>
               </div>
@@ -690,7 +690,7 @@ export default function SuperAdminDashboard() {
               {courses.map((course) => (
                 <div
                   key={course.id}
-                  className="glass-card rounded-2xl p-5 border border-slate-800/90 hover:border-purple-500/30 transition-all space-y-4 flex flex-col justify-between"
+                  className="glass-card rounded-2xl p-5 border border-border/90 hover:border-purple-500/30 transition-all space-y-4 flex flex-col justify-between"
                 >
                   <div className="space-y-2">
                     <div className="flex items-start justify-between">
@@ -703,22 +703,22 @@ export default function SuperAdminDashboard() {
 
                       <button
                         onClick={() => handleDeleteCourse(course.id, course.courseName)}
-                        className="p-1.5 rounded-lg text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 transition-all cursor-pointer"
+                        className="p-1.5 rounded-lg text-muted-foreground hover:text-rose-400 hover:bg-rose-500/10 transition-all cursor-pointer"
                         title="Delete Course"
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
                     </div>
 
-                    <p className="text-xs text-slate-400 leading-relaxed">
+                    <p className="text-xs text-muted-foreground leading-relaxed">
                       {course.description || "No description provided."}
                     </p>
                   </div>
 
                   {/* Skill Tag Chips & Adder */}
-                  <div className="pt-3 border-t border-slate-800/70 space-y-2">
+                  <div className="pt-3 border-t border-border/70 space-y-2">
                     <div className="flex items-center justify-between text-xs">
-                      <span className="font-semibold text-slate-400 flex items-center space-x-1">
+                      <span className="font-semibold text-muted-foreground flex items-center space-x-1">
                         <Tag className="w-3 h-3 text-purple-400" />
                         <span>Mapped Failure Tags:</span>
                       </span>
@@ -750,7 +750,7 @@ export default function SuperAdminDashboard() {
                           </span>
                         ))
                       ) : (
-                        <span className="text-[11px] text-slate-400 italic">No skill tags mapped yet.</span>
+                        <span className="text-[11px] text-muted-foreground italic">No skill tags mapped yet.</span>
                       )}
                     </div>
 
@@ -768,7 +768,7 @@ export default function SuperAdminDashboard() {
                               handleAddSkillTag(course.id);
                             }
                           }}
-                          className="flex-1 px-3 py-1.5 rounded-lg bg-slate-900 border border-purple-500/40 text-xs text-white placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-purple-400"
+                          className="flex-1 px-3 py-1.5 rounded-lg bg-card border border-purple-500/40 text-xs text-white placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-purple-400"
                           autoFocus
                         />
                         <button
@@ -781,7 +781,7 @@ export default function SuperAdminDashboard() {
                         <button
                           type="button"
                           onClick={() => setActiveCourseIdForTag(null)}
-                          className="px-2 py-1.5 rounded-lg text-slate-400 hover:text-slate-200 text-xs cursor-pointer"
+                          className="px-2 py-1.5 rounded-lg text-muted-foreground hover:text-foreground text-xs cursor-pointer"
                         >
                           Cancel
                         </button>
@@ -801,14 +801,14 @@ export default function SuperAdminDashboard() {
       {activeTab === "leads" && (
         <div className="space-y-6">
           {/* Header & Filter Controls */}
-          <div className="glass-panel rounded-2xl p-5 border border-slate-800 space-y-4">
+          <div className="glass-panel rounded-2xl p-5 border border-border space-y-4">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
               <div>
                 <h2 className="text-lg font-bold text-white flex items-center space-x-2">
                   <FileSpreadsheet className="w-5 h-5 text-emerald-400" />
                   <span>Lead Referral Invoicing &amp; Audit Log</span>
                 </h2>
-                <p className="text-xs text-slate-400">
+                <p className="text-xs text-muted-foreground">
                   Real-time generated candidate referrals for partner institute verification and manual billing.
                 </p>
               </div>
@@ -826,14 +826,14 @@ export default function SuperAdminDashboard() {
             </div>
 
             {/* Filter Bar */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-3 border-t border-slate-800/80">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-3 border-t border-border/80">
               {/* Institute Filter */}
               <div>
-                <label className="block text-[11px] font-semibold text-slate-400 mb-1">Filter by Institute</label>
+                <label className="block text-[11px] font-semibold text-muted-foreground mb-1">Filter by Institute</label>
                 <select
                   value={leadFilterInstitute}
                   onChange={(e) => setLeadFilterInstitute(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-800 text-xs text-slate-200 focus:outline-none focus:border-indigo-500 cursor-pointer"
+                  className="w-full px-3 py-2 rounded-xl bg-card border border-border text-xs text-foreground focus:outline-none focus:border-indigo-500 cursor-pointer"
                 >
                   <option value="all">All Institutes</option>
                   {institutes.map((inst) => (
@@ -846,33 +846,33 @@ export default function SuperAdminDashboard() {
 
               {/* From Date */}
               <div>
-                <label className="block text-[11px] font-semibold text-slate-400 mb-1">From Date</label>
+                <label className="block text-[11px] font-semibold text-muted-foreground mb-1">From Date</label>
                 <input
                   type="date"
                   value={leadFromDate}
                   onChange={(e) => setLeadFromDate(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-800 text-xs text-slate-200 focus:outline-none focus:border-indigo-500"
+                  className="w-full px-3 py-2 rounded-xl bg-card border border-border text-xs text-foreground focus:outline-none focus:border-indigo-500"
                 />
               </div>
 
               {/* To Date */}
               <div>
-                <label className="block text-[11px] font-semibold text-slate-400 mb-1">To Date</label>
+                <label className="block text-[11px] font-semibold text-muted-foreground mb-1">To Date</label>
                 <input
                   type="date"
                   value={leadToDate}
                   onChange={(e) => setLeadToDate(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-800 text-xs text-slate-200 focus:outline-none focus:border-indigo-500"
+                  className="w-full px-3 py-2 rounded-xl bg-card border border-border text-xs text-foreground focus:outline-none focus:border-indigo-500"
                 />
               </div>
             </div>
           </div>
 
           {/* Leads Data Table */}
-          <div className="glass-panel rounded-2xl border border-slate-800 overflow-hidden shadow-2xl">
+          <div className="glass-panel rounded-2xl border border-border overflow-hidden shadow-2xl">
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs">
-                <thead className="bg-slate-900/90 text-slate-400 uppercase tracking-wider font-semibold border-b border-slate-800">
+                <thead className="bg-card/90 text-muted-foreground uppercase tracking-wider font-semibold border-b border-border">
                   <tr>
                     <th className="py-3.5 px-4">Date &amp; Time</th>
                     <th className="py-3.5 px-4">Candidate</th>
@@ -882,18 +882,18 @@ export default function SuperAdminDashboard() {
                     <th className="py-3.5 px-4">Referral ID</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-800/70 text-slate-400">
+                <tbody className="divide-y divide-slate-800/70 text-muted-foreground">
                   {leads.length > 0 ? (
                     leads.map((lead) => (
-                      <tr key={lead.leadId} className="hover:bg-slate-900/40 transition-colors">
-                        <td className="py-3 px-4 font-mono text-[11px] text-slate-400 whitespace-nowrap">
+                      <tr key={lead.leadId} className="hover:bg-card/40 transition-colors">
+                        <td className="py-3 px-4 font-mono text-[11px] text-muted-foreground whitespace-nowrap">
                           {new Date(lead.createdAt).toLocaleString()}
                         </td>
                         <td className="py-3 px-4">
                           <div className="font-bold text-white">{lead.candidateName}</div>
-                          <div className="text-[11px] text-slate-400">{lead.candidateEmail}</div>
+                          <div className="text-[11px] text-muted-foreground">{lead.candidateEmail}</div>
                         </td>
-                        <td className="py-3 px-4 font-medium text-slate-200">
+                        <td className="py-3 px-4 font-medium text-foreground">
                           {lead.instituteName}
                         </td>
                         <td className="py-3 px-4 text-indigo-300">
@@ -912,17 +912,17 @@ export default function SuperAdminDashboard() {
                             {lead.status}
                           </span>
                         </td>
-                        <td className="py-3 px-4 font-mono text-[10px] text-slate-400">
+                        <td className="py-3 px-4 font-mono text-[10px] text-muted-foreground">
                           {lead.leadId.slice(0, 8)}...
                         </td>
                       </tr>
                     ))
                   ) : (
                     <tr>
-                      <td colSpan={6} className="py-12 text-center text-slate-400">
-                        <FileSpreadsheet className="w-8 h-8 text-slate-400 mx-auto mb-2 opacity-50" />
+                      <td colSpan={6} className="py-12 text-center text-muted-foreground">
+                        <FileSpreadsheet className="w-8 h-8 text-muted-foreground mx-auto mb-2 opacity-50" />
                         <p className="font-semibold">No lead referrals found for the selected criteria.</p>
-                        <p className="text-xs text-slate-400 mt-1">
+                        <p className="text-xs text-muted-foreground mt-1">
                           Leads are dynamically generated whenever candidate scores fall below 70% during sprint defense.
                         </p>
                       </td>
@@ -940,8 +940,8 @@ export default function SuperAdminDashboard() {
       {/* ========================================================================= */}
       {showAddInstituteModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-in fade-in">
-          <div className="max-w-md w-full glass-panel rounded-3xl p-6 border border-slate-800 shadow-2xl space-y-4">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+          <div className="max-w-md w-full glass-panel rounded-3xl p-6 border border-border shadow-2xl space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-border">
               <h3 className="text-base font-bold text-white flex items-center space-x-2">
                 <Building2 className="w-5 h-5 text-indigo-400" />
                 <span>Add Partner Institute</span>
@@ -949,7 +949,7 @@ export default function SuperAdminDashboard() {
               <button
                 type="button"
                 onClick={() => setShowAddInstituteModal(false)}
-                className="text-slate-400 hover:text-white cursor-pointer"
+                className="text-muted-foreground hover:text-white cursor-pointer"
               >
                 &times;
               </button>
@@ -957,44 +957,44 @@ export default function SuperAdminDashboard() {
 
             <form onSubmit={handleCreateInstitute} className="space-y-3 text-xs">
               <div>
-                <label className="block text-slate-400 font-semibold mb-1">Institute Name *</label>
+                <label className="block text-muted-foreground font-semibold mb-1">Institute Name *</label>
                 <input
                   type="text"
                   required
                   placeholder="e.g. Lambda School Global"
                   value={newInstName}
                   onChange={(e) => setNewInstName(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-800 text-white focus:outline-none focus:border-indigo-500"
+                  className="w-full px-3 py-2 rounded-xl bg-card border border-border text-white focus:outline-none focus:border-indigo-500"
                 />
               </div>
 
               <div>
-                <label className="block text-slate-400 font-semibold mb-1">Webhook Dispatch URL</label>
+                <label className="block text-muted-foreground font-semibold mb-1">Webhook Dispatch URL</label>
                 <input
                   type="url"
                   placeholder="https://institute.domain.com/webhooks/leads"
                   value={newInstWebhook}
                   onChange={(e) => setNewInstWebhook(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-800 text-white focus:outline-none focus:border-indigo-500"
+                  className="w-full px-3 py-2 rounded-xl bg-card border border-border text-white focus:outline-none focus:border-indigo-500"
                 />
               </div>
 
               <div>
-                <label className="block text-slate-400 font-semibold mb-1">API Secret Key (Optional)</label>
+                <label className="block text-muted-foreground font-semibold mb-1">API Secret Key (Optional)</label>
                 <input
                   type="text"
                   placeholder="Leave empty to auto-generate secret"
                   value={newInstApiKey}
                   onChange={(e) => setNewInstApiKey(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-800 text-white focus:outline-none focus:border-indigo-500"
+                  className="w-full px-3 py-2 rounded-xl bg-card border border-border text-white focus:outline-none focus:border-indigo-500"
                 />
               </div>
 
-              <div className="flex items-center justify-end space-x-2 pt-4 border-t border-slate-800">
+              <div className="flex items-center justify-end space-x-2 pt-4 border-t border-border">
                 <button
                   type="button"
                   onClick={() => setShowAddInstituteModal(false)}
-                  className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-400 font-semibold cursor-pointer"
+                  className="px-4 py-2 rounded-xl bg-muted hover:bg-slate-700 text-muted-foreground font-semibold cursor-pointer"
                 >
                   Cancel
                 </button>
@@ -1015,8 +1015,8 @@ export default function SuperAdminDashboard() {
       {/* ========================================================================= */}
       {showAddCourseModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-in fade-in">
-          <div className="max-w-md w-full glass-panel rounded-3xl p-6 border border-slate-800 shadow-2xl space-y-4">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+          <div className="max-w-md w-full glass-panel rounded-3xl p-6 border border-border shadow-2xl space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-border">
               <h3 className="text-base font-bold text-white flex items-center space-x-2">
                 <BookOpen className="w-5 h-5 text-purple-400" />
                 <span>Add Course &amp; Map Skills</span>
@@ -1024,7 +1024,7 @@ export default function SuperAdminDashboard() {
               <button
                 type="button"
                 onClick={() => setShowAddCourseModal(false)}
-                className="text-slate-400 hover:text-white cursor-pointer"
+                className="text-muted-foreground hover:text-white cursor-pointer"
               >
                 &times;
               </button>
@@ -1032,12 +1032,12 @@ export default function SuperAdminDashboard() {
 
             <form onSubmit={handleCreateCourse} className="space-y-3 text-xs">
               <div>
-                <label className="block text-slate-400 font-semibold mb-1">Partner Institute *</label>
+                <label className="block text-muted-foreground font-semibold mb-1">Partner Institute *</label>
                 <select
                   value={newCourseInstId}
                   onChange={(e) => setNewCourseInstId(e.target.value)}
                   required
-                  className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-800 text-white focus:outline-none focus:border-purple-500 cursor-pointer"
+                  className="w-full px-3 py-2 rounded-xl bg-card border border-border text-white focus:outline-none focus:border-purple-500 cursor-pointer"
                 >
                   {institutes.map((inst) => (
                     <option key={inst.id} value={inst.id}>
@@ -1048,30 +1048,30 @@ export default function SuperAdminDashboard() {
               </div>
 
               <div>
-                <label className="block text-slate-400 font-semibold mb-1">Course Title *</label>
+                <label className="block text-muted-foreground font-semibold mb-1">Course Title *</label>
                 <input
                   type="text"
                   required
                   placeholder="e.g. AWS VPC & Cloud Networking Professional"
                   value={newCourseName}
                   onChange={(e) => setNewCourseName(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-800 text-white focus:outline-none focus:border-purple-500"
+                  className="w-full px-3 py-2 rounded-xl bg-card border border-border text-white focus:outline-none focus:border-purple-500"
                 />
               </div>
 
               <div>
-                <label className="block text-slate-400 font-semibold mb-1">Description</label>
+                <label className="block text-muted-foreground font-semibold mb-1">Description</label>
                 <textarea
                   rows={3}
                   placeholder="Brief curriculum overview..."
                   value={newCourseDesc}
                   onChange={(e) => setNewCourseDesc(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-800 text-white focus:outline-none focus:border-purple-500"
+                  className="w-full px-3 py-2 rounded-xl bg-card border border-border text-white focus:outline-none focus:border-purple-500"
                 />
               </div>
 
               <div>
-                <label className="block text-slate-400 font-semibold mb-1">
+                <label className="block text-muted-foreground font-semibold mb-1">
                   Mapped Skill Gap Tags (comma-separated)
                 </label>
                 <input
@@ -1079,18 +1079,18 @@ export default function SuperAdminDashboard() {
                   placeholder="React Hooks, System Architecture, AWS VPC"
                   value={newCourseSkillTags}
                   onChange={(e) => setNewCourseSkillTags(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-800 text-white focus:outline-none focus:border-purple-500"
+                  className="w-full px-3 py-2 rounded-xl bg-card border border-border text-white focus:outline-none focus:border-purple-500"
                 />
-                <p className="text-[10px] text-slate-400 mt-1">
+                <p className="text-[10px] text-muted-foreground mt-1">
                   When a candidate fails any of these tags in their defense, this course is recommended.
                 </p>
               </div>
 
-              <div className="flex items-center justify-end space-x-2 pt-4 border-t border-slate-800">
+              <div className="flex items-center justify-end space-x-2 pt-4 border-t border-border">
                 <button
                   type="button"
                   onClick={() => setShowAddCourseModal(false)}
-                  className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-400 font-semibold cursor-pointer"
+                  className="px-4 py-2 rounded-xl bg-muted hover:bg-slate-700 text-muted-foreground font-semibold cursor-pointer"
                 >
                   Cancel
                 </button>

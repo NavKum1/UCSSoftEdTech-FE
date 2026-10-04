@@ -179,14 +179,14 @@ export default function MultiLanguageTranslationStudioPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-200 flex flex-col font-sans pb-16">
+    <div className="min-h-screen bg-background text-foreground flex flex-col font-sans pb-16">
       {/* Header */}
-      <header className="border-b border-slate-800 bg-slate-900/60 backdrop-blur-md sticky top-0 z-40">
+      <header className="border-b border-border bg-card/60 backdrop-blur-md sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
           <div className="flex items-center space-x-3">
             <button
               onClick={() => router.back()}
-              className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-400 transition-colors cursor-pointer"
+              className="p-2 rounded-xl bg-muted hover:bg-slate-700 text-muted-foreground transition-colors cursor-pointer"
             >
               <ArrowLeft className="w-4 h-4" />
             </button>
@@ -203,7 +203,7 @@ export default function MultiLanguageTranslationStudioPage() {
                     Live Subtitles
                   </span>
                 </div>
-                <p className="text-[11px] text-slate-400">
+                <p className="text-[11px] text-muted-foreground">
                   Real-time multilingual subtitles, bilingual transcript review, and voice translation.
                 </p>
               </div>
@@ -213,7 +213,7 @@ export default function MultiLanguageTranslationStudioPage() {
           <div className="flex items-center space-x-3">
             <button
               onClick={handleDownloadWebVtt}
-              className="px-3.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-800 text-xs font-medium flex items-center space-x-1.5 transition-colors cursor-pointer"
+              className="px-3.5 py-1.5 rounded-xl bg-muted hover:bg-slate-700 text-foreground border border-border text-xs font-medium flex items-center space-x-1.5 transition-colors cursor-pointer"
             >
               <Download className="w-3.5 h-3.5 text-cyan-400" />
               <span>Download Subtitles ({selectedLanguage.toUpperCase()})</span>
@@ -225,13 +225,13 @@ export default function MultiLanguageTranslationStudioPage() {
       {/* Main Content Layout */}
       <main className="max-w-7xl mx-auto px-6 py-8 flex-1 w-full space-y-8">
         {/* Language Selection Ribbon */}
-        <div className="p-4 rounded-2xl bg-slate-900/60 border border-slate-800 space-y-3">
+        <div className="p-4 rounded-2xl bg-card/60 border border-border space-y-3">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-slate-400 flex items-center space-x-2">
+            <span className="text-xs font-semibold text-muted-foreground flex items-center space-x-2">
               <Languages className="w-4 h-4 text-cyan-400" />
               <span>Select Subtitle &amp; Audio Language</span>
             </span>
-            <span className="text-xs text-slate-400">
+            <span className="text-xs text-muted-foreground">
               Active: <strong className="text-cyan-400">{SUPPORTED_LANGUAGES.find(l => l.code === selectedLanguage)?.label}</strong>
             </span>
           </div>
@@ -246,14 +246,14 @@ export default function MultiLanguageTranslationStudioPage() {
                   className={`p-2.5 rounded-xl border flex flex-col items-center space-y-1 transition-all cursor-pointer ${
                     isActive
                       ? "bg-cyan-950/40 border-cyan-500/70 shadow-md shadow-cyan-900/30"
-                      : "bg-slate-950/40 border-slate-800 hover:border-slate-800 hover:bg-slate-900/60"
+                      : "bg-background/40 border-border hover:border-border hover:bg-card/60"
                   }`}
                 >
                   <span className="text-xl">{lang.flag}</span>
-                  <span className={`text-[11px] font-bold ${isActive ? "text-cyan-300" : "text-slate-400"}`}>
+                  <span className={`text-[11px] font-bold ${isActive ? "text-cyan-300" : "text-muted-foreground"}`}>
                     {lang.code.toUpperCase()}
                   </span>
-                  <span className="text-[9px] text-slate-400 truncate w-full text-center">
+                  <span className="text-[9px] text-muted-foreground truncate w-full text-center">
                     {lang.native}
                   </span>
                 </button>
@@ -280,20 +280,20 @@ export default function MultiLanguageTranslationStudioPage() {
                     {audioTrackMode === "dubbed" ? "Simulated Neural Dubbing" : "Original Dialect"}
                   </span>
                 </div>
-                <div className="text-xs text-slate-400 mt-0.5 font-mono">
+                <div className="text-xs text-muted-foreground mt-0.5 font-mono">
                   {formatSeconds(currentTime)} / 00:20.0 (Scrubbing position)
                 </div>
               </div>
             </div>
 
             {/* Dual-Track Audio Selector */}
-            <div className="flex items-center space-x-2 bg-slate-950 p-1.5 rounded-xl border border-slate-800">
+            <div className="flex items-center space-x-2 bg-background p-1.5 rounded-xl border border-border">
               <button
                 onClick={() => setAudioTrackMode("original")}
                 className={`px-3 py-1.5 rounded-lg text-xs font-medium flex items-center space-x-1.5 transition-all cursor-pointer ${
                   audioTrackMode === "original"
-                    ? "bg-slate-800 text-white font-semibold"
-                    : "text-slate-400 hover:text-slate-200"
+                    ? "bg-muted text-white font-semibold"
+                    : "text-muted-foreground hover:text-foreground"
                 }`}
               >
                 <Headphones className="w-3.5 h-3.5" />
@@ -305,7 +305,7 @@ export default function MultiLanguageTranslationStudioPage() {
                 className={`px-3 py-1.5 rounded-lg text-xs font-medium flex items-center space-x-1.5 transition-all cursor-pointer ${
                   audioTrackMode === "dubbed"
                     ? "bg-cyan-600 text-white font-semibold shadow-md shadow-cyan-600/30"
-                    : "text-slate-400 hover:text-slate-200"
+                    : "text-muted-foreground hover:text-foreground"
                 }`}
               >
                 <Radio className="w-3.5 h-3.5" />
@@ -316,13 +316,13 @@ export default function MultiLanguageTranslationStudioPage() {
 
           {/* Timeline Scrubber Bar */}
           <div className="space-y-1.5">
-            <div className="h-2.5 w-full rounded-full bg-slate-950 overflow-hidden relative cursor-pointer">
+            <div className="h-2.5 w-full rounded-full bg-background overflow-hidden relative cursor-pointer">
               <div
                 style={{ width: `${(currentTime / 20.0) * 100}%` }}
                 className="h-full bg-gradient-to-r from-cyan-500 to-blue-500 rounded-full transition-all duration-200"
               />
             </div>
-            <div className="flex justify-between text-[11px] text-slate-400 font-mono">
+            <div className="flex justify-between text-[11px] text-muted-foreground font-mono">
               <span>00:00.0</span>
               <span>Timeline synchronized with WebVTT captions</span>
               <span>00:20.0</span>
@@ -337,13 +337,13 @@ export default function MultiLanguageTranslationStudioPage() {
               <Languages className="w-4 h-4 text-cyan-400" />
               <span>Synchronized Bilingual Subtitle Timeline</span>
             </h3>
-            <span className="text-xs text-slate-400">
+            <span className="text-xs text-muted-foreground">
               {segments.length} dialogue segments recorded
             </span>
           </div>
 
           {segments.length === 0 ? (
-            <div className="p-8 text-center rounded-2xl bg-slate-900/60 border border-slate-800 text-slate-400 text-xs">
+            <div className="p-8 text-center rounded-2xl bg-card/60 border border-border text-muted-foreground text-xs">
               {fetchError || "No translated dialogue segments recorded for this session yet."}
             </div>
           ) : (
@@ -359,7 +359,7 @@ export default function MultiLanguageTranslationStudioPage() {
                     className={`p-4 rounded-xl border transition-all cursor-pointer space-y-2 ${
                       isCurrent
                         ? "bg-cyan-950/30 border-cyan-500/60 shadow-lg shadow-cyan-900/20"
-                        : "bg-slate-900/40 border-slate-800 hover:border-slate-800 hover:bg-slate-900/60"
+                        : "bg-card/40 border-border hover:border-border hover:bg-card/60"
                     }`}
                   >
                     <div className="flex items-center justify-between">
@@ -373,19 +373,19 @@ export default function MultiLanguageTranslationStudioPage() {
                           <span>{isAi ? "AI Technical Interviewer" : "Candidate"}</span>
                         </span>
 
-                        <span className="text-[11px] font-mono text-slate-400">
+                        <span className="text-[11px] font-mono text-muted-foreground">
                           [{formatSeconds(seg.startTimeSeconds)} - {formatSeconds(seg.endTimeSeconds)}]
                         </span>
                       </div>
 
-                      <span className="text-[10px] uppercase font-bold text-slate-400">
+                      <span className="text-[10px] uppercase font-bold text-muted-foreground">
                         Segment #{seg.sequenceNumber}
                       </span>
                     </div>
 
                     {/* Original Spoken Text */}
-                    <div className="text-xs text-slate-400 leading-relaxed pl-2 border-l-2 border-slate-800">
-                      <span className="text-[10px] uppercase font-semibold text-slate-400 block mb-0.5">
+                    <div className="text-xs text-muted-foreground leading-relaxed pl-2 border-l-2 border-border">
+                      <span className="text-[10px] uppercase font-semibold text-muted-foreground block mb-0.5">
                         Spoken Original ({seg.originalLanguage.toUpperCase()}):
                       </span>
                       {seg.originalText}
@@ -406,18 +406,18 @@ export default function MultiLanguageTranslationStudioPage() {
         </div>
 
         {/* Real-time Dialogue Injection Simulator */}
-        <div className="p-6 rounded-2xl bg-slate-900/50 border border-slate-800 space-y-4">
+        <div className="p-6 rounded-2xl bg-card/50 border border-border space-y-4">
           <div className="flex items-center space-x-2">
             <Sparkles className="w-4 h-4 text-cyan-400" />
             <h3 className="text-base font-bold text-white">Live Conversation &amp; Subtitle Preview</h3>
           </div>
-          <p className="text-xs text-slate-400">
+          <p className="text-xs text-muted-foreground">
             Enter a question or response to see real-time translation and captions across supported languages.
           </p>
 
           <form onSubmit={handleIngestSegment} className="space-y-3">
             <div className="flex items-center space-x-3">
-              <label className="text-xs text-slate-400 font-medium">Speaker:</label>
+              <label className="text-xs text-muted-foreground font-medium">Speaker:</label>
               <div className="flex items-center space-x-2">
                 {["Candidate", "AiInterviewer", "Mentor"].map((spk) => (
                   <button
@@ -427,7 +427,7 @@ export default function MultiLanguageTranslationStudioPage() {
                     className={`px-3 py-1 rounded-lg text-xs font-medium cursor-pointer border ${
                       inputSpeaker === spk
                         ? "bg-cyan-600 text-white border-cyan-500"
-                        : "bg-slate-800 text-slate-400 border-slate-800"
+                        : "bg-muted text-muted-foreground border-border"
                     }`}
                   >
                     {spk}
@@ -442,7 +442,7 @@ export default function MultiLanguageTranslationStudioPage() {
                 value={inputText}
                 onChange={(e) => setInputText(e.target.value)}
                 placeholder="Enter technical interview speech to translate (e.g. 'I designed an async memory buffer queue...')"
-                className="flex-1 rounded-xl bg-slate-950 border border-slate-800 px-4 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-cyan-500"
+                className="flex-1 rounded-xl bg-background border border-border px-4 py-2.5 text-xs text-foreground focus:outline-none focus:border-cyan-500"
               />
               <button
                 type="submit"

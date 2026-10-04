@@ -175,10 +175,10 @@ export default function EnterpriseGuildBattlesPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-950 text-slate-200 flex items-center justify-center p-6">
+      <div className="min-h-screen bg-background text-foreground flex items-center justify-center p-6">
         <div className="text-center space-y-4">
           <div className="w-12 h-12 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin mx-auto" />
-          <p className="text-slate-400 font-mono text-sm tracking-wide">
+          <p className="text-muted-foreground font-mono text-sm tracking-wide">
             Connecting to Live Enterprise Guild Battle Arena & Matchmaking Engine...
           </p>
         </div>
@@ -187,14 +187,14 @@ export default function EnterpriseGuildBattlesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-200 antialiased selection:bg-indigo-500 selection:text-white">
+    <div className="min-h-screen bg-background text-foreground antialiased selection:bg-indigo-500 selection:text-white">
       {/* Top Navigation Bar */}
-      <header className="border-b border-slate-800 bg-slate-900/90 backdrop-blur sticky top-0 z-50 px-6 py-4">
+      <header className="border-b border-border bg-card/90 backdrop-blur sticky top-0 z-50 px-6 py-4">
         <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <Link
               href="/"
-              className="text-xs font-mono uppercase tracking-widest text-slate-400 hover:text-white transition"
+              className="text-xs font-mono uppercase tracking-widest text-muted-foreground hover:text-white transition"
             >
               ← System Dashboard
             </Link>
@@ -211,13 +211,13 @@ export default function EnterpriseGuildBattlesPage() {
           </div>
 
           <div className="flex items-center gap-3 text-xs font-mono">
-            <div className="flex items-center gap-2 bg-slate-800/80 border border-purple-500/30 px-3 py-1.5 rounded-lg shadow-sm">
+            <div className="flex items-center gap-2 bg-muted/80 border border-purple-500/30 px-3 py-1.5 rounded-lg shadow-sm">
               <span className="text-base">🏆</span>
               <div>
                 <span className="text-purple-300 font-bold text-sm">
                   {guilds.reduce((acc, g) => acc + g.totalTrophies, 0)} Total Trophies
                 </span>
-                <span className="text-slate-400 text-[10px] block">{guilds.length} Active Guilds</span>
+                <span className="text-muted-foreground text-[10px] block">{guilds.length} Active Guilds</span>
               </div>
             </div>
 
@@ -246,12 +246,12 @@ export default function EnterpriseGuildBattlesPage() {
                   <span className="text-xs uppercase font-mono font-bold text-emerald-400 tracking-wider">
                     {activeHackathon.status} Tournament Battle
                   </span>
-                  <span className="text-slate-400">•</span>
-                  <span className="text-xs font-mono text-slate-400">
+                  <span className="text-muted-foreground">•</span>
+                  <span className="text-xs font-mono text-muted-foreground">
                     Mode: {activeHackathon.eventType}
                   </span>
                 </div>
-                <h2 className="text-2xl font-bold text-slate-200">{activeHackathon.title}</h2>
+                <h2 className="text-2xl font-bold text-foreground">{activeHackathon.title}</h2>
               </div>
 
               <div className="bg-purple-950/80 border border-purple-500/40 text-purple-300 px-4 py-3 rounded-xl text-center shrink-0">
@@ -267,13 +267,13 @@ export default function EnterpriseGuildBattlesPage() {
         )}
 
         {/* Tab Navigation */}
-        <div className="flex items-center gap-2 border-b border-slate-800">
+        <div className="flex items-center gap-2 border-b border-border">
           <button
             onClick={() => setActiveTab("arena")}
             className={`px-4 py-2 text-sm font-medium border-b-2 transition ${
               activeTab === "arena"
                 ? "border-indigo-500 text-indigo-400 bg-indigo-500/5"
-                : "border-transparent text-slate-400 hover:text-slate-200"
+                : "border-transparent text-muted-foreground hover:text-foreground"
             }`}
           >
             ⚔️ Live Battle Arena & Leaderboard
@@ -283,7 +283,7 @@ export default function EnterpriseGuildBattlesPage() {
             className={`px-4 py-2 text-sm font-medium border-b-2 transition ${
               activeTab === "guilds"
                 ? "border-indigo-500 text-indigo-400 bg-indigo-500/5"
-                : "border-transparent text-slate-400 hover:text-slate-200"
+                : "border-transparent text-muted-foreground hover:text-foreground"
             }`}
           >
             🛡️ Enterprise Guilds & Elo Ratings
@@ -293,7 +293,7 @@ export default function EnterpriseGuildBattlesPage() {
             className={`px-4 py-2 text-sm font-medium border-b-2 transition ${
               activeTab === "tournaments"
                 ? "border-indigo-500 text-indigo-400 bg-indigo-500/5"
-                : "border-transparent text-slate-400 hover:text-slate-200"
+                : "border-transparent text-muted-foreground hover:text-foreground"
             }`}
           >
             📅 Scheduled Hackathon Tournaments
@@ -305,19 +305,19 @@ export default function EnterpriseGuildBattlesPage() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Left 2 Cols: Live Battle Leaderboard */}
             <div className="lg:col-span-2 space-y-6">
-              <div className="bg-slate-900 border border-slate-800 rounded-xl p-6 space-y-4 shadow-lg">
+              <div className="bg-card border border-border rounded-xl p-6 space-y-4 shadow-lg">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-base font-bold text-slate-200 flex items-center gap-2">
+                  <h3 className="text-base font-bold text-foreground flex items-center gap-2">
                     <span>📊</span> Real-Time Tournament Leaderboard
                   </h3>
-                  <span className="text-xs font-mono text-slate-400">
+                  <span className="text-xs font-mono text-muted-foreground">
                     Live Score Refresh Enabled
                   </span>
                 </div>
 
                 <div className="overflow-x-auto">
                   <table className="w-full text-left text-xs font-mono">
-                    <thead className="text-slate-400 bg-slate-950/60 border-b border-slate-800">
+                    <thead className="text-muted-foreground bg-background/60 border-b border-border">
                       <tr>
                         <th className="py-3 px-4">Rank</th>
                         <th className="py-3 px-4">Squad Name</th>
@@ -329,13 +329,13 @@ export default function EnterpriseGuildBattlesPage() {
                     </thead>
                     <tbody className="divide-y divide-slate-800/60">
                       {leaderboard?.participants.map((p) => (
-                        <tr key={p.guildId} className="hover:bg-slate-800/40 transition">
+                        <tr key={p.guildId} className="hover:bg-muted/40 transition">
                           <td className="py-3 px-4 font-bold">
                             {p.rank === 1 && "🥇 "}
                             {p.rank === 2 && "🥈 "}
                             {p.rank === 3 && "🥉 "}#{p.rank}
                           </td>
-                          <td className="py-3 px-4 font-semibold text-slate-200">{p.squadName}</td>
+                          <td className="py-3 px-4 font-semibold text-foreground">{p.squadName}</td>
                           <td className="py-3 px-4 text-emerald-400">🛡️ {p.attacksMitigated} Mitigated</td>
                           <td className="py-3 px-4 text-cyan-400">{p.speedMs}ms</td>
                           <td className="py-3 px-4 font-bold text-amber-400 text-sm">
@@ -356,24 +356,24 @@ export default function EnterpriseGuildBattlesPage() {
 
             {/* Right Col: Squad Battle Submission Console */}
             <div className="space-y-6">
-              <div className="bg-slate-900 border border-slate-800 rounded-xl p-6 space-y-4 shadow-lg">
-                <h3 className="text-base font-bold text-slate-200 flex items-center gap-2">
+              <div className="bg-card border border-border rounded-xl p-6 space-y-4 shadow-lg">
+                <h3 className="text-base font-bold text-foreground flex items-center gap-2">
                   <span>🕹️</span> Squad Battle Command Console
                 </h3>
-                <p className="text-xs text-slate-400 leading-relaxed">
+                <p className="text-xs text-muted-foreground leading-relaxed">
                   Log real-time mitigation rounds during live hackathons. Points advance squad rank
                   and increase your team&apos;s global Elo rating.
                 </p>
 
                 <div className="space-y-3">
                   <div>
-                    <label className="text-xs font-mono text-slate-400 block mb-1">
+                    <label className="text-xs font-mono text-muted-foreground block mb-1">
                       Participating Guild
                     </label>
                     <select
                       value={selectedGuildId}
                       onChange={(e) => setSelectedGuildId(e.target.value)}
-                      className="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-xs text-slate-200 font-mono focus:border-indigo-500 focus:outline-none"
+                      className="w-full bg-background border border-border rounded-lg p-2.5 text-xs text-foreground font-mono focus:border-indigo-500 focus:outline-none"
                     >
                       {guilds.map((g) => (
                         <option key={g.id} value={g.id}>
@@ -384,7 +384,7 @@ export default function EnterpriseGuildBattlesPage() {
                   </div>
 
                   <div>
-                    <label className="text-xs font-mono text-slate-400 block mb-1">
+                    <label className="text-xs font-mono text-muted-foreground block mb-1">
                       Attacks Mitigated (Chaos Faults)
                     </label>
                     <input
@@ -393,12 +393,12 @@ export default function EnterpriseGuildBattlesPage() {
                       max={20}
                       value={attacksMitigated}
                       onChange={(e) => setAttacksMitigated(parseInt(e.target.value) || 1)}
-                      className="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-xs text-slate-200 font-mono focus:border-indigo-500 focus:outline-none"
+                      className="w-full bg-background border border-border rounded-lg p-2.5 text-xs text-foreground font-mono focus:border-indigo-500 focus:outline-none"
                     />
                   </div>
 
                   <div>
-                    <label className="text-xs font-mono text-slate-400 block mb-1">
+                    <label className="text-xs font-mono text-muted-foreground block mb-1">
                       Round Points Earned
                     </label>
                     <input
@@ -407,7 +407,7 @@ export default function EnterpriseGuildBattlesPage() {
                       step={10}
                       value={scorePoints}
                       onChange={(e) => setScorePoints(parseInt(e.target.value) || 10)}
-                      className="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-xs text-slate-200 font-mono focus:border-indigo-500 focus:outline-none"
+                      className="w-full bg-background border border-border rounded-lg p-2.5 text-xs text-foreground font-mono focus:border-indigo-500 focus:outline-none"
                     />
                   </div>
 
@@ -430,7 +430,7 @@ export default function EnterpriseGuildBattlesPage() {
             {guilds.map((g) => (
               <div
                 key={g.id}
-                className="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-4 shadow-lg hover:border-slate-800 transition"
+                className="bg-card border border-border rounded-2xl p-6 space-y-4 shadow-lg hover:border-border transition"
               >
                 <div className="flex items-center justify-between">
                   <span className="text-2xl">🛡️</span>
@@ -440,17 +440,17 @@ export default function EnterpriseGuildBattlesPage() {
                 </div>
 
                 <div className="space-y-1">
-                  <h4 className="font-bold text-slate-200 text-base">{g.guildName}</h4>
-                  <p className="text-xs text-slate-400 font-mono">{g.totalMembers} Engineers</p>
+                  <h4 className="font-bold text-foreground text-base">{g.guildName}</h4>
+                  <p className="text-xs text-muted-foreground font-mono">{g.totalMembers} Engineers</p>
                 </div>
 
-                <div className="pt-2 border-t border-slate-800 flex items-center justify-between text-xs font-mono">
+                <div className="pt-2 border-t border-border flex items-center justify-between text-xs font-mono">
                   <div>
-                    <span className="text-slate-400 text-[10px] block">Guild Elo</span>
+                    <span className="text-muted-foreground text-[10px] block">Guild Elo</span>
                     <span className="text-lg font-bold text-amber-400">{g.guildRatingElo}</span>
                   </div>
                   <div>
-                    <span className="text-slate-400 text-[10px] block">Trophies</span>
+                    <span className="text-muted-foreground text-[10px] block">Trophies</span>
                     <span className="text-lg font-bold text-purple-400">🏆 {g.totalTrophies}</span>
                   </div>
                 </div>
@@ -465,7 +465,7 @@ export default function EnterpriseGuildBattlesPage() {
             {hackathons.map((h) => (
               <div
                 key={h.id}
-                className="bg-slate-900 border border-slate-800 rounded-xl p-6 flex flex-col md:flex-row md:items-center justify-between gap-4"
+                className="bg-card border border-border rounded-xl p-6 flex flex-col md:flex-row md:items-center justify-between gap-4"
               >
                 <div className="space-y-1">
                   <div className="flex items-center gap-2">
@@ -473,19 +473,19 @@ export default function EnterpriseGuildBattlesPage() {
                       className={`px-2 py-0.5 text-[10px] font-mono rounded ${
                         h.status === "Live"
                           ? "bg-emerald-950 text-emerald-400 border border-emerald-800"
-                          : "bg-slate-800 text-slate-400"
+                          : "bg-muted text-muted-foreground"
                       }`}
                     >
                       {h.status}
                     </span>
-                    <span className="text-xs font-mono text-slate-400">{h.eventType}</span>
+                    <span className="text-xs font-mono text-muted-foreground">{h.eventType}</span>
                   </div>
-                  <h4 className="text-lg font-bold text-slate-200">{h.title}</h4>
+                  <h4 className="text-lg font-bold text-foreground">{h.title}</h4>
                 </div>
 
                 <div className="text-right font-mono text-xs text-purple-300">
                   <span className="block font-bold">{h.prizePool}</span>
-                  <span className="text-[11px] text-slate-400 block">
+                  <span className="text-[11px] text-muted-foreground block">
                     Starts: {new Date(h.startTime).toLocaleDateString()}
                   </span>
                 </div>
@@ -497,12 +497,12 @@ export default function EnterpriseGuildBattlesPage() {
         {/* Create Guild Modal */}
         {showCreateGuild && (
           <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-6">
-            <div className="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl">
-              <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-                <h3 className="font-bold text-lg text-slate-200">Establish Squad Guild</h3>
+            <div className="bg-card border border-border rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl">
+              <div className="flex items-center justify-between border-b border-border pb-3">
+                <h3 className="font-bold text-lg text-foreground">Establish Squad Guild</h3>
                 <button
                   onClick={() => setShowCreateGuild(false)}
-                  className="text-slate-400 hover:text-white"
+                  className="text-muted-foreground hover:text-white"
                 >
                   ✕
                 </button>
@@ -510,7 +510,7 @@ export default function EnterpriseGuildBattlesPage() {
 
               <div className="space-y-3">
                 <div>
-                  <label className="text-xs font-mono text-slate-400 block mb-1">
+                  <label className="text-xs font-mono text-muted-foreground block mb-1">
                     Guild Name (e.g. SRE Platform Tigers)
                   </label>
                   <input
@@ -518,16 +518,16 @@ export default function EnterpriseGuildBattlesPage() {
                     value={newGuildName}
                     onChange={(e) => setNewGuildName(e.target.value)}
                     placeholder="Enter squad guild name..."
-                    className="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-xs text-slate-200 font-mono focus:border-indigo-500 focus:outline-none"
+                    className="w-full bg-background border border-border rounded-lg p-2.5 text-xs text-foreground font-mono focus:border-indigo-500 focus:outline-none"
                   />
                 </div>
 
                 <div>
-                  <label className="text-xs font-mono text-slate-400 block mb-1">Department</label>
+                  <label className="text-xs font-mono text-muted-foreground block mb-1">Department</label>
                   <select
                     value={newGuildDept}
                     onChange={(e) => setNewGuildDept(e.target.value)}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-xs text-slate-200 font-mono focus:border-indigo-500 focus:outline-none"
+                    className="w-full bg-background border border-border rounded-lg p-2.5 text-xs text-foreground font-mono focus:border-indigo-500 focus:outline-none"
                   >
                     <option value="Platform">Platform Engineering</option>
                     <option value="Fintech">Fintech & Payments</option>
@@ -546,7 +546,7 @@ export default function EnterpriseGuildBattlesPage() {
                   </button>
                   <button
                     onClick={() => setShowCreateGuild(false)}
-                    className="py-2.5 px-4 bg-slate-800 hover:bg-slate-700 text-slate-400 text-xs rounded-lg transition"
+                    className="py-2.5 px-4 bg-muted hover:bg-slate-700 text-muted-foreground text-xs rounded-lg transition"
                   >
                     Cancel
                   </button>

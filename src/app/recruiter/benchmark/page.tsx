@@ -168,7 +168,7 @@ export default function RecruiterBenchmarkPage() {
               Active Analytics
             </span>
           </div>
-          <p className="text-sm text-slate-400 max-w-2xl">
+          <p className="text-sm text-muted-foreground max-w-2xl">
             Standardized candidate rankings, code originality verification, and comprehensive evaluation summaries.
           </p>
         </div>
@@ -176,7 +176,7 @@ export default function RecruiterBenchmarkPage() {
         <div className="flex items-center space-x-3">
           <button
             onClick={() => setShowPlagiarismModal(true)}
-            className="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-medium text-xs border border-slate-800 flex items-center space-x-2 transition-all cursor-pointer shadow-sm hover:border-slate-600"
+            className="px-4 py-2.5 rounded-xl bg-muted hover:bg-slate-700 text-foreground font-medium text-xs border border-border flex items-center space-x-2 transition-all cursor-pointer shadow-sm hover:border-slate-600"
           >
             <GitCompare className="w-4 h-4 text-purple-400" />
             <span>Code Originality Check</span>
@@ -192,7 +192,7 @@ export default function RecruiterBenchmarkPage() {
 
           <button
             onClick={fetchAnalytics}
-            className="p-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-800 text-slate-400 hover:text-slate-200 border border-slate-800/80 cursor-pointer transition-colors"
+            className="p-2.5 rounded-xl bg-muted/80 hover:bg-muted text-muted-foreground hover:text-foreground border border-border/80 cursor-pointer transition-colors"
             title="Refresh Metrics"
           >
             <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
@@ -209,8 +209,8 @@ export default function RecruiterBenchmarkPage() {
 
       {/* KPI Stat Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="p-5 rounded-xl bg-slate-900/60 border border-slate-800 relative overflow-hidden">
-          <div className="flex items-center justify-between text-slate-400 mb-2">
+        <div className="p-5 rounded-xl bg-card/60 border border-border relative overflow-hidden">
+          <div className="flex items-center justify-between text-muted-foreground mb-2">
             <span className="text-xs font-medium uppercase tracking-wider">Total Evaluated</span>
             <Layers className="w-4 h-4 text-purple-400" />
           </div>
@@ -223,8 +223,8 @@ export default function RecruiterBenchmarkPage() {
           </div>
         </div>
 
-        <div className="p-5 rounded-xl bg-slate-900/60 border border-slate-800 relative overflow-hidden">
-          <div className="flex items-center justify-between text-slate-400 mb-2">
+        <div className="p-5 rounded-xl bg-card/60 border border-border relative overflow-hidden">
+          <div className="flex items-center justify-between text-muted-foreground mb-2">
             <span className="text-xs font-medium uppercase tracking-wider">Median Percentile</span>
             <BarChart3 className="w-4 h-4 text-indigo-400" />
           </div>
@@ -236,21 +236,21 @@ export default function RecruiterBenchmarkPage() {
           </div>
         </div>
 
-        <div className="p-5 rounded-xl bg-slate-900/60 border border-slate-800 relative overflow-hidden">
-          <div className="flex items-center justify-between text-slate-400 mb-2">
+        <div className="p-5 rounded-xl bg-card/60 border border-border relative overflow-hidden">
+          <div className="flex items-center justify-between text-muted-foreground mb-2">
             <span className="text-xs font-medium uppercase tracking-wider">Integrity Review Rate</span>
             <ShieldAlert className="w-4 h-4 text-rose-400" />
           </div>
           <div className="text-2xl font-bold text-white">
             {(analytics?.plagiarismFlagRate || 0).toFixed(1)}%
           </div>
-          <div className="text-[11px] text-slate-400 mt-1">
+          <div className="text-[11px] text-muted-foreground mt-1">
             Similarity analysis across all submissions
           </div>
         </div>
 
-        <div className="p-5 rounded-xl bg-slate-900/60 border border-slate-800 relative overflow-hidden">
-          <div className="flex items-center justify-between text-slate-400 mb-2">
+        <div className="p-5 rounded-xl bg-card/60 border border-border relative overflow-hidden">
+          <div className="flex items-center justify-between text-muted-foreground mb-2">
             <span className="text-xs font-medium uppercase tracking-wider">Top-Tier Talent Ratio</span>
             <Award className="w-4 h-4 text-emerald-400" />
           </div>
@@ -271,14 +271,14 @@ export default function RecruiterBenchmarkPage() {
       </div>
 
       {/* Cohort Bell-Curve & Tier Distribution Visualizer */}
-      <div className="p-6 rounded-2xl bg-slate-900/50 border border-slate-800 space-y-5">
+      <div className="p-6 rounded-2xl bg-card/50 border border-border space-y-5">
         <div className="flex items-center justify-between">
           <div>
             <h3 className="text-base font-semibold text-white flex items-center space-x-2">
               <Award className="w-4 h-4 text-amber-400" />
               <span>Skill Level Distribution</span>
             </h3>
-            <p className="text-xs text-slate-400">
+            <p className="text-xs text-muted-foreground">
               Rankings based on code quality, problem solving, system design, and efficiency.
             </p>
           </div>
@@ -286,7 +286,7 @@ export default function RecruiterBenchmarkPage() {
 
         {/* Tier Distribution Bar */}
         <div className="space-y-3">
-          <div className="h-6 w-full rounded-xl bg-slate-950 flex overflow-hidden p-0.5 border border-slate-800">
+          <div className="h-6 w-full rounded-xl bg-background flex overflow-hidden p-0.5 border border-border">
             <div 
               style={{ width: "12%" }} 
               className="bg-emerald-500 hover:brightness-110 transition-all rounded-l-lg cursor-pointer"
@@ -317,28 +317,28 @@ export default function RecruiterBenchmarkPage() {
           <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 pt-2">
             <div className="flex items-center space-x-2 text-xs">
               <span className="w-3 h-3 rounded-full bg-emerald-500 shrink-0" />
-              <span className="text-slate-400 font-medium">Staff Level</span>
-              <span className="text-slate-400">({analytics?.tierDistribution?.FAANG_Staff ?? 12})</span>
+              <span className="text-muted-foreground font-medium">Staff Level</span>
+              <span className="text-muted-foreground">({analytics?.tierDistribution?.FAANG_Staff ?? 12})</span>
             </div>
             <div className="flex items-center space-x-2 text-xs">
               <span className="w-3 h-3 rounded-full bg-indigo-500 shrink-0" />
-              <span className="text-slate-400 font-medium">Senior Level</span>
-              <span className="text-slate-400">({analytics?.tierDistribution?.Tier1_Senior ?? 38})</span>
+              <span className="text-muted-foreground font-medium">Senior Level</span>
+              <span className="text-muted-foreground">({analytics?.tierDistribution?.Tier1_Senior ?? 38})</span>
             </div>
             <div className="flex items-center space-x-2 text-xs">
               <span className="w-3 h-3 rounded-full bg-sky-500 shrink-0" />
-              <span className="text-slate-400 font-medium">Mid Level</span>
-              <span className="text-slate-400">({analytics?.tierDistribution?.MidLevel_Enterprise ?? 64})</span>
+              <span className="text-muted-foreground font-medium">Mid Level</span>
+              <span className="text-muted-foreground">({analytics?.tierDistribution?.MidLevel_Enterprise ?? 64})</span>
             </div>
             <div className="flex items-center space-x-2 text-xs">
               <span className="w-3 h-3 rounded-full bg-amber-500 shrink-0" />
-              <span className="text-slate-400 font-medium">Associate Level</span>
-              <span className="text-slate-400">({analytics?.tierDistribution?.Junior_Competent ?? 22})</span>
+              <span className="text-muted-foreground font-medium">Associate Level</span>
+              <span className="text-muted-foreground">({analytics?.tierDistribution?.Junior_Competent ?? 22})</span>
             </div>
             <div className="flex items-center space-x-2 text-xs">
               <span className="w-3 h-3 rounded-full bg-rose-500 shrink-0" />
-              <span className="text-slate-400 font-medium">Needs Practice</span>
-              <span className="text-slate-400">({analytics?.tierDistribution?.Needs_Remediation ?? 6})</span>
+              <span className="text-muted-foreground font-medium">Needs Practice</span>
+              <span className="text-muted-foreground">({analytics?.tierDistribution?.Needs_Remediation ?? 6})</span>
             </div>
           </div>
         </div>
@@ -353,7 +353,7 @@ export default function RecruiterBenchmarkPage() {
               <Sparkles className="w-4 h-4 text-purple-400" />
               <span>Evaluated Candidate Cohort</span>
             </h3>
-            <span className="text-xs text-slate-400">Click candidate to view skill breakdown</span>
+            <span className="text-xs text-muted-foreground">Click candidate to view skill breakdown</span>
           </div>
 
           <div className="space-y-2.5">
@@ -366,11 +366,11 @@ export default function RecruiterBenchmarkPage() {
                   className={`p-4 rounded-xl border transition-all cursor-pointer flex items-center justify-between ${
                     isSelected
                       ? "bg-purple-950/20 border-purple-500/50 shadow-md shadow-purple-900/20"
-                      : "bg-slate-900/40 border-slate-800 hover:border-slate-800 hover:bg-slate-900/60"
+                      : "bg-card/40 border-border hover:border-border hover:bg-card/60"
                   }`}
                 >
                   <div className="flex items-center space-x-4">
-                    <div className="w-10 h-10 rounded-xl bg-slate-800 border border-slate-800 flex items-center justify-center font-bold text-white text-xs">
+                    <div className="w-10 h-10 rounded-xl bg-muted border border-border flex items-center justify-center font-bold text-white text-xs">
                       #{candidate.sprintSubmissionId.substring(0, 4)}
                     </div>
                     <div>
@@ -382,7 +382,7 @@ export default function RecruiterBenchmarkPage() {
                           {candidate.industryStandardTier.replace("_", " ")}
                         </span>
                       </div>
-                      <p className="text-xs text-slate-400 line-clamp-1 mt-0.5">
+                      <p className="text-xs text-muted-foreground line-clamp-1 mt-0.5">
                         {candidate.benchmarkSummary}
                       </p>
                     </div>
@@ -393,11 +393,11 @@ export default function RecruiterBenchmarkPage() {
                       <div className="text-xs font-semibold text-purple-400">
                         {candidate.overallBenchmarkPercentile.toFixed(1)}th %ile
                       </div>
-                      <div className="text-[10px] text-slate-400">
+                      <div className="text-[10px] text-muted-foreground">
                         Top {(100 - candidate.overallBenchmarkPercentile).toFixed(1)}% of cohort
                       </div>
                     </div>
-                    <ChevronRight className={`w-4 h-4 ${isSelected ? "text-purple-400" : "text-slate-400"}`} />
+                    <ChevronRight className={`w-4 h-4 ${isSelected ? "text-purple-400" : "text-muted-foreground"}`} />
                   </div>
                 </div>
               );
@@ -406,8 +406,8 @@ export default function RecruiterBenchmarkPage() {
         </div>
 
         {/* 4-Dimension Radar / Score Breakdown Card */}
-        <div className="p-6 rounded-2xl bg-slate-900/70 border border-slate-800 space-y-6">
-          <div className="border-b border-slate-800 pb-4">
+        <div className="p-6 rounded-2xl bg-card/70 border border-border space-y-6">
+          <div className="border-b border-border pb-4">
             <span className="text-[10px] uppercase font-bold tracking-wider text-purple-400">
               Candidate Skill Profile
             </span>
@@ -418,7 +418,7 @@ export default function RecruiterBenchmarkPage() {
               <span className={`text-xs px-2.5 py-0.5 rounded-full border font-semibold ${getTierColor(selectedRecord?.industryStandardTier || "")}`}>
                 {selectedRecord?.industryStandardTier.replace("_", " ") || "Standard"}
               </span>
-              <span className="text-xs text-slate-400">
+              <span className="text-xs text-muted-foreground">
                 Percentile: <strong className="text-white">{(selectedRecord?.overallBenchmarkPercentile || 0).toFixed(1)}%</strong>
               </span>
             </div>
@@ -428,7 +428,7 @@ export default function RecruiterBenchmarkPage() {
           <div className="space-y-4">
             <div>
               <div className="flex justify-between text-xs mb-1.5">
-                <span className="text-slate-400 font-medium flex items-center space-x-1.5">
+                <span className="text-muted-foreground font-medium flex items-center space-x-1.5">
                   <Cpu className="w-3.5 h-3.5 text-indigo-400" />
                   <span>Code Structure & Maintainability</span>
                 </span>
@@ -436,7 +436,7 @@ export default function RecruiterBenchmarkPage() {
                   {(selectedRecord?.codeComplexityScore || 0).toFixed(1)} / 100
                 </span>
               </div>
-              <div className="h-2 w-full rounded-full bg-slate-950 overflow-hidden">
+              <div className="h-2 w-full rounded-full bg-background overflow-hidden">
                 <div 
                   style={{ width: `${selectedRecord?.codeComplexityScore || 0}%` }}
                   className="h-full bg-gradient-to-r from-indigo-600 to-indigo-400 rounded-full"
@@ -446,7 +446,7 @@ export default function RecruiterBenchmarkPage() {
 
             <div>
               <div className="flex justify-between text-xs mb-1.5">
-                <span className="text-slate-400 font-medium flex items-center space-x-1.5">
+                <span className="text-muted-foreground font-medium flex items-center space-x-1.5">
                   <Sparkles className="w-3.5 h-3.5 text-purple-400" />
                   <span>System Design & Modularity</span>
                 </span>
@@ -454,7 +454,7 @@ export default function RecruiterBenchmarkPage() {
                   {(selectedRecord?.architecturalEleganceScore || 0).toFixed(1)} / 100
                 </span>
               </div>
-              <div className="h-2 w-full rounded-full bg-slate-950 overflow-hidden">
+              <div className="h-2 w-full rounded-full bg-background overflow-hidden">
                 <div 
                   style={{ width: `${selectedRecord?.architecturalEleganceScore || 0}%` }}
                   className="h-full bg-gradient-to-r from-purple-600 to-purple-400 rounded-full"
@@ -464,7 +464,7 @@ export default function RecruiterBenchmarkPage() {
 
             <div>
               <div className="flex justify-between text-xs mb-1.5">
-                <span className="text-slate-400 font-medium flex items-center space-x-1.5">
+                <span className="text-muted-foreground font-medium flex items-center space-x-1.5">
                   <ShieldAlert className="w-3.5 h-3.5 text-emerald-400" />
                   <span>Reliability & Error Handling</span>
                 </span>
@@ -472,7 +472,7 @@ export default function RecruiterBenchmarkPage() {
                   {(selectedRecord?.resilienceScore || 0).toFixed(1)} / 100
                 </span>
               </div>
-              <div className="h-2 w-full rounded-full bg-slate-950 overflow-hidden">
+              <div className="h-2 w-full rounded-full bg-background overflow-hidden">
                 <div 
                   style={{ width: `${selectedRecord?.resilienceScore || 0}%` }}
                   className="h-full bg-gradient-to-r from-emerald-600 to-emerald-400 rounded-full"
@@ -482,7 +482,7 @@ export default function RecruiterBenchmarkPage() {
 
             <div>
               <div className="flex justify-between text-xs mb-1.5">
-                <span className="text-slate-400 font-medium flex items-center space-x-1.5">
+                <span className="text-muted-foreground font-medium flex items-center space-x-1.5">
                   <Zap className="w-3.5 h-3.5 text-amber-400" />
                   <span>Performance & Efficiency</span>
                 </span>
@@ -490,7 +490,7 @@ export default function RecruiterBenchmarkPage() {
                   {(selectedRecord?.performanceScore || 0).toFixed(1)} / 100
                 </span>
               </div>
-              <div className="h-2 w-full rounded-full bg-slate-950 overflow-hidden">
+              <div className="h-2 w-full rounded-full bg-background overflow-hidden">
                 <div 
                   style={{ width: `${selectedRecord?.performanceScore || 0}%` }}
                   className="h-full bg-gradient-to-r from-amber-600 to-amber-400 rounded-full"
@@ -500,7 +500,7 @@ export default function RecruiterBenchmarkPage() {
           </div>
 
           {/* AI Evaluator Summary */}
-          <div className="p-3.5 rounded-xl bg-slate-950/80 border border-slate-800 text-xs text-slate-400 leading-relaxed">
+          <div className="p-3.5 rounded-xl bg-background/80 border border-border text-xs text-muted-foreground leading-relaxed">
             <span className="font-semibold text-white block mb-1">Evaluation Summary:</span>
             {selectedRecord?.benchmarkSummary || "No benchmark summary available."}
           </div>
@@ -509,7 +509,7 @@ export default function RecruiterBenchmarkPage() {
             onClick={() => {
               setShowPlagiarismModal(true);
             }}
-            className="w-full py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium border border-slate-800 flex items-center justify-center space-x-2 transition-colors cursor-pointer"
+            className="w-full py-2.5 rounded-xl bg-muted hover:bg-slate-700 text-foreground text-xs font-medium border border-border flex items-center justify-center space-x-2 transition-colors cursor-pointer"
           >
             <GitCompare className="w-3.5 h-3.5 text-purple-400" />
             <span>Review Code Originality</span>
@@ -520,26 +520,26 @@ export default function RecruiterBenchmarkPage() {
       {/* Batch Re-Evaluation Dispatch Modal */}
       {showBatchModal && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fadeIn">
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full p-6 space-y-5 shadow-2xl">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+          <div className="bg-card border border-border rounded-2xl max-w-md w-full p-6 space-y-5 shadow-2xl">
+            <div className="flex items-center justify-between border-b border-border pb-3">
               <div className="flex items-center space-x-2">
                 <Sparkles className="w-5 h-5 text-purple-400" />
                 <h3 className="text-base font-bold text-white">Re-evaluate Candidate Cohort</h3>
               </div>
               <button
                 onClick={() => setShowBatchModal(false)}
-                className="text-slate-400 hover:text-white text-sm"
+                className="text-muted-foreground hover:text-white text-sm"
               >
                 ✕
               </button>
             </div>
 
-            <p className="text-xs text-slate-400 leading-relaxed">
+            <p className="text-xs text-muted-foreground leading-relaxed">
               Re-evaluates all candidate submissions using updated grading criteria to refresh rankings and benchmark scores.
             </p>
 
             <div className="space-y-3">
-              <label className="text-xs font-medium text-slate-400 block">
+              <label className="text-xs font-medium text-muted-foreground block">
                 Evaluation Standard
               </label>
               {[
@@ -553,12 +553,12 @@ export default function RecruiterBenchmarkPage() {
                   className={`p-3 rounded-xl border transition-all cursor-pointer flex items-center justify-between ${
                     selectedModel === model.id
                       ? "bg-purple-950/30 border-purple-500/60"
-                      : "bg-slate-950/60 border-slate-800 hover:border-slate-800"
+                      : "bg-background/60 border-border hover:border-border"
                   }`}
                 >
                   <div>
                     <div className="text-xs font-semibold text-white">{model.name}</div>
-                    <div className="text-[11px] text-slate-400">{model.desc}</div>
+                    <div className="text-[11px] text-muted-foreground">{model.desc}</div>
                   </div>
                   <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${
                     selectedModel === model.id ? "border-purple-400 bg-purple-500" : "border-slate-600"
@@ -578,7 +578,7 @@ export default function RecruiterBenchmarkPage() {
             <div className="flex items-center space-x-3 pt-2">
               <button
                 onClick={() => setShowBatchModal(false)}
-                className="flex-1 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-400 text-xs font-medium cursor-pointer"
+                className="flex-1 py-2.5 rounded-xl bg-muted hover:bg-slate-700 text-muted-foreground text-xs font-medium cursor-pointer"
               >
                 Cancel
               </button>
@@ -596,33 +596,33 @@ export default function RecruiterBenchmarkPage() {
       {/* Plagiarism Radar Modal */}
       {showPlagiarismModal && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fadeIn">
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl max-w-xl w-full p-6 space-y-5 shadow-2xl">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+          <div className="bg-card border border-border rounded-2xl max-w-xl w-full p-6 space-y-5 shadow-2xl">
+            <div className="flex items-center justify-between border-b border-border pb-3">
               <div className="flex items-center space-x-2">
                 <GitCompare className="w-5 h-5 text-purple-400" />
                 <h3 className="text-base font-bold text-white">Code Originality & Integrity Check</h3>
               </div>
               <button
                 onClick={() => setShowPlagiarismModal(false)}
-                className="text-slate-400 hover:text-white text-sm"
+                className="text-muted-foreground hover:text-white text-sm"
               >
                 ✕
               </button>
             </div>
 
-            <p className="text-xs text-slate-400 leading-relaxed">
+            <p className="text-xs text-muted-foreground leading-relaxed">
               Compares code structure against cohort submissions to ensure originality and academic integrity.
             </p>
 
             <div className="space-y-2">
-              <label className="text-xs font-medium text-slate-400 block">
+              <label className="text-xs font-medium text-muted-foreground block">
                 Candidate Code to Review
               </label>
               <textarea
                 value={plagiarismCode}
                 onChange={(e) => setPlagiarismCode(e.target.value)}
                 rows={5}
-                className="w-full rounded-xl bg-slate-950 border border-slate-800 p-3 text-xs font-mono text-purple-300 focus:outline-none focus:border-purple-500"
+                className="w-full rounded-xl bg-background border border-border p-3 text-xs font-mono text-purple-300 focus:outline-none focus:border-purple-500"
               />
             </div>
 
@@ -640,7 +640,7 @@ export default function RecruiterBenchmarkPage() {
                     Similarity: {(plagiarismReport.similarityScore * 100).toFixed(1)}%
                   </span>
                 </div>
-                <p className="text-xs leading-relaxed text-slate-400">
+                <p className="text-xs leading-relaxed text-muted-foreground">
                   {plagiarismReport.flaggedReason}
                 </p>
                 {plagiarismReport.crossCohortMatchUserEmail && (
@@ -661,7 +661,7 @@ export default function RecruiterBenchmarkPage() {
             <div className="flex items-center space-x-3 pt-2">
               <button
                 onClick={() => setShowPlagiarismModal(false)}
-                className="flex-1 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-400 text-xs font-medium cursor-pointer"
+                className="flex-1 py-2.5 rounded-xl bg-muted hover:bg-slate-700 text-muted-foreground text-xs font-medium cursor-pointer"
               >
                 Close
               </button>

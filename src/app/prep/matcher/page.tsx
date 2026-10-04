@@ -78,7 +78,7 @@ export default function ResumeMatcherPrepPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-200 p-6 md:p-12 font-sans relative overflow-hidden">
+    <div className="min-h-screen bg-background text-foreground p-6 md:p-12 font-sans relative overflow-hidden">
       {/* Background Radial Glow */}
       <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[700px] h-[700px] bg-indigo-600/10 blur-[150px] rounded-full pointer-events-none" />
 
@@ -92,7 +92,7 @@ export default function ResumeMatcherPrepPage() {
           <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-white">
             AI Resume Tailoring & Prep Matcher
           </h1>
-          <p className="text-sm text-slate-400 max-w-2xl">
+          <p className="text-sm text-muted-foreground max-w-2xl">
             Vectorize candidate competencies against target job descriptions to calculate match readiness and synthesize personalized gap-closing micro-internship sprints.
           </p>
         </div>
@@ -100,11 +100,11 @@ export default function ResumeMatcherPrepPage() {
         {/* Main 2-Column Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           {/* Left Column: Input Form (5 cols) */}
-          <div className="lg:col-span-6 bg-slate-900/80 border border-slate-800 rounded-3xl p-6 sm:p-8 backdrop-blur-xl shadow-2xl space-y-6">
+          <div className="lg:col-span-6 bg-card/80 border border-border rounded-3xl p-6 sm:p-8 backdrop-blur-xl shadow-2xl space-y-6">
             <form onSubmit={handleAnalyze} className="space-y-5">
               {/* Target Role Presets */}
               <div>
-                <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
+                <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
                   Target Hiring Benchmark Presets
                 </label>
                 <div className="grid grid-cols-1 gap-2">
@@ -116,7 +116,7 @@ export default function ResumeMatcherPrepPage() {
                       className={`text-left p-3 rounded-xl border text-xs transition flex items-center justify-between ${
                         targetTitle === preset.title
                           ? "bg-indigo-600/20 border-indigo-500 text-white font-medium"
-                          : "bg-slate-950/60 border-slate-800 text-slate-400 hover:text-slate-200 hover:border-slate-800"
+                          : "bg-background/60 border-border text-muted-foreground hover:text-foreground hover:border-border"
                       }`}
                     >
                       <div className="truncate pr-2">{preset.title}</div>
@@ -129,7 +129,7 @@ export default function ResumeMatcherPrepPage() {
               {/* Target Job Title & Description */}
               <div className="space-y-3">
                 <div>
-                  <label htmlFor="targetTitle" className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">
+                  <label htmlFor="targetTitle" className="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">
                     Target Job Title
                   </label>
                   <input
@@ -138,12 +138,12 @@ export default function ResumeMatcherPrepPage() {
                     value={targetTitle}
                     onChange={(e) => setTargetTitle(e.target.value)}
                     required
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-indigo-500 transition"
+                    className="w-full bg-background border border-border rounded-xl px-4 py-2.5 text-xs text-foreground focus:outline-none focus:border-indigo-500 transition"
                   />
                 </div>
 
                 <div>
-                  <label htmlFor="targetDescription" className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">
+                  <label htmlFor="targetDescription" className="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">
                     Job Description & Required Stack
                   </label>
                   <textarea
@@ -152,16 +152,16 @@ export default function ResumeMatcherPrepPage() {
                     value={targetDescription}
                     onChange={(e) => setTargetDescription(e.target.value)}
                     required
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-slate-200 font-mono resize-none focus:outline-none focus:border-indigo-500 transition"
+                    className="w-full bg-background border border-border rounded-xl p-3 text-xs text-foreground font-mono resize-none focus:outline-none focus:border-indigo-500 transition"
                   />
                 </div>
               </div>
 
               {/* Resume Text Area */}
               <div>
-                <label htmlFor="resumeText" className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5 flex items-center justify-between">
+                <label htmlFor="resumeText" className="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5 flex items-center justify-between">
                   <span>Candidate Resume Profile</span>
-                  <span className="text-slate-400 font-normal">Parsed Plaintext / Markdown</span>
+                  <span className="text-muted-foreground font-normal">Parsed Plaintext / Markdown</span>
                 </label>
                 <textarea
                   id="resumeText"
@@ -170,7 +170,7 @@ export default function ResumeMatcherPrepPage() {
                   onChange={(e) => setResumeText(e.target.value)}
                   required
                   placeholder="Paste candidate technical resume..."
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-slate-200 font-mono resize-none focus:outline-none focus:border-indigo-500 transition leading-relaxed"
+                  className="w-full bg-background border border-border rounded-xl p-3 text-xs text-foreground font-mono resize-none focus:outline-none focus:border-indigo-500 transition leading-relaxed"
                 />
               </div>
 
@@ -205,11 +205,11 @@ export default function ResumeMatcherPrepPage() {
           {/* Right Column: Predictive Match Results (6 cols) */}
           <div className="lg:col-span-6 space-y-6">
             {analysisResult ? (
-              <div className="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 sm:p-8 backdrop-blur-xl shadow-2xl space-y-6 animate-in fade-in duration-300">
+              <div className="bg-card/90 border border-border rounded-3xl p-6 sm:p-8 backdrop-blur-xl shadow-2xl space-y-6 animate-in fade-in duration-300">
                 {/* Score Header */}
-                <div className="flex items-center justify-between border-b border-slate-800/80 pb-5">
+                <div className="flex items-center justify-between border-b border-border/80 pb-5">
                   <div>
-                    <div className="text-xs uppercase font-semibold text-slate-400 tracking-wider">
+                    <div className="text-xs uppercase font-semibold text-muted-foreground tracking-wider">
                       Role Match Readiness
                     </div>
                     <div className="text-sm font-bold text-white mt-0.5">
@@ -220,7 +220,7 @@ export default function ResumeMatcherPrepPage() {
                     <div className="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-indigo-400">
                       {analysisResult.matchScore}%
                     </div>
-                    <div className="text-[10px] text-slate-400 font-mono">Competency Match</div>
+                    <div className="text-[10px] text-muted-foreground font-mono">Competency Match</div>
                   </div>
                 </div>
 
@@ -259,12 +259,12 @@ export default function ResumeMatcherPrepPage() {
                 </div>
 
                 {/* Actionable Recommendations */}
-                <div className="p-4 rounded-2xl bg-slate-950/70 border border-slate-800 space-y-2">
+                <div className="p-4 rounded-2xl bg-background/70 border border-border space-y-2">
                   <div className="text-[11px] font-mono text-indigo-400 font-semibold uppercase tracking-wider flex items-center gap-1.5">
                     <Zap className="w-3.5 h-3.5" />
                     <span>Personalized Architectural Roadmap</span>
                   </div>
-                  <ul className="space-y-1.5 text-xs text-slate-400">
+                  <ul className="space-y-1.5 text-xs text-muted-foreground">
                     {analysisResult.recommendations.map((rec: string, idx: number) => (
                       <li key={idx} className="flex items-start gap-2">
                         <span className="text-indigo-400 mt-0.5">•</span>
@@ -281,7 +281,7 @@ export default function ResumeMatcherPrepPage() {
                       <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-indigo-500/20 text-indigo-300 uppercase font-semibold">
                         Synthesized Micro-Internship
                       </span>
-                      <span className="text-xs font-mono text-slate-400 uppercase">
+                      <span className="text-xs font-mono text-muted-foreground uppercase">
                         Language: {analysisResult.generatedSprint.requiredLanguage}
                       </span>
                     </div>
@@ -290,7 +290,7 @@ export default function ResumeMatcherPrepPage() {
                       <div className="text-sm font-bold text-white">
                         {analysisResult.generatedSprint.title}
                       </div>
-                      <p className="text-xs text-slate-400 mt-1 line-clamp-2">
+                      <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
                         {analysisResult.generatedSprint.description}
                       </p>
                     </div>
@@ -307,13 +307,13 @@ export default function ResumeMatcherPrepPage() {
               </div>
             ) : (
               /* Idle Empty State */
-              <div className="bg-slate-900/40 border border-dashed border-slate-800 rounded-3xl p-12 text-center flex flex-col items-center justify-center space-y-4">
-                <div className="p-4 rounded-2xl bg-slate-950 text-slate-400 border border-slate-800/80">
+              <div className="bg-card/40 border border-dashed border-border rounded-3xl p-12 text-center flex flex-col items-center justify-center space-y-4">
+                <div className="p-4 rounded-2xl bg-background text-muted-foreground border border-border/80">
                   <FileText className="w-8 h-8" />
                 </div>
                 <div className="space-y-1">
-                  <h3 className="text-sm font-bold text-slate-400">No Active Analysis</h3>
-                  <p className="text-xs text-slate-400 max-w-sm">
+                  <h3 className="text-sm font-bold text-muted-foreground">No Active Analysis</h3>
+                  <p className="text-xs text-muted-foreground max-w-sm">
                     Select a target job benchmark and click "Synthesize Gap-Closing Micro-Internship" to vectorize competencies.
                   </p>
                 </div>

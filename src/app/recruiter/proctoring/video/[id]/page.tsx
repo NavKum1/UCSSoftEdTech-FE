@@ -112,10 +112,10 @@ export default function ProctoringVideoReviewPage({ params }: { params: Promise<
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-950 text-slate-200 flex items-center justify-center">
+      <div className="min-h-screen bg-background text-foreground flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
           <div className="w-12 h-12 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
-          <p className="text-slate-400 font-mono text-sm">Loading Assessment Video Recording...</p>
+          <p className="text-muted-foreground font-mono text-sm">Loading Assessment Video Recording...</p>
         </div>
       </div>
     );
@@ -123,13 +123,13 @@ export default function ProctoringVideoReviewPage({ params }: { params: Promise<
 
   if (fetchError || !playerData) {
     return (
-      <div className="min-h-screen bg-slate-950 text-slate-200 flex items-center justify-center font-sans p-6">
-        <div className="max-w-md w-full p-8 rounded-2xl bg-slate-900 border border-slate-800 text-center space-y-4">
+      <div className="min-h-screen bg-background text-foreground flex items-center justify-center font-sans p-6">
+        <div className="max-w-md w-full p-8 rounded-2xl bg-card border border-border text-center space-y-4">
           <div className="w-12 h-12 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 flex items-center justify-center mx-auto text-lg font-bold">
             !
           </div>
           <h2 className="text-lg font-bold text-white">Recording Not Found</h2>
-          <p className="text-xs text-slate-400">
+          <p className="text-xs text-muted-foreground">
             {fetchError || "The requested assessment recording could not be found or has expired."}
           </p>
           <Link
@@ -147,13 +147,13 @@ export default function ProctoringVideoReviewPage({ params }: { params: Promise<
   const progressPercent = (currentTime / duration) * 100;
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-200 flex flex-col font-sans">
+    <div className="min-h-screen bg-background text-foreground flex flex-col font-sans">
       {/* Top Header */}
-      <header className="border-b border-slate-800 bg-slate-900/80 backdrop-blur px-6 py-4 flex items-center justify-between sticky top-0 z-50">
+      <header className="border-b border-border bg-card/80 backdrop-blur px-6 py-4 flex items-center justify-between sticky top-0 z-50">
         <div className="flex items-center gap-3">
           <Link
             href="/partner/dashboard"
-            className="text-xs px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-400 font-mono transition"
+            className="text-xs px-2.5 py-1 rounded bg-muted hover:bg-slate-700 text-muted-foreground font-mono transition"
           >
             &larr; Back to Reviews
           </Link>
@@ -193,14 +193,14 @@ export default function ProctoringVideoReviewPage({ params }: { params: Promise<
         {/* Left Column: Dual Video Stream & Synchronized Scrubber (8 Cols) */}
         <div className="lg:col-span-8 flex flex-col gap-4">
           {/* Track Switcher */}
-          <div className="flex items-center justify-between bg-slate-900 border border-slate-800 rounded-lg p-1.5">
+          <div className="flex items-center justify-between bg-card border border-border rounded-lg p-1.5">
             <div className="flex items-center gap-1.5">
               <button
                 onClick={() => setActiveTrack('Webcam')}
                 className={`px-3 py-1 rounded text-xs font-medium transition ${
                   activeTrack === 'Webcam'
                     ? 'bg-indigo-600 text-white shadow'
-                    : 'text-slate-400 hover:text-white'
+                    : 'text-muted-foreground hover:text-white'
                 }`}
               >
                 Webcam Stream (HD)
@@ -210,20 +210,20 @@ export default function ProctoringVideoReviewPage({ params }: { params: Promise<
                 className={`px-3 py-1 rounded text-xs font-medium transition ${
                   activeTrack === 'ScreenCapture'
                     ? 'bg-indigo-600 text-white shadow'
-                    : 'text-slate-400 hover:text-white'
+                    : 'text-muted-foreground hover:text-white'
                 }`}
               >
                 Screen Capture (1080p)
               </button>
             </div>
-            <div className="flex items-center gap-2 text-xs font-mono text-slate-400 pr-2">
+            <div className="flex items-center gap-2 text-xs font-mono text-muted-foreground pr-2">
               <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
               Audio Synced (Opus 128kbps)
             </div>
           </div>
 
           {/* Video Player Display Container */}
-          <div className="relative aspect-video bg-black rounded-xl border border-slate-800 overflow-hidden shadow-2xl flex items-center justify-center group">
+          <div className="relative aspect-video bg-black rounded-xl border border-border overflow-hidden shadow-2xl flex items-center justify-center group">
             {/* Background Stream Simulation Canvas */}
             <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-slate-950 to-black flex items-center justify-center">
               {activeTrack === 'Webcam' ? (
@@ -231,10 +231,10 @@ export default function ProctoringVideoReviewPage({ params }: { params: Promise<
                   <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-indigo-950/60 border border-indigo-700/40 flex items-center justify-center text-indigo-400 text-2xl font-bold">
                     REC
                   </div>
-                  <p className="text-sm font-semibold text-slate-200">
+                  <p className="text-sm font-semibold text-foreground">
                     Proctored Webcam Candidate Feed
                   </p>
-                  <p className="text-xs text-slate-400 font-mono mt-1">
+                  <p className="text-xs text-muted-foreground font-mono mt-1">
                     Continuous AI Face &amp; Eye Gaze Tracking Active
                   </p>
                 </div>
@@ -243,18 +243,18 @@ export default function ProctoringVideoReviewPage({ params }: { params: Promise<
                   <div className="w-20 h-20 mx-auto mb-4 rounded-xl bg-cyan-950/60 border border-cyan-700/40 flex items-center justify-center text-cyan-400 text-2xl font-bold">
                     SCR
                   </div>
-                  <p className="text-sm font-semibold text-slate-200">
+                  <p className="text-sm font-semibold text-foreground">
                     Candidate Primary Display (1920x1080)
                   </p>
-                  <p className="text-xs text-slate-400 font-mono mt-1">
+                  <p className="text-xs text-muted-foreground font-mono mt-1">
                     Keystroke &amp; Window Switch Activity Recorded
                   </p>
                 </div>
               )}
 
               {/* PiP Inset (Picture in Picture for other track) */}
-              <div className="absolute bottom-4 right-4 w-44 aspect-video bg-slate-900/90 rounded-lg border border-slate-800 overflow-hidden shadow-lg flex items-center justify-center cursor-pointer hover:border-indigo-500 transition">
-                <span className="text-[10px] font-mono text-slate-400">
+              <div className="absolute bottom-4 right-4 w-44 aspect-video bg-card/90 rounded-lg border border-border overflow-hidden shadow-lg flex items-center justify-center cursor-pointer hover:border-indigo-500 transition">
+                <span className="text-[10px] font-mono text-muted-foreground">
                   {activeTrack === 'Webcam' ? 'Screen (PiP)' : 'Webcam (PiP)'}
                 </span>
               </div>
@@ -271,18 +271,18 @@ export default function ProctoringVideoReviewPage({ params }: { params: Promise<
             {/* Play/Pause Center Overlay */}
             <button
               onClick={() => setIsPlaying(!isPlaying)}
-              className="absolute z-20 w-16 h-16 rounded-full bg-slate-900/80 hover:bg-indigo-600 text-white flex items-center justify-center text-xl transition shadow-xl border border-slate-800 hover:scale-105"
+              className="absolute z-20 w-16 h-16 rounded-full bg-card/80 hover:bg-indigo-600 text-white flex items-center justify-center text-xl transition shadow-xl border border-border hover:scale-105"
             >
               {isPlaying ? '⏸' : '▶'}
             </button>
           </div>
 
           {/* Interactive Timeline Scrubber & Marker Pins */}
-          <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 flex flex-col gap-3">
+          <div className="bg-card border border-border rounded-xl p-4 flex flex-col gap-3">
             {/* Scrubber Bar */}
             <div className="relative w-full h-8 flex items-center cursor-pointer select-none">
               {/* Background Track */}
-              <div className="w-full h-2.5 bg-slate-800 rounded-full relative overflow-visible">
+              <div className="w-full h-2.5 bg-muted rounded-full relative overflow-visible">
                 {/* Progress Fill */}
                 <div
                   className="h-full bg-indigo-500 rounded-full transition-all"
@@ -317,17 +317,17 @@ export default function ProctoringVideoReviewPage({ params }: { params: Promise<
             </div>
 
             {/* Controls Bar */}
-            <div className="flex items-center justify-between text-xs text-slate-400 font-mono">
+            <div className="flex items-center justify-between text-xs text-muted-foreground font-mono">
               <div className="flex items-center gap-3">
                 <button
                   onClick={() => setIsPlaying(!isPlaying)}
-                  className="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-white font-medium transition"
+                  className="px-2.5 py-1 rounded bg-muted hover:bg-slate-700 text-white font-medium transition"
                 >
                   {isPlaying ? 'Pause' : 'Play'}
                 </button>
                 <button
                   onClick={() => jumpToSeconds(0)}
-                  className="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-400 transition"
+                  className="px-2 py-1 rounded bg-muted hover:bg-slate-700 text-muted-foreground transition"
                 >
                   Rewind
                 </button>
@@ -340,7 +340,7 @@ export default function ProctoringVideoReviewPage({ params }: { params: Promise<
 
               {/* Speed Controls */}
               <div className="flex items-center gap-1.5">
-                <span className="text-slate-400">Speed:</span>
+                <span className="text-muted-foreground">Speed:</span>
                 {[1.0, 1.5, 2.0].map((s) => (
                   <button
                     key={s}
@@ -348,7 +348,7 @@ export default function ProctoringVideoReviewPage({ params }: { params: Promise<
                     className={`px-2 py-0.5 rounded text-xs transition ${
                       playbackSpeed === s
                         ? 'bg-indigo-600 text-white font-semibold'
-                        : 'bg-slate-800 hover:bg-slate-700 text-slate-400'
+                        : 'bg-muted hover:bg-slate-700 text-muted-foreground'
                     }`}
                   >
                     {s}x
@@ -362,8 +362,8 @@ export default function ProctoringVideoReviewPage({ params }: { params: Promise<
         {/* Right Column: Violation Event Ledger & Inspector (4 Cols) */}
         <div className="lg:col-span-4 flex flex-col gap-4">
           {/* Summary Box */}
-          <div className="bg-slate-900 border border-slate-800 rounded-xl p-4">
-            <h2 className="text-xs uppercase font-mono tracking-wider text-slate-400 mb-3">
+          <div className="bg-card border border-border rounded-xl p-4">
+            <h2 className="text-xs uppercase font-mono tracking-wider text-muted-foreground mb-3">
               Integrity &amp; Audio Summary
             </h2>
             <div className="grid grid-cols-3 gap-2 text-center">
@@ -389,8 +389,8 @@ export default function ProctoringVideoReviewPage({ params }: { params: Promise<
           </div>
 
           {/* Violation Event Pins List */}
-          <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 flex-1 flex flex-col">
-            <h2 className="text-xs uppercase font-mono tracking-wider text-slate-400 mb-3 flex items-center justify-between">
+          <div className="bg-card border border-border rounded-xl p-4 flex-1 flex flex-col">
+            <h2 className="text-xs uppercase font-mono tracking-wider text-muted-foreground mb-3 flex items-center justify-between">
               <span>Incident Timestamp Log</span>
               <span className="text-indigo-400">{playerData?.markers.length} Tagged</span>
             </h2>
@@ -415,8 +415,8 @@ export default function ProctoringVideoReviewPage({ params }: { params: Promise<
                     }}
                     className={`p-3 rounded-lg border cursor-pointer transition ${
                       isSelected
-                        ? 'bg-slate-800/90 border-indigo-500 shadow-md ring-1 ring-indigo-500/50'
-                        : 'bg-slate-950/60 border-slate-800 hover:border-slate-800'
+                        ? 'bg-muted/90 border-indigo-500 shadow-md ring-1 ring-indigo-500/50'
+                        : 'bg-background/60 border-border hover:border-border'
                     }`}
                   >
                     <div className="flex items-center justify-between mb-1">
@@ -427,8 +427,8 @@ export default function ProctoringVideoReviewPage({ params }: { params: Promise<
                         {marker.severity}
                       </span>
                     </div>
-                    <p className="text-xs font-semibold text-slate-200">{marker.violationType}</p>
-                    <p className="text-[11px] text-slate-400 mt-1 line-clamp-2 leading-relaxed">
+                    <p className="text-xs font-semibold text-foreground">{marker.violationType}</p>
+                    <p className="text-[11px] text-muted-foreground mt-1 line-clamp-2 leading-relaxed">
                       {marker.notes}
                     </p>
                   </div>
@@ -439,12 +439,12 @@ export default function ProctoringVideoReviewPage({ params }: { params: Promise<
 
           {/* Selected Incident Snapshot Inspector */}
           {selectedMarker && (
-            <div className="bg-slate-900 border border-slate-800 rounded-xl p-4">
-              <h3 className="text-xs font-mono uppercase text-slate-400 mb-2">
+            <div className="bg-card border border-border rounded-xl p-4">
+              <h3 className="text-xs font-mono uppercase text-muted-foreground mb-2">
                 Frame Snapshot: {selectedMarker.timestampFormatted}
               </h3>
               {selectedMarker.snapshotUrl ? (
-                <div className="relative aspect-video rounded-lg overflow-hidden border border-slate-800 bg-black">
+                <div className="relative aspect-video rounded-lg overflow-hidden border border-border bg-black">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={selectedMarker.snapshotUrl}
@@ -456,7 +456,7 @@ export default function ProctoringVideoReviewPage({ params }: { params: Promise<
                   </div>
                 </div>
               ) : (
-                <p className="text-xs text-slate-400 font-mono">No snapshot frame captured.</p>
+                <p className="text-xs text-muted-foreground font-mono">No snapshot frame captured.</p>
               )}
             </div>
           )}

@@ -186,10 +186,10 @@ export default function DailyCodeReviewDojoPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-950 text-slate-200 flex items-center justify-center p-6">
+      <div className="min-h-screen bg-background text-foreground flex items-center justify-center p-6">
         <div className="text-center space-y-4">
           <div className="w-12 h-12 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin mx-auto" />
-          <p className="text-slate-400 font-mono text-sm tracking-wide">
+          <p className="text-muted-foreground font-mono text-sm tracking-wide">
             Loading Daily Pull Request &amp; Security Review Drill...
           </p>
         </div>
@@ -198,14 +198,14 @@ export default function DailyCodeReviewDojoPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-200 antialiased selection:bg-emerald-500 selection:text-black">
+    <div className="min-h-screen bg-background text-foreground antialiased selection:bg-emerald-500 selection:text-black">
       {/* Top GitHub PR Bar */}
-      <header className="border-b border-slate-800 bg-slate-900/90 backdrop-blur sticky top-0 z-50 px-6 py-4">
+      <header className="border-b border-border bg-card/90 backdrop-blur sticky top-0 z-50 px-6 py-4">
         <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <Link
               href="/"
-              className="text-xs font-mono uppercase tracking-widest text-slate-400 hover:text-white transition"
+              className="text-xs font-mono uppercase tracking-widest text-muted-foreground hover:text-white transition"
             >
               ← Dashboard
             </Link>
@@ -215,7 +215,7 @@ export default function DailyCodeReviewDojoPage() {
               <h1 className="font-bold text-lg tracking-tight bg-gradient-to-r from-emerald-400 via-teal-300 to-cyan-400 bg-clip-text text-transparent">
                 Daily PR Review Dojo
               </h1>
-              <span className="px-2 py-0.5 text-xs font-mono bg-slate-800 text-emerald-400 border border-slate-800 rounded">
+              <span className="px-2 py-0.5 text-xs font-mono bg-muted text-emerald-400 border border-border rounded">
                 3-Minute Drill
               </span>
             </div>
@@ -224,37 +224,37 @@ export default function DailyCodeReviewDojoPage() {
           {/* Gamification & Vigilance HUD */}
           <div className="flex items-center gap-4 text-xs font-mono">
             {/* Reviewer Tier */}
-            <div className="flex items-center gap-2 bg-slate-800/80 border border-emerald-500/30 px-3 py-1.5 rounded-lg shadow-sm">
+            <div className="flex items-center gap-2 bg-muted/80 border border-emerald-500/30 px-3 py-1.5 rounded-lg shadow-sm">
               <span className="text-base">👔</span>
               <div>
                 <span className="text-emerald-400 font-bold text-sm">
                   {stats?.seniorReviewerTier ?? "Senior Reviewer"}
                 </span>
-                <span className="text-slate-400 text-[10px] block">
+                <span className="text-muted-foreground text-[10px] block">
                   Avg Vigilance: {stats?.averageVigilanceScore ?? 0}%
                 </span>
               </div>
             </div>
 
             {/* Zero-Day Bugs Caught */}
-            <div className="flex items-center gap-2 bg-slate-800/80 border border-amber-500/30 px-3 py-1.5 rounded-lg">
+            <div className="flex items-center gap-2 bg-muted/80 border border-amber-500/30 px-3 py-1.5 rounded-lg">
               <span className="text-base">🛡️</span>
               <div>
                 <span className="text-amber-400 font-bold text-sm">
                   {stats?.zeroDayDefectsCaught ?? 0} Bugs Blocked
                 </span>
-                <span className="text-slate-400 text-[10px] block">
+                <span className="text-muted-foreground text-[10px] block">
                   {stats?.totalReviewsSubmitted ?? 0} Total Reviews
                 </span>
               </div>
             </div>
 
             {/* Review Stopwatch */}
-            <div className="flex items-center gap-2 bg-slate-800/80 border border-cyan-500/30 px-3 py-1.5 rounded-lg">
+            <div className="flex items-center gap-2 bg-muted/80 border border-cyan-500/30 px-3 py-1.5 rounded-lg">
               <span className="text-base">⏱️</span>
               <div>
                 <span className="text-cyan-400 font-bold text-sm">{formatTimer(timerSeconds)}</span>
-                <span className="text-slate-400 text-[10px] block">
+                <span className="text-muted-foreground text-[10px] block">
                   {timerSeconds <= 60 ? "+25 XP Speed Bonus" : "Standard Speed"}
                 </span>
               </div>
@@ -266,44 +266,44 @@ export default function DailyCodeReviewDojoPage() {
       {/* Main PR Workspace */}
       <main className="max-w-7xl mx-auto px-6 py-8 space-y-8">
         {/* GitHub Pull Request Header Card */}
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
+        <div className="bg-card border border-border rounded-2xl p-6 shadow-xl space-y-4">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div className="space-y-1">
-              <div className="flex items-center gap-2 text-xs font-mono text-slate-400">
-                <span className="text-slate-200 font-semibold">{kata?.repository}</span>
+              <div className="flex items-center gap-2 text-xs font-mono text-muted-foreground">
+                <span className="text-foreground font-semibold">{kata?.repository}</span>
                 <span>•</span>
                 <span className="px-2 py-0.5 bg-emerald-950 text-emerald-400 border border-emerald-800/60 rounded">
                   Open PR #184
                 </span>
                 <span>•</span>
-                <span className="text-slate-400">author: @{kata?.author}</span>
+                <span className="text-muted-foreground">author: @{kata?.author}</span>
                 <span>•</span>
                 <span className="uppercase text-amber-400 font-bold">{kata?.language}</span>
               </div>
-              <h2 className="text-2xl font-bold text-slate-200">{kata?.title}</h2>
+              <h2 className="text-2xl font-bold text-foreground">{kata?.title}</h2>
             </div>
 
             {stats?.completedToday && (
               <div className="bg-emerald-950/80 border border-emerald-500/40 text-emerald-300 px-4 py-3 rounded-xl text-center shrink-0">
                 <span className="text-sm font-semibold block">✅ Today&apos;s Review Logged</span>
-                <span className="text-[11px] text-slate-400 font-mono">
+                <span className="text-[11px] text-muted-foreground font-mono">
                   Daily streak maintained
                 </span>
               </div>
             )}
           </div>
 
-          <div className="bg-slate-950/80 p-3 rounded-lg border border-slate-800 text-xs font-mono text-slate-400 flex items-center justify-between">
+          <div className="bg-background/80 p-3 rounded-lg border border-border text-xs font-mono text-muted-foreground flex items-center justify-between">
             <div className="flex items-center gap-4">
               <span>
-                Base: <strong className="text-slate-200">main</strong>
+                Base: <strong className="text-foreground">main</strong>
               </span>
               <span>←</span>
               <span>
                 Compare: <strong className="text-emerald-400">feature/fast-path-eval</strong>
               </span>
             </div>
-            <span className="text-slate-400">
+            <span className="text-muted-foreground">
               Click on any code line in the diff to flag a vulnerability or memory leak
             </span>
           </div>
@@ -313,8 +313,8 @@ export default function DailyCodeReviewDojoPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Left 2 Cols: Unified Git Diff Viewer */}
           <div className="lg:col-span-2 space-y-4">
-            <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden shadow-lg">
-              <div className="bg-slate-950 px-4 py-2.5 border-b border-slate-800 flex items-center justify-between text-xs font-mono text-slate-400">
+            <div className="bg-card border border-border rounded-xl overflow-hidden shadow-lg">
+              <div className="bg-background px-4 py-2.5 border-b border-border flex items-center justify-between text-xs font-mono text-muted-foreground">
                 <span className="flex items-center gap-2">
                   <span className="w-2 h-2 rounded-full bg-emerald-400" />
                   Files Changed: 1 (Unified Diff)
@@ -331,7 +331,7 @@ export default function DailyCodeReviewDojoPage() {
               </div>
 
               {/* Diff Code Container */}
-              <div className="font-mono text-xs overflow-x-auto divide-y divide-slate-800/40 bg-slate-950">
+              <div className="font-mono text-xs overflow-x-auto divide-y divide-slate-800/40 bg-background">
                 {parsedLines.map((line) => {
                   const isSelected = selectedLine === line.lineNumber;
                   return (
@@ -346,12 +346,12 @@ export default function DailyCodeReviewDojoPage() {
                           : line.type === "del"
                           ? "bg-red-950/20 hover:bg-red-900/30 text-red-300"
                           : line.type === "header"
-                          ? "bg-slate-900 text-slate-400 font-bold"
-                          : "hover:bg-slate-800/30 text-slate-400"
+                          ? "bg-card text-muted-foreground font-bold"
+                          : "hover:bg-muted/30 text-muted-foreground"
                       }`}
                     >
                       {/* Line Number Column */}
-                      <span className="w-12 shrink-0 py-1 px-2 text-right text-slate-400 font-mono text-[11px] border-r border-slate-800/60 group-hover:text-slate-400">
+                      <span className="w-12 shrink-0 py-1 px-2 text-right text-muted-foreground font-mono text-[11px] border-r border-border/60 group-hover:text-muted-foreground">
                         {line.lineNumber}
                       </span>
 
@@ -379,14 +379,14 @@ export default function DailyCodeReviewDojoPage() {
 
           {/* Right Col: Review Decision & Defect Panel */}
           <div className="space-y-6">
-            <div className="bg-slate-900 border border-slate-800 rounded-xl p-6 space-y-6 shadow-lg">
-              <h3 className="text-base font-bold text-slate-200 flex items-center gap-2">
+            <div className="bg-card border border-border rounded-xl p-6 space-y-6 shadow-lg">
+              <h3 className="text-base font-bold text-foreground flex items-center gap-2">
                 <span>⚖️</span> Senior Code Review Verdict
               </h3>
 
               {/* Selected Line Flag */}
-              <div className="bg-slate-950 p-3.5 rounded-lg border border-slate-800 space-y-1">
-                <span className="text-[10px] font-mono text-slate-400 uppercase tracking-wider block">
+              <div className="bg-background p-3.5 rounded-lg border border-border space-y-1">
+                <span className="text-[10px] font-mono text-muted-foreground uppercase tracking-wider block">
                   Target Diff Location
                 </span>
                 <div className="text-sm font-bold text-amber-400 font-mono">
@@ -396,13 +396,13 @@ export default function DailyCodeReviewDojoPage() {
 
               {/* Defect Category Classification */}
               <div className="space-y-2">
-                <label className="text-xs font-mono text-slate-400 uppercase tracking-wider block">
+                <label className="text-xs font-mono text-muted-foreground uppercase tracking-wider block">
                   Defect Classification
                 </label>
                 <select
                   value={selectedCategory}
                   onChange={(e) => setSelectedCategory(e.target.value)}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-lg p-3 text-xs font-mono text-slate-200 focus:border-emerald-500 focus:outline-none"
+                  className="w-full bg-background border border-border rounded-lg p-3 text-xs font-mono text-foreground focus:border-emerald-500 focus:outline-none"
                 >
                   <option value="Security_CVE">Security CVE (SQLi, SSRF, RCE, Secrets)</option>
                   <option value="Concurrency">Concurrency / Data Race / Deadlock</option>
@@ -415,7 +415,7 @@ export default function DailyCodeReviewDojoPage() {
 
               {/* Inline Reviewer Comment */}
               <div className="space-y-2">
-                <label className="text-xs font-mono text-slate-400 uppercase tracking-wider block">
+                <label className="text-xs font-mono text-muted-foreground uppercase tracking-wider block">
                   Senior Staff PR Comment
                 </label>
                 <textarea
@@ -423,13 +423,13 @@ export default function DailyCodeReviewDojoPage() {
                   value={reviewComment}
                   onChange={(e) => setReviewComment(e.target.value)}
                   placeholder="Explain why this implementation is unsafe, cite blast radius risk, or provide suggested fix..."
-                  className="w-full bg-slate-950 border border-slate-800 rounded-lg p-3 text-xs font-mono text-slate-200 focus:border-emerald-500 focus:outline-none"
+                  className="w-full bg-background border border-border rounded-lg p-3 text-xs font-mono text-foreground focus:border-emerald-500 focus:outline-none"
                 />
               </div>
 
               {/* PR Decision Radios */}
               <div className="space-y-2">
-                <label className="text-xs font-mono text-slate-400 uppercase tracking-wider block">
+                <label className="text-xs font-mono text-muted-foreground uppercase tracking-wider block">
                   GitHub PR Decision
                 </label>
                 <div className="grid grid-cols-3 gap-2">
@@ -449,7 +449,7 @@ export default function DailyCodeReviewDojoPage() {
                             : btn.color === "yellow"
                             ? "bg-yellow-950 text-yellow-400 border-yellow-500"
                             : "bg-emerald-950 text-emerald-400 border-emerald-500"
-                          : "bg-slate-950 text-slate-400 border-slate-800 hover:border-slate-800"
+                          : "bg-background text-muted-foreground border-border hover:border-border"
                       }`}
                     >
                       {btn.label}
@@ -464,7 +464,7 @@ export default function DailyCodeReviewDojoPage() {
                 disabled={submitting || !selectedLine}
                 className={`w-full py-3.5 rounded-xl font-bold text-xs uppercase tracking-wider transition flex items-center justify-center gap-2 ${
                   submitting || !selectedLine
-                    ? "bg-slate-800 text-slate-400 cursor-not-allowed"
+                    ? "bg-muted text-muted-foreground cursor-not-allowed"
                     : "bg-gradient-to-r from-emerald-500 to-teal-400 text-black hover:from-emerald-400 hover:to-teal-300 shadow-lg shadow-emerald-500/20"
                 }`}
               >
@@ -487,17 +487,17 @@ export default function DailyCodeReviewDojoPage() {
         {/* Principal Engineer Evaluation Modal */}
         {result && (
           <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-6 overflow-y-auto">
-            <div className="bg-slate-900 border border-slate-800 rounded-2xl max-w-2xl w-full p-6 space-y-6 shadow-2xl my-8">
-              <div className="flex items-center justify-between border-b border-slate-800 pb-4">
+            <div className="bg-card border border-border rounded-2xl max-w-2xl w-full p-6 space-y-6 shadow-2xl my-8">
+              <div className="flex items-center justify-between border-b border-border pb-4">
                 <div className="flex items-center gap-3">
                   <span className="text-3xl">{result.flawDetected ? "🎯" : "⚠️"}</span>
                   <div>
-                    <h3 className="text-xl font-bold text-slate-200">
+                    <h3 className="text-xl font-bold text-foreground">
                       {result.flawDetected
                         ? "Zero-Day Defect Intercepted!"
                         : "Defect Missed in Code Review"}
                     </h3>
-                    <p className="text-xs text-slate-400">
+                    <p className="text-xs text-muted-foreground">
                       Vigilance Score: {result.vigilanceScore}/100 • Review Time:{" "}
                       {formatTimer(timerSeconds)}
                     </p>
@@ -505,7 +505,7 @@ export default function DailyCodeReviewDojoPage() {
                 </div>
                 <button
                   onClick={() => setResult(null)}
-                  className="text-slate-400 hover:text-white text-lg font-mono p-1"
+                  className="text-muted-foreground hover:text-white text-lg font-mono p-1"
                 >
                   ✕
                 </button>
@@ -513,17 +513,17 @@ export default function DailyCodeReviewDojoPage() {
 
               {/* XP & Vigilance Breakdown */}
               <div className="grid grid-cols-3 gap-3 text-center">
-                <div className="bg-slate-950 p-3 rounded-xl border border-slate-800">
-                  <span className="text-[10px] font-mono text-slate-400 block">Total XP Earned</span>
+                <div className="bg-background p-3 rounded-xl border border-border">
+                  <span className="text-[10px] font-mono text-muted-foreground block">Total XP Earned</span>
                   <span className="text-xl font-bold text-emerald-400">
                     +{result.totalXpAwarded} XP
                   </span>
-                  <span className="text-[10px] text-slate-400 block">
+                  <span className="text-[10px] text-muted-foreground block">
                     ({result.baseXp} base + {result.speedBonusXp} speed)
                   </span>
                 </div>
-                <div className="bg-slate-950 p-3 rounded-xl border border-slate-800">
-                  <span className="text-[10px] font-mono text-slate-400 block">Line Accuracy</span>
+                <div className="bg-background p-3 rounded-xl border border-border">
+                  <span className="text-[10px] font-mono text-muted-foreground block">Line Accuracy</span>
                   <span
                     className={`text-xl font-bold ${
                       result.lineAccuracy ? "text-emerald-400" : "text-red-400"
@@ -531,10 +531,10 @@ export default function DailyCodeReviewDojoPage() {
                   >
                     {result.lineAccuracy ? "Exact Match" : "Missed"}
                   </span>
-                  <span className="text-[10px] text-slate-400 block">Target: Line #{kata?.targetDefectLine}</span>
+                  <span className="text-[10px] text-muted-foreground block">Target: Line #{kata?.targetDefectLine}</span>
                 </div>
-                <div className="bg-slate-950 p-3 rounded-xl border border-slate-800">
-                  <span className="text-[10px] font-mono text-slate-400 block">PR Decision</span>
+                <div className="bg-background p-3 rounded-xl border border-border">
+                  <span className="text-[10px] font-mono text-muted-foreground block">PR Decision</span>
                   <span
                     className={`text-xl font-bold ${
                       result.decisionCorrect ? "text-emerald-400" : "text-amber-400"
@@ -542,36 +542,36 @@ export default function DailyCodeReviewDojoPage() {
                   >
                     {result.decisionCorrect ? "Correct Block" : "Improper"}
                   </span>
-                  <span className="text-[10px] text-slate-400 block">Blocked risky code</span>
+                  <span className="text-[10px] text-muted-foreground block">Blocked risky code</span>
                 </div>
               </div>
 
               {/* Principal Benchmark Comparison */}
-              <div className="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-2">
+              <div className="bg-background p-4 rounded-xl border border-border space-y-2">
                 <h4 className="text-xs font-mono text-emerald-400 uppercase tracking-wider">
                   🏆 Google / Meta Principal Engineer Benchmark
                 </h4>
-                <p className="text-xs text-slate-400 font-semibold">
+                <p className="text-xs text-muted-foreground font-semibold">
                   {result.principalBenchmarkComparison}
                 </p>
               </div>
 
               {/* Technical Critique & Root Cause Analysis */}
-              <div className="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-2">
+              <div className="bg-background p-4 rounded-xl border border-border space-y-2">
                 <h4 className="text-xs font-mono text-cyan-400 uppercase tracking-wider">
                   🔬 Technical Vulnerability & Defect Critique
                 </h4>
-                <p className="text-xs text-slate-400 leading-relaxed font-sans">
+                <p className="text-xs text-muted-foreground leading-relaxed font-sans">
                   {result.critiqueExplanation}
                 </p>
               </div>
 
               {/* Clean Remediation Patch */}
-              <div className="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-2">
+              <div className="bg-background p-4 rounded-xl border border-border space-y-2">
                 <h4 className="text-xs font-mono text-amber-400 uppercase tracking-wider">
                   ✨ Clean Production Diff Patch (Remediation)
                 </h4>
-                <pre className="text-xs font-mono bg-black/50 p-3 rounded border border-slate-800 text-emerald-300 overflow-x-auto">
+                <pre className="text-xs font-mono bg-black/50 p-3 rounded border border-border text-emerald-300 overflow-x-auto">
                   {result.suggestedRemediation}
                 </pre>
               </div>

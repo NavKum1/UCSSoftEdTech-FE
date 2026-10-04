@@ -128,14 +128,14 @@ export default function CareerTrajectoryStudioPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-200 flex flex-col font-sans pb-16">
+    <div className="min-h-screen bg-background text-foreground flex flex-col font-sans pb-16">
       {/* Top Banner */}
-      <header className="border-b border-slate-800 bg-slate-900/60 backdrop-blur-md sticky top-0 z-40">
+      <header className="border-b border-border bg-card/60 backdrop-blur-md sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
           <div className="flex items-center space-x-3">
             <Link
               href="/prep/matcher"
-              className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-400 transition-colors"
+              className="p-2 rounded-xl bg-muted hover:bg-slate-700 text-muted-foreground transition-colors"
             >
               <ArrowRight className="w-4 h-4 rotate-180" />
             </Link>
@@ -152,7 +152,7 @@ export default function CareerTrajectoryStudioPage() {
                     Career Insights
                   </span>
                 </div>
-                <p className="text-[11px] text-slate-400">
+                <p className="text-[11px] text-muted-foreground">
                   Seniority milestone projections, regional salary ranges, and personalized growth paths.
                 </p>
               </div>
@@ -181,13 +181,13 @@ export default function CareerTrajectoryStudioPage() {
         )}
 
         {/* Geographic Compensation Market Ribbon */}
-        <div className="p-4 rounded-2xl bg-slate-900/60 border border-slate-800 space-y-3">
+        <div className="p-4 rounded-2xl bg-card/60 border border-border space-y-3">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-slate-400 flex items-center space-x-2">
+            <span className="text-xs font-semibold text-muted-foreground flex items-center space-x-2">
               <Globe2 className="w-4 h-4 text-emerald-400" />
               <span>Select Location for Local Salary Ranges</span>
             </span>
-            <span className="text-xs text-slate-400">
+            <span className="text-xs text-muted-foreground">
               Active: <strong className="text-emerald-400">{REGIONS.find(r => r.code === selectedRegion)?.name}</strong>
             </span>
           </div>
@@ -202,19 +202,19 @@ export default function CareerTrajectoryStudioPage() {
                   className={`p-3 rounded-xl border flex flex-col items-start space-y-1 transition-all cursor-pointer ${
                     isActive
                       ? "bg-emerald-950/40 border-emerald-500/70 shadow-md shadow-emerald-900/30"
-                      : "bg-slate-950/40 border-slate-800 hover:border-slate-800 hover:bg-slate-900/60"
+                      : "bg-background/40 border-border hover:border-border hover:bg-card/60"
                   }`}
                 >
                   <div className="flex items-center justify-between w-full">
                     <span className="text-lg">{reg.flag}</span>
-                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-slate-800 text-emerald-300 font-mono font-bold">
+                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-muted text-emerald-300 font-mono font-bold">
                       {reg.multiplier}
                     </span>
                   </div>
-                  <div className={`text-xs font-bold ${isActive ? "text-emerald-300" : "text-slate-200"}`}>
+                  <div className={`text-xs font-bold ${isActive ? "text-emerald-300" : "text-foreground"}`}>
                     {reg.currency} ({reg.symbol})
                   </div>
-                  <div className="text-[10px] text-slate-400 truncate w-full">
+                  <div className="text-[10px] text-muted-foreground truncate w-full">
                     {reg.name}
                   </div>
                 </button>
@@ -233,18 +233,18 @@ export default function CareerTrajectoryStudioPage() {
               <h2 className="text-2xl font-bold text-white mt-1">
                 Target Role: {data?.targetRole || "Distributed Cloud Systems Architect"}
               </h2>
-              <p className="text-xs text-slate-400 mt-1 max-w-2xl leading-relaxed">
+              <p className="text-xs text-muted-foreground mt-1 max-w-2xl leading-relaxed">
                 Estimated based on project challenge performance, problem-solving skills, and code quality.
               </p>
             </div>
 
             <div className="flex items-center space-x-3">
-              <div className="p-3.5 rounded-xl bg-slate-950/80 border border-slate-800 text-center">
-                <span className="text-[10px] uppercase font-bold text-slate-400 block">Skill Growth</span>
+              <div className="p-3.5 rounded-xl bg-background/80 border border-border text-center">
+                <span className="text-[10px] uppercase font-bold text-muted-foreground block">Skill Growth</span>
                 <span className="text-xl font-black text-emerald-400">{data?.scores?.skillVelocity || 88.5}%</span>
               </div>
-              <div className="p-3.5 rounded-xl bg-slate-950/80 border border-slate-800 text-center">
-                <span className="text-[10px] uppercase font-bold text-slate-400 block">Leadership Readiness</span>
+              <div className="p-3.5 rounded-xl bg-background/80 border border-border text-center">
+                <span className="text-[10px] uppercase font-bold text-muted-foreground block">Leadership Readiness</span>
                 <span className="text-xl font-black text-teal-400">{data?.scores?.leadershipReadiness || 84.0}%</span>
               </div>
             </div>
@@ -254,12 +254,12 @@ export default function CareerTrajectoryStudioPage() {
         {/* 4-Stage Seniority Milestone Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {/* Current Level */}
-          <div className="p-5 rounded-2xl bg-slate-900/50 border border-slate-800 space-y-3 relative">
+          <div className="p-5 rounded-2xl bg-card/50 border border-border space-y-3 relative">
             <div className="flex items-center justify-between">
-              <span className="text-[10px] uppercase font-bold tracking-wider text-slate-400">
+              <span className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground">
                 Baseline Level
               </span>
-              <span className="text-[10px] px-2 py-0.5 rounded-full bg-slate-800 text-slate-400 font-semibold">
+              <span className="text-[10px] px-2 py-0.5 rounded-full bg-muted text-muted-foreground font-semibold">
                 Today
               </span>
             </div>
@@ -269,13 +269,13 @@ export default function CareerTrajectoryStudioPage() {
             <div className="text-2xl font-extrabold text-emerald-400">
               {data?.compensationBands?.currentFormatted || (geoRegion === "IN" ? "₹35,00,000" : geoRegion === "EU" ? "€130,000" : "$165,000")}
             </div>
-            <p className="text-xs text-slate-400 leading-relaxed">
+            <p className="text-xs text-muted-foreground leading-relaxed">
               Standard autonomous execution, modular component delivery, and structured API integrations.
             </p>
           </div>
 
           {/* 1-Year Milestone */}
-          <div className="p-5 rounded-2xl bg-slate-900/50 border border-slate-800 space-y-3 relative">
+          <div className="p-5 rounded-2xl bg-card/50 border border-border space-y-3 relative">
             <div className="flex items-center justify-between">
               <span className="text-[10px] uppercase font-bold tracking-wider text-teal-400">
                 1-Year Milestone
@@ -290,13 +290,13 @@ export default function CareerTrajectoryStudioPage() {
             <div className="text-2xl font-extrabold text-teal-400">
               {data?.compensationBands?.oneYearFormatted || (geoRegion === "IN" ? "₹45,00,000" : geoRegion === "EU" ? "€165,000" : "$210,000")}
             </div>
-            <p className="text-xs text-slate-400 leading-relaxed">
+            <p className="text-xs text-muted-foreground leading-relaxed">
               System resilience governance, multi-threaded optimization, and cross-team interface ownership.
             </p>
           </div>
 
           {/* 3-Year Milestone */}
-          <div className="p-5 rounded-2xl bg-slate-900/50 border border-emerald-500/30 bg-emerald-950/10 space-y-3 relative shadow-lg shadow-emerald-950/20">
+          <div className="p-5 rounded-2xl bg-card/50 border border-emerald-500/30 bg-emerald-950/10 space-y-3 relative shadow-lg shadow-emerald-950/20">
             <div className="flex items-center justify-between">
               <span className="text-[10px] uppercase font-bold tracking-wider text-emerald-400">
                 3-Year Milestone
@@ -311,13 +311,13 @@ export default function CareerTrajectoryStudioPage() {
             <div className="text-2xl font-extrabold text-emerald-300">
               {data?.compensationBands?.threeYearFormatted || (geoRegion === "IN" ? "₹65,00,000" : geoRegion === "EU" ? "€220,000" : "$285,000")}
             </div>
-            <p className="text-xs text-slate-400 leading-relaxed">
+            <p className="text-xs text-muted-foreground leading-relaxed">
               Enterprise architectural direction, distributed consensus patterns, and organizational technical leverage.
             </p>
           </div>
 
           {/* 5-Year Milestone */}
-          <div className="p-5 rounded-2xl bg-slate-900/50 border border-slate-800 space-y-3 relative">
+          <div className="p-5 rounded-2xl bg-card/50 border border-border space-y-3 relative">
             <div className="flex items-center justify-between">
               <span className="text-[10px] uppercase font-bold tracking-wider text-amber-400">
                 5-Year Milestone
@@ -332,30 +332,30 @@ export default function CareerTrajectoryStudioPage() {
             <div className="text-2xl font-extrabold text-amber-400">
               {data?.compensationBands?.fiveYearFormatted || (geoRegion === "IN" ? "₹95,00,000" : geoRegion === "EU" ? "€295,000" : "$380,000")}
             </div>
-            <p className="text-xs text-slate-400 leading-relaxed">
+            <p className="text-xs text-muted-foreground leading-relaxed">
               Company-wide systems vision, multi-datacenter fault-tolerance, and executive technology roadmap stewardship.
             </p>
           </div>
         </div>
 
         {/* Visual Compensation Growth Comparison Bar */}
-        <div className="p-6 rounded-2xl bg-slate-900/60 border border-slate-800 space-y-5">
+        <div className="p-6 rounded-2xl bg-card/60 border border-border space-y-5">
           <div className="flex items-center justify-between">
             <h3 className="text-base font-semibold text-white flex items-center space-x-2">
               <DollarSign className="w-4 h-4 text-emerald-400" />
               <span>Expected Salary Growth Over Time</span>
             </h3>
-            <span className="text-xs text-slate-400">Base Salary + Equity + Bonus Estimates</span>
+            <span className="text-xs text-muted-foreground">Base Salary + Equity + Bonus Estimates</span>
           </div>
 
           <div className="space-y-4">
             {/* Current */}
             <div>
               <div className="flex justify-between text-xs mb-1">
-                <span className="text-slate-400 font-medium">Baseline ({getLevelLabel(data?.seniorityLevels?.current || "L4")})</span>
-                <span className="font-bold text-slate-400">{data?.compensationBands?.currentFormatted}</span>
+                <span className="text-muted-foreground font-medium">Baseline ({getLevelLabel(data?.seniorityLevels?.current || "L4")})</span>
+                <span className="font-bold text-muted-foreground">{data?.compensationBands?.currentFormatted}</span>
               </div>
-              <div className="h-3 w-full rounded-full bg-slate-950 overflow-hidden">
+              <div className="h-3 w-full rounded-full bg-background overflow-hidden">
                 <div 
                   style={{ width: "42%" }}
                   className="h-full bg-slate-600 rounded-full"
@@ -366,10 +366,10 @@ export default function CareerTrajectoryStudioPage() {
             {/* 1-Year */}
             <div>
               <div className="flex justify-between text-xs mb-1">
-                <span className="text-slate-400 font-medium">1-Year Horizon ({getLevelLabel(data?.seniorityLevels?.oneYear || "L5")})</span>
+                <span className="text-muted-foreground font-medium">1-Year Horizon ({getLevelLabel(data?.seniorityLevels?.oneYear || "L5")})</span>
                 <span className="font-bold text-teal-400">{data?.compensationBands?.oneYearFormatted}</span>
               </div>
-              <div className="h-3 w-full rounded-full bg-slate-950 overflow-hidden">
+              <div className="h-3 w-full rounded-full bg-background overflow-hidden">
                 <div 
                   style={{ width: "55%" }}
                   className="h-full bg-gradient-to-r from-teal-600 to-teal-400 rounded-full"
@@ -380,10 +380,10 @@ export default function CareerTrajectoryStudioPage() {
             {/* 3-Year */}
             <div>
               <div className="flex justify-between text-xs mb-1">
-                <span className="text-slate-400 font-medium">3-Year Horizon ({getLevelLabel(data?.seniorityLevels?.threeYear || "L6")})</span>
+                <span className="text-muted-foreground font-medium">3-Year Horizon ({getLevelLabel(data?.seniorityLevels?.threeYear || "L6")})</span>
                 <span className="font-bold text-emerald-400">{data?.compensationBands?.threeYearFormatted}</span>
               </div>
-              <div className="h-3 w-full rounded-full bg-slate-950 overflow-hidden">
+              <div className="h-3 w-full rounded-full bg-background overflow-hidden">
                 <div 
                   style={{ width: "74%" }}
                   className="h-full bg-gradient-to-r from-emerald-600 to-emerald-400 rounded-full"
@@ -394,10 +394,10 @@ export default function CareerTrajectoryStudioPage() {
             {/* 5-Year */}
             <div>
               <div className="flex justify-between text-xs mb-1">
-                <span className="text-slate-400 font-medium">5-Year Horizon ({getLevelLabel(data?.seniorityLevels?.fiveYear || "L7")})</span>
+                <span className="text-muted-foreground font-medium">5-Year Horizon ({getLevelLabel(data?.seniorityLevels?.fiveYear || "L7")})</span>
                 <span className="font-bold text-amber-400">{data?.compensationBands?.fiveYearFormatted}</span>
               </div>
-              <div className="h-3 w-full rounded-full bg-slate-950 overflow-hidden">
+              <div className="h-3 w-full rounded-full bg-background overflow-hidden">
                 <div 
                   style={{ width: "100%" }}
                   className="h-full bg-gradient-to-r from-amber-600 to-amber-400 rounded-full"
@@ -408,12 +408,12 @@ export default function CareerTrajectoryStudioPage() {
         </div>
 
         {/* High-Leverage Competency Gap Roadmap */}
-        <div className="p-6 rounded-2xl bg-slate-900/60 border border-slate-800 space-y-4">
+        <div className="p-6 rounded-2xl bg-card/60 border border-border space-y-4">
           <div className="flex items-center space-x-2">
             <Target className="w-5 h-5 text-emerald-400" />
             <h3 className="text-base font-bold text-white">Recommended Skills to Accelerate Your Career</h3>
           </div>
-          <p className="text-xs text-slate-400">
+          <p className="text-xs text-muted-foreground">
             Building strengths in these key areas helps accelerate your path to the next level.
           </p>
 
@@ -442,7 +442,7 @@ export default function CareerTrajectoryStudioPage() {
             ].map((gap, idx) => (
               <div
                 key={idx}
-                className="p-4 rounded-xl bg-slate-950/60 border border-slate-800 space-y-2 flex flex-col justify-between"
+                className="p-4 rounded-xl bg-background/60 border border-border space-y-2 flex flex-col justify-between"
               >
                 <div>
                   <div className="flex items-center justify-between">
@@ -454,7 +454,7 @@ export default function CareerTrajectoryStudioPage() {
                       {gap.impact}
                     </span>
                   </div>
-                  <p className="text-xs text-slate-400 mt-1 leading-relaxed">
+                  <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
                     {gap.desc}
                   </p>
                 </div>
@@ -476,26 +476,26 @@ export default function CareerTrajectoryStudioPage() {
       {/* Simulation Modal */}
       {showSimulateModal && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fadeIn">
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full p-6 space-y-5 shadow-2xl">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+          <div className="bg-card border border-border rounded-2xl max-w-md w-full p-6 space-y-5 shadow-2xl">
+            <div className="flex items-center justify-between border-b border-border pb-3">
               <div className="flex items-center space-x-2">
                 <Sparkles className="w-5 h-5 text-emerald-400" />
                 <h3 className="text-base font-bold text-white">Explore Career Paths</h3>
               </div>
               <button
                 onClick={() => setShowSimulateModal(false)}
-                className="text-slate-400 hover:text-white text-sm"
+                className="text-muted-foreground hover:text-white text-sm"
               >
                 ✕
               </button>
             </div>
 
-            <p className="text-xs text-slate-400 leading-relaxed">
+            <p className="text-xs text-muted-foreground leading-relaxed">
               Select your target specialization to preview career milestones and salary expectations.
             </p>
 
             <div className="space-y-2">
-              <label className="text-xs font-medium text-slate-400 block">Engineering Track</label>
+              <label className="text-xs font-medium text-muted-foreground block">Engineering Track</label>
               {TRACK_PRESETS.map((trk) => (
                 <div
                   key={trk}
@@ -503,7 +503,7 @@ export default function CareerTrajectoryStudioPage() {
                   className={`p-3 rounded-xl border text-xs font-semibold cursor-pointer transition-all ${
                     targetRole === trk
                       ? "bg-emerald-950/40 border-emerald-500 text-white"
-                      : "bg-slate-950/60 border-slate-800 text-slate-400 hover:border-slate-800"
+                      : "bg-background/60 border-border text-muted-foreground hover:border-border"
                   }`}
                 >
                   {trk}
@@ -514,7 +514,7 @@ export default function CareerTrajectoryStudioPage() {
             <div className="flex items-center space-x-3 pt-2">
               <button
                 onClick={() => setShowSimulateModal(false)}
-                className="flex-1 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-400 text-xs font-medium cursor-pointer"
+                className="flex-1 py-2.5 rounded-xl bg-muted hover:bg-slate-700 text-muted-foreground text-xs font-medium cursor-pointer"
               >
                 Cancel
               </button>

@@ -224,10 +224,10 @@ export default function SpeedArchitectArenaPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-200 p-4 md:p-8 font-sans">
+    <div className="min-h-screen bg-background text-foreground p-4 md:p-8 font-sans">
       {/* Top Breadcrumb & Actions */}
       <div className="max-w-7xl mx-auto mb-6 flex flex-wrap items-center justify-between gap-4">
-        <div className="flex items-center space-x-2 text-sm text-slate-400">
+        <div className="flex items-center space-x-2 text-sm text-muted-foreground">
           <Link href="/" className="hover:text-cyan-400 transition-colors">
             Home
           </Link>
@@ -241,7 +241,7 @@ export default function SpeedArchitectArenaPage() {
         <div className="flex items-center space-x-3">
           <button
             onClick={() => setShowLeaderboard(!showLeaderboard)}
-            className="px-3.5 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-xs font-semibold text-slate-400 hover:text-white hover:border-slate-800 transition-all flex items-center space-x-1.5"
+            className="px-3.5 py-1.5 rounded-lg bg-card border border-border text-xs font-semibold text-muted-foreground hover:text-white hover:border-border transition-all flex items-center space-x-1.5"
           >
             <span>🏆 Global Elo Leaderboard</span>
           </button>
@@ -253,7 +253,7 @@ export default function SpeedArchitectArenaPage() {
       </div>
 
       {/* Duel Arena Header Banner */}
-      <div className="max-w-7xl mx-auto mb-6 bg-gradient-to-r from-slate-900 via-amber-950/30 to-purple-950/40 p-6 md:p-8 rounded-2xl border border-slate-800 shadow-2xl relative overflow-hidden">
+      <div className="max-w-7xl mx-auto mb-6 bg-gradient-to-r from-slate-900 via-amber-950/30 to-purple-950/40 p-6 md:p-8 rounded-2xl border border-border shadow-2xl relative overflow-hidden">
         <div className="absolute top-0 right-0 w-96 h-96 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
         <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
           <div>
@@ -268,15 +268,15 @@ export default function SpeedArchitectArenaPage() {
             <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight text-white mb-2">
               1v1 System Design Speed-Architecting Flash-Wars
             </h1>
-            <p className="text-slate-400 text-sm md:text-base max-w-2xl">
+            <p className="text-muted-foreground text-sm md:text-base max-w-2xl">
               Go head-to-head in real time against peers or calibrated AI Principal Architects. Draw distributed topologies under dynamic chaos constraints (e.g. 10M QPS with regional datacenter blackout).
             </p>
           </div>
 
           {/* Countdown Clock HUD */}
-          <div className="flex items-center space-x-4 bg-slate-950/80 border border-slate-800 p-4 rounded-2xl shadow-inner">
-            <div className="text-center px-4 border-r border-slate-800">
-              <div className="text-[10px] text-slate-400 uppercase font-bold tracking-wider">Duel Time</div>
+          <div className="flex items-center space-x-4 bg-background/80 border border-border p-4 rounded-2xl shadow-inner">
+            <div className="text-center px-4 border-r border-border">
+              <div className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider">Duel Time</div>
               <div className={`text-3xl font-black font-mono tracking-tight ${secondsRemaining < 60 ? "text-rose-400 animate-pulse" : "text-amber-400"}`}>
                 {formatTime(secondsRemaining)}
               </div>
@@ -304,12 +304,12 @@ export default function SpeedArchitectArenaPage() {
           <span>{selectedPreset?.injectedChaosEvent || "Minute 3: US-East-1 datacenter goes dark + 10M QPS cache stampede injected into US-West-2."}</span>
         </div>
         <div className="flex items-center space-x-2">
-          <label className="text-xs font-semibold text-slate-400 flex items-center space-x-2 cursor-pointer">
+          <label className="text-xs font-semibold text-muted-foreground flex items-center space-x-2 cursor-pointer">
             <input
               type="checkbox"
               checked={chaosHandled}
               onChange={(e) => setChaosHandled(e.target.checked)}
-              className="rounded bg-slate-900 border-slate-800 text-amber-500 focus:ring-0"
+              className="rounded bg-card border-border text-amber-500 focus:ring-0"
             />
             <span className="text-amber-400 font-bold">Chaos Auto-Failover Route Engaged</span>
           </label>
@@ -329,7 +329,7 @@ export default function SpeedArchitectArenaPage() {
       {/* 1v1 Matchup Duel Cards */}
       <div className="max-w-7xl mx-auto mb-6 grid grid-cols-1 md:grid-cols-11 items-center gap-4">
         {/* Player 1 Card */}
-        <div className="md:col-span-5 bg-slate-900 border border-cyan-500/40 p-4 rounded-2xl shadow-xl flex items-center justify-between">
+        <div className="md:col-span-5 bg-card border border-cyan-500/40 p-4 rounded-2xl shadow-xl flex items-center justify-between">
           <div className="flex items-center space-x-3">
             <div className="w-12 h-12 rounded-xl bg-cyan-500/20 border border-cyan-500/40 flex items-center justify-center font-bold text-cyan-400 text-lg">
               AC
@@ -337,24 +337,24 @@ export default function SpeedArchitectArenaPage() {
             <div>
               <div className="text-xs font-semibold text-cyan-400 uppercase">You (Player 1)</div>
               <div className="text-base font-bold text-white">Alex Chen</div>
-              <div className="text-xs text-slate-400">Gold Tier • 5 Win Streak</div>
+              <div className="text-xs text-muted-foreground">Gold Tier • 5 Win Streak</div>
             </div>
           </div>
           <div className="text-right">
-            <div className="text-[10px] text-slate-400 uppercase font-semibold">Elo Rating</div>
+            <div className="text-[10px] text-muted-foreground uppercase font-semibold">Elo Rating</div>
             <div className="text-2xl font-black text-cyan-400">1598</div>
           </div>
         </div>
 
         {/* VS Divider */}
         <div className="md:col-span-1 text-center py-2">
-          <span className="px-3 py-1 rounded-full bg-slate-800 text-amber-400 font-black text-xs border border-amber-500/30">
+          <span className="px-3 py-1 rounded-full bg-muted text-amber-400 font-black text-xs border border-amber-500/30">
             VS
           </span>
         </div>
 
         {/* Player 2 Card */}
-        <div className="md:col-span-5 bg-slate-900 border border-purple-500/40 p-4 rounded-2xl shadow-xl flex items-center justify-between">
+        <div className="md:col-span-5 bg-card border border-purple-500/40 p-4 rounded-2xl shadow-xl flex items-center justify-between">
           <div className="flex items-center space-x-3">
             <div className="w-12 h-12 rounded-xl bg-purple-500/20 border border-purple-500/40 flex items-center justify-center font-bold text-purple-400 text-lg">
               ER
@@ -364,11 +364,11 @@ export default function SpeedArchitectArenaPage() {
               <div className="text-base font-bold text-white">
                 {currentMatch?.player2Name || "Dr. Elena Rostova (AI Principal)"}
               </div>
-              <div className="text-xs text-slate-400">Diamond Tier • 85.2% WinRate</div>
+              <div className="text-xs text-muted-foreground">Diamond Tier • 85.2% WinRate</div>
             </div>
           </div>
           <div className="text-right">
-            <div className="text-[10px] text-slate-400 uppercase font-semibold">Elo Rating</div>
+            <div className="text-[10px] text-muted-foreground uppercase font-semibold">Elo Rating</div>
             <div className="text-2xl font-black text-purple-400">
               {currentMatch?.player2Elo || 1890}
             </div>
@@ -381,8 +381,8 @@ export default function SpeedArchitectArenaPage() {
         {/* Left: 8 Cols - Topology Canvas */}
         <div className="lg:col-span-8 space-y-6">
           {/* Component Palette */}
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-xl">
-            <div className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">
+          <div className="bg-card border border-border rounded-2xl p-4 shadow-xl">
+            <div className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-3">
               Add Component to Active Topology
             </div>
             <div className="flex flex-wrap gap-2">
@@ -399,16 +399,16 @@ export default function SpeedArchitectArenaPage() {
           </div>
 
           {/* Interactive Topology Graph Canvas */}
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl relative min-h-[420px] flex flex-col justify-between">
+          <div className="bg-card border border-border rounded-2xl p-6 shadow-xl relative min-h-[420px] flex flex-col justify-between">
             <div>
               <div className="flex items-center justify-between mb-4">
                 <div>
                   <h2 className="text-lg font-bold text-white">Distributed Topology Canvas</h2>
-                  <p className="text-xs text-slate-400">
+                  <p className="text-xs text-muted-foreground">
                     Arranged pipeline flow with failover routing & state replication
                   </p>
                 </div>
-                <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-slate-800 text-cyan-300 border border-slate-800">
+                <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-muted text-cyan-300 border border-border">
                   {placedNodes.length} Active Nodes
                 </span>
               </div>
@@ -418,11 +418,11 @@ export default function SpeedArchitectArenaPage() {
                 {placedNodes.map((node, idx) => (
                   <div
                     key={node.id}
-                    className="p-3 rounded-xl bg-slate-950 border border-slate-800 hover:border-cyan-500/50 transition-all relative group"
+                    className="p-3 rounded-xl bg-background border border-border hover:border-cyan-500/50 transition-all relative group"
                   >
                     <button
                       onClick={() => removeNode(node.id)}
-                      className="absolute top-2 right-2 text-slate-400 hover:text-rose-400 text-xs opacity-0 group-hover:opacity-100 transition-opacity"
+                      className="absolute top-2 right-2 text-muted-foreground hover:text-rose-400 text-xs opacity-0 group-hover:opacity-100 transition-opacity"
                     >
                       ✕
                     </button>
@@ -431,7 +431,7 @@ export default function SpeedArchitectArenaPage() {
                       <span className="text-[10px] text-cyan-400 font-semibold uppercase">{node.tier}</span>
                     </div>
                     <div className="text-sm font-bold text-white truncate">{node.name}</div>
-                    <div className="text-[10px] text-slate-400 mt-1 font-mono">{node.type}</div>
+                    <div className="text-[10px] text-muted-foreground mt-1 font-mono">{node.type}</div>
                     <div className="mt-2 text-[10px] text-emerald-400 flex items-center space-x-1">
                       <span>✓ Connected (Failover Ready)</span>
                     </div>
@@ -441,10 +441,10 @@ export default function SpeedArchitectArenaPage() {
             </div>
 
             {/* Bottom Deployment Control Bar */}
-            <div className="mt-6 pt-4 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4">
-              <div className="text-xs text-slate-400">
+            <div className="mt-6 pt-4 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div className="text-xs text-muted-foreground">
                 <span>Active Objective: </span>
-                <span className="text-slate-200 font-semibold">
+                <span className="text-foreground font-semibold">
                   {selectedPreset?.targetMetrics || "P99 < 15ms, Zero Transaction Loss"}
                 </span>
               </div>
@@ -474,8 +474,8 @@ export default function SpeedArchitectArenaPage() {
         {/* Right: 4 Cols - Preset Objectives & Match Results */}
         <div className="lg:col-span-4 space-y-6">
           {/* Preset Selector */}
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
-            <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider">
+          <div className="bg-card border border-border rounded-2xl p-6 shadow-xl space-y-4">
+            <h3 className="text-sm font-bold text-muted-foreground uppercase tracking-wider">
               Duel Arena Scenarios
             </h3>
             <div className="space-y-2">
@@ -488,12 +488,12 @@ export default function SpeedArchitectArenaPage() {
                   }}
                   className={`p-3 rounded-xl border cursor-pointer transition-all ${
                     selectedPreset?.id === p.id
-                      ? "bg-slate-800/90 border-amber-500 shadow-md shadow-amber-500/10"
-                      : "bg-slate-950/60 border-slate-800 hover:border-slate-800"
+                      ? "bg-muted/90 border-amber-500 shadow-md shadow-amber-500/10"
+                      : "bg-background/60 border-border hover:border-border"
                   }`}
                 >
-                  <div className="font-bold text-slate-200 text-xs">{p.title}</div>
-                  <div className="text-[11px] text-slate-400 mt-1 line-clamp-2">
+                  <div className="font-bold text-foreground text-xs">{p.title}</div>
+                  <div className="text-[11px] text-muted-foreground mt-1 line-clamp-2">
                     {p.problemStatement}
                   </div>
                 </div>
@@ -503,9 +503,9 @@ export default function SpeedArchitectArenaPage() {
 
           {/* Duel Result Modal / Card */}
           {duelResult && (
-            <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-2xl space-y-4">
+            <div className="bg-card border border-border rounded-2xl p-6 shadow-2xl space-y-4">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Match Outcome</span>
+                <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Match Outcome</span>
                 <span
                   className={`px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider ${
                     duelResult.matchVerdict === "VICTORY"
@@ -518,9 +518,9 @@ export default function SpeedArchitectArenaPage() {
               </div>
 
               {/* Elo Delta Pill */}
-              <div className="p-3 rounded-xl bg-slate-950 border border-slate-800 flex items-center justify-between">
+              <div className="p-3 rounded-xl bg-background border border-border flex items-center justify-between">
                 <div>
-                  <div className="text-[10px] text-slate-400 font-semibold uppercase">Elo Rating Shift</div>
+                  <div className="text-[10px] text-muted-foreground font-semibold uppercase">Elo Rating Shift</div>
                   <div className="text-xl font-black text-amber-400">
                     {duelResult.newElo}
                   </div>
@@ -532,26 +532,26 @@ export default function SpeedArchitectArenaPage() {
 
               {/* Metrics */}
               <div className="grid grid-cols-2 gap-2 text-xs">
-                <div className="p-2 rounded-lg bg-slate-950 border border-slate-800">
-                  <div className="text-[10px] text-slate-400 uppercase">Throughput</div>
+                <div className="p-2 rounded-lg bg-background border border-border">
+                  <div className="text-[10px] text-muted-foreground uppercase">Throughput</div>
                   <div className="font-bold text-cyan-400">{duelResult.throughputScore}%</div>
                 </div>
-                <div className="p-2 rounded-lg bg-slate-950 border border-slate-800">
-                  <div className="text-[10px] text-slate-400 uppercase">Resilience</div>
+                <div className="p-2 rounded-lg bg-background border border-border">
+                  <div className="text-[10px] text-muted-foreground uppercase">Resilience</div>
                   <div className="font-bold text-emerald-400">{duelResult.resilienceScore}%</div>
                 </div>
-                <div className="p-2 rounded-lg bg-slate-950 border border-slate-800">
-                  <div className="text-[10px] text-slate-400 uppercase">Latency</div>
+                <div className="p-2 rounded-lg bg-background border border-border">
+                  <div className="text-[10px] text-muted-foreground uppercase">Latency</div>
                   <div className="font-bold text-purple-400">{duelResult.latencyScore}%</div>
                 </div>
-                <div className="p-2 rounded-lg bg-slate-950 border border-slate-800">
-                  <div className="text-[10px] text-slate-400 uppercase">Overall Score</div>
+                <div className="p-2 rounded-lg bg-background border border-border">
+                  <div className="text-[10px] text-muted-foreground uppercase">Overall Score</div>
                   <div className="font-bold text-amber-400">{duelResult.overallScore}%</div>
                 </div>
               </div>
 
               {/* Feedback Quote */}
-              <div className="p-3 rounded-xl bg-slate-950 border border-slate-800 text-xs text-slate-400 italic">
+              <div className="p-3 rounded-xl bg-background border border-border text-xs text-muted-foreground italic">
                 "{duelResult.evaluationFeedback}"
               </div>
             </div>
@@ -559,27 +559,27 @@ export default function SpeedArchitectArenaPage() {
 
           {/* Global Leaderboard Standings Drawer */}
           {showLeaderboard && (
-            <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-3">
+            <div className="bg-card border border-border rounded-2xl p-6 shadow-xl space-y-3">
               <h3 className="text-sm font-bold text-white flex items-center justify-between">
                 <span>Top Speed Architects</span>
-                <span className="text-xs text-slate-400">Season 2026</span>
+                <span className="text-xs text-muted-foreground">Season 2026</span>
               </h3>
               <div className="space-y-2">
                 {leaderboard.map((entry) => (
                   <div
                     key={entry.userId}
-                    className="p-2.5 rounded-xl bg-slate-950 border border-slate-800 flex items-center justify-between text-xs"
+                    className="p-2.5 rounded-xl bg-background border border-border flex items-center justify-between text-xs"
                   >
                     <div className="flex items-center space-x-2">
                       <span className="font-bold text-amber-400">#{entry.rank}</span>
-                      <span className="font-bold text-slate-200">{entry.playerName}</span>
-                      <span className="px-1.5 py-0.5 rounded text-[10px] bg-slate-800 text-slate-400">
+                      <span className="font-bold text-foreground">{entry.playerName}</span>
+                      <span className="px-1.5 py-0.5 rounded text-[10px] bg-muted text-muted-foreground">
                         {entry.leagueTier}
                       </span>
                     </div>
                     <div className="text-right">
                       <span className="font-black text-cyan-400">{entry.currentElo} Elo</span>
-                      <span className="text-[10px] text-slate-400 ml-2">({entry.winRate}%)</span>
+                      <span className="text-[10px] text-muted-foreground ml-2">({entry.winRate}%)</span>
                     </div>
                   </div>
                 ))}

@@ -235,13 +235,13 @@ public class HighThroughputBuffer<T>
 
   if (!sprintId) {
     return (
-      <div className="min-h-screen bg-slate-950 text-slate-200 flex flex-col items-center justify-center p-6 text-center">
-        <div className="max-w-md p-8 rounded-2xl border border-slate-800 bg-slate-900/60 space-y-4">
+      <div className="min-h-screen bg-background text-foreground flex flex-col items-center justify-center p-6 text-center">
+        <div className="max-w-md p-8 rounded-2xl border border-border bg-card/60 space-y-4">
           <div className="w-12 h-12 rounded-xl bg-indigo-500/10 text-indigo-400 flex items-center justify-center mx-auto text-2xl">
             🤖
           </div>
           <h2 className="text-xl font-bold text-white">No Challenge Selected</h2>
-          <p className="text-xs text-slate-400">
+          <p className="text-xs text-muted-foreground">
             Please select an active project challenge from your dashboard to begin coaching with your AI assistant.
           </p>
           <Link
@@ -256,17 +256,17 @@ public class HighThroughputBuffer<T>
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-200 flex flex-col font-sans">
+    <div className="min-h-screen bg-background text-foreground flex flex-col font-sans">
       {/* Top Navbar */}
-      <header className="border-b border-slate-800 bg-slate-900/80 backdrop-blur-md px-6 py-4 flex items-center justify-between sticky top-0 z-40">
+      <header className="border-b border-border bg-card/80 backdrop-blur-md px-6 py-4 flex items-center justify-between sticky top-0 z-40">
         <div className="flex items-center space-x-4">
           <Link
             href={`/sprint/${sprintId}`}
-            className="text-xs font-semibold px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 border border-slate-800 transition"
+            className="text-xs font-semibold px-3 py-1.5 rounded-lg bg-muted hover:bg-slate-700 text-muted-foreground border border-border transition"
           >
             ← Back to Challenge
           </Link>
-          <div className="h-4 w-px bg-slate-800" />
+          <div className="h-4 w-px bg-muted" />
           <div className="flex items-center space-x-2">
             <span className="flex h-3 w-3 relative">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
@@ -281,8 +281,8 @@ public class HighThroughputBuffer<T>
         {/* Real-time Autonomy Meter */}
         <div className="flex items-center space-x-3">
           <div className="text-right hidden sm:block">
-            <div className="text-xs text-slate-400">Independent Problem Solving</div>
-            <div className="text-sm font-mono font-bold text-slate-200">
+            <div className="text-xs text-muted-foreground">Independent Problem Solving</div>
+            <div className="text-sm font-mono font-bold text-foreground">
               {session?.autonomyScore ? session.autonomyScore.toFixed(1) : "100.0"} / 100.0
             </div>
           </div>
@@ -300,17 +300,17 @@ public class HighThroughputBuffer<T>
       {/* Main Studio Body */}
       <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-0 overflow-hidden">
         {/* Left Pane: Candidate Code Editor (7 Cols) */}
-        <div className="lg:col-span-7 flex flex-col border-r border-slate-800 bg-slate-950">
-          <div className="bg-slate-900/60 px-5 py-3 border-b border-slate-800 flex items-center justify-between">
+        <div className="lg:col-span-7 flex flex-col border-r border-border bg-background">
+          <div className="bg-card/60 px-5 py-3 border-b border-border flex items-center justify-between">
             <div className="flex items-center space-x-2">
-              <span className="text-slate-400 text-xs font-mono">Solution.cs</span>
-              <span className="text-[10px] px-2 py-0.5 rounded bg-slate-800 text-slate-400 font-mono">C# (.NET 10)</span>
+              <span className="text-muted-foreground text-xs font-mono">Solution.cs</span>
+              <span className="text-[10px] px-2 py-0.5 rounded bg-muted text-muted-foreground font-mono">C# (.NET 10)</span>
             </div>
             <div className="flex items-center space-x-2">
               <button
                 onClick={handleAnalyzeSmells}
                 disabled={isSubmitting}
-                className="text-xs px-3 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-400 border border-slate-800 font-medium transition flex items-center space-x-1"
+                className="text-xs px-3 py-1 rounded bg-muted hover:bg-slate-700 text-muted-foreground border border-border font-medium transition flex items-center space-x-1"
               >
                 <span>🔍</span>
                 <span>Review Code Quality</span>
@@ -322,15 +322,15 @@ public class HighThroughputBuffer<T>
             <textarea
               value={codeSnippet}
               onChange={(e) => setCodeSnippet(e.target.value)}
-              className="w-full h-full bg-slate-900/90 text-indigo-100 p-4 rounded-xl border border-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 resize-none font-mono text-xs leading-relaxed"
+              className="w-full h-full bg-card/90 text-indigo-100 p-4 rounded-xl border border-border focus:outline-none focus:ring-2 focus:ring-indigo-500/50 resize-none font-mono text-xs leading-relaxed"
               placeholder="// Write or paste your solution code here..."
               spellCheck={false}
             />
           </div>
 
           {/* Quick Action Tray */}
-          <div className="p-4 border-t border-slate-800 bg-slate-900/40 flex flex-wrap items-center gap-2">
-            <span className="text-xs font-semibold text-slate-400 mr-2">Quick Actions:</span>
+          <div className="p-4 border-t border-border bg-card/40 flex flex-wrap items-center gap-2">
+            <span className="text-xs font-semibold text-muted-foreground mr-2">Quick Actions:</span>
             <button
               onClick={() => handleInteraction("Hint")}
               disabled={isSubmitting}
@@ -367,14 +367,14 @@ public class HighThroughputBuffer<T>
         </div>
 
         {/* Right Pane: AI Pair Coach Sidecar (5 Cols) */}
-        <div className="lg:col-span-5 flex flex-col bg-slate-900/30">
+        <div className="lg:col-span-5 flex flex-col bg-card/30">
           {/* Tabs */}
-          <div className="border-b border-slate-800 bg-slate-900/80 px-4 py-2 flex items-center justify-between">
+          <div className="border-b border-border bg-card/80 px-4 py-2 flex items-center justify-between">
             <div className="flex space-x-1">
               <button
                 onClick={() => setActiveTab("chat")}
                 className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition ${
-                  activeTab === "chat" ? "bg-indigo-600 text-white" : "text-slate-400 hover:text-slate-200"
+                  activeTab === "chat" ? "bg-indigo-600 text-white" : "text-muted-foreground hover:text-foreground"
                 }`}
               >
                 Coach Assistant ({interactions.length})
@@ -382,7 +382,7 @@ public class HighThroughputBuffer<T>
               <button
                 onClick={() => setActiveTab("smells")}
                 className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition ${
-                  activeTab === "smells" ? "bg-indigo-600 text-white" : "text-slate-400 hover:text-slate-200"
+                  activeTab === "smells" ? "bg-indigo-600 text-white" : "text-muted-foreground hover:text-foreground"
                 }`}
               >
                 Code Review ({codeSmells.length})
@@ -391,14 +391,14 @@ public class HighThroughputBuffer<T>
                 <button
                   onClick={() => setActiveTab("diff")}
                   className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition ${
-                    activeTab === "diff" ? "bg-indigo-600 text-white" : "text-slate-400 hover:text-slate-200"
+                    activeTab === "diff" ? "bg-indigo-600 text-white" : "text-muted-foreground hover:text-foreground"
                   }`}
                 >
                   Suggested Changes
                 </button>
               )}
             </div>
-            <div className="text-[11px] font-mono text-slate-400">
+            <div className="text-[11px] font-mono text-muted-foreground">
               Questions: {session?.totalInteractions || 0}
             </div>
           </div>
@@ -408,10 +408,10 @@ public class HighThroughputBuffer<T>
             {activeTab === "chat" && (
               <>
                 {interactions.length === 0 ? (
-                  <div className="h-64 flex flex-col items-center justify-center text-center p-6 border border-dashed border-slate-800 rounded-2xl bg-slate-900/20 text-slate-400">
+                  <div className="h-64 flex flex-col items-center justify-center text-center p-6 border border-dashed border-border rounded-2xl bg-card/20 text-muted-foreground">
                     <span className="text-3xl mb-2">🤖</span>
                     <p className="text-xs font-medium">Your AI Coding Coach is ready to assist you.</p>
-                    <p className="text-[11px] text-slate-400 mt-1 max-w-xs">
+                    <p className="text-[11px] text-muted-foreground mt-1 max-w-xs">
                       Choose an action above or type a message below to ask questions, request hints, or review recommendations.
                     </p>
                   </div>
@@ -419,9 +419,9 @@ public class HighThroughputBuffer<T>
                   interactions.map((item) => (
                     <div
                       key={item.id}
-                      className="rounded-xl border border-slate-800 bg-slate-900/60 p-4 space-y-2 shadow-sm transition"
+                      className="rounded-xl border border-border bg-card/60 p-4 space-y-2 shadow-sm transition"
                     >
-                      <div className="flex items-center justify-between text-xs border-b border-slate-800 pb-2">
+                      <div className="flex items-center justify-between text-xs border-b border-border pb-2">
                         <div className="flex items-center space-x-2">
                           <span
                             className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${
@@ -436,24 +436,24 @@ public class HighThroughputBuffer<T>
                           >
                             {item.interactionType}
                           </span>
-                          <span className="text-slate-400 font-mono text-[11px]">
+                          <span className="text-muted-foreground font-mono text-[11px]">
                             {item.autonomyPenalty > 0
                               ? `-${item.autonomyPenalty} pts`
                               : `+${Math.abs(item.autonomyPenalty)} pts`}
                           </span>
                         </div>
-                        <span className="text-[11px] text-slate-400 font-mono">
+                        <span className="text-[11px] text-muted-foreground font-mono">
                           {new Date(item.createdAt).toLocaleTimeString()}
                         </span>
                       </div>
 
                       {item.prompt && (
-                        <div className="text-xs text-slate-400 font-medium italic">
+                        <div className="text-xs text-muted-foreground font-medium italic">
                           "{item.prompt}"
                         </div>
                       )}
 
-                      <div className="text-xs text-slate-200 leading-relaxed whitespace-pre-line bg-slate-950/60 p-3 rounded-lg border border-slate-800/80 font-sans">
+                      <div className="text-xs text-foreground leading-relaxed whitespace-pre-line bg-background/60 p-3 rounded-lg border border-border/80 font-sans">
                         {item.aiResponse}
                       </div>
 
@@ -478,10 +478,10 @@ public class HighThroughputBuffer<T>
             {activeTab === "smells" && (
               <div className="space-y-3">
                 {codeSmells.length === 0 ? (
-                  <div className="p-6 text-center border border-dashed border-slate-800 rounded-2xl bg-slate-900/20 text-emerald-400">
+                  <div className="p-6 text-center border border-dashed border-border rounded-2xl bg-card/20 text-emerald-400">
                     <span className="text-3xl block mb-2">✅</span>
                     <p className="text-xs font-semibold">Great Job! Zero Code Issues Found</p>
-                    <p className="text-[11px] text-slate-400 mt-1">
+                    <p className="text-[11px] text-muted-foreground mt-1">
                       Your solution follows clean standards with no structural issues or antipatterns detected.
                     </p>
                   </div>
@@ -489,10 +489,10 @@ public class HighThroughputBuffer<T>
                   codeSmells.map((smell, i) => (
                     <div
                       key={i}
-                      className="p-3.5 rounded-xl border border-slate-800 bg-slate-900/60 space-y-2"
+                      className="p-3.5 rounded-xl border border-border bg-card/60 space-y-2"
                     >
                       <div className="flex items-center justify-between">
-                        <span className="text-xs font-bold font-mono text-slate-200">
+                        <span className="text-xs font-bold font-mono text-foreground">
                           {smell.smellType}
                         </span>
                         <span
@@ -503,13 +503,13 @@ public class HighThroughputBuffer<T>
                           {smell.severity}
                         </span>
                       </div>
-                      <p className="text-xs text-slate-400 leading-relaxed">{smell.description}</p>
+                      <p className="text-xs text-muted-foreground leading-relaxed">{smell.description}</p>
                       <div className="text-[11px] text-indigo-300 bg-indigo-950/30 p-2.5 rounded-lg border border-indigo-900/40">
                         <span className="font-semibold text-indigo-400">Suggested Fix: </span>
                         {smell.recommendation}
                       </div>
                       {smell.lineNumber && (
-                        <div className="text-[10px] text-slate-400 font-mono">
+                        <div className="text-[10px] text-muted-foreground font-mono">
                           Line #{smell.lineNumber}
                         </div>
                       )}
@@ -521,7 +521,7 @@ public class HighThroughputBuffer<T>
 
             {activeTab === "diff" && activeDiff && (
               <div className="space-y-3">
-                <div className="flex items-center justify-between text-xs text-slate-400">
+                <div className="flex items-center justify-between text-xs text-muted-foreground">
                   <span>Suggested Code Updates</span>
                   <button
                     onClick={() => setActiveTab("chat")}
@@ -530,7 +530,7 @@ public class HighThroughputBuffer<T>
                     ← Back to Chat
                   </button>
                 </div>
-                <div className="bg-slate-950 p-4 rounded-xl border border-slate-800 font-mono text-xs overflow-x-auto whitespace-pre leading-relaxed">
+                <div className="bg-background p-4 rounded-xl border border-border font-mono text-xs overflow-x-auto whitespace-pre leading-relaxed">
                   {activeDiff.split("\n").map((line, idx) => {
                     const isAdd = line.startsWith("+");
                     const isDel = line.startsWith("-");
@@ -545,7 +545,7 @@ public class HighThroughputBuffer<T>
                             ? "text-rose-400 bg-rose-950/30 -mx-4 px-4 line-through opacity-80"
                             : isHeader
                             ? "text-cyan-400 font-bold"
-                            : "text-slate-400"
+                            : "text-muted-foreground"
                         }`}
                       >
                         {line}
@@ -558,7 +558,7 @@ public class HighThroughputBuffer<T>
           </div>
 
           {/* Interactive Chat Input */}
-          <div className="p-3 border-t border-slate-800 bg-slate-900/60">
+          <div className="p-3 border-t border-border bg-card/60">
             <div className="flex space-x-2">
               <input
                 type="text"
@@ -566,7 +566,7 @@ public class HighThroughputBuffer<T>
                 onChange={(e) => setUserPrompt(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && !isSubmitting && handleInteraction("Hint")}
                 placeholder="Ask your coach for guidance, hints, or alternative approaches..."
-                className="flex-1 bg-slate-950 text-slate-200 px-3.5 py-2 rounded-xl border border-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 text-xs font-sans placeholder-slate-500"
+                className="flex-1 bg-background text-foreground px-3.5 py-2 rounded-xl border border-border focus:outline-none focus:ring-2 focus:ring-indigo-500/50 text-xs font-sans placeholder-slate-500"
               />
               <button
                 onClick={() => handleInteraction("Hint")}

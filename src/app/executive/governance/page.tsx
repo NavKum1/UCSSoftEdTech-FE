@@ -170,24 +170,24 @@ export default function MultiCampusGovernancePage() {
   }, [parentInstituteId]);
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-200 flex flex-col font-sans">
+    <div className="min-h-screen bg-background text-foreground flex flex-col font-sans">
       {/* Top Header */}
-      <header className="border-b border-slate-800 bg-slate-900/80 backdrop-blur-md px-6 py-4 flex items-center justify-between sticky top-0 z-40">
+      <header className="border-b border-border bg-card/80 backdrop-blur-md px-6 py-4 flex items-center justify-between sticky top-0 z-40">
         <div className="flex items-center space-x-4">
           <Link
             href="/partner/dashboard"
-            className="text-xs font-semibold px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 border border-slate-800 transition"
+            className="text-xs font-semibold px-3 py-1.5 rounded-lg bg-muted hover:bg-slate-700 text-muted-foreground border border-border transition"
           >
             ← Partner Portal
           </Link>
-          <div className="h-4 w-px bg-slate-800" />
+          <div className="h-4 w-px bg-muted" />
           <div className="flex items-center space-x-2">
             <span className="text-xl">🏛️</span>
             <div>
               <h1 className="text-base font-bold bg-gradient-to-r from-emerald-400 via-teal-300 to-cyan-400 bg-clip-text text-transparent">
                 Executive Multi-Campus Governance &amp; Compliance Records
               </h1>
-              <p className="text-[11px] text-slate-400">
+              <p className="text-[11px] text-muted-foreground">
                 Institutional Consortium • Verified Compliance Record
               </p>
             </div>
@@ -197,8 +197,8 @@ export default function MultiCampusGovernancePage() {
         {/* Global Accreditation Status Badge */}
         <div className="flex items-center space-x-3">
           <div className="text-right hidden sm:block">
-            <div className="text-xs text-slate-400">System Accreditation Health</div>
-            <div className="text-sm font-mono font-bold text-slate-200">
+            <div className="text-xs text-muted-foreground">System Accreditation Health</div>
+            <div className="text-sm font-mono font-bold text-foreground">
               {rollup?.averageSystemComplianceScore || 98.5}% Compliance
             </div>
           </div>
@@ -218,38 +218,38 @@ export default function MultiCampusGovernancePage() {
       <div className="flex-1 p-6 space-y-6 max-w-7xl mx-auto w-full">
         {/* KPI Summary Cards */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="p-4 rounded-2xl bg-slate-900/60 border border-slate-800/80 shadow-sm">
-            <div className="text-slate-400 text-xs font-medium">Chartered Campuses</div>
-            <div className="text-2xl font-black text-slate-200 mt-1">
+          <div className="p-4 rounded-2xl bg-card/60 border border-border/80 shadow-sm">
+            <div className="text-muted-foreground text-xs font-medium">Chartered Campuses</div>
+            <div className="text-2xl font-black text-foreground mt-1">
               {rollup?.totalCampuses || 0}
             </div>
             <div className="text-[11px] text-emerald-400 mt-1 font-mono">100% Fully Isolated</div>
           </div>
 
-          <div className="p-4 rounded-2xl bg-slate-900/60 border border-slate-800/80 shadow-sm">
-            <div className="text-slate-400 text-xs font-medium">Total Student Body</div>
+          <div className="p-4 rounded-2xl bg-card/60 border border-border/80 shadow-sm">
+            <div className="text-muted-foreground text-xs font-medium">Total Student Body</div>
             <div className="text-2xl font-black text-cyan-400 mt-1 font-mono">
               {(rollup?.totalStudentsEnrolled || 0).toLocaleString()}
             </div>
-            <div className="text-[11px] text-slate-400 mt-1">
+            <div className="text-[11px] text-muted-foreground mt-1">
               {(rollup?.totalFacultyMembers || 0).toLocaleString()} Faculty Members
             </div>
           </div>
 
-          <div className="p-4 rounded-2xl bg-slate-900/60 border border-slate-800/80 shadow-sm">
-            <div className="text-slate-400 text-xs font-medium">Immutable Audit Blocks</div>
+          <div className="p-4 rounded-2xl bg-card/60 border border-border/80 shadow-sm">
+            <div className="text-muted-foreground text-xs font-medium">Immutable Audit Blocks</div>
             <div className="text-2xl font-black text-purple-400 mt-1 font-mono">
               {rollup?.totalAuditLedgerBlocks || 0}
             </div>
             <div className="text-[11px] text-purple-300 mt-1 font-mono">SHA-256 Hash Chain</div>
           </div>
 
-          <div className="p-4 rounded-2xl bg-slate-900/60 border border-slate-800/80 shadow-sm">
-            <div className="text-slate-400 text-xs font-medium">Compliance Certifications</div>
+          <div className="p-4 rounded-2xl bg-card/60 border border-border/80 shadow-sm">
+            <div className="text-muted-foreground text-xs font-medium">Compliance Certifications</div>
             <div className="text-2xl font-black text-emerald-400 mt-1 font-mono">
               {(rollup?.totalGradeCertifications || 0) + (rollup?.totalAccreditationClearances || 0)}
             </div>
-            <div className="text-[11px] text-slate-400 mt-1">
+            <div className="text-[11px] text-muted-foreground mt-1">
               {rollup?.totalProctoringOverrides || 0} Proctoring Overrides
             </div>
           </div>
@@ -260,10 +260,10 @@ export default function MultiCampusGovernancePage() {
           {/* Left Column: Campus Hierarchy (4 cols) */}
           <div className="lg:col-span-4 space-y-4">
             <div className="flex items-center justify-between">
-              <h2 className="text-sm font-bold uppercase tracking-wider text-slate-400">
+              <h2 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">
                 Institutional Campuses
               </h2>
-              <span className="text-xs px-2 py-0.5 rounded bg-slate-800 text-slate-400 font-mono">
+              <span className="text-xs px-2 py-0.5 rounded bg-muted text-muted-foreground font-mono">
                 {rollup?.campuses?.length || 0} Registered
               </span>
             </div>
@@ -277,23 +277,23 @@ export default function MultiCampusGovernancePage() {
                     onClick={() => selectCampus(c)}
                     className={`p-4 rounded-xl border cursor-pointer transition relative ${
                       isSelected
-                        ? "bg-slate-900 border-emerald-500 shadow-md shadow-emerald-500/10 ring-1 ring-emerald-500/50"
-                        : "bg-slate-900/40 border-slate-800/80 hover:bg-slate-900/70 hover:border-slate-800"
+                        ? "bg-card border-emerald-500 shadow-md shadow-emerald-500/10 ring-1 ring-emerald-500/50"
+                        : "bg-card/40 border-border/80 hover:bg-card/70 hover:border-border"
                     }`}
                   >
                     <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold text-slate-200">{c.campusName}</span>
-                      <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-800 text-emerald-400 font-semibold border border-slate-800">
+                      <span className="text-xs font-bold text-foreground">{c.campusName}</span>
+                      <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-muted text-emerald-400 font-semibold border border-border">
                         {c.campusCode}
                       </span>
                     </div>
 
-                    <div className="mt-2 text-xs text-slate-400 flex items-center justify-between">
+                    <div className="mt-2 text-xs text-muted-foreground flex items-center justify-between">
                       <span>Dean: {c.deanEmail}</span>
                       <span className="font-mono text-emerald-400 font-bold">{c.complianceScore}%</span>
                     </div>
 
-                    <div className="mt-2 text-[11px] text-slate-400 flex items-center justify-between font-mono">
+                    <div className="mt-2 text-[11px] text-muted-foreground flex items-center justify-between font-mono">
                       <span>Students: {c.studentCount.toLocaleString()}</span>
                       <span>Tier: {c.accreditationTier}</span>
                     </div>
@@ -305,12 +305,12 @@ export default function MultiCampusGovernancePage() {
 
           {/* Right Column: Cryptographic Audit Ledger (8 cols) */}
           <div className="lg:col-span-8 space-y-4">
-            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800 pb-3">
+            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border pb-3">
               <div>
-                <h2 className="text-sm font-bold text-slate-200">
+                <h2 className="text-sm font-bold text-foreground">
                   {selectedCampus ? `${selectedCampus.campusName} Compliance Records` : "Campus Compliance Records"}
                 </h2>
-                <p className="text-xs text-slate-400">
+                <p className="text-xs text-muted-foreground">
                   Verified compliance records certified by Academic Leadership
                 </p>
               </div>
@@ -349,12 +349,12 @@ export default function MultiCampusGovernancePage() {
                   <span className="text-base">{verification.isTamperFree ? "✅" : "❌"}</span>
                   <div>
                     <span className="font-bold">STATUS: {verification.status}</span>
-                    <span className="ml-2 text-slate-400">
+                    <span className="ml-2 text-muted-foreground">
                       ({verification.totalBlocksVerified} blocks verified across chain)
                     </span>
                   </div>
                 </div>
-                <div className="text-[10px] text-slate-400">
+                <div className="text-[10px] text-muted-foreground">
                   Verified: {new Date(verification.verifiedAt).toLocaleTimeString()}
                 </div>
               </div>
@@ -363,41 +363,41 @@ export default function MultiCampusGovernancePage() {
             {/* Block Chain Timeline */}
             <div className="space-y-3 max-h-[600px] overflow-y-auto pr-1">
               {ledgerBlocks.length === 0 ? (
-                <div className="p-8 text-center border border-dashed border-slate-800 rounded-2xl bg-slate-900/30 text-slate-400 text-xs">
+                <div className="p-8 text-center border border-dashed border-border rounded-2xl bg-card/30 text-muted-foreground text-xs">
                   No audit blocks recorded for this campus.
                 </div>
               ) : (
                 ledgerBlocks.map((b) => (
                   <div
                     key={b.id}
-                    className="p-4 rounded-xl border border-slate-800 bg-slate-900/60 space-y-2.5 relative"
+                    className="p-4 rounded-xl border border-border bg-card/60 space-y-2.5 relative"
                   >
                     <div className="flex items-center justify-between text-xs">
                       <div className="flex items-center space-x-2">
-                        <span className="px-2 py-0.5 rounded font-mono font-bold bg-slate-800 text-cyan-300 border border-slate-800">
+                        <span className="px-2 py-0.5 rounded font-mono font-bold bg-muted text-cyan-300 border border-border">
                           #{b.blockIndex}
                         </span>
                         <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-indigo-950 text-indigo-300 border border-indigo-700/50">
                           {b.eventType}
                         </span>
-                        <span className="text-slate-400 text-xs">by {b.actorEmail}</span>
+                        <span className="text-muted-foreground text-xs">by {b.actorEmail}</span>
                       </div>
-                      <span className="text-[11px] text-slate-400 font-mono">
+                      <span className="text-[11px] text-muted-foreground font-mono">
                         {new Date(b.createdAt).toLocaleString()}
                       </span>
                     </div>
 
-                    <p className="text-xs text-slate-400">{b.notes}</p>
+                    <p className="text-xs text-muted-foreground">{b.notes}</p>
 
                     {/* Cryptographic Hashes Bar */}
-                    <div className="pt-2 border-t border-slate-800/80 grid grid-cols-1 md:grid-cols-2 gap-2 text-[10px] font-mono text-slate-400">
+                    <div className="pt-2 border-t border-border/80 grid grid-cols-1 md:grid-cols-2 gap-2 text-[10px] font-mono text-muted-foreground">
                       <div className="truncate">
-                        <span className="text-slate-400">Block Hash: </span>
+                        <span className="text-muted-foreground">Block Hash: </span>
                         <span className="text-emerald-400">{b.blockHash}</span>
                       </div>
                       <div className="truncate">
-                        <span className="text-slate-400">Prev Hash: </span>
-                        <span className="text-slate-400">{b.previousBlockHash}</span>
+                        <span className="text-muted-foreground">Prev Hash: </span>
+                        <span className="text-muted-foreground">{b.previousBlockHash}</span>
                       </div>
                     </div>
                   </div>
@@ -410,15 +410,15 @@ export default function MultiCampusGovernancePage() {
 
       {/* Append Block Modal */}
       {showAppendModal && (
-        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-              <h3 className="text-sm font-bold text-slate-200">
+        <div className="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-card border border-border rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl">
+            <div className="flex items-center justify-between border-b border-border pb-3">
+              <h3 className="text-sm font-bold text-foreground">
                 Certify Audit Block: {selectedCampus?.campusName}
               </h3>
               <button
                 onClick={() => setShowAppendModal(false)}
-                className="text-slate-400 hover:text-slate-200 text-sm font-bold"
+                className="text-muted-foreground hover:text-foreground text-sm font-bold"
               >
                 ✕
               </button>
@@ -426,22 +426,22 @@ export default function MultiCampusGovernancePage() {
 
             <form onSubmit={handleAppendBlock} className="space-y-3 text-xs">
               <div>
-                <label className="block text-slate-400 mb-1">Actor Email</label>
+                <label className="block text-muted-foreground mb-1">Actor Email</label>
                 <input
                   type="email"
                   value={newActorEmail}
                   onChange={(e) => setNewActorEmail(e.target.value)}
                   required
-                  className="w-full bg-slate-950 text-slate-200 p-2.5 rounded-lg border border-slate-800 focus:outline-none focus:ring-1 focus:ring-cyan-500"
+                  className="w-full bg-background text-foreground p-2.5 rounded-lg border border-border focus:outline-none focus:ring-1 focus:ring-cyan-500"
                 />
               </div>
 
               <div>
-                <label className="block text-slate-400 mb-1">Actor Role</label>
+                <label className="block text-muted-foreground mb-1">Actor Role</label>
                 <select
                   value={newActorRole}
                   onChange={(e) => setNewActorRole(e.target.value)}
-                  className="w-full bg-slate-950 text-slate-200 p-2.5 rounded-lg border border-slate-800 focus:outline-none focus:ring-1 focus:ring-cyan-500"
+                  className="w-full bg-background text-foreground p-2.5 rounded-lg border border-border focus:outline-none focus:ring-1 focus:ring-cyan-500"
                 >
                   <option value="AcademicDean">Academic Dean</option>
                   <option value="CampusProvost">Campus Provost</option>
@@ -451,11 +451,11 @@ export default function MultiCampusGovernancePage() {
               </div>
 
               <div>
-                <label className="block text-slate-400 mb-1">Event Type</label>
+                <label className="block text-muted-foreground mb-1">Event Type</label>
                 <select
                   value={newEventType}
                   onChange={(e) => setNewEventType(e.target.value)}
-                  className="w-full bg-slate-950 text-slate-200 p-2.5 rounded-lg border border-slate-800 focus:outline-none focus:ring-1 focus:ring-cyan-500"
+                  className="w-full bg-background text-foreground p-2.5 rounded-lg border border-border focus:outline-none focus:ring-1 focus:ring-cyan-500"
                 >
                   <option value="GradeCertification">Grade Certification</option>
                   <option value="ProctoringAnomalyOverride">Proctoring Anomaly Override</option>
@@ -466,13 +466,13 @@ export default function MultiCampusGovernancePage() {
               </div>
 
               <div>
-                <label className="block text-slate-400 mb-1">Compliance Notes & Rationale</label>
+                <label className="block text-muted-foreground mb-1">Compliance Notes & Rationale</label>
                 <textarea
                   value={newNotes}
                   onChange={(e) => setNewNotes(e.target.value)}
                   required
                   rows={3}
-                  className="w-full bg-slate-950 text-slate-200 p-2.5 rounded-lg border border-slate-800 focus:outline-none focus:ring-1 focus:ring-cyan-500 resize-none"
+                  className="w-full bg-background text-foreground p-2.5 rounded-lg border border-border focus:outline-none focus:ring-1 focus:ring-cyan-500 resize-none"
                 />
               </div>
 
@@ -480,7 +480,7 @@ export default function MultiCampusGovernancePage() {
                 <button
                   type="button"
                   onClick={() => setShowAppendModal(false)}
-                  className="px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 font-semibold"
+                  className="px-4 py-2 rounded-lg bg-muted hover:bg-slate-700 text-muted-foreground font-semibold"
                 >
                   Cancel
                 </button>

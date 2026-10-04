@@ -232,7 +232,7 @@ export default function ProctoringHUD({
 
           <div>
             <div className="flex items-center gap-2">
-              <span className="font-semibold text-xs tracking-wider uppercase text-zinc-200">
+              <span className="font-semibold text-xs tracking-wider uppercase text-foreground">
                 Integrity Monitor
               </span>
               <span
@@ -247,7 +247,7 @@ export default function ProctoringHUD({
                 {isDisqualified ? "DISQUALIFIED" : riskLevel}
               </span>
             </div>
-            <p className="text-[11px] text-zinc-400">
+            <p className="text-[11px] text-muted-foreground">
               Session Integrity Active (Focus, Tab, Clipboard)
             </p>
           </div>
@@ -264,7 +264,7 @@ export default function ProctoringHUD({
             <span className="text-[10px] uppercase tracking-wider text-zinc-400 block">
               Integrity Score
             </span>
-            <span className="text-lg font-black tracking-tight text-white">
+            <span className="text-lg font-black tracking-tight text-foreground">
               {integrityScore}%
             </span>
           </div>
@@ -273,7 +273,7 @@ export default function ProctoringHUD({
             <span className="text-[10px] uppercase tracking-wider text-zinc-400 block">
               Notices
             </span>
-            <span className="text-sm font-semibold text-zinc-300">
+            <span className="text-sm font-semibold text-foreground">
               {totalViolations} logged
             </span>
           </div>
@@ -282,7 +282,7 @@ export default function ProctoringHUD({
           <button
             onClick={toggleFullscreen}
             title={isFullscreen ? "Exit Fullscreen" : "Enter Exam Fullscreen"}
-            className="p-1.5 rounded-lg bg-zinc-800/80 hover:bg-zinc-700 text-zinc-300 hover:text-white border border-zinc-700 transition-colors"
+            className="p-1.5 rounded-lg bg-card hover:bg-muted text-muted-foreground hover:text-foreground border border-border transition-colors"
           >
             {isFullscreen ? (
               <Minimize2 className="w-4 h-4 text-emerald-400" />
@@ -294,9 +294,9 @@ export default function ProctoringHUD({
           {/* Expand Ledger */}
           <button
             onClick={() => setIsExpanded(!isExpanded)}
-            className="flex items-center gap-1 px-2.5 py-1 text-xs rounded-lg bg-zinc-800/80 hover:bg-zinc-700 text-zinc-300 hover:text-white border border-zinc-700 transition-colors"
+            className="flex items-center gap-1 px-2.5 py-1 text-xs rounded-lg bg-card hover:bg-muted text-muted-foreground hover:text-foreground border border-border transition-colors"
           >
-            <Activity className="w-3.5 h-3.5 text-zinc-400" />
+            <Activity className="w-3.5 h-3.5 text-muted-foreground" />
             <span>Activity Log</span>
             {isExpanded ? (
               <ChevronUp className="w-3.5 h-3.5" />
@@ -309,13 +309,13 @@ export default function ProctoringHUD({
 
       {/* Expandable Incident Ledger */}
       {isExpanded && (
-        <div className="mt-2 p-3 rounded-xl bg-zinc-900/90 border border-zinc-800 text-xs">
-          <div className="flex items-center justify-between pb-2 mb-2 border-b border-zinc-800 text-zinc-400">
+        <div className="mt-2 p-3 rounded-xl bg-card border border-border text-xs">
+          <div className="flex items-center justify-between pb-2 mb-2 border-b border-border text-muted-foreground">
             <span className="flex items-center gap-1.5 font-medium">
               <History className="w-3.5 h-3.5 text-indigo-400" />
               Session Activity History ({incidents.length})
             </span>
-            <span className="text-[10px] text-zinc-500">
+            <span className="text-[10px] text-muted-foreground">
               Real-time activity log
             </span>
           </div>
@@ -345,14 +345,14 @@ export default function ProctoringHUD({
                     >
                       {inc.severity}
                     </span>
-                    <span className="text-zinc-200 font-mono font-medium">
+                    <span className="text-foreground font-mono font-medium">
                       {inc.eventType}
                     </span>
-                    <span className="text-zinc-400 truncate max-w-xs">
+                    <span className="text-muted-foreground truncate max-w-xs">
                       {inc.message}
                     </span>
                   </div>
-                  <span className="text-zinc-500 text-[10px] font-mono">
+                  <span className="text-muted-foreground text-[10px] font-mono">
                     {inc.timestamp}
                   </span>
                 </div>

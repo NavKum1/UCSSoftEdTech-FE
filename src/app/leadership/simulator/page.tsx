@@ -237,9 +237,9 @@ export default function ExecutiveLeadershipSimulatorPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-200 flex flex-col font-sans selection:bg-indigo-500/30">
+    <div className="min-h-screen bg-background text-foreground flex flex-col font-sans selection:bg-indigo-500/30">
       {/* Top Header */}
-      <header className="border-b border-slate-800 bg-slate-900/60 backdrop-blur-md sticky top-0 z-40 px-6 py-4">
+      <header className="border-b border-border bg-card/60 backdrop-blur-md sticky top-0 z-40 px-6 py-4">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="flex items-center space-x-3">
             <div className="h-9 w-9 rounded-lg bg-gradient-to-tr from-indigo-600 via-indigo-500 to-purple-400 flex items-center justify-center font-bold text-slate-950 shadow-lg shadow-indigo-500/20">
@@ -255,24 +255,24 @@ export default function ExecutiveLeadershipSimulatorPage() {
             </div>
           </div>
 
-          <nav className="flex items-center space-x-6 text-sm font-medium text-slate-400">
+          <nav className="flex items-center space-x-6 text-sm font-medium text-muted-foreground">
             <Link href="/leadership/simulator" className="text-indigo-400 font-semibold flex items-center space-x-1.5">
               <span>👔</span>
               <span>Staff Simulator</span>
             </Link>
-            <Link href="/passport" className="hover:text-slate-200 transition-colors flex items-center space-x-1.5">
+            <Link href="/passport" className="hover:text-foreground transition-colors flex items-center space-x-1.5">
               <span>🪪</span>
               <span>Skill Passport</span>
             </Link>
-            <Link href="/daily/incident" className="hover:text-slate-200 transition-colors flex items-center space-x-1.5">
+            <Link href="/daily/incident" className="hover:text-foreground transition-colors flex items-center space-x-1.5">
               <span>🚨</span>
               <span>Incident Kata</span>
             </Link>
-            <Link href="/daily/review" className="hover:text-slate-200 transition-colors flex items-center space-x-1.5">
+            <Link href="/daily/review" className="hover:text-foreground transition-colors flex items-center space-x-1.5">
               <span>🔍</span>
               <span>PR Dojo</span>
             </Link>
-            <Link href="/guilds/battles" className="hover:text-slate-200 transition-colors flex items-center space-x-1.5">
+            <Link href="/guilds/battles" className="hover:text-foreground transition-colors flex items-center space-x-1.5">
               <span>⚔️</span>
               <span>Guild Battles</span>
             </Link>
@@ -291,7 +291,7 @@ export default function ExecutiveLeadershipSimulatorPage() {
         {loading && (
           <div className="flex flex-col items-center justify-center py-20 space-y-4">
             <div className="w-12 h-12 border-4 border-indigo-500/20 border-t-indigo-500 rounded-full animate-spin"></div>
-            <p className="text-sm font-mono text-slate-400">Loading executive simulation scenarios...</p>
+            <p className="text-sm font-mono text-muted-foreground">Loading executive simulation scenarios...</p>
           </div>
         )}
 
@@ -302,7 +302,7 @@ export default function ExecutiveLeadershipSimulatorPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <h1 className="text-2xl font-black text-white tracking-tight">Executive Staff & Tech Lead Management Simulator</h1>
-                  <p className="text-xs text-slate-400 mt-1">
+                  <p className="text-xs text-muted-foreground mt-1">
                     Defend post-mortems in front of skeptical C-suite stakeholders, arbitrate cross-squad architecture deadlocks, and defend your Staff promotion case.
                   </p>
                 </div>
@@ -327,7 +327,7 @@ export default function ExecutiveLeadershipSimulatorPage() {
                       className={`text-left p-4 rounded-xl border transition-all flex flex-col justify-between ${
                         isSelected
                           ? "bg-indigo-950/40 border-indigo-500 shadow-lg shadow-indigo-500/10"
-                          : "bg-slate-900/60 border-slate-800 hover:border-slate-800"
+                          : "bg-card/60 border-border hover:border-border"
                       }`}
                     >
                       <div>
@@ -335,11 +335,11 @@ export default function ExecutiveLeadershipSimulatorPage() {
                           <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
                             {sc.targetLevel}
                           </span>
-                          <span className="text-[10px] text-slate-400 font-mono">{sc.scenarioType}</span>
+                          <span className="text-[10px] text-muted-foreground font-mono">{sc.scenarioType}</span>
                         </div>
-                        <h3 className="font-bold text-sm text-slate-200 leading-snug line-clamp-2">{sc.title}</h3>
+                        <h3 className="font-bold text-sm text-foreground leading-snug line-clamp-2">{sc.title}</h3>
                       </div>
-                      <p className="text-[11px] text-slate-400 mt-2 line-clamp-2">{sc.contextBackground}</p>
+                      <p className="text-[11px] text-muted-foreground mt-2 line-clamp-2">{sc.contextBackground}</p>
                     </button>
                   );
                 })}
@@ -349,7 +349,7 @@ export default function ExecutiveLeadershipSimulatorPage() {
             {/* Promotion Dossier Modal (If Generated) */}
             {promotionDossier && (
               <div className="bg-gradient-to-br from-slate-900 via-slate-900 to-purple-950/30 border border-purple-500/40 rounded-2xl p-6 shadow-2xl space-y-4 animate-fadeIn">
-                <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+                <div className="flex items-center justify-between pb-3 border-b border-border">
                   <div className="flex items-center space-x-3">
                     <span className="text-2xl">🏛️</span>
                     <div>
@@ -365,33 +365,33 @@ export default function ExecutiveLeadershipSimulatorPage() {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                  <div className="bg-slate-950/80 border border-slate-800 rounded-xl p-3 text-center">
+                  <div className="bg-background/80 border border-border rounded-xl p-3 text-center">
                     <div className="text-2xl font-black text-indigo-400">{promotionDossier.ambiguityHandlingScore}%</div>
-                    <div className="text-[10px] uppercase tracking-wider text-slate-400 font-bold mt-0.5">
+                    <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold mt-0.5">
                       Ambiguity Handling
                     </div>
                   </div>
-                  <div className="bg-slate-950/80 border border-slate-800 rounded-xl p-3 text-center">
+                  <div className="bg-background/80 border border-border rounded-xl p-3 text-center">
                     <div className="text-2xl font-black text-purple-400">{promotionDossier.orgInfluenceScore}%</div>
-                    <div className="text-[10px] uppercase tracking-wider text-slate-400 font-bold mt-0.5">
+                    <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold mt-0.5">
                       Org Influence (3+ Squads)
                     </div>
                   </div>
-                  <div className="bg-slate-950/80 border border-slate-800 rounded-xl p-3 text-center">
+                  <div className="bg-background/80 border border-border rounded-xl p-3 text-center">
                     <div className="text-2xl font-black text-cyan-400">{promotionDossier.technicalVisionScore}%</div>
-                    <div className="text-[10px] uppercase tracking-wider text-slate-400 font-bold mt-0.5">
+                    <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold mt-0.5">
                       Technical Vision Depth
                     </div>
                   </div>
-                  <div className="bg-slate-950/80 border border-slate-800 rounded-xl p-3 text-center">
+                  <div className="bg-background/80 border border-border rounded-xl p-3 text-center">
                     <div className="text-2xl font-black text-emerald-400">{promotionDossier.overallDefenseScore}%</div>
-                    <div className="text-[10px] uppercase tracking-wider text-slate-400 font-bold mt-0.5">
+                    <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold mt-0.5">
                       Overall Committee Score
                     </div>
                   </div>
                 </div>
 
-                <p className="text-xs text-slate-400 leading-relaxed bg-slate-950/60 p-3 rounded-lg border border-slate-800">
+                <p className="text-xs text-muted-foreground leading-relaxed bg-background/60 p-3 rounded-lg border border-border">
                   <strong className="text-purple-300 font-bold">Committee Feedback: </strong>
                   {promotionDossier.promotionCommitteeFeedback}
                 </p>
@@ -399,7 +399,7 @@ export default function ExecutiveLeadershipSimulatorPage() {
                 <div className="flex justify-end">
                   <button
                     onClick={() => setPromotionDossier(null)}
-                    className="text-xs text-slate-400 hover:text-white font-semibold"
+                    className="text-xs text-muted-foreground hover:text-white font-semibold"
                   >
                     Dismiss Dossier
                   </button>
@@ -413,7 +413,7 @@ export default function ExecutiveLeadershipSimulatorPage() {
                 {/* Left Column: Stakeholder Personas & Rubric */}
                 <div className="space-y-6">
                   {/* Stakeholders Card */}
-                  <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-5 space-y-4">
+                  <div className="bg-card/60 border border-border rounded-xl p-5 space-y-4">
                     <h3 className="font-bold text-sm text-white flex items-center space-x-2">
                       <span>👥 Active Executive Stakeholders</span>
                     </h3>
@@ -421,17 +421,17 @@ export default function ExecutiveLeadershipSimulatorPage() {
                       {selectedScenario.stakeholders.map((sh) => (
                         <div
                           key={sh.code}
-                          className="bg-slate-950/80 border border-slate-800/80 rounded-lg p-3 space-y-1.5 shadow-inner"
+                          className="bg-background/80 border border-border/80 rounded-lg p-3 space-y-1.5 shadow-inner"
                         >
                           <div className="flex items-center justify-between">
-                            <h4 className="text-xs font-bold text-slate-200">{sh.name}</h4>
-                            <span className="text-[10px] font-semibold px-2 py-0.5 rounded bg-slate-800 text-indigo-300">
+                            <h4 className="text-xs font-bold text-foreground">{sh.name}</h4>
+                            <span className="text-[10px] font-semibold px-2 py-0.5 rounded bg-muted text-indigo-300">
                               {sh.role}
                             </span>
                           </div>
                           <p className="text-[11px] text-amber-400/90 font-medium">Stance: {sh.stance}</p>
-                          <p className="text-[11px] text-slate-400 leading-relaxed">
-                            <strong className="text-slate-400">Concern: </strong>
+                          <p className="text-[11px] text-muted-foreground leading-relaxed">
+                            <strong className="text-muted-foreground">Concern: </strong>
                             {sh.primaryConcern}
                           </p>
                         </div>
@@ -440,22 +440,22 @@ export default function ExecutiveLeadershipSimulatorPage() {
                   </div>
 
                   {/* Rubric Criteria Card */}
-                  <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-5 space-y-3">
+                  <div className="bg-card/60 border border-border rounded-xl p-5 space-y-3">
                     <h3 className="font-bold text-sm text-white flex items-center space-x-2">
                       <span>🎯 Staff Evaluation Rubric</span>
                     </h3>
-                    <div className="text-xs space-y-2.5 text-slate-400">
+                    <div className="text-xs space-y-2.5 text-muted-foreground">
                       <div>
                         <strong className="text-indigo-400 block mb-0.5">Executive Presence:</strong>
-                        <p className="text-[11px] text-slate-400">{selectedScenario.rubric.executivePresence}</p>
+                        <p className="text-[11px] text-muted-foreground">{selectedScenario.rubric.executivePresence}</p>
                       </div>
                       <div>
                         <strong className="text-purple-400 block mb-0.5">Blameless RCA Depth:</strong>
-                        <p className="text-[11px] text-slate-400">{selectedScenario.rubric.blamelessRca}</p>
+                        <p className="text-[11px] text-muted-foreground">{selectedScenario.rubric.blamelessRca}</p>
                       </div>
                       <div>
                         <strong className="text-emerald-400 block mb-0.5">Stakeholder Alignment:</strong>
-                        <p className="text-[11px] text-slate-400">{selectedScenario.rubric.stakeholderAlignment}</p>
+                        <p className="text-[11px] text-muted-foreground">{selectedScenario.rubric.stakeholderAlignment}</p>
                       </div>
                     </div>
                   </div>
@@ -464,11 +464,11 @@ export default function ExecutiveLeadershipSimulatorPage() {
                 {/* Right Column: Dialogue Stream & Response Editor */}
                 <div className="lg:col-span-2 space-y-6">
                   {/* Dialogue Stream */}
-                  <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-5 space-y-4">
-                    <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+                  <div className="bg-card/60 border border-border rounded-xl p-5 space-y-4">
+                    <div className="flex items-center justify-between pb-3 border-b border-border">
                       <div>
                         <h2 className="text-base font-bold text-white">{selectedScenario.title}</h2>
-                        <span className="text-xs text-slate-400">
+                        <span className="text-xs text-muted-foreground">
                           Turn {session.turnsCompleted} of {session.maxTurns} | Status: {session.staffReadinessTier}
                         </span>
                       </div>
@@ -485,15 +485,15 @@ export default function ExecutiveLeadershipSimulatorPage() {
                             className={`flex flex-col ${isCandidate ? "items-end" : "items-start"}`}
                           >
                             <div className="flex items-center space-x-2 mb-1">
-                              <span className="text-[11px] font-bold text-slate-400">{item.speaker}</span>
-                              <span className="text-[10px] text-slate-400 font-mono">{item.role}</span>
-                              <span className="text-[10px] text-slate-400 font-mono">{item.timestamp}</span>
+                              <span className="text-[11px] font-bold text-muted-foreground">{item.speaker}</span>
+                              <span className="text-[10px] text-muted-foreground font-mono">{item.role}</span>
+                              <span className="text-[10px] text-muted-foreground font-mono">{item.timestamp}</span>
                             </div>
                             <div
                               className={`max-w-[85%] rounded-2xl p-4 text-xs leading-relaxed shadow-md ${
                                 isCandidate
                                   ? "bg-indigo-600 text-white rounded-tr-none"
-                                  : "bg-slate-950 border border-slate-800 text-slate-200 rounded-tl-none"
+                                  : "bg-background border border-border text-foreground rounded-tl-none"
                               }`}
                             >
                               {item.message}
@@ -516,9 +516,9 @@ export default function ExecutiveLeadershipSimulatorPage() {
 
                     {/* Response Console */}
                     {session.turnsCompleted < session.maxTurns ? (
-                      <div className="pt-4 border-t border-slate-800 space-y-3">
+                      <div className="pt-4 border-t border-border space-y-3">
                         <div className="flex flex-wrap items-center gap-2">
-                          <span className="text-[11px] font-bold text-slate-400">Strategy Presets:</span>
+                          <span className="text-[11px] font-bold text-muted-foreground">Strategy Presets:</span>
                           <button
                             onClick={() => applyResponsePreset("blameless")}
                             className="px-2.5 py-1 rounded-md text-[10px] font-semibold bg-purple-500/20 text-purple-300 border border-purple-500/30 hover:bg-purple-500/30 transition-all"
@@ -544,11 +544,11 @@ export default function ExecutiveLeadershipSimulatorPage() {
                           value={candidateInput}
                           onChange={(e) => setCandidateInput(e.target.value)}
                           placeholder="Formulate your Staff+ response addressing stakeholder trade-offs, blameless architecture, and concrete action items..."
-                          className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-slate-200 placeholder:text-slate-400 focus:outline-none focus:border-indigo-500 transition-all font-mono leading-relaxed"
+                          className="w-full bg-background border border-border rounded-xl p-3 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-indigo-500 transition-all font-mono leading-relaxed"
                         ></textarea>
 
                         <div className="flex items-center justify-between">
-                          <span className="text-[11px] text-slate-400 font-mono">
+                          <span className="text-[11px] text-muted-foreground font-mono">
                             Press Submit to progress simulation dialogue
                           </span>
                           <button
@@ -574,11 +574,11 @@ export default function ExecutiveLeadershipSimulatorPage() {
 
                   {/* Evaluation Report Scorecard (If Finalized) */}
                   {evaluationReport && (
-                    <div className="bg-slate-900/80 border border-slate-800 rounded-xl p-6 space-y-5 animate-fadeIn shadow-2xl">
-                      <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+                    <div className="bg-card/80 border border-border rounded-xl p-6 space-y-5 animate-fadeIn shadow-2xl">
+                      <div className="flex items-center justify-between pb-3 border-b border-border">
                         <div>
                           <h3 className="text-base font-bold text-white">Staff Readiness Evaluation Scorecard</h3>
-                          <p className="text-xs text-slate-400">{evaluationReport.scenarioTitle}</p>
+                          <p className="text-xs text-muted-foreground">{evaluationReport.scenarioTitle}</p>
                         </div>
                         <span className="px-3 py-1 rounded-full text-xs font-black bg-indigo-500/20 text-indigo-300 border border-indigo-500/40 uppercase tracking-wider">
                           {evaluationReport.staffReadinessTier.replace(/_/g, " ")}
@@ -587,44 +587,44 @@ export default function ExecutiveLeadershipSimulatorPage() {
 
                       {/* Metric Quad */}
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                        <div className="bg-slate-950/80 border border-slate-800 rounded-lg p-3 text-center">
+                        <div className="bg-background/80 border border-border rounded-lg p-3 text-center">
                           <div className="text-xl font-black text-indigo-400">{evaluationReport.executivePresenceScore}%</div>
-                          <div className="text-[10px] uppercase text-slate-400 font-semibold mt-0.5">Presence</div>
+                          <div className="text-[10px] uppercase text-muted-foreground font-semibold mt-0.5">Presence</div>
                         </div>
-                        <div className="bg-slate-950/80 border border-slate-800 rounded-lg p-3 text-center">
+                        <div className="bg-background/80 border border-border rounded-lg p-3 text-center">
                           <div className="text-xl font-black text-emerald-400">{evaluationReport.stakeholderAlignmentScore}%</div>
-                          <div className="text-[10px] uppercase text-slate-400 font-semibold mt-0.5">Alignment</div>
+                          <div className="text-[10px] uppercase text-muted-foreground font-semibold mt-0.5">Alignment</div>
                         </div>
-                        <div className="bg-slate-950/80 border border-slate-800 rounded-lg p-3 text-center">
+                        <div className="bg-background/80 border border-border rounded-lg p-3 text-center">
                           <div className="text-xl font-black text-cyan-400">{evaluationReport.strategicClarityScore}%</div>
-                          <div className="text-[10px] uppercase text-slate-400 font-semibold mt-0.5">Clarity</div>
+                          <div className="text-[10px] uppercase text-muted-foreground font-semibold mt-0.5">Clarity</div>
                         </div>
-                        <div className="bg-slate-950/80 border border-slate-800 rounded-lg p-3 text-center">
+                        <div className="bg-background/80 border border-border rounded-lg p-3 text-center">
                           <div className="text-xl font-black text-purple-400">{evaluationReport.blamelessRcaScore}%</div>
-                          <div className="text-[10px] uppercase text-slate-400 font-semibold mt-0.5">Blameless RCA</div>
+                          <div className="text-[10px] uppercase text-muted-foreground font-semibold mt-0.5">Blameless RCA</div>
                         </div>
                       </div>
 
                       {/* Strengths & Blindspots */}
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
-                        <div className="bg-slate-950/60 border border-slate-800/80 rounded-lg p-3 space-y-1.5">
+                        <div className="bg-background/60 border border-border/80 rounded-lg p-3 space-y-1.5">
                           <span className="text-emerald-400 font-bold flex items-center space-x-1">
                             <span>✅</span>
                             <span>Key Executive Strengths</span>
                           </span>
-                          <ul className="list-disc list-inside space-y-1 text-slate-400 pl-1">
+                          <ul className="list-disc list-inside space-y-1 text-muted-foreground pl-1">
                             {evaluationReport.executiveStrengths.map((s, idx) => (
                               <li key={idx} className="leading-relaxed">{s}</li>
                             ))}
                           </ul>
                         </div>
 
-                        <div className="bg-slate-950/60 border border-slate-800/80 rounded-lg p-3 space-y-1.5">
+                        <div className="bg-background/60 border border-border/80 rounded-lg p-3 space-y-1.5">
                           <span className="text-amber-400 font-bold flex items-center space-x-1">
                             <span>🔍</span>
                             <span>Staff Competency Blindspots</span>
                           </span>
-                          <ul className="list-disc list-inside space-y-1 text-slate-400 pl-1">
+                          <ul className="list-disc list-inside space-y-1 text-muted-foreground pl-1">
                             {evaluationReport.competencyBlindspots.map((b, idx) => (
                               <li key={idx} className="leading-relaxed">{b}</li>
                             ))}

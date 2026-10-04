@@ -165,23 +165,23 @@ export default function PartnerBillingPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-950 text-slate-200 flex items-center justify-center">
+      <div className="min-h-screen bg-background text-foreground flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
           <div className="w-12 h-12 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
-          <p className="text-slate-400 font-mono text-sm">Loading Enterprise Usage &amp; Billing Ledger...</p>
+          <p className="text-muted-foreground font-mono text-sm">Loading Enterprise Usage &amp; Billing Ledger...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-200 flex flex-col font-sans">
+    <div className="min-h-screen bg-background text-foreground flex flex-col font-sans">
       {/* Top Navigation */}
-      <header className="border-b border-slate-800 bg-slate-900/80 backdrop-blur px-6 py-4 flex items-center justify-between sticky top-0 z-50">
+      <header className="border-b border-border bg-card/80 backdrop-blur px-6 py-4 flex items-center justify-between sticky top-0 z-50">
         <div className="flex items-center gap-3">
           <Link
             href="/partner/dashboard"
-            className="text-xs px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-400 font-mono transition"
+            className="text-xs px-2.5 py-1 rounded bg-muted hover:bg-slate-700 text-muted-foreground font-mono transition"
           >
             &larr; Back to Dashboard
           </Link>
@@ -203,7 +203,7 @@ export default function PartnerBillingPage() {
           )}
           <button
             onClick={handleGenerateInvoice}
-            className="px-3 py-1.5 rounded text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-800 transition"
+            className="px-3 py-1.5 rounded text-xs font-semibold bg-muted hover:bg-slate-700 text-foreground border border-border transition"
           >
             Generate Statement
           </button>
@@ -219,20 +219,20 @@ export default function PartnerBillingPage() {
       {/* Main Workspace */}
       <main className="flex-1 p-6 max-w-7xl mx-auto w-full space-y-6">
         {/* Plan Overview Card */}
-        <div className="bg-gradient-to-r from-slate-900 via-indigo-950/30 to-slate-900 border border-slate-800 rounded-xl p-6 shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+        <div className="bg-gradient-to-r from-slate-900 via-indigo-950/30 to-slate-900 border border-border rounded-xl p-6 shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
           <div>
             <div className="flex items-center gap-2.5">
               <span className="text-xs uppercase font-mono tracking-wider px-2 py-0.5 rounded bg-emerald-950 text-emerald-300 border border-emerald-800/60">
                 {subData?.status}
               </span>
-              <span className="text-xs text-slate-400 font-mono">
+              <span className="text-xs text-muted-foreground font-mono">
                 Cycle: {subData?.billingCycle}
               </span>
             </div>
             <h2 className="text-2xl font-bold text-white mt-1">
               {subData?.planTier} Tier
             </h2>
-            <p className="text-xs text-slate-400 mt-1 font-mono">
+            <p className="text-xs text-muted-foreground mt-1 font-mono">
               Current Period: {new Date(subData?.currentPeriodStart || '').toLocaleDateString()} &mdash; {new Date(subData?.currentPeriodEnd || '').toLocaleDateString()}
             </p>
           </div>
@@ -241,7 +241,7 @@ export default function PartnerBillingPage() {
             <span className="text-4xl font-extrabold text-white tracking-tight">
               {subData?.priceFormatted}
             </span>
-            <span className="text-xs text-slate-400 font-mono">
+            <span className="text-xs text-muted-foreground font-mono">
               (Includes All Quotas)
             </span>
           </div>
@@ -250,17 +250,17 @@ export default function PartnerBillingPage() {
         {/* 4 Usage Metering Gauges */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {/* 1. Seats */}
-          <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 flex flex-col justify-between">
+          <div className="bg-card border border-border rounded-xl p-4 flex flex-col justify-between">
             <div>
-              <div className="flex items-center justify-between text-xs text-slate-400 font-mono mb-2">
+              <div className="flex items-center justify-between text-xs text-muted-foreground font-mono mb-2">
                 <span>Active Seats</span>
                 <span className="text-indigo-400 font-semibold">{subData?.seats.utilizationPercent}%</span>
               </div>
               <div className="text-2xl font-bold text-white mb-2">
-                {subData?.seats.used} <span className="text-xs text-slate-400 font-normal">/ {subData?.seats.purchased} Seats</span>
+                {subData?.seats.used} <span className="text-xs text-muted-foreground font-normal">/ {subData?.seats.purchased} Seats</span>
               </div>
             </div>
-            <div className="w-full bg-slate-800 rounded-full h-2 overflow-hidden">
+            <div className="w-full bg-muted rounded-full h-2 overflow-hidden">
               <div
                 className="bg-indigo-500 h-full rounded-full transition-all"
                 style={{ width: `${Math.min(100, subData?.seats.utilizationPercent || 0)}%` }}
@@ -269,17 +269,17 @@ export default function PartnerBillingPage() {
           </div>
 
           {/* 2. Voice Minutes */}
-          <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 flex flex-col justify-between">
+          <div className="bg-card border border-border rounded-xl p-4 flex flex-col justify-between">
             <div>
-              <div className="flex items-center justify-between text-xs text-slate-400 font-mono mb-2">
+              <div className="flex items-center justify-between text-xs text-muted-foreground font-mono mb-2">
                 <span>Voice AI Quota</span>
                 <span className="text-cyan-400 font-semibold">{subData?.voiceMinutes.utilizationPercent}%</span>
               </div>
               <div className="text-2xl font-bold text-white mb-2">
-                {subData?.voiceMinutes.used} <span className="text-xs text-slate-400 font-normal">/ {subData?.voiceMinutes.monthlyQuota} Mins</span>
+                {subData?.voiceMinutes.used} <span className="text-xs text-muted-foreground font-normal">/ {subData?.voiceMinutes.monthlyQuota} Mins</span>
               </div>
             </div>
-            <div className="w-full bg-slate-800 rounded-full h-2 overflow-hidden">
+            <div className="w-full bg-muted rounded-full h-2 overflow-hidden">
               <div
                 className="bg-cyan-500 h-full rounded-full transition-all"
                 style={{ width: `${Math.min(100, subData?.voiceMinutes.utilizationPercent || 0)}%` }}
@@ -288,17 +288,17 @@ export default function PartnerBillingPage() {
           </div>
 
           {/* 3. Candidate Evaluations */}
-          <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 flex flex-col justify-between">
+          <div className="bg-card border border-border rounded-xl p-4 flex flex-col justify-between">
             <div>
-              <div className="flex items-center justify-between text-xs text-slate-400 font-mono mb-2">
+              <div className="flex items-center justify-between text-xs text-muted-foreground font-mono mb-2">
                 <span>Candidate Evals</span>
                 <span className="text-emerald-400 font-semibold">{subData?.candidateEvaluations.utilizationPercent}%</span>
               </div>
               <div className="text-2xl font-bold text-white mb-2">
-                {subData?.candidateEvaluations.used} <span className="text-xs text-slate-400 font-normal">/ {subData?.candidateEvaluations.monthlyQuota} Runs</span>
+                {subData?.candidateEvaluations.used} <span className="text-xs text-muted-foreground font-normal">/ {subData?.candidateEvaluations.monthlyQuota} Runs</span>
               </div>
             </div>
-            <div className="w-full bg-slate-800 rounded-full h-2 overflow-hidden">
+            <div className="w-full bg-muted rounded-full h-2 overflow-hidden">
               <div
                 className="bg-emerald-500 h-full rounded-full transition-all"
                 style={{ width: `${Math.min(100, subData?.candidateEvaluations.utilizationPercent || 0)}%` }}
@@ -307,17 +307,17 @@ export default function PartnerBillingPage() {
           </div>
 
           {/* 4. Video Storage */}
-          <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 flex flex-col justify-between">
+          <div className="bg-card border border-border rounded-xl p-4 flex flex-col justify-between">
             <div>
-              <div className="flex items-center justify-between text-xs text-slate-400 font-mono mb-2">
+              <div className="flex items-center justify-between text-xs text-muted-foreground font-mono mb-2">
                 <span>Proctor Video Storage</span>
                 <span className="text-amber-400 font-semibold">{subData?.videoStorage.utilizationPercent}%</span>
               </div>
               <div className="text-2xl font-bold text-white mb-2">
-                {subData?.videoStorage.usedGB} <span className="text-xs text-slate-400 font-normal">/ {subData?.videoStorage.quotaGB} GB</span>
+                {subData?.videoStorage.usedGB} <span className="text-xs text-muted-foreground font-normal">/ {subData?.videoStorage.quotaGB} GB</span>
               </div>
             </div>
-            <div className="w-full bg-slate-800 rounded-full h-2 overflow-hidden">
+            <div className="w-full bg-muted rounded-full h-2 overflow-hidden">
               <div
                 className="bg-amber-500 h-full rounded-full transition-all"
                 style={{ width: `${Math.min(100, subData?.videoStorage.utilizationPercent || 0)}%` }}
@@ -327,22 +327,22 @@ export default function PartnerBillingPage() {
         </div>
 
         {/* Invoices & Statements Table */}
-        <div className="bg-slate-900 border border-slate-800 rounded-xl p-6 shadow-xl">
+        <div className="bg-card border border-border rounded-xl p-6 shadow-xl">
           <div className="flex items-center justify-between mb-4">
             <div>
               <h3 className="text-base font-semibold text-white">Invoices &amp; Billing Statements</h3>
-              <p className="text-xs text-slate-400 font-mono mt-0.5">
+              <p className="text-xs text-muted-foreground font-mono mt-0.5">
                 Automated monthly statements with itemized usage overage breakdowns.
               </p>
             </div>
-            <span className="text-xs font-mono text-slate-400">
+            <span className="text-xs font-mono text-muted-foreground">
               {invoices.length} Total Statements
             </span>
           </div>
 
           {invoices.length === 0 ? (
-            <div className="text-center py-12 border border-dashed border-slate-800 rounded-lg">
-              <p className="text-sm text-slate-400 font-mono">No invoices generated yet.</p>
+            <div className="text-center py-12 border border-dashed border-border rounded-lg">
+              <p className="text-sm text-muted-foreground font-mono">No invoices generated yet.</p>
               <button
                 onClick={handleGenerateInvoice}
                 className="mt-3 px-3 py-1.5 text-xs font-semibold bg-indigo-600 hover:bg-indigo-500 text-white rounded transition"
@@ -354,7 +354,7 @@ export default function PartnerBillingPage() {
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs font-mono">
                 <thead>
-                  <tr className="border-b border-slate-800 text-slate-400">
+                  <tr className="border-b border-border text-muted-foreground">
                     <th className="pb-3 font-semibold">Invoice #</th>
                     <th className="pb-3 font-semibold">Billing Period</th>
                     <th className="pb-3 font-semibold">Issue Date</th>
@@ -365,10 +365,10 @@ export default function PartnerBillingPage() {
                 </thead>
                 <tbody className="divide-y divide-slate-800/60">
                   {invoices.map((inv) => (
-                    <tr key={inv.invoiceId} className="hover:bg-slate-800/40 transition">
+                    <tr key={inv.invoiceId} className="hover:bg-muted/40 transition">
                       <td className="py-3 font-bold text-white">{inv.invoiceNumber}</td>
-                      <td className="py-3 text-slate-400">{inv.billingPeriod}</td>
-                      <td className="py-3 text-slate-400">{new Date(inv.createdAt).toLocaleDateString()}</td>
+                      <td className="py-3 text-muted-foreground">{inv.billingPeriod}</td>
+                      <td className="py-3 text-muted-foreground">{new Date(inv.createdAt).toLocaleDateString()}</td>
                       <td className="py-3 text-emerald-400 font-bold">{inv.totalFormatted}</td>
                       <td className="py-3">
                         <span className="px-2 py-0.5 rounded text-[10px] bg-emerald-950 text-emerald-300 border border-emerald-800/60">
@@ -378,7 +378,7 @@ export default function PartnerBillingPage() {
                       <td className="py-3 text-right space-x-2">
                         <button
                           onClick={() => handleViewInvoice(inv.invoiceId)}
-                          className="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-indigo-400 font-medium transition"
+                          className="px-2.5 py-1 rounded bg-muted hover:bg-slate-700 text-indigo-400 font-medium transition"
                         >
                           View Line Items
                         </button>
@@ -386,7 +386,7 @@ export default function PartnerBillingPage() {
                           href={inv.pdfStorageUrl}
                           target="_blank"
                           rel="noreferrer"
-                          className="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-400 font-medium transition"
+                          className="px-2.5 py-1 rounded bg-muted hover:bg-slate-700 text-muted-foreground font-medium transition"
                         >
                           PDF
                         </a>
@@ -403,12 +403,12 @@ export default function PartnerBillingPage() {
       {/* Upgrade / Plan Change Modal */}
       {isUpgrading && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-slate-900 border border-slate-800 rounded-xl max-w-lg w-full p-6 shadow-2xl space-y-4">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+          <div className="bg-card border border-border rounded-xl max-w-lg w-full p-6 shadow-2xl space-y-4">
+            <div className="flex items-center justify-between border-b border-border pb-3">
               <h3 className="text-base font-bold text-white">Upgrade or Change Subscription Plan</h3>
               <button
                 onClick={() => setIsUpgrading(false)}
-                className="text-slate-400 hover:text-white text-sm"
+                className="text-muted-foreground hover:text-white text-sm"
               >
                 &times;
               </button>
@@ -416,11 +416,11 @@ export default function PartnerBillingPage() {
 
             <div className="space-y-3">
               <div>
-                <label className="text-xs text-slate-400 font-mono block mb-1">Select Tier</label>
+                <label className="text-xs text-muted-foreground font-mono block mb-1">Select Tier</label>
                 <select
                   value={selectedTier}
                   onChange={(e) => setSelectedTier(e.target.value)}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-xs text-white font-mono focus:border-indigo-500 outline-none"
+                  className="w-full bg-background border border-border rounded-lg p-2.5 text-xs text-white font-mono focus:border-indigo-500 outline-none"
                 >
                   <option value="UniversityStandard">
                     University Standard ({config.currency === "INR" ? "₹19,999/mo" : config.currency === "EUR" ? "€229/mo" : "$249/mo"} - 20 Seats, 1k Mins)
@@ -438,14 +438,14 @@ export default function PartnerBillingPage() {
               </div>
 
               <div>
-                <label className="text-xs text-slate-400 font-mono block mb-1">Billing Frequency</label>
+                <label className="text-xs text-muted-foreground font-mono block mb-1">Billing Frequency</label>
                 <div className="grid grid-cols-2 gap-2">
                   <button
                     onClick={() => setSelectedCycle('Monthly')}
                     className={`py-2 rounded-lg text-xs font-mono border transition ${
                       selectedCycle === 'Monthly'
                         ? 'bg-indigo-600 border-indigo-500 text-white'
-                        : 'bg-slate-950 border-slate-800 text-slate-400'
+                        : 'bg-background border-border text-muted-foreground'
                     }`}
                   >
                     Monthly Billing
@@ -455,7 +455,7 @@ export default function PartnerBillingPage() {
                     className={`py-2 rounded-lg text-xs font-mono border transition ${
                       selectedCycle === 'Annual'
                         ? 'bg-indigo-600 border-indigo-500 text-white'
-                        : 'bg-slate-950 border-slate-800 text-slate-400'
+                        : 'bg-background border-border text-muted-foreground'
                     }`}
                   >
                     Annual (20% Off)
@@ -464,10 +464,10 @@ export default function PartnerBillingPage() {
               </div>
             </div>
 
-            <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-800">
+            <div className="flex items-center justify-end gap-2 pt-3 border-t border-border">
               <button
                 onClick={() => setIsUpgrading(false)}
-                className="px-3 py-1.5 text-xs font-mono rounded bg-slate-800 hover:bg-slate-700 text-slate-400"
+                className="px-3 py-1.5 text-xs font-mono rounded bg-muted hover:bg-slate-700 text-muted-foreground"
               >
                 Cancel
               </button>
@@ -485,15 +485,15 @@ export default function PartnerBillingPage() {
       {/* Invoice Detail Modal */}
       {selectedInvoice && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-slate-900 border border-slate-800 rounded-xl max-w-xl w-full p-6 shadow-2xl space-y-4">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+          <div className="bg-card border border-border rounded-xl max-w-xl w-full p-6 shadow-2xl space-y-4">
+            <div className="flex items-center justify-between border-b border-border pb-3">
               <div>
                 <h3 className="text-base font-bold text-white">{selectedInvoice.invoiceNumber}</h3>
-                <p className="text-xs text-slate-400 font-mono">{selectedInvoice.billingPeriod}</p>
+                <p className="text-xs text-muted-foreground font-mono">{selectedInvoice.billingPeriod}</p>
               </div>
               <button
                 onClick={() => setSelectedInvoice(null)}
-                className="text-slate-400 hover:text-white text-sm"
+                className="text-muted-foreground hover:text-white text-sm"
               >
                 &times;
               </button>
@@ -501,10 +501,10 @@ export default function PartnerBillingPage() {
 
             <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
               {selectedInvoice.lineItems.map((item, idx) => (
-                <div key={idx} className="flex items-center justify-between p-2.5 rounded bg-slate-950 border border-slate-800/80 text-xs font-mono">
+                <div key={idx} className="flex items-center justify-between p-2.5 rounded bg-background border border-border/80 text-xs font-mono">
                   <div>
-                    <p className="text-slate-200 font-medium">{item.description}</p>
-                    <p className="text-slate-400 text-[10px]">Qty: {item.quantity}</p>
+                    <p className="text-foreground font-medium">{item.description}</p>
+                    <p className="text-muted-foreground text-[10px]">Qty: {item.quantity}</p>
                   </div>
                   <span className="text-white font-bold">
                     {config.symbol}{((item.totalCents / 100.0) * (config.currency === "INR" ? 80 : config.currency === "EUR" ? 0.92 : 1.0)).toFixed(2)}
@@ -513,16 +513,16 @@ export default function PartnerBillingPage() {
               ))}
             </div>
 
-            <div className="border-t border-slate-800 pt-3 space-y-1 text-xs font-mono">
-              <div className="flex justify-between text-slate-400">
+            <div className="border-t border-border pt-3 space-y-1 text-xs font-mono">
+              <div className="flex justify-between text-muted-foreground">
                 <span>Subtotal:</span>
                 <span>{selectedInvoice.subtotalFormatted}</span>
               </div>
-              <div className="flex justify-between text-slate-400">
+              <div className="flex justify-between text-muted-foreground">
                 <span>Estimated Tax (8%):</span>
                 <span>{selectedInvoice.taxFormatted}</span>
               </div>
-              <div className="flex justify-between text-base font-bold text-emerald-400 pt-1 border-t border-slate-800/60">
+              <div className="flex justify-between text-base font-bold text-emerald-400 pt-1 border-t border-border/60">
                 <span>Total Due:</span>
                 <span>{selectedInvoice.totalFormatted}</span>
               </div>
@@ -531,7 +531,7 @@ export default function PartnerBillingPage() {
             <div className="flex justify-end pt-2">
               <button
                 onClick={() => setSelectedInvoice(null)}
-                className="px-4 py-1.5 text-xs font-mono rounded bg-slate-800 hover:bg-slate-700 text-slate-200"
+                className="px-4 py-1.5 text-xs font-mono rounded bg-muted hover:bg-slate-700 text-foreground"
               >
                 Close Breakdown
               </button>

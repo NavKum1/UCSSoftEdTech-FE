@@ -167,10 +167,10 @@ END:VCALENDAR`;
 
   if (isLoadingMentors || !selectedMentor) {
     return (
-      <div className="min-h-screen bg-slate-950 text-slate-200 flex items-center justify-center font-sans">
+      <div className="min-h-screen bg-background text-foreground flex items-center justify-center font-sans">
         <div className="flex flex-col items-center gap-3">
           <div className="w-10 h-10 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin" />
-          <p className="text-sm text-slate-400">Loading Vetted Staff+ Mentors Roster...</p>
+          <p className="text-sm text-muted-foreground">Loading Vetted Staff+ Mentors Roster...</p>
           {bookingError && <p className="text-xs text-rose-400 max-w-md text-center">{bookingError}</p>}
         </div>
       </div>
@@ -182,9 +182,9 @@ END:VCALENDAR`;
   const netTakeHome = grossFee - statutoryTds;
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-200 font-sans pb-24">
+    <div className="min-h-screen bg-background text-foreground font-sans pb-24">
       {/* Hero Header */}
-      <section className="border-b border-slate-800/80 bg-gradient-to-b from-indigo-950/30 via-slate-900/40 to-slate-950 px-6 py-10">
+      <section className="border-b border-border/80 bg-gradient-to-b from-indigo-950/30 via-slate-900/40 to-slate-950 px-6 py-10">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div>
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-xs font-semibold uppercase tracking-wider mb-3">
@@ -194,22 +194,22 @@ END:VCALENDAR`;
             <h1 className="text-3xl sm:text-4xl font-black text-white tracking-tight">
               1-on-1 Staff &amp; Principal Mentor Office Hours
             </h1>
-            <p className="text-slate-400 text-sm sm:text-base mt-2 max-w-2xl">
+            <p className="text-muted-foreground text-sm sm:text-base mt-2 max-w-2xl">
               Book private 45-minute architectural defenses, incident war-room debriefs, and career coaching with verified Staff+ leaders from AWS, Stripe, Razorpay, and Cloudflare.
             </p>
           </div>
 
           <div className="flex items-center gap-3">
-            <div className="px-4 py-3 rounded-2xl bg-slate-900/80 border border-slate-800 backdrop-blur-md flex items-center gap-3">
+            <div className="px-4 py-3 rounded-2xl bg-card/80 border border-border backdrop-blur-md flex items-center gap-3">
               <ShieldCheck className="w-6 h-6 text-emerald-400" />
               <div>
-                <div className="text-xs font-bold text-slate-200">Edulexa Payout Engine</div>
-                <div className="text-[11px] text-slate-400">{config.tax.withholdingLabel}</div>
+                <div className="text-xs font-bold text-foreground">Edulexa Payout Engine</div>
+                <div className="text-[11px] text-muted-foreground">{config.tax.withholdingLabel}</div>
               </div>
             </div>
             <Link
               href="/dashboard"
-              className="px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-400 hover:text-white text-xs font-medium transition-colors"
+              className="px-4 py-2.5 rounded-xl bg-card hover:bg-muted border border-border text-muted-foreground hover:text-white text-xs font-medium transition-colors"
             >
               Back to Member 360
             </Link>
@@ -226,7 +226,7 @@ END:VCALENDAR`;
               <UserCheck className="w-5 h-5 text-indigo-400" />
               Select Your Staff+ Mentor
             </h2>
-            <span className="text-xs text-slate-400 font-mono">
+            <span className="text-xs text-muted-foreground font-mono">
               {mentors.length} Vetted Mentors Online
             </span>
           </div>
@@ -240,15 +240,15 @@ END:VCALENDAR`;
                   onClick={() => handleSelectMentor(m)}
                   className={`p-5 rounded-2xl border transition-all cursor-pointer ${
                     isSelected
-                      ? "bg-slate-900/90 border-indigo-500 shadow-xl shadow-indigo-500/10 ring-1 ring-indigo-500/50"
-                      : "bg-slate-900/40 border-slate-800/80 hover:border-slate-800 hover:bg-slate-900/70"
+                      ? "bg-card/90 border-indigo-500 shadow-xl shadow-indigo-500/10 ring-1 ring-indigo-500/50"
+                      : "bg-card/40 border-border/80 hover:border-border hover:bg-card/70"
                   }`}
                 >
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex items-start gap-4">
                       {/* Avatar Initials */}
                       <div className="w-13 h-13 rounded-2xl bg-gradient-to-tr from-indigo-600 via-purple-600 to-amber-500 p-0.5 shadow-md">
-                        <div className="w-full h-full bg-slate-950 rounded-[14px] flex items-center justify-center font-bold text-white text-base">
+                        <div className="w-full h-full bg-background rounded-[14px] flex items-center justify-center font-bold text-white text-base">
                           {m.name.split(" ").map((n) => n[0]).join("")}
                         </div>
                       </div>
@@ -262,7 +262,7 @@ END:VCALENDAR`;
                           </span>
                         </div>
                         <p className="text-xs text-indigo-300 font-medium">{m.roleTitle}</p>
-                        <p className="text-xs text-slate-400 font-mono mt-0.5">{m.company}</p>
+                        <p className="text-xs text-muted-foreground font-mono mt-0.5">{m.company}</p>
                       </div>
                     </div>
 
@@ -270,11 +270,11 @@ END:VCALENDAR`;
                       <div className="text-lg font-black text-white">
                         {formatCurrency(convertFromInr(m.ratePerSessionInr))}
                       </div>
-                      <div className="text-[11px] text-slate-400 font-mono">per 45m session</div>
+                      <div className="text-[11px] text-muted-foreground font-mono">per 45m session</div>
                     </div>
                   </div>
 
-                  <p className="text-xs text-slate-400 mt-3 line-clamp-2 leading-relaxed">
+                  <p className="text-xs text-muted-foreground mt-3 line-clamp-2 leading-relaxed">
                     {m.bio}
                   </p>
 
@@ -282,7 +282,7 @@ END:VCALENDAR`;
                     {m.specialties.map((spec) => (
                       <span
                         key={spec}
-                        className="text-[11px] px-2 py-0.5 rounded-md bg-slate-800/80 border border-slate-800/60 text-slate-400 font-mono"
+                        className="text-[11px] px-2 py-0.5 rounded-md bg-muted/80 border border-border/60 text-muted-foreground font-mono"
                       >
                         {spec}
                       </span>
@@ -290,12 +290,12 @@ END:VCALENDAR`;
                   </div>
 
                   {/* Slot Badges */}
-                  <div className="mt-4 pt-3 border-t border-slate-800/60 flex items-center justify-between text-xs text-slate-400">
+                  <div className="mt-4 pt-3 border-t border-border/60 flex items-center justify-between text-xs text-muted-foreground">
                     <span className="flex items-center gap-1.5 text-emerald-400 font-medium">
                       <Clock className="w-3.5 h-3.5" />
                       Next available: {m.availableSlots[0]}
                     </span>
-                    <span className="text-[11px] text-slate-400">{m.totalReviews} sessions completed</span>
+                    <span className="text-[11px] text-muted-foreground">{m.totalReviews} sessions completed</span>
                   </div>
                 </div>
               );
@@ -306,7 +306,7 @@ END:VCALENDAR`;
         {/* Right Column: Session Configuration & Statutory TDS Ledger (5 cols) */}
         <div className="lg:col-span-5 space-y-6">
           <div className="sticky top-24 space-y-6">
-            <div className="p-6 rounded-2xl bg-slate-900/90 border border-slate-800 shadow-2xl backdrop-blur-xl space-y-5">
+            <div className="p-6 rounded-2xl bg-card/90 border border-border shadow-2xl backdrop-blur-xl space-y-5">
               <h2 className="text-base font-bold text-white flex items-center gap-2">
                 <CalendarCheck className="w-5 h-5 text-indigo-400" />
                 Configure Session Details
@@ -317,21 +317,21 @@ END:VCALENDAR`;
                 <div>
                   <div className="text-[11px] text-indigo-400 font-mono uppercase">Assigned Mentor</div>
                   <div className="text-sm font-bold text-white">{selectedMentor.name}</div>
-                  <div className="text-xs text-slate-400">{selectedMentor.company}</div>
+                  <div className="text-xs text-muted-foreground">{selectedMentor.company}</div>
                 </div>
                 <div className="text-right">
                   <div className="text-xs font-mono text-emerald-400 font-bold">Verified Staff+</div>
-                  <div className="text-[10px] text-slate-400 font-mono">PAN: {selectedMentor.panNumber}</div>
+                  <div className="text-[10px] text-muted-foreground font-mono">PAN: {selectedMentor.panNumber}</div>
                 </div>
               </div>
 
               {/* Topic Select */}
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-slate-400">Defense &amp; Review Topic</label>
+                <label className="text-xs font-semibold text-muted-foreground">Defense &amp; Review Topic</label>
                 <select
                   value={sessionTopic}
                   onChange={(e) => setSessionTopic(e.target.value)}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-indigo-500"
+                  className="w-full bg-background border border-border rounded-xl px-3 py-2 text-xs text-foreground focus:outline-none focus:border-indigo-500"
                 >
                   <option value="Distributed Architecture & Consensus Mock Defense">
                     Distributed Architecture &amp; Consensus Mock Defense
@@ -353,7 +353,7 @@ END:VCALENDAR`;
 
               {/* Slot Select */}
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-slate-400">Available Office Hours Slot</label>
+                <label className="text-xs font-semibold text-muted-foreground">Available Office Hours Slot</label>
                 <div className="grid grid-cols-1 gap-2">
                   {selectedMentor.availableSlots.map((slot) => {
                     const isSlotSelected = selectedSlot === slot;
@@ -365,7 +365,7 @@ END:VCALENDAR`;
                         className={`px-3 py-2 rounded-xl text-left text-xs font-mono transition-all flex items-center justify-between ${
                           isSlotSelected
                             ? "bg-indigo-600/20 text-indigo-300 border border-indigo-500 font-semibold"
-                            : "bg-slate-950 border border-slate-800 text-slate-400 hover:text-slate-200 hover:border-slate-800"
+                            : "bg-background border border-border text-muted-foreground hover:text-foreground hover:border-border"
                         }`}
                       >
                         <span className="flex items-center gap-2">
@@ -382,49 +382,49 @@ END:VCALENDAR`;
               {/* Candidate Info */}
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1">
-                  <label className="text-[11px] font-semibold text-slate-400">Candidate Name</label>
+                  <label className="text-[11px] font-semibold text-muted-foreground">Candidate Name</label>
                   <input
                     type="text"
                     value={candidateName}
                     onChange={(e) => setCandidateName(e.target.value)}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500"
+                    className="w-full bg-background border border-border rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500"
                   />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-[11px] font-semibold text-slate-400">Candidate Email</label>
+                  <label className="text-[11px] font-semibold text-muted-foreground">Candidate Email</label>
                   <input
                     type="email"
                     value={candidateEmail}
                     onChange={(e) => setCandidateEmail(e.target.value)}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500"
+                    className="w-full bg-background border border-border rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500"
                   />
                 </div>
               </div>
 
               {/* Transparent Regional Statutory Financial Ledger */}
-              <div className="p-4 rounded-xl bg-slate-950 border border-slate-800/90 space-y-2.5">
+              <div className="p-4 rounded-xl bg-background border border-border/90 space-y-2.5">
                 <div className="text-[11px] font-mono uppercase text-indigo-400 font-semibold mb-1">
                   {config.tax.regimeTitle}
                 </div>
-                <div className="flex items-center justify-between text-xs text-slate-400">
-                  <span className="font-semibold text-slate-400">Candidate Session Fee:</span>
+                <div className="flex items-center justify-between text-xs text-muted-foreground">
+                  <span className="font-semibold text-muted-foreground">Candidate Session Fee:</span>
                   <span className="font-bold text-white font-mono">{formatCurrency(grossFee)}.00</span>
                 </div>
-                <div className="flex items-center justify-between text-xs text-slate-400">
-                  <span className="font-semibold text-slate-400">Gross Mentor Earning:</span>
-                  <span className="font-mono text-slate-200">{formatCurrency(grossFee)}.00</span>
+                <div className="flex items-center justify-between text-xs text-muted-foreground">
+                  <span className="font-semibold text-muted-foreground">Gross Mentor Earning:</span>
+                  <span className="font-mono text-foreground">{formatCurrency(grossFee)}.00</span>
                 </div>
                 <div className="flex items-center justify-between text-xs text-amber-400 bg-amber-500/10 px-2.5 py-1.5 rounded-lg border border-amber-500/20">
                   <span className="font-semibold">{config.tax.withholdingLabel}:</span>
                   <span className="font-mono font-bold">-{formatCurrency(statutoryTds)}.00</span>
                 </div>
-                <div className="pt-2 border-t border-slate-800 flex items-center justify-between text-xs">
+                <div className="pt-2 border-t border-border flex items-center justify-between text-xs">
                   <span className="font-bold text-emerald-400">Net Mentor Bank Payout ({config.tax.payoutRail}):</span>
                   <span className="font-black text-emerald-400 font-mono text-sm">
                     {formatCurrency(netTakeHome)}.00
                   </span>
                 </div>
-                <div className="text-[10px] text-slate-400 font-mono leading-tight">
+                <div className="text-[10px] text-muted-foreground font-mono leading-tight">
                   {config.tax.institutionLegalNotice}
                 </div>
               </div>
@@ -462,38 +462,38 @@ END:VCALENDAR`;
 
       {/* Confirmation Modal / Card */}
       {bookingResult && (
-        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4">
-          <div className="max-w-xl w-full bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-2xl space-y-6 animate-in fade-in zoom-in-95">
+        <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="max-w-xl w-full bg-card border border-border rounded-3xl p-6 sm:p-8 shadow-2xl space-y-6 animate-in fade-in zoom-in-95">
             <div className="flex items-center gap-4">
               <div className="w-12 h-12 rounded-2xl bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
                 <CheckCircle2 className="w-6 h-6" />
               </div>
               <div>
                 <h3 className="text-xl font-black text-white">Office Hours Confirmed!</h3>
-                <p className="text-xs text-slate-400 mt-0.5">
+                <p className="text-xs text-muted-foreground mt-0.5">
                   Meeting room initialized &amp; Edulexa {config.tax.regimeTitle} updated.
                 </p>
               </div>
             </div>
 
-            <div className="p-4 rounded-2xl bg-slate-950 border border-slate-800 space-y-3">
+            <div className="p-4 rounded-2xl bg-background border border-border space-y-3">
               <div className="flex items-center justify-between text-xs">
-                <span className="text-slate-400">Assigned Mentor:</span>
+                <span className="text-muted-foreground">Assigned Mentor:</span>
                 <span className="font-bold text-white">{bookingResult.mentorName}</span>
               </div>
               <div className="flex items-center justify-between text-xs">
-                <span className="text-slate-400">Session Slot:</span>
+                <span className="text-muted-foreground">Session Slot:</span>
                 <span className="font-mono text-indigo-300 font-semibold">{bookingResult.scheduledSlot}</span>
               </div>
               <div className="flex items-center justify-between text-xs">
-                <span className="text-slate-400">Defense Topic:</span>
-                <span className="text-slate-200 line-clamp-1">{bookingResult.sessionTopic}</span>
+                <span className="text-muted-foreground">Defense Topic:</span>
+                <span className="text-foreground line-clamp-1">{bookingResult.sessionTopic}</span>
               </div>
               <div className="flex items-center justify-between text-xs">
-                <span className="text-slate-400">Payment Batch Reference:</span>
-                <span className="font-mono text-slate-400">{bookingResult.batchReference}</span>
+                <span className="text-muted-foreground">Payment Batch Reference:</span>
+                <span className="font-mono text-muted-foreground">{bookingResult.batchReference}</span>
               </div>
-              <div className="flex items-center justify-between text-xs pt-2 border-t border-slate-800/80">
+              <div className="flex items-center justify-between text-xs pt-2 border-t border-border/80">
                 <span className="text-emerald-400 font-semibold">Net Payout to Mentor ({config.tax.withholdingLabel}):</span>
                 <span className="font-mono text-emerald-400 font-bold">
                   {formatCurrency(convertFromInr(bookingResult.mentorNetPayout))}.00
@@ -503,17 +503,17 @@ END:VCALENDAR`;
 
             {/* Direct Virtual Meeting Link */}
             <div className="space-y-2">
-              <label className="text-xs font-semibold text-slate-400">Encrypted Video Defense Link:</label>
+              <label className="text-xs font-semibold text-muted-foreground">Encrypted Video Defense Link:</label>
               <div className="flex items-center gap-2">
                 <input
                   type="text"
                   readOnly
                   value={bookingResult.meetingUrl}
-                  className="flex-1 bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs font-mono text-indigo-300"
+                  className="flex-1 bg-background border border-border rounded-xl px-3 py-2 text-xs font-mono text-indigo-300"
                 />
                 <button
                   onClick={copyMeetingLink}
-                  className="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-slate-200 flex items-center gap-1.5 transition-colors"
+                  className="px-3 py-2 rounded-xl bg-muted hover:bg-slate-700 text-xs font-semibold text-foreground flex items-center gap-1.5 transition-colors"
                 >
                   <Copy className="w-3.5 h-3.5" />
                   <span>{copiedLink ? "Copied!" : "Copy"}</span>
