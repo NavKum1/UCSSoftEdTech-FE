@@ -205,8 +205,8 @@ export default function MultiCampusGovernancePage() {
           <span
             className={`px-3 py-1.5 rounded-lg border text-xs font-bold uppercase tracking-wider ${
               rollup?.accreditationReadinessStatus === "AuditReady"
-                ? "bg-emerald-950 text-emerald-400 border-emerald-500/50"
-                : "bg-amber-950 text-amber-400 border-amber-500/50"
+                ? "bg-emerald-950 text-emerald-700 dark:text-emerald-400 border-emerald-500/50"
+                : "bg-amber-950 text-amber-700 dark:text-amber-400 border-amber-500/50"
             }`}
           >
             ● {rollup?.accreditationReadinessStatus || "Audit Ready"}
@@ -223,12 +223,12 @@ export default function MultiCampusGovernancePage() {
             <div className="text-2xl font-black text-foreground mt-1">
               {rollup?.totalCampuses || 0}
             </div>
-            <div className="text-[11px] text-emerald-400 mt-1 font-mono">100% Fully Isolated</div>
+            <div className="text-[11px] text-emerald-700 dark:text-emerald-400 mt-1 font-mono">100% Fully Isolated</div>
           </div>
 
           <div className="p-4 rounded-2xl bg-card/60 border border-border/80 shadow-sm">
             <div className="text-muted-foreground text-xs font-medium">Total Student Body</div>
-            <div className="text-2xl font-black text-cyan-400 mt-1 font-mono">
+            <div className="text-2xl font-black text-cyan-700 dark:text-cyan-400 mt-1 font-mono">
               {(rollup?.totalStudentsEnrolled || 0).toLocaleString()}
             </div>
             <div className="text-[11px] text-muted-foreground mt-1">
@@ -238,15 +238,15 @@ export default function MultiCampusGovernancePage() {
 
           <div className="p-4 rounded-2xl bg-card/60 border border-border/80 shadow-sm">
             <div className="text-muted-foreground text-xs font-medium">Immutable Audit Blocks</div>
-            <div className="text-2xl font-black text-purple-400 mt-1 font-mono">
+            <div className="text-2xl font-black text-purple-700 dark:text-purple-400 mt-1 font-mono">
               {rollup?.totalAuditLedgerBlocks || 0}
             </div>
-            <div className="text-[11px] text-purple-300 mt-1 font-mono">SHA-256 Hash Chain</div>
+            <div className="text-[11px] text-purple-600 dark:text-purple-300 mt-1 font-mono">SHA-256 Hash Chain</div>
           </div>
 
           <div className="p-4 rounded-2xl bg-card/60 border border-border/80 shadow-sm">
             <div className="text-muted-foreground text-xs font-medium">Compliance Certifications</div>
-            <div className="text-2xl font-black text-emerald-400 mt-1 font-mono">
+            <div className="text-2xl font-black text-emerald-700 dark:text-emerald-400 mt-1 font-mono">
               {(rollup?.totalGradeCertifications || 0) + (rollup?.totalAccreditationClearances || 0)}
             </div>
             <div className="text-[11px] text-muted-foreground mt-1">
@@ -283,14 +283,14 @@ export default function MultiCampusGovernancePage() {
                   >
                     <div className="flex items-center justify-between">
                       <span className="text-xs font-bold text-foreground">{c.campusName}</span>
-                      <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-muted text-emerald-400 font-semibold border border-border">
+                      <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-muted text-emerald-700 dark:text-emerald-400 font-semibold border border-border">
                         {c.campusCode}
                       </span>
                     </div>
 
                     <div className="mt-2 text-xs text-muted-foreground flex items-center justify-between">
                       <span>Dean: {c.deanEmail}</span>
-                      <span className="font-mono text-emerald-400 font-bold">{c.complianceScore}%</span>
+                      <span className="font-mono text-emerald-700 dark:text-emerald-400 font-bold">{c.complianceScore}%</span>
                     </div>
 
                     <div className="mt-2 text-[11px] text-muted-foreground flex items-center justify-between font-mono">
@@ -319,7 +319,7 @@ export default function MultiCampusGovernancePage() {
                 <button
                   onClick={handleVerifyLedger}
                   disabled={isVerifying || !selectedCampus}
-                  className="px-3.5 py-1.5 rounded-lg bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-300 border border-emerald-500/40 text-xs font-semibold transition flex items-center space-x-1.5"
+                  className="px-3.5 py-1.5 rounded-lg bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-600 dark:text-emerald-300 border border-emerald-500/40 text-xs font-semibold transition flex items-center space-x-1.5"
                 >
                   <span>{isVerifying ? "⏳" : "🛡️"}</span>
                   <span>{isVerifying ? "Verifying..." : "Verify Records Integrity"}</span>
@@ -341,7 +341,7 @@ export default function MultiCampusGovernancePage() {
               <div
                 className={`p-3.5 rounded-xl border text-xs font-mono flex items-center justify-between ${
                   verification.isTamperFree
-                    ? "bg-emerald-950/40 border-emerald-500/50 text-emerald-300"
+                    ? "bg-emerald-950/40 border-emerald-500/50 text-emerald-600 dark:text-emerald-300"
                     : "bg-rose-950/40 border-rose-500/50 text-rose-300"
                 }`}
               >
@@ -374,10 +374,10 @@ export default function MultiCampusGovernancePage() {
                   >
                     <div className="flex items-center justify-between text-xs">
                       <div className="flex items-center space-x-2">
-                        <span className="px-2 py-0.5 rounded font-mono font-bold bg-muted text-cyan-300 border border-border">
+                        <span className="px-2 py-0.5 rounded font-mono font-bold bg-muted text-cyan-600 dark:text-cyan-300 border border-border">
                           #{b.blockIndex}
                         </span>
-                        <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-indigo-950 text-indigo-300 border border-indigo-700/50">
+                        <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-indigo-950 text-indigo-600 dark:text-indigo-300 border border-indigo-700/50">
                           {b.eventType}
                         </span>
                         <span className="text-muted-foreground text-xs">by {b.actorEmail}</span>
@@ -393,7 +393,7 @@ export default function MultiCampusGovernancePage() {
                     <div className="pt-2 border-t border-border/80 grid grid-cols-1 md:grid-cols-2 gap-2 text-[10px] font-mono text-muted-foreground">
                       <div className="truncate">
                         <span className="text-muted-foreground">Block Hash: </span>
-                        <span className="text-emerald-400">{b.blockHash}</span>
+                        <span className="text-emerald-700 dark:text-emerald-400">{b.blockHash}</span>
                       </div>
                       <div className="truncate">
                         <span className="text-muted-foreground">Prev Hash: </span>

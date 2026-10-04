@@ -132,17 +132,17 @@ export default function PartnerDashboardPage() {
       <div className="max-w-7xl mx-auto space-y-8">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-border">
           <div className="flex items-center space-x-3">
-            <div className="w-12 h-12 rounded-2xl bg-indigo-600/20 border border-indigo-500/30 flex items-center justify-center text-indigo-400">
+            <div className="w-12 h-12 rounded-2xl bg-indigo-600/20 border border-indigo-500/30 flex items-center justify-center text-indigo-700 dark:text-indigo-400">
               <Building2 className="w-6 h-6" />
             </div>
             <div>
               <div className="flex items-center space-x-2">
-                <span className="text-xs font-semibold text-indigo-400 uppercase tracking-wider">B2B Institute Portal</span>
-                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
+                <span className="text-xs font-semibold text-indigo-700 dark:text-indigo-400 uppercase tracking-wider">B2B Institute Portal</span>
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/30">
                   LIVE CONVERSION PIPELINE
                 </span>
               </div>
-              <h1 className="text-2xl font-extrabold text-white mt-0.5">
+              <h1 className="text-2xl font-extrabold text-foreground mt-0.5">
                 {data?.instituteName || "Global ITech Accreditation Board"}
               </h1>
             </div>
@@ -173,18 +173,18 @@ export default function PartnerDashboardPage() {
           <div className="glass-card rounded-2xl p-5 border border-border relative overflow-hidden">
             <div className="flex items-center justify-between">
               <span className="text-xs font-medium text-muted-foreground">Total Referred Leads</span>
-              <Users className="w-4 h-4 text-indigo-400" />
+              <Users className="w-4 h-4 text-indigo-700 dark:text-indigo-400" />
             </div>
-            <div className="text-3xl font-extrabold text-white mt-2">{kpis.totalLeadsReceived}</div>
+            <div className="text-3xl font-extrabold text-foreground mt-2">{kpis.totalLeadsReceived}</div>
             <span className="text-[11px] text-muted-foreground mt-1 block">Qualified skill gap routing</span>
           </div>
 
           <div className="glass-card rounded-2xl p-5 border border-border relative overflow-hidden">
             <div className="flex items-center justify-between">
               <span className="text-xs font-medium text-muted-foreground">Enrolled Candidates</span>
-              <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+              <CheckCircle2 className="w-4 h-4 text-emerald-700 dark:text-emerald-400" />
             </div>
-            <div className="text-3xl font-extrabold text-emerald-400 mt-2">{kpis.enrolledLeads}</div>
+            <div className="text-3xl font-extrabold text-emerald-700 dark:text-emerald-400 mt-2">{kpis.enrolledLeads}</div>
             <span className="text-[11px] text-emerald-500/80 mt-1 block">Course conversions closed</span>
           </div>
 
@@ -200,12 +200,12 @@ export default function PartnerDashboardPage() {
           <div className="glass-card rounded-2xl p-5 border border-border relative overflow-hidden">
             <div className="flex items-center justify-between">
               <span className="text-xs font-medium text-muted-foreground">Est. Commission Revenue</span>
-              <DollarSign className="w-4 h-4 text-purple-400" />
+              <DollarSign className="w-4 h-4 text-purple-700 dark:text-purple-400" />
             </div>
-            <div className="text-3xl font-extrabold text-purple-300 mt-2">
+            <div className="text-3xl font-extrabold text-purple-600 dark:text-purple-300 mt-2">
               {config.symbol}{(config.currency === "INR" ? kpis.estimatedCommissionRevenueUsd * 80 : config.currency === "EUR" ? Math.round(kpis.estimatedCommissionRevenueUsd * 0.92) : kpis.estimatedCommissionRevenueUsd).toLocaleString()}
             </div>
-            <span className="text-[11px] text-purple-400/80 mt-1 block">
+            <span className="text-[11px] text-purple-700 dark:text-purple-400/80 mt-1 block">
               @ {config.currency === "INR" ? "₹12,000" : config.currency === "EUR" ? "€140" : "$150"} referral bounty / lead
             </span>
           </div>
@@ -214,13 +214,13 @@ export default function PartnerDashboardPage() {
         {/* Edulexa Revenue & DRM Bridge Banner */}
         <div className="rounded-2xl border border-indigo-500/30 bg-gradient-to-r from-indigo-950/40 via-purple-950/30 to-slate-900/60 p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
           <div className="flex items-center space-x-3.5">
-            <div className="w-10 h-10 rounded-xl bg-indigo-500/20 border border-indigo-500/40 flex items-center justify-center text-indigo-400 shrink-0">
+            <div className="w-10 h-10 rounded-xl bg-indigo-500/20 border border-indigo-500/40 flex items-center justify-center text-indigo-700 dark:text-indigo-400 shrink-0">
               <Sparkles className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="text-sm font-bold text-white flex items-center gap-2">
+              <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
                 Edulexa Revenue &amp; Compliance Engine Integrated
-                <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-emerald-500/20 text-emerald-600 dark:text-emerald-300 border border-emerald-500/30">
                   PARITY ACTIVE
                 </span>
               </h3>
@@ -244,8 +244,8 @@ export default function PartnerDashboardPage() {
           {/* Missing Skill Clusters (2 Cols) */}
           <div className="lg:col-span-2 glass-panel rounded-2xl p-6 border border-border space-y-4">
             <div className="flex items-center justify-between">
-              <h2 className="text-sm font-bold text-white flex items-center space-x-2">
-                <Sparkles className="w-4 h-4 text-indigo-400" />
+              <h2 className="text-sm font-bold text-foreground flex items-center space-x-2">
+                <Sparkles className="w-4 h-4 text-indigo-700 dark:text-indigo-400" />
                 <span>Candidate Skill Deficits & Demand Clusters</span>
               </h2>
               <span className="text-xs text-muted-foreground font-mono">Aggregated Real-Time</span>
@@ -264,7 +264,7 @@ export default function PartnerDashboardPage() {
               ].map((item, idx) => (
                 <div key={idx} className="bg-card/60 rounded-xl p-3.5 border border-border flex items-center justify-between">
                   <span className="text-xs font-medium text-foreground">{item.skill}</span>
-                  <span className="px-2.5 py-1 rounded-lg text-xs font-bold bg-indigo-500/10 text-indigo-300 border border-indigo-500/30">
+                  <span className="px-2.5 py-1 rounded-lg text-xs font-bold bg-indigo-500/10 text-indigo-600 dark:text-indigo-300 border border-indigo-500/30">
                     {item.count} Leads
                   </span>
                 </div>
@@ -274,7 +274,7 @@ export default function PartnerDashboardPage() {
 
           {/* CRM Webhook Config (1 Col) */}
           <div className="glass-panel rounded-2xl p-6 border border-border space-y-4">
-            <h2 className="text-sm font-bold text-white flex items-center space-x-2">
+            <h2 className="text-sm font-bold text-foreground flex items-center space-x-2">
               <Link2 className="w-4 h-4 text-sky-400" />
               <span>Outbound CRM Webhook</span>
             </h2>
@@ -306,7 +306,7 @@ export default function PartnerDashboardPage() {
               </div>
 
               {webhookStatus && (
-                <div className="text-[11px] font-mono text-indigo-400 bg-indigo-500/10 p-2 rounded-lg border border-indigo-500/30">
+                <div className="text-[11px] font-mono text-indigo-700 dark:text-indigo-400 bg-indigo-500/10 p-2 rounded-lg border border-indigo-500/30">
                   {webhookStatus}
                 </div>
               )}
@@ -335,7 +335,7 @@ export default function PartnerDashboardPage() {
         <div className="glass-panel rounded-2xl p-6 border border-border space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
-              <h2 className="text-base font-bold text-white">Referred Candidate Lead Pipeline</h2>
+              <h2 className="text-base font-bold text-foreground">Referred Candidate Lead Pipeline</h2>
               <p className="text-xs text-muted-foreground">Update student enrollment status to track referral commission conversions.</p>
             </div>
           </div>
@@ -356,7 +356,7 @@ export default function PartnerDashboardPage() {
                   <tr key={lead.leadId} className="hover:bg-card/40 transition-colors">
                     <td className="py-3.5 px-4 font-semibold text-white">{lead.candidateName}</td>
                     <td className="py-3.5 px-4 font-mono text-muted-foreground">{lead.candidateEmail}</td>
-                    <td className="py-3.5 px-4 text-indigo-300 font-medium">{lead.courseName}</td>
+                    <td className="py-3.5 px-4 text-indigo-600 dark:text-indigo-300 font-medium">{lead.courseName}</td>
                     <td className="py-3.5 px-4 text-muted-foreground">
                       {new Date(lead.createdAt).toLocaleDateString()}
                     </td>
@@ -367,15 +367,15 @@ export default function PartnerDashboardPage() {
                         onChange={(e) => handleUpdateLeadStatus(lead.leadId, e.target.value)}
                         className={`px-3 py-1.5 rounded-xl text-xs font-semibold bg-card border transition-colors cursor-pointer focus:outline-none ${
                           lead.status === "Enrolled"
-                            ? "text-emerald-400 border-emerald-500/40 bg-emerald-500/10"
+                            ? "text-emerald-700 dark:text-emerald-400 border-emerald-500/40 bg-emerald-500/10"
                             : lead.status === "Contacted"
                             ? "text-sky-400 border-sky-500/40 bg-sky-500/10"
-                            : "text-amber-400 border-amber-500/40 bg-amber-500/10"
+                            : "text-amber-700 dark:text-amber-400 border-amber-500/40 bg-amber-500/10"
                         }`}
                       >
-                        <option value="Pending" className="bg-card text-amber-400">Pending</option>
+                        <option value="Pending" className="bg-card text-amber-700 dark:text-amber-400">Pending</option>
                         <option value="Contacted" className="bg-card text-sky-400">Contacted</option>
-                        <option value="Enrolled" className="bg-card text-emerald-400">Enrolled</option>
+                        <option value="Enrolled" className="bg-card text-emerald-700 dark:text-emerald-400">Enrolled</option>
                       </select>
                     </td>
                   </tr>

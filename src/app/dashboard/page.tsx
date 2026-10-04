@@ -128,10 +128,10 @@ export default function Member360CommandCenterPage() {
     return (
       <div className="min-h-screen bg-background text-foreground flex flex-col items-center justify-center font-sans p-6">
         <div className="max-w-md w-full p-8 rounded-3xl bg-card/60 border border-border text-center space-y-4">
-          <div className="w-12 h-12 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center mx-auto">
+          <div className="w-12 h-12 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-700 dark:text-amber-400 flex items-center justify-center mx-auto">
             <AlertTriangle className="w-6 h-6" />
           </div>
-          <h2 className="text-xl font-bold text-white">Profile Unavailable</h2>
+          <h2 className="text-xl font-bold text-foreground">Profile Unavailable</h2>
           <p className="text-sm text-muted-foreground">
             {error || "Unable to load candidate profile and achievements."}
           </p>
@@ -190,31 +190,31 @@ export default function Member360CommandCenterPage() {
           {/* Candidate Identity */}
           <div className="flex items-center gap-5">
             <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-indigo-600 via-purple-600 to-amber-500 p-0.5 shadow-xl shadow-indigo-500/20">
-              <div className="w-full h-full bg-background rounded-[14px] flex items-center justify-center font-black text-white text-xl">
+              <div className="w-full h-full bg-background rounded-[14px] flex items-center justify-center font-black text-foreground text-xl">
                 {data.fullName.split(" ").map((n) => n[0]).join("")}
               </div>
             </div>
 
             <div>
               <div className="flex items-center gap-3">
-                <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
+                <h1 className="text-2xl sm:text-3xl font-black text-foreground tracking-tight">
                   {data.fullName}
                 </h1>
-                <span className="text-[11px] px-2.5 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 font-bold uppercase tracking-wider">
+                <span className="text-[11px] px-2.5 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-700 dark:text-emerald-400 font-bold uppercase tracking-wider">
                   Pro Fellow
                 </span>
               </div>
-              <p className="text-xs sm:text-sm text-indigo-300 font-medium mt-0.5">
+              <p className="text-xs sm:text-sm text-indigo-600 dark:text-indigo-300 font-medium mt-0.5">
                 {data.targetRole}
               </p>
               <div className="flex items-center gap-4 text-xs text-muted-foreground font-mono mt-2">
-                <span className="flex items-center gap-1.5 text-amber-300 font-semibold">
-                  <Flame className="w-4 h-4 text-amber-400 fill-amber-400" />
+                <span className="flex items-center gap-1.5 text-amber-600 dark:text-amber-300 font-semibold">
+                  <Flame className="w-4 h-4 text-amber-700 dark:text-amber-400 fill-amber-400" />
                   {data.activeStreakDays} Days Streak
                 </span>
                 <span className="text-muted-foreground">•</span>
                 <span className="text-muted-foreground">
-                  Global Elo: <strong className="text-white font-bold">{data.globalEloRank}</strong> ({data.eloTier})
+                  Global Elo: <strong className="text-foreground font-bold">{data.globalEloRank}</strong> ({data.eloTier})
                 </span>
               </div>
             </div>
@@ -224,12 +224,12 @@ export default function Member360CommandCenterPage() {
           <div className="flex flex-wrap items-center gap-4">
             {/* Voice Interview Balance */}
             <div className="px-4 py-2.5 rounded-2xl bg-card/90 border border-border shadow-md flex items-center gap-3">
-              <div className="p-2 rounded-xl bg-indigo-500/10 text-indigo-400">
+              <div className="p-2 rounded-xl bg-indigo-500/10 text-indigo-700 dark:text-indigo-400">
                 <Mic className="w-5 h-5" />
               </div>
               <div>
                 <div className="text-[11px] text-muted-foreground font-mono uppercase">AI Voice Defense</div>
-                <div className="text-sm font-bold text-white font-mono">
+                <div className="text-sm font-bold text-foreground font-mono">
                   {data.voiceMinutesRemaining}m <span className="text-xs text-muted-foreground font-normal">/ {data.voiceMinutesTotal}m quota</span>
                 </div>
               </div>
@@ -237,12 +237,12 @@ export default function Member360CommandCenterPage() {
 
             {/* Anti-Decay Vigilance Index */}
             <div className="px-4 py-2.5 rounded-2xl bg-card/90 border border-border shadow-md flex items-center gap-3">
-              <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-400">
+              <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-700 dark:text-emerald-400">
                 <Shield className="w-5 h-5" />
               </div>
               <div>
                 <div className="text-[11px] text-muted-foreground font-mono uppercase">Skill Retention</div>
-                <div className="text-sm font-bold text-emerald-400 font-mono">
+                <div className="text-sm font-bold text-emerald-700 dark:text-emerald-400 font-mono">
                   {data.overallVigilanceIndex}% <span className="text-xs text-muted-foreground font-normal">(Active Gold)</span>
                 </div>
               </div>
@@ -251,7 +251,7 @@ export default function Member360CommandCenterPage() {
             {/* Share Public Passport */}
             <button
               onClick={copyPublicShare}
-              className="px-4 py-3 rounded-2xl bg-indigo-600/20 hover:bg-indigo-600/30 border border-indigo-500/40 text-indigo-300 hover:text-white text-xs font-semibold flex items-center gap-2 transition-all"
+              className="px-4 py-3 rounded-2xl bg-indigo-600/20 hover:bg-indigo-600/30 border border-indigo-500/40 text-indigo-600 dark:text-indigo-300 hover:text-white text-xs font-semibold flex items-center gap-2 transition-all"
             >
               <Share2 className="w-4 h-4" />
               <span>{copiedShareLink ? "Link Copied!" : "Public Passport"}</span>
@@ -267,14 +267,14 @@ export default function Member360CommandCenterPage() {
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
             <div>
               <div className="flex items-center gap-2">
-                <Flame className="w-5 h-5 text-amber-400" />
-                <h2 className="text-lg font-bold text-white">Daily High-Stakes Rituals &amp; Katas</h2>
+                <Flame className="w-5 h-5 text-amber-700 dark:text-amber-400" />
+                <h2 className="text-lg font-bold text-foreground">Daily High-Stakes Rituals &amp; Katas</h2>
               </div>
               <p className="text-xs text-muted-foreground mt-0.5">
                 Complete daily engineering habits to prevent knowledge decay and keep all 6 competency badges in Active Gold.
               </p>
             </div>
-            <span className="text-xs font-mono text-amber-300 bg-amber-500/10 border border-amber-500/20 px-3 py-1 rounded-full self-start sm:self-auto">
+            <span className="text-xs font-mono text-amber-600 dark:text-amber-300 bg-amber-500/10 border border-amber-500/20 px-3 py-1 rounded-full self-start sm:self-auto">
               🔥 14-Day Consecutive Streak
             </span>
           </div>
@@ -284,12 +284,12 @@ export default function Member360CommandCenterPage() {
             <div className="p-4 rounded-2xl bg-background/80 border border-border/80 flex flex-col justify-between hover:border-border transition-all group">
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-[10px] font-mono uppercase px-2 py-0.5 rounded bg-red-500/10 text-red-400 border border-red-500/20">
+                  <span className="text-[10px] font-mono uppercase px-2 py-0.5 rounded bg-red-500/10 text-red-700 dark:text-red-400 border border-red-500/20">
                     08:00 AM Outage
                   </span>
                   <span className="text-[11px] text-muted-foreground font-mono">10m MTTR</span>
                 </div>
-                <h3 className="font-bold text-sm text-white group-hover:text-indigo-300 transition-colors">
+                <h3 className="font-bold text-sm text-foreground group-hover:text-indigo-600 dark:text-indigo-300 transition-colors">
                   {data.dailyRituals.morningOutageTitle}
                 </h3>
                 <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
@@ -298,7 +298,7 @@ export default function Member360CommandCenterPage() {
               </div>
 
               <div className="mt-4 pt-3 border-t border-border/60 flex items-center justify-between">
-                <span className="text-xs text-amber-400 font-medium">Pending Triage</span>
+                <span className="text-xs text-amber-700 dark:text-amber-400 font-medium">Pending Triage</span>
                 <Link
                   href="/daily"
                   className="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold flex items-center gap-1 transition-colors"
@@ -313,12 +313,12 @@ export default function Member360CommandCenterPage() {
             <div className="p-4 rounded-2xl bg-background/80 border border-border/80 flex flex-col justify-between hover:border-border transition-all group">
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-[10px] font-mono uppercase px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center gap-1">
+                  <span className="text-[10px] font-mono uppercase px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20 flex items-center gap-1">
                     <CheckCircle2 className="w-3 h-3" /> Completed
                   </span>
                   <span className="text-[11px] text-muted-foreground font-mono">+50 XP</span>
                 </div>
-                <h3 className="font-bold text-sm text-white group-hover:text-indigo-300 transition-colors">
+                <h3 className="font-bold text-sm text-foreground group-hover:text-indigo-600 dark:text-indigo-300 transition-colors">
                   {data.dailyRituals.cveReviewTitle}
                 </h3>
                 <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
@@ -327,7 +327,7 @@ export default function Member360CommandCenterPage() {
               </div>
 
               <div className="mt-4 pt-3 border-t border-border/60 flex items-center justify-between">
-                <span className="text-xs text-emerald-400 font-medium">Score: 98/100</span>
+                <span className="text-xs text-emerald-700 dark:text-emerald-400 font-medium">Score: 98/100</span>
                 <Link
                   href="/daily"
                   className="text-xs text-muted-foreground hover:text-foreground font-semibold flex items-center gap-1"
@@ -342,12 +342,12 @@ export default function Member360CommandCenterPage() {
             <div className="p-4 rounded-2xl bg-background/80 border border-border/80 flex flex-col justify-between hover:border-border transition-all group">
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-[10px] font-mono uppercase px-2 py-0.5 rounded bg-purple-500/10 text-purple-400 border border-purple-500/20">
+                  <span className="text-[10px] font-mono uppercase px-2 py-0.5 rounded bg-purple-500/10 text-purple-700 dark:text-purple-400 border border-purple-500/20">
                     Live Arena
                   </span>
                   <span className="text-[11px] text-muted-foreground font-mono">5m Flash-War</span>
                 </div>
-                <h3 className="font-bold text-sm text-white group-hover:text-indigo-300 transition-colors">
+                <h3 className="font-bold text-sm text-foreground group-hover:text-indigo-600 dark:text-indigo-300 transition-colors">
                   1v1 Speed Architecting Duel
                 </h3>
                 <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
@@ -356,7 +356,7 @@ export default function Member360CommandCenterPage() {
               </div>
 
               <div className="mt-4 pt-3 border-t border-border/60 flex items-center justify-between">
-                <span className="text-xs text-purple-400 font-medium">Rank #14 Global</span>
+                <span className="text-xs text-purple-700 dark:text-purple-400 font-medium">Rank #14 Global</span>
                 <Link
                   href="/duels"
                   className="px-3 py-1.5 rounded-lg bg-purple-600 hover:bg-purple-500 text-white text-xs font-semibold flex items-center gap-1 transition-colors"
@@ -371,12 +371,12 @@ export default function Member360CommandCenterPage() {
             <div className="p-4 rounded-2xl bg-indigo-950/20 border border-indigo-500/30 flex flex-col justify-between hover:border-indigo-500/60 transition-all group">
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-[10px] font-mono uppercase px-2 py-0.5 rounded bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                  <span className="text-[10px] font-mono uppercase px-2 py-0.5 rounded bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/20">
                     Staff+ Mentorship
                   </span>
                   <span className="text-[11px] text-muted-foreground font-mono">45m 1-on-1</span>
                 </div>
-                <h3 className="font-bold text-sm text-white group-hover:text-indigo-300 transition-colors">
+                <h3 className="font-bold text-sm text-foreground group-hover:text-indigo-600 dark:text-indigo-300 transition-colors">
                   Book 1-on-1 Staff Mentor
                 </h3>
                 <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
@@ -385,7 +385,7 @@ export default function Member360CommandCenterPage() {
               </div>
 
               <div className="mt-4 pt-3 border-t border-border/60 flex items-center justify-between">
-                <span className="text-xs text-indigo-300 font-medium">{config.tax.certificateName.split(" ")[0]} Verified</span>
+                <span className="text-xs text-indigo-600 dark:text-indigo-300 font-medium">{config.tax.certificateName.split(" ")[0]} Verified</span>
                 <Link
                   href="/mentors/book"
                   className="px-3 py-1.5 rounded-lg bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white text-xs font-semibold flex items-center gap-1 shadow-md shadow-indigo-500/20 transition-all"
@@ -404,10 +404,10 @@ export default function Member360CommandCenterPage() {
           <div className="lg:col-span-5 p-6 rounded-3xl bg-card/60 border border-border/80 shadow-2xl flex flex-col items-center justify-between">
             <div className="w-full flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
-                <Compass className="w-5 h-5 text-indigo-400" />
-                <h2 className="text-base font-bold text-white">6-Spoke Competency Radar</h2>
+                <Compass className="w-5 h-5 text-indigo-700 dark:text-indigo-400" />
+                <h2 className="text-base font-bold text-foreground">6-Spoke Competency Radar</h2>
               </div>
-              <span className="text-[11px] font-mono text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-0.5 rounded-full">
+              <span className="text-[11px] font-mono text-emerald-700 dark:text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-0.5 rounded-full">
                 Zero Decay
               </span>
             </div>
@@ -480,7 +480,7 @@ export default function Member360CommandCenterPage() {
 
             {/* Legend */}
             <div className="w-full pt-4 border-t border-border/80 flex items-center justify-around text-xs font-mono">
-              <span className="flex items-center gap-2 text-indigo-300">
+              <span className="flex items-center gap-2 text-indigo-600 dark:text-indigo-300">
                 <span className="w-3 h-3 rounded-full bg-indigo-500 shadow-sm shadow-indigo-500" />
                 Alex Morgan (Candidate)
               </span>
@@ -494,8 +494,8 @@ export default function Member360CommandCenterPage() {
           {/* Dimension Cards (7 cols) */}
           <div className="lg:col-span-7 space-y-3">
             <div className="flex items-center justify-between mb-1">
-              <h3 className="text-base font-bold text-white flex items-center gap-2">
-                <Activity className="w-4 h-4 text-indigo-400" />
+              <h3 className="text-base font-bold text-foreground flex items-center gap-2">
+                <Activity className="w-4 h-4 text-indigo-700 dark:text-indigo-400" />
                 Skill Breakdown &amp; Verified Work
               </h3>
               <span className="text-xs text-muted-foreground font-mono">6 Key Skill Areas</span>
@@ -511,12 +511,12 @@ export default function Member360CommandCenterPage() {
                   >
                     <div className="flex items-start justify-between">
                       <div>
-                        <div className="text-xs font-bold text-white">{comp.dimension}</div>
-                        <div className="text-[11px] text-indigo-300 font-mono mt-0.5">{comp.level}</div>
+                        <div className="text-xs font-bold text-foreground">{comp.dimension}</div>
+                        <div className="text-[11px] text-indigo-600 dark:text-indigo-300 font-mono mt-0.5">{comp.level}</div>
                       </div>
                       <div className="text-right">
-                        <div className="text-base font-black text-white font-mono">{comp.score}/100</div>
-                        <div className="text-[10px] text-emerald-400 font-mono">+{delta}% vs benchmark</div>
+                        <div className="text-base font-black text-foreground font-mono">{comp.score}/100</div>
+                        <div className="text-[10px] text-emerald-700 dark:text-emerald-400 font-mono">+{delta}% vs benchmark</div>
                       </div>
                     </div>
 
@@ -534,9 +534,9 @@ export default function Member360CommandCenterPage() {
             {/* Quick Practice CTA */}
             <div className="p-4 rounded-2xl bg-gradient-to-r from-indigo-950/40 via-purple-950/20 to-slate-900/60 border border-indigo-500/20 flex items-center justify-between mt-2">
               <div className="flex items-center gap-3">
-                <Sparkles className="w-5 h-5 text-indigo-400" />
+                <Sparkles className="w-5 h-5 text-indigo-700 dark:text-indigo-400" />
                 <div>
-                  <div className="text-xs font-bold text-white">Continuous Anti-Decay Half-Life Engine</div>
+                  <div className="text-xs font-bold text-foreground">Continuous Anti-Decay Half-Life Engine</div>
                   <div className="text-[11px] text-muted-foreground">Scores reflect real-time production practice decay.</div>
                 </div>
               </div>
@@ -554,10 +554,10 @@ export default function Member360CommandCenterPage() {
         <div className="p-6 rounded-3xl bg-card/60 border border-border/80 shadow-2xl space-y-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Briefcase className="w-5 h-5 text-indigo-400" />
-              <h2 className="text-lg font-bold text-white">Inbound Recruiter &amp; Headhunter Radar</h2>
+              <Briefcase className="w-5 h-5 text-indigo-700 dark:text-indigo-400" />
+              <h2 className="text-lg font-bold text-foreground">Inbound Recruiter &amp; Headhunter Radar</h2>
             </div>
-            <span className="text-xs font-mono text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-3 py-1 rounded-full">
+            <span className="text-xs font-mono text-emerald-700 dark:text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-3 py-1 rounded-full">
               Automated Fast-Tracks Unlocked
             </span>
           </div>
@@ -570,11 +570,11 @@ export default function Member360CommandCenterPage() {
               >
                 <div>
                   <div className="flex items-center justify-between text-xs mb-1">
-                    <span className="font-mono text-indigo-400 font-semibold">{opp.companyTier}</span>
+                    <span className="font-mono text-indigo-700 dark:text-indigo-400 font-semibold">{opp.companyTier}</span>
                     <span className="text-[10px] text-muted-foreground">{opp.receivedAt}</span>
                   </div>
-                  <h4 className="font-bold text-sm text-white">{opp.roleTitle}</h4>
-                  <div className="text-base font-black text-emerald-400 font-mono mt-2">
+                  <h4 className="font-bold text-sm text-foreground">{opp.roleTitle}</h4>
+                  <div className="text-base font-black text-emerald-700 dark:text-emerald-400 font-mono mt-2">
                     {config.currency === "INR"
                       ? `₹${Math.round(opp.offeredCompensationUsd * 0.22).toLocaleString("en-IN")} Lakhs CTC ($${opp.offeredCompensationUsd.toLocaleString()} USD eq.)`
                       : config.currency === "EUR"
@@ -590,7 +590,7 @@ export default function Member360CommandCenterPage() {
                   <span className="text-[11px] text-muted-foreground font-mono">Bypasses Recruiter Screen</span>
                   <Link
                     href="/career"
-                    className="text-xs text-indigo-400 hover:text-indigo-300 font-semibold flex items-center gap-1"
+                    className="text-xs text-indigo-700 dark:text-indigo-400 hover:text-indigo-600 dark:text-indigo-300 font-semibold flex items-center gap-1"
                   >
                     <span>View Terms</span>
                     <ExternalLink className="w-3 h-3" />
@@ -604,11 +604,11 @@ export default function Member360CommandCenterPage() {
         {/* 5. Edulexa Revenue & Compliance Footprint */}
         <div className="p-6 rounded-3xl bg-card/40 border border-border/80 flex flex-col sm:flex-row sm:items-center justify-between gap-6">
           <div className="flex items-start gap-4">
-            <div className="p-3 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-400">
+            <div className="p-3 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-700 dark:text-indigo-400">
               <DollarSign className="w-6 h-6" />
             </div>
             <div>
-              <h3 className="font-bold text-base text-white">Edulexa RevEngine &amp; Compliance Integration</h3>
+              <h3 className="font-bold text-base text-foreground">Edulexa RevEngine &amp; Compliance Integration</h3>
               <p className="text-xs text-muted-foreground mt-1 max-w-xl">
                 Active Member subscription, verified DRM forensic watermarking tokens, and {config.tax.regimeTitle} ({config.tax.certificateName}) synchronized with {config.tax.institutionLegalNotice.split("•")[0]}.
               </p>

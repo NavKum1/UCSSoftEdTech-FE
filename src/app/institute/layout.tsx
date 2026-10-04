@@ -19,8 +19,8 @@ export default function InstituteLayout({ children }: { children: React.ReactNod
             </div>
             <div>
               <div className="flex items-center space-x-2">
-                <span className="font-bold text-base text-white tracking-wide">BUILD & DEFEND</span>
-                <span className="text-[10px] px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 font-semibold border border-cyan-500/30 flex items-center space-x-1">
+                <span className="font-bold text-base text-foreground tracking-wide">BUILD & DEFEND</span>
+                <span className="text-[10px] px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-600 dark:text-cyan-300 font-semibold border border-cyan-500/30 flex items-center space-x-1">
                   <ShieldCheck className="w-3 h-3 mr-0.5" />
                   <span>Institute Partner Portal</span>
                 </span>

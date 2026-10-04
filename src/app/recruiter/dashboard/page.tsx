@@ -128,17 +128,17 @@ export default function RecruiterDashboardPage() {
         {/* Header Navigation */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-border">
           <div className="flex items-center space-x-3">
-            <div className="w-12 h-12 rounded-2xl bg-indigo-600/20 border border-indigo-500/30 flex items-center justify-center text-indigo-400">
+            <div className="w-12 h-12 rounded-2xl bg-indigo-600/20 border border-indigo-500/30 flex items-center justify-center text-indigo-700 dark:text-indigo-400">
               <Briefcase className="w-6 h-6" />
             </div>
             <div>
               <div className="flex items-center space-x-2">
-                <span className="text-xs font-semibold text-indigo-400 uppercase tracking-wider">Corporate Recruiter Portal</span>
-                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-500/10 text-indigo-400 border border-indigo-500/30">
+                <span className="text-xs font-semibold text-indigo-700 dark:text-indigo-400 uppercase tracking-wider">Corporate Recruiter Portal</span>
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-500/10 text-indigo-700 dark:text-indigo-400 border border-indigo-500/30">
                   UBER HIRING PIPELINE
                 </span>
               </div>
-              <h1 className="text-2xl font-extrabold text-white mt-0.5">
+              <h1 className="text-2xl font-extrabold text-foreground mt-0.5">
                 Candidate Technical Assessment &amp; Integrity Review
               </h1>
             </div>
@@ -168,27 +168,27 @@ export default function RecruiterDashboardPage() {
           <div className="glass-card rounded-2xl p-5 border border-border">
             <div className="flex items-center justify-between">
               <span className="text-xs font-medium text-muted-foreground">Total Applicants</span>
-              <Users className="w-4 h-4 text-indigo-400" />
+              <Users className="w-4 h-4 text-indigo-700 dark:text-indigo-400" />
             </div>
-            <div className="text-3xl font-extrabold text-white mt-2">{totalApplicants}</div>
+            <div className="text-3xl font-extrabold text-foreground mt-2">{totalApplicants}</div>
             <span className="text-[11px] text-muted-foreground mt-1 block">Completed voice defense review</span>
           </div>
 
           <div className="glass-card rounded-2xl p-5 border border-border">
             <div className="flex items-center justify-between">
               <span className="text-xs font-medium text-muted-foreground">Verified Clean Submissions</span>
-              <ShieldCheck className="w-4 h-4 text-emerald-400" />
+              <ShieldCheck className="w-4 h-4 text-emerald-700 dark:text-emerald-400" />
             </div>
-            <div className="text-3xl font-extrabold text-emerald-400 mt-2">{cleanCount}</div>
+            <div className="text-3xl font-extrabold text-emerald-700 dark:text-emerald-400 mt-2">{cleanCount}</div>
             <span className="text-[11px] text-emerald-500/80 mt-1 block">Passed all integrity checks</span>
           </div>
 
           <div className="glass-card rounded-2xl p-5 border border-border">
             <div className="flex items-center justify-between">
               <span className="text-xs font-medium text-muted-foreground">Submissions Under Review</span>
-              <ShieldAlert className="w-4 h-4 text-amber-400" />
+              <ShieldAlert className="w-4 h-4 text-amber-700 dark:text-amber-400" />
             </div>
-            <div className="text-3xl font-extrabold text-amber-400 mt-2">{flaggedCount}</div>
+            <div className="text-3xl font-extrabold text-amber-700 dark:text-amber-400 mt-2">{flaggedCount}</div>
             <span className="text-[11px] text-amber-500/80 mt-1 block">Requires manual review</span>
           </div>
         </div>
@@ -197,7 +197,7 @@ export default function RecruiterDashboardPage() {
         <div className="glass-panel rounded-2xl p-6 border border-border space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
-              <h2 className="text-base font-bold text-white">Corporate Applicant Pipeline</h2>
+              <h2 className="text-base font-bold text-foreground">Corporate Applicant Pipeline</h2>
               <p className="text-xs text-muted-foreground">Review candidate assessment scores, project work, and integrity status.</p>
             </div>
           </div>
@@ -217,23 +217,23 @@ export default function RecruiterDashboardPage() {
                 {candidates.map((cand: any, idx: number) => (
                   <tr key={idx} className="hover:bg-card/40 transition-colors">
                     <td className="py-3.5 px-4">
-                      <div className="font-semibold text-white">{cand.candidateName}</div>
+                      <div className="font-semibold text-foreground">{cand.candidateName}</div>
                       <div className="font-mono text-[11px] text-muted-foreground">{cand.candidateEmail}</div>
                     </td>
                     <td className="py-3.5 px-4 text-muted-foreground max-w-xs truncate">
                       {cand.sprintTitle}
                     </td>
-                    <td className="py-3.5 px-4 font-bold text-indigo-400">
+                    <td className="py-3.5 px-4 font-bold text-indigo-700 dark:text-indigo-400">
                       {cand.evaluation?.finalScore ? `${cand.evaluation.finalScore}%` : "Pending"}
                     </td>
                     <td className="py-3.5 px-4">
                       {cand.antiCheat?.verificationFlagged ? (
-                        <div className="inline-flex items-center space-x-1.5 px-2.5 py-1 rounded-lg text-[11px] font-bold bg-amber-500/10 text-amber-400 border border-amber-500/30">
+                        <div className="inline-flex items-center space-x-1.5 px-2.5 py-1 rounded-lg text-[11px] font-bold bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/30">
                           <AlertTriangle className="w-3.5 h-3.5" />
                           <span>Flagged (AI / Bulk Paste)</span>
                         </div>
                       ) : (
-                        <div className="inline-flex items-center space-x-1.5 px-2.5 py-1 rounded-lg text-[11px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
+                        <div className="inline-flex items-center space-x-1.5 px-2.5 py-1 rounded-lg text-[11px] font-bold bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/30">
                           <ShieldCheck className="w-3.5 h-3.5" />
                           <span>Verified Clean</span>
                         </div>
@@ -245,7 +245,7 @@ export default function RecruiterDashboardPage() {
                           href={`/credential/${cand.evaluation.publicUrlSlug}`}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="inline-flex items-center space-x-1 text-indigo-400 hover:text-indigo-300 font-medium"
+                          className="inline-flex items-center space-x-1 text-indigo-700 dark:text-indigo-400 hover:text-indigo-600 dark:text-indigo-300 font-medium"
                         >
                           <span>View Seal</span>
                           <ExternalLink className="w-3 h-3" />
@@ -267,8 +267,8 @@ export default function RecruiterDashboardPage() {
         <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="glass-panel rounded-3xl p-6 max-w-md w-full border border-indigo-500/30 space-y-4 shadow-2xl">
             <div className="flex items-center justify-between pb-3 border-b border-border">
-              <h3 className="text-base font-bold text-white flex items-center space-x-2">
-                <Code2 className="w-4 h-4 text-indigo-400" />
+              <h3 className="text-base font-bold text-foreground flex items-center space-x-2">
+                <Code2 className="w-4 h-4 text-indigo-700 dark:text-indigo-400" />
                 <span>Create Corporate Challenge</span>
               </h3>
               <button
@@ -341,7 +341,7 @@ export default function RecruiterDashboardPage() {
               </div>
 
               {createStatus && (
-                <div className="text-[11px] font-mono text-indigo-400 bg-indigo-500/10 p-2.5 rounded-xl border border-indigo-500/30">
+                <div className="text-[11px] font-mono text-indigo-700 dark:text-indigo-400 bg-indigo-500/10 p-2.5 rounded-xl border border-indigo-500/30">
                   {createStatus}
                 </div>
               )}

@@ -323,7 +323,7 @@ export default function DailyIncidentPage() {
               <h1 className="font-bold text-lg tracking-tight bg-gradient-to-r from-amber-400 via-orange-400 to-red-400 bg-clip-text text-transparent">
                 Daily Incident War-Room
               </h1>
-              <span className="px-2 py-0.5 text-xs font-mono font-bold bg-red-950/80 text-red-400 border border-red-800/60 rounded">
+              <span className="px-2 py-0.5 text-xs font-mono font-bold bg-red-950/80 text-red-700 dark:text-red-400 border border-red-800/60 rounded">
                 {incident?.severity || "SEV-1"}
               </span>
             </div>
@@ -357,7 +357,7 @@ export default function DailyIncidentPage() {
             <div className="flex items-center gap-2 bg-muted/80 border border-amber-500/30 px-3 py-1.5 rounded-lg shadow-sm">
               <span className="text-base">🔥</span>
               <div>
-                <span className="text-amber-400 font-bold text-sm">
+                <span className="text-amber-700 dark:text-amber-400 font-bold text-sm">
                   {streak?.currentStreak ?? 1} Day Streak
                 </span>
                 <span className="text-muted-foreground text-[10px] block">
@@ -389,7 +389,7 @@ export default function DailyIncidentPage() {
               {(streak?.streakFreezeShields ?? 0) < 3 && (
                 <button
                   onClick={handleEquipFreezeShield}
-                  className="ml-1 text-[10px] px-2 py-0.5 bg-cyan-950 hover:bg-cyan-900 text-cyan-300 border border-cyan-700/50 rounded transition"
+                  className="ml-1 text-[10px] px-2 py-0.5 bg-cyan-950 hover:bg-cyan-900 text-cyan-600 dark:text-cyan-300 border border-cyan-700/50 rounded transition"
                   title="Equip an additional freeze shield"
                 >
                   +Shield
@@ -401,7 +401,7 @@ export default function DailyIncidentPage() {
             <div className="flex items-center gap-2 bg-muted/80 border border-indigo-500/30 px-3 py-1.5 rounded-lg">
               <span className="text-base">🏆</span>
               <div>
-                <span className="text-indigo-400 font-bold text-sm">
+                <span className="text-indigo-700 dark:text-indigo-400 font-bold text-sm">
                   {streak?.currentLeague ?? "Bronze"} League
                 </span>
                 <span className="text-muted-foreground text-[10px] block">
@@ -414,7 +414,7 @@ export default function DailyIncidentPage() {
             <div className="flex items-center gap-2 bg-muted/80 border border-emerald-500/30 px-3 py-1.5 rounded-lg">
               <span className="text-base">⏱️</span>
               <div>
-                <span className="text-emerald-400 font-bold text-sm">
+                <span className="text-emerald-700 dark:text-emerald-400 font-bold text-sm">
                   {formatTimer(timerSeconds)}
                 </span>
                 <span className="text-muted-foreground text-[10px] block">
@@ -433,7 +433,7 @@ export default function DailyIncidentPage() {
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div className="space-y-1">
               <div className="flex items-center gap-2">
-                <span className="px-2 py-0.5 text-[10px] uppercase font-mono font-bold bg-amber-500/10 text-amber-400 border border-amber-500/30 rounded">
+                <span className="px-2 py-0.5 text-[10px] uppercase font-mono font-bold bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/30 rounded">
                   08:00 AM Daily Incident Kata #{incident?.dayIndex ?? 0}
                 </span>
                 <span className="px-2 py-0.5 text-[10px] font-mono bg-muted text-muted-foreground rounded border border-border">
@@ -447,7 +447,7 @@ export default function DailyIncidentPage() {
             </div>
 
             {streak?.completedToday && (
-              <div className="bg-emerald-950/80 border border-emerald-500/40 text-emerald-300 px-4 py-3 rounded-xl text-center shrink-0">
+              <div className="bg-emerald-950/80 border border-emerald-500/40 text-emerald-600 dark:text-emerald-300 px-4 py-3 rounded-xl text-center shrink-0">
                 <span className="text-base block">✅ Today&apos;s Kata Completed</span>
                 <span className="text-xs text-muted-foreground font-mono">
                   Next outage arrives tomorrow at 08:00 AM
@@ -463,7 +463,7 @@ export default function DailyIncidentPage() {
             onClick={() => setActiveTab("briefing")}
             className={`px-4 py-2 text-sm font-medium border-b-2 transition ${
               activeTab === "briefing"
-                ? "border-amber-500 text-amber-400 bg-amber-500/5"
+                ? "border-amber-500 text-amber-700 dark:text-amber-400 bg-amber-500/5"
                 : "border-transparent text-muted-foreground hover:text-foreground"
             }`}
           >
@@ -473,7 +473,7 @@ export default function DailyIncidentPage() {
             onClick={() => setActiveTab("telemetry")}
             className={`px-4 py-2 text-sm font-medium border-b-2 transition ${
               activeTab === "telemetry"
-                ? "border-amber-500 text-amber-400 bg-amber-500/5"
+                ? "border-amber-500 text-amber-700 dark:text-amber-400 bg-amber-500/5"
                 : "border-transparent text-muted-foreground hover:text-foreground"
             }`}
           >
@@ -483,7 +483,7 @@ export default function DailyIncidentPage() {
             onClick={() => setActiveTab("logs")}
             className={`px-4 py-2 text-sm font-medium border-b-2 transition ${
               activeTab === "logs"
-                ? "border-amber-500 text-amber-400 bg-amber-500/5"
+                ? "border-amber-500 text-amber-700 dark:text-amber-400 bg-amber-500/5"
                 : "border-transparent text-muted-foreground hover:text-foreground"
             }`}
           >
@@ -493,7 +493,7 @@ export default function DailyIncidentPage() {
             onClick={() => setActiveTab("leagues")}
             className={`px-4 py-2 text-sm font-medium border-b-2 transition ${
               activeTab === "leagues"
-                ? "border-amber-500 text-amber-400 bg-amber-500/5"
+                ? "border-amber-500 text-amber-700 dark:text-amber-400 bg-amber-500/5"
                 : "border-transparent text-muted-foreground hover:text-foreground"
             }`}
           >
@@ -586,16 +586,16 @@ export default function DailyIncidentPage() {
                               <span
                                 className={`text-[10px] font-mono px-2 py-0.5 rounded ${
                                   act.risk.startsWith("Low")
-                                    ? "bg-emerald-950 text-emerald-400 border border-emerald-800"
+                                    ? "bg-emerald-950 text-emerald-700 dark:text-emerald-400 border border-emerald-800"
                                     : act.risk.startsWith("Catastrophic")
-                                    ? "bg-red-950 text-red-400 border border-red-800"
-                                    : "bg-yellow-950 text-yellow-400 border border-yellow-800"
+                                    ? "bg-red-950 text-red-700 dark:text-red-400 border border-red-800"
+                                    : "bg-yellow-950 text-yellow-700 dark:text-yellow-400 border border-yellow-800"
                                 }`}
                               >
                                 {act.risk.split(" ")[0]} Risk
                               </span>
                             </div>
-                            <pre className="text-[11px] font-mono bg-background p-2.5 rounded border border-border text-amber-300/90 overflow-x-auto">
+                            <pre className="text-[11px] font-mono bg-background p-2.5 rounded border border-border text-amber-600 dark:text-amber-300/90 overflow-x-auto">
                               $ {act.command}
                             </pre>
                             <span className="text-[11px] text-muted-foreground block">{act.risk}</span>
@@ -656,25 +656,25 @@ export default function DailyIncidentPage() {
                 <div className="grid grid-cols-2 gap-3">
                   <div className="bg-background p-3 rounded-lg border border-border">
                     <span className="text-[10px] font-mono text-muted-foreground block">P99 Latency</span>
-                    <span className="text-lg font-bold text-red-400">
+                    <span className="text-lg font-bold text-red-700 dark:text-red-400">
                       {metrics.p99LatencyMs ? `${metrics.p99LatencyMs}ms` : "N/A"}
                     </span>
                   </div>
                   <div className="bg-background p-3 rounded-lg border border-border">
                     <span className="text-[10px] font-mono text-muted-foreground block">Error Rate</span>
-                    <span className="text-lg font-bold text-red-400">
+                    <span className="text-lg font-bold text-red-700 dark:text-red-400">
                       {metrics.errorRatePercent ? `${metrics.errorRatePercent}%` : "N/A"}
                     </span>
                   </div>
                   <div className="bg-background p-3 rounded-lg border border-border">
                     <span className="text-[10px] font-mono text-muted-foreground block">CPU Load</span>
-                    <span className="text-lg font-bold text-amber-400">
+                    <span className="text-lg font-bold text-amber-700 dark:text-amber-400">
                       {metrics.cpuLoadPercent ? `${metrics.cpuLoadPercent}%` : "N/A"}
                     </span>
                   </div>
                   <div className="bg-background p-3 rounded-lg border border-border">
                     <span className="text-[10px] font-mono text-muted-foreground block">Active Pods</span>
-                    <span className="text-lg font-bold text-cyan-400">
+                    <span className="text-lg font-bold text-cyan-700 dark:text-cyan-400">
                       {metrics.activeConsumerPods ?? 1}
                     </span>
                   </div>
@@ -692,12 +692,12 @@ export default function DailyIncidentPage() {
 
               {/* Habit & Retention Motivation Card */}
               <div className="bg-gradient-to-br from-indigo-950/40 to-slate-900 border border-indigo-800/40 rounded-xl p-5 space-y-3">
-                <span className="text-xs font-mono text-indigo-400 uppercase tracking-wider block">
+                <span className="text-xs font-mono text-indigo-700 dark:text-indigo-400 uppercase tracking-wider block">
                   🛡️ Anti-Decay Credential Engine
                 </span>
                 <p className="text-xs text-muted-foreground leading-relaxed">
                   Maintaining your daily morning streak keeps your{" "}
-                  <strong className="text-amber-400">Gold Verified Staff Architect</strong>{" "}
+                  <strong className="text-amber-700 dark:text-amber-400">Gold Verified Staff Architect</strong>{" "}
                   credential from decaying. Active streak subscribers are ranked at the top of the
                   Fortune 500 Headhunter Talent Ticker.
                 </p>
@@ -721,7 +721,7 @@ export default function DailyIncidentPage() {
                   <span className="text-xs font-mono text-muted-foreground uppercase tracking-wider">
                     {key.replace(/([A-Z])/g, " $1")}
                   </span>
-                  <div className="text-xl font-bold text-amber-400 font-mono">
+                  <div className="text-xl font-bold text-amber-700 dark:text-amber-400 font-mono">
                     {typeof val === "number" ? val.toLocaleString() : String(val)}
                   </div>
                 </div>
@@ -745,7 +745,7 @@ export default function DailyIncidentPage() {
                 Copy Logs
               </button>
             </div>
-            <pre className="text-red-300/90 leading-relaxed whitespace-pre-wrap overflow-x-auto p-2 bg-black/40 rounded border border-slate-900">
+            <pre className="text-red-600 dark:text-red-300/90 leading-relaxed whitespace-pre-wrap overflow-x-auto p-2 bg-black/40 rounded border border-slate-900">
               {incident?.terminalLogs}
             </pre>
           </div>
@@ -765,10 +765,10 @@ export default function DailyIncidentPage() {
                 </p>
               </div>
               <div className="flex items-center gap-2 text-xs font-mono">
-                <span className="px-2.5 py-1 bg-emerald-950 text-emerald-400 border border-emerald-800 rounded">
+                <span className="px-2.5 py-1 bg-emerald-950 text-emerald-700 dark:text-emerald-400 border border-emerald-800 rounded">
                   ▲ Top 3: Promotion Zone
                 </span>
-                <span className="px-2.5 py-1 bg-red-950 text-red-400 border border-red-800 rounded">
+                <span className="px-2.5 py-1 bg-red-950 text-red-700 dark:text-red-400 border border-red-800 rounded">
                   ▼ Bottom 2: Demotion Zone
                 </span>
               </div>
@@ -809,23 +809,23 @@ export default function DailyIncidentPage() {
                             className="w-6 h-6 rounded-full bg-muted"
                           />
                         ) : (
-                          <div className="w-6 h-6 rounded-full bg-slate-700 flex items-center justify-center text-[10px] text-white font-bold">
+                          <div className="w-6 h-6 rounded-full bg-slate-700 flex items-center justify-center text-[10px] text-foreground font-bold">
                             {entry.userName.charAt(0).toUpperCase()}
                           </div>
                         )}
-                        <span className={entry.isCurrentUser ? "text-amber-400" : "text-foreground"}>
+                        <span className={entry.isCurrentUser ? "text-amber-700 dark:text-amber-400" : "text-foreground"}>
                           {entry.userName} {entry.isCurrentUser && "(You)"}
                         </span>
                       </td>
-                      <td className="py-3 px-4 text-amber-400">🔥 {entry.streakCount}d</td>
-                      <td className="py-3 px-4 text-emerald-400">{entry.weeklyXp} XP</td>
+                      <td className="py-3 px-4 text-amber-700 dark:text-amber-400">🔥 {entry.streakCount}d</td>
+                      <td className="py-3 px-4 text-emerald-700 dark:text-emerald-400">{entry.weeklyXp} XP</td>
                       <td className="py-3 px-4">
                         <span
                           className={`px-2 py-0.5 rounded text-[10px] ${
                             entry.tierStatus === "PromotionZone"
-                              ? "bg-emerald-950 text-emerald-400 border border-emerald-800"
+                              ? "bg-emerald-950 text-emerald-700 dark:text-emerald-400 border border-emerald-800"
                               : entry.tierStatus === "DemotionZone"
-                              ? "bg-red-950 text-red-400 border border-red-800"
+                              ? "bg-red-950 text-red-700 dark:text-red-400 border border-red-800"
                               : "bg-muted text-muted-foreground"
                           }`}
                         >
@@ -872,7 +872,7 @@ export default function DailyIncidentPage() {
               <div className="grid grid-cols-3 gap-3 text-center">
                 <div className="bg-background p-3 rounded-xl border border-border">
                   <span className="text-[10px] font-mono text-muted-foreground block">Total XP Earned</span>
-                  <span className="text-xl font-bold text-emerald-400">
+                  <span className="text-xl font-bold text-emerald-700 dark:text-emerald-400">
                     +{triageResult.totalXpAwarded} XP
                   </span>
                   <span className="text-[10px] text-muted-foreground block">
@@ -881,7 +881,7 @@ export default function DailyIncidentPage() {
                 </div>
                 <div className="bg-background p-3 rounded-xl border border-border">
                   <span className="text-[10px] font-mono text-muted-foreground block">Daily Streak</span>
-                  <span className="text-xl font-bold text-amber-400">
+                  <span className="text-xl font-bold text-amber-700 dark:text-amber-400">
                     🔥 {triageResult.currentStreak} Days
                   </span>
                   <span className="text-[10px] text-muted-foreground block">
@@ -890,7 +890,7 @@ export default function DailyIncidentPage() {
                 </div>
                 <div className="bg-background p-3 rounded-xl border border-border">
                   <span className="text-[10px] font-mono text-muted-foreground block">Current League</span>
-                  <span className="text-xl font-bold text-indigo-400">
+                  <span className="text-xl font-bold text-indigo-700 dark:text-indigo-400">
                     🏆 {triageResult.currentLeague}
                   </span>
                   <span className="text-[10px] text-muted-foreground block">Weekly Promotion Active</span>
@@ -899,7 +899,7 @@ export default function DailyIncidentPage() {
 
               {/* Senior Principal Architect Feedback */}
               <div className="bg-background p-4 rounded-xl border border-border space-y-2">
-                <h4 className="text-xs font-mono text-amber-400 uppercase tracking-wider">
+                <h4 className="text-xs font-mono text-amber-700 dark:text-amber-400 uppercase tracking-wider">
                   👔 Senior Principal SRE Feedback
                 </h4>
                 <p className="text-xs text-muted-foreground leading-relaxed">
@@ -909,7 +909,7 @@ export default function DailyIncidentPage() {
 
               {/* Comprehensive Post-Mortem Analysis */}
               <div className="bg-background p-4 rounded-xl border border-border space-y-2">
-                <h4 className="text-xs font-mono text-cyan-400 uppercase tracking-wider">
+                <h4 className="text-xs font-mono text-cyan-700 dark:text-cyan-400 uppercase tracking-wider">
                   📑 Google/Meta Caliber Post-Mortem Root Cause & Prevention
                 </h4>
                 <p className="text-xs text-muted-foreground leading-relaxed font-sans">

@@ -85,11 +85,11 @@ export default function ResumeMatcherPrepPage() {
       <div className="max-w-7xl mx-auto space-y-8 relative z-10">
         {/* Header */}
         <div className="space-y-3">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-xs font-semibold">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-700 dark:text-indigo-400 text-xs font-semibold">
             <Sparkles className="w-4 h-4" />
             <span>Phase 17: Predictive Interview Prep & Skill Gap Engine</span>
           </div>
-          <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-white">
+          <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-foreground">
             AI Resume Tailoring & Prep Matcher
           </h1>
           <p className="text-sm text-muted-foreground max-w-2xl">
@@ -212,7 +212,7 @@ export default function ResumeMatcherPrepPage() {
                     <div className="text-xs uppercase font-semibold text-muted-foreground tracking-wider">
                       Role Match Readiness
                     </div>
-                    <div className="text-sm font-bold text-white mt-0.5">
+                    <div className="text-sm font-bold text-foreground mt-0.5">
                       {targetTitle}
                     </div>
                   </div>
@@ -228,13 +228,13 @@ export default function ResumeMatcherPrepPage() {
                 <div className="space-y-4">
                   {/* Verified Skills */}
                   <div>
-                    <div className="text-xs font-semibold text-emerald-400 flex items-center gap-1.5 mb-2">
+                    <div className="text-xs font-semibold text-emerald-700 dark:text-emerald-400 flex items-center gap-1.5 mb-2">
                       <CheckCircle2 className="w-3.5 h-3.5" />
                       <span>Verified Resume Competencies ({analysisResult.matchedSkills.length})</span>
                     </div>
                     <div className="flex flex-wrap gap-1.5">
                       {analysisResult.matchedSkills.map((s: string, idx: number) => (
-                        <span key={idx} className="px-2.5 py-1 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 text-xs font-mono">
+                        <span key={idx} className="px-2.5 py-1 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-300 text-xs font-mono">
                           {s}
                         </span>
                       ))}
@@ -243,13 +243,13 @@ export default function ResumeMatcherPrepPage() {
 
                   {/* Missing Gap Skills */}
                   <div>
-                    <div className="text-xs font-semibold text-amber-400 flex items-center gap-1.5 mb-2">
+                    <div className="text-xs font-semibold text-amber-700 dark:text-amber-400 flex items-center gap-1.5 mb-2">
                       <Target className="w-3.5 h-3.5" />
                       <span>Target Gap Skills to Defend ({analysisResult.missingSkills.length})</span>
                     </div>
                     <div className="flex flex-wrap gap-1.5">
                       {analysisResult.missingSkills.map((s: string, idx: number) => (
-                        <span key={idx} className="px-2.5 py-1 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-300 text-xs font-mono flex items-center gap-1">
+                        <span key={idx} className="px-2.5 py-1 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-300 text-xs font-mono flex items-center gap-1">
                           <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
                           {s}
                         </span>
@@ -260,14 +260,14 @@ export default function ResumeMatcherPrepPage() {
 
                 {/* Actionable Recommendations */}
                 <div className="p-4 rounded-2xl bg-background/70 border border-border space-y-2">
-                  <div className="text-[11px] font-mono text-indigo-400 font-semibold uppercase tracking-wider flex items-center gap-1.5">
+                  <div className="text-[11px] font-mono text-indigo-700 dark:text-indigo-400 font-semibold uppercase tracking-wider flex items-center gap-1.5">
                     <Zap className="w-3.5 h-3.5" />
                     <span>Personalized Architectural Roadmap</span>
                   </div>
                   <ul className="space-y-1.5 text-xs text-muted-foreground">
                     {analysisResult.recommendations.map((rec: string, idx: number) => (
                       <li key={idx} className="flex items-start gap-2">
-                        <span className="text-indigo-400 mt-0.5">•</span>
+                        <span className="text-indigo-700 dark:text-indigo-400 mt-0.5">•</span>
                         <span>{rec}</span>
                       </li>
                     ))}
@@ -278,7 +278,7 @@ export default function ResumeMatcherPrepPage() {
                 {analysisResult.generatedSprint && (
                   <div className="p-5 rounded-2xl bg-indigo-950/30 border border-indigo-500/40 space-y-4">
                     <div className="flex items-center justify-between">
-                      <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-indigo-500/20 text-indigo-300 uppercase font-semibold">
+                      <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-indigo-500/20 text-indigo-600 dark:text-indigo-300 uppercase font-semibold">
                         Synthesized Micro-Internship
                       </span>
                       <span className="text-xs font-mono text-muted-foreground uppercase">
@@ -287,7 +287,7 @@ export default function ResumeMatcherPrepPage() {
                     </div>
 
                     <div>
-                      <div className="text-sm font-bold text-white">
+                      <div className="text-sm font-bold text-foreground">
                         {analysisResult.generatedSprint.title}
                       </div>
                       <p className="text-xs text-muted-foreground mt-1 line-clamp-2">

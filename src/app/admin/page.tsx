@@ -357,7 +357,7 @@ export default function SuperAdminDashboard() {
       {/* Dashboard Top Header & Tabs Bar */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-border">
         <div>
-          <h1 className="text-2xl font-black tracking-tight text-white flex items-center space-x-2">
+          <h1 className="text-2xl font-black tracking-tight text-foreground flex items-center space-x-2">
             <span>Enterprise Operations Center</span>
           </h1>
           <p className="text-xs text-muted-foreground mt-1">
@@ -376,7 +376,7 @@ export default function SuperAdminDashboard() {
             className="p-2.5 rounded-xl bg-card border border-border hover:border-border text-muted-foreground hover:text-white transition-all cursor-pointer shadow-sm disabled:opacity-50"
             title="Refresh Dashboard Data"
           >
-            <RefreshCw className={`w-4 h-4 ${refreshing ? "animate-spin text-indigo-400" : ""}`} />
+            <RefreshCw className={`w-4 h-4 ${refreshing ? "animate-spin text-indigo-700 dark:text-indigo-400" : ""}`} />
           </button>
 
           {/* Tab Selection Buttons */}
@@ -434,12 +434,12 @@ export default function SuperAdminDashboard() {
             <div className="glass-card rounded-2xl p-5 border border-border hover:border-indigo-500/40 transition-all shadow-xl">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Total Users</span>
-                <div className="w-9 h-9 rounded-xl bg-indigo-500/15 border border-indigo-500/30 flex items-center justify-center text-indigo-400">
+                <div className="w-9 h-9 rounded-xl bg-indigo-500/15 border border-indigo-500/30 flex items-center justify-center text-indigo-700 dark:text-indigo-400">
                   <Users className="w-4 h-4" />
                 </div>
               </div>
               <div className="mt-3">
-                <span className="text-3xl font-extrabold text-white tracking-tight">
+                <span className="text-3xl font-extrabold text-foreground tracking-tight">
                   {analytics?.totalUsers ?? (loading ? "..." : 0)}
                 </span>
                 <p className="text-[11px] text-muted-foreground mt-1">Registered candidate &amp; engineer accounts</p>
@@ -450,16 +450,16 @@ export default function SuperAdminDashboard() {
             <div className="glass-card rounded-2xl p-5 border border-border hover:border-purple-500/40 transition-all shadow-xl">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Active Pro Tier</span>
-                <div className="w-9 h-9 rounded-xl bg-purple-500/15 border border-purple-500/30 flex items-center justify-center text-purple-400">
+                <div className="w-9 h-9 rounded-xl bg-purple-500/15 border border-purple-500/30 flex items-center justify-center text-purple-700 dark:text-purple-400">
                   <Sparkles className="w-4 h-4" />
                 </div>
               </div>
               <div className="mt-3">
                 <div className="flex items-baseline space-x-2">
-                  <span className="text-3xl font-extrabold text-white tracking-tight">
+                  <span className="text-3xl font-extrabold text-foreground tracking-tight">
                     {analytics?.activeProSubscriptions ?? (loading ? "..." : 0)}
                   </span>
-                  <span className="text-xs font-bold text-purple-400">
+                  <span className="text-xs font-bold text-purple-700 dark:text-purple-400">
                     ({config.symbol}{analytics ? (config.id === "IN" ? (analytics.mrrEstimate * 83).toLocaleString("en-IN") : config.id === "EU" ? Math.round(analytics.mrrEstimate * 0.92) : analytics.mrrEstimate) : 0}/mo MRR)
                   </span>
                 </div>
@@ -473,12 +473,12 @@ export default function SuperAdminDashboard() {
             <div className="glass-card rounded-2xl p-5 border border-border hover:border-emerald-500/40 transition-all shadow-xl">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">B2B Leads Routed</span>
-                <div className="w-9 h-9 rounded-xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
+                <div className="w-9 h-9 rounded-xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-700 dark:text-emerald-400">
                   <Send className="w-4 h-4" />
                 </div>
               </div>
               <div className="mt-3">
-                <span className="text-3xl font-extrabold text-white tracking-tight">
+                <span className="text-3xl font-extrabold text-foreground tracking-tight">
                   {analytics?.totalLeadsGenerated ?? (loading ? "..." : 0)}
                 </span>
                 <p className="text-[11px] text-muted-foreground mt-1">Qualified candidate skill gap referrals dispatched</p>
@@ -494,7 +494,7 @@ export default function SuperAdminDashboard() {
                 </div>
               </div>
               <div className="mt-3">
-                <span className="text-3xl font-extrabold text-white tracking-tight">
+                <span className="text-3xl font-extrabold text-foreground tracking-tight">
                   {analytics?.totalInstitutes ?? (loading ? "..." : 0)}
                 </span>
                 <p className="text-[11px] text-muted-foreground mt-1">Affiliate academies &amp; bootcamps connected</p>
@@ -505,12 +505,12 @@ export default function SuperAdminDashboard() {
             <div className="glass-card rounded-2xl p-5 border border-border hover:border-amber-500/40 transition-all shadow-xl">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Active Courses</span>
-                <div className="w-9 h-9 rounded-xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400">
+                <div className="w-9 h-9 rounded-xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-700 dark:text-amber-400">
                   <BookOpen className="w-4 h-4" />
                 </div>
               </div>
               <div className="mt-3">
-                <span className="text-3xl font-extrabold text-white tracking-tight">
+                <span className="text-3xl font-extrabold text-foreground tracking-tight">
                   {analytics?.totalCourses ?? (loading ? "..." : 0)}
                 </span>
                 <p className="text-[11px] text-muted-foreground mt-1">Curated programs mapped to technical failure tags</p>
@@ -526,7 +526,7 @@ export default function SuperAdminDashboard() {
                 </div>
               </div>
               <div className="mt-3">
-                <span className="text-3xl font-extrabold text-white tracking-tight">
+                <span className="text-3xl font-extrabold text-foreground tracking-tight">
                   {analytics?.totalCredentials ?? (loading ? "..." : 0)}
                 </span>
                 <p className="text-[11px] text-muted-foreground mt-1">Official tamper-evident digital certifications issued</p>
@@ -537,7 +537,7 @@ export default function SuperAdminDashboard() {
           {/* Real-time Infrastructure & Engine Status Panel */}
           <div className="glass-panel rounded-3xl p-6 border border-border space-y-4 shadow-xl">
             <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground flex items-center space-x-2">
-              <Radio className="w-4 h-4 text-emerald-400 animate-pulse" />
+              <Radio className="w-4 h-4 text-emerald-700 dark:text-emerald-400 animate-pulse" />
               <span>Engine Status &amp; Integration Health</span>
             </h3>
 
@@ -579,8 +579,8 @@ export default function SuperAdminDashboard() {
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <div>
-                <h2 className="text-lg font-bold text-white flex items-center space-x-2">
-                  <Building2 className="w-5 h-5 text-indigo-400" />
+                <h2 className="text-lg font-bold text-foreground flex items-center space-x-2">
+                  <Building2 className="w-5 h-5 text-indigo-700 dark:text-indigo-400" />
                   <span>Partner Institutes ({institutes.length})</span>
                 </h2>
                 <p className="text-xs text-muted-foreground">B2B affiliate education providers receiving qualified candidate leads.</p>
@@ -605,7 +605,7 @@ export default function SuperAdminDashboard() {
                 >
                   <div className="flex items-start justify-between">
                     <div>
-                      <h3 className="text-base font-bold text-white">{inst.name}</h3>
+                      <h3 className="text-base font-bold text-foreground">{inst.name}</h3>
                       <p className="text-[11px] text-muted-foreground font-mono mt-0.5">ID: {inst.id}</p>
                     </div>
 
@@ -623,7 +623,7 @@ export default function SuperAdminDashboard() {
                   <div className="space-y-1.5 text-xs text-muted-foreground">
                     <div className="flex items-center justify-between py-1 border-t border-border/60">
                       <span className="text-muted-foreground">Webhook Endpoint:</span>
-                      <span className="font-mono text-[11px] text-indigo-300 truncate max-w-[240px]" title={inst.webhookUrl}>
+                      <span className="font-mono text-[11px] text-indigo-600 dark:text-indigo-300 truncate max-w-[240px]" title={inst.webhookUrl}>
                         {inst.webhookUrl || "No webhook URL configured"}
                       </span>
                     </div>
@@ -645,10 +645,10 @@ export default function SuperAdminDashboard() {
                     <div className="flex items-center justify-between pt-1 border-t border-border/60">
                       <span className="text-muted-foreground">Catalog &amp; Activity:</span>
                       <div className="flex items-center space-x-3">
-                        <span className="px-2 py-0.5 rounded-md bg-indigo-500/10 text-indigo-400 font-semibold text-[11px]">
+                        <span className="px-2 py-0.5 rounded-md bg-indigo-500/10 text-indigo-700 dark:text-indigo-400 font-semibold text-[11px]">
                           {inst.courseCount ?? 0} Courses
                         </span>
-                        <span className="px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-400 font-semibold text-[11px]">
+                        <span className="px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 font-semibold text-[11px]">
                           {inst.leadCount ?? 0} Leads Routed
                         </span>
                       </div>
@@ -663,8 +663,8 @@ export default function SuperAdminDashboard() {
           <div className="space-y-4 pt-6 border-t border-border">
             <div className="flex items-center justify-between">
               <div>
-                <h2 className="text-lg font-bold text-white flex items-center space-x-2">
-                  <BookOpen className="w-5 h-5 text-purple-400" />
+                <h2 className="text-lg font-bold text-foreground flex items-center space-x-2">
+                  <BookOpen className="w-5 h-5 text-purple-700 dark:text-purple-400" />
                   <span>Courses &amp; Skill Gap Mappings ({courses.length})</span>
                 </h2>
                 <p className="text-xs text-muted-foreground">
@@ -695,10 +695,10 @@ export default function SuperAdminDashboard() {
                   <div className="space-y-2">
                     <div className="flex items-start justify-between">
                       <div>
-                        <span className="inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 mb-1">
+                        <span className="inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-indigo-500/10 text-indigo-700 dark:text-indigo-400 border border-indigo-500/20 mb-1">
                           {course.instituteName}
                         </span>
-                        <h3 className="text-base font-bold text-white leading-tight">{course.courseName}</h3>
+                        <h3 className="text-base font-bold text-foreground leading-tight">{course.courseName}</h3>
                       </div>
 
                       <button
@@ -719,7 +719,7 @@ export default function SuperAdminDashboard() {
                   <div className="pt-3 border-t border-border/70 space-y-2">
                     <div className="flex items-center justify-between text-xs">
                       <span className="font-semibold text-muted-foreground flex items-center space-x-1">
-                        <Tag className="w-3 h-3 text-purple-400" />
+                        <Tag className="w-3 h-3 text-purple-700 dark:text-purple-400" />
                         <span>Mapped Failure Tags:</span>
                       </span>
 
@@ -730,7 +730,7 @@ export default function SuperAdminDashboard() {
                             setActiveCourseIdForTag(course.id);
                             setNewSkillTagInput("");
                           }}
-                          className="text-[11px] font-bold text-purple-400 hover:text-purple-300 cursor-pointer flex items-center space-x-0.5"
+                          className="text-[11px] font-bold text-purple-700 dark:text-purple-400 hover:text-purple-600 dark:text-purple-300 cursor-pointer flex items-center space-x-0.5"
                         >
                           <Plus className="w-3 h-3" />
                           <span>Add Tag</span>
@@ -804,8 +804,8 @@ export default function SuperAdminDashboard() {
           <div className="glass-panel rounded-2xl p-5 border border-border space-y-4">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
               <div>
-                <h2 className="text-lg font-bold text-white flex items-center space-x-2">
-                  <FileSpreadsheet className="w-5 h-5 text-emerald-400" />
+                <h2 className="text-lg font-bold text-foreground flex items-center space-x-2">
+                  <FileSpreadsheet className="w-5 h-5 text-emerald-700 dark:text-emerald-400" />
                   <span>Lead Referral Invoicing &amp; Audit Log</span>
                 </h2>
                 <p className="text-xs text-muted-foreground">
@@ -890,23 +890,23 @@ export default function SuperAdminDashboard() {
                           {new Date(lead.createdAt).toLocaleString()}
                         </td>
                         <td className="py-3 px-4">
-                          <div className="font-bold text-white">{lead.candidateName}</div>
+                          <div className="font-bold text-foreground">{lead.candidateName}</div>
                           <div className="text-[11px] text-muted-foreground">{lead.candidateEmail}</div>
                         </td>
                         <td className="py-3 px-4 font-medium text-foreground">
                           {lead.instituteName}
                         </td>
-                        <td className="py-3 px-4 text-indigo-300">
+                        <td className="py-3 px-4 text-indigo-600 dark:text-indigo-300">
                           {lead.courseName}
                         </td>
                         <td className="py-3 px-4 whitespace-nowrap">
                           <span
                             className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
                               lead.status === "Pending"
-                                ? "bg-amber-500/10 text-amber-400 border border-amber-500/30"
+                                ? "bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/30"
                                 : lead.status === "Contacted"
-                                ? "bg-blue-500/10 text-blue-400 border border-blue-500/30"
-                                : "bg-emerald-500/10 text-emerald-400 border border-emerald-500/30"
+                                ? "bg-blue-500/10 text-blue-700 dark:text-blue-400 border border-blue-500/30"
+                                : "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/30"
                             }`}
                           >
                             {lead.status}
@@ -942,8 +942,8 @@ export default function SuperAdminDashboard() {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-in fade-in">
           <div className="max-w-md w-full glass-panel rounded-3xl p-6 border border-border shadow-2xl space-y-4">
             <div className="flex items-center justify-between pb-3 border-b border-border">
-              <h3 className="text-base font-bold text-white flex items-center space-x-2">
-                <Building2 className="w-5 h-5 text-indigo-400" />
+              <h3 className="text-base font-bold text-foreground flex items-center space-x-2">
+                <Building2 className="w-5 h-5 text-indigo-700 dark:text-indigo-400" />
                 <span>Add Partner Institute</span>
               </h3>
               <button
@@ -1017,8 +1017,8 @@ export default function SuperAdminDashboard() {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-in fade-in">
           <div className="max-w-md w-full glass-panel rounded-3xl p-6 border border-border shadow-2xl space-y-4">
             <div className="flex items-center justify-between pb-3 border-b border-border">
-              <h3 className="text-base font-bold text-white flex items-center space-x-2">
-                <BookOpen className="w-5 h-5 text-purple-400" />
+              <h3 className="text-base font-bold text-foreground flex items-center space-x-2">
+                <BookOpen className="w-5 h-5 text-purple-700 dark:text-purple-400" />
                 <span>Add Course &amp; Map Skills</span>
               </h3>
               <button

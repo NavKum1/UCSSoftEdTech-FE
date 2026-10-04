@@ -215,11 +215,11 @@ export default function SpeedArchitectArenaPage() {
   }
 
   const availableComponents = [
-    { type: "API_Gateway", label: "Anycast Edge Gateway", color: "border-cyan-500/50 bg-cyan-950/20 text-cyan-300" },
-    { type: "Distributed_Cache_Redis", label: "Redis Cluster", color: "border-purple-500/50 bg-purple-950/20 text-purple-300" },
-    { type: "Transactional_Outbox_WAL", label: "Transactional WAL Outbox", color: "border-amber-500/50 bg-amber-950/20 text-amber-300" },
-    { type: "Raft_Consensus_Cluster", label: "Raft Consensus Quorum", color: "border-emerald-500/50 bg-emerald-950/20 text-emerald-300" },
-    { type: "Distributed_SQL_Spanner", label: "Spanner Distributed SQL", color: "border-blue-500/50 bg-blue-950/20 text-blue-300" },
+    { type: "API_Gateway", label: "Anycast Edge Gateway", color: "border-cyan-500/50 bg-cyan-950/20 text-cyan-600 dark:text-cyan-300" },
+    { type: "Distributed_Cache_Redis", label: "Redis Cluster", color: "border-purple-500/50 bg-purple-950/20 text-purple-600 dark:text-purple-300" },
+    { type: "Transactional_Outbox_WAL", label: "Transactional WAL Outbox", color: "border-amber-500/50 bg-amber-950/20 text-amber-600 dark:text-amber-300" },
+    { type: "Raft_Consensus_Cluster", label: "Raft Consensus Quorum", color: "border-emerald-500/50 bg-emerald-950/20 text-emerald-600 dark:text-emerald-300" },
+    { type: "Distributed_SQL_Spanner", label: "Spanner Distributed SQL", color: "border-blue-500/50 bg-blue-950/20 text-blue-600 dark:text-blue-300" },
     { type: "Kafka_Event_Backplane", label: "Kafka Event Stream", color: "border-rose-500/50 bg-rose-950/20 text-rose-300" }
   ];
 
@@ -228,15 +228,15 @@ export default function SpeedArchitectArenaPage() {
       {/* Top Breadcrumb & Actions */}
       <div className="max-w-7xl mx-auto mb-6 flex flex-wrap items-center justify-between gap-4">
         <div className="flex items-center space-x-2 text-sm text-muted-foreground">
-          <Link href="/" className="hover:text-cyan-400 transition-colors">
+          <Link href="/" className="hover:text-cyan-700 dark:text-cyan-400 transition-colors">
             Home
           </Link>
           <span>/</span>
-          <Link href="/passport" className="hover:text-cyan-400 transition-colors">
+          <Link href="/passport" className="hover:text-cyan-700 dark:text-cyan-400 transition-colors">
             Career OS
           </Link>
           <span>/</span>
-          <span className="text-amber-400 font-medium">1v1 Speed-Architecting Flash-Wars</span>
+          <span className="text-amber-700 dark:text-amber-400 font-medium">1v1 Speed-Architecting Flash-Wars</span>
         </div>
         <div className="flex items-center space-x-3">
           <button
@@ -245,7 +245,7 @@ export default function SpeedArchitectArenaPage() {
           >
             <span>🏆 Global Elo Leaderboard</span>
           </button>
-          <span className="px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 text-xs font-semibold text-amber-400 flex items-center space-x-1.5">
+          <span className="px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 text-xs font-semibold text-amber-700 dark:text-amber-400 flex items-center space-x-1.5">
             <span className="w-2 h-2 rounded-full bg-amber-400 animate-ping" />
             <span>FIDE Elo Matchmaking Online</span>
           </span>
@@ -258,14 +258,14 @@ export default function SpeedArchitectArenaPage() {
         <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
           <div>
             <div className="flex items-center space-x-2 mb-2">
-              <span className="px-2.5 py-0.5 rounded-md bg-amber-500/20 text-amber-300 text-xs font-bold uppercase tracking-wider border border-amber-500/30">
+              <span className="px-2.5 py-0.5 rounded-md bg-amber-500/20 text-amber-600 dark:text-amber-300 text-xs font-bold uppercase tracking-wider border border-amber-500/30">
                 Phase 37 • Live Multiplayer
               </span>
-              <span className="px-2.5 py-0.5 rounded-md bg-purple-500/20 text-purple-300 text-xs font-bold uppercase tracking-wider border border-purple-500/30">
+              <span className="px-2.5 py-0.5 rounded-md bg-purple-500/20 text-purple-600 dark:text-purple-300 text-xs font-bold uppercase tracking-wider border border-purple-500/30">
                 5-Minute Flash-War
               </span>
             </div>
-            <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight text-white mb-2">
+            <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight text-foreground mb-2">
               1v1 System Design Speed-Architecting Flash-Wars
             </h1>
             <p className="text-muted-foreground text-sm md:text-base max-w-2xl">
@@ -277,7 +277,7 @@ export default function SpeedArchitectArenaPage() {
           <div className="flex items-center space-x-4 bg-background/80 border border-border p-4 rounded-2xl shadow-inner">
             <div className="text-center px-4 border-r border-border">
               <div className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider">Duel Time</div>
-              <div className={`text-3xl font-black font-mono tracking-tight ${secondsRemaining < 60 ? "text-rose-400 animate-pulse" : "text-amber-400"}`}>
+              <div className={`text-3xl font-black font-mono tracking-tight ${secondsRemaining < 60 ? "text-rose-400 animate-pulse" : "text-amber-700 dark:text-amber-400"}`}>
                 {formatTime(secondsRemaining)}
               </div>
             </div>
@@ -311,16 +311,16 @@ export default function SpeedArchitectArenaPage() {
               onChange={(e) => setChaosHandled(e.target.checked)}
               className="rounded bg-card border-border text-amber-500 focus:ring-0"
             />
-            <span className="text-amber-400 font-bold">Chaos Auto-Failover Route Engaged</span>
+            <span className="text-amber-700 dark:text-amber-400 font-bold">Chaos Auto-Failover Route Engaged</span>
           </label>
         </div>
       </div>
 
       {/* Notification Toast */}
       {notification && (
-        <div className="max-w-7xl mx-auto mb-6 p-4 rounded-xl bg-cyan-950/50 border border-cyan-800 text-cyan-300 text-sm flex items-center justify-between">
+        <div className="max-w-7xl mx-auto mb-6 p-4 rounded-xl bg-cyan-950/50 border border-cyan-800 text-cyan-600 dark:text-cyan-300 text-sm flex items-center justify-between">
           <span>{notification}</span>
-          <button onClick={() => setNotification(null)} className="text-cyan-400 hover:text-white font-bold ml-4">
+          <button onClick={() => setNotification(null)} className="text-cyan-700 dark:text-cyan-400 hover:text-white font-bold ml-4">
             ✕
           </button>
         </div>
@@ -331,24 +331,24 @@ export default function SpeedArchitectArenaPage() {
         {/* Player 1 Card */}
         <div className="md:col-span-5 bg-card border border-cyan-500/40 p-4 rounded-2xl shadow-xl flex items-center justify-between">
           <div className="flex items-center space-x-3">
-            <div className="w-12 h-12 rounded-xl bg-cyan-500/20 border border-cyan-500/40 flex items-center justify-center font-bold text-cyan-400 text-lg">
+            <div className="w-12 h-12 rounded-xl bg-cyan-500/20 border border-cyan-500/40 flex items-center justify-center font-bold text-cyan-700 dark:text-cyan-400 text-lg">
               AC
             </div>
             <div>
-              <div className="text-xs font-semibold text-cyan-400 uppercase">You (Player 1)</div>
-              <div className="text-base font-bold text-white">Alex Chen</div>
+              <div className="text-xs font-semibold text-cyan-700 dark:text-cyan-400 uppercase">You (Player 1)</div>
+              <div className="text-base font-bold text-foreground">Alex Chen</div>
               <div className="text-xs text-muted-foreground">Gold Tier • 5 Win Streak</div>
             </div>
           </div>
           <div className="text-right">
             <div className="text-[10px] text-muted-foreground uppercase font-semibold">Elo Rating</div>
-            <div className="text-2xl font-black text-cyan-400">1598</div>
+            <div className="text-2xl font-black text-cyan-700 dark:text-cyan-400">1598</div>
           </div>
         </div>
 
         {/* VS Divider */}
         <div className="md:col-span-1 text-center py-2">
-          <span className="px-3 py-1 rounded-full bg-muted text-amber-400 font-black text-xs border border-amber-500/30">
+          <span className="px-3 py-1 rounded-full bg-muted text-amber-700 dark:text-amber-400 font-black text-xs border border-amber-500/30">
             VS
           </span>
         </div>
@@ -356,12 +356,12 @@ export default function SpeedArchitectArenaPage() {
         {/* Player 2 Card */}
         <div className="md:col-span-5 bg-card border border-purple-500/40 p-4 rounded-2xl shadow-xl flex items-center justify-between">
           <div className="flex items-center space-x-3">
-            <div className="w-12 h-12 rounded-xl bg-purple-500/20 border border-purple-500/40 flex items-center justify-center font-bold text-purple-400 text-lg">
+            <div className="w-12 h-12 rounded-xl bg-purple-500/20 border border-purple-500/40 flex items-center justify-center font-bold text-purple-700 dark:text-purple-400 text-lg">
               ER
             </div>
             <div>
-              <div className="text-xs font-semibold text-purple-400 uppercase">Opponent</div>
-              <div className="text-base font-bold text-white">
+              <div className="text-xs font-semibold text-purple-700 dark:text-purple-400 uppercase">Opponent</div>
+              <div className="text-base font-bold text-foreground">
                 {currentMatch?.player2Name || "Dr. Elena Rostova (AI Principal)"}
               </div>
               <div className="text-xs text-muted-foreground">Diamond Tier • 85.2% WinRate</div>
@@ -369,7 +369,7 @@ export default function SpeedArchitectArenaPage() {
           </div>
           <div className="text-right">
             <div className="text-[10px] text-muted-foreground uppercase font-semibold">Elo Rating</div>
-            <div className="text-2xl font-black text-purple-400">
+            <div className="text-2xl font-black text-purple-700 dark:text-purple-400">
               {currentMatch?.player2Elo || 1890}
             </div>
           </div>
@@ -403,12 +403,12 @@ export default function SpeedArchitectArenaPage() {
             <div>
               <div className="flex items-center justify-between mb-4">
                 <div>
-                  <h2 className="text-lg font-bold text-white">Distributed Topology Canvas</h2>
+                  <h2 className="text-lg font-bold text-foreground">Distributed Topology Canvas</h2>
                   <p className="text-xs text-muted-foreground">
                     Arranged pipeline flow with failover routing & state replication
                   </p>
                 </div>
-                <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-muted text-cyan-300 border border-border">
+                <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-muted text-cyan-600 dark:text-cyan-300 border border-border">
                   {placedNodes.length} Active Nodes
                 </span>
               </div>
@@ -428,11 +428,11 @@ export default function SpeedArchitectArenaPage() {
                     </button>
                     <div className="flex items-center space-x-2 mb-1">
                       <span className="w-2 h-2 rounded-full bg-cyan-400" />
-                      <span className="text-[10px] text-cyan-400 font-semibold uppercase">{node.tier}</span>
+                      <span className="text-[10px] text-cyan-700 dark:text-cyan-400 font-semibold uppercase">{node.tier}</span>
                     </div>
-                    <div className="text-sm font-bold text-white truncate">{node.name}</div>
+                    <div className="text-sm font-bold text-foreground truncate">{node.name}</div>
                     <div className="text-[10px] text-muted-foreground mt-1 font-mono">{node.type}</div>
-                    <div className="mt-2 text-[10px] text-emerald-400 flex items-center space-x-1">
+                    <div className="mt-2 text-[10px] text-emerald-700 dark:text-emerald-400 flex items-center space-x-1">
                       <span>✓ Connected (Failover Ready)</span>
                     </div>
                   </div>
@@ -509,7 +509,7 @@ export default function SpeedArchitectArenaPage() {
                 <span
                   className={`px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider ${
                     duelResult.matchVerdict === "VICTORY"
-                      ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
+                      ? "bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 border border-emerald-500/30"
                       : "bg-rose-500/20 text-rose-400 border border-rose-500/30"
                   }`}
                 >
@@ -521,11 +521,11 @@ export default function SpeedArchitectArenaPage() {
               <div className="p-3 rounded-xl bg-background border border-border flex items-center justify-between">
                 <div>
                   <div className="text-[10px] text-muted-foreground font-semibold uppercase">Elo Rating Shift</div>
-                  <div className="text-xl font-black text-amber-400">
+                  <div className="text-xl font-black text-amber-700 dark:text-amber-400">
                     {duelResult.newElo}
                   </div>
                 </div>
-                <span className="px-2.5 py-1 rounded-lg bg-emerald-500/20 text-emerald-400 font-bold text-xs">
+                <span className="px-2.5 py-1 rounded-lg bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 font-bold text-xs">
                   +{duelResult.eloDelta} Elo
                 </span>
               </div>
@@ -534,19 +534,19 @@ export default function SpeedArchitectArenaPage() {
               <div className="grid grid-cols-2 gap-2 text-xs">
                 <div className="p-2 rounded-lg bg-background border border-border">
                   <div className="text-[10px] text-muted-foreground uppercase">Throughput</div>
-                  <div className="font-bold text-cyan-400">{duelResult.throughputScore}%</div>
+                  <div className="font-bold text-cyan-700 dark:text-cyan-400">{duelResult.throughputScore}%</div>
                 </div>
                 <div className="p-2 rounded-lg bg-background border border-border">
                   <div className="text-[10px] text-muted-foreground uppercase">Resilience</div>
-                  <div className="font-bold text-emerald-400">{duelResult.resilienceScore}%</div>
+                  <div className="font-bold text-emerald-700 dark:text-emerald-400">{duelResult.resilienceScore}%</div>
                 </div>
                 <div className="p-2 rounded-lg bg-background border border-border">
                   <div className="text-[10px] text-muted-foreground uppercase">Latency</div>
-                  <div className="font-bold text-purple-400">{duelResult.latencyScore}%</div>
+                  <div className="font-bold text-purple-700 dark:text-purple-400">{duelResult.latencyScore}%</div>
                 </div>
                 <div className="p-2 rounded-lg bg-background border border-border">
                   <div className="text-[10px] text-muted-foreground uppercase">Overall Score</div>
-                  <div className="font-bold text-amber-400">{duelResult.overallScore}%</div>
+                  <div className="font-bold text-amber-700 dark:text-amber-400">{duelResult.overallScore}%</div>
                 </div>
               </div>
 
@@ -560,7 +560,7 @@ export default function SpeedArchitectArenaPage() {
           {/* Global Leaderboard Standings Drawer */}
           {showLeaderboard && (
             <div className="bg-card border border-border rounded-2xl p-6 shadow-xl space-y-3">
-              <h3 className="text-sm font-bold text-white flex items-center justify-between">
+              <h3 className="text-sm font-bold text-foreground flex items-center justify-between">
                 <span>Top Speed Architects</span>
                 <span className="text-xs text-muted-foreground">Season 2026</span>
               </h3>
@@ -571,14 +571,14 @@ export default function SpeedArchitectArenaPage() {
                     className="p-2.5 rounded-xl bg-background border border-border flex items-center justify-between text-xs"
                   >
                     <div className="flex items-center space-x-2">
-                      <span className="font-bold text-amber-400">#{entry.rank}</span>
+                      <span className="font-bold text-amber-700 dark:text-amber-400">#{entry.rank}</span>
                       <span className="font-bold text-foreground">{entry.playerName}</span>
                       <span className="px-1.5 py-0.5 rounded text-[10px] bg-muted text-muted-foreground">
                         {entry.leagueTier}
                       </span>
                     </div>
                     <div className="text-right">
-                      <span className="font-black text-cyan-400">{entry.currentElo} Elo</span>
+                      <span className="font-black text-cyan-700 dark:text-cyan-400">{entry.currentElo} Elo</span>
                       <span className="text-[10px] text-muted-foreground ml-2">({entry.winRate}%)</span>
                     </div>
                   </div>

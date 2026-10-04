@@ -21,15 +21,15 @@ export default function GlobalErrorPage({
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-red-600/20 blur-3xl rounded-full pointer-events-none"></div>
 
       <div className="max-w-md w-full glass-panel rounded-3xl p-8 border border-red-500/30 text-center space-y-6 relative z-10 shadow-2xl">
-        <div className="w-16 h-16 rounded-2xl bg-red-500/10 border border-red-500/30 text-red-400 flex items-center justify-center mx-auto shadow-lg shadow-red-500/10">
+        <div className="w-16 h-16 rounded-2xl bg-red-500/10 border border-red-500/30 text-red-700 dark:text-red-400 flex items-center justify-center mx-auto shadow-lg shadow-red-500/10">
           <ShieldAlert className="w-8 h-8" />
         </div>
 
         <div className="space-y-2">
-          <span className="text-xs font-semibold text-red-400 uppercase tracking-widest">
+          <span className="text-xs font-semibold text-red-700 dark:text-red-400 uppercase tracking-widest">
             Service Notice
           </span>
-          <h1 className="text-2xl font-extrabold text-white">Something Went Wrong</h1>
+          <h1 className="text-2xl font-extrabold text-foreground">Something Went Wrong</h1>
           <p className="text-xs text-muted-foreground leading-relaxed">
             We encountered an unexpected issue while loading this page. Please try again or return to your dashboard.
           </p>
@@ -38,7 +38,7 @@ export default function GlobalErrorPage({
         {error?.digest && (
           <div className="bg-card/80 p-3 rounded-xl border border-border text-[11px] font-mono text-muted-foreground flex items-center justify-between">
             <span>Reference Code:</span>
-            <span className="text-red-400 font-bold">{error.digest}</span>
+            <span className="text-red-700 dark:text-red-400 font-bold">{error.digest}</span>
           </div>
         )}
 

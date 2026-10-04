@@ -309,7 +309,7 @@ export default function EdulexaDashboardPage() {
                 <h1 className="text-2xl font-bold tracking-tight bg-gradient-to-r from-white via-slate-200 to-slate-400 bg-clip-text text-transparent">
                   Edulexa Partner &amp; Creator Dashboard
                 </h1>
-                <span className="px-2 py-0.5 rounded text-[10px] font-mono font-medium bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
+                <span className="px-2 py-0.5 rounded text-[10px] font-mono font-medium bg-indigo-500/10 text-indigo-700 dark:text-indigo-400 border border-indigo-500/20">
                   Live Dashboard
                 </span>
               </div>
@@ -326,7 +326,7 @@ export default function EdulexaDashboardPage() {
               <RefreshCw className="h-3.5 w-3.5" />
               Reset Demo Data
             </button>
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border border-emerald-500/30 bg-emerald-500/10 text-emerald-400 text-xs font-mono">
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 text-xs font-mono">
               <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse"></span>
               {metrics?.edgeStatus || "Cloud Delivery Active"}
             </div>
@@ -338,12 +338,12 @@ export default function EdulexaDashboardPage() {
           <div className="rounded-xl border border-border bg-card/50 p-5 shadow-sm">
             <div className="flex items-center justify-between">
               <span className="text-xs font-mono uppercase tracking-wider text-muted-foreground">Recovered Revenue</span>
-              <DollarSign className="h-4 w-4 text-emerald-400" />
+              <DollarSign className="h-4 w-4 text-emerald-700 dark:text-emerald-400" />
             </div>
-            <div className="text-2xl font-bold text-white mt-2">
+            <div className="text-2xl font-bold text-foreground mt-2">
               {formatCurrency(convertFromInr(metrics?.totalRecoveredGmv || config.metrics.recoveredGmvSample))}
             </div>
-            <div className="text-[11px] text-emerald-400 mt-1 font-mono">
+            <div className="text-[11px] text-emerald-700 dark:text-emerald-400 mt-1 font-mono">
               +24.3% checkout recovery with voice follow-up
             </div>
           </div>
@@ -351,12 +351,12 @@ export default function EdulexaDashboardPage() {
           <div className="rounded-xl border border-border bg-card/50 p-5 shadow-sm">
             <div className="flex items-center justify-between">
               <span className="text-xs font-mono uppercase tracking-wider text-muted-foreground">Voice Conversion</span>
-              <PhoneCall className="h-4 w-4 text-indigo-400" />
+              <PhoneCall className="h-4 w-4 text-indigo-700 dark:text-indigo-400" />
             </div>
-            <div className="text-2xl font-bold text-white mt-2">
+            <div className="text-2xl font-bold text-foreground mt-2">
               {metrics?.voiceRecoveryRatePercent || 24.3}%
             </div>
-            <div className="text-[11px] text-indigo-400 mt-1 font-mono">
+            <div className="text-[11px] text-indigo-700 dark:text-indigo-400 mt-1 font-mono">
               Quick outbound calls after checkout drop-off
             </div>
           </div>
@@ -364,12 +364,12 @@ export default function EdulexaDashboardPage() {
           <div className="rounded-xl border border-border bg-card/50 p-5 shadow-sm">
             <div className="flex items-center justify-between">
               <span className="text-xs font-mono uppercase tracking-wider text-muted-foreground">Protected Assets</span>
-              <Shield className="h-4 w-4 text-cyan-400" />
+              <Shield className="h-4 w-4 text-cyan-700 dark:text-cyan-400" />
             </div>
-            <div className="text-2xl font-bold text-white mt-2">
+            <div className="text-2xl font-bold text-foreground mt-2">
               {metrics?.protectedAssetsCount || 6} Assets
             </div>
-            <div className="text-[11px] text-cyan-400 mt-1 font-mono">
+            <div className="text-[11px] text-cyan-700 dark:text-cyan-400 mt-1 font-mono">
               Protected against leaks with secure access links
             </div>
           </div>
@@ -379,12 +379,12 @@ export default function EdulexaDashboardPage() {
               <span className="text-xs font-mono uppercase tracking-wider text-muted-foreground">
                 {region === "IN" ? "Mentor TDS Withheld" : region === "US" ? "1099-NEC Tax Total" : "DAC7 Payout Total"}
               </span>
-              <FileSpreadsheet className="h-4 w-4 text-amber-400" />
+              <FileSpreadsheet className="h-4 w-4 text-amber-700 dark:text-amber-400" />
             </div>
-            <div className="text-2xl font-bold text-white mt-2">
+            <div className="text-2xl font-bold text-foreground mt-2">
               {formatCurrency(convertFromInr(metrics?.totalTdsWithheldRupees || config.metrics.taxWithheldSample))}
             </div>
-            <div className="text-[11px] text-amber-400 mt-1 font-mono">
+            <div className="text-[11px] text-amber-700 dark:text-amber-400 mt-1 font-mono">
               {config.tax.withholdingLabel}
             </div>
           </div>
@@ -396,7 +396,7 @@ export default function EdulexaDashboardPage() {
             onClick={() => setActiveTab("voice")}
             className={`flex items-center gap-2 px-4 py-2.5 text-sm font-medium border-b-2 transition ${
               activeTab === "voice"
-                ? "border-indigo-500 text-indigo-400"
+                ? "border-indigo-500 text-indigo-700 dark:text-indigo-400"
                 : "border-transparent text-muted-foreground hover:text-foreground"
             }`}
           >
@@ -407,7 +407,7 @@ export default function EdulexaDashboardPage() {
             onClick={() => setActiveTab("shield")}
             className={`flex items-center gap-2 px-4 py-2.5 text-sm font-medium border-b-2 transition ${
               activeTab === "shield"
-                ? "border-cyan-500 text-cyan-400"
+                ? "border-cyan-500 text-cyan-700 dark:text-cyan-400"
                 : "border-transparent text-muted-foreground hover:text-foreground"
             }`}
           >
@@ -418,7 +418,7 @@ export default function EdulexaDashboardPage() {
             onClick={() => setActiveTab("hrms")}
             className={`flex items-center gap-2 px-4 py-2.5 text-sm font-medium border-b-2 transition ${
               activeTab === "hrms"
-                ? "border-amber-500 text-amber-400"
+                ? "border-amber-500 text-amber-700 dark:text-amber-400"
                 : "border-transparent text-muted-foreground hover:text-foreground"
             }`}
           >
@@ -429,7 +429,7 @@ export default function EdulexaDashboardPage() {
             onClick={() => setActiveTab("api")}
             className={`flex items-center gap-2 px-4 py-2.5 text-sm font-medium border-b-2 transition ${
               activeTab === "api"
-                ? "border-emerald-500 text-emerald-400"
+                ? "border-emerald-500 text-emerald-700 dark:text-emerald-400"
                 : "border-transparent text-muted-foreground hover:text-foreground"
             }`}
           >
@@ -443,8 +443,8 @@ export default function EdulexaDashboardPage() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div className="lg:col-span-1 rounded-xl border border-border bg-card/60 p-6 space-y-5">
               <div>
-                <h3 className="text-base font-semibold text-white flex items-center gap-2">
-                  <Play className="h-4 w-4 text-indigo-400" />
+                <h3 className="text-base font-semibold text-foreground flex items-center gap-2">
+                  <Play className="h-4 w-4 text-indigo-700 dark:text-indigo-400" />
                   Start Voice Recovery Call
                 </h3>
                 <p className="text-xs text-muted-foreground mt-1">
@@ -524,7 +524,7 @@ export default function EdulexaDashboardPage() {
             <div className="lg:col-span-2 rounded-xl border border-border bg-card/60 p-6 space-y-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="text-base font-semibold text-white">Live Outbound Recovery Queue</h3>
+                  <h3 className="text-base font-semibold text-foreground">Live Outbound Recovery Queue</h3>
                   <p className="text-xs text-muted-foreground">Tracking candidates called after cart abandonment.</p>
                 </div>
                 <span className="text-xs font-mono text-muted-foreground">Total Calls: {campaigns.length}</span>
@@ -546,7 +546,7 @@ export default function EdulexaDashboardPage() {
                     {campaigns.map((c) => (
                       <tr key={c.id} className="hover:bg-muted/40">
                         <td className="py-3 px-3">
-                          <div className="font-medium text-white">{c.candidateName}</div>
+                          <div className="font-medium text-foreground">{c.candidateName}</div>
                           <div className="text-[10px] text-muted-foreground font-mono">{c.candidatePhone}</div>
                         </td>
                         <td className="py-3 px-3 max-w-[200px] truncate">{c.cartItemName}</td>
@@ -554,7 +554,7 @@ export default function EdulexaDashboardPage() {
                           {formatCurrency(convertFromInr(c.cartAmount))}
                         </td>
                         <td className="py-3 px-3">
-                          <span className="px-2 py-0.5 rounded font-mono text-[10px] bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
+                          <span className="px-2 py-0.5 rounded font-mono text-[10px] bg-indigo-500/10 text-indigo-700 dark:text-indigo-400 border border-indigo-500/20">
                             {c.discountCodeOffered} ({c.discountPercent}%)
                           </span>
                         </td>
@@ -562,9 +562,9 @@ export default function EdulexaDashboardPage() {
                           <span
                             className={`px-2 py-0.5 rounded-full text-[10px] font-medium font-mono ${
                               c.callStatus === "Converted"
-                                ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
+                                ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20"
                                 : c.callStatus === "Calling"
-                                ? "bg-amber-500/10 text-amber-400 border border-amber-500/20 animate-pulse"
+                                ? "bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/20 animate-pulse"
                                 : "bg-slate-700/50 text-muted-foreground"
                             }`}
                           >
@@ -588,8 +588,8 @@ export default function EdulexaDashboardPage() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div className="lg:col-span-1 space-y-6">
               <div className="rounded-xl border border-border bg-card/60 p-6 space-y-4">
-                <h3 className="text-base font-semibold text-white flex items-center gap-2">
-                  <Lock className="h-4 w-4 text-cyan-400" />
+                <h3 className="text-base font-semibold text-foreground flex items-center gap-2">
+                  <Lock className="h-4 w-4 text-cyan-700 dark:text-cyan-400" />
                   Sign Protected Asset URL
                 </h3>
                 <p className="text-xs text-muted-foreground">
@@ -637,7 +637,7 @@ export default function EdulexaDashboardPage() {
 
                 {signedResult && (
                   <div className="mt-4 p-4 rounded-lg border border-cyan-500/20 bg-cyan-950/20 space-y-2">
-                    <div className="text-xs font-semibold text-cyan-400 flex items-center gap-1.5">
+                    <div className="text-xs font-semibold text-cyan-700 dark:text-cyan-400 flex items-center gap-1.5">
                       <CheckCircle2 className="h-3.5 w-3.5" />
                       HMAC Token Issued
                     </div>
@@ -653,7 +653,7 @@ export default function EdulexaDashboardPage() {
 
               {/* Leak Attribution Investigator */}
               <div className="rounded-xl border border-border bg-card/60 p-6 space-y-4">
-                <h3 className="text-base font-semibold text-white flex items-center gap-2">
+                <h3 className="text-base font-semibold text-foreground flex items-center gap-2">
                   <Search className="h-4 w-4 text-rose-400" />
                   Forensic Leak Attribution (&lt;60s)
                 </h3>
@@ -691,7 +691,7 @@ export default function EdulexaDashboardPage() {
                     <div className="text-muted-foreground font-mono text-[11px]">
                       IP: {attributionResult.clientIp} • Device: {attributionResult.deviceFingerprint}
                     </div>
-                    <div className="text-emerald-400 text-[11px] pt-1">
+                    <div className="text-emerald-700 dark:text-emerald-400 text-[11px] pt-1">
                       Action Taken: {attributionResult.remediationAction}
                     </div>
                   </div>
@@ -703,12 +703,12 @@ export default function EdulexaDashboardPage() {
             <div className="lg:col-span-2 rounded-xl border border-border bg-card/60 p-6 space-y-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="text-base font-semibold text-white">Forensic Watermark Live Stream Preview</h3>
+                  <h3 className="text-base font-semibold text-foreground">Forensic Watermark Live Stream Preview</h3>
                   <p className="text-xs text-muted-foreground">
                     Demonstration of dynamic semi-transparent floating watermark applied over sensitive media.
                   </p>
                 </div>
-                <span className="px-2.5 py-1 rounded bg-cyan-500/10 text-cyan-400 text-xs font-mono border border-cyan-500/20">
+                <span className="px-2.5 py-1 rounded bg-cyan-500/10 text-cyan-700 dark:text-cyan-400 text-xs font-mono border border-cyan-500/20">
                   Widevine L1 + HLS LSB
                 </span>
               </div>
@@ -716,7 +716,7 @@ export default function EdulexaDashboardPage() {
               <div className="relative h-80 rounded-xl overflow-hidden border border-border bg-background flex flex-col items-center justify-center shadow-inner">
                 {/* Simulated Code / Video Content */}
                 <div className="w-full h-full p-6 font-mono text-xs text-muted-foreground space-y-2 opacity-60 pointer-events-none">
-                  <div className="text-indigo-400">// Distributed Sharding Engine v2 - PROPRIETARY INTELLECTUAL PROPERTY</div>
+                  <div className="text-indigo-700 dark:text-indigo-400">// Distributed Sharding Engine v2 - PROPRIETARY INTELLECTUAL PROPERTY</div>
                   <div>public class RaftConsensusCluster : IConsensusController &#123;</div>
                   <div className="pl-4">private readonly Dictionary&lt;NodeId, PeerSocket&gt; _peers;</div>
                   <div className="pl-4">public async Task CommitLogEntryAsync(LogPayload entry) &#123;</div>
@@ -729,10 +729,10 @@ export default function EdulexaDashboardPage() {
                 {/* Floating Dynamic Forensic Watermark */}
                 <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                   <div className="p-3 border border-dashed border-cyan-400/40 rounded-lg bg-cyan-950/20 backdrop-blur-[1px] text-center transform -rotate-12 animate-pulse">
-                    <div className="font-mono text-xs font-semibold text-cyan-300 opacity-70">
+                    <div className="font-mono text-xs font-semibold text-cyan-600 dark:text-cyan-300 opacity-70">
                       {signedResult?.watermarkStamp || `${viewerEmail} • ID:f8a19c • 2026-10-02 08:00 UTC`}
                     </div>
-                    <div className="text-[9px] text-cyan-400/70 font-mono mt-0.5">
+                    <div className="text-[9px] text-cyan-700 dark:text-cyan-400/70 font-mono mt-0.5">
                       ANTI-PIRACY FORENSIC PIXEL TRACKER • LSB STEGANOGRAPHY ACTIVE
                     </div>
                   </div>
@@ -742,15 +742,15 @@ export default function EdulexaDashboardPage() {
               <div className="grid grid-cols-3 gap-4 pt-2 text-xs font-mono">
                 <div className="p-3 rounded-lg border border-border bg-background">
                   <span className="text-muted-foreground block text-[10px]">WATERMARK SURVIVAL</span>
-                  <span className="text-white font-medium">Re-encoding, Crop &amp; Resize</span>
+                  <span className="text-foreground font-medium">Re-encoding, Crop &amp; Resize</span>
                 </div>
                 <div className="p-3 rounded-lg border border-border bg-background">
                   <span className="text-muted-foreground block text-[10px]">TIME TO ATTRIBUTE</span>
-                  <span className="text-emerald-400 font-medium">&lt; 60 Seconds</span>
+                  <span className="text-emerald-700 dark:text-emerald-400 font-medium">&lt; 60 Seconds</span>
                 </div>
                 <div className="p-3 rounded-lg border border-border bg-background">
                   <span className="text-muted-foreground block text-[10px]">HARDWARE DRM</span>
-                  <span className="text-cyan-400 font-medium">Widevine L1 + FairPlay</span>
+                  <span className="text-cyan-700 dark:text-cyan-400 font-medium">Widevine L1 + FairPlay</span>
                 </div>
               </div>
             </div>
@@ -761,8 +761,8 @@ export default function EdulexaDashboardPage() {
         {activeTab === "hrms" && (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div className="lg:col-span-1 rounded-xl border border-border bg-card/60 p-6 space-y-4">
-              <h3 className="text-base font-semibold text-white flex items-center gap-2">
-                <FileSpreadsheet className="h-4 w-4 text-amber-400" />
+              <h3 className="text-base font-semibold text-foreground flex items-center gap-2">
+                <FileSpreadsheet className="h-4 w-4 text-amber-700 dark:text-amber-400" />
                 Process Mentor Session Payout
               </h3>
               <p className="text-xs text-muted-foreground">
@@ -824,11 +824,11 @@ export default function EdulexaDashboardPage() {
                     <span>Gross Calculation:</span>
                     <span>{formatCurrency(parseFloat(sessionsCount || "0") * parseFloat(sessionRate || "0"))}</span>
                   </div>
-                  <div className="flex justify-between text-amber-400">
+                  <div className="flex justify-between text-amber-700 dark:text-amber-400">
                     <span>{config.tax.withholdingLabel}:</span>
                     <span>-{formatCurrency((parseFloat(sessionsCount || "0") * parseFloat(sessionRate || "0")) * (config.tax.withholdingRatePercent / 100))}</span>
                   </div>
-                  <div className="flex justify-between font-bold text-white pt-1 border-t border-border">
+                  <div className="flex justify-between font-bold text-foreground pt-1 border-t border-border">
                     <span>Net Payout ({config.tax.payoutRail}):</span>
                     <span>{formatCurrency((parseFloat(sessionsCount || "0") * parseFloat(sessionRate || "0")) * (1 - config.tax.withholdingRatePercent / 100))}</span>
                   </div>
@@ -848,7 +848,7 @@ export default function EdulexaDashboardPage() {
             <div className="lg:col-span-2 rounded-xl border border-border bg-card/60 p-6 space-y-4">
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                 <div>
-                  <h3 className="text-base font-semibold text-white">Mentor Compensation Ledger</h3>
+                  <h3 className="text-base font-semibold text-foreground">Mentor Compensation Ledger</h3>
                   <p className="text-xs text-muted-foreground">Immutable ledger reconciled for bulk bank disbursement.</p>
                 </div>
                 <div className="flex items-center gap-2">
@@ -889,17 +889,17 @@ export default function EdulexaDashboardPage() {
                     {payouts.map((p) => (
                       <tr key={p.id} className="hover:bg-muted/40">
                         <td className="py-3 px-3">
-                          <div className="font-medium text-white">{p.mentorName}</div>
+                          <div className="font-medium text-foreground">{p.mentorName}</div>
                           <div className="text-[10px] text-muted-foreground font-mono">{p.mentorEmail}</div>
                         </td>
                         <td className="py-3 px-3 font-mono text-muted-foreground">{p.mentorPan}</td>
                         <td className="py-3 px-3 font-mono font-medium text-muted-foreground">
                           {formatCurrency(convertFromInr(p.grossAmount))}
                         </td>
-                        <td className="py-3 px-3 font-mono text-amber-400 font-medium">
+                        <td className="py-3 px-3 font-mono text-amber-700 dark:text-amber-400 font-medium">
                           -{formatCurrency(convertFromInr(p.tdsAmount))}
                         </td>
-                        <td className="py-3 px-3 font-mono text-emerald-400 font-bold">
+                        <td className="py-3 px-3 font-mono text-emerald-700 dark:text-emerald-400 font-bold">
                           {formatCurrency(convertFromInr(p.netAmount))}
                         </td>
                         <td className="py-3 px-3 font-mono text-[10px] text-muted-foreground">
@@ -909,10 +909,10 @@ export default function EdulexaDashboardPage() {
                           <span
                             className={`px-2 py-0.5 rounded-full text-[10px] font-medium font-mono ${
                               p.payoutStatus === "BatchExported"
-                                ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
+                                ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20"
                                 : p.payoutStatus === "Approved"
-                                ? "bg-indigo-500/10 text-indigo-400 border border-indigo-500/20"
-                                : "bg-amber-500/10 text-amber-400 border border-amber-500/20"
+                                ? "bg-indigo-500/10 text-indigo-700 dark:text-indigo-400 border border-indigo-500/20"
+                                : "bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/20"
                             }`}
                           >
                             {p.payoutStatus}
@@ -921,7 +921,7 @@ export default function EdulexaDashboardPage() {
                         <td className="py-3 px-3 text-right">
                           <button
                             onClick={() => handleFetchForm16A(p.id)}
-                            className="px-2.5 py-1 rounded bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-300 border border-indigo-500/20 text-[10px] font-mono inline-flex items-center gap-1 transition-colors cursor-pointer"
+                            className="px-2.5 py-1 rounded bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-600 dark:text-indigo-300 border border-indigo-500/20 text-[10px] font-mono inline-flex items-center gap-1 transition-colors cursor-pointer"
                           >
                             <FileText className="h-3 w-3" />
                             <span>Form 16A</span>
@@ -940,8 +940,8 @@ export default function EdulexaDashboardPage() {
         {activeTab === "api" && (
           <div className="rounded-xl border border-border bg-card/60 p-6 space-y-6">
             <div>
-              <h3 className="text-base font-semibold text-white flex items-center gap-2">
-                <Key className="h-4 w-4 text-emerald-400" />
+              <h3 className="text-base font-semibold text-foreground flex items-center gap-2">
+                <Key className="h-4 w-4 text-emerald-700 dark:text-emerald-400" />
                 Edulexa Public Headless API Reference
               </h3>
               <p className="text-xs text-muted-foreground mt-1">
@@ -951,7 +951,7 @@ export default function EdulexaDashboardPage() {
 
             <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
               <div className="p-3.5 rounded-lg border border-border bg-background space-y-1.5">
-                <span className="px-2 py-0.5 rounded font-mono text-[10px] bg-indigo-500/10 text-indigo-400 font-bold">
+                <span className="px-2 py-0.5 rounded font-mono text-[10px] bg-indigo-500/10 text-indigo-700 dark:text-indigo-400 font-bold">
                   POST /v1/voice/campaigns
                 </span>
                 <p className="text-[11px] text-muted-foreground">
@@ -959,7 +959,7 @@ export default function EdulexaDashboardPage() {
                 </p>
               </div>
               <div className="p-3.5 rounded-lg border border-border bg-background space-y-1.5">
-                <span className="px-2 py-0.5 rounded font-mono text-[10px] bg-cyan-500/10 text-cyan-400 font-bold">
+                <span className="px-2 py-0.5 rounded font-mono text-[10px] bg-cyan-500/10 text-cyan-700 dark:text-cyan-400 font-bold">
                   POST /v1/assets/sign
                 </span>
                 <p className="text-[11px] text-muted-foreground">
@@ -967,7 +967,7 @@ export default function EdulexaDashboardPage() {
                 </p>
               </div>
               <div className="p-3.5 rounded-lg border border-border bg-background space-y-1.5">
-                <span className="px-2 py-0.5 rounded font-mono text-[10px] bg-amber-500/10 text-amber-400 font-bold">
+                <span className="px-2 py-0.5 rounded font-mono text-[10px] bg-amber-500/10 text-amber-700 dark:text-amber-400 font-bold">
                   POST /v1/payouts
                 </span>
                 <p className="text-[11px] text-muted-foreground">
@@ -975,7 +975,7 @@ export default function EdulexaDashboardPage() {
                 </p>
               </div>
               <div className="p-3.5 rounded-lg border border-border bg-background space-y-1.5">
-                <span className="px-2 py-0.5 rounded font-mono text-[10px] bg-emerald-500/10 text-emerald-400 font-bold">
+                <span className="px-2 py-0.5 rounded font-mono text-[10px] bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 font-bold">
                   POST /v1/tenants
                 </span>
                 <p className="text-[11px] text-muted-foreground">
@@ -998,10 +998,10 @@ export default function EdulexaDashboardPage() {
               <div className="p-5 rounded-xl border border-border bg-background space-y-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <Sparkles className="h-4 w-4 text-cyan-400" />
-                    <h4 className="text-sm font-semibold text-white">Embeddable Creator Pixel</h4>
+                    <Sparkles className="h-4 w-4 text-cyan-700 dark:text-cyan-400" />
+                    <h4 className="text-sm font-semibold text-foreground">Embeddable Creator Pixel</h4>
                   </div>
-                  <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
+                  <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-cyan-500/10 text-cyan-700 dark:text-cyan-400 border border-cyan-500/20">
                     Kajabi / Teachable / Custom
                   </span>
                 </div>
@@ -1010,7 +1010,7 @@ export default function EdulexaDashboardPage() {
                 </p>
 
                 <div className="relative">
-                  <pre className="p-3 rounded-lg border border-border bg-card/80 text-[11px] font-mono text-cyan-300 overflow-x-auto">
+                  <pre className="p-3 rounded-lg border border-border bg-card/80 text-[11px] font-mono text-cyan-600 dark:text-cyan-300 overflow-x-auto">
 {`<script src="${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/v1/pixel.js" data-tenant="6c370735-4615-44f6-9d61-dbbb41d5d5cf" async></script>`}
                   </pre>
                   <button
@@ -1021,7 +1021,7 @@ export default function EdulexaDashboardPage() {
                     }}
                     className="absolute top-2 right-2 p-1.5 rounded bg-muted hover:bg-slate-700 text-muted-foreground hover:text-white transition-colors cursor-pointer"
                   >
-                    {copiedPixelScript ? <Check className="h-3.5 w-3.5 text-emerald-400" /> : <Copy className="h-3.5 w-3.5" />}
+                    {copiedPixelScript ? <Check className="h-3.5 w-3.5 text-emerald-700 dark:text-emerald-400" /> : <Copy className="h-3.5 w-3.5" />}
                   </button>
                 </div>
 
@@ -1036,7 +1036,7 @@ export default function EdulexaDashboardPage() {
 
                 {pixelTrackResult && (
                   <div className="p-3 rounded-lg border border-cyan-500/30 bg-cyan-950/20 text-xs font-mono space-y-1">
-                    <div className="text-cyan-400 font-semibold flex items-center gap-1.5">
+                    <div className="text-cyan-700 dark:text-cyan-400 font-semibold flex items-center gap-1.5">
                       <CheckCircle2 className="h-3.5 w-3.5" />
                       Pixel Event Logged Successfully
                     </div>
@@ -1056,10 +1056,10 @@ export default function EdulexaDashboardPage() {
               <div className="p-5 rounded-xl border border-border bg-background space-y-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <Send className="h-4 w-4 text-emerald-400" />
-                    <h4 className="text-sm font-semibold text-white">Signed Outgoing Webhook Dispatcher</h4>
+                    <Send className="h-4 w-4 text-emerald-700 dark:text-emerald-400" />
+                    <h4 className="text-sm font-semibold text-foreground">Signed Outgoing Webhook Dispatcher</h4>
                   </div>
-                  <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                  <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20">
                     HMAC-SHA256
                   </span>
                 </div>
@@ -1069,7 +1069,7 @@ export default function EdulexaDashboardPage() {
 
                 <div className="p-3 rounded-lg border border-border bg-card/80 text-[11px] font-mono text-muted-foreground space-y-1">
                   <div className="text-muted-foreground text-[10px]">ACTIVE ENDPOINT:</div>
-                  <div className="text-emerald-400">http://localhost:5000/api/partner/webhook-receiver</div>
+                  <div className="text-emerald-700 dark:text-emerald-400">http://localhost:5000/api/partner/webhook-receiver</div>
                   <div className="text-muted-foreground text-[10px] pt-1">HEADER FORMAT:</div>
                   <div className="text-muted-foreground">X-Edulexa-Signature: t=1790931488,v1=sha256...</div>
                 </div>
@@ -1085,7 +1085,7 @@ export default function EdulexaDashboardPage() {
 
                 {webhookDispatchResult && (
                   <div className="p-3 rounded-lg border border-emerald-500/30 bg-emerald-950/20 text-xs font-mono space-y-1">
-                    <div className="text-emerald-400 font-semibold flex items-center gap-1.5">
+                    <div className="text-emerald-700 dark:text-emerald-400 font-semibold flex items-center gap-1.5">
                       <CheckCircle2 className="h-3.5 w-3.5" />
                       Webhook Delivered (HTTP {webhookDispatchResult.responseStatusCode})
                     </div>
@@ -1106,13 +1106,13 @@ export default function EdulexaDashboardPage() {
                     setCopiedToken(true);
                     setTimeout(() => setCopiedToken(false), 2000);
                   }}
-                  className="inline-flex items-center gap-1 text-[11px] text-indigo-400 hover:text-indigo-300 cursor-pointer"
+                  className="inline-flex items-center gap-1 text-[11px] text-indigo-700 dark:text-indigo-400 hover:text-indigo-600 dark:text-indigo-300 cursor-pointer"
                 >
                   {copiedToken ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
                   {copiedToken ? "Copied" : "Copy SDK snippet"}
                 </button>
               </div>
-              <pre className="p-4 rounded-lg border border-border bg-background text-xs font-mono text-indigo-300 overflow-x-auto">
+              <pre className="p-4 rounded-lg border border-border bg-background text-xs font-mono text-indigo-600 dark:text-indigo-300 overflow-x-auto">
 {`// 1. Recover an Abandoned Bootcamp Cart in 90 Seconds
 await fetch("https://api.yourdomain.com/v1/voice/campaigns", {
   method: "POST",
@@ -1137,12 +1137,12 @@ await fetch("https://api.yourdomain.com/v1/voice/campaigns", {
           <div className="bg-card border border-border rounded-2xl max-w-2xl w-full p-6 space-y-5 shadow-2xl relative">
             <div className="flex items-center justify-between pb-3 border-b border-border">
               <div className="flex items-center gap-2.5">
-                <div className="h-8 w-8 rounded-lg bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400">
+                <div className="h-8 w-8 rounded-lg bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-700 dark:text-amber-400">
                   <FileText className="h-4 w-4" />
                 </div>
                 <div>
-                  <h3 className="text-base font-bold text-white">Form No. 16A — TDS Certificate</h3>
-                  <span className="text-[11px] font-mono text-amber-400">
+                  <h3 className="text-base font-bold text-foreground">Form No. 16A — TDS Certificate</h3>
+                  <span className="text-[11px] font-mono text-amber-700 dark:text-amber-400">
                     Certificate No: {form16ModalData.certificateNumber}
                   </span>
                 </div>
@@ -1158,13 +1158,13 @@ await fetch("https://api.yourdomain.com/v1/voice/campaigns", {
             <div className="grid grid-cols-2 gap-4 text-xs font-mono bg-background/60 p-4 rounded-xl border border-border">
               <div>
                 <span className="text-muted-foreground block text-[10px]">DEDUCTOR</span>
-                <span className="text-white font-semibold">{form16ModalData.deductorName}</span>
-                <span className="text-indigo-400 block text-[11px]">TAN: {form16ModalData.deductorTan}</span>
+                <span className="text-foreground font-semibold">{form16ModalData.deductorName}</span>
+                <span className="text-indigo-700 dark:text-indigo-400 block text-[11px]">TAN: {form16ModalData.deductorTan}</span>
               </div>
               <div>
                 <span className="text-muted-foreground block text-[10px]">DEDUCTEE / MENTOR</span>
-                <span className="text-white font-semibold">{form16ModalData.deducteeName}</span>
-                <span className="text-cyan-400 block text-[11px]">PAN: {form16ModalData.deducteePan}</span>
+                <span className="text-foreground font-semibold">{form16ModalData.deducteeName}</span>
+                <span className="text-cyan-700 dark:text-cyan-400 block text-[11px]">PAN: {form16ModalData.deducteePan}</span>
               </div>
               <div>
                 <span className="text-muted-foreground block text-[10px]">FINANCIAL &amp; ASSESSMENT YEAR</span>
@@ -1173,15 +1173,15 @@ await fetch("https://api.yourdomain.com/v1/voice/campaigns", {
               </div>
               <div>
                 <span className="text-muted-foreground block text-[10px]">TAX COMPLIANCE FRAMEWORK</span>
-                <span className="text-amber-400 font-semibold">{form16ModalData.taxSection || config.tax.regimeTitle}</span>
+                <span className="text-amber-700 dark:text-amber-400 font-semibold">{form16ModalData.taxSection || config.tax.regimeTitle}</span>
               </div>
               <div className="pt-2 border-t border-border">
                 <span className="text-muted-foreground block text-[10px]">GROSS AMOUNT PAID</span>
-                <span className="text-white text-sm font-bold">{formatCurrency(convertFromInr(form16ModalData.totalGrossAmountPaid || 0))}</span>
+                <span className="text-foreground text-sm font-bold">{formatCurrency(convertFromInr(form16ModalData.totalGrossAmountPaid || 0))}</span>
               </div>
               <div className="pt-2 border-t border-border">
                 <span className="text-muted-foreground block text-[10px]">TOTAL TAX WITHHELD ({config.tax.withholdingLabel})</span>
-                <span className="text-emerald-400 text-sm font-bold">{formatCurrency(convertFromInr(form16ModalData.totalTdsDeducted || 0))}</span>
+                <span className="text-emerald-700 dark:text-emerald-400 text-sm font-bold">{formatCurrency(convertFromInr(form16ModalData.totalTdsDeducted || 0))}</span>
               </div>
             </div>
 

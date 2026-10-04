@@ -174,12 +174,12 @@ export default function BehavioralSentimentPage() {
             <span className="px-2.5 py-1 text-xs font-semibold uppercase tracking-wider bg-violet-500/10 text-violet-400 border border-violet-500/20 rounded">
               Speaking & Composure Analysis
             </span>
-            <span className="flex items-center gap-1.5 text-xs text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-full">
+            <span className="flex items-center gap-1.5 text-xs text-emerald-700 dark:text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-full">
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
               Speech Analysis Active
             </span>
           </div>
-          <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-white mt-1">
+          <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground mt-1">
             AI Communication & Delivery Coach
           </h1>
           <p className="text-sm text-muted-foreground mt-0.5">
@@ -206,7 +206,7 @@ export default function BehavioralSentimentPage() {
       {actionMessage && (
         <div className="max-w-7xl mx-auto mt-4 p-3.5 bg-blue-900/30 border border-blue-700/50 rounded-lg text-blue-200 text-sm flex items-center justify-between">
           <span>{actionMessage}</span>
-          <button onClick={() => setActionMessage(null)} className="text-xs text-blue-400 hover:underline">
+          <button onClick={() => setActionMessage(null)} className="text-xs text-blue-700 dark:text-blue-400 hover:underline">
             Dismiss
           </button>
         </div>
@@ -226,11 +226,11 @@ export default function BehavioralSentimentPage() {
               <span
                 className={`inline-block px-4 py-1.5 rounded-full text-sm font-bold uppercase tracking-wider ${
                   latestTelemetry?.psychologicalSafetyState === "Optimal"
-                    ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/40"
+                    ? "bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 border border-emerald-500/40"
                     : latestTelemetry?.psychologicalSafetyState === "Moderate_Tension"
                     ? "bg-sky-500/20 text-sky-400 border border-sky-500/40"
                     : latestTelemetry?.psychologicalSafetyState === "High_Stress_Fatigue"
-                    ? "bg-amber-500/20 text-amber-400 border border-amber-500/40"
+                    ? "bg-amber-500/20 text-amber-700 dark:text-amber-400 border border-amber-500/40"
                     : "bg-rose-500/20 text-rose-400 border border-rose-500/40 animate-pulse"
                 }`}
               >
@@ -240,25 +240,25 @@ export default function BehavioralSentimentPage() {
               <div className="mt-4 grid grid-cols-2 gap-3 px-4 text-left">
                 <div className="bg-card/80 p-2.5 rounded border border-border">
                   <div className="text-xs text-muted-foreground">Vocal Tension</div>
-                  <div className="text-lg font-bold text-white">
+                  <div className="text-lg font-bold text-foreground">
                     {latestTelemetry ? `${latestTelemetry.acousticStressScore.toFixed(1)}/100` : "15.0/100"}
                   </div>
                 </div>
                 <div className="bg-card/80 p-2.5 rounded border border-border">
                   <div className="text-xs text-muted-foreground">Speaking Pace</div>
-                  <div className="text-lg font-bold text-white">
+                  <div className="text-lg font-bold text-foreground">
                     {latestTelemetry ? `${latestTelemetry.speechCadenceWpm.toFixed(0)} WPM` : "135 WPM"}
                   </div>
                 </div>
                 <div className="bg-card/80 p-2.5 rounded border border-border">
                   <div className="text-xs text-muted-foreground">Voice Variation</div>
-                  <div className="text-lg font-bold text-white">
+                  <div className="text-lg font-bold text-foreground">
                     {latestTelemetry ? `${latestTelemetry.pitchVarianceHz.toFixed(1)} Hz` : "18.5 Hz"}
                   </div>
                 </div>
                 <div className="bg-card/80 p-2.5 rounded border border-border">
                   <div className="text-xs text-muted-foreground">Tone / Sentiment</div>
-                  <div className="text-lg font-bold text-white">
+                  <div className="text-lg font-bold text-foreground">
                     {latestTelemetry ? latestTelemetry.sentimentScore.toFixed(2) : "+0.65"}
                   </div>
                 </div>
@@ -270,7 +270,7 @@ export default function BehavioralSentimentPage() {
               <div className="text-xs font-semibold uppercase tracking-wider text-violet-300">
                 AI Interviewer Style
               </div>
-              <div className="mt-1 text-sm font-bold text-white">
+              <div className="mt-1 text-sm font-bold text-foreground">
                 {latestTelemetry?.pacingDirective === "IntensifyRigor" && "🚀 Deep-Dive Exploration"}
                 {latestTelemetry?.pacingDirective === "MaintainPacing" && "⚖️ Steady Conversational Pace"}
                 {latestTelemetry?.pacingDirective === "SocraticSupport" && "💡 Helpful Hints & Guidance"}
@@ -295,7 +295,7 @@ export default function BehavioralSentimentPage() {
             <div className="grid grid-cols-3 gap-2">
               <button
                 onClick={() => applyPreset("optimal")}
-                className="px-2.5 py-2 text-xs font-medium bg-emerald-950/40 hover:bg-emerald-900/60 border border-emerald-800/50 text-emerald-300 rounded transition text-center"
+                className="px-2.5 py-2 text-xs font-medium bg-emerald-950/40 hover:bg-emerald-900/60 border border-emerald-800/50 text-emerald-600 dark:text-emerald-300 rounded transition text-center"
               >
                 Confident & Clear
               </button>
@@ -365,7 +365,7 @@ export default function BehavioralSentimentPage() {
           <div className="bg-card border border-border rounded-xl p-5 shadow-lg">
             <div className="flex items-center justify-between pb-3 border-b border-border">
               <div>
-                <h2 className="text-base font-semibold text-white">Confidence & Communication Summary</h2>
+                <h2 className="text-base font-semibold text-foreground">Confidence & Communication Summary</h2>
                 <p className="text-xs text-muted-foreground">Overall confidence, speaking pace, and delivery insights</p>
               </div>
               <button
@@ -382,25 +382,25 @@ export default function BehavioralSentimentPage() {
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                   <div className="bg-background p-3 rounded-lg border border-border text-center">
                     <div className="text-xs text-muted-foreground">Confidence Score</div>
-                    <div className="text-2xl font-black text-emerald-400 mt-0.5">
+                    <div className="text-2xl font-black text-emerald-700 dark:text-emerald-400 mt-0.5">
                       {summary.overallConfidenceScore}%
                     </div>
                   </div>
                   <div className="bg-background p-3 rounded-lg border border-border text-center">
                     <div className="text-xs text-muted-foreground">Stress Composure</div>
-                    <div className="text-2xl font-black text-indigo-400 mt-0.5">
+                    <div className="text-2xl font-black text-indigo-700 dark:text-indigo-400 mt-0.5">
                       {summary.resilienceScore}%
                     </div>
                   </div>
                   <div className="bg-background p-3 rounded-lg border border-border text-center">
                     <div className="text-xs text-muted-foreground">Average Pace</div>
-                    <div className="text-2xl font-black text-white mt-0.5">
+                    <div className="text-2xl font-black text-foreground mt-0.5">
                       {summary.averageSpeechWpm.toFixed(0)} WPM
                     </div>
                   </div>
                   <div className="bg-background p-3 rounded-lg border border-border text-center">
                     <div className="text-xs text-muted-foreground">Overall Rating</div>
-                    <div className="text-sm font-bold text-amber-400 mt-2">
+                    <div className="text-sm font-bold text-amber-700 dark:text-amber-400 mt-2">
                       {summary.executivePresenceRating}
                     </div>
                   </div>
@@ -414,7 +414,7 @@ export default function BehavioralSentimentPage() {
                   <ul className="space-y-2 text-xs text-muted-foreground">
                     {summary.executiveCoachingFeedback.map((fb, idx) => (
                       <li key={idx} className="flex items-start gap-2">
-                        <span className="text-emerald-400 font-bold">✓</span>
+                        <span className="text-emerald-700 dark:text-emerald-400 font-bold">✓</span>
                         <span>{fb}</span>
                       </li>
                     ))}
@@ -431,7 +431,7 @@ export default function BehavioralSentimentPage() {
           {/* Telemetry Chronological Timeline */}
           <div className="bg-card border border-border rounded-xl p-5 shadow-lg">
             <div className="flex items-center justify-between pb-3 border-b border-border">
-              <h2 className="text-base font-semibold text-white">Speaking Timeline & Highlights</h2>
+              <h2 className="text-base font-semibold text-foreground">Speaking Timeline & Highlights</h2>
               <span className="text-xs text-muted-foreground">{timeline.length} Recorded Samples</span>
             </div>
 
@@ -451,11 +451,11 @@ export default function BehavioralSentimentPage() {
                         <span
                           className={`px-2 py-0.5 rounded text-[11px] font-semibold ${
                             point.psychologicalSafetyState === "Optimal"
-                              ? "bg-emerald-500/20 text-emerald-400"
+                              ? "bg-emerald-500/20 text-emerald-700 dark:text-emerald-400"
                               : point.psychologicalSafetyState === "Moderate_Tension"
                               ? "bg-sky-500/20 text-sky-400"
                               : point.psychologicalSafetyState === "High_Stress_Fatigue"
-                              ? "bg-amber-500/20 text-amber-400"
+                              ? "bg-amber-500/20 text-amber-700 dark:text-amber-400"
                               : "bg-rose-500/20 text-rose-400"
                           }`}
                         >

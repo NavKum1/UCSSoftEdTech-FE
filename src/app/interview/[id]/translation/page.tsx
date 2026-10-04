@@ -196,10 +196,10 @@ export default function MultiLanguageTranslationStudioPage() {
               </div>
               <div>
                 <div className="flex items-center space-x-2">
-                  <span className="font-bold text-base text-white tracking-wide">
+                  <span className="font-bold text-base text-foreground tracking-wide">
                     MULTI-LANGUAGE SUBTITLES &amp; AUDIO TRANSLATION
                   </span>
-                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 font-semibold border border-cyan-500/40">
+                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-600 dark:text-cyan-300 font-semibold border border-cyan-500/40">
                     Live Subtitles
                   </span>
                 </div>
@@ -215,7 +215,7 @@ export default function MultiLanguageTranslationStudioPage() {
               onClick={handleDownloadWebVtt}
               className="px-3.5 py-1.5 rounded-xl bg-muted hover:bg-slate-700 text-foreground border border-border text-xs font-medium flex items-center space-x-1.5 transition-colors cursor-pointer"
             >
-              <Download className="w-3.5 h-3.5 text-cyan-400" />
+              <Download className="w-3.5 h-3.5 text-cyan-700 dark:text-cyan-400" />
               <span>Download Subtitles ({selectedLanguage.toUpperCase()})</span>
             </button>
           </div>
@@ -228,11 +228,11 @@ export default function MultiLanguageTranslationStudioPage() {
         <div className="p-4 rounded-2xl bg-card/60 border border-border space-y-3">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-muted-foreground flex items-center space-x-2">
-              <Languages className="w-4 h-4 text-cyan-400" />
+              <Languages className="w-4 h-4 text-cyan-700 dark:text-cyan-400" />
               <span>Select Subtitle &amp; Audio Language</span>
             </span>
             <span className="text-xs text-muted-foreground">
-              Active: <strong className="text-cyan-400">{SUPPORTED_LANGUAGES.find(l => l.code === selectedLanguage)?.label}</strong>
+              Active: <strong className="text-cyan-700 dark:text-cyan-400">{SUPPORTED_LANGUAGES.find(l => l.code === selectedLanguage)?.label}</strong>
             </span>
           </div>
 
@@ -250,7 +250,7 @@ export default function MultiLanguageTranslationStudioPage() {
                   }`}
                 >
                   <span className="text-xl">{lang.flag}</span>
-                  <span className={`text-[11px] font-bold ${isActive ? "text-cyan-300" : "text-muted-foreground"}`}>
+                  <span className={`text-[11px] font-bold ${isActive ? "text-cyan-600 dark:text-cyan-300" : "text-muted-foreground"}`}>
                     {lang.code.toUpperCase()}
                   </span>
                   <span className="text-[9px] text-muted-foreground truncate w-full text-center">
@@ -275,8 +275,8 @@ export default function MultiLanguageTranslationStudioPage() {
 
               <div>
                 <div className="flex items-center space-x-2">
-                  <h3 className="text-base font-bold text-white">Interview Audio Channel</h3>
-                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 font-semibold border border-cyan-500/30">
+                  <h3 className="text-base font-bold text-foreground">Interview Audio Channel</h3>
+                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-600 dark:text-cyan-300 font-semibold border border-cyan-500/30">
                     {audioTrackMode === "dubbed" ? "Simulated Neural Dubbing" : "Original Dialect"}
                   </span>
                 </div>
@@ -333,8 +333,8 @@ export default function MultiLanguageTranslationStudioPage() {
         {/* Synchronized Bilingual Subtitle Transcript */}
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <h3 className="text-base font-semibold text-white flex items-center space-x-2">
-              <Languages className="w-4 h-4 text-cyan-400" />
+            <h3 className="text-base font-semibold text-foreground flex items-center space-x-2">
+              <Languages className="w-4 h-4 text-cyan-700 dark:text-cyan-400" />
               <span>Synchronized Bilingual Subtitle Timeline</span>
             </h3>
             <span className="text-xs text-muted-foreground">
@@ -366,8 +366,8 @@ export default function MultiLanguageTranslationStudioPage() {
                       <div className="flex items-center space-x-2">
                         <span className={`p-1.5 rounded-lg text-xs font-bold flex items-center space-x-1 ${
                           isAi 
-                            ? "bg-purple-500/20 text-purple-300 border border-purple-500/30"
-                            : "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30"
+                            ? "bg-purple-500/20 text-purple-600 dark:text-purple-300 border border-purple-500/30"
+                            : "bg-emerald-500/20 text-emerald-600 dark:text-emerald-300 border border-emerald-500/30"
                         }`}>
                           {isAi ? <Bot className="w-3.5 h-3.5 mr-1" /> : <User className="w-3.5 h-3.5 mr-1" />}
                           <span>{isAi ? "AI Technical Interviewer" : "Candidate"}</span>
@@ -393,7 +393,7 @@ export default function MultiLanguageTranslationStudioPage() {
 
                     {/* Translated Text in Active Target Language */}
                     <div className="text-sm font-medium text-cyan-200 leading-relaxed pl-2 border-l-2 border-cyan-500">
-                      <span className="text-[10px] uppercase font-semibold text-cyan-400 block mb-0.5">
+                      <span className="text-[10px] uppercase font-semibold text-cyan-700 dark:text-cyan-400 block mb-0.5">
                         Subtitles / Dubbing ({selectedLanguage.toUpperCase()}):
                       </span>
                       {getTranslatedText(seg)}
@@ -408,8 +408,8 @@ export default function MultiLanguageTranslationStudioPage() {
         {/* Real-time Dialogue Injection Simulator */}
         <div className="p-6 rounded-2xl bg-card/50 border border-border space-y-4">
           <div className="flex items-center space-x-2">
-            <Sparkles className="w-4 h-4 text-cyan-400" />
-            <h3 className="text-base font-bold text-white">Live Conversation &amp; Subtitle Preview</h3>
+            <Sparkles className="w-4 h-4 text-cyan-700 dark:text-cyan-400" />
+            <h3 className="text-base font-bold text-foreground">Live Conversation &amp; Subtitle Preview</h3>
           </div>
           <p className="text-xs text-muted-foreground">
             Enter a question or response to see real-time translation and captions across supported languages.

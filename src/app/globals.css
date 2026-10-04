@@ -27,7 +27,7 @@
   --card: oklch(0.96 0.005 250);
   --border: oklch(0.85 0.005 250);
   --muted: oklch(0.92 0.005 250);
-  --muted-foreground: oklch(0.40 0.005 250);
+  --muted-foreground: oklch(0.35 0.01 250);
 }
 
 .dark {

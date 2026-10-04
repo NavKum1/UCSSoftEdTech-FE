@@ -172,8 +172,8 @@ export default function InstituteDashboardPage() {
       <div className="glass-panel rounded-3xl p-6 border border-border flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <div className="flex items-center space-x-2">
-            <h1 className="text-2xl font-bold text-white tracking-tight">{instituteName}</h1>
-            <span className="text-xs px-2.5 py-0.5 rounded-full bg-cyan-500/10 text-cyan-400 font-semibold border border-cyan-500/20">
+            <h1 className="text-2xl font-bold text-foreground tracking-tight">{instituteName}</h1>
+            <span className="text-xs px-2.5 py-0.5 rounded-full bg-cyan-500/10 text-cyan-700 dark:text-cyan-400 font-semibold border border-cyan-500/20">
               Active Partner
             </span>
           </div>
@@ -197,29 +197,29 @@ export default function InstituteDashboardPage() {
         <div className="glass-panel rounded-2xl p-5 border border-border space-y-1">
           <div className="flex items-center justify-between text-xs text-muted-foreground">
             <span>Total Student Leads</span>
-            <Users className="w-4 h-4 text-cyan-400" />
+            <Users className="w-4 h-4 text-cyan-700 dark:text-cyan-400" />
           </div>
-          <p className="text-2xl font-extrabold text-white">{leads.length}</p>
-          <p className="text-[11px] text-cyan-400 font-medium">Referred via AI Voice Skill Gap Engine</p>
+          <p className="text-2xl font-extrabold text-foreground">{leads.length}</p>
+          <p className="text-[11px] text-cyan-700 dark:text-cyan-400 font-medium">Referred via AI Voice Skill Gap Engine</p>
         </div>
 
         <div className="glass-panel rounded-2xl p-5 border border-border space-y-1">
           <div className="flex items-center justify-between text-xs text-muted-foreground">
             <span>Pending Outreach</span>
-            <Inbox className="w-4 h-4 text-amber-400" />
+            <Inbox className="w-4 h-4 text-amber-700 dark:text-amber-400" />
           </div>
-          <p className="text-2xl font-extrabold text-white">
+          <p className="text-2xl font-extrabold text-foreground">
             {leads.filter((l) => l.status.toLowerCase() === "pending").length}
           </p>
-          <p className="text-[11px] text-amber-400 font-medium">Awaiting contact or enrollment</p>
+          <p className="text-[11px] text-amber-700 dark:text-amber-400 font-medium">Awaiting contact or enrollment</p>
         </div>
 
         <div className="glass-panel rounded-2xl p-5 border border-border space-y-1">
           <div className="flex items-center justify-between text-xs text-muted-foreground">
             <span>CRM Webhook Status</span>
-            <Activity className="w-4 h-4 text-emerald-400" />
+            <Activity className="w-4 h-4 text-emerald-700 dark:text-emerald-400" />
           </div>
-          <p className="text-base font-bold text-white truncate">
+          <p className="text-base font-bold text-foreground truncate">
             {outboundWebhookUrl ? "Configured & Live" : "Not Configured"}
           </p>
           <p className="text-[11px] text-muted-foreground truncate">
@@ -233,7 +233,7 @@ export default function InstituteDashboardPage() {
         <button
           onClick={() => setActiveTab("leads")}
           className={`pb-3 text-sm font-semibold flex items-center space-x-2 transition-all cursor-pointer ${
-            activeTab === "leads" ? "text-cyan-400 border-b-2 border-cyan-400" : "text-muted-foreground hover:text-foreground"
+            activeTab === "leads" ? "text-cyan-700 dark:text-cyan-400 border-b-2 border-cyan-400" : "text-muted-foreground hover:text-foreground"
           }`}
         >
           <Inbox className="w-4 h-4" />
@@ -243,7 +243,7 @@ export default function InstituteDashboardPage() {
         <button
           onClick={() => setActiveTab("webhook")}
           className={`pb-3 text-sm font-semibold flex items-center space-x-2 transition-all cursor-pointer ${
-            activeTab === "webhook" ? "text-cyan-400 border-b-2 border-cyan-400" : "text-muted-foreground hover:text-foreground"
+            activeTab === "webhook" ? "text-cyan-700 dark:text-cyan-400 border-b-2 border-cyan-400" : "text-muted-foreground hover:text-foreground"
           }`}
         >
           <LinkIcon className="w-4 h-4" />
@@ -253,7 +253,7 @@ export default function InstituteDashboardPage() {
         <button
           onClick={() => setActiveTab("analytics")}
           className={`pb-3 text-sm font-semibold flex items-center space-x-2 transition-all cursor-pointer ${
-            activeTab === "analytics" ? "text-cyan-400 border-b-2 border-cyan-400" : "text-muted-foreground hover:text-foreground"
+            activeTab === "analytics" ? "text-cyan-700 dark:text-cyan-400 border-b-2 border-cyan-400" : "text-muted-foreground hover:text-foreground"
           }`}
         >
           <BarChart3 className="w-4 h-4" />
@@ -319,7 +319,7 @@ export default function InstituteDashboardPage() {
                     filteredLeads.map((lead) => (
                       <tr key={lead.leadId} className="hover:bg-card/40 transition-colors">
                         <td className="px-6 py-4 font-semibold text-white">{lead.candidateName}</td>
-                        <td className="px-6 py-4 font-mono text-[11px] text-cyan-300">{lead.candidateEmail}</td>
+                        <td className="px-6 py-4 font-mono text-[11px] text-cyan-600 dark:text-cyan-300">{lead.candidateEmail}</td>
                         <td className="px-6 py-4 text-foreground">{lead.courseName}</td>
                         <td className="px-6 py-4 text-muted-foreground">
                           {new Date(lead.createdAt).toLocaleDateString("en-US", {
@@ -332,10 +332,10 @@ export default function InstituteDashboardPage() {
                           <span
                             className={`px-2.5 py-0.5 rounded-full text-[10px] font-semibold border ${
                               lead.status.toLowerCase() === "enrolled"
-                                ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/30"
+                                ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/30"
                                 : lead.status.toLowerCase() === "contacted"
-                                ? "bg-blue-500/10 text-blue-400 border-blue-500/30"
-                                : "bg-amber-500/10 text-amber-400 border-amber-500/30"
+                                ? "bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-500/30"
+                                : "bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/30"
                             }`}
                           >
                             {lead.status}
@@ -356,7 +356,7 @@ export default function InstituteDashboardPage() {
         <div className="max-w-2xl space-y-6">
           <div className="glass-panel rounded-2xl p-6 border border-border space-y-4">
             <div>
-              <h3 className="text-base font-bold text-white">Outbound CRM Webhook Configuration</h3>
+              <h3 className="text-base font-bold text-foreground">Outbound CRM Webhook Configuration</h3>
               <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
                 Connect your CRM (Salesforce, HubSpot, Zapier, Make, or custom HTTP server). Whenever an AI voice evaluation reveals a skill gap matching your courses, our Automated B2B Lead Dispatcher will push the lead payload in real-time.
               </p>
@@ -366,8 +366,8 @@ export default function InstituteDashboardPage() {
               <div
                 className={`p-3 rounded-xl text-xs flex items-center space-x-2 ${
                   feedbackMessage.includes("Error") || feedbackMessage.includes("failed")
-                    ? "bg-red-950/50 border border-red-500/30 text-red-300"
-                    : "bg-emerald-950/50 border border-emerald-500/30 text-emerald-300"
+                    ? "bg-red-950/50 border border-red-500/30 text-red-600 dark:text-red-300"
+                    : "bg-emerald-950/50 border border-emerald-500/30 text-emerald-600 dark:text-emerald-300"
                 }`}
               >
                 <CheckCircle2 className="w-4 h-4 shrink-0" />
@@ -406,7 +406,7 @@ export default function InstituteDashboardPage() {
                   disabled={testingPing || !outboundWebhookUrl}
                   className="px-4 py-2.5 bg-card hover:bg-muted text-foreground text-xs font-semibold rounded-xl border border-border flex items-center space-x-2 transition-all cursor-pointer disabled:opacity-50"
                 >
-                  <Activity className="w-3.5 h-3.5 text-cyan-400" />
+                  <Activity className="w-3.5 h-3.5 text-cyan-700 dark:text-cyan-400" />
                   <span>{testingPing ? "Pinging..." : "Test Webhook Ping"}</span>
                 </button>
               </div>
@@ -416,7 +416,7 @@ export default function InstituteDashboardPage() {
           {/* Sample JSON Payload Card */}
           <div className="glass-panel rounded-2xl p-6 border border-border space-y-2">
             <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Dispatched Lead JSON Payload Schema</h4>
-            <pre className="bg-background p-4 rounded-xl text-[11px] font-mono text-cyan-300 border border-slate-900 overflow-x-auto">
+            <pre className="bg-background p-4 rounded-xl text-[11px] font-mono text-cyan-600 dark:text-cyan-300 border border-slate-900 overflow-x-auto">
 {`{
   "event": "lead.skill_gap_referral",
   "leadId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
@@ -439,7 +439,7 @@ export default function InstituteDashboardPage() {
       {activeTab === "analytics" && (
         <div className="space-y-6">
           <div className="glass-panel rounded-2xl p-6 border border-border">
-            <h3 className="text-base font-bold text-white mb-2">Lead Conversion Funnel</h3>
+            <h3 className="text-base font-bold text-foreground mb-2">Lead Conversion Funnel</h3>
             <p className="text-xs text-muted-foreground mb-6">Track the progression of your AI-referred candidates from initial lead to final enrollment.</p>
             
             <div className="bg-background/50 p-4 rounded-xl border border-border">

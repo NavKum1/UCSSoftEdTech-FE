@@ -128,7 +128,7 @@ export default function ProctoringVideoReviewPage({ params }: { params: Promise<
           <div className="w-12 h-12 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 flex items-center justify-center mx-auto text-lg font-bold">
             !
           </div>
-          <h2 className="text-lg font-bold text-white">Recording Not Found</h2>
+          <h2 className="text-lg font-bold text-foreground">Recording Not Found</h2>
           <p className="text-xs text-muted-foreground">
             {fetchError || "The requested assessment recording could not be found or has expired."}
           </p>
@@ -158,18 +158,18 @@ export default function ProctoringVideoReviewPage({ params }: { params: Promise<
             &larr; Back to Reviews
           </Link>
           <div className="h-4 w-[1px] bg-slate-700"></div>
-          <h1 className="text-base font-semibold text-white tracking-tight flex items-center gap-2">
+          <h1 className="text-base font-semibold text-foreground tracking-tight flex items-center gap-2">
             <span className="w-2.5 h-2.5 rounded-full bg-rose-500 animate-pulse"></span>
             Assessment Video Review
           </h1>
-          <span className="text-xs px-2 py-0.5 rounded font-mono bg-indigo-950/80 text-indigo-300 border border-indigo-700/50">
+          <span className="text-xs px-2 py-0.5 rounded font-mono bg-indigo-950/80 text-indigo-600 dark:text-indigo-300 border border-indigo-700/50">
             HD Recording
           </span>
         </div>
 
         <div className="flex items-center gap-2">
           {actionNotice && (
-            <span className="text-xs text-amber-400 font-mono bg-amber-950/60 px-3 py-1 rounded border border-amber-800/40 animate-fade-in">
+            <span className="text-xs text-amber-700 dark:text-amber-400 font-mono bg-amber-950/60 px-3 py-1 rounded border border-amber-800/40 animate-fade-in">
               {actionNotice}
             </span>
           )}
@@ -228,7 +228,7 @@ export default function ProctoringVideoReviewPage({ params }: { params: Promise<
             <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-slate-950 to-black flex items-center justify-center">
               {activeTrack === 'Webcam' ? (
                 <div className="text-center p-6">
-                  <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-indigo-950/60 border border-indigo-700/40 flex items-center justify-center text-indigo-400 text-2xl font-bold">
+                  <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-indigo-950/60 border border-indigo-700/40 flex items-center justify-center text-indigo-700 dark:text-indigo-400 text-2xl font-bold">
                     REC
                   </div>
                   <p className="text-sm font-semibold text-foreground">
@@ -240,7 +240,7 @@ export default function ProctoringVideoReviewPage({ params }: { params: Promise<
                 </div>
               ) : (
                 <div className="text-center p-6">
-                  <div className="w-20 h-20 mx-auto mb-4 rounded-xl bg-cyan-950/60 border border-cyan-700/40 flex items-center justify-center text-cyan-400 text-2xl font-bold">
+                  <div className="w-20 h-20 mx-auto mb-4 rounded-xl bg-cyan-950/60 border border-cyan-700/40 flex items-center justify-center text-cyan-700 dark:text-cyan-400 text-2xl font-bold">
                     SCR
                   </div>
                   <p className="text-sm font-semibold text-foreground">
@@ -332,7 +332,7 @@ export default function ProctoringVideoReviewPage({ params }: { params: Promise<
                   Rewind
                 </button>
                 <div className="flex items-center gap-1">
-                  <span className="text-white font-semibold">{formatSeconds(currentTime)}</span>
+                  <span className="text-foreground font-semibold">{formatSeconds(currentTime)}</span>
                   <span>/</span>
                   <span>{formatSeconds(duration)}</span>
                 </div>
@@ -374,16 +374,16 @@ export default function ProctoringVideoReviewPage({ params }: { params: Promise<
                 <p className="text-[10px] font-mono text-rose-300/80 mt-0.5">Critical</p>
               </div>
               <div className="bg-amber-950/40 border border-amber-800/40 rounded-lg p-2.5">
-                <span className="text-xl font-bold text-amber-400">
+                <span className="text-xl font-bold text-amber-700 dark:text-amber-400">
                   {playerData?.summary.highViolations}
                 </span>
-                <p className="text-[10px] font-mono text-amber-300/80 mt-0.5">High</p>
+                <p className="text-[10px] font-mono text-amber-600 dark:text-amber-300/80 mt-0.5">High</p>
               </div>
               <div className="bg-yellow-950/40 border border-yellow-800/40 rounded-lg p-2.5">
-                <span className="text-xl font-bold text-yellow-400">
+                <span className="text-xl font-bold text-yellow-700 dark:text-yellow-400">
                   {playerData?.summary.mediumViolations}
                 </span>
-                <p className="text-[10px] font-mono text-yellow-300/80 mt-0.5">Medium</p>
+                <p className="text-[10px] font-mono text-yellow-600 dark:text-yellow-300/80 mt-0.5">Medium</p>
               </div>
             </div>
           </div>
@@ -392,7 +392,7 @@ export default function ProctoringVideoReviewPage({ params }: { params: Promise<
           <div className="bg-card border border-border rounded-xl p-4 flex-1 flex flex-col">
             <h2 className="text-xs uppercase font-mono tracking-wider text-muted-foreground mb-3 flex items-center justify-between">
               <span>Incident Timestamp Log</span>
-              <span className="text-indigo-400">{playerData?.markers.length} Tagged</span>
+              <span className="text-indigo-700 dark:text-indigo-400">{playerData?.markers.length} Tagged</span>
             </h2>
 
             <div className="flex-1 overflow-y-auto space-y-2 pr-1 max-h-[380px]">
@@ -403,8 +403,8 @@ export default function ProctoringVideoReviewPage({ params }: { params: Promise<
                 const badgeColor = isCritical
                   ? 'bg-rose-950 text-rose-300 border-rose-700/60'
                   : isHigh
-                  ? 'bg-amber-950 text-amber-300 border-amber-700/60'
-                  : 'bg-yellow-950 text-yellow-300 border-yellow-700/60';
+                  ? 'bg-amber-950 text-amber-600 dark:text-amber-300 border-amber-700/60'
+                  : 'bg-yellow-950 text-yellow-600 dark:text-yellow-300 border-yellow-700/60';
 
                 return (
                   <div
@@ -420,8 +420,8 @@ export default function ProctoringVideoReviewPage({ params }: { params: Promise<
                     }`}
                   >
                     <div className="flex items-center justify-between mb-1">
-                      <span className="text-xs font-mono font-bold text-white flex items-center gap-1.5">
-                        <span className="text-indigo-400">⏱</span> {marker.timestampFormatted}
+                      <span className="text-xs font-mono font-bold text-foreground flex items-center gap-1.5">
+                        <span className="text-indigo-700 dark:text-indigo-400">⏱</span> {marker.timestampFormatted}
                       </span>
                       <span className={`text-[10px] font-mono px-2 py-0.5 rounded border ${badgeColor}`}>
                         {marker.severity}

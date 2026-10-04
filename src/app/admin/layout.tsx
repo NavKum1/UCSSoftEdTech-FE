@@ -24,7 +24,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             </div>
             <div>
               <div className="flex items-center space-x-2">
-                <span className="text-base font-extrabold tracking-tight text-white">
+                <span className="text-base font-extrabold tracking-tight text-foreground">
                   BUILD &amp; DEFEND
                 </span>
                 <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-rose-500/20 text-rose-300 border border-rose-500/30 flex items-center space-x-1">
@@ -67,7 +67,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
           <span>&copy; {new Date().getFullYear()} Build &amp; Defend Inc. Secure Back-office Gateway.</span>
           <span className="text-muted-foreground flex items-center space-x-1">
-            <Lock className="w-3 h-3 text-emerald-400" />
+            <Lock className="w-3 h-3 text-emerald-700 dark:text-emerald-400" />
             <span>End-to-end Clerk RBAC + .NET Claims Verified</span>
           </span>
         </div>

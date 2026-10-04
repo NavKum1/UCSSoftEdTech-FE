@@ -144,15 +144,15 @@ export default function PersonaSelectorPage() {
   const getPersonaIcon = (code: string) => {
     switch (code) {
       case "StaffArchitectFAANG":
-        return <ShieldAlert className="w-5 h-5 text-red-400" />;
+        return <ShieldAlert className="w-5 h-5 text-red-700 dark:text-red-400" />;
       case "EmpatheticMentor":
-        return <HeartHandshake className="w-5 h-5 text-emerald-400" />;
+        return <HeartHandshake className="w-5 h-5 text-emerald-700 dark:text-emerald-400" />;
       case "StartupCTO":
-        return <Rocket className="w-5 h-5 text-amber-400" />;
+        return <Rocket className="w-5 h-5 text-amber-700 dark:text-amber-400" />;
       case "SecurityAuditor":
-        return <Lock className="w-5 h-5 text-purple-400" />;
+        return <Lock className="w-5 h-5 text-purple-700 dark:text-purple-400" />;
       default:
-        return <Mic className="w-5 h-5 text-indigo-400" />;
+        return <Mic className="w-5 h-5 text-indigo-700 dark:text-indigo-400" />;
     }
   };
 
@@ -163,10 +163,10 @@ export default function PersonaSelectorPage() {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-6 border-b border-border">
           <div>
             <div className="flex items-center gap-3">
-              <div className="p-2 rounded-xl bg-indigo-500/20 text-indigo-400 border border-indigo-500/30">
+              <div className="p-2 rounded-xl bg-indigo-500/20 text-indigo-700 dark:text-indigo-400 border border-indigo-500/30">
                 <Sliders className="w-6 h-6" />
               </div>
-              <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-white">
+              <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
                 AI Technical Interviewer Persona Studio
               </h1>
             </div>
@@ -176,15 +176,15 @@ export default function PersonaSelectorPage() {
           </div>
 
           <div className="flex items-center gap-2">
-            <span className="px-3 py-1 rounded-lg bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 text-xs font-mono">
+            <span className="px-3 py-1 rounded-lg bg-indigo-500/10 border border-indigo-500/20 text-indigo-600 dark:text-indigo-300 text-xs font-mono">
               Vapi Real-Time Voice Engine Active
             </span>
           </div>
         </div>
 
         {statusMessage && (
-          <div className="flex items-center gap-2 p-3 rounded-xl bg-indigo-950/40 border border-indigo-500/30 text-indigo-300 text-xs font-mono">
-            <CheckCircle2 className="w-4 h-4 text-indigo-400 shrink-0" />
+          <div className="flex items-center gap-2 p-3 rounded-xl bg-indigo-950/40 border border-indigo-500/30 text-indigo-600 dark:text-indigo-300 text-xs font-mono">
+            <CheckCircle2 className="w-4 h-4 text-indigo-700 dark:text-indigo-400 shrink-0" />
             <span>{statusMessage}</span>
           </div>
         )}
@@ -192,8 +192,8 @@ export default function PersonaSelectorPage() {
         {/* Section 1: Choose Persona */}
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <h2 className="text-base font-semibold text-white flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-indigo-400" />
+            <h2 className="text-base font-semibold text-foreground flex items-center gap-2">
+              <Sparkles className="w-4 h-4 text-indigo-700 dark:text-indigo-400" />
               1. Select Interviewer Persona & Scrutiny Style
             </h2>
             <span className="text-xs text-muted-foreground">{personas.length} Available Profiles</span>
@@ -219,10 +219,10 @@ export default function PersonaSelectorPage() {
                     <span
                       className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded tracking-wider ${
                         persona.scrutinyLevel === "Draconian"
-                          ? "bg-red-500/20 text-red-300 border border-red-500/30"
+                          ? "bg-red-500/20 text-red-600 dark:text-red-300 border border-red-500/30"
                           : persona.scrutinyLevel === "Lenient"
-                          ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30"
-                          : "bg-amber-500/20 text-amber-300 border border-amber-500/30"
+                          ? "bg-emerald-500/20 text-emerald-600 dark:text-emerald-300 border border-emerald-500/30"
+                          : "bg-amber-500/20 text-amber-600 dark:text-amber-300 border border-amber-500/30"
                       }`}
                     >
                       {persona.scrutinyLevel}
@@ -230,7 +230,7 @@ export default function PersonaSelectorPage() {
                   </div>
 
                   <div>
-                    <h3 className="text-sm font-bold text-white tracking-tight">{persona.displayName}</h3>
+                    <h3 className="text-sm font-bold text-foreground tracking-tight">{persona.displayName}</h3>
                     <p className="text-xs text-muted-foreground mt-1 line-clamp-2 leading-relaxed">
                       {persona.description}
                     </p>
@@ -250,8 +250,8 @@ export default function PersonaSelectorPage() {
 
         {/* Section 2: Dialect & Accent Tuning */}
         <div className="space-y-4">
-          <h2 className="text-base font-semibold text-white flex items-center gap-2">
-            <Globe className="w-4 h-4 text-emerald-400" />
+          <h2 className="text-base font-semibold text-foreground flex items-center gap-2">
+            <Globe className="w-4 h-4 text-emerald-700 dark:text-emerald-400" />
             2. Choose Speech Dialect & Regional Cadence
           </h2>
 
@@ -269,7 +269,7 @@ export default function PersonaSelectorPage() {
                   }`}
                 >
                   <div className="flex items-center justify-between">
-                    <span className="font-semibold text-xs text-white">{d.label}</span>
+                    <span className="font-semibold text-xs text-foreground">{d.label}</span>
                     <span className="text-[10px] text-muted-foreground font-mono">{d.region}</span>
                   </div>
                   <p className="text-[11px] text-muted-foreground leading-relaxed">{d.desc}</p>
@@ -283,8 +283,8 @@ export default function PersonaSelectorPage() {
         <div className="p-6 rounded-2xl border border-border bg-card/50 space-y-4">
           <div className="flex items-center justify-between pb-3 border-b border-border">
             <div className="flex items-center gap-2">
-              <Code2 className="w-5 h-5 text-indigo-400" />
-              <h2 className="text-sm font-bold text-white uppercase tracking-wider">
+              <Code2 className="w-5 h-5 text-indigo-700 dark:text-indigo-400" />
+              <h2 className="text-sm font-bold text-foreground uppercase tracking-wider">
                 Live Vapi System Prompt & Directives Inspector
               </h2>
             </div>
@@ -304,19 +304,19 @@ export default function PersonaSelectorPage() {
               <div className="flex flex-wrap items-center gap-4 text-xs font-mono bg-background p-3 rounded-xl border border-border">
                 <div>
                   <span className="text-muted-foreground block">Persona:</span>
-                  <span className="text-indigo-400 font-bold">{previewConfig.displayName}</span>
+                  <span className="text-indigo-700 dark:text-indigo-400 font-bold">{previewConfig.displayName}</span>
                 </div>
                 <div>
                   <span className="text-muted-foreground block">Scrutiny:</span>
-                  <span className="text-white font-bold">{previewConfig.scrutinyLevel}</span>
+                  <span className="text-foreground font-bold">{previewConfig.scrutinyLevel}</span>
                 </div>
                 <div>
                   <span className="text-muted-foreground block">Dialect:</span>
-                  <span className="text-emerald-400 font-bold">{previewConfig.dialectCode}</span>
+                  <span className="text-emerald-700 dark:text-emerald-400 font-bold">{previewConfig.dialectCode}</span>
                 </div>
                 <div>
                   <span className="text-muted-foreground block">Voice ID:</span>
-                  <span className="text-amber-400 font-bold">{previewConfig.voiceId}</span>
+                  <span className="text-amber-700 dark:text-amber-400 font-bold">{previewConfig.voiceId}</span>
                 </div>
               </div>
 

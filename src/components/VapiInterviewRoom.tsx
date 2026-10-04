@@ -265,22 +265,22 @@ export default function VapiInterviewRoom({
       {/* Header Badge */}
       <div className="flex items-center justify-between pb-4 border-b border-border">
         <div className="flex items-center space-x-3">
-          <div className="p-2.5 bg-indigo-500/10 rounded-xl border border-indigo-500/20 text-indigo-400">
+          <div className="p-2.5 bg-indigo-500/10 rounded-xl border border-indigo-500/20 text-indigo-700 dark:text-indigo-400">
             <Sparkles className="w-5 h-5 animate-pulse" />
           </div>
           <div>
-            <h2 className="text-lg font-semibold text-white">AI Voice Interview Simulator</h2>
+            <h2 className="text-lg font-semibold text-foreground">AI Voice Interview Simulator</h2>
             <p className="text-xs text-muted-foreground">Powered by Real-Time Voice Intelligence</p>
           </div>
         </div>
 
         <span
           className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border ${callStatus === "active"
-              ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/30"
+              ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/30"
               : callStatus === "connecting"
-                ? "bg-amber-500/10 text-amber-400 border-amber-500/30"
+                ? "bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/30"
                 : callStatus === "ended"
-                  ? "bg-purple-500/10 text-purple-400 border-purple-500/30"
+                  ? "bg-purple-500/10 text-purple-700 dark:text-purple-400 border-purple-500/30"
                   : "bg-muted text-muted-foreground border-border"
             }`}
         >
@@ -298,7 +298,7 @@ export default function VapiInterviewRoom({
           <div>
             <h3 className="text-sm font-semibold text-muted-foreground mb-2">User Microphone Input</h3>
             <p className="text-xs text-muted-foreground mb-4">
-              Microphone status: <span className="font-semibold text-indigo-400">{micPermission}</span>
+              Microphone status: <span className="font-semibold text-indigo-700 dark:text-indigo-400">{micPermission}</span>
             </p>
 
             {/* Audio Waveform & Mic Volume Meter */}
@@ -314,7 +314,7 @@ export default function VapiInterviewRoom({
                       ></div>
                     ))}
                   </div>
-                  <div className="flex items-center space-x-1 text-[11px] text-emerald-400">
+                  <div className="flex items-center space-x-1 text-[11px] text-emerald-700 dark:text-emerald-400">
                     <Volume2 className="w-3.5 h-3.5" />
                     <span>Mic Input: {volumeLevel}%</span>
                   </div>
@@ -340,7 +340,7 @@ export default function VapiInterviewRoom({
                 <button
                   onClick={toggleMute}
                   className={`flex-1 py-3 px-3 rounded-xl border text-xs font-medium flex items-center justify-center space-x-1.5 cursor-pointer ${isMuted
-                      ? "bg-amber-500/10 text-amber-400 border-amber-500/30"
+                      ? "bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/30"
                       : "bg-muted text-muted-foreground border-border hover:bg-slate-700"
                     }`}
                 >
@@ -393,8 +393,8 @@ export default function VapiInterviewRoom({
 
       {/* Status Bar */}
       {statusMessage && (
-        <div className="mt-4 p-3 bg-indigo-950/40 border border-indigo-500/30 rounded-xl text-xs text-indigo-300 flex items-center space-x-2">
-          <Sparkles className="w-4 h-4 text-indigo-400 shrink-0" />
+        <div className="mt-4 p-3 bg-indigo-950/40 border border-indigo-500/30 rounded-xl text-xs text-indigo-600 dark:text-indigo-300 flex items-center space-x-2">
+          <Sparkles className="w-4 h-4 text-indigo-700 dark:text-indigo-400 shrink-0" />
           <span>{statusMessage}</span>
         </div>
       )}
@@ -404,10 +404,10 @@ export default function VapiInterviewRoom({
         <div className="mt-6 p-5 bg-gradient-to-r from-purple-950/40 to-slate-900 rounded-xl border border-purple-500/30">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center space-x-2">
-              <AlertTriangle className="w-5 h-5 text-amber-400" />
-              <h4 className="text-sm font-semibold text-white">AI Skill Gap Evaluation</h4>
+              <AlertTriangle className="w-5 h-5 text-amber-700 dark:text-amber-400" />
+              <h4 className="text-sm font-semibold text-foreground">AI Skill Gap Evaluation</h4>
             </div>
-            <div className="text-sm font-bold text-indigo-400 bg-indigo-500/10 px-3 py-1 rounded-lg border border-indigo-500/20">
+            <div className="text-sm font-bold text-indigo-700 dark:text-indigo-400 bg-indigo-500/10 px-3 py-1 rounded-lg border border-indigo-500/20">
               Score: {technicalScore}%
             </div>
           </div>
@@ -418,7 +418,7 @@ export default function VapiInterviewRoom({
 
           <div className="flex flex-wrap gap-2">
             {missingSkills.map((skill, idx) => (
-              <span key={idx} className="px-3 py-1 rounded-lg text-xs font-semibold bg-red-500/20 text-red-300 border border-red-500/30">
+              <span key={idx} className="px-3 py-1 rounded-lg text-xs font-semibold bg-red-500/20 text-red-600 dark:text-red-300 border border-red-500/30">
                 ⚠️ Failed Skill Gap: {skill}
               </span>
             ))}

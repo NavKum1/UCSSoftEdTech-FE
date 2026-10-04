@@ -57,7 +57,7 @@ export default function GlobalNavigation() {
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="font-extrabold text-base tracking-wider bg-gradient-to-r from-white via-slate-100 to-slate-400 bg-clip-text text-transparent">
+                <span className="font-extrabold text-base tracking-wider bg-gradient-to-r from-foreground via-foreground/80 to-muted-foreground bg-clip-text text-transparent">
                   EDULEXA
                 </span>
                 <span className="relative flex h-2 w-2">
@@ -85,11 +85,11 @@ export default function GlobalNavigation() {
                   href={link.href}
                   className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
                     isActive
-                      ? "bg-indigo-600/20 text-indigo-300 border border-indigo-500/30 shadow-sm shadow-indigo-500/10"
+                      ? "bg-indigo-600/10 dark:bg-indigo-600/20 text-indigo-700 dark:text-indigo-300 border border-indigo-500/30 shadow-sm shadow-indigo-500/10"
                       : "text-muted-foreground hover:text-foreground hover:bg-card/60"
                   }`}
                 >
-                  <Icon className={`w-3.5 h-3.5 ${isActive ? "text-indigo-400" : "text-muted-foreground"}`} />
+                  <Icon className={`w-3.5 h-3.5 ${isActive ? "text-indigo-700 dark:text-indigo-400" : "text-muted-foreground"}`} />
                   {link.name}
                 </Link>
               );
@@ -103,9 +103,9 @@ export default function GlobalNavigation() {
           <Link
             href="/daily"
             title="Active 14-Day Streak — Practice daily kata to maintain Gold status"
-            className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-300 text-xs font-semibold hover:bg-amber-500/20 transition-colors"
+            className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-300 text-xs font-semibold hover:bg-amber-500/20 transition-colors"
           >
-            <Flame className="w-3.5 h-3.5 text-amber-400 fill-amber-400/30 animate-pulse" />
+            <Flame className="w-3.5 h-3.5 text-amber-700 dark:text-amber-400 fill-amber-400/30 animate-pulse" />
             <span>14d</span>
           </Link>
 
@@ -113,9 +113,9 @@ export default function GlobalNavigation() {
           <Link
             href="/sprint/1"
             title="48 minutes remaining of monthly AI Voice defense quota"
-            className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 text-xs font-medium hover:bg-indigo-500/20 transition-colors"
+            className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-600 dark:text-indigo-300 text-xs font-medium hover:bg-indigo-500/20 transition-colors"
           >
-            <Mic className="w-3.5 h-3.5 text-indigo-400" />
+            <Mic className="w-3.5 h-3.5 text-indigo-700 dark:text-indigo-400" />
             <span>48m left</span>
           </Link>
 
@@ -149,11 +149,11 @@ export default function GlobalNavigation() {
                         href={p.href}
                         className="flex items-start gap-3 p-2.5 rounded-xl hover:bg-muted/70 transition-colors group"
                       >
-                        <div className="p-2 rounded-lg bg-muted text-indigo-400 group-hover:bg-indigo-600 group-hover:text-white transition-colors">
+                        <div className="p-2 rounded-lg bg-muted text-indigo-700 dark:text-indigo-400 group-hover:bg-indigo-600 group-hover:text-white transition-colors">
                           <Icon className="w-4 h-4" />
                         </div>
                         <div>
-                          <div className="text-xs font-semibold text-foreground group-hover:text-white">
+                          <div className="text-xs font-semibold text-foreground group-hover:text-foreground">
                             {p.name}
                           </div>
                           <div className="text-[11px] text-muted-foreground line-clamp-1">

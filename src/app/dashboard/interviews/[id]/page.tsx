@@ -226,10 +226,10 @@ export default function StudentInterviewReplayPage() {
     return (
       <div className="min-h-screen bg-background text-foreground flex flex-col items-center justify-center font-sans p-6">
         <div className="max-w-md w-full p-8 rounded-3xl bg-card/60 border border-border text-center space-y-4">
-          <div className="w-12 h-12 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center mx-auto">
+          <div className="w-12 h-12 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-700 dark:text-amber-400 flex items-center justify-center mx-auto">
             <AlertTriangle className="w-6 h-6" />
           </div>
-          <h2 className="text-xl font-bold text-white">Interview Recording Not Found</h2>
+          <h2 className="text-xl font-bold text-foreground">Interview Recording Not Found</h2>
           <p className="text-sm text-muted-foreground">
             {fetchError || "The requested interview recording could not be found. Please check your interview history."}
           </p>
@@ -271,8 +271,8 @@ export default function StudentInterviewReplayPage() {
             </div>
             <div>
               <div className="flex items-center space-x-2">
-                <span className="font-bold text-base text-white tracking-wide">BUILD & DEFEND</span>
-                <span className="text-[10px] px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 font-semibold border border-indigo-500/30">
+                <span className="font-bold text-base text-foreground tracking-wide">BUILD & DEFEND</span>
+                <span className="text-[10px] px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-600 dark:text-indigo-300 font-semibold border border-indigo-500/30">
                   Recording & Review
                 </span>
               </div>
@@ -283,7 +283,7 @@ export default function StudentInterviewReplayPage() {
           <div className="flex items-center space-x-3">
             <button
               onClick={() => router.push("/leaderboard")}
-              className="text-xs text-amber-400 hover:text-amber-300 flex items-center space-x-1.5 transition-colors cursor-pointer mr-2"
+              className="text-xs text-amber-700 dark:text-amber-400 hover:text-amber-600 dark:text-amber-300 flex items-center space-x-1.5 transition-colors cursor-pointer mr-2"
             >
               <Award className="w-3.5 h-3.5" />
               <span>Leaderboard</span>
@@ -305,16 +305,16 @@ export default function StudentInterviewReplayPage() {
         <div className="glass-panel rounded-3xl p-6 border border-border flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="space-y-1">
             <div className="flex items-center space-x-2">
-              <h1 className="text-xl font-bold text-white">
+              <h1 className="text-xl font-bold text-foreground">
                 {sessionData?.jobDescription || "Interview Conversation Review"}
               </h1>
-              <span className="text-[10px] px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-semibold border border-emerald-500/30">
+              <span className="text-[10px] px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-600 dark:text-emerald-300 font-semibold border border-emerald-500/30">
                 Completed
               </span>
             </div>
             <p className="text-xs text-muted-foreground">
               Candidate: <span className="text-foreground font-medium">{sessionData?.candidateName}</span> • Reference ID:{" "}
-              <span className="font-mono text-indigo-300">{sessionId.substring(0, 12)}...</span>
+              <span className="font-mono text-indigo-600 dark:text-indigo-300">{sessionId.substring(0, 12)}...</span>
             </p>
           </div>
 
@@ -322,14 +322,14 @@ export default function StudentInterviewReplayPage() {
           <div className="flex items-center space-x-4">
             <div className="glass-panel rounded-2xl px-4 py-2 border border-border/80 bg-card/60 text-center">
               <span className="text-[10px] uppercase font-bold text-muted-foreground">Technical Skills</span>
-              <p className="text-lg font-black text-indigo-400">
+              <p className="text-lg font-black text-indigo-700 dark:text-indigo-400">
                 {sessionData?.evaluation?.technicalScore.toFixed(1) || "84.0"}%
               </p>
             </div>
 
             <div className="glass-panel rounded-2xl px-4 py-2 border border-border/80 bg-card/60 text-center">
               <span className="text-[10px] uppercase font-bold text-muted-foreground">Communication</span>
-              <p className="text-lg font-black text-purple-400">
+              <p className="text-lg font-black text-purple-700 dark:text-purple-400">
                 {sessionData?.evaluation?.communicationScore.toFixed(1) || "78.0"}%
               </p>
             </div>
@@ -339,8 +339,8 @@ export default function StudentInterviewReplayPage() {
         {/* Audio Player Component */}
         <div className="glass-panel rounded-3xl p-6 border border-indigo-500/30 bg-gradient-to-r from-slate-900/90 via-indigo-950/20 to-slate-900/90 shadow-2xl space-y-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-2 text-xs font-semibold text-indigo-300">
-              <Sparkles className="w-4 h-4 text-indigo-400" />
+            <div className="flex items-center space-x-2 text-xs font-semibold text-indigo-600 dark:text-indigo-300">
+              <Sparkles className="w-4 h-4 text-indigo-700 dark:text-indigo-400" />
               <span>Interview Audio Recording</span>
             </div>
             <span className="text-[11px] font-mono text-muted-foreground">
@@ -388,7 +388,7 @@ export default function StudentInterviewReplayPage() {
                 onClick={toggleMute}
                 className="p-2 rounded-xl bg-muted/80 hover:bg-slate-700 text-muted-foreground transition-colors cursor-pointer"
               >
-                {isMuted ? <VolumeX className="w-3.5 h-3.5 text-red-400" /> : <Volume2 className="w-3.5 h-3.5" />}
+                {isMuted ? <VolumeX className="w-3.5 h-3.5 text-red-700 dark:text-red-400" /> : <Volume2 className="w-3.5 h-3.5" />}
               </button>
             </div>
 
@@ -408,7 +408,7 @@ export default function StudentInterviewReplayPage() {
         <div className="glass-panel rounded-3xl p-6 border border-border space-y-6">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-border gap-3">
             <div>
-              <h2 className="text-base font-bold text-white">Full Interview Transcript & Key Highlights</h2>
+              <h2 className="text-base font-bold text-foreground">Full Interview Transcript & Key Highlights</h2>
               <p className="text-xs text-muted-foreground mt-0.5">
                 Review the conversation below. Key topics and areas for discussion are highlighted in amber.
               </p>
@@ -419,7 +419,7 @@ export default function StudentInterviewReplayPage() {
               onClick={() => setFilterFlaggedOnly(!filterFlaggedOnly)}
               className={`px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center space-x-1.5 transition-all cursor-pointer ${
                 filterFlaggedOnly
-                  ? "bg-amber-500/20 text-amber-300 border border-amber-500/40"
+                  ? "bg-amber-500/20 text-amber-600 dark:text-amber-300 border border-amber-500/40"
                   : "bg-card text-muted-foreground border border-border hover:text-foreground"
               }`}
             >
@@ -445,11 +445,11 @@ export default function StudentInterviewReplayPage() {
                   <div className="flex items-center space-x-2">
                     {msg.speaker === "AI" ? (
                       <div className="w-6 h-6 rounded-lg bg-indigo-600/30 border border-indigo-500/40 flex items-center justify-center">
-                        <Bot className="w-3.5 h-3.5 text-indigo-400" />
+                        <Bot className="w-3.5 h-3.5 text-indigo-700 dark:text-indigo-400" />
                       </div>
                     ) : (
                       <div className="w-6 h-6 rounded-lg bg-purple-600/30 border border-purple-500/40 flex items-center justify-center">
-                        <User className="w-3.5 h-3.5 text-purple-400" />
+                        <User className="w-3.5 h-3.5 text-purple-700 dark:text-purple-400" />
                       </div>
                     )}
                     <span className="text-xs font-bold text-foreground">
@@ -458,8 +458,8 @@ export default function StudentInterviewReplayPage() {
                   </div>
 
                   {msg.isFlagged && (
-                    <span className="px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-amber-500/20 text-amber-300 border border-amber-500/40 flex items-center space-x-1">
-                      <AlertTriangle className="w-3 h-3 text-amber-400" />
+                    <span className="px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-amber-500/20 text-amber-600 dark:text-amber-300 border border-amber-500/40 flex items-center space-x-1">
+                      <AlertTriangle className="w-3 h-3 text-amber-700 dark:text-amber-400" />
                       <span>{msg.flagReason || "Key Discussion Point"}</span>
                     </span>
                   )}

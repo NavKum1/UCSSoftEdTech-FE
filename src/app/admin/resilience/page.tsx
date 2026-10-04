@@ -154,9 +154,9 @@ export default function MultiCloudResiliencePage() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "Healthy":
-        return "bg-emerald-950 text-emerald-400 border-emerald-500/50";
+        return "bg-emerald-950 text-emerald-700 dark:text-emerald-400 border-emerald-500/50";
       case "Degraded":
-        return "bg-amber-950 text-amber-400 border-amber-500/50";
+        return "bg-amber-950 text-amber-700 dark:text-amber-400 border-amber-500/50";
       case "Critical":
         return "bg-orange-950 text-orange-400 border-orange-500/50";
       default:
@@ -167,9 +167,9 @@ export default function MultiCloudResiliencePage() {
   const getCbBadge = (state: string) => {
     switch (state) {
       case "Closed":
-        return "bg-emerald-950/80 text-emerald-400 border-emerald-600/50";
+        return "bg-emerald-950/80 text-emerald-700 dark:text-emerald-400 border-emerald-600/50";
       case "HalfOpen":
-        return "bg-amber-950/80 text-amber-300 border-amber-600/50 animate-pulse";
+        return "bg-amber-950/80 text-amber-600 dark:text-amber-300 border-amber-600/50 animate-pulse";
       default:
         return "bg-rose-950/80 text-rose-300 border-rose-600/50 animate-pulse";
     }
@@ -221,7 +221,7 @@ export default function MultiCloudResiliencePage() {
               {regions.filter((r) => r.circuitBreakerState === "Closed").length} / {regions.length} Regions
             </div>
           </div>
-          <span className="px-3 py-1.5 rounded-lg bg-emerald-950 text-emerald-400 border border-emerald-500/50 text-xs font-bold uppercase tracking-wider">
+          <span className="px-3 py-1.5 rounded-lg bg-emerald-950 text-emerald-700 dark:text-emerald-400 border border-emerald-500/50 text-xs font-bold uppercase tracking-wider">
             ● Active-Active Online
           </span>
         </div>
@@ -263,7 +263,7 @@ export default function MultiCloudResiliencePage() {
               <div className="space-y-1.5 pt-2 border-t border-border/60 text-xs font-mono">
                 <div className="flex justify-between text-muted-foreground">
                   <span>Latency:</span>
-                  <span className={r.latencyMs > 100 ? "text-rose-400 font-bold" : "text-emerald-400"}>
+                  <span className={r.latencyMs > 100 ? "text-rose-400 font-bold" : "text-emerald-700 dark:text-emerald-400"}>
                     {r.latencyMs.toFixed(1)}ms
                   </span>
                 </div>
@@ -304,7 +304,7 @@ export default function MultiCloudResiliencePage() {
                   Simulate candidate client connection from edge locations
                 </p>
               </div>
-              <span className="text-xs px-2.5 py-1 rounded bg-muted font-mono text-cyan-400 border border-border">
+              <span className="text-xs px-2.5 py-1 rounded bg-muted font-mono text-cyan-700 dark:text-cyan-400 border border-border">
                 Optimal Path Engine
               </span>
             </div>
@@ -362,11 +362,11 @@ export default function MultiCloudResiliencePage() {
                   </div>
                   <div>
                     <span className="text-muted-foreground">Target Region: </span>
-                    <span className="text-cyan-400 font-bold">{routingDecision.routedRegion}</span>
+                    <span className="text-cyan-700 dark:text-cyan-400 font-bold">{routingDecision.routedRegion}</span>
                   </div>
                   <div>
                     <span className="text-muted-foreground">Cloud Provider: </span>
-                    <span className="text-indigo-400 font-bold">{routingDecision.provider}</span>
+                    <span className="text-indigo-700 dark:text-indigo-400 font-bold">{routingDecision.provider}</span>
                   </div>
                   <div>
                     <span className="text-muted-foreground">Datacenter: </span>

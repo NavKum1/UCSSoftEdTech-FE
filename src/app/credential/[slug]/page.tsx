@@ -91,20 +91,20 @@ export default function CredentialBadgePage() {
               <Award className="w-6 h-6 text-white" />
             </div>
             <div>
-              <span className="text-xs font-semibold text-emerald-400 uppercase tracking-wider">Verifiable Digital Certificate</span>
-              <h1 className="text-lg font-bold text-white">ACCREDITED CERTIFICATE OF COMPLETION</h1>
+              <span className="text-xs font-semibold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider">Verifiable Digital Certificate</span>
+              <h1 className="text-lg font-bold text-foreground">ACCREDITED CERTIFICATE OF COMPLETION</h1>
             </div>
           </div>
 
           <div className="flex items-center space-x-2">
-            <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
+            <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/30">
               <ShieldCheck className="w-3.5 h-3.5 mr-1.5" />
               VERIFIED
             </span>
 
             {credential?.verificationFlagged && (
-              <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-amber-500/20 text-amber-400 border border-amber-500/40">
-                <AlertTriangle className="w-3.5 h-3.5 mr-1.5 text-amber-400" />
+              <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-amber-500/20 text-amber-700 dark:text-amber-400 border border-amber-500/40">
+                <AlertTriangle className="w-3.5 h-3.5 mr-1.5 text-amber-700 dark:text-amber-400" />
                 Under Review
               </span>
             )}
@@ -114,9 +114,9 @@ export default function CredentialBadgePage() {
         {/* Integrity Warning Alert Box */}
         {credential?.verificationFlagged && (
           <div className="p-4 bg-amber-950/40 border border-amber-500/30 rounded-2xl flex items-start space-x-3 text-left">
-            <AlertTriangle className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
+            <AlertTriangle className="w-5 h-5 text-amber-700 dark:text-amber-400 shrink-0 mt-0.5" />
             <div className="space-y-1">
-              <p className="text-xs font-semibold text-amber-300">Academic Review Notice</p>
+              <p className="text-xs font-semibold text-amber-600 dark:text-amber-300">Academic Review Notice</p>
               <p className="text-[11px] text-amber-200/90 leading-relaxed">
                 {credential?.flagReason || "An unusual submission pattern was flagged during this evaluation session and is awaiting review."}
               </p>
@@ -132,7 +132,7 @@ export default function CredentialBadgePage() {
           </h2>
           <p className="text-xs text-muted-foreground">has successfully completed the project challenge and demonstrated their skills in the voice assessment.</p>
 
-          <div className="inline-block mt-2 px-4 py-2 bg-indigo-500/10 border border-indigo-500/30 rounded-xl text-indigo-300 font-bold text-sm">
+          <div className="inline-block mt-2 px-4 py-2 bg-indigo-500/10 border border-indigo-500/30 rounded-xl text-indigo-600 dark:text-indigo-300 font-bold text-sm">
             {badgeTitle}
           </div>
         </div>
@@ -141,7 +141,7 @@ export default function CredentialBadgePage() {
         <div className="grid grid-cols-2 gap-4">
           <div className="glass-card rounded-2xl p-4 border border-border text-center">
             <span className="text-xs text-muted-foreground font-medium">Final Assessment Score</span>
-            <div className="text-2xl font-extrabold text-indigo-400 mt-1">{finalScore}%</div>
+            <div className="text-2xl font-extrabold text-indigo-700 dark:text-indigo-400 mt-1">{finalScore}%</div>
           </div>
 
           <div className="glass-card rounded-2xl p-4 border border-border text-center">
@@ -186,9 +186,9 @@ export default function CredentialBadgePage() {
 
           <button
             onClick={handleCopyLink}
-            className="flex items-center space-x-1 font-mono text-[11px] text-indigo-400 bg-card hover:bg-muted px-3 py-1 rounded-lg border border-border cursor-pointer transition-colors"
+            className="flex items-center space-x-1 font-mono text-[11px] text-indigo-700 dark:text-indigo-400 bg-card hover:bg-muted px-3 py-1 rounded-lg border border-border cursor-pointer transition-colors"
           >
-            {copied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+            {copied ? <Check className="w-3.5 h-3.5 text-emerald-700 dark:text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
             <span>{copied ? "Link Copied!" : `ID: ${slug}`}</span>
           </button>
         </div>

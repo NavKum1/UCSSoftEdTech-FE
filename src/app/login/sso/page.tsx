@@ -90,10 +90,10 @@ export default function EnterpriseSsoLoginPage() {
       <div className="max-w-md w-full relative z-10 space-y-8">
         {/* Header */}
         <div className="text-center space-y-3">
-          <div className="inline-flex items-center justify-center p-3 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 mb-2">
+          <div className="inline-flex items-center justify-center p-3 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-700 dark:text-indigo-400 mb-2">
             <Building2 className="w-8 h-8" />
           </div>
-          <h1 className="text-2xl font-bold tracking-tight text-white">
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">
             Enterprise Single Sign-On
           </h1>
           <p className="text-sm text-muted-foreground">
@@ -155,11 +155,11 @@ export default function EnterpriseSsoLoginPage() {
               {discoveryResult && (
                 <div className="p-4 rounded-xl bg-background/90 border border-indigo-500/30 space-y-4 animate-in fade-in duration-300">
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2 text-indigo-400 font-semibold text-sm">
+                    <div className="flex items-center gap-2 text-indigo-700 dark:text-indigo-400 font-semibold text-sm">
                       <ShieldCheck className="w-4 h-4" />
                       <span>{discoveryResult.organizationName}</span>
                     </div>
-                    <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-indigo-500/20 text-indigo-300 uppercase">
+                    <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-indigo-500/20 text-indigo-600 dark:text-indigo-300 uppercase">
                       {discoveryResult.protocol}
                     </span>
                   </div>
@@ -192,7 +192,7 @@ export default function EnterpriseSsoLoginPage() {
                       href={`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/sso/metadata/${discoveryResult.domain}`}
                       target="_blank"
                       rel="noreferrer"
-                      className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-indigo-400 transition"
+                      className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-indigo-700 dark:text-indigo-400 transition"
                     >
                       <Download className="w-3 h-3" />
                       Download SAML SP Metadata XML
@@ -204,15 +204,15 @@ export default function EnterpriseSsoLoginPage() {
           ) : (
             /* Auth Success State */
             <div className="text-center space-y-4 py-2 animate-in zoom-in-95 duration-300">
-              <div className="inline-flex items-center justify-center p-3 rounded-full bg-emerald-500/20 text-emerald-400">
+              <div className="inline-flex items-center justify-center p-3 rounded-full bg-emerald-500/20 text-emerald-700 dark:text-emerald-400">
                 <CheckCircle2 className="w-8 h-8" />
               </div>
               <div className="space-y-1">
-                <h3 className="text-lg font-bold text-white">Federation Authenticated!</h3>
+                <h3 className="text-lg font-bold text-foreground">Federation Authenticated!</h3>
                 <p className="text-xs text-muted-foreground">
-                  Welcome, <span className="text-indigo-300 font-medium">{authSuccess.user.name}</span>. Your enterprise role is:
+                  Welcome, <span className="text-indigo-600 dark:text-indigo-300 font-medium">{authSuccess.user.name}</span>. Your enterprise role is:
                 </p>
-                <div className="inline-block px-3 py-1 rounded-full bg-indigo-500/20 border border-indigo-500/40 text-indigo-300 text-xs font-semibold mt-1">
+                <div className="inline-block px-3 py-1 rounded-full bg-indigo-500/20 border border-indigo-500/40 text-indigo-600 dark:text-indigo-300 text-xs font-semibold mt-1">
                   {authSuccess.user.role}
                 </div>
               </div>
@@ -247,7 +247,7 @@ export default function EnterpriseSsoLoginPage() {
         {/* Footer Links */}
         <div className="text-center text-xs text-muted-foreground">
           Not an enterprise user?{" "}
-          <a href="/login" className="text-indigo-400 hover:text-indigo-300 underline underline-offset-4">
+          <a href="/login" className="text-indigo-700 dark:text-indigo-400 hover:text-indigo-600 dark:text-indigo-300 underline underline-offset-4">
             Sign in with Standard Account
           </a>
         </div>

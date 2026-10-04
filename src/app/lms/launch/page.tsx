@@ -35,11 +35,11 @@ export default function LmsLaunchTransitionPage() {
       <div className="max-w-xl w-full relative z-10 space-y-6">
         {/* LMS Badge & Header */}
         <div className="text-center space-y-3">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-xs font-semibold">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-700 dark:text-indigo-400 text-xs font-semibold">
             <GraduationCap className="w-4 h-4" />
             <span>1EdTech LTI 1.3 Advantage Certified Launch</span>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
+          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground">
             Welcome to Build & Defend
           </h1>
           <p className="text-sm text-muted-foreground">
@@ -51,7 +51,7 @@ export default function LmsLaunchTransitionPage() {
         <div className="bg-card/90 border border-border rounded-3xl p-6 sm:p-8 backdrop-blur-xl shadow-2xl space-y-6">
           {loading ? (
             <div className="py-12 flex flex-col items-center justify-center space-y-3">
-              <RefreshCw className="w-8 h-8 text-indigo-400 animate-spin" />
+              <RefreshCw className="w-8 h-8 text-indigo-700 dark:text-indigo-400 animate-spin" />
               <div className="text-xs text-muted-foreground">Connecting to university gradebook & verifying enrollment...</div>
             </div>
           ) : (
@@ -59,22 +59,22 @@ export default function LmsLaunchTransitionPage() {
               {/* Course Context Details */}
               <div className="space-y-4">
                 <div className="p-4 rounded-2xl bg-background/80 border border-border space-y-2">
-                  <div className="text-[11px] font-mono uppercase tracking-wider text-indigo-400 font-semibold flex items-center gap-1.5">
+                  <div className="text-[11px] font-mono uppercase tracking-wider text-indigo-700 dark:text-indigo-400 font-semibold flex items-center gap-1.5">
                     <BookOpen className="w-3.5 h-3.5" />
                     <span>Course & Assignment Context</span>
                   </div>
-                  <div className="text-base font-bold text-white">
+                  <div className="text-base font-bold text-foreground">
                     {courseInfo.courseTitle}
                   </div>
                   <div className="text-xs text-muted-foreground flex items-center gap-2">
                     <span className="font-mono text-muted-foreground">Assignment:</span>
-                    <span className="text-emerald-400 font-medium">{courseInfo.assignmentTitle}</span>
+                    <span className="text-emerald-700 dark:text-emerald-400 font-medium">{courseInfo.assignmentTitle}</span>
                   </div>
                 </div>
 
                 {/* Academic License Perks Banner */}
                 <div className="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 space-y-2">
-                  <div className="flex items-center gap-2 text-emerald-400 text-xs font-semibold">
+                  <div className="flex items-center gap-2 text-emerald-700 dark:text-emerald-400 text-xs font-semibold">
                     <Sparkles className="w-4 h-4" />
                     <span>Academic Pro Tier License Active</span>
                   </div>
@@ -85,7 +85,7 @@ export default function LmsLaunchTransitionPage() {
 
                 {/* Gradebook Sync Protocol Info */}
                 <div className="flex items-start gap-3 p-3.5 rounded-xl bg-background border border-border/80 text-xs text-muted-foreground">
-                  <ShieldCheck className="w-4 h-4 text-indigo-400 mt-0.5 shrink-0" />
+                  <ShieldCheck className="w-4 h-4 text-indigo-700 dark:text-indigo-400 mt-0.5 shrink-0" />
                   <div>
                     <span className="text-foreground font-medium">Automatic Gradebook Synchronization:</span> Upon completing your technical defense review, your score and verification badge will be synced directly back to your Canvas / Blackboard gradebook.
                   </div>

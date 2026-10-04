@@ -326,13 +326,13 @@ export default function InterviewPairingStudioPage({ params }: { params: Promise
             <ArrowLeft className="w-5 h-5" />
           </Link>
           <div className="flex items-center space-x-2.5">
-            <div className="p-2 rounded-xl bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
+            <div className="p-2 rounded-xl bg-indigo-500/10 text-indigo-700 dark:text-indigo-400 border border-indigo-500/20">
               <Radio className="w-5 h-5" />
             </div>
             <div>
-              <h1 className="text-sm font-bold text-white flex items-center gap-2">
+              <h1 className="text-sm font-bold text-foreground flex items-center gap-2">
                 Live Pairing Studio
-                <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center gap-1">
+                <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 border border-emerald-500/30 flex items-center gap-1">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
                   Live Sync
                 </span>
@@ -340,8 +340,8 @@ export default function InterviewPairingStudioPage({ params }: { params: Promise
               <div className="text-xs text-muted-foreground flex items-center gap-1 font-mono">
                 <span>Room:</span>
                 <span className="text-foreground">{sessionId.substring(0, 12)}...</span>
-                <button onClick={copySessionId} className="hover:text-indigo-400 p-0.5">
-                  {copied ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
+                <button onClick={copySessionId} className="hover:text-indigo-700 dark:text-indigo-400 p-0.5">
+                  {copied ? <Check className="w-3 h-3 text-emerald-700 dark:text-emerald-400" /> : <Copy className="w-3 h-3" />}
                 </button>
               </div>
             </div>
@@ -351,13 +351,13 @@ export default function InterviewPairingStudioPage({ params }: { params: Promise
         {/* Center: Live Takeover Status Badge */}
         <div className="hidden md:flex items-center">
           {isTakeoverActive ? (
-            <div className="flex items-center gap-2 px-4 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-400 text-xs font-semibold animate-pulse">
-              <VolumeX className="w-4 h-4 text-amber-400" />
+            <div className="flex items-center gap-2 px-4 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-700 dark:text-amber-400 text-xs font-semibold animate-pulse">
+              <VolumeX className="w-4 h-4 text-amber-700 dark:text-amber-400" />
               <span>Human Takeover Active • AI Examiner Muted</span>
             </div>
           ) : (
-            <div className="flex items-center gap-2 px-4 py-1.5 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 text-xs font-semibold">
-              <Volume2 className="w-4 h-4 text-cyan-400" />
+            <div className="flex items-center gap-2 px-4 py-1.5 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-700 dark:text-cyan-400 text-xs font-semibold">
+              <Volume2 className="w-4 h-4 text-cyan-700 dark:text-cyan-400" />
               <span>AI Voice Examiner Active</span>
             </div>
           )}
@@ -457,7 +457,7 @@ export default function InterviewPairingStudioPage({ params }: { params: Promise
                 <span className="ml-2 font-mono text-muted-foreground">DistributedStreamEngine.ts</span>
               </div>
               <div className="flex items-center gap-2 text-[11px] font-mono text-muted-foreground">
-                <MousePointer2 className="w-3 h-3 text-amber-400" />
+                <MousePointer2 className="w-3 h-3 text-amber-700 dark:text-amber-400" />
                 <span>Interviewer Viewing Line 12</span>
               </div>
             </div>
@@ -569,9 +569,9 @@ export default function InterviewPairingStudioPage({ params }: { params: Promise
         </div>
         <div>
           {isTakeoverActive ? (
-            <span className="text-amber-400 font-semibold">Live Voice Takeover: {takeoverName || "Interviewer"}</span>
+            <span className="text-amber-700 dark:text-amber-400 font-semibold">Live Voice Takeover: {takeoverName || "Interviewer"}</span>
           ) : (
-            <span className="text-cyan-400">AI Voice Assistant: Synthesizing questions</span>
+            <span className="text-cyan-700 dark:text-cyan-400">AI Voice Assistant: Synthesizing questions</span>
           )}
         </div>
       </footer>

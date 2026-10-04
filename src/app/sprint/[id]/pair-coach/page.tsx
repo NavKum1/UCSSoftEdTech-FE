@@ -210,11 +210,11 @@ public class HighThroughputBuffer<T>
   const getTierColor = (tier?: string) => {
     switch (tier) {
       case "Autonomous_Lead":
-        return "text-emerald-400 bg-emerald-950/60 border-emerald-500/50";
+        return "text-emerald-700 dark:text-emerald-400 bg-emerald-950/60 border-emerald-500/50";
       case "Self_Directed":
-        return "text-cyan-400 bg-cyan-950/60 border-cyan-500/50";
+        return "text-cyan-700 dark:text-cyan-400 bg-cyan-950/60 border-cyan-500/50";
       case "Guided_Contributor":
-        return "text-amber-400 bg-amber-950/60 border-amber-500/50";
+        return "text-amber-700 dark:text-amber-400 bg-amber-950/60 border-amber-500/50";
       default:
         return "text-rose-400 bg-rose-950/60 border-rose-500/50";
     }
@@ -227,9 +227,9 @@ public class HighThroughputBuffer<T>
       case "High":
         return "bg-orange-900/60 text-orange-300 border-orange-600/50";
       case "Medium":
-        return "bg-amber-900/60 text-amber-300 border-amber-600/50";
+        return "bg-amber-900/60 text-amber-600 dark:text-amber-300 border-amber-600/50";
       default:
-        return "bg-blue-900/60 text-blue-300 border-blue-600/50";
+        return "bg-blue-900/60 text-blue-600 dark:text-blue-300 border-blue-600/50";
     }
   };
 
@@ -237,10 +237,10 @@ public class HighThroughputBuffer<T>
     return (
       <div className="min-h-screen bg-background text-foreground flex flex-col items-center justify-center p-6 text-center">
         <div className="max-w-md p-8 rounded-2xl border border-border bg-card/60 space-y-4">
-          <div className="w-12 h-12 rounded-xl bg-indigo-500/10 text-indigo-400 flex items-center justify-center mx-auto text-2xl">
+          <div className="w-12 h-12 rounded-xl bg-indigo-500/10 text-indigo-700 dark:text-indigo-400 flex items-center justify-center mx-auto text-2xl">
             🤖
           </div>
-          <h2 className="text-xl font-bold text-white">No Challenge Selected</h2>
+          <h2 className="text-xl font-bold text-foreground">No Challenge Selected</h2>
           <p className="text-xs text-muted-foreground">
             Please select an active project challenge from your dashboard to begin coaching with your AI assistant.
           </p>
@@ -334,7 +334,7 @@ public class HighThroughputBuffer<T>
             <button
               onClick={() => handleInteraction("Hint")}
               disabled={isSubmitting}
-              className="text-xs px-3 py-2 rounded-lg bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-300 border border-indigo-500/40 font-medium transition flex items-center space-x-1"
+              className="text-xs px-3 py-2 rounded-lg bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-600 dark:text-indigo-300 border border-indigo-500/40 font-medium transition flex items-center space-x-1"
             >
               <span>💡</span>
               <span>Need a Hint (-3.5 pts)</span>
@@ -342,7 +342,7 @@ public class HighThroughputBuffer<T>
             <button
               onClick={() => handleInteraction("Explain")}
               disabled={isSubmitting}
-              className="text-xs px-3 py-2 rounded-lg bg-cyan-600/20 hover:bg-cyan-600/30 text-cyan-300 border border-cyan-500/40 font-medium transition flex items-center space-x-1"
+              className="text-xs px-3 py-2 rounded-lg bg-cyan-600/20 hover:bg-cyan-600/30 text-cyan-600 dark:text-cyan-300 border border-cyan-500/40 font-medium transition flex items-center space-x-1"
             >
               <span>🔍</span>
               <span>Explain Solution (-2.0 pts)</span>
@@ -350,7 +350,7 @@ public class HighThroughputBuffer<T>
             <button
               onClick={() => handleInteraction("Refactor")}
               disabled={isSubmitting}
-              className="text-xs px-3 py-2 rounded-lg bg-purple-600/20 hover:bg-purple-600/30 text-purple-300 border border-purple-500/40 font-medium transition flex items-center space-x-1"
+              className="text-xs px-3 py-2 rounded-lg bg-purple-600/20 hover:bg-purple-600/30 text-purple-600 dark:text-purple-300 border border-purple-500/40 font-medium transition flex items-center space-x-1"
             >
               <span>✨</span>
               <span>Improve Code Quality (-5.0 pts)</span>
@@ -358,7 +358,7 @@ public class HighThroughputBuffer<T>
             <button
               onClick={() => handleInteraction("Probe", "I used thread-safe concurrency controls to handle high load")}
               disabled={isSubmitting}
-              className="text-xs px-3 py-2 rounded-lg bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-300 border border-emerald-500/40 font-medium transition flex items-center space-x-1"
+              className="text-xs px-3 py-2 rounded-lg bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-600 dark:text-emerald-300 border border-emerald-500/40 font-medium transition flex items-center space-x-1"
             >
               <span>⚡</span>
               <span>Explain My Approach (+1.5 bonus)</span>
@@ -426,12 +426,12 @@ public class HighThroughputBuffer<T>
                           <span
                             className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${
                               item.interactionType === "Hint"
-                                ? "bg-indigo-950 text-indigo-300 border border-indigo-700/50"
+                                ? "bg-indigo-950 text-indigo-600 dark:text-indigo-300 border border-indigo-700/50"
                                 : item.interactionType === "Explain"
-                                ? "bg-cyan-950 text-cyan-300 border border-cyan-700/50"
+                                ? "bg-cyan-950 text-cyan-600 dark:text-cyan-300 border border-cyan-700/50"
                                 : item.interactionType === "Refactor"
-                                ? "bg-purple-950 text-purple-300 border border-purple-700/50"
-                                : "bg-emerald-950 text-emerald-300 border border-emerald-700/50"
+                                ? "bg-purple-950 text-purple-600 dark:text-purple-300 border border-purple-700/50"
+                                : "bg-emerald-950 text-emerald-600 dark:text-emerald-300 border border-emerald-700/50"
                             }`}
                           >
                             {item.interactionType}
@@ -463,7 +463,7 @@ public class HighThroughputBuffer<T>
                             setActiveDiff(item.suggestedDiff || null);
                             setActiveTab("diff");
                           }}
-                          className="text-[11px] font-semibold text-purple-400 hover:text-purple-300 flex items-center space-x-1"
+                          className="text-[11px] font-semibold text-purple-700 dark:text-purple-400 hover:text-purple-600 dark:text-purple-300 flex items-center space-x-1"
                         >
                           <span>✨</span>
                           <span>View Suggested Changes →</span>
@@ -478,7 +478,7 @@ public class HighThroughputBuffer<T>
             {activeTab === "smells" && (
               <div className="space-y-3">
                 {codeSmells.length === 0 ? (
-                  <div className="p-6 text-center border border-dashed border-border rounded-2xl bg-card/20 text-emerald-400">
+                  <div className="p-6 text-center border border-dashed border-border rounded-2xl bg-card/20 text-emerald-700 dark:text-emerald-400">
                     <span className="text-3xl block mb-2">✅</span>
                     <p className="text-xs font-semibold">Great Job! Zero Code Issues Found</p>
                     <p className="text-[11px] text-muted-foreground mt-1">
@@ -504,8 +504,8 @@ public class HighThroughputBuffer<T>
                         </span>
                       </div>
                       <p className="text-xs text-muted-foreground leading-relaxed">{smell.description}</p>
-                      <div className="text-[11px] text-indigo-300 bg-indigo-950/30 p-2.5 rounded-lg border border-indigo-900/40">
-                        <span className="font-semibold text-indigo-400">Suggested Fix: </span>
+                      <div className="text-[11px] text-indigo-600 dark:text-indigo-300 bg-indigo-950/30 p-2.5 rounded-lg border border-indigo-900/40">
+                        <span className="font-semibold text-indigo-700 dark:text-indigo-400">Suggested Fix: </span>
                         {smell.recommendation}
                       </div>
                       {smell.lineNumber && (
@@ -525,7 +525,7 @@ public class HighThroughputBuffer<T>
                   <span>Suggested Code Updates</span>
                   <button
                     onClick={() => setActiveTab("chat")}
-                    className="text-indigo-400 hover:text-indigo-300 font-semibold"
+                    className="text-indigo-700 dark:text-indigo-400 hover:text-indigo-600 dark:text-indigo-300 font-semibold"
                   >
                     ← Back to Chat
                   </button>
@@ -540,11 +540,11 @@ public class HighThroughputBuffer<T>
                         key={idx}
                         className={`${
                           isAdd
-                            ? "text-emerald-400 bg-emerald-950/30 -mx-4 px-4"
+                            ? "text-emerald-700 dark:text-emerald-400 bg-emerald-950/30 -mx-4 px-4"
                             : isDel
                             ? "text-rose-400 bg-rose-950/30 -mx-4 px-4 line-through opacity-80"
                             : isHeader
-                            ? "text-cyan-400 font-bold"
+                            ? "text-cyan-700 dark:text-cyan-400 font-bold"
                             : "text-muted-foreground"
                         }`}
                       >

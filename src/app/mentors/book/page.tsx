@@ -187,11 +187,11 @@ END:VCALENDAR`;
       <section className="border-b border-border/80 bg-gradient-to-b from-indigo-950/30 via-slate-900/40 to-slate-950 px-6 py-10">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-xs font-semibold uppercase tracking-wider mb-3">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-700 dark:text-indigo-400 text-xs font-semibold uppercase tracking-wider mb-3">
               <Sparkles className="w-3.5 h-3.5" />
               Two-Sided Mentorship Marketplace
             </div>
-            <h1 className="text-3xl sm:text-4xl font-black text-white tracking-tight">
+            <h1 className="text-3xl sm:text-4xl font-black text-foreground tracking-tight">
               1-on-1 Staff &amp; Principal Mentor Office Hours
             </h1>
             <p className="text-muted-foreground text-sm sm:text-base mt-2 max-w-2xl">
@@ -201,7 +201,7 @@ END:VCALENDAR`;
 
           <div className="flex items-center gap-3">
             <div className="px-4 py-3 rounded-2xl bg-card/80 border border-border backdrop-blur-md flex items-center gap-3">
-              <ShieldCheck className="w-6 h-6 text-emerald-400" />
+              <ShieldCheck className="w-6 h-6 text-emerald-700 dark:text-emerald-400" />
               <div>
                 <div className="text-xs font-bold text-foreground">Edulexa Payout Engine</div>
                 <div className="text-[11px] text-muted-foreground">{config.tax.withholdingLabel}</div>
@@ -222,8 +222,8 @@ END:VCALENDAR`;
         {/* Left Column: Mentor Selection Roster (7 cols) */}
         <div className="lg:col-span-7 space-y-6">
           <div className="flex items-center justify-between">
-            <h2 className="text-lg font-bold text-white flex items-center gap-2">
-              <UserCheck className="w-5 h-5 text-indigo-400" />
+            <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
+              <UserCheck className="w-5 h-5 text-indigo-700 dark:text-indigo-400" />
               Select Your Staff+ Mentor
             </h2>
             <span className="text-xs text-muted-foreground font-mono">
@@ -248,26 +248,26 @@ END:VCALENDAR`;
                     <div className="flex items-start gap-4">
                       {/* Avatar Initials */}
                       <div className="w-13 h-13 rounded-2xl bg-gradient-to-tr from-indigo-600 via-purple-600 to-amber-500 p-0.5 shadow-md">
-                        <div className="w-full h-full bg-background rounded-[14px] flex items-center justify-center font-bold text-white text-base">
+                        <div className="w-full h-full bg-background rounded-[14px] flex items-center justify-center font-bold text-foreground text-base">
                           {m.name.split(" ").map((n) => n[0]).join("")}
                         </div>
                       </div>
 
                       <div>
                         <div className="flex items-center gap-2">
-                          <h3 className="font-bold text-base text-white">{m.name}</h3>
-                          <span className="flex items-center gap-1 text-xs text-amber-400 bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded-full font-semibold">
-                            <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
+                          <h3 className="font-bold text-base text-foreground">{m.name}</h3>
+                          <span className="flex items-center gap-1 text-xs text-amber-700 dark:text-amber-400 bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded-full font-semibold">
+                            <Star className="w-3 h-3 fill-amber-400 text-amber-700 dark:text-amber-400" />
                             {m.rating.toFixed(2)}
                           </span>
                         </div>
-                        <p className="text-xs text-indigo-300 font-medium">{m.roleTitle}</p>
+                        <p className="text-xs text-indigo-600 dark:text-indigo-300 font-medium">{m.roleTitle}</p>
                         <p className="text-xs text-muted-foreground font-mono mt-0.5">{m.company}</p>
                       </div>
                     </div>
 
                     <div className="text-right">
-                      <div className="text-lg font-black text-white">
+                      <div className="text-lg font-black text-foreground">
                         {formatCurrency(convertFromInr(m.ratePerSessionInr))}
                       </div>
                       <div className="text-[11px] text-muted-foreground font-mono">per 45m session</div>
@@ -291,7 +291,7 @@ END:VCALENDAR`;
 
                   {/* Slot Badges */}
                   <div className="mt-4 pt-3 border-t border-border/60 flex items-center justify-between text-xs text-muted-foreground">
-                    <span className="flex items-center gap-1.5 text-emerald-400 font-medium">
+                    <span className="flex items-center gap-1.5 text-emerald-700 dark:text-emerald-400 font-medium">
                       <Clock className="w-3.5 h-3.5" />
                       Next available: {m.availableSlots[0]}
                     </span>
@@ -307,20 +307,20 @@ END:VCALENDAR`;
         <div className="lg:col-span-5 space-y-6">
           <div className="sticky top-24 space-y-6">
             <div className="p-6 rounded-2xl bg-card/90 border border-border shadow-2xl backdrop-blur-xl space-y-5">
-              <h2 className="text-base font-bold text-white flex items-center gap-2">
-                <CalendarCheck className="w-5 h-5 text-indigo-400" />
+              <h2 className="text-base font-bold text-foreground flex items-center gap-2">
+                <CalendarCheck className="w-5 h-5 text-indigo-700 dark:text-indigo-400" />
                 Configure Session Details
               </h2>
 
               {/* Selected Mentor Capsule */}
               <div className="p-3.5 rounded-xl bg-indigo-950/30 border border-indigo-500/20 flex items-center justify-between">
                 <div>
-                  <div className="text-[11px] text-indigo-400 font-mono uppercase">Assigned Mentor</div>
-                  <div className="text-sm font-bold text-white">{selectedMentor.name}</div>
+                  <div className="text-[11px] text-indigo-700 dark:text-indigo-400 font-mono uppercase">Assigned Mentor</div>
+                  <div className="text-sm font-bold text-foreground">{selectedMentor.name}</div>
                   <div className="text-xs text-muted-foreground">{selectedMentor.company}</div>
                 </div>
                 <div className="text-right">
-                  <div className="text-xs font-mono text-emerald-400 font-bold">Verified Staff+</div>
+                  <div className="text-xs font-mono text-emerald-700 dark:text-emerald-400 font-bold">Verified Staff+</div>
                   <div className="text-[10px] text-muted-foreground font-mono">PAN: {selectedMentor.panNumber}</div>
                 </div>
               </div>
@@ -364,7 +364,7 @@ END:VCALENDAR`;
                         onClick={() => setSelectedSlot(slot)}
                         className={`px-3 py-2 rounded-xl text-left text-xs font-mono transition-all flex items-center justify-between ${
                           isSlotSelected
-                            ? "bg-indigo-600/20 text-indigo-300 border border-indigo-500 font-semibold"
+                            ? "bg-indigo-600/20 text-indigo-600 dark:text-indigo-300 border border-indigo-500 font-semibold"
                             : "bg-background border border-border text-muted-foreground hover:text-foreground hover:border-border"
                         }`}
                       >
@@ -372,7 +372,7 @@ END:VCALENDAR`;
                           <Clock className="w-3.5 h-3.5" />
                           {slot}
                         </span>
-                        {isSlotSelected && <CheckCircle2 className="w-3.5 h-3.5 text-indigo-400" />}
+                        {isSlotSelected && <CheckCircle2 className="w-3.5 h-3.5 text-indigo-700 dark:text-indigo-400" />}
                       </button>
                     );
                   })}
@@ -403,24 +403,24 @@ END:VCALENDAR`;
 
               {/* Transparent Regional Statutory Financial Ledger */}
               <div className="p-4 rounded-xl bg-background border border-border/90 space-y-2.5">
-                <div className="text-[11px] font-mono uppercase text-indigo-400 font-semibold mb-1">
+                <div className="text-[11px] font-mono uppercase text-indigo-700 dark:text-indigo-400 font-semibold mb-1">
                   {config.tax.regimeTitle}
                 </div>
                 <div className="flex items-center justify-between text-xs text-muted-foreground">
                   <span className="font-semibold text-muted-foreground">Candidate Session Fee:</span>
-                  <span className="font-bold text-white font-mono">{formatCurrency(grossFee)}.00</span>
+                  <span className="font-bold text-foreground font-mono">{formatCurrency(grossFee)}.00</span>
                 </div>
                 <div className="flex items-center justify-between text-xs text-muted-foreground">
                   <span className="font-semibold text-muted-foreground">Gross Mentor Earning:</span>
                   <span className="font-mono text-foreground">{formatCurrency(grossFee)}.00</span>
                 </div>
-                <div className="flex items-center justify-between text-xs text-amber-400 bg-amber-500/10 px-2.5 py-1.5 rounded-lg border border-amber-500/20">
+                <div className="flex items-center justify-between text-xs text-amber-700 dark:text-amber-400 bg-amber-500/10 px-2.5 py-1.5 rounded-lg border border-amber-500/20">
                   <span className="font-semibold">{config.tax.withholdingLabel}:</span>
                   <span className="font-mono font-bold">-{formatCurrency(statutoryTds)}.00</span>
                 </div>
                 <div className="pt-2 border-t border-border flex items-center justify-between text-xs">
-                  <span className="font-bold text-emerald-400">Net Mentor Bank Payout ({config.tax.payoutRail}):</span>
-                  <span className="font-black text-emerald-400 font-mono text-sm">
+                  <span className="font-bold text-emerald-700 dark:text-emerald-400">Net Mentor Bank Payout ({config.tax.payoutRail}):</span>
+                  <span className="font-black text-emerald-700 dark:text-emerald-400 font-mono text-sm">
                     {formatCurrency(netTakeHome)}.00
                   </span>
                 </div>
@@ -430,7 +430,7 @@ END:VCALENDAR`;
               </div>
 
               {bookingError && (
-                <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-xs flex items-center gap-2">
+                <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/30 text-red-700 dark:text-red-400 text-xs flex items-center gap-2">
                   <AlertCircle className="w-4 h-4 flex-shrink-0" />
                   <span>{bookingError}</span>
                 </div>
@@ -465,11 +465,11 @@ END:VCALENDAR`;
         <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-md flex items-center justify-center p-4">
           <div className="max-w-xl w-full bg-card border border-border rounded-3xl p-6 sm:p-8 shadow-2xl space-y-6 animate-in fade-in zoom-in-95">
             <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-2xl bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
+              <div className="w-12 h-12 rounded-2xl bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center text-emerald-700 dark:text-emerald-400">
                 <CheckCircle2 className="w-6 h-6" />
               </div>
               <div>
-                <h3 className="text-xl font-black text-white">Office Hours Confirmed!</h3>
+                <h3 className="text-xl font-black text-foreground">Office Hours Confirmed!</h3>
                 <p className="text-xs text-muted-foreground mt-0.5">
                   Meeting room initialized &amp; Edulexa {config.tax.regimeTitle} updated.
                 </p>
@@ -479,11 +479,11 @@ END:VCALENDAR`;
             <div className="p-4 rounded-2xl bg-background border border-border space-y-3">
               <div className="flex items-center justify-between text-xs">
                 <span className="text-muted-foreground">Assigned Mentor:</span>
-                <span className="font-bold text-white">{bookingResult.mentorName}</span>
+                <span className="font-bold text-foreground">{bookingResult.mentorName}</span>
               </div>
               <div className="flex items-center justify-between text-xs">
                 <span className="text-muted-foreground">Session Slot:</span>
-                <span className="font-mono text-indigo-300 font-semibold">{bookingResult.scheduledSlot}</span>
+                <span className="font-mono text-indigo-600 dark:text-indigo-300 font-semibold">{bookingResult.scheduledSlot}</span>
               </div>
               <div className="flex items-center justify-between text-xs">
                 <span className="text-muted-foreground">Defense Topic:</span>
@@ -494,8 +494,8 @@ END:VCALENDAR`;
                 <span className="font-mono text-muted-foreground">{bookingResult.batchReference}</span>
               </div>
               <div className="flex items-center justify-between text-xs pt-2 border-t border-border/80">
-                <span className="text-emerald-400 font-semibold">Net Payout to Mentor ({config.tax.withholdingLabel}):</span>
-                <span className="font-mono text-emerald-400 font-bold">
+                <span className="text-emerald-700 dark:text-emerald-400 font-semibold">Net Payout to Mentor ({config.tax.withholdingLabel}):</span>
+                <span className="font-mono text-emerald-700 dark:text-emerald-400 font-bold">
                   {formatCurrency(convertFromInr(bookingResult.mentorNetPayout))}.00
                 </span>
               </div>
@@ -509,7 +509,7 @@ END:VCALENDAR`;
                   type="text"
                   readOnly
                   value={bookingResult.meetingUrl}
-                  className="flex-1 bg-background border border-border rounded-xl px-3 py-2 text-xs font-mono text-indigo-300"
+                  className="flex-1 bg-background border border-border rounded-xl px-3 py-2 text-xs font-mono text-indigo-600 dark:text-indigo-300"
                 />
                 <button
                   onClick={copyMeetingLink}
@@ -525,7 +525,7 @@ END:VCALENDAR`;
             <div className="flex flex-col sm:flex-row items-center gap-3 pt-2">
               <button
                 onClick={downloadIcsInvite}
-                className="w-full sm:w-auto flex-1 py-2.5 rounded-xl bg-indigo-600/20 hover:bg-indigo-600/30 border border-indigo-500/40 text-indigo-300 font-semibold text-xs flex items-center justify-center gap-2 transition-colors"
+                className="w-full sm:w-auto flex-1 py-2.5 rounded-xl bg-indigo-600/20 hover:bg-indigo-600/30 border border-indigo-500/40 text-indigo-600 dark:text-indigo-300 font-semibold text-xs flex items-center justify-center gap-2 transition-colors"
               >
                 <Download className="w-4 h-4" />
                 <span>Add to Calendar (.ics)</span>

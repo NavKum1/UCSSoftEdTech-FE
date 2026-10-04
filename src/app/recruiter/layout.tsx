@@ -19,8 +19,8 @@ export default function RecruiterLayout({ children }: { children: React.ReactNod
             </div>
             <div>
               <div className="flex items-center space-x-2">
-                <span className="font-bold text-base text-white tracking-wide">BUILD & DEFEND</span>
-                <span className="text-[10px] px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 font-semibold border border-purple-500/30 flex items-center space-x-1">
+                <span className="font-bold text-base text-foreground tracking-wide">BUILD & DEFEND</span>
+                <span className="text-[10px] px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-600 dark:text-purple-300 font-semibold border border-purple-500/30 flex items-center space-x-1">
                   <ShieldCheck className="w-3 h-3 mr-0.5" />
                   <span>Corporate Recruiter Portal</span>
                 </span>
@@ -45,7 +45,7 @@ export default function RecruiterLayout({ children }: { children: React.ReactNod
             </button>
             <button
               onClick={() => router.push("/recruiter/benchmark")}
-              className="px-3 py-1.5 rounded-lg text-xs font-semibold text-purple-400 bg-purple-950/40 border border-purple-800/40 hover:bg-purple-900/40 transition-colors"
+              className="px-3 py-1.5 rounded-lg text-xs font-semibold text-purple-700 dark:text-purple-400 bg-purple-950/40 border border-purple-800/40 hover:bg-purple-900/40 transition-colors"
             >
               AI Benchmarking
             </button>

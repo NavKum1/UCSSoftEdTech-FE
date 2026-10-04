@@ -185,21 +185,21 @@ export default function PromotionReviewPage() {
   }
 
   function getVerdictColor(verdict: string) {
-    if (verdict === "Ready_For_Promotion") return "bg-emerald-500/20 text-emerald-400 border-emerald-500/30";
-    if (verdict === "On_Track") return "bg-amber-500/20 text-amber-400 border-amber-500/30";
+    if (verdict === "Ready_For_Promotion") return "bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 border-emerald-500/30";
+    if (verdict === "On_Track") return "bg-amber-500/20 text-amber-700 dark:text-amber-400 border-amber-500/30";
     return "bg-rose-500/20 text-rose-400 border-rose-500/30";
   }
 
   function getCategoryColor(cat: string) {
     switch (cat) {
       case "Distributed_Consensus":
-        return "bg-purple-500/20 text-purple-400 border-purple-500/30";
+        return "bg-purple-500/20 text-purple-700 dark:text-purple-400 border-purple-500/30";
       case "Security_CVE":
         return "bg-rose-500/20 text-rose-400 border-rose-500/30";
       case "Core_Infrastructure":
-        return "bg-blue-500/20 text-blue-400 border-blue-500/30";
+        return "bg-blue-500/20 text-blue-700 dark:text-blue-400 border-blue-500/30";
       case "Performance_Optimization":
-        return "bg-amber-500/20 text-amber-400 border-amber-500/30";
+        return "bg-amber-500/20 text-amber-700 dark:text-amber-400 border-amber-500/30";
       default:
         return "bg-slate-700/30 text-muted-foreground border-border/50";
     }
@@ -210,15 +210,15 @@ export default function PromotionReviewPage() {
       {/* Top Breadcrumb & Navigation */}
       <div className="max-w-7xl mx-auto mb-6 flex flex-wrap items-center justify-between gap-4">
         <div className="flex items-center space-x-2 text-sm text-muted-foreground">
-          <Link href="/" className="hover:text-cyan-400 transition-colors">
+          <Link href="/" className="hover:text-cyan-700 dark:text-cyan-400 transition-colors">
             Home
           </Link>
           <span>/</span>
-          <Link href="/passport" className="hover:text-cyan-400 transition-colors">
+          <Link href="/passport" className="hover:text-cyan-700 dark:text-cyan-400 transition-colors">
             Career OS
           </Link>
           <span>/</span>
-          <span className="text-cyan-400 font-medium">Promotion Review Simulator</span>
+          <span className="text-cyan-700 dark:text-cyan-400 font-medium">Promotion Review Simulator</span>
         </div>
         <div className="flex items-center space-x-3">
           <Link
@@ -227,7 +227,7 @@ export default function PromotionReviewPage() {
           >
             ← Staff Management Simulator
           </Link>
-          <span className="px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-xs font-semibold text-emerald-400 flex items-center space-x-1.5">
+          <span className="px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-xs font-semibold text-emerald-700 dark:text-emerald-400 flex items-center space-x-1.5">
             <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
             <span>GitHub Live Sync Active</span>
           </span>
@@ -240,14 +240,14 @@ export default function PromotionReviewPage() {
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div>
             <div className="flex items-center space-x-2 mb-2">
-              <span className="px-2.5 py-0.5 rounded-md bg-cyan-500/20 text-cyan-300 text-xs font-bold uppercase tracking-wider border border-cyan-500/30">
+              <span className="px-2.5 py-0.5 rounded-md bg-cyan-500/20 text-cyan-600 dark:text-cyan-300 text-xs font-bold uppercase tracking-wider border border-cyan-500/30">
                 Career Growth &amp; Promotion Review
               </span>
-              <span className="px-2.5 py-0.5 rounded-md bg-purple-500/20 text-purple-300 text-xs font-bold uppercase tracking-wider border border-purple-500/30">
+              <span className="px-2.5 py-0.5 rounded-md bg-purple-500/20 text-purple-600 dark:text-purple-300 text-xs font-bold uppercase tracking-wider border border-purple-500/30">
                 Senior &amp; Staff Leveling Rubrics
               </span>
             </div>
-            <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight text-white mb-2">
+            <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight text-foreground mb-2">
               Promotion Review &amp; Code Impact Evaluation
             </h1>
             <p className="text-muted-foreground text-sm md:text-base max-w-2xl">
@@ -293,9 +293,9 @@ export default function PromotionReviewPage() {
 
       {/* Global Notification Banner */}
       {message && (
-        <div className="max-w-7xl mx-auto mb-6 p-4 rounded-xl bg-cyan-950/50 border border-cyan-800 text-cyan-300 text-sm flex items-center justify-between">
+        <div className="max-w-7xl mx-auto mb-6 p-4 rounded-xl bg-cyan-950/50 border border-cyan-800 text-cyan-600 dark:text-cyan-300 text-sm flex items-center justify-between">
           <span>{message}</span>
-          <button onClick={() => setMessage(null)} className="text-cyan-400 hover:text-white font-bold ml-4">
+          <button onClick={() => setMessage(null)} className="text-cyan-700 dark:text-cyan-400 hover:text-white font-bold ml-4">
             ✕
           </button>
         </div>
@@ -308,7 +308,7 @@ export default function PromotionReviewPage() {
           {/* Active Repository Card */}
           <div className="bg-card border border-border rounded-2xl p-6 shadow-xl">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-bold text-white flex items-center space-x-2">
+              <h2 className="text-lg font-bold text-foreground flex items-center space-x-2">
                 <span>Tracked Repositories</span>
                 <span className="px-2 py-0.5 rounded-full bg-muted text-xs text-muted-foreground">
                   {integrations.length}
@@ -330,8 +330,8 @@ export default function PromotionReviewPage() {
                   }`}
                 >
                   <div className="flex items-center justify-between mb-1.5">
-                    <span className="text-xs font-semibold text-cyan-400">{i.provider}</span>
-                    <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                    <span className="text-xs font-semibold text-cyan-700 dark:text-cyan-400">{i.provider}</span>
+                    <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 border border-emerald-500/30">
                       {i.syncStatus}
                     </span>
                   </div>
@@ -351,7 +351,7 @@ export default function PromotionReviewPage() {
           <div className="bg-card border border-border rounded-2xl p-6 shadow-xl space-y-4">
             <div className="flex items-center justify-between">
               <div>
-                <h2 className="text-lg font-bold text-white">Merged PR Impact Timeline</h2>
+                <h2 className="text-lg font-bold text-foreground">Merged PR Impact Timeline</h2>
                 <p className="text-xs text-muted-foreground">
                   Code quality, cross-module impact, and architectural design documentation
                 </p>
@@ -369,7 +369,7 @@ export default function PromotionReviewPage() {
                 >
                   <div className="flex flex-wrap items-start justify-between gap-2">
                     <div className="flex items-center space-x-2">
-                      <span className="px-2 py-0.5 rounded-md bg-muted font-mono text-cyan-400 font-bold text-xs">
+                      <span className="px-2 py-0.5 rounded-md bg-muted font-mono text-cyan-700 dark:text-cyan-400 font-bold text-xs">
                         {pr.prNumber}
                       </span>
                       <span className={`px-2 py-0.5 rounded-md border text-[10px] font-bold ${getCategoryColor(pr.architecturalCategory)}`}>
@@ -389,11 +389,11 @@ export default function PromotionReviewPage() {
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1 text-xs">
                     <div className="p-2 rounded-lg bg-card border border-border">
                       <div className="text-[10px] text-muted-foreground uppercase font-semibold">Impact Scope</div>
-                      <div className="text-sm font-bold text-cyan-400">{pr.blastRadiusScore}%</div>
+                      <div className="text-sm font-bold text-cyan-700 dark:text-cyan-400">{pr.blastRadiusScore}%</div>
                     </div>
                     <div className="p-2 rounded-lg bg-card border border-border">
                       <div className="text-[10px] text-muted-foreground uppercase font-semibold">Complexity</div>
-                      <div className="text-sm font-bold text-purple-400">{pr.complexityScore}%</div>
+                      <div className="text-sm font-bold text-purple-700 dark:text-purple-400">{pr.complexityScore}%</div>
                     </div>
                     <div className="p-2 rounded-lg bg-card border border-border">
                       <div className="text-[10px] text-muted-foreground uppercase font-semibold">Files Changed</div>
@@ -402,7 +402,7 @@ export default function PromotionReviewPage() {
                     <div className="p-2 rounded-lg bg-card border border-border">
                       <div className="text-[10px] text-muted-foreground uppercase font-semibold">Lines Diff</div>
                       <div className="text-sm font-bold">
-                        <span className="text-emerald-400">+{pr.additions}</span>{" "}
+                        <span className="text-emerald-700 dark:text-emerald-400">+{pr.additions}</span>{" "}
                         <span className="text-rose-400">-{pr.deletions}</span>
                       </div>
                     </div>
@@ -410,8 +410,8 @@ export default function PromotionReviewPage() {
 
                   {/* Design Doc RFC Tag */}
                   {pr.designDocSummary && (
-                    <div className="p-2.5 rounded-lg bg-cyan-950/20 border border-cyan-900/40 text-xs text-cyan-300 flex items-start space-x-2">
-                      <span className="font-bold text-cyan-400">RFC/ADR:</span>
+                    <div className="p-2.5 rounded-lg bg-cyan-950/20 border border-cyan-900/40 text-xs text-cyan-600 dark:text-cyan-300 flex items-start space-x-2">
+                      <span className="font-bold text-cyan-700 dark:text-cyan-400">RFC/ADR:</span>
                       <span>{pr.designDocSummary}</span>
                     </div>
                   )}
@@ -425,10 +425,10 @@ export default function PromotionReviewPage() {
         <div className="lg:col-span-5 space-y-6">
           <div className="bg-card border border-border rounded-2xl p-6 shadow-xl space-y-5 sticky top-8">
             <div>
-              <span className="px-2 py-0.5 rounded-md bg-purple-500/20 text-purple-300 text-xs font-bold uppercase tracking-wider border border-purple-500/30">
+              <span className="px-2 py-0.5 rounded-md bg-purple-500/20 text-purple-600 dark:text-purple-300 text-xs font-bold uppercase tracking-wider border border-purple-500/30">
                 Annual Review Simulator
               </span>
-              <h2 className="text-xl font-bold text-white mt-1">
+              <h2 className="text-xl font-bold text-foreground mt-1">
                 Promotion Committee Hearing
               </h2>
               <p className="text-xs text-muted-foreground mt-1">
@@ -498,7 +498,7 @@ export default function PromotionReviewPage() {
                   </div>
                   <div className="text-right">
                     <div className="text-[10px] text-muted-foreground font-semibold uppercase">Readiness Score</div>
-                    <div className="text-2xl font-black text-cyan-400">
+                    <div className="text-2xl font-black text-cyan-700 dark:text-cyan-400">
                       {evaluation.overallReadinessScore}%
                     </div>
                   </div>
@@ -508,7 +508,7 @@ export default function PromotionReviewPage() {
                 <div className="space-y-2 text-xs">
                   <div className="flex justify-between text-muted-foreground">
                     <span>Architectural Impact (35%)</span>
-                    <span className="font-bold text-cyan-400">{evaluation.architecturalImpactScore}%</span>
+                    <span className="font-bold text-cyan-700 dark:text-cyan-400">{evaluation.architecturalImpactScore}%</span>
                   </div>
                   <div className="w-full bg-muted h-2 rounded-full overflow-hidden">
                     <div className="bg-cyan-500 h-full rounded-full" style={{ width: `${evaluation.architecturalImpactScore}%` }} />
@@ -516,7 +516,7 @@ export default function PromotionReviewPage() {
 
                   <div className="flex justify-between text-muted-foreground pt-2">
                     <span>Organizational Influence (30%)</span>
-                    <span className="font-bold text-purple-400">{evaluation.orgInfluenceScore}%</span>
+                    <span className="font-bold text-purple-700 dark:text-purple-400">{evaluation.orgInfluenceScore}%</span>
                   </div>
                   <div className="w-full bg-muted h-2 rounded-full overflow-hidden">
                     <div className="bg-purple-500 h-full rounded-full" style={{ width: `${evaluation.orgInfluenceScore}%` }} />
@@ -524,7 +524,7 @@ export default function PromotionReviewPage() {
 
                   <div className="flex justify-between text-muted-foreground pt-2">
                     <span>Technical Leadership (25%)</span>
-                    <span className="font-bold text-amber-400">{evaluation.technicalLeadershipScore}%</span>
+                    <span className="font-bold text-amber-700 dark:text-amber-400">{evaluation.technicalLeadershipScore}%</span>
                   </div>
                   <div className="w-full bg-muted h-2 rounded-full overflow-hidden">
                     <div className="bg-amber-500 h-full rounded-full" style={{ width: `${evaluation.technicalLeadershipScore}%` }} />
@@ -532,7 +532,7 @@ export default function PromotionReviewPage() {
 
                   <div className="flex justify-between text-muted-foreground pt-2">
                     <span>Execution Velocity (10%)</span>
-                    <span className="font-bold text-emerald-400">{evaluation.executionVelocityScore}%</span>
+                    <span className="font-bold text-emerald-700 dark:text-emerald-400">{evaluation.executionVelocityScore}%</span>
                   </div>
                   <div className="w-full bg-muted h-2 rounded-full overflow-hidden">
                     <div className="bg-emerald-500 h-full rounded-full" style={{ width: `${evaluation.executionVelocityScore}%` }} />
@@ -542,13 +542,13 @@ export default function PromotionReviewPage() {
                 {/* Leveling Gaps Checklist */}
                 {evaluation.levelingGaps.length > 0 && (
                   <div className="space-y-2 pt-2">
-                    <div className="text-xs font-bold text-amber-400 uppercase tracking-wider flex items-center space-x-1">
+                    <div className="text-xs font-bold text-amber-700 dark:text-amber-400 uppercase tracking-wider flex items-center space-x-1">
                       <span>Leveling Gaps to Close</span>
                     </div>
                     <div className="space-y-1.5">
                       {evaluation.levelingGaps.map((gap, idx) => (
                         <div key={idx} className="p-2.5 rounded-lg bg-amber-500/10 border border-amber-500/20 text-xs text-amber-200/90 flex items-start space-x-2">
-                          <span className="text-amber-400 font-bold">•</span>
+                          <span className="text-amber-700 dark:text-amber-400 font-bold">•</span>
                           <span>{gap}</span>
                         </div>
                       ))}
@@ -566,7 +566,7 @@ export default function PromotionReviewPage() {
                       <div key={idx} className="p-3 rounded-xl bg-background border border-border space-y-1.5">
                         <div className="flex items-center justify-between text-[11px]">
                           <span className="font-bold text-foreground">{peer.peerName}</span>
-                          <span className="text-[10px] font-semibold text-cyan-400">{peer.sentiment}</span>
+                          <span className="text-[10px] font-semibold text-cyan-700 dark:text-cyan-400">{peer.sentiment}</span>
                         </div>
                         <div className="text-[10px] text-muted-foreground">{peer.peerRole}</div>
                         <p className="text-xs text-muted-foreground italic pt-1 border-t border-slate-900">
@@ -587,7 +587,7 @@ export default function PromotionReviewPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-md">
           <div className="bg-card border border-border rounded-2xl p-6 w-full max-w-md shadow-2xl space-y-4">
             <div className="flex items-center justify-between">
-              <h3 className="font-bold text-lg text-white">Connect GitHub Repository</h3>
+              <h3 className="font-bold text-lg text-foreground">Connect GitHub Repository</h3>
               <button onClick={() => setShowConnectModal(false)} className="text-muted-foreground hover:text-white font-bold">
                 ✕
               </button>

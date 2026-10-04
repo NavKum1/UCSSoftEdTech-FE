@@ -186,18 +186,18 @@ export default function PartnerBillingPage() {
             &larr; Back to Dashboard
           </Link>
           <div className="h-4 w-[1px] bg-slate-700"></div>
-          <h1 className="text-base font-semibold text-white tracking-tight flex items-center gap-2">
+          <h1 className="text-base font-semibold text-foreground tracking-tight flex items-center gap-2">
             <span className="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
             Enterprise Multi-Tenant Billing &amp; Usage Meter
           </h1>
-          <span className="text-xs px-2 py-0.5 rounded font-mono bg-indigo-950 text-indigo-300 border border-indigo-700/50">
+          <span className="text-xs px-2 py-0.5 rounded font-mono bg-indigo-950 text-indigo-600 dark:text-indigo-300 border border-indigo-700/50">
             {subData?.planTier}
           </span>
         </div>
 
         <div className="flex items-center gap-3">
           {notice && (
-            <span className="text-xs text-emerald-400 font-mono bg-emerald-950/60 px-3 py-1 rounded border border-emerald-800/40 animate-fade-in">
+            <span className="text-xs text-emerald-700 dark:text-emerald-400 font-mono bg-emerald-950/60 px-3 py-1 rounded border border-emerald-800/40 animate-fade-in">
               {notice}
             </span>
           )}
@@ -222,14 +222,14 @@ export default function PartnerBillingPage() {
         <div className="bg-gradient-to-r from-slate-900 via-indigo-950/30 to-slate-900 border border-border rounded-xl p-6 shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
           <div>
             <div className="flex items-center gap-2.5">
-              <span className="text-xs uppercase font-mono tracking-wider px-2 py-0.5 rounded bg-emerald-950 text-emerald-300 border border-emerald-800/60">
+              <span className="text-xs uppercase font-mono tracking-wider px-2 py-0.5 rounded bg-emerald-950 text-emerald-600 dark:text-emerald-300 border border-emerald-800/60">
                 {subData?.status}
               </span>
               <span className="text-xs text-muted-foreground font-mono">
                 Cycle: {subData?.billingCycle}
               </span>
             </div>
-            <h2 className="text-2xl font-bold text-white mt-1">
+            <h2 className="text-2xl font-bold text-foreground mt-1">
               {subData?.planTier} Tier
             </h2>
             <p className="text-xs text-muted-foreground mt-1 font-mono">
@@ -238,7 +238,7 @@ export default function PartnerBillingPage() {
           </div>
 
           <div className="flex items-baseline gap-2">
-            <span className="text-4xl font-extrabold text-white tracking-tight">
+            <span className="text-4xl font-extrabold text-foreground tracking-tight">
               {subData?.priceFormatted}
             </span>
             <span className="text-xs text-muted-foreground font-mono">
@@ -254,9 +254,9 @@ export default function PartnerBillingPage() {
             <div>
               <div className="flex items-center justify-between text-xs text-muted-foreground font-mono mb-2">
                 <span>Active Seats</span>
-                <span className="text-indigo-400 font-semibold">{subData?.seats.utilizationPercent}%</span>
+                <span className="text-indigo-700 dark:text-indigo-400 font-semibold">{subData?.seats.utilizationPercent}%</span>
               </div>
-              <div className="text-2xl font-bold text-white mb-2">
+              <div className="text-2xl font-bold text-foreground mb-2">
                 {subData?.seats.used} <span className="text-xs text-muted-foreground font-normal">/ {subData?.seats.purchased} Seats</span>
               </div>
             </div>
@@ -273,9 +273,9 @@ export default function PartnerBillingPage() {
             <div>
               <div className="flex items-center justify-between text-xs text-muted-foreground font-mono mb-2">
                 <span>Voice AI Quota</span>
-                <span className="text-cyan-400 font-semibold">{subData?.voiceMinutes.utilizationPercent}%</span>
+                <span className="text-cyan-700 dark:text-cyan-400 font-semibold">{subData?.voiceMinutes.utilizationPercent}%</span>
               </div>
-              <div className="text-2xl font-bold text-white mb-2">
+              <div className="text-2xl font-bold text-foreground mb-2">
                 {subData?.voiceMinutes.used} <span className="text-xs text-muted-foreground font-normal">/ {subData?.voiceMinutes.monthlyQuota} Mins</span>
               </div>
             </div>
@@ -292,9 +292,9 @@ export default function PartnerBillingPage() {
             <div>
               <div className="flex items-center justify-between text-xs text-muted-foreground font-mono mb-2">
                 <span>Candidate Evals</span>
-                <span className="text-emerald-400 font-semibold">{subData?.candidateEvaluations.utilizationPercent}%</span>
+                <span className="text-emerald-700 dark:text-emerald-400 font-semibold">{subData?.candidateEvaluations.utilizationPercent}%</span>
               </div>
-              <div className="text-2xl font-bold text-white mb-2">
+              <div className="text-2xl font-bold text-foreground mb-2">
                 {subData?.candidateEvaluations.used} <span className="text-xs text-muted-foreground font-normal">/ {subData?.candidateEvaluations.monthlyQuota} Runs</span>
               </div>
             </div>
@@ -311,9 +311,9 @@ export default function PartnerBillingPage() {
             <div>
               <div className="flex items-center justify-between text-xs text-muted-foreground font-mono mb-2">
                 <span>Proctor Video Storage</span>
-                <span className="text-amber-400 font-semibold">{subData?.videoStorage.utilizationPercent}%</span>
+                <span className="text-amber-700 dark:text-amber-400 font-semibold">{subData?.videoStorage.utilizationPercent}%</span>
               </div>
-              <div className="text-2xl font-bold text-white mb-2">
+              <div className="text-2xl font-bold text-foreground mb-2">
                 {subData?.videoStorage.usedGB} <span className="text-xs text-muted-foreground font-normal">/ {subData?.videoStorage.quotaGB} GB</span>
               </div>
             </div>
@@ -330,7 +330,7 @@ export default function PartnerBillingPage() {
         <div className="bg-card border border-border rounded-xl p-6 shadow-xl">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h3 className="text-base font-semibold text-white">Invoices &amp; Billing Statements</h3>
+              <h3 className="text-base font-semibold text-foreground">Invoices &amp; Billing Statements</h3>
               <p className="text-xs text-muted-foreground font-mono mt-0.5">
                 Automated monthly statements with itemized usage overage breakdowns.
               </p>
@@ -369,16 +369,16 @@ export default function PartnerBillingPage() {
                       <td className="py-3 font-bold text-white">{inv.invoiceNumber}</td>
                       <td className="py-3 text-muted-foreground">{inv.billingPeriod}</td>
                       <td className="py-3 text-muted-foreground">{new Date(inv.createdAt).toLocaleDateString()}</td>
-                      <td className="py-3 text-emerald-400 font-bold">{inv.totalFormatted}</td>
+                      <td className="py-3 text-emerald-700 dark:text-emerald-400 font-bold">{inv.totalFormatted}</td>
                       <td className="py-3">
-                        <span className="px-2 py-0.5 rounded text-[10px] bg-emerald-950 text-emerald-300 border border-emerald-800/60">
+                        <span className="px-2 py-0.5 rounded text-[10px] bg-emerald-950 text-emerald-600 dark:text-emerald-300 border border-emerald-800/60">
                           {inv.status}
                         </span>
                       </td>
                       <td className="py-3 text-right space-x-2">
                         <button
                           onClick={() => handleViewInvoice(inv.invoiceId)}
-                          className="px-2.5 py-1 rounded bg-muted hover:bg-slate-700 text-indigo-400 font-medium transition"
+                          className="px-2.5 py-1 rounded bg-muted hover:bg-slate-700 text-indigo-700 dark:text-indigo-400 font-medium transition"
                         >
                           View Line Items
                         </button>
@@ -405,7 +405,7 @@ export default function PartnerBillingPage() {
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-card border border-border rounded-xl max-w-lg w-full p-6 shadow-2xl space-y-4">
             <div className="flex items-center justify-between border-b border-border pb-3">
-              <h3 className="text-base font-bold text-white">Upgrade or Change Subscription Plan</h3>
+              <h3 className="text-base font-bold text-foreground">Upgrade or Change Subscription Plan</h3>
               <button
                 onClick={() => setIsUpgrading(false)}
                 className="text-muted-foreground hover:text-white text-sm"
@@ -488,7 +488,7 @@ export default function PartnerBillingPage() {
           <div className="bg-card border border-border rounded-xl max-w-xl w-full p-6 shadow-2xl space-y-4">
             <div className="flex items-center justify-between border-b border-border pb-3">
               <div>
-                <h3 className="text-base font-bold text-white">{selectedInvoice.invoiceNumber}</h3>
+                <h3 className="text-base font-bold text-foreground">{selectedInvoice.invoiceNumber}</h3>
                 <p className="text-xs text-muted-foreground font-mono">{selectedInvoice.billingPeriod}</p>
               </div>
               <button
@@ -506,7 +506,7 @@ export default function PartnerBillingPage() {
                     <p className="text-foreground font-medium">{item.description}</p>
                     <p className="text-muted-foreground text-[10px]">Qty: {item.quantity}</p>
                   </div>
-                  <span className="text-white font-bold">
+                  <span className="text-foreground font-bold">
                     {config.symbol}{((item.totalCents / 100.0) * (config.currency === "INR" ? 80 : config.currency === "EUR" ? 0.92 : 1.0)).toFixed(2)}
                   </span>
                 </div>
@@ -522,7 +522,7 @@ export default function PartnerBillingPage() {
                 <span>Estimated Tax (8%):</span>
                 <span>{selectedInvoice.taxFormatted}</span>
               </div>
-              <div className="flex justify-between text-base font-bold text-emerald-400 pt-1 border-t border-border/60">
+              <div className="flex justify-between text-base font-bold text-emerald-700 dark:text-emerald-400 pt-1 border-t border-border/60">
                 <span>Total Due:</span>
                 <span>{selectedInvoice.totalFormatted}</span>
               </div>

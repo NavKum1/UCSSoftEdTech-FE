@@ -215,7 +215,7 @@ export default function DailyCodeReviewDojoPage() {
               <h1 className="font-bold text-lg tracking-tight bg-gradient-to-r from-emerald-400 via-teal-300 to-cyan-400 bg-clip-text text-transparent">
                 Daily PR Review Dojo
               </h1>
-              <span className="px-2 py-0.5 text-xs font-mono bg-muted text-emerald-400 border border-border rounded">
+              <span className="px-2 py-0.5 text-xs font-mono bg-muted text-emerald-700 dark:text-emerald-400 border border-border rounded">
                 3-Minute Drill
               </span>
             </div>
@@ -227,7 +227,7 @@ export default function DailyCodeReviewDojoPage() {
             <div className="flex items-center gap-2 bg-muted/80 border border-emerald-500/30 px-3 py-1.5 rounded-lg shadow-sm">
               <span className="text-base">👔</span>
               <div>
-                <span className="text-emerald-400 font-bold text-sm">
+                <span className="text-emerald-700 dark:text-emerald-400 font-bold text-sm">
                   {stats?.seniorReviewerTier ?? "Senior Reviewer"}
                 </span>
                 <span className="text-muted-foreground text-[10px] block">
@@ -240,7 +240,7 @@ export default function DailyCodeReviewDojoPage() {
             <div className="flex items-center gap-2 bg-muted/80 border border-amber-500/30 px-3 py-1.5 rounded-lg">
               <span className="text-base">🛡️</span>
               <div>
-                <span className="text-amber-400 font-bold text-sm">
+                <span className="text-amber-700 dark:text-amber-400 font-bold text-sm">
                   {stats?.zeroDayDefectsCaught ?? 0} Bugs Blocked
                 </span>
                 <span className="text-muted-foreground text-[10px] block">
@@ -253,7 +253,7 @@ export default function DailyCodeReviewDojoPage() {
             <div className="flex items-center gap-2 bg-muted/80 border border-cyan-500/30 px-3 py-1.5 rounded-lg">
               <span className="text-base">⏱️</span>
               <div>
-                <span className="text-cyan-400 font-bold text-sm">{formatTimer(timerSeconds)}</span>
+                <span className="text-cyan-700 dark:text-cyan-400 font-bold text-sm">{formatTimer(timerSeconds)}</span>
                 <span className="text-muted-foreground text-[10px] block">
                   {timerSeconds <= 60 ? "+25 XP Speed Bonus" : "Standard Speed"}
                 </span>
@@ -272,19 +272,19 @@ export default function DailyCodeReviewDojoPage() {
               <div className="flex items-center gap-2 text-xs font-mono text-muted-foreground">
                 <span className="text-foreground font-semibold">{kata?.repository}</span>
                 <span>•</span>
-                <span className="px-2 py-0.5 bg-emerald-950 text-emerald-400 border border-emerald-800/60 rounded">
+                <span className="px-2 py-0.5 bg-emerald-950 text-emerald-700 dark:text-emerald-400 border border-emerald-800/60 rounded">
                   Open PR #184
                 </span>
                 <span>•</span>
                 <span className="text-muted-foreground">author: @{kata?.author}</span>
                 <span>•</span>
-                <span className="uppercase text-amber-400 font-bold">{kata?.language}</span>
+                <span className="uppercase text-amber-700 dark:text-amber-400 font-bold">{kata?.language}</span>
               </div>
               <h2 className="text-2xl font-bold text-foreground">{kata?.title}</h2>
             </div>
 
             {stats?.completedToday && (
-              <div className="bg-emerald-950/80 border border-emerald-500/40 text-emerald-300 px-4 py-3 rounded-xl text-center shrink-0">
+              <div className="bg-emerald-950/80 border border-emerald-500/40 text-emerald-600 dark:text-emerald-300 px-4 py-3 rounded-xl text-center shrink-0">
                 <span className="text-sm font-semibold block">✅ Today&apos;s Review Logged</span>
                 <span className="text-[11px] text-muted-foreground font-mono">
                   Daily streak maintained
@@ -300,7 +300,7 @@ export default function DailyCodeReviewDojoPage() {
               </span>
               <span>←</span>
               <span>
-                Compare: <strong className="text-emerald-400">feature/fast-path-eval</strong>
+                Compare: <strong className="text-emerald-700 dark:text-emerald-400">feature/fast-path-eval</strong>
               </span>
             </div>
             <span className="text-muted-foreground">
@@ -321,7 +321,7 @@ export default function DailyCodeReviewDojoPage() {
                 </span>
                 <span>
                   {selectedLine ? (
-                    <span className="text-amber-400 font-bold">
+                    <span className="text-amber-700 dark:text-amber-400 font-bold">
                       🚩 Line #{selectedLine} Selected for Review
                     </span>
                   ) : (
@@ -344,7 +344,7 @@ export default function DailyCodeReviewDojoPage() {
                           : line.type === "add"
                           ? "bg-emerald-950/20 hover:bg-emerald-900/30 text-emerald-200"
                           : line.type === "del"
-                          ? "bg-red-950/20 hover:bg-red-900/30 text-red-300"
+                          ? "bg-red-950/20 hover:bg-red-900/30 text-red-600 dark:text-red-300"
                           : line.type === "header"
                           ? "bg-card text-muted-foreground font-bold"
                           : "hover:bg-muted/30 text-muted-foreground"
@@ -358,9 +358,9 @@ export default function DailyCodeReviewDojoPage() {
                       {/* Line Type Badge Indicator */}
                       <span className="w-6 shrink-0 py-1 text-center font-bold">
                         {line.type === "add" ? (
-                          <span className="text-emerald-400">+</span>
+                          <span className="text-emerald-700 dark:text-emerald-400">+</span>
                         ) : line.type === "del" ? (
-                          <span className="text-red-400">-</span>
+                          <span className="text-red-700 dark:text-red-400">-</span>
                         ) : (
                           " "
                         )}
@@ -389,7 +389,7 @@ export default function DailyCodeReviewDojoPage() {
                 <span className="text-[10px] font-mono text-muted-foreground uppercase tracking-wider block">
                   Target Diff Location
                 </span>
-                <div className="text-sm font-bold text-amber-400 font-mono">
+                <div className="text-sm font-bold text-amber-700 dark:text-amber-400 font-mono">
                   {selectedLine ? `Line #${selectedLine} Flagged` : "None Selected (Click a diff line)"}
                 </div>
               </div>
@@ -445,10 +445,10 @@ export default function DailyCodeReviewDojoPage() {
                       className={`py-2 px-2 text-xs font-bold rounded-lg border transition ${
                         decision === btn.val
                           ? btn.color === "red"
-                            ? "bg-red-950 text-red-400 border-red-500 shadow-[0_0_10px_rgba(239,68,68,0.3)]"
+                            ? "bg-red-950 text-red-700 dark:text-red-400 border-red-500 shadow-[0_0_10px_rgba(239,68,68,0.3)]"
                             : btn.color === "yellow"
-                            ? "bg-yellow-950 text-yellow-400 border-yellow-500"
-                            : "bg-emerald-950 text-emerald-400 border-emerald-500"
+                            ? "bg-yellow-950 text-yellow-700 dark:text-yellow-400 border-yellow-500"
+                            : "bg-emerald-950 text-emerald-700 dark:text-emerald-400 border-emerald-500"
                           : "bg-background text-muted-foreground border-border hover:border-border"
                       }`}
                     >
@@ -515,7 +515,7 @@ export default function DailyCodeReviewDojoPage() {
               <div className="grid grid-cols-3 gap-3 text-center">
                 <div className="bg-background p-3 rounded-xl border border-border">
                   <span className="text-[10px] font-mono text-muted-foreground block">Total XP Earned</span>
-                  <span className="text-xl font-bold text-emerald-400">
+                  <span className="text-xl font-bold text-emerald-700 dark:text-emerald-400">
                     +{result.totalXpAwarded} XP
                   </span>
                   <span className="text-[10px] text-muted-foreground block">
@@ -526,7 +526,7 @@ export default function DailyCodeReviewDojoPage() {
                   <span className="text-[10px] font-mono text-muted-foreground block">Line Accuracy</span>
                   <span
                     className={`text-xl font-bold ${
-                      result.lineAccuracy ? "text-emerald-400" : "text-red-400"
+                      result.lineAccuracy ? "text-emerald-700 dark:text-emerald-400" : "text-red-700 dark:text-red-400"
                     }`}
                   >
                     {result.lineAccuracy ? "Exact Match" : "Missed"}
@@ -537,7 +537,7 @@ export default function DailyCodeReviewDojoPage() {
                   <span className="text-[10px] font-mono text-muted-foreground block">PR Decision</span>
                   <span
                     className={`text-xl font-bold ${
-                      result.decisionCorrect ? "text-emerald-400" : "text-amber-400"
+                      result.decisionCorrect ? "text-emerald-700 dark:text-emerald-400" : "text-amber-700 dark:text-amber-400"
                     }`}
                   >
                     {result.decisionCorrect ? "Correct Block" : "Improper"}
@@ -548,7 +548,7 @@ export default function DailyCodeReviewDojoPage() {
 
               {/* Principal Benchmark Comparison */}
               <div className="bg-background p-4 rounded-xl border border-border space-y-2">
-                <h4 className="text-xs font-mono text-emerald-400 uppercase tracking-wider">
+                <h4 className="text-xs font-mono text-emerald-700 dark:text-emerald-400 uppercase tracking-wider">
                   🏆 Google / Meta Principal Engineer Benchmark
                 </h4>
                 <p className="text-xs text-muted-foreground font-semibold">
@@ -558,7 +558,7 @@ export default function DailyCodeReviewDojoPage() {
 
               {/* Technical Critique & Root Cause Analysis */}
               <div className="bg-background p-4 rounded-xl border border-border space-y-2">
-                <h4 className="text-xs font-mono text-cyan-400 uppercase tracking-wider">
+                <h4 className="text-xs font-mono text-cyan-700 dark:text-cyan-400 uppercase tracking-wider">
                   🔬 Technical Vulnerability & Defect Critique
                 </h4>
                 <p className="text-xs text-muted-foreground leading-relaxed font-sans">
@@ -568,10 +568,10 @@ export default function DailyCodeReviewDojoPage() {
 
               {/* Clean Remediation Patch */}
               <div className="bg-background p-4 rounded-xl border border-border space-y-2">
-                <h4 className="text-xs font-mono text-amber-400 uppercase tracking-wider">
+                <h4 className="text-xs font-mono text-amber-700 dark:text-amber-400 uppercase tracking-wider">
                   ✨ Clean Production Diff Patch (Remediation)
                 </h4>
-                <pre className="text-xs font-mono bg-black/50 p-3 rounded border border-border text-emerald-300 overflow-x-auto">
+                <pre className="text-xs font-mono bg-black/50 p-3 rounded border border-border text-emerald-600 dark:text-emerald-300 overflow-x-auto">
                   {result.suggestedRemediation}
                 </pre>
               </div>

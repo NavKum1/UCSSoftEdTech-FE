@@ -140,13 +140,13 @@ export default function RecruiterBenchmarkPage() {
   const getTierColor = (tier: string) => {
     switch (tier) {
       case "FAANG_Staff":
-        return "bg-emerald-500/20 text-emerald-300 border-emerald-500/40";
+        return "bg-emerald-500/20 text-emerald-600 dark:text-emerald-300 border-emerald-500/40";
       case "Tier1_Senior":
-        return "bg-indigo-500/20 text-indigo-300 border-indigo-500/40";
+        return "bg-indigo-500/20 text-indigo-600 dark:text-indigo-300 border-indigo-500/40";
       case "MidLevel_Enterprise":
         return "bg-sky-500/20 text-sky-300 border-sky-500/40";
       case "Junior_Competent":
-        return "bg-amber-500/20 text-amber-300 border-amber-500/40";
+        return "bg-amber-500/20 text-amber-600 dark:text-amber-300 border-amber-500/40";
       default:
         return "bg-rose-500/20 text-rose-300 border-rose-500/40";
     }
@@ -160,11 +160,11 @@ export default function RecruiterBenchmarkPage() {
         
         <div>
           <div className="flex items-center space-x-2.5 mb-2">
-            <span className="p-2 rounded-lg bg-purple-500/20 text-purple-300 border border-purple-500/30">
-              <Cpu className="w-5 h-5 text-purple-400" />
+            <span className="p-2 rounded-lg bg-purple-500/20 text-purple-600 dark:text-purple-300 border border-purple-500/30">
+              <Cpu className="w-5 h-5 text-purple-700 dark:text-purple-400" />
             </span>
-            <h1 className="text-2xl font-bold text-white tracking-tight">Candidate Benchmarks & Skill Evaluations</h1>
-            <span className="text-[11px] px-2.5 py-0.5 rounded-full bg-purple-500/20 text-purple-300 font-semibold border border-purple-500/40">
+            <h1 className="text-2xl font-bold text-foreground tracking-tight">Candidate Benchmarks & Skill Evaluations</h1>
+            <span className="text-[11px] px-2.5 py-0.5 rounded-full bg-purple-500/20 text-purple-600 dark:text-purple-300 font-semibold border border-purple-500/40">
               Active Analytics
             </span>
           </div>
@@ -178,7 +178,7 @@ export default function RecruiterBenchmarkPage() {
             onClick={() => setShowPlagiarismModal(true)}
             className="px-4 py-2.5 rounded-xl bg-muted hover:bg-slate-700 text-foreground font-medium text-xs border border-border flex items-center space-x-2 transition-all cursor-pointer shadow-sm hover:border-slate-600"
           >
-            <GitCompare className="w-4 h-4 text-purple-400" />
+            <GitCompare className="w-4 h-4 text-purple-700 dark:text-purple-400" />
             <span>Code Originality Check</span>
           </button>
 
@@ -201,8 +201,8 @@ export default function RecruiterBenchmarkPage() {
       </div>
 
       {fetchError && (
-        <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs flex items-center gap-2">
-          <AlertTriangle className="w-4 h-4 shrink-0 text-amber-400" />
+        <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-600 dark:text-amber-300 text-xs flex items-center gap-2">
+          <AlertTriangle className="w-4 h-4 shrink-0 text-amber-700 dark:text-amber-400" />
           <span>{fetchError}</span>
         </div>
       )}
@@ -212,12 +212,12 @@ export default function RecruiterBenchmarkPage() {
         <div className="p-5 rounded-xl bg-card/60 border border-border relative overflow-hidden">
           <div className="flex items-center justify-between text-muted-foreground mb-2">
             <span className="text-xs font-medium uppercase tracking-wider">Total Evaluated</span>
-            <Layers className="w-4 h-4 text-purple-400" />
+            <Layers className="w-4 h-4 text-purple-700 dark:text-purple-400" />
           </div>
-          <div className="text-2xl font-bold text-white">
+          <div className="text-2xl font-bold text-foreground">
             {analytics?.totalEvaluated || 0}
           </div>
-          <div className="text-[11px] text-emerald-400 mt-1 flex items-center space-x-1">
+          <div className="text-[11px] text-emerald-700 dark:text-emerald-400 mt-1 flex items-center space-x-1">
             <TrendingUp className="w-3 h-3" />
             <span>100% evaluated across current cohort</span>
           </div>
@@ -226,12 +226,12 @@ export default function RecruiterBenchmarkPage() {
         <div className="p-5 rounded-xl bg-card/60 border border-border relative overflow-hidden">
           <div className="flex items-center justify-between text-muted-foreground mb-2">
             <span className="text-xs font-medium uppercase tracking-wider">Median Percentile</span>
-            <BarChart3 className="w-4 h-4 text-indigo-400" />
+            <BarChart3 className="w-4 h-4 text-indigo-700 dark:text-indigo-400" />
           </div>
-          <div className="text-2xl font-bold text-white">
+          <div className="text-2xl font-bold text-foreground">
             Top {(100 - (analytics?.medianPercentile || 75)).toFixed(1)}%
           </div>
-          <div className="text-[11px] text-indigo-300 mt-1">
+          <div className="text-[11px] text-indigo-600 dark:text-indigo-300 mt-1">
             Cohort 50th percentile: {(analytics?.medianPercentile || 75).toFixed(1)}
           </div>
         </div>
@@ -241,7 +241,7 @@ export default function RecruiterBenchmarkPage() {
             <span className="text-xs font-medium uppercase tracking-wider">Integrity Review Rate</span>
             <ShieldAlert className="w-4 h-4 text-rose-400" />
           </div>
-          <div className="text-2xl font-bold text-white">
+          <div className="text-2xl font-bold text-foreground">
             {(analytics?.plagiarismFlagRate || 0).toFixed(1)}%
           </div>
           <div className="text-[11px] text-muted-foreground mt-1">
@@ -252,9 +252,9 @@ export default function RecruiterBenchmarkPage() {
         <div className="p-5 rounded-xl bg-card/60 border border-border relative overflow-hidden">
           <div className="flex items-center justify-between text-muted-foreground mb-2">
             <span className="text-xs font-medium uppercase tracking-wider">Top-Tier Talent Ratio</span>
-            <Award className="w-4 h-4 text-emerald-400" />
+            <Award className="w-4 h-4 text-emerald-700 dark:text-emerald-400" />
           </div>
-          <div className="text-2xl font-bold text-white">
+          <div className="text-2xl font-bold text-foreground">
             {analytics?.tierDistribution
               ? `${(
                   (((analytics.tierDistribution["FAANG_Staff"] || 0) +
@@ -264,7 +264,7 @@ export default function RecruiterBenchmarkPage() {
                 ).toFixed(1)}%`
               : "35.2%"}
           </div>
-          <div className="text-[11px] text-emerald-400 mt-1">
+          <div className="text-[11px] text-emerald-700 dark:text-emerald-400 mt-1">
             High-caliber technical talent pool
           </div>
         </div>
@@ -274,8 +274,8 @@ export default function RecruiterBenchmarkPage() {
       <div className="p-6 rounded-2xl bg-card/50 border border-border space-y-5">
         <div className="flex items-center justify-between">
           <div>
-            <h3 className="text-base font-semibold text-white flex items-center space-x-2">
-              <Award className="w-4 h-4 text-amber-400" />
+            <h3 className="text-base font-semibold text-foreground flex items-center space-x-2">
+              <Award className="w-4 h-4 text-amber-700 dark:text-amber-400" />
               <span>Skill Level Distribution</span>
             </h3>
             <p className="text-xs text-muted-foreground">
@@ -349,8 +349,8 @@ export default function RecruiterBenchmarkPage() {
         {/* Candidates List */}
         <div className="lg:col-span-2 space-y-4">
           <div className="flex items-center justify-between">
-            <h3 className="text-base font-semibold text-white flex items-center space-x-2">
-              <Sparkles className="w-4 h-4 text-purple-400" />
+            <h3 className="text-base font-semibold text-foreground flex items-center space-x-2">
+              <Sparkles className="w-4 h-4 text-purple-700 dark:text-purple-400" />
               <span>Evaluated Candidate Cohort</span>
             </h3>
             <span className="text-xs text-muted-foreground">Click candidate to view skill breakdown</span>
@@ -370,12 +370,12 @@ export default function RecruiterBenchmarkPage() {
                   }`}
                 >
                   <div className="flex items-center space-x-4">
-                    <div className="w-10 h-10 rounded-xl bg-muted border border-border flex items-center justify-center font-bold text-white text-xs">
+                    <div className="w-10 h-10 rounded-xl bg-muted border border-border flex items-center justify-center font-bold text-foreground text-xs">
                       #{candidate.sprintSubmissionId.substring(0, 4)}
                     </div>
                     <div>
                       <div className="flex items-center space-x-2">
-                        <span className="text-sm font-semibold text-white">
+                        <span className="text-sm font-semibold text-foreground">
                           Candidate #{candidate.sprintSubmissionId.substring(0, 8)}
                         </span>
                         <span className={`text-[10px] px-2 py-0.5 rounded-full border font-semibold ${getTierColor(candidate.industryStandardTier)}`}>
@@ -390,14 +390,14 @@ export default function RecruiterBenchmarkPage() {
 
                   <div className="flex items-center space-x-5 text-right">
                     <div>
-                      <div className="text-xs font-semibold text-purple-400">
+                      <div className="text-xs font-semibold text-purple-700 dark:text-purple-400">
                         {candidate.overallBenchmarkPercentile.toFixed(1)}th %ile
                       </div>
                       <div className="text-[10px] text-muted-foreground">
                         Top {(100 - candidate.overallBenchmarkPercentile).toFixed(1)}% of cohort
                       </div>
                     </div>
-                    <ChevronRight className={`w-4 h-4 ${isSelected ? "text-purple-400" : "text-muted-foreground"}`} />
+                    <ChevronRight className={`w-4 h-4 ${isSelected ? "text-purple-700 dark:text-purple-400" : "text-muted-foreground"}`} />
                   </div>
                 </div>
               );
@@ -408,10 +408,10 @@ export default function RecruiterBenchmarkPage() {
         {/* 4-Dimension Radar / Score Breakdown Card */}
         <div className="p-6 rounded-2xl bg-card/70 border border-border space-y-6">
           <div className="border-b border-border pb-4">
-            <span className="text-[10px] uppercase font-bold tracking-wider text-purple-400">
+            <span className="text-[10px] uppercase font-bold tracking-wider text-purple-700 dark:text-purple-400">
               Candidate Skill Profile
             </span>
-            <h3 className="text-lg font-bold text-white mt-1">
+            <h3 className="text-lg font-bold text-foreground mt-1">
               Candidate #{selectedRecord?.sprintSubmissionId.substring(0, 8) || "N/A"}
             </h3>
             <div className="flex items-center space-x-2 mt-2">
@@ -419,7 +419,7 @@ export default function RecruiterBenchmarkPage() {
                 {selectedRecord?.industryStandardTier.replace("_", " ") || "Standard"}
               </span>
               <span className="text-xs text-muted-foreground">
-                Percentile: <strong className="text-white">{(selectedRecord?.overallBenchmarkPercentile || 0).toFixed(1)}%</strong>
+                Percentile: <strong className="text-foreground">{(selectedRecord?.overallBenchmarkPercentile || 0).toFixed(1)}%</strong>
               </span>
             </div>
           </div>
@@ -429,10 +429,10 @@ export default function RecruiterBenchmarkPage() {
             <div>
               <div className="flex justify-between text-xs mb-1.5">
                 <span className="text-muted-foreground font-medium flex items-center space-x-1.5">
-                  <Cpu className="w-3.5 h-3.5 text-indigo-400" />
+                  <Cpu className="w-3.5 h-3.5 text-indigo-700 dark:text-indigo-400" />
                   <span>Code Structure & Maintainability</span>
                 </span>
-                <span className="font-bold text-indigo-400">
+                <span className="font-bold text-indigo-700 dark:text-indigo-400">
                   {(selectedRecord?.codeComplexityScore || 0).toFixed(1)} / 100
                 </span>
               </div>
@@ -447,10 +447,10 @@ export default function RecruiterBenchmarkPage() {
             <div>
               <div className="flex justify-between text-xs mb-1.5">
                 <span className="text-muted-foreground font-medium flex items-center space-x-1.5">
-                  <Sparkles className="w-3.5 h-3.5 text-purple-400" />
+                  <Sparkles className="w-3.5 h-3.5 text-purple-700 dark:text-purple-400" />
                   <span>System Design & Modularity</span>
                 </span>
-                <span className="font-bold text-purple-400">
+                <span className="font-bold text-purple-700 dark:text-purple-400">
                   {(selectedRecord?.architecturalEleganceScore || 0).toFixed(1)} / 100
                 </span>
               </div>
@@ -465,10 +465,10 @@ export default function RecruiterBenchmarkPage() {
             <div>
               <div className="flex justify-between text-xs mb-1.5">
                 <span className="text-muted-foreground font-medium flex items-center space-x-1.5">
-                  <ShieldAlert className="w-3.5 h-3.5 text-emerald-400" />
+                  <ShieldAlert className="w-3.5 h-3.5 text-emerald-700 dark:text-emerald-400" />
                   <span>Reliability & Error Handling</span>
                 </span>
-                <span className="font-bold text-emerald-400">
+                <span className="font-bold text-emerald-700 dark:text-emerald-400">
                   {(selectedRecord?.resilienceScore || 0).toFixed(1)} / 100
                 </span>
               </div>
@@ -483,10 +483,10 @@ export default function RecruiterBenchmarkPage() {
             <div>
               <div className="flex justify-between text-xs mb-1.5">
                 <span className="text-muted-foreground font-medium flex items-center space-x-1.5">
-                  <Zap className="w-3.5 h-3.5 text-amber-400" />
+                  <Zap className="w-3.5 h-3.5 text-amber-700 dark:text-amber-400" />
                   <span>Performance & Efficiency</span>
                 </span>
-                <span className="font-bold text-amber-400">
+                <span className="font-bold text-amber-700 dark:text-amber-400">
                   {(selectedRecord?.performanceScore || 0).toFixed(1)} / 100
                 </span>
               </div>
@@ -501,7 +501,7 @@ export default function RecruiterBenchmarkPage() {
 
           {/* AI Evaluator Summary */}
           <div className="p-3.5 rounded-xl bg-background/80 border border-border text-xs text-muted-foreground leading-relaxed">
-            <span className="font-semibold text-white block mb-1">Evaluation Summary:</span>
+            <span className="font-semibold text-foreground block mb-1">Evaluation Summary:</span>
             {selectedRecord?.benchmarkSummary || "No benchmark summary available."}
           </div>
 
@@ -511,7 +511,7 @@ export default function RecruiterBenchmarkPage() {
             }}
             className="w-full py-2.5 rounded-xl bg-muted hover:bg-slate-700 text-foreground text-xs font-medium border border-border flex items-center justify-center space-x-2 transition-colors cursor-pointer"
           >
-            <GitCompare className="w-3.5 h-3.5 text-purple-400" />
+            <GitCompare className="w-3.5 h-3.5 text-purple-700 dark:text-purple-400" />
             <span>Review Code Originality</span>
           </button>
         </div>
@@ -523,8 +523,8 @@ export default function RecruiterBenchmarkPage() {
           <div className="bg-card border border-border rounded-2xl max-w-md w-full p-6 space-y-5 shadow-2xl">
             <div className="flex items-center justify-between border-b border-border pb-3">
               <div className="flex items-center space-x-2">
-                <Sparkles className="w-5 h-5 text-purple-400" />
-                <h3 className="text-base font-bold text-white">Re-evaluate Candidate Cohort</h3>
+                <Sparkles className="w-5 h-5 text-purple-700 dark:text-purple-400" />
+                <h3 className="text-base font-bold text-foreground">Re-evaluate Candidate Cohort</h3>
               </div>
               <button
                 onClick={() => setShowBatchModal(false)}
@@ -557,7 +557,7 @@ export default function RecruiterBenchmarkPage() {
                   }`}
                 >
                   <div>
-                    <div className="text-xs font-semibold text-white">{model.name}</div>
+                    <div className="text-xs font-semibold text-foreground">{model.name}</div>
                     <div className="text-[11px] text-muted-foreground">{model.desc}</div>
                   </div>
                   <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${
@@ -599,8 +599,8 @@ export default function RecruiterBenchmarkPage() {
           <div className="bg-card border border-border rounded-2xl max-w-xl w-full p-6 space-y-5 shadow-2xl">
             <div className="flex items-center justify-between border-b border-border pb-3">
               <div className="flex items-center space-x-2">
-                <GitCompare className="w-5 h-5 text-purple-400" />
-                <h3 className="text-base font-bold text-white">Code Originality & Integrity Check</h3>
+                <GitCompare className="w-5 h-5 text-purple-700 dark:text-purple-400" />
+                <h3 className="text-base font-bold text-foreground">Code Originality & Integrity Check</h3>
               </div>
               <button
                 onClick={() => setShowPlagiarismModal(false)}
@@ -622,7 +622,7 @@ export default function RecruiterBenchmarkPage() {
                 value={plagiarismCode}
                 onChange={(e) => setPlagiarismCode(e.target.value)}
                 rows={5}
-                className="w-full rounded-xl bg-background border border-border p-3 text-xs font-mono text-purple-300 focus:outline-none focus:border-purple-500"
+                className="w-full rounded-xl bg-background border border-border p-3 text-xs font-mono text-purple-600 dark:text-purple-300 focus:outline-none focus:border-purple-500"
               />
             </div>
 
@@ -630,7 +630,7 @@ export default function RecruiterBenchmarkPage() {
               <div className={`p-4 rounded-xl border space-y-2 ${
                 plagiarismReport.isPlagiarized
                   ? "bg-rose-950/20 border-rose-500/50 text-rose-300"
-                  : "bg-emerald-950/20 border-emerald-500/50 text-emerald-300"
+                  : "bg-emerald-950/20 border-emerald-500/50 text-emerald-600 dark:text-emerald-300"
               }`}>
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-bold uppercase tracking-wider">

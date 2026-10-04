@@ -101,7 +101,7 @@ export default function Dashboard() {
               <span className="font-bold text-lg bg-gradient-to-r from-white via-slate-200 to-slate-400 bg-clip-text text-transparent">
                 BUILD & DEFEND
               </span>
-              <span className="ml-2 text-[10px] px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 font-semibold border border-indigo-500/30">
+              <span className="ml-2 text-[10px] px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-600 dark:text-indigo-300 font-semibold border border-indigo-500/30">
                 EdTech Platform
               </span>
             </div>
@@ -133,7 +133,7 @@ export default function Dashboard() {
             {demoMode === "Enterprise" && (
               <>
                 <div className="flex items-center space-x-2 bg-card border border-border rounded-xl px-3 py-1.5">
-                  <Building2 className="w-4 h-4 text-indigo-400" />
+                  <Building2 className="w-4 h-4 text-indigo-700 dark:text-indigo-400" />
                   <span className="text-xs text-muted-foreground font-medium">B2B Tenant Context:</span>
                   <select
                     value={selectedTenantId}
@@ -156,7 +156,7 @@ export default function Dashboard() {
                   disabled={isSeeding}
                   className="text-xs px-3 py-1.5 bg-muted hover:bg-slate-700 text-muted-foreground rounded-xl border border-border flex items-center space-x-1.5 transition-colors"
                 >
-                  <Database className="w-3.5 h-3.5 text-emerald-400" />
+                  <Database className="w-3.5 h-3.5 text-emerald-700 dark:text-emerald-400" />
                   <span>{isSeeding ? "Seeding DB..." : "Seed Institutes"}</span>
                 </button>
               </>
@@ -172,11 +172,11 @@ export default function Dashboard() {
         {demoMode === "Enterprise" && (
           <div className="relative rounded-3xl p-8 overflow-hidden bg-gradient-to-r from-indigo-950 via-slate-900 to-purple-950 border border-indigo-500/20 shadow-2xl">
             <div className="relative z-10 max-w-3xl">
-              <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-xs font-semibold mb-4">
+              <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-700 dark:text-indigo-400 text-xs font-semibold mb-4">
                 <Sparkles className="w-3.5 h-3.5" />
                 <span>AI Voice Assessment & Lead Routing Engine</span>
               </div>
-              <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-white mb-3 leading-tight">
+              <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-foreground mb-3 leading-tight">
                 Evaluate Tech Candidates & Bridge Skill Gaps with Partner Certifications
               </h1>
               <p className="text-sm text-muted-foreground leading-relaxed">
@@ -192,8 +192,8 @@ export default function Dashboard() {
           <div className="lg:col-span-1 space-y-6">
             <div className="glass-panel rounded-2xl p-6 border border-border space-y-4">
               <div className="flex items-center space-x-2 pb-3 border-b border-border">
-                <FileText className="w-5 h-5 text-indigo-400" />
-                <h3 className="text-sm font-semibold text-white">1. Candidate Resume & Profile</h3>
+                <FileText className="w-5 h-5 text-indigo-700 dark:text-indigo-400" />
+                <h3 className="text-sm font-semibold text-foreground">1. Candidate Resume & Profile</h3>
               </div>
 
               <div>
@@ -209,7 +209,7 @@ export default function Dashboard() {
               <div>
                 <div className="flex items-center justify-between mb-1">
                   <label className="block text-xs font-medium text-muted-foreground">Parsed Resume Content</label>
-                  <label className="cursor-pointer flex items-center space-x-1 text-[10px] text-indigo-400 hover:text-indigo-300 font-semibold bg-indigo-500/10 px-2 py-0.5 rounded border border-indigo-500/20 transition-colors">
+                  <label className="cursor-pointer flex items-center space-x-1 text-[10px] text-indigo-700 dark:text-indigo-400 hover:text-indigo-600 dark:text-indigo-300 font-semibold bg-indigo-500/10 px-2 py-0.5 rounded border border-indigo-500/20 transition-colors">
                     <Upload className="w-3 h-3" />
                     <span>Upload Text File</span>
                     <input type="file" accept=".txt,.md,.json" className="hidden" onChange={handleFileUpload} />
@@ -226,8 +226,8 @@ export default function Dashboard() {
 
             <div className="glass-panel rounded-2xl p-6 border border-border space-y-4">
               <div className="flex items-center space-x-2 pb-3 border-b border-border">
-                <Briefcase className="w-5 h-5 text-purple-400" />
-                <h3 className="text-sm font-semibold text-white">2. Job Description & Technical Requirements</h3>
+                <Briefcase className="w-5 h-5 text-purple-700 dark:text-purple-400" />
+                <h3 className="text-sm font-semibold text-foreground">2. Job Description & Technical Requirements</h3>
               </div>
 
               <div>
@@ -258,11 +258,11 @@ export default function Dashboard() {
               <div className="glass-panel rounded-2xl p-6 border border-border space-y-6">
               <div className="flex items-center justify-between pb-4 border-b border-border">
                 <div className="flex items-center space-x-3">
-                  <div className="p-2.5 bg-emerald-500/10 rounded-xl border border-emerald-500/20 text-emerald-400">
+                  <div className="p-2.5 bg-emerald-500/10 rounded-xl border border-emerald-500/20 text-emerald-700 dark:text-emerald-400">
                     <Building2 className="w-5 h-5" />
                   </div>
                   <div>
-                    <h3 className="text-base font-semibold text-white">
+                    <h3 className="text-base font-semibold text-foreground">
                       B2B Partner Lead Referrals & Certification Marketplace
                     </h3>
                     <p className="text-xs text-muted-foreground">
@@ -273,7 +273,7 @@ export default function Dashboard() {
                   </div>
                 </div>
 
-                <span className="px-3 py-1 bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 rounded-full text-xs font-semibold">
+                <span className="px-3 py-1 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/30 rounded-full text-xs font-semibold">
                   {leadReferrals.length} Active Lead Referrals
                 </span>
               </div>
@@ -292,8 +292,8 @@ export default function Dashboard() {
                     tenantCourses.map((c) => (
                       <div key={c.id} className="glass-card rounded-xl p-4 border border-border space-y-2">
                         <div className="flex items-center justify-between">
-                          <span className="text-xs font-bold text-indigo-400">{c.courseName}</span>
-                          <span className="text-[10px] px-2 py-0.5 rounded bg-indigo-500/10 text-indigo-300 border border-indigo-500/20">
+                          <span className="text-xs font-bold text-indigo-700 dark:text-indigo-400">{c.courseName}</span>
+                          <span className="text-[10px] px-2 py-0.5 rounded bg-indigo-500/10 text-indigo-600 dark:text-indigo-300 border border-indigo-500/20">
                             Partner Course
                           </span>
                         </div>
@@ -330,17 +330,17 @@ export default function Dashboard() {
                       ) : (
                         leadReferrals.map((l) => (
                           <tr key={l.id} className="hover:bg-card/50 transition-colors">
-                            <td className="px-4 py-3 font-mono text-[11px] text-indigo-400">
+                            <td className="px-4 py-3 font-mono text-[11px] text-indigo-700 dark:text-indigo-400">
                               {l.id ? l.id.substring(0, 8) + "..." : "REF-1092"}
                             </td>
                             <td className="px-4 py-3 font-medium text-white">{candidateName}</td>
                             <td className="px-4 py-3">
-                              <span className="px-2 py-0.5 rounded bg-purple-500/10 text-purple-300 border border-purple-500/20 font-medium">
+                              <span className="px-2 py-0.5 rounded bg-purple-500/10 text-purple-600 dark:text-purple-300 border border-purple-500/20 font-medium">
                                 Global ITech
                               </span>
                             </td>
                             <td className="px-4 py-3">
-                              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/30">
+                              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/30">
                                 <Send className="w-2.5 h-2.5 mr-1" />
                                 {l.status || "Pending"}
                               </span>

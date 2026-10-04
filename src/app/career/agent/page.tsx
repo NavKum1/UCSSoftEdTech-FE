@@ -254,15 +254,15 @@ export default function AutonomousCareerAgentPage() {
           <div className="flex items-center space-x-4">
             <Link
               href="/passport"
-              className="text-xs uppercase tracking-wider text-emerald-400 hover:text-emerald-300 font-mono font-semibold flex items-center gap-1.5"
+              className="text-xs uppercase tracking-wider text-emerald-700 dark:text-emerald-400 hover:text-emerald-600 dark:text-emerald-300 font-mono font-semibold flex items-center gap-1.5"
             >
               <span>&larr;</span> Skill Passport
             </Link>
             <div className="h-4 w-px bg-muted" />
             <div>
-              <h1 className="text-xl font-bold tracking-tight text-white flex items-center gap-2.5">
+              <h1 className="text-xl font-bold tracking-tight text-foreground flex items-center gap-2.5">
                 <span>Autonomous Career Agent</span>
-                <span className="px-2 py-0.5 rounded-full text-xs font-mono font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 animate-pulse">
+                <span className="px-2 py-0.5 rounded-full text-xs font-mono font-semibold bg-emerald-500/20 text-emerald-600 dark:text-emerald-300 border border-emerald-500/40 animate-pulse">
                   24/7 Live Radar
                 </span>
               </h1>
@@ -298,11 +298,11 @@ export default function AutonomousCareerAgentPage() {
         <section className="lg:col-span-4 space-y-5">
           <div className="bg-card/90 border border-border rounded-xl p-5 shadow-xl space-y-5">
             <div className="flex items-center justify-between border-b border-border/80 pb-3">
-              <h2 className="text-sm font-semibold text-white uppercase tracking-wider flex items-center gap-2">
+              <h2 className="text-sm font-semibold text-foreground uppercase tracking-wider flex items-center gap-2">
                 <span className="w-2 h-2 rounded-full bg-emerald-400" />
                 Agent Autonomy Policy
               </h2>
-              <span className="text-[11px] font-mono text-emerald-400 bg-emerald-950/60 px-2 py-0.5 rounded border border-emerald-800">
+              <span className="text-[11px] font-mono text-emerald-700 dark:text-emerald-400 bg-emerald-950/60 px-2 py-0.5 rounded border border-emerald-800">
                 {config?.autonomyLevel.replace(/_/g, " ")}
               </span>
             </div>
@@ -312,14 +312,14 @@ export default function AutonomousCareerAgentPage() {
               <div className="text-[11px] uppercase tracking-wider text-muted-foreground font-mono">
                 Represented Candidate
               </div>
-              <div className="text-sm font-bold text-white flex items-center justify-between">
+              <div className="text-sm font-bold text-foreground flex items-center justify-between">
                 <span>{config?.candidateName || "Alex Chen"}</span>
-                <span className="text-xs font-mono text-amber-300 font-normal">Active Gold</span>
+                <span className="text-xs font-mono text-amber-600 dark:text-amber-300 font-normal">Active Gold</span>
               </div>
               <div className="text-xs text-muted-foreground">{config?.currentTitle}</div>
               <div className="pt-2 text-[11px] font-mono text-muted-foreground flex items-center justify-between">
                 <span>Passport Token:</span>
-                <span className="text-emerald-400 underline cursor-pointer">
+                <span className="text-emerald-700 dark:text-emerald-400 underline cursor-pointer">
                   {config?.passportVerificationToken}
                 </span>
               </div>
@@ -334,14 +334,14 @@ export default function AutonomousCareerAgentPage() {
               <div>
                 <label className="text-xs text-muted-foreground flex items-center justify-between mb-1">
                   <span>Minimum Base Salary (USD / Global)</span>
-                  <span className="text-white font-mono font-bold">
+                  <span className="text-foreground font-mono font-bold">
                     ${Number(config?.minBaseSalary || 280000).toLocaleString()}{" "}
                     {geo.currency === "INR" ? (
-                      <span className="text-emerald-400 text-[11px] font-normal">
+                      <span className="text-emerald-700 dark:text-emerald-400 text-[11px] font-normal">
                         (~₹{Math.round((config?.minBaseSalary || 280000) * 0.22)}L CTC eq.)
                       </span>
                     ) : geo.currency === "EUR" ? (
-                      <span className="text-emerald-400 text-[11px] font-normal">
+                      <span className="text-emerald-700 dark:text-emerald-400 text-[11px] font-normal">
                         (~€{Math.round(((config?.minBaseSalary || 280000) * 0.92) / 1000)}k eq.)
                       </span>
                     ) : null}
@@ -371,14 +371,14 @@ export default function AutonomousCareerAgentPage() {
               <div>
                 <label className="text-xs text-muted-foreground flex items-center justify-between mb-1">
                   <span>Minimum Annual Equity Grant</span>
-                  <span className="text-white font-mono font-bold">
+                  <span className="text-foreground font-mono font-bold">
                     ${Number(config?.minEquityGrant || 140000).toLocaleString()}{" "}
                     {geo.currency === "INR" ? (
-                      <span className="text-emerald-400 text-[11px] font-normal">
+                      <span className="text-emerald-700 dark:text-emerald-400 text-[11px] font-normal">
                         (~₹{Math.round((config?.minEquityGrant || 140000) * 0.22)}L eq.)
                       </span>
                     ) : geo.currency === "EUR" ? (
-                      <span className="text-emerald-400 text-[11px] font-normal">
+                      <span className="text-emerald-700 dark:text-emerald-400 text-[11px] font-normal">
                         (~€{Math.round(((config?.minEquityGrant || 140000) * 0.92) / 1000)}k eq.)
                       </span>
                     ) : null}
@@ -408,19 +408,19 @@ export default function AutonomousCareerAgentPage() {
               {/* Total Comp Highlight */}
               <div className="p-3 bg-gradient-to-r from-emerald-950/40 to-slate-900 border border-emerald-800/40 rounded-lg flex items-center justify-between">
                 <div>
-                  <div className="text-[11px] font-mono text-emerald-400 uppercase">
+                  <div className="text-[11px] font-mono text-emerald-700 dark:text-emerald-400 uppercase">
                     Minimum Total Comp Floor
                   </div>
                   <div className="text-xs text-muted-foreground">Enforced by Auto-Decline</div>
                 </div>
-                <div className="text-lg font-bold font-mono text-emerald-300">
+                <div className="text-lg font-bold font-mono text-emerald-600 dark:text-emerald-300">
                   ${Number(config?.minTotalComp || 420000).toLocaleString()}{" "}
                   {geo.currency === "INR" ? (
-                    <span className="text-xs font-normal text-emerald-400">
+                    <span className="text-xs font-normal text-emerald-700 dark:text-emerald-400">
                       (~₹{Math.round((config?.minTotalComp || 420000) * 0.22)}L CTC)
                     </span>
                   ) : geo.currency === "EUR" ? (
-                    <span className="text-xs font-normal text-emerald-400">
+                    <span className="text-xs font-normal text-emerald-700 dark:text-emerald-400">
                       (~€{Math.round(((config?.minTotalComp || 420000) * 0.92) / 1000)}k)
                     </span>
                   ) : null}
@@ -462,7 +462,7 @@ export default function AutonomousCareerAgentPage() {
             </div>
 
             {saveSuccessMsg && (
-              <div className="p-2.5 bg-emerald-950/80 border border-emerald-600 rounded text-xs text-emerald-300 font-mono text-center">
+              <div className="p-2.5 bg-emerald-950/80 border border-emerald-600 rounded text-xs text-emerald-600 dark:text-emerald-300 font-mono text-center">
                 {saveSuccessMsg}
               </div>
             )}
@@ -483,7 +483,7 @@ export default function AutonomousCareerAgentPage() {
           <div className="bg-card/90 border border-border rounded-xl p-5 shadow-xl space-y-4">
             <div className="flex items-center justify-between border-b border-border/80 pb-3">
               <div className="flex items-center space-x-3">
-                <h2 className="text-sm font-semibold text-white uppercase tracking-wider">
+                <h2 className="text-sm font-semibold text-foreground uppercase tracking-wider">
                   Inbound Recruiter Inquiries
                 </h2>
                 <span className="text-xs font-mono text-muted-foreground bg-muted px-2 py-0.5 rounded-full">
@@ -535,17 +535,17 @@ export default function AutonomousCareerAgentPage() {
                         <span className="text-[11px] font-mono uppercase tracking-wider text-muted-foreground">
                           {neg.recruiterCompany}
                         </span>
-                        <h3 className="text-sm font-bold text-white leading-tight">
+                        <h3 className="text-sm font-bold text-foreground leading-tight">
                           {neg.roleTitle}
                         </h3>
                       </div>
                       <span
                         className={`text-[10px] font-mono px-2 py-0.5 rounded-full border ${
                           isApproved
-                            ? "bg-emerald-950/80 text-emerald-300 border-emerald-700 font-semibold"
+                            ? "bg-emerald-950/80 text-emerald-600 dark:text-emerald-300 border-emerald-700 font-semibold"
                             : isDeclined
                             ? "bg-rose-950/80 text-rose-300 border-rose-800"
-                            : "bg-amber-950/80 text-amber-300 border-amber-800"
+                            : "bg-amber-950/80 text-amber-600 dark:text-amber-300 border-amber-800"
                         }`}
                       >
                         {neg.status.replace(/_/g, " ")}
@@ -554,14 +554,14 @@ export default function AutonomousCareerAgentPage() {
 
                     <div className="text-xs text-muted-foreground mb-3 flex items-center justify-between">
                       <span>Recruiter: {neg.recruiterName}</span>
-                      <span className="font-mono text-emerald-400 font-semibold">
+                      <span className="font-mono text-emerald-700 dark:text-emerald-400 font-semibold">
                         Alignment: {neg.candidateAlignmentScore}%
                       </span>
                     </div>
 
                     <div className="pt-2 border-t border-border/80 flex items-center justify-between text-xs font-mono">
                       <span className="text-muted-foreground">Current Offer:</span>
-                      <span className="text-white font-bold">
+                      <span className="text-foreground font-bold">
                         {geo.currency === "INR" ? (
                           <>
                             ₹{Math.round(Number(neg.currentTotalComp) * 0.22)}L CTC{" "}
@@ -589,8 +589,8 @@ export default function AutonomousCareerAgentPage() {
                     </div>
 
                     {neg.screeningBypassAgreed && (
-                      <div className="mt-2 text-[11px] font-mono text-emerald-300 bg-emerald-950/40 px-2 py-0.5 rounded border border-emerald-800/60 flex items-center gap-1.5">
-                        <svg className="w-3.5 h-3.5 text-emerald-400" fill="currentColor" viewBox="0 0 20 20">
+                      <div className="mt-2 text-[11px] font-mono text-emerald-600 dark:text-emerald-300 bg-emerald-950/40 px-2 py-0.5 rounded border border-emerald-800/60 flex items-center gap-1.5">
+                        <svg className="w-3.5 h-3.5 text-emerald-700 dark:text-emerald-400" fill="currentColor" viewBox="0 0 20 20">
                           <path
                             fillRule="evenodd"
                             d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
@@ -611,10 +611,10 @@ export default function AutonomousCareerAgentPage() {
             <div className="bg-card/90 border border-border rounded-xl p-5 shadow-xl space-y-5 flex-1">
               <div className="flex items-center justify-between border-b border-border/80 pb-3">
                 <div>
-                  <div className="text-[11px] font-mono text-emerald-400 uppercase tracking-wider">
+                  <div className="text-[11px] font-mono text-emerald-700 dark:text-emerald-400 uppercase tracking-wider">
                     Multi-Turn Negotiation Thread
                   </div>
-                  <h3 className="text-base font-bold text-white">
+                  <h3 className="text-base font-bold text-foreground">
                     {activeDetail.negotiation.roleTitle} &bull;{" "}
                     <span className="text-muted-foreground font-normal">
                       {activeDetail.negotiation.recruiterCompany}
@@ -624,10 +624,10 @@ export default function AutonomousCareerAgentPage() {
 
                 {activeDetail.negotiation.status === "FastTrack_Approved" && (
                   <div className="bg-gradient-to-r from-emerald-900/60 to-teal-900/60 border border-emerald-600/80 px-3 py-1.5 rounded-lg text-right">
-                    <div className="text-[10px] font-mono text-emerald-300 uppercase tracking-wider font-semibold">
+                    <div className="text-[10px] font-mono text-emerald-600 dark:text-emerald-300 uppercase tracking-wider font-semibold">
                       Fast-Track Onsite Confirmed
                     </div>
-                    <div className="text-xs text-white font-mono">
+                    <div className="text-xs text-foreground font-mono">
                       {activeDetail.negotiation.scheduledOnsiteDate
                         ? new Date(activeDetail.negotiation.scheduledOnsiteDate).toUTCString()
                         : "Scheduled"}
@@ -650,7 +650,7 @@ export default function AutonomousCareerAgentPage() {
                       <div className="flex items-center space-x-2 text-[11px] font-mono text-muted-foreground">
                         <span
                           className={`font-semibold ${
-                            isAgent ? "text-emerald-400" : "text-amber-300"
+                            isAgent ? "text-emerald-700 dark:text-emerald-400" : "text-amber-600 dark:text-amber-300"
                           }`}
                         >
                           {isAgent ? "AI Career Agent" : msg.senderName}
@@ -671,7 +671,7 @@ export default function AutonomousCareerAgentPage() {
                         {(msg.proposedTotalComp > 0 || msg.passportProofAttached) && (
                           <div className="mt-3 pt-2.5 border-t border-border/60 flex items-center justify-between text-[11px] font-mono">
                             {msg.proposedTotalComp > 0 && (
-                              <span className="text-white font-semibold">
+                              <span className="text-foreground font-semibold">
                                 Proposed: ${Number(msg.proposedTotalComp).toLocaleString()}{" "}
                                 <span className="text-muted-foreground font-normal">
                                   (${Number(msg.proposedBase).toLocaleString()}b + $
@@ -680,7 +680,7 @@ export default function AutonomousCareerAgentPage() {
                               </span>
                             )}
                             {msg.passportProofAttached && (
-                              <span className="text-emerald-400 bg-emerald-950/80 px-2 py-0.5 rounded border border-emerald-800">
+                              <span className="text-emerald-700 dark:text-emerald-400 bg-emerald-950/80 px-2 py-0.5 rounded border border-emerald-800">
                                 Proof Attached (SHA-256)
                               </span>
                             )}
@@ -696,7 +696,7 @@ export default function AutonomousCareerAgentPage() {
               <div className="pt-4 border-t border-border/80">
                 <form onSubmit={handleSubmitCounterTurn} className="space-y-3 bg-background/60 p-4 rounded-xl border border-border">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-semibold text-white uppercase tracking-wider">
+                    <span className="text-xs font-semibold text-foreground uppercase tracking-wider">
                       Simulate Recruiter Response / Counter-Turn
                     </span>
                     <span className="text-[11px] font-mono text-muted-foreground">
@@ -768,7 +768,7 @@ export default function AutonomousCareerAgentPage() {
         <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-card border border-border rounded-2xl max-w-lg w-full p-6 space-y-4 shadow-2xl">
             <div className="flex items-center justify-between border-b border-border pb-3">
-              <h3 className="text-base font-bold text-white flex items-center gap-2">
+              <h3 className="text-base font-bold text-foreground flex items-center gap-2">
                 <span>Simulate Inbound Recruiter Inquiry</span>
               </h3>
               <button

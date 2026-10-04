@@ -245,7 +245,7 @@ function SprintWorkspaceInner() {
         {/* Navbar */}
         <header className="border-b border-border bg-card/60 backdrop-blur-md sticky top-0 z-50">
           {isOffline && (
-            <div className="w-full bg-amber-500/10 text-amber-400 text-center text-xs py-1.5 font-semibold border-b border-amber-500/20">
+            <div className="w-full bg-amber-500/10 text-amber-700 dark:text-amber-400 text-center text-xs py-1.5 font-semibold border-b border-amber-500/20">
               No internet connection. Your work is being saved locally.
             </div>
           )}
@@ -256,7 +256,7 @@ function SprintWorkspaceInner() {
             </div>
             <div>
               <span className="font-bold text-lg text-foreground">BUILD & DEFEND</span>
-              <span className="ml-2 text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-600 dark:text-emerald-300 font-semibold border border-emerald-500/30">
+              <span className="ml-2 text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-600 dark:text-emerald-600 dark:text-emerald-300 font-semibold border border-emerald-500/30">
                 Verified & Secure
               </span>
             </div>
@@ -264,17 +264,17 @@ function SprintWorkspaceInner() {
 
           <div className="flex items-center space-x-4">
             <div className="hidden lg:flex items-center space-x-2 bg-card border border-border rounded-xl px-3 py-1.5 shadow-sm">
-              <select value={candidateTrack} onChange={(e) => setCandidateTrack(e.target.value as any)} className="bg-transparent text-xs text-indigo-300 font-semibold focus:outline-none cursor-pointer">
+              <select value={candidateTrack} onChange={(e) => setCandidateTrack(e.target.value as any)} className="bg-transparent text-xs text-indigo-600 dark:text-indigo-300 font-semibold focus:outline-none cursor-pointer">
                 <option value="Backend">Backend Track</option>
                 <option value="Frontend">Frontend Track</option>
               </select>
               <span className="text-slate-700">|</span>
-              <select value={difficultyTier} onChange={(e) => setDifficultyTier(e.target.value as any)} className="bg-transparent text-xs text-emerald-400 font-semibold focus:outline-none cursor-pointer">
+              <select value={difficultyTier} onChange={(e) => setDifficultyTier(e.target.value as any)} className="bg-transparent text-xs text-emerald-700 dark:text-emerald-400 font-semibold focus:outline-none cursor-pointer">
                 <option value="Bronze (Junior)">Bronze League (Junior)</option>
                 <option value="Diamond (Staff)">Diamond League (Staff)</option>
               </select>
               <span className="text-slate-700">|</span>
-              <select value={language} onChange={(e) => setLanguage(e.target.value)} disabled={candidateTrack === "Frontend"} className="bg-transparent text-xs text-purple-400 font-semibold focus:outline-none cursor-pointer disabled:opacity-50">
+              <select value={language} onChange={(e) => setLanguage(e.target.value)} disabled={candidateTrack === "Frontend"} className="bg-transparent text-xs text-purple-700 dark:text-purple-400 font-semibold focus:outline-none cursor-pointer disabled:opacity-50">
                 <option value="Python">Python</option>
                 <option value="C#">C#</option>
                 <option value="Java">Java</option>
@@ -284,7 +284,7 @@ function SprintWorkspaceInner() {
                 <option value="React / TSX">React / TSX</option>
               </select>
             </div>
-            <span className="text-xs px-3 py-1 rounded-full bg-indigo-500/10 text-indigo-300 border border-indigo-500/30 font-medium">
+            <span className="text-xs px-3 py-1 rounded-full bg-indigo-500/10 text-indigo-600 dark:text-indigo-300 border border-indigo-500/30 font-medium">
               Challenge ID: {sprintId.substring(0, 8)}
             </span>
             <UserButton />
@@ -316,8 +316,8 @@ function SprintWorkspaceInner() {
             </span>
           </div>
 
-          <div className="flex items-center space-x-1 text-[11px] text-indigo-400 font-mono">
-            <Lock className="w-3.5 h-3.5 mr-1 text-emerald-400" />
+          <div className="flex items-center space-x-1 text-[11px] text-indigo-700 dark:text-indigo-400 font-mono">
+            <Lock className="w-3.5 h-3.5 mr-1 text-emerald-700 dark:text-emerald-400" />
             <span>Session Authenticated</span>
           </div>
         </div>
@@ -327,21 +327,21 @@ function SprintWorkspaceInner() {
           <div className="glass-panel rounded-2xl p-6 border border-border flex flex-col space-y-4">
             <div className="flex items-center justify-between pb-3 border-b border-border">
               <div className="flex items-center space-x-2">
-                <Code className="w-5 h-5 text-indigo-400" />
+                <Code className="w-5 h-5 text-indigo-700 dark:text-indigo-400" />
                 <h3 className="text-sm font-semibold text-foreground">{t("codeEditor")}</h3>
               </div>
-              <span className="text-[10px] px-2.5 py-0.5 rounded bg-indigo-500/10 text-indigo-300 font-semibold border border-indigo-500/20">
+              <span className="text-[10px] px-2.5 py-0.5 rounded bg-indigo-500/10 text-indigo-600 dark:text-indigo-300 font-semibold border border-indigo-500/20">
                 Language: {language}
               </span>
             </div>
 
-            <p className="text-xs text-slate-300 font-medium bg-card/80 p-3 rounded-lg border border-border/80 leading-relaxed shadow-inner">
+            <p className="text-xs text-foreground font-medium bg-card/80 p-3 rounded-lg border border-border/80 leading-relaxed shadow-inner">
               {taskDescription}
             </p>
 
             {pasteWarning && (
-              <div className="p-3 bg-amber-950/40 border border-amber-500/30 rounded-xl flex items-start space-x-2 text-xs text-amber-300">
-                <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
+              <div className="p-3 bg-amber-950/40 border border-amber-500/30 rounded-xl flex items-start space-x-2 text-xs text-amber-600 dark:text-amber-300">
+                <AlertTriangle className="w-4 h-4 text-amber-700 dark:text-amber-400 shrink-0 mt-0.5" />
                 <span>{pasteWarning}</span>
               </div>
             )}
@@ -389,20 +389,20 @@ function SprintWorkspaceInner() {
             <div className="glass-panel rounded-2xl p-6 border border-border space-y-4">
               <div className="flex items-center justify-between pb-3 border-b border-border">
                 <div className="flex items-center space-x-2">
-                  <Terminal className="w-5 h-5 text-emerald-400" />
+                  <Terminal className="w-5 h-5 text-emerald-700 dark:text-emerald-400" />
                   <h3 className="text-sm font-semibold text-foreground">Execution Output & Test Results</h3>
                 </div>
-                {pipelineState === "running" && <RefreshCw className="w-4 h-4 text-amber-400 animate-spin" />}
+                {pipelineState === "running" && <RefreshCw className="w-4 h-4 text-amber-700 dark:text-amber-400 animate-spin" />}
               </div>
 
-              <div className="bg-slate-950 p-4 rounded-xl font-mono text-[11px] text-emerald-400 h-36 overflow-y-auto border border-slate-900 leading-relaxed whitespace-pre-wrap">
+              <div className="bg-slate-950 p-4 rounded-xl font-mono text-[11px] text-emerald-700 dark:text-emerald-400 h-36 overflow-y-auto border border-slate-900 leading-relaxed whitespace-pre-wrap">
                 {stdOutLogs || statusMessage || "Awaiting submission..."}
               </div>
 
               {architecturalFlaws.length > 0 && (
                 <div className="p-3 bg-red-950/40 border border-red-500/30 rounded-xl space-y-1">
-                  <div className="flex items-center space-x-2 text-xs font-semibold text-red-300">
-                    <AlertTriangle className="w-4 h-4 text-red-400" />
+                  <div className="flex items-center space-x-2 text-xs font-semibold text-red-600 dark:text-red-300">
+                    <AlertTriangle className="w-4 h-4 text-red-700 dark:text-red-400" />
                     <span>Review Topics for Discussion:</span>
                   </div>
                   <ul className="list-disc list-inside text-[11px] text-red-200 space-y-0.5 pl-2">
@@ -429,7 +429,7 @@ function SprintWorkspaceInner() {
             {/* Public Credential Badge Issuer Section */}
             {pipelineState === "passed" && (
               <div className="glass-panel rounded-2xl p-6 border border-emerald-500/40 bg-emerald-950/20 text-center space-y-4">
-                <ShieldCheck className="w-12 h-12 text-emerald-400 mx-auto" />
+                <ShieldCheck className="w-12 h-12 text-emerald-700 dark:text-emerald-400 mx-auto" />
                 <h3 className="text-lg font-bold text-foreground">Congratulations! Certificate Issued</h3>
                 <p className="text-xs text-muted-foreground">
                   You successfully defended your implementation. Your verified certificate has been issued.

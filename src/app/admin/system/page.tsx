@@ -143,10 +143,10 @@ export default function SystemOperationsDashboard() {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-6 border-b border-border">
           <div>
             <div className="flex items-center gap-3">
-              <div className="p-2 rounded-xl bg-indigo-500/20 text-indigo-400 border border-indigo-500/30">
+              <div className="p-2 rounded-xl bg-indigo-500/20 text-indigo-700 dark:text-indigo-400 border border-indigo-500/30">
                 <Cpu className="w-6 h-6" />
               </div>
-              <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-white">
+              <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
                 Distributed Operations & Edge Cache Hub
               </h1>
             </div>
@@ -156,7 +156,7 @@ export default function SystemOperationsDashboard() {
           </div>
 
           <div className="flex items-center gap-3">
-            <span className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-mono">
+            <span className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-emerald-700 dark:text-emerald-400 text-xs font-mono">
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
               Node: {queueStats?.workerNodeId || "Worker-01"}
             </span>
@@ -172,8 +172,8 @@ export default function SystemOperationsDashboard() {
 
         {/* Action Log Banner */}
         {actionLog && (
-          <div className="flex items-center gap-2 p-3 rounded-xl bg-indigo-950/40 border border-indigo-500/30 text-indigo-300 text-xs font-mono">
-            <CheckCircle2 className="w-4 h-4 text-indigo-400 shrink-0" />
+          <div className="flex items-center gap-2 p-3 rounded-xl bg-indigo-950/40 border border-indigo-500/30 text-indigo-600 dark:text-indigo-300 text-xs font-mono">
+            <CheckCircle2 className="w-4 h-4 text-indigo-700 dark:text-indigo-400 shrink-0" />
             <span>{actionLog}</span>
           </div>
         )}
@@ -184,9 +184,9 @@ export default function SystemOperationsDashboard() {
           <div className="glass-panel p-6 rounded-2xl border border-border bg-card/40 space-y-2">
             <div className="flex items-center justify-between text-muted-foreground text-xs">
               <span className="uppercase tracking-wider font-semibold">Cache Hit Ratio</span>
-              <Flame className="w-4 h-4 text-amber-400" />
+              <Flame className="w-4 h-4 text-amber-700 dark:text-amber-400" />
             </div>
-            <div className="text-3xl font-black text-white">
+            <div className="text-3xl font-black text-foreground">
               {cacheStats ? `${cacheStats.hitRatioPercentage}%` : "—"}
             </div>
             <p className="text-[11px] text-muted-foreground">
@@ -198,9 +198,9 @@ export default function SystemOperationsDashboard() {
           <div className="glass-panel p-6 rounded-2xl border border-border bg-card/40 space-y-2">
             <div className="flex items-center justify-between text-muted-foreground text-xs">
               <span className="uppercase tracking-wider font-semibold">High-Priority Queue</span>
-              <Zap className="w-4 h-4 text-indigo-400" />
+              <Zap className="w-4 h-4 text-indigo-700 dark:text-indigo-400" />
             </div>
-            <div className="text-3xl font-black text-indigo-400">
+            <div className="text-3xl font-black text-indigo-700 dark:text-indigo-400">
               {queueStats?.pendingHighPriorityCount ?? 0}
             </div>
             <p className="text-[11px] text-muted-foreground">
@@ -212,9 +212,9 @@ export default function SystemOperationsDashboard() {
           <div className="glass-panel p-6 rounded-2xl border border-border bg-card/40 space-y-2">
             <div className="flex items-center justify-between text-muted-foreground text-xs">
               <span className="uppercase tracking-wider font-semibold">Standard Backlog</span>
-              <Layers className="w-4 h-4 text-emerald-400" />
+              <Layers className="w-4 h-4 text-emerald-700 dark:text-emerald-400" />
             </div>
-            <div className="text-3xl font-black text-white">
+            <div className="text-3xl font-black text-foreground">
               {queueStats?.pendingStandardCount ?? 0}
             </div>
             <p className="text-[11px] text-muted-foreground">
@@ -226,9 +226,9 @@ export default function SystemOperationsDashboard() {
           <div className="glass-panel p-6 rounded-2xl border border-border bg-card/40 space-y-2">
             <div className="flex items-center justify-between text-muted-foreground text-xs">
               <span className="uppercase tracking-wider font-semibold">Dead Letter Queue</span>
-              <AlertTriangle className="w-4 h-4 text-red-400" />
+              <AlertTriangle className="w-4 h-4 text-red-700 dark:text-red-400" />
             </div>
-            <div className="text-3xl font-black text-red-400">
+            <div className="text-3xl font-black text-red-700 dark:text-red-400">
               {queueStats?.totalDeadLetterCount ?? 0}
             </div>
             <p className="text-[11px] text-muted-foreground">
@@ -243,10 +243,10 @@ export default function SystemOperationsDashboard() {
           <div className="p-6 rounded-2xl border border-border bg-card/50 space-y-6">
             <div className="flex items-center justify-between pb-4 border-b border-border">
               <div className="flex items-center gap-2">
-                <Database className="w-5 h-5 text-indigo-400" />
-                <h2 className="text-lg font-bold text-white">Edge Caching Control Center</h2>
+                <Database className="w-5 h-5 text-indigo-700 dark:text-indigo-400" />
+                <h2 className="text-lg font-bold text-foreground">Edge Caching Control Center</h2>
               </div>
-              <span className="text-xs px-2.5 py-1 rounded bg-indigo-500/10 text-indigo-300 border border-indigo-500/20 font-mono">
+              <span className="text-xs px-2.5 py-1 rounded bg-indigo-500/10 text-indigo-600 dark:text-indigo-300 border border-indigo-500/20 font-mono">
                 {cacheStats?.totalKeysCount || 0} Keys Active
               </span>
             </div>
@@ -254,13 +254,13 @@ export default function SystemOperationsDashboard() {
             <div className="grid grid-cols-2 gap-4 text-xs">
               <div className="p-3 rounded-xl bg-muted/40 border border-border/50">
                 <span className="text-muted-foreground block mb-1">Active Cache Tags</span>
-                <span className="text-lg font-bold text-white font-mono">
+                <span className="text-lg font-bold text-foreground font-mono">
                   {cacheStats?.activeTagsCount || 0}
                 </span>
               </div>
               <div className="p-3 rounded-xl bg-muted/40 border border-border/50">
                 <span className="text-muted-foreground block mb-1">Eviction / Flush Count</span>
-                <span className="text-lg font-bold text-white font-mono">
+                <span className="text-lg font-bold text-foreground font-mono">
                   {cacheStats?.evictionsCount || 0}
                 </span>
               </div>
@@ -277,7 +277,7 @@ export default function SystemOperationsDashboard() {
                   onClick={() => handleInvalidateCache("credential")}
                   className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-muted hover:bg-slate-700 text-xs text-white border border-border transition-colors"
                 >
-                  <Trash2 className="w-3.5 h-3.5 text-amber-400" />
+                  <Trash2 className="w-3.5 h-3.5 text-amber-700 dark:text-amber-400" />
                   <span>Purge 'credential' Tag</span>
                 </button>
                 <button
@@ -285,15 +285,15 @@ export default function SystemOperationsDashboard() {
                   onClick={() => handleInvalidateCache("leaderboard")}
                   className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-muted hover:bg-slate-700 text-xs text-white border border-border transition-colors"
                 >
-                  <Trash2 className="w-3.5 h-3.5 text-amber-400" />
+                  <Trash2 className="w-3.5 h-3.5 text-amber-700 dark:text-amber-400" />
                   <span>Purge 'leaderboard' Tag</span>
                 </button>
                 <button
                   disabled={isProcessing}
                   onClick={() => handleInvalidateCache(undefined, true)}
-                  className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-red-950/60 hover:bg-red-900/60 text-xs text-red-300 border border-red-800/60 transition-colors"
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-red-950/60 hover:bg-red-900/60 text-xs text-red-600 dark:text-red-300 border border-red-800/60 transition-colors"
                 >
-                  <Trash2 className="w-3.5 h-3.5 text-red-400" />
+                  <Trash2 className="w-3.5 h-3.5 text-red-700 dark:text-red-400" />
                   <span>Flush All Edge Keys</span>
                 </button>
               </div>
@@ -304,10 +304,10 @@ export default function SystemOperationsDashboard() {
           <div className="p-6 rounded-2xl border border-border bg-card/50 space-y-6">
             <div className="flex items-center justify-between pb-4 border-b border-border">
               <div className="flex items-center gap-2">
-                <Server className="w-5 h-5 text-emerald-400" />
-                <h2 className="text-lg font-bold text-white">Distributed Job Queue Dispatcher</h2>
+                <Server className="w-5 h-5 text-emerald-700 dark:text-emerald-400" />
+                <h2 className="text-lg font-bold text-foreground">Distributed Job Queue Dispatcher</h2>
               </div>
-              <span className="text-xs px-2.5 py-1 rounded bg-emerald-500/10 text-emerald-300 border border-emerald-500/20 font-mono">
+              <span className="text-xs px-2.5 py-1 rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-300 border border-emerald-500/20 font-mono">
                 {queueStats?.totalJobsProcessed || 0} Processed Total
               </span>
             </div>
@@ -335,15 +335,15 @@ export default function SystemOperationsDashboard() {
                   onClick={() => handleEnqueueBenchmarkJob("Standard")}
                   className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-muted hover:bg-slate-700 text-xs text-white border border-border transition-colors"
                 >
-                  <Play className="w-3.5 h-3.5 text-emerald-400" />
+                  <Play className="w-3.5 h-3.5 text-emerald-700 dark:text-emerald-400" />
                   <span>Enqueue Standard Job</span>
                 </button>
                 <button
                   disabled={isProcessing || (queueStats?.totalDeadLetterCount ?? 0) === 0}
                   onClick={handleRetryDLQ}
-                  className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-amber-600/30 hover:bg-amber-600/50 text-amber-300 border border-amber-600/40 text-xs transition-colors disabled:opacity-50"
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-amber-600/30 hover:bg-amber-600/50 text-amber-600 dark:text-amber-300 border border-amber-600/40 text-xs transition-colors disabled:opacity-50"
                 >
-                  <RotateCcw className="w-3.5 h-3.5 text-amber-400" />
+                  <RotateCcw className="w-3.5 h-3.5 text-amber-700 dark:text-amber-400" />
                   <span>Retry Dead Letter Queue ({queueStats?.totalDeadLetterCount || 0})</span>
                 </button>
               </div>

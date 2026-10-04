@@ -108,15 +108,15 @@ export default function ChallengeSynthesizerPage() {
       <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-start md:items-center justify-between pb-6 border-b border-border gap-4">
         <div>
           <div className="flex items-center gap-3">
-            <span className="px-2.5 py-1 text-xs font-semibold uppercase tracking-wider bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 rounded">
+            <span className="px-2.5 py-1 text-xs font-semibold uppercase tracking-wider bg-indigo-500/10 text-indigo-700 dark:text-indigo-400 border border-indigo-500/20 rounded">
               Phase 30 Dynamic Synthesizer
             </span>
-            <span className="flex items-center gap-1.5 text-xs text-amber-400 bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded-full">
+            <span className="flex items-center gap-1.5 text-xs text-amber-700 dark:text-amber-400 bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded-full">
               <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
               Zero-Day Anti-Cheat Active
             </span>
           </div>
-          <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-white mt-1">
+          <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground mt-1">
             Autonomous Self-Healing Coding Challenges
           </h1>
           <p className="text-sm text-muted-foreground mt-0.5">
@@ -143,7 +143,7 @@ export default function ChallengeSynthesizerPage() {
       {message && (
         <div className="max-w-7xl mx-auto mt-4 p-3.5 bg-indigo-950/40 border border-indigo-700/50 rounded-lg text-indigo-200 text-sm flex items-center justify-between">
           <span>{message}</span>
-          <button onClick={() => setMessage(null)} className="text-xs text-indigo-400 hover:underline">
+          <button onClick={() => setMessage(null)} className="text-xs text-indigo-700 dark:text-indigo-400 hover:underline">
             Dismiss
           </button>
         </div>
@@ -185,7 +185,7 @@ export default function ChallengeSynthesizerPage() {
             <select
               value={weakness}
               onChange={(e) => setWeakness(e.target.value)}
-              className="bg-background border border-border text-amber-300 font-medium rounded px-3 py-1.5 focus:outline-none focus:border-indigo-500"
+              className="bg-background border border-border text-amber-600 dark:text-amber-300 font-medium rounded px-3 py-1.5 focus:outline-none focus:border-indigo-500"
             >
               <option value="ConcurrentRaceCondition">Concurrent Race Condition</option>
               <option value="OffByOneBoundary">Off-By-One Boundary Flaw</option>
@@ -225,7 +225,7 @@ export default function ChallengeSynthesizerPage() {
             {/* Story Card */}
             <div className="bg-card border border-border rounded-xl p-5 shadow-lg">
               <div className="flex items-center justify-between pb-3 border-b border-border">
-                <span className="text-xs uppercase font-bold tracking-wider text-indigo-400">
+                <span className="text-xs uppercase font-bold tracking-wider text-indigo-700 dark:text-indigo-400">
                   {activeChallenge.difficultyRating} Engineering Challenge
                 </span>
                 <span className="text-[11px] font-mono text-muted-foreground bg-background px-2 py-0.5 rounded border border-border">
@@ -233,16 +233,16 @@ export default function ChallengeSynthesizerPage() {
                 </span>
               </div>
 
-              <h2 className="text-lg font-bold text-white mt-3">{activeChallenge.title}</h2>
+              <h2 className="text-lg font-bold text-foreground mt-3">{activeChallenge.title}</h2>
               <p className="mt-2 text-sm text-muted-foreground leading-relaxed bg-background/60 p-4 rounded-lg border border-border">
                 {activeChallenge.mutatedStoryNarrative}
               </p>
 
               <div className="mt-4 flex flex-wrap items-center gap-2">
-                <span className="px-2.5 py-1 text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded">
+                <span className="px-2.5 py-1 text-xs font-semibold bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20 rounded">
                   Targeted Weakness: {activeChallenge.targetedWeakness}
                 </span>
-                <span className="px-2.5 py-1 text-xs font-semibold bg-blue-500/10 text-blue-400 border border-blue-500/20 rounded">
+                <span className="px-2.5 py-1 text-xs font-semibold bg-blue-500/10 text-blue-700 dark:text-blue-400 border border-blue-500/20 rounded">
                   Language: {activeChallenge.language.toUpperCase()}
                 </span>
               </div>
@@ -278,7 +278,7 @@ export default function ChallengeSynthesizerPage() {
               <textarea
                 value={candidateCode}
                 onChange={(e) => setCandidateCode(e.target.value)}
-                className="w-full flex-1 bg-background text-emerald-300 font-mono text-xs p-4 rounded-lg border border-border focus:outline-none focus:border-indigo-500 resize-none"
+                className="w-full flex-1 bg-background text-emerald-600 dark:text-emerald-300 font-mono text-xs p-4 rounded-lg border border-border focus:outline-none focus:border-indigo-500 resize-none"
                 spellCheck={false}
               />
             </div>
@@ -299,7 +299,7 @@ export default function ChallengeSynthesizerPage() {
                         evaluation.executionStatus === "Passed" ? "bg-emerald-400" : "bg-rose-400 animate-pulse"
                       }`}
                     ></span>
-                    <span className="text-sm font-bold text-white">
+                    <span className="text-sm font-bold text-foreground">
                       {evaluation.executionStatus === "Passed"
                         ? "ALL TESTS PASSED (100%)"
                         : "SELF-HEALING VARIATION TRIGGERED"}
@@ -312,11 +312,11 @@ export default function ChallengeSynthesizerPage() {
 
                 <div className="mt-3 text-xs space-y-2">
                   <div className="text-muted-foreground">
-                    <strong className="text-white">Diagnostic Output:</strong> {evaluation.remediationHint}
+                    <strong className="text-foreground">Diagnostic Output:</strong> {evaluation.remediationHint}
                   </div>
                   {evaluation.selfHealingGuidance && (
-                    <div className="p-3 bg-background rounded border border-border text-amber-300">
-                      <strong className="text-white">Self-Healing Guidance:</strong> {evaluation.selfHealingGuidance}
+                    <div className="p-3 bg-background rounded border border-border text-amber-600 dark:text-amber-300">
+                      <strong className="text-foreground">Self-Healing Guidance:</strong> {evaluation.selfHealingGuidance}
                     </div>
                   )}
                 </div>

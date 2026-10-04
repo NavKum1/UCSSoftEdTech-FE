@@ -204,7 +204,7 @@ export default function EnterpriseGuildBattlesPage() {
               <h1 className="font-bold text-lg tracking-tight bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
                 Enterprise Guild Battles
               </h1>
-              <span className="px-2 py-0.5 text-xs font-mono bg-indigo-950 text-indigo-300 border border-indigo-800/60 rounded">
+              <span className="px-2 py-0.5 text-xs font-mono bg-indigo-950 text-indigo-600 dark:text-indigo-300 border border-indigo-800/60 rounded">
                 B2B Team Hackathons
               </span>
             </div>
@@ -214,7 +214,7 @@ export default function EnterpriseGuildBattlesPage() {
             <div className="flex items-center gap-2 bg-muted/80 border border-purple-500/30 px-3 py-1.5 rounded-lg shadow-sm">
               <span className="text-base">🏆</span>
               <div>
-                <span className="text-purple-300 font-bold text-sm">
+                <span className="text-purple-600 dark:text-purple-300 font-bold text-sm">
                   {guilds.reduce((acc, g) => acc + g.totalTrophies, 0)} Total Trophies
                 </span>
                 <span className="text-muted-foreground text-[10px] block">{guilds.length} Active Guilds</span>
@@ -243,7 +243,7 @@ export default function EnterpriseGuildBattlesPage() {
                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                     <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
                   </span>
-                  <span className="text-xs uppercase font-mono font-bold text-emerald-400 tracking-wider">
+                  <span className="text-xs uppercase font-mono font-bold text-emerald-700 dark:text-emerald-400 tracking-wider">
                     {activeHackathon.status} Tournament Battle
                   </span>
                   <span className="text-muted-foreground">•</span>
@@ -254,11 +254,11 @@ export default function EnterpriseGuildBattlesPage() {
                 <h2 className="text-2xl font-bold text-foreground">{activeHackathon.title}</h2>
               </div>
 
-              <div className="bg-purple-950/80 border border-purple-500/40 text-purple-300 px-4 py-3 rounded-xl text-center shrink-0">
-                <span className="text-xs font-mono uppercase tracking-wider block text-purple-400">
+              <div className="bg-purple-950/80 border border-purple-500/40 text-purple-600 dark:text-purple-300 px-4 py-3 rounded-xl text-center shrink-0">
+                <span className="text-xs font-mono uppercase tracking-wider block text-purple-700 dark:text-purple-400">
                   Prize Pool Allocation
                 </span>
-                <span className="text-sm font-bold text-white font-mono">
+                <span className="text-sm font-bold text-foreground font-mono">
                   {activeHackathon.prizePool}
                 </span>
               </div>
@@ -272,7 +272,7 @@ export default function EnterpriseGuildBattlesPage() {
             onClick={() => setActiveTab("arena")}
             className={`px-4 py-2 text-sm font-medium border-b-2 transition ${
               activeTab === "arena"
-                ? "border-indigo-500 text-indigo-400 bg-indigo-500/5"
+                ? "border-indigo-500 text-indigo-700 dark:text-indigo-400 bg-indigo-500/5"
                 : "border-transparent text-muted-foreground hover:text-foreground"
             }`}
           >
@@ -282,7 +282,7 @@ export default function EnterpriseGuildBattlesPage() {
             onClick={() => setActiveTab("guilds")}
             className={`px-4 py-2 text-sm font-medium border-b-2 transition ${
               activeTab === "guilds"
-                ? "border-indigo-500 text-indigo-400 bg-indigo-500/5"
+                ? "border-indigo-500 text-indigo-700 dark:text-indigo-400 bg-indigo-500/5"
                 : "border-transparent text-muted-foreground hover:text-foreground"
             }`}
           >
@@ -292,7 +292,7 @@ export default function EnterpriseGuildBattlesPage() {
             onClick={() => setActiveTab("tournaments")}
             className={`px-4 py-2 text-sm font-medium border-b-2 transition ${
               activeTab === "tournaments"
-                ? "border-indigo-500 text-indigo-400 bg-indigo-500/5"
+                ? "border-indigo-500 text-indigo-700 dark:text-indigo-400 bg-indigo-500/5"
                 : "border-transparent text-muted-foreground hover:text-foreground"
             }`}
           >
@@ -336,13 +336,13 @@ export default function EnterpriseGuildBattlesPage() {
                             {p.rank === 3 && "🥉 "}#{p.rank}
                           </td>
                           <td className="py-3 px-4 font-semibold text-foreground">{p.squadName}</td>
-                          <td className="py-3 px-4 text-emerald-400">🛡️ {p.attacksMitigated} Mitigated</td>
-                          <td className="py-3 px-4 text-cyan-400">{p.speedMs}ms</td>
-                          <td className="py-3 px-4 font-bold text-amber-400 text-sm">
+                          <td className="py-3 px-4 text-emerald-700 dark:text-emerald-400">🛡️ {p.attacksMitigated} Mitigated</td>
+                          <td className="py-3 px-4 text-cyan-700 dark:text-cyan-400">{p.speedMs}ms</td>
+                          <td className="py-3 px-4 font-bold text-amber-700 dark:text-amber-400 text-sm">
                             {p.score} pts
                           </td>
                           <td className="py-3 px-4">
-                            <span className="px-2 py-0.5 rounded text-[10px] bg-emerald-950 text-emerald-400 border border-emerald-800">
+                            <span className="px-2 py-0.5 rounded text-[10px] bg-emerald-950 text-emerald-700 dark:text-emerald-400 border border-emerald-800">
                               {p.status}
                             </span>
                           </td>
@@ -434,7 +434,7 @@ export default function EnterpriseGuildBattlesPage() {
               >
                 <div className="flex items-center justify-between">
                   <span className="text-2xl">🛡️</span>
-                  <span className="px-2 py-0.5 text-[10px] font-mono font-bold bg-indigo-950 text-indigo-400 border border-indigo-800 rounded">
+                  <span className="px-2 py-0.5 text-[10px] font-mono font-bold bg-indigo-950 text-indigo-700 dark:text-indigo-400 border border-indigo-800 rounded">
                     {g.department}
                   </span>
                 </div>
@@ -447,11 +447,11 @@ export default function EnterpriseGuildBattlesPage() {
                 <div className="pt-2 border-t border-border flex items-center justify-between text-xs font-mono">
                   <div>
                     <span className="text-muted-foreground text-[10px] block">Guild Elo</span>
-                    <span className="text-lg font-bold text-amber-400">{g.guildRatingElo}</span>
+                    <span className="text-lg font-bold text-amber-700 dark:text-amber-400">{g.guildRatingElo}</span>
                   </div>
                   <div>
                     <span className="text-muted-foreground text-[10px] block">Trophies</span>
-                    <span className="text-lg font-bold text-purple-400">🏆 {g.totalTrophies}</span>
+                    <span className="text-lg font-bold text-purple-700 dark:text-purple-400">🏆 {g.totalTrophies}</span>
                   </div>
                 </div>
               </div>
@@ -472,7 +472,7 @@ export default function EnterpriseGuildBattlesPage() {
                     <span
                       className={`px-2 py-0.5 text-[10px] font-mono rounded ${
                         h.status === "Live"
-                          ? "bg-emerald-950 text-emerald-400 border border-emerald-800"
+                          ? "bg-emerald-950 text-emerald-700 dark:text-emerald-400 border border-emerald-800"
                           : "bg-muted text-muted-foreground"
                       }`}
                     >
@@ -483,7 +483,7 @@ export default function EnterpriseGuildBattlesPage() {
                   <h4 className="text-lg font-bold text-foreground">{h.title}</h4>
                 </div>
 
-                <div className="text-right font-mono text-xs text-purple-300">
+                <div className="text-right font-mono text-xs text-purple-600 dark:text-purple-300">
                   <span className="block font-bold">{h.prizePool}</span>
                   <span className="text-[11px] text-muted-foreground block">
                     Starts: {new Date(h.startTime).toLocaleDateString()}
