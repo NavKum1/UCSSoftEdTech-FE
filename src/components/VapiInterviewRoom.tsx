@@ -109,12 +109,12 @@ export default function VapiInterviewRoom({
         userId: userId || "11111111-2222-3333-4444-555555555555",
         jobDescription: jobDescription || "Senior React Engineer requiring expertise in React Hooks, System Architecture, and AWS VPC networking.",
       };
-      
+
       if (personaCode) payload.personaCode = personaCode;
       if (dialectCode) payload.dialectCode = dialectCode;
 
       const token = await getToken();
-      
+
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/interview/start`, {
         method: "POST",
         headers: {
@@ -138,12 +138,7 @@ export default function VapiInterviewRoom({
         setCallStatus("connecting");
         setStatusMessage("Joining room...");
 
-        setTranscripts([
-          {
-            role: "AI Interviewer",
-            text: "Hello! I am your AI Technical Assessment Lead. Let's start the evaluation. Can you explain how you handle custom React Hooks and state side effects?",
-          },
-        ]);
+        setTranscripts([]);
 
         // Start Vapi WebRTC Call using dynamic assistant config
         if (vapi) {
@@ -152,6 +147,7 @@ export default function VapiInterviewRoom({
               model: {
                 provider: "openai",
                 model: "gpt-4o",
+                temperature: 0.8,
                 messages: [
                   {
                     role: "system",
@@ -217,10 +213,10 @@ export default function VapiInterviewRoom({
       const candidateWords = transcripts
         .filter(t => t.role === "Candidate")
         .reduce((acc, curr) => acc + curr.text.split(" ").length, 0);
-        
+
       let dynamicScore = 35.0;
       let dynamicSkills = ["React Hooks", "System Architecture"];
-      
+
       if (candidateWords > 40) {
         dynamicScore = 92.5;
         dynamicSkills = [];
@@ -252,7 +248,7 @@ export default function VapiInterviewRoom({
         setTechnicalScore(data.technicalScore);
         setMissingSkills(data.missingSkills || []);
         setStatusMessage(`Evaluation Complete! Technical Score: ${data.technicalScore}%. Identified Skill Gaps: ${data.missingSkills?.join(", ")}`);
-        
+
         if (data.createdReferrals && onLeadReferralGenerated) {
           onLeadReferralGenerated(data.createdReferrals);
         }
@@ -279,20 +275,18 @@ export default function VapiInterviewRoom({
         </div>
 
         <span
-          className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border ${
-            callStatus === "active"
+          className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border ${callStatus === "active"
               ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/30"
               : callStatus === "connecting"
-              ? "bg-amber-500/10 text-amber-400 border-amber-500/30"
-              : callStatus === "ended"
-              ? "bg-purple-500/10 text-purple-400 border-purple-500/30"
-              : "bg-slate-800 text-slate-400 border-slate-800"
-          }`}
+                ? "bg-amber-500/10 text-amber-400 border-amber-500/30"
+                : callStatus === "ended"
+                  ? "bg-purple-500/10 text-purple-400 border-purple-500/30"
+                  : "bg-slate-800 text-slate-400 border-slate-800"
+            }`}
         >
           <span
-            className={`w-2 h-2 rounded-full mr-2 ${
-              callStatus === "active" ? "bg-emerald-400 animate-ping" : "bg-slate-500"
-            }`}
+            className={`w-2 h-2 rounded-full mr-2 ${callStatus === "active" ? "bg-emerald-400 animate-ping" : "bg-slate-500"
+              }`}
           ></span>
           {callStatus.toUpperCase()}
         </span>
@@ -345,11 +339,10 @@ export default function VapiInterviewRoom({
               <div className="flex space-x-2">
                 <button
                   onClick={toggleMute}
-                  className={`flex-1 py-3 px-3 rounded-xl border text-xs font-medium flex items-center justify-center space-x-1.5 cursor-pointer ${
-                    isMuted
+                  className={`flex-1 py-3 px-3 rounded-xl border text-xs font-medium flex items-center justify-center space-x-1.5 cursor-pointer ${isMuted
                       ? "bg-amber-500/10 text-amber-400 border-amber-500/30"
                       : "bg-slate-800 text-slate-400 border-slate-800 hover:bg-slate-700"
-                  }`}
+                    }`}
                 >
                   {isMuted ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
                   <span>{isMuted ? "Muted" : "Mute Mic"}</span>
@@ -370,7 +363,7 @@ export default function VapiInterviewRoom({
         {/* Live Transcript Stream */}
         <div className="md:col-span-2 glass-card rounded-xl p-5 flex flex-col border border-slate-800 min-h-[220px]">
           <div className="flex items-center justify-between mb-3">
-            <h3 className="text-sm font-semibold text-slate-400">Live WebRTC Transcript Stream</h3>
+            <h3 className="text-sm font-semibold text-slate-400">Live Transcript Stream</h3>
             <span className="text-xs text-slate-400">{transcripts.length} messages</span>
           </div>
 
@@ -384,11 +377,10 @@ export default function VapiInterviewRoom({
                 <div key={idx} className={`flex flex-col ${t.role === "Candidate" ? "items-end" : "items-start"}`}>
                   <span className="text-[10px] text-slate-400 mb-0.5 font-medium">{t.role}</span>
                   <div
-                    className={`max-w-[85%] rounded-xl px-3 py-2 text-xs ${
-                      t.role === "Candidate"
+                    className={`max-w-[85%] rounded-xl px-3 py-2 text-xs ${t.role === "Candidate"
                         ? "bg-indigo-600 text-white rounded-tr-none"
                         : "bg-slate-800 text-slate-200 border border-slate-800 rounded-tl-none"
-                    }`}
+                      }`}
                   >
                     {t.text}
                   </div>

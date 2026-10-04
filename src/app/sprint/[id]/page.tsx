@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import Editor from "@monaco-editor/react";
 import VapiInterviewRoom from "@/components/VapiInterviewRoom";
 import ProctoringHUD from "./components/ProctoringHUD";
 import { useParams, useRouter } from "next/navigation";
@@ -31,9 +32,12 @@ function SprintWorkspaceInner() {
   const sprintId = (params?.id as string) || "demo-sprint-id";
   const t = useTranslations("SprintHUD");
 
-  const [codePayload, setCodePayload] = useState<string>(
-    `def main():\n    # Payment queue processor with hardcoded SQL insertion\n    amount = 250.00\n    query = f"INSERT INTO Payments (Amount) VALUES ({amount})"\n    print("[EXECUTION]: Processing payment record...")\n    print(f"[EXECUTION]: Executed query: {query}")\n    print("[SUCCESS]: Payment processed successfully.")\n\nif __name__ == '__main__':\n    main()`
-  );
+  const [candidateTrack, setCandidateTrack] = useState<"Backend" | "Frontend">("Backend");
+  const [difficultyTier, setDifficultyTier] = useState<"Bronze (Junior)" | "Diamond (Staff)">("Diamond (Staff)");
+  const [language, setLanguage] = useState<string>("Python");
+  const [taskDescription, setTaskDescription] = useState<string>("Task (Diamond Backend): Implement an idempotent payment queue processor capable of handling 10k messages/sec without deadlocks.");
+
+  const [codePayload, setCodePayload] = useState<string>("");
   const [submissionId, setSubmissionId] = useState<string>("");
   const [pipelineState, setPipelineState] = useState<"editor" | "submitting" | "running" | "completed" | "voice_interview" | "passed">("editor");
   const [stdOutLogs, setStdOutLogs] = useState<string>("");
@@ -49,6 +53,58 @@ function SprintWorkspaceInner() {
 
   // Phase 10: Offline Resilience (Service Workers & Local Storage)
   const [isOffline, setIsOffline] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (candidateTrack === "Backend") {
+      if (language === "React / TSX") setLanguage("Python"); // reset if leftover from frontend
+      
+      if (difficultyTier === "Diamond (Staff)") {
+        setTaskDescription("Task (Diamond Backend): Implement an idempotent payment queue processor capable of handling 10k messages/sec without deadlocks.");
+        
+        if (language === "Python") {
+            setCodePayload(`def main():\n    # Staff-level payment queue processor\n    pass\n\nif __name__ == '__main__':\n    main()`);
+        } else if (language === "C#") {
+            setCodePayload(`using System;\n\npublic class PaymentProcessor {\n    public void ProcessQueue() {\n        // Staff-level payment queue processor\n    }\n}`);
+        } else if (language === "Go") {
+            setCodePayload(`package main\n\nimport "fmt"\n\nfunc main() {\n    // Staff-level payment queue processor\n    fmt.Println("Processing...")\n}`);
+        } else if (language === "Java") {
+            setCodePayload(`public class Main {\n    public static void main(String[] args) {\n        // Staff-level payment queue processor\n    }\n}`);
+        } else if (language === "C++") {
+            setCodePayload(`#include <iostream>\n\nint main() {\n    // Staff-level payment queue processor\n    return 0;\n}`);
+        } else if (language === "Rust") {
+            setCodePayload(`fn main() {\n    // Staff-level payment queue processor\n}`);
+        } else {
+            setCodePayload(`// Implement in ${language}`);
+        }
+      } else {
+        setTaskDescription("Task (Bronze Backend): Fix the SQL syntax error and SQL injection vulnerability in this basic payment script.");
+        if (language === "Python") {
+            setCodePayload(`def main():\n    # Basic SQL fix\n    amount = 250.00\n    # TODO: Fix the SQL injection vulnerability below\n    query = f"INSERT INTO Payments (Amount) VALUES ({amount})"\n    print("Processing...")\n\nif __name__ == '__main__':\n    main()`);
+        } else if (language === "C#") {
+            setCodePayload(`using System;\n\npublic class PaymentProcessor {\n    public void ProcessQueue() {\n        string amount = "250.00";\n        // TODO: Fix injection\n        string query = $"INSERT INTO Payments (Amount) VALUES ({amount})";\n    }\n}`);
+        } else if (language === "Go") {
+            setCodePayload(`package main\n\nimport "fmt"\n\nfunc main() {\n    amount := "250.00"\n    // TODO: Fix injection\n    query := fmt.Sprintf("INSERT INTO Payments (Amount) VALUES (%s)", amount)\n}`);
+        } else if (language === "Java") {
+            setCodePayload(`public class Main {\n    public static void main(String[] args) {\n        String amount = "250.00";\n        // TODO: Fix injection\n        String query = "INSERT INTO Payments (Amount) VALUES (" + amount + ")";\n    }\n}`);
+        } else if (language === "C++") {
+            setCodePayload(`#include <iostream>\n#include <string>\n\nint main() {\n    std::string amount = "250.00";\n    // TODO: Fix injection\n    std::string query = "INSERT INTO Payments (Amount) VALUES (" + amount + ")";\n    return 0;\n}`);
+        } else if (language === "Rust") {
+            setCodePayload(`fn main() {\n    let amount = "250.00";\n    // TODO: Fix injection\n    let query = format!("INSERT INTO Payments (Amount) VALUES ({})", amount);\n}`);
+        } else {
+            setCodePayload(`// Implement in ${language}`);
+        }
+      }
+    } else if (candidateTrack === "Frontend") {
+      setLanguage("React / TSX"); // Lock frontend to React for this demo
+      if (difficultyTier === "Diamond (Staff)") {
+        setTaskDescription("Task (Diamond Frontend): Implement a custom React reconciler and virtualization engine for a high-frequency trading canvas chart.");
+        setCodePayload(`import React from 'react';\n\nexport default function TradingChart() {\n  // Implement high-frequency rendering logic (avoiding DOM repaints)\n  return <div>Trading Chart</div>;\n}`);
+      } else {
+        setTaskDescription("Task (Bronze Frontend): Create a responsive button component with hover states using Tailwind CSS.");
+        setCodePayload(`import React from 'react';\n\nexport default function Button() {\n  return <button>Click Me</button>;\n}`);
+      }
+    }
+  }, [candidateTrack, difficultyTier, language]);
 
   useEffect(() => {
     // Check initial online status
@@ -169,6 +225,19 @@ function SprintWorkspaceInner() {
     }
   };
 
+  const getMonacoLanguage = () => {
+    switch(language) {
+      case "Python": return "python";
+      case "C#": return "csharp";
+      case "Java": return "java";
+      case "C++": return "cpp";
+      case "Go": return "go";
+      case "Rust": return "rust";
+      case "React / TSX": return "typescript";
+      default: return "python";
+    }
+  };
+
   return (
       <div className="min-h-screen bg-slate-950 text-slate-200 flex flex-col font-sans pb-16">
         {/* Navbar */}
@@ -192,6 +261,27 @@ function SprintWorkspaceInner() {
           </div>
 
           <div className="flex items-center space-x-4">
+            <div className="hidden lg:flex items-center space-x-2 bg-slate-900 border border-slate-800 rounded-xl px-3 py-1.5 shadow-sm">
+              <select value={candidateTrack} onChange={(e) => setCandidateTrack(e.target.value as any)} className="bg-transparent text-xs text-indigo-300 font-semibold focus:outline-none cursor-pointer">
+                <option value="Backend">Backend Track</option>
+                <option value="Frontend">Frontend Track</option>
+              </select>
+              <span className="text-slate-700">|</span>
+              <select value={difficultyTier} onChange={(e) => setDifficultyTier(e.target.value as any)} className="bg-transparent text-xs text-emerald-400 font-semibold focus:outline-none cursor-pointer">
+                <option value="Bronze (Junior)">Bronze League (Junior)</option>
+                <option value="Diamond (Staff)">Diamond League (Staff)</option>
+              </select>
+              <span className="text-slate-700">|</span>
+              <select value={language} onChange={(e) => setLanguage(e.target.value)} disabled={candidateTrack === "Frontend"} className="bg-transparent text-xs text-purple-400 font-semibold focus:outline-none cursor-pointer disabled:opacity-50">
+                <option value="Python">Python</option>
+                <option value="C#">C#</option>
+                <option value="Java">Java</option>
+                <option value="C++">C++</option>
+                <option value="Go">Go</option>
+                <option value="Rust">Rust</option>
+                <option value="React / TSX">React / TSX</option>
+              </select>
+            </div>
             <span className="text-xs px-3 py-1 rounded-full bg-indigo-500/10 text-indigo-300 border border-indigo-500/30 font-medium">
               Challenge ID: {sprintId.substring(0, 8)}
             </span>
@@ -239,12 +329,12 @@ function SprintWorkspaceInner() {
                 <h3 className="text-sm font-semibold text-white">{t("codeEditor")}</h3>
               </div>
               <span className="text-[10px] px-2.5 py-0.5 rounded bg-indigo-500/10 text-indigo-300 font-semibold border border-indigo-500/20">
-                Language: Python
+                Language: {language}
               </span>
             </div>
 
-            <p className="text-xs text-slate-400">
-              Task: Implement payment queue processing. Write your Python implementation below:
+            <p className="text-xs text-slate-300 font-medium bg-slate-900/80 p-3 rounded-lg border border-slate-800/80 leading-relaxed shadow-inner">
+              {taskDescription}
             </p>
 
             {pasteWarning && (
@@ -254,14 +344,22 @@ function SprintWorkspaceInner() {
               </div>
             )}
 
-            <textarea
-              rows={12}
-              value={codePayload}
-              onChange={(e) => setCodePayload(e.target.value)}
-              onPaste={handlePaste}
-              disabled={pipelineState !== "editor"}
-              className="w-full bg-slate-950 font-mono text-xs text-slate-200 p-4 rounded-xl border border-slate-800 focus:outline-none focus:border-indigo-500 leading-relaxed"
-            />
+            <div className="border border-slate-800 rounded-xl overflow-hidden mt-2 bg-slate-950" onPaste={handlePaste}>
+              <Editor
+                height="350px"
+                language={getMonacoLanguage()}
+                theme="vs-dark"
+                value={codePayload}
+                onChange={(val) => setCodePayload(val || "")}
+                options={{
+                  minimap: { enabled: false },
+                  fontSize: 13,
+                  fontFamily: "var(--font-geist-mono), monospace",
+                  padding: { top: 16 },
+                  readOnly: pipelineState !== "editor"
+                }}
+              />
+            </div>
 
             <button
               onClick={handleSubmitCode}

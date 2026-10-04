@@ -759,11 +759,17 @@ export default function DailyIncidentPage() {
                       </td>
                       <td className="py-3 px-4 flex items-center gap-2">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img
-                          src={entry.avatarUrl}
-                          alt="avatar"
-                          className="w-6 h-6 rounded-full bg-slate-800"
-                        />
+                        {entry.avatarUrl ? (
+                          <img
+                            src={entry.avatarUrl}
+                            alt="avatar"
+                            className="w-6 h-6 rounded-full bg-slate-800"
+                          />
+                        ) : (
+                          <div className="w-6 h-6 rounded-full bg-slate-700 flex items-center justify-center text-[10px] text-white font-bold">
+                            {entry.userName.charAt(0).toUpperCase()}
+                          </div>
+                        )}
                         <span className={entry.isCurrentUser ? "text-amber-400" : "text-slate-200"}>
                           {entry.userName} {entry.isCurrentUser && "(You)"}
                         </span>

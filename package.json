@@ -11,6 +11,7 @@
   "dependencies": {
     "@clerk/nextjs": "^7.8.3",
     "@microsoft/signalr": "^10.0.11",
+    "@monaco-editor/react": "^4.7.0",
     "@serwist/next": "^9.5.12",
     "@vapi-ai/web": "^2.7.0",
     "clsx": "^2.1.1",

@@ -28,8 +28,8 @@ export default function GlobalNavigation() {
   // If in pure embedding / canvas iframe or fullscreen sprint mode, keep it visible or sleek
   const navLinks = [
     { name: "Member 360", href: "/dashboard", icon: Compass },
-    { name: "Simulations", href: "/sprint/distributed-database", icon: Layers },
-    { name: "AI Voice Defense", href: "/sprint/1", icon: Mic },
+    { name: "Coding Challenges", href: "/sprint/distributed-database", icon: Layers },
+    { name: "AI Interviewer", href: "/", icon: Mic },
     { name: "Daily Incident", href: "/daily/incident", icon: Flame },
     { name: "1v1 Duels", href: "/duels/arena", icon: Swords },
     { name: "Book Mentor", href: "/mentors/book", icon: CalendarCheck },
@@ -74,7 +74,10 @@ export default function GlobalNavigation() {
           <nav className="hidden lg:flex items-center space-x-1">
             {navLinks.map((link) => {
               const Icon = link.icon;
-              const isActive = pathname === link.href || (link.href !== "/dashboard" && pathname?.startsWith(link.href));
+              const isActive = 
+                link.href === "/" 
+                  ? pathname === "/" 
+                  : (pathname === link.href || (link.href !== "/dashboard" && pathname?.startsWith(link.href)));
               return (
                 <Link
                   key={link.name}
