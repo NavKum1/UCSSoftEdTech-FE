@@ -23,7 +23,7 @@ import {
 import I18nProvider from "@/components/I18nProvider";
 import { useTranslations } from "next-intl";
 
-export default function SprintWorkspace() {
+function SprintWorkspaceInner() {
   const params = useParams();
   const router = useRouter();
   const { getToken, isSignedIn } = useAuth();
@@ -170,7 +170,6 @@ export default function SprintWorkspace() {
   };
 
   return (
-    <I18nProvider>
       <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans pb-16">
         {/* Navbar */}
         <header className="border-b border-slate-800 bg-slate-900/60 backdrop-blur-md sticky top-0 z-50">
@@ -346,6 +345,13 @@ export default function SprintWorkspace() {
         </div>
       </main>
     </div>
+  );
+}
+
+export default function SprintWorkspace() {
+  return (
+    <I18nProvider>
+      <SprintWorkspaceInner />
     </I18nProvider>
   );
 }

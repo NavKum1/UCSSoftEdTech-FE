@@ -29,9 +29,9 @@ export default function GlobalNavigation() {
   const navLinks = [
     { name: "Member 360", href: "/dashboard", icon: Compass },
     { name: "Simulations", href: "/sprint/distributed-database", icon: Layers },
-    { name: "AI Voice Defense", href: "/interview/1", icon: Mic },
-    { name: "Daily Incident", href: "/daily", icon: Flame },
-    { name: "1v1 Duels", href: "/duels", icon: Swords },
+    { name: "AI Voice Defense", href: "/sprint/1", icon: Mic },
+    { name: "Daily Incident", href: "/daily/incident", icon: Flame },
+    { name: "1v1 Duels", href: "/duels/arena", icon: Swords },
     { name: "Book Mentor", href: "/mentors/book", icon: CalendarCheck },
     { name: "Skill Passport", href: "/passport", icon: Award },
   ];
@@ -107,7 +107,7 @@ export default function GlobalNavigation() {
 
           {/* Voice Interview Minutes Pill */}
           <Link
-            href="/interview/1"
+            href="/sprint/1"
             title="48 minutes remaining of monthly AI Voice defense quota"
             className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 text-xs font-medium hover:bg-indigo-500/20 transition-colors"
           >
