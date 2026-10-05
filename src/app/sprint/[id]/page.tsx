@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import Editor from "@monaco-editor/react";
 import OpenAIRealtimeInterviewRoom from "@/components/OpenAIRealtimeInterviewRoom";
 import ProctoringHUD from "./components/ProctoringHUD";
@@ -25,6 +25,17 @@ import { useTheme } from "next-themes";
 import I18nProvider from "@/components/I18nProvider";
 import { useTranslations } from "next-intl";
 
+export type CandidateTrack =
+  | "DevOps"
+  | "Backend"
+  | "Frontend"
+  | "FullStack"
+  | "DataMLOps"
+  | "Cybersecurity"
+  | "Mobile"
+  | "CloudFinOps"
+  | "DatabaseRE";
+
 function SprintWorkspaceInner() {
   const params = useParams();
   const router = useRouter();
@@ -34,7 +45,7 @@ function SprintWorkspaceInner() {
   const t = useTranslations("SprintHUD");
   const { theme } = useTheme();
 
-  const [candidateTrack, setCandidateTrack] = useState<"Backend" | "Frontend">("Backend");
+  const [candidateTrack, setCandidateTrack] = useState<CandidateTrack>("Backend");
   const [difficultyTier, setDifficultyTier] = useState<"Bronze (Junior)" | "Diamond (Staff)">("Diamond (Staff)");
   const [language, setLanguage] = useState<string>("Python");
   const [taskDescription, setTaskDescription] = useState<string>("Task (Diamond Backend): Implement an idempotent payment queue processor capable of handling 10k messages/sec without deadlocks.");
@@ -56,8 +67,114 @@ function SprintWorkspaceInner() {
   // Phase 10: Offline Resilience (Service Workers & Local Storage)
   const [isOffline, setIsOffline] = useState<boolean>(false);
 
+  const formattedChallengeId = useMemo(() => {
+    if (!sprintId || sprintId === "demo-sprint-id") return "CHLG-DEMO-01";
+    // Check if GUID
+    if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(sprintId)) {
+      return `CHLG-${sprintId.substring(0, 8).toUpperCase()}`;
+    }
+    // Clean formatted slug (e.g. distributed-database -> DISTRIBUTED-DB)
+    const cleanSlug = sprintId
+      .replace(/-database$/i, "-DB")
+      .replace(/-architecture$/i, "-ARCH")
+      .replace(/-incident$/i, "-INC")
+      .toUpperCase();
+    return `CHLG-${cleanSlug}`;
+  }, [sprintId]);
+
   useEffect(() => {
-    if (candidateTrack === "Backend") {
+    // 1. FRONTEND TRACK
+    if (candidateTrack === "Frontend") {
+      if (language !== "React / TSX") setLanguage("React / TSX");
+      if (difficultyTier === "Diamond (Staff)") {
+        setTaskDescription("Task (Diamond Frontend): Implement a custom React reconciler and virtualization engine for a high-frequency trading canvas chart.");
+        setCodePayload(`import React, { useRef, useEffect } from 'react';\n\n// Staff Frontend: High-performance canvas chart virtualization\nexport default function TradingChart({ ticker = "BTC/USDT" }) {\n  const canvasRef = useRef<HTMLCanvasElement | null>(null);\n\n  useEffect(() => {\n    // TODO: Implement batch-rendering to bypass DOM repaint limits\n  }, [ticker]);\n\n  return (\n    <div className="p-4 bg-slate-900 text-white rounded-xl">\n      <h3 className="font-bold text-sm">Realtime Orderflow: {ticker}</h3>\n      <canvas ref={canvasRef} width={800} height={400} className="w-full mt-2 bg-black rounded-lg" />\n    </div>\n  );\n}`);
+      } else {
+        setTaskDescription("Task (Bronze Frontend): Create an accessible responsive button component with hover states and loading spinner using Tailwind CSS.");
+        setCodePayload(`import React from 'react';\n\ninterface ButtonProps {\n  label: string;\n  isLoading?: boolean;\n  onClick?: () => void;\n}\n\nexport default function ActionButton({ label, isLoading, onClick }: ButtonProps) {\n  return (\n    <button\n      onClick={onClick}\n      disabled={isLoading}\n      className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-semibold transition-all shadow-md active:scale-95 disabled:opacity-50"\n    >\n      {isLoading ? "Processing..." : label}\n    </button>\n  );\n}`);
+      }
+    }
+    // 2. FULLSTACK TRACK
+    else if (candidateTrack === "FullStack") {
+      if (difficultyTier === "Diamond (Staff)") {
+        setTaskDescription("Task (Diamond FullStack): Build an optimistic UI order-book stream with an idempotent server-action state reconciler handling race conditions.");
+        setCodePayload(`import React, { useState, useOptimistic } from 'react';\n\ninterface Order { id: string; symbol: string; qty: number; status: 'pending' | 'settled'; }\n\nexport default function OrderStream() {\n  const [orders, setOrders] = useState<Order[]>([]);\n  // TODO: Implement optimistic state mutation and rollback on server error\n  const handlePlaceOrder = async (symbol: string, qty: number) => {\n    // 1. Optimistic insert\n    // 2. Async server action RPC with idempotency key\n  };\n\n  return (\n    <div className="p-6 space-y-4">\n      <h2 className="text-base font-bold">FullStack Optimistic Order Reconciler</h2>\n    </div>\n  );\n}`);
+      } else {
+        setTaskDescription("Task (Bronze FullStack): Fix the unvalidated form input submission and handle the pending server state.");
+        setCodePayload(`import React, { useState } from 'react';\n\nexport default function ContactForm() {\n  const [email, setEmail] = useState('');\n  const [error, setError] = useState('');\n\n  const handleSubmit = (e: React.FormEvent) => {\n    e.preventDefault();\n    // TODO: Add email validation and error feedback\n  };\n\n  return (\n    <form onSubmit={handleSubmit} className="p-4 space-y-2">\n      <input value={email} onChange={e => setEmail(e.target.value)} placeholder="name@company.com" className="border p-2 rounded" />\n      <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded">Submit</button>\n    </form>\n  );\n}`);
+      }
+    }
+    // 3. DEVOPS & SRE TRACK
+    else if (candidateTrack === "DevOps") {
+      if (language === "React / TSX") setLanguage("Go");
+      if (difficultyTier === "Diamond (Staff)") {
+        setTaskDescription("Task (Diamond DevOps): Implement a zero-downtime Blue/Green canary deployment controller with automated rollback on p99 latency threshold breach (>250ms).");
+        if (language === "Go") {
+          setCodePayload(`package main\n\nimport (\n    "context"\n    "fmt"\n    "time"\n)\n\ntype CanaryController struct {\n    RolloutSteps []int // e.g. 5, 25, 50, 100\n    LatencyLimitMs int\n}\n\nfunc (c *CanaryController) ShiftTraffic(ctx context.Context, newVersion string) error {\n    // TODO: Implement progressive weight shifting and automated abort on p99 latency spike\n    fmt.Printf("Deploying Canary %s...\\n", newVersion)\n    return nil\n}\n\nfunc main() {\n    controller := &CanaryController{RolloutSteps: []int{5, 25, 50, 100}, LatencyLimitMs: 250}\n    _ = controller.ShiftTraffic(context.Background(), "v2.5.0")\n}`);
+        } else {
+          setCodePayload(`class CanaryController:\n    """Zero-downtime progressive canary deployment controller."""\n    def __init__(self, latency_limit_ms: int = 250):\n        self.latency_limit_ms = latency_limit_ms\n\n    def shift_traffic(self, version: str):\n        # TODO: Implement step-wise traffic shift & rollback on latency breach\n        print(f"Deploying Canary {version}...")\n\nif __name__ == '__main__':\n    controller = CanaryController()\n    controller.shift_traffic("v2.5.0")`);
+        }
+      } else {
+        setTaskDescription("Task (Bronze DevOps): Fix the unhandled container crash loop and healthcheck probe failure in this microservice deployment script.");
+        setCodePayload(`def check_service_health():\n    # TODO: Add socket timeout and connection retry with backoff\n    import urllib.request\n    try:\n        res = urllib.request.urlopen("http://localhost:8080/healthz", timeout=2)\n        return res.status == 200\n    except Exception as e:\n        print(f"Healthcheck failed: {e}")\n        return False\n\nif __name__ == '__main__':\n    print("Healthy:", check_service_health())`);
+      }
+    }
+    // 4. DATA & MLOPS TRACK
+    else if (candidateTrack === "DataMLOps") {
+      if (language === "React / TSX") setLanguage("Python");
+      if (difficultyTier === "Diamond (Staff)") {
+        setTaskDescription("Task (Diamond DataMLOps): Implement an in-memory streaming feature store with sliding-window aggregations and vector embedding cache eviction.");
+        setCodePayload(`from collections import deque\nimport time\n\nclass StreamingFeatureStore:\n    """High-throughput sliding-window feature aggregation store."""\n    def __init__(self, window_seconds: int = 300):\n        self.window_seconds = window_seconds\n        self.events = deque()\n\n    def record_event(self, entity_id: str, feature_value: float):\n        # TODO: Append timestamped record & evict expired events outside sliding window\n        pass\n\n    def get_sliding_average(self, entity_id: str) -> float:\n        # TODO: Compute real-time sliding average for feature inference\n        return 0.0\n\nif __name__ == '__main__':\n    store = StreamingFeatureStore(window_seconds=60)\n    print("Feature store initialized.")`);
+      } else {
+        setTaskDescription("Task (Bronze DataMLOps): Fix the missing null-check and NaN division error in this feature scaling transformer.");
+        setCodePayload(`def min_max_scaler(values: list[float]) -> list[float]:\n    # TODO: Fix division by zero when min == max and handle None values\n    valid = [v for v in values if v is not None]\n    min_v, max_v = min(valid), max(valid)\n    return [(v - min_v) / (max_v - min_v) for v in valid]\n\nif __name__ == '__main__':\n    data = [10.0, 20.0, None, 50.0]\n    print(min_max_scaler(data))`);
+      }
+    }
+    // 5. CYBERSECURITY TRACK
+    else if (candidateTrack === "Cybersecurity") {
+      if (language === "React / TSX") setLanguage("Python");
+      if (difficultyTier === "Diamond (Staff)") {
+        setTaskDescription("Task (Diamond Cybersecurity): Implement a cryptographic token replay protection engine with sliding nonce validation and constant-time signature verification.");
+        setCodePayload(`import hmac\nimport hashlib\nimport time\n\nclass TokenValidator:\n    """Zero-trust constant-time token verification with nonce replay protection."""\n    def __init__(self, secret_key: bytes, nonce_ttl_sec: int = 60):\n        self.secret_key = secret_key\n        self.nonce_ttl_sec = nonce_ttl_sec\n        self.seen_nonces = {}\n\n    def verify_request(self, payload: str, nonce: str, signature: str) -> bool:\n        # TODO: 1. Check nonce freshness & replay\n        # TODO: 2. Constant-time HMAC comparison to prevent timing attacks\n        return True\n\nif __name__ == '__main__':\n    validator = TokenValidator(secret_key=b"enterprise_secret_key_2026")\n    print("Cybersecurity token validator ready.")`);
+      } else {
+        setTaskDescription("Task (Bronze Cybersecurity): Fix the vulnerable regex pattern and sanitize untrusted HTML input against Cross-Site Scripting (XSS).");
+        setCodePayload(`import html\n\ndef sanitize_comment(user_input: str) -> str:\n    # TODO: Properly escape HTML entities to prevent stored XSS attacks\n    return user_input.replace("<script>", "")\n\nif __name__ == '__main__':\n    payload = "<img src=x onerror=alert(1)>"\n    print("Sanitized:", sanitize_comment(payload))`);
+      }
+    }
+    // 6. MOBILE ARCHITECTURE TRACK
+    else if (candidateTrack === "Mobile") {
+      if (difficultyTier === "Diamond (Staff)") {
+        setTaskDescription("Task (Diamond Mobile): Implement an offline-first SQLite sync manager with vector clock conflict resolution and exponential backoff retry.");
+        setCodePayload(`export interface SyncMutation {\n  id: string;\n  table: string;\n  vectorClock: Record<string, number>;\n  payload: any;\n}\n\nexport class OfflineSyncManager {\n  private queue: SyncMutation[] = [];\n\n  async queueMutation(mutation: SyncMutation): Promise<void> {\n    // TODO: Persist mutation locally and trigger exponential backoff sync\n  }\n\n  async resolveConflict(local: SyncMutation, remote: SyncMutation): Promise<SyncMutation> {\n    // TODO: Vector clock conflict resolution\n    return remote;\n  }\n}`);
+      } else {
+        setTaskDescription("Task (Bronze Mobile): Fix the unbounded list re-rendering performance bottleneck by implementing memoized row keys.");
+        setCodePayload(`import React from 'react';\n\nexport default function ChatList({ messages }: { messages: Array<{ id: string; text: string }> }) {\n  // TODO: Fix missing key warning and unnecessary re-renders\n  return (\n    <div>\n      {messages.map((m, index) => (\n        <div key={index}>{m.text}</div>\n      ))}\n    </div>\n  );\n}`);
+      }
+    }
+    // 7. CLOUD FINOPS TRACK
+    else if (candidateTrack === "CloudFinOps") {
+      if (language === "React / TSX") setLanguage("Python");
+      if (difficultyTier === "Diamond (Staff)") {
+        setTaskDescription("Task (Diamond CloudFinOps): Build an automated multi-region compute rightsizer that monitors P95 CPU/memory metrics and reclaims idle clusters.");
+        setCodePayload(`class CloudCostGovernor:\n    """Automated compute rightsizing and idle resource reclamation daemon."""\n    def __init__(self, idle_cpu_threshold_pct: float = 5.0, idle_duration_hours: int = 24):\n        self.idle_cpu_threshold = idle_cpu_threshold_pct\n        self.idle_duration_hours = idle_duration_hours\n\n    def evaluate_fleet(self, instances: list[dict]) -> list[dict]:\n        # TODO: Return action plan: Downsize, Terminate, or Retain based on p95 metrics\n        return []\n\nif __name__ == '__main__':\n    governor = CloudCostGovernor()\n    print("FinOps Governor operational.")`);
+      } else {
+        setTaskDescription("Task (Bronze CloudFinOps): Validate mandatory cloud cost allocation tags (Owner, CostCenter, Environment) and flag untagged resources.");
+        setCodePayload(`REQUIRED_TAGS = {"Owner", "CostCenter", "Environment"}\n\ndef validate_resource_tags(resource: dict) -> list[str]:\n    # TODO: Check tags and return list of missing mandatory tags\n    tags = set(resource.get("Tags", {}).keys())\n    return list(REQUIRED_TAGS - tags)\n\nif __name__ == '__main__':\n    sample = {"Id": "i-098abc", "Tags": {"Owner": "eng-team"}}\n    print("Missing tags:", validate_resource_tags(sample))`);
+      }
+    }
+    // 8. DATABASE RELIABILITY TRACK
+    else if (candidateTrack === "DatabaseRE") {
+      if (language === "React / TSX") setLanguage("Python");
+      if (difficultyTier === "Diamond (Staff)") {
+        setTaskDescription("Task (Diamond DatabaseRE): Implement a distributed leasing lock manager with lease expiration heartbeat renewal and deadlock detection.");
+        setCodePayload(`import time\nimport threading\n\nclass DistributedLockManager:\n    """Raft-compatible distributed lease lock manager with automatic heartbeat renewal."""\n    def __init__(self, lease_ttl_ms: int = 5000):\n        self.lease_ttl_ms = lease_ttl_ms\n        self._locks = {}\n        self._mutex = threading.Lock()\n\n    def acquire_lock(self, resource_key: str, owner_id: str) -> bool:\n        with self._mutex:\n            now = time.time() * 1000\n            if resource_key not in self._locks or self._locks[resource_key]['expires_at'] < now:\n                self._locks[resource_key] = {'owner': owner_id, 'expires_at': now + self.lease_ttl_ms}\n                return True\n            return False\n\nif __name__ == '__main__':\n    dlm = DistributedLockManager()\n    print("Database Reliability Lock Manager operational.")`);
+      } else {
+        setTaskDescription("Task (Bronze DatabaseRE): Fix the missing composite database index and resolve an N+1 query problem in this query builder.");
+        setCodePayload(`def fetch_users_with_recent_orders():\n    # TODO: Eliminate N+1 loop by using single JOIN or batch IN query\n    users = [{"id": 1, "name": "Alice"}, {"id": 2, "name": "Bob"}]\n    results = []\n    for u in users:\n        # Simulated slow query for each user\n        results.append({"user": u, "orders": []})\n    return results\n\nif __name__ == '__main__':\n    print(fetch_users_with_recent_orders())`);
+      }
+    }
+    // 9. BACKEND SYSTEMS TRACK (DEFAULT)
+    else {
       if (language === "React / TSX") setLanguage("Python"); // reset if leftover from frontend
       
       if (difficultyTier === "Diamond (Staff)") {
@@ -96,15 +213,6 @@ function SprintWorkspaceInner() {
             setCodePayload(`// Implement in ${language}`);
         }
       }
-    } else if (candidateTrack === "Frontend") {
-      setLanguage("React / TSX"); // Lock frontend to React for this demo
-      if (difficultyTier === "Diamond (Staff)") {
-        setTaskDescription("Task (Diamond Frontend): Implement a custom React reconciler and virtualization engine for a high-frequency trading canvas chart.");
-        setCodePayload(`import React from 'react';\n\nexport default function TradingChart() {\n  // Implement high-frequency rendering logic (avoiding DOM repaints)\n  return <div>Trading Chart</div>;\n}`);
-      } else {
-        setTaskDescription("Task (Bronze Frontend): Create a responsive button component with hover states using Tailwind CSS.");
-        setCodePayload(`import React from 'react';\n\nexport default function Button() {\n  return <button>Click Me</button>;\n}`);
-      }
     }
   }, [candidateTrack, difficultyTier, language]);
 
@@ -138,7 +246,7 @@ function SprintWorkspaceInner() {
     }
   }, [codePayload, sprintId]);
 
-  const handlePaste = (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
+  const handlePaste = (e: React.ClipboardEvent<any>) => {
     const pastedText = e.clipboardData.getData("text");
     if (pastedText) {
       const lineCount = pastedText.split(/\r\n|\r|\n/).length;
@@ -265,8 +373,15 @@ function SprintWorkspaceInner() {
           <div className="flex items-center space-x-4">
             <div className="hidden lg:flex items-center space-x-2 bg-card border border-border rounded-xl px-3 py-1.5 shadow-sm">
               <select value={candidateTrack} onChange={(e) => setCandidateTrack(e.target.value as any)} className="bg-transparent text-xs text-indigo-600 dark:text-indigo-300 font-semibold focus:outline-none cursor-pointer">
-                <option value="Backend">Backend Track</option>
-                <option value="Frontend">Frontend Track</option>
+                <option value="DevOps">🚀 DevOps & SRE</option>
+                <option value="Backend">⚙️ Backend Systems</option>
+                <option value="Frontend">💻 Frontend & Web</option>
+                <option value="FullStack">🌐 FullStack Systems</option>
+                <option value="DataMLOps">🧠 Data & MLOps</option>
+                <option value="Cybersecurity">🛡️ Cybersecurity</option>
+                <option value="Mobile">📱 Mobile Architecture</option>
+                <option value="CloudFinOps">💰 Cloud FinOps</option>
+                <option value="DatabaseRE">🗄️ Database Reliability</option>
               </select>
               <span className="text-slate-700">|</span>
               <select value={difficultyTier} onChange={(e) => setDifficultyTier(e.target.value as any)} className="bg-transparent text-xs text-emerald-700 dark:text-emerald-400 font-semibold focus:outline-none cursor-pointer">
@@ -284,8 +399,8 @@ function SprintWorkspaceInner() {
                 <option value="React / TSX">React / TSX</option>
               </select>
             </div>
-            <span className="text-xs px-3 py-1 rounded-full bg-indigo-500/10 text-indigo-600 dark:text-indigo-300 border border-indigo-500/30 font-medium">
-              Challenge ID: {sprintId.substring(0, 8)}
+            <span className="text-xs px-3 py-1 rounded-full bg-indigo-500/10 text-indigo-600 dark:text-indigo-300 border border-indigo-500/30 font-semibold font-mono tracking-wide" title={`Sprint Identifier: ${sprintId}`}>
+              Challenge ID: {formattedChallengeId}
             </span>
             <UserButton />
           </div>

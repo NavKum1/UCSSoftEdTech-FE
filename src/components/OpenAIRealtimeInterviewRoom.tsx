@@ -9,6 +9,8 @@ interface OpenAIRealtimeInterviewRoomProps {
   jobDescription: string;
   selectedTenantId: string;
   onLeadReferralGenerated?: (referrals: any[]) => void;
+  personaCode?: string;
+  dialectCode?: string;
 }
 
 export default function OpenAIRealtimeInterviewRoom({

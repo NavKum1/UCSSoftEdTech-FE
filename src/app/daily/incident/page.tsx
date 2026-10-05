@@ -35,10 +35,24 @@ interface RemediationAction {
   risk: string;
 }
 
+const ENTERPRISE_TRACKS = [
+  { id: "DevOps", label: "🚀 DevOps & SRE", desc: "Kubernetes, DNS, Kafka, Core Services" },
+  { id: "Backend", label: "⚙️ Backend Systems", desc: "Distributed Locks, Goroutines, Postgres, Redis" },
+  { id: "Frontend", label: "💻 Frontend & Web", desc: "React 19, SSR Hydration, ServiceWorkers, CDNs" },
+  { id: "FullStack", label: "🌐 FullStack (Next.js)", desc: "Server Actions, Optimistic UI, Webhooks" },
+  { id: "DataMLOps", label: "🧠 Data & MLOps", desc: "Vector DBs, RAG, Quantization, GPU/RAM OOM" },
+  { id: "Cybersecurity", label: "🛡️ Cybersecurity", desc: "SSRF, IMDSv2, JWT Exploits, Auth Bypass" },
+  { id: "Mobile", label: "📱 Mobile Architecture", desc: "React Native, ANRs, Room SQLite, JSI Bridge" },
+  { id: "CloudFinOps", label: "💰 Cloud FinOps", desc: "Runaway Lambdas, NAT Gateway Egress, AWS Spend" },
+  { id: "DatabaseRE", label: "🗄️ Database Reliability", desc: "Postgres XID Wraparound, Replica Lag, Locks" },
+];
+
 interface IncidentKata {
   id: string;
   dayIndex: number;
   title: string;
+  track?: string;
+  difficultyTier?: string;
   severity: string;
   category: string;
   topologyDescription: string;
@@ -49,6 +63,9 @@ interface IncidentKata {
   remediationActions_JSON: string;
   postMortemAnalysis: string;
   baseXp: number;
+  isPrivateAssessment?: boolean;
+  organizationOrTeamName?: string;
+  customAccessCode?: string;
 }
 
 interface UserStreak {
@@ -123,6 +140,22 @@ export default function DailyIncidentPage() {
   const [timerSeconds, setTimerSeconds] = useState<number>(0);
   const [timerActive, setTimerActive] = useState<boolean>(true);
 
+  // AI Outage Synthesizer state
+  const [showAiSynthesizer, setShowAiSynthesizer] = useState<boolean>(false);
+  const [aiTrack, setAiTrack] = useState<string>("Backend");
+  const [aiTier, setAiTier] = useState<string>("Silver");
+  const [aiCustomStack, setAiCustomStack] = useState<string>("");
+  const [aiFailureMode, setAiFailureMode] = useState<string>("");
+  const [synthesizing, setSynthesizing] = useState<boolean>(false);
+  const [aiSuccessMessage, setAiSuccessMessage] = useState<string | null>(null);
+
+  // Enterprise Assessment Mode states
+  const [isPrivateAssessment, setIsPrivateAssessment] = useState<boolean>(false);
+  const [organizationOrTeamName, setOrganizationOrTeamName] = useState<string>("");
+  const [customAccessCode, setCustomAccessCode] = useState<string>("");
+  const [generatedShareLink, setGeneratedShareLink] = useState<{ link: string; code?: string; team?: string } | null>(null);
+  const [isAssessmentMode, setIsAssessmentMode] = useState<boolean>(false);
+
   const [loading, setLoading] = useState<boolean>(true);
   const [submitting, setSubmitting] = useState<boolean>(false);
   const [triageResult, setTriageResult] = useState<TriageResult | null>(null);
@@ -157,11 +190,31 @@ export default function DailyIncidentPage() {
   const fetchInitialData = async () => {
     setLoading(true);
     try {
-      // 1. Fetch Today's Incident
-      const incRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/incidents/today?track=${track}&difficultyTier=${difficultyTier}`);
+      let url = `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/incidents/today?track=${track}&difficultyTier=${difficultyTier}`;
+
+      if (typeof window !== "undefined") {
+        const params = new URLSearchParams(window.location.search);
+        const code = params.get("accessCode");
+        const id = params.get("id");
+        if (code) {
+          url = `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/incidents/access/${encodeURIComponent(code)}`;
+          setIsAssessmentMode(true);
+        } else if (id) {
+          url = `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/incidents/${encodeURIComponent(id)}`;
+          setIsAssessmentMode(true);
+        }
+      }
+
+      // 1. Fetch Today's Incident or Assessment Kata
+      const incRes = await fetch(url);
       if (incRes.ok) {
         const incData: IncidentKata = await incRes.json();
         setIncident(incData);
+        if (incData.track) setTrack(incData.track);
+        if (incData.difficultyTier) setDifficultyTier(incData.difficultyTier);
+        if (incData.isPrivateAssessment || incData.organizationOrTeamName) {
+          setIsAssessmentMode(true);
+        }
         if (incData.telemetryMetrics_JSON) {
           try {
             setMetrics(JSON.parse(incData.telemetryMetrics_JSON));
@@ -265,6 +318,91 @@ export default function DailyIncidentPage() {
     }
   };
 
+  const handleSynthesizeOutage = async () => {
+    setSynthesizing(true);
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/incidents/generate`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            track: aiTrack,
+            difficultyTier: aiTier,
+            customTechStack: aiCustomStack.trim() || undefined,
+            failureMode: aiFailureMode.trim() || undefined,
+            isPrivateAssessment: isPrivateAssessment,
+            organizationOrTeamName: organizationOrTeamName.trim() || undefined,
+            customAccessCode: customAccessCode.trim() || undefined,
+          }),
+        }
+      );
+
+      if (res.ok) {
+        const generated: IncidentKata = await res.json();
+        setTrack(generated.track || aiTrack);
+        setDifficultyTier(generated.difficultyTier || aiTier);
+        setIncident(generated);
+        if (generated.isPrivateAssessment || isPrivateAssessment) {
+          setIsAssessmentMode(true);
+        }
+        if (generated.telemetryMetrics_JSON) {
+          try {
+            setMetrics(JSON.parse(generated.telemetryMetrics_JSON));
+          } catch {
+            setMetrics({});
+          }
+        }
+        if (generated.hypotheses_JSON) {
+          try {
+            setHypotheses(JSON.parse(generated.hypotheses_JSON));
+          } catch {
+            setHypotheses([]);
+          }
+        }
+        if (generated.remediationActions_JSON) {
+          try {
+            setActions(JSON.parse(generated.remediationActions_JSON));
+          } catch {
+            setActions([]);
+          }
+        }
+
+        // Reset triage attempt state for the fresh outage
+        setTimerSeconds(0);
+        setTimerActive(true);
+        setTriageResult(null);
+        setSelectedHypothesis("");
+        setSelectedAction("");
+        setCustomNotes("");
+        setActiveTab("briefing");
+
+        const shareUrl = generated.customAccessCode
+          ? `${window.location.origin}/daily/incident?accessCode=${encodeURIComponent(generated.customAccessCode)}`
+          : `${window.location.origin}/daily/incident?id=${generated.id}`;
+
+        if (isPrivateAssessment) {
+          setGeneratedShareLink({
+            link: shareUrl,
+            code: generated.customAccessCode,
+            team: generated.organizationOrTeamName || organizationOrTeamName,
+          });
+        } else {
+          setShowAiSynthesizer(false);
+          setAiSuccessMessage(`⚡ Production Outage "${generated.title}" synthesized and loaded!`);
+          setTimeout(() => setAiSuccessMessage(null), 6000);
+        }
+      } else {
+        alert("Failed to synthesize custom incident. Please try again.");
+      }
+    } catch (err) {
+      console.error("AI Synthesizer error", err);
+      alert("Error contacting the incident synthesis engine.");
+    } finally {
+      setSynthesizing(false);
+    }
+  };
+
   const formatTimer = (secs: number) => {
     const mins = Math.floor(secs / 60);
     const remaining = secs % 60;
@@ -287,15 +425,38 @@ export default function DailyIncidentPage() {
   if (!incident) {
     return (
       <div className="min-h-screen bg-background text-foreground flex flex-col items-center justify-center p-6">
-        <div className="text-center space-y-4">
+        <div className="text-center space-y-4 max-w-lg">
           <div className="text-6xl mb-4">🛡️</div>
           <h2 className="text-2xl font-bold text-foreground">No Incident Kata Available</h2>
           <p className="text-muted-foreground font-mono text-sm tracking-wide">
-            You have successfully prevented all outages for {track} at the {difficultyTier} tier.
+            No active outage found for <span className="text-amber-500 font-bold">{track}</span> at the <span className="text-amber-500 font-bold">{difficultyTier}</span> tier. Synthesize an on-demand chaos scenario with Gemini AI or explore other tracks:
           </p>
-          <div className="flex gap-4 justify-center mt-6">
-            <button onClick={() => setTrack("DevOps")} className="px-4 py-2 bg-muted hover:bg-slate-700 rounded transition text-sm">Switch to DevOps</button>
-            <button onClick={() => setDifficultyTier("Bronze")} className="px-4 py-2 bg-muted hover:bg-slate-700 rounded transition text-sm">Switch to Bronze</button>
+          <div className="flex flex-wrap gap-2 justify-center mt-4">
+            {ENTERPRISE_TRACKS.map((t) => (
+              <button
+                key={t.id}
+                onClick={() => setTrack(t.id)}
+                className={`px-3 py-1.5 rounded-lg transition text-xs font-mono font-medium ${
+                  track === t.id
+                    ? "bg-amber-500 text-black font-bold shadow-md"
+                    : "bg-card border border-border hover:bg-muted text-foreground"
+                }`}
+              >
+                {t.label}
+              </button>
+            ))}
+          </div>
+          <div className="mt-4">
+            <button
+              onClick={() => {
+                setAiTrack(track);
+                setAiTier(difficultyTier);
+                setShowAiSynthesizer(true);
+              }}
+              className="px-5 py-2.5 bg-gradient-to-r from-purple-600 via-pink-600 to-amber-500 hover:from-purple-500 hover:to-amber-400 text-white rounded-xl font-bold text-sm shadow-lg hover:shadow-purple-500/25 transition transform active:scale-95"
+            >
+              ⚡ Synthesize Custom Outage with AI
+            </button>
           </div>
         </div>
       </div>
@@ -304,6 +465,49 @@ export default function DailyIncidentPage() {
 
   return (
     <div className="min-h-screen bg-background text-foreground antialiased selection:bg-amber-500 selection:text-black">
+      {/* Enterprise / Team War-Room Banner */}
+      {(isAssessmentMode || incident?.isPrivateAssessment || incident?.organizationOrTeamName) && (
+        <div className="bg-gradient-to-r from-purple-950 via-slate-900 to-indigo-950 border-b border-purple-500/30 px-6 py-2.5 flex flex-wrap items-center justify-between gap-3 text-xs shadow-md">
+          <div className="flex items-center gap-2.5">
+            <span className="px-2 py-0.5 rounded bg-purple-500/20 text-purple-300 font-bold uppercase tracking-wider text-[10px] border border-purple-500/40 flex items-center gap-1">
+              <span>🏢</span> Team Assessment
+            </span>
+            <span className="font-semibold text-white tracking-wide">
+              {incident.organizationOrTeamName || "Enterprise Technical Assessment War-Room"}
+            </span>
+            {incident.customAccessCode && (
+              <span className="font-mono text-purple-300 bg-purple-950/80 px-2 py-0.5 rounded border border-purple-500/30 text-[11px]">
+                🔑 Code: <strong className="text-white">{incident.customAccessCode}</strong>
+              </span>
+            )}
+          </div>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => {
+                const url = incident.customAccessCode
+                  ? `${window.location.origin}/daily/incident?accessCode=${encodeURIComponent(incident.customAccessCode)}`
+                  : `${window.location.origin}/daily/incident?id=${incident.id}`;
+                navigator.clipboard.writeText(url);
+                alert("📋 Shareable War-Room link copied to clipboard!");
+              }}
+              className="text-purple-300 hover:text-white underline font-mono text-[11px] flex items-center gap-1 transition"
+            >
+              <span>📋</span> Copy War-Room Link
+            </button>
+            <span className="text-slate-600">|</span>
+            <Link
+              href="/daily/incident"
+              onClick={() => {
+                setIsAssessmentMode(false);
+              }}
+              className="text-muted-foreground hover:text-foreground text-[11px] transition"
+            >
+              Exit to Daily Rotation →
+            </Link>
+          </div>
+        </div>
+      )}
+
       {/* Top Navigation HUD */}
       <header className="border-b border-border bg-card/80 backdrop-blur sticky top-0 z-50 px-6 py-4">
         <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-4">
@@ -332,22 +536,33 @@ export default function DailyIncidentPage() {
               <select
                 value={track}
                 onChange={(e) => setTrack(e.target.value)}
-                className="bg-card border border-border text-foreground text-xs rounded px-2.5 py-1 outline-none focus:border-amber-500 transition"
+                className="bg-card border border-border text-foreground text-xs rounded px-2.5 py-1 outline-none focus:border-amber-500 transition font-medium"
               >
-                <option value="DevOps">DevOps</option>
-                <option value="Backend">Backend</option>
-                <option value="Frontend">Frontend</option>
+                {ENTERPRISE_TRACKS.map((t) => (
+                  <option key={t.id} value={t.id}>{t.label}</option>
+                ))}
               </select>
               <select
                 value={difficultyTier}
                 onChange={(e) => setDifficultyTier(e.target.value)}
-                className="bg-card border border-border text-foreground text-xs rounded px-2.5 py-1 outline-none focus:border-amber-500 transition"
+                className="bg-card border border-border text-foreground text-xs rounded px-2.5 py-1 outline-none focus:border-amber-500 transition font-medium"
               >
                 <option value="Bronze">Bronze (L3)</option>
                 <option value="Silver">Silver (L4)</option>
                 <option value="Gold">Gold (L5)</option>
                 <option value="Diamond">Diamond (L6+)</option>
               </select>
+              <button
+                onClick={() => {
+                  setAiTrack(track);
+                  setAiTier(difficultyTier);
+                  setShowAiSynthesizer(true);
+                }}
+                className="flex items-center gap-1.5 px-3 py-1 bg-gradient-to-r from-purple-600 via-pink-600 to-amber-500 hover:from-purple-500 hover:to-amber-400 text-white text-xs font-semibold rounded shadow-md hover:shadow-purple-500/20 transition transform active:scale-95 cursor-pointer ml-1"
+                title="Synthesize an on-demand custom production outage with Gemini AI"
+              >
+                <span className="animate-pulse">⚡</span> AI Synthesizer
+              </button>
             </div>
           </div>
 
@@ -425,6 +640,17 @@ export default function DailyIncidentPage() {
           </div>
         </div>
       </header>
+
+      {/* AI Synthesizer Success Notification */}
+      {aiSuccessMessage && (
+        <div className="bg-emerald-500/10 border-b border-emerald-500/30 px-6 py-2.5 flex items-center justify-between text-xs text-emerald-600 dark:text-emerald-400 font-mono">
+          <div className="flex items-center gap-2">
+            <span className="text-base">🚀</span>
+            <span className="font-semibold">{aiSuccessMessage}</span>
+          </div>
+          <button onClick={() => setAiSuccessMessage(null)} className="hover:text-emerald-300 text-sm font-bold">✕</button>
+        </div>
+      )}
 
       {/* Main War-Room Workspace */}
       <main className="max-w-7xl mx-auto px-6 py-8 space-y-8">
@@ -854,16 +1080,34 @@ export default function DailyIncidentPage() {
                     <h3 className="text-xl font-bold text-foreground">
                       {triageResult.isResolved
                         ? "Outage Successfully Mitigated!"
-                        : "Outage Partial Resolution"}
+                        : triageResult.score >= 60
+                        ? "Outage Partial Resolution"
+                        : "Outage Triage Failed (Unresolved)"}
                     </h3>
                     <p className="text-xs text-muted-foreground">
                       Triage Score: {triageResult.score}/100 • MTTR: {formatTimer(timerSeconds)}
                     </p>
+                    <div className="flex flex-wrap items-center gap-2 pt-2">
+                      <span className={`px-2.5 py-0.5 rounded-full text-[11px] font-semibold flex items-center gap-1.5 border ${
+                        triageResult.hypothesisCorrect
+                          ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/30"
+                          : "bg-red-500/10 text-red-700 dark:text-red-400 border-red-500/30"
+                      }`}>
+                        {triageResult.hypothesisCorrect ? "✓ Step 1: Hypothesis Accurate" : "✕ Step 1: Hypothesis Misdiagnosed"}
+                      </span>
+                      <span className={`px-2.5 py-0.5 rounded-full text-[11px] font-semibold flex items-center gap-1.5 border ${
+                        triageResult.actionCorrect
+                          ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/30"
+                          : "bg-red-500/10 text-red-700 dark:text-red-400 border-red-500/30"
+                      }`}>
+                        {triageResult.actionCorrect ? "✓ Step 2: Mitigation Safe & Surgical" : "✕ Step 2: High Blast Radius / Wrong Action"}
+                      </span>
+                    </div>
                   </div>
                 </div>
                 <button
                   onClick={() => setTriageResult(null)}
-                  className="text-muted-foreground hover:text-white text-lg font-mono p-1"
+                  className="text-muted-foreground hover:text-foreground text-lg font-mono p-1"
                 >
                   ✕
                 </button>
@@ -918,23 +1162,357 @@ export default function DailyIncidentPage() {
                 </p>
               </div>
 
-              <div className="flex gap-3 pt-2">
+              <div className="flex flex-col sm:flex-row gap-3 pt-2">
+                {!triageResult.isResolved && (
+                  <button
+                    onClick={() => {
+                      setTriageResult(null);
+                      setTimerActive(true);
+                    }}
+                    className="flex-1 py-3 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 font-bold text-xs uppercase tracking-wider rounded-xl transition shadow-md flex items-center justify-center gap-1.5"
+                  >
+                    <span>🔄</span>
+                    <span>Re-Attempt Triage With New Options</span>
+                  </button>
+                )}
                 <button
                   onClick={() => {
                     setTriageResult(null);
                     setActiveTab("leagues");
                   }}
-                  className="flex-1 py-3 bg-amber-500 hover:bg-amber-400 text-black font-bold text-xs uppercase tracking-wider rounded-xl transition"
+                  className="flex-1 py-3 bg-card hover:bg-muted text-foreground border border-border font-bold text-xs uppercase tracking-wider rounded-xl transition"
                 >
                   View Weekly League Standings
                 </button>
                 <button
                   onClick={() => setTriageResult(null)}
-                  className="py-3 px-5 bg-muted hover:bg-slate-700 text-foreground font-bold text-xs uppercase tracking-wider rounded-xl transition"
+                  className="py-3 px-5 bg-muted hover:bg-muted/80 text-foreground border border-border font-bold text-xs uppercase tracking-wider rounded-xl transition"
                 >
                   Close War-Room
                 </button>
               </div>
+            </div>
+          </div>
+        )}
+
+        {/* AI Outage Synthesizer Modal */}
+        {showAiSynthesizer && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-md animate-in fade-in duration-200">
+            <div className="bg-card border border-border rounded-2xl max-w-2xl w-full p-6 sm:p-8 space-y-6 shadow-2xl relative overflow-hidden">
+              {/* Modal Top Accent */}
+              <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-purple-500 via-pink-500 to-amber-500" />
+              
+              <div className="flex items-start justify-between">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xl">⚡</span>
+                    <h3 className="text-xl font-bold tracking-tight text-foreground">
+                      AI Production Outage Synthesizer
+                    </h3>
+                    <span className="px-2 py-0.5 text-[10px] font-mono font-bold bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/30 rounded-full">
+                      Gemini Chaos Engine
+                    </span>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Generate authentic, mission-critical chaos engineering incidents tailored to custom technology stacks and failure modes on-demand.
+                  </p>
+                </div>
+                <button
+                  onClick={() => setShowAiSynthesizer(false)}
+                  disabled={synthesizing}
+                  className="text-muted-foreground hover:text-foreground text-sm font-bold p-1 rounded-lg hover:bg-muted transition"
+                >
+                  ✕
+                </button>
+              </div>
+
+              {/* Form Content */}
+              {generatedShareLink ? (
+                /* Generated Share Link Card */
+                <div className="bg-gradient-to-br from-purple-950/60 via-slate-900 to-indigo-950/60 border border-purple-500/40 rounded-2xl p-6 space-y-5 text-center">
+                  <div className="w-14 h-14 bg-gradient-to-tr from-purple-500 to-indigo-500 rounded-2xl flex items-center justify-center mx-auto text-2xl shadow-lg shadow-purple-500/25">
+                    🏢
+                  </div>
+                  <div className="space-y-1">
+                    <span className="px-2.5 py-0.5 rounded-full bg-purple-500/20 text-purple-300 font-mono text-[10px] font-bold uppercase tracking-wider border border-purple-500/40">
+                      Private Assessment Commissioned
+                    </span>
+                    <h4 className="text-lg font-bold text-white">
+                      {generatedShareLink.team || "Enterprise Team Assessment"} War-Room Ready
+                    </h4>
+                    <p className="text-xs text-slate-300 max-w-md mx-auto">
+                      Candidates accessing this private war-room will experience the isolated triage simulation without altering the public catalog rotation.
+                    </p>
+                  </div>
+
+                  {generatedShareLink.code && (
+                    <div className="inline-flex items-center gap-2 bg-slate-950/80 border border-purple-500/30 px-4 py-2 rounded-xl text-xs font-mono">
+                      <span className="text-slate-400">Access Code:</span>
+                      <strong className="text-purple-300 tracking-wider text-sm">{generatedShareLink.code}</strong>
+                    </div>
+                  )}
+
+                  <div className="space-y-2 text-left">
+                    <label className="text-[11px] font-mono text-slate-400 uppercase tracking-wider block">
+                      🔗 Shareable Candidate Link
+                    </label>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="text"
+                        readOnly
+                        value={generatedShareLink.link}
+                        className="flex-1 bg-slate-950 border border-border rounded-xl px-3.5 py-2.5 text-xs text-foreground font-mono select-all outline-none"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          navigator.clipboard.writeText(generatedShareLink.link);
+                          alert("War-Room Assessment link copied to clipboard!");
+                        }}
+                        className="px-4 py-2.5 bg-purple-600 hover:bg-purple-500 text-white font-semibold text-xs rounded-xl shadow transition shrink-0"
+                      >
+                        Copy Link
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-end gap-3 pt-3 border-t border-purple-500/20">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setGeneratedShareLink(null);
+                        setShowAiSynthesizer(false);
+                      }}
+                      className="px-4 py-2 text-xs font-semibold text-slate-400 hover:text-white transition"
+                    >
+                      Close Modal
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setGeneratedShareLink(null);
+                        setShowAiSynthesizer(false);
+                      }}
+                      className="px-6 py-2.5 bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-400 hover:to-indigo-400 text-white font-bold text-xs uppercase tracking-wider rounded-xl shadow-lg transition"
+                    >
+                      Enter War-Room Now →
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-4 text-xs max-h-[75vh] overflow-y-auto pr-1">
+                  {/* Track Selection - All 9 Enterprise Tracks */}
+                  <div>
+                    <label className="block font-mono text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">
+                      1. Select Technical Track (9 Enterprise Specializations)
+                    </label>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                      {ENTERPRISE_TRACKS.map((t) => (
+                        <button
+                          key={t.id}
+                          type="button"
+                          onClick={() => setAiTrack(t.id)}
+                          className={`p-2.5 rounded-xl border text-left transition font-medium text-xs flex flex-col gap-0.5 ${
+                            aiTrack === t.id
+                              ? "border-amber-500 bg-amber-500/10 text-amber-600 dark:text-amber-400 shadow-sm font-bold"
+                              : "border-border bg-card hover:bg-muted text-foreground"
+                          }`}
+                        >
+                          <span>{t.label}</span>
+                          <span className="text-[10px] text-muted-foreground font-normal line-clamp-1">{t.desc}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Difficulty Tier */}
+                  <div>
+                    <label className="block font-mono text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">
+                      2. Target Difficulty Level
+                    </label>
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                      {[
+                        { id: "Bronze", label: "Bronze (L3)" },
+                        { id: "Silver", label: "Silver (L4)" },
+                        { id: "Gold", label: "Gold (L5)" },
+                        { id: "Diamond", label: "Diamond (L6+)" },
+                      ].map((tier) => (
+                        <button
+                          key={tier.id}
+                          type="button"
+                          onClick={() => setAiTier(tier.id)}
+                          className={`p-2 rounded-xl border text-center transition font-mono text-xs ${
+                            aiTier === tier.id
+                              ? "border-cyan-500 bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 font-bold"
+                              : "border-border bg-card hover:bg-muted text-foreground"
+                          }`}
+                        >
+                          {tier.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Assessment & Distribution Mode */}
+                  <div className="p-3.5 rounded-xl bg-card border border-border space-y-3">
+                    <div className="flex items-center justify-between">
+                      <label className="font-mono text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
+                        3. Distribution & Assessment Mode
+                      </label>
+                      <div className="flex items-center gap-1 bg-muted p-0.5 rounded-lg">
+                        <button
+                          type="button"
+                          onClick={() => setIsPrivateAssessment(false)}
+                          className={`px-2.5 py-1 rounded-md text-[11px] font-medium transition ${
+                            !isPrivateAssessment
+                              ? "bg-background text-foreground shadow font-semibold"
+                              : "text-muted-foreground hover:text-foreground"
+                          }`}
+                        >
+                          🌐 Public Daily
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setIsPrivateAssessment(true)}
+                          className={`px-2.5 py-1 rounded-md text-[11px] font-medium transition ${
+                            isPrivateAssessment
+                              ? "bg-purple-600 text-white shadow font-semibold"
+                              : "text-muted-foreground hover:text-foreground"
+                          }`}
+                        >
+                          🔒 Team Assessment
+                        </button>
+                      </div>
+                    </div>
+
+                    {isPrivateAssessment && (
+                      <div className="space-y-3 pt-2 border-t border-border animate-in fade-in duration-150">
+                        <div>
+                          <label className="block text-[11px] font-medium text-foreground mb-1">
+                            🏢 Organization / Squad Name
+                          </label>
+                          <input
+                            type="text"
+                            value={organizationOrTeamName}
+                            onChange={(e) => setOrganizationOrTeamName(e.target.value)}
+                            placeholder="e.g. Uber Freight SRE Squad, Stripe Core Payments"
+                            className="w-full bg-background border border-border rounded-xl px-3 py-2 text-xs text-foreground placeholder:text-muted-foreground/60 outline-none focus:border-purple-500 font-mono transition"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-[11px] font-medium text-foreground mb-1">
+                            🔑 Custom War-Room Access Code (Optional)
+                          </label>
+                          <input
+                            type="text"
+                            value={customAccessCode}
+                            onChange={(e) => setCustomAccessCode(e.target.value)}
+                            placeholder="e.g. UBER-SRE-2026 (leave empty to auto-generate)"
+                            className="w-full bg-background border border-border rounded-xl px-3 py-2 text-xs text-foreground placeholder:text-muted-foreground/60 outline-none focus:border-purple-500 font-mono uppercase transition"
+                          />
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Custom Tech Stack */}
+                  <div>
+                    <div className="flex items-center justify-between mb-1.5">
+                      <label className="font-mono text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
+                        4. Custom Architecture & Tech Stack (Optional)
+                      </label>
+                      <span className="text-[10px] text-muted-foreground">Click a preset or type custom</span>
+                    </div>
+                    <input
+                      type="text"
+                      value={aiCustomStack}
+                      onChange={(e) => setAiCustomStack(e.target.value)}
+                      placeholder="e.g., Next.js 15, React Native JSI, AWS Lambda S3, Postgres Aurora"
+                      className="w-full bg-background border border-border rounded-xl px-3.5 py-2 text-xs text-foreground placeholder:text-muted-foreground/60 outline-none focus:border-amber-500 transition font-mono"
+                    />
+                    <div className="flex flex-wrap gap-1.5 mt-2">
+                      {[
+                        "React Native + Kotlin JSI + BLE",
+                        "AWS Lambda + S3 EventBridge + DynamoDB",
+                        "PostgreSQL 16 + pgBouncer + Aurora",
+                        "Next.js 15 + Prisma + Supabase",
+                        "Go + gRPC + Redis Redlock + K8s",
+                      ].map((preset) => (
+                        <button
+                          key={preset}
+                          type="button"
+                          onClick={() => setAiCustomStack(preset)}
+                          className="px-2 py-0.5 rounded-md bg-muted hover:bg-muted/80 text-[10px] font-mono text-muted-foreground hover:text-foreground transition cursor-pointer"
+                        >
+                          + {preset}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Specific Failure Mode */}
+                  <div>
+                    <label className="block font-mono text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">
+                      5. Specific Failure Mode or Chaos Pattern (Optional)
+                    </label>
+                    <input
+                      type="text"
+                      value={aiFailureMode}
+                      onChange={(e) => setAiFailureMode(e.target.value)}
+                      placeholder="e.g., React Native Bridge ANR, S3 Lambda Storm, Postgres XID Wraparound"
+                      className="w-full bg-background border border-border rounded-xl px-3.5 py-2 text-xs text-foreground placeholder:text-muted-foreground/60 outline-none focus:border-amber-500 transition font-mono"
+                    />
+                    <div className="flex flex-wrap gap-1.5 mt-2">
+                      {[
+                        "React Native Bridge ANR",
+                        "Recursive S3 Lambda Storm",
+                        "PostgreSQL XID Wraparound",
+                        "SSR Hydration Mismatch",
+                        "Distributed Lock Deadlock",
+                      ].map((mode) => (
+                        <button
+                          key={mode}
+                          type="button"
+                          onClick={() => setAiFailureMode(mode)}
+                          className="px-2 py-0.5 rounded-md bg-muted hover:bg-muted/80 text-[10px] font-mono text-muted-foreground hover:text-foreground transition cursor-pointer"
+                        >
+                          + {mode}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Action Buttons */}
+                  <div className="flex items-center justify-end gap-3 pt-3 border-t border-border">
+                    <button
+                      type="button"
+                      onClick={() => setShowAiSynthesizer(false)}
+                      disabled={synthesizing}
+                      className="px-4 py-2 text-xs font-semibold text-muted-foreground hover:text-foreground transition"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleSynthesizeOutage}
+                      disabled={synthesizing}
+                      className="flex items-center gap-2 px-6 py-2.5 bg-gradient-to-r from-purple-600 via-pink-600 to-amber-500 hover:from-purple-500 hover:to-amber-400 text-white rounded-xl font-bold text-xs uppercase tracking-wider shadow-lg hover:shadow-purple-500/25 transition transform active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                    >
+                      {synthesizing ? (
+                        <>
+                          <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                          <span>Synthesizing Cluster Outage...</span>
+                        </>
+                      ) : (
+                        <>
+                          <span>⚡</span>
+                          <span>{isPrivateAssessment ? "Create Team Assessment War-Room" : "Synthesize Outage with AI"}</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         )}
