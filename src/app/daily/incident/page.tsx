@@ -529,7 +529,7 @@ export default function DailyIncidentPage() {
                       key={hyp.id}
                       className={`block p-4 rounded-xl border cursor-pointer transition ${
                         selectedHypothesis === hyp.id
-                          ? "bg-amber-50 dark:bg-amber-950/30 border-amber-500 text-foreground shadow-[0_0_12px_rgba(245,158,11,0.15)]"
+                          ? "bg-amber-500/10 border-amber-500 text-foreground shadow-sm shadow-amber-500/10"
                           : "bg-card border-border text-foreground hover:border-amber-500/40"
                       }`}
                     >
@@ -567,7 +567,7 @@ export default function DailyIncidentPage() {
                         key={act.id}
                         className={`block p-4 rounded-xl border cursor-pointer transition ${
                           selectedAction === act.id
-                            ? "bg-amber-50 dark:bg-amber-950/30 border-amber-500 text-foreground shadow-[0_0_12px_rgba(245,158,11,0.15)]"
+                            ? "bg-amber-500/10 border-amber-500 text-foreground shadow-sm shadow-amber-500/10"
                             : "bg-card border-border text-foreground hover:border-amber-500/40"
                         }`}
                       >
@@ -584,20 +584,21 @@ export default function DailyIncidentPage() {
                             <div className="flex items-center justify-between">
                               <span className="font-semibold text-sm">{act.label}</span>
                               <span
-                                className={`text-[10px] font-mono px-2 py-0.5 rounded ${
+                                className={`text-[10px] font-mono font-semibold px-2.5 py-0.5 rounded-full border ${
                                   act.risk.startsWith("Low")
-                                    ? "bg-emerald-950 text-emerald-700 dark:text-emerald-400 border border-emerald-800"
+                                    ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/30"
                                     : act.risk.startsWith("Catastrophic")
-                                    ? "bg-red-950 text-red-700 dark:text-red-400 border border-red-800"
-                                    : "bg-yellow-950 text-yellow-700 dark:text-yellow-400 border border-yellow-800"
+                                    ? "bg-red-500/10 text-red-700 dark:text-red-400 border-red-500/30"
+                                    : "bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/30"
                                 }`}
                               >
                                 {act.risk.split(" ")[0]} Risk
                               </span>
                             </div>
-                            <pre className="text-[11px] font-mono bg-background p-2.5 rounded border border-border text-amber-600 dark:text-amber-300/90 overflow-x-auto">
-                              $ {act.command}
-                            </pre>
+                            <div className="bg-slate-950 border border-slate-800 rounded-lg p-3 text-[11px] font-mono shadow-inner overflow-x-auto flex items-center justify-between">
+                              <span className="text-amber-300 font-mono tracking-tight">$ {act.command}</span>
+                              <span className="text-[10px] text-slate-500 font-mono uppercase tracking-wider shrink-0 ml-2">bash</span>
+                            </div>
                             <span className="text-[11px] text-muted-foreground block">{act.risk}</span>
                           </div>
                         </div>

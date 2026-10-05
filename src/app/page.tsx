@@ -98,10 +98,10 @@ export default function Dashboard() {
               BD
             </Link>
             <div>
-              <span className="font-bold text-lg bg-gradient-to-r from-white via-slate-200 to-slate-400 bg-clip-text text-transparent">
+              <span className="font-bold text-lg bg-gradient-to-r from-foreground via-foreground/90 to-muted-foreground bg-clip-text text-transparent">
                 BUILD & DEFEND
               </span>
-              <span className="ml-2 text-[10px] px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-600 dark:text-indigo-300 font-semibold border border-indigo-500/30">
+              <span className="ml-2 text-[10px] px-2 py-0.5 rounded-full bg-indigo-50 dark:bg-indigo-500/20 text-indigo-700 dark:text-indigo-300 font-semibold border border-indigo-200 dark:border-indigo-500/30">
                 EdTech Platform
               </span>
             </div>
@@ -170,9 +170,9 @@ export default function Dashboard() {
         {/* Banner Section */}
         {/* Banner Section */}
         {demoMode === "Enterprise" && (
-          <div className="relative rounded-3xl p-8 overflow-hidden bg-gradient-to-r from-indigo-950 via-slate-900 to-purple-950 border border-indigo-500/20 shadow-2xl">
+          <div className="relative rounded-3xl p-8 overflow-hidden bg-gradient-to-r from-indigo-50 via-purple-50/40 to-slate-100 border border-indigo-200 dark:from-indigo-950 dark:via-slate-900 dark:to-purple-950 dark:border-indigo-500/20 shadow-2xl">
             <div className="relative z-10 max-w-3xl">
-              <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-700 dark:text-indigo-400 text-xs font-semibold mb-4">
+              <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-indigo-100 dark:bg-indigo-500/10 border border-indigo-300 dark:border-indigo-500/20 text-indigo-800 dark:text-indigo-400 text-xs font-semibold mb-4">
                 <Sparkles className="w-3.5 h-3.5" />
                 <span>AI Voice Assessment & Lead Routing Engine</span>
               </div>
@@ -202,7 +202,7 @@ export default function Dashboard() {
                   type="text"
                   value={candidateName}
                   onChange={(e) => setCandidateName(e.target.value)}
-                  className="w-full bg-card border border-border rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500"
+                  className="w-full bg-card border border-border rounded-xl px-3 py-2 text-xs text-foreground focus:outline-none focus:border-indigo-500"
                 />
               </div>
 
@@ -219,7 +219,7 @@ export default function Dashboard() {
                   rows={3}
                   value={resumeText}
                   onChange={(e) => setResumeText(e.target.value)}
-                  className="w-full bg-card border border-border rounded-xl p-3 text-xs text-muted-foreground focus:outline-none focus:border-indigo-500"
+                  className="w-full bg-card border border-border rounded-xl p-3 text-xs text-foreground focus:outline-none focus:border-indigo-500"
                 />
               </div>
             </div>
@@ -236,7 +236,7 @@ export default function Dashboard() {
                   rows={4}
                   value={jobDescription}
                   onChange={(e) => setJobDescription(e.target.value)}
-                  className="w-full bg-card border border-border rounded-xl p-3 text-xs text-muted-foreground focus:outline-none focus:border-indigo-500"
+                  className="w-full bg-card border border-border rounded-xl p-3 text-xs text-foreground focus:outline-none focus:border-indigo-500"
                 />
               </div>
             </div>

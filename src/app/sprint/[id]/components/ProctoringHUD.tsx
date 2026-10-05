@@ -197,10 +197,10 @@ export default function ProctoringHUD({
   };
 
   const getStatusColor = () => {
-    if (isDisqualified) return "border-red-600 bg-red-950/80 text-red-600 dark:text-red-300";
-    if (riskLevel === "Flagged") return "border-red-500 bg-red-950/40 text-red-700 dark:text-red-400";
-    if (riskLevel === "Suspicious") return "border-yellow-500 bg-yellow-950/40 text-yellow-700 dark:text-yellow-400";
-    return "border-emerald-500 bg-emerald-950/40 text-emerald-700 dark:text-emerald-400";
+    if (isDisqualified) return "border-red-300 bg-red-50 text-red-900 dark:border-red-600 dark:bg-red-950/80 dark:text-red-300";
+    if (riskLevel === "Flagged") return "border-red-300 bg-red-50 text-red-900 dark:border-red-500 dark:bg-red-950/40 dark:text-red-400";
+    if (riskLevel === "Suspicious") return "border-amber-300 bg-amber-50 text-amber-900 dark:border-yellow-500 dark:bg-yellow-950/40 dark:text-yellow-400";
+    return "border-emerald-300 bg-emerald-50 text-emerald-900 dark:border-emerald-500 dark:bg-emerald-950/40 dark:text-emerald-400";
   };
 
   return (
@@ -255,13 +255,13 @@ export default function ProctoringHUD({
 
         {/* Score & Telemetry Metrics */}
         <div className="flex items-center gap-4 mt-2 sm:mt-0">
-          <div className="hidden md:flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-cyan-950/40 border border-cyan-500/30 text-cyan-600 dark:text-cyan-300 text-[10px] font-mono shadow-sm">
+          <div className="hidden md:flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-cyan-100 dark:bg-cyan-950/40 border border-cyan-300 dark:border-cyan-500/30 text-cyan-800 dark:text-cyan-300 text-[10px] font-mono shadow-sm">
             <Fingerprint className="w-3.5 h-3.5 text-cyan-700 dark:text-cyan-400 animate-pulse" />
             <span>VERIFICATION ACTIVE</span>
           </div>
 
           <div className="text-right">
-            <span className="text-[10px] uppercase tracking-wider text-zinc-400 block">
+            <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium block">
               Integrity Score
             </span>
             <span className="text-lg font-black tracking-tight text-foreground">
@@ -270,7 +270,7 @@ export default function ProctoringHUD({
           </div>
 
           <div className="text-right">
-            <span className="text-[10px] uppercase tracking-wider text-zinc-400 block">
+            <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium block">
               Notices
             </span>
             <span className="text-sm font-semibold text-foreground">

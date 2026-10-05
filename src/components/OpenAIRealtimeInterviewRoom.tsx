@@ -420,7 +420,7 @@ export default function OpenAIRealtimeInterviewRoom({
 
       {/* Status Bar */}
       {statusMessage && (
-        <div className="mt-4 p-3 bg-indigo-950/40 border border-indigo-500/30 rounded-xl text-xs text-indigo-600 dark:text-indigo-300 flex items-center space-x-2">
+        <div className="mt-4 p-3 bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-200 dark:border-indigo-500/30 rounded-xl text-xs text-indigo-800 dark:text-indigo-300 flex items-center space-x-2">
           <Sparkles className="w-4 h-4 text-indigo-700 dark:text-indigo-400 shrink-0" />
           <span>{statusMessage}</span>
         </div>
@@ -428,7 +428,7 @@ export default function OpenAIRealtimeInterviewRoom({
 
       {/* Diagnostic Evaluation Result */}
       {technicalScore !== null && (
-        <div className="mt-6 p-5 bg-gradient-to-r from-purple-950/40 to-slate-900 rounded-xl border border-purple-500/30">
+        <div className="mt-6 p-5 bg-card border border-border dark:bg-gradient-to-r dark:from-purple-950/40 dark:to-slate-900 dark:border-purple-500/30 rounded-xl">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center space-x-2">
               <AlertTriangle className="w-5 h-5 text-amber-700 dark:text-amber-400" />

@@ -215,12 +215,12 @@ export default function SpeedArchitectArenaPage() {
   }
 
   const availableComponents = [
-    { type: "API_Gateway", label: "Anycast Edge Gateway", color: "border-cyan-500/50 bg-cyan-950/20 text-cyan-600 dark:text-cyan-300" },
-    { type: "Distributed_Cache_Redis", label: "Redis Cluster", color: "border-purple-500/50 bg-purple-950/20 text-purple-600 dark:text-purple-300" },
-    { type: "Transactional_Outbox_WAL", label: "Transactional WAL Outbox", color: "border-amber-500/50 bg-amber-950/20 text-amber-600 dark:text-amber-300" },
-    { type: "Raft_Consensus_Cluster", label: "Raft Consensus Quorum", color: "border-emerald-500/50 bg-emerald-950/20 text-emerald-600 dark:text-emerald-300" },
-    { type: "Distributed_SQL_Spanner", label: "Spanner Distributed SQL", color: "border-blue-500/50 bg-blue-950/20 text-blue-600 dark:text-blue-300" },
-    { type: "Kafka_Event_Backplane", label: "Kafka Event Stream", color: "border-rose-500/50 bg-rose-950/20 text-rose-300" }
+    { type: "API_Gateway", label: "Anycast Edge Gateway", color: "border-cyan-500/40 bg-cyan-500/10 text-cyan-800 dark:text-cyan-300" },
+    { type: "Distributed_Cache_Redis", label: "Redis Cluster", color: "border-purple-500/40 bg-purple-500/10 text-purple-800 dark:text-purple-300" },
+    { type: "Transactional_Outbox_WAL", label: "Transactional WAL Outbox", color: "border-amber-500/40 bg-amber-500/10 text-amber-800 dark:text-amber-300" },
+    { type: "Raft_Consensus_Cluster", label: "Raft Consensus Quorum", color: "border-emerald-500/40 bg-emerald-500/10 text-emerald-800 dark:text-emerald-300" },
+    { type: "Distributed_SQL_Spanner", label: "Spanner Distributed SQL", color: "border-indigo-500/40 bg-indigo-500/10 text-indigo-800 dark:text-indigo-300" },
+    { type: "Kafka_Event_Backplane", label: "Kafka Event Stream", color: "border-rose-500/40 bg-rose-500/10 text-rose-800 dark:text-rose-300" }
   ];
 
   return (
@@ -228,56 +228,56 @@ export default function SpeedArchitectArenaPage() {
       {/* Top Breadcrumb & Actions */}
       <div className="max-w-7xl mx-auto mb-6 flex flex-wrap items-center justify-between gap-4">
         <div className="flex items-center space-x-2 text-sm text-muted-foreground">
-          <Link href="/" className="hover:text-cyan-700 dark:text-cyan-400 transition-colors">
+          <Link href="/" className="hover:text-indigo-600 dark:text-indigo-400 transition-colors">
             Home
           </Link>
           <span>/</span>
-          <Link href="/passport" className="hover:text-cyan-700 dark:text-cyan-400 transition-colors">
+          <Link href="/passport" className="hover:text-indigo-600 dark:text-indigo-400 transition-colors">
             Career OS
           </Link>
           <span>/</span>
-          <span className="text-amber-700 dark:text-amber-400 font-medium">1v1 Speed-Architecting Flash-Wars</span>
+          <span className="text-foreground font-medium">1v1 Speed-Architecting Flash-Wars</span>
         </div>
         <div className="flex items-center space-x-3">
           <button
             onClick={() => setShowLeaderboard(!showLeaderboard)}
-            className="px-3.5 py-1.5 rounded-lg bg-card border border-border text-xs font-semibold text-muted-foreground hover:text-white hover:border-border transition-all flex items-center space-x-1.5"
+            className="px-3.5 py-1.5 rounded-lg bg-card border border-border text-xs font-semibold text-foreground hover:bg-muted transition-all flex items-center space-x-1.5"
           >
             <span>🏆 Global Elo Leaderboard</span>
           </button>
-          <span className="px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 text-xs font-semibold text-amber-700 dark:text-amber-400 flex items-center space-x-1.5">
-            <span className="w-2 h-2 rounded-full bg-amber-400 animate-ping" />
+          <span className="px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-xs font-semibold text-emerald-700 dark:text-emerald-400 flex items-center space-x-1.5">
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
             <span>FIDE Elo Matchmaking Online</span>
           </span>
         </div>
       </div>
 
       {/* Duel Arena Header Banner */}
-      <div className="max-w-7xl mx-auto mb-6 bg-gradient-to-r from-slate-900 via-amber-950/30 to-purple-950/40 p-6 md:p-8 rounded-2xl border border-border shadow-2xl relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-96 h-96 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
+      <div className="max-w-7xl mx-auto mb-6 bg-card/90 backdrop-blur-xl border border-border shadow-lg p-6 md:p-8 rounded-2xl relative overflow-hidden dark:bg-gradient-to-r dark:from-slate-900 dark:via-indigo-950/30 dark:to-purple-950/40">
+        <div className="absolute top-0 right-0 w-96 h-96 bg-indigo-500/5 rounded-full blur-3xl pointer-events-none" />
         <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
           <div>
             <div className="flex items-center space-x-2 mb-2">
-              <span className="px-2.5 py-0.5 rounded-md bg-amber-500/20 text-amber-600 dark:text-amber-300 text-xs font-bold uppercase tracking-wider border border-amber-500/30">
+              <span className="px-2.5 py-0.5 rounded-full bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 border border-indigo-500/30 text-xs font-bold uppercase tracking-wider">
                 Phase 37 • Live Multiplayer
               </span>
-              <span className="px-2.5 py-0.5 rounded-md bg-purple-500/20 text-purple-600 dark:text-purple-300 text-xs font-bold uppercase tracking-wider border border-purple-500/30">
+              <span className="px-2.5 py-0.5 rounded-full bg-purple-500/10 text-purple-700 dark:text-purple-300 border border-purple-500/30 text-xs font-bold uppercase tracking-wider">
                 5-Minute Flash-War
               </span>
             </div>
             <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight text-foreground mb-2">
               1v1 System Design Speed-Architecting Flash-Wars
             </h1>
-            <p className="text-muted-foreground text-sm md:text-base max-w-2xl">
+            <p className="text-muted-foreground text-sm md:text-base max-w-2xl leading-relaxed">
               Go head-to-head in real time against peers or calibrated AI Principal Architects. Draw distributed topologies under dynamic chaos constraints (e.g. 10M QPS with regional datacenter blackout).
             </p>
           </div>
 
           {/* Countdown Clock HUD */}
-          <div className="flex items-center space-x-4 bg-background/80 border border-border p-4 rounded-2xl shadow-inner">
+          <div className="flex items-center space-x-4 bg-background/90 border border-border p-4 rounded-2xl shadow-sm">
             <div className="text-center px-4 border-r border-border">
               <div className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider">Duel Time</div>
-              <div className={`text-3xl font-black font-mono tracking-tight ${secondsRemaining < 60 ? "text-rose-400 animate-pulse" : "text-amber-700 dark:text-amber-400"}`}>
+              <div className={`text-3xl font-black font-mono tracking-tight ${secondsRemaining < 60 ? "text-rose-500 animate-pulse" : "text-amber-600 dark:text-amber-400"}`}>
                 {formatTime(secondsRemaining)}
               </div>
             </div>
@@ -285,7 +285,7 @@ export default function SpeedArchitectArenaPage() {
               <button
                 onClick={() => startMatchmake()}
                 disabled={isMatching}
-                className="px-5 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 disabled:opacity-50 text-slate-950 font-black text-sm transition-all shadow-lg shadow-amber-500/20 flex items-center space-x-2"
+                className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 disabled:opacity-50 text-slate-950 font-black text-sm transition-all shadow-md flex items-center space-x-2 cursor-pointer"
               >
                 {isMatching ? "Finding Opponent..." : "New 1v1 Match"}
               </button>
@@ -295,23 +295,23 @@ export default function SpeedArchitectArenaPage() {
       </div>
 
       {/* Dynamic Chaos Alert Warning Bar */}
-      <div className="max-w-7xl mx-auto mb-6 p-4 rounded-xl bg-rose-950/40 border border-rose-800/80 text-rose-300 text-xs md:text-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-lg">
+      <div className="max-w-7xl mx-auto mb-6 p-4 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-900 dark:text-rose-200 text-xs md:text-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-sm">
         <div className="flex items-center space-x-3">
-          <span className="w-3 h-3 rounded-full bg-rose-500 animate-ping" />
-          <span className="font-bold text-rose-200">
+          <span className="w-2.5 h-2.5 rounded-full bg-rose-500 animate-ping" />
+          <span className="font-bold text-rose-800 dark:text-rose-300">
             ⚠️ INJECTED CHAOS EVENT:
           </span>
-          <span>{selectedPreset?.injectedChaosEvent || "Minute 3: US-East-1 datacenter goes dark + 10M QPS cache stampede injected into US-West-2."}</span>
+          <span className="text-rose-900 dark:text-rose-200">{selectedPreset?.injectedChaosEvent || "Minute 3: US-East-1 datacenter goes dark + 10M QPS cache stampede injected into US-West-2."}</span>
         </div>
-        <div className="flex items-center space-x-2">
-          <label className="text-xs font-semibold text-muted-foreground flex items-center space-x-2 cursor-pointer">
+        <div className="flex items-center space-x-2 shrink-0">
+          <label className="text-xs font-semibold flex items-center space-x-2 cursor-pointer">
             <input
               type="checkbox"
               checked={chaosHandled}
               onChange={(e) => setChaosHandled(e.target.checked)}
               className="rounded bg-card border-border text-amber-500 focus:ring-0"
             />
-            <span className="text-amber-700 dark:text-amber-400 font-bold">Chaos Auto-Failover Route Engaged</span>
+            <span className="text-rose-800 dark:text-rose-300 font-bold">Chaos Auto-Failover Route Engaged</span>
           </label>
         </div>
       </div>

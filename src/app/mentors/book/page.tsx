@@ -184,11 +184,11 @@ END:VCALENDAR`;
   return (
     <div className="min-h-screen bg-background text-foreground font-sans pb-24">
       {/* Hero Header */}
-      <section className="border-b border-border/80 bg-gradient-to-b from-indigo-950/30 via-slate-900/40 to-slate-950 px-6 py-10">
+      <section className="border-b border-border/80 bg-card/90 backdrop-blur-xl dark:bg-gradient-to-b dark:from-indigo-950/30 dark:via-slate-900/40 dark:to-slate-950 px-6 py-10 shadow-sm">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-700 dark:text-indigo-400 text-xs font-semibold uppercase tracking-wider mb-3">
-              <Sparkles className="w-3.5 h-3.5" />
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 border border-indigo-500/30 text-xs font-semibold uppercase tracking-wider mb-3">
+              <Sparkles className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
               Two-Sided Mentorship Marketplace
             </div>
             <h1 className="text-3xl sm:text-4xl font-black text-foreground tracking-tight">
@@ -200,7 +200,7 @@ END:VCALENDAR`;
           </div>
 
           <div className="flex items-center gap-3">
-            <div className="px-4 py-3 rounded-2xl bg-card/80 border border-border backdrop-blur-md flex items-center gap-3">
+            <div className="px-4 py-3 rounded-2xl bg-card border border-border shadow-md flex items-center gap-3">
               <ShieldCheck className="w-6 h-6 text-emerald-700 dark:text-emerald-400" />
               <div>
                 <div className="text-xs font-bold text-foreground">Edulexa Payout Engine</div>
@@ -209,7 +209,7 @@ END:VCALENDAR`;
             </div>
             <Link
               href="/dashboard"
-              className="px-4 py-2.5 rounded-xl bg-card hover:bg-muted border border-border text-muted-foreground hover:text-white text-xs font-medium transition-colors"
+              className="px-4 py-2.5 rounded-xl bg-card hover:bg-muted border border-border text-foreground hover:border-border text-xs font-medium transition-colors"
             >
               Back to Member 360
             </Link>
@@ -313,9 +313,9 @@ END:VCALENDAR`;
               </h2>
 
               {/* Selected Mentor Capsule */}
-              <div className="p-3.5 rounded-xl bg-indigo-950/30 border border-indigo-500/20 flex items-center justify-between">
+              <div className="p-3.5 rounded-xl bg-indigo-500/10 border border-indigo-500/30 dark:bg-indigo-950/30 dark:border-indigo-500/20 flex items-center justify-between">
                 <div>
-                  <div className="text-[11px] text-indigo-700 dark:text-indigo-400 font-mono uppercase">Assigned Mentor</div>
+                  <div className="text-[11px] text-indigo-700 dark:text-indigo-400 font-mono uppercase font-semibold">Assigned Mentor</div>
                   <div className="text-sm font-bold text-foreground">{selectedMentor.name}</div>
                   <div className="text-xs text-muted-foreground">{selectedMentor.company}</div>
                 </div>
@@ -387,7 +387,7 @@ END:VCALENDAR`;
                     type="text"
                     value={candidateName}
                     onChange={(e) => setCandidateName(e.target.value)}
-                    className="w-full bg-background border border-border rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500"
+                    className="w-full bg-background border border-border rounded-xl px-3 py-2 text-xs text-foreground focus:outline-none focus:border-indigo-500"
                   />
                 </div>
                 <div className="space-y-1">
@@ -396,7 +396,7 @@ END:VCALENDAR`;
                     type="email"
                     value={candidateEmail}
                     onChange={(e) => setCandidateEmail(e.target.value)}
-                    className="w-full bg-background border border-border rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500"
+                    className="w-full bg-background border border-border rounded-xl px-3 py-2 text-xs text-foreground focus:outline-none focus:border-indigo-500"
                   />
                 </div>
               </div>
@@ -513,7 +513,7 @@ END:VCALENDAR`;
                 />
                 <button
                   onClick={copyMeetingLink}
-                  className="px-3 py-2 rounded-xl bg-muted hover:bg-slate-700 text-xs font-semibold text-foreground flex items-center gap-1.5 transition-colors"
+                  className="px-3 py-2 rounded-xl bg-muted hover:bg-muted/80 text-xs font-semibold text-foreground flex items-center gap-1.5 transition-colors border border-border"
                 >
                   <Copy className="w-3.5 h-3.5" />
                   <span>{copiedLink ? "Copied!" : "Copy"}</span>
