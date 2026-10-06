@@ -239,8 +239,12 @@ export default function OpenAIRealtimeInterviewRoom({
     try {
       const fullTranscript = transcripts.map((t) => `${t.role}: ${t.text}`).join("\n");
 
+      const generatedSessionId = typeof crypto !== "undefined" && typeof crypto.randomUUID === "function" 
+        ? crypto.randomUUID() 
+        : `a0000000-0000-0000-0000-${Date.now().toString(16).padStart(12, "0")}`;
+
       const payload = {
-        sessionId: "realtime-session-" + Date.now(),
+        sessionId: generatedSessionId,
         userId: userId || "11111111-2222-3333-4444-555555555555",
         transcript: fullTranscript,
       };

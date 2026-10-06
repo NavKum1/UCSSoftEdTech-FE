@@ -40,12 +40,89 @@ interface EvaluationResponse {
   scores: Record<string, number>;
   overview: string;
   recommendedFirstSprint: string;
+  recommendedSprintSlug?: string;
+  recommendedCandidateTrack?: string;
   actionPlan: string[];
   recommendedLanguages: string[];
 }
 
+const DEFAULT_COUNSELLING_QUESTIONS: CounsellingQuestion[] = [
+  {
+    id: 1,
+    title: "What engineering or business problem excites you the most?",
+    subtitle: "Choose the problem space you find naturally engaging and rewarding to solve.",
+    options: [
+      { text: "Designing ultra low-latency database queries & distributed caching systems", description: "Deep focus on locks, memory bounds, and concurrency.", targetTrack: "Distributed Backend & Systems", weight: 15 },
+      { text: "Automating zero-downtime deployment pipelines & multi-cloud resilience", description: "Focus on Kubernetes, CI/CD, and infrastructure-as-code.", targetTrack: "Cloud, DevOps & SRE", weight: 15 },
+      { text: "Uncovering security flaws, auditing authorization, & penetration defense", description: "Zero-trust mindset, cryptographic safeguards, and incident containment.", targetTrack: "Cybersecurity & Zero-Trust", weight: 15 },
+      { text: "Building delightful, high-performance web applications & micro-animations", description: "Focus on UI responsiveness, UX design systems, and client state.", targetTrack: "Modern Frontend & Web Architecture", weight: 15 },
+      { text: "Scaling vector databases, embedding pipelines, & real-time numerical processing", description: "Large-scale data infrastructure, RAG models, and tensor processing.", targetTrack: "Data Engineering & AI/MLOps", weight: 15 },
+      { text: "Defining product roadmaps, analyzing user telemetry, & prioritizing features", description: "Cross-functional leadership, customer empathy, and metric growth.", targetTrack: "Product Management & Strategy", weight: 15 }
+    ]
+  },
+  {
+    id: 2,
+    title: "How do you prefer spending a productive coding afternoon?",
+    subtitle: "Reflects your ideal day-to-day focus and state of flow.",
+    options: [
+      { text: "Deep in code, debugging concurrency locks and optimizing algorithmic performance", description: "Independent deep technical focus.", targetTrack: "Distributed Backend & Systems", weight: 10 },
+      { text: "Managing cloud environments, observability dashboards, and incident automation", description: "Dynamic infrastructure health and platform automation.", targetTrack: "Cloud, DevOps & SRE", weight: 10 },
+      { text: "Analyzing threat vectors, code-reviewing CVE vulnerabilities, and red-teaming", description: "Adversarial thinking and defensive architecture.", targetTrack: "Cybersecurity & Zero-Trust", weight: 10 },
+      { text: "Crafting interactive UI components and polishing visual detail in browsers", description: "Visual, creative, and technical blend.", targetTrack: "Modern Frontend & Web Architecture", weight: 10 },
+      { text: "Training models, optimizing pipeline throughput, and tuning feature vectors", description: "Scientific exploration paired with high-performance compute.", targetTrack: "Data Engineering & AI/MLOps", weight: 10 },
+      { text: "Collaborating across engineers, designers, and customers to solve pain points", description: "Strategic synthesis, communication, and roadmap decisions.", targetTrack: "Product Management & Strategy", weight: 10 }
+    ]
+  },
+  {
+    id: 3,
+    title: "Which type of intellectual puzzle brings you the greatest satisfaction?",
+    subtitle: "Understanding your intrinsic intellectual motivation.",
+    options: [
+      { text: "Love statistical modeling, linear algebra, vector embeddings, & tensor math", description: "Strong appetite for machine learning and heavy numerical processing.", targetTrack: "Data Engineering & AI/MLOps", weight: 15 },
+      { text: "Prefer applied systems engineering (APIs, transactions, database indexes, thread pools)", description: "Pragmatic application development over theoretical math.", targetTrack: "Distributed Backend & Systems", weight: 10 },
+      { text: "Prefer user-centric design, animations, CSS layouts, and DOM event flow", description: "Front-of-the-glass engineering with aesthetic polish.", targetTrack: "Modern Frontend & Web Architecture", weight: 10 },
+      { text: "Prefer infrastructure reliability, Linux kernel networking, and container runtimes", description: "Platform reliability, traffic steering, and OS systems.", targetTrack: "Cloud, DevOps & SRE", weight: 10 }
+    ]
+  },
+  {
+    id: 4,
+    title: "When a SEV-1 production outage strikes at 2 AM, what is your first instinct?",
+    subtitle: "Reveals your natural crisis response and systems intuition.",
+    options: [
+      { text: "Inspect distributed RPC traces, thread dumps, and database connection pools", description: "Pinpointing concurrency deadlocks and memory boundaries.", targetTrack: "Distributed Backend & Systems", weight: 15 },
+      { text: "Roll back the canary release, inspect Kubernetes ingress pods, and drain unhealthy nodes", description: "Restoring traffic flow and container health first.", targetTrack: "Cloud, DevOps & SRE", weight: 15 },
+      { text: "Verify breach indicators, audit edge reverse proxies, and check for rogue API tokens", description: "Containing security exposure and exfiltration risks.", targetTrack: "Cybersecurity & Zero-Trust", weight: 15 },
+      { text: "Triage user-facing blast radius, draft external status communications, and coordinate recovery", description: "Managing stakeholder transparency and impact mitigation.", targetTrack: "Product Management & Strategy", weight: 15 }
+    ]
+  },
+  {
+    id: 5,
+    title: "Which architectural trade-off do you find most natural to champion?",
+    subtitle: "Engineering is the art of trade-offs. Select the one you defend most passionately.",
+    options: [
+      { text: "Strict linearizability over availability (Rejecting writes rather than risking dirty reads)", description: "Data consistency is non-negotiable.", targetTrack: "Distributed Backend & Systems", weight: 12 },
+      { text: "Active-active multi-region redundancy despite higher cloud infrastructure costs", description: "Zero-downtime survivability is paramount.", targetTrack: "Cloud, DevOps & SRE", weight: 12 },
+      { text: "Strict zero-trust mutual TLS and signed tokens on every internal service hop", description: "Security must never be sacrificed for convenience.", targetTrack: "Cybersecurity & Zero-Trust", weight: 12 },
+      { text: "60 FPS rendering and sub-100ms First Contentful Paint on low-end devices", description: "User experience and accessibility define software quality.", targetTrack: "Modern Frontend & Web Architecture", weight: 12 },
+      { text: "Shipping an intuitive MVP fast with telemetry over building speculative perfection", description: "Market validation and user feedback trump theoretical purity.", targetTrack: "Product Management & Strategy", weight: 12 }
+    ]
+  },
+  {
+    id: 6,
+    title: "What is your ultimate 5-year Career North Star?",
+    subtitle: "The highest-leverage role where you envision creating transformative impact.",
+    options: [
+      { text: "Principal Distributed Systems Architect engineering million-RPS infrastructure", description: "Technical authority on scalable, fault-tolerant backends.", targetTrack: "Distributed Backend & Systems", weight: 15 },
+      { text: "VP of Infrastructure / SRE driving 99.999% global platform resilience", description: "Leading enterprise DevOps, cloud governance, and site reliability.", targetTrack: "Cloud, DevOps & SRE", weight: 15 },
+      { text: "Chief Information Security Officer (CISO) defending against advanced zero-day exploits", description: "Top authority on enterprise defense, threat modeling, and cryptography.", targetTrack: "Cybersecurity & Zero-Trust", weight: 15 },
+      { text: "Staff Design Technologist / Frontend Architect defining next-gen web UX", description: "Setting industry benchmarks for fluid, accessible web interactions.", targetTrack: "Modern Frontend & Web Architecture", weight: 15 },
+      { text: "Chief Product Officer (CPO) driving high-velocity product innovation & market scale", description: "Guiding multi-million-dollar product bets and user growth.", targetTrack: "Product Management & Strategy", weight: 15 }
+    ]
+  }
+];
+
 export default function CareerCounsellingQuizPage() {
-  const [questions, setQuestions] = useState<CounsellingQuestion[]>([]);
+  const [questions, setQuestions] = useState<CounsellingQuestion[]>(DEFAULT_COUNSELLING_QUESTIONS);
   const [currentStep, setCurrentStep] = useState<number>(0);
   const [selectedAnswers, setSelectedAnswers] = useState<Record<number, number>>({});
   const [loading, setLoading] = useState<boolean>(true);
@@ -55,6 +132,18 @@ export default function CareerCounsellingQuizPage() {
   const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
   useEffect(() => {
+    // Check for cached evaluation in localStorage
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("counselling_latest_evaluation");
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved);
+          if (parsed && parsed.primaryTrack) {
+            setResult(parsed);
+          }
+        } catch {}
+      }
+    }
     fetchQuestions();
   }, []);
 
@@ -64,10 +153,17 @@ export default function CareerCounsellingQuizPage() {
       const res = await fetch(`${apiBase}/api/quiz/counselling/questions`);
       if (res.ok) {
         const data = await res.json();
-        setQuestions(data);
+        if (Array.isArray(data) && data.length > 0) {
+          setQuestions(data);
+        } else {
+          setQuestions(DEFAULT_COUNSELLING_QUESTIONS);
+        }
+      } else {
+        setQuestions(DEFAULT_COUNSELLING_QUESTIONS);
       }
     } catch (err) {
-      console.error("Failed to fetch counselling questions:", err);
+      console.warn("Failed to fetch counselling questions, using verified defaults:", err);
+      setQuestions(DEFAULT_COUNSELLING_QUESTIONS);
     } finally {
       setLoading(false);
     }
@@ -107,6 +203,9 @@ export default function CareerCounsellingQuizPage() {
       if (res.ok) {
         const data = await res.json();
         setResult(data);
+        if (typeof window !== "undefined") {
+          localStorage.setItem("counselling_latest_evaluation", JSON.stringify(data));
+        }
       }
     } catch (err) {
       console.error("Failed to evaluate counselling:", err);
@@ -119,9 +218,12 @@ export default function CareerCounsellingQuizPage() {
     setSelectedAnswers({});
     setCurrentStep(0);
     setResult(null);
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("counselling_latest_evaluation");
+    }
   };
 
-  if (loading) {
+  if (loading && questions.length === 0) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center p-6 font-sans">
         <div className="w-12 h-12 rounded-full border-2 border-primary border-t-transparent animate-spin" />
@@ -239,10 +341,10 @@ export default function CareerCounsellingQuizPage() {
                 </p>
               </div>
               <Link
-                href="/sprint/distributed-database"
+                href={`/sprint/${result.recommendedSprintSlug || "distributed-database"}?track=${result.recommendedCandidateTrack || "Backend"}`}
                 className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-primary text-primary-foreground font-semibold text-xs hover:opacity-95 transition-opacity shrink-0"
               >
-                <span>Launch This Sprint</span>
+                <span>Launch Practical Kata ({result.recommendedCandidateTrack || "Backend"})</span>
                 <ArrowRight className="w-4 h-4" />
               </Link>
             </div>
@@ -255,9 +357,9 @@ export default function CareerCounsellingQuizPage() {
   // ----------------------------------------------------
   // QUESTION STEPS
   // ----------------------------------------------------
-  const q = questions[currentStep];
-  const progressPercent = Math.round(((currentStep + 1) / questions.length) * 100);
-  const isAnswered = selectedAnswers[q.id] !== undefined;
+  const q = questions[currentStep] || questions[0] || DEFAULT_COUNSELLING_QUESTIONS[0];
+  const progressPercent = questions.length > 0 ? Math.round(((currentStep + 1) / questions.length) * 100) : 0;
+  const isAnswered = q ? selectedAnswers[q.id] !== undefined : false;
 
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col font-sans">

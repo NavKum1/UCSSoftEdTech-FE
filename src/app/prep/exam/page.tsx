@@ -216,13 +216,29 @@ export default function WrittenExamPrepPage() {
   const startExam = async (examId: string) => {
     setExamLoading(true);
     setEvaluation(null);
-    setAnswers({});
     setCurrentQuestionIndex(0);
     try {
       const res = await fetch(`${apiBase}/api/quiz/exams/${examId}`);
       if (res.ok) {
         const data: ActiveExamDetail = await res.json();
         setActiveExam(data);
+
+        // Restore draft answers if available
+        if (typeof window !== "undefined") {
+          const saved = localStorage.getItem(`exam_draft_answers_${examId}`);
+          if (saved) {
+            try {
+              setAnswers(JSON.parse(saved));
+            } catch {
+              setAnswers({});
+            }
+          } else {
+            setAnswers({});
+          }
+        } else {
+          setAnswers({});
+        }
+
         setTimeLeftSeconds(data.durationMinutes * 60);
       }
     } catch (err) {
@@ -251,10 +267,16 @@ export default function WrittenExamPrepPage() {
   }, [activeExam, evaluation, timeLeftSeconds]);
 
   const handleSelectOption = (questionId: number, optionIndex: number) => {
-    setAnswers((prev) => ({
-      ...prev,
-      [questionId]: optionIndex,
-    }));
+    setAnswers((prev) => {
+      const next = {
+        ...prev,
+        [questionId]: optionIndex,
+      };
+      if (typeof window !== "undefined" && activeExam) {
+        localStorage.setItem(`exam_draft_answers_${activeExam.id}`, JSON.stringify(next));
+      }
+      return next;
+    });
   };
 
   const handleSubmitExam = async () => {
@@ -270,6 +292,9 @@ export default function WrittenExamPrepPage() {
       if (res.ok) {
         const resultData: ExamEvaluationResult = await res.json();
         setEvaluation(resultData);
+        if (typeof window !== "undefined") {
+          localStorage.removeItem(`exam_draft_answers_${activeExam.id}`);
+        }
         fetchHistory();
       }
     } catch (err) {

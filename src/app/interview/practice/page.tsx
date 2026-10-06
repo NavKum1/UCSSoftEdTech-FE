@@ -532,11 +532,46 @@ export default function MultiStreamInterviewPracticePage() {
     } catch (err: any) {
       console.warn("Real evaluation call fallback:", err);
       const candidateTurns = finalTranscripts.filter(t => t.role === "candidate").length;
-      const candidateWords = finalTranscripts
+      const candidateText = finalTranscripts
         .filter(t => t.role === "candidate")
-        .reduce((acc, t) => acc + t.text.split(/\s+/).filter(Boolean).length, 0);
+        .map(t => t.text.toLowerCase())
+        .join(" ");
 
-      const calculatedScore = candidateWords < 15 ? 12 : (candidateWords < 50 ? 35 : 55);
+      const candidateWords = candidateText.split(/\s+/).filter(Boolean).length;
+
+      // Semantic domain inspection
+      const hasConcurrency = /lock|mutex|semaphore|atomic|thread|goroutine|race condition/.test(candidateText);
+      const hasConsistency = /raft|paxos|quorum|cap|lease|consensus|lineariz/.test(candidateText);
+      const hasPerformance = /p99|cache|redis|index|throughput|latency|pool/.test(candidateText);
+      const hasResilience = /circuit breaker|backoff|retry|canary|failover|rollback/.test(candidateText);
+      const hasDeflection = /i don't know|no idea|not sure|can you hear me/.test(candidateText);
+
+      const pillarCount = [hasConcurrency, hasConsistency, hasPerformance, hasResilience].filter(Boolean).length;
+      let calculatedScore = 0;
+      if (candidateTurns === 0 || candidateWords < 10 || (hasDeflection && candidateWords < 30)) {
+        calculatedScore = 0;
+      } else if (pillarCount >= 3) {
+        calculatedScore = 88;
+      } else if (pillarCount >= 2) {
+        calculatedScore = 74;
+      } else if (pillarCount === 1) {
+        calculatedScore = 52;
+      } else {
+        calculatedScore = candidateWords >= 40 ? 30 : 15;
+      }
+
+      const strengths: string[] = [];
+      if (hasConcurrency) strengths.push("Articulated concurrency safety and lock boundaries.");
+      if (hasConsistency) strengths.push("Addressed distributed consensus models and consistency bounds.");
+      if (hasPerformance) strengths.push("Proactively addressed latency optimization and caching.");
+      if (hasResilience) strengths.push("Addressed automated rollbacks and fault isolation.");
+      if (strengths.length === 0 && calculatedScore > 40) strengths.push("Completed interview dialogue under pressure.");
+
+      const improvements: string[] = [];
+      if (!hasConcurrency) improvements.push("Address thread safety, race conditions, and lock contention.");
+      if (!hasConsistency) improvements.push("Detail distributed consensus (Raft/Paxos) and network partition trade-offs.");
+      if (!hasPerformance) improvements.push("Specify quantitative P99 latency SLAs and caching eviction policies.");
+      if (!hasResilience) improvements.push("Incorporate automated circuit breakers and canary rollback triggers.");
 
       setCompletedReport({
         jobTitle,
@@ -548,15 +583,12 @@ export default function MultiStreamInterviewPracticePage() {
         transcripts: finalTranscripts,
         dimensions: [
           { label: "Domain & Technical Competency", score: calculatedScore },
-          { label: "Communication & STAR Articulation", score: calculatedScore + 5 },
-          { label: "Handling Pushback & Trade-offs", score: calculatedScore - 5 },
+          { label: "Communication & STAR Articulation", score: Math.min(100, calculatedScore + (hasDeflection ? -15 : 5)) },
+          { label: "Handling Pushback & Trade-offs", score: Math.max(0, calculatedScore - 5) },
           { label: "Confidence & Executive Presence", score: calculatedScore },
         ],
-        strengths: calculatedScore > 50 ? ["Candidate completed interview session."] : [],
-        improvements: [
-          "Candidate responses lacked technical depth or direct answers to questions.",
-          "Ensure answers align with core system architecture and trade-off concepts."
-        ]
+        strengths,
+        improvements
       });
     } finally {
       setIsEvaluating(false);
