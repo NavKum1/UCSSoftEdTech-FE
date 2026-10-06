@@ -237,28 +237,12 @@ export default function OpenAIRealtimeInterviewRoom({
     setStatusMessage("Interview ended. Analyzing transcript for skill evaluation...");
 
     try {
-      const candidateWords = transcripts
-        .filter(t => t.role === "Candidate")
-        .reduce((acc, curr) => acc + curr.text.split(" ").length, 0);
-
-      let dynamicScore = 35.0;
-      let dynamicSkills = ["React Hooks", "System Architecture"];
-
-      if (candidateWords > 40) {
-        dynamicScore = 92.5;
-        dynamicSkills = [];
-      } else if (candidateWords > 15) {
-        dynamicScore = 68.0;
-        dynamicSkills = ["Advanced State Management", "System Architecture"];
-      }
+      const fullTranscript = transcripts.map((t) => `${t.role}: ${t.text}`).join("\n");
 
       const payload = {
         sessionId: "realtime-session-" + Date.now(),
         userId: userId || "11111111-2222-3333-4444-555555555555",
-        technicalScore: dynamicScore,
-        communicationScore: dynamicScore > 50 ? 85.0 : 45.0,
-        missingSkills: dynamicSkills,
-        transcript: transcripts.map((t) => `${t.role}: ${t.text}`).join("\n"),
+        transcript: fullTranscript,
       };
 
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/interview/webhook`, {
