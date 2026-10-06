@@ -24,6 +24,8 @@ import {
   Activity,
   Share2,
   RefreshCw,
+  BookOpen,
+  GraduationCap,
 } from "lucide-react";
 import { useGeo } from "@/context/GeoContext";
 
@@ -262,6 +264,63 @@ export default function Member360CommandCenterPage() {
 
       {/* Main Content Grid */}
       <div className="max-w-7xl mx-auto px-6 py-8 space-y-8">
+        {/* Practice, Written Exam & Counselling Hub */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <Link
+            href="/interview/practice"
+            className="p-5 rounded-2xl border border-border/80 bg-card/60 hover:bg-card hover:border-primary/40 transition-all duration-200 shadow-sm hover:shadow-md group flex items-start gap-4"
+          >
+            <div className="p-3 rounded-xl bg-primary/10 text-primary shrink-0 group-hover:scale-105 transition-transform">
+              <Sparkles className="w-5 h-5" />
+            </div>
+            <div className="space-y-1">
+              <div className="flex items-center gap-1.5 text-xs font-bold text-foreground group-hover:text-primary transition-colors">
+                <span>Multi-Stream AI Voice Studio</span>
+                <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+              </div>
+              <p className="text-[11px] text-muted-foreground leading-relaxed">
+                Practice live conversational interviews for Tech, HR, Product, Sales, and Finance roles.
+              </p>
+            </div>
+          </Link>
+
+          <Link
+            href="/prep/exam"
+            className="p-5 rounded-2xl border border-border/80 bg-card/60 hover:bg-card hover:border-primary/40 transition-all duration-200 shadow-sm hover:shadow-md group flex items-start gap-4"
+          >
+            <div className="p-3 rounded-xl bg-indigo-500/10 text-indigo-500 shrink-0 group-hover:scale-105 transition-transform">
+              <GraduationCap className="w-5 h-5" />
+            </div>
+            <div className="space-y-1">
+              <div className="flex items-center gap-1.5 text-xs font-bold text-foreground group-hover:text-primary transition-colors">
+                <span>Written Exams &amp; Practice Sets</span>
+                <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+              </div>
+              <p className="text-[11px] text-muted-foreground leading-relaxed">
+                Timed diagnostic papers with automated instant grading, percentile rank, and explanations.
+              </p>
+            </div>
+          </Link>
+
+          <Link
+            href="/prep/counselling"
+            className="p-5 rounded-2xl border border-border/80 bg-card/60 hover:bg-card hover:border-primary/40 transition-all duration-200 shadow-sm hover:shadow-md group flex items-start gap-4"
+          >
+            <div className="p-3 rounded-xl bg-emerald-500/10 text-emerald-500 shrink-0 group-hover:scale-105 transition-transform">
+              <Compass className="w-5 h-5" />
+            </div>
+            <div className="space-y-1">
+              <div className="flex items-center gap-1.5 text-xs font-bold text-foreground group-hover:text-primary transition-colors">
+                <span>Career Counselling Diagnostic</span>
+                <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+              </div>
+              <p className="text-[11px] text-muted-foreground leading-relaxed">
+                Answer aptitude questions to diagnose your optimal enterprise track and 90-day action plan.
+              </p>
+            </div>
+          </Link>
+        </div>
+
         {/* 2. Top Banner: Actionable Daily Habit Rituals Matrix */}
         <div className="p-6 rounded-3xl bg-card/60 border border-border/80 shadow-2xl backdrop-blur-xl">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">

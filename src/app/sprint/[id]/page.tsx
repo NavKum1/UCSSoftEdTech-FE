@@ -25,7 +25,7 @@ import { useTheme } from "next-themes";
 import I18nProvider from "@/components/I18nProvider";
 import { useTranslations } from "next-intl";
 
-export type CandidateTrack =
+type CandidateTrack =
   | "DevOps"
   | "Backend"
   | "Frontend"
@@ -35,6 +35,335 @@ export type CandidateTrack =
   | "Mobile"
   | "CloudFinOps"
   | "DatabaseRE";
+
+const TRACK_LANGUAGES: Record<CandidateTrack, { defaultLang: string; options: string[] }> = {
+  DevOps: {
+    defaultLang: "Go",
+    options: ["Go", "Python", "Bash", "Terraform (HCL)"],
+  },
+  Backend: {
+    defaultLang: "Python",
+    options: ["Python", "Go", "C#", "Java", "Rust", "C++", "TypeScript (Node)"],
+  },
+  Frontend: {
+    defaultLang: "React (TSX)",
+    options: ["React (TSX)", "TypeScript", "Next.js", "Vue.js", "JavaScript"],
+  },
+  FullStack: {
+    defaultLang: "TypeScript (Next.js)",
+    options: ["TypeScript (Next.js)", "Python (FastAPI)", "Go", "C# (.NET)"],
+  },
+  DataMLOps: {
+    defaultLang: "Python",
+    options: ["Python", "SQL", "Scala", "C++"],
+  },
+  Cybersecurity: {
+    defaultLang: "Python",
+    options: ["Python", "Go", "C / C++", "Rust", "Bash"],
+  },
+  Mobile: {
+    defaultLang: "React Native (TSX)",
+    options: ["React Native (TSX)", "Kotlin (Android)", "Swift (iOS)", "Flutter (Dart)"],
+  },
+  CloudFinOps: {
+    defaultLang: "Python",
+    options: ["Python", "Terraform (HCL)", "Go", "Bash"],
+  },
+  DatabaseRE: {
+    defaultLang: "SQL",
+    options: ["SQL", "Go", "Python", "Rust", "C++"],
+  },
+};
+
+function getSnippetForTrackAndLanguage(
+  track: CandidateTrack,
+  tier: "Bronze (Junior)" | "Diamond (Staff)",
+  lang: string
+): { task: string; code: string } {
+  const isDiamond = tier === "Diamond (Staff)";
+
+  switch (track) {
+    case "DevOps":
+      if (isDiamond) {
+        const task = "Task (Diamond DevOps): Implement a zero-downtime Blue/Green canary deployment controller with automated rollback on p99 latency threshold breach (>250ms).";
+        if (lang === "Go") {
+          return {
+            task,
+            code: `package main\n\nimport (\n    "context"\n    "fmt"\n    "time"\n)\n\ntype CanaryController struct {\n    RolloutStepsPct []int\n    LatencyLimitMs  int\n}\n\nfunc (c *CanaryController) ShiftTraffic(ctx context.Context, version string) error {\n    // TODO: Implement progressive weight shifting and automated abort on p99 latency spike\n    fmt.Printf("Deploying Canary %s...\\n", version)\n    return nil\n}\n\nfunc main() {\n    controller := &CanaryController{RolloutStepsPct: []int{5, 25, 50, 100}, LatencyLimitMs: 250}\n    _ = controller.ShiftTraffic(context.Background(), "v2.5.0")\n}`
+          };
+        } else if (lang === "Bash") {
+          return {
+            task,
+            code: `#!/usr/bin/env bash\n# Diamond DevOps: Canary rollout with threshold monitor\nTARGET_VERSION="v2.5.0"\nLATENCY_LIMIT_MS=250\n\nfunction check_p99_latency() {\n  echo 180\n}\n\nfor weight in 5 25 50 100; do\n  echo "Shifting $weight% traffic to $TARGET_VERSION..."\n  latency=$(check_p99_latency)\n  if [ "$latency" -gt "$LATENCY_LIMIT_MS" ]; then\n    echo "CRITICAL: Latency breached ($latency ms). Initiating automated rollback!"\n    exit 1\n  fi\ndone\necho "Canary promotion complete."`
+          };
+        } else if (lang === "Terraform (HCL)") {
+          return {
+            task,
+            code: `# Diamond DevOps: Zero-downtime weighted target group routing\nresource "aws_lb_listener_rule" "canary_routing" {\n  listener_arn = var.alb_listener_arn\n  priority     = 100\n\n  action {\n    type = "forward"\n    forward {\n      target_group {\n        arn    = var.production_target_group_arn\n        weight = 80\n      }\n      target_group {\n        arn    = var.canary_target_group_arn\n        weight = 20\n      }\n    }\n  }\n\n  condition {\n    path_pattern {\n      values = ["/api/v2/*"]\n    }\n  }\n}`
+          };
+        } else {
+          return {
+            task,
+            code: `class CanaryController:\n    """Zero-downtime progressive canary deployment controller."""\n    def __init__(self, latency_limit_ms: int = 250):\n        self.latency_limit_ms = latency_limit_ms\n\n    def shift_traffic(self, version: str):\n        # TODO: Implement step-wise traffic shift & rollback on latency breach\n        print(f"Deploying Canary {version}...")\n\nif __name__ == '__main__':\n    controller = CanaryController()\n    controller.shift_traffic("v2.5.0")`
+          };
+        }
+      } else {
+        const task = "Task (Bronze DevOps): Fix the unhandled container crash loop and healthcheck probe failure in this microservice deployment script.";
+        if (lang === "Bash") {
+          return {
+            task,
+            code: `#!/usr/bin/env bash\nENDPOINT="http://localhost:8080/healthz"\n\nstatus=$(curl -s -o /dev/null -w "%{http_code}" "$ENDPOINT" || echo "000")\nif [ "$status" -eq 200 ]; then\n  echo "Healthy"\n  exit 0\nelse\n  echo "Probe failed with status $status"\n  exit 1\nfi`
+          };
+        } else if (lang === "Go") {
+          return {
+            task,
+            code: `package main\n\nimport (\n    "net/http"\n    "time"\n    "fmt"\n)\n\nfunc checkHealth(url string) bool {\n    client := http.Client{Timeout: 2 * time.Second}\n    resp, err := client.Get(url)\n    if err != nil {\n        return false\n    }\n    defer resp.Body.Close()\n    return resp.StatusCode == http.StatusOK\n}\n\nfunc main() {\n    fmt.Println("Health:", checkHealth("http://localhost:8080/healthz"))\n}`
+          };
+        } else {
+          return {
+            task,
+            code: `import urllib.request\n\ndef check_service_health():\n    # TODO: Add socket timeout and connection retry with backoff\n    try:\n        res = urllib.request.urlopen("http://localhost:8080/healthz", timeout=2)\n        return res.status == 200\n    except Exception as e:\n        print(f"Healthcheck failed: {e}")\n        return False\n\nif __name__ == '__main__':\n    print("Healthy:", check_service_health())`
+          };
+        }
+      }
+
+    case "Frontend":
+      if (isDiamond) {
+        const task = "Task (Diamond Frontend): Implement a custom virtualized rendering engine for a high-frequency trading canvas chart to avoid DOM repaint bottlenecks.";
+        if (lang === "Vue.js") {
+          return {
+            task,
+            code: `<template>\n  <div class="p-4 bg-slate-900 text-white rounded-xl">\n    <h3>Orderflow Engine (Vue 3)</h3>\n    <canvas ref="canvasEl" width="800" height="400" class="w-full bg-black rounded" />\n  </div>\n</template>\n\n<script setup lang="ts">\nimport { ref } from 'vue';\nconst canvasEl = ref<HTMLCanvasElement | null>(null);\n// TODO: Implement batch-rendering to bypass DOM repaint limits\n</script>`
+          };
+        } else if (lang === "TypeScript") {
+          return {
+            task,
+            code: `export class HighFrequencyChartVirtualizer {\n  private canvas: HTMLCanvasElement;\n  private buffer: Array<{ price: number; volume: number }> = [];\n\n  constructor(canvas: HTMLCanvasElement) {\n    this.canvas = canvas;\n  }\n\n  public ingestTick(price: number, volume: number): void {\n    // TODO: Ring-buffer aggregation and requestAnimationFrame scheduling\n  }\n}`
+          };
+        } else {
+          return {
+            task,
+            code: `import React, { useRef, useEffect } from 'react';\n\n// Staff Frontend: High-performance canvas chart virtualization\nexport default function TradingChart({ ticker = "BTC/USDT" }) {\n  const canvasRef = useRef<HTMLCanvasElement | null>(null);\n\n  useEffect(() => {\n    // TODO: Implement batch-rendering to bypass DOM repaint limits\n  }, [ticker]);\n\n  return (\n    <div className="p-4 bg-slate-900 text-white rounded-xl">\n      <h3 className="font-bold text-sm">Realtime Orderflow: {ticker}</h3>\n      <canvas ref={canvasRef} width={800} height={400} className="w-full mt-2 bg-black rounded-lg" />\n    </div>\n  );\n}`
+          };
+        }
+      } else {
+        const task = "Task (Bronze Frontend): Create an accessible responsive button component with hover states and loading spinner using Tailwind CSS.";
+        return {
+          task,
+          code: `import React from 'react';\n\ninterface ButtonProps {\n  label: string;\n  isLoading?: boolean;\n  onClick?: () => void;\n}\n\nexport default function ActionButton({ label, isLoading, onClick }: ButtonProps) {\n  return (\n    <button\n      onClick={onClick}\n      disabled={isLoading}\n      className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-semibold transition-all shadow-md active:scale-95 disabled:opacity-50"\n    >\n      {isLoading ? "Processing..." : label}\n    </button>\n  );\n}`
+        };
+      }
+
+    case "Mobile":
+      if (isDiamond) {
+        const task = "Task (Diamond Mobile): Implement an offline-first SQLite sync manager with vector clock conflict resolution and exponential backoff retry.";
+        if (lang === "Kotlin (Android)") {
+          return {
+            task,
+            code: `package com.edulexa.mobile\n\ndata class SyncMutation(val id: String, val table: String, val clock: Map<String, Long>, val payloadJson: String)\n\nclass OfflineSyncManager {\n    private val queue = mutableListOf<SyncMutation>()\n\n    fun enqueue(mutation: SyncMutation) {\n        // TODO: Store in Room database & schedule WorkManager sync\n    }\n\n    fun resolveConflict(local: SyncMutation, remote: SyncMutation): SyncMutation {\n        // TODO: Vector clock conflict resolution\n        return remote\n    }\n}`
+          };
+        } else if (lang === "Swift (iOS)") {
+          return {
+            task,
+            code: `import Foundation\n\nstruct SyncMutation: Codable {\n    let id: UUID\n    let table: String\n    let vectorClock: [String: Int]\n    let payload: String\n}\n\nclass OfflineSyncManager: ObservableObject {\n    @Published var queue: [SyncMutation] = []\n\n    func queueMutation(_ mutation: SyncMutation) async {\n        // TODO: Persist mutation locally and trigger background URLSession sync\n    }\n}`
+          };
+        } else if (lang === "Flutter (Dart)") {
+          return {
+            task,
+            code: `class SyncMutation {\n  final String id;\n  final String table;\n  final Map<String, int> vectorClock;\n  final dynamic payload;\n\n  SyncMutation({required this.id, required this.table, required this.vectorClock, required this.payload});\n}\n\nclass OfflineSyncService {\n  Future<void> enqueue(SyncMutation mutation) async {\n    // TODO: Write to Hive/Isar and schedule sync\n  }\n}`
+          };
+        } else {
+          return {
+            task,
+            code: `export interface SyncMutation {\n  id: string;\n  table: string;\n  vectorClock: Record<string, number>;\n  payload: any;\n}\n\nexport class OfflineSyncManager {\n  private queue: SyncMutation[] = [];\n\n  async queueMutation(mutation: SyncMutation): Promise<void> {\n    // TODO: Persist mutation locally and trigger exponential backoff sync\n  }\n\n  async resolveConflict(local: SyncMutation, remote: SyncMutation): Promise<SyncMutation> {\n    // TODO: Vector clock conflict resolution\n    return remote;\n  }\n}`
+          };
+        }
+      } else {
+        const task = "Task (Bronze Mobile): Fix the unbounded list re-rendering performance bottleneck by implementing memoized row keys.";
+        return {
+          task,
+          code: `import React from 'react';\n\nexport default function ChatList({ messages }: { messages: Array<{ id: string; text: string }> }) {\n  // TODO: Fix missing key warning and unnecessary re-renders\n  return (\n    <div>\n      {messages.map((m, index) => (\n        <div key={index}>{m.text}</div>\n      ))}\n    </div>\n  );\n}`
+        };
+      }
+
+    case "DatabaseRE":
+      if (isDiamond) {
+        const task = "Task (Diamond DatabaseRE): Implement a distributed leasing lock manager with lease expiration heartbeat renewal and deadlock detection.";
+        if (lang === "SQL") {
+          return {
+            task: "Task (Diamond DatabaseRE): Write a distributed multi-tenant partition migration procedure with advisory locks to prevent write-starvation.",
+            code: `-- Staff DatabaseRE: Non-blocking partition swap with advisory lock\nCREATE OR REPLACE PROCEDURE migrate_tenant_partition(\n    p_tenant_id UUID,\n    p_target_tablespace TEXT\n)\nLANGUAGE plpgsql AS $$\nDECLARE\n    v_lock_obtained BOOLEAN;\nBEGIN\n    -- TODO: Acquire session-level advisory lock\n    -- Perform ALTER TABLE DETACH PARTITION CONCURRENTLY\nEND;\n$$;`
+          };
+        } else if (lang === "Go") {
+          return {
+            task,
+            code: `package main\n\nimport (\n    "context"\n    "sync"\n    "time"\n)\n\ntype DistributedLock struct {\n    OwnerID   string\n    ExpiresAt time.Time\n}\n\ntype LockManager struct {\n    mu    sync.Mutex\n    locks map[string]DistributedLock\n}\n\nfunc (lm *LockManager) TryAcquire(ctx context.Context, key, owner string, ttl time.Duration) bool {\n    lm.mu.Lock()\n    defer lm.mu.Unlock()\n    // TODO: Atomic lease verification\n    return true\n}\n\nfunc main() {}`
+          };
+        } else {
+          return {
+            task,
+            code: `import time\nimport threading\n\nclass DistributedLockManager:\n    """Raft-compatible distributed lease lock manager with automatic heartbeat renewal."""\n    def __init__(self, lease_ttl_ms: int = 5000):\n        self.lease_ttl_ms = lease_ttl_ms\n        self._locks = {}\n        self._mutex = threading.Lock()\n\n    def acquire_lock(self, resource_key: str, owner_id: str) -> bool:\n        with self._mutex:\n            now = time.time() * 1000\n            if resource_key not in self._locks or self._locks[resource_key]['expires_at'] < now:\n                self._locks[resource_key] = {'owner': owner_id, 'expires_at': now + self.lease_ttl_ms}\n                return True\n            return False\n\nif __name__ == '__main__':\n    dlm = DistributedLockManager()\n    print("Database Reliability Lock Manager operational.")`
+          };
+        }
+      } else {
+        const task = "Task (Bronze DatabaseRE): Fix the missing composite database index and resolve an N+1 query problem in this query builder.";
+        if (lang === "SQL") {
+          return {
+            task,
+            code: `-- Fix the sequential table scan on high-cardinality orders table\n-- Query: SELECT * FROM orders WHERE tenant_id = '...' AND created_at > '...' ORDER BY created_at DESC;\n\n-- TODO: Add optimal composite B-Tree index\nCREATE INDEX CONCURRENTLY idx_orders_tenant_created ON orders (tenant_id, created_at DESC);`
+          };
+        } else {
+          return {
+            task,
+            code: `def fetch_users_with_recent_orders():\n    # TODO: Eliminate N+1 loop by using single JOIN or batch IN query\n    users = [{"id": 1, "name": "Alice"}, {"id": 2, "name": "Bob"}]\n    results = []\n    for u in users:\n        # Simulated slow query for each user\n        results.append({"user": u, "orders": []})\n    return results\n\nif __name__ == '__main__':\n    print(fetch_users_with_recent_orders())`
+          };
+        }
+      }
+
+    case "DataMLOps":
+      if (isDiamond) {
+        const task = "Task (Diamond DataMLOps): Implement an in-memory streaming feature store with sliding-window aggregations and vector embedding cache eviction.";
+        if (lang === "SQL") {
+          return {
+            task: "Task (Diamond DataMLOps): Write an incremental rolling window feature aggregation query for real-time fraud scoring.",
+            code: `SELECT\n    user_id,\n    transaction_time,\n    amount,\n    AVG(amount) OVER (\n        PARTITION BY user_id\n        ORDER BY transaction_time\n        RANGE BETWEEN INTERVAL '1 hour' PRECEDING AND CURRENT ROW\n    ) AS avg_amount_1h,\n    COUNT(*) OVER (\n        PARTITION BY user_id\n        ORDER BY transaction_time\n        RANGE BETWEEN INTERVAL '5 minutes' PRECEDING AND CURRENT ROW\n    ) AS velocity_count_5m\nFROM transaction_stream;`
+          };
+        } else {
+          return {
+            task,
+            code: `from collections import deque\nimport time\n\nclass StreamingFeatureStore:\n    """High-throughput sliding-window feature aggregation store."""\n    def __init__(self, window_seconds: int = 300):\n        self.window_seconds = window_seconds\n        self.events = deque()\n\n    def record_event(self, entity_id: str, feature_value: float):\n        # TODO: Append timestamped record & evict expired events outside sliding window\n        pass\n\n    def get_sliding_average(self, entity_id: str) -> float:\n        # TODO: Compute real-time sliding average for feature inference\n        return 0.0\n\nif __name__ == '__main__':\n    store = StreamingFeatureStore(window_seconds=60)\n    print("Feature store initialized.")`
+          };
+        }
+      } else {
+        const task = "Task (Bronze DataMLOps): Fix the missing null-check and NaN division error in this feature scaling transformer.";
+        return {
+          task,
+          code: `def min_max_scaler(values: list[float]) -> list[float]:\n    # TODO: Fix division by zero when min == max and handle None values\n    valid = [v for v in values if v is not None]\n    min_v, max_v = min(valid), max(valid)\n    return [(v - min_v) / (max_v - min_v) for v in valid]\n\nif __name__ == '__main__':\n    data = [10.0, 20.0, None, 50.0]\n    print(min_max_scaler(data))`
+        };
+      }
+
+    case "FullStack":
+      if (isDiamond) {
+        const task = "Task (Diamond FullStack): Build an optimistic UI order-book stream with an idempotent server-action state reconciler handling race conditions.";
+        if (lang === "Python (FastAPI)") {
+          return {
+            task,
+            code: `from fastapi import FastAPI, Header, HTTPException\nfrom pydantic import BaseModel\n\napp = FastAPI()\nprocessed_idempotency_keys = set()\n\nclass OrderRequest(BaseModel):\n    symbol: str\n    quantity: int\n\n@app.post("/orders")\nasync def place_order(order: OrderRequest, x_idempotency_key: str = Header(None)):\n    if not x_idempotency_key:\n        raise HTTPException(status_code=400, detail="Missing idempotency key")\n    if x_idempotency_key in processed_idempotency_keys:\n        return {"status": "already_processed"}\n    processed_idempotency_keys.add(x_idempotency_key)\n    return {"status": "created", "order": order}`
+          };
+        } else {
+          return {
+            task,
+            code: `import React, { useState, useOptimistic } from 'react';\n\ninterface Order { id: string; symbol: string; qty: number; status: 'pending' | 'settled'; }\n\nexport default function OrderStream() {\n  const [orders, setOrders] = useState<Order[]>([]);\n  // TODO: Implement optimistic state mutation and rollback on server error\n  const handlePlaceOrder = async (symbol: string, qty: number) => {\n    // 1. Optimistic insert\n    // 2. Async server action RPC with idempotency key\n  };\n\n  return (\n    <div className="p-6 space-y-4">\n      <h2 className="text-base font-bold">FullStack Optimistic Order Reconciler</h2>\n    </div>\n  );\n}`
+          };
+        }
+      } else {
+        const task = "Task (Bronze FullStack): Fix the unvalidated form input submission and handle the pending server state.";
+        return {
+          task,
+          code: `import React, { useState } from 'react';\n\nexport default function ContactForm() {\n  const [email, setEmail] = useState('');\n  const [error, setError] = useState('');\n\n  const handleSubmit = (e: React.FormEvent) => {\n    e.preventDefault();\n    // TODO: Add email validation and error feedback\n  };\n\n  return (\n    <form onSubmit={handleSubmit} className="p-4 space-y-2">\n      <input value={email} onChange={e => setEmail(e.target.value)} placeholder="name@company.com" className="border p-2 rounded" />\n      <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded">Submit</button>\n    </form>\n  );\n}`
+        };
+      }
+
+    case "CloudFinOps":
+      if (isDiamond) {
+        const task = "Task (Diamond CloudFinOps): Build an automated multi-region compute rightsizer that monitors P95 CPU/memory metrics and reclaims idle clusters.";
+        if (lang === "Terraform (HCL)") {
+          return {
+            task: "Task (Diamond CloudFinOps): Write an auto-scaling target tracking policy with predictive scaling for off-peak cost reduction.",
+            code: `resource "aws_autoscaling_policy" "cost_optimized_cpu" {\n  name                   = "target-tracking-cpu50"\n  autoscaling_group_name = var.asg_name\n  policy_type            = "TargetTrackingScaling"\n\n  target_tracking_configuration {\n    predefined_metric_specification {\n      predefined_metric_type = "ASGAverageCPUUtilization"\n    }\n    target_value = 50.0\n  }\n}`
+          };
+        } else {
+          return {
+            task,
+            code: `class CloudCostGovernor:\n    """Automated compute rightsizing and idle resource reclamation daemon."""\n    def __init__(self, idle_cpu_threshold_pct: float = 5.0, idle_duration_hours: int = 24):\n        self.idle_cpu_threshold = idle_cpu_threshold_pct\n        self.idle_duration_hours = idle_duration_hours\n\n    def evaluate_fleet(self, instances: list[dict]) -> list[dict]:\n        # TODO: Return action plan: Downsize, Terminate, or Retain based on p95 metrics\n        return []\n\nif __name__ == '__main__':\n    governor = CloudCostGovernor()\n    print("FinOps Governor operational.")`
+          };
+        }
+      } else {
+        const task = "Task (Bronze CloudFinOps): Validate mandatory cloud cost allocation tags (Owner, CostCenter, Environment) and flag untagged resources.";
+        return {
+          task,
+          code: `REQUIRED_TAGS = {"Owner", "CostCenter", "Environment"}\n\ndef validate_resource_tags(resource: dict) -> list[str]:\n    # TODO: Check tags and return list of missing mandatory tags\n    tags = set(resource.get("Tags", {}).keys())\n    return list(REQUIRED_TAGS - tags)\n\nif __name__ == '__main__':\n    sample = {"Id": "i-098abc", "Tags": {"Owner": "eng-team"}}\n    print("Missing tags:", validate_resource_tags(sample))`
+        };
+      }
+
+    case "Cybersecurity":
+      if (isDiamond) {
+        const task = "Task (Diamond Cybersecurity): Implement a cryptographic token replay protection engine with sliding nonce validation and constant-time signature verification.";
+        if (lang === "Go") {
+          return {
+            task,
+            code: `package main\n\nimport (\n    "crypto/hmac"\n    "crypto/sha256"\n    "sync"\n    "time"\n)\n\ntype TokenValidator struct {\n    secretKey  []byte\n    mu         sync.Mutex\n    seenNonces map[string]time.Time\n}\n\nfunc (tv *TokenValidator) Verify(payload, nonce, sig []byte) bool {\n    // TODO: Constant-time HMAC comparison and nonce replay protection\n    return hmac.Equal([]byte("expected"), sig)\n}\n\nfunc main() {}`
+          };
+        } else {
+          return {
+            task,
+            code: `import hmac\nimport hashlib\nimport time\n\nclass TokenValidator:\n    """Zero-trust constant-time token verification with nonce replay protection."""\n    def __init__(self, secret_key: bytes, nonce_ttl_sec: int = 60):\n        self.secret_key = secret_key\n        self.nonce_ttl_sec = nonce_ttl_sec\n        self.seen_nonces = {}\n\n    def verify_request(self, payload: str, nonce: str, signature: str) -> bool:\n        # TODO: 1. Check nonce freshness & replay\n        # TODO: 2. Constant-time HMAC comparison to prevent timing attacks\n        return True\n\nif __name__ == '__main__':\n    validator = TokenValidator(secret_key=b"enterprise_secret_key_2026")\n    print("Cybersecurity token validator ready.")`
+          };
+        }
+      } else {
+        const task = "Task (Bronze Cybersecurity): Fix the vulnerable regex pattern and sanitize untrusted HTML input against Cross-Site Scripting (XSS).";
+        return {
+          task,
+          code: `import html\n\ndef sanitize_comment(user_input: str) -> str:\n    # TODO: Properly escape HTML entities to prevent stored XSS attacks\n    return user_input.replace("<script>", "")\n\nif __name__ == '__main__':\n    payload = "<img src=x onerror=alert(1)>"\n    print("Sanitized:", sanitize_comment(payload))`
+        };
+      }
+
+    case "Backend":
+    default:
+      if (isDiamond) {
+        const task = "Task (Diamond Backend): Implement an idempotent payment queue processor capable of handling 10k messages/sec without deadlocks.";
+        if (lang === "Go") {
+          return {
+            task,
+            code: `package main\n\nimport "fmt"\n\nfunc main() {\n    // Staff-level payment queue processor\n    fmt.Println("Processing 10k msgs/sec idempotent queue...")\n}`
+          };
+        } else if (lang === "C#") {
+          return {
+            task,
+            code: `using System;\n\npublic class PaymentProcessor {\n    public void ProcessQueue() {\n        // Staff-level payment queue processor\n    }\n}`
+          };
+        } else if (lang === "Java") {
+          return {
+            task,
+            code: `public class Main {\n    public static void main(String[] args) {\n        // Staff-level payment queue processor\n    }\n}`
+          };
+        } else if (lang === "Rust") {
+          return {
+            task,
+            code: `fn main() {\n    // Staff-level payment queue processor\n}`
+          };
+        } else if (lang === "C++") {
+          return {
+            task,
+            code: `#include <iostream>\n\nint main() {\n    // Staff-level payment queue processor\n    return 0;\n}`
+          };
+        } else {
+          return {
+            task,
+            code: `def main():\n    # Staff-level payment queue processor\n    pass\n\nif __name__ == '__main__':\n    main()`
+          };
+        }
+      } else {
+        const task = "Task (Bronze Backend): Fix the SQL syntax error and SQL injection vulnerability in this basic payment script.";
+        if (lang === "Go") {
+          return {
+            task,
+            code: `package main\n\nimport "fmt"\n\nfunc main() {\n    amount := "250.00"\n    // TODO: Fix injection\n    query := fmt.Sprintf("INSERT INTO Payments (Amount) VALUES (%s)", amount)\n}`
+          };
+        } else if (lang === "C#") {
+          return {
+            task,
+            code: `using System;\n\npublic class PaymentProcessor {\n    public void ProcessQueue() {\n        string amount = "250.00";\n        // TODO: Fix injection\n        string query = $"INSERT INTO Payments (Amount) VALUES ({amount})";\n    }\n}`
+          };
+        } else {
+          return {
+            task,
+            code: `def main():\n    # Basic SQL fix\n    amount = 250.00\n    # TODO: Fix the SQL injection vulnerability below\n    query = f"INSERT INTO Payments (Amount) VALUES ({amount})"\n    print("Processing...")\n\nif __name__ == '__main__':\n    main()`
+          };
+        }
+      }
+  }
+}
 
 function SprintWorkspaceInner() {
   const params = useParams();
@@ -82,138 +411,18 @@ function SprintWorkspaceInner() {
     return `CHLG-${cleanSlug}`;
   }, [sprintId]);
 
+  const handleTrackChange = (newTrack: CandidateTrack) => {
+    setCandidateTrack(newTrack);
+    const config = TRACK_LANGUAGES[newTrack];
+    if (!config.options.includes(language)) {
+      setLanguage(config.defaultLang);
+    }
+  };
+
   useEffect(() => {
-    // 1. FRONTEND TRACK
-    if (candidateTrack === "Frontend") {
-      if (language !== "React / TSX") setLanguage("React / TSX");
-      if (difficultyTier === "Diamond (Staff)") {
-        setTaskDescription("Task (Diamond Frontend): Implement a custom React reconciler and virtualization engine for a high-frequency trading canvas chart.");
-        setCodePayload(`import React, { useRef, useEffect } from 'react';\n\n// Staff Frontend: High-performance canvas chart virtualization\nexport default function TradingChart({ ticker = "BTC/USDT" }) {\n  const canvasRef = useRef<HTMLCanvasElement | null>(null);\n\n  useEffect(() => {\n    // TODO: Implement batch-rendering to bypass DOM repaint limits\n  }, [ticker]);\n\n  return (\n    <div className="p-4 bg-slate-900 text-white rounded-xl">\n      <h3 className="font-bold text-sm">Realtime Orderflow: {ticker}</h3>\n      <canvas ref={canvasRef} width={800} height={400} className="w-full mt-2 bg-black rounded-lg" />\n    </div>\n  );\n}`);
-      } else {
-        setTaskDescription("Task (Bronze Frontend): Create an accessible responsive button component with hover states and loading spinner using Tailwind CSS.");
-        setCodePayload(`import React from 'react';\n\ninterface ButtonProps {\n  label: string;\n  isLoading?: boolean;\n  onClick?: () => void;\n}\n\nexport default function ActionButton({ label, isLoading, onClick }: ButtonProps) {\n  return (\n    <button\n      onClick={onClick}\n      disabled={isLoading}\n      className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-semibold transition-all shadow-md active:scale-95 disabled:opacity-50"\n    >\n      {isLoading ? "Processing..." : label}\n    </button>\n  );\n}`);
-      }
-    }
-    // 2. FULLSTACK TRACK
-    else if (candidateTrack === "FullStack") {
-      if (difficultyTier === "Diamond (Staff)") {
-        setTaskDescription("Task (Diamond FullStack): Build an optimistic UI order-book stream with an idempotent server-action state reconciler handling race conditions.");
-        setCodePayload(`import React, { useState, useOptimistic } from 'react';\n\ninterface Order { id: string; symbol: string; qty: number; status: 'pending' | 'settled'; }\n\nexport default function OrderStream() {\n  const [orders, setOrders] = useState<Order[]>([]);\n  // TODO: Implement optimistic state mutation and rollback on server error\n  const handlePlaceOrder = async (symbol: string, qty: number) => {\n    // 1. Optimistic insert\n    // 2. Async server action RPC with idempotency key\n  };\n\n  return (\n    <div className="p-6 space-y-4">\n      <h2 className="text-base font-bold">FullStack Optimistic Order Reconciler</h2>\n    </div>\n  );\n}`);
-      } else {
-        setTaskDescription("Task (Bronze FullStack): Fix the unvalidated form input submission and handle the pending server state.");
-        setCodePayload(`import React, { useState } from 'react';\n\nexport default function ContactForm() {\n  const [email, setEmail] = useState('');\n  const [error, setError] = useState('');\n\n  const handleSubmit = (e: React.FormEvent) => {\n    e.preventDefault();\n    // TODO: Add email validation and error feedback\n  };\n\n  return (\n    <form onSubmit={handleSubmit} className="p-4 space-y-2">\n      <input value={email} onChange={e => setEmail(e.target.value)} placeholder="name@company.com" className="border p-2 rounded" />\n      <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded">Submit</button>\n    </form>\n  );\n}`);
-      }
-    }
-    // 3. DEVOPS & SRE TRACK
-    else if (candidateTrack === "DevOps") {
-      if (language === "React / TSX") setLanguage("Go");
-      if (difficultyTier === "Diamond (Staff)") {
-        setTaskDescription("Task (Diamond DevOps): Implement a zero-downtime Blue/Green canary deployment controller with automated rollback on p99 latency threshold breach (>250ms).");
-        if (language === "Go") {
-          setCodePayload(`package main\n\nimport (\n    "context"\n    "fmt"\n    "time"\n)\n\ntype CanaryController struct {\n    RolloutSteps []int // e.g. 5, 25, 50, 100\n    LatencyLimitMs int\n}\n\nfunc (c *CanaryController) ShiftTraffic(ctx context.Context, newVersion string) error {\n    // TODO: Implement progressive weight shifting and automated abort on p99 latency spike\n    fmt.Printf("Deploying Canary %s...\\n", newVersion)\n    return nil\n}\n\nfunc main() {\n    controller := &CanaryController{RolloutSteps: []int{5, 25, 50, 100}, LatencyLimitMs: 250}\n    _ = controller.ShiftTraffic(context.Background(), "v2.5.0")\n}`);
-        } else {
-          setCodePayload(`class CanaryController:\n    """Zero-downtime progressive canary deployment controller."""\n    def __init__(self, latency_limit_ms: int = 250):\n        self.latency_limit_ms = latency_limit_ms\n\n    def shift_traffic(self, version: str):\n        # TODO: Implement step-wise traffic shift & rollback on latency breach\n        print(f"Deploying Canary {version}...")\n\nif __name__ == '__main__':\n    controller = CanaryController()\n    controller.shift_traffic("v2.5.0")`);
-        }
-      } else {
-        setTaskDescription("Task (Bronze DevOps): Fix the unhandled container crash loop and healthcheck probe failure in this microservice deployment script.");
-        setCodePayload(`def check_service_health():\n    # TODO: Add socket timeout and connection retry with backoff\n    import urllib.request\n    try:\n        res = urllib.request.urlopen("http://localhost:8080/healthz", timeout=2)\n        return res.status == 200\n    except Exception as e:\n        print(f"Healthcheck failed: {e}")\n        return False\n\nif __name__ == '__main__':\n    print("Healthy:", check_service_health())`);
-      }
-    }
-    // 4. DATA & MLOPS TRACK
-    else if (candidateTrack === "DataMLOps") {
-      if (language === "React / TSX") setLanguage("Python");
-      if (difficultyTier === "Diamond (Staff)") {
-        setTaskDescription("Task (Diamond DataMLOps): Implement an in-memory streaming feature store with sliding-window aggregations and vector embedding cache eviction.");
-        setCodePayload(`from collections import deque\nimport time\n\nclass StreamingFeatureStore:\n    """High-throughput sliding-window feature aggregation store."""\n    def __init__(self, window_seconds: int = 300):\n        self.window_seconds = window_seconds\n        self.events = deque()\n\n    def record_event(self, entity_id: str, feature_value: float):\n        # TODO: Append timestamped record & evict expired events outside sliding window\n        pass\n\n    def get_sliding_average(self, entity_id: str) -> float:\n        # TODO: Compute real-time sliding average for feature inference\n        return 0.0\n\nif __name__ == '__main__':\n    store = StreamingFeatureStore(window_seconds=60)\n    print("Feature store initialized.")`);
-      } else {
-        setTaskDescription("Task (Bronze DataMLOps): Fix the missing null-check and NaN division error in this feature scaling transformer.");
-        setCodePayload(`def min_max_scaler(values: list[float]) -> list[float]:\n    # TODO: Fix division by zero when min == max and handle None values\n    valid = [v for v in values if v is not None]\n    min_v, max_v = min(valid), max(valid)\n    return [(v - min_v) / (max_v - min_v) for v in valid]\n\nif __name__ == '__main__':\n    data = [10.0, 20.0, None, 50.0]\n    print(min_max_scaler(data))`);
-      }
-    }
-    // 5. CYBERSECURITY TRACK
-    else if (candidateTrack === "Cybersecurity") {
-      if (language === "React / TSX") setLanguage("Python");
-      if (difficultyTier === "Diamond (Staff)") {
-        setTaskDescription("Task (Diamond Cybersecurity): Implement a cryptographic token replay protection engine with sliding nonce validation and constant-time signature verification.");
-        setCodePayload(`import hmac\nimport hashlib\nimport time\n\nclass TokenValidator:\n    """Zero-trust constant-time token verification with nonce replay protection."""\n    def __init__(self, secret_key: bytes, nonce_ttl_sec: int = 60):\n        self.secret_key = secret_key\n        self.nonce_ttl_sec = nonce_ttl_sec\n        self.seen_nonces = {}\n\n    def verify_request(self, payload: str, nonce: str, signature: str) -> bool:\n        # TODO: 1. Check nonce freshness & replay\n        # TODO: 2. Constant-time HMAC comparison to prevent timing attacks\n        return True\n\nif __name__ == '__main__':\n    validator = TokenValidator(secret_key=b"enterprise_secret_key_2026")\n    print("Cybersecurity token validator ready.")`);
-      } else {
-        setTaskDescription("Task (Bronze Cybersecurity): Fix the vulnerable regex pattern and sanitize untrusted HTML input against Cross-Site Scripting (XSS).");
-        setCodePayload(`import html\n\ndef sanitize_comment(user_input: str) -> str:\n    # TODO: Properly escape HTML entities to prevent stored XSS attacks\n    return user_input.replace("<script>", "")\n\nif __name__ == '__main__':\n    payload = "<img src=x onerror=alert(1)>"\n    print("Sanitized:", sanitize_comment(payload))`);
-      }
-    }
-    // 6. MOBILE ARCHITECTURE TRACK
-    else if (candidateTrack === "Mobile") {
-      if (difficultyTier === "Diamond (Staff)") {
-        setTaskDescription("Task (Diamond Mobile): Implement an offline-first SQLite sync manager with vector clock conflict resolution and exponential backoff retry.");
-        setCodePayload(`export interface SyncMutation {\n  id: string;\n  table: string;\n  vectorClock: Record<string, number>;\n  payload: any;\n}\n\nexport class OfflineSyncManager {\n  private queue: SyncMutation[] = [];\n\n  async queueMutation(mutation: SyncMutation): Promise<void> {\n    // TODO: Persist mutation locally and trigger exponential backoff sync\n  }\n\n  async resolveConflict(local: SyncMutation, remote: SyncMutation): Promise<SyncMutation> {\n    // TODO: Vector clock conflict resolution\n    return remote;\n  }\n}`);
-      } else {
-        setTaskDescription("Task (Bronze Mobile): Fix the unbounded list re-rendering performance bottleneck by implementing memoized row keys.");
-        setCodePayload(`import React from 'react';\n\nexport default function ChatList({ messages }: { messages: Array<{ id: string; text: string }> }) {\n  // TODO: Fix missing key warning and unnecessary re-renders\n  return (\n    <div>\n      {messages.map((m, index) => (\n        <div key={index}>{m.text}</div>\n      ))}\n    </div>\n  );\n}`);
-      }
-    }
-    // 7. CLOUD FINOPS TRACK
-    else if (candidateTrack === "CloudFinOps") {
-      if (language === "React / TSX") setLanguage("Python");
-      if (difficultyTier === "Diamond (Staff)") {
-        setTaskDescription("Task (Diamond CloudFinOps): Build an automated multi-region compute rightsizer that monitors P95 CPU/memory metrics and reclaims idle clusters.");
-        setCodePayload(`class CloudCostGovernor:\n    """Automated compute rightsizing and idle resource reclamation daemon."""\n    def __init__(self, idle_cpu_threshold_pct: float = 5.0, idle_duration_hours: int = 24):\n        self.idle_cpu_threshold = idle_cpu_threshold_pct\n        self.idle_duration_hours = idle_duration_hours\n\n    def evaluate_fleet(self, instances: list[dict]) -> list[dict]:\n        # TODO: Return action plan: Downsize, Terminate, or Retain based on p95 metrics\n        return []\n\nif __name__ == '__main__':\n    governor = CloudCostGovernor()\n    print("FinOps Governor operational.")`);
-      } else {
-        setTaskDescription("Task (Bronze CloudFinOps): Validate mandatory cloud cost allocation tags (Owner, CostCenter, Environment) and flag untagged resources.");
-        setCodePayload(`REQUIRED_TAGS = {"Owner", "CostCenter", "Environment"}\n\ndef validate_resource_tags(resource: dict) -> list[str]:\n    # TODO: Check tags and return list of missing mandatory tags\n    tags = set(resource.get("Tags", {}).keys())\n    return list(REQUIRED_TAGS - tags)\n\nif __name__ == '__main__':\n    sample = {"Id": "i-098abc", "Tags": {"Owner": "eng-team"}}\n    print("Missing tags:", validate_resource_tags(sample))`);
-      }
-    }
-    // 8. DATABASE RELIABILITY TRACK
-    else if (candidateTrack === "DatabaseRE") {
-      if (language === "React / TSX") setLanguage("Python");
-      if (difficultyTier === "Diamond (Staff)") {
-        setTaskDescription("Task (Diamond DatabaseRE): Implement a distributed leasing lock manager with lease expiration heartbeat renewal and deadlock detection.");
-        setCodePayload(`import time\nimport threading\n\nclass DistributedLockManager:\n    """Raft-compatible distributed lease lock manager with automatic heartbeat renewal."""\n    def __init__(self, lease_ttl_ms: int = 5000):\n        self.lease_ttl_ms = lease_ttl_ms\n        self._locks = {}\n        self._mutex = threading.Lock()\n\n    def acquire_lock(self, resource_key: str, owner_id: str) -> bool:\n        with self._mutex:\n            now = time.time() * 1000\n            if resource_key not in self._locks or self._locks[resource_key]['expires_at'] < now:\n                self._locks[resource_key] = {'owner': owner_id, 'expires_at': now + self.lease_ttl_ms}\n                return True\n            return False\n\nif __name__ == '__main__':\n    dlm = DistributedLockManager()\n    print("Database Reliability Lock Manager operational.")`);
-      } else {
-        setTaskDescription("Task (Bronze DatabaseRE): Fix the missing composite database index and resolve an N+1 query problem in this query builder.");
-        setCodePayload(`def fetch_users_with_recent_orders():\n    # TODO: Eliminate N+1 loop by using single JOIN or batch IN query\n    users = [{"id": 1, "name": "Alice"}, {"id": 2, "name": "Bob"}]\n    results = []\n    for u in users:\n        # Simulated slow query for each user\n        results.append({"user": u, "orders": []})\n    return results\n\nif __name__ == '__main__':\n    print(fetch_users_with_recent_orders())`);
-      }
-    }
-    // 9. BACKEND SYSTEMS TRACK (DEFAULT)
-    else {
-      if (language === "React / TSX") setLanguage("Python"); // reset if leftover from frontend
-      
-      if (difficultyTier === "Diamond (Staff)") {
-        setTaskDescription("Task (Diamond Backend): Implement an idempotent payment queue processor capable of handling 10k messages/sec without deadlocks.");
-        
-        if (language === "Python") {
-            setCodePayload(`def main():\n    # Staff-level payment queue processor\n    pass\n\nif __name__ == '__main__':\n    main()`);
-        } else if (language === "C#") {
-            setCodePayload(`using System;\n\npublic class PaymentProcessor {\n    public void ProcessQueue() {\n        // Staff-level payment queue processor\n    }\n}`);
-        } else if (language === "Go") {
-            setCodePayload(`package main\n\nimport "fmt"\n\nfunc main() {\n    // Staff-level payment queue processor\n    fmt.Println("Processing...")\n}`);
-        } else if (language === "Java") {
-            setCodePayload(`public class Main {\n    public static void main(String[] args) {\n        // Staff-level payment queue processor\n    }\n}`);
-        } else if (language === "C++") {
-            setCodePayload(`#include <iostream>\n\nint main() {\n    // Staff-level payment queue processor\n    return 0;\n}`);
-        } else if (language === "Rust") {
-            setCodePayload(`fn main() {\n    // Staff-level payment queue processor\n}`);
-        } else {
-            setCodePayload(`// Implement in ${language}`);
-        }
-      } else {
-        setTaskDescription("Task (Bronze Backend): Fix the SQL syntax error and SQL injection vulnerability in this basic payment script.");
-        if (language === "Python") {
-            setCodePayload(`def main():\n    # Basic SQL fix\n    amount = 250.00\n    # TODO: Fix the SQL injection vulnerability below\n    query = f"INSERT INTO Payments (Amount) VALUES ({amount})"\n    print("Processing...")\n\nif __name__ == '__main__':\n    main()`);
-        } else if (language === "C#") {
-            setCodePayload(`using System;\n\npublic class PaymentProcessor {\n    public void ProcessQueue() {\n        string amount = "250.00";\n        // TODO: Fix injection\n        string query = $"INSERT INTO Payments (Amount) VALUES ({amount})";\n    }\n}`);
-        } else if (language === "Go") {
-            setCodePayload(`package main\n\nimport "fmt"\n\nfunc main() {\n    amount := "250.00"\n    // TODO: Fix injection\n    query := fmt.Sprintf("INSERT INTO Payments (Amount) VALUES (%s)", amount)\n}`);
-        } else if (language === "Java") {
-            setCodePayload(`public class Main {\n    public static void main(String[] args) {\n        String amount = "250.00";\n        // TODO: Fix injection\n        String query = "INSERT INTO Payments (Amount) VALUES (" + amount + ")";\n    }\n}`);
-        } else if (language === "C++") {
-            setCodePayload(`#include <iostream>\n#include <string>\n\nint main() {\n    std::string amount = "250.00";\n    // TODO: Fix injection\n    std::string query = "INSERT INTO Payments (Amount) VALUES (" + amount + ")";\n    return 0;\n}`);
-        } else if (language === "Rust") {
-            setCodePayload(`fn main() {\n    let amount = "250.00";\n    // TODO: Fix injection\n    let query = format!("INSERT INTO Payments (Amount) VALUES ({})", amount);\n}`);
-        } else {
-            setCodePayload(`// Implement in ${language}`);
-        }
-      }
-    }
+    const snippet = getSnippetForTrackAndLanguage(candidateTrack, difficultyTier, language);
+    setTaskDescription(snippet.task);
+    setCodePayload(snippet.code);
   }, [candidateTrack, difficultyTier, language]);
 
   useEffect(() => {
@@ -336,15 +545,46 @@ function SprintWorkspaceInner() {
   };
 
   const getMonacoLanguage = () => {
-    switch(language) {
-      case "Python": return "python";
-      case "C#": return "csharp";
-      case "Java": return "java";
-      case "C++": return "cpp";
-      case "Go": return "go";
-      case "Rust": return "rust";
-      case "React / TSX": return "typescript";
-      default: return "python";
+    switch (language) {
+      case "Python":
+      case "Python (FastAPI)":
+        return "python";
+      case "C#":
+      case "C# (.NET)":
+        return "csharp";
+      case "Java":
+        return "java";
+      case "C++":
+      case "C / C++":
+        return "cpp";
+      case "Go":
+        return "go";
+      case "Rust":
+        return "rust";
+      case "React (TSX)":
+      case "React Native (TSX)":
+      case "TypeScript":
+      case "TypeScript (Next.js)":
+      case "TypeScript (Node)":
+        return "typescript";
+      case "JavaScript":
+      case "Vue.js":
+        return "javascript";
+      case "SQL":
+        return "sql";
+      case "Bash":
+      case "Terraform (HCL)":
+        return "shell";
+      case "Kotlin (Android)":
+        return "kotlin";
+      case "Swift (iOS)":
+        return "swift";
+      case "Flutter (Dart)":
+        return "dart";
+      case "Scala":
+        return "scala";
+      default:
+        return "python";
     }
   };
 
@@ -372,7 +612,7 @@ function SprintWorkspaceInner() {
 
           <div className="flex items-center space-x-4">
             <div className="hidden lg:flex items-center space-x-2 bg-card border border-border rounded-xl px-3 py-1.5 shadow-sm">
-              <select value={candidateTrack} onChange={(e) => setCandidateTrack(e.target.value as any)} className="bg-transparent text-xs text-indigo-600 dark:text-indigo-300 font-semibold focus:outline-none cursor-pointer">
+              <select value={candidateTrack} onChange={(e) => handleTrackChange(e.target.value as CandidateTrack)} className="bg-transparent text-xs text-indigo-600 dark:text-indigo-300 font-semibold focus:outline-none cursor-pointer">
                 <option value="DevOps">🚀 DevOps & SRE</option>
                 <option value="Backend">⚙️ Backend Systems</option>
                 <option value="Frontend">💻 Frontend & Web</option>
@@ -389,14 +629,12 @@ function SprintWorkspaceInner() {
                 <option value="Diamond (Staff)">Diamond League (Staff)</option>
               </select>
               <span className="text-slate-700">|</span>
-              <select value={language} onChange={(e) => setLanguage(e.target.value)} disabled={candidateTrack === "Frontend"} className="bg-transparent text-xs text-purple-700 dark:text-purple-400 font-semibold focus:outline-none cursor-pointer disabled:opacity-50">
-                <option value="Python">Python</option>
-                <option value="C#">C#</option>
-                <option value="Java">Java</option>
-                <option value="C++">C++</option>
-                <option value="Go">Go</option>
-                <option value="Rust">Rust</option>
-                <option value="React / TSX">React / TSX</option>
+              <select value={language} onChange={(e) => setLanguage(e.target.value)} className="bg-transparent text-xs text-purple-700 dark:text-purple-400 font-semibold focus:outline-none cursor-pointer">
+                {TRACK_LANGUAGES[candidateTrack].options.map((opt) => (
+                  <option key={opt} value={opt}>
+                    {opt}
+                  </option>
+                ))}
               </select>
             </div>
             <span className="text-xs px-3 py-1 rounded-full bg-indigo-500/10 text-indigo-600 dark:text-indigo-300 border border-indigo-500/30 font-semibold font-mono tracking-wide" title={`Sprint Identifier: ${sprintId}`}>
