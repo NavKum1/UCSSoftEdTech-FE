@@ -1,13 +1,14 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import Link from "next/link";
 import { 
   Briefcase, Users, ShieldAlert, ShieldCheck, Plus, 
   ExternalLink, Search, RefreshCw, KeyRound, Copy, Check,
   AlertTriangle, Sparkles, Filter, Code2, Award, Mic,
   FileText, CheckCircle2, Clock, Send, Layers, ArrowRight,
-  Brain, ThumbsUp, ThumbsDown, CheckCheck, XCircle, X,
-  MessageSquare, AlertCircle, HelpCircle, FileSearch, Target, Flame
+  Brain, CheckCheck, X,
+  MessageSquare, HelpCircle, FileSearch, Target, Flame
 } from "lucide-react";
 
 interface TranscriptEntry {
@@ -83,6 +84,39 @@ interface AssessmentBundle {
   completedAt?: string | null;
 }
 
+type ReviewStatus = "AWAITING" | "ADVANCED" | "HOLD" | "DECLINED" | "IN_PROGRESS";
+
+// Only a recruiter's action changes a candidate's status; AI scores never do.
+function reviewStatus(bundle: AssessmentBundle): ReviewStatus {
+  const s = bundle.corporateDecisionStatus;
+  if (s === "OFFER_EXTENDED") return "ADVANCED";
+  if (s === "REJECTION_ISSUED") return "DECLINED";
+  if (s === "ON_HOLD" || s === "HOLD") return "HOLD";
+  return bundle.overallStatus === "Completed" ? "AWAITING" : "IN_PROGRESS";
+}
+
+const REVIEW_STATUS_LABELS: Record<ReviewStatus, string> = {
+  AWAITING: "Awaiting review",
+  ADVANCED: "Advanced",
+  HOLD: "On hold",
+  DECLINED: "Declined",
+  IN_PROGRESS: "In progress",
+};
+
+const REVIEW_STATUS_STYLES: Record<ReviewStatus, string> = {
+  AWAITING: "bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 border-indigo-500/30",
+  ADVANCED: "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30",
+  HOLD: "bg-amber-500/15 text-amber-700 dark:text-amber-400 border-amber-500/30",
+  DECLINED: "bg-muted text-muted-foreground border-border",
+  IN_PROGRESS: "bg-muted text-muted-foreground border-border",
+};
+
+const GUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+function evidenceHref(submissionId?: string | null) {
+  return submissionId && GUID_PATTERN.test(submissionId) ? `/recruiter/evidence/${submissionId}` : "/recruiter/evidence";
+}
+
 export default function RecruiterDashboardPage() {
   const [data, setData] = useState<any>(null);
   const [bundles, setBundles] = useState<AssessmentBundle[]>([]);
@@ -126,11 +160,8 @@ export default function RecruiterDashboardPage() {
   const [scrutinyLoading, setScrutinyLoading] = useState<boolean>(false);
 
   // AI Decision Filters & Audit Modal State
-  const [decisionFilter, setDecisionFilter] = useState<"ALL" | "SELECTED" | "DESELECTED" | "OFFER_EXTENDED" | "IN_PROGRESS">("ALL");
+  const [decisionFilter, setDecisionFilter] = useState<"ALL" | ReviewStatus>("ALL");
   const [selectedBundleForAudit, setSelectedBundleForAudit] = useState<AssessmentBundle | null>(null);
-  const [recruiterActionNotes, setRecruiterActionNotes] = useState<string>("");
-  const [recruiterActionSubmitting, setRecruiterActionSubmitting] = useState<boolean>(false);
-  const [recruiterActionToast, setRecruiterActionToast] = useState<string | null>(null);
 
   const fetchCandidates = async () => {
     setLoading(true);
@@ -276,36 +307,6 @@ export default function RecruiterDashboardPage() {
     setTimeout(() => setCopiedToken(null), 2500);
   };
 
-  const handleRecruiterAction = async (action: string) => {
-    if (!selectedBundleForAudit) return;
-    setRecruiterActionSubmitting(true);
-    try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/recruiter/assessments/bundle/${selectedBundleForAudit.token}/action`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          action,
-          notes: recruiterActionNotes || undefined,
-        }),
-      });
-
-      if (res.ok) {
-        const json = await res.json();
-        setRecruiterActionToast(`Action Applied: ${action.replace("_", " ")}`);
-        if (json.bundle) {
-          setSelectedBundleForAudit(json.bundle);
-        }
-        setRecruiterActionNotes("");
-        fetchBundles();
-        setTimeout(() => setRecruiterActionToast(null), 3000);
-      }
-    } catch (e) {
-      console.error("Failed to execute recruiter action:", e);
-    } finally {
-      setRecruiterActionSubmitting(false);
-    }
-  };
-
   const candidates = data?.candidates || [
     {
       submissionId: "sub-demo-1",
@@ -420,68 +421,84 @@ export default function RecruiterDashboardPage() {
           </div>
         </div>
 
+        {/* Human review, integrations and validity */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          {[
+            { href: "/recruiter/evidence", title: "Evidence review queue", text: "Review evidence packs and record Advance / Hold / Decline decisions.", Icon: FileSearch },
+            { href: "/recruiter/integrations", title: "ATS integrations", text: "Connect Greenhouse, Lever, Workday, SeekJobs or a signed webhook.", Icon: Layers },
+            { href: "/recruiter/validity", title: "Validity & bias audit", text: "Score-to-performance correlations and four-fifths impact ratios.", Icon: Target },
+          ].map(({ href, title, text, Icon }) => (
+            <Link
+              key={href}
+              href={href}
+              className="glass-panel rounded-2xl p-4 border border-border hover:border-indigo-500/40 transition-colors flex items-start gap-3"
+            >
+              <Icon className="w-5 h-5 text-indigo-600 dark:text-indigo-400 shrink-0 mt-0.5" />
+              <div className="min-w-0">
+                <div className="text-sm font-bold text-foreground flex items-center gap-1">
+                  {title}
+                  <ArrowRight className="w-3.5 h-3.5 text-muted-foreground" />
+                </div>
+                <p className="text-xs text-muted-foreground mt-0.5">{text}</p>
+              </div>
+            </Link>
+          ))}
+        </div>
+
         {/* Live KPI Stat Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-          <div className="glass-card rounded-2xl p-5 border border-emerald-500/20 bg-emerald-500/5">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400">AI Selected (Recommend Hire)</span>
-              <ThumbsUp className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-            </div>
-            <div className="text-3xl font-extrabold text-emerald-600 dark:text-emerald-400 mt-2">
-              {bundles.filter(b => b.corporateDecisionStatus === "AI_SELECTED" || b.aiVerdict?.decision === "SELECTED" || b.corporateDecisionStatus === "OFFER_EXTENDED").length}
-            </div>
-            <span className="text-[11px] text-emerald-600/80 dark:text-emerald-400/80 mt-1 block">
-              Met or exceeded corporate hiring bar
-            </span>
-          </div>
-
-          <div className="glass-card rounded-2xl p-5 border border-rose-500/20 bg-rose-500/5">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-rose-600 dark:text-rose-400">AI Deselected (Failed Bar)</span>
-              <ThumbsDown className="w-4 h-4 text-rose-600 dark:text-rose-400" />
-            </div>
-            <div className="text-3xl font-extrabold text-rose-600 dark:text-rose-400 mt-2">
-              {bundles.filter(b => b.corporateDecisionStatus === "AI_DESELECTED" || b.aiVerdict?.decision === "DESELECTED" || b.corporateDecisionStatus === "REJECTION_ISSUED").length}
-            </div>
-            <span className="text-[11px] text-rose-600/80 dark:text-rose-400/80 mt-1 block">
-              Below competency threshold / red flags
-            </span>
-          </div>
-
           <div className="glass-card rounded-2xl p-5 border border-indigo-500/20 bg-indigo-500/5">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-indigo-600 dark:text-indigo-400">Offers Extended</span>
-              <Award className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+              <span className="text-xs font-semibold text-indigo-600 dark:text-indigo-400">Awaiting review</span>
+              <FileSearch className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
             </div>
             <div className="text-3xl font-extrabold text-indigo-600 dark:text-indigo-400 mt-2">
-              {bundles.filter(b => b.corporateDecisionStatus === "OFFER_EXTENDED" || b.aiVerdict?.corporateActionStatus === "OFFER_EXTENDED").length}
+              {bundles.filter(b => reviewStatus(b) === "AWAITING").length}
             </div>
             <span className="text-[11px] text-indigo-600/80 dark:text-indigo-400/80 mt-1 block">
-              Recruiter accepted AI recommendation
+              All stages complete; a recruiter decides on the evidence
+            </span>
+          </div>
+
+          <div className="glass-card rounded-2xl p-5 border border-emerald-500/20 bg-emerald-500/5">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400">Advanced</span>
+              <Award className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+            </div>
+            <div className="text-3xl font-extrabold text-emerald-600 dark:text-emerald-400 mt-2">
+              {bundles.filter(b => reviewStatus(b) === "ADVANCED").length}
+            </div>
+            <span className="text-[11px] text-emerald-600/80 dark:text-emerald-400/80 mt-1 block">
+              Advanced by a recruiter
+            </span>
+          </div>
+
+          <div className="glass-card rounded-2xl p-5 border border-border bg-muted/30">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-semibold text-muted-foreground">On hold / declined</span>
+              <Clock className="w-4 h-4 text-muted-foreground" />
+            </div>
+            <div className="text-3xl font-extrabold text-foreground mt-2">
+              {bundles.filter(b => reviewStatus(b) === "HOLD").length} / {bundles.filter(b => reviewStatus(b) === "DECLINED").length}
+            </div>
+            <span className="text-[11px] text-muted-foreground mt-1 block">
+              Decided by a recruiter
             </span>
           </div>
 
           <div className="glass-card rounded-2xl p-5 border border-purple-500/20 bg-purple-500/5">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-purple-600 dark:text-purple-400">In-Flight AI Interviews</span>
-              <Brain className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+              <span className="text-xs font-semibold text-purple-600 dark:text-purple-400">In progress</span>
+              <Layers className="w-4 h-4 text-purple-600 dark:text-purple-400" />
             </div>
             <div className="text-3xl font-extrabold text-purple-600 dark:text-purple-400 mt-2">
-              {bundles.filter(b => b.overallStatus !== "Completed").length}
+              {bundles.filter(b => reviewStatus(b) === "IN_PROGRESS").length}
             </div>
             <span className="text-[11px] text-purple-600/80 dark:text-purple-400/80 mt-1 block">
-              Candidate currently in assessment pipeline
+              Candidate still completing the assessment stages
             </span>
           </div>
         </div>
-
-        {/* Toast Notification */}
-        {recruiterActionToast && (
-          <div className="fixed top-20 right-6 z-50 bg-card border border-indigo-500/50 text-foreground px-4 py-3 rounded-2xl shadow-xl flex items-center space-x-2 animate-in slide-in-from-top-2">
-            <Sparkles className="w-4 h-4 text-indigo-500" />
-            <span className="text-xs font-bold">{recruiterActionToast}</span>
-          </div>
-        )}
 
         {/* Tab Navigation Switcher */}
         <div className="flex items-center space-x-2 border-b border-border pb-3">
@@ -494,7 +511,7 @@ export default function RecruiterDashboardPage() {
             }`}
           >
             <Layers className="w-3.5 h-3.5" />
-            <span>Autonomous AI Assessment Pipeline ({bundles.length})</span>
+            <span>3-Stage Assessment Pipeline ({bundles.length})</span>
           </button>
 
           <button
@@ -506,7 +523,7 @@ export default function RecruiterDashboardPage() {
             }`}
           >
             <Code2 className="w-3.5 h-3.5" />
-            <span>Sprint Coding Submissions &amp; Anti-Cheat ({candidates.length})</span>
+            <span>Sprint Submissions &amp; Integrity Signals ({candidates.length})</span>
           </button>
         </div>
 
@@ -516,13 +533,13 @@ export default function RecruiterDashboardPage() {
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div>
                 <h2 className="text-base font-bold text-foreground flex items-center space-x-2">
-                  <span>Autonomous AI Corporate Interview Pipeline</span>
+                  <span>Assessment Pipeline</span>
                   <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/30">
-                    AI Autonomous Hiring Bar &amp; Selection Engine
+                    Human decision required
                   </span>
                 </h2>
                 <p className="text-xs text-muted-foreground mt-0.5">
-                  AI autonomously interviews candidates via voice defense and selects or deselects based on verified technical competence.
+                  Candidates complete a written exam, a coding sprint and a voice defense. Scores are evidence for a recruiter; nobody is advanced or declined automatically.
                 </p>
               </div>
 
@@ -542,18 +559,18 @@ export default function RecruiterDashboardPage() {
             <div className="flex flex-wrap items-center gap-2 pt-1 pb-1">
               <span className="text-[11px] font-semibold text-muted-foreground mr-1 flex items-center space-x-1">
                 <Filter className="w-3 h-3" />
-                <span>Filter By AI Verdict:</span>
+                <span>Filter By Review Status:</span>
               </span>
-              {[
+              {([
                 { id: "ALL", label: `All Candidates (${bundles.length})` },
-                { id: "SELECTED", label: `✅ AI Selected (${bundles.filter(b => b.corporateDecisionStatus === "AI_SELECTED" || b.aiVerdict?.decision === "SELECTED" || b.corporateDecisionStatus === "OFFER_EXTENDED").length})` },
-                { id: "DESELECTED", label: `❌ AI Deselected (${bundles.filter(b => b.corporateDecisionStatus === "AI_DESELECTED" || b.aiVerdict?.decision === "DESELECTED" || b.corporateDecisionStatus === "REJECTION_ISSUED").length})` },
-                { id: "OFFER_EXTENDED", label: `🎉 Offer Extended (${bundles.filter(b => b.corporateDecisionStatus === "OFFER_EXTENDED").length})` },
-                { id: "IN_PROGRESS", label: `⏳ In-Flight (${bundles.filter(b => b.overallStatus !== "Completed").length})` },
-              ].map((pill) => (
+                ...(["AWAITING", "ADVANCED", "HOLD", "DECLINED", "IN_PROGRESS"] as const).map((s) => ({
+                  id: s,
+                  label: `${REVIEW_STATUS_LABELS[s]} (${bundles.filter(b => reviewStatus(b) === s).length})`,
+                })),
+              ] as { id: "ALL" | ReviewStatus; label: string }[]).map((pill) => (
                 <button
                   key={pill.id}
-                  onClick={() => setDecisionFilter(pill.id as any)}
+                  onClick={() => setDecisionFilter(pill.id)}
                   className={`px-3 py-1 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                     decisionFilter === pill.id
                       ? "bg-indigo-600 text-white shadow-sm"
@@ -571,42 +588,25 @@ export default function RecruiterDashboardPage() {
                   <tr>
                     <th className="py-3 px-4">Candidate &amp; Role</th>
                     <th className="py-3 px-4">Diagnostics (1 / 2 / 3)</th>
-                    <th className="py-3 px-4">Autonomous AI Hiring Verdict</th>
-                    <th className="py-3 px-4">Corporate Status</th>
+                    <th className="py-3 px-4">Stage Progress</th>
+                    <th className="py-3 px-4">Review Status</th>
                     <th className="py-3 px-4">Composite</th>
-                    <th className="py-3 px-4 text-right">Actions &amp; AI Audit</th>
+                    <th className="py-3 px-4 text-right">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border/60">
-                  {bundles.filter(bundle => {
-                    if (decisionFilter === "ALL") return true;
-                    if (decisionFilter === "SELECTED") return bundle.corporateDecisionStatus === "AI_SELECTED" || bundle.aiVerdict?.decision === "SELECTED" || bundle.corporateDecisionStatus === "OFFER_EXTENDED";
-                    if (decisionFilter === "DESELECTED") return bundle.corporateDecisionStatus === "AI_DESELECTED" || bundle.aiVerdict?.decision === "DESELECTED" || bundle.corporateDecisionStatus === "REJECTION_ISSUED";
-                    if (decisionFilter === "OFFER_EXTENDED") return bundle.corporateDecisionStatus === "OFFER_EXTENDED";
-                    if (decisionFilter === "IN_PROGRESS") return bundle.overallStatus !== "Completed";
-                    return true;
-                  }).length === 0 ? (
+                  {bundles.filter(bundle => decisionFilter === "ALL" || reviewStatus(bundle) === decisionFilter).length === 0 ? (
                     <tr>
                       <td colSpan={6} className="py-8 text-center text-muted-foreground">
-                        No candidates match the selected AI verdict filter.
+                        No candidates match the selected review status.
                       </td>
                     </tr>
                   ) : (
                     bundles
-                      .filter(bundle => {
-                        if (decisionFilter === "ALL") return true;
-                        if (decisionFilter === "SELECTED") return bundle.corporateDecisionStatus === "AI_SELECTED" || bundle.aiVerdict?.decision === "SELECTED" || bundle.corporateDecisionStatus === "OFFER_EXTENDED";
-                        if (decisionFilter === "DESELECTED") return bundle.corporateDecisionStatus === "AI_DESELECTED" || bundle.aiVerdict?.decision === "DESELECTED" || bundle.corporateDecisionStatus === "REJECTION_ISSUED";
-                        if (decisionFilter === "OFFER_EXTENDED") return bundle.corporateDecisionStatus === "OFFER_EXTENDED";
-                        if (decisionFilter === "IN_PROGRESS") return bundle.overallStatus !== "Completed";
-                        return true;
-                      })
+                      .filter(bundle => decisionFilter === "ALL" || reviewStatus(bundle) === decisionFilter)
                       .map((bundle) => {
                         const isCompleted = bundle.overallStatus === "Completed";
-                        const isSelected = bundle.corporateDecisionStatus === "AI_SELECTED" || bundle.aiVerdict?.decision === "SELECTED" || bundle.corporateDecisionStatus === "OFFER_EXTENDED";
-                        const isDeselected = bundle.corporateDecisionStatus === "AI_DESELECTED" || bundle.aiVerdict?.decision === "DESELECTED" || bundle.corporateDecisionStatus === "REJECTION_ISSUED";
-                        const isOfferExtended = bundle.corporateDecisionStatus === "OFFER_EXTENDED";
-                        const isRejectionIssued = bundle.corporateDecisionStatus === "REJECTION_ISSUED";
+                        const status = reviewStatus(bundle);
 
                         return (
                           <tr key={bundle.token} className="hover:bg-card/40 transition-colors">
@@ -638,73 +638,26 @@ export default function RecruiterDashboardPage() {
                               </div>
                             </td>
 
-                            {/* Autonomous AI Hiring Verdict */}
+                            {/* Stage Progress */}
                             <td className="py-3.5 px-4">
-                              {bundle.aiVerdict ? (
-                                bundle.aiVerdict.decision === "SELECTED" ? (
-                                  <div className="space-y-1">
-                                    <span className="px-2.5 py-1 rounded-lg text-[11px] font-extrabold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 flex items-center space-x-1.5 w-fit">
-                                      <ThumbsUp className="w-3 h-3 text-emerald-500" />
-                                      <span>SELECTED • {bundle.aiVerdict.recommendationTier.replace("_", " ")}</span>
-                                    </span>
-                                    <div className="text-[10px] text-muted-foreground font-mono">
-                                      {bundle.aiVerdict.confidenceScore}% AI Confidence • Threshold {bundle.aiVerdict.hiringBarThreshold}%
-                                    </div>
-                                  </div>
-                                ) : (
-                                  <div className="space-y-1">
-                                    <span className={`px-2.5 py-1 rounded-lg text-[11px] font-extrabold flex items-center space-x-1.5 w-fit ${
-                                      bundle.aiVerdict.recommendationTier === "DISQUALIFIED"
-                                        ? "bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/30"
-                                        : "bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/30"
-                                    }`}>
-                                      <ThumbsDown className="w-3 h-3" />
-                                      <span>{bundle.aiVerdict.recommendationTier === "DISQUALIFIED" ? "DISQUALIFIED • SUSPECTED FRAUD" : `DESELECTED • ${bundle.aiVerdict.recommendationTier.replace("_", " ")}`}</span>
-                                    </span>
-                                    <div className="text-[10px] text-muted-foreground font-mono">
-                                      {bundle.aiVerdict.confidenceScore}% AI Confidence • Threshold {bundle.aiVerdict.hiringBarThreshold}%
-                                    </div>
-                                  </div>
-                                )
-                              ) : (
-                                <span className="px-2.5 py-1 rounded-lg text-[10px] font-semibold bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/30 flex items-center space-x-1.5 w-fit">
-                                  <Clock className="w-3 h-3" />
-                                  <span>Interview In-Flight (Stage {bundle.currentStage}/3)</span>
-                                </span>
-                              )}
+                              <span className="px-2.5 py-1 rounded-lg text-[10px] font-semibold bg-muted text-muted-foreground border border-border flex items-center space-x-1.5 w-fit">
+                                {isCompleted ? <CheckCircle2 className="w-3 h-3" /> : <Clock className="w-3 h-3" />}
+                                <span>{isCompleted ? "All stages complete" : `Stage ${bundle.currentStage}/3`}</span>
+                              </span>
                             </td>
 
-                            {/* Corporate Status */}
+                            {/* Review Status */}
                             <td className="py-3.5 px-4">
-                              {isOfferExtended ? (
-                                <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 flex items-center space-x-1 w-fit">
-                                  <CheckCircle2 className="w-3 h-3" />
-                                  <span>Offer Extended</span>
-                                </span>
-                              ) : isRejectionIssued ? (
-                                <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-muted text-muted-foreground border border-border flex items-center space-x-1 w-fit">
-                                  <XCircle className="w-3 h-3" />
-                                  <span>Rejection Sent</span>
-                                </span>
-                              ) : bundle.aiVerdict ? (
-                                <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 border border-indigo-500/30 flex items-center space-x-1 w-fit">
-                                  <AlertCircle className="w-3 h-3" />
-                                  <span>Review AI Verdict</span>
-                                </span>
-                              ) : (
-                                <span className="text-[10px] text-muted-foreground font-mono">In Progress</span>
-                              )}
+                              <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold border flex items-center space-x-1 w-fit ${REVIEW_STATUS_STYLES[status]}`}>
+                                <span>{REVIEW_STATUS_LABELS[status]}</span>
+                              </span>
                             </td>
 
                             {/* Composite */}
                             <td className="py-3.5 px-4">
                               {isCompleted ? (
                                 <div>
-                                  <span className={`px-2 py-0.5 rounded-md text-[11px] font-extrabold border ${
-                                    isSelected
-                                      ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30"
-                                      : "bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/30"
-                                  }`}>
+                                  <span className="px-2 py-0.5 rounded-md text-[11px] font-extrabold border bg-muted/40 text-foreground border-border">
                                     {bundle.compositeScore}%
                                   </span>
                                   {bundle.certificateNumber && (
@@ -718,17 +671,26 @@ export default function RecruiterDashboardPage() {
                               )}
                             </td>
 
-                            {/* Actions & AI Audit */}
+                            {/* Actions */}
                             <td className="py-3.5 px-4 text-right">
                               <div className="flex items-center justify-end space-x-2">
+                                {isCompleted && (
+                                  <Link
+                                    href="/recruiter/evidence"
+                                    className="px-2.5 py-1.5 rounded-lg bg-indigo-600/15 hover:bg-indigo-600/25 text-indigo-700 dark:text-indigo-400 border border-indigo-500/30 text-[11px] font-bold flex items-center space-x-1 cursor-pointer transition-colors shadow-xs"
+                                    title="Review this candidate's evidence and record a decision"
+                                  >
+                                    <FileSearch className="w-3.5 h-3.5" />
+                                    <span>Review</span>
+                                  </Link>
+                                )}
                                 {bundle.aiVerdict && (
                                   <button
                                     onClick={() => setSelectedBundleForAudit(bundle)}
-                                    className="px-2.5 py-1.5 rounded-lg bg-indigo-600/15 hover:bg-indigo-600/25 text-indigo-700 dark:text-indigo-400 border border-indigo-500/30 text-[11px] font-bold flex items-center space-x-1 cursor-pointer transition-colors shadow-xs"
-                                    title="Open Deep AI Hiring Audit & Feedback"
+                                    className="px-2.5 py-1.5 rounded-lg bg-card hover:bg-muted border border-border text-[11px] font-medium text-foreground flex items-center space-x-1 cursor-pointer transition-colors"
+                                    title="Stage scores and interview transcript"
                                   >
-                                    <Brain className="w-3.5 h-3.5" />
-                                    <span>Audit AI Verdict</span>
+                                    <span>Details</span>
                                   </button>
                                 )}
 
@@ -771,13 +733,13 @@ export default function RecruiterDashboardPage() {
           </div>
         )}
 
-        {/* Tab 2: Existing Sprint Submissions & Anti-Cheat Review */}
+        {/* Tab 2: Sprint submissions and integrity signals */}
         {activeTab === "challenges" && (
           <div className="glass-panel rounded-2xl p-6 border border-border space-y-4">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div>
                 <h2 className="text-base font-bold text-foreground">Corporate Applicant Pipeline</h2>
-                <p className="text-xs text-muted-foreground">Review candidate sprint scores, project work, and anti-cheat integrity flags.</p>
+                <p className="text-xs text-muted-foreground">Sprint scores, project work and integrity signals. Signals are prompts for a conversation, not proof; open the evidence pack to review and decide.</p>
               </div>
             </div>
 
@@ -788,7 +750,8 @@ export default function RecruiterDashboardPage() {
                     <th className="py-3 px-4">Candidate</th>
                     <th className="py-3 px-4">Corporate Challenge</th>
                     <th className="py-3 px-4">Defense Score</th>
-                    <th className="py-3 px-4">Anti-Cheat Audit</th>
+                    <th className="py-3 px-4">Integrity Signals</th>
+                    <th className="py-3 px-4">Evidence</th>
                     <th className="py-3 px-4 text-right">Verifiable Badge</th>
                   </tr>
                 </thead>
@@ -809,14 +772,23 @@ export default function RecruiterDashboardPage() {
                         {cand.antiCheat?.verificationFlagged ? (
                           <div className="inline-flex items-center space-x-1.5 px-2.5 py-1 rounded-lg text-[11px] font-bold bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/30">
                             <AlertTriangle className="w-3.5 h-3.5" />
-                            <span>Flagged (AI / Bulk Paste)</span>
+                            <span>Signals to review</span>
                           </div>
                         ) : (
                           <div className="inline-flex items-center space-x-1.5 px-2.5 py-1 rounded-lg text-[11px] font-bold bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/30">
                             <ShieldCheck className="w-3.5 h-3.5" />
-                            <span>Verified Clean</span>
+                            <span>No signals raised</span>
                           </div>
                         )}
+                      </td>
+                      <td className="py-3.5 px-4">
+                        <Link
+                          href={evidenceHref(cand.submissionId)}
+                          className="inline-flex items-center space-x-1 text-indigo-700 dark:text-indigo-400 hover:underline font-medium"
+                        >
+                          <FileSearch className="w-3 h-3" />
+                          <span>{evidenceHref(cand.submissionId) === "/recruiter/evidence" ? "Review" : "Evidence pack"}</span>
+                        </Link>
                       </td>
                       <td className="py-3.5 px-4 text-right">
                         {cand.evaluation?.publicUrlSlug ? (
@@ -1448,7 +1420,7 @@ export default function RecruiterDashboardPage() {
         </div>
       )}
 
-      {/* Deep AI Autonomous Interview & Hiring Audit Modal */}
+      {/* Assessment details modal (reference only; decisions are made on the evidence pack) */}
       {selectedBundleForAudit && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4 animate-in fade-in">
           <div className="bg-card border border-border rounded-3xl w-full max-w-4xl max-h-[92vh] flex flex-col shadow-2xl relative overflow-hidden">
@@ -1461,14 +1433,14 @@ export default function RecruiterDashboardPage() {
                 <div>
                   <div className="flex items-center space-x-2">
                     <h3 className="text-base font-bold text-foreground">
-                      {selectedBundleForAudit.candidateName} — Autonomous AI Hiring Audit
+                      {selectedBundleForAudit.candidateName} — Assessment Details
                     </h3>
                     <span className="text-[10px] font-mono px-2 py-0.5 rounded-md bg-muted text-muted-foreground border border-border">
                       {selectedBundleForAudit.token}
                     </span>
                   </div>
                   <p className="text-[11px] text-muted-foreground mt-0.5">
-                    {selectedBundleForAudit.targetRole} • {selectedBundleForAudit.companyName} • Evaluated by Edulexa AI Engine v2.4
+                    {selectedBundleForAudit.targetRole} • {selectedBundleForAudit.companyName}
                   </p>
                 </div>
               </div>
@@ -1483,76 +1455,23 @@ export default function RecruiterDashboardPage() {
 
             {/* Modal Scrollable Content */}
             <div className="overflow-y-auto p-6 space-y-6">
-              {/* 1. Hero AI Verdict Card */}
-              {selectedBundleForAudit.aiVerdict ? (
-                <div className={`rounded-2xl p-6 border relative overflow-hidden ${
-                  selectedBundleForAudit.aiVerdict.decision === "SELECTED"
-                    ? "bg-gradient-to-r from-emerald-950/40 via-emerald-900/10 to-card border-emerald-500/40"
-                    : "bg-gradient-to-r from-rose-950/40 via-rose-900/10 to-card border-rose-500/40"
-                }`}>
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                    <div className="space-y-1.5">
-                      <div className="flex items-center space-x-2">
-                        {selectedBundleForAudit.aiVerdict.decision === "SELECTED" ? (
-                          <span className="px-3 py-1 rounded-xl text-xs font-black bg-emerald-500 text-black uppercase tracking-wider flex items-center space-x-1.5 shadow-md shadow-emerald-500/20">
-                            <ThumbsUp className="w-3.5 h-3.5 fill-black" />
-                            <span>AI HIRING VERDICT: SELECTED</span>
-                          </span>
-                        ) : (
-                          <span className="px-3 py-1 rounded-xl text-xs font-black bg-rose-500 text-white uppercase tracking-wider flex items-center space-x-1.5 shadow-md shadow-rose-500/20">
-                            <ThumbsDown className="w-3.5 h-3.5 fill-white" />
-                            <span>AI HIRING VERDICT: DESELECTED</span>
-                          </span>
-                        )}
-                        <span className="text-xs font-bold font-mono text-muted-foreground">
-                          TIER: {selectedBundleForAudit.aiVerdict.recommendationTier.replace("_", " ")}
-                        </span>
-                      </div>
-                      <p className="text-xs text-muted-foreground">
-                        Hiring Bar Threshold: <span className="font-mono font-bold text-foreground">{selectedBundleForAudit.aiVerdict.hiringBarThreshold}%</span> • Candidate Composite: <span className="font-mono font-bold text-foreground">{selectedBundleForAudit.compositeScore}%</span>
-                      </p>
-                    </div>
-
-                    <div className="text-right">
-                      <div className="text-xs font-semibold text-muted-foreground">Autonomous AI Confidence</div>
-                      <div className={`text-3xl font-black font-mono ${
-                        selectedBundleForAudit.aiVerdict.decision === "SELECTED" ? "text-emerald-500" : "text-rose-500"
-                      }`}>
-                        {selectedBundleForAudit.aiVerdict.confidenceScore}%
-                      </div>
-                      <span className="text-[10px] text-muted-foreground font-mono">Calibrated via Bayesian Scrutiny</span>
-                    </div>
-                  </div>
-
-                  {/* Anti Cheat Badge */}
-                  <div className="mt-4 pt-4 border-t border-border/50 flex flex-wrap items-center justify-between text-xs">
-                    <div className="flex items-center space-x-2">
-                      <span className="text-muted-foreground">Telemetry Integrity:</span>
-                      {selectedBundleForAudit.aiVerdict.antiCheatVerdict === "VERIFIED_CLEAN" ? (
-                        <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 flex items-center space-x-1">
-                          <ShieldCheck className="w-3 h-3" />
-                          <span>VERIFIED CLEAN (No External AI Watermark)</span>
-                        </span>
-                      ) : (
-                        <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-rose-500/15 text-rose-600 dark:text-rose-400 border border-rose-500/30 flex items-center space-x-1">
-                          <ShieldAlert className="w-3 h-3" />
-                          <span>FLAGGED SUSPICIOUS (Mass Paste / Dishonesty Detected)</span>
-                        </span>
-                      )}
-                    </div>
-
-                    <div className="text-[11px] font-mono text-muted-foreground">
-                      Decision Timestamp: {new Date(selectedBundleForAudit.aiVerdict.decisionTimestamp).toLocaleString()}
-                    </div>
-                  </div>
+              {/* 1. Status and reminder that a human decides */}
+              <div className="rounded-2xl p-5 border border-indigo-500/30 bg-indigo-500/5 space-y-2">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold border ${REVIEW_STATUS_STYLES[reviewStatus(selectedBundleForAudit)]}`}>
+                    {REVIEW_STATUS_LABELS[reviewStatus(selectedBundleForAudit)]}
+                  </span>
+                  {selectedBundleForAudit.aiVerdict && (
+                    <span className="text-xs text-muted-foreground">
+                      Integrity signals: {selectedBundleForAudit.aiVerdict.antiCheatVerdict === "VERIFIED_CLEAN" ? "none raised" : "some raised; discuss with the candidate"}
+                    </span>
+                  )}
                 </div>
-              ) : (
-                <div className="p-5 rounded-2xl bg-muted/40 border border-border text-center space-y-1">
-                  <Clock className="w-6 h-6 text-indigo-500 mx-auto" />
-                  <h4 className="text-sm font-bold text-foreground">Candidate Still in Pipeline</h4>
-                  <p className="text-xs text-muted-foreground">The AI Interview panel will synthesize final hiring verdict upon Stage 3 completion.</p>
-                </div>
-              )}
+                <p className="text-xs text-muted-foreground">
+                  Scores and the AI-generated summary below are reference material. The platform does not advance or decline
+                  candidates; a recruiter records every decision, with a rationale, on the evidence pack.
+                </p>
+              </div>
 
               {/* 2. 4-Stage Diagnostics KPI Grid */}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -1595,7 +1514,7 @@ export default function RecruiterDashboardPage() {
                   <div className="flex items-center space-x-2">
                     <Sparkles className="w-4 h-4 text-indigo-500" />
                     <h4 className="text-xs font-bold uppercase tracking-wider text-foreground">
-                      AI Executive Hiring Evaluation Rationale
+                      AI-Generated Interview Summary (Reference Only)
                     </h4>
                   </div>
                   <p className="text-xs text-foreground/90 leading-relaxed">
@@ -1631,7 +1550,7 @@ export default function RecruiterDashboardPage() {
                   <div className="p-4 rounded-2xl bg-rose-500/5 border border-rose-500/20 space-y-2.5">
                     <div className="flex items-center space-x-1.5 text-xs font-bold text-rose-600 dark:text-rose-400">
                       <AlertTriangle className="w-4 h-4" />
-                      <span>Fatal Deficiencies &amp; Corporate Red Flags</span>
+                      <span>Gaps Noted in the Interview</span>
                     </div>
                     {selectedBundleForAudit.aiVerdict.fatalDeficiencies.length > 0 ? (
                       <ul className="space-y-1.5">
@@ -1643,20 +1562,20 @@ export default function RecruiterDashboardPage() {
                         ))}
                       </ul>
                     ) : (
-                      <p className="text-xs text-muted-foreground italic">No fatal deficiencies identified.</p>
+                      <p className="text-xs text-muted-foreground italic">No gaps noted.</p>
                     )}
                   </div>
                 </div>
               )}
 
-              {/* 5. Autonomous AI Audio Dialogue & Transcript Log */}
+              {/* 5. Voice defense transcript */}
               {selectedBundleForAudit.aiVerdict?.transcriptLog && selectedBundleForAudit.aiVerdict.transcriptLog.length > 0 && (
                 <div className="p-5 rounded-2xl bg-card border border-border space-y-3">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-2">
                       <MessageSquare className="w-4 h-4 text-purple-500" />
                       <h4 className="text-xs font-bold uppercase tracking-wider text-foreground">
-                        Autonomous AI Interviewer &amp; Candidate Spoken Dialogue
+                        Voice Defense Transcript
                       </h4>
                     </div>
                     <span className="text-[10px] font-mono text-muted-foreground">
@@ -1700,76 +1619,28 @@ export default function RecruiterDashboardPage() {
                 </div>
               )}
 
-              {/* 6. Corporate Recruiter Action Center */}
+              {/* 6. Next step: human review on the evidence pack */}
               <div className="p-5 rounded-2xl bg-card border border-indigo-500/30 space-y-3">
                 <div className="flex items-center space-x-2">
                   <Briefcase className="w-4 h-4 text-indigo-500" />
                   <h4 className="text-xs font-bold uppercase tracking-wider text-foreground">
-                    Corporate Hiring Panel Decision &amp; Action
+                    Review &amp; Decision
                   </h4>
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  Current Corporate Status:{" "}
-                  <span className="font-bold text-foreground">
-                    {selectedBundleForAudit.corporateDecisionStatus?.replace("_", " ") ?? "PENDING REVIEW"}
-                  </span>
+                  Current status:{" "}
+                  <span className="font-bold text-foreground">{REVIEW_STATUS_LABELS[reviewStatus(selectedBundleForAudit)]}</span>.
+                  Record Advance, Hold or Decline with a rationale from the evidence review queue.
                 </p>
 
-                <div>
-                  <label className="text-[11px] font-semibold text-muted-foreground block mb-1">
-                    Recruiter Panel Review Notes (Optional)
-                  </label>
-                  <input
-                    type="text"
-                    value={recruiterActionNotes}
-                    onChange={(e) => setRecruiterActionNotes(e.target.value)}
-                    placeholder="e.g. Compensation package aligned with Director approval..."
-                    className="w-full bg-background border border-border rounded-xl px-3 py-2 text-xs text-foreground focus:outline-none focus:border-indigo-500"
-                  />
-                </div>
-
                 <div className="flex flex-wrap items-center gap-2 pt-1">
-                  {selectedBundleForAudit.aiVerdict?.decision === "SELECTED" ? (
-                    <>
-                      <button
-                        onClick={() => handleRecruiterAction("EXTEND_OFFER")}
-                        disabled={recruiterActionSubmitting}
-                        className="py-2.5 px-4 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs cursor-pointer shadow-lg shadow-emerald-600/20 flex items-center space-x-2 disabled:opacity-50"
-                      >
-                        <CheckCheck className="w-3.5 h-3.5" />
-                        <span>Accept AI Verdict: Issue Formal Offer</span>
-                      </button>
-
-                      <button
-                        onClick={() => handleRecruiterAction("OVERRIDE_DESELECT")}
-                        disabled={recruiterActionSubmitting}
-                        className="py-2.5 px-3 rounded-xl bg-card hover:bg-muted text-muted-foreground hover:text-foreground font-semibold text-xs border border-border cursor-pointer flex items-center space-x-1.5 disabled:opacity-50"
-                      >
-                        <XCircle className="w-3.5 h-3.5 text-rose-500" />
-                        <span>Manual Override: Reject Anyway</span>
-                      </button>
-                    </>
-                  ) : (
-                    <>
-                      <button
-                        onClick={() => handleRecruiterAction("ISSUE_REJECTION")}
-                        disabled={recruiterActionSubmitting}
-                        className="py-2.5 px-4 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs cursor-pointer shadow-lg shadow-rose-600/20 flex items-center space-x-2 disabled:opacity-50"
-                      >
-                        <XCircle className="w-3.5 h-3.5" />
-                        <span>Accept AI Verdict: Send Rejection Notice</span>
-                      </button>
-
-                      <button
-                        onClick={() => handleRecruiterAction("OVERRIDE_SELECT")}
-                        disabled={recruiterActionSubmitting}
-                        className="py-2.5 px-3 rounded-xl bg-card hover:bg-muted text-muted-foreground hover:text-foreground font-semibold text-xs border border-border cursor-pointer flex items-center space-x-1.5 disabled:opacity-50"
-                      >
-                        <CheckCheck className="w-3.5 h-3.5 text-emerald-500" />
-                        <span>Manual Override: Advance Candidate</span>
-                      </button>
-                    </>
-                  )}
+                  <Link
+                    href="/recruiter/evidence"
+                    className="py-2.5 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs cursor-pointer flex items-center space-x-2"
+                  >
+                    <FileSearch className="w-3.5 h-3.5" />
+                    <span>Review</span>
+                  </Link>
 
                   <a
                     href={`/assessment/${selectedBundleForAudit.token}`}

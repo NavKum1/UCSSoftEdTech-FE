@@ -1,46 +1,89 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
-import { Mic, MicOff, PhoneCall, PhoneOff, Sparkles, AlertTriangle, Volume2 } from "lucide-react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
+import Link from "next/link";
+import { Mic, MicOff, PhoneCall, PhoneOff, Sparkles, AlertTriangle, Volume2, ArrowRight, Info } from "lucide-react";
 import { useAuth } from "@clerk/nextjs";
+import { authenticatedFetch } from "@/lib/apiClient";
 
 interface OpenAIRealtimeInterviewRoomProps {
-  userId: string;
-  jobDescription: string;
-  selectedTenantId: string;
+  userId?: string;
+  jobDescription?: string;
+  selectedTenantId?: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   onLeadReferralGenerated?: (referrals: any[]) => void;
   personaCode?: string;
   dialectCode?: string;
 }
 
+interface TranscriptLine {
+  role: "Candidate" | "AI Interviewer";
+  text: string;
+  timestamp: string;
+}
+
+interface PracticeFeedback {
+  overallScore: number;
+  status?: string;
+  disqualificationReason?: string | null;
+  dimensions?: Array<{ label: string; score: number }>;
+  strengths?: string[];
+  improvements?: string[];
+}
+
+interface UpgradePrompt {
+  message: string;
+  usageResetsAt?: string;
+}
+
+async function readJson<T>(res: Response): Promise<T | null> {
+  try {
+    return (await res.json()) as T;
+  } catch {
+    return null;
+  }
+}
+
 export default function OpenAIRealtimeInterviewRoom({
-  userId,
   jobDescription,
-  selectedTenantId,
-  onLeadReferralGenerated,
+  personaCode,
 }: OpenAIRealtimeInterviewRoomProps) {
   const { getToken } = useAuth();
-  
+
   const [callStatus, setCallStatus] = useState<"idle" | "connecting" | "active" | "ended">("idle");
-  const [transcripts, setTranscripts] = useState<Array<{ role: string; text: string }>>([]);
+  const [transcripts, setTranscripts] = useState<TranscriptLine[]>([]);
   const [isMuted, setIsMuted] = useState<boolean>(false);
   const [volumeLevel, setVolumeLevel] = useState<number>(0);
   const [micPermission, setMicPermission] = useState<"prompt" | "granted" | "denied">("prompt");
-  const [technicalScore, setTechnicalScore] = useState<number | null>(null);
-  const [missingSkills, setMissingSkills] = useState<string[]>([]);
+  const [feedback, setFeedback] = useState<PracticeFeedback | null>(null);
+  const [upgradePrompt, setUpgradePrompt] = useState<UpgradePrompt | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [statusMessage, setStatusMessage] = useState<string>("Ready to begin interview with ultra-low latency WebRTC.");
+  const [statusMessage, setStatusMessage] = useState<string>("Ready to begin a practice interview.");
 
-  // WebRTC Refs
   const peerConnectionRef = useRef<RTCPeerConnection | null>(null);
   const localStreamRef = useRef<MediaStream | null>(null);
   const dataChannelRef = useRef<RTCDataChannel | null>(null);
   const audioElementRef = useRef<HTMLAudioElement | null>(null);
-  const volumeIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const volumeIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
+  const transcriptRef = useRef<TranscriptLine[]>([]);
+  const startedAtRef = useRef<number | null>(null);
+
+  const releaseMedia = useCallback(() => {
+    peerConnectionRef.current?.close();
+    peerConnectionRef.current = null;
+    dataChannelRef.current = null;
+    localStreamRef.current?.getTracks().forEach((track) => track.stop());
+    localStreamRef.current = null;
+    if (volumeIntervalRef.current) {
+      clearInterval(volumeIntervalRef.current);
+      volumeIntervalRef.current = null;
+    }
+    void audioContextRef.current?.close().catch(() => undefined);
+    audioContextRef.current = null;
+  }, []);
 
   useEffect(() => {
-    // Create a hidden audio element to play the incoming remote stream
     const audioEl = document.createElement("audio");
     audioEl.autoplay = true;
     audioElementRef.current = audioEl;
@@ -48,16 +91,22 @@ export default function OpenAIRealtimeInterviewRoom({
 
     return () => {
       audioEl.remove();
-      handleEndCallAndEvaluate();
+      releaseMedia();
     };
-  }, []);
+  }, [releaseMedia]);
+
+  const appendTranscript = (role: TranscriptLine["role"], text: string) => {
+    if (!text) return;
+    transcriptRef.current = [...transcriptRef.current, { role, text, timestamp: new Date().toISOString() }];
+    setTranscripts(transcriptRef.current);
+  };
 
   const requestMicrophoneAccess = async (): Promise<MediaStream | null> => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       setMicPermission("granted");
       return stream;
-    } catch (err) {
+    } catch {
       setMicPermission("denied");
       setStatusMessage("Microphone permission denied. Please enable microphone access.");
       return null;
@@ -89,27 +138,35 @@ export default function OpenAIRealtimeInterviewRoom({
 
   const handleStartInterview = async () => {
     setIsLoading(true);
-    setStatusMessage("Fetching ephemeral token from secure backend...");
+    setUpgradePrompt(null);
+    setFeedback(null);
+    setStatusMessage("Requesting a practice session...");
 
-    // 1. Get Ephemeral Token from our .NET backend
     let ephemeralToken = "";
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/interview/token`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ JobDescription: jobDescription })
-      });
-      
+      const res = await authenticatedFetch(
+        "/api/interview/token",
+        { method: "POST", body: JSON.stringify({ jobDescription, personaCode }) },
+        getToken
+      );
+
       if (!res.ok) {
-        throw new Error("Failed to fetch token from backend");
+        const err = await readJson<{ error?: string; requiresUpgrade?: boolean; usageResetsAt?: string }>(res);
+        if (res.status === 403 && err?.requiresUpgrade) {
+          setUpgradePrompt({ message: err.error || "Voice minutes exhausted", usageResetsAt: err.usageResetsAt });
+          setStatusMessage("You have no voice minutes left this period.");
+          setIsLoading(false);
+          return;
+        }
+        if (res.status === 401) throw new Error("Please sign in to start a practice session.");
+        throw new Error(err?.error || `Server returned ${res.status}`);
       }
-      
-      const data = await res.json();
+
+      const data = await readJson<{ client_secret?: string }>(res);
+      if (!data?.client_secret) throw new Error("The server did not return a session token.");
       ephemeralToken = data.client_secret;
-    } catch (error: any) {
-      setStatusMessage(`Error: ${error.message}`);
+    } catch (error) {
+      setStatusMessage(`Error: ${error instanceof Error ? error.message : "could not start session"}`);
       setIsLoading(false);
       return;
     }
@@ -123,86 +180,71 @@ export default function OpenAIRealtimeInterviewRoom({
     localStreamRef.current = stream;
     setupAudioVolumeMeter(stream);
 
+    transcriptRef.current = [];
+    setTranscripts([]);
     setCallStatus("connecting");
-    setStatusMessage("Establishing WebRTC connection to OpenAI...");
+    setStatusMessage("Connecting...");
 
-    // 2. Initialize WebRTC Peer Connection
     const pc = new RTCPeerConnection();
     peerConnectionRef.current = pc;
-
-    // Add local mic track to Peer Connection
     stream.getTracks().forEach((track) => pc.addTrack(track, stream));
 
-    // Handle incoming audio from OpenAI
     pc.ontrack = (event) => {
       if (audioElementRef.current) {
         audioElementRef.current.srcObject = event.streams[0];
       }
     };
 
-    // 3. Create Data Channel for Transcripts & Events
     const dc = pc.createDataChannel("oai-events");
     dataChannelRef.current = dc;
 
     dc.onopen = () => {
+      startedAtRef.current = Date.now();
       setCallStatus("active");
-      setStatusMessage("Connection established. Interviewer is ready.");
-      
-      // Optionally trigger the AI to speak first via a client event
-      const event = {
-        type: "response.create",
-        response: {
-          modalities: ["audio", "text"],
-          instructions: "Introduce yourself as the technical interviewer and ask the candidate if they are ready to begin."
-        }
-      };
-      dc.send(JSON.stringify(event));
+      setStatusMessage("Connected. The practice interviewer is ready.");
+      dc.send(
+        JSON.stringify({
+          type: "response.create",
+          response: {
+            modalities: ["audio", "text"],
+            instructions: "Introduce yourself as the technical interviewer and ask the candidate if they are ready to begin.",
+          },
+        })
+      );
     };
 
     dc.onmessage = (e) => {
       try {
         const msg = JSON.parse(e.data);
-        // Handle transcript events
-        if (msg.type === "response.audio_transcript.done") {
-          setTranscripts(prev => [...prev, { role: "AI Interviewer", text: msg.transcript }]);
-        }
-        if (msg.type === "conversation.item.input_audio_transcription.completed") {
-          setTranscripts(prev => [...prev, { role: "Candidate", text: msg.transcript }]);
-        }
+        if (msg.type === "response.audio_transcript.done") appendTranscript("AI Interviewer", msg.transcript);
+        if (msg.type === "conversation.item.input_audio_transcription.completed") appendTranscript("Candidate", msg.transcript);
       } catch (err) {
         console.error("Error parsing data channel message", err);
       }
     };
 
-    // 4. Create Offer & Set Local Description
     try {
       const offer = await pc.createOffer();
       await pc.setLocalDescription(offer);
 
-      // 5. Send Offer to OpenAI to get Answer
       const sdpResponse = await fetch("https://api.openai.com/v1/realtime/calls", {
         method: "POST",
         body: offer.sdp,
         headers: {
           Authorization: `Bearer ${ephemeralToken}`,
-          "Content-Type": "application/sdp"
-        }
+          "Content-Type": "application/sdp",
+        },
       });
 
       if (!sdpResponse.ok) {
         const errDetail = await sdpResponse.text().catch(() => "");
-        throw new Error(`Failed to connect to OpenAI WebRTC endpoint (${sdpResponse.status}): ${errDetail}`);
+        throw new Error(`Failed to connect to the realtime endpoint (${sdpResponse.status}): ${errDetail}`);
       }
 
-      const answerSdp = await sdpResponse.text();
-      const answer = {
-        type: "answer" as RTCSdpType,
-        sdp: answerSdp
-      };
-
-      await pc.setRemoteDescription(answer);
-    } catch (error: any) {
-      setStatusMessage(`WebRTC Error: ${error.message}`);
+      await pc.setRemoteDescription({ type: "answer", sdp: await sdpResponse.text() });
+    } catch (error) {
+      releaseMedia();
+      setStatusMessage(`Connection error: ${error instanceof Error ? error.message : "unknown error"}`);
       setCallStatus("idle");
     } finally {
       setIsLoading(false);
@@ -210,66 +252,54 @@ export default function OpenAIRealtimeInterviewRoom({
   };
 
   const toggleMute = () => {
-    if (localStreamRef.current) {
-      const audioTracks = localStreamRef.current.getAudioTracks();
-      if (audioTracks.length > 0) {
-        audioTracks[0].enabled = isMuted; // If currently muted, enable it.
-        setIsMuted(!isMuted);
-      }
+    const track = localStreamRef.current?.getAudioTracks()[0];
+    if (track) {
+      track.enabled = isMuted;
+      setIsMuted(!isMuted);
     }
   };
 
-  const handleEndCallAndEvaluate = async () => {
-    if (peerConnectionRef.current) {
-      peerConnectionRef.current.close();
-      peerConnectionRef.current = null;
-    }
-    if (localStreamRef.current) {
-      localStreamRef.current.getTracks().forEach(track => track.stop());
-      localStreamRef.current = null;
-    }
-    if (volumeIntervalRef.current) {
-      clearInterval(volumeIntervalRef.current);
+  const handleEndPractice = async () => {
+    releaseMedia();
+    setVolumeLevel(0);
+    setCallStatus("ended");
+
+    const lines = transcriptRef.current;
+    if (lines.length === 0) {
+      setStatusMessage("Practice session ended.");
+      return;
     }
 
-    setCallStatus("ended");
     setIsLoading(true);
-    setStatusMessage("Interview ended. Analyzing transcript for skill evaluation...");
+    setStatusMessage("Practice session ended. Preparing feedback...");
 
     try {
-      const fullTranscript = transcripts.map((t) => `${t.role}: ${t.text}`).join("\n");
-
-      const generatedSessionId = typeof crypto !== "undefined" && typeof crypto.randomUUID === "function" 
-        ? crypto.randomUUID() 
-        : `a0000000-0000-0000-0000-${Date.now().toString(16).padStart(12, "0")}`;
-
-      const payload = {
-        sessionId: generatedSessionId,
-        userId: userId || "11111111-2222-3333-4444-555555555555",
-        transcript: fullTranscript,
-      };
-
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/interview/webhook`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "X-Institute-Id": selectedTenantId,
+      const startedAt = startedAtRef.current;
+      const durationMinutes = startedAt ? Math.max(1, Math.ceil((Date.now() - startedAt) / 60000)) : 1;
+      const res = await authenticatedFetch(
+        "/api/interview/evaluate",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            jobDescription,
+            personaCode,
+            durationMinutes,
+            transcripts: lines.map((t) => ({
+              role: t.role === "Candidate" ? "candidate" : "interviewer",
+              text: t.text,
+              timestamp: t.timestamp,
+            })),
+          }),
         },
-        body: JSON.stringify(payload),
-      });
+        getToken
+      );
 
-      const data = await res.json();
-      if (res.ok) {
-        setTechnicalScore(data.technicalScore);
-        setMissingSkills(data.missingSkills || []);
-        setStatusMessage(`Evaluation Complete! Technical Score: ${data.technicalScore}%. Identified Skill Gaps: ${data.missingSkills?.join(", ")}`);
-
-        if (data.createdReferrals && onLeadReferralGenerated) {
-          onLeadReferralGenerated(data.createdReferrals);
-        }
-      }
-    } catch (err: any) {
-      setStatusMessage("Failed to analyze interview results.");
+      const data = await readJson<PracticeFeedback>(res);
+      if (!res.ok || !data) throw new Error(`HTTP ${res.status}`);
+      setFeedback(data);
+      setStatusMessage("Practice feedback ready.");
+    } catch {
+      setStatusMessage("Could not generate practice feedback.");
     } finally {
       setIsLoading(false);
     }
@@ -277,46 +307,49 @@ export default function OpenAIRealtimeInterviewRoom({
 
   return (
     <div className="glass-panel rounded-2xl p-6 border border-border relative overflow-hidden">
-      {/* Header Badge */}
-      <div className="flex items-center justify-between pb-4 border-b border-border">
+      <div className="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-border">
         <div className="flex items-center space-x-3">
           <div className="p-2.5 bg-indigo-500/10 rounded-xl border border-indigo-500/20 text-indigo-700 dark:text-indigo-400">
-            <Sparkles className="w-5 h-5 animate-pulse" />
+            <Sparkles className="w-5 h-5" />
           </div>
           <div>
-            <h2 className="text-lg font-semibold text-foreground">AI Voice Interview Simulator</h2>
-            <p className="text-xs text-muted-foreground">Powered by OpenAI Realtime WebRTC</p>
+            <h2 className="text-lg font-semibold text-foreground">AI Voice Interview Practice</h2>
+            <p className="text-xs text-muted-foreground">Practice — not graded, no credential</p>
           </div>
         </div>
 
         <span
-          className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border ${callStatus === "active"
+          className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border ${
+            callStatus === "active"
               ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/30"
               : callStatus === "connecting"
                 ? "bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/30"
                 : callStatus === "ended"
                   ? "bg-purple-500/10 text-purple-700 dark:text-purple-400 border-purple-500/30"
                   : "bg-muted text-muted-foreground border-border"
-            }`}
+          }`}
         >
-          <span
-            className={`w-2 h-2 rounded-full mr-2 ${callStatus === "active" ? "bg-emerald-400 animate-ping" : "bg-slate-500"
-              }`}
-          ></span>
+          <span className={`w-2 h-2 rounded-full mr-2 ${callStatus === "active" ? "bg-emerald-400 animate-ping" : "bg-slate-500"}`}></span>
           {callStatus.toUpperCase()}
         </span>
       </div>
 
-      {/* Main Grid: Controls & Waveform */}
+      <div className="mt-4 p-3 rounded-xl border border-border bg-muted/50 text-xs text-muted-foreground flex items-start gap-2">
+        <Info className="w-4 h-4 shrink-0 mt-0.5 text-indigo-700 dark:text-indigo-400" />
+        <span>
+          Practice — not graded, no credential. Feedback here is for your own preparation and is never shared with employers.
+          Starting a session reserves up to one session’s maximum length from your voice balance.
+        </span>
+      </div>
+
       <div className="my-6 grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="md:col-span-1 glass-card rounded-xl p-5 flex flex-col justify-between border border-border">
           <div>
-            <h3 className="text-sm font-semibold text-muted-foreground mb-2">User Microphone Input</h3>
+            <h3 className="text-sm font-semibold text-muted-foreground mb-2">Microphone</h3>
             <p className="text-xs text-muted-foreground mb-4">
-              Microphone status: <span className="font-semibold text-indigo-700 dark:text-indigo-400">{micPermission}</span>
+              Status: <span className="font-semibold text-indigo-700 dark:text-indigo-400">{micPermission}</span>
             </p>
 
-            {/* Audio Waveform & Mic Volume Meter */}
             <div className="h-24 bg-card/90 rounded-xl border border-border flex flex-col items-center justify-center space-y-2 px-4">
               {callStatus === "active" ? (
                 <>
@@ -335,7 +368,7 @@ export default function OpenAIRealtimeInterviewRoom({
                   </div>
                 </>
               ) : (
-                <span className="text-xs text-muted-foreground">Microphone stream idle</span>
+                <span className="text-xs text-muted-foreground">Microphone idle</span>
               )}
             </div>
           </div>
@@ -345,57 +378,58 @@ export default function OpenAIRealtimeInterviewRoom({
               <button
                 onClick={handleStartInterview}
                 disabled={isLoading}
-                className="w-full py-3 px-4 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-medium rounded-xl shadow-lg shadow-indigo-500/25 flex items-center justify-center space-x-2 transition-all duration-200 cursor-pointer"
+                className="w-full py-3 px-4 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 disabled:opacity-60 text-white font-medium rounded-xl shadow-lg shadow-indigo-500/25 flex items-center justify-center space-x-2 transition-all duration-200 cursor-pointer"
               >
                 <PhoneCall className="w-4 h-4" />
-                <span>{isLoading ? "Fetching Token..." : "Start Native WebRTC Interview"}</span>
+                <span>{isLoading ? "Please wait..." : "Start Practice Interview"}</span>
               </button>
             ) : (
               <div className="flex space-x-2">
                 <button
                   onClick={toggleMute}
-                  className={`flex-1 py-3 px-3 rounded-xl border text-xs font-medium flex items-center justify-center space-x-1.5 cursor-pointer ${isMuted
+                  className={`flex-1 py-3 px-3 rounded-xl border text-xs font-medium flex items-center justify-center space-x-1.5 cursor-pointer ${
+                    isMuted
                       ? "bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/30"
-                      : "bg-muted text-muted-foreground border-border hover:bg-slate-700"
-                    }`}
+                      : "bg-muted text-muted-foreground border-border hover:bg-muted/70"
+                  }`}
                 >
                   {isMuted ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
                   <span>{isMuted ? "Muted" : "Mute Mic"}</span>
                 </button>
                 <button
-                  onClick={handleEndCallAndEvaluate}
+                  onClick={handleEndPractice}
                   disabled={isLoading}
                   className="flex-1 py-3 px-3 bg-red-600/90 hover:bg-red-500 text-white rounded-xl text-xs font-medium flex items-center justify-center space-x-1.5 cursor-pointer transition-colors"
                 >
                   <PhoneOff className="w-4 h-4" />
-                  <span>End & Evaluate</span>
+                  <span>End Practice</span>
                 </button>
               </div>
             )}
           </div>
         </div>
 
-        {/* Live Transcript Stream */}
         <div className="md:col-span-2 glass-card rounded-xl p-5 flex flex-col border border-border min-h-[220px]">
           <div className="flex items-center justify-between mb-3">
-            <h3 className="text-sm font-semibold text-muted-foreground">Live WebRTC Transcript Stream</h3>
+            <h3 className="text-sm font-semibold text-muted-foreground">Live Transcript</h3>
             <span className="text-xs text-muted-foreground">{transcripts.length} messages</span>
           </div>
 
           <div className="flex-1 bg-background/80 rounded-xl p-4 border border-border overflow-y-auto max-h-[200px] space-y-3">
             {transcripts.length === 0 ? (
               <div className="h-full flex items-center justify-center text-xs text-muted-foreground italic">
-                Click "Start Native WebRTC Interview" to establish PeerConnection...
+                The transcript appears here once the practice session starts.
               </div>
             ) : (
               transcripts.map((t, idx) => (
                 <div key={idx} className={`flex flex-col ${t.role === "Candidate" ? "items-end" : "items-start"}`}>
                   <span className="text-[10px] text-muted-foreground mb-0.5 font-medium">{t.role}</span>
                   <div
-                    className={`max-w-[85%] rounded-xl px-3 py-2 text-xs ${t.role === "Candidate"
+                    className={`max-w-[85%] rounded-xl px-3 py-2 text-xs ${
+                      t.role === "Candidate"
                         ? "bg-indigo-600 text-white rounded-tr-none"
                         : "bg-muted text-foreground border border-border rounded-tl-none"
-                      }`}
+                    }`}
                   >
                     {t.text}
                   </div>
@@ -406,7 +440,29 @@ export default function OpenAIRealtimeInterviewRoom({
         </div>
       </div>
 
-      {/* Status Bar */}
+      {upgradePrompt && (
+        <div className="mt-4 p-4 rounded-xl border border-amber-500/30 bg-amber-50 dark:bg-amber-500/10 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="flex items-start gap-2 text-xs text-amber-900 dark:text-amber-200">
+            <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
+            <div>
+              <p className="font-semibold">{upgradePrompt.message}</p>
+              {upgradePrompt.usageResetsAt && (
+                <p className="mt-0.5 text-amber-800/80 dark:text-amber-200/80">
+                  Your monthly minutes reset on {new Date(upgradePrompt.usageResetsAt).toLocaleDateString()}.
+                </p>
+              )}
+            </div>
+          </div>
+          <Link
+            href="/pricing"
+            className="inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold shrink-0"
+          >
+            See plans &amp; top-ups
+            <ArrowRight className="w-3.5 h-3.5" />
+          </Link>
+        </div>
+      )}
+
       {statusMessage && (
         <div className="mt-4 p-3 bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-200 dark:border-indigo-500/30 rounded-xl text-xs text-indigo-800 dark:text-indigo-300 flex items-center space-x-2">
           <Sparkles className="w-4 h-4 text-indigo-700 dark:text-indigo-400 shrink-0" />
@@ -414,32 +470,53 @@ export default function OpenAIRealtimeInterviewRoom({
         </div>
       )}
 
-      {/* Diagnostic Evaluation Result */}
-      {technicalScore !== null && (
-        <div className="mt-6 p-5 bg-card border border-border dark:bg-gradient-to-r dark:from-purple-950/40 dark:to-slate-900 dark:border-purple-500/30 rounded-xl">
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center space-x-2">
-              <AlertTriangle className="w-5 h-5 text-amber-700 dark:text-amber-400" />
-              <h4 className="text-sm font-semibold text-foreground">AI Skill Gap Evaluation</h4>
+      {feedback && (
+        <div className="mt-6 p-5 bg-card border border-border rounded-xl space-y-4">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h4 className="text-sm font-semibold text-foreground">Practice Feedback</h4>
+              <p className="text-[11px] text-muted-foreground">Not graded · no credential · not shared</p>
             </div>
             <div className="text-sm font-bold text-indigo-700 dark:text-indigo-400 bg-indigo-500/10 px-3 py-1 rounded-lg border border-indigo-500/20">
-              Score: {technicalScore}%
+              Practice score: {Math.round(feedback.overallScore)}%
             </div>
           </div>
 
-          <p className="text-xs text-muted-foreground mb-3">
-            Evaluation complete. AI Lead Routing Engine triggered referral insertion:
-          </p>
+          {feedback.disqualificationReason && (
+            <p className="text-xs text-amber-800 dark:text-amber-300">{feedback.disqualificationReason}</p>
+          )}
 
-          <div className="flex flex-wrap gap-2">
-            {missingSkills.length > 0 ? missingSkills.map((skill, idx) => (
-              <span key={idx} className="px-3 py-1 rounded-lg text-xs font-semibold bg-red-500/20 text-red-600 dark:text-red-300 border border-red-500/30">
-                ⚠️ Failed Skill Gap: {skill}
-              </span>
-            )) : (
-              <span className="px-3 py-1 rounded-lg text-xs font-semibold bg-emerald-500/20 text-emerald-600 dark:text-emerald-300 border border-emerald-500/30">
-                ✅ Strong Technical Competency Demonstrated
-              </span>
+          {feedback.dimensions && feedback.dimensions.length > 0 && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              {feedback.dimensions.map((d) => (
+                <div key={d.label} className="p-2.5 rounded-lg border border-border bg-background/60 text-xs flex items-center justify-between gap-2">
+                  <span className="text-muted-foreground">{d.label}</span>
+                  <span className="font-semibold text-foreground">{Math.round(d.score)}%</span>
+                </div>
+              ))}
+            </div>
+          )}
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+            {feedback.strengths && feedback.strengths.length > 0 && (
+              <div>
+                <p className="font-semibold text-emerald-700 dark:text-emerald-400 mb-1">Strengths</p>
+                <ul className="list-disc pl-4 space-y-1 text-muted-foreground">
+                  {feedback.strengths.map((s, i) => (
+                    <li key={i}>{s}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+            {feedback.improvements && feedback.improvements.length > 0 && (
+              <div>
+                <p className="font-semibold text-amber-700 dark:text-amber-400 mb-1">To improve</p>
+                <ul className="list-disc pl-4 space-y-1 text-muted-foreground">
+                  {feedback.improvements.map((s, i) => (
+                    <li key={i}>{s}</li>
+                  ))}
+                </ul>
+              </div>
             )}
           </div>
         </div>

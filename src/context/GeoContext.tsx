@@ -42,9 +42,9 @@ export const REGIONS: Record<Region, RegionComplianceConfig> = {
     locale: "en-US",
     rateMultiplier: 0.05, // e.g. 1500 INR -> $75.00
     complianceBadges: [
-      { label: "SOC 2 Type II", desc: "Enterprise Audited", dot: "bg-emerald-400" },
-      { label: "FERPA Certified", desc: "US Higher-Ed Privacy", dot: "bg-blue-400" },
-      { label: "California CCPA", desc: "Consumer Data Protection", dot: "bg-purple-400" },
+      { label: "Designed for FERPA", desc: "Built with US higher-ed privacy obligations in mind", dot: "bg-blue-400" },
+      { label: "CCPA / CPRA", desc: "Consumer data rights supported", dot: "bg-purple-400" },
+      { label: "Hash-Chained Audit Log", desc: "Tamper-evident event trail", dot: "bg-emerald-400" },
     ],
     tax: {
       regimeTitle: "IRS Form 1099-NEC & W-9 Independent Contractor Ledger",
@@ -53,11 +53,11 @@ export const REGIONS: Record<Region, RegionComplianceConfig> = {
       certificateName: "IRS Form 1099-NEC",
       taxIdLabel: "Tax ID (SSN / EIN / ITIN)",
       taxIdPlaceholder: "XX-XXXXXXX",
-      payoutRail: "ACH Direct Deposit / FedNow (Same-Day)",
-      institutionLegalNotice: "EIN: 12-3456789 • Form 1099-NEC annual summary reported to IRS & dispatched to mentor by Jan 31.",
+      payoutRail: "ACH Direct Deposit",
+      institutionLegalNotice: "Payer tax ID on file • Form 1099-NEC annual summary prepared for IRS reporting and sent to mentors by Jan 31.",
     },
     metrics: {
-      recoveredGmvSample: 42500,
+      recoveredGmvSample: 0,
       taxWithheldSample: 0,
       currencyCode: "USD",
     },
@@ -72,9 +72,9 @@ export const REGIONS: Record<Region, RegionComplianceConfig> = {
     locale: "en-IN",
     rateMultiplier: 1.0, // base 1500 INR -> ₹1,500
     complianceBadges: [
-      { label: "India DPDP Act 2023", desc: "Sovereign In-Region Storage", dot: "bg-purple-400" },
-      { label: "ISO 27001", desc: "Certified Security Posture", dot: "bg-cyan-400" },
-      { label: "Section 194J & GST", desc: "Automated TDS & Form 16A", dot: "bg-emerald-400" },
+      { label: "Designed for DPDP Act 2023", desc: "Built with India data-protection obligations in mind", dot: "bg-purple-400" },
+      { label: "Hash-Chained Audit Log", desc: "Tamper-evident event trail", dot: "bg-cyan-400" },
+      { label: "Section 194J TDS", desc: "Automated TDS calculation & Form 16A", dot: "bg-emerald-400" },
     ],
     tax: {
       regimeTitle: "Indian Statutory Section 194J Professional Services Ledger",
@@ -83,12 +83,12 @@ export const REGIONS: Record<Region, RegionComplianceConfig> = {
       certificateName: "Form 16A TDS Certificate",
       taxIdLabel: "Permanent Account Number (PAN)",
       taxIdPlaceholder: "ABCDE1234F",
-      payoutRail: "NEFT / RTGS / IMPS Instant Payout",
-      institutionLegalNotice: "TAN: BLRE12345T • Section 194J TDS certificate (Form 16A) automatically credited to mentor PAN upon quarterly reconciliation.",
+      payoutRail: "NEFT / RTGS Bank Batch (CSV Export)",
+      institutionLegalNotice: "Deductor TAN on file • Section 194J TDS deducted against mentor PAN; Form 16A issued after quarterly reconciliation.",
     },
     metrics: {
-      recoveredGmvSample: 3450000,
-      taxWithheldSample: 18500,
+      recoveredGmvSample: 0,
+      taxWithheldSample: 0,
       currencyCode: "INR",
     },
   },
@@ -102,9 +102,9 @@ export const REGIONS: Record<Region, RegionComplianceConfig> = {
     locale: "en-GB",
     rateMultiplier: 0.046, // e.g. 1500 INR -> €70.00
     complianceBadges: [
-      { label: "EU GDPR & UK DPA", desc: "Standard Contractual Clauses", dot: "bg-purple-400" },
-      { label: "EU AI Act Compliant", desc: "2024 High-Risk EdTech Conformity", dot: "bg-emerald-400" },
-      { label: "ISO 27001", desc: "Certified Posture", dot: "bg-cyan-400" },
+      { label: "Designed for GDPR & UK GDPR", desc: "Built with EU/UK data-protection obligations in mind", dot: "bg-purple-400" },
+      { label: "EU AI Act Safeguards", desc: "Emotion analysis disabled in EU/EEA; humans make hiring decisions", dot: "bg-emerald-400" },
+      { label: "Hash-Chained Audit Log", desc: "Tamper-evident event trail", dot: "bg-cyan-400" },
     ],
     tax: {
       regimeTitle: "EU DAC7 Directive & VAT Reverse Charge Ledger",
@@ -114,10 +114,10 @@ export const REGIONS: Record<Region, RegionComplianceConfig> = {
       taxIdLabel: "EU VAT Number or National Tax ID",
       taxIdPlaceholder: "EU123456789",
       payoutRail: "SEPA Credit Transfer / BACS",
-      institutionLegalNotice: "EU VAT ID: EU372001928 • Cross-border digital services reported under EU DAC7 Directive.",
+      institutionLegalNotice: "EU VAT ID on file • Cross-border digital services reportable under the EU DAC7 Directive.",
     },
     metrics: {
-      recoveredGmvSample: 39000,
+      recoveredGmvSample: 0,
       taxWithheldSample: 0,
       currencyCode: "EUR",
     },

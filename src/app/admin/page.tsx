@@ -464,7 +464,7 @@ export default function SuperAdminDashboard() {
                   </span>
                 </div>
                 <p className="text-[11px] text-muted-foreground mt-1">
-                  {config.id === "IN" ? "₹999/mo active recurring subscriptions" : config.id === "EU" ? "€11/mo active Stripe recurring subscriptions" : "$12/mo active Stripe recurring subscriptions"}
+                  Active Pro subscriptions
                 </p>
               </div>
             </div>

@@ -174,13 +174,13 @@ export default function Dashboard() {
             <div className="relative z-10 max-w-3xl">
               <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-indigo-100 dark:bg-indigo-500/10 border border-indigo-300 dark:border-indigo-500/20 text-indigo-800 dark:text-indigo-400 text-xs font-semibold mb-4">
                 <Sparkles className="w-3.5 h-3.5" />
-                <span>AI Voice Assessment & Lead Routing Engine</span>
+                <span>AI Voice Assessment & Opt-In Course Recommendations</span>
               </div>
               <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-foreground mb-3 leading-tight">
-                Evaluate Tech Candidates & Bridge Skill Gaps with Partner Certifications
+                Evaluate Tech Candidates & Help Them Close Skill Gaps
               </h1>
               <p className="text-sm text-muted-foreground leading-relaxed">
-                When a candidate fails a technical evaluation during their AI voice interview, our system automatically routes them to partner institutes (e.g. Global ITech) for targeted certification courses.
+                When an AI voice interview reveals skill gaps, the candidate sees course recommendations. Partner-institute courses (e.g. Global ITech) are labeled as sponsored, as we may earn a referral fee, and the candidate's details are shared with a partner only if they opt in.
               </p>
             </div>
           </div>
@@ -263,7 +263,7 @@ export default function Dashboard() {
                   </div>
                   <div>
                     <h3 className="text-base font-semibold text-foreground">
-                      B2B Partner Lead Referrals & Certification Marketplace
+                      B2B Partner Referrals (Candidate Opt-In) & Course Marketplace
                     </h3>
                     <p className="text-xs text-muted-foreground">
                       {selectedTenantId
@@ -274,14 +274,14 @@ export default function Dashboard() {
                 </div>
 
                 <span className="px-3 py-1 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/30 rounded-full text-xs font-semibold">
-                  {leadReferrals.length} Active Lead Referrals
+                  {leadReferrals.length} Opted-In Referrals
                 </span>
               </div>
 
               {/* Mapped Courses */}
               <div>
                 <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">
-                  Partner Certification Courses
+                  Sponsored Partner Courses
                 </h4>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {tenantCourses.length === 0 ? (
@@ -294,7 +294,7 @@ export default function Dashboard() {
                         <div className="flex items-center justify-between">
                           <span className="text-xs font-bold text-indigo-700 dark:text-indigo-400">{c.courseName}</span>
                           <span className="text-[10px] px-2 py-0.5 rounded bg-indigo-500/10 text-indigo-600 dark:text-indigo-300 border border-indigo-500/20">
-                            Partner Course
+                            Sponsored
                           </span>
                         </div>
                         <p className="text-xs text-muted-foreground line-clamp-2">{c.description}</p>
@@ -307,7 +307,7 @@ export default function Dashboard() {
               {/* Lead Referrals Table */}
               <div>
                 <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">
-                  Generated Skill Gap Lead Referrals
+                  Opted-In Skill Gap Referrals
                 </h4>
                 <div className="bg-background/80 rounded-xl border border-border overflow-hidden">
                   <table className="w-full text-left text-xs text-muted-foreground">
@@ -324,7 +324,7 @@ export default function Dashboard() {
                       {leadReferrals.length === 0 ? (
                         <tr>
                           <td colSpan={5} className="px-4 py-6 text-center text-muted-foreground italic">
-                            No lead referrals generated yet. Complete an interview call to trigger lead routing.
+                            No referrals yet. Referrals appear only when a candidate opts in to share their details with a partner institute.
                           </td>
                         </tr>
                       ) : (

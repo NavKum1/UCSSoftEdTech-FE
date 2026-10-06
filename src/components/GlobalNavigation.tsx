@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useUser, UserButton } from "@clerk/nextjs";
+import { useAuth, useUser, UserButton } from "@clerk/nextjs";
 import {
   Shield,
   Flame,
@@ -23,19 +23,64 @@ import {
   ShieldCheck,
   ArrowRight,
   LogOut,
-  Building2,
   Briefcase,
   LayoutDashboard,
+  GitBranch,
+  BookOpen,
+  CreditCard,
+  Scale,
+  FileSearch,
+  Plug,
+  BarChart3,
 } from "lucide-react";
 import { ProductRegionSwitcher } from "@/context/GeoContext";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { authenticatedFetch } from "@/lib/apiClient";
+
+// Recruiter tools (pages under /recruiter)
+const recruiterLinks = [
+  { name: "Evidence packs", href: "/recruiter/evidence", icon: FileSearch },
+  { name: "ATS integrations", href: "/recruiter/integrations", icon: Plug },
+  { name: "Validity & bias audit", href: "/recruiter/validity", icon: BarChart3 },
+];
+
+const selfIdLink = { name: "Fairness self-ID", href: "/settings/self-identification", icon: Scale };
+
+function hasRecruiterRole(metadata: Record<string, unknown> | undefined): boolean {
+  if (!metadata) return false;
+  const roles = [
+    ...(Array.isArray(metadata.roles) ? metadata.roles : []),
+    ...(typeof metadata.role === "string" ? [metadata.role] : []),
+  ];
+  return roles.some((r) => typeof r === "string" && ["recruiter", "admin"].includes(r.toLowerCase()));
+}
 
 export default function GlobalNavigation() {
   const pathname = usePathname();
   const { isSignedIn, user } = useUser();
+  const { getToken } = useAuth();
   const [practiceHubOpen, setPracticeHubOpen] = useState(false);
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [remainingMinutes, setRemainingMinutes] = useState<number | null>(null);
+
+  const isRecruiter = hasRecruiterRole(user?.publicMetadata as Record<string, unknown> | undefined);
+  // Signed-out demo menu keeps showing recruiter tools, as it did for the hiring portal link
+  const showRecruiterLinks = !isSignedIn || isRecruiter;
+
+  useEffect(() => {
+    if (!isSignedIn) return;
+    let cancelled = false;
+    authenticatedFetch("/api/billing/usage", {}, getToken)
+      .then((res) => (res.ok ? (res.json() as Promise<{ remainingMinutes: number }>) : null))
+      .then((usage) => {
+        if (!cancelled && usage) setRemainingMinutes(usage.remainingMinutes);
+      })
+      .catch(() => undefined);
+    return () => {
+      cancelled = true;
+    };
+  }, [isSignedIn, getToken, pathname]);
 
   const practiceHubRef = useRef<HTMLDivElement>(null);
   const profileMenuRef = useRef<HTMLDivElement>(null);
@@ -54,12 +99,14 @@ export default function GlobalNavigation() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Close mobile menu on route change
-  useEffect(() => {
+  // Close menus on route change
+  const [lastPathname, setLastPathname] = useState(pathname);
+  if (pathname !== lastPathname) {
+    setLastPathname(pathname);
     setMobileMenuOpen(false);
     setPracticeHubOpen(false);
     setProfileMenuOpen(false);
-  }, [pathname]);
+  }
 
   // Primary Student Core Navigation Links
   const primaryLinks = [
@@ -73,6 +120,25 @@ export default function GlobalNavigation() {
 
   // Extended Student Learning & Verification Tools (Practice Hub)
   const studentPracticeTools = [
+    {
+      name: "Defend your repo",
+      href: "/defend-repo",
+      desc: "Link your GitHub repo or PR and defend the code you wrote",
+      icon: GitBranch,
+      badge: "New",
+    },
+    {
+      name: "Recommendations",
+      href: "/referrals",
+      desc: "Course suggestions for skills to strengthen — you control sharing",
+      icon: BookOpen,
+    },
+    {
+      name: "Pricing",
+      href: "/pricing",
+      desc: "Plans, voice minutes and top-ups",
+      icon: CreditCard,
+    },
     {
       name: "1v1 Duels Arena",
       href: "/duels/arena",
@@ -248,14 +314,18 @@ export default function GlobalNavigation() {
             <span>14d</span>
           </Link>
 
-          {/* AI Voice Minutes Quota */}
+          {/* AI Voice Minutes Balance */}
           <Link
-            href="/interview/practice"
-            title="48 minutes remaining of monthly AI Voice defense simulation quota"
+            href="/pricing"
+            title={
+              isSignedIn && remainingMinutes !== null
+                ? `${remainingMinutes} voice-defense minutes remaining`
+                : "Plans and voice minutes"
+            }
             className="hidden md:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-indigo-50 dark:bg-indigo-500/10 border border-indigo-200 dark:border-indigo-500/20 text-indigo-800 dark:text-indigo-300 text-xs font-medium hover:bg-indigo-100 dark:hover:bg-indigo-500/20 transition-colors shadow-xs"
           >
             <Mic className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
-            <span>48m left</span>
+            <span>{isSignedIn && remainingMinutes !== null ? `${remainingMinutes}m left` : "Pricing"}</span>
           </Link>
 
           {/* Regional Currency & Compliance Switcher */}
@@ -277,13 +347,27 @@ export default function GlobalNavigation() {
           <div className="relative pl-1 border-l border-border/60" ref={profileMenuRef}>
             {isSignedIn ? (
               <UserButton
-                afterSignOutUrl="/login"
                 appearance={{
                   elements: {
                     avatarBox: "w-8 h-8 rounded-xl shadow-xs ring-1 ring-border",
                   },
                 }}
-              />
+              >
+                <UserButton.MenuItems>
+                  <UserButton.Link label="Pricing & minutes" labelIcon={<CreditCard className="w-4 h-4" />} href="/pricing" />
+                  <UserButton.Link
+                    label={selfIdLink.name}
+                    labelIcon={<Scale className="w-4 h-4" />}
+                    href={selfIdLink.href}
+                  />
+                  {(isRecruiter ? recruiterLinks : []).map((link) => {
+                    const Icon = link.icon;
+                    return (
+                      <UserButton.Link key={link.href} label={link.name} labelIcon={<Icon className="w-4 h-4" />} href={link.href} />
+                    );
+                  })}
+                </UserButton.MenuItems>
+              </UserButton>
             ) : (
               <div>
                 <button
@@ -350,6 +434,14 @@ export default function GlobalNavigation() {
                         <span>My Mentorship Sessions</span>
                       </Link>
                       <Link
+                        href={selfIdLink.href}
+                        onClick={() => setProfileMenuOpen(false)}
+                        className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-foreground hover:bg-muted transition-colors"
+                      >
+                        <Scale className="w-3.5 h-3.5 text-muted-foreground" />
+                        <span>{selfIdLink.name}</span>
+                      </Link>
+                      <Link
                         href="/login"
                         onClick={() => setProfileMenuOpen(false)}
                         className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-foreground hover:bg-muted transition-colors"
@@ -372,6 +464,21 @@ export default function GlobalNavigation() {
                         </span>
                         <ArrowRight className="w-3 h-3" />
                       </Link>
+                      {showRecruiterLinks &&
+                        recruiterLinks.map((link) => {
+                          const Icon = link.icon;
+                          return (
+                            <Link
+                              key={link.href}
+                              href={link.href}
+                              onClick={() => setProfileMenuOpen(false)}
+                              className="flex items-center gap-1.5 pl-7 pr-3 py-1.5 rounded-lg text-[11px] font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                            >
+                              <Icon className="w-3 h-3 text-purple-500" />
+                              <span>{link.name}</span>
+                            </Link>
+                          );
+                        })}
                       <Link
                         href="/login"
                         onClick={() => setProfileMenuOpen(false)}
@@ -456,6 +563,42 @@ export default function GlobalNavigation() {
               );
             })}
           </div>
+
+          <div className="space-y-1 pt-2 border-t border-border/60">
+            <div className="px-3 py-1 text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
+              Account &amp; Settings
+            </div>
+            <Link
+              href={selfIdLink.href}
+              onClick={() => setMobileMenuOpen(false)}
+              className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+            >
+              <Scale className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+              <span>{selfIdLink.name}</span>
+            </Link>
+          </div>
+
+          {showRecruiterLinks && (
+            <div className="space-y-1 pt-2 border-t border-border/60">
+              <div className="px-3 py-1 text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
+                Hiring Tools
+              </div>
+              {recruiterLinks.map((link) => {
+                const Icon = link.icon;
+                return (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                  >
+                    <Icon className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+                    <span>{link.name}</span>
+                  </Link>
+                );
+              })}
+            </div>
+          )}
 
           <div className="pt-2 border-t border-border/60 flex items-center justify-between">
             <Link

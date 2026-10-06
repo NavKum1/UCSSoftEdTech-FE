@@ -4,7 +4,7 @@
     "microphoneEnabled": "Micrófono Activo",
     "screenShared": "Pantalla Compartida",
     "defenseStatus": "Estado de Defensa",
-    "verifyingIdentity": "Verificando Identidad...",
+    "verifyingIdentity": "Comprobando Configuración...",
     "defenseCommencing": "Comenzando Defensa",
     "defenseCompleted": "Defensa Completada",
     "active": "Activo",
@@ -13,6 +13,6 @@
     "codeEditor": "Editor de Arquitectura",
     "submitSprint": "Enviar Sprint",
     "submitting": "Enviando...",
-    "proctoringActive": "Supervisión Zero-Trust Activa"
+    "proctoringActive": "Monitoreo de Integridad Activo"
   }
 }

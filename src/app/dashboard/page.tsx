@@ -28,6 +28,7 @@ import {
   GraduationCap,
 } from "lucide-react";
 import { useGeo } from "@/context/GeoContext";
+import VoiceUsageCard from "@/components/VoiceUsageCard";
 
 interface CompetencyDimension {
   dimension: string;
@@ -275,6 +276,8 @@ export default function Member360CommandCenterPage() {
 
       {/* Main Content Grid */}
       <div className="max-w-7xl mx-auto px-6 py-8 space-y-8">
+        <VoiceUsageCard />
+
         {/* Practice, Written Exam & Counselling Hub */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <Link
@@ -764,7 +767,7 @@ export default function Member360CommandCenterPage() {
             <div>
               <h3 className="font-bold text-base text-foreground">Edulexa RevEngine &amp; Compliance Integration</h3>
               <p className="text-xs text-muted-foreground mt-1 max-w-xl">
-                Active Member subscription, verified DRM forensic watermarking tokens, and {config.tax.regimeTitle} ({config.tax.certificateName}) synchronized with {config.tax.institutionLegalNotice.split("•")[0]}.
+                Active Member subscription, visible per-viewer watermarks on protected course content, and {config.tax.regimeTitle} ({config.tax.certificateName}) synchronized with {config.tax.institutionLegalNotice.split("•")[0]}.
               </p>
             </div>
           </div>

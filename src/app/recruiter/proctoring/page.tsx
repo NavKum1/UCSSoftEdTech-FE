@@ -100,7 +100,7 @@ export default function RecruiterProctoringPortalPage() {
             Live AI Video Proctoring & Session Audit Vault
           </h1>
           <p className="text-xs text-muted-foreground mt-0.5">
-            Synchronized screen capture and webcam telemetry with frame-by-frame gaze tracking and tab-switch detection.
+            Session recordings alongside logged browser and environment events (tab switches, focus loss, paste activity) for a human reviewer to assess. No gaze or face detection is performed.
           </p>
         </div>
 
@@ -137,7 +137,7 @@ export default function RecruiterProctoringPortalPage() {
             <ShieldAlert className="w-4 h-4 text-rose-500" />
           </div>
           <p className="text-2xl font-black text-rose-600 dark:text-rose-400 mt-1">14 Sessions</p>
-          <p className="text-[10px] text-muted-foreground mt-0.5">Suspicious multiple faces or audio anomaly</p>
+          <p className="text-[10px] text-muted-foreground mt-0.5">Logged browser/environment events for a reviewer to look at</p>
         </div>
 
         <div className="p-4 rounded-2xl bg-card border border-border">
@@ -146,7 +146,7 @@ export default function RecruiterProctoringPortalPage() {
             <ShieldCheck className="w-4 h-4 text-emerald-500" />
           </div>
           <p className="text-2xl font-black text-emerald-600 dark:text-emerald-400 mt-1">98.9%</p>
-          <p className="text-[10px] text-muted-foreground mt-0.5">Zero cheat markers detected</p>
+          <p className="text-[10px] text-muted-foreground mt-0.5">No integrity signals logged</p>
         </div>
       </div>
 

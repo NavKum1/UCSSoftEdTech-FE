@@ -4,7 +4,7 @@
     "microphoneEnabled": "Microphone Active",
     "screenShared": "Screen Shared",
     "defenseStatus": "Defense Status",
-    "verifyingIdentity": "Verifying Identity...",
+    "verifyingIdentity": "Checking Setup...",
     "defenseCommencing": "Defense Commencing",
     "defenseCompleted": "Defense Completed",
     "active": "Active",
@@ -13,6 +13,6 @@
     "codeEditor": "Architecture Editor",
     "submitSprint": "Submit Sprint",
     "submitting": "Submitting...",
-    "proctoringActive": "Zero-Trust Proctoring Active"
+    "proctoringActive": "Integrity Monitoring Active"
   }
 }

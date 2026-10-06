@@ -1,8 +1,11 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
+import { useAuth } from "@clerk/nextjs";
+import { Loader2, Lock, ShieldOff, AlertTriangle } from "lucide-react";
+import { authenticatedFetch } from "@/lib/apiClient";
 
 interface TelemetryPoint {
   id: string;
@@ -32,10 +35,57 @@ interface SentimentSummary {
   createdAt: string;
 }
 
-export default function BehavioralSentimentPage() {
-  const params = useParams();
-  const interviewId = (params?.id as string) || "e95cfc9b-513b-4890-a548-261546959b81";
-  const candidateId = "1e0463a7-f9cf-4ff0-8070-74fadcf2dd78";
+interface SentimentAvailability {
+  enabled: boolean;
+  requiresConsent: boolean;
+  hasConsent: boolean;
+  usable: boolean;
+  reason?: string | null;
+}
+
+type GetToken = () => Promise<string | null>;
+
+const UNAVAILABLE_FALLBACK = "Speaking and composure coaching isn't available in your region.";
+
+// Returns the decision from a 451 response body, if any
+async function readBlockedDecision(res: Response): Promise<SentimentAvailability | null> {
+  if (res.status !== 451) return null;
+  const body = (await res.json().catch(() => null)) as (SentimentAvailability & { decision?: SentimentAvailability }) | null;
+  return body?.decision ?? body ?? { enabled: false, requiresConsent: true, hasConsent: false, usable: false, reason: null };
+}
+
+async function fetchCoachData(interviewId: string, getToken: GetToken) {
+  const [timelineRes, summaryRes] = await Promise.all([
+    authenticatedFetch(`/api/sentiment/timeline/${interviewId}`, {}, getToken).catch(() => null),
+    authenticatedFetch(`/api/sentiment/summary/${interviewId}`, {}, getToken).catch(() => null),
+  ]);
+  const blocked =
+    (timelineRes && (await readBlockedDecision(timelineRes))) || (summaryRes && (await readBlockedDecision(summaryRes))) || null;
+  let timeline: TelemetryPoint[] = [];
+  let summary: SentimentSummary | null = null;
+  if (!blocked && timelineRes?.ok) {
+    const data = await timelineRes.json().catch(() => null);
+    if (data?.success) timeline = data.timeline || [];
+  }
+  if (!blocked && summaryRes?.ok) {
+    const data = await summaryRes.json().catch(() => null);
+    if (data?.success) summary = data.summary;
+  }
+  return { blocked, timeline, summary };
+}
+
+function SentimentCoach({
+  interviewId,
+  onBlocked,
+  onWithdrawConsent,
+  withdrawing,
+}: {
+  interviewId: string;
+  onBlocked: (decision: SentimentAvailability) => void;
+  onWithdrawConsent: () => void;
+  withdrawing: boolean;
+}) {
+  const { getToken } = useAuth();
 
   const [timeline, setTimeline] = useState<TelemetryPoint[]>([]);
   const [summary, setSummary] = useState<SentimentSummary | null>(null);
@@ -51,9 +101,33 @@ export default function BehavioralSentimentPage() {
     "Explaining consistent hashing ring with virtual nodes under network partition..."
   );
 
+  const applyCoachData = useCallback(
+    (result: Awaited<ReturnType<typeof fetchCoachData>>) => {
+      if (result.blocked) {
+        onBlocked(result.blocked);
+        return;
+      }
+      setTimeline(result.timeline);
+      setSummary(result.summary);
+    },
+    [onBlocked]
+  );
+
+  useEffect(() => {
+    let cancelled = false;
+    fetchCoachData(interviewId, getToken).then((result) => {
+      if (!cancelled) applyCoachData(result);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [interviewId, getToken, applyCoachData]);
+
   const fetchTimeline = async () => {
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/sentiment/timeline/${interviewId}`);
+      const res = await authenticatedFetch(`/api/sentiment/timeline/${interviewId}`, {}, getToken);
+      const blocked = await readBlockedDecision(res);
+      if (blocked) return onBlocked(blocked);
       if (res.ok) {
         const data = await res.json();
         if (data.success) {
@@ -65,41 +139,28 @@ export default function BehavioralSentimentPage() {
     }
   };
 
-  const fetchSummary = async () => {
-    try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/sentiment/summary/${interviewId}`);
-      if (res.ok) {
-        const data = await res.json();
-        if (data.success) {
-          setSummary(data.summary);
-        }
-      }
-    } catch (e) {
-      console.error("Error fetching summary:", e);
-    }
-  };
-
-  useEffect(() => {
-    fetchTimeline();
-    fetchSummary();
-  }, [interviewId]);
-
   const handleIngestTelemetry = async () => {
     setLoading(true);
     setActionMessage(null);
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/sentiment/telemetry`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          interviewId,
-          pitchVarianceHz: pitchVariance,
-          speechCadenceWpm: speechWpm,
-          hesitationCount: hesitations,
-          acousticLatencyMs: latencyMs,
-          audioSnippetContext: snippetContext,
-        }),
-      });
+      const res = await authenticatedFetch(
+        "/api/sentiment/telemetry",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            interviewId,
+            pitchVarianceHz: pitchVariance,
+            speechCadenceWpm: speechWpm,
+            hesitationCount: hesitations,
+            acousticLatencyMs: latencyMs,
+            audioSnippetContext: snippetContext,
+          }),
+        },
+        getToken
+      );
+
+      const blocked = await readBlockedDecision(res);
+      if (blocked) return onBlocked(blocked);
 
       const data = await res.json();
       if (data.success) {
@@ -108,6 +169,8 @@ export default function BehavioralSentimentPage() {
           `Speech sample recorded! Composure: ${evalRes.psychologicalSafetyState} | Interviewer Approach: ${evalRes.pacingDirective}`
         );
         await fetchTimeline();
+      } else {
+        setActionMessage(data.message || "Failed to record speech sample.");
       }
     } catch (e) {
       console.error("Error ingesting telemetry:", e);
@@ -120,19 +183,21 @@ export default function BehavioralSentimentPage() {
   const handleGenerateSummary = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/sentiment/summary/generate`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          interviewId,
-          candidateId,
-        }),
-      });
+      const res = await authenticatedFetch(
+        "/api/sentiment/summary/generate",
+        { method: "POST", body: JSON.stringify({ interviewId }) },
+        getToken
+      );
+
+      const blocked = await readBlockedDecision(res);
+      if (blocked) return onBlocked(blocked);
 
       const data = await res.json();
       if (data.success) {
         setSummary(data.summary);
         setActionMessage("Communication and composure summary generated successfully!");
+      } else {
+        setActionMessage(data.message || "Could not generate a summary.");
       }
     } catch (e) {
       console.error("Error generating summary:", e);
@@ -140,6 +205,7 @@ export default function BehavioralSentimentPage() {
       setLoading(false);
     }
   };
+
 
   const applyPreset = (type: "optimal" | "tension" | "freeze") => {
     if (type === "optimal") {
@@ -185,9 +251,21 @@ export default function BehavioralSentimentPage() {
           <p className="text-sm text-muted-foreground mt-0.5">
             Real-time speaking pace, confidence tracking, and communication recommendations.
           </p>
+          <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1.5">
+            <Lock className="w-3.5 h-3.5" />
+            Private coaching for you only — never shared with employers or used in hiring evidence.
+          </p>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
+          <button
+            type="button"
+            onClick={onWithdrawConsent}
+            disabled={withdrawing}
+            className="px-4 py-2 text-sm font-medium rounded-lg transition border border-red-500/30 text-red-700 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 disabled:opacity-60"
+          >
+            {withdrawing ? "Withdrawing..." : "Withdraw consent"}
+          </button>
           <Link
             href={`/interview/${interviewId}/replay`}
             className="px-4 py-2 bg-muted hover:bg-slate-700 text-foreground text-sm font-medium rounded-lg transition border border-border"
@@ -482,5 +560,165 @@ export default function BehavioralSentimentPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+async function fetchAvailability(getToken: GetToken): Promise<SentimentAvailability | "unauthorized" | null> {
+  try {
+    const res = await authenticatedFetch("/api/sentiment/availability", {}, getToken);
+    if (res.status === 401) return "unauthorized";
+    const blocked = await readBlockedDecision(res);
+    if (blocked) return blocked;
+    return res.ok ? ((await res.json()) as SentimentAvailability) : null;
+  } catch {
+    return null;
+  }
+}
+
+export default function BehavioralSentimentPage() {
+  const params = useParams<{ id: string }>();
+  const interviewId = params?.id ?? "";
+  const { getToken, isLoaded, isSignedIn } = useAuth();
+
+  const [availability, setAvailability] = useState<SentimentAvailability | null>(null);
+  const [status, setStatus] = useState<"loading" | "ready" | "error" | "unauthorized">("loading");
+  const [consentBusy, setConsentBusy] = useState(false);
+  const [consentError, setConsentError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!isLoaded || !isSignedIn) return;
+    let cancelled = false;
+    fetchAvailability(getToken).then((result) => {
+      if (cancelled) return;
+      if (result === "unauthorized") setStatus("unauthorized");
+      else if (result) {
+        setAvailability(result);
+        setStatus("ready");
+      } else setStatus("error");
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [isLoaded, isSignedIn, getToken]);
+
+  const handleBlocked = useCallback((decision: SentimentAvailability) => {
+    setAvailability(decision);
+    setStatus("ready");
+  }, []);
+
+  const setConsent = async (granted: boolean) => {
+    setConsentBusy(true);
+    setConsentError(null);
+    try {
+      const res = await authenticatedFetch(
+        "/api/sentiment/consent",
+        { method: "POST", body: JSON.stringify({ granted }) },
+        getToken
+      );
+      const blocked = await readBlockedDecision(res);
+      if (blocked) {
+        setAvailability(blocked);
+        return;
+      }
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      setAvailability((await res.json()) as SentimentAvailability);
+    } catch {
+      setConsentError(granted ? "Could not record your consent. Please try again." : "Could not withdraw consent. Please try again.");
+    } finally {
+      setConsentBusy(false);
+    }
+  };
+
+  if ((isLoaded && !isSignedIn) || status === "unauthorized") {
+    return (
+      <div className="max-w-xl mx-auto px-6 py-16 text-center space-y-3">
+        <h1 className="text-xl font-bold text-foreground">Speaking &amp; composure coach</h1>
+        <p className="text-sm text-muted-foreground">Sign in to view coaching for your own interviews.</p>
+        <Link href="/login" className="inline-block px-4 py-2 rounded-xl bg-indigo-600 text-white text-sm font-semibold">
+          Sign in
+        </Link>
+      </div>
+    );
+  }
+
+  if (status === "loading") {
+    return (
+      <div className="min-h-[60vh] flex items-center justify-center gap-2 text-sm text-muted-foreground">
+        <Loader2 className="w-4 h-4 animate-spin" /> Checking availability...
+      </div>
+    );
+  }
+
+  if (status === "error" || !availability) {
+    return (
+      <div className="max-w-xl mx-auto px-6 py-16 text-center space-y-3">
+        <AlertTriangle className="w-8 h-8 mx-auto text-amber-600 dark:text-amber-400" />
+        <p className="text-sm text-muted-foreground">We couldn&apos;t check whether speaking coaching is available. Please try again later.</p>
+      </div>
+    );
+  }
+
+  if (!availability.enabled) {
+    return (
+      <div className="max-w-xl mx-auto px-6 py-16">
+        <div className="glass-panel rounded-2xl p-6 border border-border text-center space-y-3">
+          <ShieldOff className="w-8 h-8 mx-auto text-muted-foreground" />
+          <h1 className="text-lg font-bold text-foreground">Speaking &amp; composure coaching is unavailable</h1>
+          <p className="text-sm text-muted-foreground">{availability.reason || UNAVAILABLE_FALLBACK}</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!availability.usable) {
+    return (
+      <div className="max-w-xl mx-auto px-6 py-16">
+        <div className="glass-panel rounded-2xl p-6 border border-border space-y-4">
+          <div className="flex items-center gap-2">
+            <Lock className="w-5 h-5 text-indigo-700 dark:text-indigo-400" />
+            <h1 className="text-lg font-bold text-foreground">Turn on private speaking coaching?</h1>
+          </div>
+          <div className="text-sm text-muted-foreground space-y-2">
+            <p>
+              With your consent, we analyse voice signals such as speaking pace, pauses and pitch variation during your interviews to
+              give you delivery tips.
+            </p>
+            <ul className="list-disc pl-5 space-y-1">
+              <li>This is private coaching for you only.</li>
+              <li>It is never shared with employers or reviewers and is never used in hiring evidence or scores.</li>
+              <li>You can withdraw consent at any time from this page.</li>
+            </ul>
+          </div>
+          {consentError && <p className="text-xs text-red-700 dark:text-red-400">{consentError}</p>}
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={() => setConsent(true)}
+              disabled={consentBusy}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 disabled:opacity-60 text-white text-sm font-semibold"
+            >
+              {consentBusy && <Loader2 className="w-4 h-4 animate-spin" />}I agree — turn on coaching
+            </button>
+            <Link href="/dashboard" className="px-4 py-2 rounded-xl border border-border text-sm font-medium text-foreground hover:bg-muted">
+              Not now
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <>
+      {consentError && (
+        <div className="max-w-7xl mx-auto px-6 pt-4 text-xs text-red-700 dark:text-red-400">{consentError}</div>
+      )}
+      <SentimentCoach
+        interviewId={interviewId}
+        onBlocked={handleBlocked}
+        onWithdrawConsent={() => setConsent(false)}
+        withdrawing={consentBusy}
+      />
+    </>
   );
 }

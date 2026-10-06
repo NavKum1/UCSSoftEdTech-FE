@@ -25,12 +25,12 @@ export default function RecruiterLayout({ children }: { children: React.ReactNod
                   <span>Corporate Recruiter Portal</span>
                 </span>
               </div>
-              <p className="text-[11px] text-muted-foreground">Custom Sprints, Candidate Invites & Anti-Cheat Audit</p>
+              <p className="text-[11px] text-muted-foreground">Custom Sprints, Candidate Invites & Integrity Signals</p>
             </div>
           </div>
 
           {/* Sub Navigation Links */}
-          <nav className="hidden md:flex items-center space-x-1 bg-card/80 p-1 rounded-xl border border-border">
+          <nav className="hidden xl:flex items-center space-x-1 bg-card/80 p-1 rounded-xl border border-border">
             <button
               onClick={() => router.push("/recruiter/dashboard")}
               className="px-3 py-1.5 rounded-lg text-xs font-medium text-muted-foreground hover:text-white hover:bg-muted transition-colors"
@@ -41,7 +41,25 @@ export default function RecruiterLayout({ children }: { children: React.ReactNod
               onClick={() => router.push("/recruiter/proctoring")}
               className="px-3 py-1.5 rounded-lg text-xs font-medium text-muted-foreground hover:text-white hover:bg-muted transition-colors"
             >
-              Video Proctoring
+              Session recordings
+            </button>
+            <button
+              onClick={() => router.push("/recruiter/evidence")}
+              className="px-3 py-1.5 rounded-lg text-xs font-medium text-muted-foreground hover:text-white hover:bg-muted transition-colors"
+            >
+              Evidence packs
+            </button>
+            <button
+              onClick={() => router.push("/recruiter/integrations")}
+              className="px-3 py-1.5 rounded-lg text-xs font-medium text-muted-foreground hover:text-white hover:bg-muted transition-colors"
+            >
+              ATS integrations
+            </button>
+            <button
+              onClick={() => router.push("/recruiter/validity")}
+              className="px-3 py-1.5 rounded-lg text-xs font-medium text-muted-foreground hover:text-white hover:bg-muted transition-colors"
+            >
+              Validity &amp; bias audit
             </button>
             <button
               onClick={() => router.push("/recruiter/benchmark")}
