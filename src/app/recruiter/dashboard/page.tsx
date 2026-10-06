@@ -32,6 +32,28 @@ interface AiHiringVerdict {
   transcriptLog: TranscriptEntry[];
 }
 
+interface ScrutinyFlaggedClaim {
+  claim: string;
+  severity: "HIGH" | "MEDIUM" | string;
+  critique: string;
+  interrogationQuestion: string;
+}
+
+interface ScrutinyResultData {
+  candidateName: string;
+  targetRole: string;
+  summary: string;
+  credibilityScore: number;
+  flaggedClaims: ScrutinyFlaggedClaim[];
+  buzzwordInflation: string[];
+  technicalDeficiencies: string[];
+  generatedAssessmentToken: string;
+  tailoredWrittenFocus: string;
+  tailoredCodingPrompt: string;
+  tailoredVoiceDefenseQuestions: string[];
+  [key: string]: any;
+}
+
 interface AssessmentBundle {
   token: string;
   candidateName: string;
@@ -100,7 +122,7 @@ export default function RecruiterDashboardPage() {
   const [scrutinyTargetRole, setScrutinyTargetRole] = useState<string>("Staff Distributed Systems Engineer");
   const [scrutinyTargetCompany, setScrutinyTargetCompany] = useState<string>("Uber");
   const [scrutinyYearsExp, setScrutinyYearsExp] = useState<number>(6);
-  const [scrutinyResult, setScrutinyResult] = useState<any | null>(null);
+  const [scrutinyResult, setScrutinyResult] = useState<ScrutinyResultData | null>(null);
   const [scrutinyLoading, setScrutinyLoading] = useState<boolean>(false);
 
   // AI Decision Filters & Audit Modal State
@@ -1282,7 +1304,7 @@ export default function RecruiterDashboardPage() {
                         </div>
 
                         <div className="space-y-3">
-                          {scrutinyResult.flaggedClaims?.map((item, idx) => (
+                          {scrutinyResult.flaggedClaims?.map((item: ScrutinyFlaggedClaim, idx: number) => (
                             <div key={idx} className="p-3.5 rounded-xl bg-muted/40 border border-border space-y-2">
                               <div className="flex items-center justify-between">
                                 <span className="text-xs font-semibold text-foreground">"{item.claim}"</span>
@@ -1311,7 +1333,7 @@ export default function RecruiterDashboardPage() {
                             Inflated Buzzwords
                           </span>
                           <div className="flex flex-wrap gap-1.5">
-                            {scrutinyResult.buzzwordInflation?.map((bw, i) => (
+                            {scrutinyResult.buzzwordInflation?.map((bw: string, i: number) => (
                               <span key={i} className="px-2 py-0.5 rounded-full text-[10px] font-mono bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20">
                                 {bw}
                               </span>
@@ -1324,7 +1346,7 @@ export default function RecruiterDashboardPage() {
                             Identified Gaps
                           </span>
                           <div className="flex flex-wrap gap-1.5">
-                            {scrutinyResult.technicalDeficiencies?.map((def, i) => (
+                            {scrutinyResult.technicalDeficiencies?.map((def: string, i: number) => (
                               <span key={i} className="px-2 py-0.5 rounded-full text-[10px] font-mono bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/20">
                                 {def}
                               </span>
@@ -1375,7 +1397,7 @@ export default function RecruiterDashboardPage() {
                             Stage 3: AI Voice Defense Targeted Questions
                           </span>
                           <ul className="space-y-1.5 text-xs text-muted-foreground list-disc list-inside">
-                            {scrutinyResult.tailoredVoiceDefenseQuestions?.map((q, i) => (
+                            {scrutinyResult.tailoredVoiceDefenseQuestions?.map((q: string, i: number) => (
                               <li key={i} className="text-foreground">
                                 <span className="text-purple-600 dark:text-purple-400 font-bold">Q{i + 1}:</span> "{q}"
                               </li>

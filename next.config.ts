@@ -9,9 +9,6 @@ const withSerwist = withSerwistInit({
 
 const nextConfig: NextConfig = {
   output: "standalone",
-  typescript: {
-    ignoreBuildErrors: true,
-  },
 };
 
 export default withSerwist(nextConfig);

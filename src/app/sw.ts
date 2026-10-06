@@ -3,7 +3,7 @@ import type { PrecacheEntry, SerwistGlobalConfig } from "serwist";
 import { Serwist } from "serwist";
 
 declare global {
-  interface WorkerGlobalScope extends SerwistGlobalConfig {
+  interface ServiceWorkerGlobalScope extends SerwistGlobalConfig {
     __SW_MANIFEST: (PrecacheEntry | string)[] | undefined;
   }
 }
