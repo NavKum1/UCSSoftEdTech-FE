@@ -8,6 +8,13 @@ const isInstituteRoute = createRouteMatcher(["/institute(.*)"]);
 const isRecruiterRoute = createRouteMatcher(["/recruiter(.*)"]);
 
 export default clerkMiddleware(async (auth, req) => {
+  const isDev = process.env.NODE_ENV === "development";
+
+  // In local development, permit seamless traversal across portals for live evaluation and testability
+  if (isDev) {
+    return NextResponse.next();
+  }
+
   const { userId, sessionClaims } = await auth();
 
   const role = (sessionClaims?.metadata as any)?.role 
@@ -17,64 +24,41 @@ export default clerkMiddleware(async (auth, req) => {
 
   // 1. Super Admin Route Protection
   if (isAdminRoute(req)) {
-    const isDevMock = process.env.NODE_ENV === "development" && (
-      req.nextUrl.searchParams.get("mockAdmin") === "true" || 
-      req.cookies.get("mock_admin_role")?.value === "SuperAdmin"
-    );
-
-    if (!userId && !isDevMock) {
-      await auth.protect();
-      return;
+    if (!userId) {
+      return NextResponse.redirect(new URL("/login?redirect_url=" + encodeURIComponent(req.nextUrl.pathname), req.url));
     }
 
-    const isSuperAdmin = isDevMock || role === "SuperAdmin" || role === "superadmin";
+    const isSuperAdmin = role === "SuperAdmin" || role === "superadmin";
     if (!isSuperAdmin) {
-      return NextResponse.redirect(new URL("/", req.url));
+      return NextResponse.redirect(new URL("/dashboard", req.url));
     }
   } 
   // 2. Institute Partner Portal Protection
   else if (isInstituteRoute(req)) {
-    const isDevMock = process.env.NODE_ENV === "development" && (
-      req.nextUrl.searchParams.get("mockInstitute") === "true" || 
-      req.cookies.get("mock_institute_role")?.value === "InstituteAdmin"
-    );
-
-    if (!userId && !isDevMock) {
-      await auth.protect();
-      return;
+    if (!userId) {
+      return NextResponse.redirect(new URL("/login?redirect_url=" + encodeURIComponent(req.nextUrl.pathname), req.url));
     }
 
-    const isInstituteAdmin = isDevMock || role === "InstituteAdmin" || role === "SuperAdmin";
+    const isInstituteAdmin = role === "InstituteAdmin" || role === "SuperAdmin";
     if (!isInstituteAdmin) {
-      return NextResponse.redirect(new URL("/", req.url));
+      return NextResponse.redirect(new URL("/dashboard", req.url));
     }
   }
   // 3. Corporate Recruiter Portal Protection
   else if (isRecruiterRoute(req)) {
-    const isDevMock = process.env.NODE_ENV === "development" && (
-      req.nextUrl.searchParams.get("mockRecruiter") === "true" || 
-      req.cookies.get("mock_recruiter_role")?.value === "Recruiter"
-    );
-
-    if (!userId && !isDevMock) {
-      await auth.protect();
-      return;
+    if (!userId) {
+      return NextResponse.redirect(new URL("/login?redirect_url=" + encodeURIComponent(req.nextUrl.pathname), req.url));
     }
 
-    const isRecruiter = isDevMock || role === "Recruiter" || role === "SuperAdmin";
+    const isRecruiter = role === "Recruiter" || role === "SuperAdmin";
     if (!isRecruiter) {
-      return NextResponse.redirect(new URL("/", req.url));
+      return NextResponse.redirect(new URL("/dashboard", req.url));
     }
   }
   // 4. General Candidate Protected Routes
   else if (isProtectedRoute(req)) {
-    const isDevMock = process.env.NODE_ENV === "development" && (
-      req.nextUrl.searchParams.get("mockCandidate") === "true" ||
-      req.cookies.get("mock_candidate")?.value === "true"
-    );
-
-    if (!userId && !isDevMock) {
-      await auth.protect();
+    if (!userId) {
+      return NextResponse.redirect(new URL("/login?redirect_url=" + encodeURIComponent(req.nextUrl.pathname), req.url));
     }
   }
 });

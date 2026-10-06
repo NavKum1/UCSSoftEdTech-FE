@@ -1,16 +1,14 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useUser, UserButton } from "@clerk/nextjs";
 import {
   Shield,
   Flame,
   Mic,
   Compass,
-  Briefcase,
-  Building2,
-  DollarSign,
   Award,
   ChevronDown,
   Layers,
@@ -18,49 +16,111 @@ import {
   CalendarCheck,
   GraduationCap,
   Sparkles,
+  Trophy,
+  Menu,
+  X,
+  User,
+  ShieldCheck,
+  ArrowRight,
+  LogOut,
+  Building2,
+  Briefcase,
 } from "lucide-react";
 import { ProductRegionSwitcher } from "@/context/GeoContext";
 import { ThemeToggle } from "@/components/ThemeToggle";
 
 export default function GlobalNavigation() {
   const pathname = usePathname();
-  const [portalsOpen, setPortalsOpen] = useState(false);
+  const { isSignedIn, user } = useUser();
+  const [practiceHubOpen, setPracticeHubOpen] = useState(false);
+  const [profileMenuOpen, setProfileMenuOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  // If in pure embedding / canvas iframe or fullscreen sprint mode, keep it visible or sleek
-  // Primary Top Navigation Links
-  const navLinks = [
-    { name: "Member 360", href: "/dashboard", icon: Compass },
-    { name: "Coding Challenges", href: "/sprint/distributed-database", icon: Layers },
-    { name: "AI Interviewer", href: "/interview/practice", icon: Mic },
-    { name: "Written Exams", href: "/prep/exam", icon: GraduationCap },
-    { name: "Daily Incident", href: "/daily/incident", icon: Flame },
-    { name: "1v1 Duels", href: "/duels/arena", icon: Swords },
-    { name: "Skill Passport", href: "/passport", icon: Award },
+  const practiceHubRef = useRef<HTMLDivElement>(null);
+  const profileMenuRef = useRef<HTMLDivElement>(null);
+
+  // Close dropdowns on outside click
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (practiceHubRef.current && !practiceHubRef.current.contains(event.target as Node)) {
+        setPracticeHubOpen(false);
+      }
+      if (profileMenuRef.current && !profileMenuRef.current.contains(event.target as Node)) {
+        setProfileMenuOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  // Close mobile menu on route change
+  useEffect(() => {
+    setMobileMenuOpen(false);
+    setPracticeHubOpen(false);
+    setProfileMenuOpen(false);
+  }, [pathname]);
+
+  // Primary Student Core Navigation Links
+  const primaryLinks = [
+    { name: "Dashboard", href: "/dashboard", icon: Compass },
+    { name: "Challenges", href: "/sprint/distributed-database", icon: Layers },
+    { name: "Interviews", href: "/interview/practice", icon: Mic },
+    { name: "Exams", href: "/prep/exam", icon: GraduationCap },
+    { name: "Incidents", href: "/daily/incident", icon: Flame },
   ];
 
-  const portals = [
-    { name: "Candidate 360° Center", href: "/dashboard", desc: "Streaks, Radar, Katas & Voice", icon: Compass },
-    { name: "Written Exams & Quizzes", href: "/prep/exam", desc: "Timed Diagnostics, AI Synthesis & Grading", icon: GraduationCap },
-    { name: "Career Counselling Diagnostic", href: "/prep/counselling", desc: "Aptitude Assessment & 90-Day Roadmap", icon: Compass },
-    { name: "Creator & Partner Studio", href: "/edulexa/dashboard", desc: "Voice Recovery, Content Shield & Payouts", icon: DollarSign },
-    { name: "Enterprise Partner Studio", href: "/partner/dashboard", desc: "B2B Sandboxes, Cohorts & Metrics", icon: Building2 },
-    { name: "Recruiter Talent Hub", href: "/recruiter/dashboard", desc: "Verified Talent Pipeline & Offers", icon: Briefcase },
-    { name: "Campus Governance", href: "/institute/dashboard", desc: "University LTI & Department Analytics", icon: GraduationCap },
-    { name: "Executive Leadership", href: "/executive/dashboard", desc: "Staff+ War-Rooms & Promotions", icon: Sparkles },
+  // Extended Student Learning & Verification Tools (Practice Hub)
+  const studentPracticeTools = [
+    {
+      name: "1v1 Duels Arena",
+      href: "/duels/arena",
+      desc: "Live peer speed coding battles & rating ladder",
+      icon: Swords,
+      badge: "Live",
+    },
+    {
+      name: "Verifiable Skill Passport",
+      href: "/passport",
+      desc: "Cryptographic Merkle proofs & LinkedIn certificates",
+      icon: Award,
+      badge: "Verified",
+    },
+    {
+      name: "Career Counselling Diagnostic",
+      href: "/prep/counselling",
+      desc: "Aptitude assessment & customized 90-day roadmap",
+      icon: Compass,
+    },
+    {
+      name: "Daily PR Review Dojo",
+      href: "/daily/review",
+      desc: "Security vulnerability & code review katas",
+      icon: ShieldCheck,
+    },
+    {
+      name: "League Leaderboard",
+      href: "/leaderboard",
+      desc: "Diamond League weekly rankings & XP standouts",
+      icon: Trophy,
+    },
   ];
+
+  const isPracticeActive = studentPracticeTools.some(
+    (tool) => pathname === tool.href || pathname?.startsWith(tool.href)
+  );
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-border/80 bg-background/80 backdrop-blur-xl transition-all">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
-        {/* Logo & Brand */}
-        <div className="flex items-center gap-6">
-          <Link href="/dashboard" className="flex items-center gap-3 group">
+    <header className="sticky top-0 z-50 w-full border-b border-border/80 bg-white/95 dark:bg-slate-950/95 backdrop-blur-xl transition-all shadow-sm">
+      <div className="max-w-[1440px] mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
+        {/* Logo & Student Brand */}
+        <div className="flex items-center gap-4">
+          <Link href="/dashboard" className="flex items-center gap-3 group shrink-0">
             <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-600 via-purple-600 to-amber-500 flex items-center justify-center font-black text-white shadow-lg shadow-indigo-500/25 group-hover:scale-105 transition-transform">
               <Shield className="w-5 h-5 text-white" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="font-extrabold text-base tracking-wider bg-gradient-to-r from-foreground via-foreground/80 to-muted-foreground bg-clip-text text-transparent">
+                <span className="font-extrabold text-base tracking-wider bg-gradient-to-r from-foreground via-foreground/90 to-muted-foreground bg-clip-text text-transparent">
                   EDULEXA
                 </span>
                 <span className="relative flex h-2 w-2">
@@ -69,120 +129,342 @@ export default function GlobalNavigation() {
                 </span>
               </div>
               <p className="text-[10px] text-muted-foreground font-mono tracking-tight -mt-0.5">
-                AI CAREER & ASSESSMENT PLATFORM
+                AI CAREER &amp; ASSESSMENT PLATFORM
               </p>
             </div>
           </Link>
 
-          {/* Primary Nav Links */}
-          <nav className="hidden lg:flex items-center space-x-1">
-            {navLinks.map((link) => {
+          {/* Primary Student Navigation Links (Desktop) */}
+          <nav className="hidden lg:flex items-center space-x-1 shrink-0">
+            {primaryLinks.map((link) => {
               const Icon = link.icon;
-              const isActive = 
-                link.href === "/" 
-                  ? pathname === "/" 
-                  : (pathname === link.href || (link.href !== "/dashboard" && pathname?.startsWith(link.href)));
+              const isActive =
+                link.href === "/dashboard"
+                  ? pathname === "/dashboard"
+                  : pathname?.startsWith(link.href);
               return (
                 <Link
                   key={link.name}
                   href={link.href}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                  className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all ${
                     isActive
                       ? "bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 shadow-sm"
                       : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
                   }`}
                 >
-                  <Icon className={`w-3.5 h-3.5 ${isActive ? "text-indigo-700 dark:text-indigo-400" : "text-muted-foreground"}`} />
-                  {link.name}
+                  <Icon
+                    className={`w-3.5 h-3.5 ${
+                      isActive ? "text-indigo-700 dark:text-indigo-400" : "text-muted-foreground"
+                    }`}
+                  />
+                  <span>{link.name}</span>
                 </Link>
               );
             })}
+
+            {/* Practice Hub Dropdown (Secondary Student Tools) */}
+            <div className="relative" ref={practiceHubRef}>
+              <button
+                type="button"
+                onClick={() => setPracticeHubOpen(!practiceHubOpen)}
+                className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                  isPracticeActive || practiceHubOpen
+                    ? "bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800"
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
+                }`}
+              >
+                <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+                <span>Practice Hub</span>
+                <ChevronDown
+                  className={`w-3.5 h-3.5 transition-transform duration-150 ${
+                    practiceHubOpen ? "rotate-180" : ""
+                  }`}
+                />
+              </button>
+
+              {practiceHubOpen && (
+                <div className="absolute left-0 mt-2 w-80 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl p-2 z-[100] animate-in fade-in zoom-in-95 duration-100">
+                  <div className="px-3 py-2 text-[11px] font-bold text-muted-foreground uppercase tracking-wider border-b border-border/60 mb-1 flex items-center justify-between">
+                    <span>Candidate Practice Tools</span>
+                    <span className="text-[10px] text-indigo-600 dark:text-indigo-400 lowercase font-mono">
+                      student tier
+                    </span>
+                  </div>
+                  <div className="space-y-1">
+                    {studentPracticeTools.map((tool) => {
+                      const Icon = tool.icon;
+                      const isCurrent = pathname === tool.href || pathname?.startsWith(tool.href);
+                      return (
+                        <Link
+                          key={tool.name}
+                          href={tool.href}
+                          onClick={() => setPracticeHubOpen(false)}
+                          className={`flex items-start gap-3 p-2.5 rounded-xl transition-colors group ${
+                            isCurrent
+                              ? "bg-indigo-50 dark:bg-indigo-950/50 text-indigo-900 dark:text-indigo-200"
+                              : "hover:bg-muted/80 text-foreground"
+                          }`}
+                        >
+                          <div className="p-2 rounded-lg bg-indigo-50 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400 group-hover:bg-indigo-600 group-hover:text-white transition-colors shrink-0">
+                            <Icon className="w-4 h-4" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="text-xs font-semibold flex items-center gap-1.5">
+                              <span className="truncate">{tool.name}</span>
+                              {tool.badge && (
+                                <span className="px-1.5 py-0.2 rounded text-[9px] font-bold uppercase tracking-wider bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300">
+                                  {tool.badge}
+                                </span>
+                              )}
+                            </div>
+                            <div className="text-[11px] text-muted-foreground line-clamp-1">
+                              {tool.desc}
+                            </div>
+                          </div>
+                        </Link>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+            </div>
           </nav>
         </div>
 
-        {/* Right Section: Status Pills & Portals Dropdown */}
-        <div className="flex items-center gap-3">
+        {/* Right Section: Status Indicators, Utilities & Profile */}
+        <div className="flex items-center gap-2 shrink-0">
           {/* Daily Streak Pill */}
           <Link
-            href="/daily"
-            title="Active 14-Day Streak — Practice daily kata to maintain Gold status"
-            className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-100 dark:bg-amber-500/10 border border-amber-300 dark:border-amber-500/20 text-amber-800 dark:text-amber-300 text-xs font-semibold hover:bg-amber-200 dark:hover:bg-amber-500/20 transition-colors"
+            href="/daily/incident"
+            title="Active 14-Day Streak — Practice daily katas to maintain your League standing"
+            className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 text-amber-800 dark:text-amber-300 text-xs font-semibold hover:bg-amber-100 dark:hover:bg-amber-500/20 transition-colors shadow-xs"
           >
-            <Flame className="w-3.5 h-3.5 text-amber-700 dark:text-amber-400 fill-amber-400/30 animate-pulse" />
+            <Flame className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 fill-amber-400/30 animate-pulse" />
             <span>14d</span>
           </Link>
 
-          {/* Voice Interview Minutes Pill */}
+          {/* AI Voice Minutes Quota */}
           <Link
-            href="/sprint/1"
-            title="48 minutes remaining of monthly AI Voice defense quota"
-            className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-indigo-100 dark:bg-indigo-500/10 border border-indigo-300 dark:border-indigo-500/20 text-indigo-800 dark:text-indigo-300 text-xs font-medium hover:bg-indigo-200 dark:hover:bg-indigo-500/20 transition-colors"
+            href="/interview/practice"
+            title="48 minutes remaining of monthly AI Voice defense simulation quota"
+            className="hidden md:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-indigo-50 dark:bg-indigo-500/10 border border-indigo-200 dark:border-indigo-500/20 text-indigo-800 dark:text-indigo-300 text-xs font-medium hover:bg-indigo-100 dark:hover:bg-indigo-500/20 transition-colors shadow-xs"
           >
-            <Mic className="w-3.5 h-3.5 text-indigo-700 dark:text-indigo-400" />
+            <Mic className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
             <span>48m left</span>
           </Link>
 
-          {/* Country / Currency & Compliance Switcher */}
+          {/* Regional Currency & Compliance Switcher */}
           <ProductRegionSwitcher />
 
-          {/* Portals Switcher */}
-          <div className="relative">
-            <button
-              onClick={() => setPortalsOpen(!portalsOpen)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-card border border-border text-xs font-medium text-foreground hover:bg-muted transition-colors"
-            >
-              <span>Portals</span>
-              <ChevronDown className={`w-3.5 h-3.5 transition-transform ${portalsOpen ? "rotate-180" : ""}`} />
-            </button>
-
-            {portalsOpen && (
-              <div
-                className="absolute right-0 mt-2 w-72 rounded-2xl bg-card/95 border border-border/90 shadow-2xl backdrop-blur-2xl p-2 z-50 animate-in fade-in zoom-in-95 duration-100"
-                onClick={() => setPortalsOpen(false)}
-              >
-                <div className="px-3 py-1.5 text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
-                  Platform Studios &amp; Portals
-                </div>
-                <div className="space-y-1">
-                  {portals.map((p) => {
-                    const Icon = p.icon;
-                    return (
-                      <Link
-                        key={p.name}
-                        href={p.href}
-                        className="flex items-start gap-3 p-2.5 rounded-xl hover:bg-muted/70 transition-colors group"
-                      >
-                        <div className="p-2 rounded-lg bg-muted text-indigo-700 dark:text-indigo-400 group-hover:bg-indigo-600 group-hover:text-white transition-colors">
-                          <Icon className="w-4 h-4" />
-                        </div>
-                        <div>
-                          <div className="text-xs font-semibold text-foreground group-hover:text-foreground">
-                            {p.name}
-                          </div>
-                          <div className="text-[11px] text-muted-foreground line-clamp-1">
-                            {p.desc}
-                          </div>
-                        </div>
-                      </Link>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-          </div>
-
+          {/* Theme Switcher */}
           <ThemeToggle />
 
-          {/* Book Mentor CTA button */}
+          {/* Book Mentor CTA */}
           <Link
             href="/mentors/book"
-            className="hidden md:inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white text-xs font-semibold shadow-md shadow-indigo-600/25 transition-all hover:scale-[1.02]"
+            className="hidden lg:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white text-xs font-semibold shadow-md shadow-indigo-600/20 transition-all hover:scale-[1.02] active:scale-95"
           >
             <CalendarCheck className="w-3.5 h-3.5" />
             <span>Book Mentor</span>
           </Link>
+
+          {/* Student Profile & Account Menu */}
+          <div className="relative pl-1 border-l border-border/60" ref={profileMenuRef}>
+            {isSignedIn ? (
+              <UserButton
+                afterSignOutUrl="/login"
+                appearance={{
+                  elements: {
+                    avatarBox: "w-8 h-8 rounded-xl shadow-xs ring-1 ring-border",
+                  },
+                }}
+              />
+            ) : (
+              <div>
+                <button
+                  type="button"
+                  onClick={() => setProfileMenuOpen(!profileMenuOpen)}
+                  className="flex items-center gap-1.5 p-1 rounded-xl hover:bg-muted/80 transition-colors"
+                  title="Learner Account & Identity"
+                >
+                  <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-indigo-600 to-purple-600 flex items-center justify-center text-white text-xs font-bold shadow-md ring-2 ring-indigo-500/20">
+                    AM
+                  </div>
+                  <ChevronDown className="w-3 h-3 text-muted-foreground hidden sm:block" />
+                </button>
+
+                {profileMenuOpen && (
+                  <div className="absolute right-0 mt-2 w-64 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl p-2 z-[100] animate-in fade-in zoom-in-95 duration-100">
+                    <div className="px-3 py-2.5 border-b border-border/60">
+                      <div className="flex items-center gap-2">
+                        <div className="w-8 h-8 rounded-lg bg-indigo-600 text-white flex items-center justify-center font-bold text-xs">
+                          AM
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <div className="text-xs font-bold text-foreground truncate">
+                            Alex Morgan
+                          </div>
+                          <div className="text-[10px] text-muted-foreground truncate">
+                            alex.morgan@candidate.edu
+                          </div>
+                        </div>
+                      </div>
+                      <div className="mt-2 flex items-center justify-between">
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300 border border-amber-300 dark:border-amber-800">
+                          Gold League · Top 5%
+                        </span>
+                        <span className="text-[10px] text-muted-foreground font-mono">
+                          ID: #9402
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="py-1 space-y-0.5">
+                      <Link
+                        href="/dashboard"
+                        onClick={() => setProfileMenuOpen(false)}
+                        className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-foreground hover:bg-muted transition-colors"
+                      >
+                        <Compass className="w-3.5 h-3.5 text-muted-foreground" />
+                        <span>Member 360 Dashboard</span>
+                      </Link>
+                      <Link
+                        href="/passport"
+                        onClick={() => setProfileMenuOpen(false)}
+                        className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-foreground hover:bg-muted transition-colors"
+                      >
+                        <Award className="w-3.5 h-3.5 text-muted-foreground" />
+                        <span>Skill Passport &amp; Badges</span>
+                      </Link>
+                      <Link
+                        href="/mentors/book"
+                        onClick={() => setProfileMenuOpen(false)}
+                        className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-foreground hover:bg-muted transition-colors"
+                      >
+                        <CalendarCheck className="w-3.5 h-3.5 text-muted-foreground" />
+                        <span>My Mentorship Sessions</span>
+                      </Link>
+                      <Link
+                        href="/login"
+                        onClick={() => setProfileMenuOpen(false)}
+                        className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-foreground hover:bg-muted transition-colors"
+                      >
+                        <User className="w-3.5 h-3.5 text-muted-foreground" />
+                        <span>Account &amp; Security</span>
+                      </Link>
+                    </div>
+
+                    {/* Enterprise / Corporate link clearly separated */}
+                    <div className="pt-1 mt-1 border-t border-border/60">
+                      <Link
+                        href="/recruiter/dashboard"
+                        onClick={() => setProfileMenuOpen(false)}
+                        className="flex items-center justify-between px-3 py-1.5 rounded-lg text-[11px] font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                      >
+                        <span className="flex items-center gap-1.5">
+                          <Briefcase className="w-3 h-3 text-purple-500" />
+                          <span>Enterprise Hiring Portal</span>
+                        </span>
+                        <ArrowRight className="w-3 h-3" />
+                      </Link>
+                      <Link
+                        href="/login"
+                        onClick={() => setProfileMenuOpen(false)}
+                        className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-semibold text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors mt-0.5"
+                      >
+                        <LogOut className="w-3.5 h-3.5" />
+                        <span>Sign Out</span>
+                      </Link>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Mobile Hamburger Button */}
+          <button
+            type="button"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="xl:hidden p-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+            aria-label="Toggle navigation menu"
+          >
+            {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+          </button>
         </div>
       </div>
+
+      {/* Mobile Drawer Navigation (Small Screens) */}
+      {mobileMenuOpen && (
+        <div className="xl:hidden border-t border-border bg-white dark:bg-slate-950 px-4 py-4 space-y-4 shadow-xl animate-in slide-in-from-top-2 duration-150">
+          <div className="space-y-1">
+            <div className="px-3 py-1 text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
+              Core Navigation
+            </div>
+            {primaryLinks.map((link) => {
+              const Icon = link.icon;
+              const isActive =
+                link.href === "/dashboard"
+                  ? pathname === "/dashboard"
+                  : pathname?.startsWith(link.href);
+              return (
+                <Link
+                  key={link.name}
+                  href={link.href}
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={`flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold transition-colors ${
+                    isActive
+                      ? "bg-indigo-50 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300 font-bold"
+                      : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                  }`}
+                >
+                  <Icon className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+                  <span>{link.name}</span>
+                </Link>
+              );
+            })}
+          </div>
+
+          <div className="space-y-1 pt-2 border-t border-border/60">
+            <div className="px-3 py-1 text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
+              Practice &amp; Growth Hub
+            </div>
+            {studentPracticeTools.map((tool) => {
+              const Icon = tool.icon;
+              return (
+                <Link
+                  key={tool.name}
+                  href={tool.href}
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                >
+                  <div className="flex items-center gap-2.5">
+                    <Icon className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+                    <span>{tool.name}</span>
+                  </div>
+                  {tool.badge && (
+                    <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300 uppercase">
+                      {tool.badge}
+                    </span>
+                  )}
+                </Link>
+              );
+            })}
+          </div>
+
+          <div className="pt-2 border-t border-border/60 flex items-center justify-between">
+            <Link
+              href="/mentors/book"
+              onClick={() => setMobileMenuOpen(false)}
+              className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 text-white text-xs font-bold shadow-md"
+            >
+              <CalendarCheck className="w-4 h-4" />
+              <span>Book 1-on-1 Mentor Session</span>
+            </Link>
+          </div>
+        </div>
+      )}
     </header>
   );
 }
+

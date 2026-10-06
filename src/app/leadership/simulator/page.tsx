@@ -239,7 +239,7 @@ export default function ExecutiveLeadershipSimulatorPage() {
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col font-sans selection:bg-indigo-500/30">
       {/* Top Header */}
-      <header className="border-b border-border bg-card/60 backdrop-blur-md sticky top-0 z-40 px-6 py-4">
+      <header className="border-b border-border bg-card/80 backdrop-blur-md sticky top-16 z-20 px-6 py-4">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="flex items-center space-x-3">
             <div className="h-9 w-9 rounded-lg bg-gradient-to-tr from-indigo-600 via-indigo-500 to-purple-400 flex items-center justify-center font-bold text-slate-950 shadow-lg shadow-indigo-500/20">

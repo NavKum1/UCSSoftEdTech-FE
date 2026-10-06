@@ -130,7 +130,7 @@ export default function CareerTrajectoryStudioPage() {
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col font-sans pb-16">
       {/* Top Banner */}
-      <header className="border-b border-border bg-card/60 backdrop-blur-md sticky top-0 z-40">
+      <header className="border-b border-border bg-card/80 backdrop-blur-md sticky top-16 z-20">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
           <div className="flex items-center space-x-3">
             <Link

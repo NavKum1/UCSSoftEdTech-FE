@@ -161,17 +161,19 @@ export default function DailyIncidentPage() {
   const [triageResult, setTriageResult] = useState<TriageResult | null>(null);
   const [activeTab, setActiveTab] = useState<"briefing" | "telemetry" | "logs" | "leagues">("briefing");
 
-  // Simulated constant user ID for local browser session
+  // Unique user ID for local browser session
   const [userId] = useState<string>(() => {
     if (typeof window !== "undefined") {
       const stored = localStorage.getItem("daily_incident_user_id");
       if (stored) return stored;
-      const created = "a8f3b201-1122-3344-5566-778899aabbcc";
+      const created = typeof crypto !== "undefined" && crypto.randomUUID ? crypto.randomUUID() : "a8f3b201-1122-3344-5566-778899aabbcc";
       localStorage.setItem("daily_incident_user_id", created);
       return created;
     }
     return "a8f3b201-1122-3344-5566-778899aabbcc";
   });
+
+  const [hasLoadedUrlParams, setHasLoadedUrlParams] = useState<boolean>(false);
 
   useEffect(() => {
     fetchInitialData();
@@ -190,18 +192,20 @@ export default function DailyIncidentPage() {
   const fetchInitialData = async () => {
     setLoading(true);
     try {
-      let url = `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/incidents/today?track=${track}&difficultyTier=${difficultyTier}`;
+      let url = `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/incidents/today?track=${encodeURIComponent(track)}&difficultyTier=${encodeURIComponent(difficultyTier)}`;
 
-      if (typeof window !== "undefined") {
+      if (typeof window !== "undefined" && !hasLoadedUrlParams) {
         const params = new URLSearchParams(window.location.search);
         const code = params.get("accessCode");
         const id = params.get("id");
         if (code) {
           url = `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/incidents/access/${encodeURIComponent(code)}`;
           setIsAssessmentMode(true);
+          setHasLoadedUrlParams(true);
         } else if (id) {
           url = `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/incidents/${encodeURIComponent(id)}`;
           setIsAssessmentMode(true);
+          setHasLoadedUrlParams(true);
         }
       }
 
@@ -210,9 +214,7 @@ export default function DailyIncidentPage() {
       if (incRes.ok) {
         const incData: IncidentKata = await incRes.json();
         setIncident(incData);
-        if (incData.track) setTrack(incData.track);
-        if (incData.difficultyTier) setDifficultyTier(incData.difficultyTier);
-        if (incData.isPrivateAssessment || incData.organizationOrTeamName) {
+        if (!hasLoadedUrlParams && (incData.isPrivateAssessment || incData.organizationOrTeamName)) {
           setIsAssessmentMode(true);
         }
         if (incData.telemetryMetrics_JSON) {
@@ -509,7 +511,7 @@ export default function DailyIncidentPage() {
       )}
 
       {/* Top Navigation HUD */}
-      <header className="border-b border-border bg-card/80 backdrop-blur sticky top-0 z-50 px-6 py-4">
+      <header className="border-b border-border bg-card/80 backdrop-blur sticky top-16 z-20 px-6 py-4">
         <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <Link

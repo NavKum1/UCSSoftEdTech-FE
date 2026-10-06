@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useMemo } from "react";
+import Link from "next/link";
 import Editor from "@monaco-editor/react";
 import OpenAIRealtimeInterviewRoom from "@/components/OpenAIRealtimeInterviewRoom";
 import ProctoringHUD from "./components/ProctoringHUD";
@@ -590,60 +591,65 @@ function SprintWorkspaceInner() {
 
   return (
       <div className="flex flex-col font-sans pb-16">
-        {/* Navbar */}
-        <header className="border-b border-border bg-card/60 backdrop-blur-md sticky top-0 z-50">
+        {/* Challenge Workspace HUD Sub-Header */}
+        <header className="border-b border-border bg-card/90 backdrop-blur-md sticky top-16 z-20">
           {isOffline && (
             <div className="w-full bg-amber-500/10 text-amber-700 dark:text-amber-400 text-center text-xs py-1.5 font-semibold border-b border-amber-500/20">
               No internet connection. Your work is being saved locally.
             </div>
           )}
-        <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-          <div className="flex items-center space-x-3 cursor-pointer" onClick={() => router.push("/")}>
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-600 to-purple-600 flex items-center justify-center font-bold text-white shadow-lg shadow-indigo-500/20">
-              BD
+          <div className="max-w-7xl mx-auto px-6 h-14 flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <Link
+                href="/dashboard"
+                className="text-xs font-mono uppercase tracking-widest text-muted-foreground hover:text-foreground transition flex items-center gap-1"
+              >
+                <span>←</span> Dashboard
+              </Link>
+              <span className="text-border">|</span>
+              <div className="flex items-center space-x-2">
+                <span className="font-bold text-sm text-foreground">
+                  {sprintId ? sprintId.split("-").map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(" ") : "Distributed Database"}
+                </span>
+                <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 font-semibold border border-emerald-500/30">
+                  Verified &amp; Secure
+                </span>
+              </div>
             </div>
-            <div>
-              <span className="font-bold text-lg text-foreground">BUILD & DEFEND</span>
-              <span className="ml-2 text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-600 dark:text-emerald-600 dark:text-emerald-300 font-semibold border border-emerald-500/30">
-                Verified & Secure
+
+            <div className="flex items-center space-x-3">
+              <div className="hidden lg:flex items-center space-x-2 bg-card border border-border rounded-xl px-3 py-1.5 shadow-xs">
+                <select value={candidateTrack} onChange={(e) => handleTrackChange(e.target.value as CandidateTrack)} className="bg-transparent text-xs text-indigo-600 dark:text-indigo-400 font-semibold focus:outline-none cursor-pointer">
+                  <option value="DevOps">🚀 DevOps &amp; SRE</option>
+                  <option value="Backend">⚙️ Backend Systems</option>
+                  <option value="Frontend">💻 Frontend &amp; Web</option>
+                  <option value="FullStack">🌐 FullStack Systems</option>
+                  <option value="DataMLOps">🧠 Data &amp; MLOps</option>
+                  <option value="Cybersecurity">🛡️ Cybersecurity</option>
+                  <option value="Mobile">📱 Mobile Architecture</option>
+                  <option value="CloudFinOps">💰 Cloud FinOps</option>
+                  <option value="DatabaseRE">🗄️ Database Reliability</option>
+                </select>
+                <span className="text-border">|</span>
+                <select value={difficultyTier} onChange={(e) => setDifficultyTier(e.target.value as any)} className="bg-transparent text-xs text-emerald-700 dark:text-emerald-400 font-semibold focus:outline-none cursor-pointer">
+                  <option value="Bronze (Junior)">Bronze (Junior)</option>
+                  <option value="Diamond (Staff)">Diamond (Staff)</option>
+                </select>
+                <span className="text-border">|</span>
+                <select value={language} onChange={(e) => setLanguage(e.target.value)} className="bg-transparent text-xs text-purple-700 dark:text-purple-400 font-semibold focus:outline-none cursor-pointer">
+                  {TRACK_LANGUAGES[candidateTrack].options.map((opt) => (
+                    <option key={opt} value={opt}>
+                      {opt}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <span className="text-xs px-2.5 py-1 rounded-lg bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 border border-indigo-500/30 font-semibold font-mono tracking-wide" title={`Sprint Identifier: ${sprintId}`}>
+                ID: {formattedChallengeId}
               </span>
             </div>
           </div>
-
-          <div className="flex items-center space-x-4">
-            <div className="hidden lg:flex items-center space-x-2 bg-card border border-border rounded-xl px-3 py-1.5 shadow-sm">
-              <select value={candidateTrack} onChange={(e) => handleTrackChange(e.target.value as CandidateTrack)} className="bg-transparent text-xs text-indigo-600 dark:text-indigo-300 font-semibold focus:outline-none cursor-pointer">
-                <option value="DevOps">🚀 DevOps & SRE</option>
-                <option value="Backend">⚙️ Backend Systems</option>
-                <option value="Frontend">💻 Frontend & Web</option>
-                <option value="FullStack">🌐 FullStack Systems</option>
-                <option value="DataMLOps">🧠 Data & MLOps</option>
-                <option value="Cybersecurity">🛡️ Cybersecurity</option>
-                <option value="Mobile">📱 Mobile Architecture</option>
-                <option value="CloudFinOps">💰 Cloud FinOps</option>
-                <option value="DatabaseRE">🗄️ Database Reliability</option>
-              </select>
-              <span className="text-slate-700">|</span>
-              <select value={difficultyTier} onChange={(e) => setDifficultyTier(e.target.value as any)} className="bg-transparent text-xs text-emerald-700 dark:text-emerald-400 font-semibold focus:outline-none cursor-pointer">
-                <option value="Bronze (Junior)">Bronze League (Junior)</option>
-                <option value="Diamond (Staff)">Diamond League (Staff)</option>
-              </select>
-              <span className="text-slate-700">|</span>
-              <select value={language} onChange={(e) => setLanguage(e.target.value)} className="bg-transparent text-xs text-purple-700 dark:text-purple-400 font-semibold focus:outline-none cursor-pointer">
-                {TRACK_LANGUAGES[candidateTrack].options.map((opt) => (
-                  <option key={opt} value={opt}>
-                    {opt}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <span className="text-xs px-3 py-1 rounded-full bg-indigo-500/10 text-indigo-600 dark:text-indigo-300 border border-indigo-500/30 font-semibold font-mono tracking-wide" title={`Sprint Identifier: ${sprintId}`}>
-              Challenge ID: {formattedChallengeId}
-            </span>
-            <UserButton />
-          </div>
-        </div>
-      </header>
+        </header>
 
       {/* Main Split-Pane Workspace */}
       <main className="max-w-7xl mx-auto px-6 pt-8 flex-1 w-full space-y-6">

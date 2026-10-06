@@ -370,7 +370,7 @@ export default function Member360CommandCenterPage() {
               <div className="mt-4 pt-3 border-t border-border/60 flex items-center justify-between">
                 <span className="text-xs text-amber-700 dark:text-amber-400 font-medium">Pending Triage</span>
                 <Link
-                  href="/daily"
+                  href="/daily/incident"
                   className="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold flex items-center gap-1 transition-colors"
                 >
                   <span>Resolve Outage</span>
@@ -399,7 +399,7 @@ export default function Member360CommandCenterPage() {
               <div className="mt-4 pt-3 border-t border-border/60 flex items-center justify-between">
                 <span className="text-xs text-emerald-700 dark:text-emerald-400 font-medium">Score: 98/100</span>
                 <Link
-                  href="/daily"
+                  href="/daily/review"
                   className="text-xs text-muted-foreground hover:text-foreground font-semibold flex items-center gap-1"
                 >
                   <span>View Diff</span>

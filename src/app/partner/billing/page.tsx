@@ -177,7 +177,7 @@ export default function PartnerBillingPage() {
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col font-sans">
       {/* Top Navigation */}
-      <header className="border-b border-border bg-card/80 backdrop-blur px-6 py-4 flex items-center justify-between sticky top-0 z-50">
+      <header className="border-b border-border bg-card/80 backdrop-blur px-6 py-4 flex items-center justify-between sticky top-16 z-20">
         <div className="flex items-center gap-3">
           <Link
             href="/partner/dashboard"

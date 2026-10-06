@@ -317,7 +317,7 @@ export default function InterviewPairingStudioPage({ params }: { params: Promise
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col font-sans">
       {/* Top Bar */}
-      <header className="h-16 border-b border-border bg-card/80 px-6 flex items-center justify-between backdrop-blur-md sticky top-0 z-30">
+      <header className="h-16 border-b border-border bg-card/80 px-6 flex items-center justify-between backdrop-blur-md sticky top-16 z-20">
         <div className="flex items-center space-x-4">
           <Link
             href="/recruiter/dashboard"

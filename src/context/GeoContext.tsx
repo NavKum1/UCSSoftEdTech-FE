@@ -269,10 +269,10 @@ export function ProductRegionSwitcher({ className = "" }: { className?: string }
       {isOpen && (
         <>
           <div
-            className="fixed inset-0 z-40"
+            className="fixed inset-0 z-[90]"
             onClick={() => setIsOpen(false)}
           />
-          <div className="absolute right-0 mt-2 z-50 w-56 rounded-xl border border-border bg-card/95 p-1.5 shadow-2xl backdrop-blur-xl">
+          <div className="absolute right-0 mt-2 z-[100] w-56 rounded-xl border border-border bg-white dark:bg-slate-900 p-1.5 shadow-2xl">
             <div className="px-2.5 py-1.5 font-mono text-[10px] uppercase text-muted-foreground border-b border-border/80 mb-1">
               Select Region &amp; Currency
             </div>

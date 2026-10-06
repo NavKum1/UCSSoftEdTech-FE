@@ -93,6 +93,8 @@ export default function CandidateAssessmentBundlePage() {
   const [defenseActive, setDefenseActive] = useState<boolean>(false);
   const [defenseSeconds, setDefenseSeconds] = useState<number>(0);
   const [candidateDefenseNotes, setCandidateDefenseNotes] = useState<string>("");
+  const [spokenTranscript, setSpokenTranscript] = useState<string>("");
+  const [isListeningMic, setIsListeningMic] = useState<boolean>(false);
   const [draftSavedAt, setDraftSavedAt] = useState<string | null>(null);
   const [copiedLink, setCopiedLink] = useState<boolean>(false);
   const [copiedSignature, setCopiedSignature] = useState<boolean>(false);
@@ -328,7 +330,7 @@ export default function CandidateAssessmentBundlePage() {
     }
   };
 
-  // Stage 3 Voice Timer
+  // Stage 3 Voice Timer & Live Web Speech Recognition
   useEffect(() => {
     if (!defenseActive) return;
     const interval = setInterval(() => {
@@ -337,17 +339,63 @@ export default function CandidateAssessmentBundlePage() {
     return () => clearInterval(interval);
   }, [defenseActive]);
 
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const SpeechRec = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SpeechRec) return;
+
+    let recognition: any = null;
+    if (defenseActive) {
+      try {
+        recognition = new SpeechRec();
+        recognition.continuous = true;
+        recognition.interimResults = true;
+        recognition.lang = "en-US";
+
+        recognition.onresult = (event: any) => {
+          let full = "";
+          for (let i = 0; i < event.results.length; i++) {
+            full += event.results[i][0].transcript + " ";
+          }
+          if (full.trim()) {
+            setSpokenTranscript(full.trim());
+          }
+        };
+
+        recognition.onerror = (e: any) => {
+          console.warn("Speech recognition error:", e);
+        };
+
+        recognition.start();
+        setIsListeningMic(true);
+      } catch (err) {
+        console.warn("Could not start speech recognition:", err);
+      }
+    } else {
+      setIsListeningMic(false);
+    }
+
+    return () => {
+      if (recognition) {
+        try { recognition.stop(); } catch {}
+      }
+    };
+  }, [defenseActive]);
+
   // Submit Stage 3 (AI Voice Defense) - Real Semantic Evaluation
   const handleSubmitStage3 = async () => {
     setSubmittingStage(true);
     try {
       const defenseMinutes = Math.max(1, Math.round(defenseSeconds / 60));
+      const combinedCandidateWords = (spokenTranscript.trim() + " " + candidateDefenseNotes.trim()).trim();
+
+      const candidateSpeechTurn = combinedCandidateWords.length > 0
+        ? combinedCandidateWords
+        : "Candidate completed live evaluation without verbal response or trade-off defense.";
 
       const transcriptsToSend = [
         { role: "interviewer", text: `Candidate initiating architectural defense for ${bundle?.targetRole}: '${bundle?.defenseTopic}'.`, timestamp: "00:05" },
-        { role: "candidate", text: candidateDefenseNotes || `Candidate defended consistent hashing virtual nodes, partition lease timeouts, and p99 backpressure handling under ${defenseMinutes}m architectural pushback.`, timestamp: "01:45" },
-        { role: "interviewer", text: "How does your implementation handle split-brain partitions if leader leases expire?", timestamp: "02:30" },
-        { role: "candidate", text: "We enforce monotonic epoch fences so any leader separated from quorum rejects incoming mutations.", timestamp: "03:10" }
+        { role: "candidate", text: candidateSpeechTurn, timestamp: "01:30" }
       ];
 
       const res = await fetch(`${apiBase}/api/recruiter/assessments/bundle/${token}/submit-stage`, {
@@ -357,7 +405,7 @@ export default function CandidateAssessmentBundlePage() {
           stage: 3,
           codeSubmission: candidateCode,
           transcripts: transcriptsToSend,
-          notes: candidateDefenseNotes || `Completed verbal architectural cross-examination (${defenseMinutes}m).`,
+          notes: combinedCandidateWords || `Session concluded after ${defenseMinutes}m verbal cross-examination.`,
         }),
       });
 
@@ -752,6 +800,16 @@ export default function CandidateAssessmentBundlePage() {
                   : "Click to activate WebRTC mic and begin voice defense with the AI Senior Architect."}
               </p>
             </div>
+
+            {/* Live Spoken Recognition Stream */}
+            {spokenTranscript && (
+              <div className="p-3.5 rounded-2xl bg-purple-500/10 border border-purple-500/20 space-y-1 animate-in fade-in">
+                <span className="text-[10px] uppercase font-bold text-purple-600 dark:text-purple-400 flex items-center gap-1.5">
+                  <Mic className="w-3 h-3 animate-pulse" /> Live Spoken Voice Recognition Stream:
+                </span>
+                <p className="text-xs font-mono text-foreground italic">"{spokenTranscript}"</p>
+              </div>
+            )}
 
             {/* Candidate Architectural Defense Notes */}
             <div className="space-y-2">

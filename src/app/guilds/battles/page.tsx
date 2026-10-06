@@ -189,7 +189,7 @@ export default function EnterpriseGuildBattlesPage() {
   return (
     <div className="min-h-screen bg-background text-foreground antialiased selection:bg-indigo-500 selection:text-white">
       {/* Top Navigation Bar */}
-      <header className="border-b border-border bg-card/90 backdrop-blur sticky top-0 z-50 px-6 py-4">
+      <header className="border-b border-border bg-card/90 backdrop-blur sticky top-16 z-20 px-6 py-4">
         <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <Link

@@ -731,7 +731,7 @@ export default function WrittenExamPrepPage() {
     return (
       <div className="min-h-screen bg-background text-foreground flex flex-col font-sans">
         {/* Top Sticky Test Bar */}
-        <header className="sticky top-0 z-20 border-b border-border bg-card/80 backdrop-blur-md px-6 py-3.5 flex items-center justify-between">
+        <header className="sticky top-16 z-20 border-b border-border bg-card/80 backdrop-blur-md px-6 py-3.5 flex items-center justify-between">
           <div>
             <h2 className="text-sm font-bold text-foreground line-clamp-1">
               {activeExam.title}
