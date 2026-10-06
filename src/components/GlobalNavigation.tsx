@@ -25,6 +25,7 @@ import {
   LogOut,
   Building2,
   Briefcase,
+  LayoutDashboard,
 } from "lucide-react";
 import { ProductRegionSwitcher } from "@/context/GeoContext";
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -62,8 +63,9 @@ export default function GlobalNavigation() {
 
   // Primary Student Core Navigation Links
   const primaryLinks = [
-    { name: "Dashboard", href: "/dashboard", icon: Compass },
+    { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
     { name: "Challenges", href: "/sprint/distributed-database", icon: Layers },
+    { name: "Counselling", fullName: "Career Counselling", href: "/prep/counselling", icon: Compass },
     { name: "Interviews", href: "/interview/practice", icon: Mic },
     { name: "Exams", href: "/prep/exam", icon: GraduationCap },
     { name: "Incidents", href: "/daily/incident", icon: Flame },
@@ -157,7 +159,10 @@ export default function GlobalNavigation() {
                       isActive ? "text-indigo-700 dark:text-indigo-400" : "text-muted-foreground"
                     }`}
                   />
-                  <span>{link.name}</span>
+                  <span>
+                    <span className="hidden xl:inline">{link.fullName || link.name}</span>
+                    <span className="xl:hidden">{link.name}</span>
+                  </span>
                 </Link>
               );
             })}
@@ -419,7 +424,7 @@ export default function GlobalNavigation() {
                   }`}
                 >
                   <Icon className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
-                  <span>{link.name}</span>
+                  <span>{link.fullName || link.name}</span>
                 </Link>
               );
             })}

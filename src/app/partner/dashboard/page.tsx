@@ -354,7 +354,7 @@ export default function PartnerDashboardPage() {
               <tbody className="divide-y divide-slate-800/60">
                 {leads.map((lead: any) => (
                   <tr key={lead.leadId} className="hover:bg-card/40 transition-colors">
-                    <td className="py-3.5 px-4 font-semibold text-white">{lead.candidateName}</td>
+                    <td className="py-3.5 px-4 font-semibold text-foreground">{lead.candidateName}</td>
                     <td className="py-3.5 px-4 font-mono text-muted-foreground">{lead.candidateEmail}</td>
                     <td className="py-3.5 px-4 text-indigo-600 dark:text-indigo-300 font-medium">{lead.courseName}</td>
                     <td className="py-3.5 px-4 text-muted-foreground">
