@@ -179,11 +179,8 @@ export default function OpenAIRealtimeInterviewRoom({
       const offer = await pc.createOffer();
       await pc.setLocalDescription(offer);
 
-      const baseUrl = "https://api.openai.com/v1/realtime";
-      const model = "gpt-4o-realtime-preview-2024-12-17";
-      
       // 5. Send Offer to OpenAI to get Answer
-      const sdpResponse = await fetch(`${baseUrl}?model=${model}`, {
+      const sdpResponse = await fetch("https://api.openai.com/v1/realtime/calls", {
         method: "POST",
         body: offer.sdp,
         headers: {
@@ -193,7 +190,8 @@ export default function OpenAIRealtimeInterviewRoom({
       });
 
       if (!sdpResponse.ok) {
-        throw new Error("Failed to connect to OpenAI WebRTC endpoint.");
+        const errDetail = await sdpResponse.text().catch(() => "");
+        throw new Error(`Failed to connect to OpenAI WebRTC endpoint (${sdpResponse.status}): ${errDetail}`);
       }
 
       const answerSdp = await sdpResponse.text();

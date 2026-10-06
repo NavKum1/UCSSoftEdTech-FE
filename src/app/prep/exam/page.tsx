@@ -24,8 +24,23 @@ import {
   Plus,
   X,
   FileCode,
+  Share2,
+  History,
+  TrendingUp,
+  Copy,
+  ExternalLink,
+  ShieldCheck,
+  Calendar,
 } from "lucide-react";
 import Link from "next/link";
+
+function LinkedInIcon({ className = "w-4 h-4" }: { className?: string }) {
+  return (
+    <svg className={className} fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.28 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 0 1 1.4 1.4v4.93h2.75M6.46 8.76a1.4 1.4 0 1 0 0-2.8 1.4 1.4 0 0 0 0 2.8m1.39 9.74v-8.37H5.07v8.37h2.78z"/>
+    </svg>
+  );
+}
 
 interface ExamCatalogItem {
   id: string;
@@ -36,6 +51,24 @@ interface ExamCatalogItem {
   difficulty: string;
   totalQuestions: number;
   passingPercentage: number;
+}
+
+interface ExamAttempt {
+  attemptId: string;
+  userId: string;
+  examId: string;
+  examTitle: string;
+  stream: string;
+  percentage: number;
+  passed: boolean;
+  totalQuestions: number;
+  correctAnswers: number;
+  percentileRank: number;
+  durationMinutes: number;
+  certificateNumber?: string;
+  verificationSignatureSha256?: string;
+  verificationUrl?: string;
+  submittedAt: string;
 }
 
 interface ExamQuestion {
@@ -96,6 +129,26 @@ export default function WrittenExamPrepPage() {
   const [submitting, setSubmitting] = useState<boolean>(false);
   const [evaluation, setEvaluation] = useState<ExamEvaluationResult | null>(null);
 
+  // Tab & History state
+  const [activeTab, setActiveTab] = useState<"catalog" | "history">("catalog");
+  const [examHistory, setExamHistory] = useState<ExamAttempt[]>([]);
+  const [historyLoading, setHistoryLoading] = useState<boolean>(false);
+  const [historyStats, setHistoryStats] = useState<{
+    totalAttempts: number;
+    passedCount: number;
+    passRatePercentage: number;
+    averageScore: number;
+    highestScore: number;
+  }>({ totalAttempts: 0, passedCount: 0, passRatePercentage: 0, averageScore: 0, highestScore: 0 });
+
+  // Credential Modal State
+  const [claimedCredential, setClaimedCredential] = useState<any | null>(null);
+  const [showCredentialModal, setShowCredentialModal] = useState<boolean>(false);
+  const [claiming, setClaiming] = useState<boolean>(false);
+  const [copiedLink, setCopiedLink] = useState<boolean>(false);
+  const [copiedSignature, setCopiedSignature] = useState<boolean>(false);
+  const [candidateName, setCandidateName] = useState<string>("Alex Chen");
+
   // Modals state
   const [showAiModal, setShowAiModal] = useState<boolean>(false);
   const [showUploadModal, setShowUploadModal] = useState<boolean>(false);
@@ -120,6 +173,7 @@ export default function WrittenExamPrepPage() {
 
   useEffect(() => {
     fetchCatalog();
+    fetchHistory();
   }, []);
 
   const fetchCatalog = async () => {
@@ -134,6 +188,28 @@ export default function WrittenExamPrepPage() {
       console.error("Failed to load exams catalog:", err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchHistory = async () => {
+    setHistoryLoading(true);
+    try {
+      const res = await fetch(`${apiBase}/api/quiz/exams/history`);
+      if (res.ok) {
+        const data = await res.json();
+        setExamHistory(data.attempts || []);
+        setHistoryStats({
+          totalAttempts: data.totalAttempts || 0,
+          passedCount: data.passedCount || 0,
+          passRatePercentage: data.passRatePercentage || 0,
+          averageScore: data.averageScore || 0,
+          highestScore: data.highestScore || 0,
+        });
+      }
+    } catch (err) {
+      console.error("Failed to load exam history:", err);
+    } finally {
+      setHistoryLoading(false);
     }
   };
 
@@ -188,17 +264,43 @@ export default function WrittenExamPrepPage() {
       const res = await fetch(`${apiBase}/api/quiz/exams/${activeExam.id}/submit`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ answers }),
+        body: JSON.stringify({ answers, candidateName }),
       });
 
       if (res.ok) {
         const resultData: ExamEvaluationResult = await res.json();
         setEvaluation(resultData);
+        fetchHistory();
       }
     } catch (err) {
       console.error("Failed to evaluate exam:", err);
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const handleClaimCredential = async (examId: string, percentage: number) => {
+    setClaiming(true);
+    try {
+      const res = await fetch(`${apiBase}/api/quiz/exams/${examId}/claim-credential`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          percentage,
+          candidateName: candidateName || "Alex Chen",
+        }),
+      });
+
+      if (res.ok) {
+        const cred = await res.json();
+        setClaimedCredential(cred);
+        setShowCredentialModal(true);
+        fetchHistory();
+      }
+    } catch (err) {
+      console.error("Failed to claim verified credential:", err);
+    } finally {
+      setClaiming(false);
     }
   };
 
@@ -406,6 +508,61 @@ export default function WrittenExamPrepPage() {
                 </p>
               </div>
             </div>
+
+            {/* Verified Credential & Skill Passport Issuance Banner */}
+            {evaluation.passed ? (
+              <div className="p-4 sm:p-5 rounded-2xl border border-amber-500/30 bg-gradient-to-r from-amber-500/10 via-primary/5 to-amber-500/10 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-sm">
+                <div className="flex items-center gap-3.5">
+                  <div className="w-11 h-11 rounded-xl bg-amber-500/20 text-amber-500 border border-amber-500/30 flex items-center justify-center shrink-0 shadow-sm">
+                    <Award className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-bold text-amber-500 uppercase tracking-wider">
+                        Official Certification Earned
+                      </span>
+                      <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-[10px] font-bold">
+                        {evaluation.percentage}% Passed
+                      </span>
+                    </div>
+                    <h3 className="text-sm font-bold text-foreground mt-0.5">
+                      Cryptographic Verified Credential &amp; Skill Passport Badge
+                    </h3>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      Mint your SHA-256 tamper-evident certificate, sync to your active Gold Skill Passport, and share directly on LinkedIn.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 shrink-0">
+                  <button
+                    onClick={() => handleClaimCredential(evaluation.examId, evaluation.percentage)}
+                    disabled={claiming}
+                    className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-bold text-xs shadow-md flex items-center justify-center gap-2 transition-all disabled:opacity-50"
+                  >
+                    <Award className="w-4 h-4" />
+                    <span>{claiming ? "Minting Certificate..." : claimedCredential ? "View Claimed Credential" : "Claim Verified Credential"}</span>
+                  </button>
+                  <Link
+                    href="/passport"
+                    className="hidden sm:inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-border bg-card/60 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    <span>View Passport</span>
+                    <ExternalLink className="w-3.5 h-3.5" />
+                  </Link>
+                </div>
+              </div>
+            ) : (
+              <div className="p-4 rounded-xl border border-border bg-muted/20 text-xs text-muted-foreground flex items-center justify-between">
+                <span>Passing score is {evaluation.passingPercentage}%. Retake the exam to unlock your official verified credential badge.</span>
+                <button
+                  onClick={() => startExam(evaluation.examId)}
+                  className="font-semibold text-primary hover:underline ml-2"
+                >
+                  Retry Now
+                </button>
+              </div>
+            )}
 
             <div className="flex flex-wrap items-center gap-3 pt-2">
               <button
@@ -746,105 +903,280 @@ export default function WrittenExamPrepPage() {
           </div>
         </div>
 
-        {/* Action Controls & Filter Pills */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-2">
-          {/* Filter Pills */}
-          <div className="flex items-center gap-2 overflow-x-auto pb-1">
-            {streams.map((stream) => (
-              <button
-                key={stream}
-                onClick={() => setSelectedStream(stream)}
-                className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all ${
-                  selectedStream === stream
-                    ? "bg-primary text-primary-foreground shadow-sm"
-                    : "border border-border/80 bg-card/60 text-muted-foreground hover:text-foreground hover:bg-card"
-                }`}
-              >
-                {stream}
-              </button>
-            ))}
-          </div>
-
-          {/* Creation & Import Action Buttons */}
-          <div className="flex items-center gap-2.5 shrink-0">
-            <button
-              type="button"
-              onClick={() => setShowAiModal(true)}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-600 text-white text-xs font-semibold hover:opacity-95 shadow-sm transition-all"
-            >
-              <Wand2 className="w-3.5 h-3.5" />
-              <span>Synthesize AI Exam</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setShowUploadModal(true)}
-              className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl border border-border bg-card/80 text-foreground text-xs font-semibold hover:bg-card transition-colors"
-            >
-              <Upload className="w-3.5 h-3.5 text-primary" />
-              <span>Import Question Bank</span>
-            </button>
-          </div>
+        {/* Navigation Tabs: Exam Catalog vs My History & Credentials */}
+        <div className="flex items-center gap-2 p-1.5 rounded-2xl bg-muted/40 border border-border w-fit">
+          <button
+            onClick={() => setActiveTab("catalog")}
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all ${
+              activeTab === "catalog"
+                ? "bg-card text-foreground shadow-sm border border-border/80"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            <BookOpen className="w-3.5 h-3.5 text-primary" />
+            <span>Available Exams ({catalog.length})</span>
+          </button>
+          <button
+            onClick={() => {
+              setActiveTab("history");
+              fetchHistory();
+            }}
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all ${
+              activeTab === "history"
+                ? "bg-card text-foreground shadow-sm border border-border/80"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            <History className="w-3.5 h-3.5 text-primary" />
+            <span>My Attempt History &amp; Credentials ({examHistory.length})</span>
+          </button>
         </div>
 
-        {/* Exam Cards Grid */}
-        {loading || examLoading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-            {[1, 2, 3].map((i) => (
-              <div
-                key={i}
-                className="h-64 rounded-2xl border border-border/60 bg-muted/20 animate-pulse"
-              />
-            ))}
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-            {filteredCatalog.map((exam, i) => (
-              <div
-                key={`${exam.id}-${i}`}
-                className="group relative flex flex-col justify-between p-6 rounded-2xl border border-border/80 bg-card/60 hover:bg-card hover:border-primary/40 transition-all duration-200 shadow-sm hover:shadow-md"
-              >
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="px-2.5 py-1 rounded-md bg-primary/10 text-primary text-[10px] font-bold uppercase tracking-wider">
-                      {exam.stream}
-                    </span>
-                    <span className="text-xs text-muted-foreground font-medium">
-                      {exam.difficulty}
-                    </span>
-                  </div>
-
-                  <h3 className="text-base font-bold text-foreground group-hover:text-primary transition-colors">
-                    {exam.title}
-                  </h3>
-
-                  <p className="text-xs text-muted-foreground leading-relaxed">
-                    {exam.description}
-                  </p>
-                </div>
-
-                <div className="pt-6 space-y-4">
-                  <div className="grid grid-cols-2 gap-2 text-xs text-muted-foreground pt-3 border-t border-border">
-                    <div className="flex items-center gap-1.5">
-                      <Clock className="w-3.5 h-3.5 text-primary" />
-                      <span>{exam.durationMinutes} mins</span>
-                    </div>
-                    <div className="flex items-center gap-1.5">
-                      <FileText className="w-3.5 h-3.5 text-primary" />
-                      <span>{exam.totalQuestions} Questions</span>
-                    </div>
-                  </div>
-
+        {activeTab === "catalog" ? (
+          <>
+            {/* Action Controls & Filter Pills */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-2">
+              {/* Filter Pills */}
+              <div className="flex items-center gap-2 overflow-x-auto pb-1">
+                {streams.map((stream) => (
                   <button
-                    onClick={() => startExam(exam.id)}
-                    className="w-full py-2.5 px-4 rounded-xl bg-primary text-primary-foreground font-semibold text-xs flex items-center justify-center gap-2 group-hover:opacity-95 transition-opacity"
+                    key={stream}
+                    onClick={() => setSelectedStream(stream)}
+                    className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all ${
+                      selectedStream === stream
+                        ? "bg-primary text-primary-foreground shadow-sm"
+                        : "border border-border/80 bg-card/60 text-muted-foreground hover:text-foreground hover:bg-card"
+                    }`}
                   >
-                    <span>Start Practice Exam</span>
-                    <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+                    {stream}
                   </button>
-                </div>
+                ))}
               </div>
-            ))}
+
+              {/* Creation & Import Action Buttons */}
+              <div className="flex items-center gap-2.5 shrink-0">
+                <button
+                  type="button"
+                  onClick={() => setShowAiModal(true)}
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-600 text-white text-xs font-semibold hover:opacity-95 shadow-sm transition-all"
+                >
+                  <Wand2 className="w-3.5 h-3.5" />
+                  <span>Synthesize AI Exam</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setShowUploadModal(true)}
+                  className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl border border-border bg-card/80 text-foreground text-xs font-semibold hover:bg-card transition-colors"
+                >
+                  <Upload className="w-3.5 h-3.5 text-primary" />
+                  <span>Import Question Bank</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Exam Cards Grid */}
+            {loading || examLoading ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                {[1, 2, 3].map((i) => (
+                  <div
+                    key={i}
+                    className="h-64 rounded-2xl border border-border/60 bg-muted/20 animate-pulse"
+                  />
+                ))}
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                {filteredCatalog.map((exam, i) => (
+                  <div
+                    key={`${exam.id}-${i}`}
+                    className="group relative flex flex-col justify-between p-6 rounded-2xl border border-border/80 bg-card/60 hover:bg-card hover:border-primary/40 transition-all duration-200 shadow-sm hover:shadow-md"
+                  >
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="px-2.5 py-1 rounded-md bg-primary/10 text-primary text-[10px] font-bold uppercase tracking-wider">
+                          {exam.stream}
+                        </span>
+                        <span className="text-xs text-muted-foreground font-medium">
+                          {exam.difficulty}
+                        </span>
+                      </div>
+
+                      <h3 className="text-base font-bold text-foreground group-hover:text-primary transition-colors">
+                        {exam.title}
+                      </h3>
+
+                      <p className="text-xs text-muted-foreground leading-relaxed">
+                        {exam.description}
+                      </p>
+                    </div>
+
+                    <div className="pt-6 space-y-4">
+                      <div className="grid grid-cols-2 gap-2 text-xs text-muted-foreground pt-3 border-t border-border">
+                        <div className="flex items-center gap-1.5">
+                          <Clock className="w-3.5 h-3.5 text-primary" />
+                          <span>{exam.durationMinutes} mins</span>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          <FileText className="w-3.5 h-3.5 text-primary" />
+                          <span>{exam.totalQuestions} Questions</span>
+                        </div>
+                      </div>
+
+                      <button
+                        onClick={() => startExam(exam.id)}
+                        className="w-full py-2.5 px-4 rounded-xl bg-primary text-primary-foreground font-semibold text-xs flex items-center justify-center gap-2 group-hover:opacity-95 transition-opacity"
+                      >
+                        <span>Start Practice Exam</span>
+                        <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </>
+        ) : (
+          /* ==================================================== */
+          /* HISTORY & VERIFIED CREDENTIALS VIEW                 */
+          /* ==================================================== */
+          <div className="space-y-6">
+            {/* KPI Summary Cards */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+              <div className="p-4 rounded-2xl border border-border bg-card/60 shadow-sm">
+                <span className="text-[11px] text-muted-foreground uppercase font-semibold flex items-center gap-1.5">
+                  <FileText className="w-3.5 h-3.5 text-primary" />
+                  <span>Total Attempts</span>
+                </span>
+                <p className="text-2xl font-black text-foreground mt-1">
+                  {historyStats.totalAttempts}
+                </p>
+                <span className="text-[10px] text-muted-foreground">Comprehensive diagnostics</span>
+              </div>
+
+              <div className="p-4 rounded-2xl border border-border bg-card/60 shadow-sm">
+                <span className="text-[11px] text-muted-foreground uppercase font-semibold flex items-center gap-1.5">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
+                  <span>Pass Rate</span>
+                </span>
+                <p className="text-2xl font-black text-emerald-500 mt-1">
+                  {historyStats.passRatePercentage}%
+                </p>
+                <span className="text-[10px] text-muted-foreground">{historyStats.passedCount} exams certified</span>
+              </div>
+
+              <div className="p-4 rounded-2xl border border-border bg-card/60 shadow-sm">
+                <span className="text-[11px] text-muted-foreground uppercase font-semibold flex items-center gap-1.5">
+                  <TrendingUp className="w-3.5 h-3.5 text-indigo-500" />
+                  <span>Average Score</span>
+                </span>
+                <p className="text-2xl font-black text-indigo-500 mt-1">
+                  {historyStats.averageScore}%
+                </p>
+                <span className="text-[10px] text-muted-foreground">Across all tracks</span>
+              </div>
+
+              <div className="p-4 rounded-2xl border border-border bg-card/60 shadow-sm">
+                <span className="text-[11px] text-muted-foreground uppercase font-semibold flex items-center gap-1.5">
+                  <Award className="w-3.5 h-3.5 text-amber-500" />
+                  <span>Highest Mastery</span>
+                </span>
+                <p className="text-2xl font-black text-amber-500 mt-1">
+                  {historyStats.highestScore}%
+                </p>
+                <span className="text-[10px] text-muted-foreground">Top percentile ranking</span>
+              </div>
+            </div>
+
+            {/* Past Attempts Table / Cards */}
+            {historyLoading ? (
+              <div className="p-12 text-center text-muted-foreground text-xs">
+                Loading exam attempt records...
+              </div>
+            ) : examHistory.length === 0 ? (
+              <div className="p-12 text-center border border-dashed border-border rounded-2xl space-y-3">
+                <FileText className="w-8 h-8 text-muted-foreground mx-auto" />
+                <h4 className="text-sm font-bold text-foreground">No Exam Attempts Recorded Yet</h4>
+                <p className="text-xs text-muted-foreground max-w-sm mx-auto">
+                  Take any written diagnostic exam from the catalog to record your scorecards, analyze question breakdowns, and claim verifiable credentials.
+                </p>
+                <button
+                  onClick={() => setActiveTab("catalog")}
+                  className="px-4 py-2 rounded-xl bg-primary text-primary-foreground text-xs font-semibold hover:opacity-95"
+                >
+                  Browse Exam Catalog
+                </button>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {examHistory.map((att) => (
+                  <div
+                    key={att.attemptId}
+                    className="p-5 rounded-2xl border border-border/80 bg-card/70 hover:bg-card transition-all flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-sm"
+                  >
+                    <div className="space-y-1.5">
+                      <div className="flex items-center gap-2">
+                        <span className="px-2 py-0.5 rounded-md bg-primary/10 text-primary text-[10px] font-bold uppercase">
+                          {att.stream}
+                        </span>
+                        <span className="text-xs text-muted-foreground flex items-center gap-1">
+                          <Calendar className="w-3 h-3" />
+                          <span>{new Date(att.submittedAt).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" })}</span>
+                        </span>
+                        {att.certificateNumber && (
+                          <span className="px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-500 border border-amber-500/20 text-[10px] font-bold flex items-center gap-1">
+                            <ShieldCheck className="w-3 h-3" />
+                            <span>{att.certificateNumber}</span>
+                          </span>
+                        )}
+                      </div>
+
+                      <h4 className="text-sm sm:text-base font-bold text-foreground">
+                        {att.examTitle}
+                      </h4>
+
+                      <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                        <span>Score: <strong className={att.passed ? "text-emerald-500" : "text-rose-500"}>{att.percentage}%</strong></span>
+                        <span>•</span>
+                        <span>Questions: {att.correctAnswers}/{att.totalQuestions}</span>
+                        <span>•</span>
+                        <span>Est. Percentile: Top {100 - att.percentileRank}%</span>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2 shrink-0">
+                      {att.certificateNumber && att.verificationUrl ? (
+                        <Link
+                          href={att.verificationUrl}
+                          className="px-3.5 py-2 rounded-xl border border-amber-500/30 bg-amber-500/10 hover:bg-amber-500/20 text-amber-500 text-xs font-semibold flex items-center gap-1.5 transition-colors"
+                        >
+                          <Award className="w-3.5 h-3.5" />
+                          <span>View Credential</span>
+                          <ExternalLink className="w-3 h-3" />
+                        </Link>
+                      ) : att.passed ? (
+                        <button
+                          onClick={() => handleClaimCredential(att.examId, att.percentage)}
+                          disabled={claiming}
+                          className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white text-xs font-bold shadow-sm flex items-center gap-1.5 transition-all"
+                        >
+                          <Award className="w-3.5 h-3.5" />
+                          <span>Claim Credential</span>
+                        </button>
+                      ) : null}
+
+                      <button
+                        onClick={() => startExam(att.examId)}
+                        className="px-3.5 py-2 rounded-xl border border-border bg-card/60 hover:bg-card text-foreground text-xs font-semibold flex items-center gap-1.5 transition-colors"
+                      >
+                        <RotateCcw className="w-3.5 h-3.5 text-primary" />
+                        <span>Retake Exam</span>
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
       </div>
@@ -1118,6 +1450,141 @@ export default function WrittenExamPrepPage() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* ---------------------------------------------------- */}
+      {/* 3. VERIFIED CREDENTIAL & SKILL PASSPORT MODAL        */}
+      {/* ---------------------------------------------------- */}
+      {showCredentialModal && claimedCredential && (
+        <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in duration-200">
+          <div className="bg-card border border-amber-500/40 rounded-3xl max-w-xl w-full p-6 sm:p-8 space-y-6 shadow-2xl relative">
+            <button
+              onClick={() => setShowCredentialModal(false)}
+              className="absolute top-5 right-5 p-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            {/* Certificate Header Badge */}
+            <div className="text-center space-y-2 pt-2">
+              <div className="w-16 h-16 mx-auto rounded-2xl bg-gradient-to-tr from-amber-500/20 via-amber-400/30 to-amber-500/10 border-2 border-amber-500/50 flex items-center justify-center text-amber-500 shadow-lg">
+                <Award className="w-9 h-9" />
+              </div>
+              <span className="text-[11px] font-bold text-amber-500 uppercase tracking-widest px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 inline-block">
+                Official Verifiable Credential
+              </span>
+              <h2 className="text-xl sm:text-2xl font-black text-foreground tracking-tight">
+                {claimedCredential.badgeTitle || "Certified Build & Defend Specialist"}
+              </h2>
+              <p className="text-xs text-muted-foreground">
+                Issued by <strong className="text-foreground">Build &amp; Defend Accreditation Board</strong> in partnership with Global Tech Guilds.
+              </p>
+            </div>
+
+            {/* Certificate Parchment Card */}
+            <div className="p-5 rounded-2xl bg-gradient-to-b from-amber-500/5 to-transparent border border-amber-500/30 space-y-4">
+              <div className="grid grid-cols-2 gap-3 text-xs">
+                <div>
+                  <span className="text-muted-foreground text-[10px] uppercase font-semibold">Candidate Name</span>
+                  <p className="font-bold text-foreground text-sm mt-0.5">{claimedCredential.candidateName || candidateName}</p>
+                </div>
+                <div>
+                  <span className="text-muted-foreground text-[10px] uppercase font-semibold">Verified Score</span>
+                  <p className="font-bold text-emerald-500 text-sm mt-0.5">{claimedCredential.percentage}% (Gold Mastery)</p>
+                </div>
+                <div>
+                  <span className="text-muted-foreground text-[10px] uppercase font-semibold">Certificate Number</span>
+                  <p className="font-mono font-bold text-foreground text-xs mt-0.5">{claimedCredential.certificateNumber}</p>
+                </div>
+                <div>
+                  <span className="text-muted-foreground text-[10px] uppercase font-semibold">Issue Date</span>
+                  <p className="font-medium text-foreground text-xs mt-0.5">
+                    {new Date(claimedCredential.issuedAt).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" })}
+                  </p>
+                </div>
+              </div>
+
+              {/* SHA-256 Cryptographic Seal */}
+              <div className="p-3 rounded-xl bg-background/80 border border-border space-y-1">
+                <div className="flex items-center justify-between text-[10px]">
+                  <span className="font-bold text-muted-foreground flex items-center gap-1">
+                    <ShieldCheck className="w-3.5 h-3.5 text-amber-500" />
+                    <span>Cryptographic SHA-256 Seal</span>
+                  </span>
+                  <button
+                    onClick={() => {
+                      navigator.clipboard.writeText(claimedCredential.verificationSignatureSha256);
+                      setCopiedSignature(true);
+                      setTimeout(() => setCopiedSignature(false), 2000);
+                    }}
+                    className="text-primary hover:underline font-semibold flex items-center gap-1"
+                  >
+                    {copiedSignature ? <Check className="w-3 h-3 text-emerald-500" /> : <Copy className="w-3 h-3" />}
+                    <span>{copiedSignature ? "Copied Seal" : "Copy Hash"}</span>
+                  </button>
+                </div>
+                <p className="font-mono text-[10px] text-muted-foreground break-all leading-tight">
+                  {claimedCredential.verificationSignatureSha256}
+                </p>
+              </div>
+
+              {/* Skill Passport Sync Status */}
+              <div className="flex items-center gap-2 p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-xs text-emerald-600 dark:text-emerald-400">
+                <CheckCircle2 className="w-4 h-4 shrink-0" />
+                <span>Synchronized to Dynamic Skill Passport. Anti-decay timer frozen for 30 days.</span>
+              </div>
+            </div>
+
+            {/* Actions */}
+            <div className="space-y-2.5 pt-1">
+              {/* 1-Click LinkedIn Add to Profile */}
+              <a
+                href={`https://www.linkedin.com/profile/add?startTask=CERTIFICATION_NAME&name=${encodeURIComponent(
+                  claimedCredential.badgeTitle || "Certified Specialist"
+                )}&organizationName=${encodeURIComponent(
+                  "Build & Defend Accreditation Board"
+                )}&issueYear=${new Date(claimedCredential.issuedAt).getFullYear()}&issueMonth=${
+                  new Date(claimedCredential.issuedAt).getMonth() + 1
+                }&certUrl=${encodeURIComponent(
+                  typeof window !== "undefined"
+                    ? `${window.location.origin}/credential/${claimedCredential.publicUrlSlug}`
+                    : `http://localhost:3000/credential/${claimedCredential.publicUrlSlug}`
+                )}&certId=${encodeURIComponent(claimedCredential.certificateNumber)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full py-2.5 px-4 rounded-xl bg-[#0A66C2] hover:bg-[#004182] text-white font-bold text-xs flex items-center justify-center gap-2 shadow-sm transition-colors"
+              >
+                <LinkedInIcon className="w-4 h-4" />
+                <span>1-Click Add Certificate to LinkedIn Profile</span>
+              </a>
+
+              <div className="grid grid-cols-2 gap-2.5">
+                <button
+                  onClick={() => {
+                    const url = typeof window !== "undefined"
+                      ? `${window.location.origin}/credential/${claimedCredential.publicUrlSlug}`
+                      : `http://localhost:3000/credential/${claimedCredential.publicUrlSlug}`;
+                    navigator.clipboard.writeText(url);
+                    setCopiedLink(true);
+                    setTimeout(() => setCopiedLink(false), 2000);
+                  }}
+                  className="py-2.5 px-3 rounded-xl border border-border bg-card hover:bg-muted/40 text-xs font-semibold text-foreground flex items-center justify-center gap-1.5 transition-colors"
+                >
+                  {copiedLink ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Copy className="w-3.5 h-3.5 text-muted-foreground" />}
+                  <span>{copiedLink ? "Link Copied!" : "Copy Public Link"}</span>
+                </button>
+
+                <Link
+                  href="/passport"
+                  className="py-2.5 px-3 rounded-xl border border-border bg-card hover:bg-muted/40 text-xs font-semibold text-foreground flex items-center justify-center gap-1.5 transition-colors"
+                >
+                  <Award className="w-3.5 h-3.5 text-amber-500" />
+                  <span>Open Skill Passport</span>
+                </Link>
+              </div>
+            </div>
           </div>
         </div>
       )}

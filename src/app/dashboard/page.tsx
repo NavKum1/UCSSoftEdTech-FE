@@ -92,18 +92,29 @@ export default function Member360CommandCenterPage() {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [copiedShareLink, setCopiedShareLink] = useState<boolean>(false);
+  const [examHistory, setExamHistory] = useState<any[]>([]);
 
   useEffect(() => {
     const fetchMemberData = async () => {
       try {
         setLoading(true);
         setError(null);
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/passport/member-360`);
+        const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+        const [res, histRes] = await Promise.all([
+          fetch(`${apiBase}/api/passport/member-360`),
+          fetch(`${apiBase}/api/quiz/exams/history`).catch(() => null)
+        ]);
+
         if (res.ok) {
           const result = await res.json();
           setData(result);
         } else {
           setError(`Unable to load Member 360 profile from server (HTTP ${res.status}).`);
+        }
+
+        if (histRes && histRes.ok) {
+          const histData = await histRes.json();
+          setExamHistory(histData.attempts || []);
         }
       } catch (err: any) {
         console.error("Failed to fetch Member 360 data:", err);
@@ -660,7 +671,91 @@ export default function Member360CommandCenterPage() {
           </div>
         </div>
 
-        {/* 5. Edulexa Revenue & Compliance Footprint */}
+        {/* 5. Verified Written Exam Diagnostics & Credentials */}
+        <div className="p-6 rounded-3xl bg-card/60 border border-border/80 shadow-xl space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-500 flex items-center justify-center">
+                <Award className="w-4 h-4" />
+              </div>
+              <div>
+                <h2 className="text-lg font-bold text-foreground">Verified Written Exam Diagnostics &amp; Credentials</h2>
+                <p className="text-xs text-muted-foreground">
+                  Proctored diagnostic written exams with automated grading, percentile benchmarking, and tamper-evident cryptographic seals.
+                </p>
+              </div>
+            </div>
+
+            <Link
+              href="/prep/exam"
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-primary text-primary-foreground text-xs font-bold hover:opacity-95 transition-opacity shrink-0"
+            >
+              <span>Take Diagnostic Exam</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
+          </div>
+
+          {examHistory.length === 0 ? (
+            <div className="p-8 text-center border border-dashed border-border rounded-2xl space-y-2">
+              <BookOpen className="w-6 h-6 text-muted-foreground mx-auto" />
+              <p className="text-xs text-muted-foreground">No written exams taken yet. Complete an exam to register your official scorecards and earn credentials.</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {examHistory.slice(0, 4).map((att) => (
+                <div
+                  key={att.attemptId}
+                  className="p-4 rounded-2xl bg-background border border-border hover:border-amber-500/30 transition-all flex flex-col justify-between space-y-3"
+                >
+                  <div className="space-y-1.5">
+                    <div className="flex items-center justify-between">
+                      <span className="px-2 py-0.5 rounded-md bg-primary/10 text-primary text-[10px] font-bold uppercase">
+                        {att.stream}
+                      </span>
+                      <span className={`text-xs font-black font-mono ${att.passed ? "text-emerald-500" : "text-rose-500"}`}>
+                        {att.percentage}% {att.passed ? "PASSED" : "PRACTICE"}
+                      </span>
+                    </div>
+
+                    <h4 className="text-sm font-bold text-foreground">
+                      {att.examTitle}
+                    </h4>
+
+                    <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                      <span>Questions: {att.correctAnswers}/{att.totalQuestions}</span>
+                      <span>•</span>
+                      <span>Est. Percentile: Top {100 - att.percentileRank}%</span>
+                    </div>
+                  </div>
+
+                  <div className="pt-2 border-t border-border flex items-center justify-between">
+                    {att.certificateNumber && att.verificationUrl ? (
+                      <Link
+                        href={att.verificationUrl}
+                        className="text-xs text-amber-500 hover:underline font-semibold flex items-center gap-1"
+                      >
+                        <Shield className="w-3.5 h-3.5" />
+                        <span>{att.certificateNumber}</span>
+                      </Link>
+                    ) : (
+                      <span className="text-[11px] text-muted-foreground">Diagnostic Completed</span>
+                    )}
+
+                    <Link
+                      href="/prep/exam"
+                      className="text-xs text-primary hover:underline font-semibold flex items-center gap-1"
+                    >
+                      <span>Exam Center</span>
+                      <ArrowRight className="w-3 h-3" />
+                    </Link>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* 6. Edulexa Revenue & Compliance Footprint */}
         <div className="p-6 rounded-3xl bg-card/40 border border-border/80 flex flex-col sm:flex-row sm:items-center justify-between gap-6">
           <div className="flex items-start gap-4">
             <div className="p-3 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-700 dark:text-indigo-400">

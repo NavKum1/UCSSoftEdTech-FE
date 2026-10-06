@@ -27,18 +27,21 @@ export default function GlobalNavigation() {
   const [portalsOpen, setPortalsOpen] = useState(false);
 
   // If in pure embedding / canvas iframe or fullscreen sprint mode, keep it visible or sleek
+  // Primary Top Navigation Links
   const navLinks = [
     { name: "Member 360", href: "/dashboard", icon: Compass },
     { name: "Coding Challenges", href: "/sprint/distributed-database", icon: Layers },
-    { name: "AI Interviewer", href: "/", icon: Mic },
+    { name: "AI Interviewer", href: "/interview/practice", icon: Mic },
+    { name: "Written Exams", href: "/prep/exam", icon: GraduationCap },
     { name: "Daily Incident", href: "/daily/incident", icon: Flame },
     { name: "1v1 Duels", href: "/duels/arena", icon: Swords },
-    { name: "Book Mentor", href: "/mentors/book", icon: CalendarCheck },
     { name: "Skill Passport", href: "/passport", icon: Award },
   ];
 
   const portals = [
     { name: "Candidate 360° Center", href: "/dashboard", desc: "Streaks, Radar, Katas & Voice", icon: Compass },
+    { name: "Written Exams & Quizzes", href: "/prep/exam", desc: "Timed Diagnostics, AI Synthesis & Grading", icon: GraduationCap },
+    { name: "Career Counselling Diagnostic", href: "/prep/counselling", desc: "Aptitude Assessment & 90-Day Roadmap", icon: Compass },
     { name: "Creator & Partner Studio", href: "/edulexa/dashboard", desc: "Voice Recovery, Content Shield & Payouts", icon: DollarSign },
     { name: "Enterprise Partner Studio", href: "/partner/dashboard", desc: "B2B Sandboxes, Cohorts & Metrics", icon: Building2 },
     { name: "Recruiter Talent Hub", href: "/recruiter/dashboard", desc: "Verified Talent Pipeline & Offers", icon: Briefcase },
