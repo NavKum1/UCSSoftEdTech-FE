@@ -1,26 +1,32 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from "react";
+import React, { Suspense, useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import Link from "next/link";
 import Editor from "@monaco-editor/react";
-import OpenAIRealtimeInterviewRoom from "@/components/OpenAIRealtimeInterviewRoom";
-import ProctoringHUD from "./components/ProctoringHUD";
-import { useParams, useRouter } from "next/navigation";
-import { useAuth, UserButton, useUser } from "@clerk/nextjs";
-import { authenticatedFetch } from "@/lib/apiClient";
+import VapiInterviewRoom, { type DefenseResult } from "@/components/VapiInterviewRoom";
+import MultiFileEditor, { type EditorFile, type MultiFileEditorApi } from "@/components/MultiFileEditor";
+import AiAssistantPanel, { AiPolicyNotice, type AiPolicy } from "@/components/AiAssistantPanel";
+import { useParams, useSearchParams } from "next/navigation";
+import { useAuth } from "@clerk/nextjs";
+import { API_BASE_URL, authenticatedFetch } from "@/lib/apiClient";
+import { EditorTelemetry, type TelemetryState } from "@/lib/editorTelemetry";
 import {
   Code,
   Play,
-  CheckCircle2,
   AlertTriangle,
   Award,
-  Sparkles,
   ArrowRight,
   Terminal,
   ShieldCheck,
   RefreshCw,
-  Building2,
   Lock,
+  Clock,
+  KeyRound,
+  Sparkles,
+  BookOpen,
+  Loader2,
+  Layers,
+  CloudOff,
 } from "lucide-react";
 import { useTheme } from "next-themes";
 import I18nProvider from "@/components/I18nProvider";
@@ -298,7 +304,7 @@ function getSnippetForTrackAndLanguage(
         } else {
           return {
             task,
-            code: `import hmac\nimport hashlib\nimport time\n\nclass TokenValidator:\n    """Zero-trust constant-time token verification with nonce replay protection."""\n    def __init__(self, secret_key: bytes, nonce_ttl_sec: int = 60):\n        self.secret_key = secret_key\n        self.nonce_ttl_sec = nonce_ttl_sec\n        self.seen_nonces = {}\n\n    def verify_request(self, payload: str, nonce: str, signature: str) -> bool:\n        # TODO: 1. Check nonce freshness & replay\n        # TODO: 2. Constant-time HMAC comparison to prevent timing attacks\n        return True\n\nif __name__ == '__main__':\n    validator = TokenValidator(secret_key=b"enterprise_secret_key_2026")\n    print("Cybersecurity token validator ready.")`
+            code: `import hmac\nimport hashlib\nimport time\n\nclass TokenValidator:\n    """Constant-time token verification with nonce replay protection."""\n    def __init__(self, secret_key: bytes, nonce_ttl_sec: int = 60):\n        self.secret_key = secret_key\n        self.nonce_ttl_sec = nonce_ttl_sec\n        self.seen_nonces = {}\n\n    def verify_request(self, payload: str, nonce: str, signature: str) -> bool:\n        # TODO: 1. Check nonce freshness & replay\n        # TODO: 2. Constant-time HMAC comparison to prevent timing attacks\n        return True\n\nif __name__ == '__main__':\n    validator = TokenValidator(secret_key=b"enterprise_secret_key_2026")\n    print("Cybersecurity token validator ready.")`
           };
         }
       } else {
@@ -366,299 +372,698 @@ function getSnippetForTrackAndLanguage(
   }
 }
 
-function SprintWorkspaceInner() {
-  const params = useParams();
-  const router = useRouter();
-  const { getToken, isSignedIn } = useAuth();
-  const { user } = useUser();
-  const sprintId = (params?.id as string) || "demo-sprint-id";
+type Tier = "Bronze (Junior)" | "Diamond (Staff)";
+
+type PipelineState = "editor" | "submitting" | "running" | "completed" | "voice_interview" | "passed" | "not_passed";
+
+interface AttemptInfo {
+  attemptId: string;
+  resumed: boolean;
+  aiPolicy: AiPolicy;
+  taskType: string;
+  language: string;
+  entryFile: string | null;
+  files: EditorFile[];
+  serverElapsedMs: number;
+  clientStartedAt: number;
+}
+
+interface SprintMeta {
+  title?: string;
+  description?: string;
+  starterCode?: string | null;
+  starterFiles?: EditorFile[] | null;
+}
+
+type StartIssue = { kind: "invite" | "pro" | "notFound" | "error"; message: string };
+
+const GUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+function toAiPolicy(value: unknown): AiPolicy {
+  return value === "Allowed" || value === "Evaluated" ? value : "Prohibited";
+}
+
+function toFiles(value: unknown): EditorFile[] {
+  if (!Array.isArray(value)) return [];
+  return value
+    .filter((f) => f && typeof f.name === "string")
+    .map((f) => ({ name: f.name as string, content: typeof f.content === "string" ? f.content : "" }));
+}
+
+function humanizeSlug(slug: string): string {
+  return slug
+    .split("-")
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(" ");
+}
+
+function formatChallengeId(sprintId: string): string {
+  if (!sprintId) return "CHLG-DEMO-01";
+  if (GUID_RE.test(sprintId)) return `CHLG-${sprintId.substring(0, 8).toUpperCase()}`;
+  const cleanSlug = sprintId
+    .replace(/-database$/i, "-DB")
+    .replace(/-architecture$/i, "-ARCH")
+    .replace(/-incident$/i, "-INC")
+    .toUpperCase();
+  return `CHLG-${cleanSlug}`;
+}
+
+function formatElapsed(ms: number): string {
+  const total = Math.max(0, Math.floor(ms / 1000));
+  const h = Math.floor(total / 3600);
+  const m = Math.floor((total % 3600) / 60);
+  const s = total % 60;
+  const mm = String(m).padStart(2, "0");
+  const ss = String(s).padStart(2, "0");
+  return h > 0 ? `${h}:${mm}:${ss}` : `${mm}:${ss}`;
+}
+
+function subscribeOnline(callback: () => void) {
+  window.addEventListener("online", callback);
+  window.addEventListener("offline", callback);
+  return () => {
+    window.removeEventListener("online", callback);
+    window.removeEventListener("offline", callback);
+  };
+}
+
+function useIsOffline(): boolean {
+  return useSyncExternalStore(
+    subscribeOnline,
+    () => !navigator.onLine,
+    () => false
+  );
+}
+
+function getMonacoLanguage(language: string): string {
+  switch (language) {
+    case "Python":
+    case "Python (FastAPI)":
+      return "python";
+    case "C#":
+    case "C# (.NET)":
+      return "csharp";
+    case "Java":
+      return "java";
+    case "C++":
+    case "C / C++":
+      return "cpp";
+    case "Go":
+      return "go";
+    case "Rust":
+      return "rust";
+    case "React (TSX)":
+    case "React Native (TSX)":
+    case "TypeScript":
+    case "TypeScript (Next.js)":
+    case "TypeScript (Node)":
+      return "typescript";
+    case "JavaScript":
+    case "Vue.js":
+      return "javascript";
+    case "SQL":
+      return "sql";
+    case "Bash":
+    case "Terraform (HCL)":
+      return "shell";
+    case "Kotlin (Android)":
+      return "kotlin";
+    case "Swift (iOS)":
+      return "swift";
+    case "Flutter (Dart)":
+      return "dart";
+    case "Scala":
+      return "scala";
+    default:
+      return "python";
+  }
+}
+
+function monacoLanguageForSprint(language: string): string {
+  const lang = language.trim().toLowerCase();
+  if (["c#", "csharp", "cs", ".net"].includes(lang)) return "csharp";
+  if (["py", "python", "python3"].includes(lang)) return "python";
+  if (["js", "javascript", "node"].includes(lang)) return "javascript";
+  if (["ts", "typescript"].includes(lang)) return "typescript";
+  if (["go", "golang"].includes(lang)) return "go";
+  if (["rs", "rust"].includes(lang)) return "rust";
+  if (["c++", "cpp"].includes(lang)) return "cpp";
+  if (["bash", "sh", "shell"].includes(lang)) return "shell";
+  return lang || "plaintext";
+}
+
+async function executeCode(
+  language: string,
+  code: string,
+  getToken: () => Promise<string | null>
+): Promise<string> {
+  try {
+    const res = await authenticatedFetch(
+      "/api/code/execute",
+      { method: "POST", body: JSON.stringify({ language, code }) },
+      getToken
+    );
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) return `Run failed: ${data.error || res.statusText}`;
+    const parts = [data.stdOut, data.stdErr].filter((p: unknown) => typeof p === "string" && p.trim().length > 0);
+    const footer = `\n[exit code ${data.exitCode ?? "?"}${data.executionTimeMs != null ? `, ${data.executionTimeMs} ms` : ""}]`;
+    return (parts.join("\n") || "(no output)") + footer;
+  } catch (err) {
+    return `Couldn't reach the code runner: ${err instanceof Error ? err.message : String(err)}`;
+  }
+}
+
+function ElapsedClock({ baseMs, startedAt }: { baseMs: number; startedAt: number }) {
+  const [elapsed, setElapsed] = useState(baseMs);
+  useEffect(() => {
+    const id = setInterval(() => setElapsed(baseMs + performance.now() - startedAt), 1000);
+    return () => clearInterval(id);
+  }, [baseMs, startedAt]);
+  return (
+    <span className="flex items-center gap-1 font-mono text-[11px] text-foreground" title="Time since this attempt started">
+      <Clock className="w-3.5 h-3.5 text-indigo-700 dark:text-indigo-400" />
+      {formatElapsed(elapsed)}
+    </span>
+  );
+}
+
+function WorkspaceHeader({
+  title,
+  sprintId,
+  badges,
+  controls,
+}: {
+  title: string;
+  sprintId: string;
+  badges?: React.ReactNode;
+  controls?: React.ReactNode;
+}) {
+  const isOffline = useIsOffline();
+  return (
+    <header className="border-b border-border bg-card/90 backdrop-blur-md sticky top-16 z-20">
+      {isOffline && (
+        <div className="w-full bg-amber-500/10 text-amber-700 dark:text-amber-400 text-center text-xs py-1.5 font-semibold border-b border-amber-500/20">
+          No internet connection. Your edits stay in this tab and sync when you reconnect.
+        </div>
+      )}
+      <div className="max-w-7xl mx-auto px-6 h-14 flex items-center justify-between">
+        <div className="flex items-center space-x-3 min-w-0">
+          <Link
+            href="/dashboard"
+            className="text-xs font-mono uppercase tracking-widest text-muted-foreground hover:text-foreground transition flex items-center gap-1"
+          >
+            <span>←</span> Dashboard
+          </Link>
+          <span className="text-border">|</span>
+          <div className="flex items-center space-x-2 min-w-0">
+            <span className="font-bold text-sm text-foreground truncate">{title}</span>
+            {badges}
+          </div>
+        </div>
+
+        <div className="flex items-center space-x-3">
+          {controls}
+          <span
+            className="text-xs px-2.5 py-1 rounded-lg bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 border border-indigo-500/30 font-semibold font-mono tracking-wide"
+            title={`Sprint Identifier: ${sprintId}`}
+          >
+            ID: {formatChallengeId(sprintId)}
+          </span>
+        </div>
+      </div>
+    </header>
+  );
+}
+
+function CenteredCard({ children }: { children: React.ReactNode }) {
+  return (
+    <main className="max-w-xl mx-auto px-6 pt-16 w-full">
+      <div className="glass-panel rounded-2xl p-8 border border-border text-center space-y-4">{children}</div>
+    </main>
+  );
+}
+
+function GradedWorkspace({ sprintId }: { sprintId: string }) {
+  const searchParams = useSearchParams();
+  const { getToken, isLoaded, isSignedIn } = useAuth();
   const t = useTranslations("SprintHUD");
-  const { theme } = useTheme();
+  const { resolvedTheme } = useTheme();
+  const isOffline = useIsOffline();
 
-  const [candidateTrack, setCandidateTrack] = useState<CandidateTrack>("Backend");
-  const [difficultyTier, setDifficultyTier] = useState<"Bronze (Junior)" | "Diamond (Staff)">("Diamond (Staff)");
-  const [language, setLanguage] = useState<string>("Python");
-  const [taskDescription, setTaskDescription] = useState<string>("Task (Diamond Backend): Implement an idempotent payment queue processor capable of handling 10k messages/sec without deadlocks.");
+  const [inviteCode, setInviteCode] = useState<string>(() => searchParams.get("invite")?.trim() || "");
+  const [inviteInput, setInviteInput] = useState<string>("");
+  const [starting, setStarting] = useState<boolean>(true);
+  const [startIssue, setStartIssue] = useState<StartIssue | null>(null);
+  const [upgrading, setUpgrading] = useState<boolean>(false);
+  const [attempt, setAttempt] = useState<AttemptInfo | null>(null);
+  const [telemetry, setTelemetry] = useState<EditorTelemetry | null>(null);
+  const [syncState, setSyncState] = useState<TelemetryState>("ok");
+  const [meta, setMeta] = useState<SprintMeta | null>(null);
 
-  const [codePayload, setCodePayload] = useState<string>("");
+  const [pipelineState, setPipelineState] = useState<PipelineState>("editor");
   const [submissionId, setSubmissionId] = useState<string>("");
-  const [pipelineState, setPipelineState] = useState<"editor" | "submitting" | "running" | "completed" | "voice_interview" | "passed">("editor");
-  const [stdOutLogs, setStdOutLogs] = useState<string>("");
-  const [architecturalFlaws, setArchitecturalFlaws] = useState<string[]>([]);
-  const [publicUrlSlug, setPublicUrlSlug] = useState<string>("");
-  const [selectedTenantId, setSelectedTenantId] = useState<string>("");
   const [statusMessage, setStatusMessage] = useState<string>("");
+  const [stdOutLogs, setStdOutLogs] = useState<string>("");
+  const [testSummary, setTestSummary] = useState<{ passed: number; total: number } | null>(null);
+  const [architecturalFlaws, setArchitecturalFlaws] = useState<string[]>([]);
+  const [defenseResult, setDefenseResult] = useState<DefenseResult | null>(null);
+  const [isRunning, setIsRunning] = useState<boolean>(false);
 
-  // Phase 11: Anti-Cheat & Plagiarism Detection — Paste Tracker State
-  const [suspectedPasting, setSuspectedPasting] = useState<boolean>(false);
-  const [pasteWarning, setPasteWarning] = useState<string | null>(null);
-  const [totalPastedLines, setTotalPastedLines] = useState<number>(0);
+  const editorApiRef = useRef<MultiFileEditorApi | null>(null);
+  const startRequestedRef = useRef<boolean>(false);
+  const pollFlags = useRef<{ cancelled: boolean }>({ cancelled: false });
 
-  // Phase 10: Offline Resilience (Service Workers & Local Storage)
-  const [isOffline, setIsOffline] = useState<boolean>(false);
+  const isBrownfield = attempt?.taskType === "Brownfield";
+  const editorLocked = pipelineState !== "editor";
 
-  const formattedChallengeId = useMemo(() => {
-    if (!sprintId || sprintId === "demo-sprint-id") return "CHLG-DEMO-01";
-    // Check if GUID
-    if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(sprintId)) {
-      return `CHLG-${sprintId.substring(0, 8).toUpperCase()}`;
-    }
-    // Clean formatted slug (e.g. distributed-database -> DISTRIBUTED-DB)
-    const cleanSlug = sprintId
-      .replace(/-database$/i, "-DB")
-      .replace(/-architecture$/i, "-ARCH")
-      .replace(/-incident$/i, "-INC")
-      .toUpperCase();
-    return `CHLG-${cleanSlug}`;
-  }, [sprintId]);
-
-  const handleTrackChange = (newTrack: CandidateTrack) => {
-    setCandidateTrack(newTrack);
-    const config = TRACK_LANGUAGES[newTrack];
-    if (!config.options.includes(language)) {
-      setLanguage(config.defaultLang);
-    }
-  };
-
-  useEffect(() => {
-    const snippet = getSnippetForTrackAndLanguage(candidateTrack, difficultyTier, language);
-    setTaskDescription(snippet.task);
-    setCodePayload(snippet.code);
-  }, [candidateTrack, difficultyTier, language]);
-
-  useEffect(() => {
-    // Check initial online status
-    setIsOffline(!navigator.onLine);
-
-    const handleOffline = () => setIsOffline(true);
-    const handleOnline = () => {
-      setIsOffline(false);
-      setStatusMessage("Connection restored! Your code is safely synced.");
-    };
-
-    window.addEventListener("offline", handleOffline);
-    window.addEventListener("online", handleOnline);
-
-    // Load any offline draft if it exists for this sprint
-    const draft = localStorage.getItem(`sprint_draft_${sprintId}`);
-    if (draft) setCodePayload(draft);
-
-    return () => {
-      window.removeEventListener("offline", handleOffline);
-      window.removeEventListener("online", handleOnline);
-    };
-  }, [sprintId]);
-
-  // Persist code changes to local storage for offline resilience
-  useEffect(() => {
-    if (codePayload) {
-      localStorage.setItem(`sprint_draft_${sprintId}`, codePayload);
-    }
-  }, [codePayload, sprintId]);
-
-  const handlePaste = (e: React.ClipboardEvent<any>) => {
-    const pastedText = e.clipboardData.getData("text");
-    if (pastedText) {
-      const lineCount = pastedText.split(/\r\n|\r|\n/).length;
-      const newTotal = totalPastedLines + lineCount;
-      setTotalPastedLines(newTotal);
-      
-      if (newTotal > 50) {
-        setSuspectedPasting(true);
-        setPasteWarning(
-          `Notice: Large code paste detected (${newTotal} lines total). Be prepared to discuss and explain your implementation during the review.`
+  const startAttempt = useCallback(
+    async (code: string) => {
+      let res: Response;
+      try {
+        res = await authenticatedFetch(
+          "/api/attempts/start",
+          { method: "POST", body: JSON.stringify({ sprintId, inviteCode: code || undefined }) },
+          getToken
         );
+      } catch {
+        setStartIssue({ kind: "error", message: "Couldn't reach the server. Check your connection and try again." });
+        setStarting(false);
+        return;
       }
-    }
+
+      const data = await res.json().catch(() => ({}));
+      if (res.ok && data.attemptId) {
+        const files = toFiles(data.files);
+        const serverElapsedMs = Number(data.serverElapsedMs) || 0;
+        setTelemetry(
+          new EditorTelemetry({
+            attemptId: data.attemptId,
+            nextSequence: Number(data.nextSequence) || 0,
+            serverElapsedMs,
+            apiBaseUrl: API_BASE_URL,
+            getToken,
+            onStateChange: setSyncState,
+          })
+        );
+        setAttempt({
+          attemptId: data.attemptId,
+          resumed: Boolean(data.resumed),
+          aiPolicy: toAiPolicy(data.aiPolicy),
+          taskType: typeof data.taskType === "string" ? data.taskType : "Greenfield",
+          language: typeof data.language === "string" ? data.language : "python",
+          entryFile: typeof data.entryFile === "string" ? data.entryFile : files[0]?.name ?? null,
+          files: files.length > 0 ? files : [{ name: "main.py", content: "" }],
+          serverElapsedMs,
+          clientStartedAt: performance.now(),
+        });
+        setStartIssue(null);
+      } else if (res.status === 403 && data.requiresInviteCode) {
+        setStartIssue({
+          kind: "invite",
+          message: code
+            ? "That invite code isn't valid for this sprint. Check the code from your invitation and try again."
+            : "This is a private sprint. Enter the invite code from your invitation to start.",
+        });
+      } else if (res.status === 403 && data.requiresPro) {
+        setStartIssue({ kind: "pro", message: data.message || "This sprint requires a Pro subscription." });
+      } else if (res.status === 404 || res.status === 400) {
+        setStartIssue({ kind: "notFound", message: data.error || "We couldn't find this sprint." });
+      } else if (res.status === 401) {
+        setStartIssue({ kind: "error", message: "Your session has expired. Sign in again to continue." });
+      } else {
+        setStartIssue({ kind: "error", message: data.error || "The sprint couldn't be started. Please try again." });
+      }
+      setStarting(false);
+    },
+    [getToken, sprintId]
+  );
+
+  useEffect(() => {
+    if (!isLoaded || !isSignedIn || startRequestedRef.current) return;
+    startRequestedRef.current = true;
+    void startAttempt(inviteCode);
+  }, [isLoaded, isSignedIn, inviteCode, startAttempt]);
+
+  useEffect(() => {
+    let cancelled = false;
+    authenticatedFetch(`/api/sprint/${sprintId}`, {}, getToken)
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (cancelled || !data) return;
+        setMeta({
+          title: data.title,
+          description: data.description,
+          starterCode: data.starterCode ?? null,
+          starterFiles: data.starterFiles ? toFiles(data.starterFiles) : null,
+        });
+      })
+      .catch(() => undefined);
+    return () => {
+      cancelled = true;
+    };
+  }, [sprintId, getToken]);
+
+  useEffect(() => {
+    if (!telemetry) return;
+    telemetry.start();
+    return () => telemetry.dispose({ flush: true });
+  }, [telemetry]);
+
+  useEffect(() => {
+    const flags = pollFlags.current;
+    flags.cancelled = false;
+    return () => {
+      flags.cancelled = true;
+    };
+  }, []);
+
+  const starterFiles = useMemo<EditorFile[] | null>(() => {
+    if (!attempt || !meta) return null;
+    if (isBrownfield) return meta.starterFiles ?? null;
+    if (meta.starterCode == null || attempt.files.length !== 1) return null;
+    return [{ name: attempt.files[0].name, content: meta.starterCode }];
+  }, [attempt, meta, isBrownfield]);
+
+  const retryWithInvite = () => {
+    const code = inviteInput.trim();
+    if (!code) return;
+    setInviteCode(code);
+    setStarting(true);
+    setStartIssue(null);
+    void startAttempt(code);
   };
 
-  // Step 1: Submit Code to API
-  const handleSubmitCode = async () => {
-    setPipelineState("submitting");
-    setStatusMessage("Submitting your solution for automated testing...");
+  const retryStart = () => {
+    setStarting(true);
+    setStartIssue(null);
+    void startAttempt(inviteCode);
+  };
 
+  const handleUpgrade = async () => {
+    setUpgrading(true);
+    try {
+      const res = await authenticatedFetch("/api/billing/create-checkout-session", { method: "POST" }, getToken);
+      const data = await res.json().catch(() => ({}));
+      if (res.ok && data.checkoutUrl) {
+        window.location.href = data.checkoutUrl;
+        return;
+      }
+      setStartIssue({ kind: "pro", message: data.error || "Checkout is unavailable right now. Please try again later." });
+    } catch {
+      setStartIssue({ kind: "pro", message: "Couldn't reach the server. Check your connection and try again." });
+    }
+    setUpgrading(false);
+  };
+
+  const startPolling = (subId: string) => {
+    const flags = pollFlags.current;
+    const tick = async (n: number) => {
+      if (flags.cancelled) return;
+      try {
+        const res = await authenticatedFetch(`/api/sprint/submission/${subId}`, {}, getToken);
+        if (res.ok) {
+          const data = await res.json();
+          if (data.status === "Completed") {
+            if (flags.cancelled) return;
+            setStdOutLogs(data.stdOutLogs || "");
+            setTestSummary({ passed: Number(data.passedTestsCount) || 0, total: Number(data.totalTestsCount) || 0 });
+            try {
+              const review = JSON.parse(data.architecturalReview || "{}");
+              setArchitecturalFlaws(Array.isArray(review.flaws) ? review.flaws.map(String) : []);
+            } catch {
+              setArchitecturalFlaws([]);
+            }
+            setPipelineState("completed");
+            setStatusMessage("Tests finished. Your voice defense is next.");
+            setTimeout(() => setPipelineState((s) => (s === "completed" ? "voice_interview" : s)), 2500);
+            return;
+          }
+        }
+      } catch {
+        // keep polling
+      }
+      if (n >= 200) {
+        setStatusMessage("Tests are taking longer than usual. Your submission is saved; check back from your dashboard.");
+        return;
+      }
+      setTimeout(() => void tick(n + 1), 1500);
+    };
+    setTimeout(() => void tick(0), 1000);
+  };
+
+  const handleRun = async () => {
+    const api = editorApiRef.current;
+    if (!api || !attempt || isRunning) return;
+    telemetry?.recordRun();
+    setIsRunning(true);
+    setStdOutLogs("");
+    setStatusMessage("Running your code...");
+    const output = await executeCode(attempt.language, api.getFiles()[0]?.content ?? "", getToken);
+    setStdOutLogs(output);
+    setIsRunning(false);
+  };
+
+  const handleSubmitCode = async () => {
+    const api = editorApiRef.current;
+    if (!api || !attempt) return;
+    setPipelineState("submitting");
+    setStatusMessage("Saving your work...");
+
+    if (telemetry && !(await telemetry.flushAll())) {
+      setStatusMessage(
+        syncState === "stopped"
+          ? "Your editor activity can't be saved for this attempt. Reload the page to continue."
+          : "Your latest edits haven't reached the server yet. Check your connection and submit again."
+      );
+      setPipelineState("editor");
+      return;
+    }
+
+    const files = api.getFiles();
+    const payload = isBrownfield
+      ? { sprintId, attemptId: attempt.attemptId, files, inviteCode: inviteCode || undefined }
+      : { sprintId, attemptId: attempt.attemptId, codePayload: files[0]?.content ?? "", inviteCode: inviteCode || undefined };
+
+    setStatusMessage("Submitting your solution for automated testing...");
     try {
       const res = await authenticatedFetch(
         "/api/sprint/submit",
-        {
-          method: "POST",
-          body: JSON.stringify({
-            sprintId: sprintId,
-            codePayload: codePayload,
-            suspectedPasting: suspectedPasting,
-          }),
-        },
+        { method: "POST", body: JSON.stringify(payload) },
         getToken
       );
-
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
       if ((res.status === 202 || res.status === 200) && data.submissionId) {
+        telemetry?.dispose();
+        setTelemetry(null);
         setSubmissionId(data.submissionId);
         setPipelineState("running");
-        setStatusMessage("Running test cases in a secure sandbox...");
-        startPollingStatus(data.submissionId);
+        setStatusMessage("Running hidden tests in the sandbox...");
+        startPolling(data.submissionId);
+      } else if (res.status === 409) {
+        setStatusMessage("This attempt was already submitted. Reload the page to see your latest attempt.");
+        setPipelineState("editor");
       } else {
-        setStatusMessage("Submission failed: " + (data.error || res.statusText));
+        setStatusMessage("Submission failed: " + (data.error || data.message || res.statusText));
         setPipelineState("editor");
       }
-    } catch (err: any) {
-      setStatusMessage("Error connecting to server: " + err.message);
+    } catch (err) {
+      setStatusMessage("Error connecting to server: " + (err instanceof Error ? err.message : String(err)));
       setPipelineState("editor");
     }
   };
 
-  // Step 2: Poll status until 'Completed'
-  const startPollingStatus = (subId: string) => {
-    const interval = setInterval(async () => {
-      try {
-        const res = await authenticatedFetch(`/api/sprint/submission/${subId}`, {}, getToken);
-        const data = await res.json();
+  const handleDefenseResult = useCallback((result: DefenseResult) => {
+    setDefenseResult(result);
+    if (result.status !== "evaluated") return;
+    setPipelineState(result.credentialIssued || result.credentialUnderReview ? "passed" : "not_passed");
+  }, []);
 
-        if (data.status === "Completed") {
-          clearInterval(interval);
-          setStdOutLogs(data.stdOutLogs || "");
-          
-          try {
-            const review = JSON.parse(data.architecturalReview || "{}");
-            setArchitecturalFlaws(review.flaws || []);
-          } catch (e) {
-            setArchitecturalFlaws(["Database query optimization", "Resource connection management"]);
-          }
+  const getFilesForAssistant = useCallback(() => editorApiRef.current?.getFiles() ?? [], []);
+  const insertFromAssistant = useCallback(
+    (code: string, interactionId: string) => editorApiRef.current?.insertAtCursor(code, interactionId) ?? false,
+    []
+  );
 
-          setPipelineState("completed");
-          setStatusMessage("Code analysis complete! Preparing your interactive review session...");
-
-          setTimeout(() => {
-            setPipelineState("voice_interview");
-          }, 2500);
-        }
-      } catch (err) {
-        console.log("Polling submission status...");
+  const title = meta?.title || "Coding Sprint";
+  const header = (
+    <WorkspaceHeader
+      title={title}
+      sprintId={sprintId}
+      badges={
+        attempt && (
+          <>
+            {isBrownfield && (
+              <span className="text-[10px] px-2 py-0.5 rounded-full bg-purple-500/15 text-purple-700 dark:text-purple-300 font-semibold border border-purple-500/30">
+                Multi-file
+              </span>
+            )}
+            <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 font-semibold border border-emerald-500/30">
+              {attempt.aiPolicy === "Prohibited" ? "No AI tools" : attempt.aiPolicy === "Evaluated" ? "AI use reviewed" : "AI allowed"}
+            </span>
+          </>
+        )
       }
-    }, 1000);
-  };
+    />
+  );
 
-  const handleLeadOrCredentialGenerated = (data: any) => {
-    if (data && data.publicUrlSlug) {
-      setPublicUrlSlug(data.publicUrlSlug);
-      setPipelineState("passed");
-    }
-  };
+  if (!isLoaded || (isSignedIn && starting)) {
+    return (
+      <div className="flex flex-col font-sans pb-16">
+        {header}
+        <CenteredCard>
+          <Loader2 className="w-8 h-8 text-indigo-700 dark:text-indigo-400 mx-auto animate-spin" />
+          <p className="text-sm text-muted-foreground">Preparing your sprint...</p>
+        </CenteredCard>
+      </div>
+    );
+  }
 
-  const getMonacoLanguage = () => {
-    switch (language) {
-      case "Python":
-      case "Python (FastAPI)":
-        return "python";
-      case "C#":
-      case "C# (.NET)":
-        return "csharp";
-      case "Java":
-        return "java";
-      case "C++":
-      case "C / C++":
-        return "cpp";
-      case "Go":
-        return "go";
-      case "Rust":
-        return "rust";
-      case "React (TSX)":
-      case "React Native (TSX)":
-      case "TypeScript":
-      case "TypeScript (Next.js)":
-      case "TypeScript (Node)":
-        return "typescript";
-      case "JavaScript":
-      case "Vue.js":
-        return "javascript";
-      case "SQL":
-        return "sql";
-      case "Bash":
-      case "Terraform (HCL)":
-        return "shell";
-      case "Kotlin (Android)":
-        return "kotlin";
-      case "Swift (iOS)":
-        return "swift";
-      case "Flutter (Dart)":
-        return "dart";
-      case "Scala":
-        return "scala";
-      default:
-        return "python";
-    }
-  };
+  if (!isSignedIn) {
+    const back = `/sprint/${sprintId}${inviteCode ? `?invite=${encodeURIComponent(inviteCode)}` : ""}`;
+    return (
+      <div className="flex flex-col font-sans pb-16">
+        {header}
+        <CenteredCard>
+          <Lock className="w-10 h-10 text-indigo-700 dark:text-indigo-400 mx-auto" />
+          <h2 className="text-lg font-bold text-foreground">Sign in to start this sprint</h2>
+          <p className="text-xs text-muted-foreground">Your attempt is timed from when you open it, and your progress is saved to your account.</p>
+          <Link
+            href={`/login?redirect_url=${encodeURIComponent(back)}`}
+            className="inline-flex items-center gap-2 py-2.5 px-5 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-xl text-xs transition-all"
+          >
+            Sign in <ArrowRight className="w-4 h-4" />
+          </Link>
+        </CenteredCard>
+      </div>
+    );
+  }
+
+  if (!attempt || startIssue) {
+    return (
+      <div className="flex flex-col font-sans pb-16">
+        {header}
+        <CenteredCard>
+          {startIssue?.kind === "invite" ? (
+            <>
+              <KeyRound className="w-10 h-10 text-indigo-700 dark:text-indigo-400 mx-auto" />
+              <h2 className="text-lg font-bold text-foreground">Invite code required</h2>
+              <p className="text-xs text-muted-foreground">{startIssue.message}</p>
+              <form
+                className="flex gap-2 max-w-sm mx-auto"
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  retryWithInvite();
+                }}
+              >
+                <input
+                  value={inviteInput}
+                  onChange={(e) => setInviteInput(e.target.value)}
+                  placeholder="Invite code"
+                  autoFocus
+                  className="flex-1 rounded-xl border border-border bg-background px-3 py-2 text-xs text-foreground font-mono focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                />
+                <button
+                  type="submit"
+                  disabled={!inviteInput.trim()}
+                  className="py-2 px-4 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-xl text-xs disabled:bg-muted disabled:text-muted-foreground cursor-pointer disabled:cursor-not-allowed"
+                >
+                  Start sprint
+                </button>
+              </form>
+            </>
+          ) : startIssue?.kind === "pro" ? (
+            <>
+              <Sparkles className="w-10 h-10 text-purple-700 dark:text-purple-400 mx-auto" />
+              <h2 className="text-lg font-bold text-foreground">Pro sprint</h2>
+              <p className="text-xs text-muted-foreground">{startIssue.message}</p>
+              <button
+                onClick={handleUpgrade}
+                disabled={upgrading}
+                className="inline-flex items-center gap-2 py-2.5 px-5 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-semibold rounded-xl text-xs shadow-lg shadow-indigo-500/25 cursor-pointer disabled:opacity-60"
+              >
+                {upgrading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
+                Upgrade to Pro
+              </button>
+            </>
+          ) : (
+            <>
+              <AlertTriangle className="w-10 h-10 text-amber-700 dark:text-amber-400 mx-auto" />
+              <h2 className="text-lg font-bold text-foreground">
+                {startIssue?.kind === "notFound" ? "Sprint not found" : "Couldn't start the sprint"}
+              </h2>
+              <p className="text-xs text-muted-foreground">{startIssue?.message || "Please try again."}</p>
+              <div className="flex items-center justify-center gap-2">
+                {startIssue?.kind !== "notFound" && (
+                  <button
+                    onClick={retryStart}
+                    className="inline-flex items-center gap-2 py-2 px-4 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-xl text-xs cursor-pointer"
+                  >
+                    <RefreshCw className="w-4 h-4" /> Try again
+                  </button>
+                )}
+                <Link
+                  href="/dashboard"
+                  className="py-2 px-4 rounded-xl border border-border text-xs font-semibold text-foreground hover:bg-muted"
+                >
+                  Back to dashboard
+                </Link>
+              </div>
+            </>
+          )}
+        </CenteredCard>
+      </div>
+    );
+  }
+
+  const aiEnabled = attempt.aiPolicy !== "Prohibited";
+  const showDefense = pipelineState === "voice_interview" || pipelineState === "passed" || pipelineState === "not_passed";
 
   return (
-      <div className="flex flex-col font-sans pb-16">
-        {/* Challenge Workspace HUD Sub-Header */}
-        <header className="border-b border-border bg-card/90 backdrop-blur-md sticky top-16 z-20">
-          {isOffline && (
-            <div className="w-full bg-amber-500/10 text-amber-700 dark:text-amber-400 text-center text-xs py-1.5 font-semibold border-b border-amber-500/20">
-              No internet connection. Your work is being saved locally.
-            </div>
-          )}
-          <div className="max-w-7xl mx-auto px-6 h-14 flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <Link
-                href="/dashboard"
-                className="text-xs font-mono uppercase tracking-widest text-muted-foreground hover:text-foreground transition flex items-center gap-1"
-              >
-                <span>←</span> Dashboard
-              </Link>
-              <span className="text-border">|</span>
-              <div className="flex items-center space-x-2">
-                <span className="font-bold text-sm text-foreground">
-                  {sprintId ? sprintId.split("-").map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(" ") : "Distributed Database"}
-                </span>
-                <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 font-semibold border border-emerald-500/30">
-                  Verified &amp; Secure
-                </span>
-              </div>
-            </div>
+    <div className="flex flex-col font-sans pb-16">
+      {header}
 
-            <div className="flex items-center space-x-3">
-              <div className="hidden lg:flex items-center space-x-2 bg-card border border-border rounded-xl px-3 py-1.5 shadow-xs">
-                <select value={candidateTrack} onChange={(e) => handleTrackChange(e.target.value as CandidateTrack)} className="bg-transparent text-xs text-indigo-600 dark:text-indigo-400 font-semibold focus:outline-none cursor-pointer">
-                  <option value="DevOps">🚀 DevOps &amp; SRE</option>
-                  <option value="Backend">⚙️ Backend Systems</option>
-                  <option value="Frontend">💻 Frontend &amp; Web</option>
-                  <option value="FullStack">🌐 FullStack Systems</option>
-                  <option value="DataMLOps">🧠 Data &amp; MLOps</option>
-                  <option value="Cybersecurity">🛡️ Cybersecurity</option>
-                  <option value="Mobile">📱 Mobile Architecture</option>
-                  <option value="CloudFinOps">💰 Cloud FinOps</option>
-                  <option value="DatabaseRE">🗄️ Database Reliability</option>
-                </select>
-                <span className="text-border">|</span>
-                <select value={difficultyTier} onChange={(e) => setDifficultyTier(e.target.value as any)} className="bg-transparent text-xs text-emerald-700 dark:text-emerald-400 font-semibold focus:outline-none cursor-pointer">
-                  <option value="Bronze (Junior)">Bronze (Junior)</option>
-                  <option value="Diamond (Staff)">Diamond (Staff)</option>
-                </select>
-                <span className="text-border">|</span>
-                <select value={language} onChange={(e) => setLanguage(e.target.value)} className="bg-transparent text-xs text-purple-700 dark:text-purple-400 font-semibold focus:outline-none cursor-pointer">
-                  {TRACK_LANGUAGES[candidateTrack].options.map((opt) => (
-                    <option key={opt} value={opt}>
-                      {opt}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <span className="text-xs px-2.5 py-1 rounded-lg bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 border border-indigo-500/30 font-semibold font-mono tracking-wide" title={`Sprint Identifier: ${sprintId}`}>
-                ID: {formattedChallengeId}
+      <main className="max-w-7xl mx-auto px-6 pt-8 flex-1 w-full space-y-6">
+        {/* Session notice */}
+        <div className="glass-panel rounded-2xl p-4 border border-border flex flex-col md:flex-row md:items-center justify-between gap-3">
+          <div className="space-y-1.5">
+            <div className="flex items-start gap-2 text-[11px] text-muted-foreground">
+              <ShieldCheck className="w-3.5 h-3.5 mt-0.5 shrink-0 text-emerald-700 dark:text-emerald-400" />
+              <span>
+                Your editing activity (edits, pastes and switching away from this window) is recorded and shared with
+                reviewers alongside your submission.
               </span>
             </div>
+            {attempt.aiPolicy === "Prohibited" && <AiPolicyNotice aiPolicy="Prohibited" />}
+            {attempt.resumed && (
+              <div className="flex items-start gap-2 text-[11px] text-indigo-700 dark:text-indigo-300">
+                <RefreshCw className="w-3.5 h-3.5 mt-0.5 shrink-0" />
+                <span>Welcome back. Your attempt was resumed with the work saved so far.</span>
+              </div>
+            )}
           </div>
-        </header>
-
-      {/* Main Split-Pane Workspace */}
-      <main className="max-w-7xl mx-auto px-6 pt-8 flex-1 w-full space-y-6">
-        <ProctoringHUD sessionId={submissionId || sprintId} />
+          <div className="flex items-center gap-4 shrink-0">
+            <ElapsedClock baseMs={attempt.serverElapsedMs} startedAt={attempt.clientStartedAt} />
+            {telemetry && (
+              <span
+                className={`flex items-center gap-1 text-[11px] font-medium ${
+                  syncState === "ok"
+                    ? "text-emerald-700 dark:text-emerald-400"
+                    : syncState === "retrying"
+                    ? "text-amber-700 dark:text-amber-400"
+                    : "text-red-700 dark:text-red-400"
+                }`}
+              >
+                {syncState === "ok" ? <Lock className="w-3.5 h-3.5" /> : <CloudOff className="w-3.5 h-3.5" />}
+                {syncState === "ok" ? "Progress saved" : syncState === "retrying" ? "Reconnecting..." : "Not saving - reload the page"}
+              </span>
+            )}
+          </div>
+        </div>
 
         {/* Pipeline Progress Bar */}
         <div className="glass-panel rounded-2xl p-4 border border-border flex items-center justify-between">
-          <div className="flex items-center space-x-2 text-xs font-semibold">
-            <span className={`px-3 py-1 rounded-lg ${pipelineState === "editor" ? "bg-indigo-600 text-white" : "bg-muted text-muted-foreground"}`}>
+          <div className="flex flex-wrap items-center gap-2 text-xs font-semibold">
+            <span className={`px-3 py-1 rounded-lg ${pipelineState === "editor" || pipelineState === "submitting" ? "bg-indigo-600 text-white" : "bg-muted text-muted-foreground"}`}>
               1. Code Submission
             </span>
             <ArrowRight className="w-3.5 h-3.5 text-muted-foreground" />
@@ -667,17 +1072,12 @@ function SprintWorkspaceInner() {
             </span>
             <ArrowRight className="w-3.5 h-3.5 text-muted-foreground" />
             <span className={`px-3 py-1 rounded-lg ${pipelineState === "voice_interview" ? "bg-indigo-600 text-white" : "bg-muted text-muted-foreground"}`}>
-              3. Interactive Code Review
+              3. Voice Defense
             </span>
             <ArrowRight className="w-3.5 h-3.5 text-muted-foreground" />
-            <span className={`px-3 py-1 rounded-lg ${pipelineState === "passed" ? "bg-emerald-600 text-white" : "bg-muted text-muted-foreground"}`}>
-              4. Verified Certificate
+            <span className={`px-3 py-1 rounded-lg ${pipelineState === "passed" ? "bg-emerald-600 text-white" : pipelineState === "not_passed" ? "bg-indigo-600 text-white" : "bg-muted text-muted-foreground"}`}>
+              4. Result
             </span>
-          </div>
-
-          <div className="flex items-center space-x-1 text-[11px] text-indigo-700 dark:text-indigo-400 font-mono">
-            <Lock className="w-3.5 h-3.5 mr-1 text-emerald-700 dark:text-emerald-400" />
-            <span>Session Authenticated</span>
           </div>
         </div>
 
@@ -690,61 +1090,79 @@ function SprintWorkspaceInner() {
                 <h3 className="text-sm font-semibold text-foreground">{t("codeEditor")}</h3>
               </div>
               <span className="text-[10px] px-2.5 py-0.5 rounded bg-indigo-500/10 text-indigo-600 dark:text-indigo-300 font-semibold border border-indigo-500/20">
-                Language: {language}
+                {isBrownfield ? `${attempt.files.length} files · ${attempt.language}` : `Language: ${attempt.language}`}
               </span>
             </div>
 
-            <p className="text-xs text-foreground font-medium bg-card/80 p-3 rounded-lg border border-border/80 leading-relaxed shadow-inner">
-              {taskDescription}
-            </p>
-
-            {pasteWarning && (
-              <div className="p-3 bg-amber-950/40 border border-amber-500/30 rounded-xl flex items-start space-x-2 text-xs text-amber-600 dark:text-amber-300">
-                <AlertTriangle className="w-4 h-4 text-amber-700 dark:text-amber-400 shrink-0 mt-0.5" />
-                <span>{pasteWarning}</span>
-              </div>
+            {meta?.description && (
+              <p className="text-xs text-foreground font-medium bg-card/80 p-3 rounded-lg border border-border/80 leading-relaxed shadow-inner whitespace-pre-wrap">
+                {meta.description}
+              </p>
+            )}
+            {isBrownfield && (
+              <p className="text-[11px] text-muted-foreground flex items-start gap-1.5">
+                <Layers className="w-3.5 h-3.5 mt-0.5 shrink-0" />
+                This is an existing project. Find and fix the defects across its files; hidden tests run when you submit.
+              </p>
             )}
 
-            <div className="border border-border rounded-xl overflow-hidden mt-2 bg-background" onPaste={handlePaste}>
-              <Editor
-                height="350px"
-                language={getMonacoLanguage()}
-                theme={theme === "light" ? "vs-light" : "vs-dark"}
-                value={codePayload}
-                onChange={(val) => setCodePayload(val || "")}
-                options={{
-                  minimap: { enabled: false },
-                  fontSize: 13,
-                  fontFamily: "var(--font-geist-mono), monospace",
-                  padding: { top: 16 },
-                  readOnly: pipelineState !== "editor"
-                }}
-              />
-            </div>
+            <MultiFileEditor
+              key={attempt.attemptId}
+              modelKey={attempt.attemptId}
+              files={attempt.files}
+              entryFile={attempt.entryFile}
+              fallbackLanguage={monacoLanguageForSprint(attempt.language)}
+              theme={resolvedTheme === "light" ? "light" : "vs-dark"}
+              readOnly={editorLocked}
+              height={isBrownfield ? "420px" : "350px"}
+              telemetry={telemetry}
+              starterFiles={editorLocked ? null : starterFiles}
+              onReady={(api) => {
+                editorApiRef.current = api;
+              }}
+            />
 
-            <button
-              onClick={handleSubmitCode}
-              disabled={pipelineState !== "editor" || isOffline}
-              className={`py-3 px-4 rounded-xl font-medium text-xs flex items-center justify-center space-x-2 transition-all cursor-pointer ${
-                (pipelineState === "editor" && !isOffline)
-                  ? "bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white shadow-lg shadow-indigo-500/25"
-                  : "bg-muted text-muted-foreground cursor-not-allowed"
-              }`}
-            >
-              <Play className="w-4 h-4" />
-              <span>
-                {isOffline 
-                  ? "Offline (Code Saved)" 
-                  : pipelineState === "submitting" 
-                  ? t("submitting") 
-                  : t("submitSprint")}
-              </span>
-            </button>
+            <div className="flex gap-3">
+              {!isBrownfield && (
+                <button
+                  onClick={handleRun}
+                  disabled={editorLocked || isRunning || isOffline}
+                  className="py-3 px-4 rounded-xl font-medium text-xs flex items-center justify-center space-x-2 transition-all cursor-pointer border border-border text-foreground hover:bg-muted disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isRunning ? <Loader2 className="w-4 h-4 animate-spin" /> : <Terminal className="w-4 h-4" />}
+                  <span>Run</span>
+                </button>
+              )}
+              <button
+                onClick={handleSubmitCode}
+                disabled={editorLocked || isOffline}
+                className={`flex-1 py-3 px-4 rounded-xl font-medium text-xs flex items-center justify-center space-x-2 transition-all cursor-pointer ${
+                  !editorLocked && !isOffline
+                    ? "bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white shadow-lg shadow-indigo-500/25"
+                    : "bg-muted text-muted-foreground cursor-not-allowed"
+                }`}
+              >
+                <Play className="w-4 h-4" />
+                <span>
+                  {isOffline ? "Offline - reconnect to submit" : pipelineState === "submitting" ? t("submitting") : t("submitSprint")}
+                </span>
+              </button>
+            </div>
           </div>
 
-          {/* Right Pane: Execution Output & Voice Defense Room */}
+          {/* Right Pane: Assistant, Output & Voice Defense */}
           <div className="space-y-6">
-            {/* Terminal Console Output */}
+            {aiEnabled && (
+              <AiAssistantPanel
+                attemptId={attempt.attemptId}
+                aiPolicy={attempt.aiPolicy}
+                getToken={getToken}
+                getFiles={getFilesForAssistant}
+                onInsert={insertFromAssistant}
+                disabled={editorLocked}
+              />
+            )}
+
             <div className="glass-panel rounded-2xl p-6 border border-border space-y-4">
               <div className="flex items-center justify-between pb-3 border-b border-border">
                 <div className="flex items-center space-x-2">
@@ -752,19 +1170,33 @@ function SprintWorkspaceInner() {
                   <h3 className="text-sm font-semibold text-foreground">Execution Output & Test Results</h3>
                 </div>
                 {pipelineState === "running" && <RefreshCw className="w-4 h-4 text-amber-700 dark:text-amber-400 animate-spin" />}
+                {testSummary && (
+                  <span
+                    className={`text-[11px] px-2.5 py-0.5 rounded font-semibold border ${
+                      testSummary.total > 0 && testSummary.passed === testSummary.total
+                        ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/30"
+                        : "bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/30"
+                    }`}
+                  >
+                    Tests passed: {testSummary.passed} / {testSummary.total}
+                  </span>
+                )}
               </div>
 
-              <div className="bg-slate-950 p-4 rounded-xl font-mono text-[11px] text-emerald-700 dark:text-emerald-400 h-36 overflow-y-auto border border-slate-900 leading-relaxed whitespace-pre-wrap">
+              <div className="bg-slate-950 p-4 rounded-xl font-mono text-[11px] text-emerald-400 h-36 overflow-y-auto border border-slate-900 leading-relaxed whitespace-pre-wrap">
                 {stdOutLogs || statusMessage || "Awaiting submission..."}
               </div>
+              {stdOutLogs && statusMessage && pipelineState !== "editor" && (
+                <p className="text-[11px] text-muted-foreground">{statusMessage}</p>
+              )}
 
               {architecturalFlaws.length > 0 && (
-                <div className="p-3 bg-red-950/40 border border-red-500/30 rounded-xl space-y-1">
-                  <div className="flex items-center space-x-2 text-xs font-semibold text-red-600 dark:text-red-300">
-                    <AlertTriangle className="w-4 h-4 text-red-700 dark:text-red-400" />
-                    <span>Review Topics for Discussion:</span>
+                <div className="p-3 bg-indigo-500/5 border border-indigo-500/30 rounded-xl space-y-1">
+                  <div className="flex items-center space-x-2 text-xs font-semibold text-indigo-700 dark:text-indigo-300">
+                    <AlertTriangle className="w-4 h-4" />
+                    <span>Review topics for discussion:</span>
                   </div>
-                  <ul className="list-disc list-inside text-[11px] text-red-200 space-y-0.5 pl-2">
+                  <ul className="list-disc list-inside text-[11px] text-foreground space-y-0.5 pl-2">
                     {architecturalFlaws.map((flaw, idx) => (
                       <li key={idx}>{flaw}</li>
                     ))}
@@ -773,33 +1205,49 @@ function SprintWorkspaceInner() {
               )}
             </div>
 
-            {/* Voice Defense Simulator Component */}
-            {pipelineState === "voice_interview" || pipelineState === "completed" || pipelineState === "passed" ? (
-              <OpenAIRealtimeInterviewRoom
-                userId={user?.id || "anonymous-user"}
+            {showDefense && submissionId && (
+              <VapiInterviewRoom
+                sprintSubmissionId={submissionId}
                 jobDescription="Build & Defend Sprint Review"
-                selectedTenantId={selectedTenantId || "default-tenant"}
-                onLeadReferralGenerated={handleLeadOrCredentialGenerated}
-                personaCode="StaffArchitectFAANG"
-                dialectCode="US_WestCoast_Tech"
+                onResult={handleDefenseResult}
               />
-            ) : null}
+            )}
 
-            {/* Public Credential Badge Issuer Section */}
-            {pipelineState === "passed" && (
-              <div className="glass-panel rounded-2xl p-6 border border-emerald-500/40 bg-emerald-950/20 text-center space-y-4">
+            {pipelineState === "passed" && defenseResult && (
+              <div className="glass-panel rounded-2xl p-6 border border-emerald-500/40 bg-emerald-500/5 text-center space-y-4">
                 <ShieldCheck className="w-12 h-12 text-emerald-700 dark:text-emerald-400 mx-auto" />
                 <h3 className="text-lg font-bold text-foreground">Congratulations! Certificate Issued</h3>
                 <p className="text-xs text-muted-foreground">
-                  You successfully defended your implementation. Your verified certificate has been issued.
+                  {defenseResult.credentialUnderReview
+                    ? "You defended your implementation. Your certificate is under review and becomes publicly verifiable once a reviewer confirms it."
+                    : "You successfully defended your implementation. Your verified certificate has been issued."}
                 </p>
-                <button
-                  onClick={() => router.push(`/credential/${publicUrlSlug || "cred-demo"}`)}
-                  className="py-2.5 px-5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-semibold rounded-xl text-xs shadow-lg shadow-emerald-500/25 inline-flex items-center space-x-2 cursor-pointer transition-all"
+                {defenseResult.publicUrlSlug && (
+                  <Link
+                    href={`/credential/${defenseResult.publicUrlSlug}`}
+                    className="py-2.5 px-5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-semibold rounded-xl text-xs shadow-lg shadow-emerald-500/25 inline-flex items-center space-x-2 transition-all"
+                  >
+                    <Award className="w-4 h-4" />
+                    <span>View Certificate</span>
+                  </Link>
+                )}
+              </div>
+            )}
+
+            {pipelineState === "not_passed" && defenseResult && (
+              <div className="glass-panel rounded-2xl p-6 border border-border text-center space-y-4">
+                <BookOpen className="w-10 h-10 text-indigo-700 dark:text-indigo-400 mx-auto" />
+                <h3 className="text-lg font-bold text-foreground">Defense scored</h3>
+                <p className="text-xs text-muted-foreground">
+                  A certificate wasn&apos;t issued for this attempt. Your scores and the skills to work on are shown above.
+                </p>
+                <Link
+                  href="/referrals"
+                  className="py-2.5 px-5 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-xl text-xs inline-flex items-center space-x-2 transition-all"
                 >
-                  <Award className="w-4 h-4" />
-                  <span>View Verified Certificate</span>
-                </button>
+                  <BookOpen className="w-4 h-4" />
+                  <span>See learning recommendations</span>
+                </Link>
               </div>
             )}
           </div>
@@ -809,10 +1257,212 @@ function SprintWorkspaceInner() {
   );
 }
 
+interface PublicSprint {
+  sprintId: string;
+  title: string;
+  requiredLanguage: string;
+  isPremium: boolean;
+}
+
+function PracticeWorkspace({ sprintId }: { sprintId: string }) {
+  const { getToken } = useAuth();
+  const { resolvedTheme } = useTheme();
+  const t = useTranslations("SprintHUD");
+
+  const [candidateTrack, setCandidateTrack] = useState<CandidateTrack>("Backend");
+  const [difficultyTier, setDifficultyTier] = useState<Tier>("Diamond (Staff)");
+  const [language, setLanguage] = useState<string>("Python");
+  const [snippet, setSnippet] = useState(() => getSnippetForTrackAndLanguage("Backend", "Diamond (Staff)", "Python"));
+  const [code, setCode] = useState<string>(snippet.code);
+  const [output, setOutput] = useState<string>("");
+  const [isRunning, setIsRunning] = useState<boolean>(false);
+  const [challenges, setChallenges] = useState<PublicSprint[]>([]);
+
+  useEffect(() => {
+    let cancelled = false;
+    authenticatedFetch("/api/sprint", {}, getToken)
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (!cancelled && data && Array.isArray(data.sprints)) setChallenges(data.sprints.slice(0, 8));
+      })
+      .catch(() => undefined);
+    return () => {
+      cancelled = true;
+    };
+  }, [getToken]);
+
+  const applySelection = (track: CandidateTrack, tier: Tier, lang: string) => {
+    const next = getSnippetForTrackAndLanguage(track, tier, lang);
+    setCandidateTrack(track);
+    setDifficultyTier(tier);
+    setLanguage(lang);
+    setSnippet(next);
+    setCode(next.code);
+  };
+
+  const handleTrackChange = (newTrack: CandidateTrack) => {
+    const config = TRACK_LANGUAGES[newTrack];
+    applySelection(newTrack, difficultyTier, config.options.includes(language) ? language : config.defaultLang);
+  };
+
+  const handleRun = async () => {
+    setIsRunning(true);
+    setOutput("Running...");
+    const monacoLang = getMonacoLanguage(language);
+    setOutput(await executeCode(monacoLang === "shell" ? "bash" : monacoLang, code, getToken));
+    setIsRunning(false);
+  };
+
+  return (
+    <div className="flex flex-col font-sans pb-16">
+      <WorkspaceHeader
+        title={humanizeSlug(sprintId)}
+        sprintId={sprintId}
+        badges={
+          <span className="text-[10px] px-2 py-0.5 rounded-full bg-muted text-muted-foreground font-semibold border border-border">
+            Practice
+          </span>
+        }
+        controls={
+          <div className="hidden lg:flex items-center space-x-2 bg-card border border-border rounded-xl px-3 py-1.5 shadow-xs">
+            <select value={candidateTrack} onChange={(e) => handleTrackChange(e.target.value as CandidateTrack)} className="bg-transparent text-xs text-indigo-600 dark:text-indigo-400 font-semibold focus:outline-none cursor-pointer">
+              <option value="DevOps">🚀 DevOps &amp; SRE</option>
+              <option value="Backend">⚙️ Backend Systems</option>
+              <option value="Frontend">💻 Frontend &amp; Web</option>
+              <option value="FullStack">🌐 FullStack Systems</option>
+              <option value="DataMLOps">🧠 Data &amp; MLOps</option>
+              <option value="Cybersecurity">🛡️ Cybersecurity</option>
+              <option value="Mobile">📱 Mobile Architecture</option>
+              <option value="CloudFinOps">💰 Cloud FinOps</option>
+              <option value="DatabaseRE">🗄️ Database Reliability</option>
+            </select>
+            <span className="text-border">|</span>
+            <select value={difficultyTier} onChange={(e) => applySelection(candidateTrack, e.target.value as Tier, language)} className="bg-transparent text-xs text-emerald-700 dark:text-emerald-400 font-semibold focus:outline-none cursor-pointer">
+              <option value="Bronze (Junior)">Bronze (Junior)</option>
+              <option value="Diamond (Staff)">Diamond (Staff)</option>
+            </select>
+            <span className="text-border">|</span>
+            <select value={language} onChange={(e) => applySelection(candidateTrack, difficultyTier, e.target.value)} className="bg-transparent text-xs text-purple-700 dark:text-purple-400 font-semibold focus:outline-none cursor-pointer">
+              {TRACK_LANGUAGES[candidateTrack].options.map((opt) => (
+                <option key={opt} value={opt}>
+                  {opt}
+                </option>
+              ))}
+            </select>
+          </div>
+        }
+      />
+
+      <main className="max-w-7xl mx-auto px-6 pt-8 flex-1 w-full space-y-6">
+        <div className="glass-panel rounded-2xl p-4 border border-border flex items-start gap-2 text-[11px] text-muted-foreground">
+          <Sparkles className="w-3.5 h-3.5 mt-0.5 shrink-0 text-indigo-700 dark:text-indigo-400" />
+          <span>
+            Practice mode: nothing here is graded or submitted. Pick a challenge below to start a timed sprint with
+            hidden tests and a voice defense.
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <div className="glass-panel rounded-2xl p-6 border border-border flex flex-col space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-border">
+              <div className="flex items-center space-x-2">
+                <Code className="w-5 h-5 text-indigo-700 dark:text-indigo-400" />
+                <h3 className="text-sm font-semibold text-foreground">{t("codeEditor")}</h3>
+              </div>
+              <span className="text-[10px] px-2.5 py-0.5 rounded bg-indigo-500/10 text-indigo-600 dark:text-indigo-300 font-semibold border border-indigo-500/20">
+                Language: {language}
+              </span>
+            </div>
+
+            <p className="text-xs text-foreground font-medium bg-card/80 p-3 rounded-lg border border-border/80 leading-relaxed shadow-inner">
+              {snippet.task}
+            </p>
+
+            <div className="border border-border rounded-xl overflow-hidden mt-2 bg-background">
+              <Editor
+                height="350px"
+                language={getMonacoLanguage(language)}
+                theme={resolvedTheme === "light" ? "light" : "vs-dark"}
+                value={code}
+                onChange={(val) => setCode(val || "")}
+                options={{
+                  minimap: { enabled: false },
+                  fontSize: 13,
+                  fontFamily: "var(--font-geist-mono), monospace",
+                  padding: { top: 16 },
+                }}
+              />
+            </div>
+
+            <button
+              onClick={handleRun}
+              disabled={isRunning}
+              className="py-3 px-4 rounded-xl font-medium text-xs flex items-center justify-center space-x-2 transition-all cursor-pointer border border-border text-foreground hover:bg-muted disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isRunning ? <Loader2 className="w-4 h-4 animate-spin" /> : <Terminal className="w-4 h-4" />}
+              <span>Run code</span>
+            </button>
+          </div>
+
+          <div className="space-y-6">
+            <div className="glass-panel rounded-2xl p-6 border border-border space-y-4">
+              <div className="flex items-center space-x-2 pb-3 border-b border-border">
+                <Terminal className="w-5 h-5 text-emerald-700 dark:text-emerald-400" />
+                <h3 className="text-sm font-semibold text-foreground">Output</h3>
+              </div>
+              <div className="bg-slate-950 p-4 rounded-xl font-mono text-[11px] text-emerald-400 h-36 overflow-y-auto border border-slate-900 leading-relaxed whitespace-pre-wrap">
+                {output || "Run your code to see its output."}
+              </div>
+            </div>
+
+            <div className="glass-panel rounded-2xl p-6 border border-border space-y-3">
+              <div className="flex items-center space-x-2 pb-3 border-b border-border">
+                <Award className="w-5 h-5 text-indigo-700 dark:text-indigo-400" />
+                <h3 className="text-sm font-semibold text-foreground">Graded challenges</h3>
+              </div>
+              {challenges.length === 0 ? (
+                <p className="text-xs text-muted-foreground">No public challenges are available right now.</p>
+              ) : (
+                <ul className="space-y-2">
+                  {challenges.map((c) => (
+                    <li key={c.sprintId}>
+                      <Link
+                        href={`/sprint/${c.sprintId}`}
+                        className="flex items-center justify-between gap-3 p-3 rounded-xl border border-border hover:bg-muted transition-colors"
+                      >
+                        <span className="text-xs font-semibold text-foreground truncate">{c.title}</span>
+                        <span className="flex items-center gap-2 shrink-0 text-[10px] text-muted-foreground">
+                          {c.requiredLanguage}
+                          {c.isPremium && (
+                            <span className="px-1.5 py-0.5 rounded bg-purple-500/15 text-purple-700 dark:text-purple-300 font-semibold">Pro</span>
+                          )}
+                          <ArrowRight className="w-3.5 h-3.5" />
+                        </span>
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  );
+}
+
+function SprintWorkspaceInner() {
+  const params = useParams();
+  const sprintId = (params?.id as string) || "";
+  return GUID_RE.test(sprintId) ? <GradedWorkspace sprintId={sprintId} /> : <PracticeWorkspace sprintId={sprintId || "practice"} />;
+}
+
 export default function SprintWorkspace() {
   return (
     <I18nProvider>
-      <SprintWorkspaceInner />
+      <Suspense fallback={null}>
+        <SprintWorkspaceInner />
+      </Suspense>
     </I18nProvider>
   );
 }

@@ -154,9 +154,10 @@ export class EditorTelemetry {
     return Math.round((this.baseMs + (this.clock() - this.origin)) * 10) / 10;
   }
 
-  /** Starts periodic flushing and window focus/visibility capture. Browser only. */
+  /** Starts (or restarts after dispose) periodic flushing and window focus/visibility capture. */
   start(): void {
-    if (this.interval || this.stopped) return;
+    if (this.interval || this.fatal) return;
+    this.stopped = false;
     this.interval = setInterval(() => {
       void this.refreshToken();
       void this.flush();
@@ -363,7 +364,7 @@ export class EditorTelemetry {
 
   /** Stops capture and timers. Pass flush=true to send what is left (not during unload). */
   dispose(options: { flush?: boolean } = {}): void {
-    if (this.stopped) return;
+    if (this.stopped && !this.interval) return;
     if (this.interval) clearInterval(this.interval);
     this.interval = null;
     this.detachWindow?.();
