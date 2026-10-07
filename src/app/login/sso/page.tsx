@@ -1,18 +1,26 @@
 "use client";
 
 import React, { useState } from "react";
-import { 
-  Building2, ShieldCheck, ArrowRight, Lock, 
-  Sparkles, CheckCircle2, AlertCircle, Globe,
-  KeyRound, RefreshCw, Download, FileCode
+import { useSignIn } from "@clerk/nextjs";
+import {
+  Building2, ShieldCheck, ArrowRight, Lock,
+  AlertCircle, Globe, RefreshCw, Download
 } from "lucide-react";
 
+interface DiscoveryResult {
+  domain: string;
+  organizationName: string;
+  protocol: string;
+  defaultRole: string;
+  ssoEnabled: boolean;
+}
+
 export default function EnterpriseSsoLoginPage() {
+  const { signIn } = useSignIn();
   const [email, setEmail] = useState("");
   const [isDiscovering, setIsDiscovering] = useState(false);
-  const [discoveryResult, setDiscoveryResult] = useState<any>(null);
+  const [discoveryResult, setDiscoveryResult] = useState<DiscoveryResult | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
-  const [authSuccess, setAuthSuccess] = useState<any>(null);
   const [isAuthenticating, setIsAuthenticating] = useState(false);
 
   const handleDiscovery = async (e: React.FormEvent) => {
@@ -24,7 +32,6 @@ export default function EnterpriseSsoLoginPage() {
 
     setErrorMsg(null);
     setDiscoveryResult(null);
-    setAuthSuccess(null);
     setIsDiscovering(true);
 
     try {
@@ -39,45 +46,36 @@ export default function EnterpriseSsoLoginPage() {
       } else {
         setErrorMsg("Failed to connect to identity discovery service.");
       }
-    } catch (err: any) {
-      setErrorMsg("Network error connecting to API: " + err.message);
+    } catch (err: unknown) {
+      setErrorMsg("Network error connecting to API: " + (err instanceof Error ? err.message : String(err)));
     } finally {
       setIsDiscovering(false);
     }
   };
 
-  const handleSimulatedSamlLogin = async () => {
-    if (!discoveryResult) return;
+  // Enterprise SSO runs through Clerk's SAML/OIDC connections, so the result is a normal Clerk session
+  const handleEnterpriseSso = async () => {
+    if (!discoveryResult || !signIn) return;
     setIsAuthenticating(true);
     setErrorMsg(null);
 
-    try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/sso/saml/acs`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email: email.trim().toLowerCase(),
-          name: email.split("@")[0].replace(".", " "),
-          domain: discoveryResult.domain,
-          role: discoveryResult.defaultRole || "Candidate",
-        }),
-      });
+    const created = await signIn.create({ identifier: email.trim().toLowerCase() });
+    if (created.error) {
+      setErrorMsg(created.error.message || "Could not start sign-in for this email.");
+      setIsAuthenticating(false);
+      return;
+    }
 
-      if (res.ok) {
-        const data = await res.json();
-        setAuthSuccess(data);
-        // Persist token in localStorage
-        if (typeof window !== "undefined" && data.token) {
-          localStorage.setItem("sso_bearer_token", data.token);
-          localStorage.setItem("sso_user_role", data.user.role);
-        }
-      } else {
-        const errJson = await res.json();
-        setErrorMsg(errJson.error || "SAML assertion processing failed.");
-      }
-    } catch (err: any) {
-      setErrorMsg("Authentication error: " + err.message);
-    } finally {
+    const { error } = await signIn.sso({
+      strategy: "enterprise_sso",
+      redirectUrl: "/dashboard",
+      redirectCallbackUrl: "/login/sso/callback",
+    });
+    if (error) {
+      setErrorMsg(
+        error.message ||
+          "Single sign-on is not set up for this organization yet. Ask your administrator to connect your identity provider."
+      );
       setIsAuthenticating(false);
     }
   };
@@ -97,13 +95,12 @@ export default function EnterpriseSsoLoginPage() {
             Enterprise Single Sign-On
           </h1>
           <p className="text-sm text-muted-foreground">
-            Sign in with your organization's SAML 2.0 or OIDC Identity Provider (Okta, Azure AD, PingIdentity).
+            Sign in with your organization&apos;s identity provider (SAML or OIDC, e.g. Okta, Microsoft Entra ID, Google Workspace).
           </p>
         </div>
 
         {/* Card */}
         <div className="bg-card/90 border border-border rounded-2xl p-6 sm:p-8 backdrop-blur-xl shadow-2xl space-y-6">
-          {!authSuccess ? (
             <>
               <form onSubmit={handleDiscovery} className="space-y-4">
                 <div>
@@ -170,14 +167,14 @@ export default function EnterpriseSsoLoginPage() {
                   </div>
 
                   <button
-                    onClick={handleSimulatedSamlLogin}
-                    disabled={isAuthenticating}
+                    onClick={handleEnterpriseSso}
+                    disabled={isAuthenticating || !signIn}
                     className="w-full flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white font-medium py-2.5 px-4 rounded-xl transition duration-200 shadow-lg shadow-emerald-600/20 text-sm"
                   >
                     {isAuthenticating ? (
                       <>
                         <RefreshCw className="w-4 h-4 animate-spin" />
-                        Validating SAML Assertion...
+                        Redirecting to your identity provider...
                       </>
                     ) : (
                       <>
@@ -201,47 +198,6 @@ export default function EnterpriseSsoLoginPage() {
                 </div>
               )}
             </>
-          ) : (
-            /* Auth Success State */
-            <div className="text-center space-y-4 py-2 animate-in zoom-in-95 duration-300">
-              <div className="inline-flex items-center justify-center p-3 rounded-full bg-emerald-500/20 text-emerald-700 dark:text-emerald-400">
-                <CheckCircle2 className="w-8 h-8" />
-              </div>
-              <div className="space-y-1">
-                <h3 className="text-lg font-bold text-foreground">Federation Authenticated!</h3>
-                <p className="text-xs text-muted-foreground">
-                  Welcome, <span className="text-indigo-600 dark:text-indigo-300 font-medium">{authSuccess.user.name}</span>. Your enterprise role is:
-                </p>
-                <div className="inline-block px-3 py-1 rounded-full bg-indigo-500/20 border border-indigo-500/40 text-indigo-600 dark:text-indigo-300 text-xs font-semibold mt-1">
-                  {authSuccess.user.role}
-                </div>
-              </div>
-
-              <div className="p-3 bg-background rounded-xl border border-border text-left text-xs font-mono text-muted-foreground break-all space-y-1">
-                <div className="text-muted-foreground text-[10px] uppercase font-semibold">JWT Bearer Token</div>
-                <div className="line-clamp-2 text-muted-foreground">{authSuccess.token}</div>
-              </div>
-
-              <div className="pt-2 flex flex-col gap-2">
-                <a
-                  href="/dashboard"
-                  className="w-full py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium transition text-center"
-                >
-                  Proceed to Candidate Workspace
-                </a>
-                <button
-                  onClick={() => {
-                    setAuthSuccess(null);
-                    setDiscoveryResult(null);
-                    setEmail("");
-                  }}
-                  className="w-full py-2 text-xs text-muted-foreground hover:text-foreground transition"
-                >
-                  Sign Out / Switch Account
-                </button>
-              </div>
-            </div>
-          )}
         </div>
 
         {/* Footer Links */}

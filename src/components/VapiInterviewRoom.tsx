@@ -48,6 +48,8 @@ export interface VapiInterviewRoomProps {
   repoDefenseId?: string;
   personaCode?: string;
   dialectCode?: string;
+  // Key from GET /api/interview/languages; when omitted the student's campus preference (if any) or the server default is used
+  language?: string;
   onResult?: (r: DefenseResult) => void;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   onLeadReferralGenerated?: (recs: any[]) => void;
@@ -79,6 +81,11 @@ interface TranscriptLine {
 interface UpgradePrompt {
   message: string;
   usageResetsAt?: string;
+}
+
+interface LanguageOption {
+  key: string;
+  label: string;
 }
 
 interface VapiMessage {
@@ -113,6 +120,7 @@ export default function VapiInterviewRoom({
   repoDefenseId,
   personaCode,
   dialectCode,
+  language,
   onResult,
   onLeadReferralGenerated,
 }: VapiInterviewRoomProps) {
@@ -137,6 +145,40 @@ export default function VapiInterviewRoom({
   const [sessionCapSeconds, setSessionCapSeconds] = useState<number | null>(null);
   const [callStartedAt, setCallStartedAt] = useState<number | null>(null);
   const [now, setNow] = useState(() => Date.now());
+  const [languages, setLanguages] = useState<LanguageOption[]>([]);
+  const [selectedLanguage, setSelectedLanguage] = useState(language ?? "");
+  const languageTouchedRef = useRef(Boolean(language));
+
+  // Languages offered for the defense; default to the prop, else the student's campus preference, else the server default
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await authenticatedFetch("/api/interview/languages", {});
+        if (!res.ok || cancelled) return;
+        const data = await readJson<{ defaultLanguage?: string; languages?: LanguageOption[] }>(res);
+        if (!data?.languages || cancelled) return;
+        setLanguages(data.languages);
+        let preferred: string | null = null;
+        if (!languageTouchedRef.current) {
+          try {
+            const prefRes = await authenticatedFetch("/api/campus/my-preferences", {}, getToken);
+            if (prefRes.ok) preferred = (await readJson<{ preferredLanguage?: string | null }>(prefRes))?.preferredLanguage ?? null;
+          } catch {
+            // no campus preference available
+          }
+        }
+        if (cancelled || languageTouchedRef.current) return;
+        const known = (key: string | null | undefined) => (key && data.languages!.some((l) => l.key === key) ? key : null);
+        setSelectedLanguage(known(preferred) ?? known(data.defaultLanguage) ?? data.languages[0]?.key ?? "");
+      } catch {
+        // language list is optional; the server default applies
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [getToken]);
 
   useEffect(() => {
     mountedRef.current = true;
@@ -335,7 +377,14 @@ export default function VapiInterviewRoom({
         "/api/interview/start",
         {
           method: "POST",
-          body: JSON.stringify({ jobDescription, sprintSubmissionId, repoDefenseId, personaCode, dialectCode }),
+          body: JSON.stringify({
+            jobDescription,
+            sprintSubmissionId,
+            repoDefenseId,
+            personaCode,
+            dialectCode,
+            language: selectedLanguage || language || undefined,
+          }),
         },
         getToken
       );
@@ -496,6 +545,24 @@ export default function VapiInterviewRoom({
           </div>
 
           <div className="mt-6 space-y-3">
+            {languages.length > 1 && (
+              <label className="block text-xs font-semibold text-muted-foreground">
+                Conversation language
+                <select
+                  value={selectedLanguage}
+                  onChange={(e) => {
+                    languageTouchedRef.current = true;
+                    setSelectedLanguage(e.target.value);
+                  }}
+                  disabled={inCall || callStatus === "finishing" || isLoading}
+                  className="mt-1 w-full px-3 py-2 rounded-xl bg-card border border-border text-xs text-foreground disabled:opacity-60"
+                >
+                  {languages.map((l) => (
+                    <option key={l.key} value={l.key}>{l.label}</option>
+                  ))}
+                </select>
+              </label>
+            )}
             {!inCall && callStatus !== "finishing" ? (
               <button
                 onClick={handleStartInterview}

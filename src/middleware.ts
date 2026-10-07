@@ -2,9 +2,22 @@ import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
 // Route Matchers
-const isProtectedRoute = createRouteMatcher(["/sprint(.*)", "/dashboard(.*)"]);
+// /verify, /transparency and /pricing are intentionally public
+const isProtectedRoute = createRouteMatcher([
+  "/sprint(.*)",
+  "/dashboard(.*)",
+  "/campus(.*)",
+  "/my(.*)",
+  "/settings(.*)",
+  "/written-defense(.*)",
+  "/credentials(.*)",
+  "/defend-repo(.*)",
+  "/referrals(.*)",
+]);
 const isAdminRoute = createRouteMatcher(["/admin(.*)"]);
-const isInstituteRoute = createRouteMatcher(["/institute(.*)"]);
+const isInstituteRoute = createRouteMatcher(["/institute(.*)", "/campus/admin(.*)"]);
+// Employers' institute admins manage these settings too
+const isInstituteOrRecruiterRoute = createRouteMatcher(["/recruiter/transparency-settings(.*)"]);
 const isRecruiterRoute = createRouteMatcher(["/recruiter(.*)"]);
 
 export default clerkMiddleware(async (auth, req) => {
@@ -17,10 +30,27 @@ export default clerkMiddleware(async (auth, req) => {
 
   const { userId, sessionClaims } = await auth();
 
-  const role = (sessionClaims?.metadata as any)?.role 
-            || (sessionClaims?.publicMetadata as any)?.role 
-            || (sessionClaims as any)?.role
-            || (sessionClaims?.public_metadata as any)?.role;
+  // Roles may arrive as `role` or a `roles` array, on the claims or in (public) metadata, matching the API's role mapping
+  const claims = (sessionClaims ?? {}) as Record<string, unknown>;
+  const roleList: string[] = [claims, claims.metadata, claims.publicMetadata, claims.public_metadata]
+    .flatMap((source) => {
+      if (!source || typeof source !== "object") return [];
+      const s = source as { role?: unknown; roles?: unknown };
+      return [s.role, ...(Array.isArray(s.roles) ? s.roles : [])];
+    })
+    .filter((r): r is string => typeof r === "string" && r.length > 0)
+    .map((r) => r.toLowerCase());
+  const hasRole = (...wanted: string[]) => wanted.some((w) => roleList.includes(w.toLowerCase()));
+
+  if (isInstituteOrRecruiterRoute(req)) {
+    if (!userId) {
+      return NextResponse.redirect(new URL("/login?redirect_url=" + encodeURIComponent(req.nextUrl.pathname), req.url));
+    }
+    if (!hasRole("Recruiter", "InstituteAdmin", "SuperAdmin")) {
+      return NextResponse.redirect(new URL("/dashboard", req.url));
+    }
+    return NextResponse.next();
+  }
 
   // 1. Super Admin Route Protection
   if (isAdminRoute(req)) {
@@ -28,7 +58,7 @@ export default clerkMiddleware(async (auth, req) => {
       return NextResponse.redirect(new URL("/login?redirect_url=" + encodeURIComponent(req.nextUrl.pathname), req.url));
     }
 
-    const isSuperAdmin = role === "SuperAdmin" || role === "superadmin";
+    const isSuperAdmin = hasRole("SuperAdmin");
     if (!isSuperAdmin) {
       return NextResponse.redirect(new URL("/dashboard", req.url));
     }
@@ -39,7 +69,7 @@ export default clerkMiddleware(async (auth, req) => {
       return NextResponse.redirect(new URL("/login?redirect_url=" + encodeURIComponent(req.nextUrl.pathname), req.url));
     }
 
-    const isInstituteAdmin = role === "InstituteAdmin" || role === "SuperAdmin";
+    const isInstituteAdmin = hasRole("InstituteAdmin", "SuperAdmin");
     if (!isInstituteAdmin) {
       return NextResponse.redirect(new URL("/dashboard", req.url));
     }
@@ -50,7 +80,7 @@ export default clerkMiddleware(async (auth, req) => {
       return NextResponse.redirect(new URL("/login?redirect_url=" + encodeURIComponent(req.nextUrl.pathname), req.url));
     }
 
-    const isRecruiter = role === "Recruiter" || role === "SuperAdmin";
+    const isRecruiter = hasRole("Recruiter", "SuperAdmin");
     if (!isRecruiter) {
       return NextResponse.redirect(new URL("/dashboard", req.url));
     }

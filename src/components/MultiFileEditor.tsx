@@ -14,6 +14,8 @@ export interface EditorFile {
 export interface MultiFileEditorApi {
   getFiles: () => EditorFile[];
   insertAtCursor: (text: string, interactionId?: string) => boolean;
+  // Applies a whole-file replacement (e.g. an accepted agent proposal) as a tracked "ai-assistant" edit
+  replaceFile: (name: string, content: string, interactionId?: string) => boolean;
 }
 
 interface MultiFileEditorProps {
@@ -154,6 +156,31 @@ export default function MultiFileEditor({
         const applied = telemetry ? telemetry.runAs("ai-assistant", interactionId, apply) : apply();
         ed.pushUndoStop();
         ed.focus();
+        return applied;
+      },
+      replaceFile: (name, content, interactionId) => {
+        const model = modelsRef.current.get(name);
+        if (!model || model.isDisposed()) return false;
+        // Replace only the changed middle so AI-assist character counts aren't inflated by unchanged lines
+        const old = model.getValue();
+        const next = normalizeEol(content);
+        let start = 0;
+        while (start < old.length && start < next.length && old[start] === next[start]) start++;
+        let end = 0;
+        while (end < old.length - start && end < next.length - start && old[old.length - 1 - end] === next[next.length - 1 - end]) end++;
+        if (start === old.length && start === next.length) return true;
+        const s = model.getPositionAt(start);
+        const e = model.getPositionAt(old.length - end);
+        const apply = () => {
+          model.pushEditOperations(
+            [],
+            [{ range: { startLineNumber: s.lineNumber, startColumn: s.column, endLineNumber: e.lineNumber, endColumn: e.column }, text: next.slice(start, next.length - end) }],
+            () => null
+          );
+          return true;
+        };
+        const applied = telemetry ? telemetry.runAs("ai-assistant", interactionId, apply) : apply();
+        editorRef.current?.pushUndoStop();
         return applied;
       },
     });

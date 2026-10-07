@@ -5,6 +5,19 @@ import { useRouter } from "next/navigation";
 import { UserButton } from "@clerk/nextjs";
 import { Briefcase, ShieldCheck, ArrowLeft } from "lucide-react";
 
+const recruiterNav: { label: string; href: string; highlight?: boolean }[] = [
+  { label: "Candidates & Sprints", href: "/recruiter/dashboard" },
+  { label: "Evidence packs", href: "/recruiter/evidence" },
+  { label: "Work trials", href: "/recruiter/work-trials" },
+  { label: "Appeals", href: "/recruiter/appeals" },
+  { label: "Accommodations", href: "/recruiter/accommodations" },
+  { label: "ATS integrations", href: "/recruiter/integrations" },
+  { label: "Validity & bias audit", href: "/recruiter/validity" },
+  { label: "Transparency settings", href: "/recruiter/transparency-settings" },
+  { label: "Session recordings", href: "/recruiter/proctoring" },
+  { label: "AI Benchmarking", href: "/recruiter/benchmark", highlight: true },
+];
+
 export default function RecruiterLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
 
@@ -30,43 +43,20 @@ export default function RecruiterLayout({ children }: { children: React.ReactNod
           </div>
 
           {/* Sub Navigation Links */}
-          <nav className="hidden xl:flex items-center space-x-1 bg-card/80 p-1 rounded-xl border border-border">
-            <button
-              onClick={() => router.push("/recruiter/dashboard")}
-              className="px-3 py-1.5 rounded-lg text-xs font-medium text-muted-foreground hover:text-white hover:bg-muted transition-colors"
-            >
-              Candidates & Sprints
-            </button>
-            <button
-              onClick={() => router.push("/recruiter/proctoring")}
-              className="px-3 py-1.5 rounded-lg text-xs font-medium text-muted-foreground hover:text-white hover:bg-muted transition-colors"
-            >
-              Session recordings
-            </button>
-            <button
-              onClick={() => router.push("/recruiter/evidence")}
-              className="px-3 py-1.5 rounded-lg text-xs font-medium text-muted-foreground hover:text-white hover:bg-muted transition-colors"
-            >
-              Evidence packs
-            </button>
-            <button
-              onClick={() => router.push("/recruiter/integrations")}
-              className="px-3 py-1.5 rounded-lg text-xs font-medium text-muted-foreground hover:text-white hover:bg-muted transition-colors"
-            >
-              ATS integrations
-            </button>
-            <button
-              onClick={() => router.push("/recruiter/validity")}
-              className="px-3 py-1.5 rounded-lg text-xs font-medium text-muted-foreground hover:text-white hover:bg-muted transition-colors"
-            >
-              Validity &amp; bias audit
-            </button>
-            <button
-              onClick={() => router.push("/recruiter/benchmark")}
-              className="px-3 py-1.5 rounded-lg text-xs font-semibold text-purple-700 dark:text-purple-400 bg-purple-950/40 border border-purple-800/40 hover:bg-purple-900/40 transition-colors"
-            >
-              AI Benchmarking
-            </button>
+          <nav className="hidden md:flex items-center gap-1 bg-card/80 p-1 rounded-xl border border-border overflow-x-auto max-w-[62vw] whitespace-nowrap">
+            {recruiterNav.map((item) => (
+              <button
+                key={item.href}
+                onClick={() => router.push(item.href)}
+                className={
+                  item.highlight
+                    ? "px-3 py-1.5 rounded-lg text-xs font-semibold text-purple-700 dark:text-purple-400 bg-purple-950/40 border border-purple-800/40 hover:bg-purple-900/40 transition-colors shrink-0"
+                    : "px-3 py-1.5 rounded-lg text-xs font-medium text-muted-foreground hover:text-white hover:bg-muted transition-colors shrink-0"
+                }
+              >
+                {item.label}
+              </button>
+            ))}
           </nav>
 
           <div className="flex items-center space-x-4">

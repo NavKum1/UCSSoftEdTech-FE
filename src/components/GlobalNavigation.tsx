@@ -32,6 +32,15 @@ import {
   FileSearch,
   Plug,
   BarChart3,
+  ClipboardList,
+  Gavel,
+  Accessibility,
+  Hammer,
+  BadgeCheck,
+  FileText,
+  Lock,
+  Building2,
+  Eye,
 } from "lucide-react";
 import { ProductRegionSwitcher } from "@/context/GeoContext";
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -42,6 +51,11 @@ const recruiterLinks = [
   { name: "Evidence packs", href: "/recruiter/evidence", icon: FileSearch },
   { name: "ATS integrations", href: "/recruiter/integrations", icon: Plug },
   { name: "Validity & bias audit", href: "/recruiter/validity", icon: BarChart3 },
+  { name: "Work trials", href: "/recruiter/work-trials", icon: Hammer },
+  { name: "Appeals", href: "/recruiter/appeals", icon: Gavel },
+  { name: "Accommodations", href: "/recruiter/accommodations", icon: Accessibility },
+  { name: "Transparency settings", href: "/recruiter/transparency-settings", icon: Eye },
+  { name: "Placement cell (colleges)", href: "/campus/admin", icon: Building2 },
 ];
 
 const selfIdLink = { name: "Fairness self-ID", href: "/settings/self-identification", icon: Scale };
@@ -52,7 +66,7 @@ function hasRecruiterRole(metadata: Record<string, unknown> | undefined): boolea
     ...(Array.isArray(metadata.roles) ? metadata.roles : []),
     ...(typeof metadata.role === "string" ? [metadata.role] : []),
   ];
-  return roles.some((r) => typeof r === "string" && ["recruiter", "admin"].includes(r.toLowerCase()));
+  return roles.some((r) => typeof r === "string" && ["recruiter", "admin", "instituteadmin", "superadmin"].includes(r.toLowerCase()));
 }
 
 export default function GlobalNavigation() {
@@ -121,6 +135,25 @@ export default function GlobalNavigation() {
   // Extended Student Learning & Verification Tools (Practice Hub)
   const studentPracticeTools = [
     {
+      name: "My results",
+      href: "/my/results",
+      desc: "Feedback on every submission, review status and appeals",
+      icon: ClipboardList,
+    },
+    {
+      name: "Credentials",
+      href: "/credentials",
+      desc: "Your signed credentials: share with employers, reuse for applications",
+      icon: BadgeCheck,
+      badge: "New",
+    },
+    {
+      name: "Campus",
+      href: "/campus",
+      desc: "College assignments, defense language and connection check",
+      icon: GraduationCap,
+    },
+    {
       name: "Defend your repo",
       href: "/defend-repo",
       desc: "Link your GitHub repo or PR and defend the code you wrote",
@@ -138,6 +171,18 @@ export default function GlobalNavigation() {
       href: "/pricing",
       desc: "Plans, voice minutes and top-ups",
       icon: CreditCard,
+    },
+    {
+      name: "Privacy & your data",
+      href: "/settings/privacy",
+      desc: "Download or delete your data",
+      icon: Lock,
+    },
+    {
+      name: "Transparency report",
+      href: "/transparency",
+      desc: "How our assessments perform and how fair they are, published",
+      icon: FileText,
     },
     {
       name: "1v1 Duels Arena",
@@ -226,8 +271,8 @@ export default function GlobalNavigation() {
                     }`}
                   />
                   <span>
-                    <span className="hidden xl:inline">{link.fullName || link.name}</span>
-                    <span className="xl:hidden">{link.name}</span>
+                    <span className="hidden 2xl:inline">{link.fullName || link.name}</span>
+                    <span className="2xl:hidden">{link.name}</span>
                   </span>
                 </Link>
               );
@@ -304,16 +349,6 @@ export default function GlobalNavigation() {
 
         {/* Right Section: Status Indicators, Utilities & Profile */}
         <div className="flex items-center gap-2 shrink-0">
-          {/* Daily Streak Pill */}
-          <Link
-            href="/daily/incident"
-            title="Active 14-Day Streak — Practice daily katas to maintain your League standing"
-            className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 text-amber-800 dark:text-amber-300 text-xs font-semibold hover:bg-amber-100 dark:hover:bg-amber-500/20 transition-colors shadow-xs"
-          >
-            <Flame className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 fill-amber-400/30 animate-pulse" />
-            <span>14d</span>
-          </Link>
-
           {/* AI Voice Minutes Balance */}
           <Link
             href="/pricing"

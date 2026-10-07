@@ -366,6 +366,12 @@ export default function SuperAdminDashboard() {
         </div>
 
         <div className="flex items-center space-x-3">
+          <a
+            href="/admin/transparency"
+            className="text-xs font-semibold px-3 py-1.5 rounded-lg bg-muted hover:bg-muted/80 text-foreground border border-border transition"
+          >
+            Transparency reports
+          </a>
           <button
             onClick={() => {
               setRefreshing(true);

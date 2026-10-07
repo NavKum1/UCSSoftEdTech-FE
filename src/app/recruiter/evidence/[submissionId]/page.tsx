@@ -6,6 +6,7 @@ import { useParams } from "next/navigation";
 import { useAuth } from "@clerk/nextjs";
 import { authenticatedFetch } from "@/lib/apiClient";
 import {
+  Accessibility,
   AlertCircle,
   AlertTriangle,
   ArrowLeft,
@@ -15,8 +16,10 @@ import {
   ChevronRight,
   Clock,
   FileCode2,
+  Flag,
   Gavel,
   Info,
+  Layers,
   Loader2,
   Mic,
   Printer,
@@ -75,6 +78,7 @@ interface EvidencePack {
     questionsAndAnswers: { question: string; answer: string }[];
   } | null;
   consistencyNotes: string[];
+  sections?: Record<string, unknown>;
   decisions: Decision[];
   notIncluded: string[];
   disclaimer: string;
@@ -159,6 +163,68 @@ function DiffView({ diff }: { diff: string }) {
         );
       })}
     </pre>
+  );
+}
+
+interface AppealsSection {
+  note?: string;
+  items: { id: string; category: string; reason: string; status: string; createdAt: string; resolverName: string | null; response: string | null; resolvedAt: string | null }[];
+}
+
+interface AccommodationsSection {
+  note?: string;
+  items: { type: string; details: string; scope: string; decidedBy: string | null; decidedAt: string | null }[];
+}
+
+const APPEAL_STATUS_STYLES: Record<string, string> = {
+  Open: "bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/30",
+  Overturned: "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/30",
+  Upheld: "bg-muted text-muted-foreground border-border",
+  Withdrawn: "bg-muted text-muted-foreground border-border",
+};
+
+function humanize(key: string) {
+  return key
+    .replace(/[_-]+/g, " ")
+    .replace(/([a-z0-9])([A-Z])/g, "$1 $2")
+    .replace(/^./, (c) => c.toUpperCase());
+}
+
+// Renders any contributor section generically, so sections added by other features show up without page changes
+function GenericValue({ value, depth = 0 }: { value: unknown; depth?: number }) {
+  if (value === null || value === undefined || value === "") return <span className="text-muted-foreground">—</span>;
+  if (typeof value === "boolean") return <span>{value ? "Yes" : "No"}</span>;
+  if (typeof value === "number") return <span>{value.toLocaleString()}</span>;
+  if (typeof value === "string") {
+    const isDate = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/.test(value);
+    return <span className="whitespace-pre-wrap wrap-break-word">{isDate ? fmtDate(value) : value}</span>;
+  }
+  if (depth > 3) return <pre className="text-[11px] font-mono whitespace-pre-wrap break-all">{JSON.stringify(value, null, 2)}</pre>;
+  if (Array.isArray(value)) {
+    if (value.length === 0) return <span className="text-muted-foreground">None</span>;
+    if (value.every((v) => v === null || typeof v !== "object")) return <span>{value.map((v) => String(v)).join(", ")}</span>;
+    return (
+      <ol className="space-y-2">
+        {value.map((v, i) => (
+          <li key={i} className="rounded-lg border border-border p-2">
+            <GenericValue value={v} depth={depth + 1} />
+          </li>
+        ))}
+      </ol>
+    );
+  }
+  const entries = Object.entries(value as Record<string, unknown>);
+  return (
+    <dl className="grid sm:grid-cols-[minmax(8rem,auto)_1fr] gap-x-3 gap-y-1">
+      {entries.map(([k, v]) => (
+        <React.Fragment key={k}>
+          <dt className="text-muted-foreground">{humanize(k)}</dt>
+          <dd className="text-foreground min-w-0">
+            <GenericValue value={v} depth={depth + 1} />
+          </dd>
+        </React.Fragment>
+      ))}
+    </dl>
   );
 }
 
@@ -284,6 +350,10 @@ export default function EvidencePackPage() {
   const caseEntries = Object.entries(tests.cases ?? {});
   const signals = integrity.signals ?? [];
   const rationaleLength = rationale.trim().length;
+  const sections = pack.sections ?? {};
+  const appealsSection = sections.appeals as AppealsSection | undefined;
+  const accommodationsSection = sections.accommodations as AccommodationsSection | undefined;
+  const otherSections = Object.entries(sections).filter(([key, v]) => key !== "appeals" && key !== "accommodations" && v != null);
 
   return (
     <div className="space-y-6">
@@ -513,7 +583,7 @@ export default function EvidencePackPage() {
       </Section>
 
       {/* Defense */}
-      <Section title="Voice defense" icon={<Mic className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />} className="print-break">
+      <Section title="Defense (voice or written)" icon={<Mic className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />} className="print-break">
         {!defense ? (
           <p className="text-xs text-muted-foreground">No voice defense has been completed for this submission yet.</p>
         ) : (
@@ -546,6 +616,70 @@ export default function EvidencePackPage() {
           </div>
         )}
       </Section>
+
+      {/* Approved accommodations (contributor section, not part of the evidence hash) */}
+      {accommodationsSection && accommodationsSection.items?.length > 0 && (
+        <Section title="Approved accommodations" icon={<Accessibility className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />}>
+          {accommodationsSection.note && <p className="text-xs text-muted-foreground">{accommodationsSection.note}</p>}
+          <ul className="space-y-2">
+            {accommodationsSection.items.map((a, i) => (
+              <li key={i} className="rounded-xl border border-border p-3 text-sm space-y-1">
+                <div className="flex flex-wrap items-center gap-2 text-xs">
+                  <span className="font-bold text-foreground">{humanize(a.type)}</span>
+                  <span className="text-muted-foreground">{a.scope} · approved by {a.decidedBy ?? "reviewer"} on {fmtDate(a.decidedAt)}</span>
+                </div>
+                <p className="text-foreground whitespace-pre-wrap">{a.details}</p>
+              </li>
+            ))}
+          </ul>
+        </Section>
+      )}
+
+      {/* Candidate appeals (contributor section, not part of the evidence hash) */}
+      {appealsSection && appealsSection.items?.length > 0 && (
+        <Section title="Candidate appeals" icon={<Flag className="w-4 h-4 text-amber-600 dark:text-amber-400" />}>
+          {appealsSection.note && <p className="text-xs text-muted-foreground">{appealsSection.note}</p>}
+          <ul className="space-y-2">
+            {appealsSection.items.map((a) => (
+              <li key={a.id} className="rounded-xl border border-border p-3 text-sm space-y-1.5">
+                <div className="flex flex-wrap items-center gap-2 text-xs">
+                  <span className={`px-2 py-0.5 rounded-full border font-semibold ${APPEAL_STATUS_STYLES[a.status] ?? APPEAL_STATUS_STYLES.Upheld}`}>
+                    {a.status === "Overturned" ? "Overturned (appeal succeeded)" : a.status}
+                  </span>
+                  <span className="font-semibold text-foreground">{humanize(a.category)}</span>
+                  <span className="text-muted-foreground">{fmtDate(a.createdAt)}</span>
+                </div>
+                <p className="text-foreground whitespace-pre-wrap">{a.reason}</p>
+                {a.response && (
+                  <p className="text-xs text-muted-foreground whitespace-pre-wrap">
+                    <span className="font-semibold text-foreground">Response by {a.resolverName ?? "reviewer"} ({fmtDate(a.resolvedAt)}): </span>
+                    {a.response}
+                  </p>
+                )}
+                {a.status === "Open" && (
+                  <Link href="/recruiter/appeals" className="text-xs text-indigo-700 dark:text-indigo-400 underline no-print">
+                    Resolve in the appeals queue
+                  </Link>
+                )}
+              </li>
+            ))}
+          </ul>
+        </Section>
+      )}
+
+      {/* Sections contributed by other features, rendered generically */}
+      {otherSections.map(([key, value]) => (
+        <details key={key} className="glass-panel rounded-2xl p-5 border border-border group" open>
+          <summary className="text-sm font-bold text-foreground flex items-center gap-2 cursor-pointer list-none">
+            <ChevronRight className="w-4 h-4 transition-transform group-open:rotate-90 no-print" />
+            <Layers className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+            {humanize(key)}
+          </summary>
+          <div className="mt-3 text-xs">
+            <GenericValue value={value} />
+          </div>
+        </details>
+      ))}
 
       {/* Decision history */}
       <Section title="Decision history" icon={<Clock className="w-4 h-4 text-muted-foreground" />}>

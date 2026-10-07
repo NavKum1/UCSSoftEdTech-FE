@@ -646,13 +646,13 @@ function CareerCounsellingInner() {
   };
 
   const handleOpenEditCourseModal = (course: PartnerCourseItem) => {
-    const isCustomTrk = !trackOptions.includes(course.targetTrack) && !!course.targetTrack;
-    const isCustomCrd = !credentialOptions.includes(course.credentialType) && !!course.credentialType;
+    const isCustomTrk = !!course.targetTrack && !trackOptions.includes(course.targetTrack);
+    const isCustomCrd = !!course.credentialType && !credentialOptions.includes(course.credentialType);
 
     setIsCustomCourseTrack(isCustomTrk);
-    setCustomCourseTrackText(isCustomTrk ? course.targetTrack : "");
+    setCustomCourseTrackText(isCustomTrk ? course.targetTrack ?? "" : "");
     setIsCustomCourseCred(isCustomCrd);
-    setCustomCourseCredText(isCustomCrd ? course.credentialType : "");
+    setCustomCourseCredText(isCustomCrd ? course.credentialType ?? "" : "");
 
     setEditingCourse(JSON.parse(JSON.stringify(course)));
     setNewFeatureBullet("");

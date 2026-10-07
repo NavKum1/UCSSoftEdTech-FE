@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { Suspense, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { SignIn } from "@clerk/nextjs";
@@ -9,7 +9,16 @@ import {
   Sparkles, CheckCircle2, UserCheck, Briefcase, GraduationCap
 } from "lucide-react";
 
+// useSearchParams needs a Suspense boundary for static prerendering
 export default function LoginPage() {
+  return (
+    <Suspense fallback={null}>
+      <LoginPageContent />
+    </Suspense>
+  );
+}
+
+function LoginPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirectUrl = searchParams.get("redirect_url") || "/dashboard";

@@ -6,6 +6,7 @@ import Editor from "@monaco-editor/react";
 import VapiInterviewRoom, { type DefenseResult } from "@/components/VapiInterviewRoom";
 import MultiFileEditor, { type EditorFile, type MultiFileEditorApi } from "@/components/MultiFileEditor";
 import AiAssistantPanel, { AiPolicyNotice, type AiPolicy } from "@/components/AiAssistantPanel";
+import AgentSupervisorPanel from "@/components/AgentSupervisorPanel";
 import { useParams, useSearchParams } from "next/navigation";
 import { useAuth } from "@clerk/nextjs";
 import { API_BASE_URL, authenticatedFetch } from "@/lib/apiClient";
@@ -634,6 +635,7 @@ function GradedWorkspace({ sprintId }: { sprintId: string }) {
   const pollFlags = useRef<{ cancelled: boolean }>({ cancelled: false });
 
   const isBrownfield = attempt?.taskType === "Brownfield";
+  const isAgentSupervision = attempt?.taskType === "AgentSupervision";
   const editorLocked = pipelineState !== "editor";
 
   const startAttempt = useCallback(
@@ -739,10 +741,10 @@ function GradedWorkspace({ sprintId }: { sprintId: string }) {
 
   const starterFiles = useMemo<EditorFile[] | null>(() => {
     if (!attempt || !meta) return null;
-    if (isBrownfield) return meta.starterFiles ?? null;
+    if (isBrownfield || isAgentSupervision) return meta.starterFiles ?? null;
     if (meta.starterCode == null || attempt.files.length !== 1) return null;
     return [{ name: attempt.files[0].name, content: meta.starterCode }];
-  }, [attempt, meta, isBrownfield]);
+  }, [attempt, meta, isBrownfield, isAgentSupervision]);
 
   const retryWithInvite = () => {
     const code = inviteInput.trim();
@@ -879,6 +881,9 @@ function GradedWorkspace({ sprintId }: { sprintId: string }) {
   }, []);
 
   const getFilesForAssistant = useCallback(() => editorApiRef.current?.getFiles() ?? [], []);
+  const applyAgentFile = useCallback((name: string, content: string, proposalId: string) => {
+    editorApiRef.current?.replaceFile(name, content, proposalId);
+  }, []);
   const insertFromAssistant = useCallback(
     (code: string, interactionId: string) => editorApiRef.current?.insertAtCursor(code, interactionId) ?? false,
     []
@@ -1123,7 +1128,7 @@ function GradedWorkspace({ sprintId }: { sprintId: string }) {
             />
 
             <div className="flex gap-3">
-              {!isBrownfield && (
+              {!isBrownfield && !isAgentSupervision && (
                 <button
                   onClick={handleRun}
                   disabled={editorLocked || isRunning || isOffline}
@@ -1152,7 +1157,15 @@ function GradedWorkspace({ sprintId }: { sprintId: string }) {
 
           {/* Right Pane: Assistant, Output & Voice Defense */}
           <div className="space-y-6">
-            {aiEnabled && (
+            {isAgentSupervision ? (
+              <AgentSupervisorPanel
+                attemptId={attempt.attemptId}
+                getFiles={getFilesForAssistant}
+                applyFile={applyAgentFile}
+                onTestRun={() => telemetry?.recordRun()}
+                disabled={editorLocked}
+              />
+            ) : aiEnabled && (
               <AiAssistantPanel
                 attemptId={attempt.attemptId}
                 aiPolicy={attempt.aiPolicy}
