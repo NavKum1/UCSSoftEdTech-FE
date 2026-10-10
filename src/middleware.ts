@@ -1,5 +1,6 @@
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
-import { NextResponse } from "next/server";
+import { NextResponse, type NextRequest } from "next/server";
+import { auth as keycloakAuth } from "@/auth";
 
 // Route Matchers
 // /verify, /transparency and /pricing are intentionally public
@@ -13,35 +14,25 @@ const isProtectedRoute = createRouteMatcher([
   "/credentials(.*)",
   "/defend-repo(.*)",
   "/referrals(.*)",
+  // Career suite: sign-in is enough here; the API decides access from career-center, employer and faculty
+  // memberships stored per institute. /supervisor and /kiosk use signed single-purpose links and stay public.
+  "/student(.*)",
+  "/career-center(.*)",
+  "/faculty(.*)",
+  "/employer(.*)",
+  "/alumni(.*)",
 ]);
+// Sign-in-only career routes that partner (e.g. SeekJobs) sessions may open; their token lives in sessionStorage,
+// so middleware only sees the career_partner marker cookie. Role-gated routes never accept it.
+const isPartnerCareerRoute = createRouteMatcher(["/student(.*)", "/career-center(.*)", "/faculty(.*)", "/employer(.*)", "/alumni(.*)"]);
 const isAdminRoute = createRouteMatcher(["/admin(.*)"]);
 const isInstituteRoute = createRouteMatcher(["/institute(.*)", "/campus/admin(.*)"]);
 // Employers' institute admins manage these settings too
 const isInstituteOrRecruiterRoute = createRouteMatcher(["/recruiter/transparency-settings(.*)"]);
 const isRecruiterRoute = createRouteMatcher(["/recruiter(.*)"]);
 
-export default clerkMiddleware(async (auth, req) => {
-  const isDev = process.env.NODE_ENV === "development";
-
-  // In local development, permit seamless traversal across portals for live evaluation and testability
-  if (isDev) {
-    return NextResponse.next();
-  }
-
-  const { userId, sessionClaims } = await auth();
-
-  // Roles may arrive as `role` or a `roles` array, on the claims or in (public) metadata, matching the API's role mapping
-  const claims = (sessionClaims ?? {}) as Record<string, unknown>;
-  const roleList: string[] = [claims, claims.metadata, claims.publicMetadata, claims.public_metadata]
-    .flatMap((source) => {
-      if (!source || typeof source !== "object") return [];
-      const s = source as { role?: unknown; roles?: unknown };
-      return [s.role, ...(Array.isArray(s.roles) ? s.roles : [])];
-    })
-    .filter((r): r is string => typeof r === "string" && r.length > 0)
-    .map((r) => r.toLowerCase());
-  const hasRole = (...wanted: string[]) => wanted.some((w) => roleList.includes(w.toLowerCase()));
-
+// Route gating shared by both identity providers (NEXT_PUBLIC_AUTH_PROVIDER, inlined at build time)
+function gate(req: NextRequest, userId: string | null | undefined, hasRole: (...wanted: string[]) => boolean) {
   if (isInstituteOrRecruiterRoute(req)) {
     if (!userId) {
       return NextResponse.redirect(new URL("/login?redirect_url=" + encodeURIComponent(req.nextUrl.pathname), req.url));
@@ -87,11 +78,54 @@ export default clerkMiddleware(async (auth, req) => {
   }
   // 4. General Candidate Protected Routes
   else if (isProtectedRoute(req)) {
-    if (!userId) {
+    if (!userId && !(isPartnerCareerRoute(req) && req.cookies.get("career_partner")?.value === "1")) {
       return NextResponse.redirect(new URL("/login?redirect_url=" + encodeURIComponent(req.nextUrl.pathname), req.url));
     }
   }
-});
+  return NextResponse.next();
+}
+
+// In local development, permit seamless traversal across portals for live evaluation and testability
+const isDev = process.env.NODE_ENV === "development";
+
+const clerkHandler = () =>
+  clerkMiddleware(async (auth, req) => {
+    if (isDev) {
+      return NextResponse.next();
+    }
+
+    const { userId, sessionClaims } = await auth();
+
+    // Roles may arrive as `role` or a `roles` array, on the claims or in (public) metadata, matching the API's role mapping
+    const claims = (sessionClaims ?? {}) as Record<string, unknown>;
+    const roleList: string[] = [claims, claims.metadata, claims.publicMetadata, claims.public_metadata]
+      .flatMap((source) => {
+        if (!source || typeof source !== "object") return [];
+        const s = source as { role?: unknown; roles?: unknown };
+        return [s.role, ...(Array.isArray(s.roles) ? s.roles : [])];
+      })
+      .filter((r): r is string => typeof r === "string" && r.length > 0)
+      .map((r) => r.toLowerCase());
+    const hasRole = (...wanted: string[]) => wanted.some((w) => roleList.includes(w.toLowerCase()));
+
+    return gate(req, userId, hasRole);
+  });
+
+// Keycloak (Auth.js): req.auth is the session; roles are the realm roles from the access token. A failed refresh
+// (Keycloak session ended) counts as signed out.
+const keycloakHandler = () =>
+  keycloakAuth((req) => {
+    if (isDev) {
+      return NextResponse.next();
+    }
+    const session = req.auth;
+    const signedIn = !!session && !session.error;
+    const roleList = (signedIn ? session.roles ?? [] : []).map((r) => r.toLowerCase());
+    const hasRole = (...wanted: string[]) => wanted.some((w) => roleList.includes(w.toLowerCase()));
+    return gate(req, signedIn ? session.user?.id ?? "signed-in" : null, hasRole);
+  });
+
+export default process.env.NEXT_PUBLIC_AUTH_PROVIDER === "keycloak" ? keycloakHandler() : clerkHandler();
 
 export const config = {
   matcher: [

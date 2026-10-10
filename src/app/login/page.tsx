@@ -4,6 +4,7 @@ import React, { Suspense, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { SignIn } from "@clerk/nextjs";
+import { AUTH_PROVIDER, keycloakSignIn } from "@/lib/appAuth";
 import { 
   Building2, ShieldCheck, ArrowRight, Lock, 
   Sparkles, CheckCircle2, UserCheck, Briefcase, GraduationCap
@@ -116,6 +117,10 @@ function LoginPageContent() {
           </div>
         </div>
 
+        {AUTH_PROVIDER === "keycloak" ? (
+          <KeycloakSignInCard redirectUrl={redirectUrl} />
+        ) : (
+        <>
         {/* Standard Clerk Authentication Widget */}
         <div className="flex justify-center">
           <SignIn 
@@ -148,7 +153,48 @@ function LoginPageContent() {
             <ArrowRight className="w-3 h-3" />
           </Link>
         </div>
+        </>
+        )}
       </div>
     </div>
+  );
+}
+
+// Keycloak mode: one sign-in for every TotalOffice app. An optional email is passed as login_hint so Keycloak can send
+// university and employer users straight to their organization's identity provider (email-domain discovery).
+function KeycloakSignInCard({ redirectUrl }: { redirectUrl: string }) {
+  const [email, setEmail] = useState("");
+  const [busy, setBusy] = useState(false);
+  const start = (e: React.FormEvent) => {
+    e.preventDefault();
+    setBusy(true);
+    void keycloakSignIn(redirectUrl, email.trim() || undefined);
+  };
+  return (
+    <form onSubmit={start} className="p-5 rounded-2xl bg-card border border-border shadow-md space-y-3">
+      <label htmlFor="kc-email" className="block text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+        University or work email (optional)
+      </label>
+      <input
+        id="kc-email"
+        type="email"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+        placeholder="you@university.edu"
+        className="w-full bg-background border border-border rounded-xl px-3 py-2.5 text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-purple-500/50"
+      />
+      <button
+        type="submit"
+        disabled={busy}
+        className="w-full flex items-center justify-center gap-2 bg-purple-600 hover:bg-purple-700 disabled:opacity-50 text-white text-xs font-bold py-2.5 rounded-xl transition-colors"
+      >
+        <Lock className="w-3.5 h-3.5" />
+        {busy ? "Redirecting to sign-in..." : "Sign in with TotalOffice account"}
+      </button>
+      <p className="text-[10px] text-muted-foreground text-center flex items-center justify-center gap-1">
+        <ShieldCheck className="w-3 h-3" />
+        Single sign-on for Edulexa, Hire, Documents and AttendSpot. Your university login works here.
+      </p>
+    </form>
   );
 }

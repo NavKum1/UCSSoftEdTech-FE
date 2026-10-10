@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, { createContext, useContext, useState, useEffect, useRef } from "react";
 
 export type Region = "US" | "IN" | "EU";
 
@@ -252,27 +252,45 @@ export function useGeo() {
 export function ProductRegionSwitcher({ className = "" }: { className?: string }) {
   const { region, setRegion } = useGeo();
   const [isOpen, setIsOpen] = useState(false);
+  const buttonRef = useRef<HTMLButtonElement>(null);
+  // Escape closes the list and returns focus to its button
+  useEffect(() => {
+    if (!isOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setIsOpen(false);
+        buttonRef.current?.focus();
+      }
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [isOpen]);
 
   return (
     <div className={`relative inline-block text-left ${className}`}>
       <button
+        ref={buttonRef}
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-card border border-border text-xs font-medium text-muted-foreground hover:text-white hover:border-border transition-colors shadow-sm"
+        className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-card border border-border text-xs font-medium text-muted-foreground hover:text-foreground hover:border-border transition-colors shadow-sm"
         title="Change Country & Compliance Jurisdiction"
+        aria-label={`Region and currency: ${REGIONS[region].name}, ${REGIONS[region].currency}`}
+        aria-expanded={isOpen}
+        aria-controls="region-switcher-list"
       >
-        <span>{REGIONS[region].flag}</span>
+        <span aria-hidden>{REGIONS[region].flag}</span>
         <span className="font-semibold text-foreground">{REGIONS[region].currency}</span>
-        <span className="text-[10px] text-muted-foreground">▼</span>
+        <span className="text-[10px] text-muted-foreground" aria-hidden>▼</span>
       </button>
 
       {isOpen && (
         <>
           <div
             className="fixed inset-0 z-[90]"
+            aria-hidden
             onClick={() => setIsOpen(false)}
           />
-          <div className="absolute right-0 mt-2 z-[100] w-56 rounded-xl border border-border bg-white dark:bg-slate-900 p-1.5 shadow-2xl">
+          <div id="region-switcher-list" className="absolute right-0 mt-2 z-[100] w-56 rounded-xl border border-border bg-white dark:bg-slate-900 p-1.5 shadow-2xl">
             <div className="px-2.5 py-1.5 font-mono text-[10px] uppercase text-muted-foreground border-b border-border/80 mb-1">
               Select Region &amp; Currency
             </div>
@@ -283,18 +301,19 @@ export function ProductRegionSwitcher({ className = "" }: { className?: string }
                 <button
                   key={rKey}
                   type="button"
+                  aria-pressed={isSelected}
                   onClick={() => {
                     setRegion(rKey);
                     setIsOpen(false);
                   }}
                   className={`flex w-full items-center justify-between rounded-lg px-2.5 py-2 text-xs transition ${
                     isSelected
-                      ? "bg-indigo-600/20 text-indigo-300 font-semibold border border-indigo-500/30"
-                      : "text-muted-foreground hover:bg-muted hover:text-white"
+                      ? "bg-indigo-600/20 text-indigo-800 dark:text-indigo-300 font-semibold border border-indigo-500/30"
+                      : "text-muted-foreground hover:bg-muted hover:text-foreground"
                   }`}
                 >
                   <span className="flex items-center gap-2">
-                    <span className="text-base">{r.flag}</span>
+                    <span className="text-base" aria-hidden>{r.flag}</span>
                     <span className="text-left">
                       <div className="font-medium">{r.name}</div>
                       <div className="text-[10px] text-muted-foreground font-mono">
@@ -302,7 +321,7 @@ export function ProductRegionSwitcher({ className = "" }: { className?: string }
                       </div>
                     </span>
                   </span>
-                  {isSelected && <span className="text-indigo-400 text-xs font-bold">✓</span>}
+                  {isSelected && <span className="text-indigo-700 dark:text-indigo-400 text-xs font-bold" aria-hidden>✓</span>}
                 </button>
               );
             })}

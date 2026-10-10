@@ -58,9 +58,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       </header>
 
       {/* Main Back-office Body */}
-      <main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 relative z-10">
+      <div className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 relative z-10">
         {children}
-      </main>
+      </div>
 
       {/* Footer */}
       <footer className="glass-panel border-t border-border/80 py-4 px-6 text-center text-xs text-muted-foreground mt-auto">

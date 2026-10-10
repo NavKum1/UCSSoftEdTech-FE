@@ -3,7 +3,9 @@
 import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useAuth, useUser, UserButton } from "@clerk/nextjs";
+import { UserButton } from "@clerk/nextjs";
+import { AUTH_PROVIDER, AppUserButton, useAppAuth } from "@/lib/appAuth";
+import { isCareerSuitePath } from "@/lib/careerNav";
 import {
   Shield,
   Flame,
@@ -71,14 +73,13 @@ function hasRecruiterRole(metadata: Record<string, unknown> | undefined): boolea
 
 export default function GlobalNavigation() {
   const pathname = usePathname();
-  const { isSignedIn, user } = useUser();
-  const { getToken } = useAuth();
+  const { isSignedIn, roles, getToken } = useAppAuth();
   const [practiceHubOpen, setPracticeHubOpen] = useState(false);
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [remainingMinutes, setRemainingMinutes] = useState<number | null>(null);
 
-  const isRecruiter = hasRecruiterRole(user?.publicMetadata as Record<string, unknown> | undefined);
+  const isRecruiter = hasRecruiterRole({ roles });
   // Signed-out demo menu keeps showing recruiter tools, as it did for the hiring portal link
   const showRecruiterLinks = !isSignedIn || isRecruiter;
 
@@ -112,6 +113,31 @@ export default function GlobalNavigation() {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  // Keyboard: Escape closes an open menu and returns focus to the button that opened it
+  const practiceHubButtonRef = useRef<HTMLButtonElement>(null);
+  const profileButtonRef = useRef<HTMLButtonElement>(null);
+  const mobileButtonRef = useRef<HTMLButtonElement>(null);
+  useEffect(() => {
+    if (!practiceHubOpen && !profileMenuOpen && !mobileMenuOpen) return;
+    function handleKey(event: KeyboardEvent) {
+      if (event.key !== "Escape") return;
+      if (practiceHubOpen) {
+        setPracticeHubOpen(false);
+        practiceHubButtonRef.current?.focus();
+      }
+      if (profileMenuOpen) {
+        setProfileMenuOpen(false);
+        profileButtonRef.current?.focus();
+      }
+      if (mobileMenuOpen) {
+        setMobileMenuOpen(false);
+        mobileButtonRef.current?.focus();
+      }
+    }
+    document.addEventListener("keydown", handleKey);
+    return () => document.removeEventListener("keydown", handleKey);
+  }, [practiceHubOpen, profileMenuOpen, mobileMenuOpen]);
 
   // Close menus on route change
   const [lastPathname, setLastPathname] = useState(pathname);
@@ -218,11 +244,21 @@ export default function GlobalNavigation() {
     },
   ];
 
+  // Career-suite pages bring their own brand-aware shell (they may be white-labelled for a partner)
+  if (isCareerSuitePath(pathname)) return null;
+
   const isPracticeActive = studentPracticeTools.some(
     (tool) => pathname === tool.href || pathname?.startsWith(tool.href)
   );
 
   return (
+    <>
+    <a
+      href="#main-content"
+      className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-200 focus:rounded-md focus:bg-card focus:px-3 focus:py-2 focus:text-sm focus:text-foreground focus:shadow-lg"
+    >
+      Skip to content
+    </a>
     <header className="sticky top-0 z-50 w-full border-b border-border/80 bg-white/95 dark:bg-slate-950/95 backdrop-blur-xl transition-all shadow-sm">
       <div className="max-w-[1440px] mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
         {/* Logo & Student Brand */}
@@ -248,7 +284,7 @@ export default function GlobalNavigation() {
           </Link>
 
           {/* Primary Student Navigation Links (Desktop) */}
-          <nav className="hidden lg:flex items-center space-x-1 shrink-0">
+          <nav aria-label="Main" className="hidden lg:flex items-center space-x-1 shrink-0">
             {primaryLinks.map((link) => {
               const Icon = link.icon;
               const isActive =
@@ -281,7 +317,10 @@ export default function GlobalNavigation() {
             {/* Practice Hub Dropdown (Secondary Student Tools) */}
             <div className="relative" ref={practiceHubRef}>
               <button
+                ref={practiceHubButtonRef}
                 type="button"
+                aria-expanded={practiceHubOpen}
+                aria-controls="practice-hub-menu"
                 onClick={() => setPracticeHubOpen(!practiceHubOpen)}
                 className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all ${
                   isPracticeActive || practiceHubOpen
@@ -299,7 +338,7 @@ export default function GlobalNavigation() {
               </button>
 
               {practiceHubOpen && (
-                <div className="absolute left-0 mt-2 w-80 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl p-2 z-[100] animate-in fade-in zoom-in-95 duration-100">
+                <div id="practice-hub-menu" className="absolute left-0 mt-2 w-80 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl p-2 z-[100] animate-in fade-in zoom-in-95 duration-100">
                   <div className="px-3 py-2 text-[11px] font-bold text-muted-foreground uppercase tracking-wider border-b border-border/60 mb-1 flex items-center justify-between">
                     <span>Candidate Practice Tools</span>
                     <span className="text-[10px] text-indigo-600 dark:text-indigo-400 lowercase font-mono">
@@ -380,7 +419,9 @@ export default function GlobalNavigation() {
 
           {/* Student Profile & Account Menu */}
           <div className="relative pl-1 border-l border-border/60" ref={profileMenuRef}>
-            {isSignedIn ? (
+            {isSignedIn && AUTH_PROVIDER === "keycloak" ? (
+              <AppUserButton />
+            ) : isSignedIn ? (
               <UserButton
                 appearance={{
                   elements: {
@@ -406,10 +447,14 @@ export default function GlobalNavigation() {
             ) : (
               <div>
                 <button
+                  ref={profileButtonRef}
                   type="button"
                   onClick={() => setProfileMenuOpen(!profileMenuOpen)}
                   className="flex items-center gap-1.5 p-1 rounded-xl hover:bg-muted/80 transition-colors"
                   title="Learner Account & Identity"
+                  aria-label="Account menu"
+                  aria-expanded={profileMenuOpen}
+                  aria-controls="profile-menu"
                 >
                   <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-indigo-600 to-purple-600 flex items-center justify-center text-white text-xs font-bold shadow-md ring-2 ring-indigo-500/20">
                     AM
@@ -418,7 +463,7 @@ export default function GlobalNavigation() {
                 </button>
 
                 {profileMenuOpen && (
-                  <div className="absolute right-0 mt-2 w-64 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl p-2 z-[100] animate-in fade-in zoom-in-95 duration-100">
+                  <div id="profile-menu" className="absolute right-0 mt-2 w-64 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl p-2 z-[100] animate-in fade-in zoom-in-95 duration-100">
                     <div className="px-3 py-2.5 border-b border-border/60">
                       <div className="flex items-center gap-2">
                         <div className="w-8 h-8 rounded-lg bg-indigo-600 text-white flex items-center justify-center font-bold text-xs">
@@ -531,10 +576,13 @@ export default function GlobalNavigation() {
 
           {/* Mobile Hamburger Button */}
           <button
+            ref={mobileButtonRef}
             type="button"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             className="xl:hidden p-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
             aria-label="Toggle navigation menu"
+            aria-expanded={mobileMenuOpen}
+            aria-controls="mobile-navigation"
           >
             {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </button>
@@ -543,7 +591,7 @@ export default function GlobalNavigation() {
 
       {/* Mobile Drawer Navigation (Small Screens) */}
       {mobileMenuOpen && (
-        <div className="xl:hidden border-t border-border bg-white dark:bg-slate-950 px-4 py-4 space-y-4 shadow-xl animate-in slide-in-from-top-2 duration-150">
+        <nav id="mobile-navigation" aria-label="Main (mobile)" className="xl:hidden border-t border-border bg-white dark:bg-slate-950 px-4 py-4 space-y-4 shadow-xl animate-in slide-in-from-top-2 duration-150">
           <div className="space-y-1">
             <div className="px-3 py-1 text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
               Core Navigation
@@ -645,9 +693,10 @@ export default function GlobalNavigation() {
               <span>Book 1-on-1 Mentor Session</span>
             </Link>
           </div>
-        </div>
+        </nav>
       )}
     </header>
+    </>
   );
 }
 

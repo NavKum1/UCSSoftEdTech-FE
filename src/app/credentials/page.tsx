@@ -12,6 +12,7 @@ import {
   ChevronDown,
   ChevronUp,
   Copy,
+  Download,
   Eye,
   KeyRound,
   Link2,
@@ -84,7 +85,8 @@ type Dialog =
   | { kind: "share"; credential: WalletCredential }
   | { kind: "invite"; credential: WalletCredential }
   | { kind: "revoke"; credential: WalletCredential }
-  | { kind: "created"; link: CreatedLink };
+  | { kind: "created"; link: CreatedLink }
+  | { kind: "clr" };
 
 async function readError(res: Response): Promise<string> {
   const body = (await res.json().catch(() => null)) as { error?: string } | null;
@@ -99,6 +101,95 @@ async function fetchWallet(getToken: GetToken): Promise<WalletResponse | string>
   } catch {
     return "We couldn't reach the server.";
   }
+}
+
+// Open Badges 3.0 / CLR 2.0 export: saves the server-generated file under the name the server chose
+async function saveExport(res: Response): Promise<void> {
+  if (!res.ok) {
+    const body = (await res.json().catch(() => null)) as { message?: string; error?: string } | null;
+    throw new Error(body?.message || body?.error || `HTTP ${res.status}`);
+  }
+  const disposition = res.headers.get("content-disposition") || "";
+  const name = /filename*?=(?:UTF-8'')?"?([^";]+)"?/i.exec(disposition)?.[1] || "credential.json";
+  const url = URL.createObjectURL(await res.blob());
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = decodeURIComponent(name);
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
+
+interface ExportableResponse {
+  credentials: { id: string; title: string; status: string; exportable: boolean }[];
+  internships: { id: string; title: string; completedAt?: string | null }[];
+}
+
+function ClrDialog({ getToken, onClose, onDone }: { getToken: GetToken; onClose: () => void; onDone: () => void }) {
+  const [items, setItems] = useState<ExportableResponse | null>(null);
+  const [selected, setSelected] = useState<Record<string, boolean>>({});
+  const [format, setFormat] = useState<"jwt" | "json">("jwt");
+  const [working, setWorking] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
+
+  useEffect(() => {
+    authenticatedFetch("/api/career/openbadges/mine", {}, getToken)
+      .then(async (res) => (res.ok ? setItems((await res.json()) as ExportableResponse) : setErr(`Could not load your items (HTTP ${res.status}).`)))
+      .catch(() => setErr("We couldn't reach the server."));
+  }, [getToken]);
+
+  const chosen = Object.keys(selected).filter((k) => selected[k]);
+  const download = async () => {
+    if (!items) return;
+    setWorking(true);
+    setErr(null);
+    try {
+      const credentialIds = items.credentials.filter((c) => selected[c.id]).map((c) => c.id);
+      const experienceIds = items.internships.filter((x) => selected[x.id]).map((x) => x.id);
+      const res = await authenticatedFetch("/api/career/openbadges/clr", { method: "POST", body: JSON.stringify({ credentialIds, experienceIds, format }) }, getToken);
+      await saveExport(res);
+      onDone();
+    } catch (e) {
+      setErr(e instanceof Error ? e.message : "The download failed.");
+    } finally {
+      setWorking(false);
+    }
+  };
+
+  return (
+    <Modal title="Download a learner record (CLR 2.0)" onClose={onClose}>
+      <p className="text-sm text-muted-foreground">Choose what to include. The file is signed so anyone you give it to can check it. Nothing is sent to anyone until you share the file yourself.</p>
+      {err && <p role="alert" className="text-xs text-red-700 dark:text-red-300">{err}</p>}
+      {!items ? (
+        !err && <p className="text-sm text-muted-foreground flex items-center gap-2"><Loader2 className="w-4 h-4 animate-spin" /> Loading...</p>
+      ) : (
+        <fieldset className="space-y-2">
+          <legend className="text-xs font-semibold text-muted-foreground mb-1">Credentials and completed internships</legend>
+          {items.credentials.map((c) => (
+            <Checkbox key={c.id} checked={!!selected[c.id]} disabled={!c.exportable} onChange={(v) => setSelected((s) => ({ ...s, [c.id]: v }))} label={c.title} hint={c.exportable ? `Assessment · ${c.status}` : "Revoked: can't be included"} />
+          ))}
+          {items.internships.map((x) => (
+            <Checkbox key={x.id} checked={!!selected[x.id]} onChange={(v) => setSelected((s) => ({ ...s, [x.id]: v }))} label={x.title} hint={`Internship · completed ${formatDate(x.completedAt)}`} />
+          ))}
+          {items.credentials.length + items.internships.length === 0 && <p className="text-sm text-muted-foreground">Nothing to export yet.</p>}
+        </fieldset>
+      )}
+      <label className="block text-xs text-muted-foreground">
+        File format
+        <select value={format} onChange={(e) => setFormat(e.target.value as "jwt" | "json")} className="mt-1 block w-full rounded-lg border border-border bg-background px-2 py-1.5 text-sm text-foreground">
+          <option value="jwt">VC-JWT (recommended)</option>
+          <option value="json">JSON-LD with embedded proof</option>
+        </select>
+      </label>
+      <div className="flex justify-end gap-2">
+        <button type="button" onClick={onClose} className="px-3 py-1.5 rounded-lg border border-border text-xs font-semibold">Cancel</button>
+        <button type="button" onClick={download} disabled={working || chosen.length === 0} className="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold disabled:opacity-50 flex items-center gap-1.5">
+          {working ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Download className="w-3.5 h-3.5" />} Download CLR
+        </button>
+      </div>
+    </Modal>
+  );
 }
 
 function CopyButton({ text, label }: { text: string; label: string }) {
@@ -543,6 +634,14 @@ function CredentialCard({
   const { scores } = credential;
   const active = credential.status === "Valid" || credential.status === "Under review";
 
+  const downloadBadge = async () => {
+    try {
+      await saveExport(await authenticatedFetch(`/api/career/openbadges/credentials/${credential.id}?format=jwt`, {}, getToken));
+    } catch (e) {
+      onError(e instanceof Error ? `Could not download the Open Badge: ${e.message}` : "Could not download the Open Badge.");
+    }
+  };
+
   const copyJws = async () => {
     try {
       const res = await authenticatedFetch(`/api/credentials/${credential.id}/jws?includeHumanDecision=${includeDecisionInJws}`, {}, getToken);
@@ -616,6 +715,15 @@ function CredentialCard({
             className="px-3 py-1.5 rounded-lg border border-border text-xs font-semibold text-foreground hover:bg-muted disabled:opacity-50 flex items-center gap-1.5"
           >
             {jwsCopied ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <KeyRound className="w-3.5 h-3.5" />} {jwsCopied ? "Copied" : "Copy JWS"}
+          </button>
+          <button
+            type="button"
+            onClick={downloadBadge}
+            disabled={!signingAvailable}
+            title="Download as an Open Badges 3.0 credential (VC-JWT)"
+            className="px-3 py-1.5 rounded-lg border border-border text-xs font-semibold text-foreground hover:bg-muted disabled:opacity-50 flex items-center gap-1.5"
+          >
+            <Download className="w-3.5 h-3.5" /> Download Open Badge
           </button>
           {credential.humanDecisionAvailable && (
             <label className="text-xs text-muted-foreground flex items-center gap-1.5 cursor-pointer">
@@ -765,6 +873,14 @@ export default function CredentialWalletPage() {
                 onError={setError}
               />
             ))}
+            <button
+              type="button"
+              onClick={() => setDialog({ kind: "clr" })}
+              disabled={!wallet.signingAvailable}
+              className="px-3 py-1.5 rounded-lg border border-border text-xs font-semibold text-foreground hover:bg-muted disabled:opacity-50 flex items-center gap-1.5"
+            >
+              <Download className="w-3.5 h-3.5" /> Download CLR
+            </button>
             <p className="text-xs text-muted-foreground">
               Credentials are valid for {wallet.validityMonths} months from issue. Employers can check any copied JWS at{" "}
               <Link href="/verify" className="underline">
@@ -787,6 +903,16 @@ export default function CredentialWalletPage() {
             setDialog(null);
             setNotice("Credential revoked. Its share links no longer work.");
             void reload();
+          }}
+        />
+      )}
+      {dialog?.kind === "clr" && (
+        <ClrDialog
+          getToken={getToken}
+          onClose={() => setDialog(null)}
+          onDone={() => {
+            setDialog(null);
+            setNotice("Learner record downloaded.");
           }}
         />
       )}
