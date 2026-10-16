@@ -51,6 +51,7 @@ export const careerNav: Record<CareerPersona, CareerNavItem[]> = {
     { label: "My record", href: "/student/record", module: "F2", ready: true },
     { label: "National credentials", href: "/student/national-credentials", module: "G6", ready: true },
     { label: "Privacy & sharing", href: "/student/privacy", module: "F4", ready: true },
+    { label: "Chat & SMS", href: "/student/chat-sms", module: "G7", ready: true },
     { label: "Notifications", href: "/student/notifications", module: "F5", ready: true },
   ],
   "career-center": [
@@ -77,6 +78,7 @@ export const careerNav: Record<CareerPersona, CareerNavItem[]> = {
     { label: "Employers", href: "/career-center/employers", module: "F3", ready: true },
     { label: "Imports", href: "/career-center/imports", module: "I1", ready: true },
     { label: "SIS roster sync", href: "/career-center/settings/sis", module: "I2", ready: true },
+    { label: "Chat & SMS", href: "/career-center/settings/chat-sms", module: "G7", ready: true },
     { label: "Calendar sync", href: "/career-center/calendar", module: "I3", ready: true },
     { label: "People", href: "/career-center/people", module: "F1", ready: true },
     { label: "National credentials", href: "/career-center/national-credentials", module: "G6", ready: true },
