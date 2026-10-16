@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Offline</title>
+<style>
+  :root { color-scheme: light dark; --bg:#ffffff; --fg:#18181b; --muted:#52525b; --border:#d4d4d8; }
+  @media (prefers-color-scheme: dark) { :root { --bg:#09090b; --fg:#fafafa; --muted:#a1a1aa; --border:#3f3f46; } }
+  body { margin:0; min-height:100vh; display:flex; align-items:center; justify-content:center; background:var(--bg); color:var(--fg);
+    font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans", Arial, sans-serif; padding:16px; }
+  main { max-width:28rem; border:1px solid var(--border); border-radius:12px; padding:24px; }
+  h1 { font-size:1.25rem; margin:0 0 8px; }
+  p { color:var(--muted); line-height:1.5; margin:0 0 16px; }
+  button { font:inherit; padding:8px 16px; border-radius:8px; border:1px solid var(--border); background:var(--bg); color:var(--fg); cursor:pointer; }
+  button:focus-visible { outline:2px solid #4338ca; outline-offset:2px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>You are offline</h1>
+  <p>This page needs a connection. Nothing from your account is stored on this device, so reconnect and try again.</p>
+  <button type="button" onclick="location.reload()">Try again</button>
+</main>
+<script>
+  // Reload automatically when the connection returns
+  window.addEventListener("online", function () { location.reload(); });
+</script>
+</body>
+</html>

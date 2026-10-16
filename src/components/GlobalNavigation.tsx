@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { UserButton } from "@clerk/nextjs";
 import { AUTH_PROVIDER, AppUserButton, useAppAuth } from "@/lib/appAuth";
-import { isCareerSuitePath } from "@/lib/careerNav";
+import { hidesGlobalNavigation } from "@/lib/careerNav";
 import {
   Shield,
   Flame,
@@ -244,8 +244,8 @@ export default function GlobalNavigation() {
     },
   ];
 
-  // Career-suite pages bring their own brand-aware shell (they may be white-labelled for a partner)
-  if (isCareerSuitePath(pathname)) return null;
+  // Career-suite pages bring their own brand-aware shell or branding (they may be white-labelled for a partner)
+  if (hidesGlobalNavigation(pathname)) return null;
 
   const isPracticeActive = studentPracticeTools.some(
     (tool) => pathname === tool.href || pathname?.startsWith(tool.href)
@@ -260,14 +260,15 @@ export default function GlobalNavigation() {
       Skip to content
     </a>
     <header className="sticky top-0 z-50 w-full border-b border-border/80 bg-white/95 dark:bg-slate-950/95 backdrop-blur-xl transition-all shadow-sm">
-      <div className="max-w-[1440px] mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
+      <div className="max-w-[1440px] mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-2 sm:gap-4">
         {/* Logo & Student Brand */}
         <div className="flex items-center gap-4">
           <Link href="/dashboard" className="flex items-center gap-3 group shrink-0">
             <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-600 via-purple-600 to-amber-500 flex items-center justify-center font-black text-white shadow-lg shadow-indigo-500/25 group-hover:scale-105 transition-transform">
               <Shield className="w-5 h-5 text-white" />
             </div>
-            <div>
+            {/* Name hidden visually on very small screens so the header fits at 320px (WCAG 1.4.10); still read as the link name */}
+            <div className="sr-only sm:not-sr-only">
               <div className="flex items-center gap-2">
                 <span className="font-extrabold text-base tracking-wider bg-gradient-to-r from-foreground via-foreground/90 to-muted-foreground bg-clip-text text-transparent">
                   EDULEXA
@@ -277,7 +278,7 @@ export default function GlobalNavigation() {
                   <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
                 </span>
               </div>
-              <p className="text-[10px] text-muted-foreground font-mono tracking-tight -mt-0.5">
+              <p className="hidden 2xl:block text-[10px] text-muted-foreground font-mono tracking-tight -mt-0.5">
                 AI CAREER &amp; ASSESSMENT PLATFORM
               </p>
             </div>

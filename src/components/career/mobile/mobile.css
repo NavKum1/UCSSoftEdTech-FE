@@ -1,0 +1,23 @@
+/* G10 data saver (see dataSaver.tsx). Applies only while <html data-save-data="on">. */
+
+/* System fonts instead of the web font (Geist is still preloaded by the root layout; see docs/career_suite_mobile.md) */
+html[data-save-data="on"] {
+  --font-geist-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans", Arial, sans-serif;
+  --font-geist-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+/* Decorative and lazy images are not shown, so lazy ones are never downloaded; mark a needed image data-essential */
+html[data-save-data="on"] img[alt=""]:not([data-essential]),
+html[data-save-data="on"] img[loading="lazy"]:not([data-essential]),
+html[data-save-data="on"] video:not([data-essential]) {
+  display: none !important;
+}
+
+/* No animations: less work for slow phones */
+html[data-save-data="on"] *,
+html[data-save-data="on"] *::before,
+html[data-save-data="on"] *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+}

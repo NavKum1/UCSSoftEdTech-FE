@@ -3,7 +3,7 @@
 /** Company profile fields, used for employer sign-up and the company page. */
 
 import React, { useState } from "react";
-import { Button, Field } from "@/components/career/ui";
+import { Button, Field, useCareerT } from "@/components/career/ui";
 
 export interface CompanyValues {
   name: string;
@@ -37,6 +37,7 @@ export default function CompanyForm({
   withTitle?: boolean;
   onSubmit: (v: CompanyValues) => void;
 }) {
+  const t = useCareerT("companyForm");
   const [v, setV] = useState<CompanyValues>(initial);
   const set = (k: keyof CompanyValues) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => setV({ ...v, [k]: e.target.value });
 
@@ -48,32 +49,32 @@ export default function CompanyForm({
       }}
     >
       <fieldset disabled={disabled} className="grid gap-4 sm:grid-cols-2">
-        <Field label="Company name">{(p) => <input {...p} required value={v.name} onChange={set("name")} autoComplete="organization" />}</Field>
-        <Field label="Website" hint="We compare it with your sign-in email's domain to verify the company.">
-          {(p) => <input {...p} value={v.website} onChange={set("website")} placeholder="https://example.com" inputMode="url" />}
+        <Field label={t("companyName")}>{(p) => <input {...p} required value={v.name} onChange={set("name")} autoComplete="organization" />}</Field>
+        <Field label={t("website")} hint={t("weCompareItWithYour")}>
+          {(p) => <input {...p} value={v.website} onChange={set("website")} placeholder={t("httpsExampleCom")} inputMode="url" />}
         </Field>
-        <Field label="Industry">{(p) => <input {...p} value={v.industry} onChange={set("industry")} />}</Field>
-        <Field label="Company size">
+        <Field label={t("industry")}>{(p) => <input {...p} value={v.industry} onChange={set("industry")} />}</Field>
+        <Field label={t("companySize")}>
           {(p) => (
             <select {...p} value={v.sizeBand} onChange={set("sizeBand")}>
-              <option value="">Not specified</option>
+              <option value="">{t("notSpecified")}</option>
               {SIZE_BANDS.map((s) => (
                 <option key={s} value={s}>
-                  {s} employees
+                  {t("sEmployees", { s })}
                 </option>
               ))}
             </select>
           )}
         </Field>
-        <Field label="Headquarters city">{(p) => <input {...p} value={v.hqCity} onChange={set("hqCity")} />}</Field>
-        <Field label="State or region">{(p) => <input {...p} value={v.hqState} onChange={set("hqState")} />}</Field>
-        <Field label="Country code" hint="Two letters, for example US or IN.">
+        <Field label={t("headquartersCity")}>{(p) => <input {...p} value={v.hqCity} onChange={set("hqCity")} />}</Field>
+        <Field label={t("stateOrRegion")}>{(p) => <input {...p} value={v.hqState} onChange={set("hqState")} />}</Field>
+        <Field label={t("countryCode")} hint={t("twoLettersForExampleUS")}>
           {(p) => <input {...p} value={v.hqCountry} maxLength={2} onChange={(e) => setV({ ...v, hqCountry: e.target.value.toUpperCase() })} />}
         </Field>
-        <Field label="Logo URL">{(p) => <input {...p} type="url" value={v.logoUrl} onChange={set("logoUrl")} />}</Field>
-        {withTitle && <Field label="Your job title">{(p) => <input {...p} value={v.title ?? ""} onChange={set("title")} autoComplete="organization-title" />}</Field>}
+        <Field label={t("logoURL")}>{(p) => <input {...p} type="url" value={v.logoUrl} onChange={set("logoUrl")} />}</Field>
+        {withTitle && <Field label={t("yourJobTitle")}>{(p) => <input {...p} value={v.title ?? ""} onChange={set("title")} autoComplete="organization-title" />}</Field>}
         <div className="sm:col-span-2">
-          <Field label="About the company">{(p) => <textarea {...p} rows={4} value={v.description} onChange={set("description")} />}</Field>
+          <Field label={t("aboutTheCompany")}>{(p) => <textarea {...p} rows={4} value={v.description} onChange={set("description")} />}</Field>
         </div>
         {!disabled && (
           <div className="sm:col-span-2">

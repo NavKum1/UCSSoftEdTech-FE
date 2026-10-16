@@ -4,9 +4,9 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { useApi } from "@/lib/appAuth";
 import { useCareerShell } from "@/components/career/CareerShell";
-import { Badge, Button, Card, EmptyState, ErrorBanner, Field, Loading, PageHeader, SuccessBanner, useLoad } from "@/components/career/ui";
+import { Badge, Button, Card, EmptyState, ErrorBanner, Field, Loading, PageHeader, SuccessBanner, useLoad, ScrollArea, useCareerT, useCareerFormat } from "@/components/career/ui";
 import { TabPanel, Tabs, inZone, todayIn } from "@/components/career/appointments/shared";
-import { type OcrSchedule, SIGNUP_LABELS, StatusBadge, WORK_AUTH_LABELS, daysText, eligibilityText, openHtml } from "@/components/career/interviews/shared";
+import { type OcrSchedule, StatusBadge, openHtml, useSignupLabels, useInterviewWorkAuthLabels, useDaysText, useEligibilityText } from "@/components/career/interviews/shared";
 
 type Tab = "requests" | "rooms" | "day" | "noshows" | "settings";
 
@@ -20,30 +20,33 @@ interface Room {
   blocks: { id: string; startUtc: string; endUtc: string; note?: string | null }[];
 }
 
+const SCHEDULE_STATUSES = ["Requested", "Approved", "Published", "Declined", "Withdrawn", "Cancelled"];
+
 export default function CareerCenterInterviewsPage() {
+  const tr = useCareerT("careerCenterInterviews");
   const [tab, setTab] = useState<Tab>("requests");
   const [message, setMessage] = useState<string | null>(null);
   return (
     <div>
       <PageHeader
-        title="On-campus interviews"
-        description="Review employer interview requests, assign rooms, publish schedules and run interview days."
-        actions={<Link className="text-sm underline" href="/career-center/interviews/reports">Reports</Link>}
+        title={tr("onCampusInterviews")}
+        description={tr("reviewEmployerInterviewRequestsAssign")}
+        actions={<Link className="text-sm underline" href="/career-center/interviews/reports">{tr("reports")}</Link>}
       />
       <SuccessBanner message={message} />
       <Tabs<Tab>
-        label="Interview sections"
+        label={tr("interviewSections")}
         value={tab}
         onChange={(t) => {
           setTab(t);
           setMessage(null);
         }}
         tabs={[
-          { key: "requests", label: "Schedules" },
-          { key: "rooms", label: "Rooms" },
-          { key: "day", label: "Interview day" },
-          { key: "noshows", label: "No-shows" },
-          { key: "settings", label: "Settings" },
+          { key: "requests", label: tr("schedules") },
+          { key: "rooms", label: tr("rooms") },
+          { key: "day", label: tr("interviewDay") },
+          { key: "noshows", label: tr("noShows") },
+          { key: "settings", label: tr("settings") },
         ]}
       />
       <TabPanel id={tab}>
@@ -58,6 +61,11 @@ export default function CareerCenterInterviewsPage() {
 }
 
 function Requests({ onMessage }: { onMessage: (m: string) => void }) {
+  const tr = useCareerT("careerCenterInterviews");
+  const eligibilityText = useEligibilityText();
+  const daysText = useDaysText();
+  const WORK_AUTH_LABELS = useInterviewWorkAuthLabels();
+  const SIGNUP_LABELS = useSignupLabels();
   const api = useApi();
   const { schoolId } = useCareerShell();
   const [status, setStatus] = useState("");
@@ -66,11 +74,11 @@ function Requests({ onMessage }: { onMessage: (m: string) => void }) {
   return (
     <div className="space-y-3">
       <div className="max-w-xs">
-        <Field label="Show">
+        <Field label={tr("show")}>
           {(p) => (
             <select {...p} value={status} onChange={(e) => setStatus(e.target.value)}>
-              <option value="">All schedules</option>
-              {["Requested", "Approved", "Published", "Declined", "Withdrawn", "Cancelled"].map((s) => <option key={s} value={s}>{s}</option>)}
+              <option value="">{tr("allSchedules")}</option>
+              {SCHEDULE_STATUSES.map((s) => <option key={s} value={s}>{tr(`scheduleStatus.${s}`)}</option>)}
             </select>
           )}
         </Field>
@@ -80,21 +88,21 @@ function Requests({ onMessage }: { onMessage: (m: string) => void }) {
       ) : list.error ? (
         <ErrorBanner error={list.error} onRetry={list.reload} />
       ) : (list.data ?? []).length === 0 ? (
-        <EmptyState title="No interview schedules">Employer requests appear here.</EmptyState>
+        <EmptyState title={tr("noInterviewSchedules")}>{tr("employerRequestsAppearHere")}</EmptyState>
       ) : (
         (list.data ?? []).map((s) => (
           <Card key={s.id} title={`${s.employerName}: ${s.positionTitle}`} actions={<StatusBadge status={s.status} />}>
-            <p className="text-sm">{daysText(s.days)} · {s.virtual ? "Virtual" : `${s.tracks} room(s) per day`} · {s.slotMinutes} min slots</p>
+            <p className="text-sm">{daysText(s.days)} · {s.virtual ? tr("virtual") : tr("tracksRoomSPerDay", { tracks: s.tracks })}{" "}{tr("slotMinutesMinSlots", { slotMinutes: s.slotMinutes })}</p>
             <p className="text-sm text-muted-foreground">
-              {SIGNUP_LABELS[s.signupType]} · {eligibilityText(s)} · Work authorization: {WORK_AUTH_LABELS[s.workAuthRequirement]}
+              {tr("signupTypeSWorkAuthorizationWorkAuthRequ", { signupType: SIGNUP_LABELS[s.signupType], s: eligibilityText(s), workAuthRequirement: WORK_AUTH_LABELS[s.workAuthRequirement] })}
             </p>
             {s.extra && (
               <p className="text-sm text-muted-foreground">
-                Rooms {s.extra.roomsAssigned}/{s.extra.roomsNeeded} · Booked {s.extra.booked}/{s.extra.slots}
+                {tr("rooms")}{" "}{s.extra.roomsAssigned}/{s.extra.roomsNeeded}{" "}{tr("booked")}{" "}{s.extra.booked}/{s.extra.slots}
               </p>
             )}
             <Button className="mt-2" variant="secondary" aria-expanded={open === s.id} onClick={() => setOpen(open === s.id ? null : s.id)}>
-              {open === s.id ? "Close" : "Manage"}
+              {open === s.id ? tr("close") : tr("manage")}
             </Button>
             {open === s.id && (
               <Manage
@@ -122,6 +130,7 @@ interface Detail extends OcrSchedule {
 }
 
 function Manage({ id, onChanged }: { id: string; onChanged: (m: string) => void }) {
+  const tr = useCareerT("careerCenterInterviews");
   const api = useApi();
   const d = useLoad(() => api<Detail>(`/api/career/ocr/staff/schedules/${id}`), [api, id]);
   const rooms = useLoad(() => api<Room[]>("/api/career/ocr/staff/rooms"), [api]);
@@ -155,42 +164,42 @@ function Manage({ id, onChanged }: { id: string; onChanged: (m: string) => void 
     <div className="mt-4 space-y-4">
       <ErrorBanner error={err} />
       <dl className="grid gap-1 text-sm sm:grid-cols-2">
-        <div><dt className="inline font-medium">Job: </dt><dd className="inline">{s.externalJobUrl ? <a className="underline" href={s.externalJobUrl} target="_blank" rel="noreferrer">{s.externalJobId || s.externalJobUrl}</a> : s.externalJobId ?? "—"}</dd></div>
-        <div><dt className="inline font-medium">Interviewers: </dt><dd className="inline">{s.interviewers.map((i) => i.name).join(", ")}</dd></div>
-        {s.description && <div className="sm:col-span-2"><dt className="inline font-medium">Notes: </dt><dd className="inline">{s.description}</dd></div>}
+        <div><dt className="inline font-medium">{tr("job")}{" "}</dt><dd className="inline">{s.externalJobUrl ? <a className="underline" href={s.externalJobUrl} target="_blank" rel="noreferrer">{s.externalJobId || s.externalJobUrl}</a> : s.externalJobId ?? "—"}</dd></div>
+        <div><dt className="inline font-medium">{tr("interviewers")}{" "}</dt><dd className="inline">{s.interviewers.map((i) => i.name).join(", ")}</dd></div>
+        {s.description && <div className="sm:col-span-2"><dt className="inline font-medium">{tr("notes")}{" "}</dt><dd className="inline">{s.description}</dd></div>}
       </dl>
 
       {s.status === "Requested" && (
-        <section className="space-y-2" aria-label="Decision">
+        <section className="space-y-2" aria-label={tr("decision")}>
           <div className="grid gap-2 sm:grid-cols-2">
-            <Field label="Note to the employer (optional)">{(p) => <input {...p} value={note} onChange={(e) => setNote(e.target.value)} />}</Field>
-            <Field label="Student cancellation cutoff (hours)" hint={`Default ${s.cancelCutoffHours}`}>
+            <Field label={tr("noteToTheEmployerOptional")}>{(p) => <input {...p} value={note} onChange={(e) => setNote(e.target.value)} />}</Field>
+            <Field label={tr("studentCancellationCutoffHours")} hint={tr("defaultCancelCutoffHours", { cancelCutoffHours: s.cancelCutoffHours })}>
               {(p) => <input {...p} type="number" min={0} max={336} value={cutoff} onChange={(e) => setCutoff(e.target.value === "" ? "" : Number(e.target.value))} />}
             </Field>
           </div>
           <div className="flex gap-2">
-            <Button busy={busy === "a"} onClick={() => run("a", () => api(`/api/career/ocr/staff/schedules/${id}/decision`, { json: { status: "Approved", note, cancelCutoffHours: cutoff === "" ? null : cutoff } }), "Approved.")}>Approve</Button>
-            <Button variant="secondary" busy={busy === "d"} onClick={() => run("d", () => api(`/api/career/ocr/staff/schedules/${id}/decision`, { json: { status: "Declined", note } }), "Declined.")}>Decline</Button>
+            <Button busy={busy === "a"} onClick={() => run("a", () => api(`/api/career/ocr/staff/schedules/${id}/decision`, { json: { status: "Approved", note, cancelCutoffHours: cutoff === "" ? null : cutoff } }), tr("approved"))}>{tr("approve")}</Button>
+            <Button variant="secondary" busy={busy === "d"} onClick={() => run("d", () => api(`/api/career/ocr/staff/schedules/${id}/decision`, { json: { status: "Declined", note } }), tr("declined"))}>{tr("decline")}</Button>
           </div>
         </section>
       )}
 
       {!s.virtual && (s.status === "Approved" || s.status === "Published") && (
-        <section aria-label="Room assignments" className="space-y-2">
-          <h3 className="font-semibold">Rooms</h3>
+        <section aria-label={tr("roomAssignments")} className="space-y-2">
+          <h3 className="font-semibold">{tr("rooms")}</h3>
           {rooms.loading ? (
             <Loading />
           ) : (rooms.data ?? []).length === 0 ? (
-            <p className="text-sm">Add rooms on the Rooms tab first.</p>
+            <p className="text-sm">{tr("addRoomsOnTheRooms")}</p>
           ) : (
             <div className="grid gap-2 sm:grid-cols-2">
               {s.days.flatMap((day) =>
                 Array.from({ length: s.tracks }, (_, t) => (
-                  <Field key={`${day.date}|${t}`} label={`${day.date} · track ${t + 1}`}>
+                  <Field key={`${day.date}|${t}`} label={tr("dateTrackValue", { date: day.date, value: t + 1 })}>
                     {(p) => (
                       <select {...p} value={current(day.date, t)} onChange={(e) => setAssign({ ...assign, [`${day.date}|${t}`]: e.target.value })}>
-                        <option value="">Choose a room</option>
-                        {(rooms.data ?? []).filter((r) => r.active).map((r) => <option key={r.id} value={r.id}>{r.name}{r.building ? `, ${r.building}` : ""} (seats {r.capacity})</option>)}
+                        <option value="">{tr("chooseARoom")}</option>
+                        {(rooms.data ?? []).filter((r) => r.active).map((r) => <option key={r.id} value={r.id}>{r.name}{r.building ? `, ${r.building}` : ""}{" "}{tr("seatsCapacity", { capacity: r.capacity })}</option>)}
                       </select>
                     )}
                   </Field>
@@ -205,36 +214,36 @@ function Manage({ id, onChanged }: { id: string; onChanged: (m: string) => void 
               run("r", () => api(`/api/career/ocr/staff/schedules/${id}/rooms`, {
                 method: "PUT",
                 json: { assignments: s.days.flatMap((day) => Array.from({ length: s.tracks }, (_, t) => ({ date: day.date, track: t, roomId: current(day.date, t) }))).filter((a) => a.roomId) },
-              }), "Rooms saved.")
+              }), tr("roomsSaved"))
             }
           >
-            Save rooms
+            {tr("saveRooms")}
           </Button>
         </section>
       )}
 
       {s.status === "Approved" && (
-        <Button busy={busy === "p"} onClick={() => run("p", () => api(`/api/career/ocr/staff/schedules/${id}/publish`, { method: "POST" }), "Published. Students can sign up now.")}>Publish</Button>
+        <Button busy={busy === "p"} onClick={() => run("p", () => api(`/api/career/ocr/staff/schedules/${id}/publish`, { method: "POST" }), tr("publishedStudentsCanSignUp"))}>{tr("publish")}</Button>
       )}
 
       {s.extra.slots.length > 0 && (
-        <section aria-label="Slots">
-          <h3 className="mb-2 font-semibold">Slots</h3>
-          <div className="overflow-x-auto">
+        <section aria-label={tr("slots")}>
+          <h3 className="mb-2 font-semibold">{tr("slots")}</h3>
+          <ScrollArea>
             <table className="w-full text-sm">
-              <caption className="sr-only">Interview slots</caption>
-              <thead><tr className="text-left"><th scope="col">Time</th><th scope="col">Room</th><th scope="col">Interviewer</th><th scope="col">Student</th><th scope="col"><span className="sr-only">Actions</span></th></tr></thead>
+              <caption className="sr-only">{tr("interviewSlots")}</caption>
+              <thead><tr className="text-start [&_th]:text-start"><th scope="col">{tr("time")}</th><th scope="col">{tr("room")}</th><th scope="col">{tr("interviewer")}</th><th scope="col">{tr("student")}</th><th scope="col"><span className="sr-only">{tr("actions")}</span></th></tr></thead>
               <tbody>
                 {s.extra.slots.map((x) => (
                   <tr key={x.id} className="border-t border-border">
                     <td>{inZone(x.startUtc, tz, { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}</td>
-                    <td>{x.room || (s.virtual ? "Virtual" : "—")}</td>
+                    <td>{x.room || (s.virtual ? tr("virtual") : "—")}</td>
                     <td>{x.interviewer}</td>
-                    <td>{x.booking ? <>{x.booking.student}{x.booking.source === "Promoted" && <> <Badge tone="info">alternate</Badge></>}</> : <span className="text-muted-foreground">Open</span>}</td>
+                    <td>{x.booking ? <>{x.booking.student}{x.booking.source === "Promoted" && <> <Badge tone="info">{tr("alternate")}</Badge></>}</> : <span className="text-muted-foreground">{tr("open")}</span>}</td>
                     <td>
                       {x.booking && (
-                        <Button variant="secondary" busy={busy === x.id} onClick={() => window.confirm("Cancel this student's interview? The next alternate is booked automatically.") && run(x.id, () => api(`/api/career/ocr/staff/bookings/${x.booking!.id}/cancel`, { json: { note: "Cancelled by the career center." } }), "Cancelled.")}>
-                          Cancel
+                        <Button variant="secondary" busy={busy === x.id} onClick={() => window.confirm(tr("cancelThisStudentsInterviewThe")) && run(x.id, () => api(`/api/career/ocr/staff/bookings/${x.booking!.id}/cancel`, { json: { note: "Cancelled by the career center." } }), tr("cancelled"))}>
+                          {tr("cancel")}
                         </Button>
                       )}
                     </td>
@@ -242,17 +251,17 @@ function Manage({ id, onChanged }: { id: string; onChanged: (m: string) => void 
                 ))}
               </tbody>
             </table>
-          </div>
+          </ScrollArea>
         </section>
       )}
 
       {s.extra.candidates.some((c) => c.status === "Waitlisted") && (
-        <p className="text-sm">Alternates in order: {s.extra.candidates.filter((c) => c.status === "Waitlisted").map((c) => c.name).join(", ")}</p>
+        <p className="text-sm">{tr("alternatesInOrderValue", { value: s.extra.candidates.filter((c) => c.status === "Waitlisted").map((c) => c.name).join(", ") })}</p>
       )}
 
       {!["Declined", "Withdrawn", "Cancelled"].includes(s.status) && (
-        <Button variant="secondary" busy={busy === "c"} onClick={() => window.confirm("Cancel the whole schedule? Booked students and the employer are notified.") && run("c", () => api(`/api/career/ocr/staff/schedules/${id}/cancel`, { json: { note } }), "Schedule cancelled.")}>
-          Cancel schedule
+        <Button variant="secondary" busy={busy === "c"} onClick={() => window.confirm(tr("cancelTheWholeScheduleBooked")) && run("c", () => api(`/api/career/ocr/staff/schedules/${id}/cancel`, { json: { note } }), tr("scheduleCancelled"))}>
+          {tr("cancelSchedule")}
         </Button>
       )}
     </div>
@@ -260,6 +269,8 @@ function Manage({ id, onChanged }: { id: string; onChanged: (m: string) => void 
 }
 
 function Rooms({ onMessage }: { onMessage: (m: string) => void }) {
+  const tr = useCareerT("careerCenterInterviews");
+  const fmt = useCareerFormat();
   const api = useApi();
   const { schoolId } = useCareerShell();
   const rooms = useLoad(() => api<Room[]>("/api/career/ocr/staff/rooms"), [api, schoolId]);
@@ -285,66 +296,66 @@ function Rooms({ onMessage }: { onMessage: (m: string) => void }) {
   return (
     <div className="space-y-4">
       <ErrorBanner error={err} />
-      <Card title="Add a room">
+      <Card title={tr("addARoom")}>
         <form
           className="grid gap-3 sm:grid-cols-4"
           onSubmit={(e) => {
             e.preventDefault();
-            go(() => api("/api/career/ocr/staff/rooms", { json: form }), "Room added.").then(() => setForm({ name: "", building: "", capacity: 4 }));
+            go(() => api("/api/career/ocr/staff/rooms", { json: form }), tr("roomAdded")).then(() => setForm({ name: "", building: "", capacity: 4 }));
           }}
         >
-          <Field label="Name">{(p) => <input {...p} required value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />}</Field>
-          <Field label="Building">{(p) => <input {...p} value={form.building} onChange={(e) => setForm({ ...form, building: e.target.value })} />}</Field>
-          <Field label="Seats">{(p) => <input {...p} type="number" min={1} value={form.capacity} onChange={(e) => setForm({ ...form, capacity: Number(e.target.value) })} />}</Field>
-          <div className="pt-6"><Button type="submit" busy={busy}>Add room</Button></div>
+          <Field label={tr("name")}>{(p) => <input {...p} required value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />}</Field>
+          <Field label={tr("building")}>{(p) => <input {...p} value={form.building} onChange={(e) => setForm({ ...form, building: e.target.value })} />}</Field>
+          <Field label={tr("seats")}>{(p) => <input {...p} type="number" min={1} value={form.capacity} onChange={(e) => setForm({ ...form, capacity: Number(e.target.value) })} />}</Field>
+          <div className="pt-6"><Button type="submit" busy={busy}>{tr("addRoom")}</Button></div>
         </form>
       </Card>
       {rooms.loading ? (
         <Loading />
       ) : (rooms.data ?? []).length === 0 ? (
-        <EmptyState title="No rooms yet" />
+        <EmptyState title={tr("noRoomsYet")} />
       ) : (
-        <Card title="Rooms">
+        <Card title={tr("rooms")}>
           <ul className="space-y-2 text-sm">
             {(rooms.data ?? []).map((r) => (
               <li key={r.id} className="flex flex-wrap items-center justify-between gap-2 border-b border-border pb-2">
                 <span>
-                  <strong>{r.name}</strong>{r.building ? `, ${r.building}` : ""} · seats {r.capacity} {!r.active && <Badge>Inactive</Badge>}
+                  <strong>{r.name}</strong>{r.building ? `, ${r.building}` : ""}{" "}{tr("seatsCapacity2", { capacity: r.capacity })}{" "}{!r.active && <Badge>{tr("inactive")}</Badge>}
                   {r.blocks.map((b) => (
-                    <span key={b.id} className="ml-2">
-                      <Badge tone="warn">Unavailable {new Date(b.startUtc).toLocaleString()} – {new Date(b.endUtc).toLocaleString()}{b.note ? `: ${b.note}` : ""}</Badge>{" "}
-                      <button type="button" className="underline" onClick={() => go(() => api(`/api/career/ocr/staff/rooms/${r.id}/blocks/${b.id}`, { method: "DELETE" }), "Room available again.")}>remove</button>
+                    <span key={b.id} className="ms-2">
+                      <Badge tone="warn">{tr("unavailableValueValue2", { value: new Date(b.startUtc).toLocaleString(fmt.locale), value2: new Date(b.endUtc).toLocaleString(fmt.locale) })}{b.note ? `: ${b.note}` : ""}</Badge>{" "}
+                      <button type="button" className="underline" onClick={() => go(() => api(`/api/career/ocr/staff/rooms/${r.id}/blocks/${b.id}`, { method: "DELETE" }), tr("roomAvailableAgain"))}>{tr("remove")}</button>
                     </span>
                   ))}
                 </span>
-                <Button variant="secondary" onClick={() => go(() => api(`/api/career/ocr/staff/rooms/${r.id}`, { method: "PUT", json: { ...r, active: !r.active } }), r.active ? "Room deactivated." : "Room activated.")}>
-                  {r.active ? "Deactivate" : "Activate"}
+                <Button variant="secondary" onClick={() => go(() => api(`/api/career/ocr/staff/rooms/${r.id}`, { method: "PUT", json: { ...r, active: !r.active } }), r.active ? tr("roomDeactivated") : tr("roomActivated"))}>
+                  {r.active ? tr("deactivate") : tr("activate")}
                 </Button>
               </li>
             ))}
           </ul>
         </Card>
       )}
-      <Card title="Mark a room unavailable">
+      <Card title={tr("markARoomUnavailable")}>
         <form
           className="grid gap-3 sm:grid-cols-5"
           onSubmit={(e) => {
             e.preventDefault();
-            go(() => api(`/api/career/ocr/staff/rooms/${block.roomId}/blocks`, { json: { startUtc: new Date(block.start).toISOString(), endUtc: new Date(block.end).toISOString(), note: block.note } }), "Room blocked.");
+            go(() => api(`/api/career/ocr/staff/rooms/${block.roomId}/blocks`, { json: { startUtc: new Date(block.start).toISOString(), endUtc: new Date(block.end).toISOString(), note: block.note } }), tr("roomBlocked"));
           }}
         >
-          <Field label="Room">
+          <Field label={tr("room")}>
             {(p) => (
               <select {...p} required value={block.roomId} onChange={(e) => setBlock({ ...block, roomId: e.target.value })}>
-                <option value="">Choose</option>
+                <option value="">{tr("choose")}</option>
                 {(rooms.data ?? []).map((r) => <option key={r.id} value={r.id}>{r.name}</option>)}
               </select>
             )}
           </Field>
-          <Field label="From">{(p) => <input {...p} type="datetime-local" required value={block.start} onChange={(e) => setBlock({ ...block, start: e.target.value })} />}</Field>
-          <Field label="To">{(p) => <input {...p} type="datetime-local" required value={block.end} onChange={(e) => setBlock({ ...block, end: e.target.value })} />}</Field>
-          <Field label="Reason">{(p) => <input {...p} value={block.note} onChange={(e) => setBlock({ ...block, note: e.target.value })} />}</Field>
-          <div className="pt-6"><Button type="submit" busy={busy}>Block</Button></div>
+          <Field label={tr("from")}>{(p) => <input {...p} type="datetime-local" required value={block.start} onChange={(e) => setBlock({ ...block, start: e.target.value })} />}</Field>
+          <Field label={tr("to")}>{(p) => <input {...p} type="datetime-local" required value={block.end} onChange={(e) => setBlock({ ...block, end: e.target.value })} />}</Field>
+          <Field label={tr("reason")}>{(p) => <input {...p} value={block.note} onChange={(e) => setBlock({ ...block, note: e.target.value })} />}</Field>
+          <div className="pt-6"><Button type="submit" busy={busy}>{tr("block")}</Button></div>
         </form>
       </Card>
     </div>
@@ -362,6 +373,7 @@ interface DayView {
 }
 
 function Day() {
+  const tr = useCareerT("careerCenterInterviews");
   const api = useApi();
   const { me, schoolId } = useCareerShell();
   const tz = (me as unknown as { timeZone?: string } | null)?.timeZone ?? Intl.DateTimeFormat().resolvedOptions().timeZone;
@@ -382,7 +394,7 @@ function Day() {
   const print = async () => {
     setErr(null);
     try {
-      await openHtml(await api<Response>(`/api/career/ocr/staff/day/print?date=${date}`, { raw: true }));
+      await openHtml(await api<Response>(`/api/career/ocr/staff/day/print?date=${date}`, { raw: true }), (status) => tr("couldntLoadAgenda", { status }));
     } catch (e) {
       setErr((e as Error).message);
     }
@@ -391,8 +403,8 @@ function Day() {
   return (
     <div className="space-y-3">
       <div className="flex flex-wrap items-end gap-3">
-        <Field label="Date">{(p) => <input {...p} type="date" value={date} onChange={(e) => setDate(e.target.value)} />}</Field>
-        <Button variant="secondary" onClick={print}>Printable agendas</Button>
+        <Field label={tr("date")}>{(p) => <input {...p} type="date" value={date} onChange={(e) => setDate(e.target.value)} />}</Field>
+        <Button variant="secondary" onClick={print}>{tr("printableAgendas")}</Button>
       </div>
       <ErrorBanner error={err} />
       <div aria-live="polite">
@@ -401,7 +413,7 @@ function Day() {
         ) : day.error ? (
           <ErrorBanner error={day.error} onRetry={day.reload} />
         ) : (day.data?.rooms ?? []).length === 0 ? (
-          <EmptyState title="No interviews on this day" />
+          <EmptyState title={tr("noInterviewsOnThisDay")} />
         ) : (
           day.data!.rooms.map((r) => (
             <Card key={r.room} title={r.room}>
@@ -410,13 +422,13 @@ function Day() {
                   <li key={x.slotId} className="flex flex-wrap items-center justify-between gap-2 border-b border-border pb-2">
                     <span>
                       <strong>{inZone(x.startUtc, day.data!.timeZone, { hour: "numeric", minute: "2-digit" })}</strong> · {x.employer} ({x.position}){x.interviewer ? ` · ${x.interviewer}` : ""} ·{" "}
-                      {x.booking ? `${x.booking.student ?? "Student"} ${x.booking.email ? `<${x.booking.email}>` : ""}` : <span className="text-muted-foreground">open</span>}
+                      {x.booking ? `${x.booking.student ?? tr("student")} ${x.booking.email ? `<${x.booking.email}>` : ""}` : <span className="text-muted-foreground">{tr("open2")}</span>}
                     </span>
                     {x.booking && (
                       <span className="flex items-center gap-2">
                         {x.booking.attendance && <StatusBadge status={x.booking.attendance} />}
-                        {!x.booking.checkedInAt && <Button variant="secondary" onClick={() => act(`/api/career/ocr/staff/bookings/${x.booking!.id}/checkin`)}>Check in</Button>}
-                        {x.booking.attendance !== "NoShow" && <Button variant="secondary" onClick={() => act(`/api/career/ocr/staff/bookings/${x.booking!.id}/attendance`, { attendance: "NoShow" })}>No-show</Button>}
+                        {!x.booking.checkedInAt && <Button variant="secondary" onClick={() => act(`/api/career/ocr/staff/bookings/${x.booking!.id}/checkin`)}>{tr("checkIn")}</Button>}
+                        {x.booking.attendance !== "NoShow" && <Button variant="secondary" onClick={() => act(`/api/career/ocr/staff/bookings/${x.booking!.id}/attendance`, { attendance: "NoShow" })}>{tr("noShow")}</Button>}
                       </span>
                     )}
                   </li>
@@ -431,6 +443,7 @@ function Day() {
 }
 
 function NoShows({ onMessage }: { onMessage: (m: string) => void }) {
+  const tr = useCareerT("careerCenterInterviews");
   const api = useApi();
   const { schoolId } = useCareerShell();
   const list = useLoad(() => api<{ noShowLimit: number; students: { studentUserId: string; name?: string; email?: string; noShows: number; blocked: boolean }[] }>("/api/career/ocr/staff/no-shows"), [api, schoolId]);
@@ -439,29 +452,29 @@ function NoShows({ onMessage }: { onMessage: (m: string) => void }) {
   if (list.error) return <ErrorBanner error={list.error} onRetry={list.reload} />;
   return (
     <div className="space-y-3">
-      <p className="text-sm">Students with {list.data!.noShowLimit || "∞"} uncleared no-shows can&apos;t sign up for interviews until you clear them{list.data!.noShowLimit ? "" : " (the policy is off)"}.</p>
+      <p className="text-sm">{tr("studentsWithNoShowLimitUnclearedNo", { noShowLimit: list.data!.noShowLimit || "∞" })}{list.data!.noShowLimit ? "" : tr("thePolicyIsOff")}.</p>
       <ErrorBanner error={err} />
       {list.data!.students.length === 0 ? (
-        <EmptyState title="No uncleared no-shows" />
+        <EmptyState title={tr("noUnclearedNoShows")} />
       ) : (
         <ul className="space-y-2">
           {list.data!.students.map((s) => (
             <li key={s.studentUserId} className="flex flex-wrap items-center justify-between gap-2 rounded border border-border p-2 text-sm">
-              <span>{s.name} &lt;{s.email}&gt; · {s.noShows} no-show(s) {s.blocked && <Badge tone="bad">Sign-ups paused</Badge>}</span>
+              <span>{tr("nameEmailNoShowsNoShow", { name: s.name, email: s.email, noShows: s.noShows })}{" "}{s.blocked && <Badge tone="bad">{tr("signUpsPaused")}</Badge>}</span>
               <Button
                 variant="secondary"
                 onClick={async () => {
                   setErr(null);
                   try {
                     await api(`/api/career/ocr/staff/students/${s.studentUserId}/clear-no-shows`, { method: "POST" });
-                    onMessage(`Cleared for ${s.name}.`);
+                    onMessage(tr("clearedForName", { name: String(s.name) }));
                     list.reload();
                   } catch (e) {
                     setErr((e as Error).message);
                   }
                 }}
               >
-                Clear
+                {tr("clear")}
               </Button>
             </li>
           ))}
@@ -472,6 +485,7 @@ function NoShows({ onMessage }: { onMessage: (m: string) => void }) {
 }
 
 function Settings({ onMessage }: { onMessage: (m: string) => void }) {
+  const tr = useCareerT("careerCenterInterviews");
   const api = useApi();
   const { schoolId } = useCareerShell();
   const s = useLoad(() => api<{ noShowLimit: number; defaultCancelCutoffHours: number }>("/api/career/ocr/staff/settings"), [api, schoolId]);
@@ -480,7 +494,7 @@ function Settings({ onMessage }: { onMessage: (m: string) => void }) {
   if (s.loading) return <Loading />;
   const cur = v ?? s.data!;
   return (
-    <Card title="Interview policies">
+    <Card title={tr("interviewPolicies")}>
       <ErrorBanner error={err ?? s.error} />
       <form
         className="grid max-w-xl gap-3 sm:grid-cols-2"
@@ -489,19 +503,19 @@ function Settings({ onMessage }: { onMessage: (m: string) => void }) {
           setErr(null);
           try {
             await api("/api/career/ocr/staff/settings", { method: "PUT", json: cur });
-            onMessage("Settings saved.");
+            onMessage(tr("settingsSaved"));
           } catch (e2) {
             setErr((e2 as Error).message);
           }
         }}
       >
-        <Field label="No-shows before sign-ups pause" hint="0 turns the policy off.">
+        <Field label={tr("noShowsBeforeSignUps")} hint={tr("n0TurnsThePolicyOff")}>
           {(p) => <input {...p} type="number" min={0} max={10} value={cur.noShowLimit} onChange={(e) => setV({ ...cur, noShowLimit: Number(e.target.value) })} />}
         </Field>
-        <Field label="Default cancellation cutoff (hours)">
+        <Field label={tr("defaultCancellationCutoffHours")}>
           {(p) => <input {...p} type="number" min={0} max={336} value={cur.defaultCancelCutoffHours} onChange={(e) => setV({ ...cur, defaultCancelCutoffHours: Number(e.target.value) })} />}
         </Field>
-        <div><Button type="submit">Save</Button></div>
+        <div><Button type="submit">{tr("save")}</Button></div>
       </form>
     </Card>
   );

@@ -8,7 +8,8 @@
 import React, { useEffect, useId, useMemo, useRef, useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useApi } from "@/lib/appAuth";
-import { Button, Field } from "@/components/career/ui";
+import { currentFormatLocale } from "@/components/career/i18n/CareerI18nProvider";
+import { Button, Field, useCareerFormat, useCareerT, useCareerLabels } from "@/components/career/ui";
 
 export interface IntakeQuestion {
   id: string;
@@ -96,16 +97,28 @@ export interface Task {
   mine?: boolean;
 }
 
-export const MODE_LABELS: Record<string, string> = { InPerson: "In person", Video: "Video", Phone: "Phone" };
-export const OUTCOME_LABELS: Record<string, string> = { Attended: "Attended", NoShow: "No-show", CancelledLate: "Late cancellation" };
-export const DAY_NAMES = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+export const MODE_LABELS_KEYS = ["InPerson", "Video", "Phone"];
+/** mode labels in the career language (G1) */
+export function useModeLabels(): Record<string, string> {
+  return useCareerLabels("appointmentsShared.mode", MODE_LABELS_KEYS);
+}
+export const OUTCOME_LABELS_KEYS = ["Attended", "NoShow", "CancelledLate"];
+/** outcome labels in the career language (G1) */
+export function useOutcomeLabels(): Record<string, string> {
+  return useCareerLabels("appointmentsShared.outcome", OUTCOME_LABELS_KEYS);
+}
+/** Weekday names, Sunday first, in the career locale (G1). */
+export function useDayNames(): string[] {
+  const { locale } = useCareerFormat();
+  return useMemo(() => [0, 1, 2, 3, 4, 5, 6].map((d) => new Date(Date.UTC(2023, 0, 1 + d)).toLocaleDateString(locale, { weekday: "long", timeZone: "UTC" })), [locale]);
+}
 
 /** Format a UTC instant in the school's time zone. */
 export function inZone(utc: string, timeZone: string, opts: Intl.DateTimeFormatOptions) {
   try {
-    return new Intl.DateTimeFormat(undefined, { ...opts, timeZone }).format(new Date(utc));
+    return new Intl.DateTimeFormat(currentFormatLocale(), { ...opts, timeZone }).format(new Date(utc));
   } catch {
-    return new Date(utc).toLocaleString();
+    return new Date(utc).toLocaleString(currentFormatLocale());
   }
 }
 
@@ -140,18 +153,24 @@ export function statusTone(a: Pick<Appointment, "status" | "outcome">): "good" |
   return "neutral";
 }
 
-export function statusLabel(a: Pick<Appointment, "status" | "outcome">) {
-  if (a.outcome) return OUTCOME_LABELS[a.outcome] ?? a.outcome;
-  return a.status === "Booked" ? "Booked" : a.status === "Cancelled" ? "Cancelled" : a.status;
+/** Label for an appointment's status or outcome, in the career language (G1). */
+export function useStatusLabel() {
+  const tr = useCareerT("appointmentsShared");
+  const OUTCOME_LABELS = useOutcomeLabels();
+  return (a: Pick<Appointment, "status" | "outcome">) => {
+    if (a.outcome) return OUTCOME_LABELS[a.outcome] ?? a.outcome;
+    return a.status === "Booked" ? tr("statusBooked") : a.status === "Cancelled" ? tr("statusCancelled") : a.status;
+  };
 }
 
 /** Downloads an authenticated file (ICS, CSV) through the API helper. */
 export function useDownload() {
+  const tr = useCareerT("appointmentsShared");
   const api = useApi();
   return async (path: string, fileName: string) => {
     const res = await api<Response>(path, { raw: true });
     if (!res.ok) {
-      let message = `Download failed (${res.status})`;
+      let message = tr("downloadFailedStatus", { status: res.status });
       try {
         const body = (await res.json()) as { message?: string };
         if (body.message) message = body.message;
@@ -265,6 +284,8 @@ export function SlotPicker({
   onChange: (slot: Slot | null) => void;
   counselorNames?: Record<string, string>;
 }) {
+  const tr = useCareerT("appointmentsShared");
+  const fmt = useCareerFormat();
   const tz = data?.timeZone ?? "UTC";
   const byDay = useMemo(() => {
     const map = new Map<string, Slot[]>();
@@ -279,35 +300,35 @@ export function SlotPicker({
   const activeDay = day && byDay.has(day) ? day : days[0] ?? null;
   const headingId = useId();
 
-  const label = (ymd: string) => new Date(`${ymd}T12:00:00Z`).toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric", timeZone: "UTC" });
+  const label = (ymd: string) => new Date(`${ymd}T12:00:00Z`).toLocaleDateString(fmt.locale, { weekday: "short", month: "short", day: "numeric", timeZone: "UTC" });
   const time = (s: Slot) => {
     const [h, m] = s.localStart.slice(11, 16).split(":").map(Number);
     const d = new Date(Date.UTC(2000, 0, 1, h, m));
-    return d.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit", timeZone: "UTC" });
+    return d.toLocaleTimeString(fmt.locale, { hour: "numeric", minute: "2-digit", timeZone: "UTC" });
   };
 
   return (
     <div className="space-y-3">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <p id={headingId} className="text-sm font-medium">
-          {label(from)} – {label(addDays(from, 13))} <span className="font-normal text-muted-foreground">(times in {tz})</span>
+          {label(from)} – {label(addDays(from, 13))} <span className="font-normal text-muted-foreground">{tr("timesInTz", { tz })}</span>
         </p>
         <div className="flex gap-2">
-          <Button type="button" variant="secondary" onClick={() => onFrom(addDays(from, -14) < minFrom ? minFrom : addDays(from, -14))} disabled={from <= minFrom || loading} aria-label="Previous two weeks">
-            <ChevronLeft className="h-4 w-4" aria-hidden /> Earlier
+          <Button type="button" variant="secondary" onClick={() => onFrom(addDays(from, -14) < minFrom ? minFrom : addDays(from, -14))} disabled={from <= minFrom || loading} aria-label={tr("previousTwoWeeks")}>
+            <ChevronLeft className="h-4 w-4 rtl:-scale-x-100" aria-hidden />{" "}{tr("earlier")}
           </Button>
-          <Button type="button" variant="secondary" onClick={() => onFrom(addDays(from, 14))} disabled={loading} aria-label="Next two weeks">
-            Later <ChevronRight className="h-4 w-4" aria-hidden />
+          <Button type="button" variant="secondary" onClick={() => onFrom(addDays(from, 14))} disabled={loading} aria-label={tr("nextTwoWeeks")}>
+            {tr("later")}{" "}<ChevronRight className="h-4 w-4 rtl:-scale-x-100" aria-hidden />
           </Button>
         </div>
       </div>
       {loading ? (
         <p role="status" className="text-sm text-muted-foreground">
-          Finding open times…
+          {tr("findingOpenTimes")}
         </p>
       ) : days.length === 0 ? (
         <p role="status" className="rounded-md border border-dashed border-border p-4 text-sm text-muted-foreground">
-          No open times in these two weeks. Try later dates or another counselor.
+          {tr("noOpenTimesInThese")}
         </p>
       ) : (
         <>
@@ -326,7 +347,7 @@ export function SlotPicker({
           </div>
           {activeDay && (
             <fieldset>
-              <legend className="mb-2 text-sm font-medium">Times on {label(activeDay)}</legend>
+              <legend className="mb-2 text-sm font-medium">{tr("timesOnActiveDay", { activeDay: label(activeDay) })}</legend>
               <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 lg:grid-cols-6">
                 {byDay.get(activeDay)!.map((s) => {
                   const selected = value?.startUtc === s.startUtc;
@@ -342,7 +363,7 @@ export function SlotPicker({
                       style={selected ? { background: "var(--brand, #4f46e5)" } : undefined}
                     >
                       {time(s)}
-                      {selected && <span className="sr-only"> (selected)</span>}
+                      {selected && <span className="sr-only">{" "}{tr("selected")}</span>}
                     </button>
                   );
                 })}
@@ -356,15 +377,16 @@ export function SlotPicker({
 }
 
 export function IntakeFields({ questions, answers, onChange }: { questions: IntakeQuestion[]; answers: Record<string, string>; onChange: (a: Record<string, string>) => void }) {
+  const tr = useCareerT("appointmentsShared");
   if (questions.length === 0) return null;
   return (
     <div className="space-y-3">
       {questions.map((q) => (
-        <Field key={q.id} label={q.label + (q.required ? " (required)" : "")}>
+        <Field key={q.id} label={q.label + (q.required ? tr("requiredSuffix") : "")}>
           {(p) =>
             q.kind === "choice" ? (
               <select {...p} required={q.required} value={answers[q.id] ?? ""} onChange={(e) => onChange({ ...answers, [q.id]: e.target.value })}>
-                <option value="">Choose…</option>
+                <option value="">{tr("choose")}</option>
                 {(q.options ?? []).map((o) => (
                   <option key={o} value={o}>
                     {o}
@@ -384,8 +406,9 @@ export function IntakeFields({ questions, answers, onChange }: { questions: Inta
 }
 
 export function IntakeAnswers({ appointment }: { appointment: Pick<Appointment, "intakeQuestions" | "intakeAnswers"> }) {
+  const tr = useCareerT("appointmentsShared");
   const entries = Object.entries(appointment.intakeAnswers ?? {});
-  if (entries.length === 0) return <p className="text-sm text-muted-foreground">No intake answers.</p>;
+  if (entries.length === 0) return <p className="text-sm text-muted-foreground">{tr("noIntakeAnswers")}</p>;
   const label = (id: string) => appointment.intakeQuestions.find((q) => q.id === id)?.label ?? id;
   return (
     <dl className="space-y-2 text-sm">
@@ -400,14 +423,15 @@ export function IntakeAnswers({ appointment }: { appointment: Pick<Appointment, 
 }
 
 export function MeetingInfo({ a }: { a: Pick<Appointment, "mode" | "location" | "meetingUrl"> }) {
+  const tr = useCareerT("appointmentsShared");
   if (a.mode === "Video")
     return a.meetingUrl ? (
       <a href={a.meetingUrl} target="_blank" rel="noopener noreferrer" className="text-sm underline">
-        Join video meeting<span className="sr-only"> (opens in a new tab)</span>
+        {tr.rich("joinVideoMeetingOpensIn", { span: (chunks) => <span className="sr-only">{chunks}</span> })}
       </a>
     ) : (
-      <span className="text-sm text-muted-foreground">Video link will be shared by your counselor</span>
+      <span className="text-sm text-muted-foreground">{tr("videoLinkWillBeShared")}</span>
     );
-  if (a.mode === "Phone") return <span className="text-sm text-muted-foreground">Phone call</span>;
-  return <span className="text-sm text-muted-foreground">{a.location ? `In person: ${a.location}` : "In person"}</span>;
+  if (a.mode === "Phone") return <span className="text-sm text-muted-foreground">{tr("phoneCall")}</span>;
+  return <span className="text-sm text-muted-foreground">{a.location ? tr("inPersonLocation", { location: a.location }) : tr("inPerson")}</span>;
 }

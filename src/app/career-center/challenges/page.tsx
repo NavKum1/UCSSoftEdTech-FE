@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { useApi } from "@/lib/appAuth";
-import { Badge, Button, Card, EmptyState, ErrorBanner, Field, Loading, PageHeader, SuccessBanner, formatDate, useLoad } from "@/components/career/ui";
+import { Badge, Button, Card, EmptyState, ErrorBanner, Field, Loading, PageHeader, SuccessBanner, formatDate, useLoad, useCareerT } from "@/components/career/ui";
 
 interface Row {
   status: string;
@@ -23,6 +23,7 @@ interface Stats { joined: number; withdrawn: number; submitted: number; defended
 const TONES: Record<string, "neutral" | "good" | "warn" | "bad"> = { Pending: "warn", Approved: "good", Declined: "bad" };
 
 export default function CareerCenterChallengesPage() {
+  const t = useCareerT("careerCenterChallenges");
   const api = useApi();
   const [filter, setFilter] = useState("Pending");
   const list = useLoad(() => api<Row[]>(`/api/career/challenges/staff${filter ? `?status=${filter}` : ""}`), [api, filter]);
@@ -75,34 +76,34 @@ export default function CareerCenterChallengesPage() {
     run("settings", async () => {
       const s = await api<{ autoApproveVerified: boolean }>("/api/career/challenges/staff/settings", { method: "PUT", json: { autoApproveVerified: value } });
       settings.setData(s);
-      setMsg(value ? "Challenges from verified employers are now approved automatically." : "Every challenge now needs approval.");
+      setMsg(value ? t("challengesFromVerifiedEmployersAre") : t("everyChallengeNowNeedsApproval"));
     });
 
   return (
     <div>
       <PageHeader
-        title="Employer challenges"
-        description="Approve skills challenges employers publish to your students, and follow participation. Challenges are exercises, not job postings."
-        actions={<Button variant="secondary" busy={busy === "csv"} onClick={exportCsv}>Export CSV</Button>}
+        title={t("employerChallenges")}
+        description={t("approveSkillsChallengesEmployersPublish")}
+        actions={<Button variant="secondary" busy={busy === "csv"} onClick={exportCsv}>{t("exportCSV")}</Button>}
       />
       <ErrorBanner error={err ?? list.error} />
       <SuccessBanner message={msg} />
 
-      <Card title="Approval setting" className="mb-4">
+      <Card title={t("approvalSetting")} className="mb-4">
         <label className="flex items-center gap-2 text-sm">
           <input type="checkbox" checked={settings.data?.autoApproveVerified ?? false} disabled={!settings.data || busy === "settings"} onChange={(e) => toggleAuto(e.target.checked)} />
-          Approve challenges from verified employers automatically (career admins only)
+          {t("approveChallengesFromVerifiedEmployers")}
         </label>
       </Card>
 
       <div className="mb-3 flex flex-wrap items-end gap-3">
-        <Field label="Show">
+        <Field label={t("show")}>
           {(p) => (
             <select {...p} value={filter} onChange={(e) => setFilter(e.target.value)}>
-              <option value="Pending">Waiting for approval</option>
-              <option value="Approved">Approved</option>
-              <option value="Declined">Declined</option>
-              <option value="">All</option>
+              <option value="Pending">{t("waitingForApproval")}</option>
+              <option value="Approved">{t("approved")}</option>
+              <option value="Declined">{t("declined")}</option>
+              <option value="">{t("all")}</option>
             </select>
           )}
         </Field>
@@ -111,7 +112,7 @@ export default function CareerCenterChallengesPage() {
       {list.loading && !list.data ? (
         <Loading />
       ) : !list.data?.length ? (
-        <EmptyState title="Nothing here" />
+        <EmptyState title={t("nothingHere")} />
       ) : (
         <ul className="space-y-3">
           {list.data.map((row) => {
@@ -122,33 +123,33 @@ export default function CareerCenterChallengesPage() {
                 <Card title={c.title}>
                   <div className="space-y-2 text-sm">
                     <div className="flex flex-wrap items-center gap-2">
-                      <Badge tone={TONES[row.status] ?? "neutral"}>{row.status}{row.autoApproved ? " (automatic)" : ""}</Badge>
+                      <Badge tone={TONES[row.status] ?? "neutral"}>{row.status}{row.autoApproved ? t("automatic") : ""}</Badge>
                       <span><strong>{row.employer?.name}</strong> ({row.employer?.verificationStatus})</span>
                       <span>· {formatDate(c.opensAt)} – {formatDate(c.closesAt)}</span>
-                      <span>· {row.participants} joined</span>
+                      <span>{t("participantsJoined", { participants: row.participants })}</span>
                     </div>
                     {c.description && <p className="whitespace-pre-line">{c.description}</p>}
                     <p className="text-muted-foreground">
-                      Assessment: {row.sprint?.title ?? "—"} {row.sprint && `(${row.sprint.requiredLanguage}, ${row.sprint.taskType})`}
-                      {" · "}For: {c.degreeLevels.length ? c.degreeLevels.join(", ") : "all levels"}{c.majors.length ? `, ${c.majors.join(", ")}` : ""}
-                      {c.maxParticipants ? ` · up to ${c.maxParticipants}` : ""}
+                      {t("assessmentTitle", { title: row.sprint?.title ?? "—" })}{" "}{row.sprint && `(${row.sprint.requiredLanguage}, ${row.sprint.taskType})`}
+                      {" "}{t("for")}{" "}{c.degreeLevels.length ? c.degreeLevels.join(", ") : t("allLevels")}{c.majors.length ? `, ${c.majors.join(", ")}` : ""}
+                      {c.maxParticipants ? t("upToMaxParticipants", { maxParticipants: c.maxParticipants }) : ""}
                     </p>
-                    {c.prizeText && <p>Recognition: {c.prizeText}</p>}
-                    {c.externalJobUrl && <p>Job link: <a className="underline" href={c.externalJobUrl} target="_blank" rel="noreferrer">{c.externalJobUrl}</a></p>}
-                    {row.decisionNote && <p>Note: {row.decisionNote}</p>}
+                    {c.prizeText && <p>{t("recognitionPrizeText", { prizeText: c.prizeText })}</p>}
+                    {c.externalJobUrl && <p>{t.rich("jobLinkExternalJobUrl", { link: (chunks) => <a className="underline" href={c.externalJobUrl!} target="_blank" rel="noreferrer">{chunks}</a>, externalJobUrl: c.externalJobUrl })}</p>}
+                    {row.decisionNote && <p>{t("noteDecisionNote", { decisionNote: row.decisionNote })}</p>}
                     <div className="flex flex-wrap items-end gap-2">
                       <div className="min-w-[16rem] flex-1">
-                        <Field label="Note to the employer (optional)">
+                        <Field label={t("noteToTheEmployerOptional")}>
                           {(p) => <input {...p} value={notes[c.id] ?? ""} onChange={(e) => setNotes({ ...notes, [c.id]: e.target.value })} />}
                         </Field>
                       </div>
-                      {row.status !== "Approved" && <Button busy={busy === `Approved-${c.id}`} onClick={() => decide(row, "Approved")}>Approve</Button>}
-                      {row.status !== "Declined" && <Button variant="danger" busy={busy === `Declined-${c.id}`} onClick={() => decide(row, "Declined")}>Decline</Button>}
-                      <Button variant="secondary" busy={busy === `stats-${c.id}`} onClick={() => loadStats(row)}>Participation</Button>
+                      {row.status !== "Approved" && <Button busy={busy === `Approved-${c.id}`} onClick={() => decide(row, "Approved")}>{t("approve")}</Button>}
+                      {row.status !== "Declined" && <Button variant="danger" busy={busy === `Declined-${c.id}`} onClick={() => decide(row, "Declined")}>{t("decline")}</Button>}
+                      <Button variant="secondary" busy={busy === `stats-${c.id}`} onClick={() => loadStats(row)}>{t("participation")}</Button>
                     </div>
                     {s && (
                       <dl className="grid grid-cols-3 gap-2 rounded-md bg-muted p-3 sm:grid-cols-6" aria-live="polite">
-                        {([["Joined", s.joined], ["Left", s.withdrawn], ["Submitted", s.submitted], ["Defended", s.defended], ["Sharing", s.consentActive], ["Invited to talk", s.invited]] as const).map(([k, v]) => (
+                        {([[t("statJoined"), s.joined], [t("statLeft"), s.withdrawn], [t("statSubmitted"), s.submitted], [t("statDefended"), s.defended], [t("statSharing"), s.consentActive], [t("statInvitedToTalk"), s.invited]] ).map(([k, v]) => (
                           <div key={k}><dt className="text-xs text-muted-foreground">{k}</dt><dd className="text-lg font-semibold">{v}</dd></div>
                         ))}
                       </dl>

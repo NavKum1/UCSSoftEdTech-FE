@@ -4,7 +4,8 @@
 
 import React from "react";
 import { ShieldAlert } from "lucide-react";
-import { Badge } from "@/components/career/ui";
+import { Badge, useCareerT, useCareerLabels } from "@/components/career/ui";
+import { currentFormatLocale } from "@/components/career/i18n/CareerI18nProvider";
 
 export interface DsoContact {
   name?: string | null;
@@ -108,7 +109,6 @@ export interface NotEligibleView {
   dso: DsoContact;
 }
 
-export const NOT_LEGAL_ADVICE = "This is not legal advice. Your Designated School Official (DSO) is the authority.";
 
 /** Formats a yyyy-mm-dd date without shifting it through UTC. */
 export function formatDay(value: string | null | undefined) {
@@ -116,15 +116,16 @@ export function formatDay(value: string | null | undefined) {
   const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(value);
   if (!m) return value;
   const d = new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
-  return d.toLocaleDateString(undefined, { dateStyle: "medium" });
+  return d.toLocaleDateString(currentFormatLocale(), { dateStyle: "medium" });
 }
 
-export function NotLegalAdvice({ text = NOT_LEGAL_ADVICE, children }: { text?: string; children?: React.ReactNode }) {
+export function NotLegalAdvice({ text, children }: { text?: string; children?: React.ReactNode }) {
+  const t = useCareerT("internationalShared");
   return (
     <div role="note" className="mb-6 flex items-start gap-3 rounded-xl border-2 border-amber-400 bg-amber-50 p-4 text-amber-900 dark:border-amber-600 dark:bg-amber-950/40 dark:text-amber-200">
       <ShieldAlert className="mt-0.5 h-5 w-5 shrink-0" aria-hidden />
       <div className="text-sm">
-        <p className="font-semibold">{text}</p>
+        <p className="font-semibold">{text ?? t("notLegalAdvice")}</p>
         {children && <div className="mt-1">{children}</div>}
       </div>
     </div>
@@ -132,16 +133,17 @@ export function NotLegalAdvice({ text = NOT_LEGAL_ADVICE, children }: { text?: s
 }
 
 export function DsoCard({ dso }: { dso: DsoContact }) {
+  const t = useCareerT("internationalShared");
   if (!dso.configured) {
     return (
       <p className="text-sm text-muted-foreground">
-        Your school hasn&apos;t listed its DSO contact here yet.
+        {t("yourSchoolHasntListedIts")}
         {dso.careerCenterEmail ? (
           <>
-            {" "}Ask the career center at <a className="underline" href={`mailto:${dso.careerCenterEmail}`}>{dso.careerCenterEmail}</a> how to reach your international student office.
+            {" "}{t.rich("askTheCareerCenterAt", { link: (chunks) => <a className="underline" href={`mailto:${dso.careerCenterEmail}`}>{chunks}</a>, careerCenterEmail: dso.careerCenterEmail })}
           </>
         ) : (
-          " Contact your international student office."
+          t("contactYourInternationalStudentOffice")
         )}
       </p>
     );
@@ -150,26 +152,26 @@ export function DsoCard({ dso }: { dso: DsoContact }) {
     <dl className="grid gap-1 text-sm sm:grid-cols-[8rem_1fr]">
       {dso.name && (
         <>
-          <dt className="text-muted-foreground">DSO</dt>
+          <dt className="text-muted-foreground">{t("dSO")}</dt>
           <dd>{dso.name}</dd>
         </>
       )}
-      <dt className="text-muted-foreground">Email</dt>
+      <dt className="text-muted-foreground">{t("email")}</dt>
       <dd>
         <a className="underline" href={`mailto:${dso.email}`}>{dso.email}</a>
       </dd>
       {dso.phone && (
         <>
-          <dt className="text-muted-foreground">Phone</dt>
+          <dt className="text-muted-foreground">{t("phone")}</dt>
           <dd>{dso.phone}</dd>
         </>
       )}
       {dso.officeUrl && (
         <>
-          <dt className="text-muted-foreground">Office</dt>
+          <dt className="text-muted-foreground">{t("office")}</dt>
           <dd>
             <a className="underline" href={dso.officeUrl} target="_blank" rel="noreferrer">
-              International student office website
+              {t("internationalStudentOfficeWebsite")}
             </a>
           </dd>
         </>
@@ -179,36 +181,32 @@ export function DsoCard({ dso }: { dso: DsoContact }) {
   );
 }
 
-export const LEVEL_TEXT: Record<OptStatus["level"], string> = {
-  ok: "On track",
-  notice: "Notice",
-  warning: "Warning",
-  urgent: "Urgent",
-  limit: "Limit reached",
-};
+export const LEVEL_TEXT_KEYS = ["ok", "notice", "warning", "urgent", "limit"];
+/** level text in the career language (G1) */
+export function useLevelText(): Record<string, string> {
+  return useCareerLabels("internationalShared.level", LEVEL_TEXT_KEYS);
+}
 
 export function LevelBadge({ level }: { level: OptStatus["level"] }) {
+  const LEVEL_TEXT = useLevelText();
   const tone = level === "ok" ? "good" : level === "notice" || level === "warning" ? "warn" : "bad";
   return <Badge tone={tone}>{LEVEL_TEXT[level]}</Badge>;
 }
 
-export const STATE_TEXT: Record<OptStatus["state"], string> = {
-  NoAuthorization: "No OPT period recorded",
-  PreCompletionOnly: "Pre-completion OPT only",
-  NotStarted: "Not started",
-  Active: "Active",
-  Ended: "Ended",
-};
+export const STATE_TEXT_KEYS = ["NoAuthorization", "PreCompletionOnly", "NotStarted", "Active", "Ended"];
+/** state text in the career language (G1) */
+export function useStateText(): Record<string, string> {
+  return useCareerLabels("internationalShared.state", STATE_TEXT_KEYS);
+}
 
-export const DEADLINE_TEXT: Record<OptDeadline["status"], string> = {
-  due: "Due",
-  overdue: "Overdue",
-  done: "Done",
-  upcoming: "Upcoming",
-  info: "Past",
-};
+export const DEADLINE_TEXT_KEYS = ["due", "overdue", "done", "upcoming", "info"];
+/** deadline text in the career language (G1) */
+export function useDeadlineText(): Record<string, string> {
+  return useCareerLabels("internationalShared.deadline", DEADLINE_TEXT_KEYS);
+}
 
 export function DeadlineBadge({ status }: { status: OptDeadline["status"] }) {
+  const DEADLINE_TEXT = useDeadlineText();
   const tone = status === "done" ? "good" : status === "overdue" ? "bad" : status === "due" ? "warn" : "neutral";
   return <Badge tone={tone}>{DEADLINE_TEXT[status]}</Badge>;
 }

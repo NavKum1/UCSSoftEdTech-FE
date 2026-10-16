@@ -8,10 +8,11 @@
 import React, { useState } from "react";
 import { useApi } from "@/lib/appAuth";
 import { useCareerShell } from "@/components/career/CareerShell";
-import { Badge, Button, Card, EmptyState, ErrorBanner, Field, Loading, PageHeader, SuccessBanner, useLoad } from "@/components/career/ui";
-import { DsoCard, LevelBadge, NotLegalAdvice, STATE_TEXT, formatDay, type DsoContact, type OptStatus, type OptView } from "@/components/career/international/shared";
+import { Badge, Button, Card, EmptyState, ErrorBanner, Field, Loading, PageHeader, SuccessBanner, useLoad, ScrollArea, useCareerT, useCareerLabels, useCareerFormat } from "@/components/career/ui";
+import { DsoCard, LevelBadge, NotLegalAdvice, formatDay, type DsoContact, type OptStatus, type OptView, useStateText } from "@/components/career/international/shared";
 import { AuthorizationsTable, ChecksList, DeadlinesTable, EmploymentsTable, SpansAndRules, UnemploymentMeter } from "@/components/career/international/OptOverview";
 import SponsorLookup, { type SponsorSummary } from "@/components/career/international/SponsorLookup";
+import WorkRightsStaff from "@/components/career/international/WorkRightsStaff";
 
 interface StaffRow {
   studentUserId: string;
@@ -63,9 +64,14 @@ interface EmployerLinkRow {
   sponsor: { employerKey: string; displayName: string; totalCertified: number; latestFiscalYear: number; latestCertified: number } | null;
 }
 
-const TYPE_LABEL: Record<string, string> = { PreCompletion: "Pre-completion", PostCompletion: "Post-completion", StemExtension: "STEM extension" };
+const TYPE_LABEL_KEYS = ["PreCompletion", "PostCompletion", "StemExtension"];
+/** type label in the career language (G1) */
+function useTypeLabels(): Record<string, string> {
+  return useCareerLabels("careerCenterInternational.type", TYPE_LABEL_KEYS);
+}
 
 function DsoSettings() {
+  const t = useCareerT("careerCenterInternational");
   const api = useApi();
   const { schoolId } = useCareerShell();
   const { data, setData, error, loading } = useLoad(() => api<SettingsResponse>("/api/career/international/settings"), [api, schoolId]);
@@ -81,7 +87,7 @@ function DsoSettings() {
     return (
       <>
         <DsoCard dso={data.dso} />
-        <p className="mt-3 text-xs text-muted-foreground">A career admin can change this contact.</p>
+        <p className="mt-3 text-xs text-muted-foreground">{t("aCareerAdminCanChange")}</p>
       </>
     );
   }
@@ -98,7 +104,7 @@ function DsoSettings() {
       });
       setData(saved);
       setDraft(null);
-      setMsg("DSO contact saved. Students see it on their OPT tracker.");
+      setMsg(t("dSOContactSavedStudentsSee"));
     } catch (e2) {
       setErr((e2 as Error).message);
     } finally {
@@ -112,22 +118,22 @@ function DsoSettings() {
         <ErrorBanner error={err} />
         <SuccessBanner message={msg} />
       </div>
-      <Field label="DSO name">{(p) => <input {...p} value={form.name ?? ""} onChange={(e) => setDraft({ ...form, name: e.target.value })} maxLength={200} />}</Field>
-      <Field label="DSO email" hint="Shown to F-1 students as the contact for OPT questions.">
+      <Field label={t("dSOName")}>{(p) => <input {...p} value={form.name ?? ""} onChange={(e) => setDraft({ ...form, name: e.target.value })} maxLength={200} />}</Field>
+      <Field label={t("dSOEmail")} hint={t("shownToF1Students")}>
         {(p) => <input {...p} type="email" value={form.email ?? ""} onChange={(e) => setDraft({ ...form, email: e.target.value })} maxLength={200} />}
       </Field>
-      <Field label="Phone">{(p) => <input {...p} value={form.phone ?? ""} onChange={(e) => setDraft({ ...form, phone: e.target.value })} maxLength={50} />}</Field>
-      <Field label="International office website">
-        {(p) => <input {...p} type="url" value={form.officeUrl ?? ""} onChange={(e) => setDraft({ ...form, officeUrl: e.target.value })} placeholder="https://" />}
+      <Field label={t("phone")}>{(p) => <input {...p} value={form.phone ?? ""} onChange={(e) => setDraft({ ...form, phone: e.target.value })} maxLength={50} />}</Field>
+      <Field label={t("internationalOfficeWebsite")}>
+        {(p) => <input {...p} type="url" value={form.officeUrl ?? ""} onChange={(e) => setDraft({ ...form, officeUrl: e.target.value })} placeholder={t("https")} />}
       </Field>
       <div className="sm:col-span-2">
-        <Field label="Note for students (optional)">
+        <Field label={t("noteForStudentsOptional")}>
           {(p) => <textarea {...p} rows={2} value={form.note ?? ""} onChange={(e) => setDraft({ ...form, note: e.target.value })} maxLength={1000} />}
         </Field>
       </div>
       <div>
         <Button type="submit" busy={busy}>
-          Save contact
+          {t("saveContact")}
         </Button>
       </div>
     </form>
@@ -135,35 +141,36 @@ function DsoSettings() {
 }
 
 function StudentDetailPanel({ detail, onClose }: { detail: StudentDetail; onClose: () => void }) {
+  const t = useCareerT("careerCenterInternational");
   const v = detail.view;
   return (
     <Card
-      title={`${detail.student.name || detail.student.email}: OPT record`}
+      title={t("nameOPTRecord", { name: detail.student.name || detail.student.email })}
       className="mt-6"
       actions={
         <Button variant="secondary" onClick={onClose}>
-          Close
+          {t("close")}
         </Button>
       }
     >
       <p className="mb-4 text-sm text-muted-foreground">
         {detail.student.email}
-        {detail.student.studentNumber ? ` · ${detail.student.studentNumber}` : ""} · Program end date {formatDay(v.tracker?.programEndDate)} · Entered by the student; confirm against SEVIS.
+        {detail.student.studentNumber ? ` · ${detail.student.studentNumber}` : ""}{" "}{t("programEndDateProgramEndDateEntered", { programEndDate: formatDay(v.tracker?.programEndDate) })}
       </p>
       <UnemploymentMeter view={v} />
       <div className="mt-6 grid gap-6 lg:grid-cols-2">
         <div>
-          <h3 className="mb-2 text-sm font-semibold">Things to check</h3>
+          <h3 className="mb-2 text-sm font-semibold">{t("thingsToCheck")}</h3>
           <ChecksList checks={v.checks} />
         </div>
         <div>
-          <h3 className="mb-2 text-sm font-semibold">Deadlines</h3>
+          <h3 className="mb-2 text-sm font-semibold">{t("deadlines")}</h3>
           <DeadlinesTable deadlines={v.deadlines} />
         </div>
       </div>
-      <h3 className="mb-2 mt-6 text-sm font-semibold">Authorization periods</h3>
+      <h3 className="mb-2 mt-6 text-sm font-semibold">{t("authorizationPeriods")}</h3>
       <AuthorizationsTable items={v.authorizations} />
-      <h3 className="mb-2 mt-6 text-sm font-semibold">Employment</h3>
+      <h3 className="mb-2 mt-6 text-sm font-semibold">{t("employment")}</h3>
       <EmploymentsTable items={v.employments} hasStem={v.status.hasStem} />
       <div className="mt-6">
         <SpansAndRules view={v} />
@@ -173,6 +180,9 @@ function StudentDetailPanel({ detail, onClose }: { detail: StudentDetail; onClos
 }
 
 function OptStudents() {
+  const t = useCareerT("careerCenterInternational");
+  const STATE_TEXT = useStateText();
+  const TYPE_LABEL = useTypeLabels();
   const api = useApi();
   const { schoolId } = useCareerShell();
   const [filter, setFilter] = useState("all");
@@ -200,7 +210,7 @@ function OptStudents() {
 
   return (
     <>
-      <Card title="Students on OPT">
+      <Card title={t("studentsOnOPT")}>
         <form
           className="mb-4 flex flex-wrap items-end gap-3"
           onSubmit={(e) => {
@@ -209,60 +219,60 @@ function OptStudents() {
           }}
         >
           <div className="w-48">
-            <Field label="Show">
+            <Field label={t("show")}>
               {(p) => (
                 <select {...p} value={filter} onChange={(e) => setFilter(e.target.value)}>
-                  <option value="all">All students with a tracker</option>
-                  <option value="at-risk">With a warning</option>
-                  <option value="active">OPT active</option>
-                  <option value="unemployed">Active and not employed today</option>
+                  <option value="all">{t("allStudentsWithATracker")}</option>
+                  <option value="at-risk">{t("withAWarning")}</option>
+                  <option value="active">{t("oPTActive")}</option>
+                  <option value="unemployed">{t("activeAndNotEmployedToday")}</option>
                 </select>
               )}
             </Field>
           </div>
           <div className="min-w-48 flex-1">
-            <Field label="Name or email">{(p) => <input {...p} value={q} onChange={(e) => setQ(e.target.value)} />}</Field>
+            <Field label={t("nameOrEmail")}>{(p) => <input {...p} value={q} onChange={(e) => setQ(e.target.value)} />}</Field>
           </div>
           <Button type="submit" variant="secondary">
-            Search
+            {t("search")}
           </Button>
         </form>
         <ErrorBanner error={err ?? list.error} onRetry={list.reload} />
         {list.loading ? (
           <Loading />
         ) : !list.data ? null : list.data.items.length === 0 ? (
-          <EmptyState title="No students to show">F-1 students appear here once they start their OPT tracker.</EmptyState>
+          <EmptyState title={t("noStudentsToShow")}>{t("f1StudentsAppearHere")}</EmptyState>
         ) : (
           <div aria-live="polite">
             <p className="mb-2 text-sm text-muted-foreground">
-              {list.data.total} student{list.data.total === 1 ? "" : "s"} with a tracker, {list.data.atRisk} with a warning. Counts as of {formatDay(list.data.asOf)}.
+              {t("totalStudentsWithATracker", { total: list.data.total, atRisk: list.data.atRisk, asOf: formatDay(list.data.asOf) })}
             </p>
-            <div className="overflow-x-auto">
+            <ScrollArea>
               <table className="w-full text-sm">
-                <caption className="sr-only">F-1 students on OPT and their unemployment days</caption>
-                <thead className="text-left text-xs uppercase text-muted-foreground">
+                <caption className="sr-only">{t("f1StudentsOnOPT")}</caption>
+                <thead className="text-start text-xs uppercase text-muted-foreground [&_th]:text-start">
                   <tr>
-                    <th scope="col" className="py-2 pr-3">Student</th>
-                    <th scope="col" className="py-2 pr-3">OPT</th>
-                    <th scope="col" className="py-2 pr-3">Unemployment days</th>
-                    <th scope="col" className="py-2 pr-3">Employed today</th>
-                    <th scope="col" className="py-2 pr-3">Reporting</th>
-                    <th scope="col" className="py-2 pr-3">Next due</th>
-                    <th scope="col" className="py-2"><span className="sr-only">Actions</span></th>
+                    <th scope="col" className="py-2 pe-3">{t("student")}</th>
+                    <th scope="col" className="py-2 pe-3">{t("oPT")}</th>
+                    <th scope="col" className="py-2 pe-3">{t("unemploymentDays")}</th>
+                    <th scope="col" className="py-2 pe-3">{t("employedToday")}</th>
+                    <th scope="col" className="py-2 pe-3">{t("reporting")}</th>
+                    <th scope="col" className="py-2 pe-3">{t("nextDue")}</th>
+                    <th scope="col" className="py-2"><span className="sr-only">{t("actions")}</span></th>
                   </tr>
                 </thead>
                 <tbody>
                   {list.data.items.map((s) => (
                     <tr key={s.studentUserId} className="border-t border-border align-top">
-                      <td className="py-2 pr-3">
+                      <td className="py-2 pe-3">
                         <span className="font-medium">{s.name || s.email}</span>
                         <span className="block text-xs text-muted-foreground">{s.email}</span>
                       </td>
-                      <td className="py-2 pr-3">
+                      <td className="py-2 pe-3">
                         {s.currentOptType ? TYPE_LABEL[s.currentOptType] ?? s.currentOptType : STATE_TEXT[s.state]}
-                        {s.eadEnd && <span className="block text-xs text-muted-foreground">EAD ends {formatDay(s.eadEnd)}</span>}
+                        {s.eadEnd && <span className="block text-xs text-muted-foreground">{t("eADEndsEadEnd", { eadEnd: formatDay(s.eadEnd) })}</span>}
                       </td>
-                      <td className="py-2 pr-3">
+                      <td className="py-2 pe-3">
                         {s.state === "PreCompletionOnly" || s.state === "NoAuthorization" ? (
                           "—"
                         ) : (
@@ -274,21 +284,21 @@ function OptStudents() {
                           </>
                         )}
                       </td>
-                      <td className="py-2 pr-3">{s.state === "Active" ? (s.employedToday ? "Yes" : "No") : "—"}</td>
-                      <td className="py-2 pr-3">
-                        {s.overdueItems > 0 ? <Badge tone="bad">{s.overdueItems} overdue</Badge> : s.unreportedChanges > 0 ? <Badge tone="warn">{s.unreportedChanges} open</Badge> : <Badge tone="good">Up to date</Badge>}
+                      <td className="py-2 pe-3">{s.state === "Active" ? (s.employedToday ? t("yes") : t("no")) : "—"}</td>
+                      <td className="py-2 pe-3">
+                        {s.overdueItems > 0 ? <Badge tone="bad">{t("overdueItemsOverdue", { overdueItems: s.overdueItems })}</Badge> : s.unreportedChanges > 0 ? <Badge tone="warn">{t("unreportedChangesOpen", { unreportedChanges: s.unreportedChanges })}</Badge> : <Badge tone="good">{t("upToDate")}</Badge>}
                       </td>
-                      <td className="py-2 pr-3 text-xs">{s.nextDue ? `${s.nextDue.label} (${formatDay(s.nextDue.dueOn)})` : "—"}</td>
-                      <td className="py-2 text-right">
-                        <Button variant="secondary" busy={opening === s.studentUserId} onClick={() => open(s.studentUserId)} aria-label={`View OPT record for ${s.name || s.email}`}>
-                          View
+                      <td className="py-2 pe-3 text-xs">{s.nextDue ? `${s.nextDue.label} (${formatDay(s.nextDue.dueOn)})` : "—"}</td>
+                      <td className="py-2 text-end">
+                        <Button variant="secondary" busy={opening === s.studentUserId} onClick={() => open(s.studentUserId)} aria-label={t("viewOPTRecordForName", { name: s.name || s.email })}>
+                          {t("view")}
                         </Button>
                       </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
-            </div>
+            </ScrollArea>
           </div>
         )}
       </Card>
@@ -298,6 +308,8 @@ function OptStudents() {
 }
 
 function EmployerLinks() {
+  const t = useCareerT("careerCenterInternational");
+  const fmt = useCareerFormat();
   const api = useApi();
   const { schoolId } = useCareerShell();
   const { data, setData, error, loading, reload } = useLoad(() => api<{ items: EmployerLinkRow[]; disclaimer: string }>("/api/career/international/staff/employer-links"), [api, schoolId]);
@@ -327,7 +339,7 @@ function EmployerLinks() {
   };
 
   const link = (id: string, employerKey: string | null, noMatch = false) =>
-    act(id, () => api(`/api/career/international/staff/employer-links/${id}`, { method: "PUT", json: { employerKey, noMatch } }), noMatch ? "Marked as no match." : "Link saved.");
+    act(id, () => api(`/api/career/international/staff/employer-links/${id}`, { method: "PUT", json: { employerKey, noMatch } }), noMatch ? t("markedAsNoMatch") : t("linkSaved"));
 
   const findMatches = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -341,16 +353,16 @@ function EmployerLinks() {
   };
 
   return (
-    <Card title="Employer sponsorship links">
+    <Card title={t("employerSponsorshipLinks")}>
       <p className="mb-3 text-sm text-muted-foreground">
-        Employers that work with your school are matched to their sponsorship history by name. Confirm a match, pick a different record, or mark that there is none.
+        {t("employersThatWorkWithYour")}
       </p>
       <ErrorBanner error={err ?? error} onRetry={reload} />
       <SuccessBanner message={msg} />
       {loading ? (
         <Loading />
       ) : !data || data.items.length === 0 ? (
-        <EmptyState title="No employers yet">Employers appear here once they request to work with your school.</EmptyState>
+        <EmptyState title={t("noEmployersYet")}>{t("employersAppearHereOnceThey")}</EmptyState>
       ) : (
         <ul className="divide-y divide-border">
           {data.items.map((row) => (
@@ -360,21 +372,21 @@ function EmployerLinks() {
                   <p className="font-medium">{row.name}</p>
                   <p className="text-xs text-muted-foreground">
                     {row.sponsor
-                      ? `Linked to ${row.sponsor.displayName}: ${row.sponsor.totalCertified.toLocaleString()} certified LCAs, latest FY${row.sponsor.latestFiscalYear}`
+                      ? t("linkedToDisplayNameTotalCertifiedCertifi", { displayName: row.sponsor.displayName, totalCertified: fmt.number(row.sponsor.totalCertified), latestFiscalYear: row.sponsor.latestFiscalYear })
                       : row.link.method === "NoMatch"
-                        ? "Marked as having no sponsorship record"
-                        : "No matching sponsorship record found"}
+                        ? t("markedAsHavingNoSponsorship")
+                        : t("noMatchingSponsorshipRecordFound")}
                   </p>
                   <p className="mt-1">
-                    {row.link.method === "Staff" && <Badge tone="good">Confirmed by staff</Badge>}
-                    {row.link.method === "NoMatch" && <Badge tone="neutral">No match (staff)</Badge>}
-                    {row.link.method === "Auto" && <Badge tone="info">Matched by name</Badge>}
+                    {row.link.method === "Staff" && <Badge tone="good">{t("confirmedByStaff")}</Badge>}
+                    {row.link.method === "NoMatch" && <Badge tone="neutral">{t("noMatchStaff")}</Badge>}
+                    {row.link.method === "Auto" && <Badge tone="info">{t("matchedByName")}</Badge>}
                   </p>
                 </div>
                 <div className="flex flex-wrap gap-1">
                   {row.link.method === "Auto" && row.link.employerKey && (
                     <Button variant="secondary" busy={busy === row.employerId} onClick={() => link(row.employerId, row.link.employerKey)}>
-                      Confirm
+                      {t("confirm")}
                     </Button>
                   )}
                   <Button
@@ -387,20 +399,20 @@ function EmployerLinks() {
                     }}
                     aria-expanded={picking === row.employerId}
                   >
-                    Change
+                    {t("change")}
                   </Button>
                   {row.link.method !== "NoMatch" && (
                     <Button variant="ghost" disabled={busy === row.employerId} onClick={() => link(row.employerId, null, true)}>
-                      No match
+                      {t("noMatch")}
                     </Button>
                   )}
                   {row.link.confirmed && (
                     <Button
                       variant="ghost"
                       disabled={busy === row.employerId}
-                      onClick={() => act(row.employerId, () => api(`/api/career/international/staff/employer-links/${row.employerId}`, { method: "DELETE" }), "Back to automatic matching.")}
+                      onClick={() => act(row.employerId, () => api(`/api/career/international/staff/employer-links/${row.employerId}`, { method: "DELETE" }), t("backToAutomaticMatching"))}
                     >
-                      Reset
+                      {t("reset")}
                     </Button>
                   )}
                 </div>
@@ -409,24 +421,24 @@ function EmployerLinks() {
                 <div className="mt-3 rounded-md border border-border p-3">
                   <form onSubmit={findMatches} className="flex flex-wrap items-end gap-2">
                     <div className="min-w-48 flex-1">
-                      <Field label={`Find the sponsorship record for ${row.name}`}>
+                      <Field label={t("findTheSponsorshipRecordFor", { name: row.name })}>
                         {(p) => <input {...p} value={pickQ} onChange={(e) => setPickQ(e.target.value)} maxLength={100} />}
                       </Field>
                     </div>
                     <Button type="submit" variant="secondary">
-                      Find
+                      {t("find")}
                     </Button>
                   </form>
                   {matches && (
                     <ul className="mt-2 space-y-1" aria-live="polite">
-                      {matches.length === 0 && <li className="text-sm text-muted-foreground">No records found.</li>}
+                      {matches.length === 0 && <li className="text-sm text-muted-foreground">{t("noRecordsFound")}</li>}
                       {matches.map((m) => (
                         <li key={m.normalizedKey} className="flex items-center justify-between gap-2 text-sm">
                           <span>
-                            {m.name} <span className="text-xs text-muted-foreground">({m.totalCertified.toLocaleString()} certified)</span>
+                            {m.name} <span className="text-xs text-muted-foreground">{t("totalCertifiedCertified", { totalCertified: fmt.number(m.totalCertified) })}</span>
                           </span>
                           <Button variant="secondary" busy={busy === row.employerId} onClick={() => link(row.employerId, m.normalizedKey)}>
-                            Link
+                            {t("link")}
                           </Button>
                         </li>
                       ))}
@@ -443,6 +455,7 @@ function EmployerLinks() {
 }
 
 export default function CareerCenterInternationalPage() {
+  const t = useCareerT("careerCenterInternational");
   const { me, schoolId } = useCareerShell();
   const role = me?.memberships.find((m) => m.instituteId === schoolId && ["CareerAdmin", "Counselor", "EmployerRelations"].includes(m.role))?.role
     ?? me?.memberships.find((m) => ["CareerAdmin", "Counselor", "EmployerRelations"].includes(m.role))?.role;
@@ -451,22 +464,25 @@ export default function CareerCenterInternationalPage() {
   return (
     <div>
       <PageHeader
-        title="International students"
-        description="F-1 students' OPT unemployment days and reporting deadlines as they recorded them, your DSO contact, and employers' sponsorship history."
+        title={t("internationalStudents")}
+        description={t("f1StudentsOPTUnemployment")}
       />
       <NotLegalAdvice>
-        These counts come from what students enter in their tracker. They are not SEVIS records and the rules shown reflect general guidance: your DSO confirms each case.
+        {t("theseCountsComeFromWhat")}
       </NotLegalAdvice>
       {officeView ? (
         <>
           <OptStudents />
-          <Card title="International office contact" className="mt-6">
+          <div className="mt-6">
+            <WorkRightsStaff />
+          </div>
+          <Card title={t("internationalOfficeContact")} className="mt-6">
             <DsoSettings />
           </Card>
         </>
       ) : (
-        <Card title="OPT records">
-          <p className="text-sm text-muted-foreground">Students&apos; OPT records are visible to career admins and counselors.</p>
+        <Card title={t("oPTRecords")}>
+          <p className="text-sm text-muted-foreground">{t("studentsOPTRecordsAreVisible")}</p>
         </Card>
       )}
       <div className="mt-6">

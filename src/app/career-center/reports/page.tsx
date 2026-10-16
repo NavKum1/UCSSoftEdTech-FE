@@ -2,17 +2,16 @@
 
 import React, { useCallback, useState } from "react";
 import { useApi } from "@/lib/appAuth";
-import { Button, Card, ErrorBanner, Field, Loading, PageHeader, SuccessBanner, useLoad } from "@/components/career/ui";
+import { Button, Card, ErrorBanner, Field, Loading, PageHeader, SuccessBanner, useLoad, useCareerT, useCareerLabels } from "@/components/career/ui";
 import { ReportTableView, formatCell, type Cell, type ReportTable } from "@/components/career/reports/ReportTableView";
 
 type Section = "engagement" | "service" | "employers" | "equity";
 
-const SECTION_LABELS: Record<Section, string> = {
-  engagement: "Engagement",
-  service: "Service volume",
-  employers: "Employers",
-  equity: "Equity view",
-};
+const SECTION_LABELS_KEYS = ["engagement", "service", "employers", "equity"];
+/** section labels in the career language (G1) */
+function useSectionLabels(): Record<string, string> {
+  return useCareerLabels("careerCenterReports.section", SECTION_LABELS_KEYS);
+}
 
 interface TermOption {
   name: string;
@@ -63,6 +62,8 @@ function query(f: Filters) {
 }
 
 export default function ReportsPage() {
+  const tr = useCareerT("careerCenterReports");
+  const SECTION_LABELS = useSectionLabels();
   const api = useApi();
   const opts = useLoad(() => api<Options>("/api/career/reports/options"), []);
   const presets = useLoad(() => api<Preset[]>("/api/career/reports/presets"), []);
@@ -103,7 +104,7 @@ export default function ReportsPage() {
   const download = (path: string, key: string) =>
     run(key, async () => {
       const res = await api<Response>(path, { raw: true });
-      if (!res.ok) throw new Error(`Export failed (${res.status})`);
+      if (!res.ok) throw new Error(tr("exportFailedStatus", { status: res.status }));
       const name = /filename="?([^";]+)"?/.exec(res.headers.get("content-disposition") ?? "")?.[1] ?? "report.csv";
       const url = URL.createObjectURL(await res.blob());
       const a = document.createElement("a");
@@ -111,15 +112,15 @@ export default function ReportsPage() {
       a.download = name;
       a.click();
       URL.revokeObjectURL(url);
-    }, "Download started.");
+    }, tr("downloadStarted"));
 
   const printable = () =>
     run("print", async () => {
       const res = await api<Response>(`/api/career/reports/summary.html?${q}`, { raw: true });
-      if (!res.ok) throw new Error(`Couldn't build the summary (${res.status})`);
+      if (!res.ok) throw new Error(tr("couldntBuildTheSummaryStatus", { status: res.status }));
       const url = URL.createObjectURL(new Blob([await res.text()], { type: "text/html" }));
       const w = window.open(url, "_blank", "noopener");
-      if (!w) throw new Error("Allow pop-ups to open the printable summary.");
+      if (!w) throw new Error(tr("allowPopUpsToOpen"));
       setTimeout(() => URL.revokeObjectURL(url), 60_000);
     });
 
@@ -128,31 +129,31 @@ export default function ReportsPage() {
     if (opts.data?.sections.includes(p.params.section)) setSection(p.params.section);
     setDraft(f);
     setApplied(f);
-    setSuccess(`Preset "${p.name}" applied.`);
+    setSuccess(tr("presetNameApplied", { name: p.name }));
   };
 
   if (opts.loading) return <Loading />;
-  if (opts.error || !opts.data) return <ErrorBanner error={opts.error ?? "Reports are unavailable."} onRetry={opts.reload} />;
+  if (opts.error || !opts.data) return <ErrorBanner error={opts.error ?? tr("reportsAreUnavailable")} onRetry={opts.reload} />;
   const o = opts.data;
 
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Reports"
-        description="How students use career services, built from appointments, document review, mentoring, experiences and employer activity at your school."
+        title={tr("reports")}
+        description={tr("howStudentsUseCareerServices")}
         actions={
           <>
             <Button variant="secondary" busy={busy === "csv"} onClick={() => sec && download(`/api/career/reports/${sec}.csv?${q}`, "csv")}>
-              Export CSV
+              {tr("exportCSV")}
             </Button>
             <Button variant="secondary" busy={busy === "print"} onClick={printable}>
-              Printable summary
+              {tr("printableSummary")}
             </Button>
           </>
         }
       />
 
-      <nav aria-label="Report sections" className="flex flex-wrap gap-2">
+      <nav aria-label={tr("reportSections")} className="flex flex-wrap gap-2">
         {o.sections.map((s) => (
           <button
             key={s}
@@ -167,7 +168,7 @@ export default function ReportsPage() {
         ))}
       </nav>
 
-      <Card title="Filters">
+      <Card title={tr("filters")}>
         <form
           className="grid gap-4 sm:grid-cols-[1fr_1fr_1fr_auto] sm:items-end"
           onSubmit={(e) => {
@@ -175,46 +176,46 @@ export default function ReportsPage() {
             setApplied({ ...draftF });
           }}
         >
-          <Field label="Term" hint="Pick a term, or choose “Custom dates”.">
+          <Field label={tr("term")} hint={tr("pickATermOrChoose")}>
             {(p) => (
               <select {...p} value={draftF.term} onChange={(e) => setDraft({ ...draftF, term: e.target.value })}>
-                <option value="">Custom dates</option>
+                <option value="">{tr("customDates")}</option>
                 {o.terms.map((t) => (
                   <option key={t.name} value={t.name}>
                     {t.name}
-                    {t.current ? " (current)" : ""}
+                    {t.current ? tr("current") : ""}
                   </option>
                 ))}
               </select>
             )}
           </Field>
-          <Field label="From" hint={draftF.term ? "Set by the term" : "Default: 90 days ago"}>
+          <Field label={tr("from")} hint={draftF.term ? tr("setByTheTerm") : tr("default90DaysAgo")}>
             {(p) => <input {...p} type="date" disabled={!!draftF.term} value={draftF.from} max={o.today} onChange={(e) => setDraft({ ...draftF, from: e.target.value })} />}
           </Field>
-          <Field label="To" hint={draftF.term ? "Set by the term" : "Default: today"}>
+          <Field label={tr("to")} hint={draftF.term ? tr("setByTheTerm") : tr("defaultToday")}>
             {(p) => <input {...p} type="date" disabled={!!draftF.term} value={draftF.to} onChange={(e) => setDraft({ ...draftF, to: e.target.value })} />}
           </Field>
-          <Button type="submit">Apply</Button>
+          <Button type="submit">{tr("apply")}</Button>
         </form>
 
-        <div className="mt-5 grid gap-4 border-t border-border pt-4 md:grid-cols-2">
+        <div className="mt-5 grid grid-cols-1 gap-4 border-t border-border pt-4 md:grid-cols-2">
           <div>
-            <h3 className="mb-2 text-sm font-semibold">My saved presets</h3>
+            <h3 className="mb-2 text-sm font-semibold">{tr("mySavedPresets")}</h3>
             {presets.error && <ErrorBanner error={presets.error} onRetry={presets.reload} />}
-            {presets.data && presets.data.length === 0 && <p className="text-sm text-muted-foreground">No presets yet.</p>}
+            {presets.data && presets.data.length === 0 && <p className="text-sm text-muted-foreground">{tr("noPresetsYet")}</p>}
             <ul className="space-y-1">
               {presets.data?.map((p) => (
                 <li key={p.id} className="flex items-center justify-between gap-2 text-sm">
-                  <button type="button" className="truncate text-left underline-offset-2 hover:underline focus-visible:outline-2" onClick={() => applyPreset(p)}>
-                    {p.name} <span className="text-muted-foreground">· {SECTION_LABELS[p.params.section]} · {p.params.term || `${p.params.from ?? "…"} to ${p.params.to ?? "today"}`}</span>
+                  <button type="button" className="truncate text-start underline-offset-2 hover:underline focus-visible:outline-2" onClick={() => applyPreset(p)}>
+                    {p.name} <span className="text-muted-foreground">· {SECTION_LABELS[p.params.section]} · {p.params.term || tr("fromToTo", { from: p.params.from ?? "…", to: p.params.to ?? tr("today") })}</span>
                   </button>
                   <Button
                     variant="ghost"
-                    aria-label={`Delete preset ${p.name}`}
+                    aria-label={tr("deletePresetName", { name: p.name })}
                     busy={busy === `del-${p.id}`}
-                    onClick={() => run(`del-${p.id}`, async () => { await api(`/api/career/reports/presets/${p.id}`, { method: "DELETE" }); presets.reload(); }, "Preset deleted.")}
+                    onClick={() => run(`del-${p.id}`, async () => { await api(`/api/career/reports/presets/${p.id}`, { method: "DELETE" }); presets.reload(); }, tr("presetDeleted"))}
                   >
-                    Delete
+                    {tr("delete")}
                   </Button>
                 </li>
               ))}
@@ -229,16 +230,16 @@ export default function ReportsPage() {
                 await api("/api/career/reports/presets", { json: { name: presetName, section: sec, term: filters.term || null, from: filters.term ? null : filters.from || null, to: filters.term ? null : filters.to || null } });
                 setPresetName("");
                 presets.reload();
-              }, "Preset saved.");
+              }, tr("presetSaved"));
             }}
           >
             <div className="flex-1">
-              <Field label="Save current report and filters as" hint="Saving with an existing name replaces it.">
-                {(p) => <input {...p} value={presetName} maxLength={80} onChange={(e) => setPresetName(e.target.value)} placeholder="e.g. Fall engagement" />}
+              <Field label={tr("saveCurrentReportAndFilters")} hint={tr("savingWithAnExistingName")}>
+                {(p) => <input {...p} value={presetName} maxLength={80} onChange={(e) => setPresetName(e.target.value)} placeholder={tr("eGFallEngagement")} />}
               </Field>
             </div>
             <Button type="submit" variant="secondary" busy={busy === "preset"} disabled={!presetName.trim()}>
-              Save preset
+              {tr("savePreset")}
             </Button>
           </form>
         </div>
@@ -249,14 +250,14 @@ export default function ReportsPage() {
         <SuccessBanner message={success} />
       </div>
 
-      {rep.loading && <Loading label="Building report…" />}
+      {rep.loading && <Loading label={tr("buildingReport")} />}
       {report && !rep.loading && (
         <div className="space-y-6">
           <div>
             <h2 className="text-xl font-semibold">{report.title}</h2>
             <p className="text-sm text-muted-foreground">
               {report.range.term ? `${report.range.term}: ` : ""}
-              {report.range.from} to {report.range.to} ({report.range.timeZone})
+              {tr("fromToToTimeZone", { from: report.range.from, to: report.range.to, timeZone: report.range.timeZone })}
             </p>
           </div>
           <dl className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-5">
@@ -268,7 +269,7 @@ export default function ReportsPage() {
               </div>
             ))}
           </dl>
-          <div className="grid gap-4 lg:grid-cols-2">
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
             {report.tables.map((t) => (
               <ReportTableView
                 key={t.key}
@@ -279,7 +280,7 @@ export default function ReportsPage() {
             ))}
           </div>
           {report.notes.length > 0 && (
-            <ul className="list-disc space-y-1 pl-5 text-xs text-muted-foreground">
+            <ul className="list-disc space-y-1 ps-5 text-xs text-muted-foreground">
               {report.notes.map((n) => (
                 <li key={n}>{n}</li>
               ))}
@@ -289,7 +290,7 @@ export default function ReportsPage() {
       )}
 
       {o.canEditSettings && (
-        <Card title="Privacy setting">
+        <Card title={tr("privacySetting")}>
           <form
             className="flex flex-wrap items-end gap-3"
             onSubmit={(e) => {
@@ -298,16 +299,16 @@ export default function ReportsPage() {
                 await api("/api/career/reports/settings", { method: "PUT", json: { minCellSize: Number(minCellValue) } });
                 opts.reload();
                 setVersion((v) => v + 1);
-              }, "Setting saved.");
+              }, tr("settingSaved"));
             }}
           >
             <div className="w-64">
-              <Field label="Smallest group shown in the equity view" hint={`Smaller groups appear as “<n”. Minimum ${o.minCellSizeFloor}.`}>
+              <Field label={tr("smallestGroupShownInThe")} hint={tr("smallerGroupsAppearAsN", { minCellSizeFloor: o.minCellSizeFloor })}>
                 {(p) => <input {...p} type="number" min={o.minCellSizeFloor} max={50} value={minCellValue ?? ""} onChange={(e) => setMinCell(e.target.value === "" ? "" : Number(e.target.value))} />}
               </Field>
             </div>
             <Button type="submit" busy={busy === "settings"}>
-              Save
+              {tr("save")}
             </Button>
           </form>
         </Card>

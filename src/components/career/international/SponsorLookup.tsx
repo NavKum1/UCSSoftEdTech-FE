@@ -8,7 +8,8 @@
 import React, { useState } from "react";
 import { Info } from "lucide-react";
 import { useApi } from "@/lib/appAuth";
-import { Button, Card, EmptyState, ErrorBanner, Field, Loading, formatDate, useLoad } from "@/components/career/ui";
+import { Button, Card, EmptyState, ErrorBanner, Field, Loading, formatDate, useLoad, ScrollArea, useCareerT, useCareerFormat } from "@/components/career/ui";
+import { currentFormatLocale } from "@/components/career/i18n/CareerI18nProvider";
 
 export interface SponsorSummary {
   normalizedKey: string;
@@ -51,7 +52,7 @@ interface Meta {
   source: string;
 }
 
-const money = (n: number | null) => (n == null ? "—" : n.toLocaleString(undefined, { style: "currency", currency: "USD", maximumFractionDigits: 0 }));
+const money = (n: number | null) => (n == null ? "—" : n.toLocaleString(currentFormatLocale(), { style: "currency", currency: "USD", maximumFractionDigits: 0 }));
 
 export function SponsorDisclaimer({ text }: { text: string }) {
   return (
@@ -63,6 +64,8 @@ export function SponsorDisclaimer({ text }: { text: string }) {
 }
 
 export default function SponsorLookup() {
+  const tr = useCareerT("sponsorLookup");
+  const fmt = useCareerFormat();
   const api = useApi();
   const meta = useLoad(() => api<Meta>("/api/career/international/sponsor-meta"), [api]);
   const [q, setQ] = useState("");
@@ -75,7 +78,7 @@ export default function SponsorLookup() {
   const search = async (e: React.FormEvent) => {
     e.preventDefault();
     if (q.trim().length < 2) {
-      setErr("Type at least two characters of an employer's name.");
+      setErr(tr("typeAtLeastTwoCharacters"));
       return;
     }
     setSearching(true);
@@ -104,40 +107,40 @@ export default function SponsorLookup() {
   };
 
   return (
-    <Card title="Employer sponsorship history">
+    <Card title={tr("employerSponsorshipHistory")}>
       <p className="mb-3 text-sm text-muted-foreground">
-        Look up how many Labor Condition Applications (LCAs) an employer filed in past years. This shows history only; it isn&apos;t a list of jobs.
+        {tr("lookUpHowManyLabor")}
       </p>
       {meta.data && <SponsorDisclaimer text={meta.data.disclaimer} />}
-      {meta.data && meta.data.employers === 0 && <p className="mb-3 text-sm text-muted-foreground">No sponsorship data has been loaded yet.</p>}
+      {meta.data && meta.data.employers === 0 && <p className="mb-3 text-sm text-muted-foreground">{tr("noSponsorshipDataHasBeen")}</p>}
       <form onSubmit={search} className="flex flex-wrap items-end gap-2" role="search">
         <div className="min-w-64 flex-1">
-          <Field label="Employer name" hint="Spelling variations like Inc., LLC or Corp. are ignored.">
+          <Field label={tr("employerName")} hint={tr("spellingVariationsLikeIncLLC")}>
             {(p) => <input {...p} value={q} onChange={(e) => setQ(e.target.value)} maxLength={100} autoComplete="off" />}
           </Field>
         </div>
         <Button type="submit" busy={searching} className="mb-5">
-          Search
+          {tr("search")}
         </Button>
       </form>
       <ErrorBanner error={err ?? meta.error} />
       <div aria-live="polite">
         {results && !detail && (
           results.length === 0 ? (
-            <EmptyState title="No matching employers">Try a shorter part of the name.</EmptyState>
+            <EmptyState title={tr("noMatchingEmployers")}>{tr("tryAShorterPartOf")}</EmptyState>
           ) : (
             <ul className="divide-y divide-border rounded-md border border-border">
               {results.map((r) => (
                 <li key={r.normalizedKey}>
-                  <button type="button" onClick={() => open(r.normalizedKey)} className="flex w-full flex-wrap items-center justify-between gap-2 px-3 py-2 text-left hover:bg-muted focus-visible:outline-2">
+                  <button type="button" onClick={() => open(r.normalizedKey)} className="flex w-full flex-wrap items-center justify-between gap-2 px-3 py-2 text-start hover:bg-muted focus-visible:outline-2">
                     <span>
                       <span className="font-medium">{r.name}</span>
                       <span className="block text-xs text-muted-foreground">
-                        FY{r.firstFiscalYear === r.latestFiscalYear ? r.latestFiscalYear : `${r.firstFiscalYear}–${r.latestFiscalYear}`}
+                        {tr("fY")}{r.firstFiscalYear === r.latestFiscalYear ? r.latestFiscalYear : `${r.firstFiscalYear}–${r.latestFiscalYear}`}
                       </span>
                     </span>
                     <span className="text-sm tabular-nums">
-                      {r.totalCertified.toLocaleString()} certified LCA{r.totalCertified === 1 ? "" : "s"}
+                      {tr("totalCertified2CertifiedLCAs", { totalCertified: r.totalCertified, totalCertified2: fmt.number(r.totalCertified) })}
                     </span>
                   </button>
                 </li>
@@ -150,8 +153,8 @@ export default function SponsorLookup() {
       </div>
       {meta.data && (
         <p className="mt-4 text-xs text-muted-foreground">
-          Source: {meta.data.source}.{meta.data.lastUpdated ? ` Last updated ${formatDate(meta.data.lastUpdated)}.` : ""}
-          {meta.data.fiscalYears.length > 0 ? ` Fiscal years: ${meta.data.fiscalYears.join(", ")}.` : ""}
+          {tr("sourceSource", { source: meta.data.source })}{meta.data.lastUpdated ? tr("lastUpdatedLastUpdated", { lastUpdated: formatDate(meta.data.lastUpdated) }) : ""}
+          {meta.data.fiscalYears.length > 0 ? tr("fiscalYearsFiscalYears", { fiscalYears: meta.data.fiscalYears.join(", ") }) : ""}
         </p>
       )}
     </Card>
@@ -159,68 +162,66 @@ export default function SponsorLookup() {
 }
 
 function SponsorDetailView({ detail, onBack }: { detail: SponsorDetail; onBack: () => void }) {
+  const tr = useCareerT("sponsorLookup");
   const e = detail.employer;
   return (
     <div>
       <div className="mb-3 flex flex-wrap items-start justify-between gap-2">
         <div>
           <h3 className="text-lg font-semibold">{e.name}</h3>
-          {e.otherNames.length > 1 && <p className="text-xs text-muted-foreground">Also filed as: {e.otherNames.filter((n) => n !== e.name).join("; ")}</p>}
+          {e.otherNames.length > 1 && <p className="text-xs text-muted-foreground">{tr("alsoFiledAsValue", { value: e.otherNames.filter((n) => n !== e.name).join("; ") })}</p>}
         </div>
         <Button variant="secondary" onClick={onBack}>
-          Back to results
+          {tr("backToResults")}
         </Button>
       </div>
       <SponsorDisclaimer text={detail.disclaimer} />
-      <div className="overflow-x-auto">
+      <ScrollArea>
         <table className="w-full text-sm">
-          <caption className="sr-only">LCA filings by fiscal year for {e.name}</caption>
-          <thead className="text-left text-xs uppercase text-muted-foreground">
+          <caption className="sr-only">{tr("lCAFilingsByFiscalYear", { name: e.name })}</caption>
+          <thead className="text-start text-xs uppercase text-muted-foreground [&_th]:text-start">
             <tr>
-              <th scope="col" className="py-2 pr-3">Fiscal year</th>
-              <th scope="col" className="py-2 pr-3">Certified</th>
-              <th scope="col" className="py-2 pr-3">Other outcomes</th>
-              <th scope="col" className="py-2 pr-3">Offered wage (annual)</th>
-              <th scope="col" className="py-2 pr-3">Top job titles</th>
-              <th scope="col" className="py-2 pr-3">States</th>
+              <th scope="col" className="py-2 pe-3">{tr("fiscalYear")}</th>
+              <th scope="col" className="py-2 pe-3">{tr("certified")}</th>
+              <th scope="col" className="py-2 pe-3">{tr("otherOutcomes")}</th>
+              <th scope="col" className="py-2 pe-3">{tr("offeredWageAnnual")}</th>
+              <th scope="col" className="py-2 pe-3">{tr("topJobTitles")}</th>
+              <th scope="col" className="py-2 pe-3">{tr("states")}</th>
             </tr>
           </thead>
           <tbody>
             {detail.years.map((y) => (
               <tr key={y.fiscalYear} className="border-t border-border align-top">
-                <th scope="row" className="py-2 pr-3 text-left font-medium">FY{y.fiscalYear}</th>
-                <td className="py-2 pr-3 tabular-nums">
+                <th scope="row" className="py-2 pe-3 text-start font-medium">{tr("fYFiscalYear", { fiscalYear: y.fiscalYear })}</th>
+                <td className="py-2 pe-3 tabular-nums">
                   {y.certified}
-                  {y.certifiedWithdrawn > 0 && <span className="block text-xs text-muted-foreground">+{y.certifiedWithdrawn} certified then withdrawn</span>}
+                  {y.certifiedWithdrawn > 0 && <span className="block text-xs text-muted-foreground">{tr("certifiedWithdrawnCertifiedThenWithdrawn", { certifiedWithdrawn: y.certifiedWithdrawn })}</span>}
                 </td>
-                <td className="py-2 pr-3 text-xs">
-                  {y.denied} denied, {y.withdrawn} withdrawn
+                <td className="py-2 pe-3 text-xs">
+                  {tr("deniedDeniedWithdrawnWithdrawn", { denied: y.denied, withdrawn: y.withdrawn })}
                 </td>
-                <td className="py-2 pr-3 text-xs">
+                <td className="py-2 pe-3 text-xs">
                   {y.wages.median == null ? "—" : (
                     <>
-                      median {money(y.wages.median)}
-                      <span className="block text-muted-foreground">
-                        range {money(y.wages.min)} – {money(y.wages.max)}
-                      </span>
+                      {tr.rich("medianMedianRangeMinMax", { median: money(y.wages.median), span: (chunks) => <span className="block text-muted-foreground">{chunks}</span>, min: money(y.wages.min), max: money(y.wages.max) })}
                     </>
                   )}
                 </td>
-                <td className="py-2 pr-3 text-xs">
+                <td className="py-2 pe-3 text-xs">
                   {y.topJobTitles.length === 0 ? "—" : y.topJobTitles.map((t) => <span key={t.title} className="block">{t.title} ({t.count})</span>)}
                   {y.topSocCodes.length > 0 && (
                     <span className="mt-1 block text-muted-foreground">
-                      Occupations: {y.topSocCodes.map((s) => `${s.title ?? s.code} (${s.count})`).join(", ")}
+                      {tr("occupationsValue", { value: y.topSocCodes.map((s) => `${s.title ?? s.code} (${s.count})`).join(", ") })}
                     </span>
                   )}
                 </td>
-                <td className="py-2 pr-3 text-xs">{y.states.length === 0 ? "—" : y.states.map((s) => `${s.state} ${s.count}`).join(", ")}</td>
+                <td className="py-2 pe-3 text-xs">{y.states.length === 0 ? "—" : y.states.map((s) => `${s.state} ${s.count}`).join(", ")}</td>
               </tr>
             ))}
           </tbody>
         </table>
-      </div>
-      <p className="mt-2 text-xs text-muted-foreground">Wages are the employer&apos;s offered wage on certified applications, converted to a yearly amount. U.S. federal fiscal years run October to September.</p>
+      </ScrollArea>
+      <p className="mt-2 text-xs text-muted-foreground">{tr("wagesAreTheEmployersOffered")}</p>
     </div>
   );
 }

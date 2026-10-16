@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { useApi } from "@/lib/appAuth";
 import { useCareerShell } from "@/components/career/CareerShell";
-import { Button, Card, ErrorBanner, Field, Loading, PageHeader, useLoad } from "@/components/career/ui";
+import { Button, Card, ErrorBanner, Field, Loading, PageHeader, useLoad, ScrollArea, useCareerT } from "@/components/career/ui";
 import { useDownload } from "@/components/career/appointments/shared";
 
 interface Summary {
@@ -23,6 +23,7 @@ interface Summary {
 }
 
 export default function InterviewReportsPage() {
+  const t = useCareerT("careerCenterInterviewsReports");
   const api = useApi();
   const { schoolId } = useCareerShell();
   const download = useDownload();
@@ -34,31 +35,31 @@ export default function InterviewReportsPage() {
 
   const stats: [string, string | number][] = r.data
     ? [
-        ["Employers", r.data.employers],
-        ["Slots offered", r.data.slotsOffered],
-        ["Interviews booked", r.data.interviewsBooked],
-        ["Fill rate", `${r.data.fillRate}%`],
-        ["Students interviewed", r.data.uniqueStudents],
-        ["Attended", r.data.attended],
-        ["No-shows", r.data.noShows],
-        ["Cancellations", r.data.cancellations],
-        ["Filled from alternates", r.data.promotedFromAlternates],
-        ["Offers", r.data.outcomes.Offer ?? 0],
-        ["No offer", r.data.outcomes.NoOffer ?? 0],
-        ["Pending", r.data.outcomes.Pending ?? 0],
+        [t("statEmployers"), r.data.employers],
+        [t("statSlotsOffered"), r.data.slotsOffered],
+        [t("statInterviewsBooked"), r.data.interviewsBooked],
+        [t("statFillRate"), `${r.data.fillRate}%`],
+        [t("statStudentsInterviewed"), r.data.uniqueStudents],
+        [t("statAttended"), r.data.attended],
+        [t("statNoShows"), r.data.noShows],
+        [t("statCancellations"), r.data.cancellations],
+        [t("statFilledFromAlternates"), r.data.promotedFromAlternates],
+        [t("statOffers"), r.data.outcomes.Offer ?? 0],
+        [t("statNoOffer"), r.data.outcomes.NoOffer ?? 0],
+        [t("statPending"), r.data.outcomes.Pending ?? 0],
       ]
     : [];
 
   return (
     <div>
       <PageHeader
-        title="Interview reports"
-        description="On-campus recruiting activity at your school, by interview date."
-        actions={<Link className="text-sm underline" href="/career-center/interviews">Back to interviews</Link>}
+        title={t("interviewReports")}
+        description={t("onCampusRecruitingActivityAt")}
+        actions={<Link className="text-sm underline" href="/career-center/interviews">{t("backToInterviews")}</Link>}
       />
       <div className="mb-4 flex flex-wrap items-end gap-3">
-        <Field label="From">{(p) => <input {...p} type="date" value={from} onChange={(e) => setFrom(e.target.value)} />}</Field>
-        <Field label="To">{(p) => <input {...p} type="date" value={to} onChange={(e) => setTo(e.target.value)} />}</Field>
+        <Field label={t("from")}>{(p) => <input {...p} type="date" value={from} onChange={(e) => setFrom(e.target.value)} />}</Field>
+        <Field label={t("to")}>{(p) => <input {...p} type="date" value={to} onChange={(e) => setTo(e.target.value)} />}</Field>
         <Button
           variant="secondary"
           onClick={async () => {
@@ -70,7 +71,7 @@ export default function InterviewReportsPage() {
             }
           }}
         >
-          Download CSV
+          {t("downloadCSV")}
         </Button>
       </div>
       <ErrorBanner error={err} />
@@ -89,24 +90,24 @@ export default function InterviewReportsPage() {
                 </div>
               ))}
             </dl>
-            <Card title="Schedules by status">
-              <p className="text-sm">{Object.entries(r.data!.schedulesByStatus).map(([k, v]) => `${k}: ${v}`).join(" · ") || "None yet"}</p>
+            <Card title={t("schedulesByStatus")}>
+              <p className="text-sm">{Object.entries(r.data!.schedulesByStatus).map(([k, v]) => `${k}: ${v}`).join(" · ") || t("noneYet")}</p>
             </Card>
-            <Card title="By employer">
+            <Card title={t("byEmployer")}>
               {r.data!.byEmployer.length === 0 ? (
-                <p className="text-sm text-muted-foreground">No interviews in this range.</p>
+                <p className="text-sm text-muted-foreground">{t("noInterviewsInThisRange")}</p>
               ) : (
-                <div className="overflow-x-auto">
+                <ScrollArea>
                   <table className="w-full text-sm">
-                    <caption className="sr-only">Interviews by employer</caption>
-                    <thead><tr className="text-left"><th scope="col">Employer</th><th scope="col">Interviews</th><th scope="col">No-shows</th><th scope="col">Offers</th></tr></thead>
+                    <caption className="sr-only">{t("interviewsByEmployer")}</caption>
+                    <thead><tr className="text-start [&_th]:text-start"><th scope="col">{t("employer")}</th><th scope="col">{t("interviews")}</th><th scope="col">{t("noShows")}</th><th scope="col">{t("offers")}</th></tr></thead>
                     <tbody>
                       {r.data!.byEmployer.map((e) => (
                         <tr key={e.employer} className="border-t border-border"><td>{e.employer}</td><td>{e.interviews}</td><td>{e.noShows}</td><td>{e.offers}</td></tr>
                       ))}
                     </tbody>
                   </table>
-                </div>
+                </ScrollArea>
               )}
             </Card>
           </div>

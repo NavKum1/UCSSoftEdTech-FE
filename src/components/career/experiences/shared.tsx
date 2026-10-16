@@ -6,7 +6,7 @@
  */
 
 import React, { useState } from "react";
-import { Badge, Button, Card, Field, formatDate } from "@/components/career/ui";
+import { Badge, Button, Card, Field, formatDate, useCareerT, useCareerLabels } from "@/components/career/ui";
 import type { useApi } from "@/lib/appAuth";
 
 export type Api = ReturnType<typeof useApi>;
@@ -107,17 +107,11 @@ export interface ExperienceDetail {
   canEdit: boolean;
 }
 
-export const STATUS_LABELS: Record<string, string> = {
-  Draft: "Draft",
-  Submitted: "Submitted",
-  Approved: "Approved: agreement to sign",
-  AgreementSigned: "Agreement signed",
-  Active: "Active",
-  Evaluations: "Evaluations",
-  Completed: "Completed",
-  Declined: "Declined",
-  Withdrawn: "Withdrawn",
-};
+export const STATUS_LABELS_KEYS = ["Draft", "Submitted", "Approved", "AgreementSigned", "Active", "Evaluations", "Completed", "Declined", "Withdrawn"];
+/** status labels in the career language (G1) */
+export function useExperienceStatusLabels(): Record<string, string> {
+  return useCareerLabels("experiencesShared.statusLabel", STATUS_LABELS_KEYS);
+}
 
 const STATUS_TONES: Record<string, "neutral" | "good" | "warn" | "bad" | "info"> = {
   Draft: "neutral",
@@ -131,60 +125,30 @@ const STATUS_TONES: Record<string, "neutral" | "good" | "warn" | "bad" | "info">
   Withdrawn: "neutral",
 };
 
+const SIGNER_ROLES = ["Student", "Supervisor", "Faculty"];
+
 export const STEPS = ["Draft", "Submitted", "Approved", "AgreementSigned", "Active", "Evaluations", "Completed"];
 
 export function StatusBadge({ status }: { status: string }) {
+  const STATUS_LABELS = useExperienceStatusLabels();
   return <Badge tone={STATUS_TONES[status] ?? "neutral"}>{STATUS_LABELS[status] ?? status}</Badge>;
 }
 
-export const CPT_NOTICE =
-  "This is not legal advice. Your school's international student office (your DSO) decides whether you are eligible for CPT and authorizes it on your I-20. Don't start work before the CPT start date on your I-20.";
 
-const ACTION_LABELS: Record<string, string> = {
-  created: "Registration created",
-  edited: "Registration edited",
-  submitted: "Submitted for approval",
-  "faculty.approved": "Faculty approved",
-  approved: "Career center approved",
-  declined: "Declined",
-  withdrawn: "Withdrawn",
-  comment: "Comment",
-  "document.uploaded": "Document uploaded",
-  "cpt.updated": "CPT details recorded",
-  "agreement.signed": "Agreement signed",
-  "agreement.voided": "Agreement changed: signatures voided",
-  "agreement.regenerated": "Agreement regenerated",
-  "agreement.completed": "Agreement fully signed",
-  "supervisor.confirmed": "Supervisor confirmed details",
-  "supervisor.corrections": "Supervisor asked for corrections",
-  "link.reissued": "Supervisor link sent",
-  started: "Experience started",
-  "hours.approved": "Hours approved",
-  "hours.rejected": "Hours returned",
-  "evaluation.midterm": "Midterm evaluation submitted",
-  "evaluation.final": "Final evaluation submitted",
-  "evaluations.opened": "Final evaluations opened",
-  "evaluations.started": "Final evaluations opened",
-  graded: "Grade recorded",
-  // D2 defend your internship
-  "defense.started": "Internship defense started",
-  "defense.finished": "Internship defense finished",
-  "defense.link.reissued": "Supervisor confirmation link sent",
-  "defense.supervisor.yes": "Supervisor confirmed the work",
-  "defense.supervisor.partly": "Supervisor partly confirmed the work",
-  "defense.supervisor.no": "Supervisor did not confirm the work",
-  "defense.override": "Verification changed",
-  "defense.override.cleared": "Verification override removed",
-  "defense.credential.issued": "Internship credential issued",
-  "defense.credential.revoked": "Internship credential revoked",
-};
+const ACTION_LABELS_KEYS = ["created", "edited", "submitted", "faculty.approved", "approved", "declined", "withdrawn", "comment", "document.uploaded", "cpt.updated", "agreement.signed", "agreement.voided", "agreement.regenerated", "agreement.completed", "supervisor.confirmed", "supervisor.corrections", "link.reissued", "started", "hours.approved", "hours.rejected", "evaluation.midterm", "evaluation.final", "evaluations.opened", "evaluations.started", "graded", "defense.started", "defense.finished", "defense.link.reissued", "defense.supervisor.yes", "defense.supervisor.partly", "defense.supervisor.no", "defense.override", "defense.override.cleared", "defense.credential.issued", "defense.credential.revoked"];
+/** action labels in the career language (G1) */
+function useActionLabels(): Record<string, string> {
+  return useCareerLabels("experiencesShared.action", ACTION_LABELS_KEYS);
+}
 
 /** Progress through the workflow, as an ordered list (not color-only: each step says done/current). */
 export function Stepper({ status }: { status: string }) {
-  if (status === "Declined" || status === "Withdrawn") return <p className="text-sm">This experience was {status.toLowerCase()}.</p>;
+  const tr = useCareerT("experiencesShared");
+  const STATUS_LABELS = useExperienceStatusLabels();
+  if (status === "Declined" || status === "Withdrawn") return <p className="text-sm">{tr("thisExperienceWasStatus", { status: status.toLowerCase() })}</p>;
   const current = STEPS.indexOf(status);
   return (
-    <ol className="flex flex-wrap gap-2 text-xs" aria-label="Progress">
+    <ol className="flex flex-wrap gap-2 text-xs" aria-label={tr("progress")}>
       {STEPS.map((s, i) => (
         <li
           key={s}
@@ -193,7 +157,7 @@ export function Stepper({ status }: { status: string }) {
         >
           {i < current ? "✓ " : ""}
           {STATUS_LABELS[s]}
-          <span className="sr-only">{i < current ? " (done)" : i === current ? " (current step)" : " (to do)"}</span>
+          <span className="sr-only">{i < current ? tr("done") : i === current ? tr("currentStep") : tr("toDo")}</span>
         </li>
       ))}
     </ol>
@@ -201,38 +165,39 @@ export function Stepper({ status }: { status: string }) {
 }
 
 export function OverviewCard({ x }: { x: ExperienceDetail }) {
+  const tr = useCareerT("experiencesShared");
   return (
-    <Card title="Experience">
+    <Card title={tr("experience")}>
       <dl className="grid gap-x-6 gap-y-2 text-sm sm:grid-cols-2">
-        <Row label="Student" value={`${x.student.name} (${x.student.email})`} />
-        <Row label="Program" value={`${x.program.code} ${x.program.title} · ${x.program.creditHours} credits · ${x.program.requiredHours} hours`} />
-        <Row label="Organization" value={x.employer.website ? `${x.employer.name} (${x.employer.website})` : x.employer.name} />
-        <Row label="Role" value={x.roleTitle} />
-        <Row label="Site supervisor" value={`${x.supervisor.name}${x.supervisor.title ? `, ${x.supervisor.title}` : ""} · ${x.supervisor.email}`} />
-        <Row label="Supervisor confirmed" value={x.supervisor.confirmedAt ? formatDate(x.supervisor.confirmedAt, true) : "Not yet"} />
-        <Row label="Dates" value={`${formatDate(x.startDate)} to ${formatDate(x.endDate)}`} />
-        <Row label="Hours per week" value={`${x.hoursPerWeek} · ${x.paid ? "Paid" : "Unpaid"}`} />
-        <Row label="Location" value={[x.remote ? "Remote" : null, x.location].filter(Boolean).join(" · ") || "—"} />
+        <Row label={tr("student")} value={`${x.student.name} (${x.student.email})`} />
+        <Row label={tr("program")} value={tr("programSummary", { code: x.program.code, title: x.program.title, creditHours: x.program.creditHours, requiredHours: x.program.requiredHours })} />
+        <Row label={tr("organization")} value={x.employer.website ? `${x.employer.name} (${x.employer.website})` : x.employer.name} />
+        <Row label={tr("role")} value={x.roleTitle} />
+        <Row label={tr("siteSupervisor")} value={`${x.supervisor.name}${x.supervisor.title ? `, ${x.supervisor.title}` : ""} · ${x.supervisor.email}`} />
+        <Row label={tr("supervisorConfirmed")} value={x.supervisor.confirmedAt ? formatDate(x.supervisor.confirmedAt, true) : tr("notYet")} />
+        <Row label={tr("dates")} value={tr("startDateToEndDate", { startDate: formatDate(x.startDate), endDate: formatDate(x.endDate) })} />
+        <Row label={tr("hoursPerWeek")} value={`${x.hoursPerWeek} · ${x.paid ? tr("paid") : tr("unpaid")}`} />
+        <Row label={tr("location")} value={[x.remote ? tr("remote") : null, x.location].filter(Boolean).join(" · ") || "—"} />
       </dl>
-      <h3 className="mt-4 text-sm font-semibold">Learning objectives</h3>
-      <ol className="ml-5 list-decimal text-sm">
+      <h3 className="mt-4 text-sm font-semibold">{tr("learningObjectives")}</h3>
+      <ol className="ms-5 list-decimal text-sm">
         {x.learningObjectives.map((o, i) => (
           <li key={i}>{o}</li>
         ))}
       </ol>
       {x.cpt.isF1 && (
         <div className="mt-4 rounded-md border border-border p-3 text-sm">
-          <h3 className="font-semibold">Curricular practical training (F-1)</h3>
+          <h3 className="font-semibold">{tr("curricularPracticalTrainingF1")}</h3>
           <p>
-            Status: {x.cpt.status ?? "Not recorded"} · DSO approval: {formatDate(x.cpt.dsoApprovalDate)} · I-20 CPT dates: {formatDate(x.cpt.startDate)} to {formatDate(x.cpt.endDate)}
+            {tr("statusStatusDSOApprovalDsoApprovalDate", { status: x.cpt.status ?? tr("notRecorded"), dsoApprovalDate: formatDate(x.cpt.dsoApprovalDate), startDate: formatDate(x.cpt.startDate), endDate: formatDate(x.cpt.endDate) })}
           </p>
-          {x.cpt.missing && <p className="mt-1 font-medium">CPT dates and DSO approval date are still needed before the career center can approve.</p>}
-          <p className="mt-1 text-xs text-muted-foreground">{CPT_NOTICE}</p>
+          {x.cpt.missing && <p className="mt-1 font-medium">{tr("cPTDatesAndDSOApproval")}</p>}
+          <p className="mt-1 text-xs text-muted-foreground">{tr("cptNotice")}</p>
         </div>
       )}
       {x.approvals.declineReason && (
         <p className="mt-4 text-sm">
-          <strong>Decline reason:</strong> {x.approvals.declineReason}
+          <strong>{tr("declineReason")}</strong> {x.approvals.declineReason}
         </p>
       )}
     </Card>
@@ -250,27 +215,29 @@ function Row({ label, value }: { label: string; value: React.ReactNode }) {
 
 /** Agreement text, signature status, and the click-to-sign form for the current viewer. */
 export function AgreementCard({ x, onSign, showAudit = false }: { x: ExperienceDetail; onSign?: (typedName: string, sha256: string) => Promise<void>; showAudit?: boolean }) {
+  const tr = useCareerT("experiencesShared");
   const [typed, setTyped] = useState("");
   const [consent, setConsent] = useState(false);
   const [busy, setBusy] = useState(false);
+  const SIGNERS = useCareerLabels("experiencesShared.signer", SIGNER_ROLES);
   const a = x.agreement;
   if (!a) return null;
   return (
-    <Card title={`Learning agreement (version ${a.version})`}>
-      <pre className="max-h-96 overflow-auto whitespace-pre-wrap rounded-md border border-border bg-muted/40 p-3 text-xs" tabIndex={0} aria-label="Agreement text">
+    <Card title={tr("learningAgreementVersionVersion", { version: a.version })}>
+      <pre className="max-h-96 overflow-auto whitespace-pre-wrap rounded-md border border-border bg-muted/40 p-3 text-xs" tabIndex={0} aria-label={tr("agreementText")}>
         {a.text}
       </pre>
-      <p className="mt-2 break-all text-xs text-muted-foreground">Document fingerprint (SHA-256): {a.sha256}</p>
-      <h3 className="mt-4 text-sm font-semibold">Signatures</h3>
+      <p className="mt-2 break-all text-xs text-muted-foreground">{tr("documentFingerprintSHA256Sha256", { sha256: a.sha256 })}</p>
+      <h3 className="mt-4 text-sm font-semibold">{tr("signatures")}</h3>
       <ul className="text-sm">
-        {["Student", "Supervisor", "Faculty"].map((role) => {
+        {SIGNER_ROLES.map((role) => {
           const s = a.signatures.find((x) => x.role === role);
           return (
             <li key={role}>
-              {role}: {s ? `Signed by ${s.name} on ${formatDate(s.signedAt, true)}` : "Not signed yet"}
+              {tr("signerRole", { role: SIGNERS[role] })}{" "}{s ? tr("signedByNameOnSignedAt", { name: s.name, signedAt: formatDate(s.signedAt, true) }) : tr("notSignedYet")}
               {s && showAudit && (
                 <span className="block text-xs text-muted-foreground">
-                  Typed “{s.typedName}” · {s.email} · IP {s.ip ?? "—"} · {s.userAgent ?? "—"} · {s.provider}
+                  {tr("typedTypedNameEmailIPIp", { typedName: s.typedName, email: s.email, ip: s.ip ?? "—", userAgent: s.userAgent ?? "—", provider: s.provider })}
                 </span>
               )}
             </li>
@@ -292,23 +259,23 @@ export function AgreementCard({ x, onSign, showAudit = false }: { x: ExperienceD
             }
           }}
         >
-          <Field label="Type your full name to sign">{(p) => <input {...p} value={typed} onChange={(e) => setTyped(e.target.value)} autoComplete="name" required />}</Field>
+          <Field label={tr("typeYourFullNameTo")}>{(p) => <input {...p} value={typed} onChange={(e) => setTyped(e.target.value)} autoComplete="name" required />}</Field>
           <label className="flex items-start gap-2 text-sm">
             <input type="checkbox" checked={consent} onChange={(e) => setConsent(e.target.checked)} className="mt-1" required />
-            <span>I have read this version of the agreement, agree to it, and agree to sign electronically.</span>
+            <span>{tr("iHaveReadThisVersion")}</span>
           </label>
           <Button type="submit" busy={busy} disabled={!consent || typed.trim().length < 2}>
-            Sign agreement
+            {tr("signAgreement")}
           </Button>
         </form>
       )}
       {x.agreementHistory.length > 0 && (
         <details className="mt-4 text-sm">
-          <summary className="cursor-pointer">Earlier versions ({x.agreementHistory.length})</summary>
+          <summary className="cursor-pointer">{tr("earlierVersionsCount", { count: x.agreementHistory.length })}</summary>
           <ul className="mt-2 space-y-1">
             {x.agreementHistory.map((h) => (
               <li key={h.version}>
-                Version {h.version}: replaced {formatDate(h.voidedAt, true)} ({h.voidReason ?? "changed"}); {h.signatures.length} signature(s) voided.
+                {tr("versionVersionReplacedVoidedAtVoidReason", { version: h.version, voidedAt: formatDate(h.voidedAt, true), voidReason: h.voidReason ?? tr("changed"), count: h.signatures.length })}
               </li>
             ))}
           </ul>
@@ -319,24 +286,25 @@ export function AgreementCard({ x, onSign, showAudit = false }: { x: ExperienceD
 }
 
 export function HoursCard({ x, children }: { x: ExperienceDetail; children?: React.ReactNode }) {
+  const tr = useCareerT("experiencesShared");
   const s = x.hoursSummary;
   return (
-    <Card title="Hours">
+    <Card title={tr("hours")}>
       <p className="mb-3 text-sm">
-        {s.approved} of {s.required} required hours approved{s.pending ? ` · ${s.pending} waiting for the supervisor` : ""}.
+        {tr("approvedOfRequiredRequiredHours", { approved: s.approved, required: s.required })}{s.pending ? tr("pendingWaitingForTheSupervisor", { pending: s.pending }) : ""}.
       </p>
       {children}
       {x.hours.length === 0 ? (
-        <p className="text-sm text-muted-foreground">No hours logged yet.</p>
+        <p className="text-sm text-muted-foreground">{tr("noHoursLoggedYet")}</p>
       ) : (
-        <table className="w-full text-left text-sm">
-          <caption className="sr-only">Weekly hours</caption>
+        <table className="w-full text-start text-sm [&_th]:text-start">
+          <caption className="sr-only">{tr("weeklyHours")}</caption>
           <thead>
             <tr className="border-b border-border">
-              <th scope="col" className="py-1">Week of</th>
-              <th scope="col">Hours</th>
-              <th scope="col">What you worked on</th>
-              <th scope="col">Status</th>
+              <th scope="col" className="py-1">{tr("weekOf")}</th>
+              <th scope="col">{tr("hours")}</th>
+              <th scope="col">{tr("whatYouWorkedOn")}</th>
+              <th scope="col">{tr("status")}</th>
             </tr>
           </thead>
           <tbody>
@@ -346,7 +314,7 @@ export function HoursCard({ x, children }: { x: ExperienceDetail; children?: Rea
                 <td>{h.hours}</td>
                 <td>{h.description ?? "—"}</td>
                 <td>
-                  <Badge tone={h.status === "Approved" ? "good" : h.status === "Rejected" ? "bad" : "warn"}>{h.status === "Rejected" ? "Returned" : h.status}</Badge>
+                  <Badge tone={h.status === "Approved" ? "good" : h.status === "Rejected" ? "bad" : "warn"}>{h.status === "Rejected" ? tr("returned") : h.status}</Badge>
                   {h.decisionNote && <span className="block text-xs">{h.decisionNote}</span>}
                 </td>
               </tr>
@@ -359,44 +327,47 @@ export function HoursCard({ x, children }: { x: ExperienceDetail; children?: Rea
 }
 
 export function EvaluationsCard({ x }: { x: ExperienceDetail }) {
+  const tr = useCareerT("experiencesShared");
   return (
-    <Card title="Supervisor evaluations">
+    <Card title={tr("supervisorEvaluations")}>
       {x.evaluations.length === 0 ? (
-        <p className="text-sm text-muted-foreground">No evaluations yet. The site supervisor gets a secure link for the midterm and the final evaluation.</p>
+        <p className="text-sm text-muted-foreground">{tr("noEvaluationsYetTheSite")}</p>
       ) : (
         <div className="space-y-4">
           {x.evaluations.map((v) => (
-            <section key={v.id} aria-label={`${v.kind} evaluation`}>
+            <section key={v.id} aria-label={tr("kindEvaluation", { kind: v.kind })}>
               <h3 className="text-sm font-semibold">
-                {v.kind} evaluation · {v.submittedByName} · {formatDate(v.submittedAt)}
+                {tr("kindEvaluationSubmittedByNameSubmittedAt", { kind: v.kind, submittedByName: v.submittedByName, submittedAt: formatDate(v.submittedAt) })}
               </h3>
               <dl className="mt-1 space-y-1 text-sm">
                 {v.questions.map((q) => (
                   <div key={q.key}>
                     <dt className="text-muted-foreground">{q.text}</dt>
-                    <dd>{q.type === "rating" ? `${v.answers[q.key] ?? "—"} out of ${v.ratingScaleMax}` : (v.answers[q.key] ?? "—")}</dd>
+                    <dd>{q.type === "rating" ? tr("answersOutOfRatingScaleMax", { answers: v.answers[q.key] ?? "—", ratingScaleMax: v.ratingScaleMax }) : (v.answers[q.key] ?? "—")}</dd>
                   </div>
                 ))}
               </dl>
-              {v.comments && <p className="mt-1 text-sm">Comments: {v.comments}</p>}
+              {v.comments && <p className="mt-1 text-sm">{tr("commentsComments", { comments: v.comments })}</p>}
             </section>
           ))}
         </div>
       )}
-      <p className="mt-3 text-xs text-muted-foreground">Evaluations are part of the student&apos;s education record. They are never shared with other employers.</p>
+      <p className="mt-3 text-xs text-muted-foreground">{tr("evaluationsArePartOfThe")}</p>
     </Card>
   );
 }
 
 export function TimelineCard({ x }: { x: ExperienceDetail }) {
+  const tr = useCareerT("experiencesShared");
+  const ACTION_LABELS = useActionLabels();
   return (
-    <Card title="Activity and comments">
+    <Card title={tr("activityAndComments")}>
       <ol className="space-y-2 text-sm">
         {x.timeline.map((t, i) => (
           <li key={i}>
-            <span className="text-xs text-muted-foreground">{formatDate(t.at, true)}</span> · <strong>{ACTION_LABELS[t.action] ?? t.action}</strong> by {t.actorName}
+            {tr.rich("atActionByActorName", { span: (chunks) => <span className="text-xs text-muted-foreground">{chunks}</span>, at: formatDate(t.at, true), strong: (chunks) => <strong>{chunks}</strong>, action: ACTION_LABELS[t.action] ?? t.action, actorName: t.actorName })}
             {t.actorRole !== "System" ? ` (${t.actorRole.toLowerCase()})` : ""}
-            {t.comment && <span className="block whitespace-pre-wrap pl-4">{t.comment}</span>}
+            {t.comment && <span className="block whitespace-pre-wrap ps-4">{t.comment}</span>}
           </li>
         ))}
       </ol>
@@ -405,9 +376,10 @@ export function TimelineCard({ x }: { x: ExperienceDetail }) {
 }
 
 export function DocumentsList({ x, onDownload }: { x: ExperienceDetail; onDownload: (id: string, name: string) => void }) {
+  const tr = useCareerT("experiencesShared");
   return (
     <div className="text-sm">
-      {x.program.requiredDocuments.length > 0 && <p>Required: {x.program.requiredDocuments.join(", ")}.{x.missingDocuments.length > 0 ? ` Missing: ${x.missingDocuments.join(", ")}.` : " All uploaded."}</p>}
+      {x.program.requiredDocuments.length > 0 && <p>{tr("requiredRequiredDocuments", { requiredDocuments: x.program.requiredDocuments.join(", ") })}{x.missingDocuments.length > 0 ? tr("missingMissingDocuments", { missingDocuments: x.missingDocuments.join(", ") }) : tr("allUploaded")}</p>}
       <ul className="mt-2 space-y-1">
         {x.documents.map((d) => (
           <li key={d.id}>
@@ -424,9 +396,9 @@ export function DocumentsList({ x, onDownload }: { x: ExperienceDetail; onDownlo
 }
 
 /** Downloads a protected file via the authenticated API caller. */
-export async function downloadWith(api: Api, path: string, fileName: string) {
+export async function downloadWith(api: Api, path: string, fileName: string, failedMessage: string) {
   const res = await api<Response>(path, { raw: true });
-  if (!res.ok) throw new Error("Download failed.");
+  if (!res.ok) throw new Error(failedMessage);
   const blob = await res.blob();
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
@@ -436,7 +408,8 @@ export async function downloadWith(api: Api, path: string, fileName: string) {
   URL.revokeObjectURL(url);
 }
 
-export function CommentBox({ label, onSubmit, submitLabel = "Add comment", required = true }: { label: string; onSubmit: (text: string) => Promise<void>; submitLabel?: string; required?: boolean }) {
+export function CommentBox({ label, onSubmit, submitLabel, required = true }: { label: string; onSubmit: (text: string) => Promise<void>; submitLabel?: string; required?: boolean }) {
+  const tr = useCareerT("experiencesShared");
   const [text, setText] = useState("");
   const [busy, setBusy] = useState(false);
   return (
@@ -455,13 +428,14 @@ export function CommentBox({ label, onSubmit, submitLabel = "Add comment", requi
     >
       <Field label={label}>{(p) => <textarea {...p} rows={3} value={text} onChange={(e) => setText(e.target.value)} required={required} />}</Field>
       <Button type="submit" variant="secondary" busy={busy}>
-        {submitLabel}
+        {submitLabel ?? tr("addComment")}
       </Button>
     </form>
   );
 }
 
 export function ApproveDecline({ canApprove, onApprove, onDecline }: { canApprove: boolean; onApprove: (c: string) => Promise<void>; onDecline: (c: string) => Promise<void> }) {
+  const tr = useCareerT("experiencesShared");
   const [comment, setComment] = useState("");
   const [busy, setBusy] = useState<string | null>(null);
   const run = async (kind: string, fn: (c: string) => Promise<void>) => {
@@ -474,13 +448,13 @@ export function ApproveDecline({ canApprove, onApprove, onDecline }: { canApprov
   };
   return (
     <div className="space-y-3">
-      <Field label="Comment" hint="Required when declining; shown to the student.">{(p) => <textarea {...p} rows={3} value={comment} onChange={(e) => setComment(e.target.value)} />}</Field>
+      <Field label={tr("comment")} hint={tr("requiredWhenDecliningShownTo")}>{(p) => <textarea {...p} rows={3} value={comment} onChange={(e) => setComment(e.target.value)} />}</Field>
       <div className="flex gap-2">
         <Button busy={busy === "a"} disabled={!canApprove} onClick={() => run("a", onApprove)}>
-          Approve
+          {tr("approve")}
         </Button>
         <Button variant="danger" busy={busy === "d"} disabled={!comment.trim()} onClick={() => run("d", onDecline)}>
-          Decline
+          {tr("decline")}
         </Button>
       </div>
     </div>

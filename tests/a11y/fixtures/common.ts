@@ -64,6 +64,26 @@ export const commonFixtures: ApiFixture[] = [
     },
   },
   { path: "/api/career/me", body: me },
+  // G1: the user's language (saved choice, else school default, else platform default)
+  {
+    path: "/api/career/locale",
+    body: { locale: "en", userLocale: null, schoolDefault: null, platformDefault: "en", canSaveUserLocale: true, timeZone: "America/Chicago", supported: [{ locale: "en", dir: "ltr", pseudo: false }] },
+  },
+  // G1: the school's default language (career-center settings); the admin persona can edit it
+  {
+    path: "/api/career/locale/school",
+    body: {
+      defaultLocale: null,
+      effective: "en",
+      platformDefault: "en",
+      canEdit: true,
+      supported: [
+        { locale: "en", dir: "ltr", pseudo: false },
+        { locale: "en-XA", dir: "ltr", pseudo: true },
+        { locale: "ar-XB", dir: "rtl", pseudo: true },
+      ],
+    },
+  },
   {
     path: "/api/career/notifications",
     body: (ctx: FixtureContext) =>

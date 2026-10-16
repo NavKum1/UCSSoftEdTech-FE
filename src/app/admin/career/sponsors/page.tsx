@@ -8,7 +8,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useApi } from "@/lib/appAuth";
-import { Badge, Button, Card, EmptyState, ErrorBanner, Field, Loading, PageHeader, SuccessBanner, formatDate, useLoad } from "@/components/career/ui";
+import { Badge, Button, Card, EmptyState, ErrorBanner, Field, Loading, PageHeader, SuccessBanner, formatDate, useLoad, ScrollArea } from "@/components/career/ui";
 
 interface ImportRow {
   id: string;
@@ -269,7 +269,7 @@ export default function AdminSponsorDataPage() {
         ) : !imports.data || imports.data.length === 0 ? (
           <EmptyState title="No imports yet" />
         ) : (
-          <div className="overflow-x-auto" aria-live="polite">
+          <ScrollArea><div aria-live="polite">
             <table className="w-full text-sm">
               <caption className="sr-only">Sponsorship data imports</caption>
               <thead className="text-left text-xs uppercase text-muted-foreground">
@@ -322,7 +322,7 @@ export default function AdminSponsorDataPage() {
                 ))}
               </tbody>
             </table>
-          </div>
+          </div></ScrollArea>
         )}
       </Card>
 
@@ -330,8 +330,8 @@ export default function AdminSponsorDataPage() {
         <div role="note" className="mb-4 rounded-md border-2 border-amber-400 bg-amber-50 p-3 text-sm text-amber-900 dark:border-amber-600 dark:bg-amber-950/40 dark:text-amber-200">
           <p className="font-semibold">Proposal: not active until partner agreement.</p>
           <p className="mt-1">
-            A partner could show this sponsorship history inside its own job search by calling <code>GET /api/career/international/partner/sponsors?q=</code> and{" "}
-            <code>/partner/sponsors/{"{normalizedKey}"}</code> with an <code>X-Partner-Key</code> header. Issue a key only after the agreement is signed. The API returns public DOL data only, never student data.
+            A partner could show this sponsorship history inside its own job search by calling <code className="break-all">GET /api/career/international/partner/sponsors?q=</code> and{" "}
+            <code className="break-all">/partner/sponsors/{"{normalizedKey}"}</code> with an <code>X-Partner-Key</code> header. Issue a key only after the agreement is signed. The API returns public DOL data only, never student data.
           </p>
         </div>
         {newKey && (
@@ -353,7 +353,7 @@ export default function AdminSponsorDataPage() {
         </form>
         <ErrorBanner error={keys.error} onRetry={keys.reload} />
         {keys.data && keys.data.items.length > 0 && (
-          <div className="overflow-x-auto">
+          <ScrollArea>
             <table className="w-full text-sm">
               <caption className="sr-only">Partner API keys</caption>
               <thead className="text-left text-xs uppercase text-muted-foreground">
@@ -385,7 +385,7 @@ export default function AdminSponsorDataPage() {
                 ))}
               </tbody>
             </table>
-          </div>
+          </ScrollArea>
         )}
       </Card>
     </div>

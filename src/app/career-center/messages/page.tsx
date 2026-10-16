@@ -3,33 +3,29 @@
 import React, { Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useApi } from "@/lib/appAuth";
-import { Badge, Button, Card, EmptyState, ErrorBanner, Field, Loading, PageHeader, SuccessBanner, formatDate, useLoad } from "@/components/career/ui";
+import { Badge, Button, Card, EmptyState, ErrorBanner, Field, Loading, PageHeader, SuccessBanner, formatDate, useLoad, useCareerT } from "@/components/career/ui";
 import { ThreadList, ThreadView, type ThreadRow } from "@/components/career/messaging/shared";
 import CampaignsPanel from "@/components/career/messaging/CampaignsPanel";
 
 type Tab = "inbox" | "campaigns" | "reports";
-const FILTERS = [
-  ["open", "All open"],
-  ["unassigned", "Unassigned"],
-  ["mine", "Assigned to me"],
-  ["closed", "Closed"],
-  ["all", "Everything"],
-] as const;
+// Labels: messages careerCenterMessages.filter.<key>
+const FILTERS = ["open", "unassigned", "mine", "closed", "all"] as const;
 
 function CareerCenterMessages() {
+  const tr = useCareerT("careerCenterMessages");
   const router = useRouter();
   const params = useSearchParams();
   const tab = (params.get("tab") as Tab) || "inbox";
   const setTab = (t: Tab) => router.replace(`/career-center/messages?tab=${t}`);
   const tabs: [Tab, string][] = [
-    ["inbox", "Inbox"],
-    ["campaigns", "Campaigns"],
-    ["reports", "Reports"],
+    ["inbox", tr("tabInbox")],
+    ["campaigns", tr("tabCampaigns")],
+    ["reports", tr("tabReports")],
   ];
   return (
     <div>
-      <PageHeader title="Messages & campaigns" description="The shared career-center inbox for conversations with your students, plus announcements to groups of students and alumni." />
-      <div role="tablist" aria-label="Messages sections" className="mb-6 flex gap-1 border-b border-border">
+      <PageHeader title={tr("messagesCampaigns")} description={tr("theSharedCareerCenterInbox")} />
+      <div role="tablist" aria-label={tr("messagesSections")} className="mb-6 flex gap-1 border-b border-border">
         {tabs.map(([key, label]) => (
           <button
             key={key}
@@ -49,6 +45,7 @@ function CareerCenterMessages() {
 }
 
 function Inbox() {
+  const tr = useCareerT("careerCenterMessages");
   const api = useApi();
   const router = useRouter();
   const params = useSearchParams();
@@ -66,10 +63,10 @@ function Inbox() {
   return (
     <div>
       <div className="mb-4 flex flex-wrap items-end gap-3">
-        <Field label="Show">
+        <Field label={tr("show")}>
           {(p) => (
             <select {...p} value={filter} onChange={(e) => setFilter(e.target.value)}>
-              {FILTERS.map(([v, l]) => (
+              {FILTERS.map((v) => [v, tr(`filter.${v}`)] as const).map(([v, l]) => (
                 <option key={v} value={v}>
                   {l}
                 </option>
@@ -85,13 +82,13 @@ function Inbox() {
             setSearch(q.trim());
           }}
         >
-          <Field label="Search subject, student or text">{(p) => <input {...p} type="search" value={q} onChange={(e) => setQ(e.target.value)} />}</Field>
+          <Field label={tr("searchSubjectStudentOrText")}>{(p) => <input {...p} type="search" value={q} onChange={(e) => setQ(e.target.value)} />}</Field>
           <Button type="submit" variant="secondary">
-            Search
+            {tr("search")}
           </Button>
         </form>
-        <div className="ml-auto">
-          <Button onClick={() => setComposing(!composing)}>{composing ? "Cancel" : "Message a student"}</Button>
+        <div className="ms-auto">
+          <Button onClick={() => setComposing(!composing)}>{composing ? tr("cancel") : tr("messageAStudent")}</Button>
         </div>
       </div>
       {composing && (
@@ -103,18 +100,19 @@ function Inbox() {
           }}
         />
       )}
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,2fr)]">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,2fr)]">
         <div>
           <ErrorBanner error={error} onRetry={reload} />
-          {loading && !data ? <Loading /> : data && data.length > 0 ? <ThreadList threads={data} selected={selected} onSelect={select} showStudent /> : <EmptyState title="No conversations here" />}
+          {loading && !data ? <Loading /> : data && data.length > 0 ? <ThreadList threads={data} selected={selected} onSelect={select} showStudent /> : <EmptyState title={tr("noConversationsHere")} />}
         </div>
-        <div>{selected ? <ThreadView threadId={selected} onChanged={reload} /> : <EmptyState title="Choose a conversation" />}</div>
+        <div>{selected ? <ThreadView threadId={selected} onChanged={reload} /> : <EmptyState title={tr("chooseAConversation")} />}</div>
       </div>
     </div>
   );
 }
 
 function Compose({ onSent }: { onSent: (id: string) => void }) {
+  const tr = useCareerT("careerCenterMessages");
   const api = useApi();
   const [q, setQ] = useState("");
   const [results, setResults] = useState<{ userId: string; name: string; email: string; role: string }[] | null>(null);
@@ -154,12 +152,12 @@ function Compose({ onSent }: { onSent: (id: string) => void }) {
   };
 
   return (
-    <Card title="New message to a student" className="mb-6">
+    <Card title={tr("newMessageToAStudent")} className="mb-6">
       <ErrorBanner error={error} />
       {!student ? (
         <div className="space-y-3">
           <div className="flex items-end gap-2">
-            <Field label="Find a student or alumnus (name, email or student number)">
+            <Field label={tr("findAStudentOrAlumnus")}>
               {(p) => (
                 <input
                   {...p}
@@ -175,15 +173,15 @@ function Compose({ onSent }: { onSent: (id: string) => void }) {
               )}
             </Field>
             <Button type="button" variant="secondary" onClick={find}>
-              Find
+              {tr("find")}
             </Button>
           </div>
           {results && (
             <ul role="status" className="divide-y divide-border rounded-md border border-border">
-              {results.length === 0 && <li className="p-3 text-sm text-muted-foreground">No one found.</li>}
+              {results.length === 0 && <li className="p-3 text-sm text-muted-foreground">{tr("noOneFound")}</li>}
               {results.map((r) => (
                 <li key={r.userId}>
-                  <button type="button" className="w-full p-3 text-left text-sm hover:bg-muted" onClick={() => setStudent(r)}>
+                  <button type="button" className="w-full p-3 text-start text-sm hover:bg-muted" onClick={() => setStudent(r)}>
                     {r.name} <span className="text-muted-foreground">({r.email}, {r.role})</span>
                   </button>
                 </li>
@@ -194,16 +192,16 @@ function Compose({ onSent }: { onSent: (id: string) => void }) {
       ) : (
         <form onSubmit={send} className="space-y-3">
           <p className="text-sm">
-            To <strong>{student.name}</strong>{" "}
+            {tr.rich("toName", { strong: (chunks) => <strong>{chunks}</strong>, name: student.name })}{" "}
             <button type="button" className="underline" onClick={() => setStudent(null)}>
-              change
+              {tr("change")}
             </button>
           </p>
-          <Field label="Subject">{(p) => <input {...p} required maxLength={200} value={subject} onChange={(e) => setSubject(e.target.value)} />}</Field>
-          <Field label="Message">{(p) => <textarea {...p} required rows={5} maxLength={10000} value={body} onChange={(e) => setBody(e.target.value)} />}</Field>
-          <Field label="Attachment (optional)">{(p) => <input {...p} type="file" accept=".pdf,.docx,.png,.jpg,.jpeg,.txt" onChange={(e) => setFile(e.target.files?.[0] ?? null)} />}</Field>
+          <Field label={tr("subject")}>{(p) => <input {...p} required maxLength={200} value={subject} onChange={(e) => setSubject(e.target.value)} />}</Field>
+          <Field label={tr("message")}>{(p) => <textarea {...p} required rows={5} maxLength={10000} value={body} onChange={(e) => setBody(e.target.value)} />}</Field>
+          <Field label={tr("attachmentOptional")}>{(p) => <input {...p} type="file" accept=".pdf,.docx,.png,.jpg,.jpeg,.txt" onChange={(e) => setFile(e.target.files?.[0] ?? null)} />}</Field>
           <Button type="submit" busy={busy}>
-            Send
+            {tr("send")}
           </Button>
         </form>
       )}
@@ -225,6 +223,7 @@ interface ReportRow {
 }
 
 function Reports() {
+  const tr = useCareerT("careerCenterMessages");
   const api = useApi();
   const router = useRouter();
   const [status, setStatus] = useState("Open");
@@ -235,11 +234,11 @@ function Reports() {
 
   return (
     <div className="space-y-4">
-      <Field label="Status">
+      <Field label={tr("status")}>
         {(p) => (
           <select {...p} value={status} onChange={(e) => setStatus(e.target.value)}>
-            <option>Open</option>
-            <option>Resolved</option>
+            <option>{tr("open")}</option>
+            <option>{tr("resolved")}</option>
           </select>
         )}
       </Field>
@@ -251,14 +250,14 @@ function Reports() {
         <Loading />
       ) : data && data.length > 0 ? (
         data.map((r) => (
-          <Card key={r.id} title={`${r.reason}: ${r.thread?.subject ?? "Conversation"}`}>
+          <Card key={r.id} title={`${r.reason}: ${r.thread?.subject ?? tr("conversation")}`}>
             <p className="text-sm text-muted-foreground">
-              Reported by {r.reporter} on {formatDate(r.createdAt, true)} · {r.thread?.kind === "Mentorship" ? `Mentorship (${r.thread.mentorName} / ${r.thread.studentName})` : `Career center (${r.thread?.studentName})`}{" "}
+              {tr("reportedByReporterOnCreatedAt", { reporter: r.reporter, createdAt: formatDate(r.createdAt, true) })}{" "}{r.thread?.kind === "Mentorship" ? tr("mentorshipMentorNameStudentName", { mentorName: String(r.thread.mentorName), studentName: r.thread.studentName }) : tr("careerCenterStudentName", { studentName: String(r.thread?.studentName) })}{" "}
               <Badge tone={r.status === "Open" ? "warn" : "good"}>{r.status}</Badge>
             </p>
             {r.details && <p className="mt-2 text-sm">{r.details}</p>}
             {r.post && (
-              <blockquote className="mt-2 border-l-4 border-border pl-3 text-sm">
+              <blockquote className="mt-2 border-s-4 border-border ps-3 text-sm">
                 <span className="text-xs text-muted-foreground">
                   {r.post.authorName}, {formatDate(r.post.createdAt, true)}
                 </span>
@@ -268,33 +267,33 @@ function Reports() {
             <div className="mt-3 flex flex-wrap items-end gap-2">
               {r.thread && (
                 <Button variant="secondary" onClick={() => router.replace(`/career-center/messages?tab=inbox&thread=${r.threadId}`)}>
-                  {r.thread.kind === "Mentorship" ? "Read conversation" : "Open conversation"}
+                  {r.thread.kind === "Mentorship" ? tr("readConversation") : tr("openConversation")}
                 </Button>
               )}
               {r.status === "Open" && (
                 <>
-                  <Field label="Resolution note">{(p) => <input {...p} value={notes[r.id] ?? ""} onChange={(e) => setNotes({ ...notes, [r.id]: e.target.value })} />}</Field>
+                  <Field label={tr("resolutionNote")}>{(p) => <input {...p} value={notes[r.id] ?? ""} onChange={(e) => setNotes({ ...notes, [r.id]: e.target.value })} />}</Field>
                   <Button
                     onClick={() =>
                       api(`/api/career/messaging/staff/reports/${r.id}/resolve`, { json: { note: notes[r.id] ?? "" } })
                         .then(() => {
-                          setMsg("Report resolved.");
+                          setMsg(tr("reportResolved"));
                           reload();
                         })
                         .catch((e: Error) => setActionError(e.message))
                     }
                   >
-                    Mark resolved
+                    {tr("markResolved")}
                   </Button>
                 </>
               )}
-              {r.resolutionNote && <p className="text-sm text-muted-foreground">Resolution: {r.resolutionNote}</p>}
+              {r.resolutionNote && <p className="text-sm text-muted-foreground">{tr("resolutionResolutionNote", { resolutionNote: r.resolutionNote })}</p>}
             </div>
-            {r.thread?.kind === "Mentorship" && <p className="mt-2 text-xs text-muted-foreground">Staff can read, not answer, a reported mentorship conversation. Use the mentoring page to suspend or end the mentorship.</p>}
+            {r.thread?.kind === "Mentorship" && <p className="mt-2 text-xs text-muted-foreground">{tr("staffCanReadNotAnswer")}</p>}
           </Card>
         ))
       ) : (
-        <EmptyState title="No reports" />
+        <EmptyState title={tr("noReports")} />
       )}
     </div>
   );

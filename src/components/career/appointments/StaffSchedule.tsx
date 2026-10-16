@@ -4,21 +4,21 @@ import React, { useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useApi } from "@/lib/appAuth";
 import { useCareerShell } from "@/components/career/CareerShell";
-import { Badge, Button, Card, EmptyState, ErrorBanner, Field, Loading, SuccessBanner, useLoad } from "@/components/career/ui";
+import { Badge, Button, Card, EmptyState, ErrorBanner, Field, Loading, SuccessBanner, useLoad, useCareerT, useCareerFormat } from "@/components/career/ui";
 import {
   type Appointment,
   type ApptType,
   type Slot,
   type SlotResponse,
   IntakeFields,
-  MODE_LABELS,
   SlotPicker,
   addDays,
   inZone,
-  statusLabel,
   statusTone,
   todayIn,
   useFetch,
+  useModeLabels,
+  useStatusLabel,
 } from "./shared";
 
 export interface StaffCounselor {
@@ -49,6 +49,10 @@ export function useStaffTypes() {
 
 /** Day view of booked appointments: mine, one counselor's, or everyone's (grouped by counselor). */
 export function StaffSchedule({ onOpen }: { onOpen: (id: string) => void }) {
+  const tr = useCareerT("staffSchedule");
+  const fmt = useCareerFormat();
+  const statusLabel = useStatusLabel();
+  const MODE_LABELS = useModeLabels();
   const api = useApi();
   const { schoolId } = useCareerShell();
   const types = useStaffTypes();
@@ -69,7 +73,7 @@ export function StaffSchedule({ onOpen }: { onOpen: (id: string) => void }) {
 
   const items = schedule.data?.items ?? [];
   const groups = who === "all" ? Object.entries(items.reduce<Record<string, Appointment[]>>((acc, a) => ({ ...acc, [a.counselor.name]: [...(acc[a.counselor.name] ?? []), a] }), {})) : [["", items] as [string, Appointment[]]];
-  const dayLabel = new Date(`${date}T12:00:00Z`).toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric", year: "numeric", timeZone: "UTC" });
+  const dayLabel = new Date(`${date}T12:00:00Z`).toLocaleDateString(fmt.locale, { weekday: "long", month: "long", day: "numeric", year: "numeric", timeZone: "UTC" });
 
   return (
     <div className="space-y-4">
@@ -77,27 +81,27 @@ export function StaffSchedule({ onOpen }: { onOpen: (id: string) => void }) {
       <Card>
         <div className="flex flex-wrap items-end gap-3">
           <div className="flex items-end gap-1">
-            <Button type="button" variant="secondary" aria-label="Previous day" onClick={() => setDay(addDays(date, -days))}>
-              <ChevronLeft className="h-4 w-4" aria-hidden />
+            <Button type="button" variant="secondary" aria-label={tr("previousDay")} onClick={() => setDay(addDays(date, -days))}>
+              <ChevronLeft className="h-4 w-4 rtl:-scale-x-100" aria-hidden />
             </Button>
-            <Field label="Date">{(p) => <input {...p} type="date" value={date} onChange={(e) => e.target.value && setDay(e.target.value)} />}</Field>
-            <Button type="button" variant="secondary" aria-label="Next day" onClick={() => setDay(addDays(date, days))}>
-              <ChevronRight className="h-4 w-4" aria-hidden />
+            <Field label={tr("date")}>{(p) => <input {...p} type="date" value={date} onChange={(e) => e.target.value && setDay(e.target.value)} />}</Field>
+            <Button type="button" variant="secondary" aria-label={tr("nextDay")} onClick={() => setDay(addDays(date, days))}>
+              <ChevronRight className="h-4 w-4 rtl:-scale-x-100" aria-hidden />
             </Button>
           </div>
-          <Field label="Show">
+          <Field label={tr("show")}>
             {(p) => (
               <select {...p} value={days} onChange={(e) => setDays(Number(e.target.value))}>
-                <option value={1}>One day</option>
-                <option value={7}>Seven days</option>
+                <option value={1}>{tr("oneDay")}</option>
+                <option value={7}>{tr("sevenDays")}</option>
               </select>
             )}
           </Field>
-          <Field label="Counselor">
+          <Field label={tr("counselor")}>
             {(p) => (
               <select {...p} value={who} onChange={(e) => setWho(e.target.value)}>
-                <option value="me">My schedule</option>
-                <option value="all">All counselors</option>
+                <option value="me">{tr("mySchedule")}</option>
+                <option value="all">{tr("allCounselors")}</option>
                 {(counselors.data ?? [])
                   .filter((c) => !c.isMe)
                   .map((c) => (
@@ -109,10 +113,10 @@ export function StaffSchedule({ onOpen }: { onOpen: (id: string) => void }) {
             )}
           </Field>
           <label className="flex items-center gap-2 pb-2 text-sm">
-            <input type="checkbox" checked={showCancelled} onChange={(e) => setShowCancelled(e.target.checked)} /> Include cancelled
+            <input type="checkbox" checked={showCancelled} onChange={(e) => setShowCancelled(e.target.checked)} />{" "}{tr("includeCancelled")}
           </label>
-          <Button type="button" className="ml-auto" onClick={() => setBooking((b) => !b)} aria-expanded={booking}>
-            Book for a student
+          <Button type="button" className="ms-auto" onClick={() => setBooking((b) => !b)} aria-expanded={booking}>
+            {tr("bookForAStudent")}
           </Button>
         </div>
       </Card>
@@ -124,21 +128,22 @@ export function StaffSchedule({ onOpen }: { onOpen: (id: string) => void }) {
           counselors={counselors.data ?? []}
           onDone={(a) => {
             setBooking(false);
-            setMessage(`Booked ${a.typeName} for ${a.student?.name ?? "the student"} with ${a.counselor.name}. They've been notified.`);
+            setMessage(tr("bookedTypeNameForNameWith", { typeName: a.typeName, name: a.student?.name ?? tr("theStudent"), name2: a.counselor.name }));
             schedule.reload();
           }}
         />
       )}
 
       <section aria-labelledby="day-h" aria-live="polite">
-        <h2 id="day-h" className="mb-3 text-lg font-semibold">
-          {days === 1 ? dayLabel : `${dayLabel} + 6 days`} <span className="text-sm font-normal text-muted-foreground">({tz})</span>
+        {/* The label uses the browser's locale, which can differ from the server render; it re-renders once the school's time zone loads */}
+        <h2 id="day-h" className="mb-3 text-lg font-semibold" suppressHydrationWarning>
+          {days === 1 ? dayLabel : tr("dayLabel6Days", { dayLabel })} <span className="text-sm font-normal text-muted-foreground">({tz})</span>
         </h2>
         <ErrorBanner error={schedule.error || types.error} onRetry={schedule.reload} />
         {schedule.loading || types.loading ? (
           <Loading />
         ) : items.length === 0 ? (
-          <EmptyState title="No appointments">Nothing booked for this {days === 1 ? "day" : "week"}.</EmptyState>
+          <EmptyState title={tr("noAppointments")}>{tr("nothingBookedForThisWeek", { days })}</EmptyState>
         ) : (
           <div className="space-y-4">
             {groups.map(([name, list]) => (
@@ -147,7 +152,7 @@ export function StaffSchedule({ onOpen }: { onOpen: (id: string) => void }) {
                 <ul className="divide-y divide-border rounded-xl border border-border bg-card">
                   {list.map((a) => (
                     <li key={a.id}>
-                      <button type="button" onClick={() => onOpen(a.id)} className="flex w-full flex-wrap items-center gap-3 p-3 text-left hover:bg-muted focus-visible:outline-2">
+                      <button type="button" onClick={() => onOpen(a.id)} className="flex w-full flex-wrap items-center gap-3 p-3 text-start hover:bg-muted focus-visible:outline-2">
                         <span className="w-40 shrink-0 text-sm font-medium">
                           {days > 1 && inZone(a.startUtc, tz, { weekday: "short", month: "short", day: "numeric" }) + " "}
                           {inZone(a.startUtc, tz, { hour: "numeric", minute: "2-digit" })}–{inZone(a.endUtc, tz, { hour: "numeric", minute: "2-digit" })}
@@ -158,7 +163,7 @@ export function StaffSchedule({ onOpen }: { onOpen: (id: string) => void }) {
                             {a.typeName} · {MODE_LABELS[a.mode] ?? a.mode}
                           </span>
                         </span>
-                        {a.bookedOnBehalf && <Badge tone="neutral">Booked by staff</Badge>}
+                        {a.bookedOnBehalf && <Badge tone="neutral">{tr("bookedByStaff")}</Badge>}
                         <Badge tone={statusTone(a)}>{statusLabel(a)}</Badge>
                       </button>
                     </li>
@@ -182,6 +187,8 @@ interface MemberHit {
 }
 
 function BookOnBehalf({ types, timeZone, counselors, onDone }: { types: ApptType[]; timeZone: string; counselors: StaffCounselor[]; onDone: (a: Appointment) => void }) {
+  const tr = useCareerT("staffSchedule");
+  const MODE_LABELS = useModeLabels();
   const api = useApi();
   const [q, setQ] = useState("");
   const [hits, setHits] = useState<MemberHit[]>([]);
@@ -212,7 +219,7 @@ function BookOnBehalf({ types, timeZone, counselors, onDone }: { types: ApptType
       const res = await api<{ items: MemberHit[] }>(`/api/career/admin/members?q=${encodeURIComponent(q)}&pageSize=10`);
       const students = res.items.filter((m) => m.role === "Student" || m.role === "Alumni");
       setHits(students);
-      if (students.length === 0) setError("No students match that search.");
+      if (students.length === 0) setError(tr("noStudentsMatchThatSearch"));
     } catch (err) {
       setError((err as Error).message);
     }
@@ -237,17 +244,17 @@ function BookOnBehalf({ types, timeZone, counselors, onDone }: { types: ApptType
 
   const names = Object.fromEntries(counselors.map((c) => [c.userId, c.name]));
   return (
-    <Card title="Book for a student">
-      <p className="mb-3 text-sm text-muted-foreground">Staff bookings skip the minimum-notice rule and are recorded in the audit log.</p>
+    <Card title={tr("bookForAStudent")}>
+      <p className="mb-3 text-sm text-muted-foreground">{tr("staffBookingsSkipTheMinimum")}</p>
       <ErrorBanner error={error || slotQuery.error} />
       {!student ? (
         <div className="space-y-3">
           <form onSubmit={search} className="flex flex-wrap items-end gap-2">
             <div className="min-w-60 flex-1">
-              <Field label="Find a student (name or email)">{(p) => <input {...p} required minLength={2} value={q} onChange={(e) => setQ(e.target.value)} />}</Field>
+              <Field label={tr("findAStudentNameOr")}>{(p) => <input {...p} required minLength={2} value={q} onChange={(e) => setQ(e.target.value)} />}</Field>
             </div>
             <Button type="submit" variant="secondary">
-              Search
+              {tr("search")}
             </Button>
           </form>
           {hits.length > 0 && (
@@ -259,10 +266,10 @@ function BookOnBehalf({ types, timeZone, counselors, onDone }: { types: ApptType
                   </span>
                   {h.userId ? (
                     <Button type="button" variant="secondary" onClick={() => setStudent(h)}>
-                      Choose
+                      {tr("choose")}
                     </Button>
                   ) : (
-                    <span className="text-xs text-muted-foreground">Hasn&apos;t signed in yet</span>
+                    <span className="text-xs text-muted-foreground">{tr("hasntSignedInYet")}</span>
                   )}
                 </li>
               ))}
@@ -272,13 +279,13 @@ function BookOnBehalf({ types, timeZone, counselors, onDone }: { types: ApptType
       ) : (
         <div className="space-y-4">
           <p className="text-sm">
-            Student: <strong>{student.name}</strong> ({student.email}){" "}
+            {tr.rich("studentNameEmail", { strong: (chunks) => <strong>{chunks}</strong>, name: student.name, email: student.email })}{" "}
             <button type="button" className="underline" onClick={() => setStudent(null)}>
-              change
+              {tr("change")}
             </button>
           </p>
           <div className="grid gap-3 sm:grid-cols-3">
-            <Field label="Appointment type">
+            <Field label={tr("appointmentType")}>
               {(p) => (
                 <select
                   {...p}
@@ -293,13 +300,13 @@ function BookOnBehalf({ types, timeZone, counselors, onDone }: { types: ApptType
                 >
                   {types.map((t) => (
                     <option key={t.id} value={t.id}>
-                      {t.name} ({t.durationMinutes} min)
+                      {tr("nameDurationMinutesMin", { name: t.name, durationMinutes: t.durationMinutes })}
                     </option>
                   ))}
                 </select>
               )}
             </Field>
-            <Field label="Counselor">
+            <Field label={tr("counselor")}>
               {(p) => (
                 <select
                   {...p}
@@ -309,7 +316,7 @@ function BookOnBehalf({ types, timeZone, counselors, onDone }: { types: ApptType
                     setSlot(null);
                   }}
                 >
-                  <option value="">Any available</option>
+                  <option value="">{tr("anyAvailable")}</option>
                   {offering.map((c) => (
                     <option key={c.userId} value={c.userId}>
                       {c.name}
@@ -318,7 +325,7 @@ function BookOnBehalf({ types, timeZone, counselors, onDone }: { types: ApptType
                 </select>
               )}
             </Field>
-            <Field label="Meeting">
+            <Field label={tr("meeting")}>
               {(p) => (
                 <select {...p} value={mode} onChange={(e) => setMode(e.target.value)}>
                   {(type?.modes ?? []).map((m) => (
@@ -333,7 +340,7 @@ function BookOnBehalf({ types, timeZone, counselors, onDone }: { types: ApptType
           <SlotPicker data={slots} loading={loading} from={from} minFrom={today} onFrom={setFrom} value={slot} onChange={setSlot} counselorNames={names} />
           {slot && type && <IntakeFields questions={type.intakeQuestions} answers={answers} onChange={setAnswers} />}
           <Button type="button" disabled={!slot} busy={busy} onClick={book}>
-            Book appointment
+            {tr("bookAppointment")}
           </Button>
         </div>
       )}

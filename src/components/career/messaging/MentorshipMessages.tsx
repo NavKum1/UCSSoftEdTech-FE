@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { useApi } from "@/lib/appAuth";
-import { Button, ErrorBanner } from "@/components/career/ui";
+import { Button, ErrorBanner, useCareerT } from "@/components/career/ui";
 import { ThreadView } from "@/components/career/messaging/shared";
 
 /**
@@ -10,6 +10,7 @@ import { ThreadView } from "@/components/career/messaging/shared";
  * Opens (or creates) the thread on demand; new messages are accepted only while the mentorship is Active.
  */
 export default function MentorshipMessages({ mentorshipId, status }: { mentorshipId: string; status: string }) {
+  const t = useCareerT("mentorshipMessages");
   const api = useApi();
   const [threadId, setThreadId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -33,7 +34,7 @@ export default function MentorshipMessages({ mentorshipId, status }: { mentorshi
     <div>
       <ErrorBanner error={error} />
       <Button variant="secondary" busy={busy} onClick={open}>
-        {status === "Active" ? "Open messages" : "View message history"}
+        {status === "Active" ? t("openMessages") : t("viewMessageHistory")}
       </Button>
     </div>
   );

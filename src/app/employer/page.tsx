@@ -4,10 +4,10 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { useApi } from "@/lib/appAuth";
 import { useCareerShell } from "@/components/career/CareerShell";
-import { Badge, Card, ErrorBanner, Loading, PageHeader, useLoad } from "@/components/career/ui";
+import { Badge, Card, ErrorBanner, Loading, PageHeader, useLoad, useCareerT } from "@/components/career/ui";
 import { EmployerPicker, useEmployers } from "@/components/career/EmployerPicker";
 import CompanyForm, { companyPayload, emptyCompany } from "@/components/career/CompanyForm";
-import { VERIFICATION } from "@/components/career/coreLabels";
+import { useRelationshipLabels, useVerification } from "@/components/career/coreLabels";
 
 interface Relationship {
   id: string;
@@ -15,6 +15,9 @@ interface Relationship {
 }
 
 export default function EmployerHome() {
+  const t = useCareerT("employerHome");
+  const VERIFICATION = useVerification();
+  const STATUS = useRelationshipLabels();
   const api = useApi();
   const { me, reloadMe } = useCareerShell();
   const emp = useEmployers();
@@ -43,14 +46,13 @@ export default function EmployerHome() {
   if (!emp.current) {
     return (
       <div>
-        <PageHeader title="Set up your company" description="Create an employer account to request access to schools and connect with their students." />
+        <PageHeader title={t("setUpYourCompany")} description={t("createAnEmployerAccountTo")} />
         <ErrorBanner error={err} />
         <Card>
           <p className="mb-4 text-sm text-muted-foreground">
-            Signed in as {me?.email ?? "you"}. If your email is on your company&apos;s own domain (not a free-mail address), we verify the company automatically.
-            If a colleague already set up your company, ask them to invite you instead.
+            {t("signedInAsEmailIf", { email: me?.email ?? t("you") })}
           </p>
-          <CompanyForm initial={emptyCompany} submitLabel="Create company account" busy={busy} withTitle onSubmit={signup} />
+          <CompanyForm initial={emptyCompany} submitLabel={t("createCompanyAccount")} busy={busy} withTitle onSubmit={signup} />
         </Card>
       </div>
     );
@@ -62,32 +64,32 @@ export default function EmployerHome() {
 
   return (
     <div>
-      <PageHeader title={org.name} description={`You're ${emp.current.role === "Owner" ? "the account owner" : "a team member"}.`} actions={<EmployerPicker accounts={emp.accounts} current={emp.current} onSelect={emp.select} />} />
+      <PageHeader title={org.name} description={t("youreValue", { value: emp.current.role === "Owner" ? t("theAccountOwner") : t("aTeamMember") })} actions={<EmployerPicker accounts={emp.accounts} current={emp.current} onSelect={emp.select} />} />
       <div className="grid gap-6 lg:grid-cols-2">
-        <Card title="Verification">
+        <Card title={t("verification")}>
           <Badge tone={v.tone}>{v.label}</Badge>
           <p className="mt-2 text-sm text-muted-foreground">{v.explain}</p>
-          {org.flagReason && <p className="mt-2 text-sm">Reason: {org.flagReason}</p>}
+          {org.flagReason && <p className="mt-2 text-sm">{t("reasonFlagReason", { flagReason: org.flagReason })}</p>}
         </Card>
-        <Card title="Schools">
+        <Card title={t("schools")}>
           <ErrorBanner error={rels.error} />
           <ul className="grid grid-cols-2 gap-3">
             {["Approved", "Pending", "Declined", "Blocked"].map((s) => (
               <li key={s} className="rounded-lg border border-border p-3">
                 <p className="text-xl font-semibold tabular-nums">{counts[s] ?? 0}</p>
-                <p className="text-sm text-muted-foreground">{s}</p>
+                <p className="text-sm text-muted-foreground">{STATUS[s]}</p>
               </li>
             ))}
           </ul>
-          <Link href="/employer/schools" className="mt-3 inline-block text-sm underline">Find and request schools</Link>
+          <Link href="/employer/schools" className="mt-3 inline-block text-sm underline">{t("findAndRequestSchools")}</Link>
         </Card>
-        <Card title="Company" className="lg:col-span-2">
+        <Card title={t("company")} className="lg:col-span-2">
           <p className="text-sm text-muted-foreground">
-            {[org.industry, org.sizeBand && `${org.sizeBand} employees`, [org.hqCity, org.hqState].filter(Boolean).join(", ")].filter(Boolean).join(" · ") || "Add details so schools know who you are."}
+            {[org.industry, org.sizeBand && t("sizeBandEmployees", { sizeBand: org.sizeBand }), [org.hqCity, org.hqState].filter(Boolean).join(", ")].filter(Boolean).join(" · ") || t("addDetailsSoSchoolsKnow")}
           </p>
           <div className="mt-3 flex gap-4 text-sm">
-            <Link href="/employer/company" className="underline">Company profile</Link>
-            <Link href="/employer/team" className="underline">Team</Link>
+            <Link href="/employer/company" className="underline">{t("companyProfile")}</Link>
+            <Link href="/employer/team" className="underline">{t("team")}</Link>
           </div>
         </Card>
       </div>

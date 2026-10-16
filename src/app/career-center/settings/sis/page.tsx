@@ -3,7 +3,7 @@
 import React, { useRef, useState } from "react";
 import { useApi } from "@/lib/appAuth";
 import { useCareerShell } from "@/components/career/CareerShell";
-import { Badge, Button, Card, EmptyState, ErrorBanner, Field, Loading, PageHeader, SuccessBanner, formatDate, useLoad } from "@/components/career/ui";
+import { Badge, Button, Card, EmptyState, ErrorBanner, Field, Loading, PageHeader, SuccessBanner, formatDate, useLoad, ScrollArea, useCareerT, useCareerLabels } from "@/components/career/ui";
 
 interface SisSettings {
   baseUrl?: string | null;
@@ -49,7 +49,11 @@ interface CsvPreview {
   rowCount: number;
 }
 
-const KIND_LABELS: Record<string, string> = { OneRosterCsv: "OneRoster CSV", GenericCsv: "SIS CSV", OneRosterRest: "OneRoster API" };
+const KIND_LABELS_KEYS = ["OneRosterCsv", "GenericCsv", "OneRosterRest"];
+/** kind labels in the career language (G1) */
+function useKindLabels(): Record<string, string> {
+  return useCareerLabels("careerCenterSettingsSis.kind", KIND_LABELS_KEYS);
+}
 
 interface SyncOptions {
   fullSync: boolean;
@@ -58,22 +62,22 @@ interface SyncOptions {
 }
 
 function OptionsFields({ value, onChange, idPrefix }: { value: SyncOptions; onChange: (v: SyncOptions) => void; idPrefix: string }) {
+  const t = useCareerT("careerCenterSettingsSis");
   return (
     <fieldset className="space-y-2 text-sm">
-      <legend className="mb-1 font-medium">Sync options</legend>
+      <legend className="mb-1 font-medium">{t("syncOptions")}</legend>
       <label className="flex items-start gap-2" htmlFor={`${idPrefix}-dry`}>
         <input id={`${idPrefix}-dry`} type="checkbox" checked={value.dryRun} onChange={(e) => onChange({ ...value, dryRun: e.target.checked })} />
-        <span>Dry run (report what would change; save nothing)</span>
+        <span>{t("dryRunReportWhatWould")}</span>
       </label>
       <label className="flex items-start gap-2" htmlFor={`${idPrefix}-full`}>
         <input id={`${idPrefix}-full`} type="checkbox" checked={value.fullSync} onChange={(e) => onChange({ ...value, fullSync: e.target.checked, deactivateMissing: e.target.checked && value.deactivateMissing })} />
-        <span>This is a full roster (every current student is listed)</span>
+        <span>{t("thisIsAFullRoster")}</span>
       </label>
       <label className="flex items-start gap-2" htmlFor={`${idPrefix}-deact`}>
         <input id={`${idPrefix}-deact`} type="checkbox" disabled={!value.fullSync} checked={value.deactivateMissing} onChange={(e) => onChange({ ...value, deactivateMissing: e.target.checked })} />
         <span>
-          Suspend students missing from this full roster
-          <span className="block text-xs text-muted-foreground">Off by default. Suspended students can&apos;t sign in to the career suite until they appear in a later sync.</span>
+          {t.rich("suspendStudentsMissingFromThis", { span: (chunks) => <span className="block text-xs text-muted-foreground">{chunks}</span> })}
         </span>
       </label>
     </fieldset>
@@ -81,6 +85,8 @@ function OptionsFields({ value, onChange, idPrefix }: { value: SyncOptions; onCh
 }
 
 export default function SisSettingsPage() {
+  const t = useCareerT("careerCenterSettingsSis");
+  const KIND_LABELS = useKindLabels();
   const api = useApi();
   const { me, schoolId } = useCareerShell();
   const isAdmin = me?.memberships.some((m) => m.instituteId === schoolId && m.role === "CareerAdmin") ?? false;
@@ -136,22 +142,22 @@ export default function SisSettingsPage() {
         },
       });
       setDraft({});
-      setMsg("SIS settings saved.");
+      setMsg(t("sISSettingsSaved"));
       settings.reload();
     });
   };
 
   const finished = (r: Run) => {
     setLastRun(r);
-    setMsg(r.status === "Failed" ? null : r.dryRun ? "Dry run finished: nothing was saved." : "Sync finished.");
-    if (r.status === "Failed") setErr(r.message ?? "The sync failed.");
+    setMsg(r.status === "Failed" ? null : r.dryRun ? t("dryRunFinishedNothingWas") : t("syncFinished"));
+    if (r.status === "Failed") setErr(r.message ?? t("theSyncFailed"));
     runs.reload();
     settings.reload();
   };
 
   const uploadOneRoster = () =>
     run("or", async () => {
-      if (!orFiles || orFiles.length === 0) throw new Error("Choose the OneRoster .zip or its CSV files.");
+      if (!orFiles || orFiles.length === 0) throw new Error(t("chooseTheOneRosterZipOr"));
       const fd = new FormData();
       Array.from(orFiles).forEach((f) => fd.append("files", f));
       fd.append("fullSync", String(orOpts.fullSync));
@@ -163,7 +169,7 @@ export default function SisSettingsPage() {
 
   const previewCsv = (preset?: string) =>
     run("preview", async () => {
-      if (!csvFile) throw new Error("Choose a CSV export first.");
+      if (!csvFile) throw new Error(t("chooseACSVExportFirst"));
       const fd = new FormData();
       fd.append("file", csvFile);
       if (preset) fd.append("preset", preset);
@@ -172,7 +178,7 @@ export default function SisSettingsPage() {
 
   const syncCsv = () =>
     run("csv", async () => {
-      if (!csvFile || !preview) throw new Error("Choose a file and check the mapping first.");
+      if (!csvFile || !preview) throw new Error(t("chooseAFileAndCheck"));
       const fd = new FormData();
       fd.append("file", csvFile);
       fd.append("mapping", JSON.stringify(preview.mapping));
@@ -190,8 +196,8 @@ export default function SisSettingsPage() {
   if (me && !isAdmin) {
     return (
       <div>
-        <PageHeader title="Student information system" />
-        <EmptyState title="Only career admins can manage roster sync." />
+        <PageHeader title={t("studentInformationSystem")} />
+        <EmptyState title={t("onlyCareerAdminsCanManage")} />
       </div>
     );
   }
@@ -199,43 +205,43 @@ export default function SisSettingsPage() {
   return (
     <div>
       <PageHeader
-        title="Student information system"
-        description="Keep your student roster in step with your SIS: OneRoster 1.2 files or API, or a CSV export from Banner, Workday Student or PeopleSoft. Students are matched by SIS id and email; their school record is marked as verified."
+        title={t("studentInformationSystem")}
+        description={t("keepYourStudentRosterIn")}
       />
       <ErrorBanner error={err ?? settings.error ?? runs.error} />
       <SuccessBanner message={msg} />
       {settings.data?.partnerSchool && (
         <p className="mb-4 rounded-md border border-sky-300 bg-sky-50 p-3 text-sm text-sky-900 dark:border-sky-800 dark:bg-sky-950/40 dark:text-sky-200">
-          Your school reaches the career suite through a partner platform, which usually manages the roster. Use roster sync here only if your partner agreement says so.
+          {t("yourSchoolReachesTheCareer")}
         </p>
       )}
       {settings.loading && !settings.data ? <Loading /> : null}
 
       {lastRun && <RunSummary run={lastRun} />}
 
-      <Card title="Upload a OneRoster bundle" className="mb-6">
+      <Card title={t("uploadAOneRosterBundle")} className="mb-6">
         <div className="grid gap-4 md:grid-cols-2">
-          <Field label="OneRoster files" hint="A .zip bundle, or orgs.csv, users.csv, enrollments.csv and academicSessions.csv (roles.csv for 1.2). demographics.csv is read only if you allow it below.">
+          <Field label={t("oneRosterFiles")} hint={t("aZipBundleOrOrgs")}>
             {(p) => <input {...p} ref={orRef} type="file" multiple accept=".zip,.csv" onChange={(e) => setOrFiles(e.target.files)} />}
           </Field>
           <OptionsFields value={orOpts} onChange={setOrOpts} idPrefix="or" />
         </div>
-        <Button className="mt-4" onClick={() => void uploadOneRoster()} busy={busy === "or"}>{orOpts.dryRun ? "Check the bundle" : "Sync roster"}</Button>
+        <Button className="mt-4" onClick={() => void uploadOneRoster()} busy={busy === "or"}>{orOpts.dryRun ? t("checkTheBundle") : t("syncRoster")}</Button>
       </Card>
 
-      <Card title="Upload a SIS CSV export" className="mb-6">
+      <Card title={t("uploadASISCSVExport")} className="mb-6">
         <p className="mb-3 text-xs text-muted-foreground">{settings.data?.presetNotice}</p>
         <div className="grid gap-4 md:grid-cols-2">
-          <Field label="CSV export">
+          <Field label={t("cSVExport")}>
             {(p) => <input {...p} ref={csvRef} type="file" accept=".csv,text/csv" onChange={(e) => { setCsvFile(e.target.files?.[0] ?? null); setPreview(null); }} />}
           </Field>
           <div className="flex items-end">
-            <Button variant="secondary" onClick={() => void previewCsv()} busy={busy === "preview"} disabled={!csvFile}>Read columns</Button>
+            <Button variant="secondary" onClick={() => void previewCsv()} busy={busy === "preview"} disabled={!csvFile}>{t("readColumns")}</Button>
           </div>
         </div>
         {preview && settings.data && (
           <div className="mt-4 space-y-4">
-            <Field label="Export layout">
+            <Field label={t("exportLayout")}>
               {(p) => (
                 <select {...p} value={preview.preset} onChange={(e) => void previewCsv(e.target.value)}>
                   {settings.data!.csvPresets.map((x) => <option key={x} value={x}>{x}</option>)}
@@ -244,10 +250,10 @@ export default function SisSettingsPage() {
             </Field>
             <div className="grid gap-3 md:grid-cols-2">
               {settings.data.csvFields.map((f) => (
-                <Field key={f.key} label={`${f.label}${f.required ? " (required)" : ""}`} hint={f.hint ?? undefined}>
+                <Field key={f.key} label={`${f.label}${f.required ? t("required") : ""}`} hint={f.hint ?? undefined}>
                   {(p) => (
                     <select {...p} value={preview.mapping[f.key] ?? ""} onChange={(e) => setPreview({ ...preview, mapping: { ...preview.mapping, [f.key]: e.target.value } })}>
-                      <option value="">(not in this file)</option>
+                      <option value="">{t("notInThisFile")}</option>
                       {preview.headers.map((h) => <option key={h} value={h}>{h}</option>)}
                     </select>
                   )}
@@ -255,94 +261,94 @@ export default function SisSettingsPage() {
               ))}
             </div>
             <OptionsFields value={csvOpts} onChange={setCsvOpts} idPrefix="csv" />
-            <Button onClick={() => void syncCsv()} busy={busy === "csv"}>{csvOpts.dryRun ? `Check ${preview.rowCount} rows` : `Sync ${preview.rowCount} rows`}</Button>
+            <Button onClick={() => void syncCsv()} busy={busy === "csv"}>{csvOpts.dryRun ? t("checkRowCountRows", { rowCount: preview.rowCount }) : t("syncRowCountRows", { rowCount: preview.rowCount })}</Button>
           </div>
         )}
       </Card>
 
-      <Card title="OneRoster API" className="mb-6">
+      <Card title={t("oneRosterAPI")} className="mb-6">
         <form onSubmit={save} className="grid gap-4 md:grid-cols-2">
-          <Field label="Base URL" hint="Up to the version, e.g. https://sis.example.edu/ims/oneroster/rostering/v1p2">
+          <Field label={t("baseURL")} hint={t("upToTheVersionE")}>
             {(p) => <input {...p} type="url" value={form.baseUrl ?? ""} onChange={(e) => setDraft({ ...draft, baseUrl: e.target.value })} />}
           </Field>
-          <Field label="Token URL" hint="OAuth 2.0 client-credentials endpoint">
+          <Field label={t("tokenURL")} hint={t("oAuth20ClientCredentials")}>
             {(p) => <input {...p} type="url" value={form.tokenUrl ?? ""} onChange={(e) => setDraft({ ...draft, tokenUrl: e.target.value })} />}
           </Field>
-          <Field label="Client id">
+          <Field label={t("clientId")}>
             {(p) => <input {...p} value={form.clientId ?? ""} autoComplete="off" onChange={(e) => setDraft({ ...draft, clientId: e.target.value })} />}
           </Field>
-          <Field label="Client secret" hint={s?.hasClientSecret ? "A secret is saved (stored encrypted). Leave blank to keep it." : "Stored encrypted; never shown again."}>
+          <Field label={t("clientSecret")} hint={s?.hasClientSecret ? t("aSecretIsSavedStored") : t("storedEncryptedNeverShownAgain")}>
             {(p) => <input {...p} type="password" autoComplete="new-password" value={draft.clientSecret ?? ""} onChange={(e) => setDraft({ ...draft, clientSecret: e.target.value })} />}
           </Field>
-          <Field label="Scope (optional)">
-            {(p) => <input {...p} value={form.scope ?? ""} placeholder="roster-core.readonly" onChange={(e) => setDraft({ ...draft, scope: e.target.value })} />}
+          <Field label={t("scopeOptional")}>
+            {(p) => <input {...p} value={form.scope ?? ""} placeholder={t("rosterCoreReadonly")} onChange={(e) => setDraft({ ...draft, scope: e.target.value })} />}
           </Field>
-          <Field label="Only this school org (sourcedId, optional)" hint="Also filters uploaded bundles.">
+          <Field label={t("onlyThisSchoolOrgSourcedId")} hint={t("alsoFiltersUploadedBundles")}>
             {(p) => <input {...p} value={form.orgSourcedId ?? ""} onChange={(e) => setDraft({ ...draft, orgSourcedId: e.target.value })} />}
           </Field>
           <fieldset className="space-y-2 text-sm md:col-span-2">
-            <legend className="mb-1 font-medium">Options</legend>
+            <legend className="mb-1 font-medium">{t("options")}</legend>
             <label className="flex items-start gap-2" htmlFor="sis-demo">
               <input id="sis-demo" type="checkbox" checked={!!form.importDemographics} onChange={(e) => setDraft({ ...draft, importDemographics: e.target.checked })} />
-              <span>Import demographics (sex and race/ethnicity flags only; birth date and birthplace are never stored). Turning this off deletes stored demographics.</span>
+              <span>{t("importDemographicsSexAndRace")}</span>
             </label>
             <label className="flex items-start gap-2" htmlFor="sis-nightly">
               <input id="sis-nightly" type="checkbox" checked={!!form.nightlyEnabled} onChange={(e) => setDraft({ ...draft, nightlyEnabled: e.target.checked })} />
-              <span>Pull the roster from the API every night (also needs the nightly schedule switched on for this server)</span>
+              <span>{t("pullTheRosterFromThe")}</span>
             </label>
             <label className="flex items-start gap-2" htmlFor="sis-nightly-deact">
               <input id="sis-nightly-deact" type="checkbox" disabled={!form.nightlyEnabled} checked={!!form.nightlyDeactivateMissing} onChange={(e) => setDraft({ ...draft, nightlyDeactivateMissing: e.target.checked })} />
-              <span>Nightly pulls suspend students missing from the SIS</span>
+              <span>{t("nightlyPullsSuspendStudentsMissing")}</span>
             </label>
           </fieldset>
           <div className="md:col-span-2">
-            <Button type="submit" busy={busy === "save"}>Save API settings</Button>
+            <Button type="submit" busy={busy === "save"}>{t("saveAPISettings")}</Button>
           </div>
         </form>
         <div className="mt-6 grid gap-4 border-t border-border pt-4 md:grid-cols-2">
           <OptionsFields value={restOpts} onChange={setRestOpts} idPrefix="rest" />
           <div>
             <p className="mb-2 text-sm text-muted-foreground">
-              Last sync: {formatDate(s?.lastSyncAt, true)}{s?.lastStatus ? ` (${s.lastStatus})` : ""}
+              {t("lastSyncLastSyncAt", { lastSyncAt: formatDate(s?.lastSyncAt, true) })}{s?.lastStatus ? ` (${s.lastStatus})` : ""}
             </p>
-            <Button onClick={() => void syncNow()} busy={busy === "rest"} disabled={!s?.baseUrl || !s?.hasClientSecret}>Sync now</Button>
+            <Button onClick={() => void syncNow()} busy={busy === "rest"} disabled={!s?.baseUrl || !s?.hasClientSecret}>{t("syncNow")}</Button>
           </div>
         </div>
       </Card>
 
-      <Card title="Sync history">
+      <Card title={t("syncHistory")}>
         {runs.loading && !runs.data ? (
           <Loading />
         ) : !runs.data || runs.data.length === 0 ? (
-          <EmptyState title="No syncs yet." />
+          <EmptyState title={t("noSyncsYet")} />
         ) : (
-          <div className="overflow-x-auto">
+          <ScrollArea>
             <table className="w-full text-sm">
-              <caption className="sr-only">Roster syncs</caption>
+              <caption className="sr-only">{t("rosterSyncs")}</caption>
               <thead>
-                <tr className="border-b border-border text-left">
-                  <th scope="col" className="py-2 pr-3">When</th>
-                  <th scope="col" className="py-2 pr-3">Source</th>
-                  <th scope="col" className="py-2 pr-3">Mode</th>
-                  <th scope="col" className="py-2 pr-3">Status</th>
-                  <th scope="col" className="py-2">Changes</th>
+                <tr className="border-b border-border text-start [&_th]:text-start">
+                  <th scope="col" className="py-2 pe-3">{t("when")}</th>
+                  <th scope="col" className="py-2 pe-3">{t("source")}</th>
+                  <th scope="col" className="py-2 pe-3">{t("mode")}</th>
+                  <th scope="col" className="py-2 pe-3">{t("status")}</th>
+                  <th scope="col" className="py-2">{t("changes")}</th>
                 </tr>
               </thead>
               <tbody>
                 {runs.data.map((r) => (
                   <tr key={r.id} className="border-b border-border/60 align-top">
-                    <td className="py-2 pr-3">{formatDate(r.startedAt, true)}<div className="text-xs text-muted-foreground">{r.trigger}</div></td>
-                    <td className="py-2 pr-3">{KIND_LABELS[r.kind] ?? r.kind}</td>
-                    <td className="py-2 pr-3 text-xs">{r.dryRun ? "Dry run" : r.fullSync ? (r.deactivateMissing ? "Full, suspend missing" : "Full") : "Changes only"}</td>
-                    <td className="py-2 pr-3"><Badge tone={r.status === "Succeeded" ? "good" : r.status === "Failed" ? "bad" : "warn"}>{r.status}</Badge></td>
+                    <td className="py-2 pe-3">{formatDate(r.startedAt, true)}<div className="text-xs text-muted-foreground">{r.trigger}</div></td>
+                    <td className="py-2 pe-3">{KIND_LABELS[r.kind] ?? r.kind}</td>
+                    <td className="py-2 pe-3 text-xs">{r.dryRun ? t("dryRun") : r.fullSync ? (r.deactivateMissing ? t("fullSuspendMissing") : t("full")) : t("changesOnly")}</td>
+                    <td className="py-2 pe-3"><Badge tone={r.status === "Succeeded" ? "good" : r.status === "Failed" ? "bad" : "warn"}>{r.status}</Badge></td>
                     <td className="py-2 text-xs">
-                      {r.status === "Failed" ? r.message : `${r.counts.created ?? 0} added, ${r.counts.updated ?? 0} updated, ${r.counts.reactivated ?? 0} reactivated, ${r.counts.deactivated ?? 0} suspended, ${r.counts.skipped ?? 0} skipped`}
+                      {r.status === "Failed" ? r.message : t("createdAddedUpdatedUpdatedReactivated", { created: r.counts.created ?? 0, updated: r.counts.updated ?? 0, reactivated: r.counts.reactivated ?? 0, deactivated: r.counts.deactivated ?? 0, skipped: r.counts.skipped ?? 0 })}
                     </td>
                   </tr>
                 ))}
               </tbody>
             </table>
-          </div>
+          </ScrollArea>
         )}
       </Card>
     </div>
@@ -350,23 +356,25 @@ export default function SisSettingsPage() {
 }
 
 function RunSummary({ run }: { run: Run }) {
+  const t = useCareerT("careerCenterSettingsSis");
+  const KIND_LABELS = useKindLabels();
   const c = run.counts;
   return (
-    <Card title={`Latest result: ${KIND_LABELS[run.kind] ?? run.kind}${run.dryRun ? " (dry run)" : ""}`} className="mb-6">
+    <Card title={t("latestResultKindValue", { kind: KIND_LABELS[run.kind] ?? run.kind, value: run.dryRun ? t("dryRun2") : "" })} className="mb-6">
       <div role="status" aria-live="polite">
         {run.status === "Failed" ? (
           <p className="text-sm">{run.message}</p>
         ) : (
           <dl className="grid grid-cols-2 gap-3 text-sm md:grid-cols-4">
             {[
-              ["Students in the feed", c.inFeed],
-              ["Added", c.created],
-              ["Updated", c.updated],
-              ["Unchanged", c.unchanged],
-              ["Missing from the feed", c.missing],
-              ["Suspended", c.deactivated],
-              ["Reactivated", c.reactivated],
-              ["Skipped rows", c.skipped],
+              [t("countInFeed"), c.inFeed],
+              [t("countAdded"), c.created],
+              [t("countUpdated"), c.updated],
+              [t("countUnchanged"), c.unchanged],
+              [t("countMissing"), c.missing],
+              [t("countSuspended"), c.deactivated],
+              [t("countReactivated"), c.reactivated],
+              [t("countSkipped"), c.skipped],
             ].map(([label, n]) => (
               <div key={label as string} className="rounded-md border border-border p-2">
                 <dt className="text-xs text-muted-foreground">{label}</dt>
@@ -376,9 +384,9 @@ function RunSummary({ run }: { run: Run }) {
           </dl>
         )}
         {run.issues.length > 0 && (
-          <ul className="mt-3 max-h-60 list-disc space-y-1 overflow-auto pl-5 text-sm">
+          <ul className="mt-3 max-h-60 list-disc space-y-1 overflow-auto ps-5 text-sm">
             {run.issues.map((i, n) => (
-              <li key={n}>{i.line ? `Line ${i.line}: ` : ""}{i.message}</li>
+              <li key={n}>{i.line ? t("lineLine", { line: i.line }) : ""}{i.message}</li>
             ))}
           </ul>
         )}

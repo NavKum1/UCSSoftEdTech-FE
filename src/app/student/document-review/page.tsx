@@ -3,18 +3,18 @@
 import React, { Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useApi } from "@/lib/appAuth";
-import { Button, Card, EmptyState, ErrorBanner, Field, Loading, PageHeader, SuccessBanner, formatDate, useLoad } from "@/components/career/ui";
+import { Button, Card, EmptyState, ErrorBanner, Field, Loading, PageHeader, SuccessBanner, formatDate, useLoad, useCareerT } from "@/components/career/ui";
 import {
   AnchoredText,
   CommentList,
   RubricTable,
   StatusBadge,
-  downloadFile,
-  formatSize,
   type FileMeta,
   type ReviewDetail,
   type ReviewOptions,
   type ReviewVersion,
+  useDownloadFile,
+  useFormatSize,
 } from "@/components/career/docReview/shared";
 
 interface RequestRow {
@@ -40,6 +40,7 @@ export default function StudentDocumentReviewPage() {
 }
 
 function StudentDocumentReview() {
+  const t = useCareerT("studentDocumentReview");
   const api = useApi();
   const router = useRouter();
   const params = useSearchParams();
@@ -58,9 +59,9 @@ function StudentDocumentReview() {
   return (
     <div>
       <PageHeader
-        title="Document review"
-        description="Send your resume, cover letter or other application documents to a career counselor. A person reads it and returns comments and a checklist."
-        actions={!showForm && <Button onClick={() => setShowForm(true)}>Request a review</Button>}
+        title={t("documentReview")}
+        description={t("sendYourResumeCoverLetter")}
+        actions={!showForm && <Button onClick={() => setShowForm(true)}>{t("requestAReview")}</Button>}
       />
       <SuccessBanner message={message} />
       <ErrorBanner error={options.error || list.error} onRetry={() => { options.reload(); list.reload(); }} />
@@ -70,27 +71,27 @@ function StudentDocumentReview() {
           onCancel={() => setShowForm(false)}
           onDone={(d) => {
             setShowForm(false);
-            setMessage(`Sent. A counselor aims to return it by ${formatDate(d.dueAt, true)}.`);
+            setMessage(t("sentACounselorAimsTo", { dueAt: formatDate(d.dueAt, true) }));
             list.reload();
           }}
         />
       )}
-      <Card title="My reviews">
+      <Card title={t("myReviews")}>
         {list.loading ? (
           <Loading />
         ) : !list.data || list.data.length === 0 ? (
-          <EmptyState title="No reviews yet">Request a review to get feedback from a counselor.</EmptyState>
+          <EmptyState title={t("noReviewsYet")}>{t("requestAReviewToGet")}</EmptyState>
         ) : (
           <ul className="divide-y divide-border">
             {list.data.map((r) => (
               <li key={r.id} className="flex flex-wrap items-center justify-between gap-3 py-3">
                 <div>
-                  <button type="button" className="text-left font-medium underline-offset-2 hover:underline focus-visible:outline-2" onClick={() => open(r.id)}>
+                  <button type="button" className="text-start font-medium underline-offset-2 hover:underline focus-visible:outline-2" onClick={() => open(r.id)}>
                     {r.kindLabel}: {r.target}
                   </button>
                   <p className="text-xs text-muted-foreground">
-                    Version {r.currentVersion} · sent {formatDate(r.submittedAt, true)}
-                    {r.status !== "Returned" && r.status !== "Done" ? ` · expected by ${formatDate(r.dueAt, true)}` : ""}
+                    {t("versionCurrentVersionSentSubmittedAt", { currentVersion: r.currentVersion, submittedAt: formatDate(r.submittedAt, true) })}
+                    {r.status !== "Returned" && r.status !== "Done" ? t("expectedByDueAt", { dueAt: formatDate(r.dueAt, true) }) : ""}
                   </p>
                 </div>
                 <StatusBadge status={r.status} />
@@ -116,6 +117,7 @@ function SubmitForm({
   onCancel: () => void;
   onDone: (d: ReviewDetail) => void;
 }) {
+  const t = useCareerT("studentDocumentReview");
   const api = useApi();
   const resubmit = !!requestId;
   const [kind, setKind] = useState(defaults?.kind ?? "Resume");
@@ -132,9 +134,9 @@ function SubmitForm({
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
-    if (mode === "file" && !file) return setError("Choose a file to upload.");
-    if (mode === "file" && file && file.size > 10 * 1024 * 1024) return setError("Files can be up to 10 MB.");
-    if (mode === "text" && !text.trim()) return setError("Paste the text you want reviewed.");
+    if (mode === "file" && !file) return setError(t("chooseAFileToUpload"));
+    if (mode === "file" && file && file.size > 10 * 1024 * 1024) return setError(t("filesCanBeUpTo"));
+    if (mode === "text" && !text.trim()) return setError(t("pasteTheTextYouWant"));
     const fd = new FormData();
     if (!resubmit) fd.append("kind", kind);
     if (target.trim()) fd.append("target", target.trim());
@@ -155,11 +157,11 @@ function SubmitForm({
   };
 
   return (
-    <Card title={resubmit ? "Send a new version" : "Request a review"} className="mb-6">
+    <Card title={resubmit ? t("sendANewVersion") : t("requestAReview")} className="mb-6">
       <form onSubmit={submit} className="space-y-4" noValidate>
         <ErrorBanner error={error} />
         {!resubmit && (
-          <Field label="Document type">
+          <Field label={t("documentType")}>
             {(p) => (
               <select {...p} value={kind} onChange={(e) => setKind(e.target.value)}>
                 {options.kinds.map((k) => (
@@ -171,44 +173,44 @@ function SubmitForm({
             )}
           </Field>
         )}
-        <Field label={resubmit ? "What it's for (optional change)" : "What it's for"} hint='For example "Software internships" or "Graduate school applications".'>
+        <Field label={resubmit ? t("whatItsForOptionalChange") : t("whatItsFor")} hint={t("forExampleSoftwareInternshipsOr")}>
           {(p) => <input {...p} value={target} maxLength={200} required={!resubmit} onChange={(e) => setTarget(e.target.value)} />}
         </Field>
         <fieldset className="space-y-2">
-          <legend className="text-sm font-medium">How will you share it?</legend>
+          <legend className="text-sm font-medium">{t("howWillYouShareIt")}</legend>
           <div className="flex flex-wrap gap-4 text-sm">
             <label className="inline-flex items-center gap-2">
-              <input type="radio" name="mode" checked={mode === "file"} onChange={() => setMode("file")} /> Upload a file
+              <input type="radio" name="mode" checked={mode === "file"} onChange={() => setMode("file")} />{" "}{t("uploadAFile")}
             </label>
             <label className="inline-flex items-center gap-2">
-              <input type="radio" name="mode" checked={mode === "text"} onChange={() => setMode("text")} /> Paste text
+              <input type="radio" name="mode" checked={mode === "text"} onChange={() => setMode("text")} />{" "}{t("pasteText")}
             </label>
           </div>
         </fieldset>
         {mode === "file" ? (
-          <Field label="File" hint="PDF, Word (.docx), PNG, JPEG or text, up to 10 MB.">
+          <Field label={t("file")} hint={t("pDFWordDocxPNGJPEG")}>
             {(p) => <input {...p} type="file" accept=".pdf,.docx,.png,.jpg,.jpeg,.txt" onChange={(e) => setFile(e.target.files?.[0] ?? null)} />}
           </Field>
         ) : (
-          <Field label="Text to review" hint="Up to 20,000 characters. Reviewers can comment on specific passages.">
+          <Field label={t("textToReview")} hint={t("upTo20000Characters")}>
             {(p) => <textarea {...p} rows={10} maxLength={20000} value={text} onChange={(e) => setText(e.target.value)} />}
           </Field>
         )}
-        <Field label="Job or program description (optional)" hint="Paste the posting so the reviewer can check how well your document fits.">
+        <Field label={t("jobOrProgramDescriptionOptional")} hint={t("pasteThePostingSoThe")}>
           {(p) => <textarea {...p} rows={4} maxLength={20000} value={jd} onChange={(e) => setJd(e.target.value)} />}
         </Field>
-        <Field label="Notes for the reviewer (optional)">
+        <Field label={t("notesForTheReviewerOptional")}>
           {(p) => <textarea {...p} rows={3} maxLength={2000} value={notes} onChange={(e) => setNotes(e.target.value)} />}
         </Field>
-        <Field label="Your deadline (optional)" hint={`Deadlines within ${options.urgentWithinDays} days are prioritized. Reviews usually take up to ${options.slaBusinessDays} business days.`}>
+        <Field label={t("yourDeadlineOptional")} hint={t("deadlinesWithinUrgentWithinDaysDaysAre", { urgentWithinDays: options.urgentWithinDays, slaBusinessDays: options.slaBusinessDays })}>
           {(p) => <input {...p} type="date" value={deadline} onChange={(e) => setDeadline(e.target.value)} />}
         </Field>
         <div className="flex gap-2">
           <Button type="submit" busy={busy}>
-            {resubmit ? "Send new version" : "Send for review"}
+            {resubmit ? t("sendNewVersion") : t("sendForReview")}
           </Button>
           <Button type="button" variant="secondary" onClick={onCancel}>
-            Cancel
+            {t("cancel")}
           </Button>
         </div>
       </form>
@@ -217,6 +219,8 @@ function SubmitForm({
 }
 
 function ThreadDetail({ id, options, onBack }: { id: string; options: ReviewOptions | null; onBack: () => void }) {
+  const t = useCareerT("studentDocumentReview");
+  const downloadFile = useDownloadFile();
   const api = useApi();
   const detail = useLoad(() => api<ReviewDetail>(`/api/career/doc-review/requests/${id}`), [id]);
   const [error, setError] = useState<string | null>(null);
@@ -241,15 +245,15 @@ function ThreadDetail({ id, options, onBack }: { id: string; options: ReviewOpti
       setBusy(null);
     }
   };
-  const download = (f: FileMeta) => act("dl-" + f.id, () => downloadFile(api, f), `Downloaded ${f.fileName}.`);
+  const download = (f: FileMeta) => act("dl-" + f.id, () => downloadFile(api, f), t("downloadedFileName", { fileName: f.fileName }));
 
   return (
     <div>
       <PageHeader
-        title={d ? `${d.kindLabel}: ${d.target}` : "Document review"}
+        title={d ? `${d.kindLabel}: ${d.target}` : t("documentReview")}
         actions={
           <Button variant="secondary" onClick={onBack}>
-            Back to my reviews
+            {t("backToMyReviews")}
           </Button>
         }
       />
@@ -262,26 +266,26 @@ function ThreadDetail({ id, options, onBack }: { id: string; options: ReviewOpti
           <Card>
             <dl className="grid gap-3 text-sm sm:grid-cols-3">
               <div>
-                <dt className="text-muted-foreground">Status</dt>
+                <dt className="text-muted-foreground">{t("status")}</dt>
                 <dd>
                   <StatusBadge status={d.status} />
                 </dd>
               </div>
               <div>
-                <dt className="text-muted-foreground">{d.returnedAt ? "Returned" : "Expected by"}</dt>
+                <dt className="text-muted-foreground">{d.returnedAt ? t("returned") : t("expectedBy")}</dt>
                 <dd>{formatDate(d.returnedAt ?? d.dueAt, true)}</dd>
               </div>
               <div>
-                <dt className="text-muted-foreground">Your deadline</dt>
+                <dt className="text-muted-foreground">{t("yourDeadline")}</dt>
                 <dd>{d.studentDeadline ?? "—"}</dd>
               </div>
             </dl>
             {(d.status === "Returned" || d.status === "Done") && (
               <div className="mt-4 flex flex-wrap gap-2">
-                <Button onClick={() => setResubmitting(true)}>Send a new version</Button>
+                <Button onClick={() => setResubmitting(true)}>{t("sendANewVersion")}</Button>
                 {d.status === "Returned" && (
-                  <Button variant="secondary" busy={busy === "done"} onClick={() => act("done", () => api(`/api/career/doc-review/requests/${id}/done`, { method: "POST" }), "Marked as done.")}>
-                    Mark as done
+                  <Button variant="secondary" busy={busy === "done"} onClick={() => act("done", () => api(`/api/career/doc-review/requests/${id}/done`, { method: "POST" }), t("markedAsDone"))}>
+                    {t("markAsDone")}
                   </Button>
                 )}
               </div>
@@ -296,25 +300,25 @@ function ThreadDetail({ id, options, onBack }: { id: string; options: ReviewOpti
               onCancel={() => setResubmitting(false)}
               onDone={() => {
                 setResubmitting(false);
-                setMessage("New version sent.");
+                setMessage(t("newVersionSent"));
                 detail.reload();
               }}
             />
           )}
 
           {(d.returnedAt || d.status === "Done") && (
-            <Card title="Was this review helpful?">
+            <Card title={t("wasThisReviewHelpful")}>
               <form
                 className="space-y-3"
                 onSubmit={(e) => {
                   e.preventDefault();
                   const value = rating ?? d.rating;
-                  if (!value) return setError("Choose a rating from 1 to 5.");
-                  void act("rate", () => api(`/api/career/doc-review/requests/${id}/rating`, { json: { rating: value, comment: ratingComment || d.ratingComment } }), "Thanks for your rating.");
+                  if (!value) return setError(t("chooseARatingFrom1"));
+                  void act("rate", () => api(`/api/career/doc-review/requests/${id}/rating`, { json: { rating: value, comment: ratingComment || d.ratingComment } }), t("thanksForYourRating"));
                 }}
               >
                 <fieldset>
-                  <legend className="mb-2 text-sm">1 = not helpful, 5 = very helpful</legend>
+                  <legend className="mb-2 text-sm">{t("n1NotHelpful5Very")}</legend>
                   <div className="flex flex-wrap gap-3">
                     {[1, 2, 3, 4, 5].map((n) => (
                       <label key={n} className="inline-flex items-center gap-1 text-sm">
@@ -323,11 +327,11 @@ function ThreadDetail({ id, options, onBack }: { id: string; options: ReviewOpti
                     ))}
                   </div>
                 </fieldset>
-                <Field label="Comment (optional)">
+                <Field label={t("commentOptional")}>
                   {(p) => <input {...p} maxLength={1000} value={ratingComment} placeholder={d.ratingComment ?? ""} onChange={(e) => setRatingComment(e.target.value)} />}
                 </Field>
                 <Button type="submit" variant="secondary" busy={busy === "rate"}>
-                  Save rating
+                  {t("saveRating")}
                 </Button>
               </form>
             </Card>
@@ -343,54 +347,56 @@ function ThreadDetail({ id, options, onBack }: { id: string; options: ReviewOpti
 }
 
 function VersionCard({ v, latest, onDownload, busy }: { v: ReviewVersion; latest: boolean; onDownload: (f: FileMeta) => void; busy: string | null }) {
+  const t = useCareerT("studentDocumentReview");
+  const formatSize = useFormatSize();
   return (
-    <Card title={`Version ${v.number}${latest ? " (latest)" : ""}`}>
+    <Card title={t("versionNumberValue", { number: v.number, value: latest ? t("latest") : "" })}>
       <p className="mb-3 text-xs text-muted-foreground">
-        Sent {formatDate(v.submittedAt, true)}
-        {v.returnedAt ? ` · returned ${formatDate(v.returnedAt, true)}${v.reviewer?.name ? ` by ${v.reviewer.name}` : ""}` : " · waiting for review"}
+        {t("sentSubmittedAt", { submittedAt: formatDate(v.submittedAt, true) })}
+        {v.returnedAt ? t("returnedReturnedAtValue", { returnedAt: formatDate(v.returnedAt, true), value: v.reviewer?.name ? t("byName", { name: v.reviewer.name }) : "" }) : t("waitingForReview")}
       </p>
       <div className="space-y-4">
         {v.file && (
           <p className="text-sm">
-            Your file:{" "}
+            {t("yourFile")}{" "}
             <Button variant="ghost" className="px-1 py-0 underline" busy={busy === "dl-" + v.file.id} onClick={() => onDownload(v.file!)}>
               {v.file.fileName}
             </Button>{" "}
             <span className="text-muted-foreground">({formatSize(v.file.sizeBytes)})</span>
           </p>
         )}
-        {v.text && <AnchoredText text={v.text} comments={v.comments} label={`Text of version ${v.number}`} />}
+        {v.text && <AnchoredText text={v.text} comments={v.comments} label={t("textOfVersionNumber", { number: v.number })} />}
         {v.notesToReviewer && (
           <p className="text-sm">
-            <span className="font-medium">Your notes: </span>
+            <span className="font-medium">{t("yourNotes")}{" "}</span>
             {v.notesToReviewer}
           </p>
         )}
         {v.returnedAt ? (
           <>
             <section>
-              <h3 className="mb-1 text-sm font-semibold">Summary</h3>
+              <h3 className="mb-1 text-sm font-semibold">{t("summary")}</h3>
               <p className="whitespace-pre-wrap text-sm">{v.summary}</p>
             </section>
             <section>
-              <h3 className="mb-1 text-sm font-semibold">Checklist</h3>
+              <h3 className="mb-1 text-sm font-semibold">{t("checklist")}</h3>
               <RubricTable rubric={v.rubric ?? []} />
             </section>
             <section>
-              <h3 className="mb-1 text-sm font-semibold">Comments</h3>
+              <h3 className="mb-1 text-sm font-semibold">{t("comments")}</h3>
               <CommentList comments={v.comments} />
             </section>
             {v.annotatedFile && (
               <p className="text-sm">
-                Annotated copy from your reviewer:{" "}
+                {t("annotatedCopyFromYourReviewer")}{" "}
                 <Button variant="secondary" busy={busy === "dl-" + v.annotatedFile.id} onClick={() => onDownload(v.annotatedFile!)}>
-                  Download {v.annotatedFile.fileName}
+                  {t("downloadFileName", { fileName: v.annotatedFile.fileName })}
                 </Button>
               </p>
             )}
           </>
         ) : (
-          <p className="text-sm text-muted-foreground">The review will appear here when your counselor returns it.</p>
+          <p className="text-sm text-muted-foreground">{t("theReviewWillAppearHere")}</p>
         )}
       </div>
     </Card>

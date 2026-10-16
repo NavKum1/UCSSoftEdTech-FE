@@ -2,8 +2,8 @@
 
 import React, { useState } from "react";
 import { useApi } from "@/lib/appAuth";
-import { Badge, Button, Card, EmptyState, ErrorBanner, Field, Loading, PageHeader, SuccessBanner, formatDate, useLoad } from "@/components/career/ui";
-import { WORK_AUTH_LABELS, labelOf } from "@/components/career/coreLabels";
+import { Badge, Button, Card, EmptyState, ErrorBanner, Field, Loading, PageHeader, SuccessBanner, formatDate, useLoad, useCareerT } from "@/components/career/ui";
+import { labelOf, useWorkAuthLabels } from "@/components/career/coreLabels";
 
 interface Profile {
   preferredName?: string | null;
@@ -54,6 +54,8 @@ const triState = (v: boolean | null | undefined) => (v === true ? "yes" : v === 
 const fromTri = (v: string) => (v === "yes" ? true : v === "no" ? false : null);
 
 export default function StudentRecordPage() {
+  const t = useCareerT("studentRecord");
+  const WORK_AUTH_LABELS = useWorkAuthLabels();
   const api = useApi();
   const { data, setData, error, loading, reload } = useLoad(() => api<RecordResponse>("/api/career/student/record"), [api]);
   const [draft, setProfile] = useState<Profile | null>(null);
@@ -89,7 +91,7 @@ export default function StudentRecordPage() {
       });
       setData((d) => (d ? { ...d, profile: p } : d));
       setProfile(null);
-      setMsg("Your profile was saved.");
+      setMsg(t("yourProfileWasSaved"));
     } catch (e2) {
       setErr((e2 as Error).message);
     } finally {
@@ -138,7 +140,7 @@ export default function StudentRecordPage() {
       if (editing === "new") await api("/api/career/student/education", { method: "POST", json: body });
       else await api(`/api/career/student/education/${editing}`, { method: "PUT", json: body });
       setEditing(null);
-      setMsg("Education saved.");
+      setMsg(t("educationSaved"));
       reload();
     } catch (e2) {
       setErr((e2 as Error).message);
@@ -148,11 +150,11 @@ export default function StudentRecordPage() {
   };
 
   const removeEdu = async (e: Education) => {
-    if (!window.confirm(`Delete ${e.degreeLevel} at ${e.schoolName}?`)) return;
+    if (!window.confirm(t("deleteDegreeLevelAtSchoolName", { degreeLevel: e.degreeLevel, schoolName: e.schoolName }))) return;
     setErr(null);
     try {
       await api(`/api/career/student/education/${e.id}`, { method: "DELETE" });
-      setMsg("Education entry deleted.");
+      setMsg(t("educationEntryDeleted"));
       reload();
     } catch (e2) {
       setErr((e2 as Error).message);
@@ -160,26 +162,26 @@ export default function StudentRecordPage() {
   };
 
   if (loading && !data) return <Loading />;
-  if (!data || !profile) return <ErrorBanner error={error ?? "Your record couldn't be loaded."} onRetry={reload} />;
+  if (!data || !profile) return <ErrorBanner error={error ?? t("yourRecordCouldntBeLoaded")} onRetry={reload} />;
 
   return (
     <div>
-      <PageHeader title="My record" description={`Your career record at ${data.school.displayName}. Employers only see the parts you or your school's directory policy allow.`} />
+      <PageHeader title={t("myRecord")} description={t("yourCareerRecordAtDisplayName", { displayName: data.school.displayName })} />
       <ErrorBanner error={err} />
       <SuccessBanner message={msg} />
 
-      <Card title="About you" className="mb-6">
+      <Card title={t("aboutYou")} className="mb-6">
         <form onSubmit={saveProfile} className="grid gap-4 sm:grid-cols-2">
-          <Field label="Preferred name">
+          <Field label={t("preferredName")}>
             {(p) => <input {...p} value={profile.preferredName ?? ""} onChange={(e) => setProfile({ ...profile, preferredName: e.target.value })} autoComplete="nickname" />}
           </Field>
-          <Field label="Pronouns" hint="Optional, for example she/her or they/them.">
+          <Field label={t("pronouns")} hint={t("optionalForExampleSheHer")}>
             {(p) => <input {...p} value={profile.pronouns ?? ""} onChange={(e) => setProfile({ ...profile, pronouns: e.target.value })} />}
           </Field>
-          <Field label="Phone">
+          <Field label={t("phone")}>
             {(p) => <input {...p} type="tel" value={profile.phone ?? ""} onChange={(e) => setProfile({ ...profile, phone: e.target.value })} autoComplete="tel" />}
           </Field>
-          <Field label="Work authorization" hint="Used to match you with eligible opportunities. It's never shared without a legal basis.">
+          <Field label={t("workAuthorization")} hint={t("usedToMatchYouWith")}>
             {(p) => (
               <select {...p} value={profile.workAuthorization} onChange={(e) => setProfile({ ...profile, workAuthorization: e.target.value })}>
                 {data.workAuthorizationOptions.map((o) => (
@@ -188,60 +190,60 @@ export default function StudentRecordPage() {
               </select>
             )}
           </Field>
-          <Field label="Do you need visa sponsorship now?">
+          <Field label={t("doYouNeedVisaSponsorship")}>
             {(p) => (
               <select {...p} value={triState(profile.requiresSponsorshipNow)} onChange={(e) => setProfile({ ...profile, requiresSponsorshipNow: fromTri(e.target.value) })}>
-                <option value="">Prefer not to say</option>
-                <option value="yes">Yes</option>
-                <option value="no">No</option>
+                <option value="">{t("preferNotToSay")}</option>
+                <option value="yes">{t("yes")}</option>
+                <option value="no">{t("no")}</option>
               </select>
             )}
           </Field>
-          <Field label="Will you need sponsorship in the future?">
+          <Field label={t("willYouNeedSponsorshipIn")}>
             {(p) => (
               <select {...p} value={triState(profile.requiresSponsorshipFuture)} onChange={(e) => setProfile({ ...profile, requiresSponsorshipFuture: fromTri(e.target.value) })}>
-                <option value="">Prefer not to say</option>
-                <option value="yes">Yes</option>
-                <option value="no">No</option>
+                <option value="">{t("preferNotToSay")}</option>
+                <option value="yes">{t("yes")}</option>
+                <option value="no">{t("no")}</option>
               </select>
             )}
           </Field>
           <div className="sm:col-span-2">
-            <Button type="submit" busy={saving && editing === null}>Save profile</Button>
+            <Button type="submit" busy={saving && editing === null}>{t("saveProfile")}</Button>
           </div>
         </form>
       </Card>
 
-      <Card title="Education" actions={editing === null && <Button variant="secondary" onClick={() => startEdit()}>Add education</Button>}>
+      <Card title={t("education")} actions={editing === null && <Button variant="secondary" onClick={() => startEdit()}>{t("addEducation")}</Button>}>
         {editing !== null && (
-          <form onSubmit={saveEdu} className="mb-6 grid gap-4 rounded-lg border border-border p-4 sm:grid-cols-2" aria-label={editing === "new" ? "Add education" : "Edit education"}>
-            <Field label="School">{(p) => <input {...p} required value={edu.schoolName} onChange={(e) => setEdu({ ...edu, schoolName: e.target.value })} />}</Field>
-            <Field label="Degree">
+          <form onSubmit={saveEdu} className="mb-6 grid gap-4 rounded-lg border border-border p-4 sm:grid-cols-2" aria-label={editing === "new" ? t("addEducation") : t("editEducation")}>
+            <Field label={t("school")}>{(p) => <input {...p} required value={edu.schoolName} onChange={(e) => setEdu({ ...edu, schoolName: e.target.value })} />}</Field>
+            <Field label={t("degree")}>
               {(p) => (
                 <select {...p} value={edu.degreeLevel} onChange={(e) => setEdu({ ...edu, degreeLevel: e.target.value })}>
                   {data.degreeLevels.map((d) => <option key={d} value={d}>{d}</option>)}
                 </select>
               )}
             </Field>
-            <Field label="Majors" hint="Separate with commas (up to 4).">{(p) => <input {...p} value={edu.majors} onChange={(e) => setEdu({ ...edu, majors: e.target.value })} />}</Field>
-            <Field label="Minors" hint="Separate with commas (up to 4).">{(p) => <input {...p} value={edu.minors} onChange={(e) => setEdu({ ...edu, minors: e.target.value })} />}</Field>
-            <Field label="College or school within the university">{(p) => <input {...p} value={edu.college} onChange={(e) => setEdu({ ...edu, college: e.target.value })} />}</Field>
+            <Field label={t("majors")} hint={t("separateWithCommasUpTo")}>{(p) => <input {...p} value={edu.majors} onChange={(e) => setEdu({ ...edu, majors: e.target.value })} />}</Field>
+            <Field label={t("minors")} hint={t("separateWithCommasUpTo")}>{(p) => <input {...p} value={edu.minors} onChange={(e) => setEdu({ ...edu, minors: e.target.value })} />}</Field>
+            <Field label={t("collegeOrSchoolWithinThe")}>{(p) => <input {...p} value={edu.college} onChange={(e) => setEdu({ ...edu, college: e.target.value })} />}</Field>
             <div />
-            <Field label="Start date">{(p) => <input {...p} type="date" value={edu.startDate} onChange={(e) => setEdu({ ...edu, startDate: e.target.value })} />}</Field>
-            <Field label="Graduation date (expected or actual)">{(p) => <input {...p} type="date" value={edu.graduationDate} onChange={(e) => setEdu({ ...edu, graduationDate: e.target.value })} />}</Field>
+            <Field label={t("startDate")}>{(p) => <input {...p} type="date" value={edu.startDate} onChange={(e) => setEdu({ ...edu, startDate: e.target.value })} />}</Field>
+            <Field label={t("graduationDateExpectedOrActual")}>{(p) => <input {...p} type="date" value={edu.graduationDate} onChange={(e) => setEdu({ ...edu, graduationDate: e.target.value })} />}</Field>
             <label className="flex items-center gap-2 text-sm sm:col-span-2">
               <input type="checkbox" className="h-4 w-4" checked={edu.isPrimary} onChange={(e) => setEdu({ ...edu, isPrimary: e.target.checked })} />
-              This is my main program
+              {t("thisIsMyMainProgram")}
             </label>
             <div className="flex gap-2 sm:col-span-2">
-              <Button type="submit" busy={saving}>Save</Button>
-              <Button type="button" variant="secondary" onClick={() => setEditing(null)}>Cancel</Button>
+              <Button type="submit" busy={saving}>{t("save")}</Button>
+              <Button type="button" variant="secondary" onClick={() => setEditing(null)}>{t("cancel")}</Button>
             </div>
           </form>
         )}
 
         {data.education.length === 0 ? (
-          <EmptyState title="No education added yet">Add your current program so career staff and approved employers see the right details.</EmptyState>
+          <EmptyState title={t("noEducationAddedYet")}>{t("addYourCurrentProgramSo")}</EmptyState>
         ) : (
           <ul className="divide-y divide-border">
             {data.education.map((e) => (
@@ -249,28 +251,28 @@ export default function StudentRecordPage() {
                 <div>
                   <p className="font-medium">
                     {e.degreeLevel}
-                    {e.majors.length > 0 && ` in ${e.majors.join(", ")}`}
+                    {e.majors.length > 0 && t("inMajors", { majors: e.majors.join(", ") })}
                   </p>
                   <p className="text-sm text-muted-foreground">
                     {e.schoolName}
                     {e.college && ` · ${e.college}`}
-                    {e.minors.length > 0 && ` · Minor: ${e.minors.join(", ")}`}
+                    {e.minors.length > 0 && t("minorMinors", { minors: e.minors.join(", ") })}
                   </p>
                   <p className="text-sm text-muted-foreground">
                     {e.startDate ? `${formatDate(e.startDate)} – ` : ""}
-                    {e.graduationDate ? `Graduation ${formatDate(e.graduationDate)}` : "Graduation date not set"}
+                    {e.graduationDate ? t("graduationGraduationDate", { graduationDate: formatDate(e.graduationDate) }) : t("graduationDateNotSet")}
                   </p>
                   <div className="mt-1 flex flex-wrap gap-2">
-                    {e.isPrimary && <Badge tone="info">Main program</Badge>}
-                    {e.verifiedBySchool && <Badge tone="good">Verified by school</Badge>}
+                    {e.isPrimary && <Badge tone="info">{t("mainProgram")}</Badge>}
+                    {e.verifiedBySchool && <Badge tone="good">{t("verifiedBySchool")}</Badge>}
                   </div>
                 </div>
                 {e.verifiedBySchool ? (
-                  <p className="max-w-xs text-xs text-muted-foreground">From your school&apos;s records. Ask your career center to correct it.</p>
+                  <p className="max-w-xs text-xs text-muted-foreground">{t("fromYourSchoolsRecordsAsk")}</p>
                 ) : (
                   <div className="flex gap-2">
-                    <Button variant="secondary" onClick={() => startEdit(e)} aria-label={`Edit ${e.degreeLevel} at ${e.schoolName}`}>Edit</Button>
-                    <Button variant="ghost" onClick={() => removeEdu(e)} aria-label={`Delete ${e.degreeLevel} at ${e.schoolName}`}>Delete</Button>
+                    <Button variant="secondary" onClick={() => startEdit(e)} aria-label={t("editDegreeLevelAtSchoolName", { degreeLevel: e.degreeLevel, schoolName: e.schoolName })}>{t("edit")}</Button>
+                    <Button variant="ghost" onClick={() => removeEdu(e)} aria-label={t("deleteDegreeLevelAtSchoolName2", { degreeLevel: e.degreeLevel, schoolName: e.schoolName })}>{t("delete")}</Button>
                   </div>
                 )}
               </li>

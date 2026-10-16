@@ -3,10 +3,10 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { useApi } from "@/lib/appAuth";
-import { Badge, Card, EmptyState, ErrorBanner, Loading, PageHeader, SuccessBanner } from "@/components/career/ui";
+import { Badge, Card, EmptyState, ErrorBanner, Loading, PageHeader, SuccessBanner, useCareerT } from "@/components/career/ui";
 import { EmployerPicker, useEmployers, type EmployerOrg } from "@/components/career/EmployerPicker";
 import CompanyForm, { type CompanyValues } from "@/components/career/CompanyForm";
-import { VERIFICATION } from "@/components/career/coreLabels";
+import { useVerification } from "@/components/career/coreLabels";
 
 const toValues = (o: EmployerOrg): CompanyValues => ({
   name: o.name,
@@ -21,6 +21,8 @@ const toValues = (o: EmployerOrg): CompanyValues => ({
 });
 
 export default function EmployerCompanyPage() {
+  const t = useCareerT("employerCompany");
+  const VERIFICATION = useVerification();
   const api = useApi();
   const emp = useEmployers();
   const [busy, setBusy] = useState(false);
@@ -31,8 +33,8 @@ export default function EmployerCompanyPage() {
   if (emp.error) return <ErrorBanner error={emp.error} onRetry={emp.reload} />;
   if (!emp.current)
     return (
-      <EmptyState title="No company yet">
-        <Link href="/employer" className="underline">Set up your company</Link> first.
+      <EmptyState title={t("noCompanyYet")}>
+        {t.rich("setUpYourCompanyFirst", { link: (chunks) => <Link href="/employer" className="underline">{chunks}</Link> })}
       </EmptyState>
     );
 
@@ -41,7 +43,7 @@ export default function EmployerCompanyPage() {
   const v = VERIFICATION[org.verificationStatus];
 
   const save = async (values: CompanyValues) => {
-    if (values.website.trim() !== (org.website ?? "") && org.verificationStatus === "DomainVerified" && !window.confirm("Changing the website removes the automatic domain verification. Continue?")) return;
+    if (values.website.trim() !== (org.website ?? "") && org.verificationStatus === "DomainVerified" && !window.confirm(t("changingTheWebsiteRemovesThe"))) return;
     setBusy(true);
     setErr(null);
     setMsg(null);
@@ -61,7 +63,7 @@ export default function EmployerCompanyPage() {
           hqCountry: values.hqCountry.trim() || null,
         },
       });
-      setMsg("Company profile saved.");
+      setMsg(t("companyProfileSaved"));
       emp.reload();
     } catch (e) {
       setErr((e as Error).message);
@@ -73,14 +75,14 @@ export default function EmployerCompanyPage() {
   return (
     <div>
       <PageHeader
-        title="Company profile"
-        description={isOwner ? "Schools see this when you ask to recruit their students." : "Only the account owner can edit the company profile."}
+        title={t("companyProfile")}
+        description={isOwner ? t("schoolsSeeThisWhenYou") : t("onlyTheAccountOwnerCan")}
         actions={<EmployerPicker accounts={emp.accounts} current={emp.current} onSelect={emp.select} />}
       />
       <ErrorBanner error={err} />
       <SuccessBanner message={msg} />
       <Card title={org.name} actions={v && <Badge tone={v.tone}>{v.label}</Badge>}>
-        <CompanyForm key={`${org.id}-${org.verificationStatus}-${org.name}`} initial={toValues(org)} submitLabel="Save changes" busy={busy} disabled={!isOwner} onSubmit={save} />
+        <CompanyForm key={`${org.id}-${org.verificationStatus}-${org.name}`} initial={toValues(org)} submitLabel={t("saveChanges")} busy={busy} disabled={!isOwner} onSubmit={save} />
       </Card>
     </div>
   );

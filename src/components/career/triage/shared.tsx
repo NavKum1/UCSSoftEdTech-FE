@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Badge } from "@/components/career/ui";
+import { Badge, useCareerT, useCareerLabels } from "@/components/career/ui";
 import { useCareerShell } from "@/components/career/CareerShell";
 
 export interface Signal {
@@ -35,14 +35,20 @@ export interface TriageSettings {
   rules: { key: string; title: string; description: string }[];
 }
 
-export const SEVERITY_LABEL: Record<string, string> = { high: "High", medium: "Medium", low: "Low" };
+export const SEVERITY_LABEL_KEYS = ["high", "medium", "low"];
+/** severity label in the career language (G1) */
+export function useSeverityLabels(): Record<string, string> {
+  return useCareerLabels("triageShared.severity", SEVERITY_LABEL_KEYS);
+}
 
 /** Severity is shown as text as well as color. */
 export function SeverityBadge({ severity, children }: { severity: string; children: React.ReactNode }) {
+  const t = useCareerT("triageShared");
+  const SEVERITY_LABEL = useSeverityLabels();
   const tone = severity === "high" ? "bad" : severity === "medium" ? "warn" : "neutral";
   return (
     <Badge tone={tone}>
-      <span className="sr-only">{SEVERITY_LABEL[severity] ?? severity} severity: </span>
+      <span className="sr-only">{t("severitySeverity", { severity: SEVERITY_LABEL[severity] ?? severity })}{" "}</span>
       {children}
     </Badge>
   );

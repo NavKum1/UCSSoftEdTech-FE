@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { useApi } from "@/lib/appAuth";
-import { Badge, Card, EmptyState, ErrorBanner, Field, Loading, PageHeader, formatDate, useLoad } from "@/components/career/ui";
+import { Badge, Card, EmptyState, ErrorBanner, Field, Loading, PageHeader, formatDate, useLoad, useCareerT } from "@/components/career/ui";
 
 interface EvidenceItem {
   activity: string;
@@ -28,6 +28,7 @@ interface MyCompetencies {
 }
 
 export default function StudentCompetenciesPage() {
+  const t = useCareerT("studentCompetencies");
   const api = useApi();
   const [key, setKey] = useState("");
   const data = useLoad(() => api<MyCompetencies>(`/api/career/frameworks/me/competencies${key ? `?framework=${encodeURIComponent(key)}` : ""}`), [key]);
@@ -35,7 +36,7 @@ export default function StudentCompetenciesPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="My competencies" description="See which of your activities count as evidence for each competency, to help you reflect and plan." />
+      <PageHeader title={t("myCompetencies")} description={t("seeWhichOfYourActivities")} />
       {data.loading && <Loading />}
       {data.error && <ErrorBanner error={data.error} onRetry={data.reload} />}
       {d && !data.loading && (
@@ -43,7 +44,7 @@ export default function StudentCompetenciesPage() {
           <p className="text-sm text-muted-foreground">{d.note}</p>
           {d.available.length > 1 && (
             <div className="max-w-md">
-              <Field label="Framework">
+              <Field label={t("framework")}>
                 {(p) => (
                   <select {...p} value={d.framework?.key ?? ""} onChange={(e) => setKey(e.target.value)}>
                     {d.available.map((f) => <option key={f.key} value={f.key}>{f.name}</option>)}
@@ -53,15 +54,15 @@ export default function StudentCompetenciesPage() {
             </div>
           )}
           {!d.framework ? (
-            <EmptyState title="Nothing to show yet">Your school hasn&apos;t set up competency tracking.</EmptyState>
+            <EmptyState title={t("nothingToShowYet")}>{t("yourSchoolHasntSetUp")}</EmptyState>
           ) : (
             <div className="grid gap-4 md:grid-cols-2">
               {d.competencies.map((c) => (
                 <Card key={c.code} title={c.title}>
                   {!c.mapped ? (
-                    <p className="text-sm text-muted-foreground">Your school doesn&apos;t track evidence for this competency here yet.</p>
+                    <p className="text-sm text-muted-foreground">{t("yourSchoolDoesntTrackEvidence")}</p>
                   ) : c.evidence.length === 0 ? (
-                    <p className="text-sm text-muted-foreground">No evidence yet. Activities your school counts for this competency will appear here.</p>
+                    <p className="text-sm text-muted-foreground">{t("noEvidenceYetActivitiesYour")}</p>
                   ) : (
                     <ul className="space-y-2">
                       {c.evidence.map((e, i) => (
@@ -71,10 +72,10 @@ export default function StudentCompetenciesPage() {
                             {e.measure} · {formatDate(e.at)}
                           </p>
                           <p className="mt-1 flex flex-wrap items-center gap-2">
-                            {e.score !== null && <span>Score: {e.score}</span>}
-                            {e.metTarget === true && <Badge tone="good">Met the target</Badge>}
-                            {e.metTarget === false && <Badge tone="warn">Below the target</Badge>}
-                            {!e.direct && <Badge>Participation</Badge>}
+                            {e.score !== null && <span>{t("scoreScore", { score: e.score })}</span>}
+                            {e.metTarget === true && <Badge tone="good">{t("metTheTarget")}</Badge>}
+                            {e.metTarget === false && <Badge tone="warn">{t("belowTheTarget")}</Badge>}
+                            {!e.direct && <Badge>{t("participation")}</Badge>}
                           </p>
                         </li>
                       ))}

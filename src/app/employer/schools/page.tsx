@@ -3,9 +3,9 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { useApi } from "@/lib/appAuth";
-import { Badge, Button, Card, EmptyState, ErrorBanner, Field, Loading, PageHeader, SuccessBanner, formatDate, useLoad } from "@/components/career/ui";
+import { Badge, Button, Card, EmptyState, ErrorBanner, Field, Loading, PageHeader, SuccessBanner, formatDate, useLoad, ScrollArea, useCareerT } from "@/components/career/ui";
 import { EmployerPicker, useEmployers } from "@/components/career/EmployerPicker";
-import { RELATIONSHIP_TONES } from "@/components/career/coreLabels";
+import { RELATIONSHIP_TONES, useRelationshipLabels } from "@/components/career/coreLabels";
 
 interface School {
   instituteId: string;
@@ -26,6 +26,8 @@ interface Relationship {
 }
 
 export default function EmployerSchoolsPage() {
+  const t = useCareerT("employerSchools");
+  const STATUS = useRelationshipLabels();
   const api = useApi();
   const emp = useEmployers();
   const employerId = emp.current?.employer.id;
@@ -42,8 +44,8 @@ export default function EmployerSchoolsPage() {
   if (emp.error) return <ErrorBanner error={emp.error} onRetry={emp.reload} />;
   if (!emp.current)
     return (
-      <EmptyState title="No company yet">
-        <Link href="/employer" className="underline">Set up your company</Link> first.
+      <EmptyState title={t("noCompanyYet")}>
+        {t.rich("setUpYourCompanyFirst", { link: (chunks) => <Link href="/employer" className="underline">{chunks}</Link> })}
       </EmptyState>
     );
 
@@ -71,7 +73,7 @@ export default function EmployerSchoolsPage() {
     setMsg(null);
     try {
       await api(`/api/career/employer/${employerId}/schools`, { method: "POST", json: { instituteId: requesting.instituteId, note: note.trim() || null } });
-      setMsg(`Request sent to ${requesting.displayName}. You'll be notified when they decide.`);
+      setMsg(t("requestSentToDisplayNameYoull", { displayName: requesting.displayName }));
       setRequesting(null);
       setNote("");
       rels.reload();
@@ -84,22 +86,22 @@ export default function EmployerSchoolsPage() {
 
   return (
     <div>
-      <PageHeader title="Schools" description="Ask a school's career center for approval to recruit its students." actions={<EmployerPicker accounts={emp.accounts} current={emp.current} onSelect={emp.select} />} />
+      <PageHeader title={t("schools")} description={t("askASchoolsCareerCenter")} actions={<EmployerPicker accounts={emp.accounts} current={emp.current} onSelect={emp.select} />} />
       <ErrorBanner error={err ?? rels.error} />
       <SuccessBanner message={msg} />
-      {flagged && <ErrorBanner error="Your company account is under review, so you can't request new schools right now." />}
+      {flagged && <ErrorBanner error={t("yourCompanyAccountIsUnderReview")} />}
 
-      <Card title="Find a school" className="mb-6">
+      <Card title={t("findASchool")} className="mb-6">
         <form role="search" onSubmit={search} className="flex flex-wrap items-end gap-3">
           <div className="min-w-56 flex-1">
-            <Field label="School name">{(p) => <input {...p} type="search" value={q} onChange={(e) => setQ(e.target.value)} />}</Field>
+            <Field label={t("schoolName")}>{(p) => <input {...p} type="search" value={q} onChange={(e) => setQ(e.target.value)} />}</Field>
           </div>
-          <Button type="submit" variant="secondary" busy={busy === "search"}>Search</Button>
+          <Button type="submit" variant="secondary" busy={busy === "search"}>{t("search")}</Button>
         </form>
         {results && (
           <div className="mt-4" aria-live="polite">
             {results.length === 0 ? (
-              <p className="text-sm text-muted-foreground">No schools match.</p>
+              <p className="text-sm text-muted-foreground">{t("noSchoolsMatch")}</p>
             ) : (
               <ul className="divide-y divide-border">
                 {results.map((s) => {
@@ -110,20 +112,20 @@ export default function EmployerSchoolsPage() {
                       <div className="flex flex-wrap items-center justify-between gap-2">
                         <span className="font-medium">{s.displayName}</span>
                         <div className="flex items-center gap-2">
-                          {rel && <Badge tone={RELATIONSHIP_TONES[rel.status]}>{rel.status}</Badge>}
+                          {rel && <Badge tone={RELATIONSHIP_TONES[rel.status]}>{STATUS[rel.status] ?? rel.status}</Badge>}
                           {canRequest && requesting?.instituteId !== s.instituteId && (
-                            <Button variant="secondary" onClick={() => setRequesting(s)}>{rel ? "Request again" : "Request access"}</Button>
+                            <Button variant="secondary" onClick={() => setRequesting(s)}>{rel ? t("requestAgain") : t("requestAccess")}</Button>
                           )}
                         </div>
                       </div>
                       {requesting?.instituteId === s.instituteId && (
                         <form onSubmit={sendRequest} className="mt-3 space-y-3 rounded-lg border border-border p-3">
-                          <Field label={`Note to ${s.displayName} (optional)`} hint="Who you hire and what roles you recruit for helps the school decide.">
+                          <Field label={t("noteToDisplayNameOptional", { displayName: s.displayName })} hint={t("whoYouHireAndWhat")}>
                             {(p) => <textarea {...p} rows={3} value={note} onChange={(e) => setNote(e.target.value)} />}
                           </Field>
                           <div className="flex gap-2">
-                            <Button type="submit" busy={busy === "request"}>Send request</Button>
-                            <Button type="button" variant="secondary" onClick={() => setRequesting(null)}>Cancel</Button>
+                            <Button type="submit" busy={busy === "request"}>{t("sendRequest")}</Button>
+                            <Button type="button" variant="secondary" onClick={() => setRequesting(null)}>{t("cancel")}</Button>
                           </div>
                         </form>
                       )}
@@ -136,38 +138,38 @@ export default function EmployerSchoolsPage() {
         )}
       </Card>
 
-      <Card title="Your schools">
+      <Card title={t("yourSchools")}>
         {rels.loading && !rels.data ? (
           <Loading />
         ) : (rels.data ?? []).length === 0 ? (
-          <EmptyState title="No requests yet">Search for a school above to get started.</EmptyState>
+          <EmptyState title={t("noRequestsYet")}>{t("searchForASchoolAbove")}</EmptyState>
         ) : (
-          <div className="overflow-x-auto">
+          <ScrollArea>
             <table className="w-full text-sm">
-              <caption className="sr-only">Your school relationships</caption>
+              <caption className="sr-only">{t("yourSchoolRelationships")}</caption>
               <thead>
-                <tr className="border-b border-border text-left">
-                  <th scope="col" className="py-2 pr-3 font-medium">School</th>
-                  <th scope="col" className="py-2 pr-3 font-medium">Status</th>
-                  <th scope="col" className="py-2 pr-3 font-medium">Requested</th>
-                  <th scope="col" className="py-2 font-medium">School&apos;s note</th>
+                <tr className="border-b border-border text-start [&_th]:text-start">
+                  <th scope="col" className="py-2 pe-3 font-medium">{t("school")}</th>
+                  <th scope="col" className="py-2 pe-3 font-medium">{t("status")}</th>
+                  <th scope="col" className="py-2 pe-3 font-medium">{t("requested")}</th>
+                  <th scope="col" className="py-2 font-medium">{t("schoolsNote")}</th>
                 </tr>
               </thead>
               <tbody>
                 {rels.data!.map((r) => (
                   <tr key={r.id} className="border-b border-border last:border-0 align-top">
-                    <td className="py-2 pr-3">{r.school ?? "Unknown school"}</td>
-                    <td className="py-2 pr-3"><Badge tone={RELATIONSHIP_TONES[r.status]}>{r.status}</Badge></td>
-                    <td className="py-2 pr-3 whitespace-nowrap">
+                    <td className="py-2 pe-3">{r.school ?? t("unknownSchool")}</td>
+                    <td className="py-2 pe-3"><Badge tone={RELATIONSHIP_TONES[r.status]}>{STATUS[r.status] ?? r.status}</Badge></td>
+                    <td className="py-2 pe-3 whitespace-nowrap">
                       {formatDate(r.requestedAt)}
-                      {r.decidedAt && <div className="text-xs text-muted-foreground">Decided {formatDate(r.decidedAt)}</div>}
+                      {r.decidedAt && <div className="text-xs text-muted-foreground">{t("decidedDecidedAt", { decidedAt: formatDate(r.decidedAt) })}</div>}
                     </td>
                     <td className="py-2">{r.decisionNote || "—"}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
-          </div>
+          </ScrollArea>
         )}
       </Card>
     </div>

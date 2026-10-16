@@ -1029,13 +1029,45 @@ const IMPORT_FIELDS = {
     { key: "menteeEmail", label: "Mentee email", required: true, hint: null },
     { key: "mentorEmail", label: "Mentor email", required: true, hint: null },
   ],
+  Placements: [
+    { key: "studentEmail", label: "Student email", required: false, hint: "Student email or student id number is required." },
+    { key: "employerName", label: "Employer (or institution for further study)", required: true, hint: null },
+    { key: "roleTitle", label: "Job title, role or program", required: false, hint: null },
+    { key: "employmentType", label: "Job, offer or contract type", required: false, hint: null },
+    { key: "salary", label: "Salary, package (CTC) or stipend", required: false, hint: "Kept as reported." },
+  ],
 };
 
 const importPresets = {
   notice: "Column names are based on typical exports and may differ for your school. Check each mapping before you import.",
-  sources: ["Handshake", "Symplicity", "12twenty"],
-  kinds: ["Students", "Appointments", "Experiences", "Mentoring"],
+  sources: ["Handshake", "Symplicity", "12twenty", "Superset", "CareerHub", "Orbis", "Target Connect", "JobTeaser", "Esup-Stage", "Other"],
+  kinds: ["Students", "Appointments", "Experiences", "Mentoring", "Placements"],
   fields: IMPORT_FIELDS,
+  sourceNotes: { Superset: "India placement platform. Exports: placement drives' offers per student." },
+  defaultOptions: { Superset: { dayFirst: true, currency: "INR" }, Handshake: { dayFirst: false, currency: "USD" } },
+};
+
+const connectorsBody = {
+  note: "Job postings and applications stay on these platforms. Only your school's records of where students went are imported.",
+  platforms: [
+    {
+      provider: "superset", displayName: "Superset", source: "Superset", markets: "India", holds: "Placement drives, offers per student.",
+      fileExport: "Placement reports exported as Excel/CSV.", apiStatus: "File import available. No API connector built.",
+      apiWouldNeed: ["Institution id", "API key issued to the institution"], implemented: false, testOnly: false,
+      notice: "Not verified with the vendor.", settings: [],
+      connection: { id: "conn-1", portalUrl: "https://lakeside.example-placements.test/", active: true, lastPullAt: null, lastPullStatus: null, settings: {}, secretsSet: [] },
+    },
+    {
+      provider: "test", displayName: "Test platform (sample data)", source: "Test platform", markets: "Testing only", holds: "Sample placement records.",
+      fileExport: "Not applicable.", apiStatus: "Test connector: implemented.", apiWouldNeed: ["API key"], implemented: true, testOnly: true,
+      notice: "Not verified with the vendor.",
+      settings: [
+        { key: "fixture", label: "Sample records (JSON array)", secret: false, hint: "Objects keyed by placement field names." },
+        { key: "apiKey", label: "API key", secret: true, hint: null },
+      ],
+      connection: { id: "conn-2", portalUrl: null, active: true, lastPullAt: hours(-2), lastPullStatus: "3 records ready to review.", settings: { fixture: "[]" }, secretsSet: ["apiKey"] },
+    },
+  ],
 };
 
 const STUDENT_HEADERS = ["Email", "First Name", "Last Name", "Student ID", "Major", "Graduation Date"];
@@ -1257,6 +1289,11 @@ const raw: ApiFixture[] = [
 
   // Imports
   { path: "/api/career/imports/presets", body: importPresets },
+  { path: "/api/career/imports/connectors", body: connectorsBody },
+  { method: "PUT", path: /^\/api\/career\/imports\/connectors\/[^/]+$/, body: connectorsBody.platforms[0] },
+  { method: "DELETE", path: /^\/api\/career\/imports\/connectors\/[^/]+$/, body: {} },
+  { method: "POST", path: /^\/api\/career\/imports\/connectors\/[^/]+\/pull$/, body: batchView("imp-validated") },
+  { path: "/api/career/imports/placement-facts", body: [] },
   { path: "/api/career/imports", body: importHistory },
   { method: "POST", path: "/api/career/imports/upload", body: batchView("imp-validated") },
   { method: "POST", path: "/api/career/imports/apply-pending", body: { created: 2 } },

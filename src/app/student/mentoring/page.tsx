@@ -2,16 +2,16 @@
 
 import React, { useState } from "react";
 import { useApi } from "@/lib/appAuth";
-import { Badge, Button, Card, EmptyState, ErrorBanner, Field, Loading, PageHeader, SuccessBanner, formatDate, useLoad } from "@/components/career/ui";
+import { Badge, Button, Card, EmptyState, ErrorBanner, Field, Loading, PageHeader, SuccessBanner, formatDate, useLoad, useCareerT } from "@/components/career/ui";
 import {
   CheckboxGroup,
-  MEETING_LABELS,
   MentorshipPanel,
   StatusBadge,
   splitList,
   topicLabel,
   type MentoringOptions,
   type RelationshipSummary,
+  useMeetingLabels,
 } from "@/components/career/mentoring/MentorshipPanel";
 
 interface MentorCard {
@@ -45,6 +45,7 @@ interface Preferences {
 type Tab = "find" | "mine";
 
 export default function StudentMentoringPage() {
+  const tr = useCareerT("studentMentoring");
   const api = useApi();
   const [tab, setTab] = useState<Tab>("find");
   const options = useLoad(() => api<MentoringOptions>("/api/career/mentoring/options"), [api]);
@@ -54,15 +55,15 @@ export default function StudentMentoringPage() {
   return (
     <div>
       <PageHeader
-        title="Mentoring"
-        description="Connect with alumni and professionals your career center has approved. Mentors volunteer their time, so be clear about what you'd like help with."
+        title={tr("mentoring")}
+        description={tr("connectWithAlumniAndProfessionals")}
       />
       <ErrorBanner error={options.error ?? mine.error} />
-      <div role="tablist" aria-label="Mentoring sections" className="mb-6 flex gap-2 border-b border-border">
+      <div role="tablist" aria-label={tr("mentoringSections")} className="mb-6 flex gap-2 border-b border-border">
         {(
           [
-            ["find", "Find a mentor"],
-            ["mine", `My mentorships${mine.data ? ` (${mine.data.length})` : ""}`],
+            ["find", tr("tabFind")],
+            ["mine", mine.data ? tr("tabMineCount", { count: mine.data.length }) : tr("tabMine")],
           ] as [Tab, string][]
         ).map(([key, label]) => (
           <button
@@ -97,25 +98,25 @@ export default function StudentMentoringPage() {
           {mine.loading && !mine.data ? (
             <Loading />
           ) : (mine.data ?? []).length === 0 ? (
-            <EmptyState title="No mentorships yet">Find a mentor and send a request to get started.</EmptyState>
+            <EmptyState title={tr("noMentorshipsYet")}>{tr("findAMentorAndSend")}</EmptyState>
           ) : (
             <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,2fr)]">
-              <ul className="space-y-2" aria-label="Your mentorships">
+              <ul className="space-y-2" aria-label={tr("yourMentorships")}>
                 {mine.data!.map((r) => (
                   <li key={r.id}>
                     <button
                       type="button"
                       onClick={() => setOpenId(r.id)}
                       aria-current={openId === r.id ? "true" : undefined}
-                      className={`w-full rounded-lg border p-3 text-left text-sm focus-visible:outline-2 ${openId === r.id ? "border-[var(--brand,#4f46e5)]" : "border-border"}`}
+                      className={`w-full rounded-lg border p-3 text-start text-sm focus-visible:outline-2 ${openId === r.id ? "border-[var(--brand,#4f46e5)]" : "border-border"}`}
                     >
                       <span className="flex items-center justify-between gap-2">
                         <span className="font-medium">{r.mentorName}</span>
                         <StatusBadge status={r.status} />
                       </span>
                       <span className="mt-1 block text-xs text-muted-foreground">
-                        Requested {formatDate(r.requestedAt)} · {r.sessions} session{r.sessions === 1 ? "" : "s"}
-                        {r.checkInDue ? " · check-in due" : ""}
+                        {tr("requestedRequestedAtSessionsSessions", { sessions: r.sessions, requestedAt: formatDate(r.requestedAt) })}
+                        {r.checkInDue ? tr("checkInDue") : ""}
                       </span>
                     </button>
                     {(r.status === "Requested" || r.status === "PendingStaff") && (
@@ -124,7 +125,7 @@ export default function StudentMentoringPage() {
                   </li>
                 ))}
               </ul>
-              <div>{openId ? <MentorshipPanel key={openId} id={openId} options={options.data} onChanged={mine.reload} /> : <p className="text-sm text-muted-foreground">Choose a mentorship to see details.</p>}</div>
+              <div>{openId ? <MentorshipPanel key={openId} id={openId} options={options.data} onChanged={mine.reload} /> : <p className="text-sm text-muted-foreground">{tr("chooseAMentorshipToSee")}</p>}</div>
             </div>
           )}
         </div>
@@ -134,6 +135,7 @@ export default function StudentMentoringPage() {
 }
 
 function WithdrawButton({ id, onDone }: { id: string; onDone: () => void }) {
+  const tr = useCareerT("studentMentoring");
   const api = useApi();
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
@@ -143,7 +145,7 @@ function WithdrawButton({ id, onDone }: { id: string; onDone: () => void }) {
         variant="ghost"
         busy={busy}
         onClick={async () => {
-          if (!window.confirm("Withdraw this request?")) return;
+          if (!window.confirm(tr("withdrawThisRequest"))) return;
           setBusy(true);
           try {
             await api(`/api/career/mentoring/student/relationships/${id}/withdraw`, { method: "POST" });
@@ -155,7 +157,7 @@ function WithdrawButton({ id, onDone }: { id: string; onDone: () => void }) {
           }
         }}
       >
-        Withdraw request
+        {tr("withdrawRequest")}
       </Button>
       {err && <p role="alert" className="text-xs text-red-600">{err}</p>}
     </div>
@@ -163,6 +165,8 @@ function WithdrawButton({ id, onDone }: { id: string; onDone: () => void }) {
 }
 
 function FindMentor({ options, onRequested }: { options: MentoringOptions | null; onRequested: (relationshipId: string) => void }) {
+  const tr = useCareerT("studentMentoring");
+  const MEETING_LABELS = useMeetingLabels();
   const api = useApi();
   const [filters, setFilters] = useState({ q: "", industry: "", topic: "", major: "", function: "", meeting: "", kind: "", hasCapacity: true });
   const [applied, setApplied] = useState(filters);
@@ -180,10 +184,10 @@ function FindMentor({ options, onRequested }: { options: MentoringOptions | null
   return (
     <div className="space-y-6">
       <Card
-        title="Suggested for you"
+        title={tr("suggestedForYou")}
         actions={
           <Button variant="secondary" onClick={() => setEditPrefs(!editPrefs)} aria-expanded={editPrefs}>
-            {editPrefs ? "Close preferences" : "Edit what I'm looking for"}
+            {editPrefs ? tr("closePreferences") : tr("editWhatImLookingFor")}
           </Button>
         }
       >
@@ -201,12 +205,12 @@ function FindMentor({ options, onRequested }: { options: MentoringOptions | null
         )}
         <p className="mb-3 text-xs text-muted-foreground">{suggestions.data?.explanation ?? options?.scoring}</p>
         {prefs.data && prefs.data.majors.length === 0 && (
-          <p className="mb-3 text-sm">Tip: add your major on your career record so we can suggest mentors who studied it.</p>
+          <p className="mb-3 text-sm">{tr("tipAddYourMajorOn")}</p>
         )}
         {suggestions.loading && !suggestions.data ? (
           <Loading />
         ) : (suggestions.data?.items ?? []).length === 0 ? (
-          <p className="text-sm text-muted-foreground">No suggestions yet. Tell us what you&apos;re looking for, or browse all mentors below.</p>
+          <p className="text-sm text-muted-foreground">{tr("noSuggestionsYetTellUs")}</p>
         ) : (
           <ul className="grid gap-3 md:grid-cols-2">
             {suggestions.data!.items.map((m) => (
@@ -230,7 +234,7 @@ function FindMentor({ options, onRequested }: { options: MentoringOptions | null
         />
       )}
 
-      <Card title="Browse mentors">
+      <Card title={tr("browseMentors")}>
         <form
           className="mb-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4"
           onSubmit={(e) => {
@@ -238,10 +242,10 @@ function FindMentor({ options, onRequested }: { options: MentoringOptions | null
             setApplied(filters);
           }}
           role="search"
-          aria-label="Search mentors"
+          aria-label={tr("searchMentors")}
         >
-          <Field label="Search">{(p) => <input {...p} type="search" placeholder="Name, employer, role…" value={filters.q} onChange={(e) => setFilters({ ...filters, q: e.target.value })} />}</Field>
-          <Field label="Industry">
+          <Field label={tr("search")}>{(p) => <input {...p} type="search" placeholder={tr("nameEmployerRole")} value={filters.q} onChange={(e) => setFilters({ ...filters, q: e.target.value })} />}</Field>
+          <Field label={tr("industry")}>
             {(p) => (
               <>
                 <input {...p} list="mentoring-industries" value={filters.industry} onChange={(e) => setFilters({ ...filters, industry: e.target.value })} />
@@ -253,10 +257,10 @@ function FindMentor({ options, onRequested }: { options: MentoringOptions | null
               </>
             )}
           </Field>
-          <Field label="Can help with">
+          <Field label={tr("canHelpWith")}>
             {(p) => (
               <select {...p} value={filters.topic} onChange={(e) => setFilters({ ...filters, topic: e.target.value })}>
-                <option value="">Any topic</option>
+                <option value="">{tr("anyTopic")}</option>
                 {(options?.topics ?? []).map((t) => (
                   <option key={t.key} value={t.key}>
                     {t.label}
@@ -265,12 +269,12 @@ function FindMentor({ options, onRequested }: { options: MentoringOptions | null
               </select>
             )}
           </Field>
-          <Field label="Major">{(p) => <input {...p} value={filters.major} onChange={(e) => setFilters({ ...filters, major: e.target.value })} />}</Field>
-          <Field label="Field of work">{(p) => <input {...p} value={filters.function} onChange={(e) => setFilters({ ...filters, function: e.target.value })} />}</Field>
-          <Field label="Meeting format">
+          <Field label={tr("major")}>{(p) => <input {...p} value={filters.major} onChange={(e) => setFilters({ ...filters, major: e.target.value })} />}</Field>
+          <Field label={tr("fieldOfWork")}>{(p) => <input {...p} value={filters.function} onChange={(e) => setFilters({ ...filters, function: e.target.value })} />}</Field>
+          <Field label={tr("meetingFormat")}>
             {(p) => (
               <select {...p} value={filters.meeting} onChange={(e) => setFilters({ ...filters, meeting: e.target.value })}>
-                <option value="">Any</option>
+                <option value="">{tr("any")}</option>
                 {(options?.meetingFormats ?? []).map((f) => (
                   <option key={f} value={f}>
                     {MEETING_LABELS[f] ?? f}
@@ -279,31 +283,31 @@ function FindMentor({ options, onRequested }: { options: MentoringOptions | null
               </select>
             )}
           </Field>
-          <Field label="Mentor type">
+          <Field label={tr("mentorType")}>
             {(p) => (
               <select {...p} value={filters.kind} onChange={(e) => setFilters({ ...filters, kind: e.target.value })}>
-                <option value="">Alumni and professionals</option>
-                <option value="Alumni">Alumni</option>
-                <option value="Professional">Professionals</option>
+                <option value="">{tr("alumniAndProfessionals")}</option>
+                <option value="Alumni">{tr("alumni")}</option>
+                <option value="Professional">{tr("professionals")}</option>
               </select>
             )}
           </Field>
           <div className="flex flex-col justify-end gap-2">
             <label className="inline-flex items-center gap-2 text-sm">
               <input type="checkbox" checked={filters.hasCapacity} onChange={(e) => setFilters({ ...filters, hasCapacity: e.target.checked })} />
-              Only mentors with open spots
+              {tr("onlyMentorsWithOpenSpots")}
             </label>
-            <Button type="submit">Search</Button>
+            <Button type="submit">{tr("search")}</Button>
           </div>
         </form>
         <ErrorBanner error={results.error} />
         <p role="status" aria-live="polite" className="mb-3 text-sm text-muted-foreground">
-          {results.data ? `${results.data.total} mentor${results.data.total === 1 ? "" : "s"} found` : ""}
+          {results.data ? tr("totalMentorsFound", { total: results.data.total }) : ""}
         </p>
         {results.loading && !results.data ? (
           <Loading />
         ) : (results.data?.items ?? []).length === 0 ? (
-          <EmptyState title="No mentors match">Try fewer filters.</EmptyState>
+          <EmptyState title={tr("noMentorsMatch")}>{tr("tryFewerFilters")}</EmptyState>
         ) : (
           <ul className="grid gap-3 md:grid-cols-2">
             {results.data!.items.map((m) => (
@@ -317,6 +321,8 @@ function FindMentor({ options, onRequested }: { options: MentoringOptions | null
 }
 
 function MentorItem({ m, options, onRequest }: { m: MentorCard; options: MentoringOptions | null; onRequest: () => void }) {
+  const tr = useCareerT("studentMentoring");
+  const MEETING_LABELS = useMeetingLabels();
   return (
     <li className="rounded-lg border border-border p-4 text-sm">
       <div className="flex flex-wrap items-start justify-between gap-2">
@@ -324,48 +330,48 @@ function MentorItem({ m, options, onRequest }: { m: MentorCard; options: Mentori
           <h3 className="text-base font-semibold">{m.name}</h3>
           <p className="text-muted-foreground">{[m.jobTitle, m.employer].filter(Boolean).join(" at ")}</p>
         </div>
-        <Badge tone="info">{m.kind === "Alumni" ? `Alum${m.graduationYear ? ` '${String(m.graduationYear).slice(-2)}` : ""}` : "Professional"}</Badge>
+        <Badge tone="info">{m.kind === "Alumni" ? tr("alumValue", { value: m.graduationYear ? ` '${String(m.graduationYear).slice(-2)}` : "" }) : tr("professional")}</Badge>
       </div>
       <p className="mt-2">{m.headline}</p>
       <dl className="mt-2 space-y-1 text-xs">
         {m.industry && (
           <div>
-            <dt className="inline font-medium">Industry: </dt>
+            <dt className="inline font-medium">{tr("industry2")}{" "}</dt>
             <dd className="inline">{m.industry}</dd>
           </div>
         )}
         {m.majors.length > 0 && (
           <div>
-            <dt className="inline font-medium">Majors: </dt>
+            <dt className="inline font-medium">{tr("majors")}{" "}</dt>
             <dd className="inline">{m.majors.join(", ")}</dd>
           </div>
         )}
         <div>
-          <dt className="inline font-medium">Helps with: </dt>
+          <dt className="inline font-medium">{tr("helpsWith")}{" "}</dt>
           <dd className="inline">{m.topics.map((t) => topicLabel(options, t)).join(", ")}</dd>
         </div>
         <div>
-          <dt className="inline font-medium">Meets by: </dt>
+          <dt className="inline font-medium">{tr("meetsBy")}{" "}</dt>
           <dd className="inline">{m.meetingPreferences.map((f) => MEETING_LABELS[f] ?? f).join(", ")}</dd>
         </div>
         {m.availabilityNotes && (
           <div>
-            <dt className="inline font-medium">Availability: </dt>
+            <dt className="inline font-medium">{tr("availability")}{" "}</dt>
             <dd className="inline">{m.availabilityNotes}</dd>
           </div>
         )}
         <div>
-          <dt className="inline font-medium">Open spots: </dt>
+          <dt className="inline font-medium">{tr("openSpots")}{" "}</dt>
           <dd className="inline">
-            {m.spotsLeft} of {m.capacity}
+            {tr("spotsLeftOfCapacity", { spotsLeft: m.spotsLeft, capacity: m.capacity })}
           </dd>
         </div>
       </dl>
       {m.bio && <p className="mt-2 text-xs text-muted-foreground">{m.bio}</p>}
       {m.match && m.match.score > 0 && (
         <details className="mt-2 text-xs">
-          <summary className="cursor-pointer font-medium">Why this mentor? (match score {m.match.score})</summary>
-          <ul className="mt-1 list-disc pl-5">
+          <summary className="cursor-pointer font-medium">{tr("whyThisMentorMatchScore", { score: m.match.score })}</summary>
+          <ul className="mt-1 list-disc ps-5">
             {m.match.reasons.map((r) => (
               <li key={r}>{r}</li>
             ))}
@@ -377,10 +383,10 @@ function MentorItem({ m, options, onRequest }: { m: MentorCard; options: Mentori
           <StatusBadge status={m.myStatus} />
         ) : m.spotsLeft > 0 ? (
           <Button onClick={onRequest}>
-            Ask for mentoring<span className="sr-only"> from {m.name}</span>
+            {tr.rich("askForMentoringFromName", { span: (chunks) => <span className="sr-only">{chunks}</span>, name: m.name })}
           </Button>
         ) : (
-          <Badge>No open spots</Badge>
+          <Badge>{tr("noOpenSpots")}</Badge>
         )}
       </div>
     </li>
@@ -388,6 +394,7 @@ function MentorItem({ m, options, onRequest }: { m: MentorCard; options: Mentori
 }
 
 function PreferencesForm({ initial, options, onSaved }: { initial: Preferences; options: MentoringOptions; onSaved: (p: Preferences) => void }) {
+  const tr = useCareerT("studentMentoring");
   const api = useApi();
   const [topics, setTopics] = useState(initial.topics);
   const [industries, setIndustries] = useState(initial.industries.join(", "));
@@ -412,23 +419,24 @@ function PreferencesForm({ initial, options, onSaved }: { initial: Preferences; 
     >
       <ErrorBanner error={err} />
       <p className="text-sm">
-        Your majors from your career record: <strong>{initial.majors.length ? initial.majors.join(", ") : "none yet"}</strong>
+        {tr("yourMajorsFromYourCareer")}{" "}<strong>{initial.majors.length ? initial.majors.join(", ") : tr("noneYet")}</strong>
       </p>
-      <CheckboxGroup legend="Topics I want help with" options={options.topics.map((t) => ({ value: t.key, label: t.label }))} value={topics} onChange={setTopics} />
-      <Field label="Industries I'm interested in" hint={`Separate with commas, e.g. ${options.industries.slice(0, 3).join(", ")}`}>
+      <CheckboxGroup legend={tr("topicsIWantHelpWith")} options={options.topics.map((t) => ({ value: t.key, label: t.label }))} value={topics} onChange={setTopics} />
+      <Field label={tr("industriesImInterestedIn")} hint={tr("separateWithCommasEG", { industries: options.industries.slice(0, 3).join(", ") })}>
         {(p) => <input {...p} value={industries} onChange={(e) => setIndustries(e.target.value)} />}
       </Field>
-      <Field label="Fields of work I'm interested in" hint={`Separate with commas, e.g. ${options.functions.slice(0, 3).join(", ")}`}>
+      <Field label={tr("fieldsOfWorkImInterested")} hint={tr("separateWithCommasEG2", { functions: options.functions.slice(0, 3).join(", ") })}>
         {(p) => <input {...p} value={functions} onChange={(e) => setFunctions(e.target.value)} />}
       </Field>
       <Button type="submit" busy={busy}>
-        Save preferences
+        {tr("savePreferences")}
       </Button>
     </form>
   );
 }
 
 function RequestForm({ mentor, options, onCancel, onDone }: { mentor: MentorCard; options: MentoringOptions | null; onCancel: () => void; onDone: (id: string) => void }) {
+  const tr = useCareerT("studentMentoring");
   const api = useApi();
   const [message, setMessage] = useState("");
   const [goals, setGoals] = useState("");
@@ -437,7 +445,7 @@ function RequestForm({ mentor, options, onCancel, onDone }: { mentor: MentorCard
   const [err, setErr] = useState<string | null>(null);
   const [ok, setOk] = useState<string | null>(null);
   return (
-    <Card title={`Ask ${mentor.name} for mentoring`}>
+    <Card title={tr("askNameForMentoring", { name: mentor.name })}>
       <ErrorBanner error={err} />
       <SuccessBanner message={ok} />
       <form
@@ -450,7 +458,7 @@ function RequestForm({ mentor, options, onCancel, onDone }: { mentor: MentorCard
             const res = await api<{ relationship: { id: string } }>("/api/career/mentoring/student/requests", {
               json: { mentorId: mentor.id, message, goals: goals.split("\n").map((g) => g.trim()).filter(Boolean), consentToShareContact: consent },
             });
-            setOk("Request sent.");
+            setOk(tr("requestSent"));
             onDone(res.relationship.id);
           } catch (e2) {
             setErr((e2 as Error).message);
@@ -459,26 +467,24 @@ function RequestForm({ mentor, options, onCancel, onDone }: { mentor: MentorCard
           }
         }}
       >
-        <Field label="Message to the mentor" hint="Introduce yourself and say why you chose them (at least 20 characters).">
+        <Field label={tr("messageToTheMentor")} hint={tr("introduceYourselfAndSayWhy")}>
           {(p) => <textarea {...p} rows={5} required minLength={20} maxLength={2000} value={message} onChange={(e) => setMessage(e.target.value)} />}
         </Field>
-        <Field label="Your goals (one per line, up to 5)">{(p) => <textarea {...p} rows={3} required value={goals} onChange={(e) => setGoals(e.target.value)} />}</Field>
+        <Field label={tr("yourGoalsOnePerLine")}>{(p) => <textarea {...p} rows={3} required value={goals} onChange={(e) => setGoals(e.target.value)} />}</Field>
         <div className="rounded-md border border-border p-3 text-sm">
           <label className="flex items-start gap-2">
             <input type="checkbox" className="mt-1" checked={consent} onChange={(e) => setConsent(e.target.checked)} required />
             <span>
-              I agree that my school may share my contact details (name, email and phone) with {mentor.name} if we both accept this mentorship. This sharing is
-              recorded on my Privacy page{options?.requireStaffApproval ? ", and the career center confirms each match first" : ""}. I can withdraw the request before it is
-              accepted.
+              {tr("iAgreeThatMySchool", { name: mentor.name })}{options?.requireStaffApproval ? tr("andTheCareerCenterConfirms") : ""}{tr("iCanWithdrawTheRequest")}
             </span>
           </label>
         </div>
         <div className="flex gap-2">
           <Button type="submit" busy={busy} disabled={!consent}>
-            Send request
+            {tr("sendRequest")}
           </Button>
           <Button type="button" variant="secondary" onClick={onCancel}>
-            Cancel
+            {tr("cancel")}
           </Button>
         </div>
       </form>

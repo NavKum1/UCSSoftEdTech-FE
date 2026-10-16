@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react";
 import { CalendarPlus } from "lucide-react";
 import { useApi } from "@/lib/appAuth";
 import { useCareerShell } from "@/components/career/CareerShell";
-import { Badge, Button, Card, EmptyState, ErrorBanner, Field, Loading, PageHeader, SuccessBanner, formatDate, useLoad } from "@/components/career/ui";
+import { Badge, Button, Card, EmptyState, ErrorBanner, Field, Loading, PageHeader, SuccessBanner, formatDate, useLoad, useCareerT } from "@/components/career/ui";
 import {
   type Appointment,
   type ApptType,
@@ -14,47 +14,48 @@ import {
   type Task,
   IntakeFields,
   useFetch,
-  MODE_LABELS,
   MeetingInfo,
   SlotPicker,
   TabPanel,
   Tabs,
   addDays,
-  statusLabel,
   statusTone,
   todayIn,
   useDownload,
   whenText,
+  useModeLabels,
+  useStatusLabel,
 } from "@/components/career/appointments/shared";
 
 type Tab = "book" | "mine" | "dropin" | "notes";
 
 export default function StudentAppointmentsPage() {
+  const tr = useCareerT("studentAppointments");
   const [tab, setTab] = useState<Tab>("mine");
   const [message, setMessage] = useState<string | null>(null);
   return (
     <div>
-      <PageHeader title="Appointments" description="Book time with a career counselor, join a drop-in queue, and keep track of what you agreed to do next." />
+      <PageHeader title={tr("appointments")} description={tr("bookTimeWithACareer")} />
       <SuccessBanner message={message} />
       <Tabs<Tab>
-        label="Appointment sections"
+        label={tr("appointmentSections")}
         value={tab}
         onChange={(t) => {
           setTab(t);
           setMessage(null);
         }}
         tabs={[
-          { key: "mine", label: "My appointments" },
-          { key: "book", label: "Book" },
-          { key: "dropin", label: "Drop-in" },
-          { key: "notes", label: "Notes & tasks" },
+          { key: "mine", label: tr("myAppointments") },
+          { key: "book", label: tr("book") },
+          { key: "dropin", label: tr("dropIn") },
+          { key: "notes", label: tr("notesTasks") },
         ]}
       />
       <TabPanel id={tab}>
         {tab === "book" && (
           <BookFlow
             onBooked={(a) => {
-              setMessage(`Booked: ${a.typeName} with ${a.counselor.name}, ${whenText(a, a.timeZone)}. We've sent you a confirmation.`);
+              setMessage(tr("bookedTypeNameWithNameA", { typeName: a.typeName, name: a.counselor.name, a: whenText(a, a.timeZone) }));
               setTab("mine");
             }}
           />
@@ -68,6 +69,8 @@ export default function StudentAppointmentsPage() {
 }
 
 function BookFlow({ onBooked }: { onBooked: (a: Appointment) => void }) {
+  const tr = useCareerT("studentAppointments");
+  const MODE_LABELS = useModeLabels();
   const api = useApi();
   const { schoolId } = useCareerShell();
   const types = useLoad(() => api<{ timeZone: string; types: ApptType[] }>("/api/career/appointments/student/types"), [api, schoolId]);
@@ -122,13 +125,13 @@ function BookFlow({ onBooked }: { onBooked: (a: Appointment) => void }) {
 
   if (types.loading) return <Loading />;
   if (types.error) return <ErrorBanner error={types.error} onRetry={types.reload} />;
-  if (!types.data?.types.length) return <EmptyState title="No appointments are open for booking right now">Check back later or contact your career center.</EmptyState>;
+  if (!types.data?.types.length) return <EmptyState title={tr("noAppointmentsAreOpenFor")}>{tr("checkBackLaterOrContact")}</EmptyState>;
 
   return (
     <form onSubmit={book} className="space-y-4">
-      <Card title="1. What do you need help with?">
+      <Card title={tr("n1WhatDoYouNeed")}>
         <fieldset>
-          <legend className="sr-only">Appointment type</legend>
+          <legend className="sr-only">{tr("appointmentType")}</legend>
           <div className="grid gap-3 sm:grid-cols-2">
             {types.data.types.map((t) => (
               <label key={t.id} className={`flex cursor-pointer gap-3 rounded-lg border p-3 focus-within:ring-2 ${typeId === t.id ? "border-[var(--brand,#4f46e5)] ring-1 ring-[var(--brand,#4f46e5)]" : "border-border"}`}>
@@ -136,7 +139,7 @@ function BookFlow({ onBooked }: { onBooked: (a: Appointment) => void }) {
                 <span>
                   <span className="block font-medium">{t.name}</span>
                   <span className="block text-xs text-muted-foreground">
-                    {t.durationMinutes} min · {t.modes.map((m) => MODE_LABELS[m] ?? m).join(", ")}
+                    {tr("durationMinutesMinValue", { durationMinutes: t.durationMinutes, value: t.modes.map((m) => MODE_LABELS[m] ?? m).join(", ") })}
                   </span>
                   {t.description && <span className="mt-1 block text-sm text-muted-foreground">{t.description}</span>}
                 </span>
@@ -147,9 +150,9 @@ function BookFlow({ onBooked }: { onBooked: (a: Appointment) => void }) {
       </Card>
 
       {type && (
-        <Card title="2. Choose a time">
+        <Card title={tr("n2ChooseATime")}>
           <div className="mb-4 grid gap-3 sm:grid-cols-2">
-            <Field label="Counselor">
+            <Field label={tr("counselor")}>
               {(p) => (
                 <select
                   {...p}
@@ -159,7 +162,7 @@ function BookFlow({ onBooked }: { onBooked: (a: Appointment) => void }) {
                     setSlot(null);
                   }}
                 >
-                  <option value="">Any available counselor</option>
+                  <option value="">{tr("anyAvailableCounselor")}</option>
                   {(counselors.data ?? []).map((c) => (
                     <option key={c.userId} value={c.userId}>
                       {c.name}
@@ -169,7 +172,7 @@ function BookFlow({ onBooked }: { onBooked: (a: Appointment) => void }) {
                 </select>
               )}
             </Field>
-            <Field label="How would you like to meet?">
+            <Field label={tr("howWouldYouLikeTo")}>
               {(p) => (
                 <select {...p} value={mode} onChange={(e) => setMode(e.target.value)}>
                   {type.modes.map((m) => (
@@ -184,26 +187,26 @@ function BookFlow({ onBooked }: { onBooked: (a: Appointment) => void }) {
           <ErrorBanner error={slots.error} />
           <SlotPicker data={slots.data} loading={slots.loading} from={from} minFrom={today} onFrom={(f) => { setFrom(f); setSlot(null); }} value={slot} onChange={setSlot} counselorNames={names} />
           <p className="mt-3 text-xs text-muted-foreground">
-            Book at least {type.minLeadMinutes >= 60 ? `${Math.round(type.minLeadMinutes / 60)} hours` : `${type.minLeadMinutes} minutes`} ahead, up to {type.maxLeadDays} days out. You can cancel or reschedule online until{" "}
-            {type.cancelCutoffMinutes >= 60 ? `${Math.round(type.cancelCutoffMinutes / 60)} hours` : `${type.cancelCutoffMinutes} minutes`} before the start.
+            {tr("bookAtLeast")}{" "}{type.minLeadMinutes >= 60 ? tr("valueHours", { value: Math.round(type.minLeadMinutes / 60) }) : tr("minLeadMinutesMinutes", { minLeadMinutes: type.minLeadMinutes })}{" "}{tr("aheadUpToMaxLeadDaysDays", { maxLeadDays: type.maxLeadDays })}{" "}
+            {type.cancelCutoffMinutes >= 60 ? tr("valueHours", { value: Math.round(type.cancelCutoffMinutes / 60) }) : tr("cancelCutoffMinutesMinutes", { cancelCutoffMinutes: type.cancelCutoffMinutes })}{" "}{tr("beforeTheStart")}
           </p>
         </Card>
       )}
 
       {type && slot && (
-        <Card title="3. Tell us a bit more and confirm">
+        <Card title={tr("n3TellUsABit")}>
           <p className="mb-3 text-sm" role="status">
             <strong>{type.name}</strong>, {whenText(slot, tz)}
-            {slot.counselorUserIds.length === 1 && names[slot.counselorUserIds[0]] ? ` with ${names[slot.counselorUserIds[0]]}` : counselorId ? "" : " with the first available counselor"}, {MODE_LABELS[mode] ?? mode}.
+            {slot.counselorUserIds.length === 1 && names[slot.counselorUserIds[0]] ? tr("withNames", { names: names[slot.counselorUserIds[0]] }) : counselorId ? "" : tr("withTheFirstAvailableCounselor")}, {MODE_LABELS[mode] ?? mode}.
           </p>
           <IntakeFields questions={type.intakeQuestions} answers={answers} onChange={setAnswers} />
           <ErrorBanner error={error} />
           <div className="mt-4 flex gap-2">
             <Button type="submit" busy={busy}>
-              Book appointment
+              {tr("bookAppointment")}
             </Button>
             <Button type="button" variant="secondary" onClick={() => setSlot(null)}>
-              Choose another time
+              {tr("chooseAnotherTime")}
             </Button>
           </div>
         </Card>
@@ -213,6 +216,7 @@ function BookFlow({ onBooked }: { onBooked: (a: Appointment) => void }) {
 }
 
 function MyAppointments({ onBook }: { onBook: () => void }) {
+  const tr = useCareerT("studentAppointments");
   const api = useApi();
   const { schoolId } = useCareerShell();
   const list = useLoad(() => api<{ timeZone: string; upcoming: Appointment[]; past: Appointment[] }>("/api/career/appointments/student"), [api, schoolId]);
@@ -226,12 +230,12 @@ function MyAppointments({ onBook }: { onBook: () => void }) {
       <SuccessBanner message={message} />
       <section aria-labelledby="upcoming-h">
         <h2 id="upcoming-h" className="mb-3 text-lg font-semibold">
-          Upcoming
+          {tr("upcoming")}
         </h2>
         {data.upcoming.length === 0 ? (
-          <EmptyState title="No upcoming appointments">
+          <EmptyState title={tr("noUpcomingAppointments")}>
             <Button type="button" onClick={onBook}>
-              Book an appointment
+              {tr("bookAnAppointment")}
             </Button>
           </EmptyState>
         ) : (
@@ -252,10 +256,10 @@ function MyAppointments({ onBook }: { onBook: () => void }) {
       </section>
       <section aria-labelledby="past-h">
         <h2 id="past-h" className="mb-3 text-lg font-semibold">
-          Past and cancelled
+          {tr("pastAndCancelled")}
         </h2>
         {data.past.length === 0 ? (
-          <p className="text-sm text-muted-foreground">Nothing here yet.</p>
+          <p className="text-sm text-muted-foreground">{tr("nothingHereYet")}</p>
         ) : (
           <ul className="space-y-3">
             {data.past.map((a) => (
@@ -271,6 +275,9 @@ function MyAppointments({ onBook }: { onBook: () => void }) {
 }
 
 function AppointmentCard({ a, onChanged, past }: { a: Appointment; onChanged: (message: string) => void; past?: boolean }) {
+  const tr = useCareerT("studentAppointments");
+  const statusLabel = useStatusLabel();
+  const MODE_LABELS = useModeLabels();
   const api = useApi();
   const download = useDownload();
   const [panel, setPanel] = useState<"none" | "cancel" | "reschedule" | "details">("none");
@@ -313,39 +320,39 @@ function AppointmentCard({ a, onChanged, past }: { a: Appointment; onChanged: (m
           <h3 className="font-semibold">{a.typeName}</h3>
           <p className="text-sm">{whenText(a, a.timeZone)}</p>
           <p className="text-sm text-muted-foreground">
-            With {a.counselor.name} · {MODE_LABELS[a.mode] ?? a.mode}
+            {tr("withNameMode", { name: a.counselor.name, mode: MODE_LABELS[a.mode] ?? a.mode })}
           </p>
           {!past && (
             <div className="mt-1">
               <MeetingInfo a={a} />
             </div>
           )}
-          {a.cancelReason && <p className="mt-1 text-xs text-muted-foreground">Cancellation reason: {a.cancelReason}</p>}
+          {a.cancelReason && <p className="mt-1 text-xs text-muted-foreground">{tr("cancellationReasonCancelReason", { cancelReason: a.cancelReason })}</p>}
         </div>
         <Badge tone={statusTone(a)}>{statusLabel(a)}</Badge>
       </div>
       <div className="mt-3 flex flex-wrap gap-2">
         {a.status !== "Cancelled" && (
           <Button type="button" variant="secondary" onClick={() => run(() => download(`/api/career/appointments/student/${a.id}/ics`, "appointment.ics"))}>
-            <CalendarPlus className="h-4 w-4" aria-hidden /> Add to calendar
+            <CalendarPlus className="h-4 w-4" aria-hidden />{" "}{tr("addToCalendar")}
           </Button>
         )}
         {!past && a.canChange && (
           <>
             <Button type="button" variant="secondary" aria-expanded={panel === "reschedule"} onClick={() => toggle("reschedule")}>
-              Reschedule
+              {tr("reschedule")}
             </Button>
             <Button type="button" variant="secondary" aria-expanded={panel === "cancel"} onClick={() => toggle("cancel")}>
-              Cancel
+              {tr("cancel")}
             </Button>
           </>
         )}
         <Button type="button" variant="ghost" aria-expanded={panel === "details"} onClick={() => toggle("details")}>
-          Notes & tasks
+          {tr("notesTasks")}
         </Button>
       </div>
       {!past && !a.canChange && a.status === "Booked" && (
-        <p className="mt-2 text-xs text-muted-foreground">It&apos;s too close to the start to change this online. Please contact the career center.</p>
+        <p className="mt-2 text-xs text-muted-foreground">{tr("itsTooCloseToThe")}</p>
       )}
       <ErrorBanner error={error} />
 
@@ -356,15 +363,15 @@ function AppointmentCard({ a, onChanged, past }: { a: Appointment; onChanged: (m
             e.preventDefault();
             void run(async () => {
               await api(`/api/career/appointments/student/${a.id}/cancel`, { method: "POST", json: { reason } });
-              onChanged(`Your ${a.typeName} appointment was cancelled.`);
+              onChanged(tr("yourTypeNameAppointmentWasCancelled", { typeName: a.typeName }));
             });
           }}
         >
-          <Field label="Why are you cancelling?" hint="Your counselor will see this.">
+          <Field label={tr("whyAreYouCancelling")} hint={tr("yourCounselorWillSeeThis")}>
             {(p) => <textarea {...p} rows={2} required maxLength={500} value={reason} onChange={(e) => setReason(e.target.value)} />}
           </Field>
           <Button type="submit" variant="danger" busy={busy}>
-            Cancel appointment
+            {tr("cancelAppointment")}
           </Button>
         </form>
       )}
@@ -380,11 +387,11 @@ function AppointmentCard({ a, onChanged, past }: { a: Appointment; onChanged: (m
             onClick={() =>
               run(async () => {
                 const moved = await api<Appointment>(`/api/career/appointments/student/${a.id}/reschedule`, { method: "POST", json: { startUtc: slot!.startUtc, counselorUserId: a.counselor.userId } });
-                onChanged(`Moved to ${whenText(moved, moved.timeZone)}.`);
+                onChanged(tr("movedToMoved", { moved: whenText(moved, moved.timeZone) }));
               })
             }
           >
-            Move appointment
+            {tr("moveAppointment")}
           </Button>
         </div>
       )}
@@ -396,9 +403,9 @@ function AppointmentCard({ a, onChanged, past }: { a: Appointment; onChanged: (m
           ) : (
             <>
               <div>
-                <h4 className="text-sm font-semibold">Notes from your counselor</h4>
+                <h4 className="text-sm font-semibold">{tr("notesFromYourCounselor")}</h4>
                 {detail.notes.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">No shared notes yet.</p>
+                  <p className="text-sm text-muted-foreground">{tr("noSharedNotesYet")}</p>
                 ) : (
                   <ul className="mt-1 space-y-2">
                     {detail.notes.map((n) => (
@@ -411,14 +418,14 @@ function AppointmentCard({ a, onChanged, past }: { a: Appointment; onChanged: (m
                 )}
               </div>
               <div>
-                <h4 className="text-sm font-semibold">Follow-up tasks</h4>
+                <h4 className="text-sm font-semibold">{tr("followUpTasks")}</h4>
                 {detail.tasks.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">No tasks.</p>
+                  <p className="text-sm text-muted-foreground">{tr("noTasks")}</p>
                 ) : (
                   <ul className="mt-1 space-y-1 text-sm">
                     {detail.tasks.map((t) => (
                       <li key={t.id}>
-                        {t.title} {t.dueDate && <span className="text-muted-foreground">· due {formatDate(t.dueDate)}</span>} <Badge tone={t.status === "Done" ? "good" : "neutral"}>{t.status === "Done" ? "Done" : t.assigneeType === "Student" ? "To do (you)" : "Counselor"}</Badge>
+                        {t.title} {t.dueDate && <span className="text-muted-foreground">{tr("dueDueDate", { dueDate: formatDate(t.dueDate) })}</span>} <Badge tone={t.status === "Done" ? "good" : "neutral"}>{t.status === "Done" ? tr("done") : t.assigneeType === "Student" ? tr("toDoYou") : tr("counselor")}</Badge>
                       </li>
                     ))}
                   </ul>
@@ -442,6 +449,7 @@ interface DropInSession {
 }
 
 function DropIn() {
+  const tr = useCareerT("studentAppointments");
   const api = useApi();
   const { schoolId } = useCareerShell();
   const list = useLoad(() => api<DropInSession[]>("/api/career/appointments/student/dropin"), [api, schoolId]);
@@ -471,7 +479,7 @@ function DropIn() {
 
   if (list.loading && !list.data) return <Loading />;
   if (list.error) return <ErrorBanner error={list.error} onRetry={reload} />;
-  if (!list.data?.length) return <EmptyState title="No drop-in hours right now">When the career center opens drop-in advising, you can join the line here or at the front desk.</EmptyState>;
+  if (!list.data?.length) return <EmptyState title={tr("noDropInHoursRight")}>{tr("whenTheCareerCenterOpens")}</EmptyState>;
 
   return (
     <div className="space-y-4">
@@ -482,18 +490,18 @@ function DropIn() {
           {s.myEntry ? (
             <div role="status" aria-live="polite" className="space-y-2">
               {s.myEntry.status === "Called" ? (
-                <p className="text-lg font-semibold">It&apos;s your turn — a counselor is ready for you.</p>
+                <p className="text-lg font-semibold">{tr("itsYourTurnACounselor")}</p>
               ) : (
                 <>
-                  <p className="text-lg font-semibold">You&apos;re number {s.myEntry.queueNumber}</p>
+                  <p className="text-lg font-semibold">{tr("youreNumberQueueNumber", { queueNumber: s.myEntry.queueNumber })}</p>
                   <p className="text-sm">
-                    {s.myEntry.ahead === 0 ? "You're next." : `${s.myEntry.ahead} ${s.myEntry.ahead === 1 ? "person" : "people"} ahead of you`} · about {s.myEntry.estimatedWaitMinutes} min wait
+                    {s.myEntry.ahead === 0 ? tr("youreNext") : tr("aheadPeopleAheadOfYou", { ahead: s.myEntry.ahead })}{" "}{tr("aboutEstimatedWaitMinutesMinWait", { estimatedWaitMinutes: s.myEntry.estimatedWaitMinutes })}
                   </p>
                 </>
               )}
               {s.myEntry.status === "Waiting" && (
                 <Button type="button" variant="secondary" busy={busy === s.myEntry.id} onClick={() => act(s.myEntry!.id, () => api(`/api/career/appointments/student/dropin/entries/${s.myEntry!.id}/leave`, { method: "POST" }))}>
-                  Leave the line
+                  {tr("leaveTheLine")}
                 </Button>
               )}
             </div>
@@ -506,11 +514,11 @@ function DropIn() {
               }}
             >
               <p className="text-sm">
-                {s.waiting ?? 0} waiting · about {s.estimatedWaitMinutes} min
+                {tr("waitingWaitingAboutEstimatedWaitMinutesM", { waiting: s.waiting ?? 0, estimatedWaitMinutes: s.estimatedWaitMinutes })}
               </p>
-              <Field label="What would you like to talk about? (optional)">{(p) => <input {...p} maxLength={300} value={topic} onChange={(e) => setTopic(e.target.value)} />}</Field>
+              <Field label={tr("whatWouldYouLikeTo")}>{(p) => <input {...p} maxLength={300} value={topic} onChange={(e) => setTopic(e.target.value)} />}</Field>
               <Button type="submit" busy={busy === s.id}>
-                Join the line
+                {tr("joinTheLine")}
               </Button>
             </form>
           )}
@@ -521,6 +529,7 @@ function DropIn() {
 }
 
 function NotesAndTasks() {
+  const tr = useCareerT("studentAppointments");
   const api = useApi();
   const { schoolId } = useCareerShell();
   const notes = useLoad(() => api<Note[]>("/api/career/appointments/student/notes"), [api, schoolId]);
@@ -539,12 +548,12 @@ function NotesAndTasks() {
 
   return (
     <div className="grid gap-4 lg:grid-cols-2">
-      <Card title="Follow-up tasks">
+      <Card title={tr("followUpTasks")}>
         <ErrorBanner error={error || tasks.error} />
         {tasks.loading ? (
           <Loading />
         ) : !tasks.data?.length ? (
-          <p className="text-sm text-muted-foreground">No tasks yet. Your counselor may add some after a meeting.</p>
+          <p className="text-sm text-muted-foreground">{tr("noTasksYetYourCounselor")}</p>
         ) : (
           <ul className="space-y-2">
             {tasks.data.map((t) => (
@@ -556,9 +565,9 @@ function NotesAndTasks() {
                 )}
                 <label htmlFor={t.mine ? `task-${t.id}` : undefined} className={t.status === "Done" ? "text-muted-foreground line-through" : ""}>
                   {t.title}
-                  {t.dueDate && <span className="text-muted-foreground"> · due {formatDate(t.dueDate)}</span>}
-                  {!t.mine && <span className="text-muted-foreground"> · your counselor will do this</span>}
-                  {t.status === "Done" && <span className="sr-only"> (done)</span>}
+                  {t.dueDate && <span className="text-muted-foreground">{" "}{tr("dueDueDate", { dueDate: formatDate(t.dueDate) })}</span>}
+                  {!t.mine && <span className="text-muted-foreground">{" "}{tr("yourCounselorWillDoThis")}</span>}
+                  {t.status === "Done" && <span className="sr-only">{" "}{tr("done2")}</span>}
                   {t.details && <span className="block text-xs text-muted-foreground">{t.details}</span>}
                 </label>
               </li>
@@ -566,12 +575,12 @@ function NotesAndTasks() {
           </ul>
         )}
       </Card>
-      <Card title="Notes shared with you">
+      <Card title={tr("notesSharedWithYou")}>
         <ErrorBanner error={notes.error} />
         {notes.loading ? (
           <Loading />
         ) : !notes.data?.length ? (
-          <p className="text-sm text-muted-foreground">Counselors can share notes from your meetings here.</p>
+          <p className="text-sm text-muted-foreground">{tr("counselorsCanShareNotesFrom")}</p>
         ) : (
           <ul className="space-y-3">
             {notes.data.map((n) => (

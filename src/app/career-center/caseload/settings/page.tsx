@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { useApi } from "@/lib/appAuth";
 import { useCareerShell } from "@/components/career/CareerShell";
-import { Badge, Button, Card, EmptyState, ErrorBanner, Field, Loading, PageHeader, SuccessBanner, formatDate, useLoad } from "@/components/career/ui";
+import { Badge, Button, Card, EmptyState, ErrorBanner, Field, Loading, PageHeader, SuccessBanner, formatDate, useLoad, ScrollArea, useCareerT } from "@/components/career/ui";
 import type { TriageSettings } from "@/components/career/triage/shared";
 
 interface AiLogRow {
@@ -21,17 +21,19 @@ interface AiLogRow {
   sentThreadId?: string | null;
 }
 
-const THRESHOLDS: [keyof TriageSettings, string, string, number, number][] = [
-  ["finalYearMonths", "Final-year window (months before graduation)", "Used by: final year, no recent appointment", 1, 36],
-  ["noAppointmentMonths", "Months without an appointment", "Used by: final year, no recent appointment", 1, 24],
-  ["agreementDaysBeforeStart", "Days before internship start", "Used by: internship agreement unsigned", 0, 120],
-  ["docReturnedDays", "Days since a document review was returned", "Used by: document review not acted on", 1, 180],
-  ["unansweredThreadDays", "Days a student message can go unanswered", "Used by: unanswered message", 1, 60],
-  ["mentoringPendingDays", "Days a mentoring request can wait", "Used by: mentoring request pending", 1, 90],
-  ["passingSprintPercent", "Passing sprint (% of hidden tests)", "Used by: no verified evidence", 1, 100],
+// Labels and hints: messages careerCenterCaseloadSettings.threshold.<key>
+const THRESHOLDS: [keyof TriageSettings, number, number][] = [
+  ["finalYearMonths", 1, 36],
+  ["noAppointmentMonths", 1, 24],
+  ["agreementDaysBeforeStart", 0, 120],
+  ["docReturnedDays", 1, 180],
+  ["unansweredThreadDays", 1, 60],
+  ["mentoringPendingDays", 1, 90],
+  ["passingSprintPercent", 1, 100],
 ];
 
 export default function TriageSettingsPage() {
+  const t = useCareerT("careerCenterCaseloadSettings");
   const api = useApi();
   const { schoolId } = useCareerShell();
   const loaded = useLoad(() => api<TriageSettings>("/api/career/triage/settings"), [api, schoolId]);
@@ -61,11 +63,11 @@ export default function TriageSettingsPage() {
   return (
     <div>
       <PageHeader
-        title="Signal & copilot settings"
-        description="Thresholds for this school's caseload signals, and the opt-in AI copilot. Signals are transparent rules for counselors; they are never shown to students and never make decisions."
+        title={t("signalCopilotSettings")}
+        description={t("thresholdsForThisSchoolsCaseload")}
         actions={
           <Link className="rounded-md border border-border px-3 py-2 text-sm hover:bg-muted" href="/career-center/caseload">
-            Back to caseload
+            {t("backToCaseload")}
           </Link>
         }
       />
@@ -75,18 +77,18 @@ export default function TriageSettingsPage() {
         <Loading />
       ) : (
         <div className="space-y-4">
-          <Card title="Signals">
+          <Card title={t("signals")}>
             <form
               className="space-y-4"
               onSubmit={(e) => {
                 e.preventDefault();
                 const patch: Partial<TriageSettings> = { disabledRules: s.disabledRules };
                 for (const [k] of THRESHOLDS) (patch as Record<string, unknown>)[k] = s[k];
-                save(patch, "Signal settings saved.");
+                save(patch, t("signalSettingsSaved"));
               }}
             >
               <fieldset>
-                <legend className="mb-2 text-sm font-medium">Signals in use</legend>
+                <legend className="mb-2 text-sm font-medium">{t("signalsInUse")}</legend>
                 <ul className="space-y-2">
                   {s.rules.map((r) => (
                     <li key={r.key}>
@@ -107,70 +109,69 @@ export default function TriageSettingsPage() {
                 </ul>
               </fieldset>
               <div className="grid gap-3 sm:grid-cols-2">
-                {THRESHOLDS.map(([k, label, hint, min, max]) => (
-                  <Field key={k} label={label} hint={hint}>
+                {THRESHOLDS.map(([k, min, max]) => (
+                  <Field key={k} label={t(`threshold.${k}.label`)} hint={t(`threshold.${k}.hint`)}>
                     {(p) => <input {...p} type="number" min={min} max={max} value={Number(s[k])} onChange={(e) => setS({ ...s, [k]: Number(e.target.value) })} />}
                   </Field>
                 ))}
               </div>
               <Button type="submit" busy={busy}>
-                Save signal settings
+                {t("saveSignalSettings")}
               </Button>
             </form>
           </Card>
 
-          <Card title="AI copilot">
+          <Card title={t("aICopilot")}>
             <p className="text-sm text-muted-foreground">
-              When on, counselors can generate an appointment prep brief and a drafted outreach message. Everything is labelled as AI-drafted, nothing is sent automatically (counselors edit and send through
-              messaging), and every generation is logged below. Student data is sent to the school&apos;s configured AI provider only for these drafts and is never released to employers.
+              {t("whenOnCounselorsCanGenerate")}
             </p>
             <div className="mt-3 flex flex-wrap items-center gap-2">
-              <Badge tone={s.copilotEnabled ? "good" : "neutral"}>{s.copilotEnabled ? "On" : "Off"}</Badge>
-              {!s.copilotAvailable && <Badge tone="warn">No AI provider configured</Badge>}
-              {s.copilotSimulated && <Badge tone="warn">Development stub output (no provider keys)</Badge>}
+              <Badge tone={s.copilotEnabled ? "good" : "neutral"}>{s.copilotEnabled ? t("on") : t("off")}</Badge>
+              {!s.copilotAvailable && <Badge tone="warn">{t("noAIProviderConfigured")}</Badge>}
+              {s.copilotSimulated && <Badge tone="warn">{t("developmentStubOutputNoProvider")}</Badge>}
             </div>
             <div className="mt-3 space-y-2">
               <label className="flex items-center gap-2 text-sm">
                 <input type="checkbox" checked={s.copilotIncludePrivateNotes} onChange={(e) => setS({ ...s, copilotIncludePrivateNotes: e.target.checked })} />
-                Include staff-only advising notes in prep briefs (marked as staff-only; never used in outreach drafts)
+                {t("includeStaffOnlyAdvisingNotes")}
               </label>
               <div className="flex gap-2">
-                <Button busy={busy} onClick={() => save({ copilotEnabled: !s.copilotEnabled, copilotIncludePrivateNotes: s.copilotIncludePrivateNotes }, s.copilotEnabled ? "Copilot turned off." : "Copilot turned on.")}>
-                  {s.copilotEnabled ? "Turn copilot off" : "Turn copilot on"}
+                <Button busy={busy} onClick={() => save({ copilotEnabled: !s.copilotEnabled, copilotIncludePrivateNotes: s.copilotIncludePrivateNotes }, s.copilotEnabled ? t("copilotTurnedOff") : t("copilotTurnedOn"))}>
+                  {s.copilotEnabled ? t("turnCopilotOff") : t("turnCopilotOn")}
                 </Button>
-                <Button variant="secondary" busy={busy} onClick={() => save({ copilotIncludePrivateNotes: s.copilotIncludePrivateNotes }, "Copilot settings saved.")}>
-                  Save note setting
+                <Button variant="secondary" busy={busy} onClick={() => save({ copilotIncludePrivateNotes: s.copilotIncludePrivateNotes }, t("copilotSettingsSaved"))}>
+                  {t("saveNoteSetting")}
                 </Button>
               </div>
             </div>
           </Card>
 
-          <Card title="AI generation log">
+          <Card title={t("aIGenerationLog")}>
             <ErrorBanner error={log.error} onRetry={log.reload} />
             {log.loading && !log.data ? (
               <Loading />
             ) : !log.data || log.data.length === 0 ? (
-              <EmptyState title="No AI generations yet" />
+              <EmptyState title={t("noAIGenerationsYet")} />
             ) : (
-              <div className="overflow-x-auto">
+              <ScrollArea>
                 <table className="w-full text-sm">
-                  <caption className="sr-only">AI generations, newest first</caption>
+                  <caption className="sr-only">{t("aIGenerationsNewestFirst")}</caption>
                   <thead>
-                    <tr className="text-left text-muted-foreground">
-                      <th scope="col" className="py-2">When</th>
-                      <th scope="col">Type</th>
-                      <th scope="col">By</th>
-                      <th scope="col">Student</th>
-                      <th scope="col">Model</th>
-                      <th scope="col">Prompt hash</th>
-                      <th scope="col">Notes</th>
+                    <tr className="text-start text-muted-foreground [&_th]:text-start">
+                      <th scope="col" className="py-2">{t("when")}</th>
+                      <th scope="col">{t("type")}</th>
+                      <th scope="col">{t("by")}</th>
+                      <th scope="col">{t("student")}</th>
+                      <th scope="col">{t("model")}</th>
+                      <th scope="col">{t("promptHash")}</th>
+                      <th scope="col">{t("notes")}</th>
                     </tr>
                   </thead>
                   <tbody>
                     {log.data.map((x) => (
                       <tr key={x.id} className="border-t border-border">
                         <td className="py-2">{formatDate(x.createdAt, true)}</td>
-                        <td>{x.kind === "Brief" ? "Prep brief" : "Outreach draft"}</td>
+                        <td>{x.kind === "Brief" ? t("prepBrief") : t("outreachDraft")}</td>
                         <td>{x.actorName || "—"}</td>
                         <td>{x.studentName || "—"}</td>
                         <td>
@@ -180,15 +181,15 @@ export default function TriageSettingsPage() {
                           <code title={x.promptSha256}>{x.promptSha256.slice(0, 12)}…</code>
                         </td>
                         <td className="space-x-1">
-                          {x.simulated && <Badge tone="warn">Stub</Badge>}
-                          {x.injectionSuspected && <Badge tone="warn">Instruction-like text</Badge>}
-                          {x.sentThreadId && <Badge tone="good">Sent after review</Badge>}
+                          {x.simulated && <Badge tone="warn">{t("stub")}</Badge>}
+                          {x.injectionSuspected && <Badge tone="warn">{t("instructionLikeText")}</Badge>}
+                          {x.sentThreadId && <Badge tone="good">{t("sentAfterReview")}</Badge>}
                         </td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
-              </div>
+              </ScrollArea>
             )}
           </Card>
         </div>

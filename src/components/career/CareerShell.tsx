@@ -5,8 +5,12 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Bell, Menu, X } from "lucide-react";
 import { AppUserButton, getSelectedSchool, setSelectedSchool, useApi, useAppAuth } from "@/lib/appAuth";
-import { careerNav, personaTitle, type CareerPersona } from "@/lib/careerNav";
-import { accessibleBrandColor } from "@/components/career/brandColor";
+import { careerNav, type CareerPersona } from "@/lib/careerNav";
+import { useCareerFormat, useCareerI18n, useCareerT } from "@/components/career/i18n/CareerI18nProvider";
+import { useCareerNavLabels } from "@/components/career/i18n/nav";
+import LanguagePicker from "@/components/career/i18n/LanguagePicker";
+import { accessibleBrandColor, brandCssVars } from "@/components/career/brandColor";
+import { useDataSaver } from "@/components/career/mobile/dataSaver";
 
 export interface CareerBrand {
   key: string;
@@ -53,6 +57,13 @@ export function useCareerShell() {
   return useContext(CareerShellContext);
 }
 
+function setDocumentTitle(title: string) {
+  document.title = title;
+}
+
+// Platform name for the "Powered by" line, shown only to schools on the platform's own brand (never white-label)
+const PLATFORM_NAME = "Edulexa";
+
 const FALLBACK_BRAND: CareerBrand = { key: "edulexa", displayName: "Edulexa", primaryColor: "#4f46e5", showPoweredBy: true, isWhiteLabel: false };
 
 const STAFF_ROLES: Record<CareerPersona, string[]> = {
@@ -75,6 +86,10 @@ export default function CareerShell({ persona, children }: { persona: CareerPers
   const [schoolId, setSchoolId] = useState<string | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
   const [version, setVersion] = useState(0);
+  const t = useCareerT("shell");
+  const fmt = useCareerFormat();
+  const { locale, dir } = useCareerI18n();
+  const nav = useCareerNavLabels(persona);
 
   useEffect(() => {
     let cancelled = false;
@@ -135,12 +150,17 @@ export default function CareerShell({ persona, children }: { persona: CareerPers
   };
 
   const activeItem = items.filter((i) => isActive(i.href)).sort((x, y) => y.href.length - x.href.length)[0];
-  const activeLabel = activeItem && activeItem.href !== careerNav[persona][0]?.href ? activeItem.label : null;
+  // Only the most specific match is the current page (e.g. /reports/india marks its own entry, not also "Reports")
+  const isCurrent = (href: string) => activeItem?.href === href;
+  // Data saver: the menu does not load every linked page in the background
+  const dataSaver = useDataSaver();
+  const activeLabel = activeItem && activeItem.href !== careerNav[persona][0]?.href ? nav.label(activeItem) : null;
 
   // Each page gets its own title (WCAG 2.4.2), e.g. "Appointments · Career · Brand"
+  const separator = t("titleSeparator");
   useEffect(() => {
-    if (brand) document.title = [activeLabel, personaTitle[persona], brand.displayName].filter(Boolean).join(" · ");
-  }, [brand, persona, activeLabel]);
+    if (brand) setDocumentTitle([activeLabel, nav.title, brand.displayName].filter(Boolean).join(separator));
+  }, [brand, nav.title, activeLabel, separator]);
 
   // Mobile menu: Escape closes it and returns focus to the toggle
   const menuButtonRef = useRef<HTMLButtonElement>(null);
@@ -158,9 +178,9 @@ export default function CareerShell({ persona, children }: { persona: CareerPers
 
   return (
     <CareerShellContext.Provider value={{ brand: b, me, meError, schoolId, reloadMe }}>
-      <div className="min-h-screen bg-background text-foreground" style={{ ["--brand" as string]: brandSolid }}>
-        <a href="#career-main" className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:rounded-md focus:bg-card focus:px-3 focus:py-2">
-          Skip to content
+      <div className="min-h-screen bg-background text-foreground" lang={locale} dir={dir} style={brandCssVars(b.primaryColor) as React.CSSProperties}>
+        <a href="#career-main" className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:start-2 focus:z-50 focus:rounded-md focus:bg-card focus:px-3 focus:py-2">
+          {t("skipToContent")}
         </a>
         <header className="sticky top-0 z-40 border-b border-border bg-card/80 backdrop-blur">
           <div className="mx-auto flex h-14 max-w-7xl items-center gap-3 px-4">
@@ -169,7 +189,7 @@ export default function CareerShell({ persona, children }: { persona: CareerPers
               type="button"
               className="rounded-md p-2 md:hidden hover:bg-muted"
               aria-controls="career-nav"
-              aria-label={menuOpen ? "Close menu" : "Open menu"}
+              aria-label={menuOpen ? t("closeMenu") : t("openMenu")}
               aria-expanded={menuOpen}
               onClick={() => setMenuOpen((o) => !o)}
             >
@@ -185,12 +205,12 @@ export default function CareerShell({ persona, children }: { persona: CareerPers
                 </span>
               )}
               <span>{b.displayName}</span>
-              <span className="hidden text-sm font-normal text-muted-foreground sm:inline">· {personaTitle[persona]}</span>
+              <span className="hidden text-sm font-normal text-muted-foreground sm:inline">· {nav.title}</span>
             </Link>
-            <div className="ml-auto flex items-center gap-2">
+            <div className="ms-auto flex items-center gap-2">
               {schools.length > 1 && (
                 <label className="flex items-center gap-2 text-sm">
-                  <span className="sr-only">School</span>
+                  <span className="sr-only">{t("school")}</span>
                   <select
                     className="rounded-md border border-border bg-background px-2 py-1 text-sm"
                     value={schoolId ?? ""}
@@ -200,7 +220,7 @@ export default function CareerShell({ persona, children }: { persona: CareerPers
                       window.location.reload();
                     }}
                   >
-                    <option value="">Choose school…</option>
+                    <option value="">{t("chooseSchool")}</option>
                     {schools.map((s) => (
                       <option key={s.instituteId} value={s.instituteId}>
                         {s.school ?? s.instituteId}
@@ -209,11 +229,11 @@ export default function CareerShell({ persona, children }: { persona: CareerPers
                   </select>
                 </label>
               )}
-              <Link href={notificationsHref} className="relative rounded-md p-2 hover:bg-muted" aria-label={unread ? `Notifications, ${unread} unread` : "Notifications"}>
+              <Link href={notificationsHref} className="relative rounded-md p-2 hover:bg-muted" aria-label={unread ? t("notificationsUnread", { count: unread }) : t("notifications")}>
                 <Bell className="h-5 w-5" />
                 {unread > 0 && (
-                  <span className="absolute -right-0.5 -top-0.5 min-w-4 rounded-full px-1 text-center text-[10px] font-semibold leading-4 text-white" style={{ background: brandSolid }} aria-hidden>
-                    {unread > 99 ? "99+" : unread}
+                  <span className="absolute -end-0.5 -top-0.5 min-w-4 rounded-full px-1 text-center text-[10px] font-semibold leading-4 text-white" style={{ background: brandSolid }} aria-hidden>
+                    {unread > 99 ? t("unreadOverflow") : fmt.number(unread)}
                   </span>
                 )}
               </Link>
@@ -223,18 +243,19 @@ export default function CareerShell({ persona, children }: { persona: CareerPers
         </header>
 
         <div className="mx-auto flex max-w-7xl gap-6 px-4">
-          <nav id="career-nav" aria-label={`${personaTitle[persona]} navigation`} className={`${menuOpen ? "block" : "hidden"} fixed inset-x-0 top-14 z-30 border-b border-border bg-card p-3 md:static md:block md:w-56 md:shrink-0 md:border-0 md:bg-transparent md:p-0 md:pt-6`}>
+          <nav id="career-nav" aria-label={t("navigation", { persona: nav.title })} className={`${menuOpen ? "block" : "hidden"} fixed inset-x-0 top-14 z-30 border-b border-border bg-card p-3 md:static md:block md:w-56 md:shrink-0 md:border-0 md:bg-transparent md:p-0 md:pt-6`}>
             <ul className="space-y-1">
               {items.map((item) => (
                 <li key={item.href}>
                   <Link
                     href={item.href}
+                    prefetch={dataSaver.on ? false : undefined}
                     onClick={() => setMenuOpen(false)}
-                    aria-current={isActive(item.href) ? "page" : undefined}
-                    className={`block rounded-md px-3 py-2 text-sm ${isActive(item.href) ? "font-semibold text-white" : "text-muted-foreground hover:bg-muted hover:text-foreground"}`}
-                    style={isActive(item.href) ? { background: brandSolid } : undefined}
+                    aria-current={isCurrent(item.href) ? "page" : undefined}
+                    className={`block rounded-md px-3 py-2 text-sm ${isCurrent(item.href) ? "font-semibold text-white" : "text-muted-foreground hover:bg-muted hover:text-foreground"}`}
+                    style={isCurrent(item.href) ? { background: brandSolid } : undefined}
                   >
-                    {item.label}
+                    {nav.label(item)}
                   </Link>
                 </li>
               ))}
@@ -247,11 +268,12 @@ export default function CareerShell({ persona, children }: { persona: CareerPers
 
         <footer className="mx-auto max-w-7xl px-4 py-6 text-xs text-muted-foreground">
           <div className="flex flex-wrap gap-4 border-t border-border pt-4">
-            <span>© {new Date().getFullYear()} {b.displayName}</span>
-            {b.privacyUrl && <a className="hover:underline" href={b.privacyUrl}>Privacy</a>}
-            {b.termsUrl && <a className="hover:underline" href={b.termsUrl}>Terms</a>}
-            {b.supportEmail && <a className="hover:underline" href={`mailto:${b.supportEmail}`}>Support</a>}
-            {b.showPoweredBy && !b.isWhiteLabel && b.key !== "edulexa" && <span>Powered by Edulexa</span>}
+            <span>{t("copyright", { year: String(new Date().getFullYear()), brand: b.displayName })}</span>
+            {b.privacyUrl && <a className="hover:underline" href={b.privacyUrl}>{t("privacy")}</a>}
+            {b.termsUrl && <a className="hover:underline" href={b.termsUrl}>{t("terms")}</a>}
+            {b.supportEmail && <a className="hover:underline" href={`mailto:${b.supportEmail}`}>{t("support")}</a>}
+            {b.showPoweredBy && !b.isWhiteLabel && b.key !== "edulexa" && <span>{t("poweredBy", { product: PLATFORM_NAME })}</span>}
+            <LanguagePicker className="ms-auto" />
           </div>
         </footer>
       </div>

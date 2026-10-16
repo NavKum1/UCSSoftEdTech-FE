@@ -123,7 +123,7 @@ function CodeViewer({ files }: { files: CodeFile[] }) {
         </div>
       )}
       {files.length === 1 && <div className="px-3 py-1.5 border-b border-border text-xs font-mono text-muted-foreground">{file.name}</div>}
-      <pre className="p-3 text-xs font-mono leading-relaxed overflow-auto max-h-128 bg-slate-50 dark:bg-slate-950/60 text-foreground">
+      <pre role="region" tabIndex={0} aria-label={`Code: ${file.name}`} className="p-3 text-xs font-mono leading-relaxed overflow-auto max-h-128 bg-slate-50 dark:bg-slate-950/60 text-foreground">
         {file.content.split("\n").map((line, i) => (
           <div key={i} className="flex">
             <span className="select-none w-10 shrink-0 text-right pr-3 text-muted-foreground/60">{i + 1}</span>

@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { useApi } from "@/lib/appAuth";
 import { useCareerShell } from "@/components/career/CareerShell";
-import { Badge, Button, Card, EmptyState, ErrorBanner, Field, Loading, SuccessBanner, formatDate, useLoad } from "@/components/career/ui";
+import { Badge, Button, Card, EmptyState, ErrorBanner, Field, Loading, SuccessBanner, formatDate, useLoad, ScrollArea, useCareerT, useCareerLabels } from "@/components/career/ui";
 
 interface Session {
   id: string;
@@ -39,10 +39,15 @@ interface Queue {
 }
 
 const STATUS_TONE: Record<string, "good" | "warn" | "bad" | "info" | "neutral"> = { Waiting: "info", Called: "warn", Seen: "good", NoShow: "bad", Left: "neutral" };
-const STATUS_LABEL: Record<string, string> = { Waiting: "Waiting", Called: "With counselor", Seen: "Seen", NoShow: "No-show", Left: "Left" };
+const STATUS_LABEL_KEYS = ["Waiting", "Called", "Seen", "NoShow", "Left"];
+/** status label in the career language (G1) */
+function useDropInStatusLabels(): Record<string, string> {
+  return useCareerLabels("staffDropIn.statusLabel", STATUS_LABEL_KEYS);
+}
 
 /** Drop-in sessions: open one, watch the live queue, call the next student, record the result; kiosk link. */
 export function StaffDropIn({ isAdmin }: { isAdmin: boolean }) {
+  const tr = useCareerT("staffDropIn");
   const api = useApi();
   const { schoolId } = useCareerShell();
   const sessions = useLoad(() => api<Session[]>("/api/career/appointments/dropin/sessions"), [api, schoolId]);
@@ -71,13 +76,13 @@ export function StaffDropIn({ isAdmin }: { isAdmin: boolean }) {
   return (
     <div className="space-y-4">
       <ErrorBanner error={error || sessions.error} />
-      <div className="grid gap-4 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
         <div className="space-y-4">
-          <Card title="Sessions">
+          <Card title={tr("sessions")}>
             {sessions.loading ? (
               <Loading />
             ) : !sessions.data?.length ? (
-              <p className="text-sm text-muted-foreground">No drop-in sessions in the last two weeks.</p>
+              <p className="text-sm text-muted-foreground">{tr("noDropInSessionsIn")}</p>
             ) : (
               <ul className="space-y-2">
                 {sessions.data.map((s) => (
@@ -86,14 +91,14 @@ export function StaffDropIn({ isAdmin }: { isAdmin: boolean }) {
                       type="button"
                       aria-pressed={active === s.id}
                       onClick={() => setSelected(s.id)}
-                      className={`w-full rounded-md border p-2 text-left text-sm focus-visible:outline-2 ${active === s.id ? "border-[var(--brand,#4f46e5)]" : "border-border hover:bg-muted"}`}
+                      className={`w-full rounded-md border p-2 text-start text-sm focus-visible:outline-2 ${active === s.id ? "border-[var(--brand,#4f46e5)]" : "border-border hover:bg-muted"}`}
                     >
                       <span className="flex items-center justify-between gap-2">
                         <span className="font-medium">{s.name}</span>
                         <Badge tone={s.status === "Open" ? "good" : "neutral"}>{s.status}</Badge>
                       </span>
                       <span className="block text-xs text-muted-foreground">
-                        {formatDate(s.openedAt, true)} · {s.counts.Waiting ?? 0} waiting · {s.counts.Seen ?? 0} seen
+                        {tr("openedAtWaitingWaitingSeenSeen", { openedAt: formatDate(s.openedAt, true), Waiting: s.counts.Waiting ?? 0, Seen: s.counts.Seen ?? 0 })}
                       </span>
                     </button>
                   </li>
@@ -101,27 +106,29 @@ export function StaffDropIn({ isAdmin }: { isAdmin: boolean }) {
               </ul>
             )}
           </Card>
-          <Card title="Open a session">
+          <Card title={tr("openASession")}>
             <form onSubmit={start} className="space-y-3">
-              <Field label="Name">{(p) => <input {...p} required maxLength={120} value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />}</Field>
-              <Field label="Location">{(p) => <input {...p} maxLength={200} value={form.location} onChange={(e) => setForm({ ...form, location: e.target.value })} />}</Field>
-              <Field label="Typical minutes per student" hint="Used for wait estimates until the session has its own history.">
+              <Field label={tr("name")}>{(p) => <input {...p} required maxLength={120} value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />}</Field>
+              <Field label={tr("location")}>{(p) => <input {...p} maxLength={200} value={form.location} onChange={(e) => setForm({ ...form, location: e.target.value })} />}</Field>
+              <Field label={tr("typicalMinutesPerStudent")} hint={tr("usedForWaitEstimatesUntil")}>
                 {(p) => <input {...p} type="number" min={1} max={120} value={form.minutesPerStudent} onChange={(e) => setForm({ ...form, minutesPerStudent: Number(e.target.value) })} />}
               </Field>
               <Button type="submit" busy={busy}>
-                Open drop-in
+                {tr("openDropIn")}
               </Button>
             </form>
           </Card>
           <KioskLink isAdmin={isAdmin} />
         </div>
-        <div className="lg:col-span-2">{active ? <QueuePanel id={active} onClosed={sessions.reload} /> : <EmptyState title="No session selected">Open a drop-in session to start a queue.</EmptyState>}</div>
+        <div className="lg:col-span-2">{active ? <QueuePanel id={active} onClosed={sessions.reload} /> : <EmptyState title={tr("noSessionSelected")}>{tr("openADropInSession")}</EmptyState>}</div>
       </div>
     </div>
   );
 }
 
 function QueuePanel({ id, onClosed }: { id: string; onClosed: () => void }) {
+  const tr = useCareerT("staffDropIn");
+  const STATUS_LABEL = useDropInStatusLabels();
   const api = useApi();
   const q = useLoad(() => api<Queue>(`/api/career/appointments/dropin/sessions/${id}/queue`), [api, id]);
   const [error, setError] = useState<string | null>(null);
@@ -168,27 +175,27 @@ function QueuePanel({ id, onClosed }: { id: string; onClosed: () => void }) {
             variant="secondary"
             busy={busy === "close"}
             onClick={() => {
-              if (window.confirm("Close this session? Anyone still waiting will be removed from the line.")) void run("close", async () => {
+              if (window.confirm(tr("closeThisSessionAnyoneStill"))) void run("close", async () => {
                 await api(`/api/career/appointments/dropin/sessions/${id}/close`, { method: "POST" });
                 onClosed();
-                return "Session closed.";
+                return tr("sessionClosed");
               });
             }}
           >
-            Close session
+            {tr("closeSession")}
           </Button>
         )
       }
     >
       <div role="status" aria-live="polite" className="mb-4 flex flex-wrap gap-4 text-sm">
         <span>
-          <strong>{data.waiting}</strong> waiting
+          {tr.rich("waitingWaiting", { strong: (chunks) => <strong>{chunks}</strong>, waiting: data.waiting })}
         </span>
         <span>
-          Est. wait for a new arrival: <strong>{data.estimatedWaitMinutes} min</strong>
+          {tr.rich("estWaitForANew", { strong: (chunks) => <strong>{chunks}</strong>, estimatedWaitMinutes: data.estimatedWaitMinutes })}
         </span>
         <span>
-          Average meeting: <strong>{data.averageServiceMinutes} min</strong>
+          {tr.rich("averageMeetingAverageServiceMinutesMin", { strong: (chunks) => <strong>{chunks}</strong>, averageServiceMinutes: data.averageServiceMinutes })}
         </span>
       </div>
       <SuccessBanner message={message} />
@@ -202,29 +209,29 @@ function QueuePanel({ id, onClosed }: { id: string; onClosed: () => void }) {
             onClick={() =>
               void run("next", async () => {
                 const r = await api<{ called: { queueNumber: number; student: { name?: string } } | null }>(`/api/career/appointments/dropin/sessions/${id}/call-next`, { method: "POST" });
-                return r.called ? `Called #${r.called.queueNumber}: ${r.called.student.name ?? "student"}.` : "Nobody is waiting.";
+                return r.called ? tr("calledNumberName", { number: r.called.queueNumber, name: r.called.student.name ?? tr("studentFallback") }) : tr("nobodyIsWaiting");
               })
             }
           >
-            Call next student
+            {tr("callNextStudent")}
           </Button>
         </div>
       )}
       {current.length === 0 ? (
-        <p className="text-sm text-muted-foreground">The line is empty.</p>
+        <p className="text-sm text-muted-foreground">{tr("theLineIsEmpty")}</p>
       ) : (
-        <div className="overflow-x-auto">
+        <ScrollArea>
           <table className="w-full text-sm">
-            <caption className="sr-only">Current queue</caption>
+            <caption className="sr-only">{tr("currentQueue")}</caption>
             <thead>
-              <tr className="border-b border-border text-left">
+              <tr className="border-b border-border text-start [&_th]:text-start">
                 <th scope="col" className="p-2">#</th>
-                <th scope="col" className="p-2">Student</th>
-                <th scope="col" className="p-2">Topic</th>
-                <th scope="col" className="p-2">Waited</th>
-                <th scope="col" className="p-2">Status</th>
+                <th scope="col" className="p-2">{tr("student")}</th>
+                <th scope="col" className="p-2">{tr("topic")}</th>
+                <th scope="col" className="p-2">{tr("waited")}</th>
+                <th scope="col" className="p-2">{tr("status")}</th>
                 <th scope="col" className="p-2">
-                  <span className="sr-only">Actions</span>
+                  <span className="sr-only">{tr("actions")}</span>
                 </th>
               </tr>
             </thead>
@@ -236,11 +243,11 @@ function QueuePanel({ id, onClosed }: { id: string; onClosed: () => void }) {
                     {e.student.name}
                     <span className="block text-xs text-muted-foreground">
                       {e.student.email}
-                      {e.source === "Kiosk" ? " · kiosk" : e.source === "Staff" ? " · added by staff" : ""}
+                      {e.source === "Kiosk" ? tr("kiosk") : e.source === "Staff" ? tr("addedByStaff") : ""}
                     </span>
                   </td>
                   <td className="p-2">{e.topic ?? "—"}</td>
-                  <td className="p-2">{Math.round(e.waitedMinutes)} min</td>
+                  <td className="p-2">{tr("waitedMinutesMin", { waitedMinutes: Math.round(e.waitedMinutes) })}</td>
                   <td className="p-2">
                     <Badge tone={STATUS_TONE[e.status]}>{STATUS_LABEL[e.status] ?? e.status}</Badge>
                     {e.calledBy && <span className="block text-xs text-muted-foreground">{e.calledBy}</span>}
@@ -254,9 +261,9 @@ function QueuePanel({ id, onClosed }: { id: string; onClosed: () => void }) {
                           variant="secondary"
                           busy={busy === e.id + s}
                           onClick={() => void run(e.id + s, () => api(`/api/career/appointments/dropin/entries/${e.id}/status`, { method: "POST", json: { status: s } }).then(() => undefined))}
-                          aria-label={`${s === "Waiting" ? "Back to waiting" : s === "Called" ? "Call" : s === "NoShow" ? "No-show" : s === "Seen" ? "Mark seen" : "Remove"}: number ${e.queueNumber}`}
+                          aria-label={tr("valueNumberQueueNumber", { value: s === "Waiting" ? tr("backToWaiting") : s === "Called" ? tr("call") : s === "NoShow" ? tr("noShow") : s === "Seen" ? tr("markSeen") : tr("remove"), queueNumber: e.queueNumber })}
                         >
-                          {s === "Waiting" ? "Back to line" : s === "Called" ? "Call" : s === "NoShow" ? "No-show" : s === "Seen" ? "Seen" : "Remove"}
+                          {s === "Waiting" ? tr("backToLine") : s === "Called" ? tr("call") : s === "NoShow" ? tr("noShow") : s === "Seen" ? tr("seen") : tr("remove")}
                         </Button>
                       ))}
                     </div>
@@ -265,7 +272,7 @@ function QueuePanel({ id, onClosed }: { id: string; onClosed: () => void }) {
               ))}
             </tbody>
           </table>
-        </div>
+        </ScrollArea>
       )}
       {isOpen && (
         <form
@@ -275,28 +282,28 @@ function QueuePanel({ id, onClosed }: { id: string; onClosed: () => void }) {
             void run("add", async () => {
               const r = await api<{ queueNumber: number }>(`/api/career/appointments/dropin/sessions/${id}/add`, { method: "POST", json: add });
               setAdd({ identifier: "", topic: "" });
-              return `Added as #${r.queueNumber}.`;
+              return tr("addedAsNumber", { number: r.queueNumber });
             });
           }}
         >
           <div className="min-w-48 flex-1">
-            <Field label="Add a student (email or student number)">{(p) => <input {...p} required value={add.identifier} onChange={(e) => setAdd({ ...add, identifier: e.target.value })} />}</Field>
+            <Field label={tr("addAStudentEmailOr")}>{(p) => <input {...p} required value={add.identifier} onChange={(e) => setAdd({ ...add, identifier: e.target.value })} />}</Field>
           </div>
           <div className="min-w-48 flex-1">
-            <Field label="Topic">{(p) => <input {...p} maxLength={300} value={add.topic} onChange={(e) => setAdd({ ...add, topic: e.target.value })} />}</Field>
+            <Field label={tr("topic")}>{(p) => <input {...p} maxLength={300} value={add.topic} onChange={(e) => setAdd({ ...add, topic: e.target.value })} />}</Field>
           </div>
           <Button type="submit" variant="secondary" busy={busy === "add"}>
-            Add to line
+            {tr("addToLine")}
           </Button>
         </form>
       )}
       {done.length > 0 && (
         <details className="mt-4">
-          <summary className="cursor-pointer text-sm font-medium">Finished ({done.length})</summary>
+          <summary className="cursor-pointer text-sm font-medium">{tr("finishedCount", { count: done.length })}</summary>
           <ul className="mt-2 space-y-1 text-sm">
             {done.map((e) => (
               <li key={e.id}>
-                #{e.queueNumber} {e.student.name} · <Badge tone={STATUS_TONE[e.status]}>{STATUS_LABEL[e.status] ?? e.status}</Badge> · waited {Math.round(e.waitedMinutes)} min
+                #{e.queueNumber} {e.student.name} · <Badge tone={STATUS_TONE[e.status]}>{STATUS_LABEL[e.status] ?? e.status}</Badge>{" "}{tr("waitedWaitedMinutesMin", { waitedMinutes: Math.round(e.waitedMinutes) })}
               </li>
             ))}
           </ul>
@@ -307,6 +314,7 @@ function QueuePanel({ id, onClosed }: { id: string; onClosed: () => void }) {
 }
 
 function KioskLink({ isAdmin }: { isAdmin: boolean }) {
+  const tr = useCareerT("staffDropIn");
   const api = useApi();
   const { schoolId } = useCareerShell();
   const k = useLoad(() => api<{ kioskPath: string; kioskTokenRotatedAt: string }>("/api/career/appointments/kiosk"), [api, schoolId]);
@@ -315,32 +323,32 @@ function KioskLink({ isAdmin }: { isAdmin: boolean }) {
   const url = k.data && typeof window !== "undefined" ? window.location.origin + k.data.kioskPath : "";
 
   const rotate = async () => {
-    if (!window.confirm("Make a new kiosk link? The current link stops working right away.")) return;
+    if (!window.confirm(tr("makeANewKioskLink"))) return;
     setError(null);
     try {
       const d = await api<{ kioskPath: string; kioskTokenRotatedAt: string }>("/api/career/appointments/kiosk/rotate", { method: "POST" });
       k.setData(d);
-      setMessage("New kiosk link created. Open it on the kiosk device.");
+      setMessage(tr("newKioskLinkCreatedOpen"));
     } catch (e) {
       setError((e as Error).message);
     }
   };
 
   return (
-    <Card title="Check-in kiosk">
-      <p className="mb-2 text-sm text-muted-foreground">Open this link on a front-desk tablet. Students check in with their school email or student number; no student details are shown on the kiosk.</p>
+    <Card title={tr("checkInKiosk")}>
+      <p className="mb-2 text-sm text-muted-foreground">{tr("openThisLinkOnA")}</p>
       <ErrorBanner error={error || k.error} />
       <SuccessBanner message={message} />
       {k.data && (
         <>
-          <Field label="Kiosk link">{(p) => <input {...p} readOnly value={url} onFocus={(e) => e.currentTarget.select()} />}</Field>
+          <Field label={tr("kioskLink")}>{(p) => <input {...p} readOnly value={url} onFocus={(e) => e.currentTarget.select()} />}</Field>
           <div className="mt-2 flex flex-wrap gap-2">
-            <Button type="button" variant="secondary" onClick={() => void navigator.clipboard?.writeText(url).then(() => setMessage("Link copied."))}>
-              Copy link
+            <Button type="button" variant="secondary" onClick={() => void navigator.clipboard?.writeText(url).then(() => setMessage(tr("linkCopied")))}>
+              {tr("copyLink")}
             </Button>
             {isAdmin && (
               <Button type="button" variant="secondary" onClick={() => void rotate()}>
-                New link
+                {tr("newLink")}
               </Button>
             )}
           </div>

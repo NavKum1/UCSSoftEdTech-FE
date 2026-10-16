@@ -8,6 +8,7 @@ import { useCareerShell } from "@/components/career/CareerShell";
 import { Button, Card, EmptyState, ErrorBanner, Loading, PageHeader, formatDate, useLoad } from "@/components/career/ui";
 import { StatusBadge, type ExperienceDetail, type ExperienceSummary, type Program } from "@/components/career/experiences/shared";
 import { RegistrationForm, toPayload, valuesFrom } from "@/components/career/experiences/RegistrationForm";
+import { ApprenticeshipCard } from "@/components/career/workforce/ApprenticeshipCard";
 
 export default function StudentExperiencesPage() {
   const api = useApi();
@@ -30,6 +31,8 @@ export default function StudentExperiencesPage() {
         }
       />
       <ErrorBanner error={err ?? list.error ?? programs.error} onRetry={list.reload} />
+      {/* G15: registered apprenticeship progress and short-term credentials (renders nothing when there are none) */}
+      <ApprenticeshipCard />
       {registering && programs.data && (
         <Card title="Register an experience" className="mb-6">
           <RegistrationForm

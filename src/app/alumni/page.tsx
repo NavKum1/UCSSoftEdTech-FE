@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useApi } from "@/lib/appAuth";
-import { Card, ErrorBanner, Loading, PageHeader, useLoad } from "@/components/career/ui";
+import { Card, ErrorBanner, Loading, PageHeader, useLoad, useCareerT } from "@/components/career/ui";
 import { useCareerShell } from "@/components/career/CareerShell";
 import { StatusBadge } from "@/components/career/mentoring/MentorshipPanel";
 
@@ -16,6 +16,7 @@ interface AlumniHome {
 }
 
 export default function AlumniHomePage() {
+  const t = useCareerT("alumniHome");
   const api = useApi();
   const { brand } = useCareerShell();
   const home = useLoad(() => api<AlumniHome>("/api/career/mentoring/alumni/home"), [api]);
@@ -27,38 +28,38 @@ export default function AlumniHomePage() {
   return (
     <div>
       <PageHeader
-        title={`Welcome, ${h.name}`}
-        description={h.isAlumni ? `You're part of the ${h.school ?? "school"} alumni network.` : `You're a volunteer mentor for ${h.school ?? "this school"}.`}
+        title={t("welcomeName", { name: h.name })}
+        description={h.isAlumni ? t("yourePartOfTheSchool", { school: h.school ?? t("school") }) : t("youreAVolunteerMentorFor", { school: h.school ?? t("thisSchool") })}
       />
       <div className="grid gap-6 md:grid-cols-2">
-        <Card title="Mentoring">
+        <Card title={t("mentoring")}>
           {h.profile ? (
             <div className="space-y-2 text-sm">
               <p className="flex items-center gap-2">
-                Your mentor profile: <StatusBadge status={h.profile.status} />
+                {t("yourMentorProfile")}{" "}<StatusBadge status={h.profile.status} />
               </p>
-              <ul className="list-disc pl-5">
-                <li>{h.counts.pendingRequests} request{h.counts.pendingRequests === 1 ? "" : "s"} waiting for your answer</li>
+              <ul className="list-disc ps-5">
+                <li>{t("pendingRequestsRequestsWaitingForYour", { pendingRequests: h.counts.pendingRequests })}</li>
                 <li>
-                  {h.counts.activeMentees} of {h.profile.capacity} mentee spots in use
+                  {t("activeMenteesOfCapacityMenteeSpots", { activeMentees: h.counts.activeMentees, capacity: h.profile.capacity })}
                 </li>
-                <li>{h.counts.completed} completed mentorship{h.counts.completed === 1 ? "" : "s"}</li>
+                <li>{t("completedCompletedMentorships", { completed: h.counts.completed })}</li>
               </ul>
             </div>
           ) : (
-            <p className="text-sm">Share what you&apos;ve learned with current students. Set up a mentor profile; the career center reviews it before students can find you.</p>
+            <p className="text-sm">{t("shareWhatYouveLearnedWith")}</p>
           )}
           <Link href="/alumni/mentoring" className="mt-4 inline-block text-sm font-medium underline">
-            {h.profile ? "Go to mentoring" : "Become a mentor"}
+            {h.profile ? t("goToMentoring") : t("becomeAMentor")}
           </Link>
         </Card>
         {h.isAlumni && (
-          <Card title="Career services">
+          <Card title={t("careerServices")}>
             <p className="text-sm">
-              As an alum you can keep using {brand?.displayName ?? "career"} services, including finding a mentor yourself.
+              {t("asAnAlumYouCan", { displayName: brand?.displayName ?? t("career") })}
             </p>
             <Link href="/student" className="mt-4 inline-block text-sm font-medium underline">
-              Open career services
+              {t("openCareerServices")}
             </Link>
           </Card>
         )}

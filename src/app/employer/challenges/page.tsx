@@ -3,10 +3,10 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { useApi } from "@/lib/appAuth";
-import { Badge, Button, Card, EmptyState, ErrorBanner, Field, Loading, PageHeader, SuccessBanner, formatDate, useLoad } from "@/components/career/ui";
+import { Badge, Button, Card, EmptyState, ErrorBanner, Field, Loading, PageHeader, SuccessBanner, formatDate, useLoad, ScrollArea, useCareerT } from "@/components/career/ui";
 import { EmployerPicker, useEmployers } from "@/components/career/EmployerPicker";
 
-const DEGREE_LEVELS = ["Certificate", "Associate", "Bachelor", "Master", "Doctorate", "Professional"];
+import { DEGREE_LEVELS, useDegreeLevelLabels } from "@/components/career/interviews/shared";
 
 interface Assessments {
   workTrials: { id: string; title: string; roleTitle: string; language: string; sprintId: string; validated: boolean }[];
@@ -60,6 +60,7 @@ function toLocalInput(d: Date) {
 }
 
 export default function EmployerChallengesPage() {
+  const tr = useCareerT("employerChallenges");
   const api = useApi();
   const emp = useEmployers();
   const employerId = emp.current?.employer.id;
@@ -72,20 +73,20 @@ export default function EmployerChallengesPage() {
   if (emp.error) return <ErrorBanner error={emp.error} onRetry={emp.reload} />;
   if (!emp.current)
     return (
-      <EmptyState title="No company yet">
-        <Link href="/employer" className="underline">Set up your company</Link> first.
+      <EmptyState title={tr("noCompanyYet")}>
+        {tr.rich("setUpYourCompanyFirst", { link: (chunks) => <Link href="/employer" className="underline">{chunks}</Link> })}
       </EmptyState>
     );
 
   return (
     <div>
       <PageHeader
-        title="Challenges"
-        description="Invite students to a skills exercise built on one of your assessments. Challenges are not job postings: you can link to your own job page, and students choose whether to share their results with you."
+        title={tr("challenges")}
+        description={tr("inviteStudentsToASkills")}
         actions={
           <div className="flex flex-wrap gap-2">
             <EmployerPicker accounts={emp.accounts} current={emp.current} onSelect={emp.select} />
-            <Button onClick={() => { setCreating(true); setOpenId(null); }}>New challenge</Button>
+            <Button onClick={() => { setCreating(true); setOpenId(null); }}>{tr("newChallenge")}</Button>
           </div>
         }
       />
@@ -95,13 +96,13 @@ export default function EmployerChallengesPage() {
         <CreateForm
           employerId={employerId}
           onCancel={() => setCreating(false)}
-          onCreated={(id) => { setCreating(false); setOpenId(id); setMsg("Challenge saved as a draft. Publish it to your schools when it's ready."); list.reload(); }}
+          onCreated={(id) => { setCreating(false); setOpenId(id); setMsg(tr("challengeSavedAsADraft")); list.reload(); }}
         />
       )}
       {list.loading && !list.data ? (
         <Loading />
       ) : !list.data?.length ? (
-        !creating && <EmptyState title="No challenges yet">Create one from a validated work trial or a sprint.</EmptyState>
+        !creating && <EmptyState title={tr("noChallengesYet")}>{tr("createOneFromAValidated")}</EmptyState>
       ) : (
         <ul className="space-y-3">
           {list.data.map((c) => (
@@ -110,15 +111,15 @@ export default function EmployerChallengesPage() {
                 title={c.title}
                 actions={
                   <Button variant="secondary" aria-expanded={openId === c.id} onClick={() => setOpenId(openId === c.id ? null : c.id)}>
-                    {openId === c.id ? "Hide" : "Manage"}
+                    {openId === c.id ? tr("hide") : tr("manage")}
                   </Button>
                 }
               >
                 <div className="flex flex-wrap items-center gap-2 text-sm">
                   <Badge tone={STATUS_TONES[c.status]}>{c.status}</Badge>
                   <span>{formatDate(c.opensAt)} – {formatDate(c.closesAt)}</span>
-                  <span>· {c.participants} participant{c.participants === 1 ? "" : "s"}{c.maxParticipants ? ` of ${c.maxParticipants}` : ""}</span>
-                  <span>· {c.schools.length} school{c.schools.length === 1 ? "" : "s"}</span>
+                  <span>{tr("participantsParticipants", { participants: c.participants })}{c.maxParticipants ? tr("ofMaxParticipants", { maxParticipants: c.maxParticipants }) : ""}</span>
+                  <span>{tr("countSchools", { count: c.schools.length })}</span>
                 </div>
                 {openId === c.id && employerId && <Manage employerId={employerId} challengeId={c.id} onChanged={list.reload} />}
               </Card>
@@ -131,6 +132,8 @@ export default function EmployerChallengesPage() {
 }
 
 function CreateForm({ employerId, onCancel, onCreated }: { employerId: string; onCancel: () => void; onCreated: (id: string) => void }) {
+  const tr = useCareerT("employerChallenges");
+  const DEGREES = useDegreeLevelLabels();
   const api = useApi();
   const assessments = useLoad(() => api<Assessments>(`/api/career/challenges/employer/${employerId}/assessments`), [api, employerId]);
   const [title, setTitle] = useState("");
@@ -152,7 +155,7 @@ function CreateForm({ employerId, onCancel, onCreated }: { employerId: string; o
     e.preventDefault();
     setErr(null);
     const [kind, id] = source.split(":");
-    if (!id) { setErr("Choose the assessment students will take."); return; }
+    if (!id) { setErr(tr("chooseTheAssessmentStudentsWill")); return; }
     setBusy(true);
     try {
       const res = await api<{ challenge: { id: string } }>(`/api/career/challenges/employer/${employerId}`, {
@@ -182,26 +185,26 @@ function CreateForm({ employerId, onCancel, onCreated }: { employerId: string; o
 
   const a = assessments.data;
   return (
-    <Card title="New challenge" className="mb-4">
+    <Card title={tr("newChallenge")} className="mb-4">
       <ErrorBanner error={err ?? assessments.error} />
       <form onSubmit={submit} className="grid gap-4 md:grid-cols-2">
-        <Field label="Title">{(p) => <input {...p} value={title} onChange={(e) => setTitle(e.target.value)} required maxLength={200} />}</Field>
-        <Field label="Assessment" hint="Only work trials that passed validation, your own private sprints, or public sprints.">
+        <Field label={tr("title")}>{(p) => <input {...p} value={title} onChange={(e) => setTitle(e.target.value)} required maxLength={200} />}</Field>
+        <Field label={tr("assessment")} hint={tr("onlyWorkTrialsThatPassed")}>
           {(p) => (
             <select {...p} value={source} onChange={(e) => setSource(e.target.value)} required>
-              <option value="">Choose…</option>
+              <option value="">{tr("choose")}</option>
               {!!a?.workTrials.length && (
-                <optgroup label="Your work trials">
+                <optgroup label={tr("yourWorkTrials")}>
                   {a.workTrials.filter((t) => t.validated).map((t) => <option key={t.id} value={`trial:${t.id}`}>{t.title} ({t.language})</option>)}
                 </optgroup>
               )}
               {!!a?.ownSprints.length && (
-                <optgroup label="Your private sprints">
+                <optgroup label={tr("yourPrivateSprints")}>
                   {a.ownSprints.map((s) => <option key={s.id} value={`sprint:${s.id}`}>{s.title} ({s.requiredLanguage})</option>)}
                 </optgroup>
               )}
               {!!a?.catalogSprints.length && (
-                <optgroup label="Public sprints">
+                <optgroup label={tr("publicSprints")}>
                   {a.catalogSprints.map((s) => <option key={s.id} value={`sprint:${s.id}`}>{s.title} ({s.requiredLanguage})</option>)}
                 </optgroup>
               )}
@@ -209,30 +212,30 @@ function CreateForm({ employerId, onCancel, onCreated }: { employerId: string; o
           )}
         </Field>
         <div className="md:col-span-2">
-          <Field label="Description">{(p) => <textarea {...p} rows={4} value={description} onChange={(e) => setDescription(e.target.value)} maxLength={10000} />}</Field>
+          <Field label={tr("description")}>{(p) => <textarea {...p} rows={4} value={description} onChange={(e) => setDescription(e.target.value)} maxLength={10000} />}</Field>
         </div>
-        <Field label="Opens">{(p) => <input {...p} type="datetime-local" value={opensAt} onChange={(e) => setOpensAt(e.target.value)} required />}</Field>
-        <Field label="Closes">{(p) => <input {...p} type="datetime-local" value={closesAt} onChange={(e) => setClosesAt(e.target.value)} required />}</Field>
+        <Field label={tr("opens")}>{(p) => <input {...p} type="datetime-local" value={opensAt} onChange={(e) => setOpensAt(e.target.value)} required />}</Field>
+        <Field label={tr("closes")}>{(p) => <input {...p} type="datetime-local" value={closesAt} onChange={(e) => setClosesAt(e.target.value)} required />}</Field>
         <fieldset className="md:col-span-2">
-          <legend className="text-sm font-medium">Degree levels (none selected = all)</legend>
+          <legend className="text-sm font-medium">{tr("degreeLevelsNoneSelectedAll")}</legend>
           <div className="mt-1 flex flex-wrap gap-3">
             {DEGREE_LEVELS.map((l) => (
               <label key={l} className="flex items-center gap-1 text-sm">
                 <input type="checkbox" checked={levels.includes(l)} onChange={(e) => setLevels(e.target.checked ? [...levels, l] : levels.filter((x) => x !== l))} />
-                {l}
+                {DEGREES[l] ?? l}
               </label>
             ))}
           </div>
         </fieldset>
-        <Field label="Majors" hint="Comma-separated. Leave empty for all majors.">{(p) => <input {...p} value={majors} onChange={(e) => setMajors(e.target.value)} />}</Field>
-        <Field label="Maximum participants" hint="Optional">{(p) => <input {...p} type="number" min={1} value={max} onChange={(e) => setMax(e.target.value)} />}</Field>
-        <Field label="Graduating from" hint="Optional">{(p) => <input {...p} type="date" value={gradFrom} onChange={(e) => setGradFrom(e.target.value)} />}</Field>
-        <Field label="Graduating by" hint="Optional">{(p) => <input {...p} type="date" value={gradTo} onChange={(e) => setGradTo(e.target.value)} />}</Field>
-        <Field label="Link to your job page" hint="Optional, https:// only. Applications happen on your own site.">{(p) => <input {...p} type="url" value={jobUrl} onChange={(e) => setJobUrl(e.target.value)} />}</Field>
-        <Field label="Prize or recognition" hint="Optional">{(p) => <input {...p} value={prize} onChange={(e) => setPrize(e.target.value)} maxLength={500} />}</Field>
+        <Field label={tr("majors")} hint={tr("commaSeparatedLeaveEmptyFor")}>{(p) => <input {...p} value={majors} onChange={(e) => setMajors(e.target.value)} />}</Field>
+        <Field label={tr("maximumParticipants")} hint={tr("optional")}>{(p) => <input {...p} type="number" min={1} value={max} onChange={(e) => setMax(e.target.value)} />}</Field>
+        <Field label={tr("graduatingFrom")} hint={tr("optional")}>{(p) => <input {...p} type="date" value={gradFrom} onChange={(e) => setGradFrom(e.target.value)} />}</Field>
+        <Field label={tr("graduatingBy")} hint={tr("optional")}>{(p) => <input {...p} type="date" value={gradTo} onChange={(e) => setGradTo(e.target.value)} />}</Field>
+        <Field label={tr("linkToYourJobPage")} hint={tr("optionalHttpsOnlyApplicationsHappen")}>{(p) => <input {...p} type="url" value={jobUrl} onChange={(e) => setJobUrl(e.target.value)} />}</Field>
+        <Field label={tr("prizeOrRecognition")} hint={tr("optional")}>{(p) => <input {...p} value={prize} onChange={(e) => setPrize(e.target.value)} maxLength={500} />}</Field>
         <div className="flex gap-2 md:col-span-2">
-          <Button type="submit" busy={busy}>Save draft</Button>
-          <Button type="button" variant="secondary" onClick={onCancel}>Cancel</Button>
+          <Button type="submit" busy={busy}>{tr("saveDraft")}</Button>
+          <Button type="button" variant="secondary" onClick={onCancel}>{tr("cancel")}</Button>
         </div>
       </form>
     </Card>
@@ -240,6 +243,7 @@ function CreateForm({ employerId, onCancel, onCreated }: { employerId: string; o
 }
 
 function Manage({ employerId, challengeId, onChanged }: { employerId: string; challengeId: string; onChanged: () => void }) {
+  const tr = useCareerT("employerChallenges");
   const api = useApi();
   const detail = useLoad(() => api<Detail>(`/api/career/challenges/employer/${employerId}/${challengeId}`), [api, employerId, challengeId]);
   const rels = useLoad(() => api<Relationship[]>(`/api/career/employer/${employerId}/schools`), [api, employerId]);
@@ -276,20 +280,20 @@ function Manage({ employerId, challengeId, onChanged }: { employerId: string; ch
       <ErrorBanner error={err} />
       <SuccessBanner message={msg} />
       <p className="text-sm">
-        Assessment: <strong>{d.sprint?.title ?? "—"}</strong> {d.sprint && `(${d.sprint.requiredLanguage})`}
+        {tr.rich("assessmentTitle", { strong: (chunks) => <strong>{chunks}</strong>, title: d.sprint?.title ?? "—" })}{" "}{d.sprint && `(${d.sprint.requiredLanguage})`}
         {d.challenge.externalJobUrl && (
-          <> · <a className="underline" href={d.challenge.externalJobUrl} target="_blank" rel="noreferrer">Your job page</a></>
+          <> · <a className="underline" href={d.challenge.externalJobUrl} target="_blank" rel="noreferrer">{tr("yourJobPage")}</a></>
         )}
       </p>
       <section aria-labelledby={`schools-${challengeId}`}>
-        <h3 id={`schools-${challengeId}`} className="text-sm font-semibold">Schools</h3>
+        <h3 id={`schools-${challengeId}`} className="text-sm font-semibold">{tr("schools")}</h3>
         {d.schools.length === 0 ? (
-          <p className="text-sm text-muted-foreground">Not published yet.</p>
+          <p className="text-sm text-muted-foreground">{tr("notPublishedYet")}</p>
         ) : (
           <ul className="mt-1 space-y-1 text-sm">
             {d.schools.map((s) => (
               <li key={s.instituteId} className="flex flex-wrap items-center gap-2">
-                {s.school ?? s.instituteId} <Badge tone={STATUS_TONES[s.status]}>{s.status}{s.autoApproved ? " (automatic)" : ""}</Badge>
+                {s.school ?? s.instituteId} <Badge tone={STATUS_TONES[s.status]}>{s.status}{s.autoApproved ? tr("automatic") : ""}</Badge>
                 {s.decisionNote && <span className="text-muted-foreground">“{s.decisionNote}”</span>}
               </li>
             ))}
@@ -298,7 +302,7 @@ function Manage({ employerId, challengeId, onChanged }: { employerId: string; ch
         {d.challenge.status !== "Closed" && (
           approved.length > 0 ? (
             <fieldset className="mt-2">
-              <legend className="text-sm">Publish to schools that approved your company (each career center reviews it first):</legend>
+              <legend className="text-sm">{tr("publishToSchoolsThatApproved")}</legend>
               <div className="mt-1 flex flex-wrap gap-3">
                 {approved.map((r) => (
                   <label key={r.instituteId} className="flex items-center gap-1 text-sm">
@@ -311,23 +315,23 @@ function Manage({ employerId, challengeId, onChanged }: { employerId: string; ch
                 className="mt-2"
                 disabled={picked.length === 0}
                 busy={busy === "publish"}
-                onClick={() => act("publish", () => api(`/api/career/challenges/employer/${employerId}/${challengeId}/publish`, { method: "POST", json: { instituteIds: picked } }), "Published. Students see it once each career center approves it.").then(() => setPicked([]))}
+                onClick={() => act("publish", () => api(`/api/career/challenges/employer/${employerId}/${challengeId}/publish`, { method: "POST", json: { instituteIds: picked } }), tr("publishedStudentsSeeItOnce")).then(() => setPicked([]))}
               >
-                Publish
+                {tr("publish")}
               </Button>
             </fieldset>
           ) : (
             <p className="mt-2 text-sm text-muted-foreground">
-              To reach more schools, <Link className="underline" href="/employer/schools">request approval</Link> first.
+              {tr.rich("toReachMoreSchoolsRequest", { link: (chunks) => <Link className="underline" href="/employer/schools">{chunks}</Link> })}
             </p>
           )
         )}
       </section>
       <div className="flex flex-wrap gap-2">
-        <Button variant="secondary" aria-expanded={showResults} onClick={() => setShowResults(!showResults)}>{showResults ? "Hide results" : `Results (${d.participants})`}</Button>
+        <Button variant="secondary" aria-expanded={showResults} onClick={() => setShowResults(!showResults)}>{showResults ? tr("hideResults") : tr("resultsParticipants", { participants: d.participants })}</Button>
         {d.challenge.status !== "Closed" && (
-          <Button variant="danger" busy={busy === "close"} onClick={() => act("close", () => api(`/api/career/challenges/employer/${employerId}/${challengeId}/close`, { method: "POST" }), "Challenge closed.")}>
-            Close challenge
+          <Button variant="danger" busy={busy === "close"} onClick={() => act("close", () => api(`/api/career/challenges/employer/${employerId}/${challengeId}/close`, { method: "POST" }), tr("challengeClosed"))}>
+            {tr("closeChallenge")}
           </Button>
         )}
       </div>
@@ -337,6 +341,7 @@ function Manage({ employerId, challengeId, onChanged }: { employerId: string; ch
 }
 
 function ResultsView({ employerId, challengeId }: { employerId: string; challengeId: string }) {
+  const tr = useCareerT("employerChallenges");
   const api = useApi();
   const res = useLoad(() => api<Results>(`/api/career/challenges/employer/${employerId}/${challengeId}/results`), [api, employerId, challengeId]);
   const [pack, setPack] = useState<{ id: string; data: Record<string, unknown> } | null>(null);
@@ -347,7 +352,7 @@ function ResultsView({ employerId, challengeId }: { employerId: string; challeng
   const [err, setErr] = useState<string | null>(null);
   const [msg, setMsg] = useState<string | null>(null);
 
-  if (res.loading && !res.data) return <Loading label="Loading results…" />;
+  if (res.loading && !res.data) return <Loading label={tr("loadingResults")} />;
   if (!res.data) return <ErrorBanner error={res.error} onRetry={res.reload} />;
 
   const openPack = async (row: ResultRow) => {
@@ -370,7 +375,7 @@ function ResultsView({ employerId, challengeId }: { employerId: string; challeng
     setMsg(null);
     try {
       await api(`/api/career/challenges/employer/${employerId}/${challengeId}/participants/${inviting.participantId}/invite`, { method: "POST", json: { message, link: link.trim() || null } });
-      setMsg(`Invitation sent to ${inviting.name}. They decide whether to contact you.`);
+      setMsg(tr("invitationSentToNameThey", { name: inviting.name }));
       setInviting(null);
       setMessage("");
       setLink("");
@@ -384,25 +389,25 @@ function ResultsView({ employerId, challengeId }: { employerId: string; challeng
 
   const r = res.data;
   return (
-    <section aria-label="Results" className="space-y-3">
+    <section aria-label={tr("results")} className="space-y-3">
       <p className="text-sm text-muted-foreground">{r.note}</p>
-      {r.hiddenWithoutConsent > 0 && <p className="text-sm" role="status">{r.hiddenWithoutConsent} participant(s) aren&apos;t sharing their results with you and are not shown.</p>}
+      {r.hiddenWithoutConsent > 0 && <p className="text-sm" role="status">{tr("hiddenWithoutConsentParticipantSArentSha", { hiddenWithoutConsent: r.hiddenWithoutConsent })}</p>}
       <ErrorBanner error={err} />
       <SuccessBanner message={msg} />
       {r.results.length === 0 ? (
-        <EmptyState title="No shared results yet" />
+        <EmptyState title={tr("noSharedResultsYet")} />
       ) : (
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm">
-            <caption className="sr-only">Participants sharing results</caption>
+        <ScrollArea>
+          <table className="w-full text-start text-sm [&_th]:text-start">
+            <caption className="sr-only">{tr("participantsSharingResults")}</caption>
             <thead>
               <tr className="border-b border-border">
-                <th scope="col" className="p-2">Student</th>
-                <th scope="col" className="p-2">Program</th>
-                <th scope="col" className="p-2">Score</th>
-                <th scope="col" className="p-2">Integrity signal</th>
-                <th scope="col" className="p-2">Defense</th>
-                <th scope="col" className="p-2"><span className="sr-only">Actions</span></th>
+                <th scope="col" className="p-2">{tr("student2")}</th>
+                <th scope="col" className="p-2">{tr("program")}</th>
+                <th scope="col" className="p-2">{tr("score")}</th>
+                <th scope="col" className="p-2">{tr("integritySignal")}</th>
+                <th scope="col" className="p-2">{tr("defense")}</th>
+                <th scope="col" className="p-2"><span className="sr-only">{tr("actions")}</span></th>
               </tr>
             </thead>
             <tbody>
@@ -414,42 +419,42 @@ function ResultsView({ employerId, challengeId }: { employerId: string; challeng
                   </td>
                   <td className="p-2">
                     {row.degreeLevel ?? "—"} {row.majors?.length ? `· ${row.majors.join(", ")}` : ""}
-                    {row.graduationDate && <div className="text-xs text-muted-foreground">Graduates {formatDate(row.graduationDate)}</div>}
+                    {row.graduationDate && <div className="text-xs text-muted-foreground">{tr("graduatesGraduationDate", { graduationDate: formatDate(row.graduationDate) })}</div>}
                   </td>
                   <td className="p-2">
-                    {row.submissions === 0 ? "Not submitted" : row.score == null ? "Running…" : `${row.score}%`}
-                    {row.testsTotal ? <div className="text-xs text-muted-foreground">{row.testsPassed}/{row.testsTotal} tests</div> : null}
+                    {row.submissions === 0 ? tr("notSubmitted") : row.score == null ? tr("running") : `${row.score}%`}
+                    {row.testsTotal ? <div className="text-xs text-muted-foreground">{tr("testsPassedTestsTotalTests", { testsPassed: row.testsPassed, testsTotal: row.testsTotal })}</div> : null}
                   </td>
                   <td className="p-2">{row.integrityRiskLevel ? <Badge tone={RISK_TONES[row.integrityRiskLevel] ?? "neutral"}>{row.integrityRiskLevel}</Badge> : "—"}</td>
                   <td className="p-2">
-                    {row.defended ? `Defended (${row.defenseScore ?? "—"})` : "Not yet"}
+                    {row.defended ? tr("defendedDefenseScore", { defenseScore: row.defenseScore ?? "—" }) : tr("notYet")}
                     {row.credentialSlug && (
-                      <div><Link className="text-xs underline" href={`/credential/${row.credentialSlug}`}>Credential{row.credentialUnderReview ? " (under review)" : ""}</Link></div>
+                      <div><Link className="text-xs underline" href={`/credential/${row.credentialSlug}`}>{tr("credential")}{row.credentialUnderReview ? tr("underReview") : ""}</Link></div>
                     )}
                   </td>
                   <td className="p-2">
                     <div className="flex flex-col gap-1">
                       {row.submissions > 0 && (
-                        <Button variant="secondary" busy={busy === `pack-${row.participantId}`} onClick={() => openPack(row)}>Evidence pack</Button>
+                        <Button variant="secondary" busy={busy === `pack-${row.participantId}`} onClick={() => openPack(row)}>{tr("evidencePack")}</Button>
                       )}
-                      <Button variant="ghost" onClick={() => setInviting(row)}>Invite to talk{row.inviteCount ? ` (${row.inviteCount} sent)` : ""}</Button>
+                      <Button variant="ghost" onClick={() => setInviting(row)}>{tr("inviteToTalk")}{row.inviteCount ? tr("inviteCountSent", { inviteCount: row.inviteCount }) : ""}</Button>
                     </div>
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
-        </div>
+        </ScrollArea>
       )}
       {inviting && (
-        <Card title={`Invite ${inviting.name} to talk`}>
+        <Card title={tr("inviteNameToTalk", { name: inviting.name })}>
           <form onSubmit={sendInvite} className="space-y-3">
-            <p className="text-sm text-muted-foreground">The student gets a notification with your message and link. There is no reply thread: they decide whether to contact you.</p>
-            <Field label="Message">{(p) => <textarea {...p} rows={3} value={message} onChange={(e) => setMessage(e.target.value)} minLength={10} maxLength={2000} required />}</Field>
-            <Field label="Link (optional)" hint="For example a scheduling page or your job page. https:// only.">{(p) => <input {...p} type="url" value={link} onChange={(e) => setLink(e.target.value)} />}</Field>
+            <p className="text-sm text-muted-foreground">{tr("theStudentGetsANotification")}</p>
+            <Field label={tr("message")}>{(p) => <textarea {...p} rows={3} value={message} onChange={(e) => setMessage(e.target.value)} minLength={10} maxLength={2000} required />}</Field>
+            <Field label={tr("linkOptional")} hint={tr("forExampleASchedulingPage")}>{(p) => <input {...p} type="url" value={link} onChange={(e) => setLink(e.target.value)} />}</Field>
             <div className="flex gap-2">
-              <Button type="submit" busy={busy === "invite"}>Send invitation</Button>
-              <Button type="button" variant="secondary" onClick={() => setInviting(null)}>Cancel</Button>
+              <Button type="submit" busy={busy === "invite"}>{tr("sendInvitation")}</Button>
+              <Button type="button" variant="secondary" onClick={() => setInviting(null)}>{tr("cancel")}</Button>
             </div>
           </form>
         </Card>
@@ -460,33 +465,34 @@ function ResultsView({ employerId, challengeId }: { employerId: string; challeng
 }
 
 function EvidencePackView({ pack, onClose }: { pack: Record<string, unknown>; onClose: () => void }) {
+  const tr = useCareerT("employerChallenges");
   const tests = pack.tests as { passed?: number; total?: number } | undefined;
   const integrity = pack.integrity as { riskLevel?: string; signals?: { description?: string; title?: string; kind?: string }[] } | undefined;
   const defects = (pack.defects as { title?: string; fixedDefect?: boolean }[] | undefined) ?? [];
   const notes = (pack.consistencyNotes as string[] | undefined) ?? [];
   const candidate = pack.candidate as { name?: string } | undefined;
   return (
-    <Card title={`Evidence pack: ${candidate?.name ?? "student"}`} actions={<Button variant="secondary" onClick={onClose}>Close</Button>}>
+    <Card title={tr("evidencePackName", { name: candidate?.name ?? tr("student") })} actions={<Button variant="secondary" onClick={onClose}>{tr("close")}</Button>}>
       <div className="space-y-3 text-sm">
-        <p>Tests: {tests?.passed ?? 0}/{tests?.total ?? 0}</p>
+        <p>{tr("testsPassedTotal", { passed: tests?.passed ?? 0, total: tests?.total ?? 0 })}</p>
         {defects.length > 0 && (
           <div>
-            <h4 className="font-semibold">Planted defects</h4>
-            <ul className="list-disc pl-5">
-              {defects.map((d, i) => <li key={i}>{d.title}: {d.fixedDefect ? "fixed" : "not fixed"}</li>)}
+            <h4 className="font-semibold">{tr("plantedDefects")}</h4>
+            <ul className="list-disc ps-5">
+              {defects.map((d, i) => <li key={i}>{d.title}: {d.fixedDefect ? tr("fixed") : tr("notFixed")}</li>)}
             </ul>
           </div>
         )}
         <div>
-          <h4 className="font-semibold">Integrity signals</h4>
-          <p>Level: {integrity?.riskLevel ?? "—"}</p>
+          <h4 className="font-semibold">{tr("integritySignals")}</h4>
+          <p>{tr("levelRiskLevel", { riskLevel: integrity?.riskLevel ?? "—" })}</p>
           {!!integrity?.signals?.length && (
-            <ul className="list-disc pl-5">
+            <ul className="list-disc ps-5">
               {integrity.signals.map((s, i) => <li key={i}>{s.description ?? s.title ?? s.kind}</li>)}
             </ul>
           )}
         </div>
-        {notes.length > 0 && <ul className="list-disc pl-5">{notes.map((n, i) => <li key={i}>{n}</li>)}</ul>}
+        {notes.length > 0 && <ul className="list-disc ps-5">{notes.map((n, i) => <li key={i}>{n}</li>)}</ul>}
         <p className="text-xs text-muted-foreground">{String(pack.disclaimer ?? "")}</p>
       </div>
     </Card>

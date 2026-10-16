@@ -2,7 +2,7 @@
 
 import React, { useCallback, useState } from "react";
 import { useApi } from "@/lib/appAuth";
-import { Badge, Button, Card, EmptyState, ErrorBanner, Field, Loading, PageHeader, SuccessBanner, useLoad } from "@/components/career/ui";
+import { Badge, Button, Card, EmptyState, ErrorBanner, Field, Loading, PageHeader, SuccessBanner, useLoad, ScrollArea, useCareerT } from "@/components/career/ui";
 import { AttainmentView, type Catalog, type FrameworkInfo, type SourceInfo } from "@/components/career/frameworks/AttainmentView";
 
 interface Mapping {
@@ -48,6 +48,7 @@ function refOptionsFor(source: string, refs: RefOptions | null): RefOption[] {
 }
 
 function MappingEditor({ framework, sources, canEdit, onSaved }: { framework: FrameworkInfo; sources: SourceInfo[]; canEdit: boolean; onSaved: () => void }) {
+  const tr = useCareerT("careerCenterFrameworks");
   const api = useApi();
   const base = `/api/career/frameworks/${encodeURIComponent(framework.key)}`;
   const loaded = useLoad(() => api<{ mappings: MappingDto[] }>(`${base}/mappings`), [base]);
@@ -71,7 +72,7 @@ function MappingEditor({ framework, sources, canEdit, onSaved }: { framework: Fr
         json: current.map((r) => ({ ...r, sourceRef: r.sourceRef.trim() || null })),
       });
       setRows(res.mappings.map((m) => ({ ...m, sourceRef: m.sourceRef ?? "" })));
-      setSuccess("Mappings saved.");
+      setSuccess(tr("mappingsSaved"));
       onSaved();
     } catch (e) {
       setError((e as Error).message);
@@ -84,22 +85,21 @@ function MappingEditor({ framework, sources, canEdit, onSaved }: { framework: Fr
   if (loaded.error) return <ErrorBanner error={loaded.error} onRetry={loaded.reload} />;
 
   return (
-    <Card title={`Evidence mappings: ${framework.name}`}>
+    <Card title={tr("evidenceMappingsName", { name: framework.name })}>
       <p className="mb-3 text-sm text-muted-foreground">
-        Each row counts one evidence measure towards an outcome. Target: the score (0–100) a student must reach. Thresholds: the share of assessed students at or
-        above target needed for levels 3, 2 and 1. {framework.allowsProgramSpecific && "Programme-specific outcomes PSO1–PSO9 are also accepted."}
+        {tr("eachRowCountsOneEvidence")}{" "}{framework.allowsProgramSpecific && tr("programmeSpecificOutcomesPSO1PSO9")}
       </p>
       <ErrorBanner error={error} />
       <SuccessBanner message={success} />
-      {current.length === 0 && <EmptyState title="No mappings yet">{canEdit ? "Add a row to map evidence to an outcome." : "A career admin hasn't mapped evidence yet."}</EmptyState>}
+      {current.length === 0 && <EmptyState title={tr("noMappingsYet")}>{canEdit ? tr("addARowToMap") : tr("aCareerAdminHasntMapped")}</EmptyState>}
       {current.length > 0 && (
-        <div className="overflow-x-auto">
+        <ScrollArea>
           <table className="w-full border-collapse text-sm">
-            <caption className="sr-only">Evidence mappings</caption>
+            <caption className="sr-only">{tr("evidenceMappings")}</caption>
             <thead>
               <tr>
-                {["Outcome", "Evidence source", "Source detail", "Weight", "Target", "Level 3 %", "Level 2 %", "Level 1 %", ""].map((h, i) => (
-                  <th key={i} scope="col" className="px-2 py-1 text-left">{h}</th>
+                {[tr("colOutcome"), tr("colEvidenceSource"), tr("colSourceDetail"), tr("colWeight"), tr("colTarget"), tr("colLevel3"), tr("colLevel2"), tr("colLevel1"), ""].map((h, i) => (
+                  <th key={i} scope="col" className="px-2 py-1 text-start">{h}</th>
                 ))}
               </tr>
             </thead>
@@ -111,20 +111,20 @@ function MappingEditor({ framework, sources, canEdit, onSaved }: { framework: Fr
                 return (
                   <tr key={i} className="border-t border-border">
                     <td className="px-2 py-1">
-                      <select aria-label={`Outcome, row ${n}`} className={cell} disabled={!canEdit} value={r.outcomeCode} onChange={(e) => update(i, { outcomeCode: e.target.value })}>
+                      <select aria-label={tr("outcomeRowN", { n })} className={cell} disabled={!canEdit} value={r.outcomeCode} onChange={(e) => update(i, { outcomeCode: e.target.value })}>
                         {!codes.includes(r.outcomeCode) && <option value={r.outcomeCode}>{r.outcomeCode}</option>}
                         {framework.outcomes.map((o) => <option key={o.code} value={o.code}>{o.code}: {o.title.slice(0, 60)}</option>)}
                       </select>
                     </td>
                     <td className="px-2 py-1">
-                      <select aria-label={`Evidence source, row ${n}`} className={cell} disabled={!canEdit} value={r.source} onChange={(e) => update(i, { source: e.target.value, sourceRef: "" })}>
+                      <select aria-label={tr("evidenceSourceRowN", { n })} className={cell} disabled={!canEdit} value={r.source} onChange={(e) => update(i, { source: e.target.value, sourceRef: "" })}>
                         {sources.map((s) => <option key={s.key} value={s.key}>{s.label}</option>)}
                       </select>
-                      {src && <span className="ml-1">{src.direct ? <Badge tone="info">Direct</Badge> : <Badge>Indirect</Badge>}</span>}
+                      {src && <span className="ms-1">{src.direct ? <Badge tone="info">{tr("direct2")}</Badge> : <Badge>{tr("indirect2")}</Badge>}</span>}
                     </td>
                     <td className="px-2 py-1">
                       <input
-                        aria-label={`${src?.refLabel ?? "Source detail"}, row ${n}`}
+                        aria-label={tr("refLabelRowN", { refLabel: src?.refLabel ?? tr("sourceDetail"), n })}
                         placeholder={src?.refLabel}
                         className={`${cell} w-56`}
                         disabled={!canEdit}
@@ -140,7 +140,7 @@ function MappingEditor({ framework, sources, canEdit, onSaved }: { framework: Fr
                       <td key={f} className="px-2 py-1">
                         <input
                           type="number"
-                          aria-label={`${{ weight: "Weight", targetScore: "Target score", level3: "Level 3 threshold", level2: "Level 2 threshold", level1: "Level 1 threshold" }[f]}, row ${n}`}
+                          aria-label={tr("valueRowN", { value: { weight: tr("fieldWeight"), targetScore: tr("fieldTargetScore"), level3: tr("fieldLevel3"), level2: tr("fieldLevel2"), level1: tr("fieldLevel1") }[f], n })}
                           className={`${cell} w-20`}
                           disabled={!canEdit}
                           min={0}
@@ -153,8 +153,8 @@ function MappingEditor({ framework, sources, canEdit, onSaved }: { framework: Fr
                     ))}
                     <td className="px-2 py-1">
                       {canEdit && (
-                        <Button variant="ghost" type="button" onClick={() => setRows(current.filter((_, j) => j !== i))} aria-label={`Remove row ${n}`}>
-                          Remove
+                        <Button variant="ghost" type="button" onClick={() => setRows(current.filter((_, j) => j !== i))} aria-label={tr("removeRowN", { n })}>
+                          {tr("remove")}
                         </Button>
                       )}
                     </td>
@@ -163,7 +163,7 @@ function MappingEditor({ framework, sources, canEdit, onSaved }: { framework: Fr
               })}
             </tbody>
           </table>
-        </div>
+        </ScrollArea>
       )}
       {canEdit && (
         <div className="mt-3 flex flex-wrap gap-2">
@@ -174,15 +174,15 @@ function MappingEditor({ framework, sources, canEdit, onSaved }: { framework: Fr
               setRows([...current, { outcomeCode: codes[0] ?? "", source: sources[0]?.key ?? "sprint_tests", sourceRef: "", weight: 1, targetScore: 60, level3: 70, level2: 60, level1: 50 }])
             }
           >
-            Add mapping
+            {tr("addMapping")}
           </Button>
-          <Button type="button" busy={busy} onClick={save}>Save mappings</Button>
+          <Button type="button" busy={busy} onClick={save}>{tr("saveMappings")}</Button>
         </div>
       )}
       <details className="mt-4 text-sm">
-        <summary className="cursor-pointer font-medium">About the evidence sources</summary>
-        <ul className="mt-2 list-disc space-y-1 pl-5 text-muted-foreground">
-          {sources.map((s) => <li key={s.key}><strong>{s.label}</strong> ({s.direct ? "direct" : "indirect"}): {s.description}</li>)}
+        <summary className="cursor-pointer font-medium">{tr("aboutTheEvidenceSources")}</summary>
+        <ul className="mt-2 list-disc space-y-1 ps-5 text-muted-foreground">
+          {sources.map((s) => <li key={s.key}><strong>{s.label}</strong> ({s.direct ? tr("direct") : tr("indirect")}): {s.description}</li>)}
         </ul>
       </details>
     </Card>
@@ -201,6 +201,7 @@ function parseOutcomes(text: string) {
 }
 
 function FrameworksSetup({ cat, onChanged }: { cat: Catalog; onChanged: () => void }) {
+  const tr = useCareerT("careerCenterFrameworks");
   const api = useApi();
   const [enabled, setEnabled] = useState<string[] | null>(null);
   const [minCell, setMinCell] = useState<number | "">("");
@@ -239,9 +240,9 @@ function FrameworksSetup({ cat, onChanged }: { cat: Catalog; onChanged: () => vo
     <div className="space-y-6">
       <ErrorBanner error={error} />
       <SuccessBanner message={success} />
-      <Card title="Frameworks your school measures against">
+      <Card title={tr("frameworksYourSchoolMeasuresAgainst")}>
         <fieldset disabled={!cat.canEdit}>
-          <legend className="sr-only">Frameworks</legend>
+          <legend className="sr-only">{tr("frameworks")}</legend>
           <ul className="space-y-3">
             {cat.frameworks.map((f) => (
               <li key={f.key} className="rounded-lg border border-border p-3">
@@ -253,25 +254,25 @@ function FrameworksSetup({ cat, onChanged }: { cat: Catalog; onChanged: () => vo
                     onChange={(e) => setEnabled(e.target.checked ? [...on, f.key] : on.filter((k) => k !== f.key))}
                   />
                   <span>
-                    <span className="font-medium">{f.name}</span> {f.builtIn ? <Badge>Built in</Badge> : <Badge tone="info">Custom</Badge>}{" "}
-                    <span className="text-xs text-muted-foreground">{f.outcomes.length} outcomes · {f.mappingCount} mappings</span>
+                    <span className="font-medium">{f.name}</span> {f.builtIn ? <Badge>{tr("builtIn")}</Badge> : <Badge tone="info">{tr("custom")}</Badge>}{" "}
+                    <span className="text-xs text-muted-foreground">{tr("countOutcomesMappingCountMappings", { count: f.outcomes.length, mappingCount: f.mappingCount })}</span>
                     <span className="block text-sm text-muted-foreground">{f.description}</span>
                     {f.builtIn && <span className="block text-xs text-muted-foreground">{f.note}</span>}
                   </span>
                 </label>
                 {!f.builtIn && cat.canEdit && (
                   <div className="mt-2 flex gap-2">
-                    <Button variant="secondary" type="button" onClick={() => startEdit(f)}>Edit</Button>
+                    <Button variant="secondary" type="button" onClick={() => startEdit(f)}>{tr("edit")}</Button>
                     <Button
                       variant="danger"
                       type="button"
                       busy={busy === `del-${f.key}`}
                       onClick={() => {
-                        if (!window.confirm(`Delete "${f.name}" and its mappings?`)) return;
-                        run(`del-${f.key}`, () => api(`/api/career/frameworks/custom/${encodeURIComponent(f.key)}`, { method: "DELETE" }).then(() => undefined), "Framework deleted.");
+                        if (!window.confirm(tr("deleteNameAndItsMappings", { name: f.name }))) return;
+                        run(`del-${f.key}`, () => api(`/api/career/frameworks/custom/${encodeURIComponent(f.key)}`, { method: "DELETE" }).then(() => undefined), tr("frameworkDeleted"));
                       }}
                     >
-                      Delete
+                      {tr("delete")}
                     </Button>
                   </div>
                 )}
@@ -279,7 +280,7 @@ function FrameworksSetup({ cat, onChanged }: { cat: Catalog; onChanged: () => vo
             ))}
           </ul>
           <div className="mt-4 max-w-xs">
-            <Field label="Smallest group shown" hint={`Groups smaller than this show as "<n". At least ${cat.minCellSizeFloor}.`}>
+            <Field label={tr("smallestGroupShown")} hint={tr("groupsSmallerThanThisShow", { minCellSizeFloor: cat.minCellSizeFloor })}>
               {(p) => (
                 <input {...p} type="number" min={cat.minCellSizeFloor} max={50} value={minCell === "" ? cat.minCellSize : minCell} onChange={(e) => setMinCell(e.target.value === "" ? "" : Number(e.target.value))} />
               )}
@@ -292,18 +293,18 @@ function FrameworksSetup({ cat, onChanged }: { cat: Catalog; onChanged: () => vo
               type="button"
               busy={busy === "settings"}
               onClick={() =>
-                run("settings", () => api("/api/career/frameworks/settings", { method: "PUT", json: { enabled: on, minCellSize: minCell === "" ? cat.minCellSize : minCell } }).then(() => setEnabled(null)), "Settings saved.")
+                run("settings", () => api("/api/career/frameworks/settings", { method: "PUT", json: { enabled: on, minCellSize: minCell === "" ? cat.minCellSize : minCell } }).then(() => setEnabled(null)), tr("settingsSaved"))
               }
             >
-              Save choices
+              {tr("saveChoices")}
             </Button>
-            <Button variant="secondary" type="button" onClick={() => startEdit(null)}>New custom framework</Button>
+            <Button variant="secondary" type="button" onClick={() => startEdit(null)}>{tr("newCustomFramework")}</Button>
           </div>
         )}
       </Card>
 
       {editing && cat.canEdit && (
-        <Card title={editing === "new" ? "New custom framework" : "Edit custom framework"}>
+        <Card title={editing === "new" ? tr("newCustomFramework") : tr("editCustomFramework")}>
           <form
             className="space-y-4"
             onSubmit={(e) => {
@@ -316,18 +317,18 @@ function FrameworksSetup({ cat, onChanged }: { cat: Catalog; onChanged: () => vo
                     ? api("/api/career/frameworks/custom", { method: "POST", json: body })
                     : api(`/api/career/frameworks/custom/${encodeURIComponent(editing)}`, { method: "PUT", json: body })
                   ).then(() => setEditing(null)),
-                "Framework saved.",
+                tr("frameworkSaved"),
               );
             }}
           >
-            <Field label="Name">{(p) => <input {...p} required value={name} onChange={(e) => setName(e.target.value)} maxLength={120} />}</Field>
-            <Field label="Description (optional)">{(p) => <input {...p} value={description} onChange={(e) => setDescription(e.target.value)} maxLength={2000} />}</Field>
-            <Field label="Outcomes" hint="One per line: CODE | Title, for example “CS1 | Write correct, tested programs”.">
+            <Field label={tr("name")}>{(p) => <input {...p} required value={name} onChange={(e) => setName(e.target.value)} maxLength={120} />}</Field>
+            <Field label={tr("descriptionOptional")}>{(p) => <input {...p} value={description} onChange={(e) => setDescription(e.target.value)} maxLength={2000} />}</Field>
+            <Field label={tr("outcomes")} hint={tr("onePerLineCODETitle")}>
               {(p) => <textarea {...p} rows={6} required value={outcomes} onChange={(e) => setOutcomes(e.target.value)} />}
             </Field>
             <div className="flex gap-2">
-              <Button type="submit" busy={busy === "custom"}>Save framework</Button>
-              <Button type="button" variant="secondary" onClick={() => setEditing(null)}>Cancel</Button>
+              <Button type="submit" busy={busy === "custom"}>{tr("saveFramework")}</Button>
+              <Button type="button" variant="secondary" onClick={() => setEditing(null)}>{tr("cancel")}</Button>
             </div>
           </form>
         </Card>
@@ -337,25 +338,26 @@ function FrameworksSetup({ cat, onChanged }: { cat: Catalog; onChanged: () => vo
 }
 
 export default function CareerCenterFrameworksPage() {
+  const tr = useCareerT("careerCenterFrameworks");
   const api = useApi();
   const cat = useLoad(() => api<Catalog>("/api/career/frameworks"), []);
   const [tab, setTab] = useState<Tab>("attainment");
   const [key, setKey] = useState<string | null>(null);
 
   if (cat.loading && !cat.data) return <Loading />;
-  if (cat.error || !cat.data) return <ErrorBanner error={cat.error ?? "Frameworks are unavailable."} onRetry={cat.reload} />;
+  if (cat.error || !cat.data) return <ErrorBanner error={cat.error ?? tr("frameworksAreUnavailable")} onRetry={cat.reload} />;
   const c = cat.data;
   const choices = c.frameworks.filter((f) => f.enabled).length > 0 ? c.frameworks.filter((f) => f.enabled) : c.frameworks;
   const current = choices.find((f) => f.key === key) ?? choices[0];
-  const tabs: [Tab, string][] = [["attainment", "Attainment"], ["mappings", "Evidence mappings"], ["frameworks", "Choose frameworks"]];
+  const tabs: [Tab, string][] = [["attainment", tr("tabAttainment")], ["mappings", tr("tabMappings")], ["frameworks", tr("tabFrameworks")]];
 
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Outcome frameworks"
-        description="Measure outcome attainment for accreditation (NBA, ABET) and career readiness (NACE) from direct evidence of student work. Reports are aggregate only."
+        title={tr("outcomeFrameworks")}
+        description={tr("measureOutcomeAttainmentForAccreditation")}
       />
-      <div role="group" aria-label="Sections" className="flex flex-wrap gap-2">
+      <div role="group" aria-label={tr("sections")} className="flex flex-wrap gap-2">
         {tabs.map(([t, label]) => (
           <Button key={t} type="button" variant={tab === t ? "primary" : "secondary"} aria-pressed={tab === t} onClick={() => setTab(t)}>
             {label}
@@ -365,7 +367,7 @@ export default function CareerCenterFrameworksPage() {
 
       {tab !== "frameworks" && current && (
         <div className="max-w-md">
-          <Field label="Framework" hint={c.enabled.length === 0 ? "No frameworks are switched on yet; showing all." : undefined}>
+          <Field label={tr("framework")} hint={c.enabled.length === 0 ? tr("noFrameworksAreSwitchedOn") : undefined}>
             {(p) => (
               <select {...p} value={current.key} onChange={(e) => setKey(e.target.value)}>
                 {choices.map((f) => <option key={f.key} value={f.key}>{f.name}</option>)}

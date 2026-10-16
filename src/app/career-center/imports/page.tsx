@@ -3,7 +3,8 @@
 import React, { useRef, useState } from "react";
 import { useApi } from "@/lib/appAuth";
 import { useCareerShell } from "@/components/career/CareerShell";
-import { Badge, Button, Card, EmptyState, ErrorBanner, Field, Loading, PageHeader, SuccessBanner, formatDate, useLoad } from "@/components/career/ui";
+import { Badge, Button, Card, EmptyState, ErrorBanner, Field, Loading, PageHeader, SuccessBanner, formatDate, useLoad, ScrollArea, useCareerT, useCareerLabels } from "@/components/career/ui";
+import { ConnectedPlatforms } from "@/components/career/ConnectedPlatforms";
 
 interface FieldDef {
   key: string;
@@ -12,11 +13,18 @@ interface FieldDef {
   hint?: string | null;
 }
 
+interface ImportOptions {
+  dayFirst: boolean;
+  currency?: string | null;
+}
+
 interface Presets {
   notice: string;
   sources: string[];
   kinds: string[];
   fields: Record<string, FieldDef[]>;
+  sourceNotes?: Record<string, string>;
+  defaultOptions?: Record<string, ImportOptions>;
 }
 
 interface Issue {
@@ -37,6 +45,8 @@ interface DryRun {
   matchedToStudents: number;
   waitingForSignIn: number;
   alreadyImported: number;
+  outcomeStatuses?: number;
+  alsoExperiential?: number;
   issues: Issue[];
   issuesTruncated: boolean;
   matches: { line: number; email: string; name: string; studentNumber?: string | null; role: string; linked: boolean; outcome: string }[];
@@ -78,6 +88,8 @@ interface Batch {
   dryRun?: Partial<DryRun> | null;
   result?: Partial<CommitResult> | null;
   presetNotice: string;
+  origin?: string;
+  options?: ImportOptions | null;
 }
 
 interface BatchView {
@@ -85,12 +97,14 @@ interface BatchView {
   sample?: string[][];
 }
 
-const KIND_LABELS: Record<string, string> = {
-  Students: "Students",
-  Appointments: "Appointment history and notes",
-  Experiences: "Completed internships and experiences",
-  Mentoring: "Past mentoring relationships",
-};
+const KIND_LABELS_KEYS = ["Students", "Appointments", "Experiences", "Mentoring", "Placements"];
+/** kind labels in the career language (G1) */
+function useKindLabels(): Record<string, string> {
+  return useCareerLabels("careerCenterImports.kind", KIND_LABELS_KEYS);
+}
+const SOURCE_LABELS: Record<string, string> = { Symplicity: "Symplicity CSM", Orbis: "Orbis (Outcome)" };
+const sourceLabel = (s: string) => SOURCE_LABELS[s] ?? s;
+const CURRENCIES = ["USD", "INR", "GBP", "EUR", "AUD", "CAD", "NZD", "AED", "SAR", "QAR", "MYR", "PHP", "SGD", "ZAR", "KES", "NGN", "BRL"];
 const STATUS_TONE: Record<string, "good" | "warn" | "bad" | "info" | "neutral"> = {
   Uploaded: "neutral",
   Validated: "info",
@@ -101,6 +115,8 @@ const STATUS_TONE: Record<string, "good" | "warn" | "bad" | "info" | "neutral"> 
 };
 
 export default function ImportsPage() {
+  const t = useCareerT("careerCenterImports");
+  const KIND_LABELS = useKindLabels();
   const api = useApi();
   const { me, schoolId } = useCareerShell();
   const isAdmin = me?.memberships.some((m) => m.instituteId === schoolId && m.role === "CareerAdmin") ?? false;
@@ -113,6 +129,7 @@ export default function ImportsPage() {
   const [busy, setBusy] = useState<string | null>(null);
   const [view, setView] = useState<BatchView | null>(null);
   const [mapping, setMapping] = useState<Record<string, string>>({});
+  const [options, setOptions] = useState<ImportOptions>({ dayFirst: false, currency: null });
   const [dryRun, setDryRun] = useState<DryRun | null>(null);
   const [result, setResult] = useState<CommitResult | null>(null);
 
@@ -137,6 +154,7 @@ export default function ImportsPage() {
   const open = (v: BatchView) => {
     setView(v);
     setMapping(v.batch.mapping ?? {});
+    setOptions({ dayFirst: v.batch.options?.dayFirst ?? false, currency: v.batch.options?.currency ?? null });
     setDryRun(v.batch.status === "Validated" && v.batch.dryRun && "total" in v.batch.dryRun ? (v.batch.dryRun as DryRun) : null);
     setResult(v.batch.result && "created" in v.batch.result ? (v.batch.result as CommitResult) : null);
   };
@@ -144,7 +162,7 @@ export default function ImportsPage() {
   const upload = (e: React.FormEvent) => {
     e.preventDefault();
     void run("upload", async () => {
-      if (!file) throw new Error("Choose a CSV export first.");
+      if (!file) throw new Error(t("chooseACSVOrExcel"));
       const fd = new FormData();
       fd.append("file", file);
       if (source) fd.append("source", source);
@@ -153,7 +171,7 @@ export default function ImportsPage() {
       open(v);
       setFile(null);
       if (fileRef.current) fileRef.current.value = "";
-      setMsg(`Uploaded ${v.batch.fileName}: ${v.batch.rowCount} rows, read as ${v.batch.source} ${KIND_LABELS[v.batch.entityKind]?.toLowerCase() ?? v.batch.entityKind}. Check the column mapping below.`);
+      setMsg(t("uploadedFileNameRowCountRowsRead", { fileName: v.batch.fileName, rowCount: v.batch.rowCount, source: sourceLabel(v.batch.source), value: KIND_LABELS[v.batch.entityKind]?.toLowerCase() ?? v.batch.entityKind }));
       history.reload();
     });
   };
@@ -168,32 +186,32 @@ export default function ImportsPage() {
   const runDry = () =>
     run("dry", async () => {
       if (!view) return;
-      await api(`/api/career/imports/${view.batch.id}/mapping`, { method: "PUT", json: { mapping } });
+      await api(`/api/career/imports/${view.batch.id}/mapping`, { method: "PUT", json: { mapping, options } });
       const d = await api<DryRun>(`/api/career/imports/${view.batch.id}/dry-run`, { method: "POST" });
       setDryRun(d);
-      setView({ ...view, batch: { ...view.batch, status: "Validated", mapping } });
+      setView({ ...view, batch: { ...view.batch, status: "Validated", mapping, options } });
       history.reload();
     });
 
   const commit = () => {
     if (!view || !dryRun) return;
-    if (!window.confirm(`Import ${dryRun.toCreate} records from ${view.batch.fileName}? Rows with errors are skipped. You can undo the whole import later.`)) return;
+    if (!window.confirm(t("importToCreateRecordsFromFileName", { toCreate: dryRun.toCreate, fileName: view.batch.fileName }))) return;
     void run("commit", async () => {
       const r = await api<CommitResult>(`/api/career/imports/${view.batch.id}/commit`, { method: "POST", json: { batchSize: 200 } });
       setResult(r);
       setDryRun(null);
       setView({ ...view, batch: { ...view.batch, status: "Committed" } });
-      setMsg(`Import finished: ${r.created} created, ${r.matched} matched, ${r.waitingForSignIn} waiting for sign-in, ${r.skippedWithErrors} skipped.`);
+      setMsg(t("importFinishedCreatedCreatedMatched", { created: r.created, matched: r.matched, waitingForSignIn: r.waitingForSignIn, skippedWithErrors: r.skippedWithErrors }));
       history.reload();
     });
   };
 
   const undo = (b: Batch) => {
-    if (!window.confirm(`Undo the import of ${b.fileName}? Everything it created is removed. Records that matched existing people are left as they are.`)) return;
+    if (!window.confirm(t("undoTheImportOfFileName", { fileName: b.fileName }))) return;
     void run(`undo-${b.id}`, async () => {
       const r = await api<{ removed: Record<string, number>; pendingCancelled: number }>(`/api/career/imports/${b.id}/undo`, { method: "POST" });
       const total = Object.values(r.removed).reduce((a, n) => a + n, 0);
-      setMsg(`Import undone: ${total} records removed${r.pendingCancelled ? `, ${r.pendingCancelled} waiting records cancelled` : ""}.`);
+      setMsg(t("importUndoneTotalRecordsRemoved", { total, value: r.pendingCancelled ? t("pendingCancelledWaitingRecordsCancelled", { pendingCancelled: r.pendingCancelled }) : "" }));
       if (view?.batch.id === b.id) setView({ ...view, batch: { ...view.batch, status: "Undone" } });
       history.reload();
     });
@@ -204,7 +222,7 @@ export default function ImportsPage() {
   const downloadReport = (b: Batch) =>
     run(`report-${b.id}`, async () => {
       const res = await api<Response>(`/api/career/imports/${b.id}/report.csv`, { raw: true });
-      if (!res.ok) throw new Error("The report couldn't be downloaded.");
+      if (!res.ok) throw new Error(t("theReportCouldntBeDownloaded"));
       const url = URL.createObjectURL(await res.blob());
       const a = document.createElement("a");
       a.href = url;
@@ -216,15 +234,15 @@ export default function ImportsPage() {
   const applyPending = () =>
     run("pending", async () => {
       const r = await api<{ created: number }>("/api/career/imports/apply-pending", { method: "POST" });
-      setMsg(r.created ? `${r.created} waiting records were created for people who have signed in.` : "Nothing new: the people those records belong to haven't signed in yet.");
+      setMsg(r.created ? t("createdWaitingRecordsWereCreated", { created: r.created }) : t("nothingNewThePeopleThose"));
       history.reload();
     });
 
   if (me && !isAdmin) {
     return (
       <div>
-        <PageHeader title="Imports" />
-        <EmptyState title="Only career admins can import data.">Ask a career admin at your school to run imports.</EmptyState>
+        <PageHeader title={t("imports")} />
+        <EmptyState title={t("onlyCareerAdminsCanImport")}>{t("askACareerAdminAt")}</EmptyState>
       </div>
     );
   }
@@ -235,33 +253,33 @@ export default function ImportsPage() {
   return (
     <div>
       <PageHeader
-        title="Imports"
-        description="Bring students and past career-center records over from Handshake, Symplicity CSM or 12twenty exports. Job postings and applications are not imported: they stay with your job platform."
+        title={t("imports")}
+        description={t("bringStudentsPastCareerCenter")}
       />
       <ErrorBanner error={err ?? presets.error ?? history.error} />
       <SuccessBanner message={msg} />
 
-      <Card title="1. Upload an export" className="mb-6">
+      <Card title={t("n1UploadAnExport")} className="mb-6">
         <form onSubmit={upload} className="grid gap-4 md:grid-cols-4 md:items-end">
           <div className="md:col-span-2">
-            <Field label="CSV file" hint="Up to 5 MB. Save spreadsheets as CSV first.">
-              {(p) => <input {...p} ref={fileRef} type="file" accept=".csv,text/csv" onChange={(e) => setFile(e.target.files?.[0] ?? null)} />}
+            <Field label={t("cSVOrExcelFile")} hint={t("upTo5MBCSV")}>
+              {(p) => <input {...p} ref={fileRef} type="file" accept=".csv,.txt,.tsv,.xlsx,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" onChange={(e) => setFile(e.target.files?.[0] ?? null)} />}
             </Field>
           </div>
-          <Field label="Exported from">
+          <Field label={t("exportedFrom")}>
             {(p) => (
               <select {...p} value={source} onChange={(e) => setSource(e.target.value)}>
-                <option value="">Detect from the columns</option>
+                <option value="">{t("detectFromTheColumns")}</option>
                 {presets.data?.sources.map((s) => (
-                  <option key={s} value={s}>{s}</option>
+                  <option key={s} value={s}>{sourceLabel(s)}</option>
                 ))}
               </select>
             )}
           </Field>
-          <Field label="What the file holds">
+          <Field label={t("whatTheFileHolds")}>
             {(p) => (
               <select {...p} value={kind} onChange={(e) => setKind(e.target.value)}>
-                <option value="">Detect from the columns</option>
+                <option value="">{t("detectFromTheColumns")}</option>
                 {presets.data?.kinds.map((k) => (
                   <option key={k} value={k}>{KIND_LABELS[k] ?? k}</option>
                 ))}
@@ -269,36 +287,37 @@ export default function ImportsPage() {
             )}
           </Field>
           <div className="md:col-span-4">
-            <Button type="submit" busy={busy === "upload"} disabled={!file}>Upload and read columns</Button>
+            <Button type="submit" busy={busy === "upload"} disabled={!file}>{t("uploadAndReadColumns")}</Button>
           </div>
         </form>
         <p className="mt-3 text-xs text-muted-foreground">
-          Import students first: appointments, internships and mentoring rows are matched to students by email (or student id).
-          History for students who haven&apos;t signed in yet is created when they first sign in.
+          {t("importStudentsFirstAppointmentsInternshi")}
+          {presets.data?.sourceNotes && source && presets.data.sourceNotes[source] ? <> {sourceLabel(source)}: {presets.data.sourceNotes[source]}</> : null}
         </p>
       </Card>
 
       {view && (
-        <Card title={`2. Check the column mapping: ${view.batch.fileName}`} className="mb-6" actions={<Badge tone={STATUS_TONE[view.batch.status] ?? "neutral"}>{view.batch.status}</Badge>}>
+        <Card title={t("n2CheckTheColumnMapping", { fileName: view.batch.fileName })} className="mb-6" actions={<Badge tone={STATUS_TONE[view.batch.status] ?? "neutral"}>{view.batch.status}</Badge>}>
           <p className="mb-3 rounded-md border border-amber-300 bg-amber-50 p-2 text-sm text-amber-900 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-200">
             {presets.data?.notice ?? view.batch.presetNotice}
           </p>
           {view.batch.detection && view.batch.detection.length > 0 && (
             <p className="mb-4 text-sm text-muted-foreground">
-              Best match for these columns: {view.batch.detection[0].source} {KIND_LABELS[view.batch.detection[0].entityKind]?.toLowerCase()} ({view.batch.detection[0].matched} of {view.batch.detection[0].total} typical columns found).
+              {t("bestMatchForTheseColumns", { source: sourceLabel(view.batch.detection[0].source), value: KIND_LABELS[view.batch.detection[0].entityKind]?.toLowerCase(), matched: view.batch.detection[0].matched, total: view.batch.detection[0].total })}
             </p>
           )}
           <div className="mb-4 grid gap-4 md:grid-cols-2">
-            <Field label="Exported from">
+            <Field label={t("exportedFrom")}>
               {(p) => (
-                <select {...p} value={view.batch.source} disabled={!editable || busy === "type"} onChange={(e) => void changeType({ source: e.target.value })}>
+                <select {...p} value={view.batch.source} disabled={!editable || busy === "type" || (view.batch.origin ?? "Upload") !== "Upload"} onChange={(e) => void changeType({ source: e.target.value })}>
+                  {!presets.data?.sources.includes(view.batch.source) && <option value={view.batch.source}>{sourceLabel(view.batch.source)}</option>}
                   {presets.data?.sources.map((s) => (
-                    <option key={s} value={s}>{s}</option>
+                    <option key={s} value={s}>{sourceLabel(s)}</option>
                   ))}
                 </select>
               )}
             </Field>
-            <Field label="What the file holds" hint="Changing this suggests a new mapping.">
+            <Field label={t("whatTheFileHolds")} hint={t("changingThisSuggestsANew")}>
               {(p) => (
                 <select {...p} value={view.batch.entityKind} disabled={!editable || busy === "type"} onChange={(e) => void changeType({ entityKind: e.target.value })}>
                   {presets.data?.kinds.map((k) => (
@@ -309,22 +328,53 @@ export default function ImportsPage() {
             </Field>
           </div>
 
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <caption className="sr-only">Column mapping</caption>
+          <fieldset className="mb-4 grid gap-4 rounded-md border border-border p-3 md:grid-cols-2">
+            <legend className="px-1 text-sm font-medium">{t("howToReadValues")}</legend>
+            <div className="flex items-start gap-2">
+              <input
+                id="opt-dayfirst"
+                type="checkbox"
+                className="mt-1"
+                checked={options.dayFirst}
+                disabled={!editable}
+                onChange={(e) => setOptions({ ...options, dayFirst: e.target.checked })}
+                aria-describedby="opt-dayfirst-hint"
+              />
+              <div>
+                <label htmlFor="opt-dayfirst" className="text-sm font-medium">{t("datesAreWrittenDayFirst")}</label>
+                <p id="opt-dayfirst-hint" className="text-xs text-muted-foreground">{t("on03042025Is")}</p>
+              </div>
+            </div>
+            {view.batch.entityKind === "Placements" && (
+              <Field label={t("currencyOfAmountsWithoutOne")} hint={t("salaryBandsAreFilledFor")}>
+                {(p) => (
+                  <select {...p} value={options.currency ?? ""} disabled={!editable} onChange={(e) => setOptions({ ...options, currency: e.target.value || null })}>
+                    <option value="">{t("notStated")}</option>
+                    {Array.from(new Set([...(options.currency ? [options.currency] : []), ...CURRENCIES])).map((c) => (
+                      <option key={c} value={c}>{c}</option>
+                    ))}
+                  </select>
+                )}
+              </Field>
+            )}
+          </fieldset>
+
+          <ScrollArea>
+            <table className="w-full text-sm [&_th]:text-start">
+              <caption className="sr-only">{t("columnMapping")}</caption>
               <thead>
-                <tr className="border-b border-border text-left">
-                  <th scope="col" className="py-2 pr-4">Field</th>
-                  <th scope="col" className="py-2">Column in your file</th>
+                <tr className="border-b border-border text-start">
+                  <th scope="col" className="py-2 pe-4">{t("field")}</th>
+                  <th scope="col" className="py-2">{t("columnInYourFile")}</th>
                 </tr>
               </thead>
               <tbody>
                 {fields.map((f) => (
                   <tr key={f.key} className="border-b border-border/60 align-top">
-                    <td className="py-2 pr-4">
+                    <td className="py-2 pe-4">
                       <label htmlFor={`map-${f.key}`} className="font-medium">
                         {f.label}
-                        {f.required && <span className="ml-1 text-xs text-red-600">(required)</span>}
+                        {f.required && <span className="ms-1 text-xs text-red-600">{t("required")}</span>}
                       </label>
                       {f.hint && <p className="text-xs text-muted-foreground">{f.hint}</p>}
                     </td>
@@ -336,7 +386,7 @@ export default function ImportsPage() {
                         disabled={!editable}
                         onChange={(e) => setMapping({ ...mapping, [f.key]: e.target.value })}
                       >
-                        <option value="">(not in this file)</option>
+                        <option value="">{t("notInThisFile")}</option>
                         {view.batch.headers?.map((h) => (
                           <option key={h} value={h}>{h}</option>
                         ))}
@@ -346,15 +396,15 @@ export default function ImportsPage() {
                 ))}
               </tbody>
             </table>
-          </div>
+          </ScrollArea>
 
           {view.sample && view.sample.length > 0 && view.batch.headers && (
             <details className="mt-4">
-              <summary className="cursor-pointer text-sm font-medium">First rows of the file</summary>
-              <div className="mt-2 overflow-x-auto">
-                <table className="text-xs">
+              <summary className="cursor-pointer text-sm font-medium">{t("firstRowsOfTheFile")}</summary>
+              <ScrollArea className="mt-2 overflow-x-auto">
+                <table className="text-xs [&_th]:text-start">
                   <thead>
-                    <tr>{view.batch.headers.map((h) => <th key={h} scope="col" className="border-b border-border px-2 py-1 text-left">{h}</th>)}</tr>
+                    <tr>{view.batch.headers.map((h) => <th key={h} scope="col" className="border-b border-border px-2 py-1 text-start">{h}</th>)}</tr>
                   </thead>
                   <tbody>
                     {view.sample.map((row, i) => (
@@ -362,121 +412,134 @@ export default function ImportsPage() {
                     ))}
                   </tbody>
                 </table>
-              </div>
+              </ScrollArea>
             </details>
           )}
 
           {editable && (
             <div className="mt-4">
-              <Button onClick={() => void runDry()} busy={busy === "dry"}>Save mapping and run a dry run</Button>
-              <span className="ml-3 text-xs text-muted-foreground">A dry run checks every row and saves nothing.</span>
+              <Button onClick={() => void runDry()} busy={busy === "dry"}>{t("saveMappingAndRunA")}</Button>
+              <span className="ms-3 text-xs text-muted-foreground">{t("aDryRunChecksEvery")}</span>
             </div>
           )}
         </Card>
       )}
 
       {view && dryRun && (
-        <Card title="3. Dry run results" className="mb-6">
+        <Card title={t("n3DryRunResults")} className="mb-6">
           <div role="status" aria-live="polite">
             <dl className="mb-4 grid grid-cols-2 gap-3 text-sm md:grid-cols-4">
-              <Stat label="Rows" value={dryRun.total} />
-              <Stat label="Will be imported" value={dryRun.toCreate} />
-              <Stat label="Rows with errors (skipped)" value={dryRun.errors} />
-              <Stat label="Already imported before" value={dryRun.alreadyImported} />
+              <Stat label={t("rows")} value={dryRun.total} />
+              <Stat label={t("willBeImported")} value={dryRun.toCreate} />
+              <Stat label={t("rowsWithErrorsSkipped")} value={dryRun.errors} />
+              <Stat label={t("alreadyImportedBefore")} value={dryRun.alreadyImported} />
               {view.batch.entityKind === "Students" ? (
                 <>
-                  <Stat label="New students" value={dryRun.newRecords} />
-                  <Stat label="Match existing people" value={dryRun.matchedExisting} />
+                  <Stat label={t("newStudents")} value={dryRun.newRecords} />
+                  <Stat label={t("matchExistingPeople")} value={dryRun.matchedExisting} />
                 </>
               ) : (
-                <Stat label="Matched to students" value={dryRun.matchedToStudents} />
+                <Stat label={t("matchedToStudents")} value={dryRun.matchedToStudents} />
               )}
-              <Stat label="Waiting for sign-in" value={dryRun.waitingForSignIn} />
-              <Stat label="Rows with warnings" value={dryRun.warnings} />
+              {view.batch.entityKind === "Placements" && (
+                <>
+                  <Stat label={t("seekingOrNotSeekingStatuses")} value={dryRun.outcomeStatuses} />
+                  <Stat label={t("finishedInternshipsAlsoAddedTo")} value={dryRun.alsoExperiential} />
+                </>
+              )}
+              <Stat label={t("waitingForSignIn")} value={dryRun.waitingForSignIn} />
+              <Stat label={t("rowsWithWarnings")} value={dryRun.warnings} />
             </dl>
           </div>
           <IssueTable issues={dryRun.issues} truncated={dryRun.issuesTruncated} />
           {dryRun.matches.length > 0 && (
             <details className="mt-4">
-              <summary className="cursor-pointer text-sm font-medium">Matches to people already at your school (first 25)</summary>
+              <summary className="cursor-pointer text-sm font-medium">{t("matchesToPeopleAlreadyAt")}</summary>
               <ul className="mt-2 space-y-1 text-sm">
                 {dryRun.matches.map((m) => (
                   <li key={`${m.line}-${m.email}`}>
-                    Line {m.line}: {m.name} ({m.email}{m.studentNumber ? `, id ${m.studentNumber}` : ""}) {m.linked ? "has signed in" : "hasn't signed in yet"}
+                    {t("lineLineNameEmail", { line: m.line, name: m.name, email: m.email })}{m.studentNumber ? t("idStudentNumber", { studentNumber: m.studentNumber }) : ""}) {m.linked ? t("hasSignedIn") : t("hasntSignedInYet")}
                   </li>
                 ))}
               </ul>
             </details>
           )}
           <div className="mt-4 flex flex-wrap gap-2">
-            <Button onClick={commit} busy={busy === "commit"} disabled={dryRun.toCreate === 0}>Import {dryRun.toCreate} records</Button>
-            <Button variant="secondary" onClick={() => void downloadReport(view.batch)} busy={busy === `report-${view.batch.id}`}>Download dry-run report</Button>
+            <Button onClick={commit} busy={busy === "commit"} disabled={dryRun.toCreate === 0}>{t("importToCreateRecords", { toCreate: dryRun.toCreate })}</Button>
+            <Button variant="secondary" onClick={() => void downloadReport(view.batch)} busy={busy === `report-${view.batch.id}`}>{t("downloadDryRunReport")}</Button>
           </div>
         </Card>
       )}
 
       {view && result && (
-        <Card title="4. Import report" className="mb-6">
+        <Card title={t("n4ImportReport")} className="mb-6">
           <div role="status" aria-live="polite">
-            <p className="mb-3 text-sm">Records are marked &ldquo;{result.label}&rdquo; where they appear.</p>
+            <p className="mb-3 text-sm">{t("recordsAreMarkedLabelWhere", { label: result.label })}</p>
             <dl className="mb-4 grid grid-cols-2 gap-3 text-sm md:grid-cols-4">
-              <Stat label="Created" value={result.created} />
-              <Stat label="Matched existing" value={result.matched} />
-              <Stat label="Waiting for sign-in" value={result.waitingForSignIn} />
-              <Stat label="Already imported" value={result.alreadyImported} />
-              <Stat label="Skipped (errors)" value={result.skippedWithErrors} />
-              <Stat label="Failed to save" value={result.failed} />
+              <Stat label={t("created")} value={result.created} />
+              <Stat label={t("matchedExisting")} value={result.matched} />
+              <Stat label={t("waitingForSignIn")} value={result.waitingForSignIn} />
+              <Stat label={t("alreadyImported")} value={result.alreadyImported} />
+              <Stat label={t("skippedErrors")} value={result.skippedWithErrors} />
+              <Stat label={t("failedToSave")} value={result.failed} />
             </dl>
           </div>
           <IssueTable issues={result.issues ?? []} truncated={false} />
           <div className="mt-4 flex flex-wrap gap-2">
-            <Button variant="secondary" onClick={() => void downloadReport(view.batch)} busy={busy === `report-${view.batch.id}`}>Download report</Button>
-            {view.batch.status === "Committed" && <Button variant="danger" onClick={() => undo(view.batch)} busy={busy === `undo-${view.batch.id}`}>Undo this import</Button>}
+            <Button variant="secondary" onClick={() => void downloadReport(view.batch)} busy={busy === `report-${view.batch.id}`}>{t("downloadReport")}</Button>
+            {view.batch.status === "Committed" && <Button variant="danger" onClick={() => undo(view.batch)} busy={busy === `undo-${view.batch.id}`}>{t("undoThisImport")}</Button>}
           </div>
         </Card>
       )}
 
-      <Card title="Import history" actions={<Button variant="secondary" onClick={() => void applyPending()} busy={busy === "pending"}>Create waiting records now</Button>}>
+      <ConnectedPlatforms
+        onPulled={(v) => {
+          void openBatch(v.batch as Batch);
+          history.reload();
+        }}
+      />
+
+      <Card title={t("importHistory")} actions={<Button variant="secondary" onClick={() => void applyPending()} busy={busy === "pending"}>{t("createWaitingRecordsNow")}</Button>}>
         {history.loading && !history.data ? (
           <Loading />
         ) : !history.data || history.data.length === 0 ? (
-          <EmptyState title="No imports yet." />
+          <EmptyState title={t("noImportsYet")} />
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <caption className="sr-only">Past imports</caption>
+          <ScrollArea>
+            <table className="w-full text-sm [&_th]:text-start">
+              <caption className="sr-only">{t("pastImports")}</caption>
               <thead>
-                <tr className="border-b border-border text-left">
-                  <th scope="col" className="py-2 pr-3">File</th>
-                  <th scope="col" className="py-2 pr-3">Source</th>
-                  <th scope="col" className="py-2 pr-3">Records</th>
-                  <th scope="col" className="py-2 pr-3">Status</th>
-                  <th scope="col" className="py-2 pr-3">Result</th>
-                  <th scope="col" className="py-2"><span className="sr-only">Actions</span></th>
+                <tr className="border-b border-border text-start">
+                  <th scope="col" className="py-2 pe-3">{t("file")}</th>
+                  <th scope="col" className="py-2 pe-3">{t("source")}</th>
+                  <th scope="col" className="py-2 pe-3">{t("records")}</th>
+                  <th scope="col" className="py-2 pe-3">{t("status")}</th>
+                  <th scope="col" className="py-2 pe-3">{t("result")}</th>
+                  <th scope="col" className="py-2"><span className="sr-only">{t("actions")}</span></th>
                 </tr>
               </thead>
               <tbody>
                 {history.data.map(({ batch: b, records }) => (
                   <tr key={b.id} className="border-b border-border/60 align-top">
-                    <td className="py-2 pr-3">
+                    <td className="py-2 pe-3">
                       <div className="font-medium">{b.fileName}</div>
-                      <div className="text-xs text-muted-foreground">{b.rowCount} rows, uploaded {formatDate(b.createdAt, true)}</div>
+                      <div className="text-xs text-muted-foreground">{t("rowCountRowsUploadedCreatedAt", { rowCount: b.rowCount, createdAt: formatDate(b.createdAt, true) })}</div>
                     </td>
-                    <td className="py-2 pr-3">{b.source}</td>
-                    <td className="py-2 pr-3">{KIND_LABELS[b.entityKind] ?? b.entityKind}</td>
-                    <td className="py-2 pr-3">
+                    <td className="py-2 pe-3">{sourceLabel(b.source)}</td>
+                    <td className="py-2 pe-3">{KIND_LABELS[b.entityKind] ?? b.entityKind}</td>
+                    <td className="py-2 pe-3">
                       <Badge tone={STATUS_TONE[b.status] ?? "neutral"}>{b.status}</Badge>
-                      {b.undoneAt && <div className="text-xs text-muted-foreground">Undone {formatDate(b.undoneAt, true)}</div>}
+                      {b.undoneAt && <div className="text-xs text-muted-foreground">{t("undoneUndoneAt", { undoneAt: formatDate(b.undoneAt, true) })}</div>}
                     </td>
-                    <td className="py-2 pr-3 text-xs">
+                    <td className="py-2 pe-3 text-xs">
                       {Object.keys(records).length === 0 ? "—" : Object.entries(records).map(([k, n]) => `${n} ${k.toLowerCase()}`).join(", ")}
                     </td>
                     <td className="py-2">
                       <div className="flex flex-wrap gap-1">
-                        <Button variant="ghost" onClick={() => void openBatch(b)} busy={busy === `open-${b.id}`}>Open</Button>
-                        <Button variant="ghost" onClick={() => void downloadReport(b)} busy={busy === `report-${b.id}`}>Report</Button>
+                        <Button variant="ghost" onClick={() => void openBatch(b)} busy={busy === `open-${b.id}`}>{t("open")}</Button>
+                        <Button variant="ghost" onClick={() => void downloadReport(b)} busy={busy === `report-${b.id}`}>{t("report")}</Button>
                         {(b.status === "Committed" || b.status === "Failed") && (
-                          <Button variant="ghost" onClick={() => undo(b)} busy={busy === `undo-${b.id}`}>Undo</Button>
+                          <Button variant="ghost" onClick={() => undo(b)} busy={busy === `undo-${b.id}`}>{t("undo")}</Button>
                         )}
                       </div>
                     </td>
@@ -484,7 +547,7 @@ export default function ImportsPage() {
                 ))}
               </tbody>
             </table>
-          </div>
+          </ScrollArea>
         )}
       </Card>
     </div>
@@ -501,30 +564,31 @@ function Stat({ label, value }: { label: string; value: number | undefined }) {
 }
 
 function IssueTable({ issues, truncated }: { issues: Issue[]; truncated: boolean }) {
-  if (issues.length === 0) return <p className="text-sm text-muted-foreground">No problems found.</p>;
+  const t = useCareerT("careerCenterImports");
+  if (issues.length === 0) return <p className="text-sm text-muted-foreground">{t("noProblemsFound")}</p>;
   return (
-    <div className="max-h-96 overflow-auto">
-      <table className="w-full text-sm">
-        <caption className="mb-1 text-left text-sm font-medium">Problems by row{truncated ? " (first 500)" : ""}</caption>
+    <ScrollArea className="max-h-96 overflow-auto">
+      <table className="w-full text-sm [&_th]:text-start">
+        <caption className="mb-1 text-start text-sm font-medium">{t("problemsByRow")}{truncated ? t("first500") : ""}</caption>
         <thead>
-          <tr className="border-b border-border text-left">
-            <th scope="col" className="py-1 pr-3">Line</th>
-            <th scope="col" className="py-1 pr-3">Type</th>
-            <th scope="col" className="py-1 pr-3">Field</th>
-            <th scope="col" className="py-1">Problem</th>
+          <tr className="border-b border-border text-start">
+            <th scope="col" className="py-1 pe-3">{t("line")}</th>
+            <th scope="col" className="py-1 pe-3">{t("type")}</th>
+            <th scope="col" className="py-1 pe-3">{t("field")}</th>
+            <th scope="col" className="py-1">{t("problem")}</th>
           </tr>
         </thead>
         <tbody>
           {issues.map((i, n) => (
             <tr key={n} className="border-b border-border/50 align-top">
-              <td className="py-1 pr-3">{i.line}</td>
-              <td className="py-1 pr-3"><Badge tone={i.severity === "error" ? "bad" : "warn"}>{i.severity === "error" ? "Skipped" : "Warning"}</Badge></td>
-              <td className="py-1 pr-3 text-xs">{i.field ?? ""}</td>
+              <td className="py-1 pe-3">{i.line}</td>
+              <td className="py-1 pe-3"><Badge tone={i.severity === "error" ? "bad" : "warn"}>{i.severity === "error" ? t("skipped") : t("warning")}</Badge></td>
+              <td className="py-1 pe-3 text-xs">{i.field ?? ""}</td>
               <td className="py-1">{i.message}</td>
             </tr>
           ))}
         </tbody>
       </table>
-    </div>
+    </ScrollArea>
   );
 }

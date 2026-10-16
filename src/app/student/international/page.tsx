@@ -6,10 +6,12 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { useApi } from "@/lib/appAuth";
 import { useCareerShell } from "@/components/career/CareerShell";
-import { Button, Card, ErrorBanner, Field, Loading, PageHeader, SuccessBanner, useLoad } from "@/components/career/ui";
+import { Button, Card, ErrorBanner, Field, Loading, PageHeader, SuccessBanner, useLoad, useCareerT } from "@/components/career/ui";
 import { DsoCard, NotLegalAdvice, type NotEligibleView, type OptEmployment, type OptView } from "@/components/career/international/shared";
 import { AuthorizationsTable, ChecksList, DeadlinesTable, EmploymentsTable, SpansAndRules, UnemploymentMeter } from "@/components/career/international/OptOverview";
 import SponsorLookup from "@/components/career/international/SponsorLookup";
+import WorkRightsTracker from "@/components/career/international/WorkRights";
+import NationalityCard from "@/components/career/localisation/NationalityCard";
 
 type View = OptView | NotEligibleView;
 
@@ -55,6 +57,7 @@ function Checkbox({ label, checked, onChange, hint }: { label: string; checked: 
 }
 
 export default function StudentInternationalPage() {
+  const tr = useCareerT("studentInternational");
   const api = useApi();
   const { schoolId } = useCareerShell();
   const { data, setData, error, loading, reload } = useLoad(() => api<View>("/api/career/international/opt"), [api, schoolId]);
@@ -88,8 +91,8 @@ export default function StudentInternationalPage() {
 
   const header = (
     <PageHeader
-      title="International students"
-      description="Track your OPT unemployment days and reporting deadlines, and look up employers' past sponsorship filings."
+      title={tr("internationalStudents")}
+      description={tr("trackYourOPTUnemploymentDays")}
     />
   );
 
@@ -99,17 +102,23 @@ export default function StudentInternationalPage() {
         {header}
         <NotLegalAdvice text={data.disclaimer} />
         <div className="grid gap-6 lg:grid-cols-2">
-          <Card title="OPT tracker">
+          <Card title={tr("oPTTracker")}>
             <p className="text-sm">{data.explanation}</p>
             <p className="mt-3 text-sm">
               <Link href="/student/record" className="underline">
-                Open My record
+                {tr("openMyRecord")}
               </Link>
             </p>
           </Card>
-          <Card title="Your international student office">
+          <Card title={tr("yourInternationalStudentOffice")}>
             <DsoCard dso={data.dso} />
           </Card>
+        </div>
+        <div className="mt-6">
+          <WorkRightsTracker />
+        </div>
+        <div className="mt-6">
+          <NationalityCard />
         </div>
         <div className="mt-6">
           <SponsorLookup />
@@ -125,17 +134,17 @@ export default function StudentInternationalPage() {
     e.preventDefault();
     void run(
       () => api<View>("/api/career/international/opt", { method: "PUT", json: programEndValue ? { programEndDate: programEndValue } : { clearProgramEndDate: true } }),
-      "Program end date saved.",
+      tr("programEndDateSaved"),
     ).then((ok) => ok && setProgramEnd(null));
   };
 
   const addAuth = (e: React.FormEvent) => {
     e.preventDefault();
     if (!auth.eadStart || !auth.eadEnd) {
-      setErr("Enter both EAD dates from your card.");
+      setErr(tr("enterBothEADDatesFrom"));
       return;
     }
-    void run(() => api<View>("/api/career/international/opt/authorizations", { json: auth }), "Authorization added.").then(
+    void run(() => api<View>("/api/career/international/opt/authorizations", { json: auth }), tr("authorizationAdded")).then(
       (ok) => ok && setAuth({ optType: "PostCompletion", eadStart: "", eadEnd: "" }),
     );
   };
@@ -145,7 +154,7 @@ export default function StudentInternationalPage() {
     if (!job) return;
     const hours = Number(job.hoursPerWeek);
     if (!job.employerName.trim() || !job.startDate || !Number.isFinite(hours) || hours <= 0) {
-      setErr("Employer, start date and hours per week are required.");
+      setErr(tr("employerStartDateAndHours"));
       return;
     }
     const payload = {
@@ -163,7 +172,7 @@ export default function StudentInternationalPage() {
       editingJob
         ? api<View>(`/api/career/international/opt/employments/${editingJob}`, { method: "PUT", json: payload })
         : api<View>("/api/career/international/opt/employments", { json: payload });
-    void run(send, editingJob ? "Job updated." : "Job added.").then((ok) => {
+    void run(send, editingJob ? tr("jobUpdated") : tr("jobAdded")).then((ok) => {
       if (ok) {
         setJob(null);
         setEditingJob(null);
@@ -172,50 +181,50 @@ export default function StudentInternationalPage() {
   };
 
   const markReported = (id: string, kind: "start" | "end", on: string | null) =>
-    run(() => api<View>(`/api/career/international/opt/employments/${id}/reported`, { method: "PUT", json: { kind, reportedOn: on } }), on ? "Marked as reported." : "Report mark removed.");
+    run(() => api<View>(`/api/career/international/opt/employments/${id}/reported`, { method: "PUT", json: { kind, reportedOn: on } }), on ? tr("markedAsReported") : tr("reportMarkRemoved"));
 
   const markEvaluation = (authId: string, month: number, on: string | null) =>
-    run(() => api<View>(`/api/career/international/opt/authorizations/${authId}/evaluations/${month}`, { method: "PUT", json: { submittedOn: on } }), on ? "Self-evaluation marked submitted." : "Mark removed.");
+    run(() => api<View>(`/api/career/international/opt/authorizations/${authId}/evaluations/${month}`, { method: "PUT", json: { submittedOn: on } }), on ? tr("selfEvaluationMarkedSubmitted") : tr("markRemoved"));
 
   return (
     <div>
       {header}
       <NotLegalAdvice text={view.disclaimer}>
-        This tracker helps you keep count. It doesn&apos;t report anything to SEVIS or USCIS: you still report changes as your DSO instructs.
+        {tr("thisTrackerHelpsYouKeep")}
       </NotLegalAdvice>
       <ErrorBanner error={err ?? error} />
       <SuccessBanner message={msg} />
 
       <div className="grid gap-6 lg:grid-cols-3">
-        <Card title="Unemployment days" className="lg:col-span-2">
+        <Card title={tr("unemploymentDays")} className="lg:col-span-2">
           <div aria-live="polite">
             <UnemploymentMeter view={view} />
           </div>
         </Card>
-        <Card title="Your DSO">
+        <Card title={tr("yourDSO")}>
           <DsoCard dso={view.dso} />
         </Card>
       </div>
 
       <div className="mt-6 grid gap-6 lg:grid-cols-2">
-        <Card title="Things to check">
+        <Card title={tr("thingsToCheck")}>
           <ChecksList checks={view.checks} />
         </Card>
-        <Card title="Program end date">
+        <Card title={tr("programEndDate")}>
           <form onSubmit={saveProgramEnd} className="flex flex-wrap items-end gap-2">
             <div className="min-w-48 flex-1">
-              <Field label="Program end date" hint="From your I-20.">
+              <Field label={tr("programEndDate")} hint={tr("fromYourI20")}>
                 {(p) => <input {...p} type="date" value={programEndValue} onChange={(e) => setProgramEnd(e.target.value)} />}
               </Field>
             </div>
             <Button type="submit" busy={busy} className="mb-5">
-              Save
+              {tr("save")}
             </Button>
           </form>
         </Card>
       </div>
 
-      <Card title="OPT authorization (EAD card)" className="mt-6">
+      <Card title={tr("oPTAuthorizationEADCard")} className="mt-6">
         <AuthorizationsTable
           items={view.authorizations}
           actions={(a) => (
@@ -223,29 +232,29 @@ export default function StudentInternationalPage() {
               {a.evaluations?.map((ev) =>
                 ev.submittedOn ? (
                   <Button key={ev.month} variant="ghost" disabled={busy} onClick={() => markEvaluation(a.id, ev.month, null)}>
-                    Undo {ev.month}-month
+                    {tr("undoMonthMonth", { month: ev.month })}
                   </Button>
                 ) : (
                   <Button key={ev.month} variant="secondary" disabled={busy} onClick={() => markEvaluation(a.id, ev.month, todayIso())}>
-                    {ev.month}-month submitted
+                    {tr("monthMonthSubmitted", { month: ev.month })}
                   </Button>
                 ),
               )}
               <Button
                 variant="ghost"
                 disabled={busy}
-                aria-label={`Remove ${a.label} period`}
+                aria-label={tr("removeLabelPeriod", { label: a.label })}
                 onClick={() => {
-                  if (window.confirm(`Remove this ${a.label} period?`)) void run(() => api<View>(`/api/career/international/opt/authorizations/${a.id}`, { method: "DELETE" }), "Authorization removed.");
+                  if (window.confirm(tr("removeThisLabelPeriod", { label: a.label }))) void run(() => api<View>(`/api/career/international/opt/authorizations/${a.id}`, { method: "DELETE" }), tr("authorizationRemoved"));
                 }}
               >
-                Remove
+                {tr("remove")}
               </Button>
             </div>
           )}
         />
         <form onSubmit={addAuth} className="mt-4 grid gap-3 border-t border-border pt-4 sm:grid-cols-4 sm:items-end">
-          <Field label="OPT type">
+          <Field label={tr("oPTType")}>
             {(p) => (
               <select {...p} value={auth.optType} onChange={(e) => setAuth({ ...auth, optType: e.target.value })}>
                 {view.optTypes.map((t) => (
@@ -256,20 +265,20 @@ export default function StudentInternationalPage() {
               </select>
             )}
           </Field>
-          <Field label="EAD start (valid from)">
+          <Field label={tr("eADStartValidFrom")}>
             {(p) => <input {...p} type="date" value={auth.eadStart} onChange={(e) => setAuth({ ...auth, eadStart: e.target.value })} required />}
           </Field>
-          <Field label="EAD end (card expires)">
+          <Field label={tr("eADEndCardExpires")}>
             {(p) => <input {...p} type="date" value={auth.eadEnd} onChange={(e) => setAuth({ ...auth, eadEnd: e.target.value })} required />}
           </Field>
           <Button type="submit" busy={busy}>
-            Add period
+            {tr("addPeriod")}
           </Button>
         </form>
       </Card>
 
       <Card
-        title="Employment"
+        title={tr("employment")}
         className="mt-6"
         actions={
           !job ? (
@@ -279,7 +288,7 @@ export default function StudentInternationalPage() {
                 setJob({ ...emptyJob, eVerifyEmployer: view.status.hasStem });
               }}
             >
-              Add a job
+              {tr("addAJob")}
             </Button>
           ) : undefined
         }
@@ -297,56 +306,56 @@ export default function StudentInternationalPage() {
                   setJob(jobFrom(j));
                 }}
               >
-                Edit
+                {tr("edit")}
               </Button>
               <Button
                 variant="ghost"
                 disabled={busy}
-                aria-label={`Remove job at ${j.employerName}`}
+                aria-label={tr("removeJobAtEmployerName", { employerName: j.employerName })}
                 onClick={() => {
-                  if (window.confirm(`Remove the job at ${j.employerName}?`)) void run(() => api<View>(`/api/career/international/opt/employments/${j.id}`, { method: "DELETE" }), "Job removed.");
+                  if (window.confirm(tr("removeTheJobAtEmployerName", { employerName: j.employerName }))) void run(() => api<View>(`/api/career/international/opt/employments/${j.id}`, { method: "DELETE" }), tr("jobRemoved"));
                 }}
               >
-                Remove
+                {tr("remove")}
               </Button>
             </div>
           )}
         />
         {job && (
           <form onSubmit={saveJob} className="mt-4 grid gap-3 border-t border-border pt-4 sm:grid-cols-2">
-            <h3 className="text-sm font-semibold sm:col-span-2">{editingJob ? "Edit job" : "Add a job"}</h3>
-            <Field label="Employer">
+            <h3 className="text-sm font-semibold sm:col-span-2">{editingJob ? tr("editJob") : tr("addAJob")}</h3>
+            <Field label={tr("employer")}>
               {(p) => <input {...p} value={job.employerName} onChange={(e) => setJob({ ...job, employerName: e.target.value })} maxLength={200} required />}
             </Field>
-            <Field label="Job title (optional)">
+            <Field label={tr("jobTitleOptional")}>
               {(p) => <input {...p} value={job.jobTitle} onChange={(e) => setJob({ ...job, jobTitle: e.target.value })} maxLength={200} />}
             </Field>
-            <Field label="Start date">
+            <Field label={tr("startDate")}>
               {(p) => <input {...p} type="date" value={job.startDate} onChange={(e) => setJob({ ...job, startDate: e.target.value })} required />}
             </Field>
-            <Field label="End date" hint="Leave empty if you still work there.">
+            <Field label={tr("endDate")} hint={tr("leaveEmptyIfYouStill")}>
               {(p) => <input {...p} type="date" value={job.endDate} onChange={(e) => setJob({ ...job, endDate: e.target.value })} />}
             </Field>
-            <Field label="Hours per week" hint={`At least ${view.rules.minHoursPerWeek} hours a week counts as employment for post-completion and STEM OPT.`}>
+            <Field label={tr("hoursPerWeek")} hint={tr("atLeastMinHoursPerWeekHoursA", { minHoursPerWeek: view.rules.minHoursPerWeek })}>
               {(p) => <input {...p} type="number" min={1} max={80} step={0.5} value={job.hoursPerWeek} onChange={(e) => setJob({ ...job, hoursPerWeek: e.target.value })} required />}
             </Field>
             <div className="space-y-2 pt-6">
-              <Checkbox label="This work is directly related to my major" checked={job.relatedToMajor} onChange={(v) => setJob({ ...job, relatedToMajor: v })} />
+              <Checkbox label={tr("thisWorkIsDirectlyRelated")} checked={job.relatedToMajor} onChange={(v) => setJob({ ...job, relatedToMajor: v })} />
               <Checkbox
-                label="The employer uses E-Verify"
-                hint="Required for employment during a STEM extension."
+                label={tr("theEmployerUsesEVerify")}
+                hint={tr("requiredForEmploymentDuringA")}
                 checked={job.eVerifyEmployer}
                 onChange={(v) => setJob({ ...job, eVerifyEmployer: v })}
               />
             </div>
             <div className="sm:col-span-2">
-              <Field label="How the work relates to your major (optional)">
+              <Field label={tr("howTheWorkRelatesTo")}>
                 {(p) => <textarea {...p} rows={3} value={job.relationExplanation} onChange={(e) => setJob({ ...job, relationExplanation: e.target.value })} maxLength={2000} />}
               </Field>
             </div>
             <div className="flex gap-2 sm:col-span-2">
               <Button type="submit" busy={busy}>
-                {editingJob ? "Save job" : "Add job"}
+                {editingJob ? tr("saveJob") : tr("addJob")}
               </Button>
               <Button
                 type="button"
@@ -356,14 +365,14 @@ export default function StudentInternationalPage() {
                   setEditingJob(null);
                 }}
               >
-                Cancel
+                {tr("cancel")}
               </Button>
             </div>
           </form>
         )}
       </Card>
 
-      <Card title="Deadlines and reporting" className="mt-6">
+      <Card title={tr("deadlinesAndReporting")} className="mt-6">
         <DeadlinesTable
           deadlines={view.deadlines}
           actions={(d) => {
@@ -371,11 +380,11 @@ export default function StudentInternationalPage() {
               const kind = d.kind === "report-start" ? "start" : "end";
               return d.status === "done" ? (
                 <Button variant="ghost" disabled={busy} onClick={() => markReported(d.refId!, kind, null)}>
-                  Undo
+                  {tr("undo")}
                 </Button>
               ) : (
                 <Button variant="secondary" disabled={busy} onClick={() => markReported(d.refId!, kind, todayIso())}>
-                  I reported this
+                  {tr("iReportedThis")}
                 </Button>
               );
             }
@@ -388,6 +397,12 @@ export default function StudentInternationalPage() {
         <SpansAndRules view={view} />
       </div>
 
+      <div className="mt-6">
+        <WorkRightsTracker />
+      </div>
+      <div className="mt-6">
+        <NationalityCard />
+      </div>
       <div className="mt-6">
         <SponsorLookup />
       </div>

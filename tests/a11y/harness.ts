@@ -56,6 +56,13 @@ export async function prepare(page: Page, persona: Persona, extra: ApiFixture[] 
   // Third-party identity scripts are not part of this product's UI and need the network: keep the run offline
   await page.route(/clerk\.(accounts\.dev|com)|clerk\.[^/]*\/npm\//, (route) => route.abort());
 
+  // A11Y_LOCALE=ar-XB (or en-XA) runs the pages in a career pseudo-locale (cookie read by CareerI18nRoot)
+  const locale = process.env.A11Y_LOCALE;
+  if (locale) {
+    const port = Number(process.env.A11Y_PORT || 3123);
+    await page.context().addCookies([{ name: "career_locale", value: locale, url: `http://localhost:${port}` }]);
+  }
+
   if (persona !== "public") {
     await page.addInitScript(() => {
       // Partner session (src/lib/partnerSession.ts): useAppAuth treats the tab as signed in while it is valid
@@ -86,7 +93,7 @@ export async function settle(page: Page, ready?: string) {
   }
   // Loading spinners/placeholders from components/career/ui.tsx
   await page
-    .waitForFunction(() => !Array.from(document.querySelectorAll('[role="status"]')).some((el) => /loading/i.test(el.textContent ?? "")), null, { timeout: 15_000 })
+    .waitForFunction(() => !document.querySelector("[data-loading]") && !Array.from(document.querySelectorAll('[role="status"]')).some((el) => /loading/i.test(el.textContent ?? "")), null, { timeout: 15_000 })
     .catch(() => {});
   await page.waitForLoadState("networkidle").catch(() => {});
   await page.waitForTimeout(300);

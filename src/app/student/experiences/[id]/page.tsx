@@ -1,11 +1,11 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useCallback, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useApi } from "@/lib/appAuth";
 import { useCareerShell } from "@/components/career/CareerShell";
-import { Button, Card, ErrorBanner, Field, Loading, PageHeader, SuccessBanner, useLoad } from "@/components/career/ui";
+import { Button, Card, ErrorBanner, Field, Loading, PageHeader, SuccessBanner, useLoad, useCareerT } from "@/components/career/ui";
 import {
   AgreementCard,
   DocumentsList,
@@ -21,8 +21,10 @@ import {
 } from "@/components/career/experiences/shared";
 import { DefenseSummaryCard } from "@/components/career/experiences/InternshipDefense";
 import { RegistrationForm, toPayload, valuesFrom } from "@/components/career/experiences/RegistrationForm";
+import { PackExperienceCard, type PackView } from "@/components/career/experiences/InternshipPack";
 
 export default function StudentExperienceDetailPage() {
+  const t = useCareerT("studentExperiencesDetail");
   const { id } = useParams<{ id: string }>();
   const api = useApi();
   const { schoolId } = useCareerShell();
@@ -31,6 +33,9 @@ export default function StudentExperienceDetailPage() {
   const [err, setErr] = useState<string | null>(null);
   const [msg, setMsg] = useState<string | null>(null);
   const [editing, setEditing] = useState(false);
+  // G2: with a country pack, hours are logged through the pack logbook instead of the plain weekly form
+  const [packActive, setPackActive] = useState(false);
+  const onPackLoaded = useCallback((v: PackView) => setPackActive(!!v.pack), []);
 
   const x = detail.data;
   const act = async (fn: () => Promise<ExperienceDetail>, success: string) => {
@@ -52,11 +57,11 @@ export default function StudentExperienceDetailPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title={`${x.roleTitle} at ${x.employer.name}`}
+        title={t("roleTitleAtName", { roleTitle: x.roleTitle, name: x.employer.name })}
         description={
           <>
             <Link href="/student/experiences" className="underline">
-              All experiences
+              {t("allExperiences")}
             </Link>{" "}
             · <StatusBadge status={x.status} />
           </>
@@ -65,19 +70,19 @@ export default function StudentExperienceDetailPage() {
           <>
             {x.canEdit && !editing && (
               <Button variant="secondary" onClick={() => setEditing(true)}>
-                Edit details
+                {t("editDetails")}
               </Button>
             )}
-            {x.status === "Draft" && <Button onClick={() => act(() => api(`/api/career/experiences/mine/${id}/submit`, { method: "POST" }), "Submitted for faculty approval.")}>Submit for approval</Button>}
+            {x.status === "Draft" && <Button onClick={() => act(() => api(`/api/career/experiences/mine/${id}/submit`, { method: "POST" }), t("submittedForFacultyApproval"))}>{t("submitForApproval")}</Button>}
             {!["Completed", "Declined", "Withdrawn"].includes(x.status) && (
               <Button
                 variant="danger"
                 onClick={() => {
-                  const reason = window.prompt("Why are you withdrawing? (optional)");
-                  if (reason !== null) act(() => api(`/api/career/experiences/mine/${id}/withdraw`, { json: { reason } }), "Withdrawn.");
+                  const reason = window.prompt(t("whyAreYouWithdrawingOptional"));
+                  if (reason !== null) act(() => api(`/api/career/experiences/mine/${id}/withdraw`, { json: { reason } }), t("withdrawn"));
                 }}
               >
-                Withdraw
+                {t("withdraw")}
               </Button>
             )}
           </>
@@ -90,8 +95,8 @@ export default function StudentExperienceDetailPage() {
       <Stepper status={x.status} />
 
       {editing && programs.data && (
-        <Card title="Edit details">
-          {signed > 0 && <p className="mb-3 text-sm font-medium">Changing details that appear in the learning agreement voids the signatures already collected; everyone signs the new version.</p>}
+        <Card title={t("editDetails")}>
+          {signed > 0 && <p className="mb-3 text-sm font-medium">{t("changingDetailsThatAppearIn")}</p>}
           <RegistrationForm
             api={api}
             programs={programs.data.programs}
@@ -99,46 +104,48 @@ export default function StudentExperienceDetailPage() {
             cptStatuses={programs.data.cptStatuses}
             initial={{ ...valuesFrom(x), employerId: "" }}
             lockProgram={x.status !== "Draft"}
-            submitLabel="Save changes"
+            submitLabel={t("saveChanges")}
             onSubmit={async (v) => {
-              await act(() => api(`/api/career/experiences/mine/${id}`, { method: "PUT", json: toPayload(v, programs.data!.isF1 || x.cpt.isF1) }), "Saved.");
+              await act(() => api(`/api/career/experiences/mine/${id}`, { method: "PUT", json: toPayload(v, programs.data!.isF1 || x.cpt.isF1) }), t("saved"));
               setEditing(false);
             }}
           />
           <Button variant="ghost" className="mt-2" onClick={() => setEditing(false)}>
-            Cancel
+            {t("cancel")}
           </Button>
         </Card>
       )}
 
       <OverviewCard x={x} />
 
-      <Card title="Documents">
-        <DocumentsList x={x} onDownload={(docId, name) => downloadWith(api, `/api/career/experiences/documents/${docId}`, name).catch((e) => setErr(e.message))} />
-        {!["Completed", "Declined", "Withdrawn"].includes(x.status) && <UploadForm program={x.program} onUpload={(fd) => act(() => api(`/api/career/experiences/mine/${id}/documents`, { method: "POST", body: fd }), "Document uploaded.")} />}
+      <Card title={t("documents")}>
+        <DocumentsList x={x} onDownload={(docId, name) => downloadWith(api, `/api/career/experiences/documents/${docId}`, name, t("downloadFailed")).catch((e) => setErr(e.message))} />
+        {!["Completed", "Declined", "Withdrawn"].includes(x.status) && <UploadForm program={x.program} onUpload={(fd) => act(() => api(`/api/career/experiences/mine/${id}/documents`, { method: "POST", body: fd }), t("documentUploaded"))} />}
       </Card>
 
       <AgreementCard
         x={x}
-        onSign={(typedName, sha256) => act(() => api(`/api/career/experiences/mine/${id}/sign`, { json: { typedName, sha256, consent: true } }), "You signed the learning agreement.")}
+        onSign={(typedName, sha256) => act(() => api(`/api/career/experiences/mine/${id}/sign`, { json: { typedName, sha256, consent: true } }), t("youSignedTheLearningAgreement"))}
       />
 
       {(working || x.hours.length > 0) && (
-        <HoursCard x={x}>{working && <HoursForm onSave={(body) => act(() => api(`/api/career/experiences/mine/${id}/hours`, { json: body }), "Hours sent to your supervisor for approval.")} />}</HoursCard>
+        <HoursCard x={x}>{working && !packActive && <HoursForm onSave={(body) => act(() => api(`/api/career/experiences/mine/${id}/hours`, { json: body }), t("hoursSentToYourSupervisor"))} />}</HoursCard>
       )}
 
+      {x.status !== "Draft" && <PackExperienceCard api={api} scope="mine" experienceId={id} onLoaded={onPackLoaded} onChanged={detail.reload} />}
+
       {(working || x.reflections.length > 0) && (
-        <Card title="Reflections">
+        <Card title={t("reflections")}>
           {x.program.reflectionPrompts.map((prompt) => {
             const existing = x.reflections.find((r) => r.prompt === prompt);
-            return <ReflectionForm key={prompt} prompt={prompt} existing={existing} editable={working} onSave={(body) => act(() => api(`/api/career/experiences/mine/${id}/reflections`, { json: { prompt, body } }), "Reflection saved.")} />;
+            return <ReflectionForm key={prompt} prompt={prompt} existing={existing} editable={working} onSave={(body) => act(() => api(`/api/career/experiences/mine/${id}/reflections`, { json: { prompt, body } }), t("reflectionSaved"))} />;
           })}
         </Card>
       )}
 
       {x.evaluations.length > 0 && <EvaluationsCard x={x} />}
       {x.grade.finalGrade && (
-        <Card title="Grade recommendation">
+        <Card title={t("gradeRecommendation")}>
           <p className="text-sm">
             <strong>{x.grade.finalGrade}</strong>
             {x.grade.gradeComment ? `: ${x.grade.gradeComment}` : ""}
@@ -152,6 +159,7 @@ export default function StudentExperienceDetailPage() {
 }
 
 function UploadForm({ program, onUpload }: { program: Program; onUpload: (fd: FormData) => Promise<void> }) {
+  const t = useCareerT("studentExperiencesDetail");
   const [kind, setKind] = useState(program.requiredDocuments[0] ?? "");
   const [file, setFile] = useState<File | null>(null);
   const [busy, setBusy] = useState(false);
@@ -173,7 +181,7 @@ function UploadForm({ program, onUpload }: { program: Program; onUpload: (fd: Fo
         }
       }}
     >
-      <Field label="Document type">
+      <Field label={t("documentType")}>
         {(p) => (
           <input {...p} list="exp-doc-kinds" value={kind} onChange={(e) => setKind(e.target.value)} required />
         )}
@@ -183,17 +191,18 @@ function UploadForm({ program, onUpload }: { program: Program; onUpload: (fd: Fo
           <option key={d} value={d} />
         ))}
       </datalist>
-      <Field label="File" hint="PDF, Word, PNG, JPEG or text; up to 10 MB.">
+      <Field label={t("file")} hint={t("pDFWordPNGJPEGOr")}>
         {(p) => <input {...p} type="file" accept=".pdf,.docx,.png,.jpg,.jpeg,.txt" onChange={(e) => setFile(e.target.files?.[0] ?? null)} required />}
       </Field>
       <Button type="submit" variant="secondary" busy={busy} disabled={!file}>
-        Upload
+        {t("upload")}
       </Button>
     </form>
   );
 }
 
 function HoursForm({ onSave }: { onSave: (body: { weekStart: string; hours: number; description: string }) => Promise<void> }) {
+  const t = useCareerT("studentExperiencesDetail");
   const [week, setWeek] = useState("");
   const [hours, setHours] = useState("");
   const [description, setDescription] = useState("");
@@ -213,17 +222,18 @@ function HoursForm({ onSave }: { onSave: (body: { weekStart: string; hours: numb
         }
       }}
     >
-      <Field label="Any day in the week">{(p) => <input {...p} type="date" value={week} onChange={(e) => setWeek(e.target.value)} required />}</Field>
-      <Field label="Hours worked">{(p) => <input {...p} type="number" min={0.5} max={80} step="0.5" value={hours} onChange={(e) => setHours(e.target.value)} required />}</Field>
-      <Field label="What you worked on">{(p) => <input {...p} value={description} onChange={(e) => setDescription(e.target.value)} />}</Field>
+      <Field label={t("anyDayInTheWeek")}>{(p) => <input {...p} type="date" value={week} onChange={(e) => setWeek(e.target.value)} required />}</Field>
+      <Field label={t("hoursWorked")}>{(p) => <input {...p} type="number" min={0.5} max={80} step="0.5" value={hours} onChange={(e) => setHours(e.target.value)} required />}</Field>
+      <Field label={t("whatYouWorkedOn")}>{(p) => <input {...p} value={description} onChange={(e) => setDescription(e.target.value)} />}</Field>
       <Button type="submit" busy={busy}>
-        Log hours
+        {t("logHours")}
       </Button>
     </form>
   );
 }
 
 function ReflectionForm({ prompt, existing, editable, onSave }: { prompt: string; existing?: ExperienceDetail["reflections"][number]; editable: boolean; onSave: (body: string) => Promise<void> }) {
+  const t = useCareerT("studentExperiencesDetail");
   const [body, setBody] = useState(existing?.body ?? "");
   const [busy, setBusy] = useState(false);
   return (
@@ -240,10 +250,10 @@ function ReflectionForm({ prompt, existing, editable, onSave }: { prompt: string
       }}
     >
       <Field label={prompt}>{(p) => <textarea {...p} rows={5} value={body} onChange={(e) => setBody(e.target.value)} readOnly={!editable} required />}</Field>
-      {existing?.facultyComment && <p className="text-sm">Faculty comment: {existing.facultyComment}</p>}
+      {existing?.facultyComment && <p className="text-sm">{t("facultyCommentFacultyComment", { facultyComment: existing.facultyComment })}</p>}
       {editable && (
         <Button type="submit" variant="secondary" busy={busy}>
-          {existing ? "Update reflection" : "Save reflection"}
+          {existing ? t("updateReflection") : t("saveReflection")}
         </Button>
       )}
     </form>

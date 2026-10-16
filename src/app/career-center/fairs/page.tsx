@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { useApi } from "@/lib/appAuth";
-import { Badge, Button, Card, EmptyState, ErrorBanner, Field, Loading, PageHeader, SuccessBanner, formatDate, useLoad } from "@/components/career/ui";
+import { Badge, Button, Card, EmptyState, ErrorBanner, Field, Loading, PageHeader, SuccessBanner, formatDate, useLoad, useCareerT } from "@/components/career/ui";
 
 interface Connection {
   configured: boolean;
@@ -40,6 +40,7 @@ const STATUS_TONE: Record<string, "good" | "warn" | "neutral" | "info"> = { live
 
 /** Read-only view of the school's events and career fairs in its event system; management happens there. */
 export default function CareerCenterFairsPage() {
+  const t = useCareerT("careerCenterFairs");
   const api = useApi();
   const conn = useLoad(() => api<Connection>("/api/career/events/attendspot/connection"), [api]);
   const [fairsOnly, setFairsOnly] = useState(true);
@@ -83,7 +84,7 @@ export default function CareerCenterFairsPage() {
       const next = await api<Connection>("/api/career/events/attendspot/connection", { method: "PUT", json: body });
       conn.setData(next);
       setForm({ apiBaseUrl: "", manageUrl: "", apiKey: "", webhookSecret: "" });
-      setMsg("Connection saved.");
+      setMsg(t("connectionSaved"));
       events.reload();
     });
   };
@@ -97,7 +98,7 @@ export default function CareerCenterFairsPage() {
   const sync = () =>
     run("sync", async () => {
       const r = await api<{ fairs: number; booths: number; matchedEmployers: number }>("/api/career/events/staff/sync", { method: "POST" });
-      setMsg(`Synced ${r.booths} booths from ${r.fairs} fairs; ${r.matchedEmployers} matched to employers you work with.`);
+      setMsg(t("syncedBoothsBoothsFromFairs", { booths: r.booths, fairs: r.fairs, matchedEmployers: r.matchedEmployers }));
       conn.reload();
     });
 
@@ -114,23 +115,23 @@ export default function CareerCenterFairsPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Career fairs"
-        description="Your school's events and career fairs from your event system. Create and manage them there; this page is read-only."
-        actions={c.configured && c.active ? <Button variant="secondary" busy={busy === "sync"} onClick={sync}>Sync booths for reports</Button> : undefined}
+        title={t("careerFairs")}
+        description={t("yourSchoolsEventsAndCareer")}
+        actions={c.configured && c.active ? <Button variant="secondary" busy={busy === "sync"} onClick={sync}>{t("syncBoothsForReports")}</Button> : undefined}
       />
       <ErrorBanner error={err} />
       <SuccessBanner message={msg} />
 
       {c.configured && c.active !== false ? (
         <Card
-          title={fairsOnly ? "Career fairs" : "All events"}
+          title={fairsOnly ? t("careerFairs") : t("allEvents")}
           actions={
             <div className="flex flex-wrap gap-3 text-sm">
               <label className="flex items-center gap-2">
-                <input type="checkbox" checked={fairsOnly} onChange={(e) => setFairsOnly(e.target.checked)} /> Career fairs only
+                <input type="checkbox" checked={fairsOnly} onChange={(e) => setFairsOnly(e.target.checked)} />{" "}{t("careerFairsOnly")}
               </label>
               <label className="flex items-center gap-2">
-                <input type="checkbox" checked={includePast} onChange={(e) => setIncludePast(e.target.checked)} /> Include past
+                <input type="checkbox" checked={includePast} onChange={(e) => setIncludePast(e.target.checked)} />{" "}{t("includePast")}
               </label>
             </div>
           }
@@ -140,7 +141,7 @@ export default function CareerCenterFairsPage() {
           ) : events.error ? (
             <ErrorBanner error={events.error} onRetry={events.reload} />
           ) : !events.data?.events.length ? (
-            <EmptyState title="No events found">Nothing matches these filters yet.</EmptyState>
+            <EmptyState title={t("noEventsFound")}>{t("nothingMatchesTheseFiltersYet")}</EmptyState>
           ) : (
             <ul className="divide-y" aria-live="polite">
               {events.data.events.map((ev) => (
@@ -150,20 +151,20 @@ export default function CareerCenterFairsPage() {
                       <p className="font-medium">{ev.name}</p>
                       <p className="text-sm text-muted-foreground">
                         {formatDate(ev.startsAt, true)}
-                        {ev.venue ? ` · ${ev.venue}` : ev.locationType === "virtual" ? " · Online" : ""}
+                        {ev.venue ? ` · ${ev.venue}` : ev.locationType === "virtual" ? t("online") : ""}
                       </p>
                     </div>
                     <div className="flex flex-wrap items-center gap-2">
-                      {ev.isCareerFair && <Badge tone="info">Career fair</Badge>}
+                      {ev.isCareerFair && <Badge tone="info">{t("careerFair")}</Badge>}
                       {ev.status && <Badge tone={STATUS_TONE[ev.status] ?? "neutral"}>{ev.status}</Badge>}
                       {ev.isCareerFair && (
                         <Button variant="secondary" onClick={() => showFair(ev.id)} aria-expanded={open === ev.id}>
-                          {open === ev.id ? "Hide booths" : "Booths"}
+                          {open === ev.id ? t("hideBooths") : t("booths")}
                         </Button>
                       )}
                       {ev.manageUrl && (
                         <a className="text-sm underline" href={ev.manageUrl} target="_blank" rel="noopener noreferrer">
-                          Manage<span className="sr-only"> {ev.name}</span> (opens in a new tab)
+                          {t.rich("manageNameOpensInA", { span: (chunks) => <span className="sr-only">{chunks}</span>, name: ev.name })}
                         </a>
                       )}
                     </div>
@@ -171,27 +172,27 @@ export default function CareerCenterFairsPage() {
                   {open === ev.id && (
                     <div className="rounded border p-3 text-sm">
                       {!detail ? (
-                        <Loading label="Loading booths…" />
+                        <Loading label={t("loadingBooths")} />
                       ) : (
                         <>
                           <p className="mb-2">
-                            Attendance:{" "}
+                            {t("attendance")}{" "}
                             {detail.attendance.length
                               ? detail.attendance.map((a) => `${a.count} ${a.status.replace("_", " ")}`).join(", ")
-                              : "no registrations received yet"}
+                              : t("noRegistrationsReceivedYet")}
                           </p>
                           {detail.booths.length === 0 ? (
-                            <p>No booths yet.</p>
+                            <p>{t("noBoothsYet")}</p>
                           ) : (
-                            <table className="w-full text-left">
-                              <caption className="sr-only">Booths at {ev.name}</caption>
+                            <table className="w-full text-start [&_th]:text-start">
+                              <caption className="sr-only">{t("boothsAtName", { name: ev.name })}</caption>
                               <thead>
                                 <tr>
-                                  <th scope="col">Company</th>
-                                  <th scope="col">Tier</th>
-                                  <th scope="col">Booth</th>
-                                  <th scope="col">Status</th>
-                                  <th scope="col">Leads shared</th>
+                                  <th scope="col">{t("company")}</th>
+                                  <th scope="col">{t("tier")}</th>
+                                  <th scope="col">{t("booth")}</th>
+                                  <th scope="col">{t("status")}</th>
+                                  <th scope="col">{t("leadsShared")}</th>
                                 </tr>
                               </thead>
                               <tbody>
@@ -217,49 +218,49 @@ export default function CareerCenterFairsPage() {
           )}
         </Card>
       ) : (
-        <EmptyState title={c.configured ? "Event system connection is turned off" : "No event system connected"}>
-          {c.canEdit ? "Connect your event system below to list your fairs here." : "Ask a career-center admin to connect your event system."}
+        <EmptyState title={c.configured ? t("eventSystemConnectionIsTurned") : t("noEventSystemConnected")}>
+          {c.canEdit ? t("connectYourEventSystemBelow") : t("askACareerCenterAdmin")}
         </EmptyState>
       )}
 
       {c.canEdit && (
-        <Card title="Event system connection">
+        <Card title={t("eventSystemConnection")}>
           {c.configured && (
             <dl className="mb-4 grid gap-1 text-sm sm:grid-cols-2">
-              <dt className="font-medium">API URL</dt>
+              <dt className="font-medium">{t("aPIURL")}</dt>
               <dd className="break-all">{c.apiBaseUrl}</dd>
-              <dt className="font-medium">API key</dt>
+              <dt className="font-medium">{t("aPIKey")}</dt>
               <dd>{c.apiKeyHint}</dd>
-              <dt className="font-medium">Webhook URL (paste into your event system)</dt>
+              <dt className="font-medium">{t("webhookURLPasteIntoYour")}</dt>
               <dd className="break-all">
                 <code>{c.webhookUrl}</code>
               </dd>
-              <dt className="font-medium">Webhook signing secret</dt>
-              <dd>{c.hasWebhookSecret ? "Set" : "Not set"}</dd>
-              <dt className="font-medium">Last sync / last webhook</dt>
+              <dt className="font-medium">{t("webhookSigningSecret")}</dt>
+              <dd>{c.hasWebhookSecret ? t("set") : t("notSet")}</dd>
+              <dt className="font-medium">{t("lastSyncLastWebhook")}</dt>
               <dd>
                 {formatDate(c.lastSyncAt, true)} / {formatDate(c.lastWebhookAt, true)}
               </dd>
             </dl>
           )}
           <form onSubmit={save} className="grid gap-3 sm:grid-cols-2">
-            <Field label="API URL" hint="The tenant API address, e.g. https://…/functions/v1/tenant-api">
+            <Field label={t("aPIURL")} hint={t("theTenantAPIAddressE")}>
               {(p) => <input {...p} type="url" value={form.apiBaseUrl} placeholder={c.apiBaseUrl ?? ""} onChange={(e) => setForm({ ...form, apiBaseUrl: e.target.value })} />}
             </Field>
-            <Field label="Event app URL" hint="Used for Manage and booth links">
+            <Field label={t("eventAppURL")} hint={t("usedForManageAndBooth")}>
               {(p) => <input {...p} type="url" value={form.manageUrl} placeholder={c.manageUrl ?? ""} onChange={(e) => setForm({ ...form, manageUrl: e.target.value })} />}
             </Field>
-            <Field label="API key" hint={c.configured ? "Leave empty to keep the current key" : "Create one in your event system's settings"}>
+            <Field label={t("aPIKey")} hint={c.configured ? t("leaveEmptyToKeepThe") : t("createOneInYourEvent")}>
               {(p) => <input {...p} type="password" autoComplete="off" value={form.apiKey} onChange={(e) => setForm({ ...form, apiKey: e.target.value })} />}
             </Field>
-            <Field label="Webhook signing secret" hint="Copy from the webhook endpoint you create in your event system">
+            <Field label={t("webhookSigningSecret")} hint={t("copyFromTheWebhookEndpoint")}>
               {(p) => <input {...p} type="password" autoComplete="off" value={form.webhookSecret} onChange={(e) => setForm({ ...form, webhookSecret: e.target.value })} />}
             </Field>
             <div className="flex flex-wrap gap-2 sm:col-span-2">
-              <Button type="submit" busy={busy === "save"}>Save connection</Button>
+              <Button type="submit" busy={busy === "save"}>{t("saveConnection")}</Button>
               {c.configured && (
                 <Button type="button" variant="secondary" busy={busy === "active"} onClick={toggleActive}>
-                  {c.active ? "Turn off" : "Turn on"}
+                  {c.active ? t("turnOff") : t("turnOn")}
                 </Button>
               )}
             </div>

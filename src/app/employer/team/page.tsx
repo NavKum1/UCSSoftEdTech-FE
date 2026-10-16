@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { useApi } from "@/lib/appAuth";
 import { useCareerShell } from "@/components/career/CareerShell";
-import { Badge, Button, Card, EmptyState, ErrorBanner, Field, Loading, PageHeader, SuccessBanner, useLoad } from "@/components/career/ui";
+import { Badge, Button, Card, EmptyState, ErrorBanner, Field, Loading, PageHeader, SuccessBanner, useLoad, useCareerT } from "@/components/career/ui";
 import { EmployerPicker, useEmployers } from "@/components/career/EmployerPicker";
 
 interface TeamMember {
@@ -18,6 +18,7 @@ interface TeamMember {
 }
 
 export default function EmployerTeamPage() {
+  const t = useCareerT("employerTeam");
   const api = useApi();
   const { me } = useCareerShell();
   const emp = useEmployers();
@@ -32,8 +33,8 @@ export default function EmployerTeamPage() {
   if (emp.error) return <ErrorBanner error={emp.error} onRetry={emp.reload} />;
   if (!emp.current)
     return (
-      <EmptyState title="No company yet">
-        <Link href="/employer" className="underline">Set up your company</Link> first.
+      <EmptyState title={t("noCompanyYet")}>
+        {t.rich("setUpYourCompanyFirst", { link: (chunks) => <Link href="/employer" className="underline">{chunks}</Link> })}
       </EmptyState>
     );
   const isOwner = emp.current.role === "Owner";
@@ -55,17 +56,17 @@ export default function EmployerTeamPage() {
     e.preventDefault();
     void run("invite", async () => {
       await api(`/api/career/employer/${employerId}/team`, { method: "POST", json: { email: form.email, name: form.name || null, title: form.title || null } });
-      setMsg(`${form.email} was invited. They join when they sign in with that email.`);
+      setMsg(t("emailWasInvitedTheyJoin", { email: form.email }));
       setForm({ email: "", name: "", title: "" });
       team.reload();
     });
   };
 
   const remove = (m: TeamMember) => {
-    if (!window.confirm(`Remove ${m.name} from the team?`)) return;
+    if (!window.confirm(t("removeNameFromTheTeam", { name: m.name }))) return;
     void run(m.id, async () => {
       await api(`/api/career/employer/${employerId}/team/${m.id}`, { method: "DELETE" });
-      setMsg(`${m.name} was removed.`);
+      setMsg(t("nameWasRemoved", { name: m.name }));
       team.reload();
     });
   };
@@ -75,28 +76,28 @@ export default function EmployerTeamPage() {
   const resend = (m: TeamMember) =>
     run(m.id, async () => {
       const res = await api<{ notified: boolean; message: string }>(`/api/career/employer/${employerId}/team/invites/${m.id}/resend`, { method: "POST" });
-      setMsg(res.notified ? `Reminder sent to ${m.email}.` : res.message);
+      setMsg(res.notified ? t("reminderSentToEmail", { email: m.email }) : res.message);
     });
 
   const revoke = (m: TeamMember) => {
-    if (!window.confirm(`Cancel the invitation for ${m.email}?`)) return;
+    if (!window.confirm(t("cancelTheInvitationForEmail", { email: m.email }))) return;
     void run(m.id, async () => {
       await api(`/api/career/employer/${employerId}/team/invites/${m.id}`, { method: "DELETE" });
-      setMsg(`The invitation for ${m.email} was cancelled.`);
+      setMsg(t("theInvitationForEmailWas", { email: m.email }));
       team.reload();
     });
   };
 
   return (
     <div>
-      <PageHeader title="Team" description="Colleagues who recruit for your company." actions={<EmployerPicker accounts={emp.accounts} current={emp.current} onSelect={emp.select} />} />
+      <PageHeader title={t("team")} description={t("colleaguesWhoRecruitForYour")} actions={<EmployerPicker accounts={emp.accounts} current={emp.current} onSelect={emp.select} />} />
       <ErrorBanner error={err ?? team.error} />
       <SuccessBanner message={msg} />
-      <Card title="Members" className="mb-6">
+      <Card title={t("members")} className="mb-6">
         {team.loading && !team.data ? (
           <Loading />
         ) : (team.data ?? []).length === 0 ? (
-          <EmptyState title="No team members yet" />
+          <EmptyState title={t("noTeamMembersYet")} />
         ) : (
           <ul className="divide-y divide-border">
             {team.data!.map((m) => (
@@ -107,15 +108,15 @@ export default function EmployerTeamPage() {
                 </div>
                 <div className="flex items-center gap-2">
                   <Badge tone={m.role === "Owner" ? "info" : "neutral"}>{m.role}</Badge>
-                  <Badge tone={m.status === "Active" ? "good" : "warn"}>{pending(m) ? "Invitation pending" : m.status}</Badge>
+                  <Badge tone={m.status === "Active" ? "good" : "warn"}>{pending(m) ? t("invitationPending") : m.status}</Badge>
                   {isOwner && pending(m) && (
                     <>
-                      <Button variant="secondary" onClick={() => resend(m)} busy={busy === m.id} aria-label={`Resend invitation to ${m.email}`}>Resend</Button>
-                      <Button variant="ghost" onClick={() => revoke(m)} disabled={busy === m.id} aria-label={`Cancel invitation for ${m.email}`}>Cancel invite</Button>
+                      <Button variant="secondary" onClick={() => resend(m)} busy={busy === m.id} aria-label={t("resendInvitationToEmail", { email: m.email })}>{t("resend")}</Button>
+                      <Button variant="ghost" onClick={() => revoke(m)} disabled={busy === m.id} aria-label={t("cancelInvitationForEmail", { email: m.email })}>{t("cancelInvite")}</Button>
                     </>
                   )}
                   {isOwner && !pending(m) && m.role !== "Owner" && m.userId !== me?.userId && (
-                    <Button variant="ghost" onClick={() => remove(m)} busy={busy === m.id} aria-label={`Remove ${m.name}`}>Remove</Button>
+                    <Button variant="ghost" onClick={() => remove(m)} busy={busy === m.id} aria-label={t("removeName", { name: m.name })}>{t("remove")}</Button>
                   )}
                 </div>
               </li>
@@ -124,18 +125,18 @@ export default function EmployerTeamPage() {
         )}
       </Card>
       {isOwner ? (
-        <Card title="Invite a colleague">
+        <Card title={t("inviteAColleague")}>
           <form onSubmit={invite} className="grid gap-4 sm:grid-cols-3">
-            <Field label="Email">{(p) => <input {...p} type="email" required value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />}</Field>
-            <Field label="Name">{(p) => <input {...p} value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />}</Field>
-            <Field label="Job title">{(p) => <input {...p} value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} />}</Field>
+            <Field label={t("email")}>{(p) => <input {...p} type="email" required value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />}</Field>
+            <Field label={t("name")}>{(p) => <input {...p} value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />}</Field>
+            <Field label={t("jobTitle")}>{(p) => <input {...p} value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} />}</Field>
             <div className="sm:col-span-3">
-              <Button type="submit" busy={busy === "invite"}>Send invite</Button>
+              <Button type="submit" busy={busy === "invite"}>{t("sendInvite")}</Button>
             </div>
           </form>
         </Card>
       ) : (
-        <p className="text-sm text-muted-foreground">Only the account owner can invite or remove colleagues.</p>
+        <p className="text-sm text-muted-foreground">{t("onlyTheAccountOwnerCan")}</p>
       )}
     </div>
   );

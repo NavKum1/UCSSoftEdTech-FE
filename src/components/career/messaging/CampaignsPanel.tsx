@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { useApi } from "@/lib/appAuth";
-import { Badge, Button, Card, EmptyState, ErrorBanner, Field, Loading, SuccessBanner, formatDate, useLoad } from "@/components/career/ui";
+import { Badge, Button, Card, EmptyState, ErrorBanner, Field, Loading, SuccessBanner, formatDate, useLoad, ScrollArea, useCareerT } from "@/components/career/ui";
 
 interface Segment {
   roles: string[];
@@ -78,13 +78,14 @@ function MultiCheck({ legend, options, value, onChange }: { legend: string; opti
 }
 
 function TriState({ legend, value, onChange }: { legend: string; value: boolean | null; onChange: (v: boolean | null) => void }) {
+  const t = useCareerT("campaignsPanel");
   return (
     <Field label={legend}>
       {(p) => (
         <select {...p} value={value === null ? "" : value ? "yes" : "no"} onChange={(e) => onChange(e.target.value === "" ? null : e.target.value === "yes")}>
-          <option value="">Any</option>
-          <option value="yes">Yes</option>
-          <option value="no">No</option>
+          <option value="">{t("any")}</option>
+          <option value="yes">{t("yes")}</option>
+          <option value="no">{t("no")}</option>
         </select>
       )}
     </Field>
@@ -93,6 +94,7 @@ function TriState({ legend, value, onChange }: { legend: string; value: boolean 
 
 /** Campaign builder (segment, preview, schedule or send now), history and metrics for career-center staff. */
 export default function CampaignsPanel() {
+  const t = useCareerT("campaignsPanel");
   const api = useApi();
   const options = useLoad(() => api<Options>("/api/career/messaging/campaigns/options"));
   const list = useLoad(() => api<CampaignRow[]>("/api/career/messaging/campaigns"));
@@ -114,52 +116,52 @@ export default function CampaignsPanel() {
         />
       ) : (
         <div className="flex justify-end">
-          <Button onClick={() => setEditing("new")}>New campaign</Button>
+          <Button onClick={() => setEditing("new")}>{t("newCampaign")}</Button>
         </div>
       )}
       {viewing && !editing && <Metrics id={viewing} onEdit={() => setEditing(viewing)} onChanged={list.reload} onClose={() => setViewing(null)} />}
-      <Card title="Campaign history">
+      <Card title={t("campaignHistory")}>
         <ErrorBanner error={list.error} onRetry={list.reload} />
         {list.loading && !list.data ? (
           <Loading />
         ) : list.data && list.data.length > 0 ? (
-          <div className="overflow-x-auto">
+          <ScrollArea>
             <table className="w-full text-sm">
-              <caption className="sr-only">Campaigns</caption>
-              <thead className="text-left text-xs text-muted-foreground">
+              <caption className="sr-only">{t("campaigns")}</caption>
+              <thead className="text-start text-xs text-muted-foreground [&_th]:text-start">
                 <tr>
-                  <th scope="col" className="py-2 pr-3">Name</th>
-                  <th scope="col" className="py-2 pr-3">Category</th>
-                  <th scope="col" className="py-2 pr-3">Status</th>
-                  <th scope="col" className="py-2 pr-3">When</th>
-                  <th scope="col" className="py-2 pr-3">Recipients</th>
-                  <th scope="col" className="py-2 pr-3">Sent / failed</th>
+                  <th scope="col" className="py-2 pe-3">{t("name")}</th>
+                  <th scope="col" className="py-2 pe-3">{t("category")}</th>
+                  <th scope="col" className="py-2 pe-3">{t("status")}</th>
+                  <th scope="col" className="py-2 pe-3">{t("when")}</th>
+                  <th scope="col" className="py-2 pe-3">{t("recipients")}</th>
+                  <th scope="col" className="py-2 pe-3">{t("sentFailed")}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
                 {list.data.map((c) => (
                   <tr key={c.id}>
-                    <td className="py-2 pr-3">
+                    <td className="py-2 pe-3">
                       <button type="button" className="font-medium underline" onClick={() => setViewing(c.id)}>
                         {c.name}
                       </button>
                     </td>
-                    <td className="py-2 pr-3">{c.category}</td>
-                    <td className="py-2 pr-3">
+                    <td className="py-2 pe-3">{c.category}</td>
+                    <td className="py-2 pe-3">
                       <Badge tone={STATUS_TONE[c.status]}>{c.status}</Badge>
                     </td>
-                    <td className="py-2 pr-3">{formatDate(c.completedAt ?? c.scheduledAt ?? c.createdAt, true)}</td>
-                    <td className="py-2 pr-3">{c.recipientCount}</td>
-                    <td className="py-2 pr-3">
+                    <td className="py-2 pe-3">{formatDate(c.completedAt ?? c.scheduledAt ?? c.createdAt, true)}</td>
+                    <td className="py-2 pe-3">{c.recipientCount}</td>
+                    <td className="py-2 pe-3">
                       {c.sent} / {c.failed}
                     </td>
                   </tr>
                 ))}
               </tbody>
             </table>
-          </div>
+          </ScrollArea>
         ) : (
-          <EmptyState title="No campaigns yet">Create one to reach a group of your students or alumni.</EmptyState>
+          <EmptyState title={t("noCampaignsYet")}>{t("createOneToReachA")}</EmptyState>
         )}
       </Card>
     </div>
@@ -167,6 +169,7 @@ export default function CampaignsPanel() {
 }
 
 function Builder({ id, options, onDone }: { id: string | null; options: Options | null; onDone: (id: string | null) => void }) {
+  const t = useCareerT("campaignsPanel");
   const api = useApi();
   const existing = useLoad(() => (id ? api<CampaignDetail>(`/api/career/messaging/campaigns/${id}`) : Promise.resolve(null)), [id]);
   const [form, setForm] = useState<{ name: string; category: string; subject: string; body: string; sendEmail: boolean; sendInApp: boolean; segment: Segment } | null>(null);
@@ -204,13 +207,13 @@ function Builder({ id, options, onDone }: { id: string | null; options: Options 
   };
 
   return (
-    <Card title={id ? "Edit campaign" : "New campaign"}>
+    <Card title={id ? t("editCampaign") : t("newCampaign")}>
       <div aria-live="polite">
         <ErrorBanner error={error} />
       </div>
       <div className="grid gap-4 md:grid-cols-2">
-        <Field label="Campaign name (staff only)">{(p) => <input {...p} value={f.name} onChange={(e) => set({ name: e.target.value })} />}</Field>
-        <Field label="Category" hint="Recipients can unsubscribe from each category.">
+        <Field label={t("campaignNameStaffOnly")}>{(p) => <input {...p} value={f.name} onChange={(e) => set({ name: e.target.value })} />}</Field>
+        <Field label={t("category")} hint={t("recipientsCanUnsubscribeFromEach")}>
           {(p) => (
             <select {...p} value={f.category} onChange={(e) => set({ category: e.target.value })}>
               {(options?.categories ?? ["announcements"]).map((c) => (
@@ -220,63 +223,63 @@ function Builder({ id, options, onDone }: { id: string | null; options: Options 
           )}
         </Field>
         <div className="md:col-span-2">
-          <Field label="Subject" hint="Merge fields: {{firstName}}, {{school}}">{(p) => <input {...p} maxLength={200} value={f.subject} onChange={(e) => set({ subject: e.target.value })} />}</Field>
+          <Field label={t("subject")} hint={t("mergeFields")}>{(p) => <input {...p} maxLength={200} value={f.subject} onChange={(e) => set({ subject: e.target.value })} />}</Field>
         </div>
         <div className="md:col-span-2">
-          <Field label="Message" hint="Plain text; blank lines start new paragraphs. A footer with your school contact and an unsubscribe link is added to emails.">
+          <Field label={t("message")} hint={t("plainTextBlankLinesStart")}>
             {(p) => <textarea {...p} rows={8} maxLength={20000} value={f.body} onChange={(e) => set({ body: e.target.value })} />}
           </Field>
         </div>
         <fieldset className="md:col-span-2 flex flex-wrap gap-4">
-          <legend className="sr-only">Channels</legend>
+          <legend className="sr-only">{t("channels")}</legend>
           <label className="flex items-center gap-2 text-sm">
-            <input type="checkbox" checked={f.sendEmail} onChange={(e) => set({ sendEmail: e.target.checked })} /> Email
+            <input type="checkbox" checked={f.sendEmail} onChange={(e) => set({ sendEmail: e.target.checked })} />{" "}{t("email")}
           </label>
           <label className="flex items-center gap-2 text-sm">
-            <input type="checkbox" checked={f.sendInApp} onChange={(e) => set({ sendInApp: e.target.checked })} /> In-app notification
+            <input type="checkbox" checked={f.sendInApp} onChange={(e) => set({ sendInApp: e.target.checked })} />{" "}{t("inAppNotification")}
           </label>
         </fieldset>
       </div>
 
-      <h3 className="mt-6 mb-3 text-sm font-semibold">Who receives it</h3>
+      <h3 className="mt-6 mb-3 text-sm font-semibold">{t("whoReceivesIt")}</h3>
       <div className="grid gap-4 md:grid-cols-2">
-        <MultiCheck legend="Role (none = students and alumni)" options={options?.roles ?? ["Student", "Alumni"]} value={f.segment.roles} onChange={(v) => setSeg({ roles: v })} />
-        <MultiCheck legend="Membership status" options={options?.statuses ?? ["Active", "Invited"]} value={f.segment.statuses} onChange={(v) => setSeg({ statuses: v })} />
-        <MultiCheck legend="Degree level" options={options?.degreeLevels ?? []} value={f.segment.degreeLevels} onChange={(v) => setSeg({ degreeLevels: v })} />
-        <Field label="Majors (comma-separated, partial match)">{(p) => <input {...p} value={majorsText || f.segment.majors.join(", ")} onChange={(e) => setMajorsText(e.target.value)} />}</Field>
-        <Field label="Graduating on or after">{(p) => <input {...p} type="date" value={f.segment.graduationFrom ?? ""} onChange={(e) => setSeg({ graduationFrom: e.target.value || null })} />}</Field>
-        <Field label="Graduating on or before">{(p) => <input {...p} type="date" value={f.segment.graduationTo ?? ""} onChange={(e) => setSeg({ graduationTo: e.target.value || null })} />}</Field>
+        <MultiCheck legend={t("roleNoneStudentsAndAlumni")} options={options?.roles ?? ["Student", "Alumni"]} value={f.segment.roles} onChange={(v) => setSeg({ roles: v })} />
+        <MultiCheck legend={t("membershipStatus")} options={options?.statuses ?? ["Active", "Invited"]} value={f.segment.statuses} onChange={(v) => setSeg({ statuses: v })} />
+        <MultiCheck legend={t("degreeLevel")} options={options?.degreeLevels ?? []} value={f.segment.degreeLevels} onChange={(v) => setSeg({ degreeLevels: v })} />
+        <Field label={t("majorsCommaSeparatedPartialMatch")}>{(p) => <input {...p} value={majorsText || f.segment.majors.join(", ")} onChange={(e) => setMajorsText(e.target.value)} />}</Field>
+        <Field label={t("graduatingOnOrAfter")}>{(p) => <input {...p} type="date" value={f.segment.graduationFrom ?? ""} onChange={(e) => setSeg({ graduationFrom: e.target.value || null })} />}</Field>
+        <Field label={t("graduatingOnOrBefore")}>{(p) => <input {...p} type="date" value={f.segment.graduationTo ?? ""} onChange={(e) => setSeg({ graduationTo: e.target.value || null })} />}</Field>
         <div className="md:col-span-2">
-          <MultiCheck legend="Work authorization" options={options?.workAuthorizations ?? []} value={f.segment.workAuthorizations} onChange={(v) => setSeg({ workAuthorizations: v })} />
+          <MultiCheck legend={t("workAuthorization")} options={options?.workAuthorizations ?? []} value={f.segment.workAuthorizations} onChange={(v) => setSeg({ workAuthorizations: v })} />
         </div>
-        <TriState legend="Had an advising appointment" value={f.segment.hadAppointment} onChange={(v) => setSeg({ hadAppointment: v })} />
-        <TriState legend="Submitted a document for review" value={f.segment.hadDocReview} onChange={(v) => setSeg({ hadDocReview: v })} />
-        <Field label="Activity window (days)">
+        <TriState legend={t("hadAnAdvisingAppointment")} value={f.segment.hadAppointment} onChange={(v) => setSeg({ hadAppointment: v })} />
+        <TriState legend={t("submittedADocumentForReview")} value={f.segment.hadDocReview} onChange={(v) => setSeg({ hadDocReview: v })} />
+        <Field label={t("activityWindowDays")}>
           {(p) => <input {...p} type="number" min={1} max={3650} value={f.segment.activityDays ?? 180} onChange={(e) => setSeg({ activityDays: Number(e.target.value) || 180 })} />}
         </Field>
       </div>
 
       <div className="mt-6 flex flex-wrap gap-2">
         <Button variant="secondary" busy={busy} onClick={() => act(async () => setPreview(await api<Preview>("/api/career/messaging/campaigns/preview", { json: payload() })))}>
-          Preview recipients
+          {t("previewRecipients")}
         </Button>
         <Button variant="secondary" busy={busy} onClick={() => act(async () => onDone(await save()))}>
-          Save draft
+          {t("saveDraft")}
         </Button>
         <Button variant="ghost" onClick={() => onDone(null)}>
-          Cancel
+          {t("cancel")}
         </Button>
       </div>
 
       {preview && (
         <div role="status" className="mt-4 rounded-md border border-border p-4 text-sm">
           <p className="font-medium">
-            {preview.count} recipient{preview.count === 1 ? "" : "s"}
-            {preview.emailUnsubscribed > 0 && ` · ${preview.emailUnsubscribed} unsubscribed from this category's email`}
-            {preview.notSignedIn > 0 && ` · ${preview.notSignedIn} not signed in yet (email only)`}
+            {t("countRecipients", { count: preview.count })}
+            {preview.emailUnsubscribed > 0 && t("emailUnsubscribedUnsubscribedFromThisCat", { emailUnsubscribed: preview.emailUnsubscribed })}
+            {preview.notSignedIn > 0 && t("notSignedInNotSignedInYet", { notSignedIn: preview.notSignedIn })}
           </p>
           {preview.sample.length > 0 && (
-            <p className="mt-1 text-muted-foreground">Sample: {preview.sample.map((s) => `${s.name} (${s.email})`).join("; ")}</p>
+            <p className="mt-1 text-muted-foreground">{t("sampleValue", { value: preview.sample.map((s) => `${s.name} (${s.email})`).join("; ") })}</p>
           )}
           {preview.rendered && (
             <div className="mt-3 rounded-md bg-muted p-3">
@@ -288,7 +291,7 @@ function Builder({ id, options, onDone }: { id: string | null; options: Options 
       )}
 
       <div className="mt-6 flex flex-wrap items-end gap-3 border-t border-border pt-4">
-        <Field label="Schedule for (your local time)">{(p) => <input {...p} type="datetime-local" value={when} onChange={(e) => setWhen(e.target.value)} />}</Field>
+        <Field label={t("scheduleForYourLocalTime")}>{(p) => <input {...p} type="datetime-local" value={when} onChange={(e) => setWhen(e.target.value)} />}</Field>
         <Button
           busy={busy}
           disabled={!when}
@@ -300,20 +303,20 @@ function Builder({ id, options, onDone }: { id: string | null; options: Options 
             })
           }
         >
-          Schedule
+          {t("schedule")}
         </Button>
         <Button
           busy={busy}
           onClick={() =>
             act(async () => {
-              if (!window.confirm("Send this campaign now?")) return;
+              if (!window.confirm(t("sendThisCampaignNow"))) return;
               const cid = await save();
               await api(`/api/career/messaging/campaigns/${cid}/schedule`, { json: {} });
               onDone(cid);
             })
           }
         >
-          Send now
+          {t("sendNow")}
         </Button>
       </div>
     </Card>
@@ -329,6 +332,7 @@ function stripNulls(seg: Partial<Segment>): Partial<Segment> {
 }
 
 function Metrics({ id, onEdit, onChanged, onClose }: { id: string; onEdit: () => void; onChanged: () => void; onClose: () => void }) {
+  const t = useCareerT("campaignsPanel");
   const api = useApi();
   const { data, error, loading, reload } = useLoad(() => api<CampaignDetail>(`/api/career/messaging/campaigns/${id}`), [id]);
   const [msg, setMsg] = useState<string | null>(null);
@@ -346,14 +350,14 @@ function Metrics({ id, onEdit, onChanged, onClose }: { id: string; onEdit: () =>
       })
       .catch((e: Error) => setActionError(e.message));
   const stats: [string, number][] = [
-    ["Recipients", m.recipients || data.recipientCount],
-    ["Pending", m.pending],
-    ["Delivered", m.sent],
-    ["Emails sent", m.emailsSent],
-    ["In-app sent", m.inAppSent],
-    ["Failed", m.failed],
-    ["Email suppressed", m.suppressed],
-    ["Unsubscribes", m.unsubscribes],
+    [t("statRecipients"), m.recipients || data.recipientCount],
+    [t("statPending"), m.pending],
+    [t("statDelivered"), m.sent],
+    [t("statEmailsSent"), m.emailsSent],
+    [t("statInAppSent"), m.inAppSent],
+    [t("statFailed"), m.failed],
+    [t("statEmailSuppressed"), m.suppressed],
+    [t("statUnsubscribes"), m.unsubscribes],
   ];
   return (
     <Card
@@ -361,10 +365,10 @@ function Metrics({ id, onEdit, onChanged, onClose }: { id: string; onEdit: () =>
       actions={
         <div className="flex gap-2">
           <Button variant="ghost" onClick={reload}>
-            Refresh
+            {t("refresh")}
           </Button>
           <Button variant="ghost" onClick={onClose}>
-            Close
+            {t("close")}
           </Button>
         </div>
       }
@@ -374,8 +378,8 @@ function Metrics({ id, onEdit, onChanged, onClose }: { id: string; onEdit: () =>
         <SuccessBanner message={msg} />
       </div>
       <p className="mb-3 text-sm">
-        <Badge tone={STATUS_TONE[data.status]}>{data.status}</Badge> <span className="ml-2">{data.subject}</span>
-        {data.scheduledAt && <span className="ml-2 text-muted-foreground">Scheduled {formatDate(data.scheduledAt, true)}</span>}
+        <Badge tone={STATUS_TONE[data.status]}>{data.status}</Badge> <span className="ms-2">{data.subject}</span>
+        {data.scheduledAt && <span className="ms-2 text-muted-foreground">{t("scheduledScheduledAt", { scheduledAt: formatDate(data.scheduledAt, true) })}</span>}
       </p>
       <dl className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         {stats.map(([label, value]) => (
@@ -388,8 +392,8 @@ function Metrics({ id, onEdit, onChanged, onClose }: { id: string; onEdit: () =>
       <p className="mt-2 text-xs text-muted-foreground">{m.trackingNote}</p>
       {data.failures.length > 0 && (
         <details className="mt-3 text-sm">
-          <summary>Failed deliveries ({data.failures.length})</summary>
-          <ul className="mt-2 list-disc pl-5">
+          <summary>{t("failedDeliveriesCount", { count: data.failures.length })}</summary>
+          <ul className="mt-2 list-disc ps-5">
             {data.failures.map((x) => (
               <li key={x.email}>
                 {x.name} ({x.email}): {x.error}
@@ -401,12 +405,12 @@ function Metrics({ id, onEdit, onChanged, onClose }: { id: string; onEdit: () =>
       <div className="mt-4 flex flex-wrap gap-2">
         {(data.status === "Draft" || data.status === "Scheduled") && (
           <Button variant="secondary" onClick={onEdit}>
-            Edit
+            {t("edit")}
           </Button>
         )}
         {(data.status === "Scheduled" || data.status === "Sending") && (
-          <Button variant="danger" onClick={() => act(() => api(`/api/career/messaging/campaigns/${id}/cancel`, { method: "POST" }), "Campaign cancelled.")}>
-            Cancel sending
+          <Button variant="danger" onClick={() => act(() => api(`/api/career/messaging/campaigns/${id}/cancel`, { method: "POST" }), t("campaignCancelled"))}>
+            {t("cancelSending")}
           </Button>
         )}
         {data.status === "Draft" && (
@@ -416,10 +420,10 @@ function Metrics({ id, onEdit, onChanged, onClose }: { id: string; onEdit: () =>
               act(async () => {
                 await api(`/api/career/messaging/campaigns/${id}`, { method: "DELETE" });
                 onClose();
-              }, "Draft deleted.")
+              }, t("draftDeleted"))
             }
           >
-            Delete draft
+            {t("deleteDraft")}
           </Button>
         )}
       </div>

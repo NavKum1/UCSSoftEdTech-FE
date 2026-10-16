@@ -20,7 +20,8 @@ export default defineConfig({
   expect: { timeout: 15_000 },
   fullyParallel: true,
   workers: Number(process.env.A11Y_WORKERS || 3),
-  retries: 0,
+  // next dev compiles each route on first visit; one retry absorbs a slow first compile
+  retries: 1,
   reporter: [["list"], ["json", { outputFile: "../../test-results/a11y/report.json" }]],
   use: {
     baseURL,

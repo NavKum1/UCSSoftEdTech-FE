@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { Award, ShieldCheck, CheckCircle2, Share2, ExternalLink, Calendar, User, Building2, Sparkles, Copy, Check, AlertTriangle } from "lucide-react";
+import { Award, ShieldCheck, Share2, Calendar, Copy, Check, AlertTriangle } from "lucide-react";
 
 function LinkedInIcon({ className = "w-4 h-4" }: { className?: string }) {
   return (
@@ -12,62 +12,79 @@ function LinkedInIcon({ className = "w-4 h-4" }: { className?: string }) {
   );
 }
 
+// GET /api/credential/{slug} (CredentialController.CredentialBadgeDto)
+interface CredentialBadge {
+  candidateName: string;
+  instituteName: string;
+  finalScore: number;
+  publicUrlSlug: string;
+  verifiedAt: string;
+  badgeTitle: string;
+  verificationStatus: string;
+  verificationFlagged: boolean;
+  flagReason?: string | null;
+}
+
 export default function CredentialBadgePage() {
   const params = useParams();
   const router = useRouter();
-  const slug = (params?.slug as string) || "cred-demo";
+  const slug = (params?.slug as string) || "";
 
-  const [credential, setCredential] = useState<any>(null);
+  const [credential, setCredential] = useState<CredentialBadge | null>(null);
+  // Only a credential the API returned is ever shown as verified; any failure shows that state instead
+  const [lookup, setLookup] = useState<"loading" | "found" | "notFound" | "revoked" | "error">(slug ? "loading" : "notFound");
   const [copied, setCopied] = useState<boolean>(false);
 
   useEffect(() => {
     const fetchCredential = async () => {
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/credential/${slug}`);
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/credential/${encodeURIComponent(slug)}`);
         if (res.ok) {
-          const data = await res.json();
-          setCredential(data);
+          setCredential(await res.json());
+          setLookup("found");
         } else {
-          setCredential({
-            candidateName: "Alex Morgan",
-            badgeTitle: "Certified Build & Defend Full-Stack Architect",
-            instituteName: "Global ITech Accreditation Board",
-            finalScore: 88.5,
-            publicUrlSlug: slug,
-            verifiedAt: new Date().toISOString(),
-            verificationStatus: "Official Verified Credential",
-            verificationFlagged: false,
-          });
+          setLookup(res.status === 404 ? "notFound" : res.status === 410 ? "revoked" : "error");
         }
-      } catch (e) {
-        setCredential({
-          candidateName: "Alex Morgan",
-          badgeTitle: "Certified Build & Defend Full-Stack Architect",
-          instituteName: "Global ITech Accreditation Board",
-          finalScore: 88.5,
-          publicUrlSlug: slug,
-          verifiedAt: new Date().toISOString(),
-          verificationStatus: "Official Verified Credential",
-          verificationFlagged: false,
-        });
+      } catch {
+        setLookup("error");
       }
     };
 
-    fetchCredential();
+    if (slug) fetchCredential();
   }, [slug]);
 
-  const candidateName = credential?.candidateName || "Alex Morgan";
-  const badgeTitle = credential?.badgeTitle || "Certified Build & Defend Full-Stack Architect";
-  const instituteName = credential?.instituteName || "Global ITech Accreditation Board";
-  const finalScore = credential?.finalScore || 88.5;
-  const credentialUrl = typeof window !== "undefined" ? `${window.location.origin}/credential/${slug}` : `http://localhost:3000/credential/${slug}`;
+  if (lookup !== "found" || !credential) {
+    const message = {
+      loading: { title: "Checking credential…", body: "" },
+      notFound: { title: "Credential not found", body: "No credential matches this link. Check the link with the person who shared it." },
+      revoked: { title: "Credential revoked", body: "The holder revoked this credential. It is no longer valid." },
+      error: { title: "Couldn't check this credential", body: "The verification service didn't respond. Try again in a few minutes." },
+      found: { title: "", body: "" },
+    }[lookup];
+    return (
+      <main className="min-h-screen bg-background text-foreground flex items-center justify-center p-6">
+        <div className="max-w-md w-full rounded-3xl p-8 border border-border text-center space-y-3" role={lookup === "loading" ? "status" : "alert"}>
+          {lookup !== "loading" && <AlertTriangle className="w-8 h-8 mx-auto text-amber-700 dark:text-amber-400" aria-hidden />}
+          <h1 className="text-lg font-bold">{message.title}</h1>
+          {message.body && <p className="text-sm text-muted-foreground">{message.body}</p>}
+        </div>
+      </main>
+    );
+  }
+
+  const candidateName = credential.candidateName;
+  const badgeTitle = credential.badgeTitle;
+  const instituteName = credential.instituteName;
+  const finalScore = credential.finalScore;
+  const issued = credential.verifiedAt ? new Date(credential.verifiedAt) : null;
+  const credentialUrl = typeof window !== "undefined" ? `${window.location.origin}/credential/${slug}` : `/credential/${slug}`;
 
   // Task 4: 1-Click LinkedIn Add to Profile URL
   const linkedInCertUrl = `https://www.linkedin.com/profile/add?startTask=CERTIFICATION_NAME&name=${encodeURIComponent(
     badgeTitle
   )}&organizationName=${encodeURIComponent(
     instituteName
-  )}&issueYear=2026&issueMonth=8&certUrl=${encodeURIComponent(credentialUrl)}&certId=${encodeURIComponent(slug)}`;
+  )}${issued ? `&issueYear=${issued.getUTCFullYear()}&issueMonth=${issued.getUTCMonth() + 1}` : ""}&certUrl=${encodeURIComponent(credentialUrl)}&certId=${encodeURIComponent(slug)}`;
 
   // Task 4: 1-Click LinkedIn Share to Feed URL
   const linkedInShareUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(credentialUrl)}`;
@@ -181,7 +198,7 @@ export default function CredentialBadgePage() {
         <div className="pt-4 border-t border-border flex items-center justify-between text-xs text-muted-foreground">
           <div className="flex items-center space-x-1.5">
             <Calendar className="w-4 h-4 text-muted-foreground" />
-            <span>Issued: August 31, 2026</span>
+            <span>Issued: {issued ? issued.toLocaleDateString(undefined, { year: "numeric", month: "long", day: "numeric", timeZone: "UTC" }) : "—"}</span>
           </div>
 
           <button

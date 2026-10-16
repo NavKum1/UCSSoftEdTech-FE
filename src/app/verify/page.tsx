@@ -266,7 +266,7 @@ export default function VerifyJwsPage() {
 
         <section className="glass-panel rounded-2xl p-5 border border-border grid grid-cols-1 md:grid-cols-2 gap-5">
           <div>
-            <h3 className="text-sm font-bold mb-2">What a valid credential shows</h3>
+            <h2 className="text-sm font-bold mb-2">What a valid credential shows</h2>
             <ul className="space-y-1.5 text-xs text-muted-foreground list-disc pl-4">
               {CREDENTIAL_DISCLAIMER_POINTS.proves.map((p) => (
                 <li key={p}>{p}</li>
@@ -274,7 +274,7 @@ export default function VerifyJwsPage() {
             </ul>
           </div>
           <div>
-            <h3 className="text-sm font-bold mb-2">What it doesn&apos;t show</h3>
+            <h2 className="text-sm font-bold mb-2">What it doesn&apos;t show</h2>
             <ul className="space-y-1.5 text-xs text-muted-foreground list-disc pl-4">
               {CREDENTIAL_DISCLAIMER_POINTS.doesNotProve.map((p) => (
                 <li key={p}>{p}</li>

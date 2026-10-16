@@ -3,7 +3,7 @@
 /** Types and helpers shared by the on-campus recruiting (interview scheduling) pages. */
 
 import React from "react";
-import { Badge } from "@/components/career/ui";
+import { Badge, useCareerT, useCareerLabels, useCareerFormat } from "@/components/career/ui";
 
 export interface OcrDay {
   date: string;
@@ -54,23 +54,28 @@ export interface OcrSchedule {
   extra?: any;
 }
 
-export const SIGNUP_LABELS: Record<string, string> = {
-  Open: "Open to qualified students",
-  PreSelect: "Pre-select list",
-  Alternates: "Pre-select with alternates",
-};
+export const SIGNUP_LABELS_KEYS = ["Open", "PreSelect", "Alternates"];
+/** signup labels in the career language (G1) */
+export function useSignupLabels(): Record<string, string> {
+  return useCareerLabels("interviewsShared.signup", SIGNUP_LABELS_KEYS);
+}
 
-export const WORK_AUTH_LABELS: Record<string, string> = {
-  None: "No requirement",
-  AuthorizedUS: "Authorized to work in the US",
-  NoSponsorship: "Authorized, no sponsorship needed",
-};
+export const WORK_AUTH_LABELS_KEYS = ["None", "AuthorizedUS", "NoSponsorship"];
+/** work auth labels in the career language (G1) */
+export function useInterviewWorkAuthLabels(): Record<string, string> {
+  return useCareerLabels("interviewsShared.workAuth", WORK_AUTH_LABELS_KEYS);
+}
 
-export const OUTCOME_LABELS: Record<string, string> = { Offer: "Offer", NoOffer: "No offer", Pending: "Pending" };
+export const OUTCOME_LABELS_KEYS = ["Offer", "NoOffer", "Pending"];
+/** outcome labels in the career language (G1) */
+export function useInterviewOutcomeLabels(): Record<string, string> {
+  return useCareerLabels("interviewsShared.outcome", OUTCOME_LABELS_KEYS);
+}
 
 export const DEGREE_LEVELS = ["Certificate", "Associate", "Bachelor", "Master", "Doctorate", "Professional"];
 
 export function StatusBadge({ status }: { status: string }) {
+  const t = useCareerT("interviewsShared");
   const tone = status === "Published" || status === "Registered" || status === "Booked" || status === "Attended" || status === "Offer"
     ? "good"
     : status === "Requested" || status === "Approved" || status === "Waitlisted" || status === "Invited" || status === "Pending"
@@ -78,30 +83,43 @@ export function StatusBadge({ status }: { status: string }) {
       : status === "NoShow" || status === "Declined" || status === "Cancelled"
         ? "bad"
         : "neutral";
-  const label = status === "Waitlisted" ? "Alternate" : status === "NoShow" ? "No-show" : status === "NoOffer" ? "No offer" : status;
+  const label = status === "Waitlisted" ? t("alternate") : status === "NoShow" ? t("noShow") : status === "NoOffer" ? t("noOffer") : status;
   return <Badge tone={tone}>{label}</Badge>;
 }
 
-export function daysText(days: OcrDay[]) {
-  return days
-    .map((d) => {
-      const date = new Date(`${d.date}T12:00:00Z`).toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric", timeZone: "UTC" });
-      return `${date} ${d.start}–${d.end}`;
-    })
-    .join("; ");
+/** Degree levels in the career language (G1) */
+export function useDegreeLevelLabels(): Record<string, string> {
+  return useCareerLabels("interviewsShared.degreeLevel", DEGREE_LEVELS);
 }
 
-export function eligibilityText(s: Pick<OcrSchedule, "degreeLevels" | "majors" | "gradFrom" | "gradTo">) {
-  const parts: string[] = [];
-  if (s.degreeLevels.length) parts.push(s.degreeLevels.join(", "));
-  if (s.majors.length) parts.push(`majors: ${s.majors.join(", ")}`);
-  if (s.gradFrom || s.gradTo) parts.push(`graduating ${s.gradFrom ?? "any time"} to ${s.gradTo ?? "any time"}`);
-  return parts.length ? parts.join(" · ") : "All students";
+/** Interview days as text ("Mon, Oct 5 09:00–12:00; ..."), dates in the career locale (G1). */
+export function useDaysText() {
+  const fmt = useCareerFormat();
+  return (days: OcrDay[]) =>
+    days
+      .map((d) => {
+        const date = new Date(`${d.date}T12:00:00Z`).toLocaleDateString(fmt.locale, { weekday: "short", month: "short", day: "numeric", timeZone: "UTC" });
+        return `${date} ${d.start}–${d.end}`;
+      })
+      .join("; ");
+}
+
+/** Who a schedule is open to, in the career language (G1). */
+export function useEligibilityText() {
+  const tr = useCareerT("interviewsShared");
+  const DEGREES = useDegreeLevelLabels();
+  return (s: Pick<OcrSchedule, "degreeLevels" | "majors" | "gradFrom" | "gradTo">) => {
+    const parts: string[] = [];
+    if (s.degreeLevels.length) parts.push(s.degreeLevels.map((l) => DEGREES[l] ?? l).join(", "));
+    if (s.majors.length) parts.push(tr("eligibilityMajors", { list: s.majors.join(", ") }));
+    if (s.gradFrom || s.gradTo) parts.push(tr("eligibilityGraduating", { from: s.gradFrom ?? tr("anyTime"), to: s.gradTo ?? tr("anyTime") }));
+    return parts.length ? parts.join(" · ") : tr("allStudents");
+  };
 }
 
 /** Opens an HTML document (fetched with auth) in a new tab for printing. */
-export async function openHtml(res: Response) {
-  if (!res.ok) throw new Error(`Couldn't load the agenda (${res.status})`);
+export async function openHtml(res: Response, failedMessage: (status: number) => string) {
+  if (!res.ok) throw new Error(failedMessage(res.status));
   const blob = new Blob([await res.text()], { type: "text/html" });
   const url = URL.createObjectURL(blob);
   window.open(url, "_blank", "noopener");

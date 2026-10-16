@@ -1,6 +1,8 @@
 "use client";
 
 import React, { useId, useState } from "react";
+import { ScrollArea, useCareerT } from "@/components/career/ui";
+import { currentFormatLocale } from "@/components/career/i18n/CareerI18nProvider";
 
 export type Cell = string | number | null;
 
@@ -13,13 +15,14 @@ export interface ReportTable {
   chartColumn?: number | null;
 }
 
-const fmt = (v: Cell) => (v === null || v === undefined ? "—" : typeof v === "number" ? v.toLocaleString(undefined, { maximumFractionDigits: 1 }) : v);
+const fmt = (v: Cell) => (v === null || v === undefined ? "—" : typeof v === "number" ? v.toLocaleString(currentFormatLocale(), { maximumFractionDigits: 1 }) : v);
 
 /**
  * One report table: a single-series horizontal bar chart (brand color, value printed beside each bar, so meaning never
  * depends on color) with the full data table as the accessible alternative. Suppressed cells ("<10") draw no bar.
  */
 export function ReportTableView({ table, onExport, exporting }: { table: ReportTable; onExport?: () => void; exporting?: boolean }) {
+  const t = useCareerT("reportTableView");
   const [view, setView] = useState<"chart" | "table">(table.chartColumn != null ? "chart" : "table");
   const headingId = useId();
   const col = table.chartColumn ?? null;
@@ -34,7 +37,7 @@ export function ReportTableView({ table, onExport, exporting }: { table: ReportT
         </h3>
         <div className="flex items-center gap-2">
           {col != null && table.rows.length > 0 && (
-            <div role="group" aria-label={`${table.title}: view as`} className="inline-flex rounded-md border border-border text-xs">
+            <div role="group" aria-label={t("titleViewAs", { title: table.title })} className="inline-flex rounded-md border border-border text-xs">
               {(["chart", "table"] as const).map((v) => (
                 <button
                   key={v}
@@ -50,14 +53,14 @@ export function ReportTableView({ table, onExport, exporting }: { table: ReportT
           )}
           {onExport && (
             <button type="button" onClick={onExport} disabled={exporting} className="rounded-md border border-border px-2.5 py-1 text-xs hover:bg-muted focus-visible:outline-2 disabled:opacity-50">
-              {exporting ? "Exporting…" : "CSV"}
+              {exporting ? t("exporting") : t("cSV")}
             </button>
           )}
         </div>
       </div>
 
       {table.rows.length === 0 ? (
-        <p className="text-sm text-muted-foreground">No data for this period.</p>
+        <p className="text-sm text-muted-foreground">{t("noDataForThisPeriod")}</p>
       ) : view === "chart" && col != null ? (
         <figure>
           <figcaption className="mb-2 text-xs text-muted-foreground">{table.columns[col]}</figcaption>
@@ -69,7 +72,7 @@ export function ReportTableView({ table, onExport, exporting }: { table: ReportT
                   <span className="truncate text-muted-foreground">{r[0]}</span>
                   <span className="flex items-center gap-2">
                     {v != null && v > 0 && (
-                      <span aria-hidden className="h-3 rounded-r" style={{ width: `${Math.max(1, (v / max) * 85)}%`, background: "var(--brand, #4f46e5)" }} />
+                      <span aria-hidden className="h-3 rounded-e" style={{ width: `${Math.max(1, (v / max) * 85)}%`, background: "var(--brand, #4f46e5)" }} />
                     )}
                     <span className="tabular-nums font-medium">{fmt(r[col])}</span>
                   </span>
@@ -79,12 +82,12 @@ export function ReportTableView({ table, onExport, exporting }: { table: ReportT
           </ul>
         </figure>
       ) : (
-        <div className="overflow-x-auto">
+        <ScrollArea>
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-border text-left text-xs text-muted-foreground">
+              <tr className="border-b border-border text-start text-xs text-muted-foreground [&_th]:text-start">
                 {table.columns.map((c, i) => (
-                  <th key={c} scope="col" className={`py-1.5 pr-3 font-medium ${i > 0 ? "text-right" : ""}`}>
+                  <th key={c} scope="col" className={`py-1.5 pe-3 font-medium ${i > 0 ? "text-end" : ""}`}>
                     {c}
                   </th>
                 ))}
@@ -95,11 +98,11 @@ export function ReportTableView({ table, onExport, exporting }: { table: ReportT
                 <tr key={`${r[0]}-${i}`} className="border-b border-border/60 last:border-0">
                   {r.map((c, j) =>
                     j === 0 ? (
-                      <th key={j} scope="row" className="py-1.5 pr-3 text-left font-normal">
+                      <th key={j} scope="row" className="py-1.5 pe-3 text-start font-normal">
                         {fmt(c)}
                       </th>
                     ) : (
-                      <td key={j} className="py-1.5 pr-3 text-right tabular-nums">
+                      <td key={j} className="py-1.5 pe-3 text-end tabular-nums">
                         {fmt(c)}
                       </td>
                     ),
@@ -108,7 +111,7 @@ export function ReportTableView({ table, onExport, exporting }: { table: ReportT
               ))}
             </tbody>
           </table>
-        </div>
+        </ScrollArea>
       )}
       {table.note && <p className="mt-2 text-xs text-muted-foreground">{table.note}</p>}
     </section>

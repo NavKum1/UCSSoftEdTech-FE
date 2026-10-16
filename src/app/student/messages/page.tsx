@@ -3,10 +3,11 @@
 import React, { Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useApi } from "@/lib/appAuth";
-import { Button, Card, EmptyState, ErrorBanner, Field, Loading, PageHeader, SuccessBanner, useLoad } from "@/components/career/ui";
+import { Button, Card, EmptyState, ErrorBanner, Field, Loading, PageHeader, SuccessBanner, useLoad, useCareerT } from "@/components/career/ui";
 import { ThreadList, ThreadView, type ThreadRow } from "@/components/career/messaging/shared";
 
 function StudentMessages() {
+  const t = useCareerT("studentMessages");
   const api = useApi();
   const router = useRouter();
   const params = useSearchParams();
@@ -38,7 +39,7 @@ function StudentMessages() {
       setBody("");
       setFile(null);
       setComposing(false);
-      setMsg("Message sent to your career center.");
+      setMsg(t("messageSentToYourCareer"));
       reload();
       select(res.id);
     } catch (err) {
@@ -51,29 +52,29 @@ function StudentMessages() {
   return (
     <div>
       <PageHeader
-        title="Messages"
-        description="Private conversations with your career center and, while a mentorship is active, your mentor. Only you and the people in each conversation can read it."
-        actions={<Button onClick={() => setComposing(!composing)}>{composing ? "Cancel" : "Message the career center"}</Button>}
+        title={t("messages")}
+        description={t("privateConversationsWithYourCareer")}
+        actions={<Button onClick={() => setComposing(!composing)}>{composing ? t("cancel") : t("messageTheCareerCenter")}</Button>}
       />
       <div aria-live="polite">
         <SuccessBanner message={msg} />
       </div>
       {composing && (
-        <Card title="New message to the career center" className="mb-6">
+        <Card title={t("newMessageToTheCareer")} className="mb-6">
           <form onSubmit={start} className="space-y-3">
             <ErrorBanner error={composeError} />
-            <Field label="Subject">{(p) => <input {...p} required maxLength={200} value={subject} onChange={(e) => setSubject(e.target.value)} />}</Field>
-            <Field label="Message">{(p) => <textarea {...p} required rows={5} maxLength={10000} value={body} onChange={(e) => setBody(e.target.value)} />}</Field>
-            <Field label="Attachment (optional)" hint="PDF, Word, PNG, JPEG or text, up to 10 MB.">
+            <Field label={t("subject")}>{(p) => <input {...p} required maxLength={200} value={subject} onChange={(e) => setSubject(e.target.value)} />}</Field>
+            <Field label={t("message")}>{(p) => <textarea {...p} required rows={5} maxLength={10000} value={body} onChange={(e) => setBody(e.target.value)} />}</Field>
+            <Field label={t("attachmentOptional")} hint={t("pDFWordPNGJPEGOr")}>
               {(p) => <input {...p} type="file" accept=".pdf,.docx,.png,.jpg,.jpeg,.txt" onChange={(e) => setFile(e.target.files?.[0] ?? null)} />}
             </Field>
             <Button type="submit" busy={busy}>
-              Send
+              {t("send")}
             </Button>
           </form>
         </Card>
       )}
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,2fr)]">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,2fr)]">
         <div className="space-y-3">
           <form
             role="search"
@@ -84,10 +85,10 @@ function StudentMessages() {
             className="flex items-end gap-2"
           >
             <div className="flex-1">
-              <Field label="Search messages">{(p) => <input {...p} type="search" value={q} onChange={(e) => setQ(e.target.value)} />}</Field>
+              <Field label={t("searchMessages")}>{(p) => <input {...p} type="search" value={q} onChange={(e) => setQ(e.target.value)} />}</Field>
             </div>
             <Button type="submit" variant="secondary">
-              Search
+              {t("search")}
             </Button>
           </form>
           <ErrorBanner error={error} onRetry={reload} />
@@ -96,10 +97,10 @@ function StudentMessages() {
           ) : data && data.length > 0 ? (
             <ThreadList threads={data} selected={selected} onSelect={select} />
           ) : (
-            <EmptyState title={search ? "No conversations match." : "No conversations yet"}>{!search && "Start one with the button above."}</EmptyState>
+            <EmptyState title={search ? t("noConversationsMatch") : t("noConversationsYet")}>{!search && t("startOneWithTheButton")}</EmptyState>
           )}
         </div>
-        <div>{selected ? <ThreadView threadId={selected} onChanged={reload} /> : <EmptyState title="Choose a conversation" />}</div>
+        <div>{selected ? <ThreadView threadId={selected} onChanged={reload} /> : <EmptyState title={t("chooseAConversation")} />}</div>
       </div>
     </div>
   );

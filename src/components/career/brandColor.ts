@@ -44,3 +44,29 @@ export function accessibleBrandColor(brand: string | null | undefined, minRatio 
   }
   return toHex(current);
 }
+
+function mix(c: [number, number, number], target: number, amount: number): [number, number, number] {
+  return [c[0] + (target - c[0]) * amount, c[1] + (target - c[1]) * amount, c[2] + (target - c[2]) * amount];
+}
+
+/**
+ * Brand color for text: darkened for light pages, lightened for dark mode, each reaching 4.5:1 against the page
+ * and card backgrounds. Use with BRAND_TEXT_CLASS after setting brandCssVars on a parent.
+ */
+export function brandTextColors(brand: string | null | undefined): { light: string; dark: string } {
+  const rgb = parseHex(brand ?? "") ?? parseHex(FALLBACK)!;
+  let light: [number, number, number] = rgb;
+  for (let i = 0; i < 40 && contrastRatio(toHex(light), "#eef0f3") < 4.6; i++) light = mix(light, 0, 0.06);
+  let dark: [number, number, number] = rgb;
+  for (let i = 0; i < 40 && contrastRatio(toHex(dark), "#16181d") < 4.6; i++) dark = mix(dark, 255, 0.08);
+  return { light: toHex(light), dark: toHex(dark) };
+}
+
+/** CSS variables for a brand-aware subtree: --brand (safe behind white text) and the brand text colors. */
+export function brandCssVars(brand: string | null | undefined): Record<string, string> {
+  const text = brandTextColors(brand);
+  return { "--brand": accessibleBrandColor(brand), "--brand-text-light": text.light, "--brand-text-dark": text.dark };
+}
+
+/** Text in the brand color with enough contrast in light and dark mode (needs brandCssVars on a parent). */
+export const BRAND_TEXT_CLASS = "text-[var(--brand-text-light)] dark:text-[var(--brand-text-dark)]";

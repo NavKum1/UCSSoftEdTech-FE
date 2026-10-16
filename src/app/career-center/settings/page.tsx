@@ -3,8 +3,9 @@
 import React, { useState } from "react";
 import { useApi } from "@/lib/appAuth";
 import { useCareerShell } from "@/components/career/CareerShell";
-import { Button, Card, ErrorBanner, Field, Loading, PageHeader, SuccessBanner, useLoad } from "@/components/career/ui";
-import { FERPA_CATEGORY_LABELS } from "@/components/career/coreLabels";
+import { Button, Card, ErrorBanner, Field, Loading, PageHeader, SuccessBanner, useLoad, useCareerT } from "@/components/career/ui";
+import { useFerpaCategoryLabels } from "@/components/career/coreLabels";
+import SchoolLanguageSetting from "@/components/career/i18n/SchoolLanguageSetting";
 
 interface Settings {
   instituteId: string;
@@ -37,6 +38,8 @@ const OTHER = "__other";
 const DIRECTORY_CATEGORIES = ["Profile", "ContactInfo", "Education"];
 
 export default function CareerCenterSettingsPage() {
+  const t = useCareerT("careerCenterSettings");
+  const FERPA_CATEGORY_LABELS = useFerpaCategoryLabels();
   const api = useApi();
   const { me, schoolId } = useCareerShell();
   const { data, error, loading, reload } = useLoad(() => api<Settings>("/api/career/admin/settings"), [api, schoolId]);
@@ -61,7 +64,7 @@ export default function CareerCenterSettingsPage() {
     e.preventDefault();
     if (!form) return;
     if (form.primaryColor && !/^#[0-9a-fA-F]{6}$/.test(form.primaryColor)) {
-      setErr("Primary color must look like #1a2b3c.");
+      setErr(t("primaryColorMustLookLike"));
       return;
     }
     setSaving(true);
@@ -84,7 +87,7 @@ export default function CareerCenterSettingsPage() {
         },
       });
       setForm(saved);
-      setMsg("Settings saved.");
+      setMsg(t("settingsSaved"));
     } catch (e2) {
       setErr((e2 as Error).message);
     } finally {
@@ -93,26 +96,26 @@ export default function CareerCenterSettingsPage() {
   };
 
   if (loading && !data) return <Loading />;
-  if (!form) return <ErrorBanner error={error ?? "Settings couldn't be loaded."} onRetry={reload} />;
+  if (!form) return <ErrorBanner error={error ?? t("settingsCouldntBeLoaded")} onRetry={reload} />;
 
   return (
     <div>
-      <PageHeader title="Settings" description={isAdmin ? "How your school's career center appears and works." : "Only career center admins can change these settings."} />
+      <PageHeader title={t("settings")} description={isAdmin ? t("howYourSchoolsCareerCenter") : t("onlyCareerCenterAdminsCan")} />
       <ErrorBanner error={err} />
       <SuccessBanner message={msg} />
       <form onSubmit={save}>
         <fieldset disabled={!isAdmin} className="space-y-6">
-          <Card title="School">
+          <Card title={t("school")}>
             <div className="grid gap-4 sm:grid-cols-2">
-              <Field label="Display name">{(p) => <input {...p} required value={form.displayName} onChange={(e) => setForm({ ...form, displayName: e.target.value })} />}</Field>
-              <Field label="Contact email" hint="Shown to students and employers who need help.">
+              <Field label={t("displayName")}>{(p) => <input {...p} required value={form.displayName} onChange={(e) => setForm({ ...form, displayName: e.target.value })} />}</Field>
+              <Field label={t("contactEmail")} hint={t("shownToStudentsAndEmployers")}>
                 {(p) => <input {...p} type="email" value={form.contactEmail ?? ""} onChange={(e) => setForm({ ...form, contactEmail: e.target.value })} />}
               </Field>
-              <Field label="Student email domains" hint="Comma-separated, for example state.edu, mail.state.edu. Each domain can belong to one school only.">
+              <Field label={t("studentEmailDomains")} hint={t("commaSeparatedForExampleState")}>
                 {(p) => <input {...p} value={form.emailDomains} onChange={(e) => setForm({ ...form, emailDomains: e.target.value })} />}
               </Field>
               <div className="space-y-2">
-                <Field label="Time zone">
+                <Field label={t("timeZone")}>
                   {(p) => (
                     <select
                       {...p}
@@ -123,35 +126,34 @@ export default function CareerCenterSettingsPage() {
                       }}
                     >
                       {TIME_ZONES.map((z) => <option key={z} value={z}>{z.replace(/_/g, " ")}</option>)}
-                      <option value={OTHER}>Other…</option>
+                      <option value={OTHER}>{t("other")}</option>
                     </select>
                   )}
                 </Field>
                 {tzChoice === OTHER && (
-                  <Field label="Other time zone" hint="An IANA name such as Europe/London.">
+                  <Field label={t("otherTimeZone")} hint={t("anIANANameSuchAs")}>
                     {(p) => <input {...p} value={form.timeZone} onChange={(e) => setForm({ ...form, timeZone: e.target.value })} />}
                   </Field>
                 )}
               </div>
               <div className="sm:col-span-2">
-                <Field label="Postal address" hint="Printed at the bottom of campaign emails, as US anti-spam law (CAN-SPAM) requires. Leave empty to remove it.">
+                <Field label={t("postalAddress")} hint={t("printedAtTheBottomOf")}>
                   {(p) => <textarea {...p} rows={2} maxLength={500} value={form.postalAddress ?? ""} onChange={(e) => setForm({ ...form, postalAddress: e.target.value })} />}
                 </Field>
               </div>
               <label className="flex items-start gap-2 text-sm sm:col-span-2">
                 <input type="checkbox" className="mt-0.5 h-4 w-4" checked={form.studentSelfJoin} onChange={(e) => setForm({ ...form, studentSelfJoin: e.target.checked })} />
                 <span>
-                  Let students join on their own
-                  <span className="block text-xs text-muted-foreground">Anyone who signs in with one of the email domains above becomes a student here.</span>
+                  {t.rich("letStudentsJoinOnTheir", { span: (chunks) => <span className="block text-xs text-muted-foreground">{chunks}</span> })}
                 </span>
               </label>
             </div>
           </Card>
 
-          <Card title="Directory information">
+          <Card title={t("directoryInformation")}>
             <fieldset>
               <legend className="mb-3 text-sm text-muted-foreground">
-                Under FERPA, your school may share directory information with approved employers unless a student places a hold. Choose what counts as directory information.
+                {t("underFERPAYourSchoolMay")}
               </legend>
               <div className="space-y-2">
                 {DIRECTORY_CATEGORIES.map((c) => (
@@ -164,15 +166,15 @@ export default function CareerCenterSettingsPage() {
             </fieldset>
           </Card>
 
-          <Card title="Look">
+          <Card title={t("look")}>
             <div className="grid gap-4 sm:grid-cols-2">
-              <Field label="Logo URL">{(p) => <input {...p} type="url" value={form.logoUrl ?? ""} onChange={(e) => setForm({ ...form, logoUrl: e.target.value })} />}</Field>
-              <Field label="Primary color" hint="Hex color, for example #4f46e5.">
+              <Field label={t("logoURL")}>{(p) => <input {...p} type="url" value={form.logoUrl ?? ""} onChange={(e) => setForm({ ...form, logoUrl: e.target.value })} />}</Field>
+              <Field label={t("primaryColor")} hint={t("hexColorForExample4f46e5")}>
                 {(p) => (
                   <div className="flex gap-2">
                     <input
                       type="color"
-                      aria-label="Pick primary color"
+                      aria-label={t("pickPrimaryColor")}
                       className="h-10 w-12 rounded border border-border"
                       value={/^#[0-9a-fA-F]{6}$/.test(form.primaryColor ?? "") ? form.primaryColor! : "#4f46e5"}
                       onChange={(e) => setForm({ ...form, primaryColor: e.target.value })}
@@ -184,9 +186,13 @@ export default function CareerCenterSettingsPage() {
             </div>
           </Card>
 
-          {isAdmin && <Button type="submit" busy={saving}>Save settings</Button>}
+          {isAdmin && <Button type="submit" busy={saving}>{t("saveSettings")}</Button>}
         </fieldset>
       </form>
+      {/* Saved on its own (PUT /api/career/locale/school), so it sits outside the settings form */}
+      <div className="mt-6">
+        <SchoolLanguageSetting schoolId={schoolId} />
+      </div>
     </div>
   );
 }

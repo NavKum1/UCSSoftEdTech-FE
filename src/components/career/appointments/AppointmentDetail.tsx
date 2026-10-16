@@ -3,8 +3,8 @@
 import React, { useState } from "react";
 import { ArrowLeft, CalendarPlus } from "lucide-react";
 import { useApi } from "@/lib/appAuth";
-import { Badge, Button, Card, ErrorBanner, Field, Loading, SuccessBanner, formatDate, useLoad } from "@/components/career/ui";
-import { type Appointment, type Note, IntakeAnswers, MODE_LABELS, MeetingInfo, statusLabel, statusTone, useDownload, whenText } from "./shared";
+import { Badge, Button, Card, ErrorBanner, Field, Loading, SuccessBanner, formatDate, useLoad, useCareerT } from "@/components/career/ui";
+import { useOutcomeLabels, type Appointment, type Note, IntakeAnswers, MeetingInfo, statusTone, useDownload, whenText, useModeLabels, useStatusLabel } from "./shared";
 
 interface StaffTask {
   id: string;
@@ -24,6 +24,10 @@ interface Detail {
 
 /** Staff view of one appointment: details, intake, outcome, advising notes (private or shared) and follow-up tasks. */
 export function AppointmentDetail({ id, onBack, onOpen }: { id: string; onBack: () => void; onOpen: (id: string) => void }) {
+  const tr = useCareerT("appointmentDetail");
+  const OUTCOME_LABELS = useOutcomeLabels();
+  const statusLabel = useStatusLabel();
+  const MODE_LABELS = useModeLabels();
   const api = useApi();
   const download = useDownload();
   const d = useLoad(() => api<Detail>(`/api/career/appointments/${id}`), [api, id]);
@@ -59,7 +63,7 @@ export function AppointmentDetail({ id, onBack, onOpen }: { id: string; onBack: 
   return (
     <div className="space-y-4">
       <Button type="button" variant="ghost" onClick={onBack}>
-        <ArrowLeft className="h-4 w-4" aria-hidden /> Back to appointments
+        <ArrowLeft className="h-4 w-4 rtl:-scale-x-100" aria-hidden />{" "}{tr("backToAppointments")}
       </Button>
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
@@ -68,14 +72,14 @@ export function AppointmentDetail({ id, onBack, onOpen }: { id: string; onBack: 
           </h1>
           <p className="text-sm">{whenText(a, a.timeZone)}</p>
           <p className="text-sm text-muted-foreground">
-            With {a.counselor.name} · {MODE_LABELS[a.mode] ?? a.mode} · {a.student?.email}
+            {tr("withNameModeEmail", { name: a.counselor.name, mode: MODE_LABELS[a.mode] ?? a.mode, email: a.student?.email })}
             {a.student?.studentNumber ? ` · #${a.student.studentNumber}` : ""}
           </p>
           <MeetingInfo a={a} />
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          {a.bookedOnBehalf && <Badge>Booked by staff</Badge>}
-          {a.rescheduleCount > 0 && <Badge>Rescheduled {a.rescheduleCount}×</Badge>}
+          {a.bookedOnBehalf && <Badge>{tr("bookedByStaff")}</Badge>}
+          {a.rescheduleCount > 0 && <Badge>{tr("rescheduledRescheduleCount", { rescheduleCount: a.rescheduleCount })}</Badge>}
           <Badge tone={statusTone(a)}>{statusLabel(a)}</Badge>
         </div>
       </div>
@@ -84,9 +88,9 @@ export function AppointmentDetail({ id, onBack, onOpen }: { id: string; onBack: 
 
       <div className="grid gap-4 lg:grid-cols-3">
         <div className="space-y-4 lg:col-span-2">
-          <Card title="Advising notes" actions={<span className="text-xs text-muted-foreground">Education records · never shared with employers</span>}>
+          <Card title={tr("advisingNotes")} actions={<span className="text-xs text-muted-foreground">{tr("educationRecordsNeverSharedWith")}</span>}>
             {notes.length === 0 ? (
-              <p className="mb-3 text-sm text-muted-foreground">No notes yet.</p>
+              <p className="mb-3 text-sm text-muted-foreground">{tr("noNotesYet")}</p>
             ) : (
               <ul className="mb-4 space-y-3">
                 {notes.map((n) => (
@@ -99,44 +103,44 @@ export function AppointmentDetail({ id, onBack, onOpen }: { id: string; onBack: 
                           void run("edit", async () => {
                             await api(`/api/career/appointments/notes/${n.id}`, { method: "PUT", json: { body: editing.body, visibility: editing.visibility } });
                             setEditing(null);
-                          }, "Note saved.");
+                          }, tr("noteSaved"));
                         }}
                       >
-                        <Field label="Note">{(p) => <textarea {...p} rows={4} value={editing.body} onChange={(e) => setEditing({ ...editing, body: e.target.value })} />}</Field>
+                        <Field label={tr("note")}>{(p) => <textarea {...p} rows={4} value={editing.body} onChange={(e) => setEditing({ ...editing, body: e.target.value })} />}</Field>
                         <VisibilityChoice value={editing.visibility} onChange={(v) => setEditing({ ...editing, visibility: v })} name={`vis-${n.id}`} />
                         <div className="flex gap-2">
                           <Button type="submit" busy={busy === "edit"}>
-                            Save
+                            {tr("save")}
                           </Button>
                           <Button type="button" variant="secondary" onClick={() => setEditing(null)}>
-                            Cancel
+                            {tr("cancel")}
                           </Button>
                         </div>
                       </form>
                     ) : (
                       <>
                         <div className="mb-1 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-                          <Badge tone={n.visibility === "Shared" ? "info" : "neutral"}>{n.visibility === "Shared" ? "Shared with student" : "Private to staff"}</Badge>
+                          <Badge tone={n.visibility === "Shared" ? "info" : "neutral"}>{n.visibility === "Shared" ? tr("sharedWithStudent") : tr("privateToStaff")}</Badge>
                           <span>
                             {n.author} · {formatDate(n.createdAt, true)}
-                            {n.updatedAt !== n.createdAt ? " (edited)" : ""}
+                            {n.updatedAt !== n.createdAt ? tr("edited") : ""}
                           </span>
                         </div>
                         <p className="whitespace-pre-wrap text-sm">{n.body}</p>
                         {n.canEdit && (
                           <div className="mt-2 flex gap-2">
                             <Button type="button" variant="ghost" onClick={() => setEditing({ id: n.id, body: n.body, visibility: n.visibility })}>
-                              Edit
+                              {tr("edit")}
                             </Button>
                             <Button
                               type="button"
                               variant="ghost"
                               busy={busy === n.id}
                               onClick={() => {
-                                if (window.confirm("Delete this note? This can't be undone.")) void run(n.id, () => api(`/api/career/appointments/notes/${n.id}`, { method: "DELETE" }).then(() => undefined), "Note deleted.");
+                                if (window.confirm(tr("deleteThisNoteThisCant"))) void run(n.id, () => api(`/api/career/appointments/notes/${n.id}`, { method: "DELETE" }).then(() => undefined), tr("noteDeleted"));
                               }}
                             >
-                              Delete
+                              {tr("delete")}
                             </Button>
                           </div>
                         )}
@@ -153,18 +157,18 @@ export function AppointmentDetail({ id, onBack, onOpen }: { id: string; onBack: 
                 void run("note", async () => {
                   await api(`/api/career/appointments/${a.id}/notes`, { method: "POST", json: note });
                   setNote({ body: "", visibility: note.visibility });
-                }, note.visibility === "Shared" ? "Note added and shared with the student." : "Private note added.");
+                }, note.visibility === "Shared" ? tr("noteAddedAndSharedWith") : tr("privateNoteAdded"));
               }}
             >
-              <Field label="Add a note">{(p) => <textarea {...p} rows={4} required maxLength={10000} value={note.body} onChange={(e) => setNote({ ...note, body: e.target.value })} />}</Field>
+              <Field label={tr("addANote")}>{(p) => <textarea {...p} rows={4} required maxLength={10000} value={note.body} onChange={(e) => setNote({ ...note, body: e.target.value })} />}</Field>
               <VisibilityChoice value={note.visibility} onChange={(v) => setNote({ ...note, visibility: v })} name="vis-new" />
               <Button type="submit" busy={busy === "note"}>
-                Add note
+                {tr("addNote")}
               </Button>
             </form>
           </Card>
 
-          <Card title="Follow-up tasks">
+          <Card title={tr("followUpTasks")}>
             {tasks.length > 0 && (
               <ul className="mb-4 space-y-2">
                 {tasks.map((t) => (
@@ -178,8 +182,8 @@ export function AppointmentDetail({ id, onBack, onOpen }: { id: string; onBack: 
                     <label htmlFor={`t-${t.id}`} className={t.status === "Done" ? "text-muted-foreground line-through" : ""}>
                       {t.title}
                     </label>
-                    <Badge>{t.assigneeType === "Student" ? "Student" : "Counselor"}</Badge>
-                    {t.dueDate && <span className="text-xs text-muted-foreground">due {formatDate(t.dueDate)}</span>}
+                    <Badge>{t.assigneeType === "Student" ? tr("student") : tr("counselor")}</Badge>
+                    {t.dueDate && <span className="text-xs text-muted-foreground">{tr("dueDueDate", { dueDate: formatDate(t.dueDate) })}</span>}
                   </li>
                 ))}
               </ul>
@@ -191,41 +195,37 @@ export function AppointmentDetail({ id, onBack, onOpen }: { id: string; onBack: 
                 void run("task", async () => {
                   await api(`/api/career/appointments/${a.id}/tasks`, { method: "POST", json: { title: task.title, dueDate: task.dueDate || null, assignee: task.assignee } });
                   setTask({ ...task, title: "", dueDate: "" });
-                }, "Task added.");
+                }, tr("taskAdded"));
               }}
             >
               <div className="sm:col-span-2">
-                <Field label="Task">{(p) => <input {...p} required maxLength={200} value={task.title} onChange={(e) => setTask({ ...task, title: e.target.value })} />}</Field>
+                <Field label={tr("task")}>{(p) => <input {...p} required maxLength={200} value={task.title} onChange={(e) => setTask({ ...task, title: e.target.value })} />}</Field>
               </div>
-              <Field label="Due date">{(p) => <input {...p} type="date" value={task.dueDate} onChange={(e) => setTask({ ...task, dueDate: e.target.value })} />}</Field>
-              <Field label="Who">
+              <Field label={tr("dueDate")}>{(p) => <input {...p} type="date" value={task.dueDate} onChange={(e) => setTask({ ...task, dueDate: e.target.value })} />}</Field>
+              <Field label={tr("who")}>
                 {(p) => (
                   <select {...p} value={task.assignee} onChange={(e) => setTask({ ...task, assignee: e.target.value })}>
-                    <option value="Student">Student</option>
-                    <option value="Counselor">Counselor</option>
+                    <option value="Student">{tr("student")}</option>
+                    <option value="Counselor">{tr("counselor")}</option>
                   </select>
                 )}
               </Field>
               <Button type="submit" busy={busy === "task"}>
-                Add task
+                {tr("addTask")}
               </Button>
             </form>
           </Card>
         </div>
 
         <div className="space-y-4">
-          <Card title="After the meeting">
+          <Card title={tr("afterTheMeeting")}>
             {a.status === "Cancelled" && !a.outcome ? (
-              <p className="text-sm text-muted-foreground">Cancelled{a.cancelReason ? `: ${a.cancelReason}` : "."}</p>
+              <p className="text-sm text-muted-foreground">{tr("cancelled")}{a.cancelReason ? `: ${a.cancelReason}` : "."}</p>
             ) : (
               <div className="space-y-2">
-                <p className="text-sm text-muted-foreground">{started ? "Record what happened." : "You can record attendance once the appointment starts."}</p>
-                <div className="flex flex-wrap gap-2" role="group" aria-label="Outcome">
-                  {[
-                    ["Attended", "Attended"],
-                    ["NoShow", "No-show"],
-                    ["CancelledLate", "Late cancellation"],
-                  ].map(([key, label]) => (
+                <p className="text-sm text-muted-foreground">{started ? tr("recordWhatHappened") : tr("youCanRecordAttendanceOnce")}</p>
+                <div className="flex flex-wrap gap-2" role="group" aria-label={tr("outcome")}>
+                  {(["Attended", "NoShow", "CancelledLate"] as const).map((key) => [key, OUTCOME_LABELS[key]] as const).map(([key, label]) => (
                     <Button
                       key={key}
                       type="button"
@@ -233,7 +233,7 @@ export function AppointmentDetail({ id, onBack, onOpen }: { id: string; onBack: 
                       aria-pressed={a.outcome === key}
                       disabled={key !== "CancelledLate" && !started}
                       busy={busy === key}
-                      onClick={() => void run(key, () => api(`/api/career/appointments/${a.id}/outcome`, { method: "POST", json: { outcome: key } }).then(() => undefined), `Marked as ${label.toLowerCase()}.`)}
+                      onClick={() => void run(key, () => api(`/api/career/appointments/${a.id}/outcome`, { method: "POST", json: { outcome: key } }).then(() => undefined), tr("markedAsLabel", { label: label.toLowerCase() }))}
                     >
                       {label}
                     </Button>
@@ -242,17 +242,17 @@ export function AppointmentDetail({ id, onBack, onOpen }: { id: string; onBack: 
               </div>
             )}
           </Card>
-          <Card title="Intake answers">
+          <Card title={tr("intakeAnswers")}>
             <IntakeAnswers appointment={a} />
           </Card>
-          <Card title="Actions">
+          <Card title={tr("actions")}>
             <div className="flex flex-wrap gap-2">
               <Button type="button" variant="secondary" onClick={() => void run("ics", () => download(`/api/career/appointments/${a.id}/ics`, "appointment.ics"))}>
-                <CalendarPlus className="h-4 w-4" aria-hidden /> Calendar file
+                <CalendarPlus className="h-4 w-4" aria-hidden />{" "}{tr("calendarFile")}
               </Button>
               {a.status === "Booked" && (
                 <Button type="button" variant="secondary" aria-expanded={cancel.open} onClick={() => setCancel({ ...cancel, open: !cancel.open })}>
-                  Cancel appointment
+                  {tr("cancelAppointment")}
                 </Button>
               )}
             </div>
@@ -264,27 +264,27 @@ export function AppointmentDetail({ id, onBack, onOpen }: { id: string; onBack: 
                   void run("cancel", async () => {
                     await api(`/api/career/appointments/${a.id}/cancel`, { method: "POST", json: { reason: cancel.reason, late: cancel.late } });
                     setCancel({ open: false, reason: "", late: false });
-                  }, "Appointment cancelled. The student was notified.");
+                  }, tr("appointmentCancelledTheStudentWas"));
                 }}
               >
-                <Field label="Reason (sent to the student)">{(p) => <textarea {...p} rows={2} maxLength={500} value={cancel.reason} onChange={(e) => setCancel({ ...cancel, reason: e.target.value })} />}</Field>
+                <Field label={tr("reasonSentToTheStudent")}>{(p) => <textarea {...p} rows={2} maxLength={500} value={cancel.reason} onChange={(e) => setCancel({ ...cancel, reason: e.target.value })} />}</Field>
                 <label className="flex items-center gap-2 text-sm">
-                  <input type="checkbox" checked={cancel.late} onChange={(e) => setCancel({ ...cancel, late: e.target.checked })} /> Count as a late cancellation by the student
+                  <input type="checkbox" checked={cancel.late} onChange={(e) => setCancel({ ...cancel, late: e.target.checked })} />{" "}{tr("countAsALateCancellation")}
                 </label>
                 <Button type="submit" variant="danger" busy={busy === "cancel"}>
-                  Cancel appointment
+                  {tr("cancelAppointment")}
                 </Button>
               </form>
             )}
           </Card>
-          <Card title="Earlier appointments">
+          <Card title={tr("earlierAppointments")}>
             {history.length === 0 ? (
-              <p className="text-sm text-muted-foreground">First appointment with this student.</p>
+              <p className="text-sm text-muted-foreground">{tr("firstAppointmentWithThisStudent")}</p>
             ) : (
               <ul className="space-y-2 text-sm">
                 {history.map((h) => (
                   <li key={h.id}>
-                    <button type="button" className="text-left underline" onClick={() => onOpen(h.id)}>
+                    <button type="button" className="text-start underline" onClick={() => onOpen(h.id)}>
                       {formatDate(h.startUtc)} · {h.typeName}
                     </button>{" "}
                     <Badge tone={statusTone(h)}>{statusLabel(h)}</Badge>
@@ -300,15 +300,16 @@ export function AppointmentDetail({ id, onBack, onOpen }: { id: string; onBack: 
 }
 
 function VisibilityChoice({ value, onChange, name }: { value: string; onChange: (v: string) => void; name: string }) {
+  const tr = useCareerT("appointmentDetail");
   return (
     <fieldset className="text-sm">
-      <legend className="mb-1 font-medium">Who can see this note?</legend>
+      <legend className="mb-1 font-medium">{tr("whoCanSeeThisNote")}</legend>
       <div className="flex flex-wrap gap-4">
         <label className="flex items-center gap-2">
-          <input type="radio" name={name} value="Private" checked={value === "Private"} onChange={() => onChange("Private")} /> Career staff only
+          <input type="radio" name={name} value="Private" checked={value === "Private"} onChange={() => onChange("Private")} />{" "}{tr("careerStaffOnly")}
         </label>
         <label className="flex items-center gap-2">
-          <input type="radio" name={name} value="Shared" checked={value === "Shared"} onChange={() => onChange("Shared")} /> Also the student
+          <input type="radio" name={name} value="Shared" checked={value === "Shared"} onChange={() => onChange("Shared")} />{" "}{tr("alsoTheStudent")}
         </label>
       </div>
     </fieldset>

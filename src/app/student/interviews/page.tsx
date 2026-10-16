@@ -4,9 +4,9 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { useApi } from "@/lib/appAuth";
 import { useCareerShell } from "@/components/career/CareerShell";
-import { Badge, Button, Card, EmptyState, ErrorBanner, Field, Loading, PageHeader, SuccessBanner, useLoad } from "@/components/career/ui";
+import { Badge, Button, Card, EmptyState, ErrorBanner, Field, Loading, PageHeader, SuccessBanner, useLoad, useCareerT } from "@/components/career/ui";
 import { TabPanel, Tabs, inZone, whenText } from "@/components/career/appointments/shared";
-import { type OcrSchedule, SIGNUP_LABELS, StatusBadge, daysText, eligibilityText } from "@/components/career/interviews/shared";
+import { type OcrSchedule, StatusBadge, useSignupLabels, useDaysText, useEligibilityText } from "@/components/career/interviews/shared";
 
 type Tab = "mine" | "find";
 
@@ -30,6 +30,7 @@ interface Resume {
 }
 
 export default function StudentInterviewsPage() {
+  const tr = useCareerT("studentInterviews");
   const [tab, setTab] = useState<Tab>("mine");
   const [message, setMessage] = useState<string | null>(null);
   const api = useApi();
@@ -37,23 +38,23 @@ export default function StudentInterviewsPage() {
   const status = useLoad(() => api<{ noShows: number; limit: number; blocked: boolean }>("/api/career/ocr/student/status"), [api, schoolId]);
   return (
     <div>
-      <PageHeader title="On-campus interviews" description="Sign up for interviews employers hold at your school, and keep track of the ones you booked." />
+      <PageHeader title={tr("onCampusInterviews")} description={tr("signUpForInterviewsEmployers")} />
       <SuccessBanner message={message} />
       {status.data?.blocked && (
         <div role="alert" className="mb-4 rounded-lg border border-red-300 bg-red-50 p-3 text-sm text-red-800 dark:bg-red-950 dark:text-red-200">
-          You missed {status.data.noShows} interviews (the limit is {status.data.limit}), so new sign-ups are paused. Contact your career center to have this cleared.
+          {tr("youMissedNoShowsInterviewsThe", { noShows: status.data.noShows, limit: status.data.limit })}
         </div>
       )}
       <Tabs<Tab>
-        label="Interview sections"
+        label={tr("interviewSections")}
         value={tab}
         onChange={(t) => {
           setTab(t);
           setMessage(null);
         }}
         tabs={[
-          { key: "mine", label: "My interviews" },
-          { key: "find", label: "Find interviews" },
+          { key: "mine", label: tr("myInterviews") },
+          { key: "find", label: tr("findInterviews") },
         ]}
       />
       <TabPanel id={tab}>
@@ -72,6 +73,7 @@ export default function StudentInterviewsPage() {
 }
 
 function MyInterviews({ onMessage }: { onMessage: (m: string) => void }) {
+  const tr = useCareerT("studentInterviews");
   const api = useApi();
   const { schoolId } = useCareerShell();
   const mine = useLoad(() => api<Mine>("/api/career/ocr/student/mine"), [api, schoolId]);
@@ -79,12 +81,12 @@ function MyInterviews({ onMessage }: { onMessage: (m: string) => void }) {
   const [err, setErr] = useState<string | null>(null);
 
   const withdraw = async (scheduleId: string, label: string) => {
-    if (!window.confirm(`Cancel ${label}? Your consent to share your details with this employer ends too.`)) return;
+    if (!window.confirm(tr("cancelLabelYourConsentTo", { label }))) return;
     setBusy(scheduleId);
     setErr(null);
     try {
       await api(`/api/career/ocr/student/schedules/${scheduleId}/withdraw`, { method: "POST" });
-      onMessage("Cancelled.");
+      onMessage(tr("cancelled"));
       mine.reload();
     } catch (e) {
       setErr((e as Error).message);
@@ -97,7 +99,7 @@ function MyInterviews({ onMessage }: { onMessage: (m: string) => void }) {
   if (mine.error) return <ErrorBanner error={mine.error} onRetry={mine.reload} />;
   const items = mine.data?.items ?? [];
   const tz = mine.data?.timeZone ?? "UTC";
-  if (items.length === 0) return <EmptyState title="No interviews yet">Look under Find interviews for employers recruiting at your school.</EmptyState>;
+  if (items.length === 0) return <EmptyState title={tr("noInterviewsYet")}>{tr("lookUnderFindInterviewsFor")}</EmptyState>;
   return (
     <div className="space-y-3">
       <ErrorBanner error={err} />
@@ -107,33 +109,33 @@ function MyInterviews({ onMessage }: { onMessage: (m: string) => void }) {
             <div className="space-y-1 text-sm">
               <p>
                 <strong>{whenText(i.booking, tz)}</strong>
-                {i.booking.source === "Promoted" && <span className="ml-2"><Badge tone="info">Moved up from alternates</Badge></span>}
+                {i.booking.source === "Promoted" && <span className="ms-2"><Badge tone="info">{tr("movedUpFromAlternates")}</Badge></span>}
               </p>
-              {i.booking.room && <p>Room: {i.booking.room}</p>}
+              {i.booking.room && <p>{tr("roomRoom", { room: i.booking.room })}</p>}
               {i.booking.virtualUrl && (
                 <p>
-                  Video link: <a className="underline" href={i.booking.virtualUrl} target="_blank" rel="noreferrer">{i.booking.virtualUrl}</a>
+                  {tr.rich("videoLinkVirtualUrl", { link: (chunks) => <a className="underline" href={i.booking!.virtualUrl!} target="_blank" rel="noreferrer">{chunks}</a>, virtualUrl: i.booking.virtualUrl })}
                 </p>
               )}
-              {i.booking.attendance && <p>Attendance: <StatusBadge status={i.booking.attendance} /></p>}
+              {i.booking.attendance && <p>{tr("attendance")}{" "}<StatusBadge status={i.booking.attendance} /></p>}
               <p className="text-muted-foreground">
-                {i.booking.canCancel ? `You can cancel until ${inZone(i.booking.cancelBy, tz, { dateStyle: "medium", timeStyle: "short" })}.` : "The cancellation deadline has passed; contact your career center if you can't attend."}
+                {i.booking.canCancel ? tr("youCanCancelUntilCancelBy", { cancelBy: inZone(i.booking.cancelBy, tz, { dateStyle: "medium", timeStyle: "short" }) }) : tr("theCancellationDeadlineHasPassed")}
               </p>
             </div>
           ) : i.candidateStatus === "Waitlisted" ? (
-            <p className="text-sm">You&apos;re on the alternate list. If a slot opens, we&apos;ll book you into it and let you know.</p>
+            <p className="text-sm">{tr("youreOnTheAlternateList")}</p>
           ) : (
-            <p className="text-sm text-muted-foreground">No active interview.</p>
+            <p className="text-sm text-muted-foreground">{tr("noActiveInterview")}</p>
           )}
           <div className="mt-3 flex flex-wrap gap-2">
             {i.externalJobUrl && (
               <a className="text-sm underline" href={i.externalJobUrl} target="_blank" rel="noreferrer">
-                View the job posting
+                {tr("viewTheJobPosting")}
               </a>
             )}
             {(i.booking?.canCancel || i.candidateStatus === "Waitlisted") && (
-              <Button variant="secondary" busy={busy === i.scheduleId} onClick={() => withdraw(i.scheduleId, i.candidateStatus === "Waitlisted" ? "your place on the alternate list" : "this interview")}>
-                {i.candidateStatus === "Waitlisted" ? "Leave alternate list" : "Cancel interview"}
+              <Button variant="secondary" busy={busy === i.scheduleId} onClick={() => withdraw(i.scheduleId, i.candidateStatus === "Waitlisted" ? tr("yourPlaceOnTheAlternate") : tr("thisInterview"))}>
+                {i.candidateStatus === "Waitlisted" ? tr("leaveAlternateList") : tr("cancelInterview")}
               </Button>
             )}
           </div>
@@ -146,6 +148,10 @@ function MyInterviews({ onMessage }: { onMessage: (m: string) => void }) {
 type Listed = Omit<OcrSchedule, "extra"> & { extra: { invited: boolean; tier?: string | null; candidateStatus?: string | null; canBook: boolean; freeSlots: number; signupOpen: boolean } };
 
 function FindInterviews({ onDone }: { onDone: (m: string) => void }) {
+  const tr = useCareerT("studentInterviews");
+  const eligibilityText = useEligibilityText();
+  const daysText = useDaysText();
+  const SIGNUP_LABELS = useSignupLabels();
   const api = useApi();
   const { schoolId } = useCareerShell();
   const list = useLoad(() => api<{ timeZone: string; schedules: Listed[] }>("/api/career/ocr/student/schedules"), [api, schoolId]);
@@ -167,9 +173,8 @@ function FindInterviews({ onDone }: { onDone: (m: string) => void }) {
   const schedules = list.data?.schedules ?? [];
   if (schedules.length === 0)
     return (
-      <EmptyState title="No interview schedules for you right now">
-        Schedules appear here when you meet an employer&apos;s requirements or are invited. Keep your program and graduation date up to date in your{" "}
-        <Link className="underline" href="/student/record">career record</Link>.
+      <EmptyState title={tr("noInterviewSchedulesForYou")}>
+        {tr.rich("schedulesAppearHereWhenYou", { link: (chunks) => <Link className="underline" href="/student/record">{chunks}</Link> })}
       </EmptyState>
     );
   return (
@@ -179,34 +184,34 @@ function FindInterviews({ onDone }: { onDone: (m: string) => void }) {
         <Card
           key={s.id}
           title={`${s.employerName}: ${s.positionTitle}`}
-          actions={s.extra.invited ? <Badge tone="info">{s.extra.tier === "Alternate" ? "Invited as alternate" : "Invited"}</Badge> : undefined}
+          actions={s.extra.invited ? <Badge tone="info">{s.extra.tier === "Alternate" ? tr("invitedAsAlternate") : tr("invited")}</Badge> : undefined}
         >
           <dl className="grid gap-1 text-sm sm:grid-cols-2">
-            <div><dt className="inline font-medium">Dates: </dt><dd className="inline">{daysText(s.days)}</dd></div>
-            <div><dt className="inline font-medium">Format: </dt><dd className="inline">{s.virtual ? "Virtual" : "On campus"} · {s.slotMinutes} min</dd></div>
-            <div><dt className="inline font-medium">Sign-up: </dt><dd className="inline">{SIGNUP_LABELS[s.signupType] ?? s.signupType}</dd></div>
-            <div><dt className="inline font-medium">Open to: </dt><dd className="inline">{eligibilityText(s)}</dd></div>
-            <div><dt className="inline font-medium">Open slots: </dt><dd className="inline">{s.extra.freeSlots}</dd></div>
-            {s.signupClosesAt && <div><dt className="inline font-medium">Sign-up closes: </dt><dd className="inline">{inZone(s.signupClosesAt, list.data!.timeZone, { dateStyle: "medium", timeStyle: "short" })}</dd></div>}
+            <div><dt className="inline font-medium">{tr("dates")}{" "}</dt><dd className="inline">{daysText(s.days)}</dd></div>
+            <div><dt className="inline font-medium">{tr("format")}{" "}</dt><dd className="inline">{s.virtual ? tr("virtual") : tr("onCampus")}{" "}{tr("slotMinutesMin", { slotMinutes: s.slotMinutes })}</dd></div>
+            <div><dt className="inline font-medium">{tr("signUp2")}{" "}</dt><dd className="inline">{SIGNUP_LABELS[s.signupType] ?? s.signupType}</dd></div>
+            <div><dt className="inline font-medium">{tr("openTo")}{" "}</dt><dd className="inline">{eligibilityText(s)}</dd></div>
+            <div><dt className="inline font-medium">{tr("openSlots")}{" "}</dt><dd className="inline">{s.extra.freeSlots}</dd></div>
+            {s.signupClosesAt && <div><dt className="inline font-medium">{tr("signUpCloses")}{" "}</dt><dd className="inline">{inZone(s.signupClosesAt, list.data!.timeZone, { dateStyle: "medium", timeStyle: "short" })}</dd></div>}
           </dl>
           {s.description && <p className="mt-2 text-sm">{s.description}</p>}
           {s.externalJobUrl && (
             <p className="mt-2 text-sm">
-              <a className="underline" href={s.externalJobUrl} target="_blank" rel="noreferrer">View the job posting</a>
+              <a className="underline" href={s.externalJobUrl} target="_blank" rel="noreferrer">{tr("viewTheJobPosting")}</a>
             </p>
           )}
           <div className="mt-3 flex flex-wrap gap-2">
             {s.extra.candidateStatus === "Registered" || s.extra.candidateStatus === "Waitlisted" ? (
-              <p className="text-sm">You&apos;re signed up. See My interviews.</p>
+              <p className="text-sm">{tr("youreSignedUpSeeMy")}</p>
             ) : !s.extra.signupOpen ? (
-              <p className="text-sm text-muted-foreground">Sign-up isn&apos;t open.</p>
+              <p className="text-sm text-muted-foreground">{tr("signUpIsntOpen")}</p>
             ) : (
               <>
                 <Button onClick={() => setOpen(open === s.id ? null : s.id)} aria-expanded={open === s.id}>
-                  {s.extra.canBook ? "Sign up" : "Join alternate list"}
+                  {s.extra.canBook ? tr("signUp") : tr("joinAlternateList")}
                 </Button>
                 {s.extra.candidateStatus === "Invited" && (
-                  <Button variant="secondary" onClick={() => decline(s.id)}>Decline invitation</Button>
+                  <Button variant="secondary" onClick={() => decline(s.id)}>{tr("declineInvitation")}</Button>
                 )}
               </>
             )}
@@ -219,6 +224,7 @@ function FindInterviews({ onDone }: { onDone: (m: string) => void }) {
 }
 
 function SignupForm({ schedule, timeZone, onDone }: { schedule: Listed; timeZone: string; onDone: (m: string) => void }) {
+  const tr = useCareerT("studentInterviews");
   const api = useApi();
   const detail = useLoad(() => api<Omit<OcrSchedule, "extra"> & { extra: { slots: { id: string; date: string; startUtc: string; endUtc: string }[]; hasConsent: boolean; canBook: boolean } }>(`/api/career/ocr/student/schedules/${schedule.id}`), [api, schedule.id]);
   const resumes = useLoad(() => api<Resume[]>("/api/career/ocr/student/resumes"), [api]);
@@ -251,7 +257,7 @@ function SignupForm({ schedule, timeZone, onDone }: { schedule: Listed; timeZone
       const r = await api<{ candidateStatus: string; bookingId?: string }>(`/api/career/ocr/student/schedules/${schedule.id}/signup`, {
         json: { slotId: slotId || null, resumeFileId: resumeId || null, consent, workAuthAttested: attest, joinAlternates: alternates },
       });
-      onDone(r.bookingId ? `You're booked with ${schedule.employerName}.` : `You're on the alternate list for ${schedule.employerName}.`);
+      onDone(r.bookingId ? tr("youreBookedWithEmployerName", { employerName: String(schedule.employerName) }) : tr("youreOnTheAlternateList2", { employerName: String(schedule.employerName) }));
     } catch (e2) {
       setErr((e2 as Error).message);
       detail.reload();
@@ -265,13 +271,13 @@ function SignupForm({ schedule, timeZone, onDone }: { schedule: Listed; timeZone
   const d = detail.data!;
   const needsConsent = !d.extra.hasConsent;
   return (
-    <form onSubmit={submit} className="mt-4 space-y-3 rounded-lg border border-border p-4" aria-label={`Sign up for ${schedule.positionTitle}`}>
+    <form onSubmit={submit} className="mt-4 space-y-3 rounded-lg border border-border p-4" aria-label={tr("signUpForPositionTitle", { positionTitle: schedule.positionTitle })}>
       <ErrorBanner error={err} />
       {d.extra.canBook && (
-        <Field label="Interview time" hint={`Times are in the school's time zone (${timeZone}).`}>
+        <Field label={tr("interviewTime")} hint={tr("timesAreInTheSchools", { timeZone })}>
           {(p) => (
             <select {...p} value={slotId} onChange={(e) => setSlotId(e.target.value)}>
-              <option value="">{d.extra.slots.length ? "Choose a time" : "No open times"}</option>
+              <option value="">{d.extra.slots.length ? tr("chooseATime") : tr("noOpenTimes")}</option>
               {d.extra.slots.map((s) => (
                 <option key={s.id} value={s.id}>{whenText(s, timeZone)}</option>
               ))}
@@ -281,21 +287,21 @@ function SignupForm({ schedule, timeZone, onDone }: { schedule: Listed; timeZone
       )}
       <label className="flex items-center gap-2 text-sm">
         <input type="checkbox" checked={alternates} disabled={!d.extra.canBook} onChange={(e) => setAlternates(e.target.checked)} />
-        {d.extra.canBook ? "If my time is taken or none are left, put me on the alternate list" : "Join the alternate list (you'll be booked automatically if a slot opens)"}
+        {d.extra.canBook ? tr("ifMyTimeIsTaken") : tr("joinTheAlternateListYoull")}
       </label>
       {needsConsent && (
         <>
-          <Field label="Resume to share" hint="PDF, Word, or text, up to 10 MB.">
+          <Field label={tr("resumeToShare")} hint={tr("pDFWordOrTextUp")}>
             {(p) => (
               <select {...p} value={resumeId} onChange={(e) => setResumeId(e.target.value)} required>
-                <option value="">Choose a resume</option>
+                <option value="">{tr("chooseAResume")}</option>
                 {(resumes.data ?? []).map((r) => (
                   <option key={r.id} value={r.id}>{r.fileName}</option>
                 ))}
               </select>
             )}
           </Field>
-          <Field label="Or upload a resume">
+          <Field label={tr("orUploadAResume")}>
             {(p) => <input {...p} type="file" accept=".pdf,.docx,.txt" onChange={(e) => e.target.files?.[0] && upload(e.target.files[0])} />}
           </Field>
           {schedule.workAuthRequirement !== "None" && (
@@ -307,14 +313,13 @@ function SignupForm({ schedule, timeZone, onDone }: { schedule: Listed; timeZone
           <label className="flex items-start gap-2 text-sm">
             <input type="checkbox" className="mt-1" checked={consent} onChange={(e) => setConsent(e.target.checked)} required />
             <span>
-              I agree to share my name, email, education and the resume above with {schedule.employerName} for this interview. You can withdraw consent in your{" "}
-              <Link className="underline" href="/student/privacy">privacy settings</Link>.
+              {tr.rich("iAgreeToShareMy", { employerName: schedule.employerName, link: (chunks) => <Link className="underline" href="/student/privacy">{chunks}</Link> })}
             </span>
           </label>
         </>
       )}
       <Button type="submit" busy={busy} disabled={d.extra.canBook && !slotId && !alternates}>
-        {slotId ? "Book this time" : "Join alternate list"}
+        {slotId ? tr("bookThisTime") : tr("joinAlternateList")}
       </Button>
     </form>
   );

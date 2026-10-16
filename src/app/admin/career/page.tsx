@@ -5,7 +5,7 @@ import Link from "next/link";
 
 import React, { useState } from "react";
 import { useApi } from "@/lib/appAuth";
-import { Badge, Button, Card, EmptyState, ErrorBanner, Field, Loading, PageHeader, SuccessBanner, useLoad } from "@/components/career/ui";
+import { Badge, Button, Card, EmptyState, ErrorBanner, Field, Loading, PageHeader, SuccessBanner, useLoad, ScrollArea } from "@/components/career/ui";
 
 interface Brand {
   id: string;
@@ -283,7 +283,7 @@ export default function CareerPlatformAdminPage() {
       <PageHeader
         title="Career suite"
         description="Enable schools, manage white-label brands and review employer verification."
-        actions={<Link href="/admin/career/sponsors" className="rounded-md border border-border px-3 py-2 text-sm hover:bg-muted">Sponsorship data</Link>}
+        actions={<div className="flex gap-2"><Link href="/admin/career/sponsors" className="rounded-md border border-border px-3 py-2 text-sm hover:bg-muted">Sponsorship data</Link><Link href="/admin/career/incidents" className="rounded-md border border-border px-3 py-2 text-sm hover:bg-muted">Privacy incidents</Link></div>}
       />
       <ErrorBanner error={err} />
       <SuccessBanner message={msg} />
@@ -323,7 +323,7 @@ export default function CareerPlatformAdminPage() {
         ) : filtered.length === 0 ? (
           <EmptyState title="No schools" />
         ) : (
-          <div className="overflow-x-auto">
+          <ScrollArea>
             <table className="w-full text-sm">
               <caption className="sr-only">Schools with the career suite</caption>
               <thead>
@@ -360,7 +360,7 @@ export default function CareerPlatformAdminPage() {
                 ))}
               </tbody>
             </table>
-          </div>
+          </ScrollArea>
         )}
       </Card>
 

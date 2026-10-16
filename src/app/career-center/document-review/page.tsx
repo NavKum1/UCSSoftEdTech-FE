@@ -4,21 +4,21 @@ import React, { Suspense, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useApi } from "@/lib/appAuth";
 import { useCareerShell } from "@/components/career/CareerShell";
-import { Badge, Button, Card, EmptyState, ErrorBanner, Field, Loading, PageHeader, SuccessBanner, formatDate, useLoad } from "@/components/career/ui";
+import { Badge, Button, Card, EmptyState, ErrorBanner, Field, Loading, PageHeader, SuccessBanner, formatDate, useLoad, ScrollArea, useCareerT, useCareerLabels } from "@/components/career/ui";
 import {
   AnchoredText,
   CommentList,
-  RATING_LABELS,
   RubricTable,
-  STATUS_LABELS,
   StatusBadge,
-  downloadFile,
-  formatSize,
   type FileMeta,
   type ReviewComment,
   type ReviewDetail,
   type ReviewOptions,
   type RubricItem,
+  useReviewStatusLabels,
+  useRatingLabels,
+  useDownloadFile,
+  useFormatSize,
 } from "@/components/career/docReview/shared";
 
 interface QueueItem {
@@ -89,6 +89,7 @@ export default function CareerCenterDocumentReviewPage() {
 type Tab = "queue" | "metrics" | "settings";
 
 function DocumentReviewStaff() {
+  const tr = useCareerT("careerCenterDocumentReview");
   const router = useRouter();
   const params = useSearchParams();
   const selected = params.get("id");
@@ -99,14 +100,14 @@ function DocumentReviewStaff() {
   if (selected) return <Workspace id={selected} isAdmin={isAdmin} onBack={() => router.push("/career-center/document-review")} />;
 
   const tabs: { key: Tab; label: string }[] = [
-    { key: "queue", label: "Queue" },
-    { key: "metrics", label: "Metrics" },
-    { key: "settings", label: "Settings" },
+    { key: "queue", label: tr("queue") },
+    { key: "metrics", label: tr("metrics") },
+    { key: "settings", label: tr("settings") },
   ];
   return (
     <div>
-      <PageHeader title="Document review" description="Students' resumes, cover letters and statements waiting for a counselor. Reviews are education records and are never shared with employers." />
-      <div role="tablist" aria-label="Document review sections" className="mb-4 flex gap-1 border-b border-border">
+      <PageHeader title={tr("documentReview")} description={tr("studentsResumesCoverLettersAnd")} />
+      <div role="tablist" aria-label={tr("documentReviewSections")} className="mb-4 flex gap-1 border-b border-border">
         {tabs.map((t) => (
           <button
             key={t.key}
@@ -137,6 +138,8 @@ function waiting(hours: number) {
 }
 
 function Queue({ onOpen }: { onOpen: (id: string) => void }) {
+  const tr = useCareerT("careerCenterDocumentReview");
+  const STATUS_LABELS = useReviewStatusLabels();
   const api = useApi();
   const [status, setStatus] = useState("open");
   const [kind, setKind] = useState("");
@@ -157,23 +160,23 @@ function Queue({ onOpen }: { onOpen: (id: string) => void }) {
     <div className="space-y-4">
       <Card>
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
-          <Field label="Status">
+          <Field label={tr("status")}>
             {(p) => (
               <select {...p} value={status} onChange={(e) => setStatus(e.target.value)}>
-                <option value="open">Open (not yet returned)</option>
+                <option value="open">{tr("openNotYetReturned")}</option>
                 {Object.entries(STATUS_LABELS).map(([k, v]) => (
                   <option key={k} value={k}>
                     {v}
                   </option>
                 ))}
-                <option value="all">All</option>
+                <option value="all">{tr("all")}</option>
               </select>
             )}
           </Field>
-          <Field label="Document type">
+          <Field label={tr("documentType")}>
             {(p) => (
               <select {...p} value={kind} onChange={(e) => setKind(e.target.value)}>
-                <option value="">Any</option>
+                <option value="">{tr("any")}</option>
                 {options.data?.kinds.map((k) => (
                   <option key={k.kind} value={k.kind}>
                     {k.label}
@@ -182,12 +185,12 @@ function Queue({ onOpen }: { onOpen: (id: string) => void }) {
               </select>
             )}
           </Field>
-          <Field label="Assignee">
+          <Field label={tr("assignee")}>
             {(p) => (
               <select {...p} value={assignee} onChange={(e) => setAssignee(e.target.value)}>
-                <option value="">Anyone</option>
-                <option value="me">Me</option>
-                <option value="unassigned">Unassigned</option>
+                <option value="">{tr("anyone")}</option>
+                <option value="me">{tr("me")}</option>
+                <option value="unassigned">{tr("unassigned")}</option>
                 {reviewers.data?.map((r) => (
                   <option key={r.userId} value={r.userId}>
                     {r.name}
@@ -196,61 +199,61 @@ function Queue({ onOpen }: { onOpen: (id: string) => void }) {
               </select>
             )}
           </Field>
-          <Field label="Waiting at least (days)">
+          <Field label={tr("waitingAtLeastDays")}>
             {(p) => <input {...p} type="number" min={0} max={60} value={minWait} onChange={(e) => setMinWait(e.target.value)} />}
           </Field>
           <div className="flex items-end pb-2">
             <label className="inline-flex items-center gap-2 text-sm">
-              <input type="checkbox" checked={overdue} onChange={(e) => setOverdue(e.target.checked)} /> Overdue only
+              <input type="checkbox" checked={overdue} onChange={(e) => setOverdue(e.target.checked)} />{" "}{tr("overdueOnly")}
             </label>
           </div>
         </div>
       </Card>
       <ErrorBanner error={queue.error} onRetry={queue.reload} />
-      <Card title={queue.data ? `${queue.data.total} in view${queue.data.overdueCount ? ` · ${queue.data.overdueCount} overdue` : ""}` : "Queue"}>
+      <Card title={queue.data ? tr("totalInViewValue", { total: queue.data.total, value: queue.data.overdueCount ? tr("overdueCountOverdue", { overdueCount: queue.data.overdueCount }) : "" }) : tr("queue")}>
         <div aria-live="polite">
           {queue.loading ? (
             <Loading />
           ) : !queue.data || queue.data.items.length === 0 ? (
-            <EmptyState title="Nothing here">No documents match these filters.</EmptyState>
+            <EmptyState title={tr("nothingHere")}>{tr("noDocumentsMatchTheseFilters")}</EmptyState>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full min-w-[720px] text-left text-sm">
-                <caption className="sr-only">Review queue</caption>
+            <ScrollArea>
+              <table className="w-full min-w-[720px] text-start text-sm [&_th]:text-start">
+                <caption className="sr-only">{tr("reviewQueue")}</caption>
                 <thead>
                   <tr className="border-b border-border text-xs text-muted-foreground">
-                    <th scope="col" className="py-2 pr-3 font-medium">Document</th>
-                    <th scope="col" className="py-2 pr-3 font-medium">Student</th>
-                    <th scope="col" className="py-2 pr-3 font-medium">Status</th>
-                    <th scope="col" className="py-2 pr-3 font-medium">Waiting</th>
-                    <th scope="col" className="py-2 pr-3 font-medium">Due</th>
-                    <th scope="col" className="py-2 font-medium">Reviewer</th>
+                    <th scope="col" className="py-2 pe-3 font-medium">{tr("document")}</th>
+                    <th scope="col" className="py-2 pe-3 font-medium">{tr("student")}</th>
+                    <th scope="col" className="py-2 pe-3 font-medium">{tr("status")}</th>
+                    <th scope="col" className="py-2 pe-3 font-medium">{tr("waiting")}</th>
+                    <th scope="col" className="py-2 pe-3 font-medium">{tr("due")}</th>
+                    <th scope="col" className="py-2 font-medium">{tr("reviewer")}</th>
                   </tr>
                 </thead>
                 <tbody>
                   {queue.data.items.map((i) => (
                     <tr key={i.id} className="border-b border-border last:border-0 align-top">
-                      <td className="py-2 pr-3">
-                        <button type="button" className="text-left font-medium underline-offset-2 hover:underline focus-visible:outline-2" onClick={() => onOpen(i.id)}>
+                      <td className="py-2 pe-3">
+                        <button type="button" className="text-start font-medium underline-offset-2 hover:underline focus-visible:outline-2" onClick={() => onOpen(i.id)}>
                           {i.kindLabel}: {i.target}
                         </button>
                         <div className="mt-1 flex flex-wrap gap-1">
-                          {i.currentVersion > 1 && <Badge>Version {i.currentVersion}</Badge>}
-                          {i.urgent && <Badge tone="warn">Urgent{i.studentDeadline ? ` · deadline ${i.studentDeadline}` : ""}</Badge>}
+                          {i.currentVersion > 1 && <Badge>{tr("versionCurrentVersion", { currentVersion: i.currentVersion })}</Badge>}
+                          {i.urgent && <Badge tone="warn">{tr("urgent")}{i.studentDeadline ? tr("deadlineStudentDeadline", { studentDeadline: i.studentDeadline }) : ""}</Badge>}
                         </div>
                       </td>
-                      <td className="py-2 pr-3">{i.student ?? "—"}</td>
-                      <td className="py-2 pr-3">
+                      <td className="py-2 pe-3">{i.student ?? "—"}</td>
+                      <td className="py-2 pe-3">
                         <StatusBadge status={i.status} overdue={i.overdue} />
                       </td>
-                      <td className="py-2 pr-3">{waiting(i.waitingHours)}</td>
-                      <td className="py-2 pr-3">{formatDate(i.dueAt, true)}</td>
-                      <td className="py-2">{i.assignee?.name ?? "Unassigned"}</td>
+                      <td className="py-2 pe-3">{waiting(i.waitingHours)}</td>
+                      <td className="py-2 pe-3">{formatDate(i.dueAt, true)}</td>
+                      <td className="py-2">{i.assignee?.name ?? tr("unassigned")}</td>
                     </tr>
                   ))}
                 </tbody>
               </table>
-            </div>
+            </ScrollArea>
           )}
         </div>
       </Card>
@@ -289,6 +292,10 @@ function plainText(root: Node): string {
 }
 
 function Workspace({ id, isAdmin, onBack }: { id: string; isAdmin: boolean; onBack: () => void }) {
+  const tr = useCareerT("careerCenterDocumentReview");
+  const formatSize = useFormatSize();
+  const downloadFile = useDownloadFile();
+  const RATING_LABELS = useRatingLabels();
   const api = useApi();
   const { me } = useCareerShell();
   const detail = useLoad(() => api<ReviewDetail>(`/api/career/doc-review/staff/requests/${id}`), [id]);
@@ -339,7 +346,7 @@ function Workspace({ id, isAdmin, onBack }: { id: string; isAdmin: boolean; onBa
     }
   };
   const post = (path: string, json?: unknown) => api<ReviewDetail>(`/api/career/doc-review/staff/requests/${id}${path}`, json === undefined ? { method: "POST" } : { json });
-  const download = (f: FileMeta) => act("dl-" + f.id, () => downloadFile(api, f), `Downloaded ${f.fileName}.`);
+  const download = (f: FileMeta) => act("dl-" + f.id, () => downloadFile(api, f), tr("downloadedFileName", { fileName: f.fileName }));
 
   const saveReview = () =>
     form &&
@@ -353,20 +360,20 @@ function Workspace({ id, isAdmin, onBack }: { id: string; isAdmin: boolean; onBa
             rubric: (d?.rubricTemplate ?? []).map((t) => ({ key: t.key, rating: form.ratings[t.key]?.rating || null, note: form.ratings[t.key]?.note || null })),
           },
         }),
-      "Review saved.",
+      tr("reviewSaved"),
       () => setDraft(null),
     );
 
   const addComment = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!commentBody.trim()) return setError("Write a comment.");
+    if (!commentBody.trim()) return setError(tr("writeAComment"));
     const body: Record<string, unknown> = { body: commentBody };
     if (anchor) {
       body.anchorStart = anchor.start;
       body.anchorEnd = anchor.end;
     }
     if (page) body.page = Number(page);
-    void act("comment", () => post("/comments", body), "Comment added.", () => {
+    void act("comment", () => post("/comments", body), tr("commentAdded"), () => {
       setCommentBody("");
       setAnchor(null);
       setPage("");
@@ -376,11 +383,11 @@ function Workspace({ id, isAdmin, onBack }: { id: string; isAdmin: boolean; onBa
   return (
     <div>
       <PageHeader
-        title={d ? `${d.kindLabel}: ${d.target}` : "Review"}
+        title={d ? `${d.kindLabel}: ${d.target}` : tr("review")}
         description={d?.student ? `${d.student.name} · ${d.student.email}` : undefined}
         actions={
           <Button variant="secondary" onClick={onBack}>
-            Back to queue
+            {tr("backToQueue")}
           </Button>
         }
       />
@@ -391,46 +398,46 @@ function Workspace({ id, isAdmin, onBack }: { id: string; isAdmin: boolean; onBa
       ) : d && current && form ? (
         <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
           <div className="space-y-6">
-            <Card title="Request">
+            <Card title={tr("request")}>
               <dl className="grid gap-3 text-sm sm:grid-cols-2">
                 <div>
-                  <dt className="text-muted-foreground">Status</dt>
+                  <dt className="text-muted-foreground">{tr("status")}</dt>
                   <dd>
                     <StatusBadge status={d.status} overdue={d.overdue} />
                   </dd>
                 </div>
                 <div>
-                  <dt className="text-muted-foreground">Due</dt>
+                  <dt className="text-muted-foreground">{tr("due")}</dt>
                   <dd>{formatDate(d.dueAt, true)}</dd>
                 </div>
                 <div>
-                  <dt className="text-muted-foreground">Student&apos;s deadline</dt>
+                  <dt className="text-muted-foreground">{tr("studentsDeadline")}</dt>
                   <dd>{d.studentDeadline ?? "—"}</dd>
                 </div>
                 <div>
-                  <dt className="text-muted-foreground">Reviewer</dt>
-                  <dd>{d.assignee?.name ?? "Unassigned"}</dd>
+                  <dt className="text-muted-foreground">{tr("reviewer")}</dt>
+                  <dd>{d.assignee?.name ?? tr("unassigned")}</dd>
                 </div>
               </dl>
               {isOpen && (
                 <div className="mt-4 flex flex-wrap items-end gap-2">
                   {!mine && (!d.assignee || isAdmin) && (
-                    <Button busy={busy === "claim"} onClick={() => act("claim", () => post("/claim"), "Assigned to you.")}>
-                      Claim
+                    <Button busy={busy === "claim"} onClick={() => act("claim", () => post("/claim"), tr("assignedToYou"))}>
+                      {tr("claim")}
                     </Button>
                   )}
                   {mine && d.status === "Assigned" && (
-                    <Button busy={busy === "start"} onClick={() => act("start", () => post("/start"), "Review started.")}>
-                      Start review
+                    <Button busy={busy === "start"} onClick={() => act("start", () => post("/start"), tr("reviewStarted"))}>
+                      {tr("startReview")}
                     </Button>
                   )}
                   {(isAdmin || mine) && (
                     <>
-                      <Field label="Assign to">
+                      <Field label={tr("assignTo")}>
                         {(p) => (
                           <select {...p} value={assignTo} onChange={(e) => setAssignTo(e.target.value)}>
-                            <option value="">Choose…</option>
-                            <option value="none">Nobody (back to queue)</option>
+                            <option value="">{tr("choose")}</option>
+                            <option value="none">{tr("nobodyBackToQueue")}</option>
                             {reviewers.data?.map((r) => (
                               <option key={r.userId} value={r.userId}>
                                 {r.name}
@@ -443,30 +450,30 @@ function Workspace({ id, isAdmin, onBack }: { id: string; isAdmin: boolean; onBa
                         variant="secondary"
                         disabled={!assignTo}
                         busy={busy === "assign"}
-                        onClick={() => act("assign", () => post("/assign", { assigneeUserId: assignTo === "none" ? null : assignTo }), "Assignment updated.", () => setAssignTo(""))}
+                        onClick={() => act("assign", () => post("/assign", { assigneeUserId: assignTo === "none" ? null : assignTo }), tr("assignmentUpdated"), () => setAssignTo(""))}
                       >
-                        Assign
+                        {tr("assign")}
                       </Button>
                     </>
                   )}
-                  <Button variant="ghost" busy={busy === "prio"} onClick={() => act("prio", () => post("/priority", { urgent: !d.urgent }), d.urgent ? "Marked normal priority." : "Marked urgent.")}>
-                    {d.urgent ? "Remove urgent" : "Mark urgent"}
+                  <Button variant="ghost" busy={busy === "prio"} onClick={() => act("prio", () => post("/priority", { urgent: !d.urgent }), d.urgent ? tr("markedNormalPriority") : tr("markedUrgent"))}>
+                    {d.urgent ? tr("removeUrgent") : tr("markUrgent")}
                   </Button>
                 </div>
               )}
             </Card>
 
-            <Card title={`Version ${current.number} (submitted ${formatDate(current.submittedAt, true)})`}>
+            <Card title={tr("versionNumberSubmittedSubmittedAt", { number: current.number, submittedAt: formatDate(current.submittedAt, true) })}>
               <div className="space-y-3 text-sm">
                 {current.notesToReviewer && (
                   <p>
-                    <span className="font-medium">Student&apos;s notes: </span>
+                    <span className="font-medium">{tr("studentsNotes")}{" "}</span>
                     {current.notesToReviewer}
                   </p>
                 )}
                 {current.file && (
                   <p>
-                    File:{" "}
+                    {tr("file")}{" "}
                     <Button variant="ghost" className="px-1 py-0 underline" busy={busy === "dl-" + current.file.id} onClick={() => download(current.file!)}>
                       {current.file.fileName}
                     </Button>{" "}
@@ -475,13 +482,13 @@ function Workspace({ id, isAdmin, onBack }: { id: string; isAdmin: boolean; onBa
                 )}
                 {current.text && (
                   <>
-                    <p className="text-xs text-muted-foreground">Select a passage, then use &quot;Comment on selection&quot; to anchor a comment to it.</p>
-                    <AnchoredText ref={textRef} text={current.text} comments={current.comments} label="Submitted text" />
+                    <p className="text-xs text-muted-foreground">{tr("selectAPassageThenUse")}</p>
+                    <AnchoredText ref={textRef} text={current.text} comments={current.comments} label={tr("submittedText")} />
                   </>
                 )}
                 {current.jobDescription && (
                   <details>
-                    <summary className="cursor-pointer font-medium">Job or program description</summary>
+                    <summary className="cursor-pointer font-medium">{tr("jobOrProgramDescription")}</summary>
                     <p className="mt-2 whitespace-pre-wrap">{current.jobDescription}</p>
                   </details>
                 )}
@@ -489,7 +496,7 @@ function Workspace({ id, isAdmin, onBack }: { id: string; isAdmin: boolean; onBa
             </Card>
 
             {d.versions.length > 1 && (
-              <Card title="Earlier versions">
+              <Card title={tr("earlierVersions")}>
                 <ul className="space-y-4">
                   {d.versions
                     .filter((v) => v.number !== d.currentVersion)
@@ -498,7 +505,7 @@ function Workspace({ id, isAdmin, onBack }: { id: string; isAdmin: boolean; onBa
                       <li key={v.id}>
                         <details>
                           <summary className="cursor-pointer text-sm font-medium">
-                            Version {v.number} · returned {formatDate(v.returnedAt, true)} {v.reviewer?.name ? `by ${v.reviewer.name}` : ""}
+                            {tr("versionNumberReturnedReturnedAt", { number: v.number, returnedAt: formatDate(v.returnedAt, true) })}{" "}{v.reviewer?.name ? tr("byName", { name: v.reviewer.name }) : ""}
                           </summary>
                           <div className="mt-2 space-y-3 text-sm">
                             {v.file && (
@@ -506,7 +513,7 @@ function Workspace({ id, isAdmin, onBack }: { id: string; isAdmin: boolean; onBa
                                 {v.file.fileName}
                               </Button>
                             )}
-                            {v.text && <AnchoredText text={v.text} comments={v.comments} label={`Text of version ${v.number}`} />}
+                            {v.text && <AnchoredText text={v.text} comments={v.comments} label={tr("textOfVersionNumber", { number: v.number })} />}
                             <p className="whitespace-pre-wrap">{v.summary}</p>
                             <RubricTable rubric={v.rubric ?? []} />
                             <CommentList comments={v.comments} />
@@ -520,20 +527,20 @@ function Workspace({ id, isAdmin, onBack }: { id: string; isAdmin: boolean; onBa
           </div>
 
           <div className="space-y-6">
-            <Card title="Review">
-              {!canReview && isOpen && <p className="mb-3 text-sm text-muted-foreground">This review is assigned to someone else.</p>}
-              {!isOpen && <p className="mb-3 text-sm text-muted-foreground">Returned {formatDate(current.returnedAt, true)}. The student can send a new version.</p>}
+            <Card title={tr("review")}>
+              {!canReview && isOpen && <p className="mb-3 text-sm text-muted-foreground">{tr("thisReviewIsAssignedTo")}</p>}
+              {!isOpen && <p className="mb-3 text-sm text-muted-foreground">{tr("returnedReturnedAtTheStudentCan", { returnedAt: formatDate(current.returnedAt, true) })}</p>}
               <fieldset disabled={!canReview || busy !== null} className="space-y-4">
-                <Field label="Overall summary" hint="Required before returning. Write your own feedback; the student sees it as written.">
+                <Field label={tr("overallSummary")} hint={tr("requiredBeforeReturningWriteYour")}>
                   {(p) => (
                     <textarea {...p} rows={5} maxLength={5000} value={form.summary} onChange={(e) => setDraft({ ...form, summary: e.target.value })} />
                   )}
                 </Field>
                 <div className="space-y-3">
-                  <h3 className="text-sm font-semibold">Checklist</h3>
+                  <h3 className="text-sm font-semibold">{tr("checklist")}</h3>
                   {d.rubricTemplate.map((t) => (
                     <div key={t.key} className="grid gap-2 sm:grid-cols-[1fr_10rem]">
-                      <Field label={`${t.label}: note`}>
+                      <Field label={tr("labelNote", { label: t.label })}>
                         {(p) => (
                           <input
                             {...p}
@@ -543,14 +550,14 @@ function Workspace({ id, isAdmin, onBack }: { id: string; isAdmin: boolean; onBa
                           />
                         )}
                       </Field>
-                      <Field label={`${t.label}: result`}>
+                      <Field label={tr("labelResult", { label: t.label })}>
                         {(p) => (
                           <select
                             {...p}
                             value={form.ratings[t.key]?.rating ?? ""}
                             onChange={(e) => setDraft({ ...form, ratings: { ...form.ratings, [t.key]: { note: form.ratings[t.key]?.note ?? "", rating: e.target.value } } })}
                           >
-                            <option value="">Not rated</option>
+                            <option value="">{tr("notRated")}</option>
                             {Object.entries(RATING_LABELS).map(([k, v]) => (
                               <option key={k} value={k}>
                                 {v}
@@ -564,7 +571,7 @@ function Workspace({ id, isAdmin, onBack }: { id: string; isAdmin: boolean; onBa
                 </div>
                 <div className="flex flex-wrap gap-2">
                   <Button variant="secondary" busy={busy === "save"} onClick={() => void saveReview()}>
-                    Save draft
+                    {tr("saveDraft")}
                   </Button>
                   <Button
                     busy={busy === "return"}
@@ -573,63 +580,63 @@ function Workspace({ id, isAdmin, onBack }: { id: string; isAdmin: boolean; onBa
                         // Save edits first so what's returned matches the screen
                         await saveReview();
                       }
-                      void act("return", () => post("/return"), "Returned to the student. They've been notified.");
+                      void act("return", () => post("/return"), tr("returnedToTheStudentTheyve"));
                     }}
                   >
-                    Return to student
+                    {tr("returnToStudent")}
                   </Button>
                 </div>
               </fieldset>
             </Card>
 
-            <Card title="Comments">
+            <Card title={tr("comments")}>
               {canReview && (
                 <form onSubmit={addComment} className="mb-4 space-y-3">
                   {current.text && (
                     <div className="flex flex-wrap items-center gap-2 text-sm">
                       <Button type="button" variant="secondary" onClick={() => {
                         const sel = selectionOffsets(textRef.current);
-                        if (!sel) setError("Select a passage in the submitted text first.");
+                        if (!sel) setError(tr("selectAPassageInThe"));
                         else {
                           setError(null);
                           setAnchor(sel);
                         }
                       }}>
-                        Comment on selection
+                        {tr("commentOnSelection")}
                       </Button>
                       {anchor ? (
                         <span>
-                          On: <q className="italic">{anchor.text.length > 80 ? anchor.text.slice(0, 80) + "…" : anchor.text}</q>{" "}
+                          {tr("on")}{" "}<q className="italic">{anchor.text.length > 80 ? anchor.text.slice(0, 80) + "…" : anchor.text}</q>{" "}
                           <Button type="button" variant="ghost" className="px-1 py-0 text-xs" onClick={() => setAnchor(null)}>
-                            Clear
+                            {tr("clear")}
                           </Button>
                         </span>
                       ) : (
-                        <span className="text-muted-foreground">General comment</span>
+                        <span className="text-muted-foreground">{tr("generalComment")}</span>
                       )}
                     </div>
                   )}
                   {current.file && (
-                    <Field label="Page (optional)">
+                    <Field label={tr("pageOptional")}>
                       {(p) => <input {...p} type="number" min={1} max={500} value={page} onChange={(e) => setPage(e.target.value)} />}
                     </Field>
                   )}
-                  <Field label="Comment">
+                  <Field label={tr("comment")}>
                     {(p) => <textarea {...p} rows={3} maxLength={2000} value={commentBody} onChange={(e) => setCommentBody(e.target.value)} />}
                   </Field>
                   <Button type="submit" variant="secondary" busy={busy === "comment"}>
-                    Add comment
+                    {tr("addComment")}
                   </Button>
                 </form>
               )}
               <CommentList
                 comments={current.comments}
                 busyId={busy?.startsWith("del-") ? busy.slice(4) : null}
-                onDelete={canReview ? (c: ReviewComment) => act("del-" + c.id, () => api<ReviewDetail>(`/api/career/doc-review/staff/requests/${id}/comments/${c.id}`, { method: "DELETE" }), "Comment deleted.") : undefined}
+                onDelete={canReview ? (c: ReviewComment) => act("del-" + c.id, () => api<ReviewDetail>(`/api/career/doc-review/staff/requests/${id}/comments/${c.id}`, { method: "DELETE" }), tr("commentDeleted")) : undefined}
               />
             </Card>
 
-            <Card title="Annotated file">
+            <Card title={tr("annotatedFile")}>
               {current.annotatedFile ? (
                 <p className="mb-3 text-sm">
                   <Button variant="ghost" className="px-1 py-0 underline" onClick={() => download(current.annotatedFile!)}>
@@ -638,7 +645,7 @@ function Workspace({ id, isAdmin, onBack }: { id: string; isAdmin: boolean; onBa
                   <span className="text-muted-foreground">({formatSize(current.annotatedFile.sizeBytes)})</span>
                 </p>
               ) : (
-                <p className="mb-3 text-sm text-muted-foreground">Optional: upload a marked-up copy for the student.</p>
+                <p className="mb-3 text-sm text-muted-foreground">{tr("optionalUploadAMarkedUp")}</p>
               )}
               {canReview && (
                 <form
@@ -646,29 +653,29 @@ function Workspace({ id, isAdmin, onBack }: { id: string; isAdmin: boolean; onBa
                   onSubmit={(e) => {
                     e.preventDefault();
                     const f = annotatedRef.current?.files?.[0];
-                    if (!f) return setError("Choose a file to upload.");
-                    if (f.size > 10 * 1024 * 1024) return setError("Files can be up to 10 MB.");
+                    if (!f) return setError(tr("chooseAFileToUpload"));
+                    if (f.size > 10 * 1024 * 1024) return setError(tr("filesCanBeUpTo"));
                     const fd = new FormData();
                     fd.append("file", f);
-                    void act("annotated", () => api<ReviewDetail>(`/api/career/doc-review/staff/requests/${id}/annotated`, { method: "POST", body: fd }), "Annotated file uploaded.", () => {
+                    void act("annotated", () => api<ReviewDetail>(`/api/career/doc-review/staff/requests/${id}/annotated`, { method: "POST", body: fd }), tr("annotatedFileUploaded"), () => {
                       if (annotatedRef.current) annotatedRef.current.value = "";
                     });
                   }}
                 >
-                  <Field label={current.annotatedFile ? "Replace annotated file" : "Annotated file"} hint="PDF, Word, PNG, JPEG or text, up to 10 MB.">
+                  <Field label={current.annotatedFile ? tr("replaceAnnotatedFile") : tr("annotatedFile")} hint={tr("pDFWordPNGJPEGOr")}>
                     {(p) => <input {...p} ref={annotatedRef} type="file" accept=".pdf,.docx,.png,.jpg,.jpeg,.txt" />}
                   </Field>
                   <Button type="submit" variant="secondary" busy={busy === "annotated"}>
-                    Upload
+                    {tr("upload")}
                   </Button>
                 </form>
               )}
             </Card>
 
             {(d.rating || d.ratingComment) && (
-              <Card title="Student feedback">
+              <Card title={tr("studentFeedback")}>
                 <p className="text-sm">
-                  Helpfulness: {d.rating ?? "—"} / 5{d.ratingComment ? ` · “${d.ratingComment}”` : ""}
+                  {tr("helpfulnessRating5", { rating: d.rating ?? "—" })}{d.ratingComment ? ` · “${d.ratingComment}”` : ""}
                 </p>
               </Card>
             )}
@@ -680,6 +687,7 @@ function Workspace({ id, isAdmin, onBack }: { id: string; isAdmin: boolean; onBa
 }
 
 function MetricsPanel() {
+  const tr = useCareerT("careerCenterDocumentReview");
   const api = useApi();
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
@@ -694,7 +702,7 @@ function MetricsPanel() {
     setError(null);
     try {
       const res = await api<Response>(`/api/career/doc-review/staff/metrics.csv?${query}`, { raw: true });
-      if (!res.ok) throw new Error(`Export failed (${res.status}).`);
+      if (!res.ok) throw new Error(tr("exportFailedStatus", { status: res.status }));
       const url = URL.createObjectURL(await res.blob());
       const a = document.createElement("a");
       a.href = url;
@@ -715,13 +723,13 @@ function MetricsPanel() {
     <div className="space-y-4">
       <Card>
         <div className="flex flex-wrap items-end gap-3">
-          <Field label="From">{(p) => <input {...p} type="date" value={from} onChange={(e) => setFrom(e.target.value)} />}</Field>
-          <Field label="To">{(p) => <input {...p} type="date" value={to} onChange={(e) => setTo(e.target.value)} />}</Field>
+          <Field label={tr("from")}>{(p) => <input {...p} type="date" value={from} onChange={(e) => setFrom(e.target.value)} />}</Field>
+          <Field label={tr("to")}>{(p) => <input {...p} type="date" value={to} onChange={(e) => setTo(e.target.value)} />}</Field>
           <Button variant="secondary" onClick={() => void exportCsv()}>
-            Export CSV
+            {tr("exportCSV")}
           </Button>
         </div>
-        <p className="mt-2 text-xs text-muted-foreground">Defaults to the last 90 days.</p>
+        <p className="mt-2 text-xs text-muted-foreground">{tr("defaultsToTheLast90")}</p>
       </Card>
       <ErrorBanner error={metrics.error || error} onRetry={metrics.reload} />
       {metrics.loading && !m ? (
@@ -729,47 +737,47 @@ function MetricsPanel() {
       ) : m ? (
         <>
           <dl className="grid gap-3 sm:grid-cols-3 lg:grid-cols-6" aria-live="polite">
-            {stat("Submitted", m.submitted)}
-            {stat("Returned", m.returned)}
-            {stat("Median turnaround", m.medianTurnaroundHours == null ? "—" : waiting(m.medianTurnaroundHours))}
-            {stat("On time", m.onTimePercent == null ? "—" : `${m.onTimePercent}%`)}
-            {stat("Open now (unassigned)", `${m.open} (${m.unassigned})`)}
-            {stat("Overdue now", m.overdue)}
+            {stat(tr("submitted"), m.submitted)}
+            {stat(tr("returned"), m.returned)}
+            {stat(tr("medianTurnaround"), m.medianTurnaroundHours == null ? "—" : waiting(m.medianTurnaroundHours))}
+            {stat(tr("onTime"), m.onTimePercent == null ? "—" : `${m.onTimePercent}%`)}
+            {stat(tr("openNowUnassigned"), `${m.open} (${m.unassigned})`)}
+            {stat(tr("overdueNow"), m.overdue)}
           </dl>
-          <Card title="By reviewer">
+          <Card title={tr("byReviewer")}>
             {m.reviewers.length === 0 ? (
-              <EmptyState title="No reviews in this period" />
+              <EmptyState title={tr("noReviewsInThisPeriod")} />
             ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full min-w-[560px] text-left text-sm">
-                  <caption className="sr-only">Reviews by reviewer</caption>
+              <ScrollArea>
+                <table className="w-full min-w-[560px] text-start text-sm [&_th]:text-start">
+                  <caption className="sr-only">{tr("reviewsByReviewer")}</caption>
                   <thead>
                     <tr className="border-b border-border text-xs text-muted-foreground">
-                      <th scope="col" className="py-2 pr-3 font-medium">Reviewer</th>
-                      <th scope="col" className="py-2 pr-3 font-medium">Returned</th>
-                      <th scope="col" className="py-2 pr-3 font-medium">Median turnaround</th>
-                      <th scope="col" className="py-2 pr-3 font-medium">On time</th>
-                      <th scope="col" className="py-2 pr-3 font-medium">Avg. rating</th>
-                      <th scope="col" className="py-2 font-medium">Open assigned</th>
+                      <th scope="col" className="py-2 pe-3 font-medium">{tr("reviewer")}</th>
+                      <th scope="col" className="py-2 pe-3 font-medium">{tr("returned")}</th>
+                      <th scope="col" className="py-2 pe-3 font-medium">{tr("medianTurnaround")}</th>
+                      <th scope="col" className="py-2 pe-3 font-medium">{tr("onTime")}</th>
+                      <th scope="col" className="py-2 pe-3 font-medium">{tr("avgRating")}</th>
+                      <th scope="col" className="py-2 font-medium">{tr("openAssigned")}</th>
                     </tr>
                   </thead>
                   <tbody>
                     {m.reviewers.map((r) => (
                       <tr key={r.userId ?? r.name} className="border-b border-border last:border-0">
-                        <th scope="row" className="py-2 pr-3 font-medium">{r.name}</th>
-                        <td className="py-2 pr-3">{r.returned}</td>
-                        <td className="py-2 pr-3">{r.medianTurnaroundHours == null ? "—" : waiting(r.medianTurnaroundHours)}</td>
-                        <td className="py-2 pr-3">{r.onTimePercent == null ? "—" : `${r.onTimePercent}%`}</td>
-                        <td className="py-2 pr-3">{r.averageRating ?? "—"}</td>
+                        <th scope="row" className="py-2 pe-3 font-medium">{r.name}</th>
+                        <td className="py-2 pe-3">{r.returned}</td>
+                        <td className="py-2 pe-3">{r.medianTurnaroundHours == null ? "—" : waiting(r.medianTurnaroundHours)}</td>
+                        <td className="py-2 pe-3">{r.onTimePercent == null ? "—" : `${r.onTimePercent}%`}</td>
+                        <td className="py-2 pe-3">{r.averageRating ?? "—"}</td>
                         <td className="py-2">{r.openAssigned}</td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
-              </div>
+              </ScrollArea>
             )}
           </Card>
-          <Card title="Submitted by document type">
+          <Card title={tr("submittedByDocumentType")}>
             <ul className="grid gap-2 text-sm sm:grid-cols-3">
               {m.byKind.map((k) => (
                 <li key={k.kind}>
@@ -784,15 +792,15 @@ function MetricsPanel() {
   );
 }
 
-const KIND_LABELS: Record<string, string> = {
-  Resume: "Resume",
-  CoverLetter: "Cover letter",
-  PersonalStatement: "Personal statement",
-  LinkedInSummary: "LinkedIn summary",
-  Other: "Other",
-};
+const KIND_LABELS_KEYS = ["Resume", "CoverLetter", "PersonalStatement", "LinkedInSummary", "Other"];
+/** kind labels in the career language (G1) */
+function useKindLabels(): Record<string, string> {
+  return useCareerLabels("careerCenterDocumentReview.kind", KIND_LABELS_KEYS);
+}
 
 function SettingsPanel({ isAdmin }: { isAdmin: boolean }) {
+  const tr = useCareerT("careerCenterDocumentReview");
+  const KIND_LABELS = useKindLabels();
   const api = useApi();
   const settings = useLoad(() => api<Settings>("/api/career/doc-review/staff/settings"), []);
   const [edits, setEdits] = useState<{ sla?: string; urgent?: string; rubrics: Record<string, string> }>({ rubrics: {} });
@@ -820,7 +828,7 @@ function SettingsPanel({ isAdmin }: { isAdmin: boolean }) {
       });
       settings.setData(next);
       setEdits({ rubrics: {} });
-      setMessage("Settings saved.");
+      setMessage(tr("settingsSaved"));
     } catch (err) {
       setError((err as Error).message);
     } finally {
@@ -836,21 +844,21 @@ function SettingsPanel({ isAdmin }: { isAdmin: boolean }) {
       {s && (
         <form onSubmit={save}>
           <fieldset disabled={!isAdmin || busy} className="space-y-4">
-            {!isAdmin && <p className="text-sm text-muted-foreground">Only career admins can change these settings.</p>}
-            <Card title="Turnaround">
+            {!isAdmin && <p className="text-sm text-muted-foreground">{tr("onlyCareerAdminsCanChange")}</p>}
+            <Card title={tr("turnaround")}>
               <div className="grid gap-3 sm:grid-cols-2">
-                <Field label="Review target (business days)" hint={`Counted Monday to Friday in the school's time zone (${s.timeZone}).`}>
+                <Field label={tr("reviewTargetBusinessDays")} hint={tr("countedMondayToFridayIn", { timeZone: s.timeZone })}>
                   {(p) => <input {...p} type="number" min={1} max={20} value={edits.sla ?? String(s.slaBusinessDays)} onChange={(e) => setEdits({ ...edits, sla: e.target.value })} />}
                 </Field>
-                <Field label="Urgent when the student's deadline is within (days)">
+                <Field label={tr("urgentWhenTheStudentsDeadline")}>
                   {(p) => <input {...p} type="number" min={0} max={60} value={edits.urgent ?? String(s.urgentWithinDays)} onChange={(e) => setEdits({ ...edits, urgent: e.target.value })} />}
                 </Field>
               </div>
             </Card>
-            <Card title="Checklists">
+            <Card title={tr("checklists")}>
               <div className="grid gap-4 md:grid-cols-2">
                 {Object.entries(s.rubrics).map(([kind, items]) => (
-                  <Field key={kind} label={`${KIND_LABELS[kind] ?? kind} checklist`} hint="One item per line (1 to 15).">
+                  <Field key={kind} label={tr("kindChecklist", { kind: KIND_LABELS[kind] ?? kind })} hint={tr("oneItemPerLine1")}>
                     {(p) => (
                       <textarea
                         {...p}
@@ -863,10 +871,10 @@ function SettingsPanel({ isAdmin }: { isAdmin: boolean }) {
                 ))}
               </div>
             </Card>
-            <p className="text-xs text-muted-foreground">Student peer reviewers are not available yet; reviews are done by counselors and career admins.</p>
+            <p className="text-xs text-muted-foreground">{tr("studentPeerReviewersAreNot")}</p>
             {isAdmin && (
               <Button type="submit" busy={busy}>
-                Save settings
+                {tr("saveSettings")}
               </Button>
             )}
           </fieldset>

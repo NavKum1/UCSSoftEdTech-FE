@@ -1,29 +1,23 @@
+import { useCareerLabels } from "@/components/career/ui";
 // Shared labels for D4 verified outcomes (staff outcomes page and the student "My next step" page)
 
-export const EMPLOYMENT_TYPE_LABELS: Record<string, string> = {
-  FullTime: "Full-time job",
-  PartTime: "Part-time job",
-  Internship: "Internship",
-  Contract: "Contract",
-  Fellowship: "Fellowship",
-  ContinuingEducation: "Continuing education",
-  Military: "Military service",
-  Volunteer: "Volunteer or service",
-};
+export const EMPLOYMENT_TYPE_LABELS_KEYS = ["FullTime", "PartTime", "Internship", "Contract", "Fellowship", "ContinuingEducation", "Military", "Volunteer"];
+/** employment type labels in the career language (G1) */
+export function useEmploymentTypeLabels(): Record<string, string> {
+  return useCareerLabels("outcomesLabels.employmentType", EMPLOYMENT_TYPE_LABELS_KEYS);
+}
 
-export const SOURCE_LABELS: Record<string, string> = {
-  EmployerReported: "Employer offer (on-campus recruiting)",
-  AtsWebhook: "Employer applicant tracking system",
-  HireWebhook: "Employer hiring system",
-  StaffResearch: "Career center research",
-  StudentReported: "Student",
-};
+export const SOURCE_LABELS_KEYS = ["EmployerReported", "AtsWebhook", "HireWebhook", "StaffResearch", "PlatformImport", "StudentReported"];
+/** source labels in the career language (G1) */
+export function useSourceLabels(): Record<string, string> {
+  return useCareerLabels("outcomesLabels.source", SOURCE_LABELS_KEYS);
+}
 
-export const VERIFICATION_LABELS: Record<string, string> = {
-  EmployerVerified: "Verified by employer",
-  StaffConfirmed: "Confirmed by staff",
-  SelfReported: "Self-reported",
-};
+export const VERIFICATION_LABELS_KEYS = ["EmployerVerified", "StaffConfirmed", "SelfReported"];
+/** verification labels in the career language (G1) */
+export function useVerificationLabels(): Record<string, string> {
+  return useCareerLabels("outcomesLabels.verification", VERIFICATION_LABELS_KEYS);
+}
 
 export const VERIFICATION_TONE: Record<string, "good" | "info" | "neutral"> = {
   EmployerVerified: "good",
@@ -31,16 +25,17 @@ export const VERIFICATION_TONE: Record<string, "good" | "info" | "neutral"> = {
   SelfReported: "neutral",
 };
 
-export const SALARY_BAND_LABELS: Record<string, string> = {
-  Under30k: "Under $30,000",
-  "30to50k": "$30,000–$49,999",
-  "50to75k": "$50,000–$74,999",
-  "75to100k": "$75,000–$99,999",
-  "100to150k": "$100,000–$149,999",
-  "150kPlus": "$150,000 or more",
-};
+export const SALARY_BAND_LABELS_KEYS = ["Under30k", "30to50k", "50to75k", "75to100k", "100to150k", "150kPlus"];
+/** salary band labels in the career language (G1) */
+export function useSalaryBandLabels(): Record<string, string> {
+  return useCareerLabels("outcomesLabels.salaryBand", SALARY_BAND_LABELS_KEYS);
+}
 
-export const STATUS_LABELS: Record<string, string> = { Seeking: "Still looking", NotSeeking: "Not looking right now" };
+export const STATUS_LABELS_KEYS = ["Seeking", "NotSeeking"];
+/** status labels in the career language (G1) */
+export function useStatusLabels(): Record<string, string> {
+  return useCareerLabels("outcomesLabels.status", STATUS_LABELS_KEYS);
+}
 
 export interface Placement {
   id: string;

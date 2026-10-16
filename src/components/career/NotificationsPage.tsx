@@ -5,7 +5,8 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { useApi } from "@/lib/appAuth";
-import { Badge, Button, Card, EmptyState, ErrorBanner, Loading, PageHeader, SuccessBanner, formatDate, useLoad } from "@/components/career/ui";
+import { NonEssential, useDataSaver, useListSize } from "@/components/career/mobile/dataSaver";
+import { Badge, Button, Card, EmptyState, ErrorBanner, Loading, PageHeader, SuccessBanner, useLoad, ScrollArea, useCareerFormat, useCareerT } from "@/components/career/ui";
 
 export interface CareerNotificationItem {
   id: string;
@@ -23,15 +24,29 @@ interface Preference {
   email: boolean;
 }
 
-function categoryLabel(category: string) {
+// Readable name for a category such as "appointments.booked"; a message under notifications.category
+// ("appointments_booked") replaces the generated English one
+function generatedLabel(category: string) {
   const text = category.replace(/[._-]+/g, " ").trim();
   return text.charAt(0).toUpperCase() + text.slice(1);
 }
 
 export default function NotificationsPage() {
   const api = useApi();
-  const list = useLoad(() => api<{ unread: number; items: CareerNotificationItem[] }>("/api/career/notifications?take=100"), [api]);
-  const prefs = useLoad(() => api<Preference[]>("/api/career/notifications/preferences"), [api]);
+  const t = useCareerT("notifications");
+  const tMobile = useCareerT("mobile");
+  const fmt = useCareerFormat();
+  const categoryLabel = (category: string) => {
+    const key = `category.${category.replace(/./g, "_")}`;
+    return t.has(key) ? t(key) : generatedLabel(category);
+  };
+  // G10 data saver: fewer items, and the settings table loads only when asked for
+  const take = useListSize(100, 25);
+  const saver = useDataSaver().on;
+  const [prefsWanted, setPrefsWanted] = useState(false);
+  const loadPrefs = !saver || prefsWanted;
+  const list = useLoad(() => api<{ unread: number; items: CareerNotificationItem[] }>(`/api/career/notifications?take=${take}`), [api, take]);
+  const prefs = useLoad(() => (loadPrefs ? api<Preference[]>("/api/career/notifications/preferences") : Promise.resolve(null)), [api, loadPrefs]);
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
@@ -57,7 +72,7 @@ export default function NotificationsPage() {
     setError(null);
     try {
       const r = await api<{ marked: number }>("/api/career/notifications/read-all", { method: "POST" });
-      setMessage(r.marked === 1 ? "1 notification marked as read." : `${r.marked} notifications marked as read.`);
+      setMessage(t("markedRead", { count: r.marked }));
       list.reload();
     } catch (e) {
       setError((e as Error).message);
@@ -77,7 +92,7 @@ export default function NotificationsPage() {
     try {
       const saved = await api<Preference>("/api/career/notifications/preferences", { method: "PUT", json: next });
       prefs.setData((d) => [...(d ?? []).filter((p) => p.category !== c), saved]);
-      setMessage(`Preferences saved for ${categoryLabel(c)}.`);
+      setMessage(t("prefsSaved", { kind: categoryLabel(c) }));
     } catch (e) {
       setError((e as Error).message);
     } finally {
@@ -88,11 +103,11 @@ export default function NotificationsPage() {
   return (
     <div>
       <PageHeader
-        title="Notifications"
-        description={unread ? `You have ${unread} unread notification${unread === 1 ? "" : "s"}.` : "You're all caught up."}
+        title={t("title")}
+        description={unread ? t("unreadSummary", { count: unread }) : t("allCaughtUp")}
         actions={
           <Button variant="secondary" onClick={markAll} busy={busy === "all"} disabled={unread === 0}>
-            Mark all as read
+            {t("markAllRead")}
           </Button>
         }
       />
@@ -102,40 +117,40 @@ export default function NotificationsPage() {
       {list.loading && !list.data ? (
         <Loading />
       ) : items.length === 0 ? (
-        <EmptyState title="No notifications yet">Updates about your account and activity will appear here.</EmptyState>
+        <EmptyState title={t("emptyTitle")}>{t("emptyBody")}</EmptyState>
       ) : (
-        <ul className="space-y-2" aria-label="Notifications">
+        <ul className="space-y-2" aria-label={t("listLabel")}>
           {items.map((n) => {
             const isUnread = !n.readAt;
             return (
               <li
                 key={n.id}
-                className={`rounded-xl border p-4 ${isUnread ? "border-l-4 bg-card" : "border-border bg-background"}`}
-                style={isUnread ? { borderLeftColor: "var(--brand, #4f46e5)" } : undefined}
+                className={`rounded-xl border p-4 ${isUnread ? "border-s-4 bg-card" : "border-border bg-background"}`}
+                style={isUnread ? { borderInlineStartColor: "var(--brand, #4f46e5)" } : undefined}
               >
                 <div className="flex flex-wrap items-start justify-between gap-2">
                   <div className="min-w-0">
                     <p className={isUnread ? "font-semibold" : "font-medium"}>
-                      {isUnread && <span className="sr-only">Unread: </span>}
+                      {isUnread && <span className="sr-only">{t("unreadPrefix")}</span>}
                       {n.title}
                     </p>
                     {n.body && <p className="mt-1 text-sm text-muted-foreground">{n.body}</p>}
                     <p className="mt-2 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-                      <Badge tone={isUnread ? "info" : "neutral"}>{isUnread ? "New" : "Read"}</Badge>
+                      <Badge tone={isUnread ? "info" : "neutral"}>{isUnread ? t("badgeNew") : t("badgeRead")}</Badge>
                       <span>{categoryLabel(n.category)}</span>
                       <span aria-hidden>·</span>
-                      <time dateTime={n.createdAt}>{formatDate(n.createdAt, true)}</time>
+                      <time dateTime={n.createdAt}>{fmt.dateTime(n.createdAt)}</time>
                     </p>
                   </div>
                   <div className="flex gap-2">
                     {n.link && n.link.startsWith("/") && (
                       <Link href={n.link} className="rounded-md border border-border px-3 py-2 text-sm hover:bg-muted" onClick={() => isUnread && markRead(n)}>
-                        Open
+                        {t("open")}
                       </Link>
                     )}
                     {isUnread && (
                       <Button variant="ghost" onClick={() => markRead(n)} busy={busy === n.id}>
-                        Mark read
+                        {t("markRead")}
                       </Button>
                     )}
                   </div>
@@ -146,18 +161,19 @@ export default function NotificationsPage() {
         </ul>
       )}
 
-      <Card title="Notification preferences" className="mt-8">
+      <NonEssential name={tMobile("notificationPrefs")} onLoad={() => setPrefsWanted(true)}>
+      <Card title={t("prefsTitle")} className="mt-8">
         {categories.length === 0 ? (
-          <p className="text-sm text-muted-foreground">Preferences appear here for each kind of notification you receive.</p>
+          <p className="text-sm text-muted-foreground">{t("prefsEmpty")}</p>
         ) : (
-          <div className="overflow-x-auto">
+          <ScrollArea>
             <table className="w-full text-sm">
-              <caption className="sr-only">Choose how you receive each kind of notification</caption>
+              <caption className="sr-only">{t("prefsCaption")}</caption>
               <thead>
-                <tr className="border-b border-border text-left">
-                  <th scope="col" className="py-2 pr-4 font-medium">Kind</th>
-                  <th scope="col" className="py-2 pr-4 font-medium">In app</th>
-                  <th scope="col" className="py-2 font-medium">Email</th>
+                <tr className="border-b border-border text-start [&_th]:text-start">
+                  <th scope="col" className="py-2 pe-4 font-medium">{t("colKind")}</th>
+                  <th scope="col" className="py-2 pe-4 font-medium">{t("colInApp")}</th>
+                  <th scope="col" className="py-2 font-medium">{t("colEmail")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -166,21 +182,22 @@ export default function NotificationsPage() {
                   const label = categoryLabel(c);
                   return (
                     <tr key={c} className="border-b border-border last:border-0">
-                      <th scope="row" className="py-2 pr-4 text-left font-normal">{label}</th>
-                      <td className="py-2 pr-4">
-                        <input type="checkbox" className="h-4 w-4" aria-label={`${label}: show in app`} checked={p.inApp} disabled={busy === `pref:${c}`} onChange={(e) => setPref(c, { inApp: e.target.checked })} />
+                      <th scope="row" className="py-2 pe-4 text-start font-normal">{label}</th>
+                      <td className="py-2 pe-4">
+                        <input type="checkbox" className="h-4 w-4" aria-label={t("showInApp", { kind: label })} checked={p.inApp} disabled={busy === `pref:${c}`} onChange={(e) => setPref(c, { inApp: e.target.checked })} />
                       </td>
                       <td className="py-2">
-                        <input type="checkbox" className="h-4 w-4" aria-label={`${label}: send email`} checked={p.email} disabled={busy === `pref:${c}`} onChange={(e) => setPref(c, { email: e.target.checked })} />
+                        <input type="checkbox" className="h-4 w-4" aria-label={t("sendEmail", { kind: label })} checked={p.email} disabled={busy === `pref:${c}`} onChange={(e) => setPref(c, { email: e.target.checked })} />
                       </td>
                     </tr>
                   );
                 })}
               </tbody>
             </table>
-          </div>
+          </ScrollArea>
         )}
       </Card>
+      </NonEssential>
     </div>
   );
 }

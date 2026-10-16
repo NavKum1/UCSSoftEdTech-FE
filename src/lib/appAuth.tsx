@@ -12,7 +12,7 @@ import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useAuth, useUser, UserButton } from "@clerk/nextjs";
 import { SessionProvider, getSession, signIn, useSession } from "next-auth/react";
 import { LogOut } from "lucide-react";
-import { authenticatedFetch } from "@/lib/apiClient";
+import { API_BASE_URL, REGION_ROUTING, authenticatedFetch, getApiRegion, setApiRegion } from "@/lib/apiClient";
 import { getPartnerSession, usePartnerToken } from "@/lib/partnerSession";
 
 export type AuthProviderName = "clerk" | "keycloak";
@@ -83,11 +83,72 @@ export function keycloakSignIn(redirectTo: string, loginHint?: string) {
   return signIn("keycloak", { redirectTo }, loginHint ? { login_hint: loginHint } : undefined);
 }
 
+// G8 regional hosting: who is signed in, for routing this tab to the region that hosts their school
+function useClerkIdentity(): { userId: string | null; email: string | null } {
+  const { userId } = useAuth();
+  const { user } = useUser();
+  return { userId: userId ?? null, email: user?.primaryEmailAddress?.emailAddress ?? null };
+}
+
+function useKeycloakIdentity(): { userId: string | null; email: string | null } {
+  const { data: session, status } = useSession();
+  const ok = status === "authenticated" && !session?.error;
+  return { userId: ok ? (session?.user?.id ?? null) : null, email: ok ? (session?.user?.email ?? null) : null };
+}
+
+const useIdentity = AUTH_PROVIDER === "keycloak" ? useKeycloakIdentity : useClerkIdentity;
+
+/**
+ * G8: after sign-in, asks the default API (the region directory) which region hosts the user's email domain and points this
+ * tab's API calls there (see apiClient.ts). Rendered only when NEXT_PUBLIC_API_REGIONS is set; renders nothing.
+ * A wrong-region answer from any API call does the same, so this is only a head start that saves one refused request.
+ */
+function RegionRouting() {
+  const { userId, email } = useIdentity();
+  useEffect(() => {
+    if (!userId) return;
+    const stored = getApiRegion();
+    if (stored?.user && stored.user !== userId) {
+      setApiRegion(null); // a different user signed in in this tab: start again from the default API
+    } else if (stored) {
+      if (!stored.user) setApiRegion(stored.region, userId); // switched by a wrong-region answer before we knew the user
+      return;
+    }
+    const domain = email?.split("@")[1];
+    if (!domain) return;
+    let cancelled = false;
+    fetch(`${API_BASE_URL}/api/career/region-lookup?domain=${encodeURIComponent(domain)}`, { cache: "no-store" })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((b: { region?: unknown } | null) => {
+        if (!cancelled && typeof b?.region === "string") setApiRegion(b.region, userId);
+      })
+      .catch(() => {
+        // Lookup unavailable: calls go to the default API, which answers wrong-region if needed
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [userId, email]);
+  return null;
+}
+
 /** Wraps the app in the session context the Keycloak hooks need; a no-op in Clerk mode (ClerkProvider is in the root layout). */
 export function AppAuthProvider({ children }: { children: React.ReactNode }) {
-  if (AUTH_PROVIDER !== "keycloak") return <>{children}</>;
+  const routing = REGION_ROUTING ? <RegionRouting /> : null;
+  if (AUTH_PROVIDER !== "keycloak")
+    return (
+      <>
+        {routing}
+        {children}
+      </>
+    );
   // Re-check the session every 4 minutes so the access token is refreshed before the 5-minute expiry
-  return <SessionProvider refetchInterval={240}>{children}</SessionProvider>;
+  return (
+    <SessionProvider refetchInterval={240}>
+      {routing}
+      {children}
+    </SessionProvider>
+  );
 }
 
 const SCHOOL_KEY = "career.school";

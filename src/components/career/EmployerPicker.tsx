@@ -4,7 +4,7 @@
 
 import React, { useState } from "react";
 import { useApi } from "@/lib/appAuth";
-import { useLoad } from "@/components/career/ui";
+import { useLoad, useCareerT } from "@/components/career/ui";
 
 export interface EmployerOrg {
   id: string;
@@ -58,10 +58,11 @@ export function useEmployers() {
 }
 
 export function EmployerPicker({ accounts, current, onSelect }: { accounts: EmployerAccount[]; current: EmployerAccount | null; onSelect: (id: string) => void }) {
+  const t = useCareerT("employerPicker");
   if (accounts.length < 2) return null;
   return (
     <label className="flex items-center gap-2 text-sm">
-      <span>Company</span>
+      <span>{t("company")}</span>
       <select className="rounded-md border border-border bg-background px-2 py-1" value={current?.employer.id ?? ""} onChange={(e) => onSelect(e.target.value)}>
         {accounts.map((a) => (
           <option key={a.employer.id} value={a.employer.id}>

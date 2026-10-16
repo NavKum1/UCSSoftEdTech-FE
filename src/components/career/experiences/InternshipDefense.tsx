@@ -5,10 +5,10 @@
  * DefenseSummaryCard sits on the student's experience page and DefenseReviewPanel on the faculty and career-center pages.
  */
 
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import Link from "next/link";
 import { useApi } from "@/lib/appAuth";
-import { Badge, Button, Card, ErrorBanner, Field, Loading, SuccessBanner, formatDate, useLoad } from "@/components/career/ui";
+import { Badge, Button, Card, ErrorBanner, Field, Loading, SuccessBanner, formatDate, useLoad, useCareerT, useCareerLabels } from "@/components/career/ui";
 
 export const DEFENSE_API = "/api/career/internship-defense";
 
@@ -63,19 +63,18 @@ export interface DefenseState {
   devToken?: string | null;
 }
 
-export const RUBRIC_LABELS: Record<string, string> = {
-  ownership: "Ownership",
-  technicalDepth: "Technical depth",
-  decisions: "Decisions and trade-offs",
-  outcomes: "Outcomes",
-};
+export const RUBRIC_LABELS_KEYS = ["ownership", "technicalDepth", "decisions", "outcomes"];
+/** rubric labels in the career language (G1) */
+export function useRubricLabels(): Record<string, string> {
+  return useCareerLabels("internshipDefense.rubric", RUBRIC_LABELS_KEYS);
+}
 
-export const ARTIFACT_KINDS: { value: string; label: string }[] = [
-  { value: "repo", label: "Code repository" },
-  { value: "document", label: "Document" },
-  { value: "demo", label: "Demo or live link" },
-  { value: "description", label: "Description only" },
-];
+const ARTIFACT_KIND_KEYS = ["repo", "document", "demo", "description"];
+/** Kinds of evidence a student can attach, in the career language (G1). */
+export function useArtifactKinds(): { value: string; label: string }[] {
+  const tr = useCareerT("internshipDefense.artifactKind");
+  return useMemo(() => ARTIFACT_KIND_KEYS.map((value) => ({ value, label: tr(value) })), [tr]);
+}
 
 const VERIFICATION_TONES: Record<string, "neutral" | "good" | "warn" | "bad" | "info"> = {
   Verified: "good",
@@ -85,20 +84,20 @@ const VERIFICATION_TONES: Record<string, "neutral" | "good" | "warn" | "bad" | "
   None: "neutral",
 };
 
-export const VERIFICATION_LABELS: Record<string, string> = {
-  Verified: "Verified",
-  PartlyVerified: "Partly verified",
-  NotVerified: "Not verified",
-  Pending: "Pending",
-  None: "Not started",
-};
+export const VERIFICATION_LABELS_KEYS = ["Verified", "PartlyVerified", "NotVerified", "Pending", "None"];
+/** verification labels in the career language (G1) */
+export function useDefenseVerificationLabels(): Record<string, string> {
+  return useCareerLabels("internshipDefense.verificationLabel", VERIFICATION_LABELS_KEYS);
+}
 
 /** Text label plus color, so meaning never depends on color alone. */
 export function VerificationBadge({ status }: { status: string }) {
+  const VERIFICATION_LABELS = useDefenseVerificationLabels();
   return <Badge tone={VERIFICATION_TONES[status] ?? "neutral"}>{VERIFICATION_LABELS[status] ?? status}</Badge>;
 }
 
 export function ArtifactList({ artifacts }: { artifacts: DefenseArtifact[] }) {
+  const ARTIFACT_KINDS = useArtifactKinds();
   return (
     <ol className="space-y-3 text-sm">
       {artifacts.map((a, i) => (
@@ -121,30 +120,32 @@ export function ArtifactList({ artifacts }: { artifacts: DefenseArtifact[] }) {
 }
 
 export function DefenseResult({ result }: { result: NonNullable<NonNullable<DefenseState["defense"]>["result"]> }) {
+  const tr = useCareerT("internshipDefense");
+  const RUBRIC_LABELS = useRubricLabels();
   return (
     <div className="space-y-4 text-sm">
       {result.graderSource === "development-heuristic" && (
         <p className="rounded-md border border-amber-300 bg-amber-50 p-2 text-xs text-amber-900 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-200">
-          Development mode: this grade comes from a simple heuristic, not an AI model.
+          {tr("developmentModeThisGradeComes")}
         </p>
       )}
       {result.score == null ? (
-        <p>This defense couldn&apos;t be graded automatically. Faculty or the career center will review it.</p>
+        <p>{tr("thisDefenseCouldntBeGraded")}</p>
       ) : (
         <p>
-          Defense score: <strong>{result.score}</strong> out of 100 (the school looks for {result.threshold} or more, together with the supervisor&apos;s confirmation).
+          {tr.rich("defenseScoreScoreOutOf", { strong: (chunks) => <strong>{chunks}</strong>, score: result.score, threshold: result.threshold })}
         </p>
       )}
       {Object.keys(result.rubric).length > 0 && (
-        <table className="w-full max-w-md text-left">
-          <caption className="sr-only">Rubric scores</caption>
+        <table className="w-full max-w-md text-start [&_th]:text-start">
+          <caption className="sr-only">{tr("rubricScores")}</caption>
           <thead>
             <tr className="text-xs text-muted-foreground">
               <th scope="col" className="py-1 font-medium">
-                Dimension
+                {tr("dimension")}
               </th>
               <th scope="col" className="py-1 font-medium">
-                Score (0–100)
+                {tr("score0100")}
               </th>
             </tr>
           </thead>
@@ -163,12 +164,12 @@ export function DefenseResult({ result }: { result: NonNullable<NonNullable<Defe
       {result.summary && <p className="whitespace-pre-wrap">{result.summary}</p>}
       {result.evidence.items.length > 0 && (
         <div>
-          <h3 className="mb-1 font-semibold">Evidence from the answers</h3>
+          <h3 className="mb-1 font-semibold">{tr("evidenceFromTheAnswers")}</h3>
           <ul className="space-y-2">
             {result.evidence.items.map((e, i) => (
               <li key={i}>
                 <span className="text-xs text-muted-foreground">{RUBRIC_LABELS[e.dimension] ?? e.dimension}</span>
-                <blockquote className="border-l-2 border-border pl-2 italic">“{e.quote}”</blockquote>
+                <blockquote className="border-s-2 border-border ps-2 italic">“{e.quote}”</blockquote>
                 {e.note && <span className="text-xs text-muted-foreground">{e.note}</span>}
               </li>
             ))}
@@ -177,8 +178,8 @@ export function DefenseResult({ result }: { result: NonNullable<NonNullable<Defe
       )}
       {result.evidence.concerns.length > 0 && (
         <div>
-          <h3 className="mb-1 font-semibold">For a person to look at</h3>
-          <ul className="list-disc pl-5">
+          <h3 className="mb-1 font-semibold">{tr("forAPersonToLook")}</h3>
+          <ul className="list-disc ps-5">
             {result.evidence.concerns.map((c, i) => (
               <li key={i}>{c}</li>
             ))}
@@ -190,11 +191,12 @@ export function DefenseResult({ result }: { result: NonNullable<NonNullable<Defe
 }
 
 export function Transcript({ turns }: { turns: NonNullable<DefenseState["defense"]>["turns"] }) {
+  const tr = useCareerT("internshipDefense");
   return (
     <ol className="space-y-3 text-sm">
       {turns.map((t, i) => (
-        <li key={i} className={t.role === "interviewer" ? "" : "pl-4"}>
-          <span className="block text-xs font-medium text-muted-foreground">{t.role === "interviewer" ? "Interviewer" : "Student"}</span>
+        <li key={i} className={t.role === "interviewer" ? "" : "ps-4"}>
+          <span className="block text-xs font-medium text-muted-foreground">{t.role === "interviewer" ? tr("interviewer") : tr("student")}</span>
           <span className="whitespace-pre-wrap">{t.text}</span>
         </li>
       ))}
@@ -203,11 +205,12 @@ export function Transcript({ turns }: { turns: NonNullable<DefenseState["defense
 }
 
 function SupervisorAnswer({ s }: { s: NonNullable<DefenseState["defense"]>["supervisor"] }) {
-  if (!s.answer) return <p className="text-sm">Waiting for {s.name} to confirm.</p>;
-  const label = s.answer === "Yes" ? "Yes, the student did this work" : s.answer === "Partly" ? "Partly" : "No";
+  const tr = useCareerT("internshipDefense");
+  if (!s.answer) return <p className="text-sm">{tr("waitingForNameToConfirm", { name: s.name })}</p>;
+  const label = s.answer === "Yes" ? tr("yesTheStudentDidThis") : s.answer === "Partly" ? tr("partly") : tr("no");
   return (
     <p className="text-sm">
-      {s.answeredByName ?? s.name} answered <strong>{label}</strong> on {formatDate(s.answeredAt)}.
+      {tr.rich("answeredByNameAnsweredLabelOnAnsweredAt", { answeredByName: s.answeredByName ?? s.name, strong: (chunks) => <strong>{chunks}</strong>, label, answeredAt: formatDate(s.answeredAt) })}
       {s.comment && <span className="mt-1 block whitespace-pre-wrap">“{s.comment}”</span>}
     </p>
   );
@@ -215,28 +218,26 @@ function SupervisorAnswer({ s }: { s: NonNullable<DefenseState["defense"]>["supe
 
 /** On the student's experience page: where the defense stands, with a link to the defense page. */
 export function DefenseSummaryCard({ experienceId }: { experienceId: string }) {
+  const tr = useCareerT("internshipDefense");
   const api = useApi();
   const state = useLoad(() => api<DefenseState>(`${DEFENSE_API}/mine/${experienceId}`), [api, experienceId]);
   const s = state.data;
   if (!s) return state.error ? <ErrorBanner error={state.error} onRetry={state.reload} /> : null;
   const d = s.defense;
   return (
-    <Card title="Defend this internship">
+    <Card title={tr("defendThisInternship")}>
       <p className="mb-3 text-sm">
-        Verification: <VerificationBadge status={s.verification.status} />
+        {tr("verification")}{" "}<VerificationBadge status={s.verification.status} />
       </p>
       {!d && s.eligibility.canStart && (
-        <p className="mb-3 text-sm">Describe what you built, answer a few questions about it, and your site supervisor confirms it. A verified internship earns a credential you can share.</p>
+        <p className="mb-3 text-sm">{tr("describeWhatYouBuiltAnswer")}</p>
       )}
       {!d && !s.eligibility.canStart && s.eligibility.reason && <p className="text-sm">{s.eligibility.reason}</p>}
-      {d?.status === "InProgress" && <p className="mb-3 text-sm">Your defense is in progress.</p>}
-      {d?.status === "AwaitingSupervisor" && <p className="mb-3 text-sm">Waiting for {d.supervisor.name} to confirm your work.</p>}
+      {d?.status === "InProgress" && <p className="mb-3 text-sm">{tr("yourDefenseIsInProgress")}</p>}
+      {d?.status === "AwaitingSupervisor" && <p className="mb-3 text-sm">{tr("waitingForNameToConfirm2", { name: d.supervisor.name })}</p>}
       {s.credential && s.credential.status === "Valid" && (
         <p className="mb-3 text-sm">
-          Credential issued.{" "}
-          <Link href={s.credential.verifyPath} className="underline">
-            Public verification page
-          </Link>
+          {tr.rich("credentialIssuedPublicVerificationPage", { link: (chunks) => <Link href={s.credential!.verifyPath} className="underline">{chunks}</Link> })}
         </p>
       )}
       {(s.eligibility.canStart || d) && (
@@ -245,22 +246,20 @@ export function DefenseSummaryCard({ experienceId }: { experienceId: string }) {
           className="inline-flex items-center rounded-md px-3 py-2 text-sm font-medium text-white focus-visible:outline-2 focus-visible:outline-offset-2"
           style={{ background: "var(--brand, #4f46e5)" }}
         >
-          {!d ? "Defend this internship" : d.status === "InProgress" ? "Continue your defense" : "See your defense"}
+          {!d ? tr("defendThisInternship") : d.status === "InProgress" ? tr("continueYourDefense") : tr("seeYourDefense")}
         </Link>
       )}
     </Card>
   );
 }
 
-const OVERRIDE_CHOICES = [
-  { value: "Verified", label: "Verified" },
-  { value: "PartlyVerified", label: "Partly verified" },
-  { value: "NotVerified", label: "Not verified" },
-  { value: "Pending", label: "Pending (needs more review)" },
-];
+const OVERRIDE_KEYS = ["Verified", "PartlyVerified", "NotVerified", "Pending"];
 
 /** Faculty and career-center view: signals, transcript, supervisor answer, and an audited override. */
 export function DefenseReviewPanel({ experienceId, scope }: { experienceId: string; scope: "faculty" | "staff" }) {
+  const tr = useCareerT("internshipDefense");
+  const OVERRIDE_CHOICES = OVERRIDE_KEYS.map((value) => ({ value, label: tr(`overrideChoice.${value}`) }));
+  const VERIFICATION_LABELS = useDefenseVerificationLabels();
   const api = useApi();
   const base = `${DEFENSE_API}/${scope}/${experienceId}`;
   const state = useLoad(() => api<DefenseState>(base), [api, base]);
@@ -271,7 +270,7 @@ export function DefenseReviewPanel({ experienceId, scope }: { experienceId: stri
   const [busy, setBusy] = useState(false);
 
   const s = state.data;
-  if (state.loading && !s) return <Loading label="Loading the internship defense…" />;
+  if (state.loading && !s) return <Loading label={tr("loadingTheInternshipDefense")} />;
   if (!s) return <ErrorBanner error={state.error} onRetry={state.reload} />;
   const d = s.defense;
 
@@ -281,7 +280,7 @@ export function DefenseReviewPanel({ experienceId, scope }: { experienceId: stri
     setBusy(true);
     try {
       state.setData(await api<DefenseState>(`${base}/override`, { json: clear ? { clear: true, note } : { status, note } }));
-      setMsg(clear ? "Override removed; the signals decide again." : "Verification updated. The change is in the audit log.");
+      setMsg(clear ? tr("overrideRemovedTheSignalsDecide") : tr("verificationUpdatedTheChangeIs"));
       setNote("");
       setStatus("");
     } catch (e) {
@@ -296,7 +295,7 @@ export function DefenseReviewPanel({ experienceId, scope }: { experienceId: stri
     setMsg(null);
     try {
       const r = await api<{ sentTo: string }>(`${base}/supervisor-link`, { method: "POST" });
-      setMsg(`A new confirmation link was emailed to ${r.sentTo}.`);
+      setMsg(tr("aNewConfirmationLinkWas", { sentTo: r.sentTo }));
       state.reload();
     } catch (e) {
       setErr((e as Error).message);
@@ -304,34 +303,34 @@ export function DefenseReviewPanel({ experienceId, scope }: { experienceId: stri
   };
 
   return (
-    <Card title="Internship defense and verification">
+    <Card title={tr("internshipDefenseAndVerification")}>
       <div aria-live="polite">
         <ErrorBanner error={err} />
         <SuccessBanner message={msg} />
       </div>
       <p className="mb-4 text-sm">
-        Verification: <VerificationBadge status={s.verification.status} />
+        {tr("verification")}{" "}<VerificationBadge status={s.verification.status} />
         {d && d.overrideInfo?.status && (
-          <span className="ml-2 text-xs text-muted-foreground">
-            (set by {d.overrideInfo.byName} on {formatDate(d.overrideInfo.at)}; the signals say {VERIFICATION_LABELS[d.computedStatus] ?? d.computedStatus})
+          <span className="ms-2 text-xs text-muted-foreground">
+            {tr("setByByNameOnAt", { byName: d.overrideInfo.byName, at: formatDate(d.overrideInfo.at), computedStatus: VERIFICATION_LABELS[d.computedStatus] ?? d.computedStatus })}
           </span>
         )}
       </p>
       {!d ? (
-        <p className="text-sm">{s.eligibility.reason ?? "The student hasn't started a defense yet."}</p>
+        <p className="text-sm">{s.eligibility.reason ?? tr("theStudentHasntStartedA")}</p>
       ) : (
         <div className="space-y-6">
-          <p className="text-xs text-muted-foreground">These are signals for people to weigh, not an automatic decision.</p>
+          <p className="text-xs text-muted-foreground">{tr("theseAreSignalsForPeople")}</p>
           <section>
-            <h3 className="mb-2 text-sm font-semibold">Work the student described</h3>
+            <h3 className="mb-2 text-sm font-semibold">{tr("workTheStudentDescribed")}</h3>
             <ArtifactList artifacts={d.artifacts} />
           </section>
           <section>
-            <h3 className="mb-2 text-sm font-semibold">Defense ({d.mode.toLowerCase()})</h3>
-            {d.result ? <DefenseResult result={d.result} /> : <p className="text-sm">In progress: {d.answered} answer(s) so far.</p>}
+            <h3 className="mb-2 text-sm font-semibold">{tr("defenseMode", { mode: d.mode.toLowerCase() })}</h3>
+            {d.result ? <DefenseResult result={d.result} /> : <p className="text-sm">{tr("inProgressAnsweredAnswerS", { answered: d.answered })}</p>}
             {d.turns.length > 0 && (
               <details className="mt-3">
-                <summary className="cursor-pointer text-sm underline">Full transcript</summary>
+                <summary className="cursor-pointer text-sm underline">{tr("fullTranscript")}</summary>
                 <div className="mt-2">
                   <Transcript turns={d.turns} />
                 </div>
@@ -339,39 +338,36 @@ export function DefenseReviewPanel({ experienceId, scope }: { experienceId: stri
             )}
           </section>
           <section>
-            <h3 className="mb-2 text-sm font-semibold">Site supervisor</h3>
+            <h3 className="mb-2 text-sm font-semibold">{tr("siteSupervisor")}</h3>
             <SupervisorAnswer s={d.supervisor} />
             {d.consent && (
               <p className="mt-1 text-xs text-muted-foreground">
-                Student consent to share with the supervisor: {d.consent.active ? "active" : "revoked or expired"} (given {formatDate(d.consent.consentedAt)}).
+                {tr("studentConsentToShareWith")}{" "}{d.consent.active ? tr("active") : tr("revokedOrExpired")}{" "}{tr("givenConsentedAt", { consentedAt: formatDate(d.consent.consentedAt) })}
               </p>
             )}
             {d.supervisorLinks && d.supervisorLinks.length > 0 && (
               <ul className="mt-2 text-xs text-muted-foreground">
                 {d.supervisorLinks.map((l, i) => (
                   <li key={i}>
-                    Link sent {formatDate(l.issuedAt, true)}: {l.state}, opened {l.useCount} time(s)
+                    {tr("linkSentIssuedAtStateOpened", { issuedAt: formatDate(l.issuedAt, true), state: l.state, useCount: l.useCount })}
                   </li>
                 ))}
               </ul>
             )}
             {d.status === "AwaitingSupervisor" && (
               <Button variant="secondary" className="mt-2" onClick={resend}>
-                Resend confirmation link
+                {tr("resendConfirmationLink")}
               </Button>
             )}
           </section>
           {s.credential && (
             <p className="text-sm">
-              Credential: {s.credential.status}, issued {formatDate(s.credential.issuedAt)}.{" "}
-              <Link href={s.credential.verifyPath} className="underline">
-                Public verification page
-              </Link>
+              {tr.rich("credentialStatusIssuedIssuedAtPublic", { status: s.credential.status, issuedAt: formatDate(s.credential.issuedAt), link: (chunks) => <Link href={s.credential!.verifyPath} className="underline">{chunks}</Link> })}
             </p>
           )}
           {d.overrideInfo?.note && (
             <p className="text-sm">
-              Last decision note ({d.overrideInfo.byName}, {formatDate(d.overrideInfo.at)}): {d.overrideInfo.note}
+              {tr("lastDecisionNoteByNameAt", { byName: d.overrideInfo.byName, at: formatDate(d.overrideInfo.at), note: d.overrideInfo.note })}
             </p>
           )}
           <form
@@ -381,11 +377,11 @@ export function DefenseReviewPanel({ experienceId, scope }: { experienceId: stri
               override(false);
             }}
           >
-            <h3 className="text-sm font-semibold">Change the verification</h3>
-            <Field label="New status">
+            <h3 className="text-sm font-semibold">{tr("changeTheVerification")}</h3>
+            <Field label={tr("newStatus")}>
               {(p) => (
                 <select {...p} value={status} onChange={(e) => setStatus(e.target.value)} required>
-                  <option value="">Choose</option>
+                  <option value="">{tr("choose")}</option>
                   {OVERRIDE_CHOICES.map((c) => (
                     <option key={c.value} value={c.value}>
                       {c.label}
@@ -394,16 +390,16 @@ export function DefenseReviewPanel({ experienceId, scope }: { experienceId: stri
                 </select>
               )}
             </Field>
-            <Field label="Note (required, kept in the audit log)" hint="Say what you checked, for example a call with the supervisor.">
+            <Field label={tr("noteRequiredKeptInThe")} hint={tr("sayWhatYouCheckedFor")}>
               {(p) => <textarea {...p} rows={3} value={note} onChange={(e) => setNote(e.target.value)} required minLength={5} />}
             </Field>
             <div className="flex flex-wrap gap-2">
               <Button type="submit" busy={busy} disabled={!status || note.trim().length < 5}>
-                Save decision
+                {tr("saveDecision")}
               </Button>
               {d.overrideInfo?.status && (
                 <Button type="button" variant="secondary" disabled={busy || note.trim().length < 5} onClick={() => override(true)}>
-                  Remove override
+                  {tr("removeOverride")}
                 </Button>
               )}
             </div>

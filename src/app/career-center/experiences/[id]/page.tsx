@@ -5,10 +5,9 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useApi } from "@/lib/appAuth";
 import { useCareerShell } from "@/components/career/CareerShell";
-import { Badge, Button, Card, ErrorBanner, Field, Loading, PageHeader, SuccessBanner, formatDate, useLoad } from "@/components/career/ui";
+import { Badge, Button, Card, ErrorBanner, Field, Loading, PageHeader, SuccessBanner, formatDate, useLoad, ScrollArea, useCareerT, useCareerLabels } from "@/components/career/ui";
 import {
   AgreementCard,
-  CPT_NOTICE,
   CommentBox,
   DocumentsList,
   EvaluationsCard,
@@ -22,15 +21,17 @@ import {
   type ExperienceDetail,
 } from "@/components/career/experiences/shared";
 import { DefenseReviewPanel } from "@/components/career/experiences/InternshipDefense";
+import { PackExperienceCard } from "@/components/career/experiences/InternshipPack";
 
-const LINK_LABELS: Record<string, string> = {
-  Agreement: "Confirm and sign the agreement",
-  Hours: "Approve hours",
-  MidtermEvaluation: "Midterm evaluation",
-  FinalEvaluation: "Final evaluation",
-};
+const LINK_LABELS_KEYS = ["Agreement", "Hours", "MidtermEvaluation", "FinalEvaluation"];
+/** link labels in the career language (G1) */
+function useLinkLabels(): Record<string, string> {
+  return useCareerLabels("careerCenterExperiencesDetail.linkPurpose", LINK_LABELS_KEYS);
+}
 
 export default function CareerCenterExperienceDetailPage() {
+  const t = useCareerT("careerCenterExperiencesDetail");
+  const LINK_LABELS = useLinkLabels();
   const { id } = useParams<{ id: string }>();
   const api = useApi();
   const { schoolId } = useCareerShell();
@@ -60,11 +61,11 @@ export default function CareerCenterExperienceDetailPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title={`${x.student.name}: ${x.roleTitle} at ${x.employer.name}`}
+        title={t("nameRoleTitleAtName2", { name: x.student.name, roleTitle: x.roleTitle, name2: x.employer.name })}
         description={
           <>
             <Link href="/career-center/experiences" className="underline">
-              All experiences
+              {t("allExperiences")}
             </Link>{" "}
             · <StatusBadge status={x.status} />
           </>
@@ -77,16 +78,16 @@ export default function CareerCenterExperienceDetailPage() {
       <Stepper status={x.status} />
 
       {x.status === "Submitted" && (
-        <Card title="Career-center review">
+        <Card title={t("careerCenterReview")}>
           <ul className="mb-4 space-y-1 text-sm">
-            <li>Faculty approval: {x.approvals.facultyApprovedAt ? `approved ${formatDate(x.approvals.facultyApprovedAt, true)}` : "waiting"}</li>
-            <li>Required documents: {x.missingDocuments.length ? `missing ${x.missingDocuments.join(", ")}` : "complete"}</li>
-            {x.cpt.required && <li>F-1 CPT: {x.cpt.missing ? "dates still needed" : "recorded"}</li>}
+            <li>{t("facultyApproval")}{" "}{x.approvals.facultyApprovedAt ? t("approvedFacultyApprovedAt", { facultyApprovedAt: formatDate(x.approvals.facultyApprovedAt, true) }) : t("waiting")}</li>
+            <li>{t("requiredDocuments")}{" "}{x.missingDocuments.length ? t("missingMissingDocuments", { missingDocuments: x.missingDocuments.join(", ") }) : t("complete")}</li>
+            {x.cpt.required && <li>{t("f1CPT")}{" "}{x.cpt.missing ? t("datesStillNeeded") : t("recorded")}</li>}
           </ul>
           <ApproveDecline
             canApprove={!!x.approvals.facultyApprovedAt && !x.cpt.missing && x.missingDocuments.length === 0}
-            onApprove={(comment) => act(() => api(`${base}/approve`, { json: { comment } }), "Approved. The learning agreement was generated and sent for signatures.")}
-            onDecline={(comment) => act(() => api(`${base}/decline`, { json: { comment } }), "Declined.")}
+            onApprove={(comment) => act(() => api(`${base}/approve`, { json: { comment } }), t("approvedTheLearningAgreementWas"))}
+            onDecline={(comment) => act(() => api(`${base}/decline`, { json: { comment } }), t("declined"))}
           />
         </Card>
       )}
@@ -94,57 +95,61 @@ export default function CareerCenterExperienceDetailPage() {
       <OverviewCard x={x} />
 
       {x.cpt.isF1 && !["Completed", "Declined", "Withdrawn"].includes(x.status) && (
-        <CptCard x={x} onSave={(body) => act(() => api(`${base}/cpt`, { method: "PUT", json: body }), "CPT details saved.")} />
+        <CptCard x={x} onSave={(body) => act(() => api(`${base}/cpt`, { method: "PUT", json: body }), t("cPTDetailsSaved"))} />
       )}
 
-      <Card title="Documents">
-        <DocumentsList x={x} onDownload={(docId, name) => downloadWith(api, `/api/career/experiences/documents/${docId}`, name).catch((e) => setErr(e.message))} />
+      <Card title={t("documents")}>
+        <DocumentsList x={x} onDownload={(docId, name) => downloadWith(api, `/api/career/experiences/documents/${docId}`, name, t("downloadFailed")).catch((e) => setErr(e.message))} />
       </Card>
 
       <AgreementCard x={x} showAudit />
 
+      <PackExperienceCard api={api} scope="staff" experienceId={id} onChanged={detail.reload} />
+
       {open && (
-        <Card title="Site supervisor links">
+        <Card title={t("siteSupervisorLinks")}>
           <p className="mb-3 text-sm text-muted-foreground">
-            Supervisors don&apos;t have accounts. Each secure link does one job and expires in 30 days; sending a new link replaces the previous one for that job.
+            {t("supervisorsDontHaveAccountsEach")}
           </p>
           <div className="mb-4 flex flex-wrap gap-2">
             {Object.entries(LINK_LABELS).map(([purpose, label]) => (
-              <Button key={purpose} variant="secondary" onClick={() => act(() => api(`${base}/supervisor-link`, { json: { purpose } }), `Sent “${label}” link to ${x.supervisor.email}.`, true)}>
-                Send: {label}
+              <Button key={purpose} variant="secondary" onClick={() => act(() => api(`${base}/supervisor-link`, { json: { purpose } }), t("sentLabelLinkToEmail", { label, email: x.supervisor.email }), true)}>
+                {t("sendLabel", { label })}
               </Button>
             ))}
           </div>
           {x.supervisorLinks && x.supervisorLinks.length > 0 && (
-            <table className="w-full text-left text-sm">
-              <caption className="sr-only">Links sent</caption>
-              <thead>
-                <tr className="border-b border-border">
-                  <th scope="col" className="py-1">Purpose</th>
-                  <th scope="col">Sent</th>
-                  <th scope="col">Expires</th>
-                  <th scope="col">Last opened</th>
-                  <th scope="col">State</th>
-                </tr>
-              </thead>
-              <tbody>
-                {x.supervisorLinks.map((l, i) => (
-                  <tr key={i} className="border-b border-border/60">
-                    <td className="py-1">{LINK_LABELS[l.purpose] ?? l.purpose}</td>
-                    <td>{formatDate(l.issuedAt, true)}</td>
-                    <td>{formatDate(l.expiresAt)}</td>
-                    <td>{l.lastUsedAt ? formatDate(l.lastUsedAt, true) : "—"}</td>
-                    <td>
-                      <Badge tone={l.state === "Active" ? "good" : "neutral"}>{l.state}</Badge>
-                    </td>
+            <ScrollArea>
+              <table className="w-full text-start text-sm [&_th]:text-start">
+                <caption className="sr-only">{t("linksSent")}</caption>
+                <thead>
+                  <tr className="border-b border-border">
+                    <th scope="col" className="py-1">{t("purpose")}</th>
+                    <th scope="col">{t("sent")}</th>
+                    <th scope="col">{t("expires")}</th>
+                    <th scope="col">{t("lastOpened")}</th>
+                    <th scope="col">{t("state")}</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {x.supervisorLinks.map((l, i) => (
+                    <tr key={i} className="border-b border-border/60">
+                      <td className="py-1">{LINK_LABELS[l.purpose] ?? l.purpose}</td>
+                      <td>{formatDate(l.issuedAt, true)}</td>
+                      <td>{formatDate(l.expiresAt)}</td>
+                      <td>{l.lastUsedAt ? formatDate(l.lastUsedAt, true) : "—"}</td>
+                      <td>
+                        <Badge tone={l.state === "Active" ? "good" : "neutral"}>{l.state}</Badge>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </ScrollArea>
           )}
           {x.status === "Active" && (
-            <Button className="mt-4" onClick={() => act(() => api(`${base}/start-evaluations`, { method: "POST" }), "Final evaluations opened; the supervisor was emailed.")}>
-              Open final evaluations now
+            <Button className="mt-4" onClick={() => act(() => api(`${base}/start-evaluations`, { method: "POST" }), t("finalEvaluationsOpenedTheSupervisor"))}>
+              {t("openFinalEvaluationsNow")}
             </Button>
           )}
         </Card>
@@ -152,26 +157,26 @@ export default function CareerCenterExperienceDetailPage() {
 
       {x.hours.length > 0 && <HoursCard x={x} />}
       {x.reflections.length > 0 && (
-        <Card title="Reflections">
+        <Card title={t("reflections")}>
           {x.reflections.map((r) => (
             <section key={r.id} className="mb-4 text-sm">
               <h3 className="font-semibold">{r.prompt}</h3>
               <p className="whitespace-pre-wrap">{r.body}</p>
-              {r.facultyComment && <p className="mt-1 text-muted-foreground">Faculty: {r.facultyComment}</p>}
+              {r.facultyComment && <p className="mt-1 text-muted-foreground">{t("facultyFacultyComment", { facultyComment: r.facultyComment })}</p>}
             </section>
           ))}
         </Card>
       )}
       {x.evaluations.length > 0 && <EvaluationsCard x={x} />}
       {x.grade.finalGrade && (
-        <Card title="Grade recommendation">
+        <Card title={t("gradeRecommendation")}>
           <p className="text-sm">
             <strong>{x.grade.finalGrade}</strong> {x.grade.gradeComment}
           </p>
         </Card>
       )}
-      <Card title="Comment to the student">
-        <CommentBox label="Comment" onSubmit={(c) => act(() => api(`${base}/comments`, { json: { comment: c } }), "Comment added.")} />
+      <Card title={t("commentToTheStudent")}>
+        <CommentBox label={t("comment")} onSubmit={(c) => act(() => api(`${base}/comments`, { json: { comment: c } }), t("commentAdded"))} />
       </Card>
       {["Evaluations", "Completed"].includes(x.status) && <DefenseReviewPanel experienceId={id} scope="staff" />}
       <TimelineCard x={x} />
@@ -179,14 +184,19 @@ export default function CareerCenterExperienceDetailPage() {
   );
 }
 
+const CPT_STATUSES = ["NotStarted", "Requested", "Authorized", "Denied"];
+
 function CptCard({ x, onSave }: { x: ExperienceDetail; onSave: (body: unknown) => Promise<void> }) {
+  const t = useCareerT("careerCenterExperiencesDetail");
+  const tShared = useCareerT("experiencesShared");
+  const CPT_STATUS = useCareerLabels("careerCenterExperiencesDetail.cptStatus", CPT_STATUSES);
   const [status, setStatus] = useState(x.cpt.status ?? "");
   const [dso, setDso] = useState(x.cpt.dsoApprovalDate ?? "");
   const [start, setStart] = useState(x.cpt.startDate ?? "");
   const [end, setEnd] = useState(x.cpt.endDate ?? "");
   return (
-    <Card title="Record CPT (F-1)">
-      <p className="mb-3 text-xs text-muted-foreground">{CPT_NOTICE} Record what the international student office authorized on the I-20.</p>
+    <Card title={t("recordCPTF1")}>
+      <p className="mb-3 text-xs text-muted-foreground">{t("cptNoticeRecordWhatThe", { notice: tShared("cptNotice") })}</p>
       <form
         className="grid gap-3 sm:grid-cols-5 sm:items-end"
         onSubmit={(e) => {
@@ -194,23 +204,23 @@ function CptCard({ x, onSave }: { x: ExperienceDetail; onSave: (body: unknown) =
           onSave({ status: status || undefined, dsoApprovalDate: dso || undefined, startDate: start || undefined, endDate: end || undefined });
         }}
       >
-        <Field label="Status">
+        <Field label={t("status")}>
           {(p) => (
             <select {...p} value={status} onChange={(e) => setStatus(e.target.value)}>
-              <option value="">Not recorded</option>
-              {["NotStarted", "Requested", "Authorized", "Denied"].map((s) => (
+              <option value="">{t("notRecorded")}</option>
+              {CPT_STATUSES.map((s) => (
                 <option key={s} value={s}>
-                  {s.replace(/([a-z])([A-Z])/g, "$1 $2")}
+                  {CPT_STATUS[s]}
                 </option>
               ))}
             </select>
           )}
         </Field>
-        <Field label="DSO approval date">{(p) => <input {...p} type="date" value={dso} onChange={(e) => setDso(e.target.value)} />}</Field>
-        <Field label="I-20 CPT start">{(p) => <input {...p} type="date" value={start} onChange={(e) => setStart(e.target.value)} />}</Field>
-        <Field label="I-20 CPT end">{(p) => <input {...p} type="date" value={end} onChange={(e) => setEnd(e.target.value)} />}</Field>
+        <Field label={t("dSOApprovalDate")}>{(p) => <input {...p} type="date" value={dso} onChange={(e) => setDso(e.target.value)} />}</Field>
+        <Field label={t("i20CPTStart")}>{(p) => <input {...p} type="date" value={start} onChange={(e) => setStart(e.target.value)} />}</Field>
+        <Field label={t("i20CPTEnd")}>{(p) => <input {...p} type="date" value={end} onChange={(e) => setEnd(e.target.value)} />}</Field>
         <Button type="submit" variant="secondary">
-          Save CPT
+          {t("saveCPT")}
         </Button>
       </form>
     </Card>

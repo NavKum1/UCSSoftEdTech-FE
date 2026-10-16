@@ -9,6 +9,8 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useParams } from "next/navigation";
 import { API_BASE_URL } from "@/lib/apiClient";
+import { BRAND_TEXT_CLASS, brandCssVars } from "@/components/career/brandColor";
+import { useCareerT } from "@/components/career/ui";
 
 interface KioskInfo {
   school: string;
@@ -25,7 +27,7 @@ interface CheckInResult {
   estimatedWaitMinutes: number;
 }
 
-async function kioskFetch<T>(path: string, init?: RequestInit): Promise<T> {
+async function request<T>(path: string, init: RequestInit | undefined, failed: (status: number) => string): Promise<T> {
   const res = await fetch(`${API_BASE_URL}${path}`, { ...init, headers: { "Content-Type": "application/json", ...(init?.headers ?? {}) } });
   const text = await res.text();
   let body: unknown;
@@ -35,15 +37,23 @@ async function kioskFetch<T>(path: string, init?: RequestInit): Promise<T> {
     body = text;
   }
   if (!res.ok) {
-    const message = body && typeof body === "object" && "message" in body ? String((body as { message: unknown }).message) : `Something went wrong (${res.status}).`;
+    const message = body && typeof body === "object" && "message" in body ? String((body as { message: unknown }).message) : failed(res.status);
     throw Object.assign(new Error(message), { status: res.status });
   }
   return body as T;
 }
 
+/** The API helper with its fallback error in the page language (G1). */
+function useKioskFetch() {
+  const t = useCareerT("kiosk");
+  return useCallback(<T,>(path: string, init?: RequestInit) => request<T>(path, init, (status) => t("somethingWentWrongStatus", { status })), [t]);
+}
+
 const RESET_MS = 12000;
 
 export default function KioskPage() {
+  const tr = useCareerT("kiosk");
+  const kioskFetch = useKioskFetch();
   const params = useParams<{ token: string }>();
   const token = params?.token ?? "";
   const [info, setInfo] = useState<KioskInfo | null>(null);
@@ -63,9 +73,9 @@ export default function KioskPage() {
       setLoadError(null);
       setSessionId((cur) => (data.sessions.some((s) => s.id === cur) ? cur : data.sessions[0]?.id ?? ""));
     } catch (e) {
-      setLoadError((e as { status?: number }).status === 404 ? "This kiosk link is no longer active. Ask career-center staff for the current link." : (e as Error).message);
+      setLoadError((e as { status?: number }).status === 404 ? tr("thisKioskLinkIsNo") : (e as Error).message);
     }
-  }, [token]);
+  }, [token, tr, kioskFetch]);
 
   useEffect(() => {
     // Initial load plus a light refresh so waits stay current and closed sessions disappear
@@ -78,8 +88,8 @@ export default function KioskPage() {
   }, [load]);
 
   useEffect(() => {
-    if (info?.school) document.title = `Check in · ${info.school}`;
-  }, [info?.school]);
+    if (info?.school) document.title = tr("documentTitle", { school: info.school });
+  }, [info?.school, tr]);
 
   // After a check-in, clear the screen for the next student
   useEffect(() => {
@@ -115,7 +125,7 @@ export default function KioskPage() {
   const session = info?.sessions.find((s) => s.id === sessionId);
 
   return (
-    <div className="min-h-screen bg-background text-foreground" style={{ ["--brand" as string]: brand }}>
+    <div className="min-h-screen bg-background text-foreground" style={brandCssVars(brand) as React.CSSProperties}>
       <header className="border-b border-border bg-card">
         <div className="mx-auto flex max-w-3xl items-center gap-3 px-4 py-4">
           {info?.logoUrl ? (
@@ -125,8 +135,8 @@ export default function KioskPage() {
             <span aria-hidden className="inline-block h-10 w-10 rounded-lg" style={{ background: brand }} />
           )}
           <div>
-            <p className="text-lg font-semibold">{info?.school ?? "Career center"}</p>
-            <p className="text-sm text-muted-foreground">Drop-in check-in</p>
+            <p className="text-lg font-semibold">{info?.school ?? tr("careerCenter")}</p>
+            <p className="text-sm text-muted-foreground">{tr("dropInCheckIn")}</p>
           </div>
         </div>
       </header>
@@ -138,39 +148,39 @@ export default function KioskPage() {
           </p>
         ) : !info ? (
           <p role="status" className="text-lg text-muted-foreground">
-            Loading…
+            {tr("loading")}
           </p>
         ) : result ? (
           <section role="status" aria-live="assertive" className="rounded-2xl border border-border bg-card p-8 text-center">
-            <h1 className="text-2xl font-semibold">You&apos;re checked in</h1>
-            <p className="mt-6 text-sm uppercase tracking-wide text-muted-foreground">Your number</p>
-            <p className="text-7xl font-bold" style={{ color: brand }}>
+            <h1 className="text-2xl font-semibold">{tr("youreCheckedIn")}</h1>
+            <p className="mt-6 text-sm uppercase tracking-wide text-muted-foreground">{tr("yourNumber")}</p>
+            <p className={`text-7xl font-bold ${BRAND_TEXT_CLASS}`}>
               {result.queueNumber}
             </p>
             <p className="mt-6 text-lg">
-              {result.ahead === 0 ? "You're next." : `${result.ahead} ${result.ahead === 1 ? "person" : "people"} ahead of you.`} About {result.estimatedWaitMinutes} minutes.
+              {result.ahead === 0 ? tr("youreNext") : tr("aheadPeopleAheadOfYou", { ahead: result.ahead })}{" "}{tr("aboutEstimatedWaitMinutesMinutes", { estimatedWaitMinutes: result.estimatedWaitMinutes })}
             </p>
-            <p className="mt-2 text-sm text-muted-foreground">Please take a seat; we&apos;ll call your number. Signed-in students also get a notification.</p>
+            <p className="mt-2 text-sm text-muted-foreground">{tr("pleaseTakeASeatWell")}</p>
             <button
               type="button"
               onClick={() => setResult(null)}
               className="mt-8 rounded-lg px-6 py-3 text-lg font-medium text-white focus-visible:outline-2 focus-visible:outline-offset-2"
               style={{ background: brand, outlineColor: brand }}
             >
-              Done
+              {tr("done")}
             </button>
           </section>
         ) : info.sessions.length === 0 ? (
           <section className="rounded-2xl border border-border bg-card p-8 text-center">
-            <h1 className="text-2xl font-semibold">Drop-in advising is closed right now</h1>
-            <p className="mt-2 text-muted-foreground">Please check back later or book an appointment online.</p>
+            <h1 className="text-2xl font-semibold">{tr("dropInAdvisingIsClosed")}</h1>
+            <p className="mt-2 text-muted-foreground">{tr("pleaseCheckBackLaterOr")}</p>
           </section>
         ) : (
           <form onSubmit={submit} className="space-y-6 rounded-2xl border border-border bg-card p-6 sm:p-8">
-            <h1 className="text-2xl font-semibold">Check in for drop-in advising</h1>
+            <h1 className="text-2xl font-semibold">{tr("checkInForDropIn")}</h1>
             {info.sessions.length > 1 ? (
               <fieldset>
-                <legend className="mb-2 text-base font-medium">Which line?</legend>
+                <legend className="mb-2 text-base font-medium">{tr("whichLine")}</legend>
                 <div className="grid gap-2 sm:grid-cols-2">
                   {info.sessions.map((s) => (
                     <label key={s.id} className={`flex cursor-pointer flex-col rounded-lg border p-3 focus-within:ring-2 ${sessionId === s.id ? "border-[var(--brand)] ring-1 ring-[var(--brand)]" : "border-border"}`}>
@@ -180,7 +190,7 @@ export default function KioskPage() {
                       </span>
                       <span className="text-sm text-muted-foreground">
                         {s.location ? `${s.location} · ` : ""}
-                        {s.waiting} waiting · about {s.estimatedWaitMinutes} min
+                        {tr("waitingWaitingAboutEstimatedWaitMinutesM", { waiting: s.waiting, estimatedWaitMinutes: s.estimatedWaitMinutes })}
                       </span>
                     </label>
                   ))}
@@ -190,13 +200,13 @@ export default function KioskPage() {
               session && (
                 <p className="text-base text-muted-foreground">
                   {session.name}
-                  {session.location ? ` · ${session.location}` : ""} · {session.waiting} waiting · about {session.estimatedWaitMinutes} min
+                  {session.location ? ` · ${session.location}` : ""}{" "}{tr("waitingWaitingAboutEstimatedWaitMinutesM2", { waiting: session.waiting, estimatedWaitMinutes: session.estimatedWaitMinutes })}
                 </p>
               )
             )}
             <div className="space-y-1">
               <label htmlFor="kiosk-id" className="block text-base font-medium">
-                School email or student number
+                {tr("schoolEmailOrStudentNumber")}
               </label>
               <input
                 id="kiosk-id"
@@ -215,7 +225,7 @@ export default function KioskPage() {
             </div>
             <div className="space-y-1">
               <label htmlFor="kiosk-topic" className="block text-base font-medium">
-                What would you like help with? (optional)
+                {tr("whatWouldYouLikeHelp")}
               </label>
               <input
                 id="kiosk-topic"
@@ -237,12 +247,12 @@ export default function KioskPage() {
               className="w-full rounded-lg px-6 py-4 text-lg font-semibold text-white focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-50"
               style={{ background: brand, outlineColor: brand }}
             >
-              {busy ? "Checking in…" : "Check in"}
+              {busy ? tr("checkingIn") : tr("checkIn")}
             </button>
           </form>
         )}
       </main>
-      {info?.showPoweredBy && <footer className="pb-6 text-center text-xs text-muted-foreground">Powered by {info.brandName}</footer>}
+      {info?.showPoweredBy && <footer className="pb-6 text-center text-xs text-muted-foreground">{tr("poweredByBrandName", { brandName: info.brandName })}</footer>}
     </div>
   );
 }

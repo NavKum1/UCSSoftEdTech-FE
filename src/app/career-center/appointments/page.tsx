@@ -3,7 +3,7 @@
 import React, { Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCareerShell } from "@/components/career/CareerShell";
-import { Loading, PageHeader } from "@/components/career/ui";
+import { Loading, PageHeader, useCareerT } from "@/components/career/ui";
 import { TabPanel, Tabs } from "@/components/career/appointments/shared";
 import { StaffSchedule } from "@/components/career/appointments/StaffSchedule";
 import { AppointmentDetail } from "@/components/career/appointments/AppointmentDetail";
@@ -21,6 +21,7 @@ export default function CareerCenterAppointmentsPage() {
 type Tab = "schedule" | "dropin" | "availability" | "types" | "reports";
 
 function Appointments() {
+  const t = useCareerT("careerCenterAppointments");
   const router = useRouter();
   const params = useSearchParams();
   const selected = params.get("id");
@@ -34,17 +35,17 @@ function Appointments() {
 
   return (
     <div>
-      <PageHeader title="Appointments" description="Advising schedules, availability, drop-in queues and appointment reports. Advising notes are education records and are never shared with employers." />
+      <PageHeader title={t("appointments")} description={t("advisingSchedulesAvailabilityDropIn")} />
       <Tabs<Tab>
-        label="Appointment sections"
+        label={t("appointmentSections")}
         value={tab}
         onChange={setTab}
         tabs={[
-          { key: "schedule", label: "Schedule" },
-          { key: "dropin", label: "Drop-in" },
-          { key: "availability", label: "Availability" },
-          { key: "types", label: "Appointment types" },
-          { key: "reports", label: "Reports" },
+          { key: "schedule", label: t("schedule") },
+          { key: "dropin", label: t("dropIn") },
+          { key: "availability", label: t("availability") },
+          { key: "types", label: t("appointmentTypes") },
+          { key: "reports", label: t("reports") },
         ]}
       />
       <TabPanel id={tab}>

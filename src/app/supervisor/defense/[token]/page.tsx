@@ -6,10 +6,11 @@
  * student's consent. Brand-aware header from /api/career/brand for the student's school.
  */
 
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { API_BASE_URL } from "@/lib/apiClient";
-import { Button, Card, ErrorBanner, Field, Loading, SuccessBanner, formatDate } from "@/components/career/ui";
+import { BRAND_TEXT_CLASS, brandCssVars } from "@/components/career/brandColor";
+import { Button, Card, ErrorBanner, Field, Loading, SuccessBanner, formatDate, useCareerT } from "@/components/career/ui";
 import { ArtifactList, type DefenseArtifact } from "@/components/career/experiences/InternshipDefense";
 
 interface Brand {
@@ -27,7 +28,7 @@ interface DefenseView {
   defense: { mode: string; defendedAt?: string | null; artifacts: DefenseArtifact[]; summary: string };
 }
 
-async function call<T>(path: string, body?: unknown): Promise<T> {
+async function request<T>(path: string, body: unknown, failed: (status: number) => string): Promise<T> {
   const res = await fetch(`${API_BASE_URL}${path}`, {
     method: body === undefined ? "GET" : "POST",
     headers: body === undefined ? undefined : { "Content-Type": "application/json" },
@@ -43,13 +44,21 @@ async function call<T>(path: string, body?: unknown): Promise<T> {
     data = text;
   }
   if (!res.ok) {
-    const message = data && typeof data === "object" && "message" in data ? String((data as { message: unknown }).message) : `Something went wrong (${res.status}).`;
+    const message = data && typeof data === "object" && "message" in data ? String((data as { message: unknown }).message) : failed(res.status);
     throw new Error(message);
   }
   return data as T;
 }
 
+/** The API helper with its fallback error in the page language (G1). */
+function useCall() {
+  const t = useCareerT("supervisorDefense");
+  return useCallback(<T,>(path: string, body?: unknown) => request<T>(path, body, (status) => t("somethingWentWrongStatus", { status })), [t]);
+}
+
 export default function SupervisorDefensePage() {
+  const t = useCareerT("supervisorDefense");
+  const call = useCall();
   const { token } = useParams<{ token: string }>();
   const [view, setView] = useState<DefenseView | null>(null);
   const [brand, setBrand] = useState<Brand | null>(null);
@@ -75,26 +84,26 @@ export default function SupervisorDefensePage() {
     return () => {
       cancelled = true;
     };
-  }, [path]);
+  }, [path, call]);
 
   const color = brand?.primaryColor ?? "#4f46e5";
   return (
-    <div className="min-h-screen bg-background text-foreground" style={{ ["--brand" as string]: color } as React.CSSProperties}>
+    <div className="min-h-screen bg-background text-foreground" style={brandCssVars(color) as React.CSSProperties}>
       <header className="border-b border-border">
         <div className="mx-auto flex max-w-3xl items-center gap-3 px-4 py-3">
           {brand?.logoUrl ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img src={brand.logoUrl} alt={brand.displayName} className="h-8 w-auto" />
           ) : (
-            <span className="font-semibold" style={{ color }}>
+            <span className={`font-semibold ${BRAND_TEXT_CLASS}`}>
               {brand?.displayName ?? ""}
             </span>
           )}
-          {view && <span className="text-sm text-muted-foreground">for {view.school.displayName}</span>}
+          {view && <span className="text-sm text-muted-foreground">{t("forDisplayName", { displayName: view.school.displayName })}</span>}
         </div>
       </header>
       <main className="mx-auto max-w-3xl space-y-6 px-4 py-8">
-        <h1 className="text-2xl font-semibold">{view ? `Confirm ${view.experience.studentName}'s internship work` : "Confirm internship work"}</h1>
+        <h1 className="text-2xl font-semibold">{view ? t("confirmStudentNameSInternshipWork", { studentName: view.experience.studentName }) : t("confirmInternshipWork")}</h1>
         <div aria-live="polite">
           <ErrorBanner error={error} />
           <SuccessBanner message={msg} />
@@ -108,7 +117,7 @@ export default function SupervisorDefensePage() {
               setError(null);
               try {
                 await call(path, body);
-                setMsg("Thank you. Your answer was sent to the school.");
+                setMsg(t("thankYouYourAnswerWas"));
                 setView(null);
               } catch (e) {
                 setError((e as Error).message);
@@ -117,15 +126,15 @@ export default function SupervisorDefensePage() {
           />
         ) : null}
         <footer className="border-t border-border pt-4 text-xs text-muted-foreground">
-          <p>This secure link is only for the site supervisor named by the student. Please don&apos;t forward it.{view ? ` It expires on ${formatDate(view.expiresAt)}.` : ""}</p>
+          <p>{t("thisSecureLinkIsOnly")}{view ? t("itExpiresOnExpiresAt", { expiresAt: formatDate(view.expiresAt) }) : ""}</p>
           <p className="mt-1">
-            The student agreed to share these work descriptions and this summary with you so you can confirm them.
-            {brand?.supportEmail ? ` Questions: ${brand.supportEmail}.` : ""}
+            {t("theStudentAgreedToShare")}
+            {brand?.supportEmail ? t("questionsSupportEmail", { supportEmail: brand.supportEmail }) : ""}
             {brand?.privacyUrl && (
               <>
                 {" "}
                 <a href={brand.privacyUrl} className="underline">
-                  Privacy
+                  {t("privacy")}
                 </a>
               </>
             )}
@@ -137,6 +146,7 @@ export default function SupervisorDefensePage() {
 }
 
 function Body({ view, onSubmit }: { view: DefenseView; onSubmit: (body: { answer: string; comment: string; name: string }) => Promise<void> }) {
+  const t = useCareerT("supervisorDefense");
   const x = view.experience;
   const [answer, setAnswer] = useState("");
   const [comment, setComment] = useState("");
@@ -145,39 +155,39 @@ function Body({ view, onSubmit }: { view: DefenseView; onSubmit: (body: { answer
   const needsComment = answer === "Partly" || answer === "No";
   return (
     <>
-      <Card title="Internship">
+      <Card title={t("internship")}>
         <dl className="grid gap-x-6 gap-y-2 text-sm sm:grid-cols-2">
           <div>
-            <dt className="text-xs text-muted-foreground">Student</dt>
+            <dt className="text-xs text-muted-foreground">{t("student")}</dt>
             <dd>{x.studentName}</dd>
           </div>
           <div>
-            <dt className="text-xs text-muted-foreground">Role</dt>
+            <dt className="text-xs text-muted-foreground">{t("role")}</dt>
             <dd>
               {x.roleTitle}, {x.employerName}
             </dd>
           </div>
           <div>
-            <dt className="text-xs text-muted-foreground">Dates</dt>
+            <dt className="text-xs text-muted-foreground">{t("dates")}</dt>
             <dd>
-              {formatDate(x.startDate)} to {formatDate(x.endDate)}
+              {t("startDateToEndDate", { startDate: formatDate(x.startDate), endDate: formatDate(x.endDate) })}
             </dd>
           </div>
           <div>
-            <dt className="text-xs text-muted-foreground">Defended</dt>
+            <dt className="text-xs text-muted-foreground">{t("defended")}</dt>
             <dd>
               {formatDate(view.defense.defendedAt)} ({view.defense.mode.toLowerCase()})
             </dd>
           </div>
         </dl>
       </Card>
-      <Card title="Work the student says they did">
+      <Card title={t("workTheStudentSaysThey")}>
         <ArtifactList artifacts={view.defense.artifacts} />
       </Card>
-      <Card title="Summary of their defense">
+      <Card title={t("summaryOfTheirDefense")}>
         <p className="whitespace-pre-wrap text-sm">{view.defense.summary}</p>
       </Card>
-      <Card title="Your confirmation">
+      <Card title={t("yourConfirmation")}>
         <form
           className="space-y-4"
           onSubmit={async (e) => {
@@ -191,11 +201,11 @@ function Body({ view, onSubmit }: { view: DefenseView; onSubmit: (body: { answer
           }}
         >
           <fieldset className="space-y-2 text-sm">
-            <legend className="mb-1 font-medium">Did the student do this work?</legend>
+            <legend className="mb-1 font-medium">{t("didTheStudentDoThis")}</legend>
             {[
-              { v: "Yes", l: "Yes, this is their work" },
-              { v: "Partly", l: "Partly: some of it is overstated or was done by others" },
-              { v: "No", l: "No, this is not their work" },
+              { v: "Yes", l: t("answerYes") },
+              { v: "Partly", l: t("answerPartly") },
+              { v: "No", l: t("answerNo") },
             ].map((o) => (
               <label key={o.v} className="flex items-start gap-2">
                 <input type="radio" name="answer" className="mt-1" value={o.v} checked={answer === o.v} onChange={() => setAnswer(o.v)} required />
@@ -203,12 +213,12 @@ function Body({ view, onSubmit }: { view: DefenseView; onSubmit: (body: { answer
               </label>
             ))}
           </fieldset>
-          <Field label={needsComment ? "What should the school know? (required)" : "Comment (optional)"}>
+          <Field label={needsComment ? t("whatShouldTheSchoolKnow") : t("commentOptional")}>
             {(p) => <textarea {...p} rows={4} value={comment} maxLength={2000} onChange={(e) => setComment(e.target.value)} required={needsComment} />}
           </Field>
-          <Field label="Your name">{(p) => <input {...p} value={name} maxLength={200} onChange={(e) => setName(e.target.value)} />}</Field>
+          <Field label={t("yourName")}>{(p) => <input {...p} value={name} maxLength={200} onChange={(e) => setName(e.target.value)} />}</Field>
           <Button type="submit" busy={busy} disabled={!answer || (needsComment && !comment.trim())}>
-            Send my answer
+            {t("sendMyAnswer")}
           </Button>
         </form>
       </Card>

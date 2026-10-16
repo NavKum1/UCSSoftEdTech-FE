@@ -5,19 +5,19 @@
 import React, { useState } from "react";
 import { useApi } from "@/lib/appAuth";
 import { useCareerShell } from "@/components/career/CareerShell";
-import { Badge, Button, Card, EmptyState, ErrorBanner, Field, Loading, PageHeader, SuccessBanner, formatDate, useLoad } from "@/components/career/ui";
+import { Badge, Button, Card, EmptyState, ErrorBanner, Field, Loading, PageHeader, ScrollArea, SuccessBanner, formatDate, useLoad, useCareerT } from "@/components/career/ui";
 import { labelOf } from "@/components/career/coreLabels";
 import {
-  EMPLOYMENT_TYPE_LABELS,
   Placement,
   PlacementForm,
-  SALARY_BAND_LABELS,
-  SOURCE_LABELS,
-  STATUS_LABELS,
-  VERIFICATION_LABELS,
   VERIFICATION_TONE,
   emptyPlacementForm,
   placementPayload,
+  useEmploymentTypeLabels,
+  useSalaryBandLabels,
+  useSourceLabels,
+  useStatusLabels,
+  useVerificationLabels,
 } from "@/components/career/outcomesLabels";
 
 interface PlacementList {
@@ -72,32 +72,28 @@ interface Report {
 }
 
 type Tab = "placements" | "add" | "offers" | "reports" | "hire";
-const TABS: [Tab, string][] = [
-  ["placements", "Placements"],
-  ["add", "Add research entry"],
-  ["offers", "Offer signals"],
-  ["reports", "Reports"],
-  ["hire", "Hire links"],
-];
 
 function PlacementFields({ form, setForm, types, bands }: { form: PlacementForm; setForm: (f: PlacementForm) => void; types: string[]; bands: string[] }) {
+  const tr = useCareerT("careerCenterOutcomes");
+  const EMPLOYMENT_TYPE_LABELS = useEmploymentTypeLabels();
+  const SALARY_BAND_LABELS = useSalaryBandLabels();
   return (
     <>
-      <Field label="Employer or school">{(p) => <input {...p} required maxLength={200} value={form.employerName} onChange={(e) => setForm({ ...form, employerName: e.target.value })} />}</Field>
-      <Field label="Job title or program">{(p) => <input {...p} required maxLength={200} value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} />}</Field>
-      <Field label="Type">
+      <Field label={tr("employerOrSchool")}>{(p) => <input {...p} required maxLength={200} value={form.employerName} onChange={(e) => setForm({ ...form, employerName: e.target.value })} />}</Field>
+      <Field label={tr("jobTitleOrProgram")}>{(p) => <input {...p} required maxLength={200} value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} />}</Field>
+      <Field label={tr("type")}>
         {(p) => (
           <select {...p} value={form.employmentType} onChange={(e) => setForm({ ...form, employmentType: e.target.value })}>
             {types.map((t) => <option key={t} value={t}>{labelOf(EMPLOYMENT_TYPE_LABELS, t)}</option>)}
           </select>
         )}
       </Field>
-      <Field label="Start date">{(p) => <input {...p} type="date" value={form.startDate} onChange={(e) => setForm({ ...form, startDate: e.target.value })} />}</Field>
-      <Field label="Location">{(p) => <input {...p} maxLength={200} value={form.location} onChange={(e) => setForm({ ...form, location: e.target.value })} />}</Field>
-      <Field label="Salary range (optional)" hint="Yearly, in US dollars.">
+      <Field label={tr("startDate")}>{(p) => <input {...p} type="date" value={form.startDate} onChange={(e) => setForm({ ...form, startDate: e.target.value })} />}</Field>
+      <Field label={tr("location")}>{(p) => <input {...p} maxLength={200} value={form.location} onChange={(e) => setForm({ ...form, location: e.target.value })} />}</Field>
+      <Field label={tr("salaryRangeOptional")} hint={tr("yearlyInUSDollars")}>
         {(p) => (
           <select {...p} value={form.salaryBand} onChange={(e) => setForm({ ...form, salaryBand: e.target.value })}>
-            <option value="">Not known</option>
+            <option value="">{tr("notKnown")}</option>
             {bands.map((b) => <option key={b} value={b}>{labelOf(SALARY_BAND_LABELS, b)}</option>)}
           </select>
         )}
@@ -107,35 +103,49 @@ function PlacementFields({ form, setForm, types, bands }: { form: PlacementForm;
 }
 
 function Table({ t }: { t: ReportTable }) {
+  const tr = useCareerT("careerCenterOutcomes");
   return (
-    <div className="overflow-x-auto">
+    <ScrollArea>
       <table className="w-full text-sm">
-        <caption className="mb-2 text-left font-semibold">{t.title}</caption>
+        <caption className="mb-2 text-start font-semibold">{t.title}</caption>
         <thead>
-          <tr className="border-b border-border text-left">
-            {t.columns.map((c) => <th key={c} scope="col" className="py-2 pr-3 font-medium">{c}</th>)}
+          <tr className="border-b border-border text-start [&_th]:text-start">
+            {t.columns.map((c) => <th key={c} scope="col" className="py-2 pe-3 font-medium">{c}</th>)}
           </tr>
         </thead>
         <tbody>
           {t.rows.length === 0 ? (
             <tr>
-              <td colSpan={t.columns.length} className="py-2 text-muted-foreground">Nothing to show.</td>
+              <td colSpan={t.columns.length} className="py-2 text-muted-foreground">{tr("nothingToShow")}</td>
             </tr>
           ) : (
             t.rows.map((r, i) => (
               <tr key={i} className="border-b border-border last:border-0">
-                {r.map((c, j) => (j === 0 ? <th key={j} scope="row" className="py-2 pr-3 text-left font-normal">{c ?? "—"}</th> : <td key={j} className="py-2 pr-3">{c ?? "—"}</td>))}
+                {r.map((c, j) => (j === 0 ? <th key={j} scope="row" className="py-2 pe-3 text-start font-normal">{c ?? "—"}</th> : <td key={j} className="py-2 pe-3">{c ?? "—"}</td>))}
               </tr>
             ))
           )}
         </tbody>
       </table>
       {t.note && <p className="mt-2 text-xs text-muted-foreground">{t.note}</p>}
-    </div>
+    </ScrollArea>
   );
 }
 
 export default function CareerOutcomesPage() {
+  const tr = useCareerT("careerCenterOutcomes");
+  const EMPLOYMENT_TYPE_LABELS = useEmploymentTypeLabels();
+  const SALARY_BAND_LABELS = useSalaryBandLabels();
+  const SOURCE_LABELS = useSourceLabels();
+  const STATUS_LABELS = useStatusLabels();
+  const VERIFICATION_LABELS = useVerificationLabels();
+  const TABS: [Tab, string][] = [
+    ["placements", tr("tabPlacements")],
+    ["add", tr("tabAdd")],
+    ["offers", tr("tabOffers")],
+    ["reports", tr("tabReports")],
+    ["hire", tr("tabHire")],
+  ];
   const api = useApi();
   const { schoolId } = useCareerShell();
   const [tab, setTab] = useState<Tab>("placements");
@@ -170,7 +180,7 @@ export default function CareerOutcomesPage() {
   const download = (path: string, key: string) =>
     run(key, async () => {
       const res = await api<Response>(path, { raw: true });
-      if (!res.ok) throw new Error(`Export failed (${res.status})`);
+      if (!res.ok) throw new Error(tr("exportFailedStatus", { status: res.status }));
       const name = /filename="?([^";]+)"?/.exec(res.headers.get("content-disposition") ?? "")?.[1] ?? "export.csv";
       const url = URL.createObjectURL(await res.blob());
       const a = document.createElement("a");
@@ -178,22 +188,22 @@ export default function CareerOutcomesPage() {
       a.download = name;
       a.click();
       URL.revokeObjectURL(url);
-      setMsg("Download started.");
+      setMsg(tr("downloadStarted"));
     });
 
   const verify = (p: Placement) =>
     run(p.id, async () => {
-      const notes = window.prompt("How did you confirm it? (optional, for example: offer letter seen)") ?? "";
+      const notes = window.prompt(tr("howDidYouConfirmIt")) ?? "";
       await api(`/api/career/outcomes/placements/${p.id}/verify`, { method: "POST", json: { notes } });
-      setMsg(`${p.studentName ?? "The student"}'s placement at ${p.employerName} is confirmed.`);
+      setMsg(tr("studentNameSPlacementAtEmployerName", { studentName: p.studentName ?? tr("theStudent"), employerName: p.employerName }));
       list.reload();
     });
 
   const remove = (p: Placement) => {
-    if (!window.confirm(`Delete the placement at ${p.employerName} for ${p.studentName ?? "this student"}?`)) return;
+    if (!window.confirm(tr("deleteThePlacementAtEmployerName", { employerName: p.employerName, studentName: p.studentName ?? tr("thisStudent") }))) return;
     void run(p.id, async () => {
       await api(`/api/career/outcomes/placements/${p.id}`, { method: "DELETE" });
-      setMsg("Placement deleted.");
+      setMsg(tr("placementDeleted"));
       list.reload();
     });
   };
@@ -201,7 +211,7 @@ export default function CareerOutcomesPage() {
   const syncAts = () =>
     run("sync", async () => {
       const r = await api<{ scanned: number; created: number; merged: number }>("/api/career/outcomes/sync/ats", { method: "POST" });
-      setMsg(`Checked ${r.scanned} employer-reported hires: ${r.created} new placements, ${r.merged} already known or merged.`);
+      setMsg(tr("checkedScannedEmployerReportedHires", { scanned: r.scanned, created: r.created, merged: r.merged }));
       list.reload();
     });
 
@@ -219,9 +229,9 @@ export default function CareerOutcomesPage() {
   const addResearch = (e: React.FormEvent) => {
     e.preventDefault();
     void run("add", async () => {
-      if (!studentId) throw new Error("Choose a student first.");
+      if (!studentId) throw new Error(tr("chooseAStudentFirst"));
       const r = await api<{ merged: boolean }>("/api/career/outcomes/placements", { method: "POST", json: { ...placementPayload(form), studentUserId: studentId } });
-      setMsg(r.merged ? "This matched a placement already on record, so the two were merged." : "Placement added as confirmed by staff.");
+      setMsg(r.merged ? tr("thisMatchedAPlacementAlready") : tr("placementAddedAsConfirmedBy"));
       setForm(emptyPlacementForm);
       list.reload();
     });
@@ -229,9 +239,9 @@ export default function CareerOutcomesPage() {
 
   const saveStatus = () =>
     run("status", async () => {
-      if (!studentId) throw new Error("Choose a student first.");
+      if (!studentId) throw new Error(tr("chooseAStudentFirst"));
       await api(`/api/career/outcomes/students/${studentId}/status`, { method: "PUT", json: { status: status || null } });
-      setMsg(status ? `Status recorded: ${labelOf(STATUS_LABELS, status)}.` : "Status cleared.");
+      setMsg(status ? tr("statusRecordedStatus", { status: labelOf(STATUS_LABELS, status) }) : tr("statusCleared"));
       students.reload();
     });
 
@@ -249,9 +259,9 @@ export default function CareerOutcomesPage() {
   const addLink = (e: React.FormEvent) => {
     e.preventDefault();
     void run("link", async () => {
-      if (!studentId) throw new Error("Choose a student first.");
+      if (!studentId) throw new Error(tr("chooseAStudentFirst"));
       await api("/api/career/outcomes/hire/links", { method: "POST", json: { studentUserId: studentId, employerId: link.employerId.trim(), externalApplicationId: link.externalApplicationId.trim(), title: link.title.trim() || null } });
-      setMsg("Application linked. Hire and offer events for it will now create verified placements.");
+      setMsg(tr("applicationLinkedHireAndOffer"));
       setLink({ employerId: "", externalApplicationId: "", title: "" });
     });
   };
@@ -266,13 +276,13 @@ export default function CareerOutcomesPage() {
           setStudentSearch(studentQ.trim());
         }}
       >
-        <Field label="Find a student">{(p) => <input {...p} type="search" value={studentQ} onChange={(e) => setStudentQ(e.target.value)} />}</Field>
-        <Button type="submit" variant="secondary">Search</Button>
+        <Field label={tr("findAStudent")}>{(p) => <input {...p} type="search" value={studentQ} onChange={(e) => setStudentQ(e.target.value)} />}</Field>
+        <Button type="submit" variant="secondary">{tr("search")}</Button>
       </form>
-      <Field label="Student">
+      <Field label={tr("student")}>
         {(p) => (
           <select {...p} value={studentId} onChange={(e) => setStudentId(e.target.value)}>
-            <option value="">Choose…</option>
+            <option value="">{tr("choose")}</option>
             {(students.data ?? []).map((s) => (
               <option key={s.userId} value={s.userId}>
                 {s.name} ({s.email}){s.status ? ` · ${labelOf(STATUS_LABELS, s.status)}` : ""}
@@ -287,10 +297,10 @@ export default function CareerOutcomesPage() {
   return (
     <div>
       <PageHeader
-        title="Outcomes"
-        description="Where your graduates went, where each fact came from and how well it is verified. Placement records are part of the student's record: they are never shared with employers."
+        title={tr("outcomes")}
+        description={tr("whereYourGraduatesWentWhere")}
       />
-      <div role="tablist" aria-label="Outcomes" className="mb-4 flex flex-wrap gap-1 border-b border-border">
+      <div role="tablist" aria-label={tr("outcomes")} className="mb-4 flex flex-wrap gap-1 border-b border-border">
         {TABS.map(([key, label]) => (
           <button
             key={key}
@@ -315,8 +325,8 @@ export default function CareerOutcomesPage() {
           <Card
             actions={
               <div className="flex flex-wrap gap-2">
-                <Button variant="secondary" busy={busy === "sync"} onClick={syncAts}>Import employer-reported hires</Button>
-                <Button variant="secondary" busy={busy === "csv"} onClick={() => download("/api/career/outcomes/placements.csv", "csv")}>Export CSV</Button>
+                <Button variant="secondary" busy={busy === "sync"} onClick={syncAts}>{tr("importEmployerReportedHires")}</Button>
+                <Button variant="secondary" busy={busy === "csv"} onClick={() => download("/api/career/outcomes/placements.csv", "csv")}>{tr("exportCSV")}</Button>
               </div>
             }
           >
@@ -328,57 +338,57 @@ export default function CareerOutcomesPage() {
                 setSearch(q.trim());
               }}
             >
-              <Field label="Search" hint="Student, employer or title.">{(p) => <input {...p} type="search" value={q} onChange={(e) => setQ(e.target.value)} />}</Field>
-              <Field label="Verification">
+              <Field label={tr("search")} hint={tr("studentEmployerOrTitle")}>{(p) => <input {...p} type="search" value={q} onChange={(e) => setQ(e.target.value)} />}</Field>
+              <Field label={tr("verification")}>
                 {(p) => (
                   <select {...p} value={level} onChange={(e) => setLevel(e.target.value)}>
-                    <option value="">Any</option>
+                    <option value="">{tr("any")}</option>
                     {Object.keys(VERIFICATION_LABELS).map((v) => <option key={v} value={v}>{VERIFICATION_LABELS[v]}</option>)}
                   </select>
                 )}
               </Field>
-              <Field label="Source">
+              <Field label={tr("source")}>
                 {(p) => (
                   <select {...p} value={source} onChange={(e) => setSource(e.target.value)}>
-                    <option value="">Any</option>
+                    <option value="">{tr("any")}</option>
                     {Object.keys(SOURCE_LABELS).map((v) => <option key={v} value={v}>{SOURCE_LABELS[v]}</option>)}
                   </select>
                 )}
               </Field>
               <div className="flex items-end">
-                <Button type="submit" variant="secondary">Search</Button>
+                <Button type="submit" variant="secondary">{tr("search")}</Button>
               </div>
             </form>
             <ErrorBanner error={list.error} onRetry={list.reload} />
             {list.loading && !list.data ? (
               <Loading />
             ) : (list.data?.items ?? []).length === 0 ? (
-              <EmptyState title="No placements recorded yet">Import employer-reported hires, add research entries, or ask students to report their next step.</EmptyState>
+              <EmptyState title={tr("noPlacementsRecordedYet")}>{tr("importEmployerReportedHiresAdd")}</EmptyState>
             ) : (
               <ul className="divide-y divide-border" aria-live="polite">
                 {list.data!.items.map((p) => (
                   <li key={p.id} className="flex flex-wrap items-start justify-between gap-3 py-3">
                     <div className="min-w-0">
                       <p className="font-medium">
-                        {p.studentName ?? "Former member"} <span className="font-normal text-muted-foreground">· {p.studentEmail}</span>
+                        {p.studentName ?? tr("formerMember")} <span className="font-normal text-muted-foreground">· {p.studentEmail}</span>
                       </p>
                       <p className="text-sm">
-                        {p.title} at {p.employerName} · {labelOf(EMPLOYMENT_TYPE_LABELS, p.employmentType)}
-                        {p.startDate && ` · starts ${formatDate(p.startDate)}`}
+                        {tr("titleAtEmployerNameEmploymentType", { title: p.title, employerName: p.employerName, employmentType: labelOf(EMPLOYMENT_TYPE_LABELS, p.employmentType) })}
+                        {p.startDate && tr("startsStartDate", { startDate: formatDate(p.startDate) })}
                         {p.location && ` · ${p.location}`}
                         {p.salaryBand && ` · ${labelOf(SALARY_BAND_LABELS, p.salaryBand)}`}
                       </p>
                       <p className="text-xs text-muted-foreground">
-                        Reported by: {p.sources.map((s) => labelOf(SOURCE_LABELS, s)).join(", ")}
+                        {tr("reportedByValue", { value: p.sources.map((s) => labelOf(SOURCE_LABELS, s)).join(", ") })}
                         {p.evidenceNotes && ` · ${p.evidenceNotes}`}
                       </p>
                     </div>
                     <div className="flex flex-wrap items-center gap-2">
                       <Badge tone={VERIFICATION_TONE[p.verificationLevel] ?? "neutral"}>{labelOf(VERIFICATION_LABELS, p.verificationLevel)}</Badge>
                       {p.verificationLevel === "SelfReported" && (
-                        <Button variant="secondary" busy={busy === p.id} onClick={() => verify(p)} aria-label={`Confirm placement at ${p.employerName} for ${p.studentName ?? "student"}`}>Confirm</Button>
+                        <Button variant="secondary" busy={busy === p.id} onClick={() => verify(p)} aria-label={tr("confirmPlacementAtEmployerNameFor", { employerName: p.employerName, studentName: p.studentName ?? tr("student2") })}>{tr("confirm")}</Button>
                       )}
-                      <Button variant="ghost" disabled={busy === p.id} onClick={() => remove(p)} aria-label={`Delete placement at ${p.employerName} for ${p.studentName ?? "student"}`}>Delete</Button>
+                      <Button variant="ghost" disabled={busy === p.id} onClick={() => remove(p)} aria-label={tr("deletePlacementAtEmployerNameFor", { employerName: p.employerName, studentName: p.studentName ?? tr("student2") })}>{tr("delete")}</Button>
                     </div>
                   </li>
                 ))}
@@ -389,54 +399,54 @@ export default function CareerOutcomesPage() {
 
         {tab === "add" && (
           <div className="space-y-6">
-            <Card title="Student">{studentPicker}</Card>
-            <Card title="Placement found by the career center">
+            <Card title={tr("student")}>{studentPicker}</Card>
+            <Card title={tr("placementFoundByTheCareer")}>
               <form onSubmit={addResearch} className="grid gap-4 sm:grid-cols-2">
                 <PlacementFields form={form} setForm={setForm} types={types} bands={bands} />
                 <div className="sm:col-span-2">
-                  <Field label="Evidence" hint="Where you found it, for example: LinkedIn profile checked on 3 June, or email from the employer.">
+                  <Field label={tr("evidence")} hint={tr("whereYouFoundItFor")}>
                     {(p) => <textarea {...p} rows={2} maxLength={2000} value={form.evidenceNotes} onChange={(e) => setForm({ ...form, evidenceNotes: e.target.value })} />}
                   </Field>
                 </div>
                 <div className="sm:col-span-2">
-                  <Button type="submit" busy={busy === "add"}>Add placement</Button>
+                  <Button type="submit" busy={busy === "add"}>{tr("addPlacement")}</Button>
                 </div>
               </form>
             </Card>
-            <Card title="Or record that the student is still looking">
+            <Card title={tr("orRecordThatTheStudent")}>
               <div className="flex flex-wrap items-end gap-2">
-                <Field label="Status">
+                <Field label={tr("status")}>
                   {(p) => (
                     <select {...p} value={status} onChange={(e) => setStatus(e.target.value)}>
-                      <option value="">No status (clear)</option>
+                      <option value="">{tr("noStatusClear")}</option>
                       {Object.keys(STATUS_LABELS).map((s) => <option key={s} value={s}>{STATUS_LABELS[s]}</option>)}
                     </select>
                   )}
                 </Field>
-                <Button variant="secondary" busy={busy === "status"} onClick={saveStatus}>Save status</Button>
+                <Button variant="secondary" busy={busy === "status"} onClick={saveStatus}>{tr("saveStatus")}</Button>
               </div>
-              <p className="mt-2 text-xs text-muted-foreground">A recorded status counts as a known outcome in the knowledge rate.</p>
+              <p className="mt-2 text-xs text-muted-foreground">{tr("aRecordedStatusCountsAs")}</p>
             </Card>
           </div>
         )}
 
         {tab === "offers" && (
-          <Card title="Offers recorded in on-campus recruiting">
-            <p className="mb-3 text-sm text-muted-foreground">Students confirm on their &quot;My next step&quot; page whether they accepted. Accepted offers become placements.</p>
+          <Card title={tr("offersRecordedInOnCampus")}>
+            <p className="mb-3 text-sm text-muted-foreground">{tr("studentsConfirmOnTheirMy")}</p>
             <ErrorBanner error={offers.error} onRetry={offers.reload} />
             {offers.loading || !offers.data ? (
               <Loading />
             ) : offers.data.length === 0 ? (
-              <EmptyState title="No offers recorded" />
+              <EmptyState title={tr("noOffersRecorded")} />
             ) : (
               <ul className="divide-y divide-border text-sm">
                 {offers.data.map((o) => (
                   <li key={o.bookingId} className="flex flex-wrap justify-between gap-2 py-2">
                     <span>
-                      {o.studentName ?? "Student"} · {o.positionTitle} at {o.employerName}
+                      {tr("studentNamePositionTitleAtEmployerName", { studentName: o.studentName ?? tr("student"), positionTitle: o.positionTitle, employerName: o.employerName })}
                       {o.outcomeAt && <span className="text-muted-foreground"> · {formatDate(o.outcomeAt)}</span>}
                     </span>
-                    <Badge tone={o.response === "Accepted" ? "good" : o.response === "Declined" ? "neutral" : "warn"}>{o.response ?? "Waiting for the student"}</Badge>
+                    <Badge tone={o.response === "Accepted" ? "good" : o.response === "Declined" ? "neutral" : "warn"}>{o.response ?? tr("waitingForTheStudent")}</Badge>
                   </li>
                 ))}
               </ul>
@@ -447,21 +457,21 @@ export default function CareerOutcomesPage() {
         {tab === "reports" && (
           <div className="space-y-6">
             <Card
-              actions={<Button variant="secondary" busy={busy === "rcsv"} onClick={() => download(`/api/career/outcomes/reports.csv?${reportQ}`, "rcsv")}>Export CSV</Button>}
+              actions={<Button variant="secondary" busy={busy === "rcsv"} onClick={() => download(`/api/career/outcomes/reports.csv?${reportQ}`, "rcsv")}>{tr("exportCSV")}</Button>}
             >
               <div className="grid gap-3 sm:grid-cols-3">
-                <Field label="Graduation year">
+                <Field label={tr("graduationYear")}>
                   {(p) => (
                     <select {...p} value={cohort} onChange={(e) => setCohort(e.target.value)}>
-                      <option value="">All years</option>
+                      <option value="">{tr("allYears")}</option>
                       {(report.data?.filters.cohorts ?? []).map((c) => <option key={c} value={c}>{c}</option>)}
                     </select>
                   )}
                 </Field>
-                <Field label="Program">
+                <Field label={tr("program")}>
                   {(p) => (
                     <select {...p} value={program} onChange={(e) => setProgram(e.target.value)}>
-                      <option value="">All programs</option>
+                      <option value="">{tr("allPrograms")}</option>
                       {(report.data?.filters.programs ?? []).map((c) => <option key={c} value={c}>{c}</option>)}
                     </select>
                   )}
@@ -476,13 +486,13 @@ export default function CareerOutcomesPage() {
                 {report.data.tables.filter((t) => t.key !== "predictors").map((t) => (
                   <Card key={t.key}><Table t={t} /></Card>
                 ))}
-                <Card title="Which evidence went with placement">
+                <Card title={tr("whichEvidenceWentWithPlacement")}>
                   <p className="mb-3 rounded-md border border-border bg-muted p-3 text-sm" role="note">
-                    <strong>Correlation, not causation; small samples.</strong> {report.data.predictorsCaveat.replace(/^Correlation, not causation; small samples\. /, "")}
+                    <strong>{tr("correlationNotCausationSmallSamples")}</strong> {report.data.predictorsCaveat.replace(/^Correlation, not causation; small samples\. /, "")}
                   </p>
                   <Table t={report.data.tables.find((t) => t.key === "predictors")!} />
                 </Card>
-                <ul className="list-disc space-y-1 pl-5 text-xs text-muted-foreground">
+                <ul className="list-disc space-y-1 ps-5 text-xs text-muted-foreground">
                   {report.data.notes.map((n) => <li key={n}>{n}</li>)}
                 </ul>
               </div>
@@ -492,26 +502,26 @@ export default function CareerOutcomesPage() {
 
         {tab === "hire" && (
           <div className="space-y-6">
-            <Card title="Link an application sent to an employer's Hire account">
+            <Card title={tr("linkAnApplicationSentTo")}>
               <p className="mb-3 text-sm text-muted-foreground">
-                When an employer uses Hire, it reports offers and hires for applications we sent it. Linking our application id to the student lets those reports become employer-verified placements.
+                {tr("whenAnEmployerUsesHire")}
               </p>
               {studentPicker}
               <form onSubmit={addLink} className="mt-4 grid gap-3 sm:grid-cols-3">
-                <Field label="Employer id">{(p) => <input {...p} required pattern="[0-9a-fA-F-]{36}" value={link.employerId} onChange={(e) => setLink({ ...link, employerId: e.target.value })} />}</Field>
-                <Field label="Our application id" hint="The externalApplicationId sent to Hire.">{(p) => <input {...p} required maxLength={128} value={link.externalApplicationId} onChange={(e) => setLink({ ...link, externalApplicationId: e.target.value })} />}</Field>
-                <Field label="Role (optional)">{(p) => <input {...p} maxLength={200} value={link.title} onChange={(e) => setLink({ ...link, title: e.target.value })} />}</Field>
+                <Field label={tr("employerId")}>{(p) => <input {...p} required pattern="[0-9a-fA-F-]{36}" value={link.employerId} onChange={(e) => setLink({ ...link, employerId: e.target.value })} />}</Field>
+                <Field label={tr("ourApplicationId")} hint={tr("theExternalApplicationIdSentToHire")}>{(p) => <input {...p} required maxLength={128} value={link.externalApplicationId} onChange={(e) => setLink({ ...link, externalApplicationId: e.target.value })} />}</Field>
+                <Field label={tr("roleOptional")}>{(p) => <input {...p} maxLength={200} value={link.title} onChange={(e) => setLink({ ...link, title: e.target.value })} />}</Field>
                 <div>
-                  <Button type="submit" busy={busy === "link"}>Link application</Button>
+                  <Button type="submit" busy={busy === "link"}>{tr("linkApplication")}</Button>
                 </div>
               </form>
             </Card>
-            <Card title="Recent events from Hire">
+            <Card title={tr("recentEventsFromHire")}>
               <ErrorBanner error={events.error} onRetry={events.reload} />
               {events.loading || !events.data ? (
                 <Loading />
               ) : events.data.length === 0 ? (
-                <EmptyState title="No events received yet" />
+                <EmptyState title={tr("noEventsReceivedYet")} />
               ) : (
                 <ul className="divide-y divide-border text-sm">
                   {events.data.map((e) => (

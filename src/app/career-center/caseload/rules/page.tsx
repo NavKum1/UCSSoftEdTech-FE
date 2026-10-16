@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { useApi } from "@/lib/appAuth";
 import { useCareerShell } from "@/components/career/CareerShell";
-import { Button, Card, EmptyState, ErrorBanner, Field, Loading, PageHeader, SuccessBanner, useLoad } from "@/components/career/ui";
+import { Button, Card, EmptyState, ErrorBanner, Field, Loading, PageHeader, SuccessBanner, useLoad, useCareerT } from "@/components/career/ui";
 import type { Counselor } from "@/components/career/triage/shared";
 
 interface Rule {
@@ -28,6 +28,7 @@ interface Row {
 }
 
 export default function CaseloadRulesPage() {
+  const t = useCareerT("careerCenterCaseloadRules");
   const api = useApi();
   const { schoolId } = useCareerShell();
   const rules = useLoad(() => api<Rule[]>("/api/career/triage/rules"), [api, schoolId]);
@@ -65,36 +66,36 @@ export default function CaseloadRulesPage() {
       return n;
     });
 
-  const describe = (r: Rule) => (r.kind === "Alpha" ? `Last name ${r.alphaFrom}–${r.alphaTo}` : `${r.kind}: ${r.value}`);
+  const describe = (r: Rule) => (r.kind === "Alpha" ? t("describeAlpha", { from: r.alphaFrom, to: r.alphaTo }) : t("describeRule", { kind: r.kind, value: r.value }));
 
   return (
     <div>
       <PageHeader
-        title="Caseload rules"
-        description="Assign students to counselors by major, college or last-name range. The first matching rule (lowest priority number) wins; a manual assignment overrides the rules. Students no rule matches stay in the unassigned pool."
+        title={t("caseloadRules")}
+        description={t("assignStudentsToCounselorsBy")}
         actions={
           <Link className="rounded-md border border-border px-3 py-2 text-sm hover:bg-muted" href="/career-center/caseload">
-            Back to caseload
+            {t("backToCaseload")}
           </Link>
         }
       />
       <SuccessBanner message={msg} />
       <ErrorBanner error={err || rules.error || counselors.error} />
 
-      <Card title="Rules">
+      <Card title={t("rules")}>
         {rules.loading && !rules.data ? (
           <Loading />
         ) : !rules.data || rules.data.length === 0 ? (
-          <EmptyState title="No rules yet">Every student is in the unassigned pool until you add a rule or assign them.</EmptyState>
+          <EmptyState title={t("noRulesYet")}>{t("everyStudentIsInThe")}</EmptyState>
         ) : (
           <table className="w-full text-sm">
-            <caption className="sr-only">Caseload rules in the order they apply</caption>
+            <caption className="sr-only">{t("caseloadRulesInTheOrder")}</caption>
             <thead>
-              <tr className="text-left text-muted-foreground">
-                <th scope="col" className="py-2">Priority</th>
-                <th scope="col">Rule</th>
-                <th scope="col">Counselor</th>
-                <th scope="col"><span className="sr-only">Actions</span></th>
+              <tr className="text-start text-muted-foreground [&_th]:text-start">
+                <th scope="col" className="py-2">{t("priority")}</th>
+                <th scope="col">{t("rule")}</th>
+                <th scope="col">{t("counselor")}</th>
+                <th scope="col"><span className="sr-only">{t("actions")}</span></th>
               </tr>
             </thead>
             <tbody>
@@ -103,14 +104,14 @@ export default function CaseloadRulesPage() {
                   <td className="py-2">{r.priority}</td>
                   <td>{describe(r)}</td>
                   <td>{r.counselorName}</td>
-                  <td className="text-right">
+                  <td className="text-end">
                     <Button
                       variant="ghost"
                       busy={busy === r.id}
-                      aria-label={`Delete rule ${describe(r)}`}
-                      onClick={() => run(r.id, () => api(`/api/career/triage/rules/${r.id}`, { method: "DELETE" }), "Rule deleted.").then((ok) => ok && (rules.reload(), students.reload()))}
+                      aria-label={t("deleteRuleR", { r: describe(r) })}
+                      onClick={() => run(r.id, () => api(`/api/career/triage/rules/${r.id}`, { method: "DELETE" }), t("ruleDeleted")).then((ok) => ok && (rules.reload(), students.reload()))}
                     >
-                      Delete
+                      {t("delete")}
                     </Button>
                   </td>
                 </tr>
@@ -122,7 +123,7 @@ export default function CaseloadRulesPage() {
           className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-6"
           onSubmit={(e) => {
             e.preventDefault();
-            run("add", () => api("/api/career/triage/rules", { json: { ...form, priority: Number(form.priority) } }), "Rule added.").then((ok) => {
+            run("add", () => api("/api/career/triage/rules", { json: { ...form, priority: Number(form.priority) } }), t("ruleAdded")).then((ok) => {
               if (ok) {
                 setForm({ ...form, value: "", alphaFrom: "", alphaTo: "" });
                 rules.reload();
@@ -131,10 +132,10 @@ export default function CaseloadRulesPage() {
             });
           }}
         >
-          <Field label="Counselor">
+          <Field label={t("counselor")}>
             {(p) => (
               <select {...p} required value={form.counselorUserId} onChange={(e) => setForm({ ...form, counselorUserId: e.target.value })}>
-                <option value="">Choose…</option>
+                <option value="">{t("choose")}</option>
                 {(counselors.data || []).map((c) => (
                   <option key={c.userId} value={c.userId}>
                     {c.name}
@@ -143,63 +144,63 @@ export default function CaseloadRulesPage() {
               </select>
             )}
           </Field>
-          <Field label="Match on">
+          <Field label={t("matchOn")}>
             {(p) => (
               <select {...p} value={form.kind} onChange={(e) => setForm({ ...form, kind: e.target.value })}>
-                <option value="Major">Major</option>
-                <option value="College">College</option>
-                <option value="Alpha">Last-name range</option>
+                <option value="Major">{t("major")}</option>
+                <option value="College">{t("college")}</option>
+                <option value="Alpha">{t("lastNameRange")}</option>
               </select>
             )}
           </Field>
           {form.kind === "Alpha" ? (
             <>
-              <Field label="From letter">{(p) => <input {...p} required maxLength={1} value={form.alphaFrom} onChange={(e) => setForm({ ...form, alphaFrom: e.target.value })} />}</Field>
-              <Field label="To letter">{(p) => <input {...p} required maxLength={1} value={form.alphaTo} onChange={(e) => setForm({ ...form, alphaTo: e.target.value })} />}</Field>
+              <Field label={t("fromLetter")}>{(p) => <input {...p} required maxLength={1} value={form.alphaFrom} onChange={(e) => setForm({ ...form, alphaFrom: e.target.value })} />}</Field>
+              <Field label={t("toLetter")}>{(p) => <input {...p} required maxLength={1} value={form.alphaTo} onChange={(e) => setForm({ ...form, alphaTo: e.target.value })} />}</Field>
             </>
           ) : (
             <div className="lg:col-span-2">
-              <Field label={form.kind === "Major" ? "Major" : "College"}>{(p) => <input {...p} required value={form.value} onChange={(e) => setForm({ ...form, value: e.target.value })} />}</Field>
+              <Field label={form.kind === "Major" ? t("major") : t("college")}>{(p) => <input {...p} required value={form.value} onChange={(e) => setForm({ ...form, value: e.target.value })} />}</Field>
             </div>
           )}
-          <Field label="Priority" hint="Lower runs first">
+          <Field label={t("priority")} hint={t("lowerRunsFirst")}>
             {(p) => <input {...p} type="number" min={0} max={10000} value={form.priority} onChange={(e) => setForm({ ...form, priority: Number(e.target.value) })} />}
           </Field>
           <div className="flex items-end">
             <Button type="submit" busy={busy === "add"}>
-              Add rule
+              {t("addRule")}
             </Button>
           </div>
         </form>
       </Card>
 
       <div className="mt-4">
-        <Card title="Reassign students">
+        <Card title={t("reassignStudents")}>
           <div className="grid gap-3 sm:grid-cols-3">
-            <Field label="Show">
+            <Field label={t("show")}>
               {(p) => (
                 <select {...p} value={scope} onChange={(e) => { setScope(e.target.value); setPicked(new Set()); }}>
-                  <option value="all">All students</option>
-                  <option value="unassigned">Unassigned pool</option>
+                  <option value="all">{t("allStudents")}</option>
+                  <option value="unassigned">{t("unassignedPool")}</option>
                   {(counselors.data || []).map((c) => (
                     <option key={c.userId} value={c.userId}>
-                      {c.name}&apos;s caseload
+                      {t("nameSCaseload", { name: c.name })}
                     </option>
                   ))}
                 </select>
               )}
             </Field>
-            <Field label="Move selected to">
+            <Field label={t("moveSelectedTo")}>
               {(p) => (
                 <select {...p} value={target} onChange={(e) => setTarget(e.target.value)}>
-                  <option value="">Choose…</option>
+                  <option value="">{t("choose")}</option>
                   {(counselors.data || []).map((c) => (
                     <option key={c.userId} value={c.userId}>
                       {c.name}
                     </option>
                   ))}
-                  <option value="pool">Unassigned pool (pinned)</option>
-                  <option value="rules">Follow the rules (remove manual assignment)</option>
+                  <option value="pool">{t("unassignedPoolPinned")}</option>
+                  <option value="rules">{t("followTheRulesRemoveManual")}</option>
                 </select>
               )}
             </Field>
@@ -209,7 +210,7 @@ export default function CaseloadRulesPage() {
                 busy={busy === "assign"}
                 onClick={() => {
                   const mode = target === "pool" || target === "rules" ? target : "assign";
-                  run("assign", () => api("/api/career/triage/assignments", { json: { studentUserIds: [...picked], mode, counselorUserId: mode === "assign" ? target : null } }), `Updated ${picked.size} student(s).`).then((ok) => {
+                  run("assign", () => api("/api/career/triage/assignments", { json: { studentUserIds: [...picked], mode, counselorUserId: mode === "assign" ? target : null } }), t("updatedSizeStudentS", { size: picked.size })).then((ok) => {
                     if (ok) {
                       setPicked(new Set());
                       students.reload();
@@ -217,7 +218,7 @@ export default function CaseloadRulesPage() {
                   });
                 }}
               >
-                Reassign {picked.size} selected
+                {t("reassignSizeSelected", { size: picked.size })}
               </Button>
             </div>
           </div>
@@ -226,27 +227,27 @@ export default function CaseloadRulesPage() {
             <Loading />
           ) : (
             <table className="mt-3 w-full text-sm">
-              <caption className="sr-only">Students and their counselor</caption>
+              <caption className="sr-only">{t("studentsAndTheirCounselor")}</caption>
               <thead>
-                <tr className="text-left text-muted-foreground">
+                <tr className="text-start text-muted-foreground [&_th]:text-start">
                   <th scope="col" className="py-2">
-                    <span className="sr-only">Select</span>
+                    <span className="sr-only">{t("select")}</span>
                   </th>
-                  <th scope="col">Student</th>
-                  <th scope="col">Major</th>
-                  <th scope="col">Counselor</th>
+                  <th scope="col">{t("student")}</th>
+                  <th scope="col">{t("major")}</th>
+                  <th scope="col">{t("counselor")}</th>
                 </tr>
               </thead>
               <tbody>
                 {(students.data?.students || []).map((s) => (
                   <tr key={s.userId} className="border-t border-border">
                     <td className="py-2">
-                      <input type="checkbox" aria-label={`Select ${s.name}`} checked={picked.has(s.userId)} onChange={() => toggle(s.userId)} />
+                      <input type="checkbox" aria-label={t("selectName", { name: s.name })} checked={picked.has(s.userId)} onChange={() => toggle(s.userId)} />
                     </td>
                     <td>{s.name}</td>
                     <td>{s.majors.join(", ") || "—"}</td>
                     <td>
-                      {s.counselorName || "Unassigned"} <span className="text-xs text-muted-foreground">({s.assignmentSource})</span>
+                      {s.counselorName || t("unassigned")} <span className="text-xs text-muted-foreground">({s.assignmentSource})</span>
                     </td>
                   </tr>
                 ))}

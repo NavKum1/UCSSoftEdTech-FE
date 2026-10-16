@@ -3,8 +3,8 @@
 import React, { useState } from "react";
 import { useApi } from "@/lib/appAuth";
 import { useCareerShell } from "@/components/career/CareerShell";
-import { EmptyState, ErrorBanner, Loading, PageHeader, formatDate, useLoad } from "@/components/career/ui";
-import { FERPA_CATEGORY_LABELS, labelOf } from "@/components/career/coreLabels";
+import { EmptyState, ErrorBanner, Loading, PageHeader, formatDate, useLoad, useCareerT, useCareerLabels } from "@/components/career/ui";
+import { labelOf, useFerpaCategoryLabels } from "@/components/career/coreLabels";
 
 interface Disclosure {
   id: string;
@@ -33,11 +33,11 @@ interface AuditEvent {
   details?: unknown;
 }
 
-const LEGAL_BASIS: Record<string, string> = { Consent: "Student consent", DirectoryInformation: "Directory information", SchoolOfficial: "School official", StudentSelf: "Student" };
+const LEGAL_BASIS_KEYS = ["Consent", "DirectoryInformation", "SchoolOfficial", "StudentSelf"];
 
-function catsOf(d: Disclosure) {
+function catsOf(d: Disclosure, FERPA_CATEGORY_LABELS: Record<string, string>) {
   if (d.categories) return d.categories.map((c) => labelOf(FERPA_CATEGORY_LABELS, c)).join(", ");
-  return parseCats(d.dataCategories_JSON);
+  return parseCats(d.dataCategories_JSON, FERPA_CATEGORY_LABELS);
 }
 
 // Audit details as short "key: value" lines
@@ -51,7 +51,7 @@ function detailsText(a: AuditEvent) {
   return a.details_JSON === "{}" ? "—" : a.details_JSON;
 }
 
-function parseCats(json: string) {
+function parseCats(json: string, FERPA_CATEGORY_LABELS: Record<string, string>) {
   try {
     const list = JSON.parse(json) as string[];
     return list.map((c) => labelOf(FERPA_CATEGORY_LABELS, c)).join(", ");
@@ -63,6 +63,9 @@ function parseCats(json: string) {
 const shortId = (id?: string | null) => (id ? id.slice(0, 8) : "—");
 
 export default function PrivacyLogPage() {
+  const t = useCareerT("careerCenterPrivacyLog");
+  const FERPA_CATEGORY_LABELS = useFerpaCategoryLabels();
+  const LEGAL_BASIS = useCareerLabels("careerCenterPrivacyLog.legalBasisLabel", LEGAL_BASIS_KEYS);
   const api = useApi();
   const { schoolId } = useCareerShell();
   const [tab, setTab] = useState<"disclosures" | "audit">("disclosures");
@@ -72,12 +75,12 @@ export default function PrivacyLogPage() {
 
   return (
     <div>
-      <PageHeader title="Privacy log" description="FERPA requires a record of every release of student information. Staff actions are recorded in the audit log." />
-      <div role="tablist" aria-label="Log" className="mb-4 flex gap-1 border-b border-border">
+      <PageHeader title={t("privacyLog")} description={t("fERPARequiresARecordOf")} />
+      <div role="tablist" aria-label={t("log")} className="mb-4 flex gap-1 border-b border-border">
         {(
           [
-            ["disclosures", "Disclosures"],
-            ["audit", "Audit events"],
+            ["disclosures", t("disclosures")],
+            ["audit", t("auditEvents")],
           ] as const
         ).map(([key, label]) => (
           <button
@@ -95,33 +98,33 @@ export default function PrivacyLogPage() {
         ))}
       </div>
       <ErrorBanner error={current.error} onRetry={current.reload} />
-      <div id="log-panel" role="tabpanel" className="overflow-x-auto">
+      <div id="log-panel" role="tabpanel" tabIndex={0} aria-label={tab === "disclosures" ? t("disclosures") : t("auditEvents")} className="overflow-x-auto focus-visible:outline-2">
         {current.loading || !current.data ? (
           current.error ? null : <Loading />
         ) : tab === "disclosures" ? (
           disclosures.data!.length === 0 ? (
-            <EmptyState title="No student information has been released yet" />
+            <EmptyState title={t("noStudentInformationHasBeen")} />
           ) : (
             <table className="w-full text-sm">
-              <caption className="sr-only">Disclosures of student records</caption>
+              <caption className="sr-only">{t("disclosuresOfStudentRecords")}</caption>
               <thead>
-                <tr className="border-b border-border text-left">
-                  <th scope="col" className="py-2 pr-3 font-medium">When</th>
-                  <th scope="col" className="py-2 pr-3 font-medium">Student</th>
-                  <th scope="col" className="py-2 pr-3 font-medium">Released to</th>
-                  <th scope="col" className="py-2 pr-3 font-medium">What</th>
-                  <th scope="col" className="py-2 pr-3 font-medium">Why</th>
-                  <th scope="col" className="py-2 font-medium">Legal basis</th>
+                <tr className="border-b border-border text-start [&_th]:text-start">
+                  <th scope="col" className="py-2 pe-3 font-medium">{t("when")}</th>
+                  <th scope="col" className="py-2 pe-3 font-medium">{t("student")}</th>
+                  <th scope="col" className="py-2 pe-3 font-medium">{t("releasedTo")}</th>
+                  <th scope="col" className="py-2 pe-3 font-medium">{t("what")}</th>
+                  <th scope="col" className="py-2 pe-3 font-medium">{t("why")}</th>
+                  <th scope="col" className="py-2 font-medium">{t("legalBasis")}</th>
                 </tr>
               </thead>
               <tbody>
                 {disclosures.data!.map((d) => (
                   <tr key={d.id} className="border-b border-border last:border-0 align-top">
-                    <td className="py-2 pr-3 whitespace-nowrap">{formatDate(d.occurredAt, true)}</td>
-                    <td className="py-2 pr-3" title={d.studentUserId}>{d.studentName ?? <span className="font-mono text-xs">{shortId(d.studentUserId)}</span>}</td>
-                    <td className="py-2 pr-3">{d.recipientName}<div className="text-xs text-muted-foreground">{d.recipientType}</div></td>
-                    <td className="py-2 pr-3">{catsOf(d)}{d.actorName && <div className="text-xs text-muted-foreground">Viewed by {d.actorName}</div>}</td>
-                    <td className="py-2 pr-3">{d.purpose || "—"}</td>
+                    <td className="py-2 pe-3 whitespace-nowrap">{formatDate(d.occurredAt, true)}</td>
+                    <td className="py-2 pe-3" title={d.studentUserId}>{d.studentName ?? <span className="font-mono text-xs">{shortId(d.studentUserId)}</span>}</td>
+                    <td className="py-2 pe-3">{d.recipientName}<div className="text-xs text-muted-foreground">{d.recipientType}</div></td>
+                    <td className="py-2 pe-3">{catsOf(d, FERPA_CATEGORY_LABELS)}{d.actorName && <div className="text-xs text-muted-foreground">{t("viewedByActorName", { actorName: d.actorName })}</div>}</td>
+                    <td className="py-2 pe-3">{d.purpose || "—"}</td>
                     <td className="py-2">{labelOf(LEGAL_BASIS, d.legalBasis)}</td>
                   </tr>
                 ))}
@@ -129,26 +132,26 @@ export default function PrivacyLogPage() {
             </table>
           )
         ) : audit.data!.length === 0 ? (
-          <EmptyState title="No audit events yet" />
+          <EmptyState title={t("noAuditEventsYet")} />
         ) : (
           <table className="w-full text-sm">
-            <caption className="sr-only">Audit events</caption>
+            <caption className="sr-only">{t("auditEvents")}</caption>
             <thead>
-              <tr className="border-b border-border text-left">
-                <th scope="col" className="py-2 pr-3 font-medium">When</th>
-                <th scope="col" className="py-2 pr-3 font-medium">Action</th>
-                <th scope="col" className="py-2 pr-3 font-medium">Item</th>
-                <th scope="col" className="py-2 pr-3 font-medium">By</th>
-                <th scope="col" className="py-2 font-medium">Details</th>
+              <tr className="border-b border-border text-start [&_th]:text-start">
+                <th scope="col" className="py-2 pe-3 font-medium">{t("when")}</th>
+                <th scope="col" className="py-2 pe-3 font-medium">{t("action")}</th>
+                <th scope="col" className="py-2 pe-3 font-medium">{t("item")}</th>
+                <th scope="col" className="py-2 pe-3 font-medium">{t("by")}</th>
+                <th scope="col" className="py-2 font-medium">{t("details")}</th>
               </tr>
             </thead>
             <tbody>
               {audit.data!.map((a) => (
                 <tr key={a.id} className="border-b border-border last:border-0 align-top">
-                  <td className="py-2 pr-3 whitespace-nowrap">{formatDate(a.at, true)}</td>
-                  <td className="py-2 pr-3">{a.action}</td>
-                  <td className="py-2 pr-3">{a.entityType}<div className="font-mono text-xs text-muted-foreground">{shortId(a.entityId)}</div></td>
-                  <td className="py-2 pr-3" title={a.actorUserId ?? ""}>{a.actorName ?? <span className="font-mono text-xs">{shortId(a.actorUserId)}</span>}</td>
+                  <td className="py-2 pe-3 whitespace-nowrap">{formatDate(a.at, true)}</td>
+                  <td className="py-2 pe-3">{a.action}</td>
+                  <td className="py-2 pe-3">{a.entityType}<div className="font-mono text-xs text-muted-foreground">{shortId(a.entityId)}</div></td>
+                  <td className="py-2 pe-3" title={a.actorUserId ?? ""}>{a.actorName ?? <span className="font-mono text-xs">{shortId(a.actorUserId)}</span>}</td>
                   <td className="max-w-md break-words py-2 text-xs">{detailsText(a)}</td>
                 </tr>
               ))}

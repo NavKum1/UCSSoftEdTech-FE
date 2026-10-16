@@ -11,9 +11,10 @@ import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { setSelectedSchool } from "@/lib/appAuth";
 import { clearPartnerSession, safeReturnTo, savePartnerSession } from "@/lib/partnerSession";
-import { ErrorBanner, Loading } from "@/components/career/ui";
+import { ErrorBanner, Loading, useCareerT } from "@/components/career/ui";
 
 export default function PartnerCallbackPage() {
+  const t = useCareerT("partnerCallback");
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
 
@@ -33,23 +34,24 @@ export default function PartnerCallbackPage() {
     const token = params.get("token");
     const session = token ? savePartnerSession(token) : null;
     if (!session) {
-      fail("This sign-in link is incomplete or has expired. Open career services from your account again.");
+      fail(t("thisSignInLinkIs"));
       return;
     }
     const institute = params.get("institute") ?? session.instituteId;
     if (institute) setSelectedSchool(institute);
     const fallback = session.role === "CareerAdmin" ? "/career-center" : "/student";
     router.replace(safeReturnTo(params.get("returnTo"), fallback));
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- t only changes with the language; the sign-in exchange must run once
   }, [router]);
 
   return (
     <div className="mx-auto max-w-lg px-4 py-16">
-      <h1 className="mb-4 text-xl font-semibold">Signing you in</h1>
+      <h1 className="mb-4 text-xl font-semibold">{t("signingYouIn")}</h1>
       {error ? (
-        <ErrorBanner error={`We couldn't sign you in: ${error}`} />
+        <ErrorBanner error={t("weCouldntSignYouIn", { error })} />
       ) : (
         <div role="status" aria-live="polite">
-          <Loading label="Opening career services…" />
+          <Loading label={t("openingCareerServices")} />
         </div>
       )}
     </div>
