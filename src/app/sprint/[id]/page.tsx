@@ -708,7 +708,9 @@ function GradedWorkspace({ sprintId }: { sprintId: string }) {
 
   useEffect(() => {
     let cancelled = false;
-    authenticatedFetch(`/api/sprint/${sprintId}`, {}, getToken)
+    // A private sprint's details need its invite code (or an attempt the user already started with it)
+    const query = inviteCode ? `?invite=${encodeURIComponent(inviteCode)}` : "";
+    authenticatedFetch(`/api/sprint/${sprintId}${query}`, {}, getToken)
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
         if (cancelled || !data) return;
@@ -723,7 +725,7 @@ function GradedWorkspace({ sprintId }: { sprintId: string }) {
     return () => {
       cancelled = true;
     };
-  }, [sprintId, getToken]);
+  }, [sprintId, inviteCode, getToken]);
 
   useEffect(() => {
     if (!telemetry) return;

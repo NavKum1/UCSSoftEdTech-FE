@@ -120,6 +120,8 @@ interface ClaimedExamCredential {
 }
 
 interface ExamEvaluationResult {
+  /** The stored attempt the server graded; a credential is claimed for it (the server recomputes the score). */
+  attemptId: string;
   examId: string;
   examTitle: string;
   totalQuestions: number;
@@ -161,6 +163,9 @@ export default function WrittenExamPrepPage() {
 
   // Credential Modal State
   const [claimedCredential, setClaimedCredential] = useState<ClaimedExamCredential | null>(null);
+  // The attempt the credential above was issued for, and why the last claim was refused (shown under the claim button)
+  const [claimedAttemptId, setClaimedAttemptId] = useState<string | null>(null);
+  const [claimError, setClaimError] = useState<string | null>(null);
   const [showCredentialModal, setShowCredentialModal] = useState<boolean>(false);
   const [claiming, setClaiming] = useState<boolean>(false);
   const [copiedLink, setCopiedLink] = useState<boolean>(false);
@@ -324,14 +329,20 @@ export default function WrittenExamPrepPage() {
     return () => clearInterval(timer);
   }, [activeExam, evaluation, timeLeftSeconds]);
 
-  const handleClaimCredential = async (examId: string, percentage: number) => {
+  // The server issues the credential for the stored, server-graded attempt; no score is sent from here.
+  const handleClaimCredential = async (examId: string, attemptId: string) => {
+    if (claimedCredential && claimedAttemptId === attemptId) {
+      setShowCredentialModal(true);
+      return;
+    }
     setClaiming(true);
+    setClaimError(null);
     try {
       const res = await apiFetch(`/api/quiz/exams/${examId}/claim-credential`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          percentage,
+          attemptId,
           candidateName: candidateName || "Alex Chen",
         }),
       });
@@ -339,11 +350,17 @@ export default function WrittenExamPrepPage() {
       if (res.ok) {
         const cred = await res.json();
         setClaimedCredential(cred);
+        setClaimedAttemptId(attemptId);
         setShowCredentialModal(true);
+        fetchHistory();
+      } else {
+        const err = await res.json().catch(() => null);
+        setClaimError(err?.error || "The credential could not be issued for this attempt.");
         fetchHistory();
       }
     } catch (err) {
       console.error("Failed to claim verified credential:", err);
+      setClaimError("The credential could not be issued. Try again.");
     } finally {
       setClaiming(false);
     }
@@ -583,13 +600,14 @@ export default function WrittenExamPrepPage() {
 
                 <div className="flex items-center gap-2 shrink-0">
                   <button
-                    onClick={() => handleClaimCredential(evaluation.examId, evaluation.percentage)}
+                    onClick={() => handleClaimCredential(evaluation.examId, evaluation.attemptId)}
                     disabled={claiming}
                     className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-bold text-xs shadow-md flex items-center justify-center gap-2 transition-all disabled:opacity-50"
                   >
                     <Award className="w-4 h-4" />
-                    <span>{claiming ? "Minting Certificate..." : claimedCredential ? "View Claimed Credential" : "Claim Verified Credential"}</span>
+                    <span>{claiming ? "Minting Certificate..." : claimedCredential && claimedAttemptId === evaluation.attemptId ? "View Claimed Credential" : "Claim Verified Credential"}</span>
                   </button>
+                  {claimError && <span role="alert" className="text-xs text-red-500">{claimError}</span>}
                   <Link
                     href="/passport"
                     className="hidden sm:inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-border bg-card/60 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors"
@@ -1204,7 +1222,7 @@ export default function WrittenExamPrepPage() {
                         </Link>
                       ) : att.passed ? (
                         <button
-                          onClick={() => handleClaimCredential(att.examId, att.percentage)}
+                          onClick={() => handleClaimCredential(att.examId, att.attemptId)}
                           disabled={claiming}
                           className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white text-xs font-bold shadow-sm flex items-center gap-1.5 transition-all"
                         >
