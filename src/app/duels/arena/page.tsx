@@ -561,7 +561,7 @@ export default function SpeedArchitectArenaPage() {
 
               {/* Feedback Quote */}
               <div className="p-3 rounded-xl bg-background border border-border text-xs text-muted-foreground italic">
-                "{duelResult.evaluationFeedback}"
+                &quot;{duelResult.evaluationFeedback}&quot;
               </div>
             </div>
           )}

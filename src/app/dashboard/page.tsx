@@ -8,22 +8,17 @@ import {
   Mic,
   Award,
   Swords,
-  Layers,
   CalendarCheck,
   Briefcase,
-  TrendingUp,
   CheckCircle2,
   AlertTriangle,
   ArrowRight,
   ExternalLink,
   Sparkles,
-  Zap,
-  Clock,
   Compass,
   DollarSign,
   Activity,
   Share2,
-  RefreshCw,
   BookOpen,
   GraduationCap,
 } from "lucide-react";
@@ -63,6 +58,20 @@ interface HeadhunterInquiry {
   receivedAt: string;
 }
 
+/** An exam attempt from /api/quiz/exams/history (fields the recent-attempts card shows). */
+interface ExamAttemptSummary {
+  attemptId: string;
+  examTitle: string;
+  stream: string;
+  percentage: number;
+  passed: boolean;
+  totalQuestions: number;
+  correctAnswers: number;
+  percentileRank: number;
+  certificateNumber?: string;
+  verificationUrl?: string;
+}
+
 interface Member360Data {
   memberId: string;
   fullName: string;
@@ -95,7 +104,7 @@ export default function Member360CommandCenterPage() {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [copiedShareLink, setCopiedShareLink] = useState<boolean>(false);
-  const [examHistory, setExamHistory] = useState<any[]>([]);
+  const [examHistory, setExamHistory] = useState<ExamAttemptSummary[]>([]);
 
   useEffect(() => {
     if (!ready) return;
@@ -119,9 +128,9 @@ export default function Member360CommandCenterPage() {
           const histData = await histRes.json();
           setExamHistory(histData.attempts || []);
         }
-      } catch (err: any) {
+      } catch (err) {
         console.error("Failed to fetch Member 360 data:", err);
-        setError(err.message || "Failed to connect to Member 360 profile service.");
+        setError((err as Error).message || "Failed to connect to Member 360 profile service.");
       } finally {
         setLoading(false);
       }

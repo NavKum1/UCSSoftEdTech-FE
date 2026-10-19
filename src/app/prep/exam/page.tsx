@@ -11,20 +11,14 @@ import {
   ArrowRight,
   RotateCcw,
   Sparkles,
-  BarChart3,
   BookOpen,
-  Filter,
   Check,
-  ChevronRight,
-  Code2,
   BrainCircuit,
   GraduationCap,
   Wand2,
   Upload,
-  Plus,
   X,
   FileCode,
-  Share2,
   History,
   TrendingUp,
   Copy,
@@ -33,7 +27,7 @@ import {
   Calendar,
 } from "lucide-react";
 import Link from "next/link";
-import { AccessNotice, useLegacyApi } from "@/lib/legacyApi";
+import { AccessNotice, useLegacyApi, useLatestRef } from "@/lib/legacyApi";
 
 function LinkedInIcon({ className = "w-4 h-4" }: { className?: string }) {
   return (
@@ -103,6 +97,28 @@ interface QuestionResult {
   topic: string;
 }
 
+/** Older API builds sent question results in PascalCase; the explanations list accepts either. */
+interface PascalCaseQuestionResult {
+  QuestionId?: number;
+  QuestionText?: string;
+  SelectedOptionText?: string;
+  CorrectOptionText?: string;
+  IsCorrect?: boolean;
+  Explanation?: string;
+  Topic?: string;
+}
+
+/** The credential returned when a passed exam is claimed (fields the credential modal shows). */
+interface ClaimedExamCredential {
+  badgeTitle?: string;
+  candidateName?: string;
+  percentage: number;
+  certificateNumber: string;
+  issuedAt: string;
+  verificationSignatureSha256: string;
+  publicUrlSlug: string;
+}
+
 interface ExamEvaluationResult {
   examId: string;
   examTitle: string;
@@ -144,7 +160,7 @@ export default function WrittenExamPrepPage() {
   }>({ totalAttempts: 0, passedCount: 0, passRatePercentage: 0, averageScore: 0, highestScore: 0 });
 
   // Credential Modal State
-  const [claimedCredential, setClaimedCredential] = useState<any | null>(null);
+  const [claimedCredential, setClaimedCredential] = useState<ClaimedExamCredential | null>(null);
   const [showCredentialModal, setShowCredentialModal] = useState<boolean>(false);
   const [claiming, setClaiming] = useState<boolean>(false);
   const [copiedLink, setCopiedLink] = useState<boolean>(false);
@@ -171,12 +187,6 @@ export default function WrittenExamPrepPage() {
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState<boolean>(false);
 
-
-  useEffect(() => {
-    if (!ready) return;
-    fetchCatalog();
-    fetchHistory();
-  }, [ready]);
 
   const fetchCatalog = async () => {
     setLoading(true);
@@ -215,6 +225,14 @@ export default function WrittenExamPrepPage() {
     }
   };
 
+  const fetchCatalogRef = useLatestRef(fetchCatalog);
+  const fetchHistoryRef = useLatestRef(fetchHistory);
+  useEffect(() => {
+    if (!ready) return;
+    fetchCatalogRef.current();
+    fetchHistoryRef.current();
+  }, [ready, fetchCatalogRef, fetchHistoryRef]);
+
   const startExam = async (examId: string) => {
     setExamLoading(true);
     setEvaluation(null);
@@ -249,24 +267,6 @@ export default function WrittenExamPrepPage() {
       setExamLoading(false);
     }
   };
-
-  // Countdown timer
-  useEffect(() => {
-    if (!activeExam || evaluation || timeLeftSeconds <= 0) return;
-
-    const timer = setInterval(() => {
-      setTimeLeftSeconds((prev) => {
-        if (prev <= 1) {
-          clearInterval(timer);
-          handleSubmitExam();
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-
-    return () => clearInterval(timer);
-  }, [activeExam, evaluation, timeLeftSeconds]);
 
   const handleSelectOption = (questionId: number, optionIndex: number) => {
     setAnswers((prev) => {
@@ -305,6 +305,24 @@ export default function WrittenExamPrepPage() {
       setSubmitting(false);
     }
   };
+
+  // Countdown timer
+  useEffect(() => {
+    if (!activeExam || evaluation || timeLeftSeconds <= 0) return;
+
+    const timer = setInterval(() => {
+      setTimeLeftSeconds((prev) => {
+        if (prev <= 1) {
+          clearInterval(timer);
+          handleSubmitExam();
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [activeExam, evaluation, timeLeftSeconds]);
 
   const handleClaimCredential = async (examId: string, percentage: number) => {
     setClaiming(true);
@@ -370,8 +388,8 @@ export default function WrittenExamPrepPage() {
         if (!Array.isArray(parsedQuestions)) {
           throw new Error("JSON must be an array of question objects.");
         }
-      } catch (parseErr: any) {
-        setUploadError("Invalid JSON: " + parseErr.message);
+      } catch (parseErr) {
+        setUploadError("Invalid JSON: " + (parseErr as Error).message);
         setIsUploading(false);
         return;
       }
@@ -399,8 +417,8 @@ export default function WrittenExamPrepPage() {
         const err = await res.json();
         setUploadError(err.error || "Failed to upload question bank.");
       }
-    } catch (err: any) {
-      setUploadError("Upload failed: " + err.message);
+    } catch (err) {
+      setUploadError("Upload failed: " + (err as Error).message);
     } finally {
       setIsUploading(false);
     }
@@ -629,13 +647,14 @@ export default function WrittenExamPrepPage() {
 
             <div className="space-y-4">
               {evaluation.questionResults.map((qr, index) => {
-                const isCorrect = qr.isCorrect ?? (qr as any).IsCorrect ?? false;
-                const topic = qr.topic ?? (qr as any).Topic ?? "Core Concept";
-                const qText = qr.questionText ?? (qr as any).QuestionText ?? `Question ${index + 1}`;
-                const explanation = qr.explanation ?? (qr as any).Explanation ?? "";
-                const selectedText = qr.selectedOptionText ?? (qr as any).SelectedOptionText;
-                const correctText = qr.correctOptionText ?? (qr as any).CorrectOptionText;
-                const qId = qr.questionId ?? (qr as any).QuestionId ?? index;
+                const pascal = qr as QuestionResult & PascalCaseQuestionResult;
+                const isCorrect = qr.isCorrect ?? pascal.IsCorrect ?? false;
+                const topic = qr.topic ?? pascal.Topic ?? "Core Concept";
+                const qText = qr.questionText ?? pascal.QuestionText ?? `Question ${index + 1}`;
+                const explanation = qr.explanation ?? pascal.Explanation ?? "";
+                const selectedText = qr.selectedOptionText ?? pascal.SelectedOptionText;
+                const correctText = qr.correctOptionText ?? pascal.CorrectOptionText;
+                const qId = qr.questionId ?? pascal.QuestionId ?? index;
 
                 return (
                   <div

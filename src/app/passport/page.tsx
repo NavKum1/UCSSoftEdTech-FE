@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { AccessNotice, useLegacyApi } from "@/lib/legacyApi";
+import { AccessNotice, useLegacyApi, useLatestRef } from "@/lib/legacyApi";
 
 interface VerifiedSkillBadge {
   id: string;
@@ -74,10 +74,11 @@ export default function SkillPassportPage() {
     }
   };
 
+  const fetchPassportDataRef = useLatestRef(fetchPassportData);
   useEffect(() => {
     if (!ready) return;
-    fetchPassportData();
-  }, [ready]);
+    fetchPassportDataRef.current();
+  }, [ready, fetchPassportDataRef]);
 
   const handlePracticeKata = async (category: string) => {
     try {

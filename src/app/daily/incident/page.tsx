@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { AccessNotice, useLegacyApi } from "@/lib/legacyApi";
+import { AccessNotice, useLegacyApi, useLatestRef } from "@/lib/legacyApi";
 
 interface TelemetryMetrics {
   p99LatencyMs?: number;
@@ -177,21 +177,6 @@ export default function DailyIncidentPage() {
 
   const [hasLoadedUrlParams, setHasLoadedUrlParams] = useState<boolean>(false);
 
-  useEffect(() => {
-    if (!ready) return;
-    fetchInitialData();
-  }, [track, difficultyTier, ready]);
-
-  useEffect(() => {
-    let interval: NodeJS.Timeout;
-    if (timerActive && !triageResult) {
-      interval = setInterval(() => {
-        setTimerSeconds((prev) => prev + 1);
-      }, 1000);
-    }
-    return () => clearInterval(interval);
-  }, [timerActive, triageResult]);
-
   const fetchInitialData = async () => {
     setLoading(true);
     try {
@@ -262,6 +247,22 @@ export default function DailyIncidentPage() {
       setLoading(false);
     }
   };
+
+  const fetchInitialDataRef = useLatestRef(fetchInitialData);
+  useEffect(() => {
+    if (!ready) return;
+    fetchInitialDataRef.current();
+  }, [track, difficultyTier, ready, fetchInitialDataRef]);
+
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (timerActive && !triageResult) {
+      interval = setInterval(() => {
+        setTimerSeconds((prev) => prev + 1);
+      }, 1000);
+    }
+    return () => clearInterval(interval);
+  }, [timerActive, triageResult]);
 
   const handleTriageSubmit = async () => {
     if (!incident || !selectedHypothesis || !selectedAction) {
@@ -1049,8 +1050,8 @@ export default function DailyIncidentPage() {
                         {entry.rank === 3 && "🥉 "}#{entry.rank}
                       </td>
                       <td className="py-3 px-4 flex items-center gap-2">
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
                         {entry.avatarUrl ? (
+                          // eslint-disable-next-line @next/next/no-img-element
                           <img
                             src={entry.avatarUrl}
                             alt="avatar"

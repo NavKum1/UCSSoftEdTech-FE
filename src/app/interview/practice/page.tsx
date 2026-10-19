@@ -7,17 +7,12 @@ import {
   PhoneOff,
   Sparkles,
   Volume2,
-  Briefcase,
-  Building2,
   CheckCircle2,
-  Sliders,
   ChevronRight,
   RotateCcw,
   Award,
   AlertTriangle,
   Play,
-  ArrowRight,
-  ShieldCheck,
   Compass,
   Copy,
   Check,
@@ -27,8 +22,6 @@ import {
   Activity,
   User,
   Bot,
-  Trash2,
-  ArrowDown,
   XCircle,
   ShieldAlert
 } from "lucide-react";
@@ -50,6 +43,55 @@ interface TranscriptMessage {
   timestamp: string;
   isFinal?: boolean;
 }
+
+// Scorecard: the /api/interview/evaluate response (plus the session transcript), or the local fallback below.
+interface InterviewScoreDimension {
+  label: string;
+  score: number;
+}
+
+interface InterviewReport {
+  jobTitle: string;
+  stream: string;
+  durationMinutes: number;
+  overallScore: number;
+  candidateTurns?: number;
+  candidateWords?: number;
+  status?: string;
+  disqualificationReason?: string | null;
+  dimensions: InterviewScoreDimension[];
+  strengths: string[];
+  improvements: string[];
+  transcripts: TranscriptMessage[];
+}
+
+// The parts of the Web Speech API this page uses (not in TypeScript's DOM lib), and the prefixed browser globals.
+interface SpeechRecognitionResultLike {
+  isFinal: boolean;
+  [index: number]: { transcript: string } | undefined;
+}
+
+interface SpeechRecognitionEventLike {
+  resultIndex: number;
+  results: ArrayLike<SpeechRecognitionResultLike>;
+}
+
+interface SpeechRecognitionLike {
+  continuous: boolean;
+  interimResults: boolean;
+  lang: string;
+  onresult: ((event: SpeechRecognitionEventLike) => void) | null;
+  onerror: ((event: { error: string }) => void) | null;
+  onend: (() => void) | null;
+  start(): void;
+  stop(): void;
+}
+
+type BrowserSpeechWindow = Window & {
+  SpeechRecognition?: new () => SpeechRecognitionLike;
+  webkitSpeechRecognition?: new () => SpeechRecognitionLike;
+  webkitAudioContext?: typeof AudioContext;
+};
 
 const PERSONAS = [
   {
@@ -162,7 +204,7 @@ export default function MultiStreamInterviewPracticePage() {
   const [audioLevel, setAudioLevel] = useState<number>(0);
 
   // Scorecard modal state
-  const [completedReport, setCompletedReport] = useState<any | null>(null);
+  const [completedReport, setCompletedReport] = useState<InterviewReport | null>(null);
   const [isEvaluating, setIsEvaluating] = useState<boolean>(false);
 
   // Cancellation modal
@@ -174,7 +216,7 @@ export default function MultiStreamInterviewPracticePage() {
   const localStreamRef = useRef<MediaStream | null>(null);
   const audioElRef = useRef<HTMLAudioElement | null>(null);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
-  const recognitionRef = useRef<any>(null);
+  const recognitionRef = useRef<SpeechRecognitionLike | null>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
   const analyserRef = useRef<AnalyserNode | null>(null);
   const animFrameRef = useRef<number | null>(null);
@@ -197,7 +239,7 @@ export default function MultiStreamInterviewPracticePage() {
   // Setup Web Audio API volume meter for lively equalizer visualizer
   const setupAudioMeter = (stream: MediaStream) => {
     try {
-      const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
+      const AudioCtx = window.AudioContext || (window as BrowserSpeechWindow).webkitAudioContext;
       if (!AudioCtx) return;
       const ctx = new AudioCtx();
       audioContextRef.current = ctx;
@@ -231,7 +273,8 @@ export default function MultiStreamInterviewPracticePage() {
   // Setup Native Browser Speech Recognition (Web Speech API) for candidate STT stream
   const setupSpeechRecognition = () => {
     if (typeof window === "undefined") return;
-    const SpeechRec = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    const speechWindow = window as BrowserSpeechWindow;
+    const SpeechRec = speechWindow.SpeechRecognition || speechWindow.webkitSpeechRecognition;
     if (!SpeechRec) {
       console.log("Web Speech API not available on this browser, relying solely on WebRTC DataChannel.");
       return;
@@ -243,7 +286,7 @@ export default function MultiStreamInterviewPracticePage() {
       recognition.interimResults = true;
       recognition.lang = "en-US";
 
-      recognition.onresult = (event: any) => {
+      recognition.onresult = (event: SpeechRecognitionEventLike) => {
         let interim = "";
         for (let i = event.resultIndex; i < event.results.length; ++i) {
           const item = event.results[i];
@@ -271,7 +314,7 @@ export default function MultiStreamInterviewPracticePage() {
         }
       };
 
-      recognition.onerror = (e: any) => {
+      recognition.onerror = (e: { error: string }) => {
         console.warn("Speech Recognition notice:", e.error);
       };
 
@@ -451,9 +494,9 @@ export default function MultiStreamInterviewPracticePage() {
       timerRef.current = setInterval(() => {
         setSessionDuration((prev) => prev + 1);
       }, 1000);
-    } catch (err: any) {
+    } catch (err) {
       console.error("Interview setup failed:", err);
-      setErrorMsg(err.message || "Could not connect to AI voice agent. Please verify microphone permissions.");
+      setErrorMsg((err as Error).message || "Could not connect to AI voice agent. Please verify microphone permissions.");
       endSessionCleanup();
     } finally {
       setIsConnecting(false);
@@ -530,7 +573,7 @@ export default function MultiStreamInterviewPracticePage() {
         ...report,
         transcripts: finalTranscripts,
       });
-    } catch (err: any) {
+    } catch (err) {
       console.warn("Real evaluation call fallback:", err);
       const candidateTurns = finalTranscripts.filter(t => t.role === "candidate").length;
       const candidateText = finalTranscripts
@@ -1035,7 +1078,7 @@ export default function MultiStreamInterviewPracticePage() {
 
             {/* Dimension Breakdown */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
-              {completedReport.dimensions.map((dim: any, i: number) => {
+              {completedReport.dimensions.map((dim: InterviewScoreDimension, i: number) => {
                 const isGood = dim.score >= 70;
                 return (
                   <div key={i} className="p-4 rounded-xl border border-border/80 bg-muted/20 space-y-1.5">

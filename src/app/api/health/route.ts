@@ -31,13 +31,13 @@ export async function GET() {
         { status: 503 }
       );
     }
-  } catch (error: any) {
+  } catch (error) {
     return NextResponse.json(
       {
         status: "Degraded",
         service: "Next.js Production Edge Gateway",
         timestamp: new Date().toISOString(),
-        error: error.message || "Backend API unreachable",
+        error: (error as Error).message || "Backend API unreachable",
       },
       { status: 500 }
     );

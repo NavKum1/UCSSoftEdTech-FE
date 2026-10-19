@@ -5,8 +5,6 @@ import { useRouter } from "next/navigation";
 import { AccessNotice, useLegacyApi } from "@/lib/legacyApi";
 import {
   Trophy,
-  Medal,
-  Award,
   Crown,
   Search,
   ExternalLink,
@@ -14,8 +12,6 @@ import {
   AlertTriangle,
   Clock,
   ArrowLeft,
-  Sparkles,
-  Zap,
 } from "lucide-react";
 
 interface LeaderboardEntry {
@@ -52,9 +48,9 @@ export default function LeaderboardPage() {
           setFetchError(`Server returned status ${res.status}: Unable to load verified leaderboard.`);
           setEntries([]);
         }
-      } catch (err: any) {
+      } catch (err) {
         console.error("Failed to load leaderboard:", err);
-        setFetchError(err.message || "Failed to connect to leaderboard service.");
+        setFetchError((err as Error).message || "Failed to connect to leaderboard service.");
         setEntries([]);
       } finally {
         setLoading(false);

@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useGeo } from '@/context/GeoContext';
-import { AccessNotice, useLegacyApi } from "@/lib/legacyApi";
+import { AccessNotice, useLegacyApi, useLatestRef } from "@/lib/legacyApi";
 
 interface QuotaMetric {
   monthlyQuota?: number;
@@ -105,10 +105,11 @@ export default function PartnerBillingPage() {
     }
   };
 
+  const fetchBillingDataRef = useLatestRef(fetchBillingData);
   useEffect(() => {
     if (!ready) return;
-    fetchBillingData();
-  }, [ready]);
+    fetchBillingDataRef.current();
+  }, [ready, fetchBillingDataRef]);
 
   const handleUpdatePlan = async () => {
     try {

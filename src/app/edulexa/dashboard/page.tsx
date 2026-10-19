@@ -3,21 +3,102 @@
 import React, { useState, useEffect } from "react";
 import {
   PhoneCall, Shield, FileSpreadsheet, Key, Play, Download,
-  CheckCircle2, AlertTriangle, RefreshCw, Sparkles, Clock,
-  DollarSign, Activity, Lock, Search, FileText, Check, Copy, ArrowUpRight,
+  CheckCircle2, AlertTriangle, RefreshCw, Sparkles,
+  DollarSign, Lock, Search, FileText, Check, Copy,
   X, Send
 } from "lucide-react";
 import { useGeo } from "@/context/GeoContext";
-import { AccessNotice, useLegacyApi } from "@/lib/legacyApi";
+import { AccessNotice, useLegacyApi, useLatestRef } from "@/lib/legacyApi";
+
+// Response shapes of the /v1 Edulexa endpoints this page reads (backend EdulexaController / IEdulexaRevenueEngineService).
+interface EdulexaDashboardMetrics {
+  totalRecoveredGmv: number;
+  voiceRecoveryRatePercent: number;
+  protectedAssetsCount: number;
+  totalTdsWithheldRupees: number;
+  edgeStatus: string;
+}
+
+interface VoiceRecoveryCampaign {
+  id: string;
+  candidateName: string;
+  candidatePhone: string;
+  cartItemName: string;
+  cartAmount: number;
+  callStatus: string;
+  vapiCallId?: string | null;
+  discountCodeOffered?: string | null;
+  discountPercent: number;
+  createdAt: string;
+}
+
+interface ProtectedAsset {
+  id: string;
+  assetTitle: string;
+  assetType: string;
+}
+
+interface MentorPayoutRecord {
+  id: string;
+  mentorName: string;
+  mentorEmail: string;
+  mentorPan: string;
+  grossAmount: number;
+  tdsAmount: number;
+  netAmount: number;
+  payoutStatus: string;
+  paymentBatchReference?: string | null;
+}
+
+interface SignedAssetResponse {
+  signedToken: string;
+  watermarkStamp: string;
+}
+
+interface LeakAttributionResult {
+  attributionFound: boolean;
+  leakerEmail: string;
+  deviceFingerprint: string;
+  clientIp: string;
+  attributionConfidencePercent: number;
+  remediationAction: string;
+}
+
+interface Form16aStatement {
+  certificateNumber: string;
+  deductorName: string;
+  deductorTan: string;
+  deducteeName: string;
+  deducteePan: string;
+  financialYear: string;
+  assessmentYear: string;
+  quarter: string;
+  taxSection: string;
+  totalGrossAmountPaid: number;
+  totalTdsDeducted: number;
+  challanBsrcode: string;
+  challanTenderDate: string;
+  certificateText: string;
+}
+
+interface PixelTrackResult {
+  recoveryCampaignTriggered: boolean;
+  recoveryCampaign?: Pick<VoiceRecoveryCampaign, "callStatus" | "vapiCallId"> | null;
+}
+
+interface WebhookDispatchResult {
+  hmacSignatureHeader: string;
+  responseStatusCode: number;
+}
 
 export default function EdulexaDashboardPage() {
   const { apiFetch, ready, access } = useLegacyApi();
   const { region, config, formatCurrency, convertFromInr } = useGeo();
   const [activeTab, setActiveTab] = useState<"voice" | "shield" | "hrms" | "api">("voice");
-  const [metrics, setMetrics] = useState<any>(null);
-  const [campaigns, setCampaigns] = useState<any[]>([]);
-  const [assets, setAssets] = useState<any[]>([]);
-  const [payouts, setPayouts] = useState<any[]>([]);
+  const [metrics, setMetrics] = useState<EdulexaDashboardMetrics | null>(null);
+  const [campaigns, setCampaigns] = useState<VoiceRecoveryCampaign[]>([]);
+  const [assets, setAssets] = useState<ProtectedAsset[]>([]);
+  const [payouts, setPayouts] = useState<MentorPayoutRecord[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [copiedToken, setCopiedToken] = useState<boolean>(false);
 
@@ -33,10 +114,10 @@ export default function EdulexaDashboardPage() {
   // Pillar 2 Form State
   const [selectedAssetTitle, setSelectedAssetTitle] = useState("Distributed Sharding & Raft Consensus Repo");
   const [viewerEmail, setViewerEmail] = useState("student.alex@example.com");
-  const [signedResult, setSignedResult] = useState<any>(null);
+  const [signedResult, setSignedResult] = useState<SignedAssetResponse | null>(null);
   const [signingAsset, setSigningAsset] = useState(false);
   const [leakSnippet, setLeakSnippet] = useState("student.alex@example.com");
-  const [attributionResult, setAttributionResult] = useState<any>(null);
+  const [attributionResult, setAttributionResult] = useState<LeakAttributionResult | null>(null);
   const [investigating, setInvestigating] = useState(false);
 
   // Pillar 3 Form State
@@ -48,11 +129,11 @@ export default function EdulexaDashboardPage() {
   const [processingPayout, setProcessingPayout] = useState(false);
 
   // Form 16A, Creator Pixel, & Outgoing Webhook State
-  const [form16ModalData, setForm16ModalData] = useState<any | null>(null);
+  const [form16ModalData, setForm16ModalData] = useState<Form16aStatement | null>(null);
   const [loadingForm16, setLoadingForm16] = useState<boolean>(false);
-  const [pixelTrackResult, setPixelTrackResult] = useState<any | null>(null);
+  const [pixelTrackResult, setPixelTrackResult] = useState<PixelTrackResult | null>(null);
   const [trackingPixel, setTrackingPixel] = useState<boolean>(false);
-  const [webhookDispatchResult, setWebhookDispatchResult] = useState<any | null>(null);
+  const [webhookDispatchResult, setWebhookDispatchResult] = useState<WebhookDispatchResult | null>(null);
   const [dispatchingWebhook, setDispatchingWebhook] = useState<boolean>(false);
   const [copiedPixelScript, setCopiedPixelScript] = useState<boolean>(false);
 
@@ -77,10 +158,11 @@ export default function EdulexaDashboardPage() {
     }
   };
 
+  const fetchDashboardDataRef = useLatestRef(fetchDashboardData);
   useEffect(() => {
     if (!ready) return;
-    fetchDashboardData();
-  }, [ready]);
+    fetchDashboardDataRef.current();
+  }, [ready, fetchDashboardDataRef]);
 
   const handleSeedData = async () => {
     try {
@@ -721,7 +803,7 @@ export default function EdulexaDashboardPage() {
               <div className="relative h-80 rounded-xl overflow-hidden border border-border bg-background flex flex-col items-center justify-center shadow-inner">
                 {/* Simulated Code / Video Content */}
                 <div className="w-full h-full p-6 font-mono text-xs text-muted-foreground space-y-2 opacity-60 pointer-events-none">
-                  <div className="text-indigo-700 dark:text-indigo-400">// Distributed Sharding Engine v2 - PROPRIETARY INTELLECTUAL PROPERTY</div>
+                  <div className="text-indigo-700 dark:text-indigo-400">{"// Distributed Sharding Engine v2 - PROPRIETARY INTELLECTUAL PROPERTY"}</div>
                   <div>public class RaftConsensusCluster : IConsensusController &#123;</div>
                   <div className="pl-4">private readonly Dictionary&lt;NodeId, PeerSocket&gt; _peers;</div>
                   <div className="pl-4">public async Task CommitLogEntryAsync(LogPayload entry) &#123;</div>

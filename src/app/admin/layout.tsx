@@ -1,6 +1,6 @@
 import React from "react";
 import Link from "next/link";
-import { Shield, Sparkles, ArrowLeft, Users, Building2, FileSpreadsheet, BarChart3, Lock } from "lucide-react";
+import { Shield, ArrowLeft, Lock } from "lucide-react";
 import { UserButton } from "@clerk/nextjs";
 
 export const metadata = {

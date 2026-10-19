@@ -1,27 +1,21 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { AccessNotice, useLegacyApi } from "@/lib/legacyApi";
+import { AccessNotice, useLegacyApi, useLatestRef } from "@/lib/legacyApi";
 import {
   Globe2,
-  Volume2,
   Play,
   Pause,
-  RotateCcw,
   Languages,
   Download,
-  Settings2,
   Sparkles,
   Bot,
   User,
   ArrowLeft,
-  CheckCircle2,
   Send,
   Radio,
   Headphones,
-  Sliders,
-  Share2
 } from "lucide-react";
 
 interface TranscriptSegment {
@@ -92,19 +86,20 @@ export default function MultiLanguageTranslationStudioPage() {
         setFetchError(`Translation service returned HTTP ${res.status}. No transcript recorded for this session.`);
         setSegments([]);
       }
-    } catch (e: any) {
+    } catch (e) {
       console.warn("[TRANSCRIPT FETCH NOTICE]:", e);
-      setFetchError(e.message || "Failed to connect to transcript translation service.");
+      setFetchError((e as Error).message || "Failed to connect to transcript translation service.");
       setSegments([]);
     } finally {
       setLoading(false);
     }
   };
 
+  const fetchTranscriptRef = useLatestRef(fetchTranscript);
   useEffect(() => {
     if (!ready) return;
-    fetchTranscript();
-  }, [sessionId, ready]);
+    fetchTranscriptRef.current();
+  }, [sessionId, ready, fetchTranscriptRef]);
 
   // Audio timer ticker simulation
   useEffect(() => {

@@ -63,9 +63,9 @@ export default function ProctoringVideoReviewPage({ params }: { params: Promise<
           setFetchError(`Recording not found in forensic vault (HTTP ${res.status}).`);
           setPlayerData(null);
         }
-      } catch (err: any) {
+      } catch (err) {
         console.error('Failed to load video player payload', err);
-        setFetchError(err.message || 'Failed to connect to video recording service.');
+        setFetchError((err as Error).message || 'Failed to connect to video recording service.');
         setPlayerData(null);
       } finally {
         setLoading(false);

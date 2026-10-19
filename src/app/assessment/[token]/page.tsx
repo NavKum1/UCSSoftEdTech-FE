@@ -269,8 +269,13 @@ export default function CandidateAssessmentBundlePage() {
             durationMs: Math.round((data.executionTimeMs || 0) / Math.max(1, results.length)),
           })),
         );
+      } else if (res.status === 404 || res.status === 410) {
+        setLinkProblem(await linkProblemOf(res));
       } else {
         const errJson = await res.json().catch(() => ({}));
+        if (typeof errJson.codeRunsRemaining === "number") {
+          setBundle((prev) => (prev ? { ...prev, codeRunsRemaining: errJson.codeRunsRemaining } : prev));
+        }
         throw new Error(
           res.status === 429
             ? errJson.scope === "link"
@@ -469,6 +474,12 @@ export default function CandidateAssessmentBundlePage() {
               <h1 className="text-sm sm:text-base font-bold text-foreground">
                 {bundle.targetRole}
               </h1>
+              {bundle.expiresAt && bundle.currentStage < 4 && (
+                <p className="text-[11px] text-muted-foreground">
+                  This link works until{" "}
+                  {new Date(bundle.expiresAt).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" })}.
+                </p>
+              )}
             </div>
           </div>
 

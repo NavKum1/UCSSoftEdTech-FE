@@ -6,8 +6,8 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { SignIn } from "@clerk/nextjs";
 import { AUTH_PROVIDER, keycloakSignIn } from "@/lib/appAuth";
 import { 
-  Building2, ShieldCheck, ArrowRight, Lock, 
-  Sparkles, CheckCircle2, UserCheck, Briefcase, GraduationCap
+  Building2, ShieldCheck, ArrowRight, Lock,
+  Sparkles, UserCheck, Briefcase, GraduationCap
 } from "lucide-react";
 
 // useSearchParams needs a Suspense boundary for static prerendering

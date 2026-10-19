@@ -5,16 +5,13 @@ import {
   ShieldAlert,
   ShieldCheck,
   AlertTriangle,
-  Eye,
   Maximize2,
   Minimize2,
-  Copy,
   Activity,
   History,
   ChevronDown,
   ChevronUp,
   Fingerprint,
-  Lock,
 } from "lucide-react";
 
 import { API_BASE_URL, authenticatedFetch } from "@/lib/apiClient";

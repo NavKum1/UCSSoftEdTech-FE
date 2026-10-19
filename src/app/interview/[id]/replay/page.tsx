@@ -13,11 +13,9 @@ import {
   ShieldCheck,
   AlertTriangle,
   ArrowLeft,
-  Share2,
   Sparkles,
   Bot,
   User,
-  CheckCircle2,
   Cpu,
   Layers,
   Code2,
@@ -96,9 +94,9 @@ export default function AudioReplayStudioPage() {
           setFetchError(`Interview recording not found (HTTP ${res.status}). The requested session ID does not exist in the database.`);
           setReplay(null);
         }
-      } catch (e: any) {
+      } catch (e) {
         console.error("Replay fetch error:", e);
-        setFetchError(e.message || "Failed to connect to audio replay service.");
+        setFetchError((e as Error).message || "Failed to connect to audio replay service.");
         setReplay(null);
       } finally {
         setLoading(false);

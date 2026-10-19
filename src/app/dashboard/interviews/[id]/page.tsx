@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { authenticatedFetch } from "@/lib/apiClient";
 import { AccessNotice, useLegacyApi } from "@/lib/legacyApi";
 import {
   Play,
@@ -10,17 +9,12 @@ import {
   RotateCcw,
   Volume2,
   VolumeX,
-  Clock,
   Award,
   AlertTriangle,
-  CheckCircle2,
   ArrowLeft,
   Sparkles,
   Bot,
   User,
-  ShieldCheck,
-  ExternalLink,
-  Sliders,
   Filter,
 } from "lucide-react";
 
@@ -92,9 +86,9 @@ export default function StudentInterviewReplayPage() {
           setFetchError(`Interview defense record not found (HTTP ${res.status}). The requested session does not exist.`);
           setSessionData(null);
         }
-      } catch (err: any) {
+      } catch (err) {
         console.error("Failed to load interview session replay:", err);
-        setFetchError(err.message || "Failed to connect to interview session service.");
+        setFetchError((err as Error).message || "Failed to connect to interview session service.");
         setSessionData(null);
       } finally {
         setLoading(false);

@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { AccessNotice, useLegacyApi } from "@/lib/legacyApi";
+import { AccessNotice, useLegacyApi, useLatestRef } from "@/lib/legacyApi";
 
 interface SynthesizedChallenge {
   id: string;
@@ -100,10 +100,11 @@ export default function ChallengeSynthesizerPage() {
   };
 
   // Auto-synthesize on initial load
+  const handleSynthesizeRef = useLatestRef(handleSynthesize);
   useEffect(() => {
     if (!ready) return;
-    handleSynthesize();
-  }, [ready]);
+    handleSynthesizeRef.current();
+  }, [ready, handleSynthesizeRef]);
 
   if (access) return <AccessNotice problem={access} feature="The challenge synthesizer" />;
 

@@ -2,9 +2,9 @@
 
 import React, { useState, useEffect } from "react";
 import { 
-  GraduationCap, CheckCircle2, ArrowRight, ShieldCheck, 
-  Sparkles, BookOpen, Layers, Award, ExternalLink,
-  Laptop, RefreshCw
+  GraduationCap, ArrowRight, ShieldCheck,
+  Sparkles, BookOpen, ExternalLink,
+  RefreshCw
 } from "lucide-react";
 import Link from "next/link";
 

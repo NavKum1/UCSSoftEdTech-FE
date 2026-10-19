@@ -3,17 +3,43 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { 
-  Building2, Users, CheckCircle2, TrendingUp, DollarSign, 
-  Send, RefreshCw, Filter, ShieldCheck, AlertCircle, Sparkles, 
-  Search, ArrowUpRight, Link2, ExternalLink
+  Building2, Users, CheckCircle2, TrendingUp, DollarSign,
+  Send, RefreshCw, Sparkles,
+  ArrowUpRight, Link2
 } from "lucide-react";
 import { useGeo } from "@/context/GeoContext";
-import { AccessNotice, useLegacyApi } from "@/lib/legacyApi";
+import { AccessNotice, useLegacyApi, useLatestRef } from "@/lib/legacyApi";
+
+// GET /api/partner/dashboard: the fields this page reads.
+interface PartnerLead {
+  leadId: string;
+  candidateName: string;
+  candidateEmail: string;
+  courseName: string;
+  status: string;
+  createdAt: string;
+}
+
+interface PartnerKpis {
+  totalLeadsReceived: number;
+  pendingLeads: number;
+  contactedLeads: number;
+  enrolledLeads: number;
+  conversionRatePercent: number;
+  estimatedCommissionRevenueUsd: number;
+}
+
+interface PartnerDashboardData {
+  instituteName?: string;
+  outboundWebhookUrl?: string | null;
+  kpis?: PartnerKpis;
+  recentLeads?: PartnerLead[];
+}
 
 export default function PartnerDashboardPage() {
   const { apiFetch, ready, access } = useLegacyApi();
   const { config } = useGeo();
-  const [data, setData] = useState<any>(null);
+  const [data, setData] = useState<PartnerDashboardData | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [webhookUrl, setWebhookUrl] = useState<string>("");
   const [apiKey, setApiKey] = useState<string>("");
@@ -25,7 +51,7 @@ export default function PartnerDashboardPage() {
     try {
       const res = await apiFetch(`/api/partner/dashboard`);
       if (res.ok) {
-        const json = await res.json();
+        const json: PartnerDashboardData = await res.json();
         setData(json);
         setWebhookUrl(json.outboundWebhookUrl || "");
       }
@@ -36,10 +62,11 @@ export default function PartnerDashboardPage() {
     }
   };
 
+  const fetchDashboardRef = useLatestRef(fetchDashboard);
   useEffect(() => {
     if (!ready) return;
-    fetchDashboard();
-  }, [ready]);
+    fetchDashboardRef.current();
+  }, [ready, fetchDashboardRef]);
 
   const handleUpdateLeadStatus = async (leadId: string, newStatus: string) => {
     setUpdatingLeadId(leadId);
@@ -93,7 +120,7 @@ export default function PartnerDashboardPage() {
     }
   };
 
-  const kpis = data?.kpis || {
+  const kpis: PartnerKpis = data?.kpis || {
     totalLeadsReceived: 18,
     pendingLeads: 5,
     contactedLeads: 6,
@@ -102,7 +129,7 @@ export default function PartnerDashboardPage() {
     estimatedCommissionRevenueUsd: 1050.0,
   };
 
-  const leads = data?.recentLeads || [
+  const leads: PartnerLead[] = data?.recentLeads || [
     {
       leadId: "demo-lead-1",
       candidateName: "Alex Morgan",
@@ -357,7 +384,7 @@ export default function PartnerDashboardPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-800/60">
-                {leads.map((lead: any) => (
+                {leads.map((lead: PartnerLead) => (
                   <tr key={lead.leadId} className="hover:bg-card/40 transition-colors">
                     <td className="py-3.5 px-4 font-semibold text-foreground">{lead.candidateName}</td>
                     <td className="py-3.5 px-4 font-mono text-muted-foreground">{lead.candidateEmail}</td>

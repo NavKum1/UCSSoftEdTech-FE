@@ -7,11 +7,16 @@ import {
   Calendar,
   CheckCircle2,
   Clock,
-  RotateCcw,
-  Sparkles,
 } from "lucide-react";
 import { authenticatedFetch } from "@/lib/apiClient";
 import { useAppAuth } from "@/lib/appAuth";
+
+/** The cancellation API response, or the local acknowledgement shown when it can't be reached. */
+interface CancellationResult {
+  status?: string;
+  message: string;
+  suggestedRescheduleSlots?: string[];
+}
 
 interface CancellationQuizModalProps {
   isOpen: boolean;
@@ -39,7 +44,7 @@ export function CancellationQuizModal({
   const [details, setDetails] = useState<string>("");
   const [wantsReschedule, setWantsReschedule] = useState<boolean>(true);
   const [submitting, setSubmitting] = useState<boolean>(false);
-  const [result, setResult] = useState<any>(null);
+  const [result, setResult] = useState<CancellationResult | null>(null);
   const { getToken } = useAppAuth();
 
   if (!isOpen) return null;

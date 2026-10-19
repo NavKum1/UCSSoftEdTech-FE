@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { AccessNotice, useLegacyApi } from "@/lib/legacyApi";
+import { AccessNotice, useLegacyApi, useLatestRef } from "@/lib/legacyApi";
 
 interface CloudRegion {
   id: string;
@@ -148,11 +148,13 @@ export default function MultiCloudResiliencePage() {
     }
   };
 
+  const fetchFleetStatusRef = useLatestRef(fetchFleetStatus);
+  const testRoutingRef = useLatestRef(testRouting);
   useEffect(() => {
     if (!ready) return;
-    fetchFleetStatus();
-    testRouting("Americas_East");
-  }, [ready]);
+    fetchFleetStatusRef.current();
+    testRoutingRef.current("Americas_East");
+  }, [ready, fetchFleetStatusRef, testRoutingRef]);
 
   const getStatusBadge = (status: string) => {
     switch (status) {

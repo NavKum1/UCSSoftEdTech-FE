@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect } from "react";
-import { AlertTriangle, RefreshCw, ShieldAlert, Home } from "lucide-react";
+import { RefreshCw, ShieldAlert, Home } from "lucide-react";
 
 export default function GlobalErrorPage({
   error,
@@ -51,6 +51,7 @@ export default function GlobalErrorPage({
             <span>Try Again</span>
           </button>
 
+          {/* eslint-disable-next-line @next/next/no-html-link-for-pages -- a full page load on purpose: it resets client state after a crash, which a client-side <Link> would keep */}
           <a
             href="/"
             className="w-full py-3 px-4 rounded-xl bg-card hover:bg-muted text-muted-foreground font-medium text-xs flex items-center justify-center space-x-2 border border-border transition-colors cursor-pointer"

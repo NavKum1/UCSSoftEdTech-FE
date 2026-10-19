@@ -2,12 +2,26 @@
 
 import React, { useState } from "react";
 import { 
-  FileText, Briefcase, Sparkles, CheckCircle2, 
-  AlertCircle, ArrowRight, Zap, Target, Layers, 
-  Code2, RefreshCw, BookmarkCheck, ChevronRight
+  FileText, Sparkles, CheckCircle2,
+  AlertCircle, ArrowRight, Zap, Target,
+  RefreshCw, ChevronRight
 } from "lucide-react";
 import Link from "next/link";
 import { AccessNotice, useLegacyApi } from "@/lib/legacyApi";
+
+/** Resume-to-role analysis result (fields this page shows). */
+interface ResumeMatchResult {
+  matchScore: number;
+  matchedSkills: string[];
+  missingSkills: string[];
+  recommendations: string[];
+  generatedSprint?: {
+    id: string;
+    title: string;
+    description: string;
+    requiredLanguage: string;
+  } | null;
+}
 
 interface TargetRolePreset {
   title: string;
@@ -39,7 +53,7 @@ export default function ResumeMatcherPrepPage() {
   const [targetDescription, setTargetDescription] = useState(PRESET_ROLES[0].description);
   
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [analysisResult, setAnalysisResult] = useState<any>(null);
+  const [analysisResult, setAnalysisResult] = useState<ResumeMatchResult | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   const handleSelectPreset = (preset: TargetRolePreset) => {
@@ -72,8 +86,8 @@ export default function ResumeMatcherPrepPage() {
         const err = await res.json();
         setErrorMsg(err.error || "Failed to analyze resume competencies.");
       }
-    } catch (e: any) {
-      setErrorMsg("Network error connecting to analysis engine: " + e.message);
+    } catch (e) {
+      setErrorMsg("Network error connecting to analysis engine: " + (e as Error).message);
     } finally {
       setIsAnalyzing(false);
     }
@@ -318,7 +332,7 @@ export default function ResumeMatcherPrepPage() {
                 <div className="space-y-1">
                   <h3 className="text-sm font-bold text-muted-foreground">No Active Analysis</h3>
                   <p className="text-xs text-muted-foreground max-w-sm">
-                    Select a target job benchmark and click "Synthesize Gap-Closing Micro-Internship" to vectorize competencies.
+                    Select a target job benchmark and click &quot;Synthesize Gap-Closing Micro-Internship&quot; to vectorize competencies.
                   </p>
                 </div>
               </div>

@@ -7,7 +7,7 @@
  * and remembers a 401/403 so the page can show a sign-in or not-allowed state instead of crashing on empty data.
  */
 
-import { useCallback, useState, useSyncExternalStore } from "react";
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { authenticatedFetch } from "@/lib/apiClient";
@@ -51,6 +51,20 @@ export function useLegacyApi() {
     /** Set when the visitor is signed out or the API refused this user; render <AccessNotice problem={access} />. */
     access,
   };
+}
+
+/**
+ * A ref that always holds the latest `value` (updated after every render). A page effect calls its loader through it,
+ * `loadRef.current()`, so the effect still runs only when its own deps change (e.g. `ready`) but always calls the
+ * current closure. Same ref-based pattern as career useLoad; it keeps a loader that starts with setLoading(true) out of
+ * the effect body (react-hooks/set-state-in-effect).
+ */
+export function useLatestRef<T>(value: T) {
+  const ref = useRef(value);
+  useEffect(() => {
+    ref.current = value;
+  });
+  return ref;
 }
 
 const noSubscribe = () => () => {};

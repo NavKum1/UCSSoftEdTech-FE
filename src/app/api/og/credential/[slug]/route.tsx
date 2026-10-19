@@ -265,7 +265,7 @@ export async function GET(
         height: 630,
       }
     );
-  } catch (e: any) {
+  } catch (e) {
     return new Response(`Failed to generate OG image`, { status: 500 });
   }
 }

@@ -5,15 +5,11 @@ import Link from "next/link";
 import {
   CalendarCheck,
   CheckCircle2,
-  DollarSign,
-  FileText,
   Star,
   ShieldCheck,
   Clock,
   Video,
   ArrowRight,
-  ExternalLink,
-  ChevronRight,
   Sparkles,
   UserCheck,
   AlertCircle,
@@ -86,8 +82,8 @@ export default function BookMentorOfficeHoursPage() {
         } else {
           setBookingError(`Unable to load mentor roster (HTTP ${res.status}).`);
         }
-      } catch (err: any) {
-        setBookingError("Failed to connect to mentor service: " + err.message);
+      } catch (err) {
+        setBookingError("Failed to connect to mentor service: " + (err as Error).message);
       } finally {
         setIsLoadingMentors(false);
       }
@@ -130,9 +126,9 @@ export default function BookMentorOfficeHoursPage() {
         const errJson = await res.json().catch(() => ({}));
         setBookingError(errJson.error || "Failed to process mentor booking with TDS ledger record. Please try again.");
       }
-    } catch (err: any) {
+    } catch (err) {
       console.error("Booking error:", err);
-      setBookingError(err?.message || "Network error contacting booking service. Please verify server connection.");
+      setBookingError((err as Error)?.message || "Network error contacting booking service. Please verify server connection.");
     } finally {
       setIsSubmitting(false);
     }

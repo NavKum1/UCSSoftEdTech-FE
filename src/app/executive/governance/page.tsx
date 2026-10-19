@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { AccessNotice, useLegacyApi } from "@/lib/legacyApi";
+import { AccessNotice, useLegacyApi, useLatestRef } from "@/lib/legacyApi";
 
 interface Campus {
   id: string;
@@ -167,10 +167,11 @@ export default function MultiCampusGovernancePage() {
     }
   };
 
+  const fetchSystemRollupRef = useLatestRef(fetchSystemRollup);
   useEffect(() => {
     if (!ready) return;
-    fetchSystemRollup();
-  }, [parentInstituteId, ready]);
+    fetchSystemRollupRef.current();
+  }, [parentInstituteId, ready, fetchSystemRollupRef]);
 
   if (access) return <AccessNotice problem={access} feature="Multi-campus governance" />;
 

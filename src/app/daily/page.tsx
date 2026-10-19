@@ -4,9 +4,9 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useLegacyApi } from "@/lib/legacyApi";
 import { 
-  Flame, ShieldCheck, Swords, GitPullRequest, Terminal, 
-  Trophy, ArrowRight, CheckCircle2, Clock, Sparkles, 
-  AlertTriangle, ChevronRight, Play, Zap, Award
+  Flame, ShieldCheck, Swords, GitPullRequest, Terminal,
+  Trophy, ArrowRight, CheckCircle2, Clock, Sparkles,
+  ChevronRight, Award
 } from "lucide-react";
 
 interface UserStreak {
@@ -171,7 +171,7 @@ export default function DailyRitualsHubPage() {
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <h3 className="text-lg font-bold text-foreground">
-              Today's Daily Engineering Challenges
+              Today&apos;s Daily Engineering Challenges
             </h3>
             <span className="text-xs text-muted-foreground">Resets daily at 00:00 UTC</span>
           </div>

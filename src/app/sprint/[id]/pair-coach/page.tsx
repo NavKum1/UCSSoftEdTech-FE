@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { AccessNotice, useLegacyApi } from "@/lib/legacyApi";
+import { AccessNotice, useLegacyApi, useLatestRef } from "@/lib/legacyApi";
 
 interface InteractionLog {
   id: string;
@@ -131,10 +131,11 @@ public class HighThroughputBuffer<T>
     }
   };
 
+  const fetchOrStartSessionRef = useLatestRef(fetchOrStartSession);
   useEffect(() => {
     if (!ready) return;
-    fetchOrStartSession();
-  }, [sprintId, ready]);
+    fetchOrStartSessionRef.current();
+  }, [sprintId, ready, fetchOrStartSessionRef]);
 
   // Handle interaction dispatch (Hint, Explain, Refactor, Probe)
   const handleInteraction = async (type: "Hint" | "Explain" | "Refactor" | "Probe", customPrompt?: string) => {
@@ -454,7 +455,7 @@ public class HighThroughputBuffer<T>
 
                       {item.prompt && (
                         <div className="text-xs text-muted-foreground font-medium italic">
-                          "{item.prompt}"
+                          &quot;{item.prompt}&quot;
                         </div>
                       )}
 

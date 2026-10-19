@@ -575,7 +575,7 @@ export default function PromotionReviewPage() {
                         </div>
                         <div className="text-[10px] text-muted-foreground">{peer.peerRole}</div>
                         <p className="text-xs text-muted-foreground italic pt-1 border-t border-slate-900">
-                          "{peer.commentary}"
+                          &quot;{peer.commentary}&quot;
                         </p>
                       </div>
                     ))}

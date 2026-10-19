@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { AccessNotice, useLegacyApi } from "@/lib/legacyApi";
+import { AccessNotice, useLegacyApi, useLatestRef } from "@/lib/legacyApi";
 
 interface Guild {
   id: string;
@@ -67,11 +67,6 @@ export default function EnterpriseGuildBattlesPage() {
   const [newGuildName, setNewGuildName] = useState<string>("");
   const [newGuildDept, setNewGuildDept] = useState<string>("Platform");
 
-  useEffect(() => {
-    if (!ready) return;
-    fetchInitialData();
-  }, [ready]);
-
   const fetchInitialData = async () => {
     setLoading(true);
     try {
@@ -112,6 +107,12 @@ export default function EnterpriseGuildBattlesPage() {
       console.error("Failed to fetch leaderboard", err);
     }
   };
+
+  const fetchInitialDataRef = useLatestRef(fetchInitialData);
+  useEffect(() => {
+    if (!ready) return;
+    fetchInitialDataRef.current();
+  }, [ready, fetchInitialDataRef]);
 
   const handleSubmitScore = async () => {
     if (!activeHackathon || !selectedGuildId) return;

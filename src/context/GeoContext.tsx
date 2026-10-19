@@ -185,6 +185,9 @@ export function GeoProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     // 1. Sync on mount
     const detected = detectInitialRegion();
+    // The server can't see localStorage or the time zone, so it renders "IN" and the client corrects it after
+    // hydration. A lazy useState initializer would mismatch hydration on every region-priced page.
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- one-time post-hydration sync, see above
     setRegionState(detected);
 
     // 2. Cross-tab and window event listener

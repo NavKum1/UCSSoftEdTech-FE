@@ -11,18 +11,13 @@ import {
   Target,
   Layers,
   Award,
-  Zap,
-  BookOpen,
-  Code2,
   Building2,
   Plus,
   Trash2,
   Edit3,
   Save,
   Sliders,
-  ShieldCheck,
   Eye,
-  HelpCircle,
   ExternalLink,
   Phone,
   Mail,
@@ -33,16 +28,10 @@ import {
   RefreshCw,
   SlidersHorizontal,
   GraduationCap,
-  ChevronDown,
   Lock,
-  Filter,
-  Flame,
-  Star,
-  CheckSquare,
-  BookmarkCheck,
 } from "lucide-react";
 import Link from "next/link";
-import { AccessNotice, useLegacyApi } from "@/lib/legacyApi";
+import { AccessNotice, useLatestRef, useLegacyApi } from "@/lib/legacyApi";
 
 // ----------------------------------------------------
 // TYPES & INTERFACES
@@ -376,8 +365,7 @@ function CareerCounsellingInner() {
     }
   };
 
-  useEffect(() => {
-    if (!ready) return;
+  const restoreAndFetchRef = useLatestRef(() => {
     // Restore cached evaluation if applicable
     if (typeof window !== "undefined") {
       const storageKey = partnerSlug ? `counselling_eval_${partnerSlug}` : "counselling_eval_global";
@@ -392,7 +380,11 @@ function CareerCounsellingInner() {
       }
     }
     fetchAllData();
-  }, [partnerSlug, instituteIdQuery, ready]);
+  });
+  useEffect(() => {
+    if (!ready) return;
+    restoreAndFetchRef.current();
+  }, [partnerSlug, instituteIdQuery, ready, restoreAndFetchRef]);
 
   // Active questions for candidate quiz
   const activeQuestions = questions.filter((q) => q.isActive !== false);
@@ -568,10 +560,10 @@ function CareerCounsellingInner() {
           text: errData.error || "Failed to save questions to backend.",
         });
       }
-    } catch (err: any) {
+    } catch (err) {
       setBuilderStatusMsg({
         type: "error",
-        text: `Error saving questions: ${err.message}`,
+        text: `Error saving questions: ${(err as Error).message}`,
       });
     } finally {
       setIsSaving(false);
@@ -607,10 +599,10 @@ function CareerCounsellingInner() {
         });
         setTimeout(() => setBuilderStatusMsg(null), 4000);
       }
-    } catch (err: any) {
+    } catch (err) {
       setBuilderStatusMsg({
         type: "error",
-        text: `Failed to reset questions: ${err.message}`,
+        text: `Failed to reset questions: ${(err as Error).message}`,
       });
     } finally {
       setIsSaving(false);
@@ -667,9 +659,11 @@ function CareerCounsellingInner() {
       return;
     }
 
+    // Apply the custom track/credential to a copy (state is not mutated in place)
+    const course = { ...editingCourse };
     if (isCustomCourseTrack && customCourseTrackText.trim()) {
       const customTrk = customCourseTrackText.trim();
-      editingCourse.targetTrack = customTrk;
+      course.targetTrack = customTrk;
       if (!trackOptions.includes(customTrk)) {
         setTrackOptions((prev) => [...prev, customTrk]);
       }
@@ -677,7 +671,7 @@ function CareerCounsellingInner() {
 
     if (isCustomCourseCred && customCourseCredText.trim()) {
       const customCrd = customCourseCredText.trim();
-      editingCourse.credentialType = customCrd;
+      course.credentialType = customCrd;
       if (!credentialOptions.includes(customCrd)) {
         setCredentialOptions((prev) => [...prev, customCrd]);
       }
@@ -692,7 +686,7 @@ function CareerCounsellingInner() {
       const res = await apiFetch(`/api/quiz/counselling/courses?${qParams.toString()}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(editingCourse),
+        body: JSON.stringify(course),
       });
 
       if (res.ok) {
@@ -703,8 +697,8 @@ function CareerCounsellingInner() {
         const err = await res.json();
         alert(err.error || "Failed to save course.");
       }
-    } catch (err: any) {
-      alert(`Error saving course: ${err.message}`);
+    } catch (err) {
+      alert(`Error saving course: ${(err as Error).message}`);
     } finally {
       setIsSaving(false);
     }
@@ -818,8 +812,8 @@ function CareerCounsellingInner() {
         const err = await res.json();
         alert(err.error || "Failed to submit admissions inquiry. Please try again.");
       }
-    } catch (err: any) {
-      alert(`Error submitting inquiry: ${err.message}`);
+    } catch (err) {
+      alert(`Error submitting inquiry: ${(err as Error).message}`);
     } finally {
       setLeadSubmitting(false);
     }

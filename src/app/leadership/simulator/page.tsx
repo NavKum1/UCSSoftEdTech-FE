@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { AccessNotice, useLegacyApi } from "@/lib/legacyApi";
+import { AccessNotice, useLegacyApi, useLatestRef } from "@/lib/legacyApi";
 
 interface StakeholderPersona {
   code: string;
@@ -94,11 +94,6 @@ export default function ExecutiveLeadershipSimulatorPage() {
   const [promotionDossier, setPromotionDossier] = useState<PromotionDossier | null>(null);
   const [generatingDossier, setGeneratingDossier] = useState(false);
 
-  useEffect(() => {
-    if (!ready) return;
-    fetchScenarios();
-  }, [ready]);
-
   const fetchScenarios = async () => {
     try {
       setLoading(true);
@@ -138,6 +133,12 @@ export default function ExecutiveLeadershipSimulatorPage() {
       console.error("Failed to start simulation session", err);
     }
   };
+
+  const fetchScenariosRef = useLatestRef(fetchScenarios);
+  useEffect(() => {
+    if (!ready) return;
+    fetchScenariosRef.current();
+  }, [ready, fetchScenariosRef]);
 
   const handleScenarioChange = async (scenario: ExecutiveScenario) => {
     setSelectedScenario(scenario);

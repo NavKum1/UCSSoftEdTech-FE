@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { AccessNotice, useLegacyApi } from "@/lib/legacyApi";
+import { AccessNotice, useLatestRef, useLegacyApi } from "@/lib/legacyApi";
 import { 
   Briefcase, Users, ShieldAlert, ShieldCheck, Plus, 
   ExternalLink, Search, RefreshCw, KeyRound, Copy, Check,
@@ -53,11 +53,16 @@ interface ScrutinyResultData {
   tailoredWrittenFocus: string;
   tailoredCodingPrompt: string;
   tailoredVoiceDefenseQuestions: string[];
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
+// PL1/PL2: the list carries the bundle id and a link hint; the link itself is shown once (at create or "New link")
 interface AssessmentBundle {
-  token: string;
+  id: string;
+  linkHint: string;
+  linkStatus: "active" | "expired" | "revoked" | "completed" | string;
+  expiresAt?: string | null;
+  revokedAt?: string | null;
   candidateName: string;
   candidateEmail: string;
   targetRole: string;
@@ -83,6 +88,36 @@ interface AssessmentBundle {
   aiVerdict?: AiHiringVerdict | null;
   createdAt: string;
   completedAt?: string | null;
+}
+
+interface CorporateCandidate {
+  submissionId: string;
+  candidateName: string;
+  candidateEmail: string;
+  sprintTitle: string;
+  status: string;
+  antiCheat: { verificationFlagged: boolean; suspectedAi: boolean; suspectedPasting: boolean; flagReason: string | null };
+  evaluation: { finalScore: number; publicUrlSlug: string | null };
+}
+
+interface CorporateCandidatesResponse {
+  companyId?: string;
+  totalApplicants?: number;
+  flaggedCount?: number;
+  candidates?: CorporateCandidate[];
+}
+
+// POST /api/recruiter/assessments/bundle/create: the only response that carries the link token
+interface CreatedBundle {
+  id: string;
+  token: string;
+  inviteUrl: string;
+  linkHint: string;
+  candidateName: string;
+  candidateEmail: string;
+  companyName: string;
+  targetRole: string;
+  expiresAt?: string | null;
 }
 
 type ReviewStatus = "AWAITING" | "ADVANCED" | "HOLD" | "DECLINED" | "IN_PROGRESS";
@@ -114,13 +149,28 @@ const REVIEW_STATUS_STYLES: Record<ReviewStatus, string> = {
 
 const GUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
+function formatLinkDate(value?: string | null) {
+  if (!value) return "";
+  const d = new Date(value);
+  return Number.isNaN(d.getTime()) ? "" : d.toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" });
+}
+
+function linkStatusText(bundle: AssessmentBundle) {
+  switch (bundle.linkStatus) {
+    case "revoked": return `Link revoked ${formatLinkDate(bundle.revokedAt)}`.trim();
+    case "expired": return bundle.expiresAt ? `Link expired ${formatLinkDate(bundle.expiresAt)}` : "Old link without expiry (not usable)";
+    case "completed": return "Assessment finished";
+    default: return bundle.expiresAt ? `Link expires ${formatLinkDate(bundle.expiresAt)}` : "Link active";
+  }
+}
+
 function evidenceHref(submissionId?: string | null) {
   return submissionId && GUID_PATTERN.test(submissionId) ? `/recruiter/evidence/${submissionId}` : "/recruiter/evidence";
 }
 
 export default function RecruiterDashboardPage() {
   const { apiFetch, ready, access } = useLegacyApi();
-  const [data, setData] = useState<any>(null);
+  const [data, setData] = useState<CorporateCandidatesResponse | null>(null);
   const [bundles, setBundles] = useState<AssessmentBundle[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [loadingBundles, setLoadingBundles] = useState<boolean>(true);
@@ -149,7 +199,7 @@ export default function RecruiterDashboardPage() {
   const [bundleLanguage, setBundleLanguage] = useState("typescript");
   const [bundleDefenseTopic, setBundleDefenseTopic] = useState("Architectural pushback: Defend your partition rebalancing latency vs consistency model.");
   const [bundleStatus, setBundleStatus] = useState<string | null>(null);
-  const [bundleCreatedData, setBundleCreatedData] = useState<any>(null);
+  const [bundleCreatedData, setBundleCreatedData] = useState<CreatedBundle | null>(null);
 
   // AI Deep Resume Scrutiny State
   const [showScrutinyModal, setShowScrutinyModal] = useState<boolean>(false);
@@ -164,6 +214,11 @@ export default function RecruiterDashboardPage() {
   // AI Decision Filters & Audit Modal State
   const [decisionFilter, setDecisionFilter] = useState<"ALL" | ReviewStatus>("ALL");
   const [selectedBundleForAudit, setSelectedBundleForAudit] = useState<AssessmentBundle | null>(null);
+
+  // Link management (revoke, new link)
+  const [linkBusyId, setLinkBusyId] = useState<string | null>(null);
+  const [linkMessage, setLinkMessage] = useState<string | null>(null);
+  const [reissued, setReissued] = useState<{ id: string; token: string; expiresAt?: string | null } | null>(null);
 
   const fetchCandidates = async () => {
     setLoading(true);
@@ -195,11 +250,15 @@ export default function RecruiterDashboardPage() {
     }
   };
 
-  useEffect(() => {
-    if (!ready) return;
+  // The loaders start with setLoading(true): call them through a ref, not from the effect body
+  const loadRef = useLatestRef(() => {
     fetchCandidates();
     fetchBundles();
-  }, [ready]);
+  });
+  useEffect(() => {
+    if (!ready) return;
+    loadRef.current();
+  }, [ready, loadRef]);
 
   const handleCreateChallenge = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -267,6 +326,49 @@ export default function RecruiterDashboardPage() {
     }
   };
 
+  const handleRevokeLink = async (bundle: AssessmentBundle) => {
+    if (typeof window !== "undefined" && !window.confirm(`Withdraw the assessment link for ${bundle.candidateName}? The candidate will no longer be able to open it.`)) return;
+    setLinkBusyId(bundle.id);
+    setLinkMessage(null);
+    try {
+      const res = await apiFetch(`/api/recruiter/assessments/bundle/${encodeURIComponent(bundle.id)}/revoke`, { method: "POST" });
+      const body = await res.json().catch(() => ({}));
+      setLinkMessage(res.ok ? `Link for ${bundle.candidateName} revoked.` : body.error || "Could not revoke the link.");
+      if (res.ok) {
+        if (reissued?.id === bundle.id) setReissued(null);
+        fetchBundles();
+      }
+    } catch {
+      setLinkMessage("Network error occurred.");
+    } finally {
+      setLinkBusyId(null);
+    }
+  };
+
+  const handleReissueLink = async (bundle: AssessmentBundle) => {
+    setLinkBusyId(bundle.id);
+    setLinkMessage(null);
+    try {
+      const res = await apiFetch(`/api/recruiter/assessments/bundle/${encodeURIComponent(bundle.id)}/reissue`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({}),
+      });
+      const body = await res.json().catch(() => ({}));
+      if (res.ok && body.token) {
+        setReissued({ id: bundle.id, token: body.token, expiresAt: body.expiresAt });
+        setLinkMessage(`New link for ${bundle.candidateName}. The previous link no longer works. Copy it now: it is shown only once.`);
+        fetchBundles();
+      } else {
+        setLinkMessage(body.error || "Could not create a new link.");
+      }
+    } catch {
+      setLinkMessage("Network error occurred.");
+    } finally {
+      setLinkBusyId(null);
+    }
+  };
+
   const handleRunDeepScrutiny = async (e: React.FormEvent) => {
     e.preventDefault();
     setScrutinyLoading(true);
@@ -310,7 +412,7 @@ export default function RecruiterDashboardPage() {
     setTimeout(() => setCopiedToken(null), 2500);
   };
 
-  const candidates = data?.candidates || [
+  const candidates: CorporateCandidate[] = data?.candidates || [
     {
       submissionId: "sub-demo-1",
       candidateName: "Sarah Chen",
@@ -348,7 +450,7 @@ export default function RecruiterDashboardPage() {
   ];
 
   const totalApplicants = data?.totalApplicants ?? candidates.length;
-  const flaggedCount = data?.flaggedCount ?? candidates.filter((c: any) => c.antiCheat.verificationFlagged).length;
+  const flaggedCount = data?.flaggedCount ?? candidates.filter((c) => c.antiCheat.verificationFlagged).length;
   const cleanCount = totalApplicants - flaggedCount;
 
   if (access) return <AccessNotice problem={access} feature="The recruiter dashboard" />;
@@ -587,6 +689,40 @@ export default function RecruiterDashboardPage() {
               ))}
             </div>
 
+            {linkMessage && (
+              <div role="status" aria-live="polite" className="mb-3 p-3 rounded-xl bg-muted/50 border border-border text-xs text-foreground">
+                {linkMessage}
+              </div>
+            )}
+            {reissued && (
+              <div className="mb-3 p-3 rounded-xl bg-card border border-border space-y-2">
+                <label htmlFor="reissued-link" className="text-[11px] font-semibold text-muted-foreground block">
+                  New candidate link{reissued.expiresAt ? ` (expires ${formatLinkDate(reissued.expiresAt)})` : ""}:
+                </label>
+                <div className="flex items-center space-x-2">
+                  <input
+                    id="reissued-link"
+                    type="text"
+                    readOnly
+                    value={typeof window !== "undefined" ? `${window.location.origin}/assessment/${reissued.token}` : `/assessment/${reissued.token}`}
+                    className="w-full bg-muted/60 border border-border rounded-lg px-3 py-2 text-xs font-mono text-foreground focus:outline-none"
+                  />
+                  <button
+                    onClick={() => handleCopyBundleUrl(reissued.token)}
+                    className="px-3 py-2 rounded-lg bg-indigo-600 text-white text-xs font-bold flex items-center space-x-1 cursor-pointer shrink-0"
+                  >
+                    {copiedToken === reissued.token ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+                    <span>{copiedToken === reissued.token ? "Copied" : "Copy"}</span>
+                  </button>
+                  <button
+                    onClick={() => setReissued(null)}
+                    className="px-3 py-2 rounded-lg bg-card border border-border text-xs font-medium text-foreground cursor-pointer shrink-0"
+                  >
+                    Done
+                  </button>
+                </div>
+              </div>
+            )}
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs text-muted-foreground">
                 <thead className="bg-card/80 text-muted-foreground uppercase text-[10px] font-semibold border-b border-border">
@@ -614,7 +750,7 @@ export default function RecruiterDashboardPage() {
                         const status = reviewStatus(bundle);
 
                         return (
-                          <tr key={bundle.token} className="hover:bg-card/40 transition-colors">
+                          <tr key={bundle.id} className="hover:bg-card/40 transition-colors">
                             <td className="py-3.5 px-4">
                               <div className="font-semibold text-foreground">{bundle.candidateName}</div>
                               <div className="font-mono text-[11px] text-muted-foreground">{bundle.candidateEmail}</div>
@@ -649,6 +785,14 @@ export default function RecruiterDashboardPage() {
                                 {isCompleted ? <CheckCircle2 className="w-3 h-3" /> : <Clock className="w-3 h-3" />}
                                 <span>{isCompleted ? "All stages complete" : `Stage ${bundle.currentStage}/3`}</span>
                               </span>
+                              <div
+                                className={`text-[10px] mt-1 ${bundle.linkStatus === "revoked" || bundle.linkStatus === "expired" ? "text-amber-700 dark:text-amber-400 font-semibold" : "text-muted-foreground"}`}
+                              >
+                                {linkStatusText(bundle)}
+                              </div>
+                              <div className="font-mono text-[9px] text-muted-foreground truncate max-w-[160px]" title="Link reference (the full link is shown only when it is created)">
+                                {bundle.linkHint}
+                              </div>
                             </td>
 
                             {/* Review Status */}
@@ -699,33 +843,28 @@ export default function RecruiterDashboardPage() {
                                   </button>
                                 )}
 
-                                <button
-                                  onClick={() => handleCopyBundleUrl(bundle.token)}
-                                  title="Copy Candidate Invite URL"
-                                  className="px-2.5 py-1.5 rounded-lg bg-card hover:bg-muted border border-border text-[11px] font-medium text-foreground flex items-center space-x-1 cursor-pointer transition-colors"
-                                >
-                                  {copiedToken === bundle.token ? (
-                                    <>
-                                      <Check className="w-3 h-3 text-emerald-500" />
-                                      <span className="text-emerald-500">Copied!</span>
-                                    </>
-                                  ) : (
-                                    <>
-                                      <Copy className="w-3 h-3 text-muted-foreground" />
-                                      <span>Copy</span>
-                                    </>
-                                  )}
-                                </button>
-
-                                <a
-                                  href={`/assessment/${bundle.token}`}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="px-2.5 py-1.5 rounded-lg bg-card hover:bg-muted text-muted-foreground hover:text-foreground border border-border text-[11px] font-medium flex items-center space-x-1 cursor-pointer transition-colors"
-                                  title="Open Candidate Assessment Sandbox"
-                                >
-                                  <ExternalLink className="w-3 h-3" />
-                                </a>
+                                {(bundle.linkStatus === "active" || bundle.linkStatus === "expired") && (
+                                  <button
+                                    onClick={() => handleReissueLink(bundle)}
+                                    disabled={linkBusyId === bundle.id}
+                                    title="Send a new link (the previous one stops working)"
+                                    className="px-2.5 py-1.5 rounded-lg bg-card hover:bg-muted border border-border text-[11px] font-medium text-foreground flex items-center space-x-1 cursor-pointer transition-colors disabled:opacity-50"
+                                  >
+                                    <RefreshCw className="w-3 h-3 text-muted-foreground" aria-hidden="true" />
+                                    <span>New link</span>
+                                  </button>
+                                )}
+                                {bundle.linkStatus === "active" && (
+                                  <button
+                                    onClick={() => handleRevokeLink(bundle)}
+                                    disabled={linkBusyId === bundle.id}
+                                    title="Withdraw this candidate's link"
+                                    className="px-2.5 py-1.5 rounded-lg bg-card hover:bg-red-500/10 border border-red-500/30 text-[11px] font-medium text-red-700 dark:text-red-400 flex items-center space-x-1 cursor-pointer transition-colors disabled:opacity-50"
+                                  >
+                                    <X className="w-3 h-3" aria-hidden="true" />
+                                    <span>Revoke</span>
+                                  </button>
+                                )}
                               </div>
                             </td>
                           </tr>
@@ -761,7 +900,7 @@ export default function RecruiterDashboardPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border/60">
-                  {candidates.map((cand: any, idx: number) => (
+                  {candidates.map((cand, idx: number) => (
                     <tr key={idx} className="hover:bg-card/40 transition-colors">
                       <td className="py-3.5 px-4">
                         <div className="font-semibold text-foreground">{cand.candidateName}</div>
@@ -847,7 +986,10 @@ export default function RecruiterDashboardPage() {
                 </div>
 
                 <div className="p-4 rounded-xl bg-card border border-border space-y-2">
-                  <div className="text-[11px] font-semibold text-muted-foreground">Direct Candidate Invite Link:</div>
+                  <div className="text-[11px] font-semibold text-muted-foreground">
+                    Direct Candidate Invite Link{bundleCreatedData.expiresAt ? ` (expires ${formatLinkDate(bundleCreatedData.expiresAt)})` : ""}:
+                  </div>
+                  <p className="text-[11px] text-amber-700 dark:text-amber-400">Copy it now: for security the full link is shown only once. You can send a new link from the list later.</p>
                   <div className="flex items-center space-x-2">
                     <input
                       type="text"
@@ -1284,7 +1426,7 @@ export default function RecruiterDashboardPage() {
                           {scrutinyResult.flaggedClaims?.map((item: ScrutinyFlaggedClaim, idx: number) => (
                             <div key={idx} className="p-3.5 rounded-xl bg-muted/40 border border-border space-y-2">
                               <div className="flex items-center justify-between">
-                                <span className="text-xs font-semibold text-foreground">"{item.claim}"</span>
+                                <span className="text-xs font-semibold text-foreground">&ldquo;{item.claim}&rdquo;</span>
                                 <span className={`px-2 py-0.5 rounded text-[9px] font-black uppercase ${
                                   item.severity === "HIGH" ? "bg-rose-500 text-white" : "bg-amber-500 text-black"
                                 }`}>
@@ -1296,7 +1438,7 @@ export default function RecruiterDashboardPage() {
                               </p>
                               <div className="p-2 rounded-lg bg-indigo-500/10 border border-indigo-500/20 text-[11px] text-indigo-700 dark:text-indigo-300">
                                 <strong className="block text-[10px] uppercase font-bold text-indigo-600 dark:text-indigo-400">Interrogation Probe:</strong>
-                                "{item.interrogationQuestion}"
+                                &ldquo;{item.interrogationQuestion}&rdquo;
                               </div>
                             </div>
                           ))}
@@ -1376,7 +1518,7 @@ export default function RecruiterDashboardPage() {
                           <ul className="space-y-1.5 text-xs text-muted-foreground list-disc list-inside">
                             {scrutinyResult.tailoredVoiceDefenseQuestions?.map((q: string, i: number) => (
                               <li key={i} className="text-foreground">
-                                <span className="text-purple-600 dark:text-purple-400 font-bold">Q{i + 1}:</span> "{q}"
+                                <span className="text-purple-600 dark:text-purple-400 font-bold">Q{i + 1}:</span> &ldquo;{q}&rdquo;
                               </li>
                             ))}
                           </ul>
@@ -1441,7 +1583,7 @@ export default function RecruiterDashboardPage() {
                       {selectedBundleForAudit.candidateName} — Assessment Details
                     </h3>
                     <span className="text-[10px] font-mono px-2 py-0.5 rounded-md bg-muted text-muted-foreground border border-border">
-                      {selectedBundleForAudit.token}
+                      {selectedBundleForAudit.linkHint}
                     </span>
                   </div>
                   <p className="text-[11px] text-muted-foreground mt-0.5">
@@ -1647,15 +1789,6 @@ export default function RecruiterDashboardPage() {
                     <span>Review</span>
                   </Link>
 
-                  <a
-                    href={`/assessment/${selectedBundleForAudit.token}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="py-2.5 px-3 rounded-xl bg-card hover:bg-muted text-muted-foreground hover:text-foreground font-semibold text-xs border border-border cursor-pointer flex items-center space-x-1.5 ml-auto"
-                  >
-                    <span>View Candidate Portal</span>
-                    <ExternalLink className="w-3 h-3" />
-                  </a>
                 </div>
               </div>
             </div>

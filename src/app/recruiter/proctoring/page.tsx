@@ -3,8 +3,8 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { 
-  ShieldCheck, ShieldAlert, Video, Eye, AlertTriangle, 
-  CheckCircle2, Clock, Search, ArrowRight, UserCheck, Filter
+  ShieldCheck, ShieldAlert, Video, Eye,
+  Search, ArrowRight
 } from "lucide-react";
 
 interface ProctoringSession {

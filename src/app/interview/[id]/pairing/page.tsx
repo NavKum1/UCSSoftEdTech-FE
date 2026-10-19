@@ -2,10 +2,10 @@
 
 import React, { useState, useEffect, useRef, use } from "react";
 import { 
-  Users, Code2, PenTool, Eraser, Square, 
-  Database, Cloud, Save, Radio, ShieldAlert, 
+  Code2, PenTool, Eraser, Square,
+  Database, Cloud, Save, Radio, ShieldAlert,
   Volume2, VolumeX, Check, Copy, ArrowLeft,
-  Sparkles, RefreshCw, Layers, MousePointer2
+  RefreshCw, Layers, MousePointer2
 } from "lucide-react";
 import Link from "next/link";
 import * as signalR from "@microsoft/signalr";

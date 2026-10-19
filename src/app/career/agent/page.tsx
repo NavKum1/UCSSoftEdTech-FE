@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useGeo } from "@/context/GeoContext";
-import { AccessNotice, useLegacyApi } from "@/lib/legacyApi";
+import { AccessNotice, useLegacyApi, useLatestRef } from "@/lib/legacyApi";
 
 interface CareerAgentConfig {
   id: string;
@@ -152,11 +152,12 @@ export default function AutonomousCareerAgentPage() {
     init();
   }, [ready]);
 
+  const fetchDetailRef = useLatestRef(fetchDetail);
   useEffect(() => {
     if (selectedNegId) {
-      fetchDetail(selectedNegId);
+      fetchDetailRef.current(selectedNegId);
     }
-  }, [selectedNegId]);
+  }, [selectedNegId, fetchDetailRef]);
 
   const handleSaveConfig = async () => {
     if (!config) return;

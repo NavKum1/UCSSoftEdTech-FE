@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { AccessNotice, useLegacyApi } from "@/lib/legacyApi";
+import { AccessNotice, useLegacyApi, useLatestRef } from "@/lib/legacyApi";
 
 interface PrKata {
   id: string;
@@ -80,21 +80,6 @@ export default function DailyCodeReviewDojoPage() {
     return "d9e8f7a6-b5c4-4321-9876-112233445566";
   });
 
-  useEffect(() => {
-    if (!ready) return;
-    fetchInitialData();
-  }, [ready]);
-
-  useEffect(() => {
-    let interval: NodeJS.Timeout;
-    if (timerActive && !result) {
-      interval = setInterval(() => {
-        setTimerSeconds((prev) => prev + 1);
-      }, 1000);
-    }
-    return () => clearInterval(interval);
-  }, [timerActive, result]);
-
   const fetchInitialData = async () => {
     setLoading(true);
     try {
@@ -136,6 +121,22 @@ export default function DailyCodeReviewDojoPage() {
     }
     setParsedLines(result);
   };
+
+  const fetchInitialDataRef = useLatestRef(fetchInitialData);
+  useEffect(() => {
+    if (!ready) return;
+    fetchInitialDataRef.current();
+  }, [ready, fetchInitialDataRef]);
+
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (timerActive && !result) {
+      interval = setInterval(() => {
+        setTimerSeconds((prev) => prev + 1);
+      }, 1000);
+    }
+    return () => clearInterval(interval);
+  }, [timerActive, result]);
 
   const handleSubmitReview = async () => {
     if (!kata) return;

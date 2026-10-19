@@ -1,22 +1,19 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { AccessNotice, useLegacyApi } from "@/lib/legacyApi";
+import { AccessNotice, useLegacyApi, useLatestRef } from "@/lib/legacyApi";
 import {
   Server,
   Zap,
   Database,
   RefreshCw,
   Layers,
-  Activity,
   Trash2,
   Play,
   RotateCcw,
   CheckCircle2,
   AlertTriangle,
-  Clock,
   Cpu,
-  BarChart3,
   Flame,
 } from "lucide-react";
 
@@ -69,12 +66,13 @@ export default function SystemOperationsDashboard() {
     }
   };
 
+  const fetchMetricsRef = useLatestRef(fetchMetrics);
   useEffect(() => {
     if (!ready) return;
-    fetchMetrics();
+    fetchMetricsRef.current();
     const interval = setInterval(fetchMetrics, 3000);
     return () => clearInterval(interval);
-  }, [ready]);
+  }, [ready, fetchMetricsRef]);
 
   const handleInvalidateCache = async (tag?: string, flushAll: boolean = false) => {
     setIsProcessing(true);
@@ -90,8 +88,8 @@ export default function SystemOperationsDashboard() {
       const data = await res.json();
       setActionLog(data.message || "Cache action completed successfully.");
       await fetchMetrics();
-    } catch (err: any) {
-      setActionLog(`Invalidation error: ${err.message}`);
+    } catch (err) {
+      setActionLog(`Invalidation error: ${(err as Error).message}`);
     } finally {
       setIsProcessing(false);
     }
@@ -109,8 +107,8 @@ export default function SystemOperationsDashboard() {
       const data = await res.json();
       setActionLog(`Job Enqueued! ID: ${data.jobId} into ${data.priority} channel.`);
       await fetchMetrics();
-    } catch (err: any) {
-      setActionLog(`Queue error: ${err.message}`);
+    } catch (err) {
+      setActionLog(`Queue error: ${(err as Error).message}`);
     } finally {
       setIsProcessing(false);
     }
@@ -129,8 +127,8 @@ export default function SystemOperationsDashboard() {
       const data = await res.json();
       setActionLog(data.message || `Re-enqueued ${data.reEnqueuedCount} jobs from DLQ.`);
       await fetchMetrics();
-    } catch (err: any) {
-      setActionLog(`DLQ Retry error: ${err.message}`);
+    } catch (err) {
+      setActionLog(`DLQ Retry error: ${(err as Error).message}`);
     } finally {
       setIsProcessing(false);
     }
@@ -280,7 +278,7 @@ export default function SystemOperationsDashboard() {
                   className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-muted hover:bg-slate-700 text-xs text-white border border-border transition-colors"
                 >
                   <Trash2 className="w-3.5 h-3.5 text-amber-700 dark:text-amber-400" />
-                  <span>Purge 'credential' Tag</span>
+                  <span>Purge &apos;credential&apos; Tag</span>
                 </button>
                 <button
                   disabled={isProcessing}
@@ -288,7 +286,7 @@ export default function SystemOperationsDashboard() {
                   className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-muted hover:bg-slate-700 text-xs text-white border border-border transition-colors"
                 >
                   <Trash2 className="w-3.5 h-3.5 text-amber-700 dark:text-amber-400" />
-                  <span>Purge 'leaderboard' Tag</span>
+                  <span>Purge &apos;leaderboard&apos; Tag</span>
                 </button>
                 <button
                   disabled={isProcessing}

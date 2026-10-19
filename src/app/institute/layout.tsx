@@ -3,7 +3,7 @@
 import React from "react";
 import { useRouter } from "next/navigation";
 import { UserButton } from "@clerk/nextjs";
-import { Building2, ShieldCheck, ArrowLeft, Send, Sparkles } from "lucide-react";
+import { Building2, ShieldCheck, ArrowLeft } from "lucide-react";
 
 export default function InstituteLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();

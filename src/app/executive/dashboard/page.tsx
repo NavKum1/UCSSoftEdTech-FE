@@ -1,11 +1,11 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import Link from "next/link";
 import { 
-  Sparkles, ShieldCheck, Users, Award, Building2, 
-  ArrowRight, FileCheck, Brain, Lock, RefreshCw, 
-  ExternalLink, CheckCircle2, AlertTriangle, Layers,
+  Sparkles, ShieldCheck, Building2,
+  ArrowRight, Brain, Lock,
+  CheckCircle2,
   ChevronRight, Activity
 } from "lucide-react";
 

@@ -9,16 +9,13 @@ import {
   RefreshCw,
   Send,
   CheckCircle2,
-  AlertTriangle,
-  Building2,
   Users,
   Search,
-  ExternalLink,
-  Shield,
   Activity,
   BarChart3,
 } from "lucide-react";
 import FunnelChart from "@/components/charts/FunnelChart";
+import { useLatestRef } from "@/lib/legacyApi";
 
 interface Lead {
   leadId: string;
@@ -76,9 +73,10 @@ export default function InstituteDashboardPage() {
     }
   };
 
+  const fetchDataRef = useLatestRef(fetchData);
   useEffect(() => {
-    fetchData();
-  }, []);
+    fetchDataRef.current();
+  }, [fetchDataRef]);
 
   // Save CRM Webhook URL
   const handleSaveWebhook = async (e: React.FormEvent) => {
@@ -105,8 +103,8 @@ export default function InstituteDashboardPage() {
         const errData = await res.json();
         setFeedbackMessage("Error saving webhook: " + (errData.error || res.statusText));
       }
-    } catch (err: any) {
-      setFeedbackMessage("Failed to connect to API: " + err.message);
+    } catch (err) {
+      setFeedbackMessage("Failed to connect to API: " + (err as Error).message);
     } finally {
       setSavingWebhook(false);
     }
@@ -142,8 +140,8 @@ export default function InstituteDashboardPage() {
       } else {
         setFeedbackMessage(`CRM endpoint returned HTTP ${res.status}. Please verify your webhook receiver.`);
       }
-    } catch (err: any) {
-      setFeedbackMessage("Error pinging CRM webhook endpoint: " + err.message);
+    } catch (err) {
+      setFeedbackMessage("Error pinging CRM webhook endpoint: " + (err as Error).message);
     } finally {
       setTestingPing(false);
     }

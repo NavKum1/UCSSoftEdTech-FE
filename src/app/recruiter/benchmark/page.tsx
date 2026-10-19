@@ -1,11 +1,11 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { AccessNotice, useLegacyApi } from "@/lib/legacyApi";
+import { AccessNotice, useLegacyApi, useLatestRef } from "@/lib/legacyApi";
 import { 
-  BarChart3, Sparkles, ShieldAlert, Layers, Award, Zap, 
-  CheckCircle2, Cpu, GitCompare, RefreshCw, Play, Search,
-  ChevronRight, AlertTriangle, ArrowUpRight, TrendingUp, Code2
+  BarChart3, Sparkles, ShieldAlert, Layers, Award, Zap,
+  Cpu, GitCompare, RefreshCw,
+  ChevronRight, AlertTriangle, TrendingUp
 } from "lucide-react";
 
 interface BenchmarkRecord {
@@ -21,6 +21,14 @@ interface BenchmarkRecord {
   industryStandardTier: string;
   benchmarkSummary: string;
   evaluatedAt: string;
+}
+
+/** Cross-cohort plagiarism scan report (fields the result panel shows). */
+interface PlagiarismReport {
+  isPlagiarized: boolean;
+  similarityScore: number;
+  crossCohortMatchUserEmail?: string | null;
+  flaggedReason?: string | null;
 }
 
 interface CohortAnalytics {
@@ -52,7 +60,7 @@ export default function RecruiterBenchmarkPage() {
   const [plagiarismCode, setPlagiarismCode] = useState<string>(
     "function solveChallenge(data) {\n  // Quick implementation with heavy branching\n  if (!data) return null;\n  return data.map(item => item * 2);\n}"
   );
-  const [plagiarismReport, setPlagiarismReport] = useState<any | null>(null);
+  const [plagiarismReport, setPlagiarismReport] = useState<PlagiarismReport | null>(null);
   const [plagiarismScanning, setPlagiarismScanning] = useState<boolean>(false);
   const [fetchError, setFetchError] = useState<string | null>(null);
   const [plagiarismError, setPlagiarismError] = useState<string | null>(null);
@@ -72,19 +80,20 @@ export default function RecruiterBenchmarkPage() {
         setFetchError(`Cohort analytics service returned HTTP ${res.status}.`);
         setAnalytics(null);
       }
-    } catch (e: any) {
+    } catch (e) {
       console.warn("[BENCHMARK FETCH NOTICE]:", e);
-      setFetchError(e.message || "Failed to connect to cohort analytics service.");
+      setFetchError((e as Error).message || "Failed to connect to cohort analytics service.");
       setAnalytics(null);
     } finally {
       setLoading(false);
     }
   };
 
+  const fetchAnalyticsRef = useLatestRef(fetchAnalytics);
   useEffect(() => {
     if (!ready) return;
-    fetchAnalytics();
-  }, [ready]);
+    fetchAnalyticsRef.current();
+  }, [ready, fetchAnalyticsRef]);
 
   const handleDispatchBatch = async () => {
     setBatchStatus("Dispatching offline evaluation job...");
@@ -105,8 +114,8 @@ export default function RecruiterBenchmarkPage() {
       } else {
         setBatchStatus(`Error: ${data.message || "Failed to dispatch"}`);
       }
-    } catch (e: any) {
-      setBatchStatus(`Error connecting to batch dispatcher: ${e?.message || "Server unreachable"}`);
+    } catch (e) {
+      setBatchStatus(`Error connecting to batch dispatcher: ${(e as Error)?.message || "Server unreachable"}`);
     }
   };
 
@@ -133,8 +142,8 @@ export default function RecruiterBenchmarkPage() {
       } else {
         setPlagiarismError(data.message || `Plagiarism check returned HTTP ${res.status}.`);
       }
-    } catch (e: any) {
-      setPlagiarismError(e.message || "Failed to connect to plagiarism analysis engine.");
+    } catch (e) {
+      setPlagiarismError((e as Error).message || "Failed to connect to plagiarism analysis engine.");
     } finally {
       setPlagiarismScanning(false);
     }

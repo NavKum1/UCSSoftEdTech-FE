@@ -1,10 +1,9 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { AccessNotice, useLegacyApi } from "@/lib/legacyApi";
+import { AccessNotice, useLegacyApi, useLatestRef } from "@/lib/legacyApi";
 import {
   Mic,
-  Volume2,
   Sparkles,
   ShieldAlert,
   HeartHandshake,
@@ -13,10 +12,7 @@ import {
   Globe,
   CheckCircle2,
   Sliders,
-  ChevronRight,
   Code2,
-  MessageSquare,
-  Play,
   RotateCw,
 } from "lucide-react";
 
@@ -101,10 +97,11 @@ export default function PersonaSelectorPage() {
     }
   };
 
+  const fetchPersonasRef = useLatestRef(fetchPersonas);
   useEffect(() => {
     if (!ready) return;
-    fetchPersonas();
-  }, [ready]);
+    fetchPersonasRef.current();
+  }, [ready, fetchPersonasRef]);
 
   const handleGeneratePreview = async (personaCode: string, dialectCode: string) => {
     setGeneratingPreview(true);
@@ -130,19 +127,20 @@ export default function PersonaSelectorPage() {
         setPreviewConfig(data);
         setStatusMessage(`Adapted system prompt dynamically compiled for ${data.displayName}.`);
       }
-    } catch (err: any) {
-      setStatusMessage(`Error compiling prompt: ${err.message}`);
+    } catch (err) {
+      setStatusMessage(`Error compiling prompt: ${(err as Error).message}`);
     } finally {
       setGeneratingPreview(false);
     }
   };
 
+  const handleGeneratePreviewRef = useLatestRef(handleGeneratePreview);
   useEffect(() => {
     if (!ready) return;
     if (selectedPersona) {
-      handleGeneratePreview(selectedPersona, selectedDialect);
+      handleGeneratePreviewRef.current(selectedPersona, selectedDialect);
     }
-  }, [selectedPersona, selectedDialect, ready]);
+  }, [selectedPersona, selectedDialect, ready, handleGeneratePreviewRef]);
 
   const getPersonaIcon = (code: string) => {
     switch (code) {

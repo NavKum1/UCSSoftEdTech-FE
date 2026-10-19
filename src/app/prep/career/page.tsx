@@ -2,14 +2,14 @@
 
 import React, { useState, useEffect } from "react";
 import { 
-  TrendingUp, DollarSign, Award, Target, Sparkles, 
-  ArrowRight, Compass, ShieldCheck, Zap, Layers, 
-  Calendar, CheckCircle2, ChevronRight, RefreshCw,
-  Globe2, Building2, Briefcase, Sliders, ArrowUpRight, AlertTriangle
+  TrendingUp, DollarSign, Target, Sparkles,
+  ArrowRight,
+  CheckCircle2, ChevronRight,
+  Globe2, AlertTriangle
 } from "lucide-react";
 import Link from "next/link";
 import { useGeo } from "@/context/GeoContext";
-import { AccessNotice, useLegacyApi } from "@/lib/legacyApi";
+import { AccessNotice, useLegacyApi, useLatestRef } from "@/lib/legacyApi";
 
 interface CompensationBandData {
   userId: string;
@@ -68,10 +68,12 @@ export default function CareerTrajectoryStudioPage() {
   const [showSimulateModal, setShowSimulateModal] = useState<boolean>(false);
   const [targetRole, setTargetRole] = useState<string>(TRACK_PRESETS[0]);
 
-  useEffect(() => {
-    const matchedRegion = geoRegion === "IN" ? "India_APAC" : geoRegion === "EU" ? "EU_UK" : "US_Tier1";
-    setSelectedRegion(matchedRegion);
-  }, [geoRegion]);
+  // Follow the visitor's geo region when it changes (adjusting state during render, not in an effect).
+  const [syncedGeoRegion, setSyncedGeoRegion] = useState(geoRegion);
+  if (geoRegion !== syncedGeoRegion) {
+    setSyncedGeoRegion(geoRegion);
+    setSelectedRegion(geoRegion === "IN" ? "India_APAC" : geoRegion === "EU" ? "EU_UK" : "US_Tier1");
+  }
   const [isSimulating, setIsSimulating] = useState<boolean>(false);
 
   const fetchCompensation = async (region: string) => {
@@ -87,19 +89,20 @@ export default function CareerTrajectoryStudioPage() {
         setFetchError(`Career compensation service returned HTTP ${res.status}.`);
         setData(null);
       }
-    } catch (e: any) {
+    } catch (e) {
       console.warn("[CAREER COMPENSATION FETCH NOTICE]:", e);
-      setFetchError(e.message || "Failed to connect to career compensation service.");
+      setFetchError((e as Error).message || "Failed to connect to career compensation service.");
       setData(null);
     } finally {
       setLoading(false);
     }
   };
 
+  const fetchCompensationRef = useLatestRef(fetchCompensation);
   useEffect(() => {
     if (!ready) return;
-    fetchCompensation(selectedRegion);
-  }, [selectedRegion, ready]);
+    fetchCompensationRef.current(selectedRegion);
+  }, [selectedRegion, ready, fetchCompensationRef]);
 
   const handleSimulate = async () => {
     setIsSimulating(true);

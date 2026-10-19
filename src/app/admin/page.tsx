@@ -11,15 +11,9 @@ import {
   Award,
   Plus,
   Trash2,
-  Edit2,
-  ExternalLink,
   Download,
-  Filter,
   CheckCircle2,
   AlertCircle,
-  Clock,
-  ShieldAlert,
-  Search,
   BookOpen,
   Tag,
   RefreshCw,
@@ -27,10 +21,10 @@ import {
   EyeOff,
   Radio,
   Send,
-  Mail
 } from "lucide-react";
 import { authenticatedFetch } from "@/lib/apiClient";
 import { useGeo } from "@/context/GeoContext";
+import { useLatestRef } from "@/lib/legacyApi";
 
 interface AnalyticsData {
   totalUsers: number;
@@ -167,7 +161,7 @@ export default function SuperAdminDashboard() {
         const ldsData = await ldsRes.json();
         setLeads(ldsData.leads || []);
       }
-    } catch (err: any) {
+    } catch (err) {
       console.error("[ADMIN DASHBOARD ERROR]", err);
       setError("Failed to synchronize with .NET SuperAdmin API. Verify server connectivity.");
     } finally {
@@ -176,9 +170,10 @@ export default function SuperAdminDashboard() {
     }
   }, [customFetch, leadFilterInstitute, leadFromDate, leadToDate]);
 
+  const loadDataRef = useLatestRef(loadData);
   useEffect(() => {
-    loadData();
-  }, [loadData]);
+    loadDataRef.current();
+  }, [loadData, loadDataRef]);
 
   // Handle Institute Creation
   const handleCreateInstitute = async (e: React.FormEvent) => {
@@ -206,8 +201,8 @@ export default function SuperAdminDashboard() {
         const err = await res.json();
         setError(err.error || "Failed to create partner institute.");
       }
-    } catch (err: any) {
-      setError(err.message || "Error creating institute.");
+    } catch (err) {
+      setError((err as Error).message || "Error creating institute.");
     }
   };
 
@@ -221,8 +216,8 @@ export default function SuperAdminDashboard() {
         showNotification(`Partner Institute "${name}" removed.`);
         loadData();
       }
-    } catch (err: any) {
-      setError(err.message || "Failed to delete institute.");
+    } catch (err) {
+      setError((err as Error).message || "Failed to delete institute.");
     }
   };
 
@@ -255,8 +250,8 @@ export default function SuperAdminDashboard() {
         setShowAddCourseModal(false);
         loadData();
       }
-    } catch (err: any) {
-      setError(err.message || "Failed to create course.");
+    } catch (err) {
+      setError((err as Error).message || "Failed to create course.");
     }
   };
 
@@ -270,8 +265,8 @@ export default function SuperAdminDashboard() {
         showNotification(`Course "${courseName}" deleted.`);
         loadData();
       }
-    } catch (err: any) {
-      setError(err.message || "Failed to delete course.");
+    } catch (err) {
+      setError((err as Error).message || "Failed to delete course.");
     }
   };
 
@@ -291,8 +286,8 @@ export default function SuperAdminDashboard() {
         setActiveCourseIdForTag(null);
         loadData();
       }
-    } catch (err: any) {
-      setError(err.message || "Failed to add skill mapping.");
+    } catch (err) {
+      setError((err as Error).message || "Failed to add skill mapping.");
     }
   };
 
@@ -321,8 +316,8 @@ export default function SuperAdminDashboard() {
       window.URL.revokeObjectURL(downloadUrl);
 
       showNotification("CSV export successfully generated and downloaded.");
-    } catch (err: any) {
-      setError(err.message || "Error generating CSV export.");
+    } catch (err) {
+      setError((err as Error).message || "Error generating CSV export.");
     } finally {
       setIsExportingCsv(false);
     }
