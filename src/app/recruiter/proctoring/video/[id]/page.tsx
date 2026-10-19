@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, use } from 'react';
 import Link from 'next/link';
+import { AccessNotice, useLegacyApi } from "@/lib/legacyApi";
 
 interface ViolationMarker {
   id: string;
@@ -31,6 +32,7 @@ interface PlayerPayload {
 }
 
 export default function ProctoringVideoReviewPage({ params }: { params: Promise<{ id: string }> }) {
+  const { apiFetch, ready, access } = useLegacyApi();
   const resolvedParams = use(params);
   const recordingId = resolvedParams.id;
 
@@ -45,11 +47,12 @@ export default function ProctoringVideoReviewPage({ params }: { params: Promise<
   const [fetchError, setFetchError] = useState<string | null>(null);
 
   useEffect(() => {
+    if (!ready) return;
     async function fetchPlayerData() {
       try {
         setLoading(true);
         setFetchError(null);
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/video/recording/${recordingId}/player`);
+        const res = await apiFetch(`/api/video/recording/${recordingId}/player`);
         if (res.ok) {
           const data = await res.json();
           setPlayerData(data);
@@ -70,7 +73,7 @@ export default function ProctoringVideoReviewPage({ params }: { params: Promise<
     }
 
     fetchPlayerData();
-  }, [recordingId]);
+  }, [recordingId, ready, apiFetch]);
 
   // Simulated video playback timer
   useEffect(() => {
@@ -109,6 +112,8 @@ export default function ProctoringVideoReviewPage({ params }: { params: Promise<
     setActionNotice(`[AUDIT LEDGER] Action executed: ${action}. Notification dispatched to university dean and candidate record.`);
     setTimeout(() => setActionNotice(null), 5000);
   };
+
+  if (access) return <AccessNotice problem={access} feature="Proctoring video review" />;
 
   if (loading) {
     return (

@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
+import { AccessNotice, useLegacyApi } from "@/lib/legacyApi";
 import {
   Play,
   Pause,
@@ -55,6 +56,7 @@ interface ReplayData {
 }
 
 export default function AudioReplayStudioPage() {
+  const { apiFetch, ready, access } = useLegacyApi();
   const params = useParams();
   const router = useRouter();
   const sessionId = (params?.id as string) || "";
@@ -80,11 +82,12 @@ export default function AudioReplayStudioPage() {
   }, []);
 
   useEffect(() => {
+    if (!ready) return;
     const fetchReplay = async () => {
       if (!sessionId) return;
       try {
         setFetchError(null);
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/interview/${sessionId}/replay`);
+        const res = await apiFetch(`/api/interview/${sessionId}/replay`);
         if (res.ok) {
           const data = await res.json();
           setReplay(data);
@@ -103,7 +106,7 @@ export default function AudioReplayStudioPage() {
     };
 
     fetchReplay();
-  }, [sessionId]);
+  }, [sessionId, ready, apiFetch]);
 
   const togglePlay = () => {
     if (!audioRef.current) return;
@@ -148,6 +151,8 @@ export default function AudioReplayStudioPage() {
     const s = Math.floor(secs % 60);
     return `${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
   };
+
+  if (access) return <AccessNotice problem={access} feature="This interview replay" />;
 
   if (loading) {
     return (

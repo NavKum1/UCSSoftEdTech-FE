@@ -33,6 +33,7 @@ import {
   Calendar,
 } from "lucide-react";
 import Link from "next/link";
+import { AccessNotice, useLegacyApi } from "@/lib/legacyApi";
 
 function LinkedInIcon({ className = "w-4 h-4" }: { className?: string }) {
   return (
@@ -116,6 +117,7 @@ interface ExamEvaluationResult {
 }
 
 export default function WrittenExamPrepPage() {
+  const { apiFetch, ready, access } = useLegacyApi();
   const [catalog, setCatalog] = useState<ExamCatalogItem[]>([]);
   const [selectedStream, setSelectedStream] = useState<string>("All");
   const [loading, setLoading] = useState<boolean>(true);
@@ -169,17 +171,17 @@ export default function WrittenExamPrepPage() {
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState<boolean>(false);
 
-  const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
   useEffect(() => {
+    if (!ready) return;
     fetchCatalog();
     fetchHistory();
-  }, []);
+  }, [ready]);
 
   const fetchCatalog = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`${apiBase}/api/quiz/exams`);
+      const res = await apiFetch(`/api/quiz/exams`);
       if (res.ok) {
         const data = await res.json();
         setCatalog(data);
@@ -194,7 +196,7 @@ export default function WrittenExamPrepPage() {
   const fetchHistory = async () => {
     setHistoryLoading(true);
     try {
-      const res = await fetch(`${apiBase}/api/quiz/exams/history`);
+      const res = await apiFetch(`/api/quiz/exams/history`);
       if (res.ok) {
         const data = await res.json();
         setExamHistory(data.attempts || []);
@@ -218,7 +220,7 @@ export default function WrittenExamPrepPage() {
     setEvaluation(null);
     setCurrentQuestionIndex(0);
     try {
-      const res = await fetch(`${apiBase}/api/quiz/exams/${examId}`);
+      const res = await apiFetch(`/api/quiz/exams/${examId}`);
       if (res.ok) {
         const data: ActiveExamDetail = await res.json();
         setActiveExam(data);
@@ -283,7 +285,7 @@ export default function WrittenExamPrepPage() {
     if (!activeExam || submitting) return;
     setSubmitting(true);
     try {
-      const res = await fetch(`${apiBase}/api/quiz/exams/${activeExam.id}/submit`, {
+      const res = await apiFetch(`/api/quiz/exams/${activeExam.id}/submit`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ answers, candidateName }),
@@ -307,7 +309,7 @@ export default function WrittenExamPrepPage() {
   const handleClaimCredential = async (examId: string, percentage: number) => {
     setClaiming(true);
     try {
-      const res = await fetch(`${apiBase}/api/quiz/exams/${examId}/claim-credential`, {
+      const res = await apiFetch(`/api/quiz/exams/${examId}/claim-credential`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -333,7 +335,7 @@ export default function WrittenExamPrepPage() {
     e.preventDefault();
     setIsSynthesizing(true);
     try {
-      const res = await fetch(`${apiBase}/api/quiz/exams/generate`, {
+      const res = await apiFetch(`/api/quiz/exams/generate`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -374,7 +376,7 @@ export default function WrittenExamPrepPage() {
         return;
       }
 
-      const res = await fetch(`${apiBase}/api/quiz/exams/upload`, {
+      const res = await apiFetch(`/api/quiz/exams/upload`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -457,6 +459,8 @@ export default function WrittenExamPrepPage() {
   // ----------------------------------------------------
   // VIEW 1: EVALUATION REPORT VIEW
   // ----------------------------------------------------
+  if (access) return <AccessNotice problem={access} feature="Written exam prep" />;
+
   if (evaluation) {
     return (
       <div className="min-h-screen bg-background text-foreground p-4 md:p-8 font-sans">

@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
-import { useParams, useRouter } from "next/navigation";
+import React, { useState, useEffect } from "react";
+import { useParams } from "next/navigation";
 import {
   ShieldCheck,
   CheckCircle2,
@@ -13,24 +13,53 @@ import {
   Sparkles,
   Terminal,
   Play,
-  RotateCcw,
-  Building2,
-  Briefcase,
   AlertTriangle,
-  ExternalLink,
   Check,
   Copy,
-  ChevronRight,
-  Layers,
-  Flame,
   FileText,
 } from "lucide-react";
 import Link from "next/link";
+import { getApiBaseUrl } from "@/lib/apiClient";
+
+/**
+ * H7b: the candidate assessment link is public. The candidate needs no account; the bundle token in the URL is the
+ * credential, so these calls go to the bundle-scoped endpoints without a user token (and without cookies). The API
+ * checks the token (entropy, expiry, revocation), rate-limits it and scores every stage on the server.
+ */
+function bundleFetch(token: string, path: string, init: RequestInit = {}) {
+  const headers = new Headers(init.headers || {});
+  if (init.body && !headers.has("Content-Type")) headers.set("Content-Type", "application/json");
+  return fetch(`${getApiBaseUrl()}/api/recruiter/assessments/bundle/${encodeURIComponent(token)}${path}`, {
+    ...init,
+    headers,
+    credentials: "omit",
+    cache: "no-store",
+  });
+}
+
+type LinkProblem = "invalid" | "expired" | "revoked" | "busy" | "unavailable";
+
+const LINK_PROBLEM_TEXT: Record<LinkProblem, { title: string; body: string }> = {
+  invalid: { title: "This assessment link isn't valid", body: "Check that you opened the full link from your invitation email, or ask the recruiter to send it again." },
+  expired: { title: "This assessment link has expired", body: "Ask the recruiter who invited you for a new link." },
+  revoked: { title: "This assessment link was withdrawn", body: "The recruiter withdrew this invitation. Contact them if you think this is a mistake." },
+  busy: { title: "Too many requests", body: "Please wait a minute and reload the page." },
+  unavailable: { title: "The assessment can't load right now", body: "Please try again in a few minutes." },
+};
+
+async function linkProblemOf(res: Response): Promise<LinkProblem> {
+  if (res.status === 404) return "invalid";
+  if (res.status === 429) return "busy";
+  if (res.status === 410) {
+    const body = (await res.json().catch(() => ({}))) as { reason?: string };
+    return body.reason === "revoked" ? "revoked" : "expired";
+  }
+  return "unavailable";
+}
 
 interface AssessmentBundle {
   token: string;
   candidateName: string;
-  candidateEmail: string;
   targetRole: string;
   companyName: string;
   currentStage: number; // 1 = Written, 2 = Coding, 3 = Voice Defense, 4 = Completed
@@ -50,7 +79,21 @@ interface AssessmentBundle {
   compositeScore?: number;
   certificateNumber?: string;
   verificationSignatureSha256?: string;
+  expiresAt?: string;
+  codeRunsRemaining?: number | null;
 }
+
+// The parts of the (prefixed) Web Speech API this page uses
+interface SpeechRecognitionLike {
+  continuous: boolean;
+  interimResults: boolean;
+  lang: string;
+  onresult: ((event: { results: ArrayLike<ArrayLike<{ transcript: string }>> }) => void) | null;
+  onerror: ((event: unknown) => void) | null;
+  start: () => void;
+  stop: () => void;
+}
+type SpeechRecognitionCtor = new () => SpeechRecognitionLike;
 
 interface ExamQuestion {
   id: number;
@@ -62,9 +105,9 @@ interface ExamQuestion {
 
 export default function CandidateAssessmentBundlePage() {
   const params = useParams();
-  const router = useRouter();
-  const token = (params?.token as string) || "ASSESS-UBER-DEMO";
-  const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+  const token = (params?.token as string) || "";
+  const [linkProblem, setLinkProblem] = useState<LinkProblem | null>(null);
+  const [stageError, setStageError] = useState<string | null>(null);
 
   const [bundle, setBundle] = useState<AssessmentBundle | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
@@ -94,36 +137,32 @@ export default function CandidateAssessmentBundlePage() {
   const [defenseSeconds, setDefenseSeconds] = useState<number>(0);
   const [candidateDefenseNotes, setCandidateDefenseNotes] = useState<string>("");
   const [spokenTranscript, setSpokenTranscript] = useState<string>("");
-  const [isListeningMic, setIsListeningMic] = useState<boolean>(false);
   const [draftSavedAt, setDraftSavedAt] = useState<string | null>(null);
   const [copiedLink, setCopiedLink] = useState<boolean>(false);
   const [copiedSignature, setCopiedSignature] = useState<boolean>(false);
 
-  useEffect(() => {
-    fetchBundle();
-  }, [token]);
-
   // Auto-save candidate code & answers to LocalStorage
-  useEffect(() => {
-    if (!token || !candidateCode) return;
+  // Saves the candidate's code and answers to localStorage as they change (called from the edit handlers)
+  const saveDraft = (code: string, answers: Record<number, number>) => {
+    if (!token || !code) return;
     try {
-      const draftKey = `edulexa_draft_${token}`;
-      localStorage.setItem(draftKey, JSON.stringify({
-        code: candidateCode,
-        answers: examAnswers,
-        savedAt: new Date().toLocaleTimeString()
-      }));
-      setDraftSavedAt(new Date().toLocaleTimeString());
-    } catch (e) {
+      const savedAt = new Date().toLocaleTimeString();
+      localStorage.setItem(`edulexa_draft_${token}`, JSON.stringify({ code, answers, savedAt }));
+      setDraftSavedAt(savedAt);
+    } catch {
       // Ignore in private browsing mode
     }
-  }, [token, candidateCode, examAnswers]);
+  };
 
   const fetchBundle = async () => {
+    // loading starts true and there is no link problem yet; every state update below comes after the first await
     try {
-      setLoading(true);
-      const res = await fetch(`${apiBase}/api/recruiter/assessments/bundle/${token}`);
-      if (res.ok) {
+      const res = await bundleFetch(token, "");
+      if (!res.ok) {
+        setLinkProblem(await linkProblemOf(res));
+        return;
+      }
+      {
         const data: AssessmentBundle = await res.json();
         setBundle(data);
         setActiveStage(data.currentStage || 1);
@@ -145,13 +184,15 @@ export default function CandidateAssessmentBundlePage() {
               setDraftSavedAt(draft.savedAt);
             }
           }
-        } catch (e) {}
+        } catch {
+          // A broken draft is ignored
+        }
 
         setCandidateCode(initialCode);
 
-        // Fetch Exam Questions for Stage 1
-        const examRes = await fetch(`${apiBase}/api/quiz/exams/${data.examId}`);
-        if (examRes.ok) {
+        // Fetch this bundle's exam questions for Stage 1 (served only while stage 1 is open)
+        const examRes = data.currentStage === 1 ? await bundleFetch(token, "/exam") : null;
+        if (examRes?.ok) {
           const examData = await examRes.json();
           setExamQuestions(examData.questions || []);
           setExamTimeLeft((data.examDurationMinutes || 20) * 60);
@@ -159,94 +200,53 @@ export default function CandidateAssessmentBundlePage() {
       }
     } catch (err) {
       console.error("Failed to load assessment bundle:", err);
+      setLinkProblem("unavailable");
     } finally {
       setLoading(false);
     }
   };
 
-  // Submit Stage 1 (Written Exam)
+  useEffect(() => {
+    // Loaded outside the effect body (state is only set once the response is in)
+    void Promise.resolve().then(fetchBundle);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- load once per token
+  }, [token]);
+
+  // Stage 1 (written exam): graded on the server against this bundle's exam; moves the bundle on to stage 2
   const handleSubmitStage1 = async () => {
     setSubmittingStage(true);
+    setStageError(null);
     try {
-      let score = 75;
-      const total = examQuestions.length || 5;
-      const answered = Object.keys(examAnswers).length;
-
-      // Grade against real exam submission API
-      try {
-        const gradeRes = await fetch(`${apiBase}/api/quiz/exams/${bundle?.examId || "swe-core-systems"}/submit`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ answers: examAnswers }),
-        });
-        if (gradeRes.ok) {
-          const gradeData = await gradeRes.json();
-          score = gradeData.percentage ?? 80;
-        } else {
-          score = Math.max(50, Math.min(100, Math.round((answered / total) * 85)));
-        }
-      } catch {
-        score = Math.max(50, Math.min(100, Math.round((answered / total) * 85)));
-      }
-
-      const res = await fetch(`${apiBase}/api/recruiter/assessments/bundle/${token}/submit-stage`, {
+      const res = await bundleFetch(token, "/exam/submit", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          stage: 1,
-          score,
-          notes: `Completed ${answered} of ${total} written diagnostic items with score ${score}%.`,
-        }),
+        body: JSON.stringify({ answers: examAnswers }),
       });
-
       if (res.ok) {
-        const updated = await res.json();
-        setBundle(updated);
-        setActiveStage(2);
+        const graded = await res.json();
+        setBundle(graded.bundle);
+        setActiveStage(graded.bundle?.currentStage ?? 2);
+      } else if (res.status === 404 || res.status === 410) {
+        setLinkProblem(await linkProblemOf(res));
+      } else {
+        const body = await res.json().catch(() => ({}));
+        setStageError(body.error || "Could not submit the written stage. Please try again.");
       }
     } catch (err) {
       console.error("Failed to submit Stage 1:", err);
+      setStageError("Could not reach the server. Please try again.");
     } finally {
       setSubmittingStage(false);
     }
   };
 
-  // Run Stage 2 Code Unit Tests via Live Backend Compiler
+  // Stage 2: runs the code in the sandbox against this bundle's fixed checks (the server picks language and tests)
   const handleRunTests = async () => {
     setRunningTests(true);
     setExecutionConsole(null);
     try {
-      const testCases = [
-        {
-          name: "Consistent Hash Ring Partition Distribution",
-          input: "dispatcher.dispatch('key_user_100', {})",
-          expectedOutput: "valid_partition"
-        },
-        {
-          name: "Zero Key Eviction Under Peak Load (10,000 ops)",
-          input: "dispatcher.dispatch('key_user_200', {})",
-          expectedOutput: "valid_partition"
-        },
-        {
-          name: "Rebalance Lock Contention & Thread Boundary",
-          input: "dispatcher.dispatch('key_user_300', {})",
-          expectedOutput: "valid_partition"
-        },
-        {
-          name: "Memory Allocation Benchmark (< 64MB Resident)",
-          input: "dispatcher.dispatch('key_user_400', {})",
-          expectedOutput: "valid_partition"
-        }
-      ];
-
-      const res = await fetch(`${apiBase}/api/code/execute`, {
+      const res = await bundleFetch(token, "/code/execute", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          language: bundle?.requiredLanguage || "typescript",
-          code: candidateCode,
-          testCases
-        }),
+        body: JSON.stringify({ code: candidateCode }),
       });
 
       if (res.ok) {
@@ -254,42 +254,37 @@ export default function CandidateAssessmentBundlePage() {
         setExecutionConsole({
           stdout: data.stdOut || "(No standard output generated)",
           stderr: data.stdErr || "",
-          version: data.version || "Node.js v22",
-          durationMs: data.executionTimeMs || 45,
+          version: data.version || "Sandbox",
+          durationMs: data.executionTimeMs || 0,
           success: data.success,
         });
-
-        if (data.testCaseResults && data.testCaseResults.length > 0) {
-          setTestResults(data.testCaseResults.map((tc: any) => ({
+        if (typeof data.codeRunsRemaining === "number") {
+          setBundle((prev) => (prev ? { ...prev, codeRunsRemaining: data.codeRunsRemaining } : prev));
+        }
+        const results: { name: string; passed: boolean }[] = data.testCaseResults || [];
+        setTestResults(
+          results.map((tc) => ({
             name: tc.name,
             passed: tc.passed,
-            durationMs: Math.round((data.executionTimeMs || 40) / data.testCaseResults.length),
-            errorMessage: tc.errorMessage
-          })));
-        } else {
-          const isSuccess = data.success && data.exitCode === 0;
-          setTestResults([
-            { name: "Consistent Hash Ring Partition Distribution", passed: isSuccess, durationMs: 15 },
-            { name: "Zero Key Eviction Under Peak Load (10,000 ops)", passed: isSuccess, durationMs: 20 },
-            { name: "Rebalance Lock Contention & Thread Boundary", passed: isSuccess, durationMs: 19 },
-            { name: "Memory Allocation Benchmark (< 64MB Resident)", passed: isSuccess, durationMs: 35 },
-          ]);
-        }
+            durationMs: Math.round((data.executionTimeMs || 0) / Math.max(1, results.length)),
+          })),
+        );
       } else {
         const errJson = await res.json().catch(() => ({}));
-        throw new Error(errJson.error || "Compilation execution failed");
+        throw new Error(
+          res.status === 429
+            ? errJson.scope === "link"
+              ? "You have used all code runs for this assessment."
+              : "Too many runs in a short time. Please wait a minute."
+            : errJson.error || "Code execution failed",
+        );
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Test execution error:", err);
-      setTestResults([
-        { name: "Consistent Hash Ring Partition Distribution", passed: false, durationMs: 0 },
-        { name: "Zero Key Eviction Under Peak Load (10,000 ops)", passed: false, durationMs: 0 },
-        { name: "Rebalance Lock Contention & Thread Boundary", passed: false, durationMs: 0 },
-        { name: "Memory Allocation Benchmark (< 64MB Resident)", passed: false, durationMs: 0 },
-      ]);
+      setTestResults(null);
       setExecutionConsole({
         stdout: "",
-        stderr: err.message || "Failed to execute code in sandbox.",
+        stderr: err instanceof Error ? err.message : "Failed to execute code in sandbox.",
         version: "Sandbox Error",
         durationMs: 0,
         success: false,
@@ -299,32 +294,29 @@ export default function CandidateAssessmentBundlePage() {
     }
   };
 
-  // Submit Stage 2 (Code Sprint)
+  // Submit Stage 2 (Code Sprint): the server scores it from your last sandbox run
   const handleSubmitStage2 = async () => {
     setSubmittingStage(true);
+    setStageError(null);
     try {
-      const passedCount = testResults?.filter((t) => t.passed).length ?? 0;
-      const totalCount = testResults?.length ?? 4;
-      const sprintScore = totalCount > 0 ? Math.round((passedCount / totalCount) * 100) : 50;
-
-      const res = await fetch(`${apiBase}/api/recruiter/assessments/bundle/${token}/submit-stage`, {
+      const res = await bundleFetch(token, "/submit-stage", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          stage: 2,
-          score: sprintScore,
-          codeSubmission: candidateCode,
-          notes: `${passedCount} of ${totalCount} test suites passed in production sandbox.`,
-        }),
+        body: JSON.stringify({ stage: 2 }),
       });
 
       if (res.ok) {
         const updated = await res.json();
         setBundle(updated);
-        setActiveStage(3);
+        setActiveStage(updated.currentStage ?? 3);
+      } else if (res.status === 404 || res.status === 410) {
+        setLinkProblem(await linkProblemOf(res));
+      } else {
+        const body = await res.json().catch(() => ({}));
+        setStageError(body.error || "Could not submit the coding stage. Please try again.");
       }
     } catch (err) {
       console.error("Failed to submit Stage 2:", err);
+      setStageError("Could not reach the server. Please try again.");
     } finally {
       setSubmittingStage(false);
     }
@@ -341,10 +333,11 @@ export default function CandidateAssessmentBundlePage() {
 
   useEffect(() => {
     if (typeof window === "undefined") return;
-    const SpeechRec = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    const speechWindow = window as unknown as { SpeechRecognition?: SpeechRecognitionCtor; webkitSpeechRecognition?: SpeechRecognitionCtor };
+    const SpeechRec = speechWindow.SpeechRecognition || speechWindow.webkitSpeechRecognition;
     if (!SpeechRec) return;
 
-    let recognition: any = null;
+    let recognition: SpeechRecognitionLike | null = null;
     if (defenseActive) {
       try {
         recognition = new SpeechRec();
@@ -352,7 +345,7 @@ export default function CandidateAssessmentBundlePage() {
         recognition.interimResults = true;
         recognition.lang = "en-US";
 
-        recognition.onresult = (event: any) => {
+        recognition.onresult = (event) => {
           let full = "";
           for (let i = 0; i < event.results.length; i++) {
             full += event.results[i][0].transcript + " ";
@@ -362,17 +355,14 @@ export default function CandidateAssessmentBundlePage() {
           }
         };
 
-        recognition.onerror = (e: any) => {
+        recognition.onerror = (e) => {
           console.warn("Speech recognition error:", e);
         };
 
         recognition.start();
-        setIsListeningMic(true);
       } catch (err) {
         console.warn("Could not start speech recognition:", err);
       }
-    } else {
-      setIsListeningMic(false);
     }
 
     return () => {
@@ -398,12 +388,11 @@ export default function CandidateAssessmentBundlePage() {
         { role: "candidate", text: candidateSpeechTurn, timestamp: "01:30" }
       ];
 
-      const res = await fetch(`${apiBase}/api/recruiter/assessments/bundle/${token}/submit-stage`, {
+      setStageError(null);
+      const res = await bundleFetch(token, "/submit-stage", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           stage: 3,
-          codeSubmission: candidateCode,
           transcripts: transcriptsToSend,
           notes: combinedCandidateWords || `Session concluded after ${defenseMinutes}m verbal cross-examination.`,
         }),
@@ -412,15 +401,34 @@ export default function CandidateAssessmentBundlePage() {
       if (res.ok) {
         const updated = await res.json();
         setBundle(updated);
-        setActiveStage(4);
+        setActiveStage(updated.currentStage ?? 4);
         setDefenseActive(false);
+      } else if (res.status === 404 || res.status === 410) {
+        setLinkProblem(await linkProblemOf(res));
+      } else {
+        const body = await res.json().catch(() => ({}));
+        setStageError(body.error || "Could not submit the defense. Please try again.");
       }
     } catch (err) {
       console.error("Failed to submit Stage 3:", err);
+      setStageError("Could not reach the server. Please try again.");
     } finally {
       setSubmittingStage(false);
     }
   };
+
+  if (linkProblem) {
+    const text = LINK_PROBLEM_TEXT[linkProblem];
+    return (
+      <main className="min-h-[70vh] flex items-center justify-center p-6 bg-background text-foreground">
+        <div className="max-w-md w-full rounded-2xl border border-border bg-card p-8 text-center shadow-sm" data-assessment-problem={linkProblem}>
+          <AlertTriangle className="w-8 h-8 mx-auto mb-3 text-amber-500" aria-hidden="true" />
+          <h1 className="text-xl font-bold mb-2">{text.title}</h1>
+          <p className="text-sm text-muted-foreground">{text.body}</p>
+        </div>
+      </main>
+    );
+  }
 
   if (loading || !bundle) {
     return (
@@ -487,7 +495,6 @@ export default function CandidateAssessmentBundlePage() {
             {stages.map((st) => {
               const isPast = activeStage > st.num;
               const isCurrent = activeStage === st.num;
-              const IconComp = st.icon;
 
               return (
                 <div
@@ -524,6 +531,11 @@ export default function CandidateAssessmentBundlePage() {
 
       {/* Dynamic Assessment Stage Container */}
       <main className="flex-1 max-w-4xl w-full mx-auto p-4 md:p-8 space-y-6">
+        {stageError && (
+          <div role="alert" className="p-3 rounded-xl border border-rose-500/30 bg-rose-500/10 text-rose-700 dark:text-rose-300 text-xs font-semibold">
+            {stageError}
+          </div>
+        )}
         {/* ==================================================== */}
         {/* STAGE 1: TIMED WRITTEN EXAM DIAGNOSTIC               */}
         {/* ==================================================== */}
@@ -571,12 +583,11 @@ export default function CandidateAssessmentBundlePage() {
                     return (
                       <button
                         key={idx}
-                        onClick={() =>
-                          setExamAnswers((prev) => ({
-                            ...prev,
-                            [examQuestions[examCurrentQIndex].id]: idx,
-                          }))
-                        }
+                        onClick={() => {
+                          const next = { ...examAnswers, [examQuestions[examCurrentQIndex].id]: idx };
+                          setExamAnswers(next);
+                          saveDraft(candidateCode, next);
+                        }}
                         className={`w-full text-left p-4 rounded-xl border text-sm transition-all flex items-center justify-between ${
                           isSelected
                             ? "border-primary bg-primary/10 text-foreground font-semibold ring-1 ring-primary"
@@ -670,7 +681,10 @@ export default function CandidateAssessmentBundlePage() {
               <textarea
                 rows={12}
                 value={candidateCode}
-                onChange={(e) => setCandidateCode(e.target.value)}
+                onChange={(e) => {
+                  setCandidateCode(e.target.value);
+                  saveDraft(e.target.value, examAnswers);
+                }}
                 className="w-full p-4 rounded-2xl bg-neutral-950 text-neutral-100 font-mono text-xs border border-neutral-800 focus:outline-none focus:ring-1 focus:ring-primary leading-relaxed shadow-inner"
               />
             </div>
@@ -709,7 +723,11 @@ export default function CandidateAssessmentBundlePage() {
                       className="flex items-center justify-between p-2 rounded-xl bg-card border border-border text-xs font-mono"
                     >
                       <div className="flex items-center gap-2">
-                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+                        {tr.passed ? (
+                          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" aria-label="passed" />
+                        ) : (
+                          <AlertTriangle className="w-3.5 h-3.5 text-rose-500 shrink-0" aria-label="failed" />
+                        )}
                         <span className="text-foreground">{tr.name}</span>
                       </div>
                       <span className="text-[10px] text-muted-foreground">{tr.durationMs}ms</span>
@@ -720,7 +738,10 @@ export default function CandidateAssessmentBundlePage() {
             )}
 
             <div className="flex items-center justify-between pt-4 border-t border-border">
-              <span className="text-xs text-muted-foreground">All code is evaluated for algorithmic complexity and memory isolation.</span>
+              <span className="text-xs text-muted-foreground">
+                Your last test run sets the sprint score.
+                {typeof bundle.codeRunsRemaining === "number" && ` ${bundle.codeRunsRemaining} test runs left.`}
+              </span>
               <button
                 onClick={handleSubmitStage2}
                 disabled={submittingStage}
@@ -759,7 +780,7 @@ export default function CandidateAssessmentBundlePage() {
                 <span>Examiner Challenge Topic:</span>
               </div>
               <p className="text-sm font-semibold text-foreground leading-relaxed">
-                "{bundle.defenseTopic}"
+                &ldquo;{bundle.defenseTopic}&rdquo;
               </p>
               <p className="text-xs text-muted-foreground">
                 The AI Hiring Committee cross-examines the code you wrote in Stage 2. Speak naturally, articulate trade-offs, and defend your failure recovery mechanisms.
@@ -807,7 +828,7 @@ export default function CandidateAssessmentBundlePage() {
                 <span className="text-[10px] uppercase font-bold text-purple-600 dark:text-purple-400 flex items-center gap-1.5">
                   <Mic className="w-3 h-3 animate-pulse" /> Live Spoken Voice Recognition Stream:
                 </span>
-                <p className="text-xs font-mono text-foreground italic">"{spokenTranscript}"</p>
+                <p className="text-xs font-mono text-foreground italic">&ldquo;{spokenTranscript}&rdquo;</p>
               </div>
             )}
 

@@ -124,7 +124,7 @@ export default function VapiInterviewRoom({
   onResult,
   onLeadReferralGenerated,
 }: VapiInterviewRoomProps) {
-  const { getToken } = useAuth();
+  const { getToken, isLoaded } = useAuth();
 
   const vapiRef = useRef<Vapi | null>(null);
   const sessionRef = useRef<ActiveSession | null>(null);
@@ -151,10 +151,11 @@ export default function VapiInterviewRoom({
 
   // Languages offered for the defense; default to the prop, else the student's campus preference, else the server default
   useEffect(() => {
+    if (!isLoaded) return; // H7: /api/interview/languages needs the token, which exists once auth has loaded
     let cancelled = false;
     (async () => {
       try {
-        const res = await authenticatedFetch("/api/interview/languages", {});
+        const res = await authenticatedFetch("/api/interview/languages", {}, getToken);
         if (!res.ok || cancelled) return;
         const data = await readJson<{ defaultLanguage?: string; languages?: LanguageOption[] }>(res);
         if (!data?.languages || cancelled) return;
@@ -178,7 +179,7 @@ export default function VapiInterviewRoom({
     return () => {
       cancelled = true;
     };
-  }, [getToken]);
+  }, [getToken, isLoaded]);
 
   useEffect(() => {
     mountedRef.current = true;

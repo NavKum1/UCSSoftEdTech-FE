@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useGeo } from "@/context/GeoContext";
+import { AccessNotice, useLegacyApi } from "@/lib/legacyApi";
 
 interface CompensationBandData {
   userId: string;
@@ -57,6 +58,7 @@ const TRACK_PRESETS = [
 ];
 
 export default function CareerTrajectoryStudioPage() {
+  const { apiFetch, ready, access } = useLegacyApi();
   const { region: geoRegion } = useGeo();
   const initialRegion = geoRegion === "IN" ? "India_APAC" : geoRegion === "EU" ? "EU_UK" : "US_Tier1";
   const [selectedRegion, setSelectedRegion] = useState<string>(initialRegion);
@@ -77,7 +79,7 @@ export default function CareerTrajectoryStudioPage() {
     setFetchError(null);
     try {
       const testUserId = "44444444-5555-6666-7777-888888888888";
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/career/compensation/${testUserId}?region=${region}`);
+      const res = await apiFetch(`/api/career/compensation/${testUserId}?region=${region}`);
       if (res.ok) {
         const json = await res.json();
         setData(json.compensation);
@@ -95,14 +97,15 @@ export default function CareerTrajectoryStudioPage() {
   };
 
   useEffect(() => {
+    if (!ready) return;
     fetchCompensation(selectedRegion);
-  }, [selectedRegion]);
+  }, [selectedRegion, ready]);
 
   const handleSimulate = async () => {
     setIsSimulating(true);
     try {
       const testUserId = "44444444-5555-6666-7777-888888888888";
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/career/simulate`, {
+      const res = await apiFetch(`/api/career/simulate`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -126,6 +129,8 @@ export default function CareerTrajectoryStudioPage() {
   const getLevelLabel = (lvl: string) => {
     return lvl.replace("_", " ");
   };
+
+  if (access) return <AccessNotice problem={access} feature="The career trajectory studio" />;
 
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col font-sans pb-16">

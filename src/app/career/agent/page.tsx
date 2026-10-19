@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useGeo } from "@/context/GeoContext";
+import { AccessNotice, useLegacyApi } from "@/lib/legacyApi";
 
 interface CareerAgentConfig {
   id: string;
@@ -66,6 +67,7 @@ interface NegotiationDetail {
 }
 
 export default function AutonomousCareerAgentPage() {
+  const { apiFetch, ready, access } = useLegacyApi();
   const { config: geo } = useGeo();
   const candidateUserId = "6d940ce2-2fc7-4525-9aff-af62f1956550";
   const [config, setConfig] = useState<CareerAgentConfig | null>(null);
@@ -99,7 +101,7 @@ export default function AutonomousCareerAgentPage() {
 
   const fetchConfig = async () => {
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/agent/config/${candidateUserId}`);
+      const res = await apiFetch(`/api/agent/config/${candidateUserId}`);
       if (res.ok) {
         const data = await res.json();
         setConfig(data);
@@ -111,7 +113,7 @@ export default function AutonomousCareerAgentPage() {
 
   const fetchNegotiations = async () => {
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/agent/inquiries/${candidateUserId}`);
+      const res = await apiFetch(`/api/agent/inquiries/${candidateUserId}`);
       if (res.ok) {
         const data: InboundNegotiation[] = await res.json();
         setNegotiations(data);
@@ -126,7 +128,7 @@ export default function AutonomousCareerAgentPage() {
 
   const fetchDetail = async (id: string) => {
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/agent/inquiries/detail/${id}`);
+      const res = await apiFetch(`/api/agent/inquiries/detail/${id}`);
       if (res.ok) {
         const data: NegotiationDetail = await res.json();
         setActiveDetail(data);
@@ -139,15 +141,16 @@ export default function AutonomousCareerAgentPage() {
   };
 
   useEffect(() => {
+    if (!ready) return;
     const init = async () => {
       setIsLoading(true);
-      await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/agent/seed`, { method: "POST" });
+      await apiFetch(`/api/agent/seed`, { method: "POST" });
       await fetchConfig();
       await fetchNegotiations();
       setIsLoading(false);
     };
     init();
-  }, []);
+  }, [ready]);
 
   useEffect(() => {
     if (selectedNegId) {
@@ -160,7 +163,7 @@ export default function AutonomousCareerAgentPage() {
     setIsSavingConfig(true);
     setSaveSuccessMsg(null);
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/agent/config`, {
+      const res = await apiFetch(`/api/agent/config`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(config),
@@ -183,7 +186,7 @@ export default function AutonomousCareerAgentPage() {
     if (!selectedNegId) return;
     setIsSubmittingTurn(true);
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/agent/negotiate/turn`, {
+      const res = await apiFetch(`/api/agent/negotiate/turn`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -211,7 +214,7 @@ export default function AutonomousCareerAgentPage() {
   const handleSimulateInbound = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/agent/inbound`, {
+      const res = await apiFetch(`/api/agent/inbound`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -245,6 +248,8 @@ export default function AutonomousCareerAgentPage() {
     if (filterTab === "DECLINED") return neg.status === "Screening_Declined";
     return true;
   });
+
+  if (access) return <AccessNotice problem={access} feature="Your career agent" />;
 
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col font-sans">

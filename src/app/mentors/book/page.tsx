@@ -21,6 +21,7 @@ import {
   Download,
 } from "lucide-react";
 import { useGeo } from "@/context/GeoContext";
+import { AccessNotice, useLegacyApi } from "@/lib/legacyApi";
 
 interface MentorProfile {
   mentorId: string;
@@ -53,6 +54,7 @@ interface BookingResponse {
 }
 
 export default function BookMentorOfficeHoursPage() {
+  const { apiFetch, ready, access } = useLegacyApi();
   const { region, config, formatCurrency, convertFromInr } = useGeo();
   const [mentors, setMentors] = useState<MentorProfile[]>([]);
   const [selectedMentor, setSelectedMentor] = useState<MentorProfile | null>(null);
@@ -67,10 +69,11 @@ export default function BookMentorOfficeHoursPage() {
   const [copiedLink, setCopiedLink] = useState<boolean>(false);
 
   useEffect(() => {
+    if (!ready) return;
     const fetchMentors = async () => {
       try {
         setIsLoadingMentors(true);
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/v1/mentors`);
+        const res = await apiFetch(`/v1/mentors`);
         if (res.ok) {
           const data = await res.json();
           if (Array.isArray(data) && data.length > 0) {
@@ -90,7 +93,7 @@ export default function BookMentorOfficeHoursPage() {
       }
     };
     fetchMentors();
-  }, []);
+  }, [ready, apiFetch]);
 
   const handleSelectMentor = (m: MentorProfile) => {
     setSelectedMentor(m);
@@ -113,7 +116,7 @@ export default function BookMentorOfficeHoursPage() {
         amountInr: selectedMentor.ratePerSessionInr,
       };
 
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/v1/mentors/book`, {
+      const res = await apiFetch(`/v1/mentors/book`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -164,6 +167,8 @@ END:VCALENDAR`;
     setCopiedLink(true);
     setTimeout(() => setCopiedLink(false), 2000);
   };
+
+  if (access) return <AccessNotice problem={access} feature="Mentor booking" />;
 
   if (isLoadingMentors || !selectedMentor) {
     return (

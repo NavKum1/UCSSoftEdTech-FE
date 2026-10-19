@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useGeo } from '@/context/GeoContext';
+import { AccessNotice, useLegacyApi } from "@/lib/legacyApi";
 
 interface QuotaMetric {
   monthlyQuota?: number;
@@ -67,6 +68,7 @@ interface DetailedInvoice {
 }
 
 export default function PartnerBillingPage() {
+  const { apiFetch, ready, access } = useLegacyApi();
   const { config } = useGeo();
   const [loading, setLoading] = useState(true);
   const [subData, setSubData] = useState<SubscriptionData | null>(null);
@@ -81,8 +83,8 @@ export default function PartnerBillingPage() {
     try {
       setLoading(true);
       const [subRes, invRes] = await Promise.all([
-        fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/billing/enterprise/subscription`),
-        fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/billing/enterprise/invoices`)
+        apiFetch(`/api/billing/enterprise/subscription`),
+        apiFetch(`/api/billing/enterprise/invoices`)
       ]);
 
       if (subRes.ok) {
@@ -104,12 +106,13 @@ export default function PartnerBillingPage() {
   };
 
   useEffect(() => {
+    if (!ready) return;
     fetchBillingData();
-  }, []);
+  }, [ready]);
 
   const handleUpdatePlan = async () => {
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/billing/enterprise/subscription/update`, {
+      const res = await apiFetch(`/api/billing/enterprise/subscription/update`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -132,7 +135,7 @@ export default function PartnerBillingPage() {
 
   const handleGenerateInvoice = async () => {
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/billing/enterprise/invoices/generate`, {
+      const res = await apiFetch(`/api/billing/enterprise/invoices/generate`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -153,7 +156,7 @@ export default function PartnerBillingPage() {
 
   const handleViewInvoice = async (invoiceId: string) => {
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/billing/enterprise/invoices/${invoiceId}`);
+      const res = await apiFetch(`/api/billing/enterprise/invoices/${invoiceId}`);
       if (res.ok) {
         const detailed = await res.json();
         setSelectedInvoice(detailed);
@@ -162,6 +165,8 @@ export default function PartnerBillingPage() {
       console.error('Failed to load invoice detail', err);
     }
   };
+
+  if (access) return <AccessNotice problem={access} feature="Partner billing" />;
 
   if (loading) {
     return (

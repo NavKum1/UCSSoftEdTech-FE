@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import { AccessNotice, useLegacyApi } from "@/lib/legacyApi";
 import { 
   Briefcase, Users, ShieldAlert, ShieldCheck, Plus, 
   ExternalLink, Search, RefreshCw, KeyRound, Copy, Check,
@@ -118,6 +119,7 @@ function evidenceHref(submissionId?: string | null) {
 }
 
 export default function RecruiterDashboardPage() {
+  const { apiFetch, ready, access } = useLegacyApi();
   const [data, setData] = useState<any>(null);
   const [bundles, setBundles] = useState<AssessmentBundle[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
@@ -166,7 +168,7 @@ export default function RecruiterDashboardPage() {
   const fetchCandidates = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/recruiter/candidates?companyId=Uber`);
+      const res = await apiFetch(`/api/recruiter/candidates?companyId=Uber`);
       if (res.ok) {
         const json = await res.json();
         setData(json);
@@ -181,7 +183,7 @@ export default function RecruiterDashboardPage() {
   const fetchBundles = async () => {
     setLoadingBundles(true);
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/recruiter/assessments/bundles`);
+      const res = await apiFetch(`/api/recruiter/assessments/bundles`);
       if (res.ok) {
         const json = await res.json();
         setBundles(json);
@@ -194,15 +196,16 @@ export default function RecruiterDashboardPage() {
   };
 
   useEffect(() => {
+    if (!ready) return;
     fetchCandidates();
     fetchBundles();
-  }, []);
+  }, [ready]);
 
   const handleCreateChallenge = async (e: React.FormEvent) => {
     e.preventDefault();
     setCreateStatus("Creating private challenge...");
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/recruiter/sprint/create`, {
+      const res = await apiFetch(`/api/recruiter/sprint/create`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -237,7 +240,7 @@ export default function RecruiterDashboardPage() {
     e.preventDefault();
     setBundleStatus("Generating 3-Stage Assessment Bundle...");
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/recruiter/assessments/bundle/create`, {
+      const res = await apiFetch(`/api/recruiter/assessments/bundle/create`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -269,7 +272,7 @@ export default function RecruiterDashboardPage() {
     setScrutinyLoading(true);
     setScrutinyResult(null);
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/resume/deep-scrutiny`, {
+      const res = await apiFetch(`/api/resume/deep-scrutiny`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -347,6 +350,8 @@ export default function RecruiterDashboardPage() {
   const totalApplicants = data?.totalApplicants ?? candidates.length;
   const flaggedCount = data?.flaggedCount ?? candidates.filter((c: any) => c.antiCheat.verificationFlagged).length;
   const cleanCount = totalApplicants - flaggedCount;
+
+  if (access) return <AccessNotice problem={access} feature="The recruiter dashboard" />;
 
   return (
     <div className="min-h-screen bg-background text-foreground font-sans p-6 md:p-10">
@@ -943,8 +948,8 @@ export default function RecruiterDashboardPage() {
                     className="w-full bg-card border border-border rounded-xl px-3 py-2 text-xs text-foreground focus:outline-none focus:border-indigo-500"
                   >
                     <option value="swe-core-systems">Software Engineering &amp; Distributed Systems Diagnostic (20 min)</option>
-                    <option value="algorithms-dsa">Algorithmic Problem Solving &amp; Data Structures (20 min)</option>
-                    <option value="fullstack-arch">Full Stack Web Architecture &amp; React/Node.js Diagnostic (20 min)</option>
+                    <option value="quantitative-aptitude-logic">Quantitative Aptitude &amp; Logical Reasoning</option>
+                    <option value="product-management-foundations">Product Management Foundations</option>
                   </select>
                 </div>
 
@@ -956,8 +961,8 @@ export default function RecruiterDashboardPage() {
                     className="w-full bg-card border border-border rounded-xl px-3 py-2 text-xs text-foreground focus:outline-none focus:border-indigo-500"
                   >
                     <option value="typescript">TypeScript</option>
+                    <option value="javascript">JavaScript</option>
                     <option value="python">Python</option>
-                    <option value="csharp">C# (.NET)</option>
                   </select>
                 </div>
 

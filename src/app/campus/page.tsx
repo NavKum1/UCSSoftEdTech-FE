@@ -2,8 +2,8 @@
 
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
-import { useAuth } from "@clerk/nextjs";
 import { API_BASE_URL, authenticatedFetch } from "@/lib/apiClient";
+import { useAppAuth } from "@/lib/appAuth";
 import {
   AlertCircle,
   ArrowRight,
@@ -139,7 +139,7 @@ const ADVICE: Record<ConnectionResult["verdict"], { title: string; text: string;
 };
 
 export default function CampusStudentPage() {
-  const { getToken } = useAuth();
+  const { getToken, isLoaded } = useAppAuth();
 
   const [data, setData] = useState<MyAssignments | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -151,6 +151,7 @@ export default function CampusStudentPage() {
   const [connection, setConnection] = useState<ConnectionResult | null>(null);
 
   useEffect(() => {
+    if (!isLoaded) return;
     let active = true;
     authenticatedFetch("/api/campus/my-assignments", {}, getToken)
       .then(async (res) => {
@@ -165,7 +166,7 @@ export default function CampusStudentPage() {
       })
       .catch((e) => active && setLoadError(e instanceof Error ? e.message : "Could not load your assignments."));
 
-    fetch(`${API_BASE_URL}/api/interview/languages`)
+    authenticatedFetch("/api/interview/languages", {}, getToken)
       .then((res) => (res.ok ? res.json() : null))
       .then((d: { defaultLanguage?: string; languages?: LanguageOption[] } | null) => {
         if (!active || !d?.languages) return;
@@ -178,7 +179,7 @@ export default function CampusStudentPage() {
     return () => {
       active = false;
     };
-  }, [getToken]);
+  }, [getToken, isLoaded]);
 
   const savePreference = async () => {
     setSaving(true);

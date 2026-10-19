@@ -2,8 +2,8 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { useAuth } from "@clerk/nextjs";
 import { authenticatedFetch } from "@/lib/apiClient";
+import { AccessNotice, useLegacyApi } from "@/lib/legacyApi";
 import {
   Play,
   Pause,
@@ -53,9 +53,9 @@ interface DialogueMessage {
 }
 
 export default function StudentInterviewReplayPage() {
+  const { apiFetch, ready, access } = useLegacyApi();
   const params = useParams();
   const router = useRouter();
-  const { getToken } = useAuth();
   const sessionId = (params?.id as string) || "";
 
   const [sessionData, setSessionData] = useState<InterviewSessionData | null>(null);
@@ -73,6 +73,7 @@ export default function StudentInterviewReplayPage() {
 
   // Fetch Session & Evaluation
   useEffect(() => {
+    if (!ready) return;
     const fetchSession = async () => {
       if (!sessionId) {
         setFetchError("Invalid session identifier provided.");
@@ -82,7 +83,7 @@ export default function StudentInterviewReplayPage() {
       setLoading(true);
       setFetchError(null);
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/interview/session/${sessionId}`);
+        const res = await apiFetch(`/api/interview/session/${sessionId}`);
         if (res.ok) {
           const data = await res.json();
           setSessionData(data);
@@ -101,7 +102,7 @@ export default function StudentInterviewReplayPage() {
     };
 
     fetchSession();
-  }, [sessionId]);
+  }, [sessionId, ready, apiFetch]);
 
   // Audio Event Handlers
   const togglePlay = () => {
@@ -210,6 +211,8 @@ export default function StudentInterviewReplayPage() {
 
     return parsed;
   };
+
+  if (access) return <AccessNotice problem={access} feature="This interview replay" />;
 
   if (loading) {
     return (

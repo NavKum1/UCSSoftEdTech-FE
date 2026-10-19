@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { AccessNotice, useLegacyApi } from "@/lib/legacyApi";
 import {
   Server,
   Zap,
@@ -40,19 +41,19 @@ interface CacheStats {
 }
 
 export default function SystemOperationsDashboard() {
+  const { apiFetch, ready, access } = useLegacyApi();
   const [queueStats, setQueueStats] = useState<QueueStats | null>(null);
   const [cacheStats, setCacheStats] = useState<CacheStats | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [actionLog, setActionLog] = useState<string>("");
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
 
-  const apiBase = `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}`;
 
   const fetchMetrics = async () => {
     try {
       const [queueRes, cacheRes] = await Promise.all([
-        fetch(`${apiBase}/api/system/queue/status`),
-        fetch(`${apiBase}/api/system/cache/stats`),
+        apiFetch(`/api/system/queue/status`),
+        apiFetch(`/api/system/cache/stats`),
       ]);
 
       if (queueRes.ok) {
@@ -69,19 +70,19 @@ export default function SystemOperationsDashboard() {
   };
 
   useEffect(() => {
+    if (!ready) return;
     fetchMetrics();
     const interval = setInterval(fetchMetrics, 3000);
     return () => clearInterval(interval);
-  }, []);
+  }, [ready]);
 
   const handleInvalidateCache = async (tag?: string, flushAll: boolean = false) => {
     setIsProcessing(true);
     try {
-      const res = await fetch(`${apiBase}/api/system/cache/invalidate`, {
+      const res = await apiFetch(`/api/system/cache/invalidate`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: "Bearer superadmin-dev-token",
         },
         body: JSON.stringify({ tag, flushAll }),
       });
@@ -99,7 +100,7 @@ export default function SystemOperationsDashboard() {
   const handleEnqueueBenchmarkJob = async (priority: "HighPriority" | "Standard") => {
     setIsProcessing(true);
     try {
-      const res = await fetch(`${apiBase}/api/system/queue/enqueue-test`, {
+      const res = await apiFetch(`/api/system/queue/enqueue-test`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ priority, taskName: `Synthetic ${priority} Benchmark` }),
@@ -118,11 +119,10 @@ export default function SystemOperationsDashboard() {
   const handleRetryDLQ = async () => {
     setIsProcessing(true);
     try {
-      const res = await fetch(`${apiBase}/api/system/queue/retry-dlq`, {
+      const res = await apiFetch(`/api/system/queue/retry-dlq`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: "Bearer superadmin-dev-token",
         },
       });
 
@@ -135,6 +135,8 @@ export default function SystemOperationsDashboard() {
       setIsProcessing(false);
     }
   };
+
+  if (access) return <AccessNotice problem={access} feature="System operations" />;
 
   return (
     <div className="min-h-screen bg-background text-foreground p-6 sm:p-10">

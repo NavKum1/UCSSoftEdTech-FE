@@ -17,7 +17,8 @@ import {
   Lock,
 } from "lucide-react";
 
-import { API_BASE_URL } from "@/lib/apiClient";
+import { API_BASE_URL, authenticatedFetch } from "@/lib/apiClient";
+import { useAppAuth } from "@/lib/appAuth";
 
 interface ProctoringHUDProps {
   sessionId: string;
@@ -40,6 +41,7 @@ export default function ProctoringHUD({
   onViolationOccurred,
   apiBaseUrl = API_BASE_URL,
 }: ProctoringHUDProps) {
+  const { getToken } = useAppAuth();
   const [integrityScore, setIntegrityScore] = useState<number>(100);
   const [riskLevel, setRiskLevel] = useState<"Clean" | "Suspicious" | "Flagged">("Clean");
   const [isDisqualified, setIsDisqualified] = useState<boolean>(false);
@@ -68,16 +70,19 @@ export default function ProctoringHUD({
     metadata: Record<string, unknown>
   ) => {
     try {
-      const res = await fetch(`${apiBaseUrl}/api/proctoring/event`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          sessionId,
-          eventType,
-          severity,
-          metadata,
-        }),
-      });
+      const res = await authenticatedFetch(
+        `${apiBaseUrl}/api/proctoring/event`,
+        {
+          method: "POST",
+          body: JSON.stringify({
+            sessionId,
+            eventType,
+            severity,
+            metadata,
+          }),
+        },
+        getToken
+      );
 
       if (res.ok) {
         const data = await res.json();

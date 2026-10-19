@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import { useLegacyApi } from "@/lib/legacyApi";
 import { 
   Flame, ShieldCheck, Swords, GitPullRequest, Terminal, 
   Trophy, ArrowRight, CheckCircle2, Clock, Sparkles, 
@@ -20,6 +21,8 @@ interface UserStreak {
 }
 
 export default function DailyRitualsHubPage() {
+  // The hub works signed out; the live streak is added once the user is signed in
+  const { apiFetch, ready } = useLegacyApi();
   const [streak, setStreak] = useState<UserStreak>({
     currentStreak: 14,
     highestStreak: 21,
@@ -34,6 +37,7 @@ export default function DailyRitualsHubPage() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
+    if (!ready) return;
     // Attempt to fetch user's live streak from backend
     async function loadStreak() {
       try {
@@ -41,7 +45,7 @@ export default function DailyRitualsHubPage() {
           ? localStorage.getItem("daily_incident_user_id") || "a8f3b201-1122-3344-5566-778899aabbcc"
           : "a8f3b201-1122-3344-5566-778899aabbcc";
 
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/incidents/streak/${userId}`);
+        const res = await apiFetch(`/api/incidents/streak/${userId}`, {}, { quiet: true });
         if (res.ok) {
           const data = await res.json();
           setStreak(prev => ({
@@ -61,7 +65,7 @@ export default function DailyRitualsHubPage() {
       }
     }
     loadStreak();
-  }, []);
+  }, [ready, apiFetch]);
 
   return (
     <div className="min-h-screen bg-background text-foreground font-sans">

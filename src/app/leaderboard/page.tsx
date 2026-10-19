@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { AccessNotice, useLegacyApi } from "@/lib/legacyApi";
 import {
   Trophy,
   Medal,
@@ -31,6 +32,7 @@ interface LeaderboardEntry {
 }
 
 export default function LeaderboardPage() {
+  const { apiFetch, ready, access } = useLegacyApi();
   const router = useRouter();
   const [entries, setEntries] = useState<LeaderboardEntry[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
@@ -38,10 +40,11 @@ export default function LeaderboardPage() {
   const [fetchError, setFetchError] = useState<string | null>(null);
 
   useEffect(() => {
+    if (!ready) return;
     const fetchLeaderboard = async () => {
       try {
         setFetchError(null);
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/leaderboard`);
+        const res = await apiFetch(`/api/leaderboard`);
         if (res.ok) {
           const data = await res.json();
           setEntries(data.leaderboard || []);
@@ -59,13 +62,15 @@ export default function LeaderboardPage() {
     };
 
     fetchLeaderboard();
-  }, []);
+  }, [ready, apiFetch]);
 
   const filtered = entries.filter((item) =>
     item.candidateName.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const top3 = entries.slice(0, 3);
+
+  if (access) return <AccessNotice problem={access} feature="The leaderboard" />;
 
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col font-sans pb-16">

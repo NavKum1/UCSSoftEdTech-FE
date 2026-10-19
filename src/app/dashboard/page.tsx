@@ -29,6 +29,7 @@ import {
 } from "lucide-react";
 import { useGeo } from "@/context/GeoContext";
 import VoiceUsageCard from "@/components/VoiceUsageCard";
+import { AccessNotice, useLegacyApi } from "@/lib/legacyApi";
 
 interface CompetencyDimension {
   dimension: string;
@@ -88,6 +89,7 @@ interface Member360Data {
 }
 
 export default function Member360CommandCenterPage() {
+  const { apiFetch, ready, access } = useLegacyApi();
   const { config } = useGeo();
   const [data, setData] = useState<Member360Data | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
@@ -96,14 +98,14 @@ export default function Member360CommandCenterPage() {
   const [examHistory, setExamHistory] = useState<any[]>([]);
 
   useEffect(() => {
+    if (!ready) return;
     const fetchMemberData = async () => {
       try {
         setLoading(true);
         setError(null);
-        const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
         const [res, histRes] = await Promise.all([
-          fetch(`${apiBase}/api/passport/member-360`),
-          fetch(`${apiBase}/api/quiz/exams/history`).catch(() => null)
+          apiFetch(`/api/passport/member-360`),
+          apiFetch(`/api/quiz/exams/history`, {}, { quiet: true }).catch(() => null)
         ]);
 
         if (res.ok) {
@@ -125,7 +127,9 @@ export default function Member360CommandCenterPage() {
       }
     };
     fetchMemberData();
-  }, []);
+  }, [ready, apiFetch]);
+
+  if (access) return <AccessNotice problem={access} feature="Your dashboard" />;
 
   if (loading) {
     return (

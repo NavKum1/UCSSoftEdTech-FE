@@ -1,58 +1,23 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import OpenAIRealtimeInterviewRoom from "@/components/OpenAIRealtimeInterviewRoom";
 import Link from "next/link";
-import {
-  ShieldAlert,
-  Building2,
-  FileText,
-  Briefcase,
-  Users,
-  CheckCircle2,
-  ExternalLink,
-  Sparkles,
-  Database,
-  ArrowRight,
-  Send,
-  Compass,
-  Upload,
-} from "lucide-react";
+import { Building2, FileText, Briefcase, Sparkles, Send, Compass, Upload } from "lucide-react";
 
 export default function Dashboard() {
-  const [userId, setUserId] = useState<string>("11111111-2222-3333-4444-555555555555");
+  // H7b (owner decision 19 Oct 2026): the institute picker and the "Seed Institutes" panel are gone, with their calls
+  // (GET /api/institute never existed; seeding is an admin task). This public page calls no institute endpoint.
+  const [userId] = useState<string>("11111111-2222-3333-4444-555555555555");
   const [candidateName, setCandidateName] = useState<string>("Alex Morgan");
   const [jobDescription, setJobDescription] = useState<string>(
     "Senior Full-Stack Engineer requiring deep hands-on expertise in React Hooks, System Architecture, and AWS VPC networking configuration."
   );
   const [demoMode, setDemoMode] = useState<"Enterprise" | "University">("University");
-  const [selectedTenantId, setSelectedTenantId] = useState<string>("");
-  const [institutes, setInstitutes] = useState<any[]>([]);
-  const [tenantCourses, setTenantCourses] = useState<any[]>([]);
-  const [leadReferrals, setLeadReferrals] = useState<any[]>([]);
+  const [leadReferrals, setLeadReferrals] = useState<{ id?: string; status?: string; createdAt?: string }[]>([]);
   const [resumeText, setResumeText] = useState<string>(
     "Alex Morgan - Full-Stack Developer with 4 years experience in JavaScript, basic React, Node.js, and SQL."
   );
-  const [isSeeding, setIsSeeding] = useState<boolean>(false);
-
-  const fetchTenantDetails = async (tenantId: string) => {
-    try {
-      const headers: Record<string, string> = {};
-      if (tenantId) {
-        headers["X-Institute-Id"] = tenantId;
-      }
-
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/institute`, { headers });
-      const data = await res.json();
-      if (res.ok) {
-        setInstitutes(data.institutes || []);
-        setTenantCourses(data.courses || []);
-        setLeadReferrals(data.leadReferrals || []);
-      }
-    } catch (err) {
-      console.log("Error fetching institute details.");
-    }
-  };
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -67,25 +32,8 @@ export default function Dashboard() {
     reader.readAsText(file);
   };
 
-  useEffect(() => {
-    fetchTenantDetails(selectedTenantId);
-  }, [selectedTenantId]);
-
-  const handleSeedData = async () => {
-    setIsSeeding(true);
-    try {
-      await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/institute/seed`, { method: "POST" });
-      await fetchTenantDetails(selectedTenantId);
-    } catch (err) {
-      console.log("Error seeding database.");
-    } finally {
-      setIsSeeding(false);
-    }
-  };
-
-  const handleLeadReferralGenerated = (newReferrals: any[]) => {
+  const handleLeadReferralGenerated = (newReferrals: { id?: string; status?: string; createdAt?: string }[]) => {
     setLeadReferrals((prev) => [...newReferrals, ...prev]);
-    fetchTenantDetails(selectedTenantId);
   };
 
   return (
@@ -108,7 +56,6 @@ export default function Dashboard() {
           </div>
 
           <div className="flex items-center space-x-4">
-            {/* Multi-Tenant Institute Switcher */}
             <Link href="/dashboard" className="text-xs px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white font-medium rounded-xl border border-indigo-500 flex items-center space-x-1.5 transition-colors mr-2">
               <Compass className="w-3.5 h-3.5" />
               <span>Back to Dashboard</span>
@@ -130,37 +77,6 @@ export default function Dashboard() {
               </button>
             </div>
 
-            {demoMode === "Enterprise" && (
-              <>
-                <div className="flex items-center space-x-2 bg-card border border-border rounded-xl px-3 py-1.5">
-                  <Building2 className="w-4 h-4 text-indigo-700 dark:text-indigo-400" />
-                  <span className="text-xs text-muted-foreground font-medium">B2B Tenant Context:</span>
-                  <select
-                    value={selectedTenantId}
-                    onChange={(e) => setSelectedTenantId(e.target.value)}
-                    className="bg-transparent text-xs text-white font-semibold focus:outline-none cursor-pointer"
-                  >
-                    <option value="" className="bg-card text-white">
-                      🌐 All Partner Institutes (Platform View)
-                    </option>
-                    {institutes.map((inst) => (
-                      <option key={inst.id} value={inst.id} className="bg-card text-white">
-                        🏢 {inst.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <button
-                  onClick={handleSeedData}
-                  disabled={isSeeding}
-                  className="text-xs px-3 py-1.5 bg-muted hover:bg-slate-700 text-muted-foreground rounded-xl border border-border flex items-center space-x-1.5 transition-colors"
-                >
-                  <Database className="w-3.5 h-3.5 text-emerald-700 dark:text-emerald-400" />
-                  <span>{isSeeding ? "Seeding DB..." : "Seed Institutes"}</span>
-                </button>
-              </>
-            )}
           </div>
         </div>
       </header>
@@ -180,7 +96,7 @@ export default function Dashboard() {
                 Evaluate Tech Candidates & Help Them Close Skill Gaps
               </h1>
               <p className="text-sm text-muted-foreground leading-relaxed">
-                When an AI voice interview reveals skill gaps, the candidate sees course recommendations. Partner-institute courses (e.g. Global ITech) are labeled as sponsored, as we may earn a referral fee, and the candidate's details are shared with a partner only if they opt in.
+                When an AI voice interview reveals skill gaps, the candidate sees course recommendations. Partner-institute courses (e.g. Global ITech) are labeled as sponsored, as we may earn a referral fee, and the candidate&apos;s details are shared with a partner only if they opt in.
               </p>
             </div>
           </div>
@@ -247,7 +163,6 @@ export default function Dashboard() {
             <OpenAIRealtimeInterviewRoom
               userId={userId}
               jobDescription={jobDescription}
-              selectedTenantId={selectedTenantId}
               onLeadReferralGenerated={handleLeadReferralGenerated}
               personaCode="StartupCTO"
               dialectCode="UK_London_Financial"
@@ -263,45 +178,15 @@ export default function Dashboard() {
                   </div>
                   <div>
                     <h3 className="text-base font-semibold text-foreground">
-                      B2B Partner Referrals (Candidate Opt-In) & Course Marketplace
+                      B2B Partner Referrals (Candidate Opt-In)
                     </h3>
-                    <p className="text-xs text-muted-foreground">
-                      {selectedTenantId
-                        ? "Filtered view (EF Core Global Query Filter applied for tenant)"
-                        : "Global view across all partner institutes"}
-                    </p>
+                    <p className="text-xs text-muted-foreground">Referrals from this session, after the candidate opts in</p>
                   </div>
                 </div>
 
                 <span className="px-3 py-1 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/30 rounded-full text-xs font-semibold">
                   {leadReferrals.length} Opted-In Referrals
                 </span>
-              </div>
-
-              {/* Mapped Courses */}
-              <div>
-                <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">
-                  Sponsored Partner Courses
-                </h4>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {tenantCourses.length === 0 ? (
-                    <div className="col-span-2 p-4 bg-card/50 rounded-xl text-xs text-muted-foreground italic text-center">
-                      No courses mapped yet. Click "Seed Institutes" to populate Global ITech.
-                    </div>
-                  ) : (
-                    tenantCourses.map((c) => (
-                      <div key={c.id} className="glass-card rounded-xl p-4 border border-border space-y-2">
-                        <div className="flex items-center justify-between">
-                          <span className="text-xs font-bold text-indigo-700 dark:text-indigo-400">{c.courseName}</span>
-                          <span className="text-[10px] px-2 py-0.5 rounded bg-indigo-500/10 text-indigo-600 dark:text-indigo-300 border border-indigo-500/20">
-                            Sponsored
-                          </span>
-                        </div>
-                        <p className="text-xs text-muted-foreground line-clamp-2">{c.description}</p>
-                      </div>
-                    ))
-                  )}
-                </div>
               </div>
 
               {/* Lead Referrals Table */}

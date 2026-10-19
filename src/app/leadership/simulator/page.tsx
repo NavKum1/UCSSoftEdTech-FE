@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import { AccessNotice, useLegacyApi } from "@/lib/legacyApi";
 
 interface StakeholderPersona {
   code: string;
@@ -81,6 +82,7 @@ interface PromotionDossier {
 }
 
 export default function ExecutiveLeadershipSimulatorPage() {
+  const { apiFetch, ready, access } = useLegacyApi();
   const [scenarios, setScenarios] = useState<ExecutiveScenario[]>([]);
   const [selectedScenario, setSelectedScenario] = useState<ExecutiveScenario | null>(null);
   const [session, setSession] = useState<ExecutiveSession | null>(null);
@@ -93,13 +95,14 @@ export default function ExecutiveLeadershipSimulatorPage() {
   const [generatingDossier, setGeneratingDossier] = useState(false);
 
   useEffect(() => {
+    if (!ready) return;
     fetchScenarios();
-  }, []);
+  }, [ready]);
 
   const fetchScenarios = async () => {
     try {
       setLoading(true);
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/leadership/scenarios`);
+      const res = await apiFetch(`/api/leadership/scenarios`);
       if (res.ok) {
         const data = await res.json();
         setScenarios(data);
@@ -119,7 +122,7 @@ export default function ExecutiveLeadershipSimulatorPage() {
     try {
       setEvaluationReport(null);
       setCoachingTip(null);
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/leadership/session/start`, {
+      const res = await apiFetch(`/api/leadership/session/start`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -146,7 +149,7 @@ export default function ExecutiveLeadershipSimulatorPage() {
 
     try {
       setSubmittingTurn(true);
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/leadership/turn`, {
+      const res = await apiFetch(`/api/leadership/turn`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -162,7 +165,7 @@ export default function ExecutiveLeadershipSimulatorPage() {
         setCandidateInput("");
 
         // Refresh session transcript
-        const sessionRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/leadership/session/start`, {
+        const sessionRes = await apiFetch(`/api/leadership/session/start`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -177,7 +180,7 @@ export default function ExecutiveLeadershipSimulatorPage() {
 
         if (result.isSimulationFinished) {
           // Finalize session
-          const finalizeRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/leadership/session/${session.id}/finalize`, {
+          const finalizeRes = await apiFetch(`/api/leadership/session/${session.id}/finalize`, {
             method: "POST"
           });
           if (finalizeRes.ok) {
@@ -196,7 +199,7 @@ export default function ExecutiveLeadershipSimulatorPage() {
   const handleGeneratePromotionDossier = async () => {
     try {
       setGeneratingDossier(true);
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/leadership/promotion/defense`, {
+      const res = await apiFetch(`/api/leadership/promotion/defense`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -235,6 +238,8 @@ export default function ExecutiveLeadershipSimulatorPage() {
       );
     }
   };
+
+  if (access) return <AccessNotice problem={access} feature="The leadership simulator" />;
 
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col font-sans selection:bg-indigo-500/30">

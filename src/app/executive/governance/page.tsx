@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import { AccessNotice, useLegacyApi } from "@/lib/legacyApi";
 
 interface Campus {
   id: string;
@@ -58,6 +59,7 @@ interface VerificationResult {
 }
 
 export default function MultiCampusGovernancePage() {
+  const { apiFetch, ready, access } = useLegacyApi();
   const [parentInstituteId] = useState<string>("8c353f80-0a21-41fb-8b43-2287413d98bf");
   const [rollup, setRollup] = useState<SystemRollup | null>(null);
   const [selectedCampus, setSelectedCampus] = useState<Campus | null>(null);
@@ -78,7 +80,7 @@ export default function MultiCampusGovernancePage() {
   const fetchSystemRollup = async () => {
     try {
       setIsLoading(true);
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/governance/system-rollup/${parentInstituteId}`);
+      const res = await apiFetch(`/api/governance/system-rollup/${parentInstituteId}`);
       const data = await res.json();
       if (data.success && data.report) {
         setRollup(data.report);
@@ -98,7 +100,7 @@ export default function MultiCampusGovernancePage() {
     setSelectedCampus(campus);
     setVerification(null);
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/governance/ledger/${campus.id}`);
+      const res = await apiFetch(`/api/governance/ledger/${campus.id}`);
       const data = await res.json();
       if (data.success) {
         setLedgerBlocks(data.blocks || []);
@@ -113,7 +115,7 @@ export default function MultiCampusGovernancePage() {
     if (!selectedCampus) return;
     try {
       setIsVerifying(true);
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/governance/ledger/${selectedCampus.id}/verify`);
+      const res = await apiFetch(`/api/governance/ledger/${selectedCampus.id}/verify`);
       const data = await res.json();
       if (data.success && data.verification) {
         setVerification(data.verification);
@@ -138,7 +140,7 @@ export default function MultiCampusGovernancePage() {
         auditDetails: newNotes,
       };
 
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/governance/ledger/append`, {
+      const res = await apiFetch(`/api/governance/ledger/append`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -166,8 +168,11 @@ export default function MultiCampusGovernancePage() {
   };
 
   useEffect(() => {
+    if (!ready) return;
     fetchSystemRollup();
-  }, [parentInstituteId]);
+  }, [parentInstituteId, ready]);
+
+  if (access) return <AccessNotice problem={access} feature="Multi-campus governance" />;
 
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col font-sans">

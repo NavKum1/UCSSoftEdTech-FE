@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import { AccessNotice, useLegacyApi } from "@/lib/legacyApi";
 
 interface ArchitecturalPreset {
   id: string;
@@ -64,6 +65,7 @@ interface TopologyNode {
 }
 
 export default function SpeedArchitectArenaPage() {
+  const { apiFetch, ready, access } = useLegacyApi();
   const [presets, setPresets] = useState<ArchitecturalPreset[]>([]);
   const [selectedPreset, setSelectedPreset] = useState<ArchitecturalPreset | null>(null);
   const [currentMatch, setCurrentMatch] = useState<DuelMatch | null>(null);
@@ -80,8 +82,9 @@ export default function SpeedArchitectArenaPage() {
   const defaultUserId = "6d940ce2-2fc7-4525-9aff-af62f1956550";
 
   useEffect(() => {
+    if (!ready) return;
     initializeArena();
-  }, []);
+  }, [ready]);
 
   // Timer countdown simulation
   useEffect(() => {
@@ -93,10 +96,10 @@ export default function SpeedArchitectArenaPage() {
 
   async function initializeArena() {
     try {
-      await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/duels/seed`, { method: "POST" });
+      await apiFetch(`/api/duels/seed`, { method: "POST" });
       const [presetsRes, lbRes] = await Promise.all([
-        fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/duels/presets`),
-        fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/duels/leaderboard`)
+        apiFetch(`/api/duels/presets`),
+        apiFetch(`/api/duels/leaderboard`)
       ]);
 
       if (presetsRes.ok) {
@@ -141,7 +144,7 @@ export default function SpeedArchitectArenaPage() {
         preferredPresetCode: presetCode || selectedPreset?.presetCode,
         matchWithAiOpponent: true
       };
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/duels/matchmake`, {
+      const res = await apiFetch(`/api/duels/matchmake`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload)
@@ -174,7 +177,7 @@ export default function SpeedArchitectArenaPage() {
         topologyGraph_JSON: JSON.stringify({ nodes: placedNodes }),
         addressedChaosConstraint: chaosHandled
       };
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/duels/submit`, {
+      const res = await apiFetch(`/api/duels/submit`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload)
@@ -184,7 +187,7 @@ export default function SpeedArchitectArenaPage() {
         setDuelResult(result);
         
         // Refresh leaderboard
-        const lbRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/duels/leaderboard`);
+        const lbRes = await apiFetch(`/api/duels/leaderboard`);
         if (lbRes.ok) {
           setLeaderboard(await lbRes.json());
         }
@@ -224,6 +227,8 @@ export default function SpeedArchitectArenaPage() {
     { type: "Distributed_SQL_Spanner", label: "Spanner Distributed SQL", color: "border-indigo-500/40 bg-indigo-500/10 text-indigo-800 dark:text-indigo-300" },
     { type: "Kafka_Event_Backplane", label: "Kafka Event Stream", color: "border-rose-500/40 bg-rose-500/10 text-rose-800 dark:text-rose-300" }
   ];
+
+  if (access) return <AccessNotice problem={access} feature="The system design duel arena" />;
 
   return (
     <div className="min-h-screen bg-background text-foreground p-4 md:p-8 font-sans">

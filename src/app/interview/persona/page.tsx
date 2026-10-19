@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { AccessNotice, useLegacyApi } from "@/lib/legacyApi";
 import {
   Mic,
   Volume2,
@@ -43,6 +44,7 @@ interface AdaptedPromptConfig {
 }
 
 export default function PersonaSelectorPage() {
+  const { apiFetch, ready, access } = useLegacyApi();
   const [personas, setPersonas] = useState<PersonaItem[]>([]);
   const [selectedPersona, setSelectedPersona] = useState<string>("StaffArchitectFAANG");
   const [selectedDialect, setSelectedDialect] = useState<string>("US_WestCoast_Tech");
@@ -51,7 +53,6 @@ export default function PersonaSelectorPage() {
   const [generatingPreview, setGeneratingPreview] = useState<boolean>(false);
   const [statusMessage, setStatusMessage] = useState<string>("");
 
-  const apiBase = `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}`;
 
   const dialects = [
     {
@@ -83,7 +84,7 @@ export default function PersonaSelectorPage() {
   const fetchPersonas = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`${apiBase}/api/persona/catalog`);
+      const res = await apiFetch(`/api/persona/catalog`);
       if (res.ok) {
         const data = await res.json();
         setPersonas(data);
@@ -101,13 +102,14 @@ export default function PersonaSelectorPage() {
   };
 
   useEffect(() => {
+    if (!ready) return;
     fetchPersonas();
-  }, []);
+  }, [ready]);
 
   const handleGeneratePreview = async (personaCode: string, dialectCode: string) => {
     setGeneratingPreview(true);
     try {
-      const res = await fetch(`${apiBase}/api/persona/benchmark-prompt`, {
+      const res = await apiFetch(`/api/persona/benchmark-prompt`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -136,10 +138,11 @@ export default function PersonaSelectorPage() {
   };
 
   useEffect(() => {
+    if (!ready) return;
     if (selectedPersona) {
       handleGeneratePreview(selectedPersona, selectedDialect);
     }
-  }, [selectedPersona, selectedDialect]);
+  }, [selectedPersona, selectedDialect, ready]);
 
   const getPersonaIcon = (code: string) => {
     switch (code) {
@@ -155,6 +158,8 @@ export default function PersonaSelectorPage() {
         return <Mic className="w-5 h-5 text-indigo-700 dark:text-indigo-400" />;
     }
   };
+
+  if (access) return <AccessNotice problem={access} feature="The interviewer persona studio" />;
 
   return (
     <div className="min-h-screen bg-background text-foreground p-6 sm:p-10">

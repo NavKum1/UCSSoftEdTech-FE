@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { AccessNotice, useLegacyApi } from "@/lib/legacyApi";
 import { 
   BarChart3, Sparkles, ShieldAlert, Layers, Award, Zap, 
   CheckCircle2, Cpu, GitCompare, RefreshCw, Play, Search,
@@ -37,6 +38,7 @@ interface CohortAnalytics {
 }
 
 export default function RecruiterBenchmarkPage() {
+  const { apiFetch, ready, access } = useLegacyApi();
   const [analytics, setAnalytics] = useState<CohortAnalytics | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [selectedRecord, setSelectedRecord] = useState<BenchmarkRecord | null>(null);
@@ -59,7 +61,7 @@ export default function RecruiterBenchmarkPage() {
     setLoading(true);
     setFetchError(null);
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/benchmark/cohort/analytics`);
+      const res = await apiFetch(`/api/benchmark/cohort/analytics`);
       if (res.ok) {
         const json = await res.json();
         setAnalytics(json.analytics);
@@ -80,13 +82,14 @@ export default function RecruiterBenchmarkPage() {
   };
 
   useEffect(() => {
+    if (!ready) return;
     fetchAnalytics();
-  }, []);
+  }, [ready]);
 
   const handleDispatchBatch = async () => {
     setBatchStatus("Dispatching offline evaluation job...");
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/benchmark/batch-dispatch`, {
+      const res = await apiFetch(`/api/benchmark/batch-dispatch`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ modelVersion: selectedModel })
@@ -116,7 +119,7 @@ export default function RecruiterBenchmarkPage() {
     setPlagiarismReport(null);
     setPlagiarismError(null);
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/benchmark/plagiarism-check`, {
+      const res = await apiFetch(`/api/benchmark/plagiarism-check`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -151,6 +154,8 @@ export default function RecruiterBenchmarkPage() {
         return "bg-rose-500/20 text-rose-300 border-rose-500/40";
     }
   };
+
+  if (access) return <AccessNotice problem={access} feature="Cohort benchmarking" />;
 
   return (
     <div className="space-y-8 animate-fadeIn">

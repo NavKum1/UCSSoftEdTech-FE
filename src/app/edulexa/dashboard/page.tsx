@@ -8,8 +8,10 @@ import {
   X, Send
 } from "lucide-react";
 import { useGeo } from "@/context/GeoContext";
+import { AccessNotice, useLegacyApi } from "@/lib/legacyApi";
 
 export default function EdulexaDashboardPage() {
+  const { apiFetch, ready, access } = useLegacyApi();
   const { region, config, formatCurrency, convertFromInr } = useGeo();
   const [activeTab, setActiveTab] = useState<"voice" | "shield" | "hrms" | "api">("voice");
   const [metrics, setMetrics] = useState<any>(null);
@@ -58,10 +60,10 @@ export default function EdulexaDashboardPage() {
     try {
       setLoading(true);
       const [metricsRes, campRes, assetsRes, payoutsRes] = await Promise.all([
-        fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/v1/dashboard/metrics`),
-        fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/v1/voice/campaigns`),
-        fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/v1/assets`),
-        fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/v1/payouts`)
+        apiFetch(`/v1/dashboard/metrics`),
+        apiFetch(`/v1/voice/campaigns`),
+        apiFetch(`/v1/assets`),
+        apiFetch(`/v1/payouts`)
       ]);
 
       if (metricsRes.ok) setMetrics(await metricsRes.json());
@@ -76,12 +78,13 @@ export default function EdulexaDashboardPage() {
   };
 
   useEffect(() => {
+    if (!ready) return;
     fetchDashboardData();
-  }, []);
+  }, [ready]);
 
   const handleSeedData = async () => {
     try {
-      await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/v1/seed`, { method: "POST" });
+      await apiFetch(`/v1/seed`, { method: "POST" });
       fetchDashboardData();
     } catch (err) {
       console.error(err);
@@ -92,7 +95,7 @@ export default function EdulexaDashboardPage() {
     e.preventDefault();
     setTriggeringCall(true);
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/v1/voice/campaigns`, {
+      const res = await apiFetch(`/v1/voice/campaigns`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -119,7 +122,7 @@ export default function EdulexaDashboardPage() {
     e.preventDefault();
     setSigningAsset(true);
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/v1/assets/sign`, {
+      const res = await apiFetch(`/v1/assets/sign`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -145,7 +148,7 @@ export default function EdulexaDashboardPage() {
     e.preventDefault();
     setInvestigating(true);
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/v1/assets/leak-attribution`, {
+      const res = await apiFetch(`/v1/assets/leak-attribution`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ leakSnippetOrFingerprint: leakSnippet })
@@ -165,7 +168,7 @@ export default function EdulexaDashboardPage() {
     e.preventDefault();
     setProcessingPayout(true);
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/v1/payouts`, {
+      const res = await apiFetch(`/v1/payouts`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -193,7 +196,7 @@ export default function EdulexaDashboardPage() {
 
   const handleExportNeft = async () => {
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/v1/payouts/export-neft`, { method: "POST" });
+      const res = await apiFetch(`/v1/payouts/export-neft`, { method: "POST" });
       if (res.ok) {
         const blob = await res.blob();
         const url = window.URL.createObjectURL(blob);
@@ -212,9 +215,9 @@ export default function EdulexaDashboardPage() {
     setLoadingForm16(true);
     try {
       const url = mentorId
-        ? `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/v1/payouts/form16a/${mentorId}`
-        : `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/v1/payouts/form16a`;
-      const res = await fetch(url);
+        ? `/v1/payouts/form16a/${mentorId}`
+        : `/v1/payouts/form16a`;
+      const res = await apiFetch(url);
       if (res.ok) {
         const json = await res.json();
         setForm16ModalData(json);
@@ -239,7 +242,7 @@ export default function EdulexaDashboardPage() {
   const handleSimulatePixelDropOff = async () => {
     setTrackingPixel(true);
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/v1/pixel/track`, {
+      const res = await apiFetch(`/v1/pixel/track`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -271,7 +274,7 @@ export default function EdulexaDashboardPage() {
   const handleTestOutgoingWebhook = async () => {
     setDispatchingWebhook(true);
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/v1/webhooks/test-dispatch`, {
+      const res = await apiFetch(`/v1/webhooks/test-dispatch`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -294,6 +297,8 @@ export default function EdulexaDashboardPage() {
       setDispatchingWebhook(false);
     }
   };
+
+  if (access) return <AccessNotice problem={access} feature="The Edulexa partner dashboard" />;
 
   return (
     <div className="min-h-screen bg-background text-foreground p-6 lg:p-10 font-sans">
@@ -1011,11 +1016,11 @@ export default function EdulexaDashboardPage() {
 
                 <div className="relative">
                   <pre className="p-3 rounded-lg border border-border bg-card/80 text-[11px] font-mono text-cyan-600 dark:text-cyan-300 overflow-x-auto">
-{`<script src="${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/v1/pixel.js" data-tenant="6c370735-4615-44f6-9d61-dbbb41d5d5cf" async></script>`}
+{`<script src="${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/v1/pixel.js?tenant=6c370735-4615-44f6-9d61-dbbb41d5d5cf" async></script>`}
                   </pre>
                   <button
                     onClick={() => {
-                      navigator.clipboard.writeText(`<script src="${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/v1/pixel.js" data-tenant="6c370735-4615-44f6-9d61-dbbb41d5d5cf" async></script>`);
+                      navigator.clipboard.writeText(`<script src="${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/v1/pixel.js?tenant=6c370735-4615-44f6-9d61-dbbb41d5d5cf" async></script>`);
                       setCopiedPixelScript(true);
                       setTimeout(() => setCopiedPixelScript(false), 2000);
                     }}

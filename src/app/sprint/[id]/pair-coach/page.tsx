@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
+import { AccessNotice, useLegacyApi } from "@/lib/legacyApi";
 
 interface InteractionLog {
   id: string;
@@ -42,6 +43,7 @@ interface PairSession {
 }
 
 export default function AiPairCoachStudioPage() {
+  const { apiFetch, ready, access } = useLegacyApi();
   const params = useParams();
   const sprintId = (params?.id as string) || "";
   const [userId] = useState<string>("c89ef120-745a-4b9b-9801-9a776c5b9812");
@@ -95,7 +97,7 @@ public class HighThroughputBuffer<T>
     }
     try {
       setIsLoading(true);
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/pair-coach/session/start`, {
+      const res = await apiFetch(`/api/pair-coach/session/start`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -109,7 +111,7 @@ public class HighThroughputBuffer<T>
         setSession(data.session);
 
         // Fetch full audit to retrieve previous interaction timeline
-        const auditRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/pair-coach/session/${data.session.id}`);
+        const auditRes = await apiFetch(`/api/pair-coach/session/${data.session.id}`);
         const auditData = await auditRes.json();
         if (auditData.success && auditData.session) {
           setInteractions(auditData.session.interactions || []);
@@ -130,8 +132,9 @@ public class HighThroughputBuffer<T>
   };
 
   useEffect(() => {
+    if (!ready) return;
     fetchOrStartSession();
-  }, [sprintId]);
+  }, [sprintId, ready]);
 
   // Handle interaction dispatch (Hint, Explain, Refactor, Probe)
   const handleInteraction = async (type: "Hint" | "Explain" | "Refactor" | "Probe", customPrompt?: string) => {
@@ -140,7 +143,7 @@ public class HighThroughputBuffer<T>
       setIsSubmitting(true);
       const promptToSend = customPrompt || userPrompt || `Requesting ${type.toLowerCase()} for current buffer implementation`;
 
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/pair-coach/interact`, {
+      const res = await apiFetch(`/api/pair-coach/interact`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -162,7 +165,7 @@ public class HighThroughputBuffer<T>
         setUserPrompt("");
 
         // Refresh session telemetry
-        const auditRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/pair-coach/session/${session.id}`);
+        const auditRes = await apiFetch(`/api/pair-coach/session/${session.id}`);
         const auditData = await auditRes.json();
         if (auditData.success && auditData.session) {
           setSession(auditData.session);
@@ -186,7 +189,7 @@ public class HighThroughputBuffer<T>
   const handleAnalyzeSmells = async () => {
     try {
       setIsSubmitting(true);
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/pair-coach/analyze-smells`, {
+      const res = await apiFetch(`/api/pair-coach/analyze-smells`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -232,6 +235,8 @@ public class HighThroughputBuffer<T>
         return "bg-blue-900/60 text-blue-600 dark:text-blue-300 border-blue-600/50";
     }
   };
+
+  if (access) return <AccessNotice problem={access} feature="The AI pair coach" />;
 
   if (!sprintId) {
     return (

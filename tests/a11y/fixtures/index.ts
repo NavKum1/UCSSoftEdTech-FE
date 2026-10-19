@@ -11,6 +11,8 @@ import { freeTierFixtures, freeTierRoutes } from "./freeTier";
 import { privacyFixtures, privacyRoutes } from "./privacy";
 import { nationalBillingFixtures, nationalBillingRoutes } from "./nationalBilling";
 import { workforceFixtures, workforceRoutes } from "./workforce";
+import { campusDrivesFixtures, campusDrivesRoutes } from "./campusDrives";
+import { campusIntegrationsFixtures, campusIntegrationsRoutes } from "./campusIntegrations";
 
-export const allFixtures: ApiFixture[] = [...workforceFixtures, ...nationalBillingFixtures, ...privacyFixtures, ...freeTierFixtures, ...workRightsFixtures, ...indiaPlacementsFixtures, ...internshipPackFixtures, ...studentFixtures, ...careerCenterAFixtures, ...careerCenterBFixtures, ...otherFixtures, ...fairsFixtures];
-export const allRoutes: A11yRoute[] = [...studentRoutes, ...careerCenterARoutes, ...careerCenterBRoutes, ...otherRoutes, ...fairsRoutes, ...internshipPackRoutes, ...indiaPlacementsRoutes, ...freeTierRoutes, ...workRightsRoutes, ...privacyRoutes, ...nationalBillingRoutes, ...workforceRoutes];
+export const allFixtures: ApiFixture[] = [...campusIntegrationsFixtures, ...campusDrivesFixtures, ...workforceFixtures, ...nationalBillingFixtures, ...privacyFixtures, ...freeTierFixtures, ...workRightsFixtures, ...indiaPlacementsFixtures, ...internshipPackFixtures, ...studentFixtures, ...careerCenterAFixtures, ...careerCenterBFixtures, ...otherFixtures, ...fairsFixtures];
+export const allRoutes: A11yRoute[] = [...studentRoutes, ...careerCenterARoutes, ...careerCenterBRoutes, ...otherRoutes, ...fairsRoutes, ...internshipPackRoutes, ...indiaPlacementsRoutes, ...freeTierRoutes, ...workRightsRoutes, ...privacyRoutes, ...nationalBillingRoutes, ...workforceRoutes, ...campusDrivesRoutes, ...campusIntegrationsRoutes];

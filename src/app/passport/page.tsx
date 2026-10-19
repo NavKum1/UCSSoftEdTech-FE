@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import { AccessNotice, useLegacyApi } from "@/lib/legacyApi";
 
 interface VerifiedSkillBadge {
   id: string;
@@ -43,6 +44,7 @@ interface PassiveHeadhunterInquiry {
 }
 
 export default function SkillPassportPage() {
+  const { apiFetch, ready, access } = useLegacyApi();
   const [passport, setPassport] = useState<SkillPassport | null>(null);
   const [radarInquiries, setRadarInquiries] = useState<PassiveHeadhunterInquiry[]>([]);
   const [loading, setLoading] = useState(true);
@@ -54,13 +56,13 @@ export default function SkillPassportPage() {
   const fetchPassportData = async () => {
     try {
       setLoading(true);
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/passport`);
+      const res = await apiFetch(`/api/passport`);
       if (res.ok) {
         const data = await res.json();
         setPassport(data);
       }
 
-      const radarRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/passport/radar`);
+      const radarRes = await apiFetch(`/api/passport/radar`);
       if (radarRes.ok) {
         const inquiries = await radarRes.json();
         setRadarInquiries(inquiries);
@@ -73,15 +75,16 @@ export default function SkillPassportPage() {
   };
 
   useEffect(() => {
+    if (!ready) return;
     fetchPassportData();
-  }, []);
+  }, [ready]);
 
   const handlePracticeKata = async (category: string) => {
     try {
       setPracticingCategory(category);
       setPracticeSuccessMessage(null);
 
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/passport/practice`, {
+      const res = await apiFetch(`/api/passport/practice`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -112,6 +115,8 @@ export default function SkillPassportPage() {
     setCopiedLink(true);
     setTimeout(() => setCopiedLink(false), 3000);
   };
+
+  if (access) return <AccessNotice problem={access} feature="Your skill passport" />;
 
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col font-sans selection:bg-amber-500/30">

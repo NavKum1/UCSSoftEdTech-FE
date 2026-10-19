@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { useApi } from "@/lib/appAuth";
 import { Badge, Button, Card, ErrorBanner, Field, Loading, PageHeader, SuccessBanner, formatDate, useCareerT, useLoad } from "@/components/career/ui";
+import { DriveMessageDefaults } from "@/components/career/channels/DriveMessageDefaults";
 
 interface ChannelInfo {
   channel: string;
@@ -434,6 +435,9 @@ export default function ChannelSettings() {
           </Button>
         )}
       </form>
+
+      {/* H3: campus-drive notice templates and India DLT texts */}
+      <DriveMessageDefaults<Settings> canEdit={edit} onApplied={(next) => setS(next)} />
 
       {edit && (
         <Card

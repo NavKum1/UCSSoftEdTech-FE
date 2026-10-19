@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import { AccessNotice, useLegacyApi } from "@/lib/legacyApi";
 
 interface TelemetryMetrics {
   p99LatencyMs?: number;
@@ -124,6 +125,7 @@ interface WeeklyLeagues {
 }
 
 export default function DailyIncidentPage() {
+  const { apiFetch, ready, access } = useLegacyApi();
   const [incident, setIncident] = useState<IncidentKata | null>(null);
   const [metrics, setMetrics] = useState<TelemetryMetrics>({});
   const [hypotheses, setHypotheses] = useState<Hypothesis[]>([]);
@@ -176,8 +178,9 @@ export default function DailyIncidentPage() {
   const [hasLoadedUrlParams, setHasLoadedUrlParams] = useState<boolean>(false);
 
   useEffect(() => {
+    if (!ready) return;
     fetchInitialData();
-  }, [track, difficultyTier]);
+  }, [track, difficultyTier, ready]);
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
@@ -192,25 +195,25 @@ export default function DailyIncidentPage() {
   const fetchInitialData = async () => {
     setLoading(true);
     try {
-      let url = `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/incidents/today?track=${encodeURIComponent(track)}&difficultyTier=${encodeURIComponent(difficultyTier)}`;
+      let url = `/api/incidents/today?track=${encodeURIComponent(track)}&difficultyTier=${encodeURIComponent(difficultyTier)}`;
 
       if (typeof window !== "undefined" && !hasLoadedUrlParams) {
         const params = new URLSearchParams(window.location.search);
         const code = params.get("accessCode");
         const id = params.get("id");
         if (code) {
-          url = `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/incidents/access/${encodeURIComponent(code)}`;
+          url = `/api/incidents/access/${encodeURIComponent(code)}`;
           setIsAssessmentMode(true);
           setHasLoadedUrlParams(true);
         } else if (id) {
-          url = `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/incidents/${encodeURIComponent(id)}`;
+          url = `/api/incidents/${encodeURIComponent(id)}`;
           setIsAssessmentMode(true);
           setHasLoadedUrlParams(true);
         }
       }
 
       // 1. Fetch Today's Incident or Assessment Kata
-      const incRes = await fetch(url);
+      const incRes = await apiFetch(url);
       if (incRes.ok) {
         const incData: IncidentKata = await incRes.json();
         setIncident(incData);
@@ -241,14 +244,14 @@ export default function DailyIncidentPage() {
       }
 
       // 2. Fetch User Streak
-      const streakRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/incidents/streak/${userId}`);
+      const streakRes = await apiFetch(`/api/incidents/streak/${userId}`);
       if (streakRes.ok) {
         const streakData = await streakRes.json();
         setStreak(streakData);
       }
 
       // 3. Fetch Weekly Leagues
-      const leagueRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/incidents/leagues?userId=${userId}`);
+      const leagueRes = await apiFetch(`/api/incidents/leagues?userId=${userId}`);
       if (leagueRes.ok) {
         const leagueData = await leagueRes.json();
         setLeagues(leagueData);
@@ -270,7 +273,7 @@ export default function DailyIncidentPage() {
     setTimerActive(false);
 
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/incidents/triage`, {
+      const res = await apiFetch(`/api/incidents/triage`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -288,10 +291,10 @@ export default function DailyIncidentPage() {
         setTriageResult(result);
 
         // Refresh streak and league stats
-        const streakRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/incidents/streak/${userId}`);
+        const streakRes = await apiFetch(`/api/incidents/streak/${userId}`);
         if (streakRes.ok) setStreak(await streakRes.json());
 
-        const leagueRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/incidents/leagues?userId=${userId}`);
+        const leagueRes = await apiFetch(`/api/incidents/leagues?userId=${userId}`);
         if (leagueRes.ok) setLeagues(await leagueRes.json());
       } else {
         alert("Triage submission evaluation encountered an error.");
@@ -306,7 +309,7 @@ export default function DailyIncidentPage() {
 
   const handleEquipFreezeShield = async () => {
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/incidents/streak/freeze`, {
+      const res = await apiFetch(`/api/incidents/streak/freeze`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userId }),
@@ -323,8 +326,8 @@ export default function DailyIncidentPage() {
   const handleSynthesizeOutage = async () => {
     setSynthesizing(true);
     try {
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/incidents/generate`,
+      const res = await apiFetch(
+        `/api/incidents/generate`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -410,6 +413,22 @@ export default function DailyIncidentPage() {
     const remaining = secs % 60;
     return `${mins.toString().padStart(2, "0")}:${remaining.toString().padStart(2, "0")}`;
   };
+
+  // Owner decision 19 Oct 2026 (H7b): shared incident links (?accessCode=) stay sign-in only. The notice renders only on
+  // the client (auth is never loaded on the server), so reading the URL here can't cause a hydration mismatch.
+  if (access) {
+    const shared = typeof window !== "undefined" && new URLSearchParams(window.location.search).has("accessCode");
+    return shared ? (
+      <AccessNotice
+        problem={access}
+        feature="This shared incident"
+        title="Sign in to open this incident"
+        message="Shared incident drills open for signed-in users only. Sign in or create a free account, and you'll come straight back to this incident."
+      />
+    ) : (
+      <AccessNotice problem={access} feature="The daily incident drill" />
+    );
+  }
 
   if (loading) {
     return (

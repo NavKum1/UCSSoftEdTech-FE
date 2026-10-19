@@ -8,8 +8,10 @@ import {
   Search, ArrowUpRight, Link2, ExternalLink
 } from "lucide-react";
 import { useGeo } from "@/context/GeoContext";
+import { AccessNotice, useLegacyApi } from "@/lib/legacyApi";
 
 export default function PartnerDashboardPage() {
+  const { apiFetch, ready, access } = useLegacyApi();
   const { config } = useGeo();
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState<boolean>(true);
@@ -21,7 +23,7 @@ export default function PartnerDashboardPage() {
   const fetchDashboard = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/partner/dashboard`);
+      const res = await apiFetch(`/api/partner/dashboard`);
       if (res.ok) {
         const json = await res.json();
         setData(json);
@@ -35,13 +37,14 @@ export default function PartnerDashboardPage() {
   };
 
   useEffect(() => {
+    if (!ready) return;
     fetchDashboard();
-  }, []);
+  }, [ready]);
 
   const handleUpdateLeadStatus = async (leadId: string, newStatus: string) => {
     setUpdatingLeadId(leadId);
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/partner/lead/${leadId}/status`, {
+      const res = await apiFetch(`/api/partner/lead/${leadId}/status`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status: newStatus }),
@@ -60,7 +63,7 @@ export default function PartnerDashboardPage() {
     e.preventDefault();
     setWebhookStatus("Saving configuration...");
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/partner/webhook-config`, {
+      const res = await apiFetch(`/api/partner/webhook-config`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ outboundWebhookUrl: webhookUrl, apiKey }),
@@ -77,7 +80,7 @@ export default function PartnerDashboardPage() {
   const handleTestWebhookDispatch = async () => {
     setWebhookStatus("Dispatching test CRM payload...");
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/partner/dispatch-test-webhook`, {
+      const res = await apiFetch(`/api/partner/dispatch-test-webhook`, {
         method: "POST",
       });
       const json = await res.json();
@@ -125,6 +128,8 @@ export default function PartnerDashboardPage() {
       createdAt: new Date().toISOString(),
     },
   ];
+
+  if (access) return <AccessNotice problem={access} feature="The partner dashboard" />;
 
   return (
     <div className="min-h-screen bg-background text-foreground font-sans p-6 md:p-10">

@@ -34,6 +34,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { CancellationQuizModal } from "@/components/CancellationQuizModal";
+import { AccessNotice, useLegacyApi } from "@/lib/legacyApi";
 
 interface JobPreset {
   stream: string;
@@ -136,6 +137,7 @@ const VOICES = [
 ];
 
 export default function MultiStreamInterviewPracticePage() {
+  const { apiFetch, access } = useLegacyApi();
   const [selectedStream, setSelectedStream] = useState<string>("Technical");
   const [jobTitle, setJobTitle] = useState<string>(JOB_PRESETS[0].title);
   const [jobDescription, setJobDescription] = useState<string>(JOB_PRESETS[0].description);
@@ -178,7 +180,6 @@ export default function MultiStreamInterviewPracticePage() {
   const animFrameRef = useRef<number | null>(null);
   const transcriptBottomRef = useRef<HTMLDivElement | null>(null);
 
-  const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
   // Auto-scroll transcript container
   useEffect(() => {
@@ -300,7 +301,7 @@ export default function MultiStreamInterviewPracticePage() {
 
     try {
       // 1. Request ephemeral WebRTC token from backend
-      const res = await fetch(`${apiBase}/api/interview/token`, {
+      const res = await apiFetch(`/api/interview/token`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -506,7 +507,7 @@ export default function MultiStreamInterviewPracticePage() {
     setIsEvaluating(true);
 
     try {
-      const res = await fetch(`${apiBase}/api/interview/evaluate`, {
+      const res = await apiFetch(`/api/interview/evaluate`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -633,6 +634,8 @@ export default function MultiStreamInterviewPracticePage() {
     const s = secs % 60;
     return `${mins.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
   };
+
+  if (access) return <AccessNotice problem={access} feature="Interview practice" />;
 
   return (
     <div className="min-h-screen bg-background text-foreground p-4 md:p-10 font-sans">

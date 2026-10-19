@@ -9,6 +9,8 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import * as signalR from "@microsoft/signalr";
+import { getApiBaseUrl } from "@/lib/apiClient";
+import { AccessNotice, useLegacyApi } from "@/lib/legacyApi";
 
 interface Participant {
   connectionId: string;
@@ -19,6 +21,7 @@ interface Participant {
 }
 
 export default function InterviewPairingStudioPage({ params }: { params: Promise<{ id: string }> }) {
+  const { apiFetch, ready, access, getToken } = useLegacyApi();
   const resolvedParams = use(params);
   const sessionId = resolvedParams.id;
 
@@ -51,8 +54,10 @@ export default function InterviewPairingStudioPage({ params }: { params: Promise
 
   // Establish SignalR Connection
   useEffect(() => {
+    if (!ready) return;
     const conn = new signalR.HubConnectionBuilder()
-      .withUrl(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/hubs/collaboration`)
+      // H7: the hub needs a signed-in user; SignalR sends this token as a Bearer header or ?access_token=
+      .withUrl(`${getApiBaseUrl()}/hubs/collaboration`, { accessTokenFactory: async () => (await getToken()) ?? "" })
       .withAutomaticReconnect()
       .build();
 
@@ -152,7 +157,7 @@ export default function InterviewPairingStudioPage({ params }: { params: Promise
     return () => {
       conn.stop();
     };
-  }, [sessionId]);
+  }, [sessionId, ready, getToken]);
 
   // Handle Interviewer Takeover Toggle
   const handleToggleTakeover = async () => {
@@ -288,7 +293,7 @@ export default function InterviewPairingStudioPage({ params }: { params: Promise
 
     try {
       const dataUrl = canvas.toDataURL("image/png");
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/collaboration/${sessionId}/whiteboard/save`, {
+      const res = await apiFetch(`/api/collaboration/${sessionId}/whiteboard/save`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -313,6 +318,8 @@ export default function InterviewPairingStudioPage({ params }: { params: Promise
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
+
+  if (access) return <AccessNotice problem={access} feature="The pairing studio" />;
 
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col font-sans">

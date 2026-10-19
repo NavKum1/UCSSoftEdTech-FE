@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import { AccessNotice, useLegacyApi } from "@/lib/legacyApi";
 
 interface SynthesizedChallenge {
   id: string;
@@ -31,6 +32,7 @@ interface EvaluationResult {
 }
 
 export default function ChallengeSynthesizerPage() {
+  const { apiFetch, ready, access } = useLegacyApi();
   const [baseSlug, setBaseSlug] = useState<string>("distributed-lru");
   const [language, setLanguage] = useState<string>("csharp");
   const [weakness, setWeakness] = useState<string>("ConcurrentRaceCondition");
@@ -48,7 +50,7 @@ export default function ChallengeSynthesizerPage() {
     setMessage(null);
     setEvaluation(null);
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/challenges/synthesize`, {
+      const res = await apiFetch(`/api/challenges/synthesize`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -77,7 +79,7 @@ export default function ChallengeSynthesizerPage() {
     if (!activeChallenge) return;
     setEvaluating(true);
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/challenges/evaluate`, {
+      const res = await apiFetch(`/api/challenges/evaluate`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -99,8 +101,11 @@ export default function ChallengeSynthesizerPage() {
 
   // Auto-synthesize on initial load
   useEffect(() => {
+    if (!ready) return;
     handleSynthesize();
-  }, []);
+  }, [ready]);
+
+  if (access) return <AccessNotice problem={access} feature="The challenge synthesizer" />;
 
   return (
     <div className="min-h-screen bg-background text-foreground p-6 font-sans">

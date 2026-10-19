@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
+import { AccessNotice, useLegacyApi } from "@/lib/legacyApi";
 import {
   Globe2,
   Volume2,
@@ -49,6 +50,7 @@ const SUPPORTED_LANGUAGES = [
 ];
 
 export default function MultiLanguageTranslationStudioPage() {
+  const { apiFetch, ready, access } = useLegacyApi();
   const params = useParams();
   const router = useRouter();
   const sessionId = (params?.id as string) || "";
@@ -82,7 +84,7 @@ export default function MultiLanguageTranslationStudioPage() {
     setLoading(true);
     setFetchError(null);
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/translation/session/${sessionId}/transcript`);
+      const res = await apiFetch(`/api/translation/session/${sessionId}/transcript`);
       if (res.ok) {
         const json = await res.json();
         setSegments(json.transcript || []);
@@ -100,8 +102,9 @@ export default function MultiLanguageTranslationStudioPage() {
   };
 
   useEffect(() => {
+    if (!ready) return;
     fetchTranscript();
-  }, [sessionId]);
+  }, [sessionId, ready]);
 
   // Audio timer ticker simulation
   useEffect(() => {
@@ -130,7 +133,7 @@ export default function MultiLanguageTranslationStudioPage() {
       const start = lastSegment ? lastSegment.endTimeSeconds + 0.5 : 0.0;
       const end = start + Math.max(3.0, inputText.length * 0.08);
 
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/translation/segment/ingest`, {
+      const res = await apiFetch(`/api/translation/segment/ingest`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -155,8 +158,20 @@ export default function MultiLanguageTranslationStudioPage() {
     }
   };
 
-  const handleDownloadWebVtt = () => {
-    window.open(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/translation/session/${sessionId}/subtitles.vtt?lang=${selectedLanguage}`, "_blank");
+  // The subtitles endpoint needs the bearer token, so download through fetch instead of opening the URL
+  const handleDownloadWebVtt = async () => {
+    try {
+      const res = await apiFetch(`/api/translation/session/${sessionId}/subtitles.vtt?lang=${encodeURIComponent(selectedLanguage)}`);
+      if (!res.ok) return;
+      const url = URL.createObjectURL(await res.blob());
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `session-${sessionId}-${selectedLanguage}.vtt`;
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    } catch (e) {
+      console.error("[SUBTITLE DOWNLOAD ERROR]:", e);
+    }
   };
 
   const getTranslatedText = (segment: TranscriptSegment) => {
@@ -177,6 +192,8 @@ export default function MultiLanguageTranslationStudioPage() {
     const ms = Math.floor((sec % 1) * 10);
     return `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}.${ms}`;
   };
+
+  if (access) return <AccessNotice problem={access} feature="The translation studio" />;
 
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col font-sans pb-16">

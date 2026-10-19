@@ -10,6 +10,8 @@ import {
   RotateCcw,
   Sparkles,
 } from "lucide-react";
+import { authenticatedFetch } from "@/lib/apiClient";
+import { useAppAuth } from "@/lib/appAuth";
 
 interface CancellationQuizModalProps {
   isOpen: boolean;
@@ -38,6 +40,7 @@ export function CancellationQuizModal({
   const [wantsReschedule, setWantsReschedule] = useState<boolean>(true);
   const [submitting, setSubmitting] = useState<boolean>(false);
   const [result, setResult] = useState<any>(null);
+  const { getToken } = useAppAuth();
 
   if (!isOpen) return null;
 
@@ -45,22 +48,29 @@ export function CancellationQuizModal({
     e.preventDefault();
     setSubmitting(true);
     try {
-      const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
-      const res = await fetch(`${apiBase}/api/quiz/cancellation/record`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          sessionType,
-          reason: selectedReason,
-          details,
-          wantsReschedule,
-        }),
-      });
+      const res = await authenticatedFetch(
+        "/api/quiz/cancellation/record",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            sessionType,
+            reason: selectedReason,
+            details,
+            wantsReschedule,
+          }),
+        },
+        getToken
+      );
 
       if (res.ok) {
         const data = await res.json();
         setResult(data);
         if (onConfirmedCancel) onConfirmedCancel();
+      } else if (res.status === 401) {
+        setResult({
+          status: "Sign in required",
+          message: "Sign in again to record your cancellation feedback.",
+        });
       } else {
         setResult({
           status: "Processed",

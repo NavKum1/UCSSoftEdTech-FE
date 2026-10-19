@@ -42,6 +42,7 @@ import {
   BookmarkCheck,
 } from "lucide-react";
 import Link from "next/link";
+import { AccessNotice, useLegacyApi } from "@/lib/legacyApi";
 
 // ----------------------------------------------------
 // TYPES & INTERFACES
@@ -241,6 +242,7 @@ export default function CareerCounsellingPage() {
 // INNER COMPONENT WITH URL PARAMS & FULL STATE
 // ----------------------------------------------------
 function CareerCounsellingInner() {
+  const { apiFetch, ready, access } = useLegacyApi();
   const searchParams = useSearchParams();
   const partnerSlug = searchParams.get("partner") || "";
   const instituteIdQuery = searchParams.get("instituteId") || "";
@@ -305,7 +307,6 @@ function CareerCounsellingInner() {
   const [leadSubmitting, setLeadSubmitting] = useState<boolean>(false);
   const [leadSuccessInfo, setLeadSuccessInfo] = useState<{ leadId: string; message: string } | null>(null);
 
-  const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
   // Fetch Questions and Partner Catalog from API
   const fetchAllData = async () => {
@@ -320,7 +321,7 @@ function CareerCounsellingInner() {
       let loadedCourses: PartnerCourseItem[] = [];
 
       // 1. Fetch questions
-      const qRes = await fetch(`${apiBase}/api/quiz/counselling/questions?${qParams.toString()}`);
+      const qRes = await apiFetch(`/api/quiz/counselling/questions?${qParams.toString()}`);
       if (qRes.ok) {
         const data = await qRes.json();
         if (data && data.questions && Array.isArray(data.questions)) {
@@ -336,7 +337,7 @@ function CareerCounsellingInner() {
       }
 
       // 2. Fetch full course catalog for this partner
-      const cRes = await fetch(`${apiBase}/api/quiz/counselling/courses?${qParams.toString()}`);
+      const cRes = await apiFetch(`/api/quiz/counselling/courses?${qParams.toString()}`);
       if (cRes.ok) {
         const cData = await cRes.json();
         if (cData && cData.courses && Array.isArray(cData.courses)) {
@@ -376,6 +377,7 @@ function CareerCounsellingInner() {
   };
 
   useEffect(() => {
+    if (!ready) return;
     // Restore cached evaluation if applicable
     if (typeof window !== "undefined") {
       const storageKey = partnerSlug ? `counselling_eval_${partnerSlug}` : "counselling_eval_global";
@@ -390,7 +392,7 @@ function CareerCounsellingInner() {
       }
     }
     fetchAllData();
-  }, [partnerSlug, instituteIdQuery]);
+  }, [partnerSlug, instituteIdQuery, ready]);
 
   // Active questions for candidate quiz
   const activeQuestions = questions.filter((q) => q.isActive !== false);
@@ -425,7 +427,7 @@ function CareerCounsellingInner() {
         partnerSlug: partnerSlug || undefined,
       };
 
-      const res = await fetch(`${apiBase}/api/quiz/counselling/evaluate`, {
+      const res = await apiFetch(`/api/quiz/counselling/evaluate`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -545,7 +547,7 @@ function CareerCounsellingInner() {
       if (partnerSlug) qParams.set("partner", partnerSlug);
       if (instituteIdQuery) qParams.set("instituteId", instituteIdQuery);
 
-      const res = await fetch(`${apiBase}/api/quiz/counselling/questions?${qParams.toString()}`, {
+      const res = await apiFetch(`/api/quiz/counselling/questions?${qParams.toString()}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(questions),
@@ -591,7 +593,7 @@ function CareerCounsellingInner() {
       if (partnerSlug) qParams.set("partner", partnerSlug);
       if (instituteIdQuery) qParams.set("instituteId", instituteIdQuery);
 
-      const res = await fetch(`${apiBase}/api/quiz/counselling/questions/reset?${qParams.toString()}`, {
+      const res = await apiFetch(`/api/quiz/counselling/questions/reset?${qParams.toString()}`, {
         method: "POST",
       });
 
@@ -687,7 +689,7 @@ function CareerCounsellingInner() {
       if (partnerSlug) qParams.set("partner", partnerSlug);
       if (instituteIdQuery) qParams.set("instituteId", instituteIdQuery);
 
-      const res = await fetch(`${apiBase}/api/quiz/counselling/courses?${qParams.toString()}`, {
+      const res = await apiFetch(`/api/quiz/counselling/courses?${qParams.toString()}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(editingCourse),
@@ -718,7 +720,7 @@ function CareerCounsellingInner() {
       if (partnerSlug) qParams.set("partner", partnerSlug);
       if (instituteIdQuery) qParams.set("instituteId", instituteIdQuery);
 
-      const res = await fetch(`${apiBase}/api/quiz/counselling/courses/${courseId}?${qParams.toString()}`, {
+      const res = await apiFetch(`/api/quiz/counselling/courses/${courseId}?${qParams.toString()}`, {
         method: "DELETE",
       });
 
@@ -740,7 +742,7 @@ function CareerCounsellingInner() {
       if (partnerSlug) qParams.set("partner", partnerSlug);
       if (instituteIdQuery) qParams.set("instituteId", instituteIdQuery);
 
-      const res = await fetch(`${apiBase}/api/quiz/counselling/courses/reset?${qParams.toString()}`, {
+      const res = await apiFetch(`/api/quiz/counselling/courses/reset?${qParams.toString()}`, {
         method: "POST",
       });
 
@@ -800,7 +802,7 @@ function CareerCounsellingInner() {
           : "Edulexa Global Marketplace",
       };
 
-      const res = await fetch(`${apiBase}/api/quiz/counselling/refer-lead`, {
+      const res = await apiFetch(`/api/quiz/counselling/refer-lead`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -836,6 +838,17 @@ function CareerCounsellingInner() {
   // ----------------------------------------------------
   // RENDER: LOADING STATE
   // ----------------------------------------------------
+  // Owner decision 19 Oct 2026 (H7b): the partner quiz stays sign-in only, so partners get answers from real accounts
+  if (access)
+    return (
+      <AccessNotice
+        problem={access}
+        feature="The career counselling quiz"
+        title="Sign in to take the quiz"
+        message={`The career counselling quiz${partnerSlug ? " from this partner" : ""} is for signed-in students. Sign in or create a free account, and you'll come straight back to the quiz.`}
+      />
+    );
+
   if (loading && questions.length === 0) {
     return (
       <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6 font-sans">

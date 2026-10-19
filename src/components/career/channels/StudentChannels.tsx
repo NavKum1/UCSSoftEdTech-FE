@@ -23,6 +23,8 @@ interface MyChannel {
   optOutSource?: string | null;
   codeExpiresAt?: string | null;
   mutedTypes: string[];
+  // H3: campus-drive notice types this student turned on
+  optedInTypes?: string[];
 }
 
 interface MineResponse {
@@ -30,6 +32,9 @@ interface MineResponse {
   brand: string;
   consentVersion: string;
   allowedTypes: string[];
+  // H3: types the student turns on one by one, with their own consent statement
+  optInTypes?: string[];
+  driveConsentVersion?: string;
   quietStart?: string | null;
   quietEnd?: string | null;
   timeZone: string;
@@ -44,6 +49,7 @@ function ChannelPanel({ c, mine, onChanged }: { c: MyChannel; mine: MineResponse
   const [phone, setPhone] = useState("");
   const [consent, setConsent] = useState(false);
   const [code, setCode] = useState("");
+  const [driveConsent, setDriveConsent] = useState(false);
   const [busy, setBusy] = useState<string | null>(null);
   const [err, setErr] = useState<string | null>(null);
   const [msg, setMsg] = useState<string | null>(null);
@@ -84,6 +90,14 @@ function ChannelPanel({ c, mine, onChanged }: { c: MyChannel; mine: MineResponse
     run("mute", async () => {
       const next = muted ? [...c.mutedTypes, type] : c.mutedTypes.filter((x) => x !== type);
       await api(`/api/career/channels/me/${ch}`, { method: "PUT", json: { mutedTypes: next } });
+      onChanged();
+    });
+  const setDriveType = (type: string, on: boolean) =>
+    run("drive", async () => {
+      const current = c.optedInTypes ?? [];
+      const next = on ? [...new Set([...current, type])] : current.filter((x) => x !== type);
+      await api(`/api/career/channels/me/${ch}`, { method: "PUT", json: { mutedTypes: c.mutedTypes, optInTypes: next, driveConsent } });
+      setMsg(t("driveSaved"));
       onChanged();
     });
   const optOut = () =>
@@ -137,6 +151,29 @@ function ChannelPanel({ c, mine, onChanged }: { c: MyChannel; mine: MineResponse
                     </label>
                   );
                 })}
+            </fieldset>
+          )}
+          {(mine.optInTypes ?? []).some((x) => mine.allowedTypes.includes(x)) && (
+            <fieldset className="space-y-2 text-sm">
+              <legend className="mb-1 font-medium">{t("driveTitle")}</legend>
+              <p className="text-xs text-muted-foreground">{t("driveHelp", { school: mine.schoolName })}</p>
+              <label htmlFor={`${ch}-drive-consent`} className="flex items-start gap-2">
+                <input id={`${ch}-drive-consent`} type="checkbox" checked={driveConsent} onChange={(e) => setDriveConsent(e.target.checked)} />
+                <span>{t("driveConsent", { school: mine.schoolName, channel: label })}</span>
+              </label>
+              {(mine.optInTypes ?? [])
+                .filter((x) => mine.allowedTypes.includes(x))
+                .map((type) => {
+                  const id = `${ch}-drive-${type}`;
+                  const on = (c.optedInTypes ?? []).includes(type);
+                  return (
+                    <label key={type} htmlFor={id} className="flex items-start gap-2">
+                      <input id={id} type="checkbox" checked={on} disabled={busy === "drive" || (!on && !driveConsent)} onChange={(e) => void setDriveType(type, e.target.checked)} />
+                      <span>{t(`type.${type}`)}</span>
+                    </label>
+                  );
+                })}
+              {!driveConsent && <p className="text-xs text-muted-foreground">{t("driveConsentFirst")}</p>}
             </fieldset>
           )}
           <Button variant="secondary" busy={busy === "optout"} onClick={() => void optOut()}>

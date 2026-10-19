@@ -7,6 +7,7 @@ import {
   Code2, RefreshCw, BookmarkCheck, ChevronRight
 } from "lucide-react";
 import Link from "next/link";
+import { AccessNotice, useLegacyApi } from "@/lib/legacyApi";
 
 interface TargetRolePreset {
   title: string;
@@ -29,6 +30,7 @@ const PRESET_ROLES: TargetRolePreset[] = [
 ];
 
 export default function ResumeMatcherPrepPage() {
+  const { apiFetch, access } = useLegacyApi();
   const [resumeText, setResumeText] = useState(
     "Senior Full-Stack Engineer with 5+ years building backend systems using Python, TypeScript, Docker, PostgreSQL, Microservices, and Redis. Experienced in REST APIs and CI/CD pipelines."
   );
@@ -53,7 +55,7 @@ export default function ResumeMatcherPrepPage() {
     setAnalysisResult(null);
 
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/resume/analyze-and-match`, {
+      const res = await apiFetch(`/api/resume/analyze-and-match`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -76,6 +78,8 @@ export default function ResumeMatcherPrepPage() {
       setIsAnalyzing(false);
     }
   };
+
+  if (access) return <AccessNotice problem={access} feature="The resume matcher" />;
 
   return (
     <div className="min-h-screen bg-background text-foreground p-6 md:p-12 font-sans relative overflow-hidden">
