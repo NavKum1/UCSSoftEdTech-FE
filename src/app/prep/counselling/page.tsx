@@ -432,6 +432,10 @@ function CareerCounsellingInner() {
           const storageKey = partnerSlug ? `counselling_eval_${partnerSlug}` : "counselling_eval_global";
           localStorage.setItem(storageKey, JSON.stringify(data));
         }
+      } else {
+        // EX3: e.g. 429 when the quiz was taken too often in a short time (per-user limit)
+        const err = await res.json().catch(() => null);
+        alert(err?.error || "Could not evaluate your answers. Please try again.");
       }
     } catch (err) {
       console.error("Failed to evaluate counselling answers:", err);

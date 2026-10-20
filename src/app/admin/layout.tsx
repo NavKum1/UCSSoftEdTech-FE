@@ -1,10 +1,11 @@
 import React from "react";
 import Link from "next/link";
-import { Shield, ArrowLeft, Lock } from "lucide-react";
+import { Shield, ArrowLeft, Lock, ClipboardList } from "lucide-react";
 import { UserButton } from "@clerk/nextjs";
+import { AdminRoleBadge } from "@/components/admin/AdminRoleBadge";
 
 export const metadata = {
-  title: "Super Admin Back-office — Build & Defend",
+  title: "Admin Back-office — Build & Defend",
   description: "Enterprise administration portal for partner institutes, course mapping, lead routing, and platform analytics.",
 };
 
@@ -15,7 +16,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       <div className="fixed top-0 left-1/4 w-96 h-96 bg-indigo-600/15 blur-[120px] pointer-events-none rounded-full" />
       <div className="fixed top-20 right-1/4 w-96 h-96 bg-purple-600/15 blur-[120px] pointer-events-none rounded-full" />
 
-      {/* Super Admin Topbar */}
+      {/* Admin Topbar */}
       <header className="sticky top-0 z-50 glass-panel border-b border-border/80 px-4 sm:px-6 py-3.5 flex flex-wrap gap-3 items-center justify-between backdrop-blur-xl">
         <div className="flex items-center space-x-4">
           <div className="flex items-center space-x-3">
@@ -27,10 +28,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 <span className="text-base font-extrabold tracking-tight text-foreground">
                   BUILD &amp; DEFEND
                 </span>
-                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-rose-500/20 text-rose-800 dark:text-rose-300 border border-rose-500/30 flex items-center space-x-1">
-                  <span className="w-1.5 h-1.5 rounded-full bg-rose-400 animate-ping inline-block mr-1"></span>
-                  SUPER ADMIN
-                </span>
+                {/* SUPER ADMIN only for a SuperAdmin; institute admins and exam creators (H12, /admin/exams) see their own role */}
+                <AdminRoleBadge />
               </div>
               <p className="text-xs text-muted-foreground">Back-office B2B Marketplace &amp; Operations Control</p>
             </div>
@@ -39,6 +38,15 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
         {/* Right Action Controls */}
         <div className="flex items-center space-x-4">
+          {/* H12: exam administration (also open to institute admins and exam creators; the API decides what they see) */}
+          <Link
+            href="/admin/exams"
+            id="admin-nav-exams"
+            className="text-xs font-medium text-muted-foreground hover:text-foreground px-3.5 py-2 rounded-xl bg-card/80 hover:bg-muted border border-border/60 transition-all flex items-center space-x-1.5 cursor-pointer shadow-sm"
+          >
+            <ClipboardList className="w-3.5 h-3.5" aria-hidden />
+            <span>Exams</span>
+          </Link>
           <Link
             href="/"
             id="admin-nav-return-portal"

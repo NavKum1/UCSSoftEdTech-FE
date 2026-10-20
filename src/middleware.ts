@@ -26,6 +26,9 @@ const isProtectedRoute = createRouteMatcher([
 // so middleware only sees the career_partner marker cookie. Role-gated routes never accept it.
 const isPartnerCareerRoute = createRouteMatcher(["/student(.*)", "/career-center(.*)", "/faculty(.*)", "/employer(.*)", "/alumni(.*)"]);
 const isAdminRoute = createRouteMatcher(["/admin(.*)"]);
+// H12: exam administration is also for institute admins and exam creators; sign-in is enough here and the API decides
+// which exams the user manages (404 for the rest)
+const isExamAdminRoute = createRouteMatcher(["/admin/exams(.*)"]);
 const isInstituteRoute = createRouteMatcher(["/institute(.*)", "/campus/admin(.*)"]);
 // Employers' institute admins manage these settings too
 const isInstituteOrRecruiterRoute = createRouteMatcher(["/recruiter/transparency-settings(.*)"]);
@@ -39,6 +42,13 @@ function gate(req: NextRequest, userId: string | null | undefined, hasRole: (...
     }
     if (!hasRole("Recruiter", "InstituteAdmin", "SuperAdmin")) {
       return NextResponse.redirect(new URL("/dashboard", req.url));
+    }
+    return NextResponse.next();
+  }
+
+  if (isExamAdminRoute(req)) {
+    if (!userId) {
+      return NextResponse.redirect(new URL("/login?redirect_url=" + encodeURIComponent(req.nextUrl.pathname), req.url));
     }
     return NextResponse.next();
   }
