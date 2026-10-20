@@ -46,6 +46,17 @@ interface ExamCatalogItem {
   difficulty: string;
   totalQuestions: number;
   passingPercentage: number;
+  /** Credential exams hide the answer key and have an attempt limit and a cooldown; practice exams issue no credential. */
+  issuesCredential?: boolean;
+  revealAnswerKey?: boolean;
+  /** 0 = unlimited */
+  maxAttempts?: number;
+  attemptsUsed?: number;
+  /** null when unlimited */
+  attemptsRemaining?: number | null;
+  /** Set while the cooldown after the last attempt runs */
+  nextAttemptAt?: string | null;
+  hasOpenAttempt?: boolean;
 }
 
 interface ExamAttempt {
@@ -64,6 +75,10 @@ interface ExamAttempt {
   verificationSignatureSha256?: string;
   verificationUrl?: string;
   submittedAt: string;
+  /** Submitted or Expired (time ran out before the submission) */
+  status?: string;
+  /** The server says whether this attempt may still be certified (passing, graded here, credential exam, not claimed). */
+  canClaimCredential?: boolean;
 }
 
 interface ExamQuestion {
@@ -74,7 +89,13 @@ interface ExamQuestion {
   topic: string;
 }
 
+/** A started attempt (POST /api/quiz/exams/{id}/start): its own question order and option order, never the answer key. */
 interface ActiveExamDetail {
+  attemptId: string;
+  attemptNumber?: number;
+  resumed?: boolean;
+  expiresAt?: string;
+  secondsLeft?: number;
   id: string;
   title: string;
   stream: string;
@@ -82,7 +103,17 @@ interface ActiveExamDetail {
   durationMinutes: number;
   difficulty: string;
   passingPercentage: number;
+  issuesCredential?: boolean;
+  revealAnswerKey?: boolean;
+  maxAttempts?: number;
+  attemptsRemaining?: number | null;
   questions: ExamQuestion[];
+}
+
+/** Why the server refused to start or grade an attempt (attempt limit, cooldown, time ran out). */
+interface AttemptNotice {
+  message: string;
+  nextAttemptAt?: string | null;
 }
 
 interface QuestionResult {
@@ -131,7 +162,30 @@ interface ExamEvaluationResult {
   passed: boolean;
   percentileRank: number;
   submittedAt: string;
+  /** Credential exams return no correct answers or explanations: questionResults is then empty. */
+  answerKeyHidden?: boolean;
+  issuesCredential?: boolean;
+  canClaimCredential?: boolean;
+  maxAttempts?: number;
+  attemptsRemaining?: number | null;
+  nextAttemptAt?: string | null;
   questionResults: QuestionResult[];
+}
+
+/** Attempts left and the cooldown, in words, for the catalogue card and the result screen. */
+function attemptsText(maxAttempts?: number, attemptsRemaining?: number | null): string | null {
+  if (!maxAttempts || attemptsRemaining === null || attemptsRemaining === undefined) return null;
+  if (attemptsRemaining === 0) return `No attempts left (${maxAttempts} used)`;
+  return `${attemptsRemaining} of ${maxAttempts} attempt${maxAttempts === 1 ? "" : "s"} left`;
+}
+
+function formatDateTime(value: string): string {
+  return new Date(value).toLocaleString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
+}
+
+/** True while the cooldown after the last attempt still runs. */
+function inCooldown(nextAttemptAt?: string | null): boolean {
+  return !!nextAttemptAt && new Date(nextAttemptAt).getTime() > Date.now();
 }
 
 export default function WrittenExamPrepPage() {
@@ -148,6 +202,8 @@ export default function WrittenExamPrepPage() {
   const [timeLeftSeconds, setTimeLeftSeconds] = useState<number>(0);
   const [submitting, setSubmitting] = useState<boolean>(false);
   const [evaluation, setEvaluation] = useState<ExamEvaluationResult | null>(null);
+  // Attempt limit / cooldown / expired attempt message from the server (shown on the catalogue and the result screen)
+  const [attemptNotice, setAttemptNotice] = useState<AttemptNotice | null>(null);
 
   // Tab & History state
   const [activeTab, setActiveTab] = useState<"catalog" | "history">("catalog");
@@ -238,19 +294,22 @@ export default function WrittenExamPrepPage() {
     fetchHistoryRef.current();
   }, [ready, fetchCatalogRef, fetchHistoryRef]);
 
+  // The server starts the attempt (or resumes the open one): it checks the attempt limit and the cooldown and sends this
+  // attempt's own question and option order. Draft answers are kept per attempt, because the order differs per attempt.
   const startExam = async (examId: string) => {
     setExamLoading(true);
     setEvaluation(null);
+    setAttemptNotice(null);
     setCurrentQuestionIndex(0);
     try {
-      const res = await apiFetch(`/api/quiz/exams/${examId}`);
+      const res = await apiFetch(`/api/quiz/exams/${examId}/start`, { method: "POST" });
       if (res.ok) {
         const data: ActiveExamDetail = await res.json();
         setActiveExam(data);
 
-        // Restore draft answers if available
+        // Restore draft answers of this attempt if available
         if (typeof window !== "undefined") {
-          const saved = localStorage.getItem(`exam_draft_answers_${examId}`);
+          const saved = localStorage.getItem(`exam_draft_answers_${data.attemptId}`);
           if (saved) {
             try {
               setAnswers(JSON.parse(saved));
@@ -264,10 +323,20 @@ export default function WrittenExamPrepPage() {
           setAnswers({});
         }
 
-        setTimeLeftSeconds(data.durationMinutes * 60);
+        // at least 1 s, so a resumed attempt whose time is up is submitted by the countdown at once
+        setTimeLeftSeconds(Math.max(1, data.secondsLeft ?? data.durationMinutes * 60));
+      } else {
+        const err = await res.json().catch(() => null);
+        setActiveExam(null);
+        setAttemptNotice({
+          message: err?.error || "This exam could not be started. Try again later.",
+          nextAttemptAt: err?.nextAttemptAt ?? null,
+        });
+        fetchCatalog();
       }
     } catch (err) {
-      console.error("Failed to load exam details:", err);
+      console.error("Failed to start the exam:", err);
+      setAttemptNotice({ message: "This exam could not be started. Check your connection and try again." });
     } finally {
       setExamLoading(false);
     }
@@ -280,7 +349,7 @@ export default function WrittenExamPrepPage() {
         [questionId]: optionIndex,
       };
       if (typeof window !== "undefined" && activeExam) {
-        localStorage.setItem(`exam_draft_answers_${activeExam.id}`, JSON.stringify(next));
+        localStorage.setItem(`exam_draft_answers_${activeExam.attemptId}`, JSON.stringify(next));
       }
       return next;
     });
@@ -293,16 +362,30 @@ export default function WrittenExamPrepPage() {
       const res = await apiFetch(`/api/quiz/exams/${activeExam.id}/submit`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ answers, candidateName }),
+        body: JSON.stringify({ attemptId: activeExam.attemptId, answers, candidateName }),
       });
 
       if (res.ok) {
         const resultData: ExamEvaluationResult = await res.json();
         setEvaluation(resultData);
         if (typeof window !== "undefined") {
-          localStorage.removeItem(`exam_draft_answers_${activeExam.id}`);
+          localStorage.removeItem(`exam_draft_answers_${activeExam.attemptId}`);
         }
         fetchHistory();
+        fetchCatalog();
+      } else {
+        // e.g. the time for this attempt ran out (it still counts as an attempt)
+        const err = await res.json().catch(() => null);
+        if (typeof window !== "undefined") {
+          localStorage.removeItem(`exam_draft_answers_${activeExam.attemptId}`);
+        }
+        setActiveExam(null);
+        setAttemptNotice({
+          message: err?.error || "Your answers could not be graded. Try again later.",
+          nextAttemptAt: err?.nextAttemptAt ?? null,
+        });
+        fetchHistory();
+        fetchCatalog();
       }
     } catch (err) {
       console.error("Failed to evaluate exam:", err);
@@ -365,6 +448,27 @@ export default function WrittenExamPrepPage() {
       setClaiming(false);
     }
   };
+
+  // Attempt limit / cooldown / expired attempt banner
+  const noticeBanner = attemptNotice && (
+    <div role="status" className="p-4 rounded-xl border border-amber-500/30 bg-amber-500/10 text-xs text-foreground flex items-start gap-2.5">
+      <AlertCircle className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" aria-hidden="true" />
+      <div className="space-y-0.5">
+        <p className="font-semibold">{attemptNotice.message}</p>
+        {attemptNotice.nextAttemptAt && (
+          <p className="text-muted-foreground">Next attempt available from {formatDateTime(attemptNotice.nextAttemptAt)}.</p>
+        )}
+      </div>
+      <button
+        type="button"
+        onClick={() => setAttemptNotice(null)}
+        aria-label="Dismiss message"
+        className="ml-auto rounded-lg p-0.5 text-muted-foreground hover:text-foreground"
+      >
+        <X className="w-4 h-4" />
+      </button>
+    </div>
+  );
 
   const handleSynthesizeExam = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -497,6 +601,9 @@ export default function WrittenExamPrepPage() {
   if (access) return <AccessNotice problem={access} feature="Written exam prep" />;
 
   if (evaluation) {
+    const isCredentialExam = evaluation.issuesCredential ?? true;
+    const retakeBlocked = evaluation.attemptsRemaining === 0 || inCooldown(evaluation.nextAttemptAt);
+    const evaluationAttempts = attemptsText(evaluation.maxAttempts, evaluation.attemptsRemaining);
     return (
       <div className="min-h-screen bg-background text-foreground p-4 md:p-8 font-sans">
         <div className="max-w-4xl mx-auto space-y-6">
@@ -530,7 +637,7 @@ export default function WrittenExamPrepPage() {
                 )}
                 <div>
                   <div className="text-xs font-semibold uppercase tracking-wider">
-                    {evaluation.passed ? "PASSED (Certified)" : "NEEDS PRACTICE"}
+                    {evaluation.passed ? (isCredentialExam ? "PASSED (Certified)" : "PASSED") : "NEEDS PRACTICE"}
                   </div>
                   <div className="text-2xl font-black">{evaluation.percentage}%</div>
                 </div>
@@ -568,13 +675,18 @@ export default function WrittenExamPrepPage() {
                   Skill Verified
                 </span>
                 <p className="text-xl font-bold text-foreground mt-0.5">
-                  {evaluation.passed ? "Yes" : "In Progress"}
+                  {!isCredentialExam ? "Practice" : evaluation.passed ? "Yes" : "In Progress"}
                 </p>
               </div>
             </div>
 
             {/* Verified Credential & Skill Passport Issuance Banner */}
-            {evaluation.passed ? (
+            {evaluation.passed && !isCredentialExam ? (
+              <div role="status" className="p-4 rounded-xl border border-emerald-500/30 bg-emerald-500/10 text-xs text-foreground flex items-center gap-2">
+                <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" aria-hidden="true" />
+                <span>You passed this practice exam. Practice exams don&apos;t issue a credential.</span>
+              </div>
+            ) : evaluation.passed ? (
               <div className="p-4 sm:p-5 rounded-2xl border border-amber-500/30 bg-gradient-to-r from-amber-500/10 via-primary/5 to-amber-500/10 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-sm">
                 <div className="flex items-center gap-3.5">
                   <div className="w-11 h-11 rounded-xl bg-amber-500/20 text-amber-500 border border-amber-500/30 flex items-center justify-center shrink-0 shadow-sm">
@@ -619,20 +731,41 @@ export default function WrittenExamPrepPage() {
               </div>
             ) : (
               <div className="p-4 rounded-xl border border-border bg-muted/20 text-xs text-muted-foreground flex items-center justify-between">
-                <span>Passing score is {evaluation.passingPercentage}%. Retake the exam to unlock your official verified credential badge.</span>
-                <button
-                  onClick={() => startExam(evaluation.examId)}
-                  className="font-semibold text-primary hover:underline ml-2"
-                >
-                  Retry Now
-                </button>
+                <span>
+                  Passing score is {evaluation.passingPercentage}%.{" "}
+                  {!isCredentialExam
+                    ? "Retake the practice exam when you are ready."
+                    : retakeBlocked
+                      ? "You can't retake this exam right now (see below)."
+                      : "Retake the exam to unlock your official verified credential badge."}
+                </span>
+                {!retakeBlocked && (
+                  <button
+                    onClick={() => startExam(evaluation.examId)}
+                    className="font-semibold text-primary hover:underline ml-2"
+                  >
+                    Retry Now
+                  </button>
+                )}
+              </div>
+            )}
+
+            {/* Attempts left and the cooldown */}
+            {(evaluationAttempts || inCooldown(evaluation.nextAttemptAt)) && (
+              <div role="status" className="p-3 rounded-xl border border-border bg-muted/20 text-xs text-muted-foreground flex flex-wrap items-center gap-x-3 gap-y-1">
+                <Clock className="w-3.5 h-3.5 text-primary" aria-hidden="true" />
+                {evaluationAttempts && <span className="font-semibold text-foreground">{evaluationAttempts}</span>}
+                {inCooldown(evaluation.nextAttemptAt) && evaluation.attemptsRemaining !== 0 && (
+                  <span>Next attempt available from {formatDateTime(evaluation.nextAttemptAt as string)}.</span>
+                )}
               </div>
             )}
 
             <div className="flex flex-wrap items-center gap-3 pt-2">
               <button
                 onClick={() => startExam(evaluation.examId)}
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-primary text-primary-foreground font-semibold text-xs hover:opacity-95 transition-opacity"
+                disabled={retakeBlocked}
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-primary text-primary-foreground font-semibold text-xs hover:opacity-95 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <RotateCcw className="w-3.5 h-3.5" />
                 Retake Exam
@@ -656,7 +789,23 @@ export default function WrittenExamPrepPage() {
             </div>
           </div>
 
+          {/* Credential exams: no answer key */}
+          {evaluation.answerKeyHidden && (
+            <div role="note" className="p-5 rounded-2xl border border-border bg-card shadow-sm text-xs text-muted-foreground flex items-start gap-3">
+              <ShieldCheck className="w-5 h-5 text-primary shrink-0" aria-hidden="true" />
+              <div className="space-y-1">
+                <h2 className="text-sm font-bold text-foreground">Answers are not shown for this exam</h2>
+                <p>
+                  {isCredentialExam
+                    ? "This exam issues a credential, so the correct answers and explanations stay private. You see your score and whether you passed."
+                    : "The exam owner has chosen not to show the correct answers for this exam. You see your score and whether you passed."}
+                </p>
+              </div>
+            </div>
+          )}
+
           {/* Deep Question Explanations */}
+          {!evaluation.answerKeyHidden && evaluation.questionResults.length > 0 && (
           <div className="space-y-4">
             <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
               <BookOpen className="w-4 h-4 text-primary" />
@@ -754,6 +903,7 @@ export default function WrittenExamPrepPage() {
               })}
             </div>
           </div>
+          )}
         </div>
       </div>
     );
@@ -781,6 +931,12 @@ export default function WrittenExamPrepPage() {
               <span>{activeExam.stream}</span>
               <span>•</span>
               <span>Question {currentQuestionIndex + 1} of {activeExam.questions.length}</span>
+              {activeExam.attemptNumber && activeExam.maxAttempts ? (
+                <>
+                  <span>•</span>
+                  <span>Attempt {activeExam.attemptNumber} of {activeExam.maxAttempts}</span>
+                </>
+              ) : null}
             </div>
           </div>
 
@@ -998,6 +1154,8 @@ export default function WrittenExamPrepPage() {
           </button>
         </div>
 
+        {noticeBanner}
+
         {activeTab === "catalog" ? (
           <>
             {/* Action Controls & Filter Pills */}
@@ -1053,7 +1211,11 @@ export default function WrittenExamPrepPage() {
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-                {filteredCatalog.map((exam, i) => (
+                {filteredCatalog.map((exam, i) => {
+                  const attemptsLine = attemptsText(exam.maxAttempts, exam.attemptsRemaining);
+                  const cooling = inCooldown(exam.nextAttemptAt) && !exam.hasOpenAttempt;
+                  const exhausted = exam.attemptsRemaining === 0 && !exam.hasOpenAttempt;
+                  return (
                   <div
                     key={`${exam.id}-${i}`}
                     className="group relative flex flex-col justify-between p-6 rounded-2xl border border-border/80 bg-card/60 hover:bg-card hover:border-primary/40 transition-all duration-200 shadow-sm hover:shadow-md"
@@ -1075,6 +1237,26 @@ export default function WrittenExamPrepPage() {
                       <p className="text-xs text-muted-foreground leading-relaxed">
                         {exam.description}
                       </p>
+
+                      <span
+                        className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-semibold ${
+                          exam.issuesCredential
+                            ? "bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20"
+                            : "bg-muted text-muted-foreground border border-border"
+                        }`}
+                      >
+                        {exam.issuesCredential ? (
+                          <>
+                            <Award className="w-3 h-3" aria-hidden="true" />
+                            Credential exam: answers not shown
+                          </>
+                        ) : (
+                          <>
+                            <BookOpen className="w-3 h-3" aria-hidden="true" />
+                            {exam.revealAnswerKey === false ? "Practice exam" : "Practice exam: answers shown after you submit"}
+                          </>
+                        )}
+                      </span>
                     </div>
 
                     <div className="pt-6 space-y-4">
@@ -1089,16 +1271,35 @@ export default function WrittenExamPrepPage() {
                         </div>
                       </div>
 
+                      {(attemptsLine || cooling) && (
+                        <div className="text-[11px] text-muted-foreground space-y-0.5">
+                          {attemptsLine && <p className="font-semibold text-foreground">{attemptsLine}</p>}
+                          {cooling && !exhausted && <p>Next attempt available from {formatDateTime(exam.nextAttemptAt as string)}.</p>}
+                        </div>
+                      )}
+
                       <button
                         onClick={() => startExam(exam.id)}
-                        className="w-full py-2.5 px-4 rounded-xl bg-primary text-primary-foreground font-semibold text-xs flex items-center justify-center gap-2 group-hover:opacity-95 transition-opacity"
+                        disabled={cooling || exhausted}
+                        className="w-full py-2.5 px-4 rounded-xl bg-primary text-primary-foreground font-semibold text-xs flex items-center justify-center gap-2 group-hover:opacity-95 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
                       >
-                        <span>Start Practice Exam</span>
+                        <span>
+                          {exam.hasOpenAttempt
+                            ? "Resume Exam"
+                            : exhausted
+                              ? "No Attempts Left"
+                              : cooling
+                                ? "Available Later"
+                                : exam.issuesCredential
+                                  ? "Start Exam"
+                                  : "Start Practice Exam"}
+                        </span>
                         <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
                       </button>
                     </div>
                   </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </>
@@ -1201,6 +1402,11 @@ export default function WrittenExamPrepPage() {
                         {att.examTitle}
                       </h4>
 
+                      {att.status === "Expired" ? (
+                        <div className="text-xs text-muted-foreground">
+                          Time ran out before this attempt was submitted, so it was not graded. It counts as an attempt.
+                        </div>
+                      ) : (
                       <div className="flex items-center gap-3 text-xs text-muted-foreground">
                         <span>Score: <strong className={att.passed ? "text-emerald-500" : "text-rose-500"}>{att.percentage}%</strong></span>
                         <span>•</span>
@@ -1208,6 +1414,7 @@ export default function WrittenExamPrepPage() {
                         <span>•</span>
                         <span>Est. Percentile: Top {100 - att.percentileRank}%</span>
                       </div>
+                      )}
                     </div>
 
                     <div className="flex items-center gap-2 shrink-0">
@@ -1220,7 +1427,7 @@ export default function WrittenExamPrepPage() {
                           <span>View Credential</span>
                           <ExternalLink className="w-3 h-3" />
                         </Link>
-                      ) : att.passed ? (
+                      ) : (att.canClaimCredential ?? att.passed) ? (
                         <button
                           onClick={() => handleClaimCredential(att.examId, att.attemptId)}
                           disabled={claiming}
