@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { Suspense, useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { CalendarPlus } from "lucide-react";
 import { useApi } from "@/lib/appAuth";
 import { useCareerShell } from "@/components/career/CareerShell";
@@ -26,12 +27,24 @@ import {
   useModeLabels,
   useStatusLabel,
 } from "@/components/career/appointments/shared";
+import { StudentGroupSessions } from "@/components/career/appointments/GroupSessionsStudent";
 
-type Tab = "book" | "mine" | "dropin" | "notes";
+type Tab = "book" | "mine" | "group" | "dropin" | "notes";
+const TABS: Tab[] = ["mine", "book", "group", "dropin", "notes"];
 
 export default function StudentAppointmentsPage() {
+  return (
+    <Suspense fallback={<Loading />}>
+      <StudentAppointments />
+    </Suspense>
+  );
+}
+
+function StudentAppointments() {
   const tr = useCareerT("studentAppointments");
-  const [tab, setTab] = useState<Tab>("mine");
+  // ?tab=group opens the group sessions (links in group-session notifications)
+  const requested = useSearchParams().get("tab") as Tab | null;
+  const [tab, setTab] = useState<Tab>(requested && TABS.includes(requested) ? requested : "mine");
   const [message, setMessage] = useState<string | null>(null);
   return (
     <div>
@@ -47,6 +60,7 @@ export default function StudentAppointmentsPage() {
         tabs={[
           { key: "mine", label: tr("myAppointments") },
           { key: "book", label: tr("book") },
+          { key: "group", label: tr("groupSessions") },
           { key: "dropin", label: tr("dropIn") },
           { key: "notes", label: tr("notesTasks") },
         ]}
@@ -61,6 +75,7 @@ export default function StudentAppointmentsPage() {
           />
         )}
         {tab === "mine" && <MyAppointments onBook={() => setTab("book")} />}
+        {tab === "group" && <StudentGroupSessions />}
         {tab === "dropin" && <DropIn />}
         {tab === "notes" && <NotesAndTasks />}
       </TabPanel>

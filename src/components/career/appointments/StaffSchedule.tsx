@@ -20,6 +20,7 @@ import {
   useModeLabels,
   useStatusLabel,
 } from "./shared";
+import { type GroupSession, SeatsBadge } from "./groupShared";
 
 export interface StaffCounselor {
   userId: string;
@@ -33,6 +34,8 @@ export interface StaffCounselor {
   meetingUrl?: string | null;
   location?: string | null;
   weeklyBlocks: number;
+  // H14: false = the counselor always shares their own room instead of a generated Teams / Google Meet link
+  useGeneratedMeetings?: boolean;
 }
 
 export function useCounselors() {
@@ -47,8 +50,8 @@ export function useStaffTypes() {
   return useLoad(() => api<{ timeZone: string; types: ApptType[] }>("/api/career/appointments/types"), [api, schoolId]);
 }
 
-/** Day view of booked appointments: mine, one counselor's, or everyone's (grouped by counselor). */
-export function StaffSchedule({ onOpen }: { onOpen: (id: string) => void }) {
+/** Day view of booked appointments and (H14) hosted group sessions: mine, one counselor's, or everyone's (grouped by counselor). */
+export function StaffSchedule({ onOpen, onOpenGroup }: { onOpen: (id: string) => void; onOpenGroup?: (id: string) => void }) {
   const tr = useCareerT("staffSchedule");
   const fmt = useCareerFormat();
   const statusLabel = useStatusLabel();
@@ -67,12 +70,19 @@ export function StaffSchedule({ onOpen }: { onOpen: (id: string) => void }) {
   const date = day ?? todayIn(tz);
   const query = who === "me" ? "" : who === "all" ? "&all=true" : `&counselorId=${who}`;
   const schedule = useLoad(
-    () => (types.data ? api<{ timeZone: string; items: Appointment[] }>(`/api/career/appointments/schedule?from=${date}&to=${addDays(date, days - 1)}${query}&includeCancelled=${showCancelled}`) : Promise.resolve(null)),
+    () => (types.data ? api<{ timeZone: string; items: Appointment[]; groupSessions?: GroupSession[] }>(`/api/career/appointments/schedule?from=${date}&to=${addDays(date, days - 1)}${query}&includeCancelled=${showCancelled}`) : Promise.resolve(null)),
     [api, schoolId, date, days, query, showCancelled, types.data],
   );
 
   const items = schedule.data?.items ?? [];
-  const groups = who === "all" ? Object.entries(items.reduce<Record<string, Appointment[]>>((acc, a) => ({ ...acc, [a.counselor.name]: [...(acc[a.counselor.name] ?? []), a] }), {})) : [["", items] as [string, Appointment[]]];
+  const sessions = schedule.data?.groupSessions ?? [];
+  // One list per counselor (or one list): appointments and group sessions in time order; a session is listed under its lead host
+  type Row = { kind: "appt"; a: Appointment; start: string; owner: string } | { kind: "group"; s: GroupSession; start: string; owner: string };
+  const rows: Row[] = [
+    ...items.map((a) => ({ kind: "appt" as const, a, start: a.startUtc, owner: a.counselor.name })),
+    ...sessions.map((s) => ({ kind: "group" as const, s, start: s.startUtc, owner: s.hosts[0]?.name ?? "" })),
+  ].sort((x, y) => Date.parse(x.start) - Date.parse(y.start));
+  const groups = who === "all" ? Object.entries(rows.reduce<Record<string, Row[]>>((acc, x) => ({ ...acc, [x.owner]: [...(acc[x.owner] ?? []), x] }), {})) : [["", rows] as [string, Row[]]];
   const dayLabel = new Date(`${date}T12:00:00Z`).toLocaleDateString(fmt.locale, { weekday: "long", month: "long", day: "numeric", year: "numeric", timeZone: "UTC" });
 
   return (
@@ -142,7 +152,7 @@ export function StaffSchedule({ onOpen }: { onOpen: (id: string) => void }) {
         <ErrorBanner error={schedule.error || types.error} onRetry={schedule.reload} />
         {schedule.loading || types.loading ? (
           <Loading />
-        ) : items.length === 0 ? (
+        ) : rows.length === 0 ? (
           <EmptyState title={tr("noAppointments")}>{tr("nothingBookedForThisWeek", { days })}</EmptyState>
         ) : (
           <div className="space-y-4">
@@ -150,24 +160,43 @@ export function StaffSchedule({ onOpen }: { onOpen: (id: string) => void }) {
               <div key={name || "mine"}>
                 {name && <h3 className="mb-2 font-medium">{name}</h3>}
                 <ul className="divide-y divide-border rounded-xl border border-border bg-card">
-                  {list.map((a) => (
-                    <li key={a.id}>
-                      <button type="button" onClick={() => onOpen(a.id)} className="flex w-full flex-wrap items-center gap-3 p-3 text-start hover:bg-muted focus-visible:outline-2">
+                  {list.map((row) =>
+                    row.kind === "group" ? (
+                      <li key={row.s.id}>
+                        <button type="button" onClick={() => onOpenGroup?.(row.s.id)} className="flex w-full flex-wrap items-center gap-3 p-3 text-start hover:bg-muted focus-visible:outline-2">
+                          <span className="w-40 shrink-0 text-sm font-medium">
+                            {days > 1 && inZone(row.s.startUtc, tz, { weekday: "short", month: "short", day: "numeric" }) + " "}
+                            {inZone(row.s.startUtc, tz, { hour: "numeric", minute: "2-digit" })}–{inZone(row.s.endUtc, tz, { hour: "numeric", minute: "2-digit" })}
+                          </span>
+                          <span className="min-w-0 flex-1">
+                            <span className="block truncate font-medium">{row.s.title}</span>
+                            <span className="block truncate text-xs text-muted-foreground">
+                              {tr("groupSessionLine", { registered: row.s.registered, capacity: row.s.capacity, mode: MODE_LABELS[row.s.mode] ?? row.s.mode })}
+                            </span>
+                          </span>
+                          <Badge tone="info">{tr("groupSession")}</Badge>
+                          <SeatsBadge s={row.s} />
+                        </button>
+                      </li>
+                    ) : (
+                    <li key={row.a.id}>
+                      <button type="button" onClick={() => onOpen(row.a.id)} className="flex w-full flex-wrap items-center gap-3 p-3 text-start hover:bg-muted focus-visible:outline-2">
                         <span className="w-40 shrink-0 text-sm font-medium">
-                          {days > 1 && inZone(a.startUtc, tz, { weekday: "short", month: "short", day: "numeric" }) + " "}
-                          {inZone(a.startUtc, tz, { hour: "numeric", minute: "2-digit" })}–{inZone(a.endUtc, tz, { hour: "numeric", minute: "2-digit" })}
+                          {days > 1 && inZone(row.a.startUtc, tz, { weekday: "short", month: "short", day: "numeric" }) + " "}
+                          {inZone(row.a.startUtc, tz, { hour: "numeric", minute: "2-digit" })}–{inZone(row.a.endUtc, tz, { hour: "numeric", minute: "2-digit" })}
                         </span>
                         <span className="min-w-0 flex-1">
-                          <span className="block truncate font-medium">{a.student?.name}</span>
+                          <span className="block truncate font-medium">{row.a.student?.name}</span>
                           <span className="block truncate text-xs text-muted-foreground">
-                            {a.typeName} · {MODE_LABELS[a.mode] ?? a.mode}
+                            {row.a.typeName} · {MODE_LABELS[row.a.mode] ?? row.a.mode}
                           </span>
                         </span>
-                        {a.bookedOnBehalf && <Badge tone="neutral">{tr("bookedByStaff")}</Badge>}
-                        <Badge tone={statusTone(a)}>{statusLabel(a)}</Badge>
+                        {row.a.bookedOnBehalf && <Badge tone="neutral">{tr("bookedByStaff")}</Badge>}
+                        <Badge tone={statusTone(row.a)}>{statusLabel(row.a)}</Badge>
                       </button>
                     </li>
-                  ))}
+                    ),
+                  )}
                 </ul>
               </div>
             ))}

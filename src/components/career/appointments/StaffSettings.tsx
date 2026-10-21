@@ -22,6 +22,7 @@ interface Profile {
   bookable: boolean;
   typeIds: string[];
   calendarFeedPath?: string | null;
+  useGeneratedMeetings?: boolean;
 }
 
 interface Availability {
@@ -71,7 +72,7 @@ function ProfileCard({ userId, isMe, api, onSaved }: { userId: string; isMe: boo
   const initial: Profile | null = isMe
     ? mine.data
     : c
-      ? { userId, name: c.name, title: c.title, meetingUrl: c.meetingUrl, location: c.location, bookable: c.bookable, typeIds: c.typeIds }
+      ? { userId, name: c.name, title: c.title, meetingUrl: c.meetingUrl, location: c.location, bookable: c.bookable, typeIds: c.typeIds, useGeneratedMeetings: c.useGeneratedMeetings ?? true }
       : null;
   if (!initial) return mine.error || counselors.error ? <ErrorBanner error={mine.error || counselors.error} /> : <Loading />;
   return <ProfileForm initial={initial} userId={userId} isMe={isMe} api={api} onSaved={onSaved} types={types.data?.types ?? []} />;
@@ -92,7 +93,7 @@ function ProfileForm({ initial, userId, isMe, api, onSaved, types }: { initial: 
     try {
       const saved = await api<Profile>(`/api/career/appointments/counselors/${userId}`, {
         method: "PUT",
-        json: { name: form.name, title: form.title ?? "", bio: form.bio ?? "", meetingUrl: form.meetingUrl ?? "", location: form.location ?? "", phone: form.phone ?? "", typeIds: form.typeIds, bookable: form.bookable },
+        json: { name: form.name, title: form.title ?? "", bio: form.bio ?? "", meetingUrl: form.meetingUrl ?? "", location: form.location ?? "", phone: form.phone ?? "", typeIds: form.typeIds, bookable: form.bookable, useGeneratedMeetings: form.useGeneratedMeetings ?? true },
       });
       setForm({ ...form, ...saved, calendarFeedPath: saved.calendarFeedPath ?? form.calendarFeedPath });
       setMessage(tr("bookingProfileSaved"));
@@ -129,6 +130,13 @@ function ProfileForm({ initial, userId, isMe, api, onSaved, types }: { initial: 
           </Field>
           <Field label={tr("inPersonLocation")}>{(p) => <input {...p} maxLength={300} value={form.location ?? ""} onChange={(e) => setForm({ ...form, location: e.target.value })} />}</Field>
         </div>
+        <label className="flex items-start gap-2 text-sm">
+          <input type="checkbox" checked={form.useGeneratedMeetings ?? true} onChange={(e) => setForm({ ...form, useGeneratedMeetings: e.target.checked })} />
+          <span>
+            {tr("useGeneratedMeetings")}
+            <span className="block text-xs text-muted-foreground">{tr("useGeneratedMeetingsHint")}</span>
+          </span>
+        </label>
         {isMe && <Field label={tr("shortBioOptional")}>{(p) => <textarea {...p} rows={2} maxLength={1000} value={form.bio ?? ""} onChange={(e) => setForm({ ...form, bio: e.target.value })} />}</Field>}
         <fieldset>
           <legend className="mb-2 text-sm font-medium">{tr("appointmentTypesOffered")}</legend>

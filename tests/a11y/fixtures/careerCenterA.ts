@@ -1,4 +1,5 @@
 import { type ApiFixture, type A11yRoute, type FixtureContext, INSTITUTE_ID, SCHOOL_NAME, USER_ID, days, hours } from "./types";
+import { scheduleGroupSessions } from "./groupSessions";
 
 /**
  * Career-center persona, part A: home, appointments, calendar sync, caseload (+ rules, settings), employer challenges,
@@ -1208,7 +1209,7 @@ const raw: ApiFixture[] = [
   { method: "PUT", path: /^\/api\/career\/appointments\/counselors\/[^/]+$/, body: counselorProfile },
   { method: "POST", path: "/api/career/appointments/counselors/me/calendar-token/rotate", body: { ...counselorProfile, calendarFeedPath: "/api/career/appointments/feed/1b9e44a0.ics" } },
   { method: "*", path: /^\/api\/career\/appointments\/counselors\/[^/]+\/(availability|exceptions)(\/[^/]+)?$/, body: availability },
-  { path: "/api/career/appointments/schedule", body: (ctx: FixtureContext) => ({ timeZone: TZ, items: APPOINTMENTS.filter((a) => ctx.url.searchParams.get("includeCancelled") === "true" || a.status !== "Cancelled") }) },
+  { path: "/api/career/appointments/schedule", body: (ctx: FixtureContext) => ({ timeZone: TZ, items: APPOINTMENTS.filter((a) => ctx.url.searchParams.get("includeCancelled") === "true" || a.status !== "Cancelled"), groupSessions: scheduleGroupSessions }) },
   { path: "/api/career/appointments/slots", body: slotsBody },
   { method: "POST", path: "/api/career/appointments/book", body: APPOINTMENTS[1] },
   { path: "/api/career/appointments/dropin/sessions", body: DROPIN_SESSIONS },

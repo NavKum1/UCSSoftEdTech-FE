@@ -21,7 +21,8 @@ interface Status {
   providers: { provider: "Microsoft" | "Google"; available: boolean }[];
   connection: Connection | null;
   eventsInCalendar: number;
-  school: { readBusyEnabled: boolean; writeEventsEnabled: boolean; includeStudentNames: boolean };
+  // H14: generateMeetingLinks gives video appointments and group sessions their own Teams / Google Meet link
+  school: { readBusyEnabled: boolean; writeEventsEnabled: boolean; includeStudentNames: boolean; generateMeetingLinks?: boolean };
   isAdmin: boolean;
 }
 
@@ -176,6 +177,9 @@ export default function CalendarPage() {
                 ? t("bookedAppointmentsAreAddedTo", { value: s.school.includeStudentNames ? t("titlesIncludeTheStudentsName") : t("titlesShowTheAppointmentType") })
                 : t("yourCareerCenterHasntTurned")}
             </li>
+            {s.school.writeEventsEnabled && s.school.generateMeetingLinks && (
+              <li>{t("meetingLinksForVideo", { provider: s.connection?.provider === "Google" ? "Google Meet" : "Microsoft Teams" })}</li>
+            )}
           </ul>
         </Card>
       )}
@@ -196,6 +200,12 @@ export default function CalendarPage() {
               <input id="cal-names" type="checkbox" disabled={!s.school.writeEventsEnabled} checked={s.school.includeStudentNames} onChange={(e) => void saveSchool({ includeStudentNames: e.target.checked })} />
               <span>
                 {t.rich("includeTheStudentsNameIn", { span: (chunks) => <span className="block text-xs text-muted-foreground">{chunks}</span> })}
+              </span>
+            </label>
+            <label className="flex items-start gap-2" htmlFor="cal-meetings">
+              <input id="cal-meetings" type="checkbox" disabled={!s.school.writeEventsEnabled} checked={!!s.school.generateMeetingLinks} onChange={(e) => void saveSchool({ generateMeetingLinks: e.target.checked })} />
+              <span>
+                {t.rich("generateMeetingLinks", { span: (chunks) => <span className="block text-xs text-muted-foreground">{chunks}</span> })}
               </span>
             </label>
           </fieldset>

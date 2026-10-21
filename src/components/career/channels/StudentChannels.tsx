@@ -41,7 +41,7 @@ interface MineResponse {
   channels: MyChannel[];
 }
 
-const TYPE_KEYS = ["appointment_reminders", "document_review_results", "internship_approvals", "counselor_messages"];
+const TYPE_KEYS = ["appointment_reminders", "group_session_reminders", "group_session_updates", "document_review_results", "internship_approvals", "counselor_messages"];
 
 function ChannelPanel({ c, mine, onChanged }: { c: MyChannel; mine: MineResponse; onChanged: () => void }) {
   const t = useCareerT("studentChatSms");

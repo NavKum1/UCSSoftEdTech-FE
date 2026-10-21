@@ -47,6 +47,10 @@ export interface Appointment {
   mode: string;
   location?: string | null;
   meetingUrl?: string | null;
+  // H14: "Generated" (Teams / Google Meet) or "HostLink"; staff also get the reason a fixed link is used
+  meetingSource?: string | null;
+  meetingProvider?: string | null;
+  meetingFallbackReason?: string | null;
   status: string;
   outcome?: string | null;
   counselor: { userId: string; name: string };
