@@ -440,7 +440,7 @@ function TypeForm({ initial, onDone, onCancel }: { initial: GroupType | null; on
   const api = useApi();
   const cohorts = useCohorts();
   const [f, setF] = useState<Omit<GroupType, "id">>(
-    initial ?? { name: "", description: "", kind: "Workshop", durationMinutes: 60, capacity: 20, mode: "InPerson", location: "", allowStudents: true, allowAlumni: true, eligibility: {}, minLeadMinutes: 60, maxLeadDays: 90, cancelCutoffMinutes: 120, active: true, sortOrder: 0 },
+    initial ?? { name: "", description: "", kind: "Workshop", durationMinutes: 60, capacity: 20, mode: "InPerson", location: "", allowStudents: true, allowAlumni: true, eligibility: {}, minLeadMinutes: 60, maxLeadDays: 90, cancelCutoffMinutes: 120, promotionCutoffMinutes: 120, active: true, sortOrder: 0 },
   );
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -493,12 +493,15 @@ function TypeForm({ initial, onDone, onCancel }: { initial: GroupType | null; on
         </Field>
         {f.mode === "InPerson" && <Field label={t("location")}>{(p) => <input {...p} maxLength={300} value={f.location ?? ""} onChange={(e) => set("location", e.target.value)} />}</Field>}
       </div>
-      <div className="grid gap-3 sm:grid-cols-3">
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <Field label={t("registrationClosesMinutes")} hint={t("sameAsAppointments")}>
           {(p) => <input {...p} type="number" min={0} max={43200} value={f.minLeadMinutes} onChange={(e) => set("minLeadMinutes", Number(e.target.value))} />}
         </Field>
         <Field label={t("registrationOpensDays")}>{(p) => <input {...p} type="number" min={1} max={365} value={f.maxLeadDays} onChange={(e) => set("maxLeadDays", Number(e.target.value))} />}</Field>
         <Field label={t("cancelCutoffMinutes")}>{(p) => <input {...p} type="number" min={0} max={10080} value={f.cancelCutoffMinutes} onChange={(e) => set("cancelCutoffMinutes", Number(e.target.value))} />}</Field>
+        <Field label={t("promotionCutoffMinutes")} hint={t("promotionCutoffHint")}>
+          {(p) => <input {...p} type="number" min={0} max={10080} value={f.promotionCutoffMinutes} onChange={(e) => set("promotionCutoffMinutes", Number(e.target.value))} />}
+        </Field>
       </div>
       <div className="flex flex-wrap gap-4 text-sm">
         <label htmlFor="gt-students" className="flex items-center gap-1">
@@ -542,6 +545,13 @@ interface RosterRow {
   cancelledAt?: string | null;
   cancelReason?: string | null;
   addedByStaff: boolean;
+  addedBy?: { userId: string; name: string } | null;
+  eligibilityOverridden?: boolean;
+  overCapacity?: boolean;
+  overCapacityReason?: string | null;
+  /** Why the last promotion passed this waitlisted student over ("TimeConflict" or "NotEligible") */
+  promotionSkippedReason?: string | null;
+  promotionSkippedAt?: string | null;
 }
 
 interface NoteRow {
@@ -652,6 +662,9 @@ export function GroupSessionDetail({ id, onBack }: { id: string; onBack: () => v
             <dd>{t("registeredOfCapacity", { registered: s.registered, capacity: s.capacity })}</dd>
             <dd className="text-xs text-muted-foreground">
               {t("windowText", { opens: formatDate(s.registrationOpensUtc, true), closes: formatDate(s.registrationClosesUtc, true), cancel: formatDate(s.cancelCutoffUtc, true) })}
+            </dd>
+            <dd className="text-xs text-muted-foreground">
+              {s.waitlistOpen ? t("waitlistMovesUntil", { date: formatDate(s.waitlistClosesUtc, true) }) : t("waitlistClosedOn", { date: formatDate(s.waitlistClosesUtc, true) })}
             </dd>
             <dd>
               <EligibilitySummary e={s.eligibility} cohortNames={cohortNames} />
@@ -784,6 +797,12 @@ export function GroupSessionDetail({ id, onBack }: { id: string; onBack: () => v
                 <bdi className="font-medium">{r.student.name}</bdi>
                 <span className="text-muted-foreground">{r.student.email}</span>
                 <span className="text-xs text-muted-foreground">{t("joinedOn", { date: formatDate(r.waitlistedAt, true) })}</span>
+                {r.promotionSkippedReason && (
+                  <span className="flex flex-wrap items-center gap-1">
+                    <Badge tone="bad">{r.promotionSkippedReason === "TimeConflict" ? t("skippedTimeConflict") : t("skippedNotEligible")}</Badge>
+                    <span className="text-xs text-muted-foreground">{t("skippedOn", { date: formatDate(r.promotionSkippedAt, true) })}</span>
+                  </span>
+                )}
                 {d.canManage && <RemoveButton r={r} onDone={(text) => { setMessage(text); detail.reload(); }} />}
               </li>
             ))}
@@ -847,6 +866,12 @@ function RosterLine({ r, canManage, started, attendance, onAttendance, notes, on
             {r.student.studentNumber ? ` · ${r.student.studentNumber}` : ""}
           </span>
           {r.promotedAt && <span className="block text-xs text-muted-foreground">{t("promotedFromWaitlist")}</span>}
+          {r.overCapacity && (
+            <span className="mt-1 block">
+              <Badge tone="warn">{t("overCapacityBy", { name: r.addedBy?.name ?? "—", reason: r.overCapacityReason ?? "—" })}</Badge>
+            </span>
+          )}
+          {r.eligibilityOverridden && <span className="block text-xs text-muted-foreground">{t("eligibilityOverridden")}</span>}
           {notes.length > 0 && (
             <ul className="mt-1 space-y-1">
               {notes.map((n) => (
@@ -1128,6 +1153,7 @@ function EditSession({ s, cohorts, onDone }: { s: GroupSession; cohorts: Cohort[
   const [location, setLocation] = useState(s.location ?? "");
   const [hosts, setHosts] = useState<string[]>(s.hosts.map((h) => h.userId));
   const [eligibility, setEligibility] = useState<GroupEligibility>(s.eligibility ?? {});
+  const [promotionCutoff, setPromotionCutoff] = useState(s.promotionCutoffMinutes);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const timeChanged = `${date}T${time}` !== s.localStart;
@@ -1137,7 +1163,7 @@ function EditSession({ s, cohorts, onDone }: { s: GroupSession; cohorts: Cohort[
     setBusy(true);
     setError(null);
     try {
-      const body: Record<string, unknown> = { title, description, durationMinutes: duration, capacity, mode, location: mode === "InPerson" ? location : null, hostUserIds: hosts, eligibility };
+      const body: Record<string, unknown> = { title, description, durationMinutes: duration, capacity, mode, location: mode === "InPerson" ? location : null, hostUserIds: hosts, eligibility, promotionCutoffMinutes: promotionCutoff };
       if (scope === "one" && timeChanged) body.startLocal = `${date}T${time}`;
       if (scope === "series" && time !== s.localStart.slice(11, 16)) body.startTime = time;
       const res = await api<{ sessions: GroupSession[] }>(`/api/career/appointments/group/sessions/${s.id}?scope=${scope}`, { method: "PUT", json: body });
@@ -1177,6 +1203,9 @@ function EditSession({ s, cohorts, onDone }: { s: GroupSession; cohorts: Cohort[
         </Field>
         <Field label={t("lengthMinutes")}>{(p) => <input {...p} type="number" min={15} max={480} value={duration} onChange={(e) => setDuration(Number(e.target.value))} />}</Field>
       </div>
+      <Field label={t("promotionCutoffMinutes")} hint={t("promotionCutoffHint")}>
+        {(p) => <input {...p} type="number" min={0} max={10080} value={promotionCutoff} onChange={(e) => setPromotionCutoff(Number(e.target.value))} />}
+      </Field>
       <div className="grid gap-3 sm:grid-cols-2">
         <Field label={t("meeting")}>
           {(p) => (
@@ -1265,6 +1294,8 @@ function AddStudent({ sessionId, onDone }: { sessionId: string; onDone: (text: s
   const api = useApi();
   const [email, setEmail] = useState("");
   const [override, setOverride] = useState(false);
+  const [overCapacity, setOverCapacity] = useState(false);
+  const [reason, setReason] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   return (
@@ -1275,11 +1306,11 @@ function AddStudent({ sessionId, onDone }: { sessionId: string; onDone: (text: s
         setBusy(true);
         setError(null);
         try {
-          const r = await api<{ status: string; waitlistPosition?: number | null }>(`/api/career/appointments/group/sessions/${sessionId}/registrations`, {
+          const r = await api<{ status: string; waitlistPosition?: number | null; overCapacity?: boolean }>(`/api/career/appointments/group/sessions/${sessionId}/registrations`, {
             method: "POST",
-            json: { studentEmail: email, overrideEligibility: override },
+            json: { studentEmail: email, overrideEligibility: override, overCapacity, overCapacityReason: overCapacity ? reason : null },
           });
-          onDone(r.status === "Registered" ? t("studentRegistered") : t("studentWaitlisted", { position: r.waitlistPosition ?? 0 }));
+          onDone(r.overCapacity ? t("studentRegisteredOverCapacity") : r.status === "Registered" ? t("studentRegistered") : t("studentWaitlisted", { position: r.waitlistPosition ?? 0 }));
         } catch (err) {
           setError((err as Error).message);
         } finally {
@@ -1295,6 +1326,15 @@ function AddStudent({ sessionId, onDone }: { sessionId: string; onDone: (text: s
         <input id={`ovr-${sessionId}`} type="checkbox" checked={override} onChange={(e) => setOverride(e.target.checked)} />
         {t("overrideEligibility")}
       </label>
+      <label htmlFor={`over-${sessionId}`} className="flex items-start gap-2 text-sm">
+        <input id={`over-${sessionId}`} type="checkbox" checked={overCapacity} onChange={(e) => setOverCapacity(e.target.checked)} />
+        {t("addOverCapacity")}
+      </label>
+      {overCapacity && (
+        <Field label={t("overCapacityReason")} hint={t("overCapacityReasonHint")}>
+          {(p) => <textarea {...p} rows={2} required maxLength={500} value={reason} onChange={(e) => setReason(e.target.value)} />}
+        </Field>
+      )}
       <Button type="submit" busy={busy}>
         {t("addStudent")}
       </Button>

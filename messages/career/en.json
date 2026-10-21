@@ -6549,7 +6549,8 @@
       "forDegreeLevels": "Degree levels: {list}",
       "forCohorts": "Cohorts: {list}",
       "seatsLeft": "{count, plural, one {{count} seat left} other {{count} seats left}}",
-      "fullWaitlist": "{count, plural, =0 {Full: waitlist open} one {Full: {count} on the waitlist} other {Full: {count} on the waitlist}}"
+      "fullWaitlist": "{count, plural, =0 {Full: waitlist open} one {Full: {count} on the waitlist} other {Full: {count} on the waitlist}}",
+      "fullWaitlistClosed": "Full: waitlist closed"
     },
     "groupSessions": {
       "mySessions": "My group sessions",
@@ -6570,6 +6571,11 @@
       "cancelUntil": "You can cancel until {date}.",
       "sessionCancelled": "Session cancelled",
       "waitlistHelp": "If a seat opens, you're registered automatically and we'll let you know.",
+      "waitlistUntil": "The waitlist moves up until {date}.",
+      "waitlistClosedFull": "This session is full and its waitlist has closed.",
+      "waitlistClosedHelp": "The waitlist has closed, so you won't be registered automatically.",
+      "seatFreeNow": "A seat is free. You can still register until {date}.",
+      "takeFreeSeat": "Register for the free seat",
       "cancelReason": "Reason: {reason}",
       "addToCalendar": "Add to calendar",
       "leaveWaitlist": "Leave the waitlist",
@@ -6652,6 +6658,8 @@
       "sameAsAppointments": "The same rules as one-to-one appointments.",
       "registrationOpensDays": "Registration opens (days before)",
       "cancelCutoffMinutes": "Students can cancel until (minutes before)",
+      "promotionCutoffMinutes": "Waitlist closes (minutes before)",
+      "promotionCutoffHint": "0 = until the start. After this, a freed seat is open to direct registration while registration is open, and the waitlist is told it closed.",
       "openToStudents": "Open to students",
       "openToAlumni": "Open to alumni",
       "active": "Active",
@@ -6681,7 +6689,12 @@
       "waitlistEmpty": "Nobody is waiting.",
       "positionN": "Number {position}",
       "joinedOn": "Joined {date}",
-      "waitlistHelp": "When a seat opens, the next student is registered automatically, in the order they joined, and told.",
+      "waitlistHelp": "When a seat opens, the next student is registered automatically, in the order they joined, and told. A student with a clashing appointment or session, or who no longer meets who can register, is skipped and keeps their place.",
+      "waitlistMovesUntil": "The waitlist moves up until {date}.",
+      "waitlistClosedOn": "The waitlist closed {date}. Freed seats are open to direct registration while registration is open.",
+      "skippedTimeConflict": "Skipped: time conflict",
+      "skippedNotEligible": "Skipped: no longer eligible",
+      "skippedOn": "Passed over {date}; tried again at the next promotion.",
       "followUpTasks": "Follow-up tasks",
       "due": "(due {date})",
       "done": "Done",
@@ -6689,6 +6702,8 @@
       "counselorTask": "Counselor",
       "cancelledRegistrations": "{count, plural, one {Cancelled registrations ({count})} other {Cancelled registrations ({count})}}",
       "promotedFromWaitlist": "Moved up from the waitlist",
+      "overCapacityBy": "Over capacity, added by {name}: {reason}",
+      "eligibilityOverridden": "Added despite who can register",
       "sharedWithStudent": "Shared with the student",
       "private": "Private",
       "attendanceFor": "Attendance for {name}",
@@ -6740,7 +6755,11 @@
       "studentWaitlisted": "The session is full: the student is number {position} on the waitlist.",
       "studentEmail": "Student's school email",
       "addStudentHint": "Staff can register students after registration closes.",
-      "overrideEligibility": "Add them even if they don't meet who can register (recorded in the audit log)"
+      "overrideEligibility": "Add them even if they don't meet who can register (recorded in the audit log)",
+      "addOverCapacity": "Give them a seat even if the session is full (over capacity)",
+      "overCapacityReason": "Reason for adding over capacity",
+      "overCapacityReasonHint": "Required. Shown on the roster and recorded in the audit log. While the session is over capacity, cancellations don't move the waitlist up.",
+      "studentRegisteredOverCapacity": "The student is registered over capacity."
     }
   }
 }

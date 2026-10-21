@@ -131,6 +131,8 @@ function BrowseCard({ s, onChanged }: { s: GroupSession; onChanged: (message: st
   const [now] = useState(() => Date.now());
   const opensLater = Date.parse(s.registrationOpensUtc) > now;
   const full = s.seatsLeft === 0;
+  // After the waitlist cutoff a full session takes no new waitlist entries
+  const closedFull = full && !s.waitlistOpen;
 
   const register = async () => {
     setBusy(true);
@@ -161,18 +163,19 @@ function BrowseCard({ s, onChanged }: { s: GroupSession; onChanged: (message: st
       </div>
       <ErrorBanner error={error} />
       <div className="mt-3 flex flex-wrap items-center gap-3">
-        {s.registrationOpen ? (
+        {s.registrationOpen && !closedFull ? (
           <Button type="button" busy={busy} onClick={() => void register()}>
             {full ? t("joinWaitlist") : t("register")}
           </Button>
         ) : (
           <p className="text-sm text-muted-foreground">
-            {opensLater ? t("registrationOpensOn", { date: formatDate(s.registrationOpensUtc, true) }) : t("registrationClosed")}
+            {s.registrationOpen ? t("waitlistClosedFull") : opensLater ? t("registrationOpensOn", { date: formatDate(s.registrationOpensUtc, true) }) : t("registrationClosed")}
           </p>
         )}
-        {s.registrationOpen && (
+        {s.registrationOpen && !closedFull && (
           <span className="text-xs text-muted-foreground">
             {t("registrationClosesAt", { date: formatDate(s.registrationClosesUtc, true) })} {t("cancelUntil", { date: formatDate(s.cancelCutoffUtc, true) })}
+            {full ? ` ${t("waitlistUntil", { date: formatDate(s.waitlistClosesUtc, true) })}` : ""}
           </span>
         )}
       </div>
@@ -212,6 +215,8 @@ function MySessionCard({ s, onChanged, past }: { s: GroupSession; onChanged: (me
   const toggle = (p: typeof panel) => setPanel((cur) => (cur === p ? "none" : p));
   const waitlisted = reg.status === "Waitlisted";
   const cancelled = s.status === "Cancelled" || reg.status === "Cancelled";
+  // After the waitlist cutoff a waitlisted student can still take a free seat directly while registration is open
+  const seatFree = waitlisted && !s.waitlistOpen && s.seatsLeft > 0 && s.registrationOpen && s.status === "Scheduled";
 
   return (
     <article className="rounded-xl border border-border bg-card p-4" aria-label={`${s.title}, ${whenText(s, s.timeZone)}`}>
@@ -224,12 +229,32 @@ function MySessionCard({ s, onChanged, past }: { s: GroupSession; onChanged: (me
           <MeetingInfo a={s} />
         </div>
       )}
-      {waitlisted && <p className="mt-1 text-sm text-muted-foreground">{t("waitlistHelp")}</p>}
+      {waitlisted && !past && s.status === "Scheduled" && (
+        <p className="mt-1 text-sm text-muted-foreground">
+          {s.waitlistOpen
+            ? `${t("waitlistHelp")} ${t("waitlistUntil", { date: formatDate(s.waitlistClosesUtc, true) })}`
+            : t("waitlistClosedHelp") + (seatFree ? ` ${t("seatFreeNow", { date: formatDate(s.registrationClosesUtc, true) })}` : "")}
+        </p>
+      )}
       {s.status === "Cancelled" && s.cancelReason && <p className="mt-1 text-xs text-muted-foreground">{t("cancelReason", { reason: s.cancelReason })}</p>}
       <div className="mt-3 flex flex-wrap gap-2">
         {!waitlisted && reg.status !== "Cancelled" && !cancelled && (
           <Button type="button" variant="secondary" onClick={() => run(() => download(`/api/career/appointments/student/group-sessions/registrations/${reg.id}/ics`, "session.ics"))}>
             <CalendarPlus className="h-4 w-4" aria-hidden />{" "}{t("addToCalendar")}
+          </Button>
+        )}
+        {!past && seatFree && (
+          <Button
+            type="button"
+            busy={busy}
+            onClick={() =>
+              run(async () => {
+                await api(`/api/career/appointments/student/group-sessions/${s.id}/register`, { method: "POST" });
+                onChanged(t("registeredFor", { title: s.title }));
+              })
+            }
+          >
+            {t("takeFreeSeat")}
           </Button>
         )}
         {!past && reg.canCancel && (

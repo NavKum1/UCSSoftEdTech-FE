@@ -23,6 +23,7 @@ function session(over: Partial<GroupSession> & { id: string; startUtc: string })
     meetingUrl: null, meetingSource: null, meetingProvider: null, meetingFallbackReason: null, status: "Scheduled", cancelReason: null,
     seriesId: null, seriesIndex: null, seriesCount: null, hosts: HOSTS, eligibility: {}, allowStudents: true, allowAlumni: true,
     minLeadMinutes: 60, maxLeadDays: 90, cancelCutoffMinutes: 120,
+    promotionCutoffMinutes: 120, waitlistClosesUtc: new Date(new Date(start).getTime() - 7_200_000).toISOString(), waitlistOpen: true,
     registrationOpensUtc: days(-30), registrationClosesUtc: new Date(new Date(start).getTime() - 3_600_000).toISOString(), cancelCutoffUtc: new Date(new Date(start).getTime() - 7_200_000).toISOString(),
     registrationOpen: true, eligible: true, ineligibleReason: null, myRegistration: null,
     ...over,
@@ -45,6 +46,10 @@ const MINE_UPCOMING: GroupSession[] = [
     myRegistration: { id: "gr-1", status: "Registered", attendance: null, waitlistPosition: null, canCancel: true, registeredAt: days(-3), promotedAt: null } }),
   session({ id: "gs-5", startUtc: days(6), title: "LinkedIn profile lab", typeName: "Workshop", kind: "Workshop", seatsLeft: 0, registered: 12, waitlisted: 4,
     myRegistration: { id: "gr-2", status: "Waitlisted", attendance: null, waitlistPosition: 2, canCancel: true, registeredAt: null, promotedAt: null } }),
+  // H14b: past the waitlist cutoff with a seat free again: the waitlisted student can take it directly
+  session({ id: "gs-7", startUtc: hours(3), title: "Mock interview lab", typeName: "Workshop", kind: "Workshop", seatsLeft: 1, registered: 11, waitlisted: 1, waitlistOpen: false,
+    waitlistClosesUtc: hours(1), registrationClosesUtc: hours(2),
+    myRegistration: { id: "gr-7", status: "Waitlisted", attendance: null, waitlistPosition: 1, canCancel: true, registeredAt: null, promotedAt: null } }),
 ];
 
 const MINE_PAST: GroupSession[] = [
@@ -52,8 +57,8 @@ const MINE_PAST: GroupSession[] = [
 ];
 
 const TYPES: GroupType[] = [
-  { id: "gt-1", name: "Résumé clinic", description: "Small-group résumé reviews.", kind: "ResumeClinic", durationMinutes: 60, capacity: 12, mode: "InPerson", location: "Career Center, Room 210", allowStudents: true, allowAlumni: true, eligibility: {}, minLeadMinutes: 60, maxLeadDays: 90, cancelCutoffMinutes: 120, active: true, sortOrder: 0 },
-  { id: "gt-2", name: "Interview workshop", description: null, kind: "Workshop", durationMinutes: 90, capacity: 20, mode: "Video", location: null, allowStudents: true, allowAlumni: false, eligibility: { classYears: [2027] }, minLeadMinutes: 0, maxLeadDays: 60, cancelCutoffMinutes: 60, active: true, sortOrder: 1 },
+  { id: "gt-1", name: "Résumé clinic", description: "Small-group résumé reviews.", kind: "ResumeClinic", durationMinutes: 60, capacity: 12, mode: "InPerson", location: "Career Center, Room 210", allowStudents: true, allowAlumni: true, eligibility: {}, minLeadMinutes: 60, maxLeadDays: 90, cancelCutoffMinutes: 120, promotionCutoffMinutes: 120, active: true, sortOrder: 0 },
+  { id: "gt-2", name: "Interview workshop", description: null, kind: "Workshop", durationMinutes: 90, capacity: 20, mode: "Video", location: null, allowStudents: true, allowAlumni: false, eligibility: { classYears: [2027] }, minLeadMinutes: 0, maxLeadDays: 60, cancelCutoffMinutes: 60, promotionCutoffMinutes: 0, active: true, sortOrder: 1 },
 ];
 
 const roster = (n: number, status: string, attendance: (i: number) => string | null) =>
@@ -62,6 +67,9 @@ const roster = (n: number, status: string, attendance: (i: number) => string | n
     student: { userId: `stu-${status}-${i}`, name: ["Aisha Khan", "Diego Ramos", "Mei Chen", "Tom Okafor", "Lena Fischer"][i % 5], email: `student${i}@lakeside.edu`, studentNumber: `S10${i}` },
     registeredAt: status === "Registered" ? days(-5) : null, waitlistedAt: status === "Waitlisted" ? days(-2) : null, promotedAt: i === 2 && status === "Registered" ? days(-1) : null,
     cancelledAt: status === "Cancelled" ? days(-1) : null, cancelReason: status === "Cancelled" ? "Exam clash" : null, addedByStaff: false,
+    // H14b: one staff placement over capacity, and waitlisted students the last promotion passed over
+    ...(status === "Registered" && i === 3 ? { addedByStaff: true, addedBy: { userId: USER_ID, name: "Morgan Lee" }, overCapacity: true, overCapacityReason: "Needs feedback before a visa interview" } : {}),
+    ...(status === "Waitlisted" ? { promotionSkippedReason: i === 0 ? "TimeConflict" : "NotEligible", promotionSkippedAt: days(-1) } : {}),
   }));
 
 const detail = (ctx: FixtureContext) => {

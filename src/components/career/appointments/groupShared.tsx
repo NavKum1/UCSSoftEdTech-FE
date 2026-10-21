@@ -64,6 +64,11 @@ export interface GroupSession {
   minLeadMinutes: number;
   maxLeadDays: number;
   cancelCutoffMinutes: number;
+  /** The waitlist promotes until this many minutes before the start (0 = until the start) */
+  promotionCutoffMinutes: number;
+  waitlistClosesUtc: string;
+  /** False after the waitlist cutoff: a full session takes no new waitlist entries */
+  waitlistOpen: boolean;
   registrationOpensUtc: string;
   registrationClosesUtc: string;
   cancelCutoffUtc: string;
@@ -88,6 +93,7 @@ export interface GroupType {
   minLeadMinutes: number;
   maxLeadDays: number;
   cancelCutoffMinutes: number;
+  promotionCutoffMinutes: number;
   active: boolean;
   sortOrder: number;
 }
@@ -186,11 +192,12 @@ export function EligibilitySummary({ e, cohortNames = {} }: { e: GroupEligibilit
   );
 }
 
-/** Seats left, or that the session is full and the waitlist is open. */
-export function SeatsBadge({ s }: { s: Pick<GroupSession, "seatsLeft" | "waitlisted" | "capacity" | "status"> }) {
+/** Seats left, or that the session is full and whether the waitlist is still open. */
+export function SeatsBadge({ s }: { s: Pick<GroupSession, "seatsLeft" | "waitlisted" | "capacity" | "status" | "waitlistOpen"> }) {
   const t = useCareerT("groupShared");
   if (s.status === "Cancelled") return <Badge tone="neutral">{t("cancelled")}</Badge>;
   if (s.seatsLeft > 0) return <Badge tone="good">{t("seatsLeft", { count: s.seatsLeft })}</Badge>;
+  if (!s.waitlistOpen) return <Badge tone="neutral">{t("fullWaitlistClosed")}</Badge>;
   return <Badge tone="warn">{t("fullWaitlist", { count: s.waitlisted })}</Badge>;
 }
 
