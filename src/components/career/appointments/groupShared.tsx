@@ -120,6 +120,22 @@ export function useMeetingReasonLabels(): Record<string, string> {
   return useCareerLabels("groupShared.meetingReason", MEETING_REASON_KEYS);
 }
 
+export const INVITE_REASON_KEYS = ["NoVerifiedEmail", "AttendeeLimit", "InvitesOff"];
+/** H15: why a student isn't on the host's calendar invite (staff only) */
+export function useInviteReasonLabels(): Record<string, string> {
+  return useCareerLabels("groupShared.inviteReason", INVITE_REASON_KEYS);
+}
+
+/** H15, for staff: whether the student is on the host's calendar invite, or why not. Nothing while no event is written. */
+export function InviteNote({ x }: { x: { inviteStatus?: string | null; inviteSkippedReason?: string | null } }) {
+  const t = useCareerT("groupShared");
+  const REASONS = useInviteReasonLabels();
+  if (x.inviteStatus === "Invited") return <span className="block text-xs text-muted-foreground">{t("inviteInvited")}</span>;
+  if (x.inviteStatus !== "Skipped") return null;
+  const reason = x.inviteSkippedReason ? REASONS[x.inviteSkippedReason] ?? x.inviteSkippedReason : "";
+  return <span className="block text-xs text-muted-foreground">{t("inviteSkipped", { reason })}</span>;
+}
+
 export const DEGREE_LEVEL_KEYS = ["Certificate", "Associate", "Bachelor", "Master", "Doctorate", "Professional"];
 export function useDegreeLevelLabels(): Record<string, string> {
   return useCareerLabels("groupShared.degreeLevel", DEGREE_LEVEL_KEYS);

@@ -51,6 +51,9 @@ export interface Appointment {
   meetingSource?: string | null;
   meetingProvider?: string | null;
   meetingFallbackReason?: string | null;
+  // H15 (staff only): "Invited" (on the counselor's calendar invite) or "Skipped" with the reason
+  inviteStatus?: string | null;
+  inviteSkippedReason?: string | null;
   status: string;
   outcome?: string | null;
   counselor: { userId: string; name: string };

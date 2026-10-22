@@ -19,6 +19,7 @@ import {
   type GroupSession,
   type GroupType,
   EligibilitySummary,
+  InviteNote,
   MeetingSourceNote,
   Prose,
   SeatsBadge,
@@ -552,6 +553,9 @@ interface RosterRow {
   /** Why the last promotion passed this waitlisted student over ("TimeConflict" or "NotEligible") */
   promotionSkippedReason?: string | null;
   promotionSkippedAt?: string | null;
+  /** H15: on the lead host's calendar invite ("Invited") or not ("Skipped" with the reason); registered students only */
+  inviteStatus?: string | null;
+  inviteSkippedReason?: string | null;
 }
 
 interface NoteRow {
@@ -866,6 +870,7 @@ function RosterLine({ r, canManage, started, attendance, onAttendance, notes, on
             {r.student.studentNumber ? ` · ${r.student.studentNumber}` : ""}
           </span>
           {r.promotedAt && <span className="block text-xs text-muted-foreground">{t("promotedFromWaitlist")}</span>}
+          <InviteNote x={r} />
           {r.overCapacity && (
             <span className="mt-1 block">
               <Badge tone="warn">{t("overCapacityBy", { name: r.addedBy?.name ?? "—", reason: r.overCapacityReason ?? "—" })}</Badge>

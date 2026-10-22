@@ -1288,7 +1288,9 @@
       "providerConnectedValue": "{provider} connected{value}.",
       "connectProvider": "Connect {provider}",
       "meetingLinksForVideo": "Video appointments and group sessions you host get their own {provider} link, created with the calendar event.",
-      "generateMeetingLinks": "Give video appointments and group sessions their own meeting link<span>A Microsoft Teams or Google Meet link is created with the counselor's calendar event. Counselors without a connected calendar, or who choose their own room, share their fixed link instead.</span>"
+      "generateMeetingLinks": "Give video appointments and group sessions their own meeting link<span>A Microsoft Teams or Google Meet link is created with the counselor's calendar event. Counselors without a connected calendar, or who choose their own room, share their fixed link instead.</span>",
+      "addStudentsToMeetingInvite": "Add students to the meeting invite<span>The student (or every registered student of a group session, who can't see each other) is added to the host's calendar event, so Microsoft 365 or Google sends them the invitation, updates and cancellation and they can join the meeting directly. Their verified email goes to the host's calendar provider. Turning this off removes students from upcoming events at the next calendar update.</span>",
+      "studentsAreAddedToInvites": "Students are added to the events as attendees and get the invitation, changes and cancellation from your calendar. Waitlisted students aren't added."
     },
     "careerCenterCaseload": {
       "caseload": "Caseload",
@@ -6550,7 +6552,14 @@
       "forCohorts": "Cohorts: {list}",
       "seatsLeft": "{count, plural, one {{count} seat left} other {{count} seats left}}",
       "fullWaitlist": "{count, plural, =0 {Full: waitlist open} one {Full: {count} on the waitlist} other {Full: {count} on the waitlist}}",
-      "fullWaitlistClosed": "Full: waitlist closed"
+      "fullWaitlistClosed": "Full: waitlist closed",
+      "inviteInvited": "On the calendar invite",
+      "inviteSkipped": "Not on the calendar invite: {reason}",
+      "inviteReason": {
+        "NoVerifiedEmail": "no verified email address.",
+        "AttendeeLimit": "the event has reached the calendar provider's attendee limit.",
+        "InvitesOff": "the school doesn't add students to meeting invites."
+      }
     },
     "groupSessions": {
       "mySessions": "My group sessions",

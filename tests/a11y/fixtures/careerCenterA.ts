@@ -183,6 +183,9 @@ function appt(
     cancelledAt: opts.status === "Cancelled" ? hours(-20) : null,
     bookedOnBehalf: opts.bookedOnBehalf ?? false,
     rescheduleCount: opts.rescheduleCount ?? 0,
+    // H15: booked appointments are on the counselor's calendar invite
+    inviteStatus: opts.status === "Booked" ? "Invited" : null,
+    inviteSkippedReason: null,
     createdAt: days(-7),
   };
 }
@@ -320,7 +323,7 @@ const calendarStatus = {
     lastEventSyncAt: hours(-3),
   },
   eventsInCalendar: 12,
-  school: { readBusyEnabled: true, writeEventsEnabled: true, includeStudentNames: false },
+  school: { readBusyEnabled: true, writeEventsEnabled: true, includeStudentNames: false, generateMeetingLinks: true, addStudentsToMeetingInvite: true },
   isAdmin: true,
 };
 

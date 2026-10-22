@@ -70,6 +70,8 @@ const roster = (n: number, status: string, attendance: (i: number) => string | n
     // H14b: one staff placement over capacity, and waitlisted students the last promotion passed over
     ...(status === "Registered" && i === 3 ? { addedByStaff: true, addedBy: { userId: USER_ID, name: "Morgan Lee" }, overCapacity: true, overCapacityReason: "Needs feedback before a visa interview" } : {}),
     ...(status === "Waitlisted" ? { promotionSkippedReason: i === 0 ? "TimeConflict" : "NotEligible", promotionSkippedAt: days(-1) } : {}),
+    // H15: registered students on the lead host's calendar invite, one without a verified email
+    ...(status === "Registered" ? (i === 1 ? { inviteStatus: "Skipped", inviteSkippedReason: "NoVerifiedEmail" } : { inviteStatus: "Invited", inviteSkippedReason: null }) : {}),
   }));
 
 const detail = (ctx: FixtureContext) => {

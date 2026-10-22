@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import { ArrowLeft, CalendarPlus } from "lucide-react";
 import { useApi } from "@/lib/appAuth";
 import { Badge, Button, Card, ErrorBanner, Field, Loading, SuccessBanner, formatDate, useLoad, useCareerT } from "@/components/career/ui";
-import { MeetingSourceNote } from "./groupShared";
+import { InviteNote, MeetingSourceNote } from "./groupShared";
 import { useOutcomeLabels, type Appointment, type Note, IntakeAnswers, MeetingInfo, statusTone, useDownload, whenText, useModeLabels, useStatusLabel } from "./shared";
 
 interface StaffTask {
@@ -78,6 +78,7 @@ export function AppointmentDetail({ id, onBack, onOpen }: { id: string; onBack: 
           </p>
           <MeetingInfo a={a} />
           <MeetingSourceNote x={a} />
+          <InviteNote x={a} />
         </div>
         <div className="flex flex-wrap items-center gap-2">
           {a.bookedOnBehalf && <Badge>{tr("bookedByStaff")}</Badge>}

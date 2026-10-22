@@ -22,7 +22,8 @@ interface Status {
   connection: Connection | null;
   eventsInCalendar: number;
   // H14: generateMeetingLinks gives video appointments and group sessions their own Teams / Google Meet link
-  school: { readBusyEnabled: boolean; writeEventsEnabled: boolean; includeStudentNames: boolean; generateMeetingLinks?: boolean };
+  // H15: addStudentsToMeetingInvite adds the student (one-to-one) or every registered student (group session) to the host's event
+  school: { readBusyEnabled: boolean; writeEventsEnabled: boolean; includeStudentNames: boolean; generateMeetingLinks?: boolean; addStudentsToMeetingInvite?: boolean };
   isAdmin: boolean;
 }
 
@@ -180,6 +181,7 @@ export default function CalendarPage() {
             {s.school.writeEventsEnabled && s.school.generateMeetingLinks && (
               <li>{t("meetingLinksForVideo", { provider: s.connection?.provider === "Google" ? "Google Meet" : "Microsoft Teams" })}</li>
             )}
+            {s.school.writeEventsEnabled && s.school.addStudentsToMeetingInvite && <li>{t("studentsAreAddedToInvites")}</li>}
           </ul>
         </Card>
       )}
@@ -206,6 +208,18 @@ export default function CalendarPage() {
               <input id="cal-meetings" type="checkbox" disabled={!s.school.writeEventsEnabled} checked={!!s.school.generateMeetingLinks} onChange={(e) => void saveSchool({ generateMeetingLinks: e.target.checked })} />
               <span>
                 {t.rich("generateMeetingLinks", { span: (chunks) => <span className="block text-xs text-muted-foreground">{chunks}</span> })}
+              </span>
+            </label>
+            <label className="flex items-start gap-2" htmlFor="cal-invites">
+              <input
+                id="cal-invites"
+                type="checkbox"
+                disabled={!s.school.writeEventsEnabled}
+                checked={s.school.addStudentsToMeetingInvite !== false}
+                onChange={(e) => void saveSchool({ addStudentsToMeetingInvite: e.target.checked })}
+              />
+              <span>
+                {t.rich("addStudentsToMeetingInvite", { span: (chunks) => <span className="block text-xs text-muted-foreground">{chunks}</span> })}
               </span>
             </label>
           </fieldset>
