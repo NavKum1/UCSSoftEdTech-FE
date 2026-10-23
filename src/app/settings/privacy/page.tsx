@@ -1,11 +1,11 @@
 "use client";
 
 import React, { useState } from "react";
-import Link from "next/link";
 import { useAuth, useClerk } from "@clerk/nextjs";
 import { AlertTriangle, CheckCircle2, Download, Loader2, Lock, Trash2 } from "lucide-react";
 import { authenticatedFetch } from "@/lib/apiClient";
 import { errorMessage } from "@/lib/candidateExperience";
+import SignInRequired from "@/components/SignInRequired";
 
 const CONFIRM = "DELETE MY DATA";
 
@@ -96,11 +96,7 @@ export default function PrivacySettingsPage() {
 
   if (isLoaded && !isSignedIn) {
     return (
-      <div className="max-w-xl mx-auto px-6 py-16 text-center space-y-3">
-        <h1 className="text-xl font-bold text-foreground">Privacy and your data</h1>
-        <p className="text-sm text-muted-foreground">Sign in to export or delete your data.</p>
-        <Link href="/login" className="inline-block px-4 py-2 rounded-xl bg-indigo-600 text-white text-sm font-semibold">Sign in</Link>
-      </div>
+      <SignInRequired title="Privacy and your data" message="Sign in to export or delete your data." />
     );
   }
 

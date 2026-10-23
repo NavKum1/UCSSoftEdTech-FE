@@ -53,6 +53,8 @@ const PAGES: LegacyPage[] = [
   { path: "/interview/smoke-session/translation", persona: "candidate", calls: ["/api/translation/session/"] },
   { path: "/sprint/smoke-sprint/pair-coach", persona: "candidate", calls: ["/api/pair-coach/session/start"] },
   { path: "/campus", persona: "candidate", calls: ["/api/campus/my-assignments", "/api/interview/languages"] },
+  // Public practice editor: signed in, the graded challenge list loads
+  { path: "/sprint/distributed-database", persona: "candidate", calls: ["/api/sprint"] },
   // Recruiter pages
   { path: "/recruiter/dashboard", persona: "recruiter", calls: ["/api/recruiter/candidates", "/api/recruiter/assessments/bundles"] },
   { path: "/recruiter/benchmark", persona: "recruiter", calls: ["/api/benchmark/cohort/analytics"] },
@@ -153,6 +155,8 @@ test.describe("signed in: no 401s, no crash", () => {
       if (seen.hydration.length) test.info().annotations.push({ type: "hydration-mismatch", description: seen.hydration[0].slice(0, 200) });
       expect(seen.errors, "uncaught page errors").toEqual([]);
       await expect(page.locator("[data-access-notice]")).toHaveCount(0);
+      // Signed in: the header offers no Sign in / Sign up buttons
+      await expect(page.locator("[data-nav-signed-out]")).toHaveCount(0);
 
       if (p.path.endsWith("/pairing")) {
         // SignalR: negotiate carries the Bearer header and the WebSocket carries ?access_token= (hubs only)
@@ -192,7 +196,7 @@ test.describe("signed out", () => {
 
   // With Clerk reachable the provider reports "signed out" and the page shows the sign-in notice; offline it stays
   // loading. Either way a signed-out page must not send requests that the API would refuse.
-  for (const path of ["/passport", "/recruiter/dashboard", "/admin/system", "/prep/exam"]) {
+  for (const path of ["/passport", "/recruiter/dashboard", "/admin/system", "/prep/exam", "/credentials", "/campus", "/sprint/distributed-database"]) {
     test(`${path} makes no locked call and offers sign-in`, async ({ page }) => {
       const seen = watchApi(page);
       await page.goto(path, { waitUntil: "domcontentloaded", timeout: 180_000 });
@@ -204,9 +208,66 @@ test.describe("signed out", () => {
         test.info().annotations.push({ type: "note", description: "identity provider did not load (offline?); sign-in notice not checked" });
         return;
       }
+      await expect(notice.getByRole("heading")).toBeVisible();
       await expect(notice.getByRole("link", { name: "Sign in" })).toHaveAttribute("href", `/login?redirect_url=${encodeURIComponent(path)}`);
+      await expect(notice.getByRole("link", { name: "Create account" })).toHaveAttribute(
+        "href",
+        `/login?mode=signup&redirect_url=${encodeURIComponent(path)}`,
+      );
     });
   }
+
+  // The header used to show a hard-coded "AM" avatar and account menu to signed-out visitors
+  test("header shows Sign in, not a placeholder avatar", async ({ page }) => {
+    await page.goto("/passport", { waitUntil: "domcontentloaded", timeout: 180_000 });
+    await settle(page);
+    const header = page.locator("header").first();
+    await expect(header.getByRole("button", { name: "Account menu" })).toHaveCount(0);
+    await expect(header.getByText("AM", { exact: true })).toHaveCount(0);
+    await expect(page.getByText("Alex Morgan")).toHaveCount(0);
+    const signedOut = header.locator("[data-nav-signed-out]");
+    if ((await signedOut.count()) === 0) {
+      test.info().annotations.push({ type: "note", description: "identity provider did not load (offline?); Sign in button not checked" });
+      return;
+    }
+    await expect(signedOut.getByRole("link", { name: "Sign in" })).toHaveAttribute("href", `/login?redirect_url=${encodeURIComponent("/passport")}`);
+    await expect(signedOut.getByRole("link", { name: "Sign up" })).toHaveAttribute(
+      "href",
+      `/login?mode=signup&redirect_url=${encodeURIComponent("/passport")}`,
+    );
+    // Narrow screens: the header keeps Sign in and the menu offers both
+    await page.setViewportSize({ width: 375, height: 800 });
+    await expect(signedOut.getByRole("link", { name: "Sign in" })).toBeVisible();
+    await header.getByRole("button", { name: "Toggle navigation menu" }).click();
+    const drawer = page.locator("#mobile-navigation");
+    await expect(drawer.getByRole("link", { name: "Sign in" })).toBeVisible();
+    await expect(drawer.getByRole("link", { name: "Create account" })).toBeVisible();
+  });
+
+  // Practice editor stays public; the graded list and Run say "sign in" instead of "none available" / a silent failure
+  test("practice editor: graded challenges and Run ask for sign-in, no locked calls", async ({ page }) => {
+    const seen = watchApi(page);
+    await page.goto("/sprint/distributed-database", { waitUntil: "domcontentloaded", timeout: 180_000 });
+    await settle(page);
+    await expect(page.getByText("No public challenges are available right now.")).toHaveCount(0);
+    const prompts = page.locator('[data-access-notice="signin"]');
+    if ((await prompts.count()) === 0) {
+      test.info().annotations.push({ type: "note", description: "identity provider did not load (offline?); prompts not checked" });
+      return;
+    }
+    await expect(prompts.getByRole("heading", { name: "Sign in to see graded challenges" })).toBeVisible();
+    await page.getByRole("button", { name: "Run code" }).click();
+    await expect(page.getByRole("heading", { name: "Sign in to run your code" })).toBeVisible();
+    const runPrompt = page.locator('[data-access-notice="signin"]', { has: page.getByRole("heading", { name: "Sign in to run your code" }) });
+    await expect(runPrompt.getByRole("link", { name: "Sign in" })).toHaveAttribute(
+      "href",
+      `/login?redirect_url=${encodeURIComponent("/sprint/distributed-database")}`,
+    );
+    const summary = seen.calls.map((c) => `${c.status} ${c.method} ${c.path}`).join("\n");
+    expect(seen.calls.filter((c) => c.path.startsWith("/api/sprint") || c.path.startsWith("/api/code/")), summary).toEqual([]);
+    expect(seen.calls.filter((c) => c.status === 401), summary).toEqual([]);
+    expect(await overlayError(page)).toBeNull();
+  });
 });
 
 // H7b (owner decisions 19 Oct 2026)

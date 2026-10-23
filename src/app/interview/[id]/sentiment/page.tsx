@@ -6,6 +6,7 @@ import { useParams } from "next/navigation";
 import { useAuth } from "@clerk/nextjs";
 import { Loader2, Lock, ShieldOff, AlertTriangle } from "lucide-react";
 import { authenticatedFetch } from "@/lib/apiClient";
+import SignInRequired from "@/components/SignInRequired";
 
 interface TelemetryPoint {
   id: string;
@@ -631,13 +632,7 @@ export default function BehavioralSentimentPage() {
 
   if ((isLoaded && !isSignedIn) || status === "unauthorized") {
     return (
-      <div className="max-w-xl mx-auto px-6 py-16 text-center space-y-3">
-        <h1 className="text-xl font-bold text-foreground">Speaking &amp; composure coach</h1>
-        <p className="text-sm text-muted-foreground">Sign in to view coaching for your own interviews.</p>
-        <Link href="/login" className="inline-block px-4 py-2 rounded-xl bg-indigo-600 text-white text-sm font-semibold">
-          Sign in
-        </Link>
-      </div>
+      <SignInRequired title="Speaking & composure coach" message="Sign in to view coaching for your own interviews." />
     );
   }
 

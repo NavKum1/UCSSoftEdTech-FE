@@ -21,6 +21,10 @@ export const CAREER_PREFIXES = ["/student", "/career-center", "/employer", "/fac
 // users, so the Edulexa header must not show on them either
 export const CAREER_STANDALONE_PREFIXES = ["/partner/callback", "/career-unsubscribe", "/verify/internship"];
 
+// Sign-in and sign-up (/login, /login?mode=signup): a full-screen, brand-aware page of their own (components/auth),
+// which may also be white-labelled. Exact paths only: /login/sso keeps the navigation.
+export const AUTH_PAGES = ["/login"];
+
 const matches = (pathname: string, prefixes: string[]) => prefixes.some((p) => pathname === p || pathname.startsWith(p + "/"));
 
 export function isCareerSuitePath(pathname: string | null | undefined): boolean {
@@ -29,7 +33,10 @@ export function isCareerSuitePath(pathname: string | null | undefined): boolean 
 
 /** True where the platform's global navigation (Edulexa branding) must be hidden */
 export function hidesGlobalNavigation(pathname: string | null | undefined): boolean {
-  return !!pathname && (matches(pathname, CAREER_PREFIXES) || matches(pathname, CAREER_STANDALONE_PREFIXES));
+  return (
+    !!pathname &&
+    (matches(pathname, CAREER_PREFIXES) || matches(pathname, CAREER_STANDALONE_PREFIXES) || AUTH_PAGES.includes(pathname))
+  );
 }
 
 export const careerNav: Record<CareerPersona, CareerNavItem[]> = {

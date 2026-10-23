@@ -24,6 +24,7 @@ import {
 } from "lucide-react";
 import { authenticatedFetch } from "@/lib/apiClient";
 import { formatDate, statusBadgeClass } from "@/lib/credentialVerification";
+import SignInRequired from "@/components/SignInRequired";
 
 type GetToken = () => Promise<string | null>;
 
@@ -792,13 +793,7 @@ export default function CredentialWalletPage() {
 
   if (isLoaded && !isSignedIn) {
     return (
-      <div className="max-w-xl mx-auto px-6 py-16 text-center space-y-3">
-        <h1 className="text-xl font-bold text-foreground">Your credentials</h1>
-        <p className="text-sm text-muted-foreground">Sign in to see and share the credentials you earned by defending your code.</p>
-        <Link href="/login" className="inline-block px-4 py-2 rounded-xl bg-indigo-600 text-white text-sm font-semibold">
-          Sign in
-        </Link>
-      </div>
+      <SignInRequired title="Your credentials" message="Sign in to see and share the credentials you earned by defending your code." />
     );
   }
 

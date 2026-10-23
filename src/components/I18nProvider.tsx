@@ -33,7 +33,8 @@ export default function I18nProvider({ children }: I18nProviderProps) {
       <div className="relative w-full h-full">
         {/* Language Switcher Overlay */}
         <div className="absolute top-4 right-4 z-50">
-          <select 
+          <select
+            aria-label="Page language"
             value={locale} 
             onChange={(e) => {
               const newLocale = e.target.value;

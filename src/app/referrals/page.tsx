@@ -1,10 +1,10 @@
 "use client";
 
 import React, { useCallback, useEffect, useState } from "react";
-import Link from "next/link";
 import { useAuth } from "@clerk/nextjs";
 import { BookOpen, Info, Loader2, AlertTriangle, Share2, Undo2, CheckCircle2, X, Mail } from "lucide-react";
 import { authenticatedFetch } from "@/lib/apiClient";
+import SignInRequired from "@/components/SignInRequired";
 
 interface Recommendation {
   courseId: string;
@@ -139,13 +139,7 @@ export default function ReferralsPage() {
 
   if (isLoaded && !isSignedIn) {
     return (
-      <div className="max-w-xl mx-auto px-6 py-16 text-center space-y-3">
-        <h1 className="text-xl font-bold text-foreground">Learning recommendations</h1>
-        <p className="text-sm text-muted-foreground">Sign in to see course suggestions based on your defenses.</p>
-        <Link href="/login" className="inline-block px-4 py-2 rounded-xl bg-indigo-600 text-white text-sm font-semibold">
-          Sign in
-        </Link>
-      </div>
+      <SignInRequired title="Learning recommendations" message="Sign in to see course suggestions based on your defenses." />
     );
   }
 

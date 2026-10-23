@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useCallback, useEffect, useState } from "react";
-import Link from "next/link";
 import { useAuth } from "@clerk/nextjs";
 import {
   GitBranch,
@@ -16,6 +15,7 @@ import {
 } from "lucide-react";
 import { authenticatedFetch } from "@/lib/apiClient";
 import VapiInterviewRoom from "@/components/VapiInterviewRoom";
+import SignInRequired from "@/components/SignInRequired";
 
 type RepoDefenseStatus = "PendingVerification" | "Ready" | "Failed" | "Defended";
 
@@ -184,13 +184,7 @@ export default function DefendRepoPage() {
 
   if (isLoaded && !isSignedIn) {
     return (
-      <div className="max-w-xl mx-auto px-6 py-16 text-center space-y-3">
-        <h1 className="text-xl font-bold text-foreground">Defend your real work</h1>
-        <p className="text-sm text-muted-foreground">Sign in to link a GitHub repository or pull request.</p>
-        <Link href="/login" className="inline-block px-4 py-2 rounded-xl bg-indigo-600 text-white text-sm font-semibold">
-          Sign in
-        </Link>
-      </div>
+      <SignInRequired title="Defend your real work" message="Sign in to link a GitHub repository or pull request." />
     );
   }
 

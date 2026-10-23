@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { UserButton } from "@clerk/nextjs";
 import { AUTH_PROVIDER, AppUserButton, useAppAuth } from "@/lib/appAuth";
+import { CAN_SIGN_UP, signInHref, signUpHref, useReturnPath } from "@/components/SignInRequired";
 import { hidesGlobalNavigation } from "@/lib/careerNav";
 import {
   Shield,
@@ -21,11 +22,8 @@ import {
   Trophy,
   Menu,
   X,
-  User,
+  LogIn,
   ShieldCheck,
-  ArrowRight,
-  LogOut,
-  Briefcase,
   LayoutDashboard,
   GitBranch,
   BookOpen,
@@ -73,15 +71,26 @@ function hasRecruiterRole(metadata: Record<string, unknown> | undefined): boolea
 
 export default function GlobalNavigation() {
   const pathname = usePathname();
-  const { isSignedIn, roles, getToken } = useAppAuth();
+  const { isLoaded, isSignedIn, roles, getToken } = useAppAuth();
   const [practiceHubOpen, setPracticeHubOpen] = useState(false);
-  const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [remainingMinutes, setRemainingMinutes] = useState<number | null>(null);
 
   const isRecruiter = hasRecruiterRole({ roles });
-  // Signed-out demo menu keeps showing recruiter tools, as it did for the hiring portal link
+  // The signed-out mobile menu keeps listing the recruiter tools (each one asks for sign-in)
   const showRecruiterLinks = !isSignedIn || isRecruiter;
+
+  // Signed out: Sign in / Sign up return to this page. On the sign-in page itself, keep its own redirect_url.
+  const returnPath = useReturnPath();
+  const onLoginPage = pathname === "/login" || !!pathname?.startsWith("/login/");
+  const loginRedirect = onLoginPage
+    ? (() => {
+        const q = returnPath.indexOf("?");
+        return q >= 0 ? new URLSearchParams(returnPath.slice(q)).get("redirect_url") : null;
+      })()
+    : returnPath;
+  const signInLink = loginRedirect ? signInHref(loginRedirect) : "/login";
+  const signUpLink = signUpHref(loginRedirect || "/dashboard");
 
   useEffect(() => {
     if (!isSignedIn) return;
@@ -98,16 +107,12 @@ export default function GlobalNavigation() {
   }, [isSignedIn, getToken, pathname]);
 
   const practiceHubRef = useRef<HTMLDivElement>(null);
-  const profileMenuRef = useRef<HTMLDivElement>(null);
 
   // Close dropdowns on outside click
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (practiceHubRef.current && !practiceHubRef.current.contains(event.target as Node)) {
         setPracticeHubOpen(false);
-      }
-      if (profileMenuRef.current && !profileMenuRef.current.contains(event.target as Node)) {
-        setProfileMenuOpen(false);
       }
     }
     document.addEventListener("mousedown", handleClickOutside);
@@ -116,19 +121,14 @@ export default function GlobalNavigation() {
 
   // Keyboard: Escape closes an open menu and returns focus to the button that opened it
   const practiceHubButtonRef = useRef<HTMLButtonElement>(null);
-  const profileButtonRef = useRef<HTMLButtonElement>(null);
   const mobileButtonRef = useRef<HTMLButtonElement>(null);
   useEffect(() => {
-    if (!practiceHubOpen && !profileMenuOpen && !mobileMenuOpen) return;
+    if (!practiceHubOpen && !mobileMenuOpen) return;
     function handleKey(event: KeyboardEvent) {
       if (event.key !== "Escape") return;
       if (practiceHubOpen) {
         setPracticeHubOpen(false);
         practiceHubButtonRef.current?.focus();
-      }
-      if (profileMenuOpen) {
-        setProfileMenuOpen(false);
-        profileButtonRef.current?.focus();
       }
       if (mobileMenuOpen) {
         setMobileMenuOpen(false);
@@ -137,7 +137,7 @@ export default function GlobalNavigation() {
     }
     document.addEventListener("keydown", handleKey);
     return () => document.removeEventListener("keydown", handleKey);
-  }, [practiceHubOpen, profileMenuOpen, mobileMenuOpen]);
+  }, [practiceHubOpen, mobileMenuOpen]);
 
   // Close menus on route change
   const [lastPathname, setLastPathname] = useState(pathname);
@@ -145,7 +145,6 @@ export default function GlobalNavigation() {
     setLastPathname(pathname);
     setMobileMenuOpen(false);
     setPracticeHubOpen(false);
-    setProfileMenuOpen(false);
   }
 
   // Primary Student Core Navigation Links
@@ -419,7 +418,7 @@ export default function GlobalNavigation() {
           </Link>
 
           {/* Student Profile & Account Menu */}
-          <div className="relative pl-1 border-l border-border/60" ref={profileMenuRef}>
+          <div className="relative pl-1 border-l border-border/60">
             {isSignedIn && AUTH_PROVIDER === "keycloak" ? (
               <AppUserButton />
             ) : isSignedIn ? (
@@ -445,131 +444,25 @@ export default function GlobalNavigation() {
                   })}
                 </UserButton.MenuItems>
               </UserButton>
+            ) : !isLoaded ? (
+              // Auth still loading: hold the space without claiming either state
+              <div className="w-8 h-8 rounded-xl bg-muted animate-pulse" aria-hidden="true" />
             ) : (
-              <div>
-                <button
-                  ref={profileButtonRef}
-                  type="button"
-                  onClick={() => setProfileMenuOpen(!profileMenuOpen)}
-                  className="flex items-center gap-1.5 p-1 rounded-xl hover:bg-muted/80 transition-colors"
-                  title="Learner Account & Identity"
-                  aria-label="Account menu"
-                  aria-expanded={profileMenuOpen}
-                  aria-controls="profile-menu"
+              <div className="flex items-center gap-1.5" data-nav-signed-out>
+                <Link
+                  href={signInLink}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold shadow-xs transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 dark:focus-visible:outline-indigo-400"
                 >
-                  <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-indigo-600 to-purple-600 flex items-center justify-center text-white text-xs font-bold shadow-md ring-2 ring-indigo-500/20">
-                    AM
-                  </div>
-                  <ChevronDown className="w-3 h-3 text-muted-foreground hidden sm:block" />
-                </button>
-
-                {profileMenuOpen && (
-                  <div id="profile-menu" className="absolute right-0 mt-2 w-64 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl p-2 z-[100] animate-in fade-in zoom-in-95 duration-100">
-                    <div className="px-3 py-2.5 border-b border-border/60">
-                      <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 rounded-lg bg-indigo-600 text-white flex items-center justify-center font-bold text-xs">
-                          AM
-                        </div>
-                        <div className="min-w-0 flex-1">
-                          <div className="text-xs font-bold text-foreground truncate">
-                            Alex Morgan
-                          </div>
-                          <div className="text-[10px] text-muted-foreground truncate">
-                            alex.morgan@candidate.edu
-                          </div>
-                        </div>
-                      </div>
-                      <div className="mt-2 flex items-center justify-between">
-                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300 border border-amber-300 dark:border-amber-800">
-                          Gold League · Top 5%
-                        </span>
-                        <span className="text-[10px] text-muted-foreground font-mono">
-                          ID: #9402
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className="py-1 space-y-0.5">
-                      <Link
-                        href="/dashboard"
-                        onClick={() => setProfileMenuOpen(false)}
-                        className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-foreground hover:bg-muted transition-colors"
-                      >
-                        <Compass className="w-3.5 h-3.5 text-muted-foreground" />
-                        <span>Member 360 Dashboard</span>
-                      </Link>
-                      <Link
-                        href="/passport"
-                        onClick={() => setProfileMenuOpen(false)}
-                        className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-foreground hover:bg-muted transition-colors"
-                      >
-                        <Award className="w-3.5 h-3.5 text-muted-foreground" />
-                        <span>Skill Passport &amp; Badges</span>
-                      </Link>
-                      <Link
-                        href="/mentors/book"
-                        onClick={() => setProfileMenuOpen(false)}
-                        className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-foreground hover:bg-muted transition-colors"
-                      >
-                        <CalendarCheck className="w-3.5 h-3.5 text-muted-foreground" />
-                        <span>My Mentorship Sessions</span>
-                      </Link>
-                      <Link
-                        href={selfIdLink.href}
-                        onClick={() => setProfileMenuOpen(false)}
-                        className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-foreground hover:bg-muted transition-colors"
-                      >
-                        <Scale className="w-3.5 h-3.5 text-muted-foreground" />
-                        <span>{selfIdLink.name}</span>
-                      </Link>
-                      <Link
-                        href="/login"
-                        onClick={() => setProfileMenuOpen(false)}
-                        className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-foreground hover:bg-muted transition-colors"
-                      >
-                        <User className="w-3.5 h-3.5 text-muted-foreground" />
-                        <span>Account &amp; Security</span>
-                      </Link>
-                    </div>
-
-                    {/* Enterprise / Corporate link clearly separated */}
-                    <div className="pt-1 mt-1 border-t border-border/60">
-                      <Link
-                        href="/recruiter/dashboard"
-                        onClick={() => setProfileMenuOpen(false)}
-                        className="flex items-center justify-between px-3 py-1.5 rounded-lg text-[11px] font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
-                      >
-                        <span className="flex items-center gap-1.5">
-                          <Briefcase className="w-3 h-3 text-purple-500" />
-                          <span>Enterprise Hiring Portal</span>
-                        </span>
-                        <ArrowRight className="w-3 h-3" />
-                      </Link>
-                      {showRecruiterLinks &&
-                        recruiterLinks.map((link) => {
-                          const Icon = link.icon;
-                          return (
-                            <Link
-                              key={link.href}
-                              href={link.href}
-                              onClick={() => setProfileMenuOpen(false)}
-                              className="flex items-center gap-1.5 pl-7 pr-3 py-1.5 rounded-lg text-[11px] font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
-                            >
-                              <Icon className="w-3 h-3 text-purple-500" />
-                              <span>{link.name}</span>
-                            </Link>
-                          );
-                        })}
-                      <Link
-                        href="/login"
-                        onClick={() => setProfileMenuOpen(false)}
-                        className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-semibold text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors mt-0.5"
-                      >
-                        <LogOut className="w-3.5 h-3.5" />
-                        <span>Sign Out</span>
-                      </Link>
-                    </div>
-                  </div>
+                  <LogIn className="w-3.5 h-3.5" aria-hidden="true" />
+                  <span>Sign in</span>
+                </Link>
+                {CAN_SIGN_UP && (
+                  <Link
+                    href={signUpLink}
+                    className="hidden sm:inline-flex items-center px-3 py-1.5 rounded-xl border border-border bg-card hover:bg-muted text-foreground text-xs font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 dark:focus-visible:outline-indigo-400"
+                  >
+                    Sign up
+                  </Link>
                 )}
               </div>
             )}
@@ -652,6 +545,27 @@ export default function GlobalNavigation() {
             <div className="px-3 py-1 text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
               Account &amp; Settings
             </div>
+            {isLoaded && !isSignedIn && (
+              <div className="flex flex-col sm:flex-row gap-2 px-3 py-2">
+                <Link
+                  href={signInLink}
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="flex-1 inline-flex items-center justify-center gap-2 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 dark:focus-visible:outline-indigo-400"
+                >
+                  <LogIn className="w-4 h-4" aria-hidden="true" />
+                  <span>Sign in</span>
+                </Link>
+                {CAN_SIGN_UP && (
+                  <Link
+                    href={signUpLink}
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="flex-1 inline-flex items-center justify-center py-2.5 rounded-xl border border-border bg-card hover:bg-muted text-foreground text-xs font-bold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 dark:focus-visible:outline-indigo-400"
+                  >
+                    Create account
+                  </Link>
+                )}
+              </div>
+            )}
             <Link
               href={selfIdLink.href}
               onClick={() => setMobileMenuOpen(false)}

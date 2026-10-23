@@ -79,8 +79,21 @@ export function useAppAuth(): AppAuth {
 }
 
 /** Starts the Keycloak sign-in (PKCE). loginHint lets Keycloak route a university email to its identity provider. */
-export function keycloakSignIn(redirectTo: string, loginHint?: string) {
-  return signIn("keycloak", { redirectTo }, loginHint ? { login_hint: loginHint } : undefined);
+/**
+ * Sends the browser to the Keycloak sign-in page (or, with `signUp`, its registration page: OIDC prompt=create).
+ * location.replace keeps /login out of the history, so Back from Keycloak returns to the page the visitor came from.
+ * Resolves to an error code when Auth.js refuses to start the flow.
+ */
+export async function keycloakSignIn(redirectTo: string, options: { loginHint?: string; signUp?: boolean } = {}): Promise<string | undefined> {
+  const params: Record<string, string> = {};
+  if (options.loginHint) params.login_hint = options.loginHint;
+  if (options.signUp) params.prompt = "create";
+  const result = await signIn("keycloak", { redirectTo, redirect: false }, params);
+  if (result?.url) {
+    window.location.replace(result.url);
+    return undefined;
+  }
+  return result?.error ?? "Configuration";
 }
 
 // G8 regional hosting: who is signed in, for routing this tab to the region that hosts their school

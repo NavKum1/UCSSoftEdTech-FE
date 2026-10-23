@@ -1,10 +1,10 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import Link from "next/link";
 import { useAuth } from "@clerk/nextjs";
 import { Scale, Loader2, CheckCircle2, AlertTriangle, Trash2, Lock } from "lucide-react";
 import { authenticatedFetch } from "@/lib/apiClient";
+import SignInRequired from "@/components/SignInRequired";
 
 const PREFER_NOT = "Prefer not to say";
 
@@ -144,13 +144,7 @@ export default function SelfIdentificationPage() {
 
   if (isLoaded && !isSignedIn) {
     return (
-      <div className="max-w-xl mx-auto px-6 py-16 text-center space-y-3">
-        <h1 className="text-xl font-bold text-foreground">Voluntary self-identification</h1>
-        <p className="text-sm text-muted-foreground">Sign in to manage your answers.</p>
-        <Link href="/login" className="inline-block px-4 py-2 rounded-xl bg-indigo-600 text-white text-sm font-semibold">
-          Sign in
-        </Link>
-      </div>
+      <SignInRequired title="Voluntary self-identification" message="Sign in to manage your answers." />
     );
   }
 

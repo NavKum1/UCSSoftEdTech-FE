@@ -35,6 +35,7 @@ import {
   fmtDate,
   statusLabel,
 } from "@/lib/candidateExperience";
+import SignInRequired from "@/components/SignInRequired";
 
 function Section({ title, icon, children }: { title: string; icon: React.ReactNode; children: React.ReactNode }) {
   return (
@@ -240,12 +241,7 @@ export default function SubmissionReportPage() {
 
   if (isLoaded && !isSignedIn) {
     return (
-      <div className="max-w-xl mx-auto px-6 py-16 text-center space-y-3">
-        <p className="text-sm text-muted-foreground">Sign in to see this report.</p>
-        <Link href="/login" className="inline-block px-4 py-2 rounded-xl bg-indigo-600 text-white text-sm font-semibold">
-          Sign in
-        </Link>
-      </div>
+      <SignInRequired title="Your assessment report" message="Sign in to see this report." />
     );
   }
 

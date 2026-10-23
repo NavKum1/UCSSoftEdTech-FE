@@ -7,6 +7,7 @@ import { useAuth } from "@clerk/nextjs";
 import { AlertCircle, ArrowLeft, Bot, CheckCircle2, Loader2, PenLine, Send, User } from "lucide-react";
 import { authenticatedFetch } from "@/lib/apiClient";
 import { WrittenDefenseState, errorMessage } from "@/lib/candidateExperience";
+import SignInRequired from "@/components/SignInRequired";
 
 const MAX_ANSWER = 4000;
 
@@ -92,10 +93,7 @@ export default function WrittenDefensePage() {
 
   if (isLoaded && !isSignedIn) {
     return (
-      <div className="max-w-xl mx-auto px-6 py-16 text-center space-y-3">
-        <p className="text-sm text-muted-foreground">Sign in to continue your written defense.</p>
-        <Link href="/login" className="inline-block px-4 py-2 rounded-xl bg-indigo-600 text-white text-sm font-semibold">Sign in</Link>
-      </div>
+      <SignInRequired title="Your written defense" message="Sign in to continue your written defense." />
     );
   }
 

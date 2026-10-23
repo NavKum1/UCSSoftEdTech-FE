@@ -6,6 +6,7 @@ import { useAuth } from "@clerk/nextjs";
 import { AlertCircle, ChevronRight, ClipboardList, Inbox, Loader2, Lock } from "lucide-react";
 import { authenticatedFetch } from "@/lib/apiClient";
 import { errorMessage, fmtDate, MySubmissionRow } from "@/lib/candidateExperience";
+import SignInRequired from "@/components/SignInRequired";
 
 function Badge({ children, tone = "muted" }: { children: React.ReactNode; tone?: "muted" | "good" | "warn" | "info" }) {
   const cls =
@@ -41,13 +42,7 @@ export default function MyResultsPage() {
 
   if (isLoaded && !isSignedIn) {
     return (
-      <div className="max-w-xl mx-auto px-6 py-16 text-center space-y-3">
-        <h1 className="text-xl font-bold text-foreground">My results</h1>
-        <p className="text-sm text-muted-foreground">Sign in to see your assessment results.</p>
-        <Link href="/login" className="inline-block px-4 py-2 rounded-xl bg-indigo-600 text-white text-sm font-semibold">
-          Sign in
-        </Link>
-      </div>
+      <SignInRequired title="My results" message="Sign in to see your assessment results." />
     );
   }
 

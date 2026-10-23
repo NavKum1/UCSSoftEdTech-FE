@@ -16,6 +16,11 @@ const withSerwist = withSerwistInit({
 
 const nextConfig: NextConfig = {
   output: "standalone",
+  env: {
+    // Always inlined (even when unset), so a build without it drops the sign-in page's developer shortcuts entirely
+    // (components/auth/DevShortcuts.tsx). Set NEXT_PUBLIC_ENABLE_DEMO_LOGIN=true at build time to keep them.
+    NEXT_PUBLIC_ENABLE_DEMO_LOGIN: process.env.NEXT_PUBLIC_ENABLE_DEMO_LOGIN ?? "",
+  },
 };
 
 export default withSerwist(nextConfig);

@@ -10,6 +10,8 @@ import AgentSupervisorPanel from "@/components/AgentSupervisorPanel";
 import { useParams, useSearchParams } from "next/navigation";
 import { useAuth } from "@clerk/nextjs";
 import { API_BASE_URL, authenticatedFetch } from "@/lib/apiClient";
+import { useAppAuth } from "@/lib/appAuth";
+import SignInRequired from "@/components/SignInRequired";
 import { EditorTelemetry, type TelemetryState } from "@/lib/editorTelemetry";
 import {
   Code,
@@ -513,11 +515,12 @@ function monacoLanguageForSprint(language: string): string {
   return lang || "plaintext";
 }
 
+/** Runs code in the sandbox (POST /api/code/execute, signed-in only). `status` is the HTTP status, 0 when unreachable. */
 async function executeCode(
   language: string,
   code: string,
   getToken: () => Promise<string | null>
-): Promise<string> {
+): Promise<{ output: string; status: number }> {
   try {
     const res = await authenticatedFetch(
       "/api/code/execute",
@@ -525,12 +528,12 @@ async function executeCode(
       getToken
     );
     const data = await res.json().catch(() => ({}));
-    if (!res.ok) return `Run failed: ${data.error || res.statusText}`;
+    if (!res.ok) return { output: `Run failed: ${data.error || res.statusText}`, status: res.status };
     const parts = [data.stdOut, data.stdErr].filter((p: unknown) => typeof p === "string" && p.trim().length > 0);
     const footer = `\n[exit code ${data.exitCode ?? "?"}${data.executionTimeMs != null ? `, ${data.executionTimeMs} ms` : ""}]`;
-    return (parts.join("\n") || "(no output)") + footer;
+    return { output: (parts.join("\n") || "(no output)") + footer, status: res.status };
   } catch (err) {
-    return `Couldn't reach the code runner: ${err instanceof Error ? err.message : String(err)}`;
+    return { output: `Couldn't reach the code runner: ${err instanceof Error ? err.message : String(err)}`, status: 0 };
   }
 }
 
@@ -822,7 +825,7 @@ function GradedWorkspace({ sprintId }: { sprintId: string }) {
     setIsRunning(true);
     setStdOutLogs("");
     setStatusMessage("Running your code...");
-    const output = await executeCode(attempt.language, api.getFiles()[0]?.content ?? "", getToken);
+    const { output } = await executeCode(attempt.language, api.getFiles()[0]?.content ?? "", getToken);
     setStdOutLogs(output);
     setIsRunning(false);
   };
@@ -930,17 +933,11 @@ function GradedWorkspace({ sprintId }: { sprintId: string }) {
     return (
       <div className="flex flex-col font-sans pb-16">
         {header}
-        <CenteredCard>
-          <Lock className="w-10 h-10 text-indigo-700 dark:text-indigo-400 mx-auto" />
-          <h2 className="text-lg font-bold text-foreground">Sign in to start this sprint</h2>
-          <p className="text-xs text-muted-foreground">Your attempt is timed from when you open it, and your progress is saved to your account.</p>
-          <Link
-            href={`/login?redirect_url=${encodeURIComponent(back)}`}
-            className="inline-flex items-center gap-2 py-2.5 px-5 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-xl text-xs transition-all"
-          >
-            Sign in <ArrowRight className="w-4 h-4" />
-          </Link>
-        </CenteredCard>
+        <SignInRequired
+          title="Sign in to start this sprint"
+          message="Your attempt is timed from when you open it, and your progress is saved to your account."
+          returnTo={back}
+        />
       </div>
     );
   }
@@ -1280,7 +1277,8 @@ interface PublicSprint {
 }
 
 function PracticeWorkspace({ sprintId }: { sprintId: string }) {
-  const { getToken } = useAuth();
+  // The practice editor is public; the challenge list (GET /api/sprint) and Run (POST /api/code/execute) need an account
+  const { getToken, isLoaded, isSignedIn } = useAppAuth();
   const { resolvedTheme } = useTheme();
   const t = useTranslations("SprintHUD");
 
@@ -1292,19 +1290,31 @@ function PracticeWorkspace({ sprintId }: { sprintId: string }) {
   const [output, setOutput] = useState<string>("");
   const [isRunning, setIsRunning] = useState<boolean>(false);
   const [challenges, setChallenges] = useState<PublicSprint[]>([]);
+  // "loading" until the list arrives; "signin" when the API refused the session (401), as when it ended
+  const [challengeState, setChallengeState] = useState<"loading" | "ready" | "signin" | "error">("loading");
+  // Set when Run was refused for want of a session, so the output panel offers sign-in instead of an error line
+  const [runNeedsSignIn, setRunNeedsSignIn] = useState(false);
 
   useEffect(() => {
+    if (!isLoaded || !isSignedIn) return;
     let cancelled = false;
     authenticatedFetch("/api/sprint", {}, getToken)
-      .then((res) => (res.ok ? res.json() : null))
-      .then((data) => {
-        if (!cancelled && data && Array.isArray(data.sprints)) setChallenges(data.sprints.slice(0, 8));
+      .then(async (res) => {
+        if (cancelled) return;
+        if (res.status === 401) return setChallengeState("signin");
+        if (!res.ok) return setChallengeState("error");
+        const data = await res.json().catch(() => null);
+        if (cancelled) return;
+        setChallenges(data && Array.isArray(data.sprints) ? data.sprints.slice(0, 8) : []);
+        setChallengeState("ready");
       })
-      .catch(() => undefined);
+      .catch(() => !cancelled && setChallengeState("error"));
     return () => {
       cancelled = true;
     };
-  }, [getToken]);
+  }, [isLoaded, isSignedIn, getToken]);
+
+  const challengeView = !isLoaded ? "loading" : !isSignedIn ? "signin" : challengeState;
 
   const applySelection = (track: CandidateTrack, tier: Tier, lang: string) => {
     const next = getSnippetForTrackAndLanguage(track, tier, lang);
@@ -1321,10 +1331,23 @@ function PracticeWorkspace({ sprintId }: { sprintId: string }) {
   };
 
   const handleRun = async () => {
+    // Signed out: don't send a request the API will refuse; say what's needed instead
+    if (isLoaded && !isSignedIn) {
+      setOutput("");
+      setRunNeedsSignIn(true);
+      return;
+    }
+    setRunNeedsSignIn(false);
     setIsRunning(true);
     setOutput("Running...");
     const monacoLang = getMonacoLanguage(language);
-    setOutput(await executeCode(monacoLang === "shell" ? "bash" : monacoLang, code, getToken));
+    const result = await executeCode(monacoLang === "shell" ? "bash" : monacoLang, code, getToken);
+    if (result.status === 401) {
+      setOutput("");
+      setRunNeedsSignIn(true);
+    } else {
+      setOutput(result.output);
+    }
     setIsRunning(false);
   };
 
@@ -1340,7 +1363,7 @@ function PracticeWorkspace({ sprintId }: { sprintId: string }) {
         }
         controls={
           <div className="hidden lg:flex items-center space-x-2 bg-card border border-border rounded-xl px-3 py-1.5 shadow-xs">
-            <select value={candidateTrack} onChange={(e) => handleTrackChange(e.target.value as CandidateTrack)} className="bg-transparent text-xs text-indigo-600 dark:text-indigo-400 font-semibold focus:outline-none cursor-pointer">
+            <select aria-label="Track" value={candidateTrack} onChange={(e) => handleTrackChange(e.target.value as CandidateTrack)} className="bg-transparent text-xs text-indigo-600 dark:text-indigo-400 font-semibold focus:outline-none cursor-pointer">
               <option value="DevOps">🚀 DevOps &amp; SRE</option>
               <option value="Backend">⚙️ Backend Systems</option>
               <option value="Frontend">💻 Frontend &amp; Web</option>
@@ -1352,12 +1375,12 @@ function PracticeWorkspace({ sprintId }: { sprintId: string }) {
               <option value="DatabaseRE">🗄️ Database Reliability</option>
             </select>
             <span className="text-border">|</span>
-            <select value={difficultyTier} onChange={(e) => applySelection(candidateTrack, e.target.value as Tier, language)} className="bg-transparent text-xs text-emerald-700 dark:text-emerald-400 font-semibold focus:outline-none cursor-pointer">
+            <select aria-label="Difficulty" value={difficultyTier} onChange={(e) => applySelection(candidateTrack, e.target.value as Tier, language)} className="bg-transparent text-xs text-emerald-700 dark:text-emerald-400 font-semibold focus:outline-none cursor-pointer">
               <option value="Bronze (Junior)">Bronze (Junior)</option>
               <option value="Diamond (Staff)">Diamond (Staff)</option>
             </select>
             <span className="text-border">|</span>
-            <select value={language} onChange={(e) => applySelection(candidateTrack, difficultyTier, e.target.value)} className="bg-transparent text-xs text-purple-700 dark:text-purple-400 font-semibold focus:outline-none cursor-pointer">
+            <select aria-label="Language" value={language} onChange={(e) => applySelection(candidateTrack, difficultyTier, e.target.value)} className="bg-transparent text-xs text-purple-700 dark:text-purple-400 font-semibold focus:outline-none cursor-pointer">
               {TRACK_LANGUAGES[candidateTrack].options.map((opt) => (
                 <option key={opt} value={opt}>
                   {opt}
@@ -1425,8 +1448,20 @@ function PracticeWorkspace({ sprintId }: { sprintId: string }) {
                 <Terminal className="w-5 h-5 text-emerald-700 dark:text-emerald-400" />
                 <h3 className="text-sm font-semibold text-foreground">Output</h3>
               </div>
-              <div className="bg-slate-950 p-4 rounded-xl font-mono text-[11px] text-emerald-400 h-36 overflow-y-auto border border-slate-900 leading-relaxed whitespace-pre-wrap">
-                {output || "Run your code to see its output."}
+              <div aria-live="polite">
+                {runNeedsSignIn ? (
+                  <SignInRequired
+                    variant="inline"
+                    headingLevel={4}
+                    title="Sign in to run your code"
+                    message="Editing here is open to everyone. Running code on our servers needs an account."
+                    className="rounded-xl border border-border bg-card"
+                  />
+                ) : (
+                  <div className="bg-slate-950 p-4 rounded-xl font-mono text-[11px] text-emerald-400 h-36 overflow-y-auto border border-slate-900 leading-relaxed whitespace-pre-wrap">
+                    {output || "Run your code to see its output."}
+                  </div>
+                )}
               </div>
             </div>
 
@@ -1435,7 +1470,20 @@ function PracticeWorkspace({ sprintId }: { sprintId: string }) {
                 <Award className="w-5 h-5 text-indigo-700 dark:text-indigo-400" />
                 <h3 className="text-sm font-semibold text-foreground">Graded challenges</h3>
               </div>
-              {challenges.length === 0 ? (
+              {challengeView === "loading" ? (
+                <p role="status" className="text-xs text-muted-foreground flex items-center gap-2">
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" aria-hidden="true" /> Loading challenges...
+                </p>
+              ) : challengeView === "signin" ? (
+                <SignInRequired
+                  variant="inline"
+                  headingLevel={4}
+                  title="Sign in to see graded challenges"
+                  message="Graded challenges are timed, with hidden tests and a voice defense, and count toward your results."
+                />
+              ) : challengeView === "error" ? (
+                <p role="status" className="text-xs text-muted-foreground">Couldn&apos;t load the graded challenges. Try again in a moment.</p>
+              ) : challenges.length === 0 ? (
                 <p className="text-xs text-muted-foreground">No public challenges are available right now.</p>
               ) : (
                 <ul className="space-y-2">

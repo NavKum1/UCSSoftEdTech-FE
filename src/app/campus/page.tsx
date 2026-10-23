@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { API_BASE_URL, authenticatedFetch } from "@/lib/apiClient";
 import { useAppAuth } from "@/lib/appAuth";
+import SignInRequired from "@/components/SignInRequired";
 import {
   AlertCircle,
   ArrowRight,
@@ -139,7 +140,9 @@ const ADVICE: Record<ConnectionResult["verdict"], { title: string; text: string;
 };
 
 export default function CampusStudentPage() {
-  const { getToken, isLoaded } = useAppAuth();
+  const { getToken, isLoaded, isSignedIn } = useAppAuth();
+  // Signed out: the connection check and the guide below stay usable; assignments and the language preference need an account
+  const signedOut = isLoaded && !isSignedIn;
 
   const [data, setData] = useState<MyAssignments | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -151,7 +154,7 @@ export default function CampusStudentPage() {
   const [connection, setConnection] = useState<ConnectionResult | null>(null);
 
   useEffect(() => {
-    if (!isLoaded) return;
+    if (!isLoaded || !isSignedIn) return;
     let active = true;
     authenticatedFetch("/api/campus/my-assignments", {}, getToken)
       .then(async (res) => {
@@ -179,7 +182,7 @@ export default function CampusStudentPage() {
     return () => {
       active = false;
     };
-  }, [getToken, isLoaded]);
+  }, [getToken, isLoaded, isSignedIn]);
 
   const savePreference = async () => {
     setSaving(true);
@@ -230,7 +233,13 @@ export default function CampusStudentPage() {
         <h2 className="text-base font-bold text-foreground flex items-center gap-2">
           <CalendarClock className="w-4 h-4 text-indigo-600 dark:text-indigo-400" /> Assignments
         </h2>
-        {loadError ? (
+        {signedOut ? (
+          <SignInRequired
+            variant="inline"
+            title="Sign in to see your assignments"
+            message="Your placement cell assigns assessments to your account. Sign in with the email address they added for you."
+          />
+        ) : loadError ? (
           <p className="text-sm text-rose-700 dark:text-rose-400 flex items-center gap-2"><AlertCircle className="w-4 h-4 shrink-0" /> {loadError}</p>
         ) : !data ? (
           <p className="text-sm text-muted-foreground flex items-center gap-2"><Loader2 className="w-4 h-4 animate-spin" /> Loading...</p>
@@ -287,6 +296,9 @@ export default function CampusStudentPage() {
         <p className="text-xs text-muted-foreground">
           Choose the language you are most comfortable explaining your code in. Technical terms can stay in English. You can still change it on the defense screen.
         </p>
+        {signedOut ? (
+          <p className="text-xs text-muted-foreground">Sign in above to save your preferred language.</p>
+        ) : (
         <div className="flex flex-col sm:flex-row gap-2">
           <select
             value={language}
@@ -307,6 +319,7 @@ export default function CampusStudentPage() {
             {saving && <Loader2 className="w-4 h-4 animate-spin" />} Save
           </button>
         </div>
+        )}
         {data && !data.inCohort && (
           <p className="text-[11px] text-muted-foreground">You can save a preference once your placement cell adds you to a cohort.</p>
         )}

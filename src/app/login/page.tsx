@@ -1,14 +1,25 @@
 "use client";
 
-import React, { Suspense, useState } from "react";
+/**
+ * Sign-in (/login) and sign-up (/login?mode=signup) for both identity providers (NEXT_PUBLIC_AUTH_PROVIDER):
+ * - Clerk: <SignIn>/<SignUp> styled through its appearance API, in the brand-aware frame (components/auth).
+ * - Keycloak: straight on to the one TotalOffice sign-in page (themed per product, identity-theme/), so visitors see a
+ *   single sign-in screen. Sign-up opens Keycloak's registration page. The card below is shown only when the flow
+ *   can't start, Auth.js reports an error (?error=...), or the visitor came back here with the Back button.
+ * White-label hosts never see "Edulexa". The global navigation is hidden here (lib/careerNav.ts, AUTH_PAGES).
+ */
+
+import React, { Suspense, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
-import { SignIn } from "@clerk/nextjs";
+import { useSearchParams } from "next/navigation";
+import { SignIn, SignUp } from "@clerk/nextjs";
+import { AlertCircle, ArrowRight, Building2, Loader2, Lock, ShieldCheck, UserPlus } from "lucide-react";
 import { AUTH_PROVIDER, keycloakSignIn } from "@/lib/appAuth";
-import { 
-  Building2, ShieldCheck, ArrowRight, Lock,
-  Sparkles, UserCheck, Briefcase, GraduationCap
-} from "lucide-react";
+import AuthLayout from "@/components/auth/AuthLayout";
+import DevShortcuts, { DEMO_LOGIN_ENABLED } from "@/components/auth/DevShortcuts";
+import { brandName, useAuthBrand, type AuthBrandState } from "@/components/auth/authBrand";
+import { clerkAppearance } from "@/components/auth/clerkAppearance";
+import { CAN_SIGN_UP } from "@/components/SignInRequired";
 
 // useSearchParams needs a Suspense boundary for static prerendering
 export default function LoginPage() {
@@ -20,181 +31,192 @@ export default function LoginPage() {
 }
 
 function LoginPageContent() {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const redirectUrl = searchParams.get("redirect_url") || "/dashboard";
+  // ?mode=signup: Clerk's sign-up form, or Keycloak's registration page
+  const signUp = CAN_SIGN_UP && searchParams.get("mode") === "signup";
+  const signInUrl = `/login?redirect_url=${encodeURIComponent(redirectUrl)}`;
+  const signUpUrl = `/login?mode=signup&redirect_url=${encodeURIComponent(redirectUrl)}`;
 
-  const [demoRole, setDemoRole] = useState<string | null>(null);
+  const brand = useAuthBrand();
+  const name = brandName(brand);
 
-  const handleDemoSignIn = (role: string, targetPath: string) => {
-    setDemoRole(role);
-    if (typeof document !== "undefined") {
-      document.cookie = `mock_${role.toLowerCase()}_role=${role}; path=/; max-age=86400`;
-    }
-    setTimeout(() => {
-      router.push(targetPath);
-    }, 400);
-  };
+  // Page title per brand (the root metadata names Edulexa, which a white-label host must not show)
+  useEffect(() => {
+    if (brand.kind === "loading") return;
+    const action = signUp ? "Create account" : "Sign in";
+    document.title = name ? `${action} · ${name}` : action;
+  }, [brand.kind, name, signUp]);
+
+  if (AUTH_PROVIDER === "keycloak") {
+    return (
+      <KeycloakSignIn
+        redirectUrl={redirectUrl}
+        signUp={signUp}
+        loginHint={searchParams.get("login_hint") ?? undefined}
+        authError={searchParams.get("error")}
+        brand={brand}
+      />
+    );
+  }
+
+  const heading = signUp ? "Create your account" : "Welcome back";
+  const subtitle = signUp
+    ? name
+      ? `Get started with ${name}.`
+      : "Get started."
+    : name
+      ? `Sign in to continue to ${name}.`
+      : "Sign in to continue.";
 
   return (
-    <div className="min-h-screen bg-background text-foreground flex flex-col justify-center items-center px-4 py-12 font-sans relative overflow-x-clip">
-      {/* Background glow */}
-      <div className="absolute top-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl pointer-events-none -z-10" />
-
-      <div className="w-full max-w-md space-y-6">
-        {/* Header */}
-        <div className="text-center space-y-2">
-          <Link href="/" className="inline-flex items-center space-x-2 group">
-            <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-purple-600 to-indigo-600 flex items-center justify-center font-bold text-white shadow-lg shadow-purple-500/20 group-hover:scale-105 transition-transform">
-              <Sparkles className="w-5 h-5" />
-            </div>
-            <span className="text-xl font-black tracking-tight text-foreground">
-              BUILD & DEFEND
-            </span>
-          </Link>
-          <h1 className="text-2xl font-black text-foreground">
-            Sign In to Edulexa
-          </h1>
-          <p className="text-xs text-muted-foreground">
-            Access your technical assessments, corporate recruiting pipeline, and credentials.
-          </p>
-        </div>
-
-        {/* Demo One-Click Personas */}
-        <div className="p-4 rounded-2xl bg-card border border-border space-y-3">
-          <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground block text-center">
-            Instant Demo Sign-In (One-Click)
-          </span>
-
-          <div className="grid grid-cols-1 gap-2">
-            <button
-              onClick={() => handleDemoSignIn("Recruiter", "/recruiter/dashboard")}
-              className="w-full p-2.5 rounded-xl border border-purple-500/30 bg-purple-500/5 hover:bg-purple-500/15 text-left flex items-center justify-between text-xs transition-colors group"
-            >
-              <div className="flex items-center space-x-2.5">
-                <div className="w-7 h-7 rounded-lg bg-purple-500/20 text-purple-600 dark:text-purple-400 flex items-center justify-center shrink-0">
-                  <Briefcase className="w-4 h-4" />
-                </div>
-                <div>
-                  <span className="font-bold text-foreground block">Corporate Recruiter</span>
-                  <span className="text-[10px] text-muted-foreground">Candidate assessments & anti-cheat audits</span>
-                </div>
-              </div>
-              <ArrowRight className="w-3.5 h-3.5 text-muted-foreground group-hover:text-purple-500 transition-colors" />
-            </button>
-
-            <button
-              onClick={() => handleDemoSignIn("Candidate", "/dashboard")}
-              className="w-full p-2.5 rounded-xl border border-indigo-500/30 bg-indigo-500/5 hover:bg-indigo-500/15 text-left flex items-center justify-between text-xs transition-colors group"
-            >
-              <div className="flex items-center space-x-2.5">
-                <div className="w-7 h-7 rounded-lg bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0">
-                  <UserCheck className="w-4 h-4" />
-                </div>
-                <div>
-                  <span className="font-bold text-foreground block">Software Candidate</span>
-                  <span className="text-[10px] text-muted-foreground">Coding sprints, voice defense, and katas</span>
-                </div>
-              </div>
-              <ArrowRight className="w-3.5 h-3.5 text-muted-foreground group-hover:text-indigo-500 transition-colors" />
-            </button>
-
-            <button
-              onClick={() => handleDemoSignIn("InstituteAdmin", "/institute/dashboard")}
-              className="w-full p-2.5 rounded-xl border border-emerald-500/30 bg-emerald-500/5 hover:bg-emerald-500/15 text-left flex items-center justify-between text-xs transition-colors group"
-            >
-              <div className="flex items-center space-x-2.5">
-                <div className="w-7 h-7 rounded-lg bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
-                  <GraduationCap className="w-4 h-4" />
-                </div>
-                <div>
-                  <span className="font-bold text-foreground block">University Institute Admin</span>
-                  <span className="text-[10px] text-muted-foreground">Cohort batching & accreditation metrics</span>
-                </div>
-              </div>
-              <ArrowRight className="w-3.5 h-3.5 text-muted-foreground group-hover:text-emerald-500 transition-colors" />
-            </button>
-          </div>
-        </div>
-
-        {AUTH_PROVIDER === "keycloak" ? (
-          <KeycloakSignInCard redirectUrl={redirectUrl} />
-        ) : (
-        <>
-        {/* Standard Clerk Authentication Widget */}
-        <div className="flex justify-center">
-          <SignIn 
-            routing="hash"
-            fallbackRedirectUrl={redirectUrl}
-            appearance={{
-              elements: {
-                rootBox: "w-full",
-                card: "bg-card border border-border shadow-md rounded-2xl w-full",
-                headerTitle: "text-foreground font-black text-lg",
-                headerSubtitle: "text-muted-foreground text-xs",
-                socialButtonsBlockButton: "border-border text-foreground hover:bg-muted text-xs",
-                formButtonPrimary: "bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold rounded-xl",
-                formFieldLabel: "text-foreground text-xs font-semibold",
-                formFieldInput: "bg-background border-border text-foreground text-xs rounded-xl",
-                footerActionLink: "text-purple-600 dark:text-purple-400 font-semibold"
-              }
-            }}
-          />
-        </div>
-
-        {/* Enterprise SSO Link */}
-        <div className="text-center pt-2">
-          <Link
-            href="/login/sso"
-            className="text-xs text-muted-foreground hover:text-foreground font-semibold inline-flex items-center space-x-1.5 transition-colors"
-          >
-            <Building2 className="w-3.5 h-3.5 text-purple-500" />
-            <span>Sign in with Enterprise SAML / Okta / Azure AD</span>
-            <ArrowRight className="w-3 h-3" />
-          </Link>
-        </div>
-        </>
-        )}
+    <AuthLayout state={brand}>
+      <div className="mb-7 space-y-1.5">
+        <h1 className="text-[1.75rem] font-semibold leading-tight tracking-tight text-foreground">{heading}</h1>
+        <p className="text-sm text-muted-foreground">{subtitle}</p>
       </div>
-    </div>
+
+      {signUp ? (
+        <SignUp key="signup" routing="hash" fallbackRedirectUrl={redirectUrl} signInUrl={signInUrl} appearance={clerkAppearance} />
+      ) : (
+        <SignIn key="signin" routing="hash" fallbackRedirectUrl={redirectUrl} signUpUrl={signUpUrl} appearance={clerkAppearance} />
+      )}
+
+      <p className="mt-6 text-center text-sm text-muted-foreground">
+        <Link
+          href="/login/sso"
+          className="group inline-flex items-center gap-1.5 rounded-md font-medium text-foreground/90 underline-offset-4 hover:text-foreground hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--auth-ring)]"
+        >
+          <Building2 aria-hidden="true" className="h-4 w-4 text-[var(--auth-link)]" />
+          Sign in with enterprise SSO
+          <ArrowRight aria-hidden="true" className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5 motion-reduce:transition-none" />
+        </Link>
+      </p>
+
+      {DEMO_LOGIN_ENABLED && <DevShortcuts />}
+    </AuthLayout>
   );
 }
 
-// Keycloak mode: one sign-in for every TotalOffice app. An optional email is passed as login_hint so Keycloak can send
-// university and employer users straight to their organization's identity provider (email-domain discovery).
-function KeycloakSignInCard({ redirectUrl }: { redirectUrl: string }) {
-  const [email, setEmail] = useState("");
+// Auth.js error codes (?error=...) in plain words; anything else gets the generic line
+const AUTH_ERRORS: Record<string, string> = {
+  AccessDenied: "Your account isn't allowed to sign in here. Ask your administrator for access.",
+  Verification: "That sign-in link has expired or was already used. Please sign in again.",
+  Configuration: "Sign-in isn't available right now. Please try again in a few minutes.",
+};
+
+const noSubscribe = () => () => {};
+
+function cameBackWithBackButton(): boolean {
+  try {
+    const nav = performance.getEntriesByType("navigation")[0] as PerformanceNavigationTiming | undefined;
+    return nav?.type === "back_forward";
+  } catch {
+    return false;
+  }
+}
+
+interface KeycloakSignInProps {
+  redirectUrl: string;
+  signUp: boolean;
+  loginHint?: string;
+  authError: string | null;
+  brand: AuthBrandState;
+}
+
+// Keycloak mode: one sign-in page for every TotalOffice app. University and employer users are sent on to their own
+// identity provider by Keycloak (identity-first login, email-domain discovery), so nothing is asked here first.
+function KeycloakSignIn({ redirectUrl, signUp, loginHint, authError, brand }: KeycloakSignInProps) {
+  // The flow's own failure (Auth.js refused to start it); authError is one Auth.js reported on the way back
+  const [failure, setFailure] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
-  const start = (e: React.FormEvent) => {
-    e.preventDefault();
+  // Don't bounce straight back to Keycloak after an error, or when the visitor pressed Back to leave it
+  const cameBack = useSyncExternalStore(noSubscribe, cameBackWithBackButton, () => false);
+  const started = useRef(false);
+
+  useEffect(() => {
+    if (started.current || authError || cameBackWithBackButton()) return;
+    started.current = true;
+    void keycloakSignIn(redirectUrl, { loginHint, signUp }).then((code) => code && setFailure(code));
+  }, [authError, loginHint, redirectUrl, signUp]);
+
+  const go = async (asSignUp: boolean) => {
+    setFailure(null);
     setBusy(true);
-    void keycloakSignIn(redirectUrl, email.trim() || undefined);
+    const code = await keycloakSignIn(redirectUrl, { loginHint, signUp: asSignUp });
+    if (code) {
+      setFailure(code);
+      setBusy(false);
+    }
   };
+
+  const error = failure ?? authError;
+  if (!error && !cameBack) {
+    return (
+      <main className="flex min-h-dvh items-center justify-center bg-background px-4" aria-busy="true">
+        <p role="status" className="flex items-center gap-2.5 text-sm text-muted-foreground">
+          <Loader2 aria-hidden="true" className="h-4 w-4 animate-spin motion-reduce:animate-none" />
+          {signUp ? "Opening sign-up…" : "Taking you to sign-in…"}
+        </p>
+      </main>
+    );
+  }
+
+  const platform = brand.kind === "edulexa";
   return (
-    <form onSubmit={start} className="p-5 rounded-2xl bg-card border border-border shadow-md space-y-3">
-      <label htmlFor="kc-email" className="block text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
-        University or work email (optional)
-      </label>
-      <input
-        id="kc-email"
-        type="email"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-        placeholder="you@university.edu"
-        className="w-full bg-background border border-border rounded-xl px-3 py-2.5 text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-purple-500/50"
-      />
-      <button
-        type="submit"
-        disabled={busy}
-        className="w-full flex items-center justify-center gap-2 bg-purple-600 hover:bg-purple-700 disabled:opacity-50 text-white text-xs font-bold py-2.5 rounded-xl transition-colors"
-      >
-        <Lock className="w-3.5 h-3.5" />
-        {busy ? "Redirecting to sign-in..." : "Sign in with TotalOffice account"}
-      </button>
-      <p className="text-[10px] text-muted-foreground text-center flex items-center justify-center gap-1">
-        <ShieldCheck className="w-3 h-3" />
-        Single sign-on for Edulexa, Hire, Documents and AttendSpot. Your university login works here.
-      </p>
-    </form>
+    <AuthLayout state={brand}>
+      <div className="mb-7 space-y-1.5">
+        <h1 className="text-[1.75rem] font-semibold leading-tight tracking-tight text-foreground">
+          {signUp ? "Create your account" : "Welcome back"}
+        </h1>
+        <p className="text-sm text-muted-foreground">
+          {signUp ? "Create your account, then come back here." : "Sign in to continue."}
+        </p>
+      </div>
+
+      <div className="space-y-5 rounded-2xl border border-[var(--auth-card-border)] bg-[var(--auth-card-bg)] p-6 shadow-[var(--auth-card-shadow)] sm:p-7">
+        {error && (
+          <p role="alert" className="flex items-start gap-2 rounded-xl border border-red-200 bg-red-50 px-3.5 py-3 text-sm text-red-800 dark:border-red-900/60 dark:bg-red-950/40 dark:text-red-200">
+            <AlertCircle aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0" />
+            {AUTH_ERRORS[error] ?? "We couldn't sign you in. Please try again."}
+          </p>
+        )}
+        <button
+          type="button"
+          onClick={() => void go(signUp)}
+          disabled={busy}
+          className="flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-[var(--auth-primary)] bg-linear-to-b from-white/12 to-white/0 text-sm font-semibold text-white shadow-[inset_0_1px_0_rgb(255_255_255/0.18),0_1px_2px_rgb(16_24_40/0.2),0_6px_16px_-6px_var(--auth-primary-glow)] transition-colors hover:bg-[var(--auth-primary-hover)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--auth-ring)] disabled:cursor-wait disabled:opacity-70"
+        >
+          {busy ? (
+            <Loader2 aria-hidden="true" className="h-4 w-4 animate-spin motion-reduce:animate-none" />
+          ) : signUp ? (
+            <UserPlus aria-hidden="true" className="h-4 w-4" />
+          ) : (
+            <Lock aria-hidden="true" className="h-4 w-4" />
+          )}
+          {busy ? "Redirecting…" : signUp ? "Create account" : "Sign in"}
+        </button>
+        {(signUp || CAN_SIGN_UP) && (
+          <p className="text-center text-sm text-muted-foreground">
+            {signUp ? "Already have an account? " : "New here? "}
+            <button
+              type="button"
+              onClick={() => void go(!signUp)}
+              className="rounded-md font-medium text-[var(--auth-link)] underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--auth-ring)]"
+            >
+              {signUp ? "Sign in" : "Create an account"}
+            </button>
+          </p>
+        )}
+        <p className="flex items-start justify-center gap-1.5 border-t border-[var(--auth-card-border)] pt-4 text-center text-xs text-muted-foreground">
+          <ShieldCheck aria-hidden="true" className="mt-px h-3.5 w-3.5 shrink-0" />
+          {platform
+            ? "One account for Edulexa, Hire, Documents and AttendSpot. Your university or work login works here too."
+            : "Your university or work login works here."}
+        </p>
+      </div>
+
+      {DEMO_LOGIN_ENABLED && <DevShortcuts />}
+    </AuthLayout>
   );
 }

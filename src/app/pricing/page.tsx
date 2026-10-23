@@ -13,6 +13,7 @@ import {
   formatPrice,
   startBillingRedirect,
 } from "@/components/VoiceUsageCard";
+import { signInHref } from "@/components/SignInRequired";
 
 export default function PricingPage() {
   const { getToken, isLoaded, isSignedIn } = useAuth();
@@ -141,7 +142,7 @@ export default function PricingPage() {
                 {isPro ? (
                   !isSignedIn ? (
                     <Link
-                      href="/login"
+                      href={signInHref("/pricing")}
                       className="w-full text-center py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-semibold"
                     >
                       Sign in to upgrade
@@ -200,7 +201,7 @@ export default function PricingPage() {
               Buy {plans.topUp.minutes} minutes
             </button>
           ) : (
-            <Link href="/login" className="px-5 py-2.5 rounded-xl border border-border text-sm font-semibold text-foreground hover:bg-muted text-center">
+            <Link href={signInHref("/pricing")} className="px-5 py-2.5 rounded-xl border border-border text-sm font-semibold text-foreground hover:bg-muted text-center">
               Sign in to buy
             </Link>
           )}

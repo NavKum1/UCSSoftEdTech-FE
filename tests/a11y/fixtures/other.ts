@@ -985,6 +985,10 @@ export const otherFixtures: ApiFixture[] = [
 
   // Login
   { path: "/api/sso/discovery", body: { domain: "lakeside.edu", organizationName: SCHOOL_NAME, protocol: "saml", defaultRole: "Candidate", ssoEnabled: true } },
+
+  // Shared signed-in-required state (components/SignInRequired): the API refuses the session (401) or the role (403)
+  { path: /^\/api\/passport(\/radar)?$/, status: 401, body: { message: "Unauthorized" } },
+  { path: "/api/leaderboard", status: 403, body: { message: "Forbidden" } },
 ];
 
 export const otherRoutes: A11yRoute[] = [
@@ -1029,4 +1033,9 @@ export const otherRoutes: A11yRoute[] = [
   // Login
   { name: "login", path: "/login", persona: "public" },
   { name: "login-sso", path: "/login/sso", persona: "public" },
+  { name: "login-signup", path: "/login?mode=signup&redirect_url=%2Fcredentials", persona: "public" },
+
+  // Shared signed-in-required state on an older page (session ended, then a role that can't use the page)
+  { name: "access-notice-signin", path: "/passport", persona: "student", ready: '[data-access-notice="signin"] h1' },
+  { name: "access-notice-forbidden", path: "/leaderboard", persona: "student", ready: '[data-access-notice="forbidden"] h1' },
 ];
