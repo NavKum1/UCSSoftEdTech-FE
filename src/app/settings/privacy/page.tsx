@@ -22,7 +22,7 @@ const DELETED = [
   "Editor activity recordings (keystroke and edit telemetry) and AI-assistant conversations",
   "Interview transcripts and links to voice recordings",
   "Voluntary self-identification (demographic) answers",
-  "Sentiment-coaching data",
+  "Speaking-practice measurements (pace, filler words, pauses)",
   "GitHub repository defenses, résumés and language preferences",
   "Course referrals (providers are told to stop contact and delete your data)",
   "Personalised feedback, accommodation requests and written-defense answers",
@@ -121,7 +121,7 @@ export default function PrivacySettingsPage() {
           <p className="text-xs text-muted-foreground">
             A JSON file with your profile, assessment attempts and editor activity, AI-assistant conversations, submissions, interviews
             and transcripts, evaluations, credentials, referrals, repository defenses, self-identification answers, appeals,
-            accommodations and sentiment-coaching data. Integrity-analysis details and reviewers&apos; internal rationale are not
+            accommodations and speaking-practice measurements. Integrity-analysis details and reviewers&apos; internal rationale are not
             included in the self-service export; the file explains why and how to request them.
           </p>
           <button

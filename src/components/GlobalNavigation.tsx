@@ -230,6 +230,12 @@ export default function GlobalNavigation() {
       icon: Compass,
     },
     {
+      name: "Speaking practice",
+      href: "/prep/delivery",
+      desc: "Pace, filler words and pauses in your spoken answers (private)",
+      icon: Mic,
+    },
+    {
       name: "Daily PR Review Dojo",
       href: "/daily/review",
       desc: "Security vulnerability & code review katas",
