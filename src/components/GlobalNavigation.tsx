@@ -2,9 +2,10 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { UserButton } from "@clerk/nextjs";
 import { AUTH_PROVIDER, AppUserButton, useAppAuth } from "@/lib/appAuth";
+import { endDevSession, useDevSession } from "@/lib/devSession";
 import { CAN_SIGN_UP, signInHref, signUpHref, useReturnPath } from "@/components/SignInRequired";
 import { hidesGlobalNavigation } from "@/lib/careerNav";
 import {
@@ -72,6 +73,8 @@ function hasRecruiterRole(metadata: Record<string, unknown> | undefined): boolea
 export default function GlobalNavigation() {
   const pathname = usePathname();
   const { isLoaded, isSignedIn, roles, getToken } = useAppAuth();
+  const devSession = useDevSession();
+  const router = useRouter();
   const [practiceHubOpen, setPracticeHubOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [remainingMinutes, setRemainingMinutes] = useState<number | null>(null);
@@ -436,7 +439,23 @@ export default function GlobalNavigation() {
 
           {/* Student Profile & Account Menu */}
           <div className="relative pl-1 border-l border-border/60">
-            {isSignedIn && AUTH_PROVIDER === "keycloak" ? (
+            {devSession ? (
+              <span className="inline-flex items-center gap-2 text-xs">
+                <span className="rounded-full border border-amber-600/30 bg-amber-500/10 px-2 py-1 font-medium text-amber-800 dark:text-amber-300">
+                  Dev: {devSession.label}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    endDevSession();
+                    router.push("/login");
+                  }}
+                  className="rounded-lg border border-border px-2 py-1 font-medium hover:bg-muted"
+                >
+                  End
+                </button>
+              </span>
+            ) : isSignedIn && AUTH_PROVIDER === "keycloak" ? (
               <AppUserButton />
             ) : isSignedIn ? (
               <UserButton

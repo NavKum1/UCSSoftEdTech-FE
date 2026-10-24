@@ -1,3 +1,5 @@
+import { getDevSession } from "@/lib/devSession";
+
 /**
  * Authenticated API fetch for the Edulexa frontend.
  * Automatically attaches Clerk JWT Session Bearer Token in HTTP Authorization Header.
@@ -142,6 +144,9 @@ export async function authenticatedFetch(
       const token = await getToken();
       if (token) {
         headers.set("Authorization", `Bearer ${token}`);
+        // Local developer session: the candidate dev token needs a stable user id
+        const dev = getDevSession();
+        if (dev?.userId && token === dev.token && !headers.has("X-User-Id")) headers.set("X-User-Id", dev.userId);
       }
     } catch (error) {
       console.warn("[API CLIENT] Could not retrieve Clerk JWT token:", error);
@@ -155,3 +160,4 @@ export async function authenticatedFetch(
   if (relative && (await followWrongRegion(res))) return send();
   return res;
 }
+

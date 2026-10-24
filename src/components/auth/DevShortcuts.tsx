@@ -1,17 +1,19 @@
 "use client";
 
 /**
- * One-click portal shortcuts for local development. They don't sign anyone in: in development the middleware lets
- * every route through (src/middleware.ts, isDev), so they simply open each portal. They render only when
- * DEMO_LOGIN_ENABLED is true; NODE_ENV and NEXT_PUBLIC_* are inlined at build time, so a production build drops them.
+ * One-click portal shortcuts for local development. Each starts a developer session as that persona (lib/devSession:
+ * one of the API's development tokens, accepted only by an API running in Development), then opens the portal, so the
+ * portals work without Keycloak. They render only when DEMO_LOGIN_ENABLED is true; NODE_ENV and NEXT_PUBLIC_* are inlined
+ * at build time, so a production build drops them.
  */
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowUpRight, Briefcase, GraduationCap, Loader2, TerminalSquare, UserCheck } from "lucide-react";
 
-export const DEMO_LOGIN_ENABLED =
-  process.env.NODE_ENV === "development" || process.env.NEXT_PUBLIC_ENABLE_DEMO_LOGIN === "true";
+import { DEMO_LOGIN_ENABLED, startDevSession } from "@/lib/devSession";
+
+export { DEMO_LOGIN_ENABLED };
 
 const SHORTCUTS = [
   { role: "Recruiter", label: "Recruiter", hint: "Assessments and integrity reviews", href: "/recruiter/dashboard", icon: Briefcase },
@@ -25,6 +27,7 @@ export default function DevShortcuts() {
 
   const open = (role: string, href: string) => {
     setBusy(role);
+    startDevSession(role);
     router.push(href);
   };
 
@@ -39,7 +42,7 @@ export default function DevShortcuts() {
           Local only
         </span>
       </div>
-      <p className="mt-1 text-xs text-muted-foreground">Open a portal without signing in. Not part of production builds.</p>
+      <p className="mt-1 text-xs text-muted-foreground">Open a portal signed in as a test user (needs the API running in Development). Not part of production builds.</p>
       <ul className="mt-3 flex flex-wrap gap-2">
         {SHORTCUTS.map(({ role, label, hint, href, icon: Icon }) => (
           <li key={role}>

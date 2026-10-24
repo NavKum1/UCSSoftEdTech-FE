@@ -14,6 +14,7 @@ import { SessionProvider, getSession, signIn, useSession } from "next-auth/react
 import { LogOut } from "lucide-react";
 import { API_BASE_URL, REGION_ROUTING, authenticatedFetch, getApiRegion, setApiRegion } from "@/lib/apiClient";
 import { getPartnerSession, usePartnerToken } from "@/lib/partnerSession";
+import { getDevSession, useDevSession } from "@/lib/devSession";
 
 export type AuthProviderName = "clerk" | "keycloak";
 export const AUTH_PROVIDER: AuthProviderName = process.env.NEXT_PUBLIC_AUTH_PROVIDER === "keycloak" ? "keycloak" : "clerk";
@@ -69,11 +70,14 @@ function useKeycloakAppAuth(): AppAuth {
 const useProviderAppAuth: () => AppAuth = AUTH_PROVIDER === "keycloak" ? useKeycloakAppAuth : useClerkAppAuth;
 
 // F9 partner sign-in: a partner session token (sessionStorage, set by /partner/callback) takes precedence while valid
+// Local development: a developer session from the sign-in page shortcuts (lib/devSession) signs in as that persona
 export function useAppAuth(): AppAuth {
   const provider = useProviderAppAuth();
   const partnerToken = usePartnerToken();
+  const dev = useDevSession();
   const providerGetToken = provider.getToken;
-  const getToken = useCallback(async () => getPartnerSession()?.token ?? providerGetToken(), [providerGetToken]);
+  const getToken = useCallback(async () => getDevSession()?.token ?? getPartnerSession()?.token ?? providerGetToken(), [providerGetToken]);
+  if (dev) return { isLoaded: true, isSignedIn: true, userId: dev.userId, roles: [dev.role], getToken };
   if (!partnerToken) return { ...provider, getToken };
   return { isLoaded: true, isSignedIn: true, userId: getPartnerSession()?.userId ?? null, roles: [], getToken };
 }
