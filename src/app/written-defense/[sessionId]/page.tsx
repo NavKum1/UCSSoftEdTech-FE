@@ -3,7 +3,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { useAuth } from "@clerk/nextjs";
+import { useAppAuth as useAuth } from "@/lib/appAuth";
 import { AlertCircle, ArrowLeft, Bot, CheckCircle2, Loader2, PenLine, Send, User } from "lucide-react";
 import { authenticatedFetch } from "@/lib/apiClient";
 import { WrittenDefenseState, errorMessage } from "@/lib/candidateExperience";

@@ -3,7 +3,7 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import Vapi from "@vapi-ai/web";
-import { useAuth } from "@clerk/nextjs";
+import { useAppAuth as useAuth } from "@/lib/appAuth";
 import {
   Mic,
   MicOff,

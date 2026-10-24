@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
-import { useAuth } from "@clerk/nextjs";
+import { useAppAuth as useAuth } from "@/lib/appAuth";
 import { Mic, Zap, PlusCircle, CreditCard, Loader2, AlertTriangle, Clock } from "lucide-react";
 import { API_BASE_URL, authenticatedFetch } from "@/lib/apiClient";
 

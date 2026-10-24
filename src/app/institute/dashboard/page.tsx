@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { useAuth } from "@clerk/nextjs";
+import { useAppAuth as useAuth } from "@/lib/appAuth";
 import { authenticatedFetch } from "@/lib/apiClient";
 import {
   Inbox,
@@ -29,7 +29,7 @@ interface Lead {
 }
 
 export default function InstituteDashboardPage() {
-  const { getToken } = useAuth();
+  const { getToken, isLoaded, isSignedIn } = useAuth();
   const [activeTab, setActiveTab] = useState<"leads" | "webhook" | "analytics">("leads");
 
   const [instituteId, setInstituteId] = useState<string>("");
@@ -75,8 +75,9 @@ export default function InstituteDashboardPage() {
 
   const fetchDataRef = useLatestRef(fetchData);
   useEffect(() => {
-    fetchDataRef.current();
-  }, [fetchDataRef]);
+    // Load once signed in (loading before sign-in finished got a 401 and showed an empty inbox)
+    if (isLoaded && isSignedIn) fetchDataRef.current();
+  }, [fetchDataRef, isLoaded, isSignedIn]);
 
   // Save CRM Webhook URL
   const handleSaveWebhook = async (e: React.FormEvent) => {

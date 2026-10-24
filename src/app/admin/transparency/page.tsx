@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
-import { useAuth } from "@clerk/nextjs";
+import { useAppAuth as useAuth } from "@/lib/appAuth";
 import { authenticatedFetch } from "@/lib/apiClient";
 import { AlertCircle, CheckCircle2, ExternalLink, Eye, FileBarChart, Loader2, Send, Undo2 } from "lucide-react";
 import TransparencyReportView from "@/components/transparency/TransparencyReportView";

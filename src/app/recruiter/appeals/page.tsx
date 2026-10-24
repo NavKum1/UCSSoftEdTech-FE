@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
-import { useAuth } from "@clerk/nextjs";
+import { useAppAuth as useAuth } from "@/lib/appAuth";
 import { AlertCircle, CheckCircle2, Flag, Inbox, Loader2, RefreshCw, X } from "lucide-react";
 import { authenticatedFetch } from "@/lib/apiClient";
 import { STATUS_STYLES, categoryLabel, errorMessage, fmtDate, statusLabel } from "@/lib/candidateExperience";

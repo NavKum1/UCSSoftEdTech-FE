@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useCallback, useEffect, useState } from "react";
-import { useAuth } from "@clerk/nextjs";
+import { useAppAuth as useAuth } from "@/lib/appAuth";
 import { BookOpen, Info, Loader2, AlertTriangle, Share2, Undo2, CheckCircle2, X, Mail } from "lucide-react";
 import { authenticatedFetch } from "@/lib/apiClient";
 import SignInRequired from "@/components/SignInRequired";

@@ -8,7 +8,7 @@ import MultiFileEditor, { type EditorFile, type MultiFileEditorApi } from "@/com
 import AiAssistantPanel, { AiPolicyNotice, type AiPolicy } from "@/components/AiAssistantPanel";
 import AgentSupervisorPanel from "@/components/AgentSupervisorPanel";
 import { useParams, useSearchParams } from "next/navigation";
-import { useAuth } from "@clerk/nextjs";
+import { useAppAuth as useAuth } from "@/lib/appAuth";
 import { API_BASE_URL, authenticatedFetch } from "@/lib/apiClient";
 import { useAppAuth } from "@/lib/appAuth";
 import SignInRequired from "@/components/SignInRequired";

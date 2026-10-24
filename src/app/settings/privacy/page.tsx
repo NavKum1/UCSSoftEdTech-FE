@@ -1,7 +1,8 @@
 "use client";
 
 import React, { useState } from "react";
-import { useAuth, useClerk } from "@clerk/nextjs";
+import { AUTH_PROVIDER, useAppAuth as useAuth } from "@/lib/appAuth";
+import { endDevSession, getDevSession } from "@/lib/devSession";
 import { AlertTriangle, CheckCircle2, Download, Loader2, Lock, Trash2 } from "lucide-react";
 import { authenticatedFetch } from "@/lib/apiClient";
 import { errorMessage } from "@/lib/candidateExperience";
@@ -41,7 +42,13 @@ const KEPT = [
 
 export default function PrivacySettingsPage() {
   const { getToken, isLoaded, isSignedIn } = useAuth();
-  const { signOut } = useClerk();
+  // After erasure: end the session (Keycloak signs out everywhere; a local dev session just ends)
+  const signOut = () => {
+    if (getDevSession()) {
+      endDevSession();
+      window.location.replace("/");
+    } else window.location.replace(AUTH_PROVIDER === "keycloak" ? "/api/auth/federated-logout" : "/");
+  };
   const [exporting, setExporting] = useState(false);
   const [exportError, setExportError] = useState<string | null>(null);
   const [confirm, setConfirm] = useState("");
@@ -166,7 +173,7 @@ export default function PrivacySettingsPage() {
                 </ul>
               </div>
               <button
-                onClick={() => signOut({ redirectUrl: "/" })}
+                onClick={signOut}
                 className="py-2 px-4 rounded-xl bg-card hover:bg-muted border border-border text-sm font-semibold text-foreground cursor-pointer"
               >
                 Sign out

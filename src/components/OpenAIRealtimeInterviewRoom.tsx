@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
 import { Mic, MicOff, PhoneCall, PhoneOff, Sparkles, AlertTriangle, Volume2, ArrowRight, Info } from "lucide-react";
-import { useAuth } from "@clerk/nextjs";
+import { useAppAuth as useAuth } from "@/lib/appAuth";
 import { authenticatedFetch } from "@/lib/apiClient";
 
 interface OpenAIRealtimeInterviewRoomProps {
