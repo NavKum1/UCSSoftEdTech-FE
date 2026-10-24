@@ -28,6 +28,9 @@ export const AUTH_PAGES = ["/login"];
 // Portals with a header of their own (app/<portal>/layout.tsx): the global navigation would show a second header there
 export const PORTAL_PREFIXES = ["/recruiter", "/institute", "/admin"];
 
+// Pages embedded on other websites (e.g. an institute's guidance form): no Edulexa header
+export const EMBED_PREFIXES = ["/embed"];
+
 const matches = (pathname: string, prefixes: string[]) => prefixes.some((p) => pathname === p || pathname.startsWith(p + "/"));
 
 export function isCareerSuitePath(pathname: string | null | undefined): boolean {
@@ -38,7 +41,7 @@ export function isCareerSuitePath(pathname: string | null | undefined): boolean 
 export function hidesGlobalNavigation(pathname: string | null | undefined): boolean {
   return (
     !!pathname &&
-    (matches(pathname, CAREER_PREFIXES) || matches(pathname, CAREER_STANDALONE_PREFIXES) || matches(pathname, PORTAL_PREFIXES) || AUTH_PAGES.includes(pathname))
+    (matches(pathname, CAREER_PREFIXES) || matches(pathname, CAREER_STANDALONE_PREFIXES) || matches(pathname, PORTAL_PREFIXES) || matches(pathname, EMBED_PREFIXES) || AUTH_PAGES.includes(pathname))
   );
 }
 

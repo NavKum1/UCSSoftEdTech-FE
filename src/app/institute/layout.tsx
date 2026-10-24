@@ -5,8 +5,9 @@ import { Building2 } from "lucide-react";
 import PortalShell from "@/components/portal/PortalShell";
 
 const SECTIONS = [
-  { href: "/institute/dashboard", label: "Inquiries and integration" },
+  { href: "/institute/dashboard", label: "Leads and integration" },
   { href: "/institute/counselling", label: "Counselling quiz and courses" },
+  { href: "/institute/guidance", label: "Career guidance form" },
 ];
 
 export default function InstituteLayout({ children }: { children: React.ReactNode }) {

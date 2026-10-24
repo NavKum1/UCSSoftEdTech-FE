@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import FunnelChart from "@/components/charts/FunnelChart";
 import { useLatestRef } from "@/lib/legacyApi";
+import LeadDetail from "@/components/institute/LeadDetail";
 
 interface Lead {
   leadId: string;
@@ -23,6 +24,8 @@ interface Lead {
   candidateName: string | null;
   candidateEmail: string | null;
   candidatePhone?: string | null;
+  quizShared?: boolean;
+  requestType?: "guidance" | "course";
   notes?: string | null;
   courseId: string;
   courseName: string | null;
@@ -41,6 +44,7 @@ export default function InstituteDashboardPage() {
 
   const [leads, setLeads] = useState<Lead[]>([]);
   const [searchQuery, setSearchQuery] = useState<string>("");
+  const [openLead, setOpenLead] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState<string>("all");
 
   const [loading, setLoading] = useState<boolean>(true);
@@ -318,12 +322,17 @@ export default function InstituteDashboardPage() {
                   ) : (
                     filteredLeads.map((lead) => (
                       <tr key={lead.leadId} className="hover:bg-card/40 transition-colors">
-                        <td className="px-6 py-4 font-semibold text-foreground">{lead.candidateName ?? "—"}</td>
+                        <td className="px-6 py-4 font-semibold text-foreground">
+                          <button type="button" onClick={() => setOpenLead(lead.leadId)} className="text-left underline-offset-2 hover:underline">
+                            {lead.candidateName ?? "—"}
+                          </button>
+                          {lead.quizShared && <span className="mt-0.5 block text-[11px] font-normal text-indigo-700 dark:text-indigo-300">Quiz answers shared</span>}
+                        </td>
                         <td className="px-6 py-4 font-mono text-[11px] text-cyan-700 dark:text-cyan-300">
                           {lead.candidateEmail || "—"}
                           {lead.candidatePhone && <span className="block text-muted-foreground">{lead.candidatePhone}</span>}
                         </td>
-                        <td className="px-6 py-4 text-foreground">{lead.courseName ?? "Course no longer listed"}</td>
+                        <td className="px-6 py-4 text-foreground">{lead.requestType === "guidance" ? <span className="text-indigo-700 dark:text-indigo-300">Career guidance</span> : (lead.courseName ?? "Course no longer listed")}</td>
                         <td className="px-6 py-4 text-muted-foreground">
                           {new Date(lead.createdAt).toLocaleDateString("en-US", {
                             month: "short",
@@ -451,6 +460,7 @@ export default function InstituteDashboardPage() {
           </div>
         </div>
       )}
+      {openLead && <LeadDetail leadId={openLead} getToken={getToken} onClose={() => setOpenLead(null)} />}
     </div>
   );
 }

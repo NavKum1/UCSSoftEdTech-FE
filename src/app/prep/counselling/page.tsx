@@ -9,6 +9,7 @@
  * ?instituteId= or ?partner= opens a partner institute's quiz; ?result= opens a saved result.
  */
 
+import AdvisorRequest from "@/components/counselling/AdvisorRequest";
 import React, { Suspense, useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
@@ -289,6 +290,8 @@ function CounsellingInner() {
         </p>
         <h1 className="mt-1 text-2xl font-semibold tracking-tight">{status?.scope ? `${status.scope.instituteName}: career quiz` : "Find the area of tech that suits you"}</h1>
       </header>
+
+      {loaded && !problem && <AdvisorRequest apiFetch={apiFetch} scope={status?.scope ?? null} hasQuizResult={history.length > 0 || !!result} />}
 
       {problem && (
         <p role="alert" className="mb-6 rounded-xl border border-amber-500/40 bg-amber-500/10 px-4 py-3 text-sm">
@@ -811,6 +814,7 @@ function InquiryDialog({
   const [phone, setPhone] = useState("");
   const [notes, setNotes] = useState("");
   const [consent, setConsent] = useState(false);
+  const [shareQuiz, setShareQuiz] = useState(false);
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -857,6 +861,7 @@ function InquiryDialog({
           primaryTrack,
           referralSource: "Counselling quiz",
           consent,
+          shareQuizResult: shareQuiz,
         }),
       });
       const body = await res.json().catch(() => null);
@@ -897,7 +902,7 @@ function InquiryDialog({
             <input type="tel" value={phone} maxLength={64} onChange={(e) => setPhone(e.target.value)} className={input} autoComplete="tel" />
           </label>
           <label className="block text-sm">
-            <span className="font-medium">Your question (optional)</span>
+            <span className="font-medium">Your question, or what you&apos;re unsure about (optional)</span>
             <textarea value={notes} maxLength={2000} rows={3} onChange={(e) => setNotes(e.target.value)} className={input} />
           </label>
           <label className="flex items-start gap-2 text-sm">
@@ -905,6 +910,13 @@ function InquiryDialog({
             <span>
               Send my name, email{phone.trim() ? ", phone" : ""}, my question and my result&apos;s area ({primaryTrack}) to {course.instituteName}, so they can
               contact me about this course.
+            </span>
+          </label>
+          <label className="flex items-start gap-2 text-sm">
+            <input type="checkbox" checked={shareQuiz} onChange={(e) => setShareQuiz(e.target.checked)} className="mt-0.5 h-4 w-4 accent-indigo-600" />
+            <span>
+              Also share my quiz answers and result with {course.instituteName}, so an advisor can see what I&apos;m unsure about and help me choose.
+              <span className="block text-xs text-muted-foreground">Optional. They see each question with the answer you picked, and your scores by area.</span>
             </span>
           </label>
           {error && (
