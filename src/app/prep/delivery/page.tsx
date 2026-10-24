@@ -571,7 +571,7 @@ export default function DeliveryCoachingPage() {
           <h2 id="dc-history" className="text-base font-semibold">
             Your answers
           </h2>
-          <table className="mt-3 w-full min-w-[560px] text-left text-sm">
+          <table className="mt-3 w-full min-w-140 text-left text-sm">
             <thead className="text-xs text-muted-foreground">
               <tr>
                 <th className="py-2 pr-3 font-medium">When</th>

@@ -53,6 +53,7 @@ export const careerNav: Record<CareerPersona, CareerNavItem[]> = {
     { label: "My next step", href: "/student/next-step", module: "D4", ready: true },
     { label: "Job board", href: "/student/jobs", module: "H1", ready: true },
     { label: "My applications", href: "/student/jobs/applications", module: "H1", ready: true },
+    { label: "Career agent", href: "/student/agent", module: "E", ready: true },
     { label: "My placement record", href: "/student/placements", module: "G14a", ready: true },
     { label: "Challenges", href: "/student/challenges", module: "D7", ready: true },
     { label: "International", href: "/student/international", module: "D3", ready: true },

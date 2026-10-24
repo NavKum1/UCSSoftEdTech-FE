@@ -1,1307 +1,941 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import {
-  PhoneCall, Shield, FileSpreadsheet, Key, Play, Download,
-  CheckCircle2, AlertTriangle, RefreshCw, Sparkles,
-  DollarSign, Lock, Search, FileText, Check, Copy,
-  X, Send
-} from "lucide-react";
-import { useGeo } from "@/context/GeoContext";
-import { AccessNotice, useLegacyApi, useLatestRef } from "@/lib/legacyApi";
+/**
+ * Edulexa tenant console (phase E, 24 Oct 2026), for an organisation's admins. Every number here is a count of the
+ * organisation's own records.
+ * - Follow-up calls: off until turned on; a call needs the person's express consent, passes the do-not-call registry
+ *   check of the number's country, happens only in calling hours in the person's time zone, opens by saying who is
+ *   calling, that it is recorded and how to opt out; opt-outs stop calls at once; every decision is in the audit trail.
+ * - Protected content: signed, watermarked links and leak lookup.
+ * - Mentor payments: TDS at the payee's rate, an NEFT batch file, and a TDS statement (not a Form 16A, which comes from TRACES).
+ * - Integration: the pixel snippet (consent-based) and a signed webhook test.
+ * (This page used to show invented call recoveries, discounts, payees, a made-up Form 16A and fixed platform claims.)
+ */
 
-// Response shapes of the /v1 Edulexa endpoints this page reads (backend EdulexaController / IEdulexaRevenueEngineService).
-interface EdulexaDashboardMetrics {
-  totalRecoveredGmv: number;
-  voiceRecoveryRatePercent: number;
+import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { AlertTriangle, CheckCircle2, Copy, Download, PhoneCall, Search, Shield, Wallet, Webhook } from "lucide-react";
+import { AccessNotice, useLatestRef, useLegacyApi } from "@/lib/legacyApi";
+import { getApiBaseUrl } from "@/lib/apiClient";
+
+interface Metrics {
+  tenantId: string;
+  followUpCallsRequested: number;
+  followUpCallsPlaced: number;
+  followUpCallsBlocked: number;
+  followUpCallsScheduled: number;
+  activeConsents: number;
+  optOuts: number;
   protectedAssetsCount: number;
-  totalTdsWithheldRupees: number;
-  edgeStatus: string;
+  signedSessionsCount: number;
+  activeSignedSessionsCount: number;
+  totalMentorPayoutsGross: number;
+  totalTdsWithheld: number;
+  pendingMentorPayoutsCount: number;
 }
-
-interface VoiceRecoveryCampaign {
+interface Country {
+  code: string;
+  name: string;
+  prefix: string;
+  registry: string;
+  registryConnected: boolean;
+  legalHours: string;
+}
+interface Settings {
+  enabled: boolean;
+  callerName: string;
+  windowStart: string;
+  windowEnd: string;
+  providerConnected: boolean;
+  providerMissing: string[];
+  countries: Country[];
+  disclosure: string;
+}
+interface Call {
   id: string;
-  candidateName: string;
-  candidatePhone: string;
-  cartItemName: string;
-  cartAmount: number;
-  callStatus: string;
-  vapiCallId?: string | null;
-  discountCodeOffered?: string | null;
-  discountPercent: number;
+  name: string;
+  phone: string;
+  topic: string;
+  status: string;
+  reason: string;
+  source: string;
+  scheduledFor: string | null;
+  placedAt: string | null;
+  durationSeconds: number | null;
   createdAt: string;
 }
-
-interface ProtectedAsset {
+interface Consent {
+  id: string;
+  name: string;
+  phone: string;
+  consentText: string;
+  source: string;
+  timeZone: string;
+  capturedAt: string;
+  revokedAt: string | null;
+}
+interface OptOut {
+  id: string;
+  phone: string;
+  source: string;
+  createdAt: string;
+}
+interface AuditEvent {
+  id: string;
+  phone: string;
+  event: string;
+  detail: string;
+  at: string;
+}
+interface Asset {
   id: string;
   assetTitle: string;
   assetType: string;
+  ttlMinutes: number;
+  totalSignedUrlRequests: number;
+  createdAt: string;
 }
-
-interface MentorPayoutRecord {
+interface Payout {
   id: string;
   mentorName: string;
-  mentorEmail: string;
   mentorPan: string;
+  contractType: string;
+  totalSessionsOrHours: number;
+  ratePerUnit: number;
   grossAmount: number;
+  tdsRatePercent: number;
   tdsAmount: number;
   netAmount: number;
   payoutStatus: string;
-  paymentBatchReference?: string | null;
+  paymentBatchReference: string | null;
+  createdAt: string;
 }
-
-interface SignedAssetResponse {
-  signedToken: string;
-  watermarkStamp: string;
-}
-
-interface LeakAttributionResult {
-  attributionFound: boolean;
-  leakerEmail: string;
-  deviceFingerprint: string;
-  clientIp: string;
-  attributionConfidencePercent: number;
-  remediationAction: string;
-}
-
-interface Form16aStatement {
-  certificateNumber: string;
-  deductorName: string;
-  deductorTan: string;
-  deducteeName: string;
-  deducteePan: string;
-  financialYear: string;
-  assessmentYear: string;
-  quarter: string;
-  taxSection: string;
-  totalGrossAmountPaid: number;
+interface TdsStatement {
+  payeeName: string;
+  payeePanMasked: string;
+  totalGrossAmount: number;
   totalTdsDeducted: number;
-  challanBsrcode: string;
-  challanTenderDate: string;
-  certificateText: string;
+  quarters: { quarter: string; grossAmount: number; tdsDeducted: number }[];
+  note: string;
 }
 
-interface PixelTrackResult {
-  recoveryCampaignTriggered: boolean;
-  recoveryCampaign?: Pick<VoiceRecoveryCampaign, "callStatus" | "vapiCallId"> | null;
+type Tab = "calls" | "content" | "payments" | "integration";
+const card = "rounded-2xl border border-border bg-card shadow-[0_1px_2px_rgb(16_24_40/0.04)]";
+const input = "mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm";
+const button = "inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-500 disabled:opacity-60";
+const ghost = "inline-flex items-center gap-2 rounded-xl border border-border px-3 py-2 text-sm font-medium hover:bg-muted disabled:opacity-60";
+const inr = (n: number) => new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 2 }).format(n);
+const when = (s: string | null) => (s ? new Date(s).toLocaleString() : "—");
+const STATUS: Record<string, string> = {
+  Placed: "text-emerald-700 dark:text-emerald-400",
+  Completed: "text-emerald-700 dark:text-emerald-400",
+  Scheduled: "text-indigo-700 dark:text-indigo-300",
+  Blocked: "text-amber-700 dark:text-amber-400",
+  Failed: "text-red-700 dark:text-red-400",
+  Cancelled: "text-muted-foreground",
+};
+
+function Field({ label, children, hint }: { label: string; children: React.ReactNode; hint?: string }) {
+  return (
+    <label className="block text-sm">
+      <span className="font-medium">{label}</span>
+      {children}
+      {hint && <span className="mt-1 block text-xs text-muted-foreground">{hint}</span>}
+    </label>
+  );
 }
 
-interface WebhookDispatchResult {
-  hmacSignatureHeader: string;
-  responseStatusCode: number;
+function Stat({ label, value }: { label: string; value: React.ReactNode }) {
+  return (
+    <div className={`${card} p-4`}>
+      <dt className="text-xs text-muted-foreground">{label}</dt>
+      <dd className="mt-1 text-xl font-semibold tabular-nums">{value}</dd>
+    </div>
+  );
 }
 
-export default function EdulexaDashboardPage() {
+export default function EdulexaConsolePage() {
   const { apiFetch, ready, access } = useLegacyApi();
-  const { region, config, formatCurrency, convertFromInr } = useGeo();
-  const [activeTab, setActiveTab] = useState<"voice" | "shield" | "hrms" | "api">("voice");
-  const [metrics, setMetrics] = useState<EdulexaDashboardMetrics | null>(null);
-  const [campaigns, setCampaigns] = useState<VoiceRecoveryCampaign[]>([]);
-  const [assets, setAssets] = useState<ProtectedAsset[]>([]);
-  const [payouts, setPayouts] = useState<MentorPayoutRecord[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [copiedToken, setCopiedToken] = useState<boolean>(false);
+  const [tab, setTab] = useState<Tab>("calls");
+  const [metrics, setMetrics] = useState<Metrics | null>(null);
+  const [settings, setSettings] = useState<Settings | null>(null);
+  const [calls, setCalls] = useState<Call[]>([]);
+  const [consents, setConsents] = useState<Consent[]>([]);
+  const [optOuts, setOptOuts] = useState<OptOut[]>([]);
+  const [audit, setAudit] = useState<AuditEvent[]>([]);
+  const [assets, setAssets] = useState<Asset[]>([]);
+  const [payouts, setPayouts] = useState<Payout[]>([]);
+  const [failed, setFailed] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [notice, setNotice] = useState<{ ok: boolean; text: string } | null>(null);
 
-  // Pillar 1 Form State
-  const [candName, setCandName] = useState("Kavita Rao");
-  const [candPhone, setCandPhone] = useState("+919876501234");
-  const [candEmail, setCandEmail] = useState("kavita.rao@example.com");
-  const [cartItem, setCartItem] = useState("Distributed Systems Architect Bootcamp");
-  const [cartAmount, setCartAmount] = useState("50000");
-  const [discountPercent, setDiscountPercent] = useState("15");
-  const [triggeringCall, setTriggeringCall] = useState(false);
+  const json = useCallback(
+    async <T,>(path: string, fallback: T): Promise<T> => {
+      const res = await apiFetch(path);
+      return res.ok ? ((await res.json()) as T) : fallback;
+    },
+    [apiFetch],
+  );
 
-  // Pillar 2 Form State
-  const [selectedAssetTitle, setSelectedAssetTitle] = useState("Distributed Sharding & Raft Consensus Repo");
-  const [viewerEmail, setViewerEmail] = useState("student.alex@example.com");
-  const [signedResult, setSignedResult] = useState<SignedAssetResponse | null>(null);
-  const [signingAsset, setSigningAsset] = useState(false);
-  const [leakSnippet, setLeakSnippet] = useState("student.alex@example.com");
-  const [attributionResult, setAttributionResult] = useState<LeakAttributionResult | null>(null);
-  const [investigating, setInvestigating] = useState(false);
-
-  // Pillar 3 Form State
-  const [mentorName, setMentorName] = useState("Rohan Desai");
-  const [mentorEmail, setMentorEmail] = useState("rohan.desai@staffeng.org");
-  const [mentorPan, setMentorPan] = useState("ABCDE9876R");
-  const [sessionsCount, setSessionsCount] = useState("8");
-  const [sessionRate, setSessionRate] = useState("2000");
-  const [processingPayout, setProcessingPayout] = useState(false);
-
-  // Form 16A, Creator Pixel, & Outgoing Webhook State
-  const [form16ModalData, setForm16ModalData] = useState<Form16aStatement | null>(null);
-  const [loadingForm16, setLoadingForm16] = useState<boolean>(false);
-  const [pixelTrackResult, setPixelTrackResult] = useState<PixelTrackResult | null>(null);
-  const [trackingPixel, setTrackingPixel] = useState<boolean>(false);
-  const [webhookDispatchResult, setWebhookDispatchResult] = useState<WebhookDispatchResult | null>(null);
-  const [dispatchingWebhook, setDispatchingWebhook] = useState<boolean>(false);
-  const [copiedPixelScript, setCopiedPixelScript] = useState<boolean>(false);
-
-  const fetchDashboardData = async () => {
+  const load = useCallback(async () => {
     try {
-      setLoading(true);
-      const [metricsRes, campRes, assetsRes, payoutsRes] = await Promise.all([
-        apiFetch(`/v1/dashboard/metrics`),
-        apiFetch(`/v1/voice/campaigns`),
-        apiFetch(`/v1/assets`),
-        apiFetch(`/v1/payouts`)
+      const res = await apiFetch("/v1/dashboard/metrics");
+      if (!res.ok) return setFailed(res.status !== 401 && res.status !== 403);
+      setMetrics((await res.json()) as Metrics);
+      const [s, c, co, o, a, as, p] = await Promise.all([
+        json<Settings | null>("/v1/voice/settings", null),
+        json<Call[]>("/v1/voice/calls", []),
+        json<Consent[]>("/v1/voice/consents", []),
+        json<OptOut[]>("/v1/voice/opt-outs", []),
+        json<AuditEvent[]>("/v1/voice/audit", []),
+        json<Asset[]>("/v1/assets", []),
+        json<Payout[]>("/v1/payouts", []),
       ]);
-
-      if (metricsRes.ok) setMetrics(await metricsRes.json());
-      if (campRes.ok) setCampaigns(await campRes.json());
-      if (assetsRes.ok) setAssets(await assetsRes.json());
-      if (payoutsRes.ok) setPayouts(await payoutsRes.json());
-    } catch (err) {
-      console.error("[EDULEXA_FETCH_ERROR]:", err);
-    } finally {
-      setLoading(false);
+      setSettings(s);
+      setCalls(c);
+      setConsents(co);
+      setOptOuts(o);
+      setAudit(a);
+      setAssets(as);
+      setPayouts(p);
+    } catch {
+      setFailed(true);
     }
-  };
-
-  const fetchDashboardDataRef = useLatestRef(fetchDashboardData);
+  }, [apiFetch, json]);
+  const loadRef = useLatestRef(load);
   useEffect(() => {
-    if (!ready) return;
-    fetchDashboardDataRef.current();
-  }, [ready, fetchDashboardDataRef]);
+    if (ready) void loadRef.current();
+  }, [ready, loadRef]);
 
-  const handleSeedData = async () => {
+  /** Sends a JSON request; shows the API's error message on failure. Returns the parsed body on success. */
+  const send = async <T,>(path: string, method: string, body: unknown, success: string): Promise<T | null> => {
+    setBusy(true);
+    setNotice(null);
     try {
-      await apiFetch(`/v1/seed`, { method: "POST" });
-      fetchDashboardData();
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
-  const handleTriggerVoiceCall = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setTriggeringCall(true);
-    try {
-      const res = await apiFetch(`/v1/voice/campaigns`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          candidateName: candName,
-          candidatePhone: candPhone,
-          candidateEmail: candEmail,
-          cartItemName: cartItem,
-          cartAmount: parseFloat(cartAmount),
-          currency: "INR",
-          discountPercent: parseInt(discountPercent, 10)
-        })
-      });
-      if (res.ok) {
-        fetchDashboardData();
+      const res = await apiFetch(path, { method, body: body === undefined ? undefined : JSON.stringify(body) });
+      const data = (await res.json().catch(() => null)) as (T & { error?: string }) | null;
+      if (!res.ok) {
+        setNotice({ ok: false, text: data?.error ?? `The request failed (HTTP ${res.status}).` });
+        return null;
       }
-    } catch (err) {
-      console.error(err);
+      setNotice({ ok: true, text: success });
+      await load();
+      return data;
+    } catch {
+      setNotice({ ok: false, text: "The request failed. Please try again." });
+      return null;
     } finally {
-      setTriggeringCall(false);
+      setBusy(false);
     }
   };
 
-  const handleSignAsset = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setSigningAsset(true);
-    try {
-      const res = await apiFetch(`/v1/assets/sign`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          assetTitle: selectedAssetTitle,
-          userEmail: viewerEmail,
-          clientIp: "49.207.180.12",
-          ttlMinutes: 30
-        })
-      });
-      if (res.ok) {
-        const json = await res.json();
-        setSignedResult(json);
-        fetchDashboardData();
-      }
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setSigningAsset(false);
-    }
-  };
+  if (access) return <AccessNotice problem={access} feature="the Edulexa console" />;
+  if (failed)
+    return (
+      <main className="mx-auto max-w-md px-4 py-24 text-center">
+        <AlertTriangle aria-hidden="true" className="mx-auto h-8 w-8 text-amber-600" />
+        <h1 className="mt-3 text-xl font-semibold">We couldn&apos;t load the console</h1>
+        <p className="mt-2 text-sm text-muted-foreground">Please refresh the page to try again.</p>
+      </main>
+    );
+  if (!metrics)
+    return (
+      <main className="mx-auto max-w-6xl px-4 py-10" aria-busy="true" aria-label="Loading the console">
+        <div className={`${card} h-40 animate-pulse motion-reduce:animate-none`} />
+      </main>
+    );
 
-  const handleInvestigateLeak = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setInvestigating(true);
-    try {
-      const res = await apiFetch(`/v1/assets/leak-attribution`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ leakSnippetOrFingerprint: leakSnippet })
-      });
-      if (res.ok) {
-        const json = await res.json();
-        setAttributionResult(json);
-      }
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setInvestigating(false);
-    }
-  };
-
-  const handleProcessPayout = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setProcessingPayout(true);
-    try {
-      const res = await apiFetch(`/v1/payouts`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          mentorName,
-          mentorEmail,
-          mentorPan,
-          bankName: "HDFC Bank",
-          bankAccountNumber: "50100918273645",
-          bankIfscCode: "HDFC0000128",
-          contractType: "PerSession",
-          totalSessionsOrHours: parseFloat(sessionsCount),
-          ratePerUnit: parseFloat(sessionRate),
-          tdsRatePercent: 10.0
-        })
-      });
-      if (res.ok) {
-        fetchDashboardData();
-      }
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setProcessingPayout(false);
-    }
-  };
-
-  const handleExportNeft = async () => {
-    try {
-      const res = await apiFetch(`/v1/payouts/export-neft`, { method: "POST" });
-      if (res.ok) {
-        const blob = await res.blob();
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = `Edulexa_NEFT_Batch_${new Date().toISOString().slice(0, 10)}.csv`;
-        a.click();
-        fetchDashboardData();
-      }
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
-  const handleFetchForm16A = async (mentorId?: string) => {
-    setLoadingForm16(true);
-    try {
-      const url = mentorId
-        ? `/v1/payouts/form16a/${mentorId}`
-        : `/v1/payouts/form16a`;
-      const res = await apiFetch(url);
-      if (res.ok) {
-        const json = await res.json();
-        setForm16ModalData(json);
-      }
-    } catch (err) {
-      console.error("[FORM16A_ERROR]:", err);
-    } finally {
-      setLoadingForm16(false);
-    }
-  };
-
-  const handleDownloadForm16File = () => {
-    if (!form16ModalData?.certificateText) return;
-    const blob = new Blob([form16ModalData.certificateText], { type: "text/plain;charset=utf-8" });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `${form16ModalData.certificateNumber || "FORM16A"}_TDS_Certificate.txt`;
-    a.click();
-  };
-
-  const handleSimulatePixelDropOff = async () => {
-    setTrackingPixel(true);
-    try {
-      const res = await apiFetch(`/v1/pixel/track`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          tenantId: "6c370735-4615-44f6-9d61-dbbb41d5d5cf",
-          eventType: "cart_abandoned",
-          candidateName: "Pooja Hegde",
-          candidateEmail: "pooja.hegde@example.com",
-          candidatePhone: "+919876543299",
-          cartItemName: "Distributed Systems & Cloud Architecture Bootcamp",
-          cartAmount: 50000.0,
-          pageUrl: "https://eclinicsoft.com/checkout",
-          referrer: "https://linkedin.com",
-          clientIp: "49.207.180.12",
-          userAgent: "Mozilla/5.0 Chrome"
-        })
-      });
-      if (res.ok) {
-        const json = await res.json();
-        setPixelTrackResult(json);
-        fetchDashboardData();
-      }
-    } catch (err) {
-      console.error("[PIXEL_TRACK_ERROR]:", err);
-    } finally {
-      setTrackingPixel(false);
-    }
-  };
-
-  const handleTestOutgoingWebhook = async () => {
-    setDispatchingWebhook(true);
-    try {
-      const res = await apiFetch(`/v1/webhooks/test-dispatch`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          eventType: "voice.call.ended",
-          payload: {
-            candidateEmail: "pooja.hegde@example.com",
-            durationSeconds: 142,
-            outcome: "DiscountCodeAccepted",
-            couponApplied: "EDULEXA15"
-          }
-        })
-      });
-      if (res.ok) {
-        const json = await res.json();
-        setWebhookDispatchResult(json);
-      }
-    } catch (err) {
-      console.error("[WEBHOOK_DISPATCH_ERROR]:", err);
-    } finally {
-      setDispatchingWebhook(false);
-    }
-  };
-
-  if (access) return <AccessNotice problem={access} feature="The Edulexa partner dashboard" />;
+  const tabs: [Tab, string, React.ElementType][] = [
+    ["calls", "Follow-up calls", PhoneCall],
+    ["content", "Protected content", Shield],
+    ["payments", "Mentor payments", Wallet],
+    ["integration", "Integration", Webhook],
+  ];
 
   return (
-    <div className="min-h-screen bg-background text-foreground p-6 lg:p-10 font-sans">
-      {/* Top Banner & Brand */}
-      <div className="max-w-7xl mx-auto space-y-8">
-        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border-b border-border pb-6">
-          <div className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-xl bg-gradient-to-tr from-violet-600 via-indigo-600 to-cyan-400 flex items-center justify-center shadow-lg shadow-indigo-500/20">
-              <Sparkles className="h-5 w-5 text-white" />
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h1 className="text-2xl font-bold tracking-tight bg-gradient-to-r from-white via-slate-200 to-slate-400 bg-clip-text text-transparent">
-                  Edulexa Partner &amp; Creator Dashboard
-                </h1>
-                <span className="px-2 py-0.5 rounded text-[10px] font-mono font-medium bg-indigo-500/10 text-indigo-700 dark:text-indigo-400 border border-indigo-500/20">
-                  Live Dashboard
-                </span>
-              </div>
-              <p className="text-xs text-muted-foreground mt-0.5 font-mono">
-                Voice Cart Follow-Up • Course Asset Protection • Mentor Payouts &amp; Tax Documents
-              </p>
-            </div>
-          </div>
-          <div className="flex items-center gap-3">
-            <button
-              onClick={handleSeedData}
-              className="inline-flex items-center gap-2 px-3 py-1.5 text-xs font-medium rounded-lg border border-border bg-card/80 hover:bg-muted text-muted-foreground transition"
-            >
-              <RefreshCw className="h-3.5 w-3.5" />
-              Reset Demo Data
-            </button>
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 text-xs font-mono">
-              <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse"></span>
-              {metrics?.edgeStatus || "Cloud Delivery Active"}
-            </div>
-          </div>
-        </div>
+    <main className="mx-auto max-w-6xl space-y-6 px-4 pb-16 pt-8 sm:px-6">
+      <header>
+        <h1 className="text-2xl font-semibold tracking-tight">Edulexa console</h1>
+        <p className="mt-1 max-w-3xl text-sm text-muted-foreground">
+          Follow-up calls, protected content, mentor payments and integration for your organisation. Every number here is a count of your own
+          records.
+        </p>
+      </header>
 
-        {/* 4 Metric Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="rounded-xl border border-border bg-card/50 p-5 shadow-sm">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-mono uppercase tracking-wider text-muted-foreground">Recovered Revenue</span>
-              <DollarSign className="h-4 w-4 text-emerald-700 dark:text-emerald-400" />
-            </div>
-            <div className="text-2xl font-bold text-foreground mt-2">
-              {formatCurrency(convertFromInr(metrics?.totalRecoveredGmv || config.metrics.recoveredGmvSample))}
-            </div>
-            <div className="text-[11px] text-emerald-700 dark:text-emerald-400 mt-1 font-mono">
-              +24.3% checkout recovery with voice follow-up
-            </div>
-          </div>
-
-          <div className="rounded-xl border border-border bg-card/50 p-5 shadow-sm">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-mono uppercase tracking-wider text-muted-foreground">Voice Conversion</span>
-              <PhoneCall className="h-4 w-4 text-indigo-700 dark:text-indigo-400" />
-            </div>
-            <div className="text-2xl font-bold text-foreground mt-2">
-              {metrics?.voiceRecoveryRatePercent != null ? `${metrics.voiceRecoveryRatePercent}%` : "—"}
-            </div>
-            <div className="text-[11px] text-indigo-700 dark:text-indigo-400 mt-1 font-mono">
-              Quick outbound calls after checkout drop-off
-            </div>
-          </div>
-
-          <div className="rounded-xl border border-border bg-card/50 p-5 shadow-sm">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-mono uppercase tracking-wider text-muted-foreground">Protected Assets</span>
-              <Shield className="h-4 w-4 text-cyan-700 dark:text-cyan-400" />
-            </div>
-            <div className="text-2xl font-bold text-foreground mt-2">
-              {metrics?.protectedAssetsCount || 6} Assets
-            </div>
-            <div className="text-[11px] text-cyan-700 dark:text-cyan-400 mt-1 font-mono">
-              Protected against leaks with secure access links
-            </div>
-          </div>
-
-          <div className="rounded-xl border border-border bg-card/50 p-5 shadow-sm">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-mono uppercase tracking-wider text-muted-foreground">
-                {region === "IN" ? "Mentor TDS Withheld" : region === "US" ? "1099-NEC Tax Total" : "DAC7 Payout Total"}
-              </span>
-              <FileSpreadsheet className="h-4 w-4 text-amber-700 dark:text-amber-400" />
-            </div>
-            <div className="text-2xl font-bold text-foreground mt-2">
-              {formatCurrency(convertFromInr(metrics?.totalTdsWithheldRupees || config.metrics.taxWithheldSample))}
-            </div>
-            <div className="text-[11px] text-amber-700 dark:text-amber-400 mt-1 font-mono">
-              {config.tax.withholdingLabel}
-            </div>
-          </div>
-        </div>
-
-        {/* Navigation Tabs */}
-        <div className="flex border-b border-border space-x-1">
+      <div role="tablist" aria-label="Console sections" className="flex flex-wrap gap-2">
+        {tabs.map(([key, label, Icon]) => (
           <button
-            onClick={() => setActiveTab("voice")}
-            className={`flex items-center gap-2 px-4 py-2.5 text-sm font-medium border-b-2 transition ${
-              activeTab === "voice"
-                ? "border-indigo-500 text-indigo-700 dark:text-indigo-400"
-                : "border-transparent text-muted-foreground hover:text-foreground"
-            }`}
+            key={key}
+            role="tab"
+            aria-selected={tab === key}
+            onClick={() => setTab(key)}
+            className={`inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-medium ${tab === key ? "bg-indigo-600 text-white" : "border border-border hover:bg-muted"}`}
           >
-            <PhoneCall className="h-4 w-4" />
-            Voice Cart Recovery
+            <Icon aria-hidden="true" className="h-4 w-4" /> {label}
           </button>
-          <button
-            onClick={() => setActiveTab("shield")}
-            className={`flex items-center gap-2 px-4 py-2.5 text-sm font-medium border-b-2 transition ${
-              activeTab === "shield"
-                ? "border-cyan-500 text-cyan-700 dark:text-cyan-400"
-                : "border-transparent text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            <Shield className="h-4 w-4" />
-            Course Asset Protection
-          </button>
-          <button
-            onClick={() => setActiveTab("hrms")}
-            className={`flex items-center gap-2 px-4 py-2.5 text-sm font-medium border-b-2 transition ${
-              activeTab === "hrms"
-                ? "border-amber-500 text-amber-700 dark:text-amber-400"
-                : "border-transparent text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            <FileSpreadsheet className="h-4 w-4" />
-            Mentor Payouts &amp; Tax Documents
-          </button>
-          <button
-            onClick={() => setActiveTab("api")}
-            className={`flex items-center gap-2 px-4 py-2.5 text-sm font-medium border-b-2 transition ${
-              activeTab === "api"
-                ? "border-emerald-500 text-emerald-700 dark:text-emerald-400"
-                : "border-transparent text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            <Key className="h-4 w-4" />
-            Developer API &amp; Integrations
-          </button>
-        </div>
-
-        {/* Tab 1: Voice Cart Recovery */}
-        {activeTab === "voice" && (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div className="lg:col-span-1 rounded-xl border border-border bg-card/60 p-6 space-y-5">
-              <div>
-                <h3 className="text-base font-semibold text-foreground flex items-center gap-2">
-                  <Play className="h-4 w-4 text-indigo-700 dark:text-indigo-400" />
-                  Start Voice Recovery Call
-                </h3>
-                <p className="text-xs text-muted-foreground mt-1">
-                  Initiates a voice follow-up call with the student.
-                </p>
-              </div>
-
-              <form onSubmit={handleTriggerVoiceCall} className="space-y-4">
-                <div>
-                  <label className="text-xs text-muted-foreground font-medium">Candidate Name</label>
-                  <input
-                    type="text"
-                    value={candName}
-                    onChange={(e) => setCandName(e.target.value)}
-                    className="w-full mt-1.5 px-3 py-2 bg-background border border-border rounded-lg text-xs text-white focus:outline-none focus:border-indigo-500"
-                  />
-                </div>
-                <div>
-                  <label className="text-xs text-muted-foreground font-medium">Candidate Phone</label>
-                  <input
-                    type="text"
-                    value={candPhone}
-                    onChange={(e) => setCandPhone(e.target.value)}
-                    className="w-full mt-1.5 px-3 py-2 bg-background border border-border rounded-lg text-xs text-white font-mono focus:outline-none focus:border-indigo-500"
-                  />
-                </div>
-                <div>
-                  <label className="text-xs text-muted-foreground font-medium">Candidate Email</label>
-                  <input
-                    type="email"
-                    value={candEmail}
-                    onChange={(e) => setCandEmail(e.target.value)}
-                    className="w-full mt-1.5 px-3 py-2 bg-background border border-border rounded-lg text-xs text-white font-mono focus:outline-none focus:border-indigo-500"
-                  />
-                </div>
-                <div>
-                  <label className="text-xs text-muted-foreground font-medium">Abandoned Course / Sprint</label>
-                  <input
-                    type="text"
-                    value={cartItem}
-                    onChange={(e) => setCartItem(e.target.value)}
-                    className="w-full mt-1.5 px-3 py-2 bg-background border border-border rounded-lg text-xs text-white focus:outline-none focus:border-indigo-500"
-                  />
-                </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="text-xs text-muted-foreground font-medium">Cart Value (INR)</label>
-                    <input
-                      type="number"
-                      value={cartAmount}
-                      onChange={(e) => setCartAmount(e.target.value)}
-                      className="w-full mt-1.5 px-3 py-2 bg-background border border-border rounded-lg text-xs text-white font-mono focus:outline-none focus:border-indigo-500"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-xs text-muted-foreground font-medium">Voucher Discount %</label>
-                    <input
-                      type="number"
-                      value={discountPercent}
-                      onChange={(e) => setDiscountPercent(e.target.value)}
-                      className="w-full mt-1.5 px-3 py-2 bg-background border border-border rounded-lg text-xs text-white font-mono focus:outline-none focus:border-indigo-500"
-                    />
-                  </div>
-                </div>
-
-                <button
-                  type="submit"
-                  disabled={triggeringCall}
-                  className="w-full py-2.5 px-4 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold shadow-lg shadow-indigo-600/30 transition flex items-center justify-center gap-2"
-                >
-                  {triggeringCall ? <RefreshCw className="h-4 w-4 animate-spin" /> : <PhoneCall className="h-4 w-4" />}
-                  {triggeringCall ? "Dispatching Call..." : "Dial Candidate (Sub-300ms)"}
-                </button>
-              </form>
-            </div>
-
-            <div className="lg:col-span-2 rounded-xl border border-border bg-card/60 p-6 space-y-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="text-base font-semibold text-foreground">Live Outbound Recovery Queue</h3>
-                  <p className="text-xs text-muted-foreground">Tracking candidates called after cart abandonment.</p>
-                </div>
-                <span className="text-xs font-mono text-muted-foreground">Total Calls: {campaigns.length}</span>
-              </div>
-
-              <div className="overflow-x-auto">
-                <table className="w-full text-left text-xs">
-                  <thead className="border-b border-border text-muted-foreground font-mono uppercase text-[10px]">
-                    <tr>
-                      <th className="py-2.5 px-3">Candidate</th>
-                      <th className="py-2.5 px-3">Abandoned Course</th>
-                      <th className="py-2.5 px-3">Amount</th>
-                      <th className="py-2.5 px-3">Voucher</th>
-                      <th className="py-2.5 px-3">Status</th>
-                      <th className="py-2.5 px-3">Time</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-800 text-muted-foreground">
-                    {campaigns.map((c) => (
-                      <tr key={c.id} className="hover:bg-muted/40">
-                        <td className="py-3 px-3">
-                          <div className="font-medium text-foreground">{c.candidateName}</div>
-                          <div className="text-[10px] text-muted-foreground font-mono">{c.candidatePhone}</div>
-                        </td>
-                        <td className="py-3 px-3 max-w-[200px] truncate">{c.cartItemName}</td>
-                        <td className="py-3 px-3 font-mono font-medium text-white">
-                          {formatCurrency(convertFromInr(c.cartAmount))}
-                        </td>
-                        <td className="py-3 px-3">
-                          <span className="px-2 py-0.5 rounded font-mono text-[10px] bg-indigo-500/10 text-indigo-700 dark:text-indigo-400 border border-indigo-500/20">
-                            {c.discountCodeOffered} ({c.discountPercent}%)
-                          </span>
-                        </td>
-                        <td className="py-3 px-3">
-                          <span
-                            className={`px-2 py-0.5 rounded-full text-[10px] font-medium font-mono ${
-                              c.callStatus === "Converted"
-                                ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20"
-                                : c.callStatus === "Calling"
-                                ? "bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/20 animate-pulse"
-                                : "bg-slate-700/50 text-muted-foreground"
-                            }`}
-                          >
-                            {c.callStatus}
-                          </span>
-                        </td>
-                        <td className="py-3 px-3 text-[10px] text-muted-foreground font-mono">
-                          {new Date(c.createdAt).toLocaleTimeString()}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Tab 2: IP Shield & Anti-Scraping / DRM Watermark */}
-        {activeTab === "shield" && (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div className="lg:col-span-1 space-y-6">
-              <div className="rounded-xl border border-border bg-card/60 p-6 space-y-4">
-                <h3 className="text-base font-semibold text-foreground flex items-center gap-2">
-                  <Lock className="h-4 w-4 text-cyan-700 dark:text-cyan-400" />
-                  Sign Protected Asset URL
-                </h3>
-                <p className="text-xs text-muted-foreground">
-                  Issues a 30-minute HMAC signed token with dynamic per-viewer forensic watermarking.
-                </p>
-
-                <form onSubmit={handleSignAsset} className="space-y-4">
-                  <div>
-                    <label className="text-xs text-muted-foreground font-medium">Select Protected Asset</label>
-                    <select
-                      value={selectedAssetTitle}
-                      onChange={(e) => setSelectedAssetTitle(e.target.value)}
-                      className="w-full mt-1.5 px-3 py-2 bg-background border border-border rounded-lg text-xs text-white focus:outline-none focus:border-cyan-500"
-                    >
-                      <option value="Distributed Sharding & Raft Consensus Repo">
-                        Distributed Sharding & Raft Consensus Repo
-                      </option>
-                      <option value="Principal Mock Architectural Interview Recording Replay">
-                        Principal Mock Architectural Interview Recording Replay
-                      </option>
-                      <option value="Advanced Micro-Internship Solution Suite">
-                        Advanced Micro-Internship Solution Suite
-                      </option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="text-xs text-muted-foreground font-medium">Viewer / Student Email</label>
-                    <input
-                      type="email"
-                      value={viewerEmail}
-                      onChange={(e) => setViewerEmail(e.target.value)}
-                      className="w-full mt-1.5 px-3 py-2 bg-background border border-border rounded-lg text-xs text-white font-mono focus:outline-none focus:border-cyan-500"
-                    />
-                  </div>
-
-                  <button
-                    type="submit"
-                    disabled={signingAsset}
-                    className="w-full py-2.5 px-4 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-semibold shadow-lg shadow-cyan-600/30 transition flex items-center justify-center gap-2"
-                  >
-                    {signingAsset ? <RefreshCw className="h-4 w-4 animate-spin" /> : <Shield className="h-4 w-4" />}
-                    Generate Signed DRM Token (30m TTL)
-                  </button>
-                </form>
-
-                {signedResult && (
-                  <div className="mt-4 p-4 rounded-lg border border-cyan-500/20 bg-cyan-950/20 space-y-2">
-                    <div className="text-xs font-semibold text-cyan-700 dark:text-cyan-400 flex items-center gap-1.5">
-                      <CheckCircle2 className="h-3.5 w-3.5" />
-                      HMAC Token Issued
-                    </div>
-                    <div className="text-[11px] font-mono text-muted-foreground break-all bg-background/60 p-2 rounded border border-border">
-                      {signedResult.signedToken}
-                    </div>
-                    <div className="text-[10px] text-muted-foreground font-mono">
-                      Watermark Stamp: {signedResult.watermarkStamp}
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Leak Attribution Investigator */}
-              <div className="rounded-xl border border-border bg-card/60 p-6 space-y-4">
-                <h3 className="text-base font-semibold text-foreground flex items-center gap-2">
-                  <Search className="h-4 w-4 text-rose-400" />
-                  Forensic Leak Attribution (&lt;60s)
-                </h3>
-                <p className="text-xs text-muted-foreground">
-                  Paste leaked Telegram clip text, watermark string, or token to extract the leaker session.
-                </p>
-
-                <form onSubmit={handleInvestigateLeak} className="space-y-3">
-                  <input
-                    type="text"
-                    value={leakSnippet}
-                    onChange={(e) => setLeakSnippet(e.target.value)}
-                    placeholder="Enter email, session ID, or watermark fragment"
-                    className="w-full px-3 py-2 bg-background border border-border rounded-lg text-xs text-white font-mono focus:outline-none focus:border-rose-500"
-                  />
-                  <button
-                    type="submit"
-                    disabled={investigating}
-                    className="w-full py-2 px-3 rounded-lg bg-rose-600/80 hover:bg-rose-500 text-white text-xs font-medium transition flex items-center justify-center gap-2"
-                  >
-                    {investigating ? <RefreshCw className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
-                    Trace Leak to Originator
-                  </button>
-                </form>
-
-                {attributionResult?.attributionFound && (
-                  <div className="mt-4 p-4 rounded-lg border border-rose-500/30 bg-rose-950/20 space-y-2 text-xs">
-                    <div className="font-semibold text-rose-400 flex items-center gap-1.5">
-                      <AlertTriangle className="h-3.5 w-3.5" />
-                      Attribution Confirmed ({attributionResult.attributionConfidencePercent}%)
-                    </div>
-                    <div className="text-muted-foreground font-mono">
-                      <strong>Leaker:</strong> {attributionResult.leakerEmail}
-                    </div>
-                    <div className="text-muted-foreground font-mono text-[11px]">
-                      IP: {attributionResult.clientIp} • Device: {attributionResult.deviceFingerprint}
-                    </div>
-                    <div className="text-emerald-700 dark:text-emerald-400 text-[11px] pt-1">
-                      Action Taken: {attributionResult.remediationAction}
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Interactive Forensic Watermark Canvas Preview */}
-            <div className="lg:col-span-2 rounded-xl border border-border bg-card/60 p-6 space-y-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="text-base font-semibold text-foreground">Forensic Watermark Live Stream Preview</h3>
-                  <p className="text-xs text-muted-foreground">
-                    Demonstration of dynamic semi-transparent floating watermark applied over sensitive media.
-                  </p>
-                </div>
-                <span className="px-2.5 py-1 rounded bg-cyan-500/10 text-cyan-700 dark:text-cyan-400 text-xs font-mono border border-cyan-500/20">
-                  Widevine L1 + HLS LSB
-                </span>
-              </div>
-
-              <div className="relative h-80 rounded-xl overflow-hidden border border-border bg-background flex flex-col items-center justify-center shadow-inner">
-                {/* Simulated Code / Video Content */}
-                <div className="w-full h-full p-6 font-mono text-xs text-muted-foreground space-y-2 opacity-60 pointer-events-none">
-                  <div className="text-indigo-700 dark:text-indigo-400">{"// Distributed Sharding Engine v2 - PROPRIETARY INTELLECTUAL PROPERTY"}</div>
-                  <div>public class RaftConsensusCluster : IConsensusController &#123;</div>
-                  <div className="pl-4">private readonly Dictionary&lt;NodeId, PeerSocket&gt; _peers;</div>
-                  <div className="pl-4">public async Task CommitLogEntryAsync(LogPayload entry) &#123;</div>
-                  <div className="pl-8">var quorum = (_peers.Count / 2) + 1;</div>
-                  <div className="pl-8">await BroadcastAppendEntriesRPC(entry);</div>
-                  <div className="pl-4">&#125;</div>
-                  <div>&#125;</div>
-                </div>
-
-                {/* Floating Dynamic Forensic Watermark */}
-                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                  <div className="p-3 border border-dashed border-cyan-400/40 rounded-lg bg-cyan-950/20 backdrop-blur-[1px] text-center transform -rotate-12 animate-pulse">
-                    <div className="font-mono text-xs font-semibold text-cyan-600 dark:text-cyan-300 opacity-70">
-                      {signedResult?.watermarkStamp || `${viewerEmail} • ID:f8a19c • 2026-10-02 08:00 UTC`}
-                    </div>
-                    <div className="text-[9px] text-cyan-700 dark:text-cyan-400/70 font-mono mt-0.5">
-                      ANTI-PIRACY FORENSIC PIXEL TRACKER • LSB STEGANOGRAPHY ACTIVE
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-3 gap-4 pt-2 text-xs font-mono">
-                <div className="p-3 rounded-lg border border-border bg-background">
-                  <span className="text-muted-foreground block text-[10px]">WATERMARK SURVIVAL</span>
-                  <span className="text-foreground font-medium">Re-encoding, Crop &amp; Resize</span>
-                </div>
-                <div className="p-3 rounded-lg border border-border bg-background">
-                  <span className="text-muted-foreground block text-[10px]">TIME TO ATTRIBUTE</span>
-                  <span className="text-emerald-700 dark:text-emerald-400 font-medium">&lt; 60 Seconds</span>
-                </div>
-                <div className="p-3 rounded-lg border border-border bg-background">
-                  <span className="text-muted-foreground block text-[10px]">HARDWARE DRM</span>
-                  <span className="text-cyan-700 dark:text-cyan-400 font-medium">Widevine L1 + FairPlay</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Tab 3: Compliance HRMS & Contractor/Mentor Payroll */}
-        {activeTab === "hrms" && (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div className="lg:col-span-1 rounded-xl border border-border bg-card/60 p-6 space-y-4">
-              <h3 className="text-base font-semibold text-foreground flex items-center gap-2">
-                <FileSpreadsheet className="h-4 w-4 text-amber-700 dark:text-amber-400" />
-                Process Mentor Session Payout
-              </h3>
-              <p className="text-xs text-muted-foreground">
-                Hourly and per-session compensation with automated {config.tax.regimeTitle}.
-              </p>
-
-              <form onSubmit={handleProcessPayout} className="space-y-3.5">
-                <div>
-                  <label className="text-xs text-muted-foreground font-medium">Mentor Full Name</label>
-                  <input
-                    type="text"
-                    value={mentorName}
-                    onChange={(e) => setMentorName(e.target.value)}
-                    className="w-full mt-1 px-3 py-2 bg-background border border-border rounded-lg text-xs text-white focus:outline-none focus:border-amber-500"
-                  />
-                </div>
-                <div>
-                  <label className="text-xs text-muted-foreground font-medium">Mentor Email</label>
-                  <input
-                    type="email"
-                    value={mentorEmail}
-                    onChange={(e) => setMentorEmail(e.target.value)}
-                    className="w-full mt-1 px-3 py-2 bg-background border border-border rounded-lg text-xs text-white font-mono focus:outline-none focus:border-amber-500"
-                  />
-                </div>
-                <div>
-                  <label className="text-xs text-muted-foreground font-medium">{config.tax.taxIdLabel}</label>
-                  <input
-                    type="text"
-                    value={mentorPan}
-                    placeholder={config.tax.taxIdPlaceholder}
-                    onChange={(e) => setMentorPan(e.target.value.toUpperCase())}
-                    className="w-full mt-1 px-3 py-2 bg-background border border-border rounded-lg text-xs text-white font-mono focus:outline-none focus:border-amber-500"
-                  />
-                </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="text-xs text-muted-foreground font-medium">Sessions / Hours</label>
-                    <input
-                      type="number"
-                      value={sessionsCount}
-                      onChange={(e) => setSessionsCount(e.target.value)}
-                      className="w-full mt-1 px-3 py-2 bg-background border border-border rounded-lg text-xs text-white font-mono focus:outline-none focus:border-amber-500"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-xs text-muted-foreground font-medium">Rate / Unit ({config.currency})</label>
-                    <input
-                      type="number"
-                      value={sessionRate}
-                      onChange={(e) => setSessionRate(e.target.value)}
-                      className="w-full mt-1 px-3 py-2 bg-background border border-border rounded-lg text-xs text-white font-mono focus:outline-none focus:border-amber-500"
-                    />
-                  </div>
-                </div>
-
-                <div className="p-3 bg-background/80 rounded-lg border border-border text-xs font-mono space-y-1">
-                  <div className="flex justify-between text-muted-foreground">
-                    <span>Gross Calculation:</span>
-                    <span>{formatCurrency(parseFloat(sessionsCount || "0") * parseFloat(sessionRate || "0"))}</span>
-                  </div>
-                  <div className="flex justify-between text-amber-700 dark:text-amber-400">
-                    <span>{config.tax.withholdingLabel}:</span>
-                    <span>-{formatCurrency((parseFloat(sessionsCount || "0") * parseFloat(sessionRate || "0")) * (config.tax.withholdingRatePercent / 100))}</span>
-                  </div>
-                  <div className="flex justify-between font-bold text-foreground pt-1 border-t border-border">
-                    <span>Net Payout ({config.tax.payoutRail}):</span>
-                    <span>{formatCurrency((parseFloat(sessionsCount || "0") * parseFloat(sessionRate || "0")) * (1 - config.tax.withholdingRatePercent / 100))}</span>
-                  </div>
-                </div>
-
-                <button
-                  type="submit"
-                  disabled={processingPayout}
-                  className="w-full py-2.5 px-4 rounded-lg bg-amber-600 hover:bg-amber-500 text-white text-xs font-semibold shadow-lg shadow-amber-600/30 transition flex items-center justify-center gap-2"
-                >
-                  {processingPayout ? <RefreshCw className="h-4 w-4 animate-spin" /> : <FileSpreadsheet className="h-4 w-4" />}
-                  Approve Payout Record
-                </button>
-              </form>
-            </div>
-
-            <div className="lg:col-span-2 rounded-xl border border-border bg-card/60 p-6 space-y-4">
-              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-                <div>
-                  <h3 className="text-base font-semibold text-foreground">Mentor Compensation Ledger</h3>
-                  <p className="text-xs text-muted-foreground">Immutable ledger reconciled for bulk bank disbursement.</p>
-                </div>
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => handleFetchForm16A()}
-                    disabled={loadingForm16}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-medium transition shadow-sm cursor-pointer"
-                  >
-                    {loadingForm16 ? <RefreshCw className="h-3.5 w-3.5 animate-spin" /> : <FileText className="h-3.5 w-3.5" />}
-                    <span>Generate {config.tax.certificateName}</span>
-                  </button>
-
-                  <button
-                    onClick={handleExportNeft}
-                    className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-medium transition shadow-sm cursor-pointer"
-                  >
-                    <Download className="h-3.5 w-3.5" />
-                    <span>Export {config.tax.payoutRail.split("/")[0]} Batch CSV</span>
-                  </button>
-                </div>
-              </div>
-
-              <div className="overflow-x-auto">
-                <table className="w-full text-left text-xs">
-                  <thead className="border-b border-border text-muted-foreground font-mono uppercase text-[10px]">
-                    <tr>
-                      <th className="py-2.5 px-3">Mentor</th>
-                      <th className="py-2.5 px-3">{config.tax.taxIdLabel.split(" ")[0]}</th>
-                      <th className="py-2.5 px-3">Gross</th>
-                      <th className="py-2.5 px-3">{config.tax.withholdingLabel.split("(")[0]}</th>
-                      <th className="py-2.5 px-3">Net Payout</th>
-                      <th className="py-2.5 px-3">Batch Ref</th>
-                      <th className="py-2.5 px-3">Status</th>
-                      <th className="py-2.5 px-3 text-right">Tax Cert</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-800 text-muted-foreground">
-                    {payouts.map((p) => (
-                      <tr key={p.id} className="hover:bg-muted/40">
-                        <td className="py-3 px-3">
-                          <div className="font-medium text-foreground">{p.mentorName}</div>
-                          <div className="text-[10px] text-muted-foreground font-mono">{p.mentorEmail}</div>
-                        </td>
-                        <td className="py-3 px-3 font-mono text-muted-foreground">{p.mentorPan}</td>
-                        <td className="py-3 px-3 font-mono font-medium text-muted-foreground">
-                          {formatCurrency(convertFromInr(p.grossAmount))}
-                        </td>
-                        <td className="py-3 px-3 font-mono text-amber-700 dark:text-amber-400 font-medium">
-                          -{formatCurrency(convertFromInr(p.tdsAmount))}
-                        </td>
-                        <td className="py-3 px-3 font-mono text-emerald-700 dark:text-emerald-400 font-bold">
-                          {formatCurrency(convertFromInr(p.netAmount))}
-                        </td>
-                        <td className="py-3 px-3 font-mono text-[10px] text-muted-foreground">
-                          {p.paymentBatchReference}
-                        </td>
-                        <td className="py-3 px-3">
-                          <span
-                            className={`px-2 py-0.5 rounded-full text-[10px] font-medium font-mono ${
-                              p.payoutStatus === "BatchExported"
-                                ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20"
-                                : p.payoutStatus === "Approved"
-                                ? "bg-indigo-500/10 text-indigo-700 dark:text-indigo-400 border border-indigo-500/20"
-                                : "bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/20"
-                            }`}
-                          >
-                            {p.payoutStatus}
-                          </span>
-                        </td>
-                        <td className="py-3 px-3 text-right">
-                          <button
-                            onClick={() => handleFetchForm16A(p.id)}
-                            className="px-2.5 py-1 rounded bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-600 dark:text-indigo-300 border border-indigo-500/20 text-[10px] font-mono inline-flex items-center gap-1 transition-colors cursor-pointer"
-                          >
-                            <FileText className="h-3 w-3" />
-                            <span>Form 16A</span>
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Tab 4: Headless API & Webhooks */}
-        {activeTab === "api" && (
-          <div className="rounded-xl border border-border bg-card/60 p-6 space-y-6">
-            <div>
-              <h3 className="text-base font-semibold text-foreground flex items-center gap-2">
-                <Key className="h-4 w-4 text-emerald-700 dark:text-emerald-400" />
-                Edulexa Public Headless API Reference
-              </h3>
-              <p className="text-xs text-muted-foreground mt-1">
-                Your platform exposes first-class public endpoints matching eclinicsoft.com/docs for external B2B integration.
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
-              <div className="p-3.5 rounded-lg border border-border bg-background space-y-1.5">
-                <span className="px-2 py-0.5 rounded font-mono text-[10px] bg-indigo-500/10 text-indigo-700 dark:text-indigo-400 font-bold">
-                  POST /v1/voice/campaigns
-                </span>
-                <p className="text-[11px] text-muted-foreground">
-                  Sub-300ms outbound recovery calls.
-                </p>
-              </div>
-              <div className="p-3.5 rounded-lg border border-border bg-background space-y-1.5">
-                <span className="px-2 py-0.5 rounded font-mono text-[10px] bg-cyan-500/10 text-cyan-700 dark:text-cyan-400 font-bold">
-                  POST /v1/assets/sign
-                </span>
-                <p className="text-[11px] text-muted-foreground">
-                  HMAC expiring DRM signed URLs.
-                </p>
-              </div>
-              <div className="p-3.5 rounded-lg border border-border bg-background space-y-1.5">
-                <span className="px-2 py-0.5 rounded font-mono text-[10px] bg-amber-500/10 text-amber-700 dark:text-amber-400 font-bold">
-                  POST /v1/payouts
-                </span>
-                <p className="text-[11px] text-muted-foreground">
-                  Automated mentor compensation &amp; tax compliance.
-                </p>
-              </div>
-              <div className="p-3.5 rounded-lg border border-border bg-background space-y-1.5">
-                <span className="px-2 py-0.5 rounded font-mono text-[10px] bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 font-bold">
-                  POST /v1/tenants
-                </span>
-                <p className="text-[11px] text-muted-foreground">
-                  Sub-400ms schema &amp; API key provisioning.
-                </p>
-              </div>
-              <div className="p-3.5 rounded-lg border border-border bg-background space-y-1.5">
-                <span className="px-2 py-0.5 rounded font-mono text-[10px] bg-rose-500/10 text-rose-400 font-bold">
-                  GET /v1/pixel.js
-                </span>
-                <p className="text-[11px] text-muted-foreground">
-                  Embeddable creator drop-off tracker.
-                </p>
-              </div>
-            </div>
-
-            {/* Creator Pixel & Webhook Interactive Test Suite */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Creator Pixel Card */}
-              <div className="p-5 rounded-xl border border-border bg-background space-y-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Sparkles className="h-4 w-4 text-cyan-700 dark:text-cyan-400" />
-                    <h4 className="text-sm font-semibold text-foreground">Embeddable Creator Pixel</h4>
-                  </div>
-                  <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-cyan-500/10 text-cyan-700 dark:text-cyan-400 border border-cyan-500/20">
-                    Kajabi / Teachable / Custom
-                  </span>
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  Drop this script tag into your checkout header to automatically detect exit-intent and fire AI recovery.
-                </p>
-
-                <div className="relative">
-                  <pre className="p-3 rounded-lg border border-border bg-card/80 text-[11px] font-mono text-cyan-600 dark:text-cyan-300 overflow-x-auto">
-{`<script src="${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/v1/pixel.js?tenant=6c370735-4615-44f6-9d61-dbbb41d5d5cf" async></script>`}
-                  </pre>
-                  <button
-                    onClick={() => {
-                      navigator.clipboard.writeText(`<script src="${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/v1/pixel.js?tenant=6c370735-4615-44f6-9d61-dbbb41d5d5cf" async></script>`);
-                      setCopiedPixelScript(true);
-                      setTimeout(() => setCopiedPixelScript(false), 2000);
-                    }}
-                    className="absolute top-2 right-2 p-1.5 rounded bg-muted hover:bg-slate-700 text-muted-foreground hover:text-white transition-colors cursor-pointer"
-                  >
-                    {copiedPixelScript ? <Check className="h-3.5 w-3.5 text-emerald-700 dark:text-emerald-400" /> : <Copy className="h-3.5 w-3.5" />}
-                  </button>
-                </div>
-
-                <button
-                  onClick={handleSimulatePixelDropOff}
-                  disabled={trackingPixel}
-                  className="w-full py-2.5 px-4 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-semibold shadow-md shadow-cyan-600/30 transition flex items-center justify-center gap-2 cursor-pointer"
-                >
-                  {trackingPixel ? <RefreshCw className="h-4 w-4 animate-spin" /> : <Play className="h-4 w-4" />}
-                  Simulate Exit-Intent Drop-Off via Pixel
-                </button>
-
-                {pixelTrackResult && (
-                  <div className="p-3 rounded-lg border border-cyan-500/30 bg-cyan-950/20 text-xs font-mono space-y-1">
-                    <div className="text-cyan-700 dark:text-cyan-400 font-semibold flex items-center gap-1.5">
-                      <CheckCircle2 className="h-3.5 w-3.5" />
-                      Pixel Event Logged Successfully
-                    </div>
-                    <div className="text-muted-foreground text-[11px]">
-                      Auto-Recovery Triggered: {pixelTrackResult.recoveryCampaignTriggered ? "Yes (Vapi Dispatch)" : "Queued"}
-                    </div>
-                    {pixelTrackResult.recoveryCampaign && (
-                      <div className="text-muted-foreground text-[10px]">
-                        Call Status: {pixelTrackResult.recoveryCampaign.callStatus} • Vapi ID: {pixelTrackResult.recoveryCampaign.vapiCallId}
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
-
-              {/* Signed Outgoing Webhook Card */}
-              <div className="p-5 rounded-xl border border-border bg-background space-y-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Send className="h-4 w-4 text-emerald-700 dark:text-emerald-400" />
-                    <h4 className="text-sm font-semibold text-foreground">Signed Outgoing Webhook Dispatcher</h4>
-                  </div>
-                  <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20">
-                    HMAC-SHA256
-                  </span>
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  Real-time events delivered to your endpoints with Stripe-compatible timestamped HMAC-SHA256 signature verification.
-                </p>
-
-                <div className="p-3 rounded-lg border border-border bg-card/80 text-[11px] font-mono text-muted-foreground space-y-1">
-                  <div className="text-muted-foreground text-[10px]">ACTIVE ENDPOINT:</div>
-                  <div className="text-emerald-700 dark:text-emerald-400">http://localhost:5000/api/partner/webhook-receiver</div>
-                  <div className="text-muted-foreground text-[10px] pt-1">HEADER FORMAT:</div>
-                  <div className="text-muted-foreground">X-Edulexa-Signature: t=1790931488,v1=sha256...</div>
-                </div>
-
-                <button
-                  onClick={handleTestOutgoingWebhook}
-                  disabled={dispatchingWebhook}
-                  className="w-full py-2.5 px-4 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold shadow-md shadow-emerald-600/30 transition flex items-center justify-center gap-2 cursor-pointer"
-                >
-                  {dispatchingWebhook ? <RefreshCw className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-                  Dispatch Test Signed Webhook
-                </button>
-
-                {webhookDispatchResult && (
-                  <div className="p-3 rounded-lg border border-emerald-500/30 bg-emerald-950/20 text-xs font-mono space-y-1">
-                    <div className="text-emerald-700 dark:text-emerald-400 font-semibold flex items-center gap-1.5">
-                      <CheckCircle2 className="h-3.5 w-3.5" />
-                      Webhook Delivered (HTTP {webhookDispatchResult.responseStatusCode})
-                    </div>
-                    <div className="text-muted-foreground text-[10px] break-all">
-                      Signature: {webhookDispatchResult.hmacSignatureHeader}
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-mono text-muted-foreground">Node.js / TypeScript SDK Example</span>
-                <button
-                  onClick={() => {
-                    navigator.clipboard.writeText(`import { Edulexa } from '@edulexa/node';\nconst edulexa = new Edulexa('edx_live_sk_...');`);
-                    setCopiedToken(true);
-                    setTimeout(() => setCopiedToken(false), 2000);
-                  }}
-                  className="inline-flex items-center gap-1 text-[11px] text-indigo-700 dark:text-indigo-400 hover:text-indigo-600 dark:text-indigo-300 cursor-pointer"
-                >
-                  {copiedToken ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
-                  {copiedToken ? "Copied" : "Copy SDK snippet"}
-                </button>
-              </div>
-              <pre className="p-4 rounded-lg border border-border bg-background text-xs font-mono text-indigo-600 dark:text-indigo-300 overflow-x-auto">
-{`// 1. Recover an Abandoned Bootcamp Cart in 90 Seconds
-await fetch("https://api.yourdomain.com/v1/voice/campaigns", {
-  method: "POST",
-  headers: { "Content-Type": "application/json", "Authorization": "Bearer edx_live_sk_..." },
-  body: JSON.stringify({
-    candidateName: "Kavita Rao",
-    candidatePhone: "+919876501234",
-    cartItemName: "Distributed Systems Bootcamp",
-    cartAmount: 50000,
-    discountPercent: 15
-  })
-});`}
-              </pre>
-            </div>
-          </div>
-        )}
+        ))}
       </div>
 
-      {/* Form 16A Statutory TDS Certificate Modal */}
-      {form16ModalData && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-          <div className="bg-card border border-border rounded-2xl max-w-2xl w-full p-6 space-y-5 shadow-2xl relative">
-            <div className="flex items-center justify-between pb-3 border-b border-border">
-              <div className="flex items-center gap-2.5">
-                <div className="h-8 w-8 rounded-lg bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-700 dark:text-amber-400">
-                  <FileText className="h-4 w-4" />
-                </div>
-                <div>
-                  <h3 className="text-base font-bold text-foreground">Form No. 16A — TDS Certificate</h3>
-                  <span className="text-[11px] font-mono text-amber-700 dark:text-amber-400">
-                    Certificate No: {form16ModalData.certificateNumber}
-                  </span>
-                </div>
-              </div>
-              <button
-                onClick={() => setForm16ModalData(null)}
-                className="text-muted-foreground hover:text-white p-1 rounded-lg hover:bg-muted transition-colors cursor-pointer"
-              >
-                <X className="h-5 w-5" />
-              </button>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4 text-xs font-mono bg-background/60 p-4 rounded-xl border border-border">
-              <div>
-                <span className="text-muted-foreground block text-[10px]">DEDUCTOR</span>
-                <span className="text-foreground font-semibold">{form16ModalData.deductorName}</span>
-                <span className="text-indigo-700 dark:text-indigo-400 block text-[11px]">TAN: {form16ModalData.deductorTan}</span>
-              </div>
-              <div>
-                <span className="text-muted-foreground block text-[10px]">DEDUCTEE / MENTOR</span>
-                <span className="text-foreground font-semibold">{form16ModalData.deducteeName}</span>
-                <span className="text-cyan-700 dark:text-cyan-400 block text-[11px]">PAN: {form16ModalData.deducteePan}</span>
-              </div>
-              <div>
-                <span className="text-muted-foreground block text-[10px]">FINANCIAL &amp; ASSESSMENT YEAR</span>
-                <span className="text-muted-foreground">FY: {form16ModalData.financialYear} • AY: {form16ModalData.assessmentYear}</span>
-                <span className="text-muted-foreground block text-[10px]">Quarter: {form16ModalData.quarter}</span>
-              </div>
-              <div>
-                <span className="text-muted-foreground block text-[10px]">TAX COMPLIANCE FRAMEWORK</span>
-                <span className="text-amber-700 dark:text-amber-400 font-semibold">{form16ModalData.taxSection || config.tax.regimeTitle}</span>
-              </div>
-              <div className="pt-2 border-t border-border">
-                <span className="text-muted-foreground block text-[10px]">GROSS AMOUNT PAID</span>
-                <span className="text-foreground text-sm font-bold">{formatCurrency(convertFromInr(form16ModalData.totalGrossAmountPaid || 0))}</span>
-              </div>
-              <div className="pt-2 border-t border-border">
-                <span className="text-muted-foreground block text-[10px]">TOTAL TAX WITHHELD ({config.tax.withholdingLabel})</span>
-                <span className="text-emerald-700 dark:text-emerald-400 text-sm font-bold">{formatCurrency(convertFromInr(form16ModalData.totalTdsDeducted || 0))}</span>
-              </div>
-            </div>
-
-            <div className="p-3 bg-background rounded-xl border border-border max-h-48 overflow-y-auto">
-              <span className="text-[10px] uppercase font-mono text-muted-foreground block mb-1">Official Statement Preview</span>
-              <pre className="text-[10px] font-mono text-muted-foreground whitespace-pre-wrap leading-relaxed">
-                {form16ModalData.certificateText}
-              </pre>
-            </div>
-
-            <div className="flex items-center justify-between pt-2">
-              <span className="text-[11px] text-muted-foreground font-mono">
-                BSR Code: {form16ModalData.challanBsrcode} • Challan Date: {form16ModalData.challanTenderDate}
-              </span>
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => setForm16ModalData(null)}
-                  className="px-3 py-1.5 rounded-lg border border-border hover:bg-muted text-xs text-muted-foreground transition-colors cursor-pointer"
-                >
-                  Close
-                </button>
-                <button
-                  onClick={handleDownloadForm16File}
-                  className="px-4 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-xs font-semibold text-white flex items-center gap-1.5 transition-colors shadow-md shadow-indigo-600/30 cursor-pointer"
-                >
-                  <Download className="h-3.5 w-3.5" />
-                  <span>Download Certificate (.txt)</span>
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
+      {notice && (
+        <p role="status" className={`flex items-start gap-2 text-sm ${notice.ok ? "text-emerald-700 dark:text-emerald-400" : "text-red-700 dark:text-red-400"}`}>
+          {notice.ok ? <CheckCircle2 aria-hidden="true" className="mt-0.5 h-4 w-4" /> : <AlertTriangle aria-hidden="true" className="mt-0.5 h-4 w-4" />}
+          {notice.text}
+        </p>
       )}
+
+      {tab === "calls" && settings && (
+        <CallsTab settings={settings} metrics={metrics} calls={calls} consents={consents} optOuts={optOuts} audit={audit} busy={busy} send={send} />
+      )}
+      {tab === "content" && <ContentTab metrics={metrics} assets={assets} busy={busy} send={send} />}
+      {tab === "payments" && <PaymentsTab metrics={metrics} payouts={payouts} busy={busy} send={send} apiFetch={apiFetch} setNotice={setNotice} />}
+      {tab === "integration" && <IntegrationTab tenantId={metrics.tenantId} busy={busy} send={send} />}
+    </main>
+  );
+}
+
+type Send = <T>(path: string, method: string, body: unknown, success: string) => Promise<T | null>;
+
+function CallsTab({ settings, metrics, calls, consents, optOuts, audit, busy, send }: {
+  settings: Settings;
+  metrics: Metrics;
+  calls: Call[];
+  consents: Consent[];
+  optOuts: OptOut[];
+  audit: AuditEvent[];
+  busy: boolean;
+  send: Send;
+}) {
+  const [form, setForm] = useState({ enabled: settings.enabled, callerName: settings.callerName, windowStart: settings.windowStart, windowEnd: settings.windowEnd });
+  const browserZone = useMemo(() => {
+    try {
+      return Intl.DateTimeFormat().resolvedOptions().timeZone;
+    } catch {
+      return "";
+    }
+  }, []);
+  const [consent, setConsent] = useState({ name: "", phone: "", email: "", timeZone: browserZone, consentText: "" });
+  const [request, setRequest] = useState({ name: "", phone: "", topic: "" });
+  const [optOut, setOptOut] = useState("");
+
+  return (
+    <div className="space-y-6">
+      <dl className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+        <Stat label="Requested" value={metrics.followUpCallsRequested} />
+        <Stat label="Placed" value={metrics.followUpCallsPlaced} />
+        <Stat label="Blocked by a check" value={metrics.followUpCallsBlocked} />
+        <Stat label="Scheduled" value={metrics.followUpCallsScheduled} />
+        <Stat label="Active consents" value={metrics.activeConsents} />
+        <Stat label="Opted out" value={metrics.optOuts} />
+      </dl>
+
+      <section className={`${card} space-y-4 p-5`} aria-labelledby="vc-settings">
+        <h2 id="vc-settings" className="text-base font-semibold">
+          Settings and compliance
+        </h2>
+        <p className="text-sm text-muted-foreground">
+          A call is placed only when every check passes: calls are on, the person gave express consent, the number isn&apos;t opted out or on its
+          country&apos;s do-not-call registry, it wasn&apos;t called in the last 24 hours, and it&apos;s within calling hours in the person&apos;s time
+          zone (otherwise it&apos;s scheduled). Staff can&apos;t lift an opt-out.
+        </p>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <label className="flex items-center gap-2 text-sm font-medium">
+            <input type="checkbox" checked={form.enabled} onChange={(e) => setForm({ ...form, enabled: e.target.checked })} />
+            Follow-up calls are on
+          </label>
+          <Field label="Calls say they are from">
+            <input className={input} value={form.callerName} maxLength={120} onChange={(e) => setForm({ ...form, callerName: e.target.value })} />
+          </Field>
+          <Field label="Earliest call (person's local time)" hint="Inside the legal hours of each country below.">
+            <input className={input} type="time" value={form.windowStart} onChange={(e) => setForm({ ...form, windowStart: e.target.value })} />
+          </Field>
+          <Field label="Latest call (person's local time)">
+            <input className={input} type="time" value={form.windowEnd} onChange={(e) => setForm({ ...form, windowEnd: e.target.value })} />
+          </Field>
+        </div>
+        <button className={button} disabled={busy} onClick={() => void send("/v1/voice/settings", "PUT", form, "Settings saved.")}>
+          Save settings
+        </button>
+        <div className="rounded-xl bg-muted/60 p-3 text-sm">
+          <p className="font-medium">Every call opens with:</p>
+          <p className="mt-1 italic">&ldquo;{settings.disclosure}&rdquo;</p>
+        </div>
+        <div className="text-sm">
+          <p className="font-medium">
+            Voice provider:{" "}
+            {settings.providerConnected ? (
+              <span className="text-emerald-700 dark:text-emerald-400">connected</span>
+            ) : (
+              <span className="text-amber-700 dark:text-amber-400">not connected (missing: {settings.providerMissing.join(", ")})</span>
+            )}
+          </p>
+          <div className="mt-2 overflow-x-auto">
+            <table className="w-full min-w-140 text-left">
+              <thead className="text-xs text-muted-foreground">
+                <tr>
+                  <th className="py-1 pr-3 font-medium">Numbers</th>
+                  <th className="py-1 pr-3 font-medium">Do-not-call registry</th>
+                  <th className="py-1 pr-3 font-medium">Legal calling hours</th>
+                </tr>
+              </thead>
+              <tbody>
+                {settings.countries.map((c) => (
+                  <tr key={c.code} className="border-t border-border">
+                    <td className="py-2 pr-3">
+                      {c.name} ({c.prefix})
+                    </td>
+                    <td className="py-2 pr-3">
+                      {c.registry}:{" "}
+                      {c.registryConnected ? (
+                        <span className="text-emerald-700 dark:text-emerald-400">connected</span>
+                      ) : (
+                        <span className="text-amber-700 dark:text-amber-400">not connected, so these numbers aren&apos;t called</span>
+                      )}
+                    </td>
+                    <td className="py-2 pr-3">{c.legalHours}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <p className="mt-2 text-xs text-muted-foreground">Numbers in other countries aren&apos;t called.</p>
+        </div>
+      </section>
+
+      <div className="grid gap-6 lg:grid-cols-2">
+        <section className={`${card} space-y-3 p-5`} aria-labelledby="vc-consent">
+          <h2 id="vc-consent" className="text-base font-semibold">
+            Record a consent
+          </h2>
+          <p className="text-sm text-muted-foreground">For a person who agreed to be called (in a form, by email or in person). Keep their exact words.</p>
+          <Field label="Name">
+            <input className={input} value={consent.name} onChange={(e) => setConsent({ ...consent, name: e.target.value })} />
+          </Field>
+          <Field label="Phone (international format)">
+            <input className={input} value={consent.phone} placeholder="+91 98765 43210" onChange={(e) => setConsent({ ...consent, phone: e.target.value })} />
+          </Field>
+          <Field label="Their time zone" hint="IANA name, e.g. Asia/Kolkata. Needed for numbers in countries with several time zones.">
+            <input className={input} value={consent.timeZone} onChange={(e) => setConsent({ ...consent, timeZone: e.target.value })} />
+          </Field>
+          <Field label="The words they agreed to">
+            <textarea className={input} rows={3} value={consent.consentText} maxLength={1000} onChange={(e) => setConsent({ ...consent, consentText: e.target.value })} />
+          </Field>
+          <button
+            className={button}
+            disabled={busy}
+            onClick={async () => {
+              if (await send("/v1/voice/consents", "POST", consent, "Consent recorded.")) setConsent({ name: "", phone: "", email: "", timeZone: browserZone, consentText: "" });
+            }}
+          >
+            Record consent
+          </button>
+        </section>
+
+        <section className={`${card} space-y-3 p-5`} aria-labelledby="vc-request">
+          <h2 id="vc-request" className="text-base font-semibold">
+            Request a call
+          </h2>
+          <p className="text-sm text-muted-foreground">The result says whether it was placed, scheduled or blocked, and why.</p>
+          <Field label="Name">
+            <input className={input} value={request.name} onChange={(e) => setRequest({ ...request, name: e.target.value })} />
+          </Field>
+          <Field label="Phone">
+            <input className={input} value={request.phone} placeholder="+91 98765 43210" onChange={(e) => setRequest({ ...request, phone: e.target.value })} />
+          </Field>
+          <Field label="What the call is about" hint="e.g. the course they asked about. The call says this.">
+            <input className={input} value={request.topic} maxLength={200} onChange={(e) => setRequest({ ...request, topic: e.target.value })} />
+          </Field>
+          <button
+            className={button}
+            disabled={busy}
+            onClick={async () => {
+              const call = await send<Call>("/v1/voice/calls", "POST", request, "Call requested.");
+              if (call) setRequest({ name: "", phone: "", topic: "" });
+            }}
+          >
+            <PhoneCall aria-hidden="true" className="h-4 w-4" /> Request call
+          </button>
+          <div className="border-t border-border pt-3">
+            <Field label="Opt a number out" hint="Stops all calls to it at once and withdraws its consent.">
+              <input className={input} value={optOut} placeholder="+91 98765 43210" onChange={(e) => setOptOut(e.target.value)} />
+            </Field>
+            <button
+              className={`${ghost} mt-2`}
+              disabled={busy}
+              onClick={async () => {
+                if (await send("/v1/voice/opt-outs", "POST", { phone: optOut }, "Opted out.")) setOptOut("");
+              }}
+            >
+              Opt out
+            </button>
+          </div>
+        </section>
+      </div>
+
+      <section className={`${card} overflow-x-auto p-5`} aria-labelledby="vc-calls">
+        <h2 id="vc-calls" className="text-base font-semibold">
+          Calls
+        </h2>
+        {calls.length === 0 ? (
+          <p className="mt-2 text-sm text-muted-foreground">No calls requested yet.</p>
+        ) : (
+          <table className="mt-3 w-full min-w-190 text-left text-sm">
+            <thead className="text-xs text-muted-foreground">
+              <tr>
+                <th className="py-2 pr-3 font-medium">Requested</th>
+                <th className="py-2 pr-3 font-medium">Person</th>
+                <th className="py-2 pr-3 font-medium">About</th>
+                <th className="py-2 pr-3 font-medium">Status</th>
+                <th className="py-2 pr-3 font-medium">Details</th>
+                <th className="py-2 font-medium" />
+              </tr>
+            </thead>
+            <tbody>
+              {calls.map((c) => (
+                <tr key={c.id} className="border-t border-border align-top">
+                  <td className="py-2 pr-3 whitespace-nowrap">{when(c.createdAt)}</td>
+                  <td className="py-2 pr-3">
+                    {c.name || "—"}
+                    <span className="block text-xs text-muted-foreground">{c.phone}</span>
+                  </td>
+                  <td className="py-2 pr-3">{c.topic}</td>
+                  <td className={`py-2 pr-3 font-medium ${STATUS[c.status] ?? ""}`}>{c.status}</td>
+                  <td className="py-2 pr-3 text-xs">
+                    {c.status === "Scheduled" && <span className="block">For {when(c.scheduledFor)}</span>}
+                    {c.placedAt && <span className="block">Placed {when(c.placedAt)}</span>}
+                    {c.durationSeconds != null && <span className="block">{c.durationSeconds} s</span>}
+                    {c.reason}
+                  </td>
+                  <td className="py-2">
+                    {c.status === "Scheduled" && (
+                      <button className={ghost} disabled={busy} onClick={() => void send(`/v1/voice/calls/${c.id}/cancel`, "POST", undefined, "Call cancelled.")}>
+                        Cancel
+                      </button>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </section>
+
+      <div className="grid gap-6 lg:grid-cols-2">
+        <section className={`${card} overflow-x-auto p-5`} aria-labelledby="vc-consents">
+          <h2 id="vc-consents" className="text-base font-semibold">
+            Consents
+          </h2>
+          {consents.length === 0 ? (
+            <p className="mt-2 text-sm text-muted-foreground">No consents recorded.</p>
+          ) : (
+            <ul className="mt-3 space-y-3 text-sm">
+              {consents.map((c) => (
+                <li key={c.id} className="border-t border-border pt-2">
+                  <span className="font-medium">{c.name || c.phone}</span> <span className="text-muted-foreground">{c.phone}</span>
+                  {c.revokedAt && <span className="ml-2 text-xs text-amber-700 dark:text-amber-400">withdrawn {when(c.revokedAt)}</span>}
+                  <span className="block text-xs text-muted-foreground">
+                    {when(c.capturedAt)} · {c.source}
+                    {c.timeZone ? ` · ${c.timeZone}` : ""}
+                  </span>
+                  <q className="mt-1 block text-xs italic">{c.consentText}</q>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
+        <section className={`${card} overflow-x-auto p-5`} aria-labelledby="vc-optouts">
+          <h2 id="vc-optouts" className="text-base font-semibold">
+            Opted out
+          </h2>
+          {optOuts.length === 0 ? (
+            <p className="mt-2 text-sm text-muted-foreground">No numbers have opted out.</p>
+          ) : (
+            <ul className="mt-3 space-y-1 text-sm">
+              {optOuts.map((o) => (
+                <li key={o.id}>
+                  {o.phone} <span className="text-xs text-muted-foreground">({o.source === "call" ? "said so on a call" : o.source}, {when(o.createdAt)})</span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
+      </div>
+
+      <section className={`${card} overflow-x-auto p-5`} aria-labelledby="vc-audit">
+        <h2 id="vc-audit" className="text-base font-semibold">
+          Audit trail
+        </h2>
+        {audit.length === 0 ? (
+          <p className="mt-2 text-sm text-muted-foreground">Nothing yet.</p>
+        ) : (
+          <table className="mt-3 w-full min-w-160 text-left text-sm">
+            <tbody>
+              {audit.map((e) => (
+                <tr key={e.id} className="border-t border-border align-top">
+                  <td className="py-2 pr-3 whitespace-nowrap text-xs text-muted-foreground">{when(e.at)}</td>
+                  <td className="py-2 pr-3 font-medium">{e.event}</td>
+                  <td className="py-2 pr-3 text-xs">{e.phone}</td>
+                  <td className="py-2 text-xs">{e.detail}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </section>
+    </div>
+  );
+}
+
+function ContentTab({ metrics, assets, busy, send }: { metrics: Metrics; assets: Asset[]; busy: boolean; send: Send }) {
+  const [asset, setAsset] = useState({ assetTitle: "", originalStorageUrl: "", assetType: "CourseLecture", ttlMinutes: 30 });
+  const [signed, setSigned] = useState<{ signedUrl: string; watermarkStamp: string; expiresAt: string } | null>(null);
+  const [leak, setLeak] = useState("");
+  const [match, setMatch] = useState<{ attributionFound: boolean; leakerEmail: string; assetTitle: string; matchedOn: string | null; sessionTimestamp: string | null; remediationAction: string } | null>(null);
+
+  return (
+    <div className="space-y-6">
+      <dl className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+        <Stat label="Protected assets" value={metrics.protectedAssetsCount} />
+        <Stat label="Signed links issued" value={metrics.signedSessionsCount} />
+        <Stat label="Links still valid" value={metrics.activeSignedSessionsCount} />
+      </dl>
+      <div className="grid gap-6 lg:grid-cols-2">
+        <section className={`${card} space-y-3 p-5`} aria-labelledby="pc-sign">
+          <h2 id="pc-sign" className="text-base font-semibold">
+            Register an asset and sign a link
+          </h2>
+          <p className="text-sm text-muted-foreground">Each link expires and carries a watermark naming the viewer, so a leaked copy can be traced to its session.</p>
+          <Field label="Title">
+            <input className={input} value={asset.assetTitle} onChange={(e) => setAsset({ ...asset, assetTitle: e.target.value })} />
+          </Field>
+          <Field label="Storage URL (https)">
+            <input className={input} value={asset.originalStorageUrl} onChange={(e) => setAsset({ ...asset, originalStorageUrl: e.target.value })} />
+          </Field>
+          <Field label="Type">
+            <select className={input} value={asset.assetType} onChange={(e) => setAsset({ ...asset, assetType: e.target.value })}>
+              <option value="CourseLecture">Course lecture</option>
+              <option value="CodeRepository">Code repository</option>
+              <option value="AssessmentPrompt">Assessment prompt</option>
+              <option value="ProctoredReplayVideo">Proctored replay video</option>
+            </select>
+          </Field>
+          <button
+            className={button}
+            disabled={busy}
+            onClick={async () => setSigned(await send<{ signedUrl: string; watermarkStamp: string; expiresAt: string }>("/v1/assets/sign", "POST", asset, "Link signed."))}
+          >
+            Sign a link
+          </button>
+          {signed && (
+            <div className="rounded-xl bg-muted/60 p-3 text-xs">
+              <p className="break-all font-mono">{signed.signedUrl}</p>
+              <p className="mt-1">Watermark: {signed.watermarkStamp}</p>
+              <p>Expires {when(signed.expiresAt)}</p>
+            </div>
+          )}
+        </section>
+        <section className={`${card} space-y-3 p-5`} aria-labelledby="pc-leak">
+          <h2 id="pc-leak" className="text-base font-semibold">
+            Trace a leaked copy
+          </h2>
+          <p className="text-sm text-muted-foreground">Paste the watermark text, signed token or session id from the leaked copy.</p>
+          <Field label="Watermark, token or session id">
+            <input className={input} value={leak} onChange={(e) => setLeak(e.target.value)} />
+          </Field>
+          <button
+            className={button}
+            disabled={busy || leak.trim().length < 4}
+            onClick={async () => setMatch(await send("/v1/assets/leak-attribution", "POST", { leakSnippetOrFingerprint: leak }, "Lookup done."))}
+          >
+            <Search aria-hidden="true" className="h-4 w-4" /> Look up
+          </button>
+          {match &&
+            (match.attributionFound ? (
+              <div className="rounded-xl bg-muted/60 p-3 text-sm">
+                <p>
+                  Matched a viewing session of <span className="font-medium">{match.assetTitle}</span> by {match.leakerEmail || "an unknown viewer"} on{" "}
+                  {when(match.sessionTimestamp)} (matched on {match.matchedOn}).
+                </p>
+                <p className="mt-1 text-xs text-muted-foreground">{match.remediationAction}</p>
+              </div>
+            ) : (
+              <p className="text-sm text-muted-foreground">No recorded viewing session matches.</p>
+            ))}
+        </section>
+      </div>
+      <section className={`${card} overflow-x-auto p-5`} aria-labelledby="pc-assets">
+        <h2 id="pc-assets" className="text-base font-semibold">
+          Assets
+        </h2>
+        {assets.length === 0 ? (
+          <p className="mt-2 text-sm text-muted-foreground">No assets registered.</p>
+        ) : (
+          <table className="mt-3 w-full min-w-140 text-left text-sm">
+            <thead className="text-xs text-muted-foreground">
+              <tr>
+                <th className="py-2 pr-3 font-medium">Title</th>
+                <th className="py-2 pr-3 font-medium">Type</th>
+                <th className="py-2 pr-3 font-medium">Link lifetime</th>
+                <th className="py-2 font-medium">Links signed</th>
+              </tr>
+            </thead>
+            <tbody>
+              {assets.map((a) => (
+                <tr key={a.id} className="border-t border-border">
+                  <td className="py-2 pr-3">{a.assetTitle}</td>
+                  <td className="py-2 pr-3">{a.assetType}</td>
+                  <td className="py-2 pr-3">{a.ttlMinutes} min</td>
+                  <td className="py-2 tabular-nums">{a.totalSignedUrlRequests}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </section>
+    </div>
+  );
+}
+
+function PaymentsTab({ metrics, payouts, busy, send, apiFetch, setNotice }: {
+  metrics: Metrics;
+  payouts: Payout[];
+  busy: boolean;
+  send: Send;
+  apiFetch: (path: string, init?: RequestInit) => Promise<Response>;
+  setNotice: (n: { ok: boolean; text: string } | null) => void;
+}) {
+  const empty = { mentorName: "", mentorEmail: "", mentorPan: "", bankName: "", bankAccountNumber: "", bankIfscCode: "", contractType: "PerSession", totalSessionsOrHours: "", ratePerUnit: "", tdsRatePercent: "" };
+  const [p, setP] = useState(empty);
+  const [pan, setPan] = useState("");
+  const [statement, setStatement] = useState<TdsStatement | null>(null);
+
+  const exportNeft = async () => {
+    const res = await apiFetch("/v1/payouts/export-neft", { method: "POST" });
+    if (!res.ok) return setNotice({ ok: false, text: `The export failed (HTTP ${res.status}).` });
+    const url = URL.createObjectURL(await res.blob());
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `neft-batch-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    setNotice({ ok: true, text: "NEFT batch file downloaded; the payments in it are marked exported." });
+  };
+
+  const lookup = async () => {
+    setStatement(null);
+    const res = await apiFetch(`/v1/payouts/tds-statement?pan=${encodeURIComponent(pan.trim())}`);
+    if (res.ok) setStatement((await res.json()) as TdsStatement);
+    else setNotice({ ok: false, text: res.status === 404 ? "No recorded payments for that PAN." : `The lookup failed (HTTP ${res.status}).` });
+  };
+
+  return (
+    <div className="space-y-6">
+      <dl className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+        <Stat label="Recorded (gross)" value={inr(metrics.totalMentorPayoutsGross)} />
+        <Stat label="TDS withheld" value={inr(metrics.totalTdsWithheld)} />
+        <Stat label="Waiting for export" value={metrics.pendingMentorPayoutsCount} />
+      </dl>
+      <div className="grid gap-6 lg:grid-cols-2">
+        <section className={`${card} space-y-3 p-5`} aria-labelledby="mp-record">
+          <h2 id="mp-record" className="text-base font-semibold">
+            Record a payment
+          </h2>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <Field label="Payee name">
+              <input className={input} value={p.mentorName} onChange={(e) => setP({ ...p, mentorName: e.target.value })} />
+            </Field>
+            <Field label="Email (optional)">
+              <input className={input} value={p.mentorEmail} onChange={(e) => setP({ ...p, mentorEmail: e.target.value })} />
+            </Field>
+            <Field label="PAN">
+              <input className={input} value={p.mentorPan} maxLength={10} onChange={(e) => setP({ ...p, mentorPan: e.target.value.toUpperCase() })} />
+            </Field>
+            <Field label="Bank (optional)">
+              <input className={input} value={p.bankName} onChange={(e) => setP({ ...p, bankName: e.target.value })} />
+            </Field>
+            <Field label="Account number">
+              <input className={input} value={p.bankAccountNumber} inputMode="numeric" onChange={(e) => setP({ ...p, bankAccountNumber: e.target.value })} />
+            </Field>
+            <Field label="IFSC">
+              <input className={input} value={p.bankIfscCode} maxLength={11} onChange={(e) => setP({ ...p, bankIfscCode: e.target.value.toUpperCase() })} />
+            </Field>
+            <Field label="Paid per">
+              <select className={input} value={p.contractType} onChange={(e) => setP({ ...p, contractType: e.target.value })}>
+                <option value="PerSession">Session</option>
+                <option value="Hourly">Hour</option>
+              </select>
+            </Field>
+            <Field label={p.contractType === "Hourly" ? "Hours" : "Sessions"}>
+              <input className={input} type="number" min="0" step="0.5" value={p.totalSessionsOrHours} onChange={(e) => setP({ ...p, totalSessionsOrHours: e.target.value })} />
+            </Field>
+            <Field label="Rate (INR)">
+              <input className={input} type="number" min="0" value={p.ratePerUnit} onChange={(e) => setP({ ...p, ratePerUnit: e.target.value })} />
+            </Field>
+            <Field label="TDS rate (%)" hint="The rate that applies to this payee, e.g. 10 under section 194J for professional fees.">
+              <input className={input} type="number" min="0" max="40" step="0.1" value={p.tdsRatePercent} onChange={(e) => setP({ ...p, tdsRatePercent: e.target.value })} />
+            </Field>
+          </div>
+          <button
+            className={button}
+            disabled={busy}
+            onClick={async () => {
+              const body = {
+                ...p,
+                totalSessionsOrHours: Number(p.totalSessionsOrHours) || 0,
+                ratePerUnit: Number(p.ratePerUnit) || 0,
+                tdsRatePercent: p.tdsRatePercent === "" ? null : Number(p.tdsRatePercent),
+              };
+              if (await send("/v1/payouts", "POST", body, "Payment recorded.")) setP(empty);
+            }}
+          >
+            Record payment
+          </button>
+        </section>
+        <section className={`${card} space-y-3 p-5`} aria-labelledby="mp-tds">
+          <h2 id="mp-tds" className="text-base font-semibold">
+            TDS statement
+          </h2>
+          <p className="text-sm text-muted-foreground">
+            From the payments recorded here, by quarter. It isn&apos;t a Form 16A: download that from TRACES after filing the quarterly TDS return.
+          </p>
+          <Field label="Payee PAN">
+            <input className={input} value={pan} maxLength={10} onChange={(e) => setPan(e.target.value.toUpperCase())} />
+          </Field>
+          <button className={button} disabled={pan.trim().length !== 10} onClick={() => void lookup()}>
+            Show statement
+          </button>
+          {statement && (
+            <div className="rounded-xl bg-muted/60 p-3 text-sm">
+              <p className="font-medium">
+                {statement.payeeName} ({statement.payeePanMasked})
+              </p>
+              <ul className="mt-2 space-y-1">
+                {statement.quarters.map((q) => (
+                  <li key={q.quarter}>
+                    {q.quarter}: paid {inr(q.grossAmount)}, TDS {inr(q.tdsDeducted)}
+                  </li>
+                ))}
+              </ul>
+              <p className="mt-2">
+                Total: paid {inr(statement.totalGrossAmount)}, TDS {inr(statement.totalTdsDeducted)}
+              </p>
+              <p className="mt-2 text-xs text-muted-foreground">{statement.note}</p>
+            </div>
+          )}
+        </section>
+      </div>
+      <section className={`${card} overflow-x-auto p-5`} aria-labelledby="mp-list">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h2 id="mp-list" className="text-base font-semibold">
+            Payments
+          </h2>
+          <button className={ghost} disabled={busy || metrics.pendingMentorPayoutsCount === 0} onClick={() => void exportNeft()}>
+            <Download aria-hidden="true" className="h-4 w-4" /> Export NEFT batch file
+          </button>
+        </div>
+        {payouts.length === 0 ? (
+          <p className="mt-2 text-sm text-muted-foreground">No payments recorded.</p>
+        ) : (
+          <table className="mt-3 w-full min-w-190 text-left text-sm">
+            <thead className="text-xs text-muted-foreground">
+              <tr>
+                <th className="py-2 pr-3 font-medium">Recorded</th>
+                <th className="py-2 pr-3 font-medium">Payee</th>
+                <th className="py-2 pr-3 font-medium">Work</th>
+                <th className="py-2 pr-3 font-medium">Gross</th>
+                <th className="py-2 pr-3 font-medium">TDS</th>
+                <th className="py-2 pr-3 font-medium">Net</th>
+                <th className="py-2 font-medium">Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {payouts.map((x) => (
+                <tr key={x.id} className="border-t border-border">
+                  <td className="py-2 pr-3 whitespace-nowrap">{new Date(x.createdAt).toLocaleDateString()}</td>
+                  <td className="py-2 pr-3">{x.mentorName}</td>
+                  <td className="py-2 pr-3">
+                    {x.totalSessionsOrHours} {x.contractType === "Hourly" ? "h" : "sessions"} × {inr(x.ratePerUnit)}
+                  </td>
+                  <td className="py-2 pr-3 tabular-nums">{inr(x.grossAmount)}</td>
+                  <td className="py-2 pr-3 tabular-nums">
+                    {inr(x.tdsAmount)} <span className="text-xs text-muted-foreground">({x.tdsRatePercent}%)</span>
+                  </td>
+                  <td className="py-2 pr-3 tabular-nums">{inr(x.netAmount)}</td>
+                  <td className="py-2">
+                    {x.payoutStatus}
+                    {x.paymentBatchReference && <span className="block text-xs text-muted-foreground">{x.paymentBatchReference}</span>}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </section>
+    </div>
+  );
+}
+
+function IntegrationTab({ tenantId, busy, send }: { tenantId: string; busy: boolean; send: Send }) {
+  const [copied, setCopied] = useState(false);
+  const [result, setResult] = useState<{ delivered: boolean; responseStatusCode: number; error?: string | null; targetWebhookUrl: string } | null>(null);
+  const api = getApiBaseUrl().replace(/\/$/, "");
+  const snippet = `<script src="${api}/v1/pixel.js?tenant=${tenantId}" async></script>
+<script>
+  // When the person leaves checkout. Only with the box they ticked:
+  // voiceConsent is true only if they agreed, and consentText is that box's exact wording.
+  EdulexaPixel.track("cart_abandoned", {
+    candidateName: form.name.value,
+    candidatePhone: form.phone.value,
+    cartItemName: "Your course name",
+    voiceConsent: form.callMe.checked,
+    consentText: "Yes, you may call me about this course. I can say stop at any time."
+  });
+  // An "Don't call me" link: EdulexaPixel.optOut(form.phone.value);
+</script>`;
+
+  return (
+    <div className="space-y-6">
+      <section className={`${card} space-y-3 p-5`} aria-labelledby="in-pixel">
+        <h2 id="in-pixel" className="text-base font-semibold">
+          Checkout pixel
+        </h2>
+        <p className="text-sm text-muted-foreground">
+          Add it to your checkout page. It sends only what your code passes to it; a follow-up call is requested only when the person ticked a box
+          agreeing to be called, and the call still goes through every check. Your organisation needs an active API key for the pixel to work.
+        </p>
+        <pre className="overflow-x-auto rounded-xl bg-muted/60 p-3 text-xs">
+          <code>{snippet}</code>
+        </pre>
+        <button
+          className={ghost}
+          onClick={() => {
+            void navigator.clipboard.writeText(snippet).then(() => setCopied(true));
+          }}
+        >
+          <Copy aria-hidden="true" className="h-4 w-4" /> {copied ? "Copied" : "Copy snippet"}
+        </button>
+      </section>
+      <section className={`${card} space-y-3 p-5`} aria-labelledby="in-webhook">
+        <h2 id="in-webhook" className="text-base font-semibold">
+          Webhook test
+        </h2>
+        <p className="text-sm text-muted-foreground">
+          Sends a signed test event (header X-Edulexa-Signature: t=timestamp,v1=HMAC-SHA256 of &ldquo;timestamp.body&rdquo; with your API key) to your
+          webhook URL.
+        </p>
+        <button
+          className={button}
+          disabled={busy}
+          onClick={async () => setResult(await send("/v1/webhooks/test-dispatch", "POST", { eventType: "test.ping", payload: { test: true } }, "Test sent."))}
+        >
+          Send test event
+        </button>
+        {result && (
+          <p className="text-sm">
+            {result.delivered
+              ? `Delivered to ${result.targetWebhookUrl} (HTTP ${result.responseStatusCode}).`
+              : result.error ?? `Not delivered (HTTP ${result.responseStatusCode}).`}
+          </p>
+        )}
+      </section>
     </div>
   );
 }
