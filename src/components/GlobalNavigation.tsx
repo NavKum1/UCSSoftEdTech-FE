@@ -46,9 +46,6 @@ import { ProductRegionSwitcher } from "@/context/GeoContext";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { authenticatedFetch } from "@/lib/apiClient";
 
-// The mentor marketplace shows only real, verified mentors; until the programme launches the entry points stay hidden
-const MENTOR_PROGRAMME_LIVE = process.env.NEXT_PUBLIC_MENTOR_PROGRAMME === "true";
-
 // Recruiter tools (pages under /recruiter)
 const recruiterLinks = [
   { name: "Evidence packs", href: "/recruiter/evidence", icon: FileSearch },
@@ -411,16 +408,14 @@ export default function GlobalNavigation() {
           {/* Theme Switcher */}
           <ThemeToggle />
 
-          {/* Book Mentor CTA: only once the mentor programme has verified mentors (plan phase D) */}
-          {MENTOR_PROGRAMME_LIVE && (
+          {/* Mentoring (phase D): the free mentoring network; /mentors explains it and lets members join */}
           <Link
-            href="/mentors/book"
-            className="hidden lg:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white text-xs font-semibold shadow-md shadow-indigo-600/20 transition-all hover:scale-[1.02] active:scale-95"
+            href="/mentors"
+            className="hidden lg:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold shadow-sm transition-colors"
           >
-            <CalendarCheck className="w-3.5 h-3.5" />
-            <span>Book Mentor</span>
+            <CalendarCheck aria-hidden="true" className="w-3.5 h-3.5" />
+            <span>Mentoring</span>
           </Link>
-          )}
 
           {/* Student Profile & Account Menu */}
           <div className="relative pl-1 border-l border-border/60">
@@ -603,18 +598,16 @@ export default function GlobalNavigation() {
             </div>
           )}
 
-          {MENTOR_PROGRAMME_LIVE && (
           <div className="pt-2 border-t border-border/60 flex items-center justify-between">
             <Link
-              href="/mentors/book"
+              href="/mentors"
               onClick={() => setMobileMenuOpen(false)}
-              className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 text-white text-xs font-bold shadow-md"
+              className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-indigo-600 text-white text-xs font-bold shadow-sm"
             >
-              <CalendarCheck className="w-4 h-4" />
-              <span>Book 1-on-1 Mentor Session</span>
+              <CalendarCheck aria-hidden="true" className="w-4 h-4" />
+              <span>Mentoring</span>
             </Link>
           </div>
-          )}
         </nav>
       )}
     </header>

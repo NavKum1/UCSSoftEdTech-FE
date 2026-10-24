@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { Bell, Menu, X } from "lucide-react";
 import { AppUserButton, getSelectedSchool, setSelectedSchool, useApi, useAppAuth } from "@/lib/appAuth";
 import { careerNav, type CareerPersona } from "@/lib/careerNav";
+import { COMMUNITY_INSTITUTE_ID } from "@/lib/community";
 import { useCareerFormat, useCareerI18n, useCareerT } from "@/components/career/i18n/CareerI18nProvider";
 import { useCareerNavLabels } from "@/components/career/i18n/nav";
 import LanguagePicker from "@/components/career/i18n/LanguagePicker";
@@ -138,7 +139,9 @@ export default function CareerShell({ persona, children }: { persona: CareerPers
   const b = brand ?? FALLBACK_BRAND;
   // White text sits on the brand color (active nav, primary buttons): darken it when the school's color is too light
   const brandSolid = accessibleBrandColor(b.primaryColor);
-  const items = careerNav[persona].filter((i) => i.ready);
+  // The Edulexa community (members without a school) offers mentoring only
+  const inCommunity = schoolId === COMMUNITY_INSTITUTE_ID;
+  const items = careerNav[persona].filter((i) => i.ready && (!inCommunity || i.module === "C10"));
   const schools = (me?.memberships ?? [])
     .filter((m) => STAFF_ROLES[persona].includes(m.role))
     .filter((m, i, all) => all.findIndex((x) => x.instituteId === m.instituteId) === i);
