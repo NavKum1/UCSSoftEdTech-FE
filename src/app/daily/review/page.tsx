@@ -234,7 +234,7 @@ export default function DailyCodeReviewDojoPage() {
               <span className="text-base">👔</span>
               <div>
                 <span className="text-emerald-700 dark:text-emerald-400 font-bold text-sm">
-                  {stats?.seniorReviewerTier ?? "Senior Reviewer"}
+                  {stats?.seniorReviewerTier ?? "No reviews yet"}
                 </span>
                 <span className="text-muted-foreground text-[10px] block">
                   Avg Vigilance: {stats?.averageVigilanceScore ?? 0}%

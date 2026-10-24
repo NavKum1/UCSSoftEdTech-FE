@@ -20,7 +20,7 @@ import {
 
 interface EvaluationData {
   technicalScore: number;
-  communicationScore: number;
+  communicationScore: number | null;
   missingSkills: string[];
   architecturalFlaws: string[];
 }
@@ -320,16 +320,12 @@ export default function StudentInterviewReplayPage() {
             <div className="glass-panel rounded-2xl px-4 py-2 border border-border/80 bg-card/60 text-center">
               <span className="text-[10px] uppercase font-bold text-muted-foreground">Technical Skills</span>
               <p className="text-lg font-black text-indigo-700 dark:text-indigo-400">
-                {sessionData?.evaluation?.technicalScore.toFixed(1) || "84.0"}%
+                {typeof sessionData?.evaluation?.technicalScore === "number" && sessionData.evaluation.technicalScore >= 0
+                  ? `${sessionData.evaluation.technicalScore.toFixed(1)}%`
+                  : "Not scored"}
               </p>
             </div>
 
-            <div className="glass-panel rounded-2xl px-4 py-2 border border-border/80 bg-card/60 text-center">
-              <span className="text-[10px] uppercase font-bold text-muted-foreground">Communication</span>
-              <p className="text-lg font-black text-purple-700 dark:text-purple-400">
-                {sessionData?.evaluation?.communicationScore.toFixed(1) || "78.0"}%
-              </p>
-            </div>
           </div>
         </div>
 

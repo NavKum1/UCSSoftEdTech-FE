@@ -194,7 +194,7 @@ export default function VerifyTokenPage() {
       <div className="max-w-4xl mx-auto px-6 py-10 space-y-6">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
-            <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Edulexa Build &amp; Defend credential</p>
+            <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Edulexa credential</p>
             <h1 className="text-2xl font-black tracking-tight text-foreground mt-1">{claims.task.title}</h1>
             <p className="text-sm text-muted-foreground mt-1 flex items-center gap-1.5">
               <User className="w-4 h-4" /> Held by <span className="font-semibold text-foreground">{claims.name}</span>

@@ -179,7 +179,6 @@ export default function WrittenDefensePage() {
             {state.result ? (
               <div className="text-sm text-foreground space-y-1">
                 <p>Technical score: <span className="font-semibold">{Math.round(state.result.technicalScore)}/100</span></p>
-                <p>Communication: <span className="font-semibold">{Math.round(state.result.communicationScore)}/100</span></p>
                 {state.result.missingSkills.length > 0 && <p>Skills to work on: {state.result.missingSkills.join(", ")}</p>}
               </div>
             ) : (

@@ -1,5 +1,5 @@
 /**
- * Authenticated API Fetch Utility for "Build & Defend" Frontend.
+ * Authenticated API fetch for the Edulexa frontend.
  * Automatically attaches Clerk JWT Session Bearer Token in HTTP Authorization Header.
  */
 

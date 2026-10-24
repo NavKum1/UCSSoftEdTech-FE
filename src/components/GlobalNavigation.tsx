@@ -46,6 +46,9 @@ import { ProductRegionSwitcher } from "@/context/GeoContext";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { authenticatedFetch } from "@/lib/apiClient";
 
+// The mentor marketplace shows only real, verified mentors; until the programme launches the entry points stay hidden
+const MENTOR_PROGRAMME_LIVE = process.env.NEXT_PUBLIC_MENTOR_PROGRAMME === "true";
+
 // Recruiter tools (pages under /recruiter)
 const recruiterLinks = [
   { name: "Evidence packs", href: "/recruiter/evidence", icon: FileSearch },
@@ -408,7 +411,8 @@ export default function GlobalNavigation() {
           {/* Theme Switcher */}
           <ThemeToggle />
 
-          {/* Book Mentor CTA */}
+          {/* Book Mentor CTA: only once the mentor programme has verified mentors (plan phase D) */}
+          {MENTOR_PROGRAMME_LIVE && (
           <Link
             href="/mentors/book"
             className="hidden lg:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white text-xs font-semibold shadow-md shadow-indigo-600/20 transition-all hover:scale-[1.02] active:scale-95"
@@ -416,6 +420,7 @@ export default function GlobalNavigation() {
             <CalendarCheck className="w-3.5 h-3.5" />
             <span>Book Mentor</span>
           </Link>
+          )}
 
           {/* Student Profile & Account Menu */}
           <div className="relative pl-1 border-l border-border/60">
@@ -598,6 +603,7 @@ export default function GlobalNavigation() {
             </div>
           )}
 
+          {MENTOR_PROGRAMME_LIVE && (
           <div className="pt-2 border-t border-border/60 flex items-center justify-between">
             <Link
               href="/mentors/book"
@@ -608,6 +614,7 @@ export default function GlobalNavigation() {
               <span>Book 1-on-1 Mentor Session</span>
             </Link>
           </div>
+          )}
         </nav>
       )}
     </header>

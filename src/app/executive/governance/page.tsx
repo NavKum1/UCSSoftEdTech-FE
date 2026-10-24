@@ -205,7 +205,7 @@ export default function MultiCampusGovernancePage() {
           <div className="text-right hidden sm:block">
             <div className="text-xs text-muted-foreground">System Accreditation Health</div>
             <div className="text-sm font-mono font-bold text-foreground">
-              {rollup?.averageSystemComplianceScore || 98.5}% Compliance
+              {rollup?.averageSystemComplianceScore != null ? `${rollup.averageSystemComplianceScore}% compliance` : "Not assessed yet"}
             </div>
           </div>
           <span
@@ -215,7 +215,7 @@ export default function MultiCampusGovernancePage() {
                 : "bg-amber-950 text-amber-700 dark:text-amber-400 border-amber-500/50"
             }`}
           >
-            ● {rollup?.accreditationReadinessStatus || "Audit Ready"}
+            ● {rollup?.accreditationReadinessStatus || "Not assessed"}
           </span>
         </div>
       </header>

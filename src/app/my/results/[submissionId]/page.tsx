@@ -447,10 +447,9 @@ export default function SubmissionReportPage() {
             <p className="text-xs text-muted-foreground">You have not completed a defense of this submission yet.</p>
           ) : (
             <div className="space-y-3">
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                 <Stat label="Format" value={defense.mode === "written" ? "Written" : "Voice"} />
                 <Stat label="Technical score" value={defense.technicalScore != null ? `${Math.round(defense.technicalScore)}/100` : defense.status} />
-                <Stat label="Communication" value={defense.communicationScore != null ? `${Math.round(defense.communicationScore)}/100` : "—"} />
                 <Stat
                   label="Skills to work on"
                   value={defense.missingSkills.length > 0 ? defense.missingSkills.join(", ") : "None noted"}

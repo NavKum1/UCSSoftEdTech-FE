@@ -21,8 +21,8 @@ interface LeaderboardEntry {
   finalScore: number;
   badgeTitle: string;
   publicUrlSlug: string;
-  completionTimeSeconds: number;
-  completionTimeFormatted: string;
+  completionTimeSeconds: number | null;
+  completionTimeFormatted: string | null;
   verificationFlagged: boolean;
   verifiedAt: string;
 }
@@ -137,7 +137,7 @@ export default function LeaderboardPage() {
               </div>
               <span className="text-[11px] text-muted-foreground flex items-center space-x-1">
                 <Clock className="w-3.5 h-3.5 text-muted-foreground" />
-                <span>Speed: {top3[1].completionTimeFormatted}</span>
+                <span>Time to verify: {top3[1].completionTimeFormatted ?? "—"}</span>
               </span>
               <button
                 onClick={() => router.push(`/credential/${top3[1].publicUrlSlug}`)}
@@ -158,7 +158,7 @@ export default function LeaderboardPage() {
                 1
               </div>
               <div>
-                <p className="text-xs text-amber-700 dark:text-amber-400 font-semibold uppercase tracking-wider">Gold Grandmaster</p>
+                <p className="text-xs text-amber-700 dark:text-amber-400 font-semibold uppercase tracking-wider">1st place</p>
                 <h3 className="text-xl font-extrabold text-foreground mt-0.5">{top3[0].candidateName}</h3>
               </div>
               <div className="px-5 py-2 rounded-full bg-amber-500/20 border border-amber-500/40 text-amber-600 dark:text-amber-300 text-base font-black">
@@ -166,7 +166,7 @@ export default function LeaderboardPage() {
               </div>
               <span className="text-xs text-muted-foreground flex items-center space-x-1">
                 <Clock className="w-3.5 h-3.5 text-amber-700 dark:text-amber-400" />
-                <span>Speed: {top3[0].completionTimeFormatted}</span>
+                <span>Time to verify: {top3[0].completionTimeFormatted ?? "—"}</span>
               </span>
               <button
                 onClick={() => router.push(`/credential/${top3[0].publicUrlSlug}`)}
@@ -191,7 +191,7 @@ export default function LeaderboardPage() {
               </div>
               <span className="text-[11px] text-muted-foreground flex items-center space-x-1">
                 <Clock className="w-3.5 h-3.5 text-muted-foreground" />
-                <span>Speed: {top3[2].completionTimeFormatted}</span>
+                <span>Time to verify: {top3[2].completionTimeFormatted ?? "—"}</span>
               </span>
               <button
                 onClick={() => router.push(`/credential/${top3[2].publicUrlSlug}`)}
@@ -271,7 +271,7 @@ export default function LeaderboardPage() {
                           {entry.finalScore.toFixed(1)}%
                         </td>
                         <td className="px-6 py-4 text-muted-foreground font-mono text-[11px]">
-                          {entry.completionTimeFormatted}
+                          {entry.completionTimeFormatted ?? "—"}
                         </td>
                         <td className="px-6 py-4">
                           {entry.verificationFlagged ? (

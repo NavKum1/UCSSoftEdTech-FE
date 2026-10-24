@@ -253,7 +253,7 @@ export default function ExecutiveLeadershipSimulatorPage() {
             </div>
             <div>
               <span className="text-xl font-bold bg-gradient-to-r from-indigo-400 via-purple-200 to-indigo-500 bg-clip-text text-transparent">
-                Build & Defend
+                Edulexa
               </span>
               <span className="text-xs text-indigo-700 dark:text-indigo-400/80 font-mono ml-2 uppercase tracking-widest border border-indigo-500/30 px-2 py-0.5 rounded-full">
                 Staff+ Leadership OS

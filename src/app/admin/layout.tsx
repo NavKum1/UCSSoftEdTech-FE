@@ -5,7 +5,7 @@ import { UserButton } from "@clerk/nextjs";
 import { AdminRoleBadge } from "@/components/admin/AdminRoleBadge";
 
 export const metadata = {
-  title: "Admin Back-office — Build & Defend",
+  title: "Admin · Edulexa",
   description: "Enterprise administration portal for partner institutes, course mapping, lead routing, and platform analytics.",
 };
 
@@ -73,7 +73,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       {/* Footer */}
       <footer className="glass-panel border-t border-border/80 py-4 px-6 text-center text-xs text-muted-foreground mt-auto">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
-          <span>&copy; {new Date().getFullYear()} Build &amp; Defend Inc. Secure Back-office Gateway.</span>
+          <span>&copy; {new Date().getFullYear()} Edulexa. Platform administration.</span>
           <span className="text-muted-foreground flex items-center space-x-1">
             <Lock className="w-3 h-3 text-emerald-700 dark:text-emerald-400" />
             <span>End-to-end Clerk RBAC + .NET Claims Verified</span>

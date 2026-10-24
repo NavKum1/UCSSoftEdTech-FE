@@ -55,7 +55,7 @@ export default function InstituteDashboardPage() {
       if (profileRes.ok) {
         const profileData = await profileRes.json();
         setInstituteId(profileData.id || "");
-        setInstituteName(profileData.name || "Institute Partner");
+        setInstituteName(profileData.name || "");
         setOutboundWebhookUrl(profileData.outboundWebhookUrl || "");
         setWebhookInput(profileData.outboundWebhookUrl || "");
       }

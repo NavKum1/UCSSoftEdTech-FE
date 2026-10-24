@@ -13,27 +13,27 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const pageUrl = `${baseUrl}/credential/${slug}`;
 
   return {
-    title: "Verified Credential | Build & Defend",
-    description: "View this verified Build & Defend architectural engineering credential.",
+    title: "Verified credential | Edulexa",
+    description: "Check this Edulexa credential and the result it records.",
     openGraph: {
-      title: "Verified Credential | Build & Defend",
-      description: "View this verified Build & Defend architectural engineering credential.",
+      title: "Verified credential | Edulexa",
+      description: "Check this Edulexa credential and the result it records.",
       url: pageUrl,
-      siteName: "Build & Defend",
+      siteName: "Edulexa",
       images: [
         {
           url: ogImageUrl,
           width: 1200,
           height: 630,
-          alt: "Build & Defend Verified Credential",
+          alt: "Edulexa verified credential",
         },
       ],
       type: "website",
     },
     twitter: {
       card: "summary_large_image",
-      title: "Verified Credential | Build & Defend",
-      description: "View this verified Build & Defend architectural engineering credential.",
+      title: "Verified credential | Edulexa",
+      description: "Check this Edulexa credential and the result it records.",
       images: [ogImageUrl],
     },
   };

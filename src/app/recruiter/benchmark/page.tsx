@@ -33,7 +33,7 @@ interface PlagiarismReport {
 
 interface CohortAnalytics {
   totalEvaluated: number;
-  medianPercentile: number;
+  medianPercentile: number | null;
   averageScores: {
     complexity: number;
     elegance: number;
@@ -243,10 +243,10 @@ export default function RecruiterBenchmarkPage() {
             <BarChart3 className="w-4 h-4 text-indigo-700 dark:text-indigo-400" />
           </div>
           <div className="text-2xl font-bold text-foreground">
-            Top {(100 - (analytics?.medianPercentile || 75)).toFixed(1)}%
+            {analytics?.medianPercentile == null ? "No data yet" : `${analytics.medianPercentile.toFixed(1)}`}
           </div>
           <div className="text-[11px] text-indigo-600 dark:text-indigo-300 mt-1">
-            Cohort 50th percentile: {(analytics?.medianPercentile || 75).toFixed(1)}
+            {analytics?.medianPercentile == null ? "Evaluate submissions to see your cohort" : "Cohort median"}
           </div>
         </div>
 
@@ -269,14 +269,14 @@ export default function RecruiterBenchmarkPage() {
             <Award className="w-4 h-4 text-emerald-700 dark:text-emerald-400" />
           </div>
           <div className="text-2xl font-bold text-foreground">
-            {analytics?.tierDistribution
+            {analytics && analytics.totalEvaluated > 0
               ? `${(
-                  (((analytics.tierDistribution["FAANG_Staff"] || 0) +
-                    (analytics.tierDistribution["Tier1_Senior"] || 0)) /
-                    (analytics.totalEvaluated || 1)) *
+                  (((analytics.tierDistribution["faanG_Staff"] || 0) +
+                    (analytics.tierDistribution["tier1_Senior"] || 0)) /
+                    analytics.totalEvaluated) *
                   100
                 ).toFixed(1)}%`
-              : "35.2%"}
+              : "No data yet"}
           </div>
           <div className="text-[11px] text-emerald-700 dark:text-emerald-400 mt-1">
             High-caliber technical talent pool
@@ -332,27 +332,27 @@ export default function RecruiterBenchmarkPage() {
             <div className="flex items-center space-x-2 text-xs">
               <span className="w-3 h-3 rounded-full bg-emerald-500 shrink-0" />
               <span className="text-muted-foreground font-medium">Staff Level</span>
-              <span className="text-muted-foreground">({analytics?.tierDistribution?.FAANG_Staff ?? 12})</span>
+              <span className="text-muted-foreground">({analytics?.tierDistribution?.faanG_Staff ?? 0})</span>
             </div>
             <div className="flex items-center space-x-2 text-xs">
               <span className="w-3 h-3 rounded-full bg-indigo-500 shrink-0" />
               <span className="text-muted-foreground font-medium">Senior Level</span>
-              <span className="text-muted-foreground">({analytics?.tierDistribution?.Tier1_Senior ?? 38})</span>
+              <span className="text-muted-foreground">({analytics?.tierDistribution?.tier1_Senior ?? 0})</span>
             </div>
             <div className="flex items-center space-x-2 text-xs">
               <span className="w-3 h-3 rounded-full bg-sky-500 shrink-0" />
               <span className="text-muted-foreground font-medium">Mid Level</span>
-              <span className="text-muted-foreground">({analytics?.tierDistribution?.MidLevel_Enterprise ?? 64})</span>
+              <span className="text-muted-foreground">({analytics?.tierDistribution?.midLevel_Enterprise ?? 0})</span>
             </div>
             <div className="flex items-center space-x-2 text-xs">
               <span className="w-3 h-3 rounded-full bg-amber-500 shrink-0" />
               <span className="text-muted-foreground font-medium">Associate Level</span>
-              <span className="text-muted-foreground">({analytics?.tierDistribution?.Junior_Competent ?? 22})</span>
+              <span className="text-muted-foreground">({analytics?.tierDistribution?.junior_Competent ?? 0})</span>
             </div>
             <div className="flex items-center space-x-2 text-xs">
               <span className="w-3 h-3 rounded-full bg-rose-500 shrink-0" />
               <span className="text-muted-foreground font-medium">Needs Practice</span>
-              <span className="text-muted-foreground">({analytics?.tierDistribution?.Needs_Remediation ?? 6})</span>
+              <span className="text-muted-foreground">({analytics?.tierDistribution?.needs_Remediation ?? 0})</span>
             </div>
           </div>
         </div>

@@ -441,7 +441,7 @@ export default function EdulexaDashboardPage() {
               <PhoneCall className="h-4 w-4 text-indigo-700 dark:text-indigo-400" />
             </div>
             <div className="text-2xl font-bold text-foreground mt-2">
-              {metrics?.voiceRecoveryRatePercent || 24.3}%
+              {metrics?.voiceRecoveryRatePercent != null ? `${metrics.voiceRecoveryRatePercent}%` : "—"}
             </div>
             <div className="text-[11px] text-indigo-700 dark:text-indigo-400 mt-1 font-mono">
               Quick outbound calls after checkout drop-off

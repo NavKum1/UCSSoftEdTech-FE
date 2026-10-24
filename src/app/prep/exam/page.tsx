@@ -69,7 +69,7 @@ interface ExamAttempt {
   passed: boolean;
   totalQuestions: number;
   correctAnswers: number;
-  percentileRank: number;
+  percentileRank: number | null;
   durationMinutes: number;
   certificateNumber?: string;
   verificationSignatureSha256?: string;
@@ -160,7 +160,7 @@ interface ExamEvaluationResult {
   percentage: number;
   passingPercentage: number;
   passed: boolean;
-  percentileRank: number;
+  percentileRank: number | null;
   submittedAt: string;
   /** Credential exams return no correct answers or explanations: questionResults is then empty. */
   answerKeyHidden?: boolean;
@@ -226,7 +226,6 @@ export default function WrittenExamPrepPage() {
   const [claiming, setClaiming] = useState<boolean>(false);
   const [copiedLink, setCopiedLink] = useState<boolean>(false);
   const [copiedSignature, setCopiedSignature] = useState<boolean>(false);
-  const [candidateName, setCandidateName] = useState<string>("Alex Chen");
 
   // Modals state
   const [showAiModal, setShowAiModal] = useState<boolean>(false);
@@ -362,7 +361,7 @@ export default function WrittenExamPrepPage() {
       const res = await apiFetch(`/api/quiz/exams/${activeExam.id}/submit`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ attemptId: activeExam.attemptId, answers, candidateName }),
+        body: JSON.stringify({ attemptId: activeExam.attemptId, answers }),
       });
 
       if (res.ok) {
@@ -426,7 +425,6 @@ export default function WrittenExamPrepPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           attemptId,
-          candidateName: candidateName || "Alex Chen",
         }),
       });
 
@@ -664,11 +662,13 @@ export default function WrittenExamPrepPage() {
               </div>
               <div className="p-3 rounded-xl bg-muted/40 border border-border/60">
                 <span className="text-[11px] text-muted-foreground uppercase font-semibold">
-                  Est. Percentile
+                  Percentile
                 </span>
-                <p className="text-xl font-bold text-primary mt-0.5">
-                  Top {100 - evaluation.percentileRank}%
-                </p>
+                {evaluation.percentileRank == null ? (
+                  <p className="text-sm text-muted-foreground mt-1">Shown once 20 people have taken this exam</p>
+                ) : (
+                  <p className="text-xl font-bold text-primary mt-0.5">Better than {evaluation.percentileRank}%</p>
+                )}
               </div>
               <div className="p-3 rounded-xl bg-muted/40 border border-border/60">
                 <span className="text-[11px] text-muted-foreground uppercase font-semibold">
@@ -1412,7 +1412,7 @@ export default function WrittenExamPrepPage() {
                         <span>•</span>
                         <span>Questions: {att.correctAnswers}/{att.totalQuestions}</span>
                         <span>•</span>
-                        <span>Est. Percentile: Top {100 - att.percentileRank}%</span>
+                        {att.percentileRank != null && <span>Better than {att.percentileRank}% of test takers</span>}
                       </div>
                       )}
                     </div>
@@ -1749,10 +1749,10 @@ export default function WrittenExamPrepPage() {
                 Official Verifiable Credential
               </span>
               <h2 className="text-xl sm:text-2xl font-black text-foreground tracking-tight">
-                {claimedCredential.badgeTitle || "Certified Build & Defend Specialist"}
+                {claimedCredential.badgeTitle || "Verified credential"}
               </h2>
               <p className="text-xs text-muted-foreground">
-                Issued by <strong className="text-foreground">Build &amp; Defend Accreditation Board</strong> in partnership with Global Tech Guilds.
+                Issued by <strong className="text-foreground">Edulexa</strong>. Anyone can check it at its verification link.
               </p>
             </div>
 
@@ -1761,7 +1761,7 @@ export default function WrittenExamPrepPage() {
               <div className="grid grid-cols-2 gap-3 text-xs">
                 <div>
                   <span className="text-muted-foreground text-[10px] uppercase font-semibold">Candidate Name</span>
-                  <p className="font-bold text-foreground text-sm mt-0.5">{claimedCredential.candidateName || candidateName}</p>
+                  <p className="font-bold text-foreground text-sm mt-0.5">{claimedCredential.candidateName}</p>
                 </div>
                 <div>
                   <span className="text-muted-foreground text-[10px] uppercase font-semibold">Verified Score</span>
@@ -1817,7 +1817,7 @@ export default function WrittenExamPrepPage() {
                 href={`https://www.linkedin.com/profile/add?startTask=CERTIFICATION_NAME&name=${encodeURIComponent(
                   claimedCredential.badgeTitle || "Certified Specialist"
                 )}&organizationName=${encodeURIComponent(
-                  "Build & Defend Accreditation Board"
+                  "Edulexa"
                 )}&issueYear=${new Date(claimedCredential.issuedAt).getFullYear()}&issueMonth=${
                   new Date(claimedCredential.issuedAt).getMonth() + 1
                 }&certUrl=${encodeURIComponent(

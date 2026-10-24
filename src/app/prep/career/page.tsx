@@ -249,11 +249,11 @@ export default function CareerTrajectoryStudioPage() {
             <div className="flex items-center space-x-3">
               <div className="p-3.5 rounded-xl bg-background/80 border border-border text-center">
                 <span className="text-[10px] uppercase font-bold text-muted-foreground block">Skill Growth</span>
-                <span className="text-xl font-black text-emerald-700 dark:text-emerald-400">{data?.scores?.skillVelocity || 88.5}%</span>
+                <span className="text-xl font-black text-emerald-700 dark:text-emerald-400">{data?.scores?.skillVelocity != null ? `${data.scores.skillVelocity}%` : "—"}</span>
               </div>
               <div className="p-3.5 rounded-xl bg-background/80 border border-border text-center">
                 <span className="text-[10px] uppercase font-bold text-muted-foreground block">Leadership Readiness</span>
-                <span className="text-xl font-black text-teal-400">{data?.scores?.leadershipReadiness || 84.0}%</span>
+                <span className="text-xl font-black text-teal-400">{data?.scores?.leadershipReadiness != null ? `${data.scores.leadershipReadiness}%` : "—"}</span>
               </div>
             </div>
           </div>

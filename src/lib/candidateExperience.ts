@@ -134,6 +134,6 @@ export interface WrittenDefenseState {
   finished: boolean;
   simulated: boolean;
   turns: { role: "interviewer" | "candidate"; text: string; at: string }[];
-  result: { technicalScore: number; communicationScore: number; missingSkills: string[] } | null;
+  result: { technicalScore: number; communicationScore: number | null; missingSkills: string[] } | null;
   resultStatus: string | null;
 }

@@ -659,7 +659,7 @@ export default function MultiStreamInterviewPracticePage() {
   };
 
   const handleDownloadTranscript = (items: TranscriptMessage[]) => {
-    const header = `Build & Defend AI Voice Interview Transcript\nJob Role: ${jobTitle}\nCandidate: ${candidateName}\nStream: ${selectedStream}\nDate: ${new Date().toLocaleString()}\n----------------------------------------\n\n`;
+    const header = `Edulexa voice interview transcript\nJob Role: ${jobTitle}\nCandidate: ${candidateName}\nStream: ${selectedStream}\nDate: ${new Date().toLocaleString()}\n----------------------------------------\n\n`;
     const body = items
       .map(m => `[${m.timestamp}] ${m.role === "interviewer" ? "AI INTERVIEWER" : candidateName.toUpperCase()}:\n${m.text}\n`)
       .join("\n");

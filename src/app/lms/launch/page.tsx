@@ -40,7 +40,7 @@ export default function LmsLaunchTransitionPage() {
             <span>1EdTech LTI 1.3 Advantage Certified Launch</span>
           </div>
           <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground">
-            Welcome to Build & Defend
+            Welcome to Edulexa
           </h1>
           <p className="text-sm text-muted-foreground">
             Authenticated via <span className="text-foreground font-semibold">{courseInfo.lmsPlatform}</span> single sign-on.

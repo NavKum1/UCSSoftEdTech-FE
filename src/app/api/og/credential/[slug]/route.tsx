@@ -22,8 +22,8 @@ export async function GET(
         const data = await res.json();
         if (data && data.candidateName) {
           candidateName = data.candidateName;
-          badgeTitle = data.badgeTitle || "Certified Build & Defend Architect";
-          finalScore = data.finalScore ? String(data.finalScore) : "100.0";
+          badgeTitle = data.badgeTitle || "Verified credential";
+          finalScore = typeof data.finalScore === "number" ? String(Math.round(data.finalScore * 10) / 10) : "";
           isVerified = true;
         }
       }

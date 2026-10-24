@@ -185,8 +185,9 @@ export default function AudioReplayStudioPage() {
     );
   }
 
-  const technicalScore = replay?.evaluation?.technicalScore ?? 90;
-  const commScore = replay?.evaluation?.communicationScore ?? 88;
+  // Null while the interview is not scored (grader unavailable, or still processing): shown as "Not scored", never a number
+  const rawScore = replay?.evaluation?.technicalScore;
+  const technicalScore = typeof rawScore === "number" && rawScore >= 0 ? Math.round(rawScore) : null;
 
   return (
     <div className="min-h-screen bg-background text-foreground font-sans p-6 md:p-12 relative overflow-hidden">
@@ -252,12 +253,7 @@ export default function AudioReplayStudioPage() {
             <div className="flex items-center space-x-3">
               <div className="bg-background/80 border border-indigo-500/40 rounded-2xl px-5 py-3 text-center">
                 <span className="text-[10px] uppercase font-semibold text-muted-foreground">Technical Score</span>
-                <div className="text-2xl font-black text-indigo-700 dark:text-indigo-400">{technicalScore}%</div>
-              </div>
-
-              <div className="bg-background/80 border border-cyan-500/40 rounded-2xl px-5 py-3 text-center">
-                <span className="text-[10px] uppercase font-semibold text-muted-foreground">Communication</span>
-                <div className="text-2xl font-black text-cyan-700 dark:text-cyan-400">{commScore}%</div>
+                <div className="text-2xl font-black text-indigo-700 dark:text-indigo-400">{technicalScore === null ? "Not scored" : `${technicalScore}%`}</div>
               </div>
             </div>
           </div>
@@ -426,20 +422,10 @@ export default function AudioReplayStudioPage() {
                 <div>
                   <div className="flex justify-between text-xs text-muted-foreground mb-1">
                     <span>Technical Architecture Defense</span>
-                    <span className="font-bold text-indigo-700 dark:text-indigo-400">{technicalScore}%</span>
+                    <span className="font-bold text-indigo-700 dark:text-indigo-400">{technicalScore === null ? "Not scored" : `${technicalScore}%`}</span>
                   </div>
                   <div className="w-full bg-muted h-2 rounded-full overflow-hidden">
-                    <div className="bg-indigo-500 h-full rounded-full" style={{ width: `${technicalScore}%` }} />
-                  </div>
-                </div>
-
-                <div>
-                  <div className="flex justify-between text-xs text-muted-foreground mb-1">
-                    <span>Verbal Clarity & System Rationale</span>
-                    <span className="font-bold text-cyan-700 dark:text-cyan-400">{commScore}%</span>
-                  </div>
-                  <div className="w-full bg-muted h-2 rounded-full overflow-hidden">
-                    <div className="bg-cyan-500 h-full rounded-full" style={{ width: `${commScore}%` }} />
+                    <div className="bg-indigo-500 h-full rounded-full" style={{ width: `${technicalScore ?? 0}%` }} />
                   </div>
                 </div>
               </div>

@@ -343,14 +343,13 @@ export default function SpeedArchitectArenaPage() {
             </div>
             <div>
               <div className="text-xs font-semibold text-cyan-700 dark:text-cyan-400 uppercase">You (Player 1)</div>
-              <div className="text-base font-bold text-foreground">{currentMatch?.player1Name || "Alex Chen"}</div>
-              <div className="text-xs text-muted-foreground">Gold Tier • 5 Win Streak</div>
+              <div className="text-base font-bold text-foreground">{currentMatch?.player1Name || "You"}</div>
             </div>
           </div>
           <div className="text-right">
             <div className="text-[10px] text-muted-foreground uppercase font-semibold">Elo Rating</div>
             <div className="text-2xl font-black text-cyan-700 dark:text-cyan-400">
-              {duelResult ? duelResult.newElo : (currentMatch?.player1Elo || 1580)}
+              {duelResult ? duelResult.newElo : (currentMatch?.player1Elo ?? "—")}
             </div>
           </div>
         </div>
@@ -371,15 +370,15 @@ export default function SpeedArchitectArenaPage() {
             <div>
               <div className="text-xs font-semibold text-purple-700 dark:text-purple-400 uppercase">Opponent</div>
               <div className="text-base font-bold text-foreground">
-                {currentMatch?.player2Name || "Dr. Elena Rostova (AI Principal)"}
+                {currentMatch?.player2Name || "Practice opponent (AI)"}
               </div>
-              <div className="text-xs text-muted-foreground">Diamond Tier • 85.2% WinRate</div>
+              <div className="text-xs text-muted-foreground">Practice bot</div>
             </div>
           </div>
           <div className="text-right">
             <div className="text-[10px] text-muted-foreground uppercase font-semibold">Elo Rating</div>
             <div className="text-2xl font-black text-purple-700 dark:text-purple-400">
-              {currentMatch?.player2Elo || 1890}
+              {currentMatch?.player2Elo ?? "—"}
             </div>
           </div>
         </div>

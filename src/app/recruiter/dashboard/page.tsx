@@ -21,7 +21,7 @@ interface TranscriptEntry {
 interface AiHiringVerdict {
   decision: string;
   recommendationTier: string;
-  confidenceScore: number;
+  confidenceScore: number | null;
   hiringBarThreshold: number;
   executiveSummary: string;
   keyStrengths: string[];
@@ -807,7 +807,7 @@ export default function RecruiterDashboardPage() {
                               {isCompleted ? (
                                 <div>
                                   <span className="px-2 py-0.5 rounded-md text-[11px] font-extrabold border bg-muted/40 text-foreground border-border">
-                                    {bundle.compositeScore}%
+                                    {bundle.compositeScore == null ? "Needs scoring" : `${bundle.compositeScore}%`}
                                   </span>
                                   {bundle.certificateNumber && (
                                     <div className="font-mono text-[9px] text-muted-foreground mt-1 truncate max-w-[95px]" title={bundle.certificateNumber}>
@@ -1610,7 +1610,7 @@ export default function RecruiterDashboardPage() {
                   </span>
                   {selectedBundleForAudit.aiVerdict && (
                     <span className="text-xs text-muted-foreground">
-                      Integrity signals: {selectedBundleForAudit.aiVerdict.antiCheatVerdict === "VERIFIED_CLEAN" ? "none raised" : "some raised; discuss with the candidate"}
+                      Integrity signals: {selectedBundleForAudit.aiVerdict.antiCheatVerdict === "FLAGGED_SUSPICIOUS" ? "raised; review the transcript and discuss with the candidate" : "none raised"}
                     </span>
                   )}
                 </div>
@@ -1649,7 +1649,7 @@ export default function RecruiterDashboardPage() {
                 <div className="p-3.5 rounded-2xl bg-card border border-border">
                   <span className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider block">Composite Score</span>
                   <div className="text-xl font-black font-mono text-foreground mt-1">
-                    {selectedBundleForAudit.compositeScore ?? "--"}%
+                    {selectedBundleForAudit.compositeScore == null ? "Needs scoring" : `${selectedBundleForAudit.compositeScore}%`}
                   </div>
                   <span className="text-[10px] text-muted-foreground truncate block mt-0.5">Sealed &amp; Cryptographic</span>
                 </div>

@@ -1220,7 +1220,7 @@ function GradedWorkspace({ sprintId }: { sprintId: string }) {
             {showDefense && submissionId && (
               <VapiInterviewRoom
                 sprintSubmissionId={submissionId}
-                jobDescription="Build & Defend Sprint Review"
+                jobDescription="Coding challenge review"
                 onResult={handleDefenseResult}
               />
             )}

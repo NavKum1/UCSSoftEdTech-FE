@@ -14,7 +14,7 @@ function LinkedInIcon({ className = "w-4 h-4" }: { className?: string }) {
 
 // GET /api/credential/{slug} (CredentialController.CredentialBadgeDto)
 interface CredentialBadge {
-  candidateName: string;
+  candidateName: string | null;
   instituteName: string;
   finalScore: number;
   publicUrlSlug: string;
@@ -145,9 +145,9 @@ export default function CredentialBadgePage() {
         <div className="text-center space-y-3 py-4">
           <p className="text-xs text-muted-foreground uppercase tracking-widest font-semibold">This Certifies That</p>
           <h2 className="text-3xl font-extrabold text-white bg-gradient-to-r from-white via-indigo-200 to-slate-200 bg-clip-text text-transparent">
-            {candidateName}
+            {candidateName ?? "Name not shared"}
           </h2>
-          <p className="text-xs text-muted-foreground">has successfully completed the project challenge and demonstrated their skills in the voice assessment.</p>
+          <p className="text-xs text-muted-foreground">earned this credential with the result below, graded by Edulexa.</p>
 
           <div className="inline-block mt-2 px-4 py-2 bg-indigo-500/10 border border-indigo-500/30 rounded-xl text-indigo-600 dark:text-indigo-300 font-bold text-sm">
             {badgeTitle}
