@@ -1,601 +1,505 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import Link from "next/link";
-import { AccessNotice, useLegacyApi } from "@/lib/legacyApi";
+/**
+ * System design duels (phase E, 24 Oct 2026, owner decision 2). The member builds a topology for a practice scenario
+ * (components with replicas and regions, and the connections between them) against a clearly labelled practice bot. The
+ * server grades it against the scenario's rubric and explains every check; the result moves the member's Elo rating.
+ * The leaderboard shows real members' ratings; bots are listed separately with their fixed ratings.
+ * (This page used to pit everyone against an invented "principal architect" with fixed scores and invented players.)
+ */
 
-interface ArchitecturalPreset {
-  id: string;
-  presetCode: string;
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { AlertTriangle, Check, Plus, Swords, Trash2, Trophy, X } from "lucide-react";
+import { AccessNotice, useLatestRef, useLegacyApi } from "@/lib/legacyApi";
+
+interface Scenario {
+  code: string;
   title: string;
-  problemStatement: string;
-  targetMetrics: string;
-  duelDurationSeconds: number;
-  injectedChaosEvent: string;
-  requiredComponents: string[];
+  problem: string;
+  targets: string;
+  chaosEvent: string;
+  durationSeconds: number;
+  required: string[];
+  stateful: string[];
+  minReplicas: number;
+  multiRegion: boolean;
 }
-
-interface DuelMatch {
+interface Component {
+  type: string;
+  label: string;
+  group: string;
+  description: string;
+}
+interface Bot {
+  level: string;
+  name: string;
+  rating: number;
+  score: number;
+}
+interface Catalogue {
+  scenarios: Scenario[];
+  components: Component[];
+  bots: Bot[];
+  scoring: string;
+  note: string;
+}
+interface Match {
   id: string;
-  player1UserId: string;
-  player1Name: string;
-  player1Elo: number;
-  player2UserId: string;
-  player2Name: string;
-  player2Elo: number;
-  presetId: string;
-  preset?: ArchitecturalPreset;
+  scenario: Scenario;
+  bot: { name: string; rating: number };
   status: string;
   startedAt: string;
+  deadline: string;
+  ratingAtStart: number;
 }
-
-interface DuelSubmissionResult {
-  submissionId: string;
-  matchId: string;
-  throughputScore: number;
-  resilienceScore: number;
-  latencyScore: number;
-  costEfficiencyScore: number;
-  overallScore: number;
-  chaosConstraintHandled: boolean;
-  eloDelta: number;
-  newElo: number;
-  matchVerdict: string;
-  evaluationFeedback: string;
+interface CheckRow {
+  area: string;
+  passed: boolean;
+  text: string;
 }
-
-interface LeaderboardEntry {
+interface Result {
+  verdict: string;
+  late: boolean;
+  reason: string;
+  grade: { coverage: number; resilience: number; flow: number; economy: number; overall: number; checks: CheckRow[] };
+  bot: { name: string; rating: number; score: number };
+  rating: { before: number; delta: number; after: number; provisional: boolean };
+}
+interface Row {
   rank: number;
-  userId: string;
-  playerName: string;
-  currentElo: number;
-  leagueTier: string;
-  totalMatches: number;
-  totalWins: number;
-  totalLosses: number;
-  currentWinStreak: number;
-  winRate: number;
-}
-
-interface TopologyNode {
-  id: string;
   name: string;
+  rating: number;
+  provisional: boolean;
+  duels: number;
+  wins: number;
+  draws: number;
+  losses: number;
+  isYou: boolean;
+}
+interface Board {
+  entries: Row[];
+  you: Row | null;
+  youAreVisible: boolean;
+  players: number;
+  bots: { name: string; rating: number; score: number }[];
+  note: string;
+}
+interface Node {
+  id: string;
   type: string;
-  tier: string;
+  replicas: number;
+  regions: string[];
+}
+interface Edge {
+  from: string;
+  to: string;
 }
 
-export default function SpeedArchitectArenaPage() {
+const REGIONS = ["region-a", "region-b", "region-c"];
+const AREA: Record<string, string> = { components: "Components", resilience: "Handling the chaos event", flow: "Flows", economy: "Economy" };
+const card = "rounded-2xl border border-border bg-card shadow-[0_1px_2px_rgb(16_24_40/0.04)]";
+const button = "inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-500 disabled:opacity-60";
+const ghost = "inline-flex items-center gap-1 rounded-lg border border-border px-2 py-1 text-xs font-medium hover:bg-muted disabled:opacity-60";
+const input = "rounded-lg border border-border bg-background px-2 py-1 text-sm";
+
+export default function DuelArenaPage() {
   const { apiFetch, ready, access } = useLegacyApi();
-  const [presets, setPresets] = useState<ArchitecturalPreset[]>([]);
-  const [selectedPreset, setSelectedPreset] = useState<ArchitecturalPreset | null>(null);
-  const [currentMatch, setCurrentMatch] = useState<DuelMatch | null>(null);
-  const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
-  const [placedNodes, setPlacedNodes] = useState<TopologyNode[]>([]);
-  const [chaosHandled, setChaosHandled] = useState<boolean>(true);
-  const [secondsRemaining, setSecondsRemaining] = useState<number>(294);
-  const [isMatching, setIsMatching] = useState<boolean>(false);
-  const [isDeploying, setIsDeploying] = useState<boolean>(false);
-  const [duelResult, setDuelResult] = useState<DuelSubmissionResult | null>(null);
-  const [showLeaderboard, setShowLeaderboard] = useState<boolean>(false);
-  const [notification, setNotification] = useState<string | null>(null);
+  const [catalogue, setCatalogue] = useState<Catalogue | null>(null);
+  const [board, setBoard] = useState<Board | null>(null);
+  const [failed, setFailed] = useState(false);
+  const [scenario, setScenario] = useState("");
+  const [bot, setBot] = useState("mid");
+  const [match, setMatch] = useState<Match | null>(null);
+  const [nodes, setNodes] = useState<Node[]>([]);
+  const [edges, setEdges] = useState<Edge[]>([]);
+  const [from, setFrom] = useState("");
+  const [to, setTo] = useState("");
+  const [result, setResult] = useState<Result | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [now, setNow] = useState(() => Date.now());
+  const seq = useRef(0);
 
-  const defaultUserId = "6d940ce2-2fc7-4525-9aff-af62f1956550";
+  const load = useCallback(async () => {
+    try {
+      const [c, b] = await Promise.all([apiFetch("/api/duels/presets"), apiFetch("/api/duels/leaderboard")]);
+      if (!c.ok) return setFailed(true);
+      const cat = (await c.json()) as Catalogue;
+      setCatalogue(cat);
+      setScenario((s) => s || cat.scenarios[0]?.code || "");
+      if (b.ok) setBoard((await b.json()) as Board);
+    } catch {
+      setFailed(true);
+    }
+  }, [apiFetch]);
+  const loadRef = useLatestRef(load);
+  useEffect(() => {
+    if (ready) void loadRef.current();
+  }, [ready, loadRef]);
 
   useEffect(() => {
-    if (!ready) return;
-    initializeArena();
-  }, [ready]);
+    if (!match || result) return;
+    const t = window.setInterval(() => setNow(Date.now()), 1000);
+    return () => window.clearInterval(t);
+  }, [match, result]);
 
-  // Timer countdown simulation
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setSecondsRemaining((prev) => (prev > 0 ? prev - 1 : 0));
-    }, 1000);
-    return () => clearInterval(timer);
-  }, []);
+  const label = useMemo(() => Object.fromEntries((catalogue?.components ?? []).map((c) => [c.type, c.label])), [catalogue]);
+  const groups = useMemo(() => {
+    const g: Record<string, Component[]> = {};
+    for (const c of catalogue?.components ?? []) (g[c.group] ??= []).push(c);
+    return g;
+  }, [catalogue]);
 
-  async function initializeArena() {
+  const start = async () => {
+    setBusy(true);
+    setError(null);
+    setResult(null);
     try {
-      await apiFetch(`/api/duels/seed`, { method: "POST" });
-      const [presetsRes, lbRes] = await Promise.all([
-        apiFetch(`/api/duels/presets`),
-        apiFetch(`/api/duels/leaderboard`)
-      ]);
-
-      if (presetsRes.ok) {
-        const presetsData: ArchitecturalPreset[] = await presetsRes.json();
-        setPresets(presetsData);
-        if (presetsData.length > 0) {
-          setSelectedPreset(presetsData[0]);
-          setDefaultNodes(presetsData[0]);
-          // Initialize active match on load
-          startMatchmake(presetsData[0].presetCode);
-        }
-      }
-
-      if (lbRes.ok) {
-        const lbData: LeaderboardEntry[] = await lbRes.json();
-        setLeaderboard(lbData);
-      }
-    } catch (err) {
-      console.error("Arena initialization failed", err);
-    }
-  }
-
-  function setDefaultNodes(preset: ArchitecturalPreset) {
-    const defaultNodes: TopologyNode[] = [
-      { id: "node-1", name: "Global Anycast Gateway", type: "API_Gateway", tier: "Ingress" },
-      { id: "node-2", name: "Multi-Region Redis Shards", type: "Distributed_Cache_Redis", tier: "Memory" },
-      { id: "node-3", name: "Transactional WAL Buffer", type: "Transactional_Outbox_WAL", tier: "Streaming" },
-      { id: "node-4", name: "Raft Quorum (3/5 Nodes)", type: "Raft_Consensus_Cluster", tier: "Consensus" },
-      { id: "node-5", name: "Spanner Active-Active DB", type: "Distributed_SQL_Spanner", tier: "Storage" }
-    ];
-    setPlacedNodes(defaultNodes);
-  }
-
-  async function startMatchmake(presetCode?: string) {
-    setIsMatching(true);
-    setDuelResult(null);
-    setNotification(null);
-    try {
-      const payload = {
-        userId: defaultUserId,
-        playerName: "Alex Chen",
-        preferredPresetCode: presetCode || selectedPreset?.presetCode,
-        matchWithAiOpponent: true
-      };
-      const res = await apiFetch(`/api/duels/matchmake`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
-      });
-      if (res.ok) {
-        const matchData: DuelMatch = await res.json();
-        setCurrentMatch(matchData);
-        setSecondsRemaining(300);
-        setNotification(`Matched against ${matchData.player2Name} (${matchData.player2Elo} Elo)! 5-minute timer started.`);
-      }
-    } catch (err) {
-      console.error("Matchmaking error", err);
+      const res = await apiFetch("/api/duels/matchmake", { method: "POST", body: JSON.stringify({ scenarioCode: scenario, bot }) });
+      const body = await res.json();
+      if (!res.ok) throw new Error(body?.error);
+      setMatch(body as Match);
+      setNodes([]);
+      setEdges([]);
+      setNow(Date.now());
+    } catch (e) {
+      setError(e instanceof Error && e.message ? e.message : "We couldn't start the duel.");
     } finally {
-      setIsMatching(false);
+      setBusy(false);
     }
-  }
+  };
 
-  async function handleDeployTopology() {
-    if (!currentMatch) {
-      await startMatchmake();
-      return;
-    }
-
-    setIsDeploying(true);
-    setNotification(null);
+  const submit = async () => {
+    if (!match) return;
+    setBusy(true);
+    setError(null);
     try {
-      const payload = {
-        matchId: currentMatch.id,
-        userId: defaultUserId,
-        topologyGraph_JSON: JSON.stringify({ nodes: placedNodes }),
-        addressedChaosConstraint: chaosHandled
-      };
-      const res = await apiFetch(`/api/duels/submit`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
-      });
-      if (res.ok) {
-        const result: DuelSubmissionResult = await res.json();
-        setDuelResult(result);
-        
-        // Refresh leaderboard
-        const lbRes = await apiFetch(`/api/duels/leaderboard`);
-        if (lbRes.ok) {
-          setLeaderboard(await lbRes.json());
-        }
-      }
-    } catch (err) {
-      console.error("Deployment evaluation failed", err);
+      const res = await apiFetch("/api/duels/submit", { method: "POST", body: JSON.stringify({ matchId: match.id, topology: { nodes, edges } }) });
+      const body = await res.json();
+      if (!res.ok) throw new Error(body?.error);
+      setResult(body as Result);
+      const b = await apiFetch("/api/duels/leaderboard");
+      if (b.ok) setBoard((await b.json()) as Board);
+    } catch (e) {
+      setError(e instanceof Error && e.message ? e.message : "We couldn't submit your design.");
     } finally {
-      setIsDeploying(false);
+      setBusy(false);
     }
-  }
+  };
 
-  function addNodeToCanvas(componentType: string) {
-    const newNode: TopologyNode = {
-      id: `node-${Date.now()}`,
-      name: componentType.replace(/_/g, " "),
-      type: componentType,
-      tier: "Active Service"
-    };
-    setPlacedNodes([...placedNodes, newNode]);
-  }
+  const addNode = (type: string) => {
+    seq.current += 1;
+    setNodes([...nodes, { id: `${type}-${seq.current}`, type, replicas: 1, regions: ["region-a"] }]);
+  };
+  const nodeName = (id: string) => {
+    const n = nodes.find((x) => x.id === id);
+    if (!n) return id;
+    const same = nodes.filter((x) => x.type === n.type);
+    return same.length > 1 ? `${label[n.type]} ${same.indexOf(n) + 1}` : label[n.type];
+  };
 
-  function removeNode(id: string) {
-    setPlacedNodes(placedNodes.filter((n) => n.id !== id));
-  }
+  if (access) return <AccessNotice problem={access} feature="System design duels" />;
+  if (failed)
+    return (
+      <main className="mx-auto max-w-md px-4 py-24 text-center">
+        <AlertTriangle aria-hidden="true" className="mx-auto h-8 w-8 text-amber-600" />
+        <h1 className="mt-3 text-xl font-semibold">We couldn&apos;t load duels</h1>
+        <p className="mt-2 text-sm text-muted-foreground">Please refresh the page to try again.</p>
+      </main>
+    );
+  if (!catalogue)
+    return (
+      <main className="mx-auto max-w-6xl px-4 py-10" aria-busy="true" aria-label="Loading duels">
+        <div className={`${card} h-40 animate-pulse motion-reduce:animate-none`} />
+      </main>
+    );
 
-  function formatTime(secs: number) {
-    const m = Math.floor(secs / 60);
-    const s = secs % 60;
-    return `${m}:${s < 10 ? "0" : ""}${s}`;
-  }
-
-  const availableComponents = [
-    { type: "API_Gateway", label: "Anycast Edge Gateway", color: "border-cyan-500/40 bg-cyan-500/10 text-cyan-800 dark:text-cyan-300" },
-    { type: "Distributed_Cache_Redis", label: "Redis Cluster", color: "border-purple-500/40 bg-purple-500/10 text-purple-800 dark:text-purple-300" },
-    { type: "Transactional_Outbox_WAL", label: "Transactional WAL Outbox", color: "border-amber-500/40 bg-amber-500/10 text-amber-800 dark:text-amber-300" },
-    { type: "Raft_Consensus_Cluster", label: "Raft Consensus Quorum", color: "border-emerald-500/40 bg-emerald-500/10 text-emerald-800 dark:text-emerald-300" },
-    { type: "Distributed_SQL_Spanner", label: "Spanner Distributed SQL", color: "border-indigo-500/40 bg-indigo-500/10 text-indigo-800 dark:text-indigo-300" },
-    { type: "Kafka_Event_Backplane", label: "Kafka Event Stream", color: "border-rose-500/40 bg-rose-500/10 text-rose-800 dark:text-rose-300" }
-  ];
-
-  if (access) return <AccessNotice problem={access} feature="The system design duel arena" />;
+  const remaining = match ? Math.max(0, Math.floor((new Date(match.deadline).getTime() - now) / 1000)) : 0;
+  const sc = match?.scenario ?? catalogue.scenarios.find((s) => s.code === scenario);
 
   return (
-    <div className="min-h-screen bg-background text-foreground p-4 md:p-8 font-sans">
-      {/* Top Breadcrumb & Actions */}
-      <div className="max-w-7xl mx-auto mb-6 flex flex-wrap items-center justify-between gap-4">
-        <div className="flex items-center space-x-2 text-sm text-muted-foreground">
-          <Link href="/" className="hover:text-indigo-600 dark:text-indigo-400 transition-colors">
-            Home
-          </Link>
-          <span>/</span>
-          <Link href="/passport" className="hover:text-indigo-600 dark:text-indigo-400 transition-colors">
-            Career OS
-          </Link>
-          <span>/</span>
-          <span className="text-foreground font-medium">1v1 Speed-Architecting Flash-Wars</span>
-        </div>
-        <div className="flex items-center space-x-3">
-          <button
-            onClick={() => setShowLeaderboard(!showLeaderboard)}
-            className="px-3.5 py-1.5 rounded-lg bg-card border border-border text-xs font-semibold text-foreground hover:bg-muted transition-all flex items-center space-x-1.5"
-          >
-            <span>🏆 Global Elo Leaderboard</span>
-          </button>
-          <span className="px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-xs font-semibold text-emerald-700 dark:text-emerald-400 flex items-center space-x-1.5">
-            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-            <span>FIDE Elo Matchmaking Online</span>
-          </span>
-        </div>
-      </div>
+    <main className="mx-auto max-w-6xl space-y-6 px-4 pb-16 pt-8 sm:px-6">
+      <header>
+        <h1 className="text-2xl font-semibold tracking-tight">System design duels</h1>
+        <p className="mt-1 max-w-3xl text-sm text-muted-foreground">
+          Build a design for a practice scenario before the time runs out, then see how it scores against a practice bot. {catalogue.note}
+        </p>
+      </header>
 
-      {/* Duel Arena Header Banner */}
-      <div className="max-w-7xl mx-auto mb-6 bg-card/90 backdrop-blur-xl border border-border shadow-lg p-6 md:p-8 rounded-2xl relative overflow-hidden dark:bg-gradient-to-r dark:from-slate-900 dark:via-indigo-950/30 dark:to-purple-950/40">
-        <div className="absolute top-0 right-0 w-96 h-96 bg-indigo-500/5 rounded-full blur-3xl pointer-events-none" />
-        <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
-          <div>
-            <div className="flex items-center space-x-2 mb-2">
-              <span className="px-2.5 py-0.5 rounded-full bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 border border-indigo-500/30 text-xs font-bold uppercase tracking-wider">
-                Phase 37 • Live Multiplayer
-              </span>
-              <span className="px-2.5 py-0.5 rounded-full bg-purple-500/10 text-purple-700 dark:text-purple-300 border border-purple-500/30 text-xs font-bold uppercase tracking-wider">
-                5-Minute Flash-War
-              </span>
+      {error && <p className="text-sm text-red-700 dark:text-red-400">{error}</p>}
+
+      {!match || result ? (
+        <section className={`${card} space-y-4 p-5`} aria-labelledby="duel-start">
+          <h2 id="duel-start" className="flex items-center gap-2 text-base font-semibold">
+            <Swords aria-hidden="true" className="h-4 w-4 text-indigo-600" /> Start a duel
+          </h2>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <label className="block text-sm">
+              <span className="font-medium">Scenario</span>
+              <select className={`${input} mt-1 w-full py-2`} value={scenario} onChange={(e) => setScenario(e.target.value)}>
+                {catalogue.scenarios.map((s) => (
+                  <option key={s.code} value={s.code}>
+                    {s.title}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className="block text-sm">
+              <span className="font-medium">Opponent</span>
+              <select className={`${input} mt-1 w-full py-2`} value={bot} onChange={(e) => setBot(e.target.value)}>
+                {catalogue.bots.map((b) => (
+                  <option key={b.level} value={b.level}>
+                    {b.name}: rating {b.rating}, scores {b.score}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
+          {sc && (
+            <div className="text-sm">
+              <p>{sc.problem}</p>
+              <p className="mt-1 text-muted-foreground">Goals: {sc.targets}</p>
             </div>
-            <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight text-foreground mb-2">
-              1v1 System Design Speed-Architecting Flash-Wars
-            </h1>
-            <p className="text-muted-foreground text-sm md:text-base max-w-2xl leading-relaxed">
-              Go head-to-head in real time against peers or calibrated AI Principal Architects. Draw distributed topologies under dynamic chaos constraints (e.g. 10M QPS with regional datacenter blackout).
-            </p>
+          )}
+          <p className="text-xs text-muted-foreground">{catalogue.scoring}</p>
+          <button className={button} disabled={busy || !scenario} onClick={() => void start()}>
+            Start ({Math.round((sc?.durationSeconds ?? 300) / 60)} minutes)
+          </button>
+        </section>
+      ) : null}
+
+      {match && !result && (
+        <section className={`${card} space-y-5 p-5`} aria-labelledby="duel-build">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <h2 id="duel-build" className="text-base font-semibold">
+              {match.scenario.title} <span className="text-sm font-normal text-muted-foreground">vs {match.bot.name}</span>
+            </h2>
+            <span role="timer" aria-live="off" className={`tabular-nums text-sm font-semibold ${remaining < 60 ? "text-red-700 dark:text-red-400" : ""}`}>
+              {Math.floor(remaining / 60)}:{String(remaining % 60).padStart(2, "0")} left
+            </span>
+          </div>
+          <div className="space-y-1 text-sm">
+            <p>{match.scenario.problem}</p>
+            <p className="font-medium text-amber-800 dark:text-amber-300">Chaos event: {match.scenario.chaosEvent}</p>
+            <p className="text-muted-foreground">It needs at least: {match.scenario.required.map((t) => label[t] ?? t).join(", ")}.</p>
           </div>
 
-          {/* Countdown Clock HUD */}
-          <div className="flex items-center space-x-4 bg-background/90 border border-border p-4 rounded-2xl shadow-sm">
-            <div className="text-center px-4 border-r border-border">
-              <div className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider">Duel Time</div>
-              <div className={`text-3xl font-black font-mono tracking-tight ${secondsRemaining < 60 ? "text-rose-500 animate-pulse" : "text-amber-600 dark:text-amber-400"}`}>
-                {formatTime(secondsRemaining)}
+          <div className="grid gap-5 lg:grid-cols-3">
+            <div>
+              <h3 className="text-sm font-semibold">Components</h3>
+              <div className="mt-2 space-y-3">
+                {Object.entries(groups).map(([g, list]) => (
+                  <div key={g}>
+                    <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{g}</p>
+                    <ul className="mt-1 space-y-1">
+                      {list.map((c) => (
+                        <li key={c.type}>
+                          <button className={`${ghost} w-full justify-between`} onClick={() => addNode(c.type)} title={c.description}>
+                            {c.label} <Plus aria-hidden="true" className="h-3 w-3" />
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ))}
               </div>
             </div>
-            <div className="text-center px-2">
-              <button
-                onClick={() => startMatchmake()}
-                disabled={isMatching}
-                className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 disabled:opacity-50 text-slate-950 font-black text-sm transition-all shadow-md flex items-center space-x-2 cursor-pointer"
-              >
-                {isMatching ? "Finding Opponent..." : "New 1v1 Match"}
-              </button>
+
+            <div>
+              <h3 className="text-sm font-semibold">Your design ({nodes.length})</h3>
+              {nodes.length === 0 ? (
+                <p className="mt-2 text-sm text-muted-foreground">Add components from the list.</p>
+              ) : (
+                <ul className="mt-2 space-y-2">
+                  {nodes.map((n) => (
+                    <li key={n.id} className="rounded-lg border border-border p-2 text-sm">
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="font-medium">{nodeName(n.id)}</span>
+                        <button
+                          className={ghost}
+                          aria-label={`Remove ${nodeName(n.id)}`}
+                          onClick={() => {
+                            setNodes(nodes.filter((x) => x.id !== n.id));
+                            setEdges(edges.filter((e) => e.from !== n.id && e.to !== n.id));
+                          }}
+                        >
+                          <Trash2 aria-hidden="true" className="h-3 w-3" />
+                        </button>
+                      </div>
+                      <div className="mt-1 flex flex-wrap items-center gap-2 text-xs">
+                        <label className="flex items-center gap-1">
+                          Replicas
+                          <input
+                            className={`${input} w-14`}
+                            type="number"
+                            min={1}
+                            max={20}
+                            value={n.replicas}
+                            onChange={(e) => setNodes(nodes.map((x) => (x.id === n.id ? { ...x, replicas: Math.max(1, Math.min(20, Number(e.target.value) || 1)) } : x)))}
+                          />
+                        </label>
+                        {REGIONS.map((r) => (
+                          <label key={r} className="flex items-center gap-1">
+                            <input
+                              type="checkbox"
+                              checked={n.regions.includes(r)}
+                              onChange={(e) =>
+                                setNodes(nodes.map((x) => (x.id === n.id ? { ...x, regions: e.target.checked ? [...x.regions, r] : x.regions.filter((y) => y !== r) } : x)))
+                              }
+                            />
+                            {r}
+                          </label>
+                        ))}
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+
+            <div>
+              <h3 className="text-sm font-semibold">Connections ({edges.length})</h3>
+              <div className="mt-2 flex flex-wrap items-center gap-2 text-sm">
+                <select className={input} value={from} onChange={(e) => setFrom(e.target.value)} aria-label="From">
+                  <option value="">From…</option>
+                  {nodes.map((n) => (
+                    <option key={n.id} value={n.id}>
+                      {nodeName(n.id)}
+                    </option>
+                  ))}
+                </select>
+                <span aria-hidden="true">→</span>
+                <select className={input} value={to} onChange={(e) => setTo(e.target.value)} aria-label="To">
+                  <option value="">To…</option>
+                  {nodes.map((n) => (
+                    <option key={n.id} value={n.id}>
+                      {nodeName(n.id)}
+                    </option>
+                  ))}
+                </select>
+                <button
+                  className={ghost}
+                  disabled={!from || !to || from === to || edges.some((e) => e.from === from && e.to === to)}
+                  onClick={() => setEdges([...edges, { from, to }])}
+                >
+                  <Plus aria-hidden="true" className="h-3 w-3" /> Connect
+                </button>
+              </div>
+              <ul className="mt-2 space-y-1 text-sm">
+                {edges.map((e, i) => (
+                  <li key={`${e.from}-${e.to}`} className="flex items-center justify-between gap-2">
+                    <span>
+                      {nodeName(e.from)} → {nodeName(e.to)}
+                    </span>
+                    <button className={ghost} aria-label="Remove connection" onClick={() => setEdges(edges.filter((_, j) => j !== i))}>
+                      <X aria-hidden="true" className="h-3 w-3" />
+                    </button>
+                  </li>
+                ))}
+              </ul>
             </div>
           </div>
-        </div>
-      </div>
-
-      {/* Dynamic Chaos Alert Warning Bar */}
-      <div className="max-w-7xl mx-auto mb-6 p-4 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-900 dark:text-rose-200 text-xs md:text-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-sm">
-        <div className="flex items-center space-x-3">
-          <span className="w-2.5 h-2.5 rounded-full bg-rose-500 animate-ping" />
-          <span className="font-bold text-rose-800 dark:text-rose-300">
-            ⚠️ INJECTED CHAOS EVENT:
-          </span>
-          <span className="text-rose-900 dark:text-rose-200">{selectedPreset?.injectedChaosEvent || "Minute 3: US-East-1 datacenter goes dark + 10M QPS cache stampede injected into US-West-2."}</span>
-        </div>
-        <div className="flex items-center space-x-2 shrink-0">
-          <label className="text-xs font-semibold flex items-center space-x-2 cursor-pointer">
-            <input
-              type="checkbox"
-              checked={chaosHandled}
-              onChange={(e) => setChaosHandled(e.target.checked)}
-              className="rounded bg-card border-border text-amber-500 focus:ring-0"
-            />
-            <span className="text-rose-800 dark:text-rose-300 font-bold">Chaos Auto-Failover Route Engaged</span>
-          </label>
-        </div>
-      </div>
-
-      {/* Notification Toast */}
-      {notification && (
-        <div className="max-w-7xl mx-auto mb-6 p-4 rounded-xl bg-cyan-950/50 border border-cyan-800 text-cyan-600 dark:text-cyan-300 text-sm flex items-center justify-between">
-          <span>{notification}</span>
-          <button onClick={() => setNotification(null)} className="text-cyan-700 dark:text-cyan-400 hover:text-foreground font-bold ml-4">
-            ✕
+          <button className={button} disabled={busy || nodes.length === 0} onClick={() => void submit()}>
+            Submit design
           </button>
-        </div>
+        </section>
       )}
 
-      {/* 1v1 Matchup Duel Cards */}
-      <div className="max-w-7xl mx-auto mb-6 grid grid-cols-1 md:grid-cols-11 items-center gap-4">
-        {/* Player 1 Card */}
-        <div className="md:col-span-5 bg-card border border-cyan-500/40 p-4 rounded-2xl shadow-xl flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <div className="w-12 h-12 rounded-xl bg-cyan-500/20 border border-cyan-500/40 flex items-center justify-center font-bold text-cyan-700 dark:text-cyan-400 text-lg">
-              AC
-            </div>
-            <div>
-              <div className="text-xs font-semibold text-cyan-700 dark:text-cyan-400 uppercase">You (Player 1)</div>
-              <div className="text-base font-bold text-foreground">{currentMatch?.player1Name || "You"}</div>
-            </div>
-          </div>
-          <div className="text-right">
-            <div className="text-[10px] text-muted-foreground uppercase font-semibold">Elo Rating</div>
-            <div className="text-2xl font-black text-cyan-700 dark:text-cyan-400">
-              {duelResult ? duelResult.newElo : (currentMatch?.player1Elo ?? "—")}
-            </div>
-          </div>
-        </div>
-
-        {/* VS Divider */}
-        <div className="md:col-span-1 text-center py-2">
-          <span className="px-3 py-1 rounded-full bg-muted text-amber-700 dark:text-amber-400 font-black text-xs border border-amber-500/30">
-            VS
-          </span>
-        </div>
-
-        {/* Player 2 Card */}
-        <div className="md:col-span-5 bg-card border border-purple-500/40 p-4 rounded-2xl shadow-xl flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <div className="w-12 h-12 rounded-xl bg-purple-500/20 border border-purple-500/40 flex items-center justify-center font-bold text-purple-700 dark:text-purple-400 text-lg">
-              ER
-            </div>
-            <div>
-              <div className="text-xs font-semibold text-purple-700 dark:text-purple-400 uppercase">Opponent</div>
-              <div className="text-base font-bold text-foreground">
-                {currentMatch?.player2Name || "Practice opponent (AI)"}
+      {result && (
+        <section className={`${card} space-y-4 p-5`} aria-labelledby="duel-result" aria-live="polite">
+          <h2 id="duel-result" className="flex items-center gap-2 text-base font-semibold">
+            <Trophy aria-hidden="true" className="h-4 w-4 text-indigo-600" /> {result.verdict}
+          </h2>
+          <p className="text-sm">{result.reason}</p>
+          <dl className="grid grid-cols-2 gap-3 text-center sm:grid-cols-5">
+            {[
+              ["Overall", result.grade.overall],
+              ["Components", result.grade.coverage],
+              ["Chaos event", result.grade.resilience],
+              ["Flows", result.grade.flow],
+              ["Economy", result.grade.economy],
+            ].map(([k, v]) => (
+              <div key={k as string} className="rounded-xl bg-muted/60 p-3">
+                <dt className="text-xs text-muted-foreground">{k}</dt>
+                <dd className="mt-1 font-semibold tabular-nums">{Math.round(v as number)}</dd>
               </div>
-              <div className="text-xs text-muted-foreground">Practice bot</div>
-            </div>
-          </div>
-          <div className="text-right">
-            <div className="text-[10px] text-muted-foreground uppercase font-semibold">Elo Rating</div>
-            <div className="text-2xl font-black text-purple-700 dark:text-purple-400">
-              {currentMatch?.player2Elo ?? "—"}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Main Duel Studio Grid: Left Canvas & Toolbox (8 Cols) vs Right Inspector & Scenarios (4 Cols) */}
-      <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8">
-        {/* Left: 8 Cols - Topology Canvas */}
-        <div className="lg:col-span-8 space-y-6">
-          {/* Component Palette */}
-          <div className="bg-card border border-border rounded-2xl p-4 shadow-xl">
-            <div className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-3">
-              Add Component to Active Topology
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {availableComponents.map((comp) => (
-                <button
-                  key={comp.type}
-                  onClick={() => addNodeToCanvas(comp.type)}
-                  className={`px-3 py-1.5 rounded-lg border text-xs font-bold transition-all hover:scale-105 active:scale-95 ${comp.color}`}
-                >
-                  + {comp.label}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Interactive Topology Graph Canvas */}
-          <div className="bg-card border border-border rounded-2xl p-6 shadow-xl relative min-h-[420px] flex flex-col justify-between">
-            <div>
-              <div className="flex items-center justify-between mb-4">
-                <div>
-                  <h2 className="text-lg font-bold text-foreground">Distributed Topology Canvas</h2>
-                  <p className="text-xs text-muted-foreground">
-                    Arranged pipeline flow with failover routing & state replication
-                  </p>
-                </div>
-                <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-muted text-cyan-600 dark:text-cyan-300 border border-border">
-                  {placedNodes.length} Active Nodes
-                </span>
+            ))}
+          </dl>
+          <p className="text-sm">
+            Rating: {result.rating.before} → <span className="font-semibold">{result.rating.after}</span> ({result.rating.delta >= 0 ? "+" : ""}
+            {result.rating.delta}){result.rating.provisional ? ", provisional" : ""}
+          </p>
+          {Object.entries(AREA).map(([area, title]) => {
+            const rows = result.grade.checks.filter((c) => c.area === area);
+            if (rows.length === 0) return null;
+            return (
+              <div key={area}>
+                <h3 className="text-sm font-semibold">{title}</h3>
+                <ul className="mt-1 space-y-1 text-sm">
+                  {rows.map((c) => (
+                    <li key={c.text} className="flex items-start gap-2">
+                      {c.passed ? (
+                        <Check aria-label="Passed" className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" />
+                      ) : (
+                        <X aria-label="Not met" className="mt-0.5 h-4 w-4 shrink-0 text-red-600" />
+                      )}
+                      {c.text}
+                    </li>
+                  ))}
+                </ul>
               </div>
+            );
+          })}
+        </section>
+      )}
 
-              {/* Topology Flow Items */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-                {placedNodes.map((node, idx) => (
-                  <div
-                    key={node.id}
-                    className="p-3 rounded-xl bg-background border border-border hover:border-cyan-500/50 transition-all relative group"
-                  >
-                    <button
-                      onClick={() => removeNode(node.id)}
-                      className="absolute top-2 right-2 text-muted-foreground hover:text-rose-400 text-xs opacity-0 group-hover:opacity-100 transition-opacity"
-                    >
-                      ✕
-                    </button>
-                    <div className="flex items-center space-x-2 mb-1">
-                      <span className="w-2 h-2 rounded-full bg-cyan-400" />
-                      <span className="text-[10px] text-cyan-700 dark:text-cyan-400 font-semibold uppercase">{node.tier}</span>
-                    </div>
-                    <div className="text-sm font-bold text-foreground truncate">{node.name}</div>
-                    <div className="text-[10px] text-muted-foreground mt-1 font-mono">{node.type}</div>
-                    <div className="mt-2 text-[10px] text-emerald-700 dark:text-emerald-400 flex items-center space-x-1">
-                      <span>✓ Connected (Failover Ready)</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Bottom Deployment Control Bar */}
-            <div className="mt-6 pt-4 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-4">
-              <div className="text-xs text-muted-foreground">
-                <span>Active Objective: </span>
-                <span className="text-foreground font-semibold">
-                  {selectedPreset?.targetMetrics || "P99 < 15ms, Zero Transaction Loss"}
-                </span>
-              </div>
-              <button
-                onClick={handleDeployTopology}
-                disabled={isDeploying}
-                className="w-full sm:w-auto px-6 py-3 rounded-xl bg-gradient-to-r from-amber-500 to-cyan-500 hover:from-amber-400 hover:to-cyan-400 text-slate-950 font-black text-sm shadow-xl shadow-amber-500/20 transition-all flex items-center justify-center space-x-2"
-              >
-                {isDeploying ? (
-                  <>
-                    <svg className="w-4 h-4 animate-spin text-slate-950" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
-                    </svg>
-                    <span>Evaluating Topology under Chaos...</span>
-                  </>
-                ) : (
-                  <>
-                    <span>⚔️ Deploy Topology to Battle</span>
-                  </>
-                )}
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* Right: 4 Cols - Preset Objectives & Match Results */}
-        <div className="lg:col-span-4 space-y-6">
-          {/* Preset Selector */}
-          <div className="bg-card border border-border rounded-2xl p-6 shadow-xl space-y-4">
-            <h3 className="text-sm font-bold text-muted-foreground uppercase tracking-wider">
-              Duel Arena Scenarios
-            </h3>
-            <div className="space-y-2">
-              {presets.map((p) => (
-                <div
-                  key={p.id}
-                  onClick={() => {
-                    setSelectedPreset(p);
-                    setDefaultNodes(p);
-                  }}
-                  className={`p-3 rounded-xl border cursor-pointer transition-all ${
-                    selectedPreset?.id === p.id
-                      ? "bg-muted/90 border-amber-500 shadow-md shadow-amber-500/10"
-                      : "bg-background/60 border-border hover:border-border"
-                  }`}
-                >
-                  <div className="font-bold text-foreground text-xs">{p.title}</div>
-                  <div className="text-[11px] text-muted-foreground mt-1 line-clamp-2">
-                    {p.problemStatement}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Duel Result Modal / Card */}
-          {duelResult && (
-            <div className="bg-card border border-border rounded-2xl p-6 shadow-2xl space-y-4">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Match Outcome</span>
-                <span
-                  className={`px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider ${
-                    duelResult.matchVerdict === "VICTORY"
-                      ? "bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 border border-emerald-500/30"
-                      : "bg-rose-500/20 text-rose-400 border border-rose-500/30"
-                  }`}
-                >
-                  {duelResult.matchVerdict}
-                </span>
-              </div>
-
-              {/* Elo Delta Pill */}
-              <div className="p-3 rounded-xl bg-background border border-border flex items-center justify-between">
-                <div>
-                  <div className="text-[10px] text-muted-foreground font-semibold uppercase">Elo Rating Shift</div>
-                  <div className="text-xl font-black text-amber-700 dark:text-amber-400">
-                    {duelResult.newElo}
-                  </div>
-                </div>
-                <span className="px-2.5 py-1 rounded-lg bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 font-bold text-xs">
-                  +{duelResult.eloDelta} Elo
-                </span>
-              </div>
-
-              {/* Metrics */}
-              <div className="grid grid-cols-2 gap-2 text-xs">
-                <div className="p-2 rounded-lg bg-background border border-border">
-                  <div className="text-[10px] text-muted-foreground uppercase">Throughput</div>
-                  <div className="font-bold text-cyan-700 dark:text-cyan-400">{duelResult.throughputScore}%</div>
-                </div>
-                <div className="p-2 rounded-lg bg-background border border-border">
-                  <div className="text-[10px] text-muted-foreground uppercase">Resilience</div>
-                  <div className="font-bold text-emerald-700 dark:text-emerald-400">{duelResult.resilienceScore}%</div>
-                </div>
-                <div className="p-2 rounded-lg bg-background border border-border">
-                  <div className="text-[10px] text-muted-foreground uppercase">Latency</div>
-                  <div className="font-bold text-purple-700 dark:text-purple-400">{duelResult.latencyScore}%</div>
-                </div>
-                <div className="p-2 rounded-lg bg-background border border-border">
-                  <div className="text-[10px] text-muted-foreground uppercase">Overall Score</div>
-                  <div className="font-bold text-amber-700 dark:text-amber-400">{duelResult.overallScore}%</div>
-                </div>
-              </div>
-
-              {/* Feedback Quote */}
-              <div className="p-3 rounded-xl bg-background border border-border text-xs text-muted-foreground italic">
-                &quot;{duelResult.evaluationFeedback}&quot;
-              </div>
-            </div>
+      {board && (
+        <section className={`${card} overflow-x-auto p-5`} aria-labelledby="duel-board">
+          <h2 id="duel-board" className="text-base font-semibold">
+            Ratings
+          </h2>
+          <p className="mt-1 text-sm text-muted-foreground">{board.note}</p>
+          {board.you && (
+            <p className="mt-2 text-sm">
+              You: rank {board.you.rank} of {board.players}, rating {board.you.rating}
+              {board.you.provisional ? " (provisional)" : ""}
+              {!board.youAreVisible && ". You're hidden from the public list (leaderboard privacy setting)"}.
+            </p>
           )}
-
-          {/* Global Leaderboard Standings Drawer */}
-          {showLeaderboard && (
-            <div className="bg-card border border-border rounded-2xl p-6 shadow-xl space-y-3">
-              <h3 className="text-sm font-bold text-foreground flex items-center justify-between">
-                <span>Top Speed Architects</span>
-                <span className="text-xs text-muted-foreground">Season 2026</span>
-              </h3>
-              <div className="space-y-2">
-                {leaderboard.map((entry) => (
-                  <div
-                    key={entry.userId}
-                    className="p-2.5 rounded-xl bg-background border border-border flex items-center justify-between text-xs"
-                  >
-                    <div className="flex items-center space-x-2">
-                      <span className="font-bold text-amber-700 dark:text-amber-400">#{entry.rank}</span>
-                      <span className="font-bold text-foreground">{entry.playerName}</span>
-                      <span className="px-1.5 py-0.5 rounded text-[10px] bg-muted text-muted-foreground">
-                        {entry.leagueTier}
-                      </span>
-                    </div>
-                    <div className="text-right">
-                      <span className="font-black text-cyan-700 dark:text-cyan-400">{entry.currentElo} Elo</span>
-                      <span className="text-[10px] text-muted-foreground ml-2">({entry.winRate}%)</span>
-                    </div>
-                  </div>
+          {board.entries.length === 0 ? (
+            <p className="mt-2 text-sm text-muted-foreground">No rated members yet.</p>
+          ) : (
+            <table className="mt-3 w-full min-w-140 text-left text-sm">
+              <thead className="text-xs text-muted-foreground">
+                <tr>
+                  <th className="py-2 pr-3 font-medium">Rank</th>
+                  <th className="py-2 pr-3 font-medium">Member</th>
+                  <th className="py-2 pr-3 font-medium">Rating</th>
+                  <th className="py-2 font-medium">Won / drawn / lost</th>
+                </tr>
+              </thead>
+              <tbody>
+                {board.entries.map((r) => (
+                  <tr key={`${r.rank}-${r.name}-${r.rating}`} className={`border-t border-border ${r.isYou ? "font-semibold" : ""}`}>
+                    <td className="py-2 pr-3 tabular-nums">{r.rank}</td>
+                    <td className="py-2 pr-3">{r.name}</td>
+                    <td className="py-2 pr-3 tabular-nums">
+                      {r.rating}
+                      {r.provisional ? <span className="ml-1 text-xs font-normal text-muted-foreground">provisional</span> : null}
+                    </td>
+                    <td className="py-2 tabular-nums">
+                      {r.wins} / {r.draws} / {r.losses}
+                    </td>
+                  </tr>
                 ))}
-              </div>
-            </div>
+              </tbody>
+            </table>
           )}
-        </div>
-      </div>
-    </div>
+          <p className="mt-3 text-xs text-muted-foreground">
+            Practice bots (fixed): {board.bots.map((b) => `${b.name}, rating ${b.rating}, scores ${b.score}`).join("; ")}.
+          </p>
+        </section>
+      )}
+    </main>
   );
 }
