@@ -21,7 +21,7 @@ export interface PortalSection {
 
 export default function PortalShell({
   name,
-  icon: Icon,
+  icon,
   accent,
   home,
   sections,
@@ -31,7 +31,8 @@ export default function PortalShell({
 }: {
   /** The portal's name, e.g. "Recruiter" */
   name: string;
-  icon: React.ElementType;
+  /** The portal icon, e.g. <Briefcase /> (an element, so server layouts can pass it) */
+  icon: React.ReactNode;
   /** Tailwind classes for the icon tile, e.g. "bg-indigo-600" */
   accent: string;
   home: string;
@@ -52,7 +53,7 @@ export default function PortalShell({
         <div className="mx-auto flex h-14 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6">
           <Link href={home} className="flex min-w-0 items-center gap-2.5">
             <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-white ${accent}`}>
-              <Icon aria-hidden="true" className="h-4 w-4" />
+              {icon}
             </span>
             <span className="truncate text-sm font-semibold tracking-tight">
               Edulexa <span className="font-normal text-muted-foreground">· {name}</span>

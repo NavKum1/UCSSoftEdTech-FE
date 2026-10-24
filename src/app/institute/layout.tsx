@@ -11,7 +11,7 @@ const SECTIONS = [
 
 export default function InstituteLayout({ children }: { children: React.ReactNode }) {
   return (
-    <PortalShell name="Institute" icon={Building2} accent="bg-cyan-600" home="/institute/dashboard" sections={SECTIONS}>
+    <PortalShell name="Institute" icon={<Building2 aria-hidden="true" className="h-4 w-4" />} accent="bg-cyan-600" home="/institute/dashboard" sections={SECTIONS}>
       {children}
     </PortalShell>
   );

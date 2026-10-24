@@ -19,7 +19,7 @@ const SECTIONS = [
 
 export default function RecruiterLayout({ children }: { children: React.ReactNode }) {
   return (
-    <PortalShell name="Recruiter" icon={Briefcase} accent="bg-indigo-600" home="/recruiter/dashboard" sections={SECTIONS}>
+    <PortalShell name="Recruiter" icon={<Briefcase aria-hidden="true" className="h-4 w-4" />} accent="bg-indigo-600" home="/recruiter/dashboard" sections={SECTIONS}>
       {children}
     </PortalShell>
   );

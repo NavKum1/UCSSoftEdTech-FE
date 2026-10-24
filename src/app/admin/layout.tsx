@@ -19,7 +19,7 @@ const SECTIONS = [
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   return (
-    <PortalShell name="Admin" icon={Shield} accent="bg-slate-800 dark:bg-slate-700" home="/admin" sections={SECTIONS} badge={<AdminRoleBadge />}>
+    <PortalShell name="Admin" icon={<Shield aria-hidden="true" className="h-4 w-4" />} accent="bg-slate-800 dark:bg-slate-700" home="/admin" sections={SECTIONS} badge={<AdminRoleBadge />}>
       {children}
     </PortalShell>
   );

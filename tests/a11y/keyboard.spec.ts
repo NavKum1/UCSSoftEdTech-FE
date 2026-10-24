@@ -208,14 +208,14 @@ test("keyboard: appointment tabs follow the arrow-key tab pattern", async ({ pag
   await expect(next).toHaveAttribute("aria-selected", "true");
 });
 
-test("keyboard: global Practice Hub menu opens from the keyboard and closes on Escape", async ({ page }) => {
+test("keyboard: global More menu opens from the keyboard and closes on Escape", async ({ page }) => {
   await open(page, "verify-jws");
-  const button = page.getByRole("button", { name: /Practice Hub/ });
+  const button = page.getByRole("button", { name: /^More/ });
   await button.focus();
   await page.keyboard.press("Enter");
   await expect(button).toHaveAttribute("aria-expanded", "true");
   await page.keyboard.press("Tab");
-  expect(await page.evaluate(() => !!document.activeElement?.closest("#practice-hub-menu")), "Tab enters the open menu").toBe(true);
+  expect(await page.evaluate(() => !!document.activeElement?.closest("#more-menu")), "Tab enters the open menu").toBe(true);
   await page.keyboard.press("Escape");
   await expect(button).toHaveAttribute("aria-expanded", "false");
   await expect(button).toBeFocused();
