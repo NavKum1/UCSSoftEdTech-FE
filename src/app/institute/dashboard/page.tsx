@@ -20,10 +20,12 @@ import { useLatestRef } from "@/lib/legacyApi";
 interface Lead {
   leadId: string;
   candidateUserId: string;
-  candidateName: string;
-  candidateEmail: string;
+  candidateName: string | null;
+  candidateEmail: string | null;
+  candidatePhone?: string | null;
+  notes?: string | null;
   courseId: string;
-  courseName: string;
+  courseName: string | null;
   status: string;
   createdAt: string;
 }
@@ -149,10 +151,9 @@ export default function InstituteDashboardPage() {
   };
 
   const filteredLeads = leads.filter((lead) => {
-    const matchesSearch =
-      lead.candidateName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      lead.candidateEmail.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      lead.courseName.toLowerCase().includes(searchQuery.toLowerCase());
+    // Some leads have no name, email or course recorded (null from the API)
+    const q = searchQuery.toLowerCase();
+    const matchesSearch = [lead.candidateName, lead.candidateEmail, lead.courseName].some((v) => (v ?? "").toLowerCase().includes(q));
 
     const matchesStatus = statusFilter === "all" || lead.status.toLowerCase() === statusFilter.toLowerCase();
 
@@ -317,9 +318,12 @@ export default function InstituteDashboardPage() {
                   ) : (
                     filteredLeads.map((lead) => (
                       <tr key={lead.leadId} className="hover:bg-card/40 transition-colors">
-                        <td className="px-6 py-4 font-semibold text-white">{lead.candidateName}</td>
-                        <td className="px-6 py-4 font-mono text-[11px] text-cyan-600 dark:text-cyan-300">{lead.candidateEmail}</td>
-                        <td className="px-6 py-4 text-foreground">{lead.courseName}</td>
+                        <td className="px-6 py-4 font-semibold text-foreground">{lead.candidateName ?? "—"}</td>
+                        <td className="px-6 py-4 font-mono text-[11px] text-cyan-700 dark:text-cyan-300">
+                          {lead.candidateEmail || "—"}
+                          {lead.candidatePhone && <span className="block text-muted-foreground">{lead.candidatePhone}</span>}
+                        </td>
+                        <td className="px-6 py-4 text-foreground">{lead.courseName ?? "Course no longer listed"}</td>
                         <td className="px-6 py-4 text-muted-foreground">
                           {new Date(lead.createdAt).toLocaleDateString("en-US", {
                             month: "short",
