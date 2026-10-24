@@ -25,6 +25,9 @@ export const CAREER_STANDALONE_PREFIXES = ["/partner/callback", "/career-unsubsc
 // which may also be white-labelled. Exact paths only: /login/sso keeps the navigation.
 export const AUTH_PAGES = ["/login"];
 
+// Portals with a header of their own (app/<portal>/layout.tsx): the global navigation would show a second header there
+export const PORTAL_PREFIXES = ["/recruiter", "/institute", "/admin"];
+
 const matches = (pathname: string, prefixes: string[]) => prefixes.some((p) => pathname === p || pathname.startsWith(p + "/"));
 
 export function isCareerSuitePath(pathname: string | null | undefined): boolean {
@@ -35,7 +38,7 @@ export function isCareerSuitePath(pathname: string | null | undefined): boolean 
 export function hidesGlobalNavigation(pathname: string | null | undefined): boolean {
   return (
     !!pathname &&
-    (matches(pathname, CAREER_PREFIXES) || matches(pathname, CAREER_STANDALONE_PREFIXES) || AUTH_PAGES.includes(pathname))
+    (matches(pathname, CAREER_PREFIXES) || matches(pathname, CAREER_STANDALONE_PREFIXES) || matches(pathname, PORTAL_PREFIXES) || AUTH_PAGES.includes(pathname))
   );
 }
 
