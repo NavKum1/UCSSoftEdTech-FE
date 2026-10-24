@@ -1,542 +1,202 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { 
-  TrendingUp, DollarSign, Target, Sparkles,
-  ArrowRight,
-  CheckCircle2, ChevronRight,
-  Globe2, AlertTriangle
-} from "lucide-react";
-import Link from "next/link";
-import { useGeo } from "@/context/GeoContext";
-import { AccessNotice, useLegacyApi, useLatestRef } from "@/lib/legacyApi";
+/**
+ * Career path (phase E, 24 Oct 2026). Built from the member's own data: their target role (skill passport), the area of
+ * their latest counselling result with what to learn next, their verified and practised skills from graded results, and
+ * practice on this platform. Salary figures appear only from a named, licensed dataset with its date; without one the
+ * page says so. (This page used to predict promotions to made-up levels and show invented salary bands.)
+ */
 
-interface CompensationBandData {
-  userId: string;
-  region: string;
-  regionName: string;
-  currencyCode: string;
-  currencySymbol: string;
-  baseMultiplier: number;
-  seniorityLevels: {
-    current: string;
-    oneYear: string;
-    threeYear: string;
-    fiveYear: string;
-  };
-  compensationBands: {
-    current: number;
-    oneYear: number;
-    threeYear: number;
-    fiveYear: number;
-    currentFormatted: string;
-    oneYearFormatted: string;
-    threeYearFormatted: string;
-    fiveYearFormatted: string;
-  };
-  scores: {
-    skillVelocity: number;
-    leadershipReadiness: number;
-  };
-  targetRole: string;
-  simulatedAt: string;
+import React, { useCallback, useEffect, useState } from "react";
+import Link from "next/link";
+import { ArrowRight, BadgeCheck, Compass, Target, Wallet } from "lucide-react";
+import { AccessNotice, useLatestRef, useLegacyApi } from "@/lib/legacyApi";
+
+interface Skill {
+  skillCategory: string;
+  kind: string;
+  bestScore: number | null;
+  results: number;
+  verified: boolean;
+}
+interface Path {
+  targetRole: string | null;
+  area: string | null;
+  guide: { summary: string; roles: string[]; learnNext: string[]; languages: string[] } | null;
+  verifiedSkills: Skill[];
+  practisedSkills: Skill[];
+  nextSteps: { title: string; description: string; href: string }[];
+  compensation: {
+    role: string;
+    region: string;
+    currency: string;
+    p25: number | null;
+    median: number | null;
+    p75: number | null;
+    source: string;
+    licence: string;
+    asOf: string;
+  } | null;
+  compensationNote: string | null;
 }
 
-const REGIONS = [
-  { code: "US_Tier1", name: "US Tier 1 (SF / NYC / Seattle)", flag: "🇺🇸", symbol: "$", currency: "USD", multiplier: "1.0x" },
-  { code: "US_Remote", name: "US National Remote", flag: "🇺🇸", symbol: "$", currency: "USD", multiplier: "0.88x" },
-  { code: "EU_UK", name: "Europe & UK (London / Berlin)", flag: "🇪🇺", symbol: "€", currency: "EUR", multiplier: "0.78x" },
-  { code: "India_APAC", name: "India & APAC (Bengaluru / Singapore)", flag: "🇮🇳", symbol: "₹", currency: "INR", multiplier: "0.42x" },
-  { code: "LatAm", name: "Latin America (São Paulo / Mexico City)", flag: "🇧🇷", symbol: "$", currency: "USD", multiplier: "0.38x" }
-];
+const card = "rounded-2xl border border-border bg-card shadow-[0_1px_2px_rgb(16_24_40/0.04)]";
 
-const TRACK_PRESETS = [
-  "Distributed Cloud Systems Architect",
-  "High-Throughput Concurrency & Storage Engineer",
-  "AI/ML Platform & Low-Latency Inference Engineer",
-  "Zero-Trust Security & Cryptographic Protocol Architect"
-];
-
-export default function CareerTrajectoryStudioPage() {
+export default function CareerPathPage() {
   const { apiFetch, ready, access } = useLegacyApi();
-  const { region: geoRegion } = useGeo();
-  const initialRegion = geoRegion === "IN" ? "India_APAC" : geoRegion === "EU" ? "EU_UK" : "US_Tier1";
-  const [selectedRegion, setSelectedRegion] = useState<string>(initialRegion);
-  const [data, setData] = useState<CompensationBandData | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [fetchError, setFetchError] = useState<string | null>(null);
-  const [showSimulateModal, setShowSimulateModal] = useState<boolean>(false);
-  const [targetRole, setTargetRole] = useState<string>(TRACK_PRESETS[0]);
+  const [path, setPath] = useState<Path | null>(null);
+  const [failed, setFailed] = useState(false);
 
-  // Follow the visitor's geo region when it changes (adjusting state during render, not in an effect).
-  const [syncedGeoRegion, setSyncedGeoRegion] = useState(geoRegion);
-  if (geoRegion !== syncedGeoRegion) {
-    setSyncedGeoRegion(geoRegion);
-    setSelectedRegion(geoRegion === "IN" ? "India_APAC" : geoRegion === "EU" ? "EU_UK" : "US_Tier1");
-  }
-  const [isSimulating, setIsSimulating] = useState<boolean>(false);
-
-  const fetchCompensation = async (region: string) => {
-    setLoading(true);
-    setFetchError(null);
+  const load = useCallback(async () => {
     try {
-      const testUserId = "44444444-5555-6666-7777-888888888888";
-      const res = await apiFetch(`/api/career/compensation/${testUserId}?region=${region}`);
-      if (res.ok) {
-        const json = await res.json();
-        setData(json.compensation);
-      } else {
-        setFetchError(`Career compensation service returned HTTP ${res.status}.`);
-        setData(null);
-      }
-    } catch (e) {
-      console.warn("[CAREER COMPENSATION FETCH NOTICE]:", e);
-      setFetchError((e as Error).message || "Failed to connect to career compensation service.");
-      setData(null);
-    } finally {
-      setLoading(false);
+      const res = await apiFetch("/api/career/path");
+      if (!res.ok) return setFailed(true);
+      setPath((await res.json()) as Path);
+    } catch {
+      setFailed(true);
     }
-  };
-
-  const fetchCompensationRef = useLatestRef(fetchCompensation);
+  }, [apiFetch]);
+  const loadRef = useLatestRef(load);
   useEffect(() => {
-    if (!ready) return;
-    fetchCompensationRef.current(selectedRegion);
-  }, [selectedRegion, ready, fetchCompensationRef]);
+    if (ready) void loadRef.current();
+  }, [ready, loadRef]);
 
-  const handleSimulate = async () => {
-    setIsSimulating(true);
-    try {
-      const testUserId = "44444444-5555-6666-7777-888888888888";
-      const res = await apiFetch(`/api/career/simulate`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          userId: testUserId,
-          targetRole,
-          region: selectedRegion
-        })
-      });
-      if (res.ok) {
-        setShowSimulateModal(false);
-        fetchCompensation(selectedRegion);
-      }
-    } catch (e) {
-      console.warn("Simulation notice:", e);
-      setShowSimulateModal(false);
-    } finally {
-      setIsSimulating(false);
-    }
-  };
+  if (access) return <AccessNotice problem={access} feature="Your career path" />;
+  if (failed)
+    return (
+      <main className="mx-auto max-w-md px-4 py-24 text-center">
+        <h1 className="text-xl font-semibold">We couldn&apos;t load your career path</h1>
+        <p className="mt-2 text-sm text-muted-foreground">Please refresh the page to try again.</p>
+      </main>
+    );
+  if (!path)
+    return (
+      <main className="mx-auto max-w-5xl px-4 py-10" aria-busy="true" aria-label="Loading your career path">
+        <div className={`${card} h-40 animate-pulse motion-reduce:animate-none`} />
+      </main>
+    );
 
-  const getLevelLabel = (lvl: string) => {
-    return lvl.replace("_", " ");
-  };
-
-  if (access) return <AccessNotice problem={access} feature="The career trajectory studio" />;
+  const money = (n: number | null) => (n == null ? "—" : new Intl.NumberFormat(undefined, { style: "currency", currency: path.compensation!.currency, maximumFractionDigits: 0 }).format(n));
 
   return (
-    <div className="min-h-screen bg-background text-foreground flex flex-col font-sans pb-16">
-      {/* Top Banner */}
-      <header className="border-b border-border bg-card/80 backdrop-blur-md sticky top-16 z-20">
-        <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <Link
-              href="/prep/matcher"
-              className="p-2 rounded-xl bg-muted hover:bg-slate-700 text-muted-foreground transition-colors"
-            >
-              <ArrowRight className="w-4 h-4 rotate-180" />
-            </Link>
-            <div className="flex items-center space-x-2.5">
-              <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-600 flex items-center justify-center font-bold text-white shadow-lg shadow-emerald-500/20">
-                <TrendingUp className="w-5 h-5 text-white" />
-              </div>
-              <div>
-                <div className="flex items-center space-x-2">
-                  <span className="font-bold text-base text-foreground tracking-wide">
-                    AI CAREER PATH & SALARY INSIGHTS
-                  </span>
-                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-600 dark:text-emerald-300 font-semibold border border-emerald-500/40">
-                    Career Insights
-                  </span>
-                </div>
-                <p className="text-[11px] text-muted-foreground">
-                  Seniority milestone projections, regional salary ranges, and personalized growth paths.
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <div className="flex items-center space-x-3">
-            <button
-              onClick={() => setShowSimulateModal(true)}
-              className="px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-semibold text-xs shadow-lg shadow-emerald-600/30 flex items-center space-x-1.5 transition-all cursor-pointer"
-            >
-              <Sparkles className="w-3.5 h-3.5" />
-              <span>Explore Career Track</span>
-            </button>
-          </div>
-        </div>
+    <main className="mx-auto max-w-5xl space-y-6 px-4 pb-16 pt-8 sm:px-6">
+      <header>
+        <h1 className="text-2xl font-semibold tracking-tight">Your career path</h1>
+        <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
+          Where you are, from your graded results, and what to do next. We don&apos;t predict promotions or salaries; salary data is shown only from a
+          named, licensed source.
+        </p>
       </header>
 
-      {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-6 py-8 flex-1 w-full space-y-8 animate-fadeIn">
-        {fetchError && (
-          <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-600 dark:text-amber-300 text-xs flex items-center gap-2">
-            <AlertTriangle className="w-4 h-4 shrink-0 text-amber-700 dark:text-amber-400" />
-            <span>{fetchError}</span>
+      <div className="grid gap-4 md:grid-cols-2">
+        <section className={`${card} p-5`}>
+          <h2 className="flex items-center gap-2 text-base font-semibold">
+            <Target aria-hidden="true" className="h-4 w-4 text-indigo-600" /> Target role
+          </h2>
+          {path.targetRole ? (
+            <p className="mt-2 text-lg font-semibold">{path.targetRole}</p>
+          ) : (
+            <p className="mt-2 text-sm text-muted-foreground">Not set yet.</p>
+          )}
+          <Link href="/passport" className="mt-2 inline-block text-sm font-medium text-indigo-700 hover:underline dark:text-indigo-300">
+            {path.targetRole ? "Change it in your skill passport" : "Set it in your skill passport"}
+          </Link>
+        </section>
+        <section className={`${card} p-5`}>
+          <h2 className="flex items-center gap-2 text-base font-semibold">
+            <Compass aria-hidden="true" className="h-4 w-4 text-indigo-600" /> Area that suits you
+          </h2>
+          {path.area && path.guide ? (
+            <>
+              <p className="mt-2 font-semibold">{path.area}</p>
+              <p className="mt-1 text-sm text-muted-foreground">{path.guide.summary}</p>
+            </>
+          ) : (
+            <p className="mt-2 text-sm text-muted-foreground">
+              Take the <Link href="/prep/counselling" className="font-medium text-indigo-700 hover:underline dark:text-indigo-300">career quiz</Link> to find it.
+            </p>
+          )}
+        </section>
+      </div>
+
+      <section className={`${card} p-5`}>
+        <h2 className="flex items-center gap-2 text-base font-semibold">
+          <BadgeCheck aria-hidden="true" className="h-4 w-4 text-emerald-600" /> Your skills
+        </h2>
+        {path.verifiedSkills.length === 0 && path.practisedSkills.length === 0 ? (
+          <p className="mt-2 text-sm text-muted-foreground">No graded results yet. Your skills appear here as you complete challenges, exams and drills.</p>
+        ) : (
+          <ul className="mt-3 flex flex-wrap gap-2">
+            {[...path.verifiedSkills, ...path.practisedSkills].map((s) => (
+              <li
+                key={`${s.skillCategory}-${s.kind}`}
+                className={`rounded-full border px-3 py-1 text-sm ${s.verified ? "border-emerald-500/40 bg-emerald-50 dark:bg-emerald-500/10" : "border-border"}`}
+              >
+                {s.skillCategory}
+                {s.bestScore != null && <span className="ml-1 text-xs text-muted-foreground">best {Math.round(s.bestScore)}</span>}
+                {s.verified && <span className="ml-1 text-xs text-emerald-700 dark:text-emerald-400">verified</span>}
+              </li>
+            ))}
+          </ul>
+        )}
+        {path.guide && path.guide.learnNext.length > 0 && (
+          <div className="mt-5">
+            <h3 className="text-sm font-semibold">Good things to learn next for {path.area}</h3>
+            <ul className="mt-1 list-disc space-y-1 pl-5 text-sm">
+              {path.guide.learnNext.map((l) => (
+                <li key={l}>{l}</li>
+              ))}
+            </ul>
           </div>
         )}
+      </section>
 
-        {/* Geographic Compensation Market Ribbon */}
-        <div className="p-4 rounded-2xl bg-card/60 border border-border space-y-3">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-muted-foreground flex items-center space-x-2">
-              <Globe2 className="w-4 h-4 text-emerald-700 dark:text-emerald-400" />
-              <span>Select Location for Local Salary Ranges</span>
-            </span>
-            <span className="text-xs text-muted-foreground">
-              Active: <strong className="text-emerald-700 dark:text-emerald-400">{REGIONS.find(r => r.code === selectedRegion)?.name}</strong>
-            </span>
-          </div>
-
-          <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
-            {REGIONS.map((reg) => {
-              const isActive = selectedRegion === reg.code;
-              return (
-                <button
-                  key={reg.code}
-                  onClick={() => setSelectedRegion(reg.code)}
-                  className={`p-3 rounded-xl border flex flex-col items-start space-y-1 transition-all cursor-pointer ${
-                    isActive
-                      ? "bg-emerald-950/40 border-emerald-500/70 shadow-md shadow-emerald-900/30"
-                      : "bg-background/40 border-border hover:border-border hover:bg-card/60"
-                  }`}
-                >
-                  <div className="flex items-center justify-between w-full">
-                    <span className="text-lg">{reg.flag}</span>
-                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-muted text-emerald-600 dark:text-emerald-300 font-mono font-bold">
-                      {reg.multiplier}
-                    </span>
-                  </div>
-                  <div className={`text-xs font-bold ${isActive ? "text-emerald-600 dark:text-emerald-300" : "text-foreground"}`}>
-                    {reg.currency} ({reg.symbol})
-                  </div>
-                  <div className="text-[10px] text-muted-foreground truncate w-full">
-                    {reg.name}
-                  </div>
-                </button>
-              );
-            })}
-          </div>
+      <section aria-labelledby="cp-next">
+        <h2 id="cp-next" className="mb-3 text-base font-semibold">
+          Next steps
+        </h2>
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {path.nextSteps.map((s) => (
+            <Link key={s.href} href={s.href} className={`${card} group p-4 hover:border-indigo-400`}>
+              <span className="flex items-center justify-between gap-2 text-sm font-semibold">
+                {s.title}
+                <ArrowRight aria-hidden="true" className="h-4 w-4 text-muted-foreground group-hover:text-indigo-600" />
+              </span>
+              <span className="mt-1 block text-xs text-muted-foreground">{s.description}</span>
+            </Link>
+          ))}
         </div>
+      </section>
 
-        {/* Top Summary Banner */}
-        <div className="p-6 rounded-2xl bg-gradient-to-r from-slate-900 via-emerald-950/20 to-slate-900 border border-emerald-900/30 shadow-2xl space-y-4">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div>
-              <span className="text-[10px] uppercase font-bold tracking-wider text-emerald-700 dark:text-emerald-400">
-                Projected Career Growth
-              </span>
-              <h2 className="text-2xl font-bold text-foreground mt-1">
-                Target Role: {data?.targetRole || "Distributed Cloud Systems Architect"}
-              </h2>
-              <p className="text-xs text-muted-foreground mt-1 max-w-2xl leading-relaxed">
-                Estimated based on project challenge performance, problem-solving skills, and code quality.
-              </p>
-            </div>
-
-            <div className="flex items-center space-x-3">
-              <div className="p-3.5 rounded-xl bg-background/80 border border-border text-center">
-                <span className="text-[10px] uppercase font-bold text-muted-foreground block">Skill Growth</span>
-                <span className="text-xl font-black text-emerald-700 dark:text-emerald-400">{data?.scores?.skillVelocity != null ? `${data.scores.skillVelocity}%` : "—"}</span>
-              </div>
-              <div className="p-3.5 rounded-xl bg-background/80 border border-border text-center">
-                <span className="text-[10px] uppercase font-bold text-muted-foreground block">Leadership Readiness</span>
-                <span className="text-xl font-black text-teal-400">{data?.scores?.leadershipReadiness != null ? `${data.scores.leadershipReadiness}%` : "—"}</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* 4-Stage Seniority Milestone Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {/* Current Level */}
-          <div className="p-5 rounded-2xl bg-card/50 border border-border space-y-3 relative">
-            <div className="flex items-center justify-between">
-              <span className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground">
-                Baseline Level
-              </span>
-              <span className="text-[10px] px-2 py-0.5 rounded-full bg-muted text-muted-foreground font-semibold">
-                Today
-              </span>
-            </div>
-            <div className="text-lg font-bold text-foreground">
-              {getLevelLabel(data?.seniorityLevels?.current || "L4 MidLevel")}
-            </div>
-            <div className="text-2xl font-extrabold text-emerald-700 dark:text-emerald-400">
-              {data?.compensationBands?.currentFormatted || (geoRegion === "IN" ? "₹35,00,000" : geoRegion === "EU" ? "€130,000" : "$165,000")}
-            </div>
-            <p className="text-xs text-muted-foreground leading-relaxed">
-              Standard autonomous execution, modular component delivery, and structured API integrations.
+      <section className={`${card} p-5`}>
+        <h2 className="flex items-center gap-2 text-base font-semibold">
+          <Wallet aria-hidden="true" className="h-4 w-4 text-indigo-600" /> Salary data
+        </h2>
+        {path.compensation ? (
+          <>
+            <p className="mt-1 text-sm text-muted-foreground">
+              {path.compensation.role}, {path.compensation.region}
             </p>
-          </div>
-
-          {/* 1-Year Milestone */}
-          <div className="p-5 rounded-2xl bg-card/50 border border-border space-y-3 relative">
-            <div className="flex items-center justify-between">
-              <span className="text-[10px] uppercase font-bold tracking-wider text-teal-400">
-                1-Year Milestone
-              </span>
-              <span className="text-[10px] px-2 py-0.5 rounded-full bg-teal-500/20 text-teal-300 font-semibold border border-teal-500/30">
-                +12 Months
-              </span>
-            </div>
-            <div className="text-lg font-bold text-foreground">
-              {getLevelLabel(data?.seniorityLevels?.oneYear || "L5 Senior")}
-            </div>
-            <div className="text-2xl font-extrabold text-teal-400">
-              {data?.compensationBands?.oneYearFormatted || (geoRegion === "IN" ? "₹45,00,000" : geoRegion === "EU" ? "€165,000" : "$210,000")}
-            </div>
-            <p className="text-xs text-muted-foreground leading-relaxed">
-              System resilience governance, multi-threaded optimization, and cross-team interface ownership.
-            </p>
-          </div>
-
-          {/* 3-Year Milestone */}
-          <div className="p-5 rounded-2xl bg-card/50 border border-emerald-500/30 bg-emerald-950/10 space-y-3 relative shadow-lg shadow-emerald-950/20">
-            <div className="flex items-center justify-between">
-              <span className="text-[10px] uppercase font-bold tracking-wider text-emerald-700 dark:text-emerald-400">
-                3-Year Milestone
-              </span>
-              <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-600 dark:text-emerald-300 font-semibold border border-emerald-500/40">
-                +36 Months
-              </span>
-            </div>
-            <div className="text-lg font-bold text-foreground">
-              {getLevelLabel(data?.seniorityLevels?.threeYear || "L6 Staff")}
-            </div>
-            <div className="text-2xl font-extrabold text-emerald-600 dark:text-emerald-300">
-              {data?.compensationBands?.threeYearFormatted || (geoRegion === "IN" ? "₹65,00,000" : geoRegion === "EU" ? "€220,000" : "$285,000")}
-            </div>
-            <p className="text-xs text-muted-foreground leading-relaxed">
-              Enterprise architectural direction, distributed consensus patterns, and organizational technical leverage.
-            </p>
-          </div>
-
-          {/* 5-Year Milestone */}
-          <div className="p-5 rounded-2xl bg-card/50 border border-border space-y-3 relative">
-            <div className="flex items-center justify-between">
-              <span className="text-[10px] uppercase font-bold tracking-wider text-amber-700 dark:text-amber-400">
-                5-Year Milestone
-              </span>
-              <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-600 dark:text-amber-300 font-semibold border border-amber-500/30">
-                +60 Months
-              </span>
-            </div>
-            <div className="text-lg font-bold text-foreground">
-              {getLevelLabel(data?.seniorityLevels?.fiveYear || "L7 Principal")}
-            </div>
-            <div className="text-2xl font-extrabold text-amber-700 dark:text-amber-400">
-              {data?.compensationBands?.fiveYearFormatted || (geoRegion === "IN" ? "₹95,00,000" : geoRegion === "EU" ? "€295,000" : "$380,000")}
-            </div>
-            <p className="text-xs text-muted-foreground leading-relaxed">
-              Company-wide systems vision, multi-datacenter fault-tolerance, and executive technology roadmap stewardship.
-            </p>
-          </div>
-        </div>
-
-        {/* Visual Compensation Growth Comparison Bar */}
-        <div className="p-6 rounded-2xl bg-card/60 border border-border space-y-5">
-          <div className="flex items-center justify-between">
-            <h3 className="text-base font-semibold text-foreground flex items-center space-x-2">
-              <DollarSign className="w-4 h-4 text-emerald-700 dark:text-emerald-400" />
-              <span>Expected Salary Growth Over Time</span>
-            </h3>
-            <span className="text-xs text-muted-foreground">Base Salary + Equity + Bonus Estimates</span>
-          </div>
-
-          <div className="space-y-4">
-            {/* Current */}
-            <div>
-              <div className="flex justify-between text-xs mb-1">
-                <span className="text-muted-foreground font-medium">Baseline ({getLevelLabel(data?.seniorityLevels?.current || "L4")})</span>
-                <span className="font-bold text-muted-foreground">{data?.compensationBands?.currentFormatted}</span>
-              </div>
-              <div className="h-3 w-full rounded-full bg-background overflow-hidden">
-                <div 
-                  style={{ width: "42%" }}
-                  className="h-full bg-slate-600 rounded-full"
-                />
-              </div>
-            </div>
-
-            {/* 1-Year */}
-            <div>
-              <div className="flex justify-between text-xs mb-1">
-                <span className="text-muted-foreground font-medium">1-Year Horizon ({getLevelLabel(data?.seniorityLevels?.oneYear || "L5")})</span>
-                <span className="font-bold text-teal-400">{data?.compensationBands?.oneYearFormatted}</span>
-              </div>
-              <div className="h-3 w-full rounded-full bg-background overflow-hidden">
-                <div 
-                  style={{ width: "55%" }}
-                  className="h-full bg-gradient-to-r from-teal-600 to-teal-400 rounded-full"
-                />
-              </div>
-            </div>
-
-            {/* 3-Year */}
-            <div>
-              <div className="flex justify-between text-xs mb-1">
-                <span className="text-muted-foreground font-medium">3-Year Horizon ({getLevelLabel(data?.seniorityLevels?.threeYear || "L6")})</span>
-                <span className="font-bold text-emerald-700 dark:text-emerald-400">{data?.compensationBands?.threeYearFormatted}</span>
-              </div>
-              <div className="h-3 w-full rounded-full bg-background overflow-hidden">
-                <div 
-                  style={{ width: "74%" }}
-                  className="h-full bg-gradient-to-r from-emerald-600 to-emerald-400 rounded-full"
-                />
-              </div>
-            </div>
-
-            {/* 5-Year */}
-            <div>
-              <div className="flex justify-between text-xs mb-1">
-                <span className="text-muted-foreground font-medium">5-Year Horizon ({getLevelLabel(data?.seniorityLevels?.fiveYear || "L7")})</span>
-                <span className="font-bold text-amber-700 dark:text-amber-400">{data?.compensationBands?.fiveYearFormatted}</span>
-              </div>
-              <div className="h-3 w-full rounded-full bg-background overflow-hidden">
-                <div 
-                  style={{ width: "100%" }}
-                  className="h-full bg-gradient-to-r from-amber-600 to-amber-400 rounded-full"
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* High-Leverage Competency Gap Roadmap */}
-        <div className="p-6 rounded-2xl bg-card/60 border border-border space-y-4">
-          <div className="flex items-center space-x-2">
-            <Target className="w-5 h-5 text-emerald-700 dark:text-emerald-400" />
-            <h3 className="text-base font-bold text-foreground">Recommended Skills to Accelerate Your Career</h3>
-          </div>
-          <p className="text-xs text-muted-foreground">
-            Building strengths in these key areas helps accelerate your path to the next level.
-          </p>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-2">
-            {[
-              {
-                title: "Distributed Consensus & Raft Invariants",
-                impact: geoRegion === "IN" ? "+₹28 Lakhs / yr" : geoRegion === "EU" ? "+€32k / yr" : "+$35k / yr",
-                desc: "Master leader election, log replication, and split-brain recovery in partition-tolerant clusters."
-              },
-              {
-                title: "Zero-Copy Ring Buffers & Memory Safety",
-                impact: geoRegion === "IN" ? "+₹20 Lakhs / yr" : geoRegion === "EU" ? "+€23k / yr" : "+$25k / yr",
-                desc: "Build sub-millisecond execution engines eliminating GC pause latency and lock contention."
-              },
-              {
-                title: "Event Sourcing & Cross-Service Saga Choreography",
-                impact: geoRegion === "IN" ? "+₹24 Lakhs / yr" : geoRegion === "EU" ? "+€28k / yr" : "+$30k / yr",
-                desc: "Implement durable compensating transactions without distributed 2PC locks."
-              },
-              {
-                title: "SLO Error Budget Governance & Tail Latency Trimming",
-                impact: geoRegion === "IN" ? "+₹16 Lakhs / yr" : geoRegion === "EU" ? "+€18k / yr" : "+$20k / yr",
-                desc: "Design adaptive client-side throttling, hedged requests, and circuit-breaker backoffs."
-              }
-            ].map((gap, idx) => (
-              <div
-                key={idx}
-                className="p-4 rounded-xl bg-background/60 border border-border space-y-2 flex flex-col justify-between"
-              >
-                <div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-foreground flex items-center space-x-1.5">
-                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-700 dark:text-emerald-400" />
-                      <span>{gap.title}</span>
-                    </span>
-                    <span className="text-[10px] font-bold text-emerald-700 dark:text-emerald-400 px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/30">
-                      {gap.impact}
-                    </span>
-                  </div>
-                  <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
-                    {gap.desc}
-                  </p>
-                </div>
-                <div className="pt-2">
-                  <Link
-                    href="/"
-                    className="text-[11px] text-emerald-700 dark:text-emerald-400 hover:text-emerald-600 dark:text-emerald-300 font-semibold flex items-center space-x-1"
-                  >
-                    <span>Practice Real-World Challenge</span>
-                    <ChevronRight className="w-3 h-3" />
-                  </Link>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </main>
-
-      {/* Simulation Modal */}
-      {showSimulateModal && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fadeIn">
-          <div className="bg-card border border-border rounded-2xl max-w-md w-full p-6 space-y-5 shadow-2xl">
-            <div className="flex items-center justify-between border-b border-border pb-3">
-              <div className="flex items-center space-x-2">
-                <Sparkles className="w-5 h-5 text-emerald-700 dark:text-emerald-400" />
-                <h3 className="text-base font-bold text-foreground">Explore Career Paths</h3>
-              </div>
-              <button
-                onClick={() => setShowSimulateModal(false)}
-                className="text-muted-foreground hover:text-white text-sm"
-              >
-                ✕
-              </button>
-            </div>
-
-            <p className="text-xs text-muted-foreground leading-relaxed">
-              Select your target specialization to preview career milestones and salary expectations.
-            </p>
-
-            <div className="space-y-2">
-              <label className="text-xs font-medium text-muted-foreground block">Engineering Track</label>
-              {TRACK_PRESETS.map((trk) => (
-                <div
-                  key={trk}
-                  onClick={() => setTargetRole(trk)}
-                  className={`p-3 rounded-xl border text-xs font-semibold cursor-pointer transition-all ${
-                    targetRole === trk
-                      ? "bg-emerald-950/40 border-emerald-500 text-white"
-                      : "bg-background/60 border-border text-muted-foreground hover:border-border"
-                  }`}
-                >
-                  {trk}
+            <dl className="mt-3 grid grid-cols-3 gap-3 text-center">
+              {[
+                ["25th percentile", path.compensation.p25],
+                ["Median", path.compensation.median],
+                ["75th percentile", path.compensation.p75],
+              ].map(([label, v]) => (
+                <div key={label as string} className="rounded-xl bg-muted/60 p-3">
+                  <dt className="text-xs text-muted-foreground">{label}</dt>
+                  <dd className="mt-1 font-semibold tabular-nums">{money(v as number | null)}</dd>
                 </div>
               ))}
-            </div>
-
-            <div className="flex items-center space-x-3 pt-2">
-              <button
-                onClick={() => setShowSimulateModal(false)}
-                className="flex-1 py-2.5 rounded-xl bg-muted hover:bg-slate-700 text-muted-foreground text-xs font-medium cursor-pointer"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleSimulate}
-                disabled={isSimulating}
-                className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white text-xs font-semibold shadow-lg shadow-emerald-600/30 cursor-pointer disabled:opacity-50"
-              >
-                {isSimulating ? "Projecting..." : "Explore Growth Path"}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
+            </dl>
+            <p className="mt-3 text-xs text-muted-foreground">
+              Source: {path.compensation.source}, as of {new Date(path.compensation.asOf).toLocaleDateString()}. {path.compensation.licence}
+            </p>
+          </>
+        ) : (
+          <p className="mt-2 text-sm text-muted-foreground">{path.compensationNote}</p>
+        )}
+      </section>
+    </main>
   );
 }
