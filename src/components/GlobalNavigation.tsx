@@ -210,11 +210,22 @@ export default function GlobalNavigation() {
       icon: FileText,
     },
     {
-      name: "1v1 Duels Arena",
+      name: "System design duels",
       href: "/duels/arena",
-      desc: "Live peer speed coding battles & rating ladder",
+      desc: "Design against practice bots; graded on the server, Elo ratings",
       icon: Swords,
-      badge: "Live",
+    },
+    {
+      name: "Leadership practice",
+      href: "/leadership/simulator",
+      desc: "Practice scenarios: hard conversations, scored with feedback",
+      icon: Swords,
+    },
+    {
+      name: "Failover practice",
+      href: "/practice/failover",
+      desc: "Practice scenario: lead the response to a failing region",
+      icon: Swords,
     },
     {
       name: "Verifiable Skill Passport",

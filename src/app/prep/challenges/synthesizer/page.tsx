@@ -138,10 +138,10 @@ export default function ChallengeSynthesizerPage() {
             Career Trajectory
           </Link>
           <Link
-            href="/admin/resilience"
+            href="/practice/failover"
             className="px-4 py-2 bg-muted hover:bg-slate-700 text-foreground text-sm font-medium rounded-lg transition border border-border"
           >
-            Resilience Hub
+            Failover practice
           </Link>
         </div>
       </div>
