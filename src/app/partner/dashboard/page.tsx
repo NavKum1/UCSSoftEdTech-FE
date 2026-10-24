@@ -1,413 +1,258 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import Link from "next/link";
-import { 
-  Building2, Users, CheckCircle2, TrendingUp, DollarSign,
-  Send, RefreshCw, Sparkles,
-  ArrowUpRight, Link2
-} from "lucide-react";
-import { useGeo } from "@/context/GeoContext";
-import { AccessNotice, useLegacyApi, useLatestRef } from "@/lib/legacyApi";
+/**
+ * Partner institute dashboard (phase C, 24 Oct 2026): the inquiries members sent to the institute, their status, what the
+ * inquiries were about, and the institute's CRM webhook. Every figure comes from GET /api/partner/dashboard. (This page
+ * used to show sample leads and figures when there were none, an assumed commission per enrolment, made-up skill-gap
+ * counts and claims about features that don't exist.)
+ */
 
-// GET /api/partner/dashboard: the fields this page reads.
+import React, { useCallback, useEffect, useState } from "react";
+import Link from "next/link";
+import { Building2, Link2, RefreshCw, Send } from "lucide-react";
+import { AccessNotice, useLatestRef, useLegacyApi } from "@/lib/legacyApi";
+
 interface PartnerLead {
   leadId: string;
-  candidateName: string;
-  candidateEmail: string;
-  courseName: string;
+  candidateName: string | null;
+  candidateEmail: string | null;
+  courseName: string | null;
   status: string;
   createdAt: string;
 }
-
-interface PartnerKpis {
-  totalLeadsReceived: number;
-  pendingLeads: number;
-  contactedLeads: number;
-  enrolledLeads: number;
-  conversionRatePercent: number;
-  estimatedCommissionRevenueUsd: number;
-}
-
 interface PartnerDashboardData {
-  instituteName?: string;
-  outboundWebhookUrl?: string | null;
-  kpis?: PartnerKpis;
-  recentLeads?: PartnerLead[];
+  instituteName: string;
+  outboundWebhookUrl: string | null;
+  apiKeyConfigured: boolean;
+  kpis: { totalLeadsReceived: number; pendingLeads: number; contactedLeads: number; enrolledLeads: number; conversionRatePercent: number };
+  interestByArea: { area: string; inquiries: number }[];
+  recentLeads: PartnerLead[];
 }
+
+const card = "rounded-2xl border border-border bg-card shadow-[0_1px_2px_rgb(16_24_40/0.04)]";
+const input = "mt-1 block w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus:outline-2 focus:outline-indigo-600";
 
 export default function PartnerDashboardPage() {
   const { apiFetch, ready, access } = useLegacyApi();
-  const { config } = useGeo();
   const [data, setData] = useState<PartnerDashboardData | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [webhookUrl, setWebhookUrl] = useState<string>("");
-  const [apiKey, setApiKey] = useState<string>("");
-  const [webhookStatus, setWebhookStatus] = useState<string>("");
+  const [failed, setFailed] = useState(false);
+  const [webhookUrl, setWebhookUrl] = useState("");
+  const [apiKey, setApiKey] = useState("");
+  const [webhookStatus, setWebhookStatus] = useState<string | null>(null);
   const [updatingLeadId, setUpdatingLeadId] = useState<string | null>(null);
 
-  const fetchDashboard = async () => {
-    setLoading(true);
+  const load = useCallback(async () => {
+    setFailed(false);
     try {
-      const res = await apiFetch(`/api/partner/dashboard`);
-      if (res.ok) {
-        const json: PartnerDashboardData = await res.json();
-        setData(json);
-        setWebhookUrl(json.outboundWebhookUrl || "");
-      }
-    } catch (e) {
-      console.error("[PARTNER DASHBOARD FETCH ERROR]:", e);
-    } finally {
-      setLoading(false);
+      const res = await apiFetch("/api/partner/dashboard");
+      if (!res.ok) return setFailed(true);
+      const json = (await res.json()) as PartnerDashboardData;
+      setData(json);
+      setWebhookUrl(json.outboundWebhookUrl ?? "");
+    } catch {
+      setFailed(true);
     }
-  };
-
-  const fetchDashboardRef = useLatestRef(fetchDashboard);
+  }, [apiFetch]);
+  const loadRef = useLatestRef(load);
   useEffect(() => {
-    if (!ready) return;
-    fetchDashboardRef.current();
-  }, [ready, fetchDashboardRef]);
+    if (ready) void loadRef.current();
+  }, [ready, loadRef]);
 
-  const handleUpdateLeadStatus = async (leadId: string, newStatus: string) => {
+  const updateStatus = async (leadId: string, status: string) => {
     setUpdatingLeadId(leadId);
     try {
       const res = await apiFetch(`/api/partner/lead/${leadId}/status`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status: newStatus }),
+        body: JSON.stringify({ status }),
       });
-      if (res.ok) {
-        fetchDashboard();
-      }
-    } catch (e) {
-      console.error("[UPDATE LEAD STATUS ERROR]:", e);
+      if (res.ok) await load();
     } finally {
       setUpdatingLeadId(null);
     }
   };
 
-  const handleSaveWebhookConfig = async (e: React.FormEvent) => {
+  const saveWebhook = async (e: React.FormEvent) => {
     e.preventDefault();
-    setWebhookStatus("Saving configuration...");
+    setWebhookStatus("Saving…");
     try {
-      const res = await apiFetch(`/api/partner/webhook-config`, {
+      const res = await apiFetch("/api/partner/webhook-config", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ outboundWebhookUrl: webhookUrl, apiKey }),
       });
-      if (res.ok) {
-        setWebhookStatus("Webhook configuration saved!");
-        setTimeout(() => setWebhookStatus(""), 3000);
-      }
-    } catch (e) {
-      setWebhookStatus("Failed to save webhook config.");
+      setWebhookStatus(res.ok ? "Saved." : "That didn't save. Check the address and try again.");
+      if (res.ok) setApiKey("");
+    } catch {
+      setWebhookStatus("That didn't save. Please try again.");
     }
   };
 
-  const handleTestWebhookDispatch = async () => {
-    setWebhookStatus("Dispatching test CRM payload...");
+  const testWebhook = async () => {
+    setWebhookStatus("Sending a test inquiry to your endpoint…");
     try {
-      const res = await apiFetch(`/api/partner/dispatch-test-webhook`, {
-        method: "POST",
-      });
-      const json = await res.json();
-      if (res.ok) {
-        setWebhookStatus(`Test Payload Dispatched! Status: ${json.status}`);
-        setTimeout(() => setWebhookStatus(""), 4000);
-      }
-    } catch (e) {
-      setWebhookStatus("Test webhook dispatch failed.");
+      const res = await apiFetch("/api/partner/dispatch-test-webhook", { method: "POST" });
+      const json = await res.json().catch(() => null);
+      setWebhookStatus(res.ok ? `Your endpoint answered: ${json?.status ?? "OK"}.` : json?.error ?? "The test couldn't be sent.");
+    } catch {
+      setWebhookStatus("The test couldn't be sent.");
     }
   };
-
-  const kpis: PartnerKpis = data?.kpis || {
-    totalLeadsReceived: 18,
-    pendingLeads: 5,
-    contactedLeads: 6,
-    enrolledLeads: 7,
-    conversionRatePercent: 38.9,
-    estimatedCommissionRevenueUsd: 1050.0,
-  };
-
-  const leads: PartnerLead[] = data?.recentLeads || [
-    {
-      leadId: "demo-lead-1",
-      candidateName: "Alex Morgan",
-      candidateEmail: "alex.morgan@example.com",
-      courseName: "Full-Stack React & Microservices Masterclass",
-      status: "Pending",
-      createdAt: new Date().toISOString(),
-    },
-    {
-      leadId: "demo-lead-2",
-      candidateName: "Jordan Lee",
-      candidateEmail: "jordan.lee@example.com",
-      courseName: "High-Concurrency PostgreSQL & Distributed Systems",
-      status: "Contacted",
-      createdAt: new Date().toISOString(),
-    },
-    {
-      leadId: "demo-lead-3",
-      candidateName: "Taylor Swift",
-      candidateEmail: "taylor.s@example.com",
-      courseName: "Cloud Containerization & AWS VPC Security",
-      status: "Enrolled",
-      createdAt: new Date().toISOString(),
-    },
-  ];
 
   if (access) return <AccessNotice problem={access} feature="The partner dashboard" />;
+  if (failed)
+    return (
+      <main className="mx-auto max-w-md px-4 py-24 text-center">
+        <h1 className="text-xl font-semibold">We couldn&apos;t load your dashboard</h1>
+        <p className="mt-2 text-sm text-muted-foreground">Your account may not be linked to an institute yet. Please refresh, or ask Edulexa support.</p>
+      </main>
+    );
+  if (!data)
+    return (
+      <main className="mx-auto max-w-6xl px-4 py-10" aria-busy="true" aria-label="Loading your dashboard">
+        <div className={`${card} h-40 animate-pulse motion-reduce:animate-none`} />
+      </main>
+    );
 
+  const k = data.kpis;
   return (
-    <div className="min-h-screen bg-background text-foreground font-sans p-6 md:p-10">
-      {/* Top Header Navigation */}
-      <div className="max-w-7xl mx-auto space-y-8">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-border">
-          <div className="flex items-center space-x-3">
-            <div className="w-12 h-12 rounded-2xl bg-indigo-600/20 border border-indigo-500/30 flex items-center justify-center text-indigo-700 dark:text-indigo-400">
-              <Building2 className="w-6 h-6" />
-            </div>
-            <div>
-              <div className="flex items-center space-x-2">
-                <span className="text-xs font-semibold text-indigo-700 dark:text-indigo-400 uppercase tracking-wider">B2B Institute Portal</span>
-                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/30">
-                  LIVE CONVERSION PIPELINE
-                </span>
-              </div>
-              <h1 className="text-2xl font-extrabold text-foreground mt-0.5">
-                {data?.instituteName || "Global ITech Accreditation Board"}
-              </h1>
-            </div>
-          </div>
-
-          <div className="flex items-center space-x-3">
-            <Link
-              href="/edulexa/dashboard"
-              className="py-2.5 px-4 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-xs font-semibold text-white flex items-center space-x-2 transition-all shadow-md shadow-indigo-600/20 cursor-pointer"
-            >
-              <Sparkles className="w-3.5 h-3.5" />
-              <span>Edulexa RevEngine</span>
-              <ArrowUpRight className="w-3.5 h-3.5" />
-            </Link>
-
-            <button
-              onClick={fetchDashboard}
-              className="py-2.5 px-4 rounded-xl bg-card hover:bg-muted border border-border text-xs font-medium text-muted-foreground flex items-center space-x-2 transition-colors cursor-pointer"
-            >
-              <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} />
-              <span>Refresh Metrics</span>
-            </button>
+    <main className="mx-auto max-w-6xl space-y-6 px-4 pb-16 pt-8 sm:px-6">
+      <header className="flex flex-wrap items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-indigo-600/10 text-indigo-700 dark:text-indigo-300">
+            <Building2 aria-hidden="true" className="h-5 w-5" />
+          </span>
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Partner institute</p>
+            <h1 className="text-xl font-semibold">{data.instituteName}</h1>
           </div>
         </div>
-
-        {/* Live KPI Stat Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-          <div className="glass-card rounded-2xl p-5 border border-border relative overflow-hidden">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-medium text-muted-foreground">Total Referred Leads</span>
-              <Users className="w-4 h-4 text-indigo-700 dark:text-indigo-400" />
-            </div>
-            <div className="text-3xl font-extrabold text-foreground mt-2">{kpis.totalLeadsReceived}</div>
-            <span className="text-[11px] text-muted-foreground mt-1 block">Qualified skill gap routing</span>
-          </div>
-
-          <div className="glass-card rounded-2xl p-5 border border-border relative overflow-hidden">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-medium text-muted-foreground">Enrolled Candidates</span>
-              <CheckCircle2 className="w-4 h-4 text-emerald-700 dark:text-emerald-400" />
-            </div>
-            <div className="text-3xl font-extrabold text-emerald-700 dark:text-emerald-400 mt-2">{kpis.enrolledLeads}</div>
-            <span className="text-[11px] text-emerald-500/80 mt-1 block">Course conversions closed</span>
-          </div>
-
-          <div className="glass-card rounded-2xl p-5 border border-border relative overflow-hidden">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-medium text-muted-foreground">Conversion Rate</span>
-              <TrendingUp className="w-4 h-4 text-sky-400" />
-            </div>
-            <div className="text-3xl font-extrabold text-sky-400 mt-2">{kpis.conversionRatePercent}%</div>
-            <span className="text-[11px] text-sky-500/80 mt-1 block">Lead to student enrollment</span>
-          </div>
-
-          <div className="glass-card rounded-2xl p-5 border border-border relative overflow-hidden">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-medium text-muted-foreground">Est. Commission Revenue</span>
-              <DollarSign className="w-4 h-4 text-purple-700 dark:text-purple-400" />
-            </div>
-            <div className="text-3xl font-extrabold text-purple-600 dark:text-purple-300 mt-2">
-              {config.symbol}{(config.currency === "INR" ? kpis.estimatedCommissionRevenueUsd * 80 : config.currency === "EUR" ? Math.round(kpis.estimatedCommissionRevenueUsd * 0.92) : kpis.estimatedCommissionRevenueUsd).toLocaleString()}
-            </div>
-            <span className="text-[11px] text-purple-700 dark:text-purple-400/80 mt-1 block">
-              @ {config.currency === "INR" ? "₹12,000" : config.currency === "EUR" ? "€140" : "$150"} referral bounty / lead
-            </span>
-          </div>
-        </div>
-
-        {/* Edulexa Revenue & DRM Bridge Banner */}
-        <div className="rounded-2xl border border-indigo-500/30 bg-gradient-to-r from-indigo-950/40 via-purple-950/30 to-slate-900/60 p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-          <div className="flex items-center space-x-3.5">
-            <div className="w-10 h-10 rounded-xl bg-indigo-500/20 border border-indigo-500/40 flex items-center justify-center text-indigo-700 dark:text-indigo-400 shrink-0">
-              <Sparkles className="w-5 h-5" />
-            </div>
-            <div>
-              <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
-                Edulexa Revenue &amp; Compliance Engine Integrated
-                <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-emerald-500/20 text-emerald-600 dark:text-emerald-300 border border-emerald-500/30">
-                  PARITY ACTIVE
-                </span>
-              </h3>
-              <p className="text-xs text-muted-foreground mt-0.5">
-                Automated outbound AI voice cart recovery, Widevine L1 dynamic forensic watermarking, {config.tax.regimeTitle} &amp; embeddable creator tracking pixels.
-              </p>
-            </div>
-          </div>
-
-          <Link
-            href="/edulexa/dashboard"
-            className="py-2 px-3.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-xs font-semibold text-white flex items-center gap-1.5 transition-colors shrink-0 cursor-pointer"
-          >
-            <span>Launch Edulexa Suite</span>
-            <ArrowUpRight className="w-3.5 h-3.5" />
+        <div className="flex gap-2">
+          <Link href="/institute/counselling" className="rounded-xl border border-border px-3 py-2 text-sm font-medium hover:bg-muted">
+            Courses and quiz
           </Link>
+          <button type="button" onClick={() => void load()} className="inline-flex items-center gap-1.5 rounded-xl border border-border px-3 py-2 text-sm font-medium hover:bg-muted">
+            <RefreshCw aria-hidden="true" className="h-4 w-4" /> Refresh
+          </button>
         </div>
+      </header>
 
-        {/* Skill Deficits & CRM Webhook Configuration Split Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Missing Skill Clusters (2 Cols) */}
-          <div className="lg:col-span-2 glass-panel rounded-2xl p-6 border border-border space-y-4">
-            <div className="flex items-center justify-between">
-              <h2 className="text-sm font-bold text-foreground flex items-center space-x-2">
-                <Sparkles className="w-4 h-4 text-indigo-700 dark:text-indigo-400" />
-                <span>Candidate Skill Deficits & Demand Clusters</span>
-              </h2>
-              <span className="text-xs text-muted-foreground font-mono">Aggregated Real-Time</span>
-            </div>
+      <section aria-label="Inquiries" className="grid gap-4 sm:grid-cols-4">
+        {[
+          ["Inquiries", k.totalLeadsReceived],
+          ["Waiting for contact", k.pendingLeads],
+          ["Contacted", k.contactedLeads],
+          ["Enrolled", k.enrolledLeads],
+        ].map(([label, n]) => (
+          <div key={label} className={`${card} p-5`}>
+            <p className="text-xs text-muted-foreground">{label}</p>
+            <p className="mt-1 text-3xl font-semibold tabular-nums">{n}</p>
+          </div>
+        ))}
+      </section>
+      {k.totalLeadsReceived > 0 && (
+        <p className="text-sm text-muted-foreground">
+          {k.conversionRatePercent}% of inquiries have enrolled so far (as you marked them below).
+        </p>
+      )}
 
-            <p className="text-xs text-muted-foreground">
-              Technical evaluation failures identified during candidate AI voice interview defense sessions across all micro-internships:
-            </p>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
-              {[
-                { skill: "React Hooks & State Management", count: 14, color: "from-indigo-500 to-sky-500" },
-                { skill: "PostgreSQL Indexing & Optimization", count: 9, color: "from-purple-500 to-pink-500" },
-                { skill: "AWS VPC Security & Subnets", count: 7, color: "from-emerald-500 to-teal-500" },
-                { skill: "Docker Multi-Stage Containerization", count: 5, color: "from-amber-500 to-orange-500" }
-              ].map((item, idx) => (
-                <div key={idx} className="bg-card/60 rounded-xl p-3.5 border border-border flex items-center justify-between">
-                  <span className="text-xs font-medium text-foreground">{item.skill}</span>
-                  <span className="px-2.5 py-1 rounded-lg text-xs font-bold bg-indigo-500/10 text-indigo-600 dark:text-indigo-300 border border-indigo-500/30">
-                    {item.count} Leads
+      <div className="grid gap-6 lg:grid-cols-3">
+        <section aria-labelledby="pd-interest" className={`${card} p-5 lg:col-span-2`}>
+          <h2 id="pd-interest" className="text-base font-semibold">
+            What members asked about
+          </h2>
+          <p className="mt-1 text-xs text-muted-foreground">The area of each member&apos;s counselling result, as sent with their inquiry.</p>
+          {data.interestByArea.length === 0 ? (
+            <p className="mt-4 text-sm text-muted-foreground">No inquiries yet.</p>
+          ) : (
+            <ul className="mt-4 space-y-2">
+              {data.interestByArea.map((a) => (
+                <li key={a.area} className="flex items-center justify-between gap-3 text-sm">
+                  <span>{a.area}</span>
+                  <span className="tabular-nums text-muted-foreground">
+                    {a.inquiries} inquir{a.inquiries === 1 ? "y" : "ies"}
                   </span>
-                </div>
+                </li>
               ))}
+            </ul>
+          )}
+        </section>
+
+        <section aria-labelledby="pd-webhook" className={`${card} p-5`}>
+          <h2 id="pd-webhook" className="flex items-center gap-2 text-base font-semibold">
+            <Link2 aria-hidden="true" className="h-4 w-4" /> CRM webhook
+          </h2>
+          <p className="mt-1 text-xs text-muted-foreground">Each new inquiry is also sent as JSON to this address, for your CRM.</p>
+          <form onSubmit={saveWebhook} className="mt-3 space-y-3">
+            <label className="block text-sm">
+              <span className="font-medium">Endpoint address</span>
+              <input type="url" value={webhookUrl} onChange={(e) => setWebhookUrl(e.target.value)} placeholder="https://crm.example.edu/api/leads" className={input} />
+            </label>
+            <label className="block text-sm">
+              <span className="font-medium">API key header {data.apiKeyConfigured ? "(set; enter a new one to replace it)" : "(optional)"}</span>
+              <input type="password" value={apiKey} onChange={(e) => setApiKey(e.target.value)} autoComplete="off" className={input} />
+            </label>
+            <div className="flex gap-2">
+              <button type="submit" className="flex-1 rounded-xl bg-indigo-600 px-3 py-2 text-sm font-semibold text-white hover:bg-indigo-500">
+                Save
+              </button>
+              <button type="button" onClick={() => void testWebhook()} disabled={!data.outboundWebhookUrl} className="inline-flex items-center gap-1 rounded-xl border border-border px-3 py-2 text-sm hover:bg-muted disabled:opacity-50">
+                <Send aria-hidden="true" className="h-4 w-4" /> Test
+              </button>
             </div>
-          </div>
+            {webhookStatus && (
+              <p role="status" className="text-sm text-muted-foreground">
+                {webhookStatus}
+              </p>
+            )}
+          </form>
+        </section>
+      </div>
 
-          {/* CRM Webhook Config (1 Col) */}
-          <div className="glass-panel rounded-2xl p-6 border border-border space-y-4">
-            <h2 className="text-sm font-bold text-foreground flex items-center space-x-2">
-              <Link2 className="w-4 h-4 text-sky-400" />
-              <span>Outbound CRM Webhook</span>
-            </h2>
-            <p className="text-xs text-muted-foreground">
-              Automatically dispatch qualified lead JSON payloads directly to your HubSpot, Salesforce, or custom CRM endpoint:
-            </p>
-
-            <form onSubmit={handleSaveWebhookConfig} className="space-y-3">
-              <div>
-                <label className="text-[11px] font-semibold text-muted-foreground block mb-1">Webhook Endpoint URL</label>
-                <input
-                  type="url"
-                  value={webhookUrl}
-                  onChange={(e) => setWebhookUrl(e.target.value)}
-                  placeholder="https://crm.yourinstitute.com/api/leads"
-                  className="w-full bg-card border border-border rounded-xl px-3 py-2 text-xs text-foreground focus:outline-none focus:border-indigo-500"
-                />
-              </div>
-
-              <div>
-                <label className="text-[11px] font-semibold text-muted-foreground block mb-1">X-Institute-Api-Key Header</label>
-                <input
-                  type="password"
-                  value={apiKey}
-                  onChange={(e) => setApiKey(e.target.value)}
-                  placeholder="••••••••••••••••"
-                  className="w-full bg-card border border-border rounded-xl px-3 py-2 text-xs text-foreground focus:outline-none focus:border-indigo-500"
-                />
-              </div>
-
-              {webhookStatus && (
-                <div className="text-[11px] font-mono text-indigo-700 dark:text-indigo-400 bg-indigo-500/10 p-2 rounded-lg border border-indigo-500/30">
-                  {webhookStatus}
-                </div>
-              )}
-
-              <div className="flex items-center space-x-2 pt-1">
-                <button
-                  type="submit"
-                  className="flex-1 py-2 px-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-xs transition-colors cursor-pointer"
-                >
-                  Save Endpoint
-                </button>
-                <button
-                  type="button"
-                  onClick={handleTestWebhookDispatch}
-                  className="py-2 px-3 rounded-xl bg-card hover:bg-muted text-muted-foreground font-medium text-xs border border-border transition-colors flex items-center space-x-1 cursor-pointer"
-                >
-                  <Send className="w-3 h-3" />
-                  <span>Test Ping</span>
-                </button>
-              </div>
-            </form>
-          </div>
+      <section aria-labelledby="pd-leads" className={`${card} overflow-hidden`}>
+        <div className="p-5">
+          <h2 id="pd-leads" className="text-base font-semibold">
+            Inquiries
+          </h2>
+          <p className="mt-1 text-xs text-muted-foreground">Mark each inquiry as you follow it up. Members agreed to share these details with you.</p>
         </div>
-
-        {/* Candidate Lead Referrals Management Table */}
-        <div className="glass-panel rounded-2xl p-6 border border-border space-y-4">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <div>
-              <h2 className="text-base font-bold text-foreground">Referred Candidate Lead Pipeline</h2>
-              <p className="text-xs text-muted-foreground">Update student enrollment status to track referral commission conversions.</p>
-            </div>
-          </div>
-
+        {data.recentLeads.length === 0 ? (
+          <p className="px-5 pb-5 text-sm text-muted-foreground">No inquiries yet. They appear here when members ask about your courses.</p>
+        ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs text-muted-foreground">
-              <thead className="bg-card/80 text-muted-foreground uppercase text-[10px] font-semibold border-b border-border">
+            <table className="w-full text-sm">
+              <thead className="border-y border-border text-left text-xs text-muted-foreground">
                 <tr>
-                  <th className="py-3 px-4">Candidate Name</th>
-                  <th className="py-3 px-4">Contact Email</th>
-                  <th className="py-3 px-4">Matched Recommended Course</th>
-                  <th className="py-3 px-4">Referred On</th>
-                  <th className="py-3 px-4 text-right">Conversion Status</th>
+                  <th className="p-3 font-medium">Member</th>
+                  <th className="p-3 font-medium">Course</th>
+                  <th className="p-3 font-medium">Received</th>
+                  <th className="p-3 text-right font-medium">Status</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-800/60">
-                {leads.map((lead: PartnerLead) => (
-                  <tr key={lead.leadId} className="hover:bg-card/40 transition-colors">
-                    <td className="py-3.5 px-4 font-semibold text-foreground">{lead.candidateName}</td>
-                    <td className="py-3.5 px-4 font-mono text-muted-foreground">{lead.candidateEmail}</td>
-                    <td className="py-3.5 px-4 text-indigo-600 dark:text-indigo-300 font-medium">{lead.courseName}</td>
-                    <td className="py-3.5 px-4 text-muted-foreground">
-                      {new Date(lead.createdAt).toLocaleDateString()}
+              <tbody className="divide-y divide-border">
+                {data.recentLeads.map((lead) => (
+                  <tr key={lead.leadId}>
+                    <td className="p-3">
+                      <span className="block font-medium">{lead.candidateName ?? "Account deleted"}</span>
+                      {lead.candidateEmail && (
+                        <a href={`mailto:${lead.candidateEmail}`} className="text-xs text-indigo-700 hover:underline dark:text-indigo-300">
+                          {lead.candidateEmail}
+                        </a>
+                      )}
                     </td>
-                    <td className="py-3.5 px-4 text-right">
+                    <td className="p-3">{lead.courseName ?? "—"}</td>
+                    <td className="p-3 text-muted-foreground">{new Date(lead.createdAt).toLocaleDateString()}</td>
+                    <td className="p-3 text-right">
                       <select
+                        aria-label={`Status of the inquiry from ${lead.candidateName ?? "this member"}`}
                         value={lead.status}
                         disabled={updatingLeadId === lead.leadId}
-                        onChange={(e) => handleUpdateLeadStatus(lead.leadId, e.target.value)}
-                        className={`px-3 py-1.5 rounded-xl text-xs font-semibold bg-card border transition-colors cursor-pointer focus:outline-none ${
-                          lead.status === "Enrolled"
-                            ? "text-emerald-700 dark:text-emerald-400 border-emerald-500/40 bg-emerald-500/10"
-                            : lead.status === "Contacted"
-                            ? "text-sky-400 border-sky-500/40 bg-sky-500/10"
-                            : "text-amber-700 dark:text-amber-400 border-amber-500/40 bg-amber-500/10"
-                        }`}
+                        onChange={(e) => void updateStatus(lead.leadId, e.target.value)}
+                        className="rounded-lg border border-border bg-background px-2 py-1 text-sm"
                       >
-                        <option value="Pending" className="bg-card text-amber-700 dark:text-amber-400">Pending</option>
-                        <option value="Contacted" className="bg-card text-sky-400">Contacted</option>
-                        <option value="Enrolled" className="bg-card text-emerald-700 dark:text-emerald-400">Enrolled</option>
+                        <option value="Pending">Waiting for contact</option>
+                        <option value="Contacted">Contacted</option>
+                        <option value="Enrolled">Enrolled</option>
                       </select>
                     </td>
                   </tr>
@@ -415,8 +260,8 @@ export default function PartnerDashboardPage() {
               </tbody>
             </table>
           </div>
-        </div>
-      </div>
-    </div>
+        )}
+      </section>
+    </main>
   );
 }

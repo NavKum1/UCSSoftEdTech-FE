@@ -112,7 +112,7 @@ export default function PersonaSelectorPage() {
         body: JSON.stringify({
           personaCode,
           dialectCode,
-          candidateName: "Elena Rostova",
+          candidateName: "the candidate",
           codeSnippet:
             "def handle_payment(account_id, amount):\n    cursor.execute(f'UPDATE balances SET balance = balance - {amount} WHERE id = {account_id}')",
           flaws: [

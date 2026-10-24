@@ -88,7 +88,10 @@ function gate(req: NextRequest, userId: string | null | undefined, hasRole: (...
   }
   // 4. General Candidate Protected Routes
   else if (isProtectedRoute(req)) {
-    if (!userId && !(isPartnerCareerRoute(req) && req.cookies.get("career_partner")?.value === "1")) {
+    // a partner session reaches the career routes; a learning-platform (LTI) session the candidate pages too
+    const partnerSession = isPartnerCareerRoute(req) && req.cookies.get("career_partner")?.value === "1";
+    const lmsSession = req.cookies.get("lms_session")?.value === "1";
+    if (!userId && !partnerSession && !lmsSession) {
       return NextResponse.redirect(new URL("/login?redirect_url=" + encodeURIComponent(req.nextUrl.pathname), req.url));
     }
   }

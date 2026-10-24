@@ -1,257 +1,245 @@
 "use client";
 
-import React, { useState } from "react";
-import Link from "next/link";
-import { 
-  ShieldCheck, ShieldAlert, Video, Eye,
-  Search, ArrowRight
-} from "lucide-react";
+/**
+ * Session integrity review (phase C, 24 Oct 2026): proctored sessions with the browser and environment events that were
+ * logged (tab switches, focus loss, pastes, device changes), their integrity score and the full event log, for a person to
+ * review. No one is disqualified automatically; a reviewer records their decision with a note. No gaze or face detection
+ * is performed. (This page used to list three invented candidates.)
+ */
 
-interface ProctoringSession {
-  id: string;
-  candidateName: string;
-  candidateEmail: string;
-  assessmentTitle: string;
-  company: string;
-  status: "FLAGGED" | "CLEAN" | "IN_REVIEW";
-  riskScore: number;
-  durationMinutes: number;
-  recordedAt: string;
-  violationsSummary: {
-    critical: number;
-    high: number;
-    medium: number;
-  };
-  hasScreenRecording: boolean;
-  hasWebcamRecording: boolean;
+import React, { useCallback, useEffect, useState } from "react";
+import { ShieldAlert, ShieldCheck } from "lucide-react";
+import { AccessNotice, useLatestRef, useLegacyApi } from "@/lib/legacyApi";
+
+interface SessionRow {
+  sessionId: string;
+  userId: string;
+  candidateName: string | null;
+  totalViolations: number;
+  integrityScore: number;
+  riskLevel: string;
+  isOverriddenByAdmin: boolean;
+  needsReview: boolean;
+  createdAt: string;
+  lastUpdatedAt: string;
+}
+interface Report {
+  sessionId: string;
+  totalViolations: number;
+  integrityScore: number;
+  riskLevel: string;
+  auditSummary: string;
+  isOverriddenByAdmin: boolean;
+  adminOverrideNotes: string | null;
+  overriddenByAdminEmail: string | null;
+  incidentBreakdown: Record<string, number>;
+  chronologicalLedger: { id: string; eventType: string; severity: string; metadata_JSON: string; timestamp: string }[];
 }
 
-export default function RecruiterProctoringPortalPage() {
-  const [filter, setFilter] = useState<"ALL" | "FLAGGED" | "CLEAN">("ALL");
-  const [search, setSearch] = useState("");
+const card = "rounded-2xl border border-border bg-card shadow-[0_1px_2px_rgb(16_24_40/0.04)]";
+const EVENT_LABEL: Record<string, string> = {
+  TabSwitch: "Switched tab",
+  WindowBlur: "Left the window",
+  FullScreenExit: "Left full screen",
+  ClipboardPaste: "Pasted text",
+  KeystrokeCadence: "Unusual typing rhythm",
+  AudioDisturbance: "Background audio",
+  DeviceChange: "Camera or microphone changed",
+  Other: "Other event",
+};
 
-  const sessions: ProctoringSession[] = [
-    {
-      id: "REC-UBER-7712",
-      candidateName: "Jordan Vance",
-      candidateEmail: "jordan.vance@example.com",
-      assessmentTitle: "Senior Distributed Systems Engineer (Uber)",
-      company: "Uber",
-      status: "FLAGGED",
-      riskScore: 88,
-      durationMinutes: 45,
-      recordedAt: "Today, 10:15 AM",
-      violationsSummary: { critical: 1, high: 2, medium: 1 },
-      hasScreenRecording: true,
-      hasWebcamRecording: true
-    },
-    {
-      id: "REC-STRIPE-4409",
-      candidateName: "Elena Rostova",
-      candidateEmail: "elena.r@example.com",
-      assessmentTitle: "Staff Infrastructure Architect (Stripe)",
-      company: "Stripe",
-      status: "CLEAN",
-      riskScore: 12,
-      durationMinutes: 60,
-      recordedAt: "Today, 08:30 AM",
-      violationsSummary: { critical: 0, high: 0, medium: 0 },
-      hasScreenRecording: true,
-      hasWebcamRecording: true
-    },
-    {
-      id: "REC-META-9921",
-      candidateName: "Marcus Thorne",
-      candidateEmail: "m.thorne@example.com",
-      assessmentTitle: "L6 Production Engineer (Meta)",
-      company: "Meta",
-      status: "IN_REVIEW",
-      riskScore: 45,
-      durationMinutes: 52,
-      recordedAt: "Yesterday, 04:20 PM",
-      violationsSummary: { critical: 0, high: 1, medium: 2 },
-      hasScreenRecording: true,
-      hasWebcamRecording: true
-    }
-  ];
+export default function SessionIntegrityPage() {
+  const { apiFetch, ready, access } = useLegacyApi();
+  const [rows, setRows] = useState<SessionRow[] | null>(null);
+  const [filter, setFilter] = useState<"all" | "review" | "Flagged" | "Suspicious" | "Clean">("all");
+  const [open, setOpen] = useState<Report | null>(null);
+  const [notes, setNotes] = useState("");
+  const [message, setMessage] = useState<string | null>(null);
+  const [failed, setFailed] = useState(false);
 
-  const filtered = sessions.filter(s => {
-    if (filter === "FLAGGED" && s.status !== "FLAGGED") return false;
-    if (filter === "CLEAN" && s.status !== "CLEAN") return false;
-    if (search.trim()) {
-      const q = search.toLowerCase();
-      return s.candidateName.toLowerCase().includes(q) || s.candidateEmail.toLowerCase().includes(q) || s.id.toLowerCase().includes(q);
+  const load = useCallback(async () => {
+    try {
+      const res = await apiFetch("/api/proctoring/sessions");
+      if (!res.ok) return setFailed(true);
+      setRows((await res.json()) as SessionRow[]);
+    } catch {
+      setFailed(true);
     }
-    return true;
-  });
+  }, [apiFetch]);
+  const loadRef = useLatestRef(load);
+  useEffect(() => {
+    if (ready) void loadRef.current();
+  }, [ready, loadRef]);
+
+  const openReport = async (id: string) => {
+    setMessage(null);
+    setNotes("");
+    const res = await apiFetch(`/api/proctoring/report/${id}`);
+    if (res.ok) setOpen((await res.json()) as Report);
+  };
+
+  const recordDecision = async () => {
+    if (!open || !notes.trim()) return;
+    const res = await apiFetch(`/api/proctoring/session/${open.sessionId}/override`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ waiveDisqualification: true, notes: notes.trim() }),
+    });
+    if (res.ok) {
+      setMessage("Your review was recorded.");
+      await openReport(open.sessionId);
+      await load();
+    } else setMessage("That didn't save. Please try again.");
+  };
+
+  if (access) return <AccessNotice problem={access} feature="Session integrity review" />;
+
+  const shown = (rows ?? []).filter((r) => (filter === "all" ? true : filter === "review" ? r.needsReview : r.riskLevel === filter));
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border pb-6">
-        <div>
-          <div className="flex items-center space-x-2">
-            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20 uppercase tracking-wider">
-              Forensic Proctoring
-            </span>
-            <span className="text-xs text-muted-foreground">• Dual-Stream Video Audit</span>
-          </div>
-          <h1 className="text-2xl font-black text-foreground mt-1">
-            Live AI Video Proctoring & Session Audit Vault
-          </h1>
-          <p className="text-xs text-muted-foreground mt-0.5">
-            Session recordings alongside logged browser and environment events (tab switches, focus loss, paste activity) for a human reviewer to assess. No gaze or face detection is performed.
-          </p>
-        </div>
+      <header>
+        <h1 className="text-2xl font-semibold tracking-tight">Session integrity review</h1>
+        <p className="mt-1 max-w-3xl text-sm text-muted-foreground">
+          Events logged during proctored sessions, for a person to review. Event severity is set by the kind of event, not by the candidate&apos;s browser.
+          No one is disqualified automatically, and no gaze or face detection is performed.
+        </p>
+      </header>
 
-        <div className="flex items-center space-x-2">
-          <Link
-            href="/recruiter/dashboard"
-            className="px-3.5 py-1.5 rounded-xl bg-secondary hover:bg-secondary/80 text-secondary-foreground text-xs font-semibold border border-border transition-colors"
-          >
-            Candidate Sprints
-          </Link>
-          <Link
-            href="/recruiter/benchmark"
-            className="px-3.5 py-1.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-semibold shadow-sm transition-colors"
-          >
-            AI Benchmarking
-          </Link>
-        </div>
-      </div>
-
-      {/* Metrics Row */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="p-4 rounded-2xl bg-card border border-border">
-          <div className="flex items-center justify-between text-xs text-muted-foreground">
-            <span>Total Recordings Stored</span>
-            <Video className="w-4 h-4 text-purple-500" />
-          </div>
-          <p className="text-2xl font-black text-foreground mt-1">1,482</p>
-          <p className="text-[10px] text-muted-foreground mt-0.5">Encrypted AES-256 cloud vault</p>
-        </div>
-
-        <div className="p-4 rounded-2xl bg-card border border-border">
-          <div className="flex items-center justify-between text-xs text-muted-foreground">
-            <span>Flagged for Human Review</span>
-            <ShieldAlert className="w-4 h-4 text-rose-500" />
-          </div>
-          <p className="text-2xl font-black text-rose-600 dark:text-rose-400 mt-1">14 Sessions</p>
-          <p className="text-[10px] text-muted-foreground mt-0.5">Logged browser/environment events for a reviewer to look at</p>
-        </div>
-
-        <div className="p-4 rounded-2xl bg-card border border-border">
-          <div className="flex items-center justify-between text-xs text-muted-foreground">
-            <span>Verified Clean Ratio</span>
-            <ShieldCheck className="w-4 h-4 text-emerald-500" />
-          </div>
-          <p className="text-2xl font-black text-emerald-600 dark:text-emerald-400 mt-1">98.9%</p>
-          <p className="text-[10px] text-muted-foreground mt-0.5">No integrity signals logged</p>
-        </div>
-      </div>
-
-      {/* Search & Filter Toolbar */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-3 p-3 rounded-2xl bg-card border border-border">
-        <div className="relative w-full sm:w-72">
-          <Search className="w-4 h-4 text-muted-foreground absolute left-3 top-1/2 -translate-y-1/2" />
-          <input
-            type="text"
-            placeholder="Search candidate name, email, or session ID..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-9 pr-3 py-1.5 text-xs rounded-xl bg-background border border-border focus:outline-none focus:ring-1 focus:ring-purple-500 text-foreground"
-          />
-        </div>
-
-        <div className="flex items-center space-x-2 w-full sm:w-auto">
+      <div role="tablist" aria-label="Filter sessions" className="flex flex-wrap gap-2">
+        {(
+          [
+            ["all", "All"],
+            ["review", "Needs review"],
+            ["Flagged", "Flagged"],
+            ["Suspicious", "Suspicious"],
+            ["Clean", "Clean"],
+          ] as const
+        ).map(([key, label]) => (
           <button
-            onClick={() => setFilter("ALL")}
-            className={`px-3 py-1 rounded-lg text-xs font-semibold transition-colors ${
-              filter === "ALL" ? "bg-purple-600 text-white" : "bg-muted text-muted-foreground hover:text-foreground"
-            }`}
+            key={key}
+            role="tab"
+            type="button"
+            aria-selected={filter === key}
+            onClick={() => setFilter(key)}
+            className={`rounded-full border px-3 py-1 text-sm ${filter === key ? "border-indigo-600 bg-indigo-50 font-semibold dark:bg-indigo-500/10" : "border-border"}`}
           >
-            All Sessions
+            {label}
           </button>
-          <button
-            onClick={() => setFilter("FLAGGED")}
-            className={`px-3 py-1 rounded-lg text-xs font-semibold transition-colors ${
-              filter === "FLAGGED" ? "bg-rose-600 text-white" : "bg-muted text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            Flagged Only
-          </button>
-          <button
-            onClick={() => setFilter("CLEAN")}
-            className={`px-3 py-1 rounded-lg text-xs font-semibold transition-colors ${
-              filter === "CLEAN" ? "bg-emerald-600 text-white" : "bg-muted text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            Clean
-          </button>
-        </div>
-      </div>
-
-      {/* Sessions List */}
-      <div className="space-y-3">
-        {filtered.map((session) => (
-          <div
-            key={session.id}
-            className="p-5 rounded-2xl bg-card border border-border hover:border-purple-500/40 transition-all flex flex-col md:flex-row md:items-center justify-between gap-4"
-          >
-            <div className="space-y-1">
-              <div className="flex items-center space-x-2">
-                <span className="font-mono text-xs font-bold text-muted-foreground">
-                  {session.id}
-                </span>
-                <span className="font-bold text-foreground text-sm">
-                  {session.candidateName}
-                </span>
-                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
-                  session.status === "FLAGGED"
-                    ? "bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20"
-                    : session.status === "CLEAN"
-                    ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20"
-                    : "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20"
-                }`}>
-                  {session.status} (Risk: {session.riskScore}%)
-                </span>
-              </div>
-
-              <div className="text-xs text-muted-foreground">
-                <span>{session.assessmentTitle}</span> • <span className="font-mono text-[11px]">{session.candidateEmail}</span>
-              </div>
-
-              <div className="flex items-center space-x-3 text-[11px] text-muted-foreground pt-1">
-                <span>Duration: {session.durationMinutes}m</span>
-                <span>•</span>
-                <span>Recorded: {session.recordedAt}</span>
-                <span>•</span>
-                <span className="text-purple-600 dark:text-purple-400 font-medium">
-                  {session.hasWebcamRecording && session.hasScreenRecording ? "Dual HD Stream (Webcam + Screen)" : "Single Stream"}
-                </span>
-              </div>
-            </div>
-
-            <div className="flex items-center space-x-3 self-end md:self-center">
-              <div className="text-right hidden sm:block">
-                <span className="text-[10px] text-muted-foreground block">Anomaly Markers</span>
-                <span className="font-mono text-xs font-bold text-foreground">
-                  {session.violationsSummary.critical} Crit / {session.violationsSummary.high} High
-                </span>
-              </div>
-
-              <Link
-                href={`/recruiter/proctoring/video/${session.id}`}
-                className="px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold flex items-center space-x-1.5 shadow-sm transition-colors"
-              >
-                <Eye className="w-3.5 h-3.5" />
-                <span>Review Video Feed</span>
-                <ArrowRight className="w-3 h-3 ml-1" />
-              </Link>
-            </div>
-          </div>
         ))}
       </div>
+
+      {failed ? (
+        <p className={`${card} p-6 text-sm text-muted-foreground`}>The sessions couldn&apos;t be loaded. Please refresh the page.</p>
+      ) : !rows ? (
+        <div className={`${card} h-40 animate-pulse motion-reduce:animate-none`} aria-busy="true" />
+      ) : shown.length === 0 ? (
+        <p className={`${card} p-6 text-sm text-muted-foreground`}>{rows.length === 0 ? "No proctored sessions yet." : "No sessions match this filter."}</p>
+      ) : (
+        <div className={`${card} overflow-x-auto`}>
+          <table className="w-full text-sm">
+            <thead className="border-b border-border text-left text-xs text-muted-foreground">
+              <tr>
+                <th className="p-3 font-medium">Candidate</th>
+                <th className="p-3 font-medium">Last activity</th>
+                <th className="p-3 text-right font-medium">Events</th>
+                <th className="p-3 text-right font-medium">Integrity score</th>
+                <th className="p-3 font-medium">Status</th>
+                <th className="p-3" />
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-border">
+              {shown.map((r) => (
+                <tr key={r.sessionId}>
+                  <td className="p-3">{r.candidateName ?? <span className="font-mono text-xs text-muted-foreground">{r.userId.slice(0, 8)}</span>}</td>
+                  <td className="p-3 text-muted-foreground">{new Date(r.lastUpdatedAt).toLocaleString()}</td>
+                  <td className="p-3 text-right tabular-nums">{r.totalViolations}</td>
+                  <td className="p-3 text-right tabular-nums">{r.integrityScore}</td>
+                  <td className="p-3">
+                    {r.isOverriddenByAdmin ? (
+                      <span className="inline-flex items-center gap-1 text-emerald-700 dark:text-emerald-400">
+                        <ShieldCheck aria-hidden="true" className="h-4 w-4" /> Reviewed
+                      </span>
+                    ) : r.needsReview ? (
+                      <span className="inline-flex items-center gap-1 text-amber-700 dark:text-amber-400">
+                        <ShieldAlert aria-hidden="true" className="h-4 w-4" /> Needs review
+                      </span>
+                    ) : (
+                      r.riskLevel
+                    )}
+                  </td>
+                  <td className="p-3 text-right">
+                    <button type="button" onClick={() => void openReport(r.sessionId)} className="text-sm font-semibold text-indigo-700 hover:underline dark:text-indigo-300">
+                      Open
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {open && (
+        <section aria-labelledby="si-report" className={`${card} p-5`}>
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <h2 id="si-report" className="text-base font-semibold">
+                Session log
+              </h2>
+              <p className="mt-1 text-sm text-muted-foreground">{open.auditSummary}</p>
+            </div>
+            <button type="button" onClick={() => setOpen(null)} className="text-sm text-muted-foreground hover:text-foreground">
+              Close
+            </button>
+          </div>
+          {Object.keys(open.incidentBreakdown).length > 0 && (
+            <ul className="mt-3 flex flex-wrap gap-2 text-xs">
+              {Object.entries(open.incidentBreakdown).map(([k, n]) => (
+                <li key={k} className="rounded-full border border-border px-2.5 py-1">
+                  {EVENT_LABEL[k] ?? k}: {n}
+                </li>
+              ))}
+            </ul>
+          )}
+          <ol className="mt-4 max-h-80 divide-y divide-border overflow-auto rounded-xl border border-border text-sm">
+            {open.chronologicalLedger.map((e) => (
+              <li key={e.id} className="flex flex-wrap items-baseline justify-between gap-2 px-3 py-2">
+                <span>
+                  {EVENT_LABEL[e.eventType] ?? e.eventType} <span className="text-xs text-muted-foreground">({e.severity})</span>
+                </span>
+                <span className="text-xs text-muted-foreground tabular-nums">{new Date(e.timestamp).toLocaleTimeString()}</span>
+              </li>
+            ))}
+          </ol>
+          {open.isOverriddenByAdmin ? (
+            <p className="mt-4 text-sm">
+              Reviewed by {open.overriddenByAdminEmail ?? "a reviewer"}: {open.adminOverrideNotes}
+            </p>
+          ) : (
+            <form
+              className="mt-4 space-y-2"
+              onSubmit={(e) => {
+                e.preventDefault();
+                void recordDecision();
+              }}
+            >
+              <label className="block text-sm">
+                <span className="font-medium">Your review (recorded with your name)</span>
+                <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={3} maxLength={2000} required className="mt-1 block w-full rounded-xl border border-border bg-background px-3 py-2 text-sm" />
+              </label>
+              <button type="submit" disabled={!notes.trim()} className="rounded-xl bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-500 disabled:opacity-50">
+                Record review
+              </button>
+            </form>
+          )}
+          {message && (
+            <p role="status" className="mt-2 text-sm text-muted-foreground">
+              {message}
+            </p>
+          )}
+        </section>
+      )}
     </div>
   );
 }

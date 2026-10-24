@@ -1,309 +1,245 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { AccessNotice, useLegacyApi } from "@/lib/legacyApi";
-import {
-  Trophy,
-  Crown,
-  Search,
-  ExternalLink,
-  ShieldCheck,
-  AlertTriangle,
-  Clock,
-  ArrowLeft,
-} from "lucide-react";
+/**
+ * Leaderboards (phase B, 24 Oct 2026), both built from graded results only:
+ * - Daily practice: points from members' first attempt at each incident drill and code review, this week (Monday 00:00
+ *   UTC onwards) or all time.
+ * - Verified challenges: each member's best verified coding-challenge credential.
+ * Names show as first name and last initial. Members can hide themselves; they still see their own rank.
+ */
 
-interface LeaderboardEntry {
-  rank: number;
-  credentialId: string;
-  candidateName: string;
-  finalScore: number;
-  badgeTitle: string;
-  publicUrlSlug: string;
-  completionTimeSeconds: number | null;
-  completionTimeFormatted: string | null;
-  verificationFlagged: boolean;
-  verifiedAt: string;
+import React, { useCallback, useEffect, useState } from "react";
+import Link from "next/link";
+import { EyeOff, Trophy } from "lucide-react";
+import { AccessNotice, useLatestRef, useLegacyApi } from "@/lib/legacyApi";
+
+interface PracticeBoard {
+  period: "week" | "all";
+  startsAt: string | null;
+  endsAt: string | null;
+  entries: { rank: number; displayName: string; points: number; drills: number; isYou: boolean }[];
+  you: { rank: number; points: number; drills: number } | null;
+  youAreVisible: boolean;
+  rankedMembers: number;
 }
+interface ChallengeBoard {
+  totalPublicCount: number;
+  leaderboard: {
+    rank: number;
+    candidateName: string;
+    finalScore: number;
+    sprintTitle: string | null;
+    language: string | null;
+    publicUrlSlug: string;
+    completionTimeFormatted: string | null;
+    isYou: boolean;
+  }[];
+  you: { rank: number; finalScore: number; sprintTitle: string | null; visible: boolean } | null;
+}
+
+const card = "rounded-2xl border border-border bg-card shadow-[0_1px_2px_rgb(16_24_40/0.04)]";
+type Tab = "week" | "all" | "challenges";
 
 export default function LeaderboardPage() {
   const { apiFetch, ready, access } = useLegacyApi();
-  const router = useRouter();
-  const [entries, setEntries] = useState<LeaderboardEntry[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [searchQuery, setSearchQuery] = useState<string>("");
-  const [fetchError, setFetchError] = useState<string | null>(null);
+  const [tab, setTab] = useState<Tab>("week");
+  const [practice, setPractice] = useState<PracticeBoard | null>(null);
+  const [challenges, setChallenges] = useState<ChallengeBoard | null>(null);
+  const [visible, setVisible] = useState<boolean | null>(null);
+  const [failed, setFailed] = useState(false);
+  const [saving, setSaving] = useState(false);
 
-  useEffect(() => {
-    if (!ready) return;
-    const fetchLeaderboard = async () => {
+  const load = useCallback(
+    async (which: Tab) => {
+      setFailed(false);
       try {
-        setFetchError(null);
-        const res = await apiFetch(`/api/leaderboard`);
-        if (res.ok) {
-          const data = await res.json();
-          setEntries(data.leaderboard || []);
+        if (which === "challenges") {
+          const res = await apiFetch("/api/Leaderboard?limit=100");
+          if (!res.ok) return setFailed(true);
+          const body = (await res.json()) as ChallengeBoard;
+          setChallenges(body);
+          if (body.you) setVisible(body.you.visible);
         } else {
-          setFetchError(`Server returned status ${res.status}: Unable to load verified leaderboard.`);
-          setEntries([]);
+          const res = await apiFetch(`/api/practice/leaderboard?period=${which}&take=100`);
+          if (!res.ok) return setFailed(true);
+          const body = (await res.json()) as PracticeBoard;
+          setPractice(body);
+          setVisible(body.youAreVisible);
         }
-      } catch (err) {
-        console.error("Failed to load leaderboard:", err);
-        setFetchError((err as Error).message || "Failed to connect to leaderboard service.");
-        setEntries([]);
-      } finally {
-        setLoading(false);
+      } catch {
+        setFailed(true);
       }
-    };
-
-    fetchLeaderboard();
-  }, [ready, apiFetch]);
-
-  const filtered = entries.filter((item) =>
-    item.candidateName.toLowerCase().includes(searchQuery.toLowerCase())
+    },
+    [apiFetch],
   );
+  const loadRef = useLatestRef(load);
+  useEffect(() => {
+    if (ready) void loadRef.current(tab);
+  }, [ready, tab, loadRef]);
 
-  const top3 = entries.slice(0, 3);
+  const toggleVisible = async (value: boolean) => {
+    setSaving(true);
+    try {
+      const res = await apiFetch("/api/practice/leaderboard/visibility", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ visible: value }),
+      });
+      if (res.ok) {
+        setVisible(value);
+        await load(tab);
+      }
+    } finally {
+      setSaving(false);
+    }
+  };
 
-  if (access) return <AccessNotice problem={access} feature="The leaderboard" />;
+  if (access) return <AccessNotice problem={access} feature="The leaderboards" />;
+
+  const tabs: { key: Tab; label: string }[] = [
+    { key: "week", label: "This week" },
+    { key: "all", label: "All time" },
+    { key: "challenges", label: "Verified challenges" },
+  ];
 
   return (
-    <div className="min-h-screen bg-background text-foreground flex flex-col font-sans pb-16">
-      {/* Top Navbar */}
-      <header className="border-b border-border bg-card/80 backdrop-blur-md sticky top-16 z-20">
-        <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-          <div className="flex items-center space-x-3 cursor-pointer" onClick={() => router.push("/")}>
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-amber-500 to-yellow-600 flex items-center justify-center font-bold text-white shadow-lg shadow-amber-500/20">
-              <Trophy className="w-5 h-5 text-white" />
-            </div>
-            <div>
-              <div className="flex items-center space-x-2">
-                <span className="font-bold text-base text-foreground tracking-wide">BUILD & DEFEND</span>
-                <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-600 dark:text-amber-300 font-semibold border border-amber-500/30">
-                  Global Hall of Fame
-                </span>
-              </div>
-              <p className="text-[11px] text-muted-foreground">Public Engineering Leaderboard & Verified Credentials</p>
-            </div>
-          </div>
-
-          <button
-            onClick={() => router.push("/")}
-            className="text-xs text-muted-foreground hover:text-foreground flex items-center space-x-1.5 transition-colors cursor-pointer"
-          >
-            <ArrowLeft className="w-3.5 h-3.5" />
-            <span>Marketplace</span>
-          </button>
+    <main className="mx-auto max-w-4xl px-4 pb-16 pt-8 sm:px-6">
+      <header className="flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <h1 className="flex items-center gap-2 text-2xl font-semibold tracking-tight">
+            <Trophy aria-hidden="true" className="h-6 w-6 text-amber-500" /> Leaderboards
+          </h1>
+          <p className="mt-1 text-sm text-muted-foreground">Built from graded results only. Names show as first name and last initial.</p>
         </div>
+        {visible !== null && (
+          <label className="flex items-center gap-2 text-sm">
+            <input type="checkbox" checked={visible} disabled={saving} onChange={(e) => void toggleVisible(e.target.checked)} className="h-4 w-4 accent-indigo-600" />
+            Show me to other members
+          </label>
+        )}
       </header>
 
-      <main className="max-w-7xl mx-auto px-6 pt-10 flex-1 w-full space-y-10">
-        {/* Banner Section */}
-        <div className="text-center space-y-3">
-          <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-700 dark:text-amber-400 text-xs font-semibold">
-            <Crown className="w-4 h-4 text-amber-700 dark:text-amber-400" />
-            <span>Top 50 Verified Engineers</span>
-          </div>
-          <h1 className="text-3xl sm:text-4xl font-extrabold text-foreground tracking-tight">
-            Global Community Leaderboard
-          </h1>
-          <p className="text-xs sm:text-sm text-muted-foreground max-w-xl mx-auto">
-            Engineers ranked by AI Voice Defense score and sprint completion speed. Only public opt-in credentials are shown.
+      <div role="tablist" aria-label="Leaderboards" className="mt-6 flex gap-1 border-b border-border">
+        {tabs.map((t) => (
+          <button
+            key={t.key}
+            role="tab"
+            type="button"
+            aria-selected={tab === t.key}
+            onClick={() => setTab(t.key)}
+            className={`-mb-px border-b-2 px-3 py-2 text-sm ${tab === t.key ? "border-indigo-600 font-semibold" : "border-transparent text-muted-foreground hover:text-foreground"}`}
+          >
+            {t.label}
+          </button>
+        ))}
+      </div>
+
+      {visible === false && (
+        <p className="mt-4 flex items-center gap-2 rounded-xl border border-border bg-muted/50 px-4 py-3 text-sm">
+          <EyeOff aria-hidden="true" className="h-4 w-4" /> You are hidden from other members. You still see your own rank below.
+        </p>
+      )}
+      {failed && <p className="mt-6 text-sm text-muted-foreground">The leaderboard couldn&apos;t be loaded. Please try again.</p>}
+
+      {tab !== "challenges" && practice && practice.period === tab && (
+        <section className="mt-6">
+          <p className="mb-3 text-xs text-muted-foreground">
+            {tab === "week" && practice.endsAt
+              ? `Points from daily drills since Monday. Resets ${new Date(practice.endsAt).toLocaleString(undefined, { weekday: "long", hour: "numeric", minute: "2-digit" })}.`
+              : "Points from daily drills since they started."}{" "}
+            Your first try at each drill counts. <Link href="/daily" className="font-medium text-indigo-700 hover:underline dark:text-indigo-300">Today&apos;s drills</Link>
           </p>
-        </div>
+          <Table
+            empty="Nobody has earned points in this period yet."
+            rows={practice.entries.map((e) => ({ key: `${e.rank}-${e.displayName}`, rank: e.rank, name: e.displayName, isYou: e.isYou, cells: [`${e.drills} drill${e.drills === 1 ? "" : "s"}`, `${e.points} pts`] }))}
+            headers={["Drills", "Points"]}
+            you={practice.you && !practice.entries.some((e) => e.isYou) ? { rank: practice.you.rank, cells: [`${practice.you.drills} drills`, `${practice.you.points} pts`] } : null}
+          />
+        </section>
+      )}
 
-        {fetchError && (
-          <div className="max-w-2xl mx-auto p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center space-x-3 text-amber-600 dark:text-amber-300 text-xs">
-            <span className="font-bold">Notice:</span>
-            <span>{fetchError}</span>
-          </div>
-        )}
+      {tab === "challenges" && challenges && (
+        <section className="mt-6">
+          <p className="mb-3 text-xs text-muted-foreground">Each member&apos;s best verified coding challenge: best score first, then the fastest verified completion.</p>
+          <Table
+            empty="No verified challenge results yet."
+            headers={["Challenge", "Time", "Score"]}
+            rows={challenges.leaderboard.map((e) => ({
+              key: e.publicUrlSlug,
+              rank: e.rank,
+              name: e.candidateName,
+              isYou: e.isYou,
+              href: `/credential/${e.publicUrlSlug}`,
+              cells: [e.sprintTitle ?? "—", e.completionTimeFormatted ?? "—", `${Math.round(e.finalScore)}`],
+            }))}
+            you={challenges.you && !challenges.leaderboard.some((e) => e.isYou) ? { rank: challenges.you.rank, cells: [challenges.you.sprintTitle ?? "—", "", `${Math.round(challenges.you.finalScore)}`] } : null}
+          />
+        </section>
+      )}
+    </main>
+  );
+}
 
-        {/* Top 3 Podium Cards */}
-        {top3.length >= 3 && (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4 max-w-4xl mx-auto items-end">
-            {/* 2nd Place (Silver) */}
-            <div className="glass-panel rounded-3xl p-6 border border-border/80 bg-card/40 flex flex-col items-center text-center space-y-3 order-2 md:order-1 relative shadow-xl">
-              <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-slate-400 to-slate-200 flex items-center justify-center font-extrabold text-slate-900 text-lg shadow-lg">
-                2
-              </div>
-              <div>
-                <p className="text-xs text-muted-foreground font-semibold uppercase tracking-wider">Silver Medal</p>
-                <h3 className="text-lg font-bold text-foreground mt-0.5">{top3[1].candidateName}</h3>
-              </div>
-              <div className="px-4 py-1.5 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-600 dark:text-cyan-300 text-sm font-extrabold">
-                {top3[1].finalScore.toFixed(1)}% Score
-              </div>
-              <span className="text-[11px] text-muted-foreground flex items-center space-x-1">
-                <Clock className="w-3.5 h-3.5 text-muted-foreground" />
-                <span>Time to verify: {top3[1].completionTimeFormatted ?? "—"}</span>
-              </span>
-              <button
-                onClick={() => router.push(`/credential/${top3[1].publicUrlSlug}`)}
-                className="text-xs text-indigo-700 dark:text-indigo-400 hover:text-indigo-600 dark:text-indigo-300 font-semibold flex items-center space-x-1 pt-1"
-              >
-                <span>View Badge</span>
-                <ExternalLink className="w-3.5 h-3.5" />
-              </button>
-            </div>
-
-            {/* 1st Place (Gold Champion) */}
-            <div className="glass-panel rounded-3xl p-8 border border-amber-500/50 bg-gradient-to-b from-amber-500/10 to-slate-900/60 flex flex-col items-center text-center space-y-4 order-1 md:order-2 relative shadow-2xl scale-105">
-              <div className="absolute -top-4 px-3 py-0.5 rounded-full bg-gradient-to-r from-amber-500 to-yellow-500 text-slate-950 font-extrabold text-[10px] tracking-wider uppercase shadow-md flex items-center space-x-1">
-                <Crown className="w-3 h-3 text-slate-950" />
-                <span>Champion</span>
-              </div>
-              <div className="w-16 h-16 rounded-3xl bg-gradient-to-tr from-amber-400 to-yellow-500 flex items-center justify-center font-extrabold text-slate-950 text-2xl shadow-xl shadow-amber-500/20">
-                1
-              </div>
-              <div>
-                <p className="text-xs text-amber-700 dark:text-amber-400 font-semibold uppercase tracking-wider">1st place</p>
-                <h3 className="text-xl font-extrabold text-foreground mt-0.5">{top3[0].candidateName}</h3>
-              </div>
-              <div className="px-5 py-2 rounded-full bg-amber-500/20 border border-amber-500/40 text-amber-600 dark:text-amber-300 text-base font-black">
-                {top3[0].finalScore.toFixed(1)}% Score
-              </div>
-              <span className="text-xs text-muted-foreground flex items-center space-x-1">
-                <Clock className="w-3.5 h-3.5 text-amber-700 dark:text-amber-400" />
-                <span>Time to verify: {top3[0].completionTimeFormatted ?? "—"}</span>
-              </span>
-              <button
-                onClick={() => router.push(`/credential/${top3[0].publicUrlSlug}`)}
-                className="px-4 py-2 bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-400 hover:to-yellow-400 text-slate-950 font-bold text-xs rounded-xl shadow-md flex items-center space-x-1.5 transition-all cursor-pointer"
-              >
-                <span>View Public Credential</span>
-                <ExternalLink className="w-3.5 h-3.5" />
-              </button>
-            </div>
-
-            {/* 3rd Place (Bronze) */}
-            <div className="glass-panel rounded-3xl p-6 border border-border/80 bg-card/40 flex flex-col items-center text-center space-y-3 order-3 relative shadow-xl">
-              <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-amber-700 to-yellow-800 flex items-center justify-center font-extrabold text-white text-lg shadow-lg">
-                3
-              </div>
-              <div>
-                <p className="text-xs text-amber-600 font-semibold uppercase tracking-wider">Bronze Medal</p>
-                <h3 className="text-lg font-bold text-foreground mt-0.5">{top3[2].candidateName}</h3>
-              </div>
-              <div className="px-4 py-1.5 rounded-full bg-purple-500/10 border border-purple-500/30 text-purple-600 dark:text-purple-300 text-sm font-extrabold">
-                {top3[2].finalScore.toFixed(1)}% Score
-              </div>
-              <span className="text-[11px] text-muted-foreground flex items-center space-x-1">
-                <Clock className="w-3.5 h-3.5 text-muted-foreground" />
-                <span>Time to verify: {top3[2].completionTimeFormatted ?? "—"}</span>
-              </span>
-              <button
-                onClick={() => router.push(`/credential/${top3[2].publicUrlSlug}`)}
-                className="text-xs text-indigo-700 dark:text-indigo-400 hover:text-indigo-600 dark:text-indigo-300 font-semibold flex items-center space-x-1 pt-1"
-              >
-                <span>View Badge</span>
-                <ExternalLink className="w-3.5 h-3.5" />
-              </button>
-            </div>
-          </div>
-        )}
-
-        {/* Search & Data Table */}
-        <div className="space-y-4 max-w-5xl mx-auto pt-6">
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-            <h2 className="text-lg font-bold text-foreground">Full Standings ({entries.length})</h2>
-            <div className="relative w-full sm:w-72">
-              <Search className="w-4 h-4 text-muted-foreground absolute left-3 top-1/2 -translate-y-1/2" />
-              <input
-                type="text"
-                placeholder="Search candidate name..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full bg-card border border-border rounded-xl pl-9 pr-4 py-2 text-xs text-foreground focus:outline-none focus:border-amber-500"
-              />
-            </div>
-          </div>
-
-          <div className="glass-panel rounded-2xl border border-border overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs text-muted-foreground">
-                <thead className="bg-card/80 border-b border-border text-muted-foreground font-semibold uppercase text-[10px] tracking-wider">
-                  <tr>
-                    <th className="px-6 py-3 w-16 text-center">Rank</th>
-                    <th className="px-6 py-3">Candidate</th>
-                    <th className="px-6 py-3">Technical Score</th>
-                    <th className="px-6 py-3">Speed</th>
-                    <th className="px-6 py-3">Verification</th>
-                    <th className="px-6 py-3 text-right">Credential</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-800/60">
-                  {loading ? (
-                    <tr>
-                      <td colSpan={6} className="px-6 py-12 text-center text-muted-foreground">
-                        Loading community leaderboard...
-                      </td>
-                    </tr>
-                  ) : filtered.length === 0 ? (
-                    <tr>
-                      <td colSpan={6} className="px-6 py-12 text-center text-muted-foreground">
-                        No candidates found. Complete an interview and sprint defense to join the Hall of Fame!
-                      </td>
-                    </tr>
-                  ) : (
-                    filtered.map((entry) => (
-                      <tr key={entry.credentialId} className="hover:bg-card/40 transition-colors">
-                        <td className="px-6 py-4 font-bold text-center">
-                          {entry.rank === 1 ? (
-                            <span className="w-6 h-6 rounded-full bg-amber-500 text-slate-950 inline-flex items-center justify-center text-xs font-black">
-                              1
-                            </span>
-                          ) : entry.rank === 2 ? (
-                            <span className="w-6 h-6 rounded-full bg-slate-300 text-slate-950 inline-flex items-center justify-center text-xs font-black">
-                              2
-                            </span>
-                          ) : entry.rank === 3 ? (
-                            <span className="w-6 h-6 rounded-full bg-amber-700 text-foreground inline-flex items-center justify-center text-xs font-black">
-                              3
-                            </span>
-                          ) : (
-                            <span className="text-muted-foreground">#{entry.rank}</span>
-                          )}
-                        </td>
-                        <td className="px-6 py-4 font-semibold text-white">{entry.candidateName}</td>
-                        <td className="px-6 py-4 font-mono font-bold text-amber-600 dark:text-amber-300 text-sm">
-                          {entry.finalScore.toFixed(1)}%
-                        </td>
-                        <td className="px-6 py-4 text-muted-foreground font-mono text-[11px]">
-                          {entry.completionTimeFormatted ?? "—"}
-                        </td>
-                        <td className="px-6 py-4">
-                          {entry.verificationFlagged ? (
-                            <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-500/20 text-amber-600 dark:text-amber-300 border border-amber-500/40 flex items-center space-x-1 w-fit">
-                              <AlertTriangle className="w-3 h-3 text-amber-700 dark:text-amber-400" />
-                              <span>Flagged</span>
-                            </span>
-                          ) : (
-                            <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/30 flex items-center space-x-1 w-fit">
-                              <ShieldCheck className="w-3 h-3 text-emerald-700 dark:text-emerald-400" />
-                              <span>Verified</span>
-                            </span>
-                          )}
-                        </td>
-                        <td className="px-6 py-4 text-right">
-                          <button
-                            onClick={() => router.push(`/credential/${entry.publicUrlSlug}`)}
-                            className="text-xs text-indigo-700 dark:text-indigo-400 hover:text-indigo-600 dark:text-indigo-300 font-semibold inline-flex items-center space-x-1 cursor-pointer"
-                          >
-                            <span>View</span>
-                            <ExternalLink className="w-3 h-3" />
-                          </button>
-                        </td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-      </main>
+function Table({
+  headers,
+  rows,
+  you,
+  empty,
+}: {
+  headers: string[];
+  rows: { key: string; rank: number; name: string; isYou: boolean; href?: string; cells: string[] }[];
+  you: { rank: number; cells: string[] } | null;
+  empty: string;
+}) {
+  if (rows.length === 0 && !you) return <p className={`${card} p-6 text-sm text-muted-foreground`}>{empty}</p>;
+  return (
+    <div className={`${card} overflow-x-auto`}>
+      <table className="w-full text-sm">
+        <thead className="border-b border-border text-left text-xs text-muted-foreground">
+          <tr>
+            <th className="w-14 p-3 font-medium">Rank</th>
+            <th className="p-3 font-medium">Member</th>
+            {headers.map((h) => (
+              <th key={h} className="p-3 text-right font-medium">
+                {h}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-border">
+          {rows.map((r) => (
+            <tr key={r.key} className={r.isYou ? "bg-indigo-50/60 font-semibold dark:bg-indigo-500/10" : ""}>
+              <td className="p-3 tabular-nums text-muted-foreground">{r.rank}</td>
+              <td className="p-3">
+                {r.href ? (
+                  <Link href={r.href} className="hover:underline">
+                    {r.name}
+                  </Link>
+                ) : (
+                  r.name
+                )}
+                {r.isYou && <span className="ml-1 text-xs font-normal text-muted-foreground">(you)</span>}
+              </td>
+              {r.cells.map((c, i) => (
+                <td key={i} className="p-3 text-right tabular-nums">
+                  {c}
+                </td>
+              ))}
+            </tr>
+          ))}
+          {you && (
+            <tr className="bg-indigo-50/60 font-semibold dark:bg-indigo-500/10">
+              <td className="p-3 tabular-nums text-muted-foreground">{you.rank}</td>
+              <td className="p-3">You</td>
+              {you.cells.map((c, i) => (
+                <td key={i} className="p-3 text-right tabular-nums">
+                  {c}
+                </td>
+              ))}
+            </tr>
+          )}
+        </tbody>
+      </table>
     </div>
   );
 }

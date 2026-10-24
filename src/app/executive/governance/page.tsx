@@ -40,7 +40,7 @@ interface SystemRollup {
   totalCampuses: number;
   totalStudentsEnrolled: number;
   totalFacultyMembers: number;
-  averageSystemComplianceScore: number;
+  averageSystemComplianceScore: number | null;
   totalAuditLedgerBlocks: number;
   totalGradeCertifications: number;
   totalProctoringOverrides: number;
@@ -215,7 +215,7 @@ export default function MultiCampusGovernancePage() {
                 : "bg-amber-950 text-amber-700 dark:text-amber-400 border-amber-500/50"
             }`}
           >
-            ● {rollup?.accreditationReadinessStatus || "Not assessed"}
+            ● {!rollup?.accreditationReadinessStatus || rollup.accreditationReadinessStatus === "NotAssessed" ? "Not assessed" : rollup.accreditationReadinessStatus}
           </span>
         </div>
       </header>

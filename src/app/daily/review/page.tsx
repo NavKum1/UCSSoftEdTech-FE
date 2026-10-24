@@ -1,599 +1,346 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import Link from "next/link";
-import { AccessNotice, useLegacyApi, useLatestRef } from "@/lib/legacyApi";
+/**
+ * Daily code review (phase B, 24 Oct 2026). The pull request arrives without its answers; opening it starts an attempt
+ * timed on the server. The member flags the line with the defect, names the kind of defect and decides; the server grades
+ * it and only then shows where the defect was and why. The first graded review of a pull request earns points; later
+ * ones are practice.
+ */
 
-interface PrKata {
+import React, { useCallback, useEffect, useMemo, useState } from "react";
+import Link from "next/link";
+import { ArrowLeft, CheckCircle2, Clock, XCircle } from "lucide-react";
+import { AccessNotice, useLatestRef, useLegacyApi } from "@/lib/legacyApi";
+
+interface Review {
   id: string;
-  dayIndex: number;
   title: string;
   repository: string;
   author: string;
   language: string;
   diffContent: string;
-  defectCategory: string;
-  targetDefectLine: number;
-  targetDefectExplanation: string;
-  correctDecision: string;
-  suggestedRemediation: string;
-  baseXp: number;
+  categories: string[];
 }
-
-interface ReviewResult {
-  submissionId: string;
-  kataId: string;
-  flawDetected: boolean;
+interface Status {
+  openAttemptId: string | null;
+  startedAt: string | null;
+  completed: boolean;
+  score: number | null;
+  points: number | null;
+}
+interface Result {
+  score: number;
+  lineCorrect: boolean;
   decisionCorrect: boolean;
-  lineAccuracy: boolean;
-  categoryAccuracy: boolean;
-  vigilanceScore: number;
-  baseXp: number;
-  speedBonusXp: number;
-  totalXpAwarded: number;
-  principalBenchmarkComparison: string;
-  critiqueExplanation: string;
+  categoryCorrect: boolean;
+  timeSeconds: number;
+  countsForPoints: boolean;
+  points: number;
+  speedBonus: number;
+  feedback: string;
+  defectLine: number;
+  defectCategory: string;
+  correctDecision: string;
+  explanation: string;
   suggestedRemediation: string;
 }
 
-interface UserReviewStats {
-  userId: string;
-  totalReviewsSubmitted: number;
-  zeroDayDefectsCaught: number;
-  averageVigilanceScore: number;
-  reviewStreakDays: number;
-  seniorReviewerTier: string;
-  completedToday: boolean;
-}
+const CATEGORY_LABELS: Record<string, string> = {
+  Security_CVE: "Security vulnerability",
+  Concurrency: "Concurrency bug",
+  Memory_Leak: "Memory or resource leak",
+  ReDoS: "Regular expression denial of service",
+  Data_Integrity: "Data integrity",
+  Performance: "Performance",
+};
+const DECISIONS = [
+  { value: "APPROVE", label: "Approve" },
+  { value: "REQUEST_CHANGES", label: "Request changes" },
+  { value: "COMMENT", label: "Comment only" },
+];
+const decisionLabel = (v: string) => DECISIONS.find((d) => d.value === v)?.label ?? v;
 
-interface DiffLine {
-  lineNumber: number;
-  type: "header" | "add" | "del" | "ctx";
-  content: string;
-}
+const card = "rounded-2xl border border-border bg-card shadow-[0_1px_2px_rgb(16_24_40/0.04)]";
+const primary =
+  "inline-flex items-center justify-center gap-2 rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-indigo-500 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600";
 
-export default function DailyCodeReviewDojoPage() {
+export default function DailyCodeReviewPage() {
   const { apiFetch, ready, access } = useLegacyApi();
-  const [kata, setKata] = useState<PrKata | null>(null);
-  const [parsedLines, setParsedLines] = useState<DiffLine[]>([]);
-  const [stats, setStats] = useState<UserReviewStats | null>(null);
+  const [review, setReview] = useState<Review | null>(null);
+  const [status, setStatus] = useState<Status | null>(null);
+  const [attempt, setAttempt] = useState<{ id: string; startedAt: string } | null>(null);
+  const [line, setLine] = useState<number | null>(null);
+  const [category, setCategory] = useState("");
+  const [decision, setDecision] = useState("");
+  const [comment, setComment] = useState("");
+  const [result, setResult] = useState<Result | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [loadFailed, setLoadFailed] = useState(false);
+  const [now, setNow] = useState(() => Date.now());
 
-  const [selectedLine, setSelectedLine] = useState<number | null>(null);
-  const [selectedCategory, setSelectedCategory] = useState<string>("Security_CVE");
-  const [reviewComment, setReviewComment] = useState<string>("");
-  const [decision, setDecision] = useState<string>("REQUEST_CHANGES");
-
-  const [timerSeconds, setTimerSeconds] = useState<number>(0);
-  const [timerActive, setTimerActive] = useState<boolean>(true);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [submitting, setSubmitting] = useState<boolean>(false);
-  const [result, setResult] = useState<ReviewResult | null>(null);
-
-  const [userId] = useState<string>(() => {
-    if (typeof window !== "undefined") {
-      const stored = localStorage.getItem("daily_review_user_id");
-      if (stored) return stored;
-      const created = typeof crypto !== "undefined" && crypto.randomUUID ? crypto.randomUUID() : "d9e8f7a6-b5c4-4321-9876-112233445566";
-      localStorage.setItem("daily_review_user_id", created);
-      return created;
-    }
-    return "d9e8f7a6-b5c4-4321-9876-112233445566";
-  });
-
-  const fetchInitialData = async () => {
-    setLoading(true);
+  const load = useCallback(async () => {
     try {
-      // 1. Fetch Today's PR Kata
-      const kataRes = await apiFetch(`/api/codereview/today`);
-      if (kataRes.ok) {
-        const kataData: PrKata = await kataRes.json();
-        setKata(kataData);
-        parseDiff(kataData.diffContent);
+      const res = await apiFetch("/api/codereview/today");
+      if (!res.ok) {
+        setLoadFailed(true);
+        return;
       }
+      const body = await res.json();
+      setReview(body.review as Review);
+      setStatus(body.status as Status);
+      if (body.status?.openAttemptId) setAttempt({ id: body.status.openAttemptId, startedAt: body.status.startedAt });
+    } catch {
+      setLoadFailed(true);
+    }
+  }, [apiFetch]);
+  const loadRef = useLatestRef(load);
+  useEffect(() => {
+    if (ready) void loadRef.current();
+  }, [ready, loadRef]);
 
-      // 2. Fetch User Stats
-      const statsRes = await apiFetch(`/api/codereview/stats/${userId}`);
-      if (statsRes.ok) {
-        setStats(await statsRes.json());
-      }
-    } catch (err) {
-      console.error("Failed to load PR review kata", err);
+  useEffect(() => {
+    if (!attempt || result) return;
+    const t = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(t);
+  }, [attempt, result]);
+
+  const lines = useMemo(() => (review?.diffContent ?? "").split("\n"), [review]);
+
+  const start = async () => {
+    if (!review) return;
+    setBusy(true);
+    setError(null);
+    try {
+      const res = await apiFetch(`/api/codereview/${review.id}/start`, { method: "POST" });
+      const body = await res.json().catch(() => null);
+      if (res.ok) {
+        setAttempt({ id: body.attemptId, startedAt: body.startedAt });
+        setResult(null);
+        setLine(null);
+        setCategory("");
+        setDecision("");
+        setComment("");
+      } else setError(body?.error ?? "The review couldn't be opened. Please try again.");
     } finally {
-      setLoading(false);
+      setBusy(false);
     }
   };
 
-  const parseDiff = (rawDiff: string) => {
-    const lines = rawDiff.split("\n");
-    const result: DiffLine[] = [];
-    let currentLine = 1;
-
-    for (const line of lines) {
-      if (line.startsWith("---") || line.startsWith("+++") || line.startsWith("@@")) {
-        result.push({ lineNumber: currentLine++, type: "header", content: line });
-      } else if (line.startsWith("+")) {
-        result.push({ lineNumber: currentLine++, type: "add", content: line });
-      } else if (line.startsWith("-")) {
-        result.push({ lineNumber: currentLine++, type: "del", content: line });
-      } else {
-        result.push({ lineNumber: currentLine++, type: "ctx", content: line });
-      }
-    }
-    setParsedLines(result);
-  };
-
-  const fetchInitialDataRef = useLatestRef(fetchInitialData);
-  useEffect(() => {
-    if (!ready) return;
-    fetchInitialDataRef.current();
-  }, [ready, fetchInitialDataRef]);
-
-  useEffect(() => {
-    let interval: NodeJS.Timeout;
-    if (timerActive && !result) {
-      interval = setInterval(() => {
-        setTimerSeconds((prev) => prev + 1);
-      }, 1000);
-    }
-    return () => clearInterval(interval);
-  }, [timerActive, result]);
-
-  const handleSubmitReview = async () => {
-    if (!kata) return;
-
-    if (!selectedLine) {
-      alert("Please click on a line in the diff to flag the critical flaw or comment location.");
-      return;
-    }
-
-    setSubmitting(true);
-    setTimerActive(false);
-
+  const submit = async () => {
+    if (!attempt || line == null) return;
+    setBusy(true);
+    setError(null);
     try {
-      const res = await apiFetch(`/api/codereview/review`, {
+      const res = await apiFetch("/api/codereview/review", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          kataId: kata.id,
-          userId,
-          flaggedLineNumber: selectedLine,
-          selectedDefectCategory: selectedCategory,
-          reviewComment: reviewComment || "Flagged potential vulnerability during senior review.",
-          decision,
-          reviewTimeSeconds: timerSeconds,
-        }),
+        body: JSON.stringify({ attemptId: attempt.id, flaggedLineNumber: line, decision, category, comment: comment.trim() || null }),
       });
-
+      const body = await res.json().catch(() => null);
       if (res.ok) {
-        const evalData: ReviewResult = await res.json();
-        setResult(evalData);
-
-        // Refresh stats
-        const statsRes = await apiFetch(`/api/codereview/stats/${userId}`);
-        if (statsRes.ok) setStats(await statsRes.json());
-      } else {
-        alert("Code review evaluation encountered an issue.");
-      }
-    } catch (err) {
-      console.error("Review submission failed", err);
-      alert("Network error evaluating code review.");
+        setResult(body as Result);
+        setAttempt(null);
+        setStatus((s) => (s && body.countsForPoints ? { ...s, completed: true, score: body.score, points: body.points } : s));
+      } else setError(body?.error ?? "Your review couldn't be submitted. Please try again.");
+    } catch {
+      setError("We couldn't reach the server. Please try again.");
     } finally {
-      setSubmitting(false);
+      setBusy(false);
     }
   };
 
-  const formatTimer = (secs: number) => {
-    const mins = Math.floor(secs / 60);
-    const remaining = secs % 60;
-    return `${mins.toString().padStart(2, "0")}:${remaining.toString().padStart(2, "0")}`;
+  if (access) return <AccessNotice problem={access} feature="The daily code review" />;
+  if (loadFailed)
+    return (
+      <main className="mx-auto max-w-md px-4 py-24 text-center">
+        <h1 className="text-xl font-semibold">No code review is available right now</h1>
+        <p className="mt-2 text-sm text-muted-foreground">Please try again later.</p>
+      </main>
+    );
+  if (!review || !status)
+    return (
+      <main className="mx-auto max-w-6xl px-4 py-10" aria-busy="true" aria-label="Loading the code review">
+        <div className={`${card} h-64 animate-pulse motion-reduce:animate-none`} />
+      </main>
+    );
+
+  const elapsed = attempt ? Math.max(0, Math.floor((now - new Date(attempt.startedAt).getTime()) / 1000)) : 0;
+  const lineClass = (text: string, n: number) => {
+    if (result && n === result.defectLine) return "bg-red-100 dark:bg-red-500/20";
+    if (n === line) return "bg-indigo-100 dark:bg-indigo-500/20";
+    if (text.startsWith("+") && !text.startsWith("+++")) return "bg-emerald-50 dark:bg-emerald-500/10";
+    if (text.startsWith("-") && !text.startsWith("---")) return "bg-rose-50 dark:bg-rose-500/10";
+    return "";
   };
 
-  if (access) return <AccessNotice problem={access} feature="The code review dojo" />;
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-background text-foreground flex items-center justify-center p-6">
-        <div className="text-center space-y-4">
-          <div className="w-12 h-12 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin mx-auto" />
-          <p className="text-muted-foreground font-mono text-sm tracking-wide">
-            Loading Daily Pull Request &amp; Security Review Drill...
+  return (
+    <main className="mx-auto max-w-6xl px-4 pb-16 pt-8 sm:px-6">
+      <Link href="/daily" className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
+        <ArrowLeft aria-hidden="true" className="h-4 w-4" /> Daily practice
+      </Link>
+      <header className="mt-3 flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Today&apos;s code review · {review.language}</p>
+          <h1 className="mt-1 text-xl font-semibold">{review.title}</h1>
+          <p className="mt-1 text-sm text-muted-foreground">
+            {review.repository} · opened by {review.author} (a practice scenario)
           </p>
         </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="min-h-screen bg-background text-foreground antialiased selection:bg-emerald-500 selection:text-black">
-      {/* Top GitHub PR Bar */}
-      <header className="border-b border-border bg-card/90 backdrop-blur sticky top-16 z-20 px-6 py-4">
-        <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <Link
-              href="/"
-              className="text-xs font-mono uppercase tracking-widest text-muted-foreground hover:text-white transition"
-            >
-              ← Dashboard
-            </Link>
-            <span className="text-slate-700">|</span>
-            <div className="flex items-center gap-2">
-              <span className="text-xl">🔍</span>
-              <h1 className="font-bold text-lg tracking-tight bg-gradient-to-r from-emerald-400 via-teal-300 to-cyan-400 bg-clip-text text-transparent">
-                Daily PR Review Dojo
-              </h1>
-              <span className="px-2 py-0.5 text-xs font-mono bg-muted text-emerald-700 dark:text-emerald-400 border border-border rounded">
-                3-Minute Drill
-              </span>
-            </div>
-          </div>
-
-          {/* Gamification & Vigilance HUD */}
-          <div className="flex items-center gap-4 text-xs font-mono">
-            {/* Reviewer Tier */}
-            <div className="flex items-center gap-2 bg-muted/80 border border-emerald-500/30 px-3 py-1.5 rounded-lg shadow-sm">
-              <span className="text-base">👔</span>
-              <div>
-                <span className="text-emerald-700 dark:text-emerald-400 font-bold text-sm">
-                  {stats?.seniorReviewerTier ?? "No reviews yet"}
-                </span>
-                <span className="text-muted-foreground text-[10px] block">
-                  Avg Vigilance: {stats?.averageVigilanceScore ?? 0}%
-                </span>
-              </div>
-            </div>
-
-            {/* Zero-Day Bugs Caught */}
-            <div className="flex items-center gap-2 bg-muted/80 border border-amber-500/30 px-3 py-1.5 rounded-lg">
-              <span className="text-base">🛡️</span>
-              <div>
-                <span className="text-amber-700 dark:text-amber-400 font-bold text-sm">
-                  {stats?.zeroDayDefectsCaught ?? 0} Bugs Blocked
-                </span>
-                <span className="text-muted-foreground text-[10px] block">
-                  {stats?.totalReviewsSubmitted ?? 0} Total Reviews
-                </span>
-              </div>
-            </div>
-
-            {/* Review Stopwatch */}
-            <div className="flex items-center gap-2 bg-muted/80 border border-cyan-500/30 px-3 py-1.5 rounded-lg">
-              <span className="text-base">⏱️</span>
-              <div>
-                <span className="text-cyan-700 dark:text-cyan-400 font-bold text-sm">{formatTimer(timerSeconds)}</span>
-                <span className="text-muted-foreground text-[10px] block">
-                  {timerSeconds <= 60 ? "+25 XP Speed Bonus" : "Standard Speed"}
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
+        {attempt && (
+          <p className="inline-flex items-center gap-1.5 rounded-full border border-border px-3 py-1 text-sm tabular-nums" aria-live="off">
+            <Clock aria-hidden="true" className="h-4 w-4" /> {Math.floor(elapsed / 60)}:{String(elapsed % 60).padStart(2, "0")}
+          </p>
+        )}
       </header>
 
-      {/* Main PR Workspace */}
-      <main className="max-w-7xl mx-auto px-6 py-8 space-y-8">
-        {/* GitHub Pull Request Header Card */}
-        <div className="bg-card border border-border rounded-2xl p-6 shadow-xl space-y-4">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div className="space-y-1">
-              <div className="flex items-center gap-2 text-xs font-mono text-muted-foreground">
-                <span className="text-foreground font-semibold">{kata?.repository}</span>
-                <span>•</span>
-                <span className="px-2 py-0.5 bg-emerald-950 text-emerald-700 dark:text-emerald-400 border border-emerald-800/60 rounded">
-                  Open PR #184
-                </span>
-                <span>•</span>
-                <span className="text-muted-foreground">author: @{kata?.author}</span>
-                <span>•</span>
-                <span className="uppercase text-amber-700 dark:text-amber-400 font-bold">{kata?.language}</span>
-              </div>
-              <h2 className="text-2xl font-bold text-foreground">{kata?.title}</h2>
-            </div>
+      {status.completed && !result && (
+        <p className="mt-4 rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-sm">
+          You completed this review and earned {status.points ?? 0} points. You can practise it again; repeats don&apos;t earn points.
+        </p>
+      )}
 
-            {stats?.completedToday && (
-              <div className="bg-emerald-950/80 border border-emerald-500/40 text-emerald-600 dark:text-emerald-300 px-4 py-3 rounded-xl text-center shrink-0">
-                <span className="text-sm font-semibold block">✅ Today&apos;s Review Logged</span>
-                <span className="text-[11px] text-muted-foreground font-mono">
-                  Daily streak maintained
-                </span>
-              </div>
-            )}
-          </div>
-
-          <div className="bg-background/80 p-3 rounded-lg border border-border text-xs font-mono text-muted-foreground flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <span>
-                Base: <strong className="text-foreground">main</strong>
-              </span>
-              <span>←</span>
-              <span>
-                Compare: <strong className="text-emerald-700 dark:text-emerald-400">feature/fast-path-eval</strong>
-              </span>
-            </div>
-            <span className="text-muted-foreground">
-              Click on any code line in the diff to flag a vulnerability or memory leak
-            </span>
-          </div>
-        </div>
-
-        {/* Workspace: Split Pane (Diff Viewer + Review Decision Canvas) */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Left 2 Cols: Unified Git Diff Viewer */}
-          <div className="lg:col-span-2 space-y-4">
-            <div className="bg-card border border-border rounded-xl overflow-hidden shadow-lg">
-              <div className="bg-background px-4 py-2.5 border-b border-border flex items-center justify-between text-xs font-mono text-muted-foreground">
-                <span className="flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full bg-emerald-400" />
-                  Files Changed: 1 (Unified Diff)
-                </span>
-                <span>
-                  {selectedLine ? (
-                    <span className="text-amber-700 dark:text-amber-400 font-bold">
-                      🚩 Line #{selectedLine} Selected for Review
-                    </span>
-                  ) : (
-                    "Select a line to flag flaw"
-                  )}
-                </span>
-              </div>
-
-              {/* Diff Code Container */}
-              <div className="font-mono text-xs overflow-x-auto divide-y divide-slate-800/40 bg-background">
-                {parsedLines.map((line) => {
-                  const isSelected = selectedLine === line.lineNumber;
+      {!attempt && !result ? (
+        <section className={`${card} mt-6 p-6`}>
+          <h2 className="text-base font-semibold">How it works</h2>
+          <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-muted-foreground">
+            <li>Find the line with the defect (within one line counts): 50 points.</li>
+            <li>Make the right call on the pull request: 30 points. Name the kind of defect: 20 points.</li>
+            <li>Line and call right within 3 minutes: 20 bonus points. The time is measured from when you open it.</li>
+          </ul>
+          <button type="button" className={`${primary} mt-5`} disabled={busy} onClick={() => void start()}>
+            {status.completed ? "Practise again" : "Open the pull request"}
+          </button>
+        </section>
+      ) : (
+        <div className="mt-6 grid gap-6 lg:grid-cols-3">
+          <section aria-label="Diff" className={`${card} overflow-hidden lg:col-span-2`}>
+            <p className="border-b border-border px-4 py-2 text-xs text-muted-foreground">
+              {result ? "The defect is highlighted in red." : "Select the line with the defect."}
+            </p>
+            <div className="overflow-x-auto">
+              <ol className="min-w-max font-mono text-xs leading-6">
+                {lines.map((text, i) => {
+                  const n = i + 1;
                   return (
-                    <div
-                      key={line.lineNumber}
-                      onClick={() => setSelectedLine(line.lineNumber)}
-                      className={`group flex items-start cursor-pointer transition select-none ${
-                        isSelected
-                          ? "bg-amber-950/40 border-l-4 border-amber-500 shadow-inner"
-                          : line.type === "add"
-                          ? "bg-emerald-950/20 hover:bg-emerald-900/30 text-emerald-200"
-                          : line.type === "del"
-                          ? "bg-red-950/20 hover:bg-red-900/30 text-red-600 dark:text-red-300"
-                          : line.type === "header"
-                          ? "bg-card text-muted-foreground font-bold"
-                          : "hover:bg-muted/30 text-muted-foreground"
-                      }`}
-                    >
-                      {/* Line Number Column */}
-                      <span className="w-12 shrink-0 py-1 px-2 text-right text-muted-foreground font-mono text-[11px] border-r border-border/60 group-hover:text-muted-foreground">
-                        {line.lineNumber}
-                      </span>
-
-                      {/* Line Type Badge Indicator */}
-                      <span className="w-6 shrink-0 py-1 text-center font-bold">
-                        {line.type === "add" ? (
-                          <span className="text-emerald-700 dark:text-emerald-400">+</span>
-                        ) : line.type === "del" ? (
-                          <span className="text-red-700 dark:text-red-400">-</span>
-                        ) : (
-                          " "
-                        )}
-                      </span>
-
-                      {/* Content */}
-                      <pre className="py-1 px-2 whitespace-pre overflow-x-visible font-mono leading-relaxed">
-                        {line.content}
-                      </pre>
-                    </div>
+                    <li key={n} className={lineClass(text, n)}>
+                      <button
+                        type="button"
+                        disabled={!!result}
+                        aria-pressed={line === n}
+                        onClick={() => setLine(n)}
+                        className="flex w-full gap-3 px-3 text-left hover:bg-muted/60 disabled:cursor-default"
+                      >
+                        <span className="w-8 shrink-0 select-none text-right text-muted-foreground">{n}</span>
+                        <span className="whitespace-pre">{text || " "}</span>
+                      </button>
+                    </li>
                   );
                 })}
-              </div>
+              </ol>
             </div>
-          </div>
+          </section>
 
-          {/* Right Col: Review Decision & Defect Panel */}
-          <div className="space-y-6">
-            <div className="bg-card border border-border rounded-xl p-6 space-y-6 shadow-lg">
-              <h3 className="text-base font-bold text-foreground flex items-center gap-2">
-                <span>⚖️</span> Senior Code Review Verdict
-              </h3>
-
-              {/* Selected Line Flag */}
-              <div className="bg-background p-3.5 rounded-lg border border-border space-y-1">
-                <span className="text-[10px] font-mono text-muted-foreground uppercase tracking-wider block">
-                  Target Diff Location
-                </span>
-                <div className="text-sm font-bold text-amber-700 dark:text-amber-400 font-mono">
-                  {selectedLine ? `Line #${selectedLine} Flagged` : "None Selected (Click a diff line)"}
-                </div>
-              </div>
-
-              {/* Defect Category Classification */}
-              <div className="space-y-2">
-                <label className="text-xs font-mono text-muted-foreground uppercase tracking-wider block">
-                  Defect Classification
-                </label>
-                <select
-                  value={selectedCategory}
-                  onChange={(e) => setSelectedCategory(e.target.value)}
-                  className="w-full bg-background border border-border rounded-lg p-3 text-xs font-mono text-foreground focus:border-emerald-500 focus:outline-none"
-                >
-                  <option value="Security_CVE">Security CVE (SQLi, SSRF, RCE, Secrets)</option>
-                  <option value="Concurrency">Concurrency / Data Race / Deadlock</option>
-                  <option value="Memory_Leak">Memory Leak / Goroutine Leak / Lapsed Listener</option>
-                  <option value="ReDoS">Regular Expression Denial of Service (ReDoS)</option>
-                  <option value="Data_Integrity">Data Integrity / Transaction Isolation</option>
-                  <option value="Performance">Performance Anti-Pattern (N+1, OOM)</option>
-                </select>
-              </div>
-
-              {/* Inline Reviewer Comment */}
-              <div className="space-y-2">
-                <label className="text-xs font-mono text-muted-foreground uppercase tracking-wider block">
-                  Senior Staff PR Comment
-                </label>
-                <textarea
-                  rows={4}
-                  value={reviewComment}
-                  onChange={(e) => setReviewComment(e.target.value)}
-                  placeholder="Explain why this implementation is unsafe, cite blast radius risk, or provide suggested fix..."
-                  className="w-full bg-background border border-border rounded-lg p-3 text-xs font-mono text-foreground focus:border-emerald-500 focus:outline-none"
-                />
-              </div>
-
-              {/* PR Decision Radios */}
-              <div className="space-y-2">
-                <label className="text-xs font-mono text-muted-foreground uppercase tracking-wider block">
-                  GitHub PR Decision
-                </label>
-                <div className="grid grid-cols-3 gap-2">
-                  {[
-                    { val: "REQUEST_CHANGES", label: "Request Changes", color: "red" },
-                    { val: "COMMENT", label: "Comment", color: "yellow" },
-                    { val: "APPROVE", label: "Approve", color: "emerald" },
-                  ].map((btn) => (
-                    <button
-                      key={btn.val}
-                      type="button"
-                      onClick={() => setDecision(btn.val)}
-                      className={`py-2 px-2 text-xs font-bold rounded-lg border transition ${
-                        decision === btn.val
-                          ? btn.color === "red"
-                            ? "bg-red-950 text-red-700 dark:text-red-400 border-red-500 shadow-[0_0_10px_rgba(239,68,68,0.3)]"
-                            : btn.color === "yellow"
-                            ? "bg-yellow-950 text-yellow-700 dark:text-yellow-400 border-yellow-500"
-                            : "bg-emerald-950 text-emerald-700 dark:text-emerald-400 border-emerald-500"
-                          : "bg-background text-muted-foreground border-border hover:border-border"
-                      }`}
-                    >
-                      {btn.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Submit Review CTA */}
-              <button
-                onClick={handleSubmitReview}
-                disabled={submitting || !selectedLine}
-                className={`w-full py-3.5 rounded-xl font-bold text-xs uppercase tracking-wider transition flex items-center justify-center gap-2 ${
-                  submitting || !selectedLine
-                    ? "bg-muted text-muted-foreground cursor-not-allowed"
-                    : "bg-gradient-to-r from-emerald-500 to-teal-400 text-black hover:from-emerald-400 hover:to-teal-300 shadow-lg shadow-emerald-500/20"
-                }`}
+          <aside className="space-y-4">
+            {!result ? (
+              <form
+                className={`${card} space-y-4 p-5`}
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  void submit();
+                }}
               >
-                {submitting ? (
-                  <>
-                    <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin" />
-                    <span>Benchmarking Vigilance...</span>
-                  </>
-                ) : (
-                  <>
-                    <span>🚀</span>
-                    <span>Submit Review ({formatTimer(timerSeconds)})</span>
-                  </>
-                )}
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* Principal Engineer Evaluation Modal */}
-        {result && (
-          <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-6 overflow-y-auto">
-            <div className="bg-card border border-border rounded-2xl max-w-2xl w-full p-6 space-y-6 shadow-2xl my-8">
-              <div className="flex items-center justify-between border-b border-border pb-4">
-                <div className="flex items-center gap-3">
-                  <span className="text-3xl">{result.flawDetected ? "🎯" : "⚠️"}</span>
-                  <div>
-                    <h3 className="text-xl font-bold text-foreground">
-                      {result.flawDetected
-                        ? "Zero-Day Defect Intercepted!"
-                        : "Defect Missed in Code Review"}
-                    </h3>
-                    <p className="text-xs text-muted-foreground">
-                      Vigilance Score: {result.vigilanceScore}/100 • Review Time:{" "}
-                      {formatTimer(timerSeconds)}
-                    </p>
+                <p className="text-sm">{line ? `Line ${line} flagged.` : "No line flagged yet."}</p>
+                <label className="block text-sm">
+                  <span className="font-medium">Kind of defect</span>
+                  <select
+                    required
+                    value={category}
+                    onChange={(e) => setCategory(e.target.value)}
+                    className="mt-1 block w-full rounded-xl border border-border bg-background px-3 py-2 text-sm"
+                  >
+                    <option value="" disabled>
+                      Choose…
+                    </option>
+                    {review.categories.map((c) => (
+                      <option key={c} value={c}>
+                        {CATEGORY_LABELS[c] ?? c}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <fieldset>
+                  <legend className="text-sm font-medium">Your decision</legend>
+                  <div className="mt-1 space-y-1.5">
+                    {DECISIONS.map((d) => (
+                      <label key={d.value} className="flex items-center gap-2 text-sm">
+                        <input type="radio" name="decision" required value={d.value} checked={decision === d.value} onChange={() => setDecision(d.value)} className="accent-indigo-600" />
+                        {d.label}
+                      </label>
+                    ))}
                   </div>
-                </div>
-                <button
-                  onClick={() => setResult(null)}
-                  className="text-muted-foreground hover:text-white text-lg font-mono p-1"
-                >
-                  ✕
+                </fieldset>
+                <label className="block text-sm">
+                  <span className="font-medium">Comment (optional)</span>
+                  <textarea value={comment} onChange={(e) => setComment(e.target.value)} rows={3} maxLength={2000} className="mt-1 block w-full rounded-xl border border-border bg-background px-3 py-2 text-sm" />
+                </label>
+                {error && (
+                  <p role="alert" className="text-sm text-red-700 dark:text-red-400">
+                    {error}
+                  </p>
+                )}
+                <button type="submit" className={`${primary} w-full`} disabled={busy || line == null || !category || !decision}>
+                  {busy ? "Submitting…" : "Submit review"}
                 </button>
-              </div>
+              </form>
+            ) : (
+              <ReviewResultPanel result={result} onAgain={() => void start()} busy={busy} />
+            )}
+          </aside>
+        </div>
+      )}
+    </main>
+  );
+}
 
-              {/* XP & Vigilance Breakdown */}
-              <div className="grid grid-cols-3 gap-3 text-center">
-                <div className="bg-background p-3 rounded-xl border border-border">
-                  <span className="text-[10px] font-mono text-muted-foreground block">Total XP Earned</span>
-                  <span className="text-xl font-bold text-emerald-700 dark:text-emerald-400">
-                    +{result.totalXpAwarded} XP
-                  </span>
-                  <span className="text-[10px] text-muted-foreground block">
-                    ({result.baseXp} base + {result.speedBonusXp} speed)
-                  </span>
-                </div>
-                <div className="bg-background p-3 rounded-xl border border-border">
-                  <span className="text-[10px] font-mono text-muted-foreground block">Line Accuracy</span>
-                  <span
-                    className={`text-xl font-bold ${
-                      result.lineAccuracy ? "text-emerald-700 dark:text-emerald-400" : "text-red-700 dark:text-red-400"
-                    }`}
-                  >
-                    {result.lineAccuracy ? "Exact Match" : "Missed"}
-                  </span>
-                  <span className="text-[10px] text-muted-foreground block">Target: Line #{kata?.targetDefectLine}</span>
-                </div>
-                <div className="bg-background p-3 rounded-xl border border-border">
-                  <span className="text-[10px] font-mono text-muted-foreground block">PR Decision</span>
-                  <span
-                    className={`text-xl font-bold ${
-                      result.decisionCorrect ? "text-emerald-700 dark:text-emerald-400" : "text-amber-700 dark:text-amber-400"
-                    }`}
-                  >
-                    {result.decisionCorrect ? "Correct Block" : "Improper"}
-                  </span>
-                  <span className="text-[10px] text-muted-foreground block">Blocked risky code</span>
-                </div>
-              </div>
+function Mark({ ok, children }: { ok: boolean; children: React.ReactNode }) {
+  return (
+    <li className="flex items-start gap-2 text-sm">
+      {ok ? <CheckCircle2 aria-label="Right" className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" /> : <XCircle aria-label="Not right" className="mt-0.5 h-4 w-4 shrink-0 text-red-600" />}
+      <span>{children}</span>
+    </li>
+  );
+}
 
-              {/* Principal Benchmark Comparison */}
-              <div className="bg-background p-4 rounded-xl border border-border space-y-2">
-                <h4 className="text-xs font-mono text-emerald-700 dark:text-emerald-400 uppercase tracking-wider">
-                  🏆 Google / Meta Principal Engineer Benchmark
-                </h4>
-                <p className="text-xs text-muted-foreground font-semibold">
-                  {result.principalBenchmarkComparison}
-                </p>
-              </div>
-
-              {/* Technical Critique & Root Cause Analysis */}
-              <div className="bg-background p-4 rounded-xl border border-border space-y-2">
-                <h4 className="text-xs font-mono text-cyan-700 dark:text-cyan-400 uppercase tracking-wider">
-                  🔬 Technical Vulnerability & Defect Critique
-                </h4>
-                <p className="text-xs text-muted-foreground leading-relaxed font-sans">
-                  {result.critiqueExplanation}
-                </p>
-              </div>
-
-              {/* Clean Remediation Patch */}
-              <div className="bg-background p-4 rounded-xl border border-border space-y-2">
-                <h4 className="text-xs font-mono text-amber-700 dark:text-amber-400 uppercase tracking-wider">
-                  ✨ Clean Production Diff Patch (Remediation)
-                </h4>
-                <pre className="text-xs font-mono bg-black/50 p-3 rounded border border-border text-emerald-600 dark:text-emerald-300 overflow-x-auto">
-                  {result.suggestedRemediation}
-                </pre>
-              </div>
-
-              <div className="pt-2">
-                <button
-                  onClick={() => setResult(null)}
-                  className="w-full py-3 bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-xs uppercase tracking-wider rounded-xl transition"
-                >
-                  Close Review & Log Daily Practice
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-      </main>
-    </div>
+function ReviewResultPanel({ result, onAgain, busy }: { result: Result; onAgain: () => void; busy: boolean }) {
+  return (
+    <section className={`${card} space-y-4 p-5`} aria-live="polite">
+      <div>
+        <p className="text-3xl font-semibold tabular-nums">{result.score} / 100</p>
+        <p className="text-sm text-muted-foreground">
+          {result.countsForPoints ? `${result.points} points${result.speedBonus ? `, including a ${result.speedBonus}-point speed bonus` : ""}.` : "Practice: no points for a repeat."} Time:{" "}
+          {Math.floor(result.timeSeconds / 60)}m {result.timeSeconds % 60}s.
+        </p>
+      </div>
+      <p className="text-sm">{result.feedback}</p>
+      <ul className="space-y-1.5">
+        <Mark ok={result.lineCorrect}>Defect on line {result.defectLine}</Mark>
+        <Mark ok={result.decisionCorrect}>Right call: {decisionLabel(result.correctDecision)}</Mark>
+        <Mark ok={result.categoryCorrect}>Kind: {CATEGORY_LABELS[result.defectCategory] ?? result.defectCategory}</Mark>
+      </ul>
+      <div>
+        <h3 className="text-sm font-semibold">Why</h3>
+        <p className="mt-1 text-sm text-muted-foreground">{result.explanation}</p>
+      </div>
+      {result.suggestedRemediation && (
+        <div>
+          <h3 className="text-sm font-semibold">The fix</h3>
+          <pre className="mt-1 overflow-x-auto rounded-lg bg-muted p-3 text-xs">{result.suggestedRemediation}</pre>
+        </div>
+      )}
+      <button type="button" className="text-sm font-semibold text-indigo-700 hover:underline disabled:opacity-50 dark:text-indigo-300" disabled={busy} onClick={onAgain}>
+        Practise again (no points)
+      </button>
+    </section>
   );
 }

@@ -10,12 +10,15 @@ const KEY = "career.partnerSession";
 // Marker cookie (no token in it) so middleware lets partner users reach the sign-in-only career routes.
 // The API still authorizes every call with the partner token itself.
 export const PARTNER_MARKER_COOKIE = "career_partner";
+// Phase C: a session from a learning platform (LTI) also opens the candidate pages (dashboard, challenges, results);
+// a separate marker, so partner sessions keep exactly the routes they had
+export const LMS_MARKER_COOKIE = "lms_session";
 
-function setMarkerCookie(expiresAt: number | null) {
+function setMarkerCookie(expiresAt: number | null, name = PARTNER_MARKER_COOKIE) {
   try {
     document.cookie = expiresAt
-      ? `${PARTNER_MARKER_COOKIE}=1; path=/; SameSite=Lax; expires=${new Date(expiresAt).toUTCString()}`
-      : `${PARTNER_MARKER_COOKIE}=; path=/; SameSite=Lax; max-age=0`;
+      ? `${name}=1; path=/; SameSite=Lax; expires=${new Date(expiresAt).toUTCString()}`
+      : `${name}=; path=/; SameSite=Lax; max-age=0`;
   } catch {
     /* cookies unavailable */
   }
@@ -42,7 +45,8 @@ function decodeClaims(token: string): Record<string, unknown> | null {
 
 export function savePartnerSession(token: string): PartnerSession | null {
   const claims = decodeClaims(token);
-  if (!claims || typeof claims.exp !== "number" || claims.aud !== "edulexa-partner-session") return null;
+  // partner sign-ins (F9) and LMS launches (LTI 1.3, phase C) both hand the app a session token this way
+  if (!claims || typeof claims.exp !== "number" || (claims.aud !== "edulexa-partner-session" && claims.aud !== "buildanddefend-lti-session")) return null;
   const session: PartnerSession = {
     token,
     expiresAt: claims.exp * 1000,
@@ -56,6 +60,7 @@ export function savePartnerSession(token: string): PartnerSession | null {
     return null;
   }
   setMarkerCookie(session.expiresAt);
+  if (claims.aud === "buildanddefend-lti-session") setMarkerCookie(session.expiresAt, LMS_MARKER_COOKIE);
   return session;
 }
 
@@ -69,6 +74,7 @@ export function getPartnerSession(): PartnerSession | null {
     if (!session?.token || typeof session.expiresAt !== "number" || Date.now() > session.expiresAt - 30_000) {
       window.sessionStorage.removeItem(KEY);
       setMarkerCookie(null);
+      setMarkerCookie(null, LMS_MARKER_COOKIE);
       return null;
     }
     return session;
@@ -84,6 +90,7 @@ export function clearPartnerSession() {
     /* storage unavailable */
   }
   setMarkerCookie(null);
+  setMarkerCookie(null, LMS_MARKER_COOKIE);
 }
 
 /** Only same-app paths such as /student/appointments; anything else falls back. */

@@ -15,7 +15,7 @@ const recruiterNav: { label: string; href: string; highlight?: boolean }[] = [
   { label: "Validity & bias audit", href: "/recruiter/validity" },
   { label: "Transparency settings", href: "/recruiter/transparency-settings" },
   { label: "Session recordings", href: "/recruiter/proctoring" },
-  { label: "AI Benchmarking", href: "/recruiter/benchmark", highlight: true },
+  { label: "Challenge results", href: "/recruiter/benchmark", highlight: true },
 ];
 
 export default function RecruiterLayout({ children }: { children: React.ReactNode }) {
