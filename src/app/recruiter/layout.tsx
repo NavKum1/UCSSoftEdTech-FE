@@ -2,7 +2,7 @@
 
 import React from "react";
 import { useRouter } from "next/navigation";
-import { UserButton } from "@clerk/nextjs";
+import { AppUserButton } from "@/lib/appAuth";
 import { Briefcase, ShieldCheck, ArrowLeft } from "lucide-react";
 
 const recruiterNav: { label: string; href: string; highlight?: boolean }[] = [
@@ -32,7 +32,7 @@ export default function RecruiterLayout({ children }: { children: React.ReactNod
             </div>
             <div>
               <div className="flex items-center space-x-2">
-                <span className="font-bold text-base text-foreground tracking-wide">BUILD & DEFEND</span>
+                <span className="font-bold text-base text-foreground tracking-wide">EDULEXA</span>
                 <span className="text-[10px] px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-600 dark:text-purple-300 font-semibold border border-purple-500/30 flex items-center space-x-1">
                   <ShieldCheck className="w-3 h-3 mr-0.5" />
                   <span>Corporate Recruiter Portal</span>
@@ -67,7 +67,7 @@ export default function RecruiterLayout({ children }: { children: React.ReactNod
               <ArrowLeft className="w-3.5 h-3.5" />
               <span>Back to Marketplace</span>
             </button>
-            <UserButton />
+            <AppUserButton />
           </div>
         </div>
       </header>

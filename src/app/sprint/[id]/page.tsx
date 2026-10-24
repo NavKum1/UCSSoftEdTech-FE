@@ -46,6 +46,8 @@ type CandidateTrack =
   | "CloudFinOps"
   | "DatabaseRE";
 
+const PRACTICE_TRACKS: CandidateTrack[] = ["DevOps", "Backend", "Frontend", "FullStack", "DataMLOps", "Cybersecurity", "Mobile", "CloudFinOps", "DatabaseRE"];
+
 const TRACK_LANGUAGES: Record<CandidateTrack, { defaultLang: string; options: string[] }> = {
   DevOps: {
     defaultLang: "Go",
@@ -1282,10 +1284,14 @@ function PracticeWorkspace({ sprintId }: { sprintId: string }) {
   const { resolvedTheme } = useTheme();
   const t = useTranslations("SprintHUD");
 
-  const [candidateTrack, setCandidateTrack] = useState<CandidateTrack>("Backend");
+  // ?track= (e.g. from a counselling result) opens that track's exercises
+  const searchParams = useSearchParams();
+  const requestedTrack = searchParams.get("track");
+  const initialTrack: CandidateTrack = PRACTICE_TRACKS.includes(requestedTrack as CandidateTrack) ? (requestedTrack as CandidateTrack) : "Backend";
+  const [candidateTrack, setCandidateTrack] = useState<CandidateTrack>(initialTrack);
   const [difficultyTier, setDifficultyTier] = useState<Tier>("Diamond (Staff)");
   const [language, setLanguage] = useState<string>("Python");
-  const [snippet, setSnippet] = useState(() => getSnippetForTrackAndLanguage("Backend", "Diamond (Staff)", "Python"));
+  const [snippet, setSnippet] = useState(() => getSnippetForTrackAndLanguage(initialTrack, "Diamond (Staff)", "Python"));
   const [code, setCode] = useState<string>(snippet.code);
   const [output, setOutput] = useState<string>("");
   const [isRunning, setIsRunning] = useState<boolean>(false);

@@ -1,7 +1,7 @@
 import React from "react";
 import Link from "next/link";
 import { Shield, ArrowLeft, Lock, ClipboardList } from "lucide-react";
-import { UserButton } from "@clerk/nextjs";
+import { AppUserButton } from "@/lib/appAuth";
 import { AdminRoleBadge } from "@/components/admin/AdminRoleBadge";
 
 export const metadata = {
@@ -60,7 +60,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
           {/* Clerk Auth Avatar */}
           <div className="flex items-center space-x-2">
-            <UserButton />
+            <AppUserButton />
           </div>
         </div>
       </header>
