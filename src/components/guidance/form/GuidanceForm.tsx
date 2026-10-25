@@ -26,24 +26,8 @@ import {
   type Fillable,
   type Question,
 } from "./model";
+import { RTL, UI, type UiKey } from "./uiText";
 
-/** Words of the form itself (the institute's own text is translated in the editor) */
-const UI: Record<string, Record<string, string>> = {
-  en: {
-    next: "Next", back: "Back", send: "Send", sending: "Sending…", optional: "optional", unsure: "What are you unsure about?",
-    unsurePh: "e.g. I can't decide between cloud and data, or which certification would help me get a job", details: "Your details", name: "Name", email: "Email",
-    phone: "Phone", step: "Step", of: "of", minutes: "About {n} min", other: "Other", otherPh: "Please specify", yes: "Yes", no: "No", choose: "Choose…",
-    attach: "Attach a file", uploading: "Uploading…", remove: "Remove", saveLater: "Save and finish later", saved: "Saved. Use this link to come back within 30 days:",
-    copy: "Copy link", copied: "Copied", thanks: "Thank you. Your request was sent.", language: "Language",
-  },
-  hi: {
-    next: "आगे", back: "पीछे", send: "भेजें", sending: "भेजा जा रहा है…", optional: "वैकल्पिक", unsure: "आप किस बारे में निश्चित नहीं हैं?",
-    unsurePh: "जैसे: मैं क्लाउड और डेटा में से चुन नहीं पा रहा/रही हूँ", details: "आपकी जानकारी", name: "नाम", email: "ईमेल", phone: "फ़ोन", step: "चरण",
-    of: "में से", minutes: "लगभग {n} मिनट", other: "अन्य", otherPh: "कृपया बताएं", yes: "हाँ", no: "नहीं", choose: "चुनें…", attach: "फ़ाइल जोड़ें",
-    uploading: "अपलोड हो रहा है…", remove: "हटाएँ", saveLater: "सहेजें और बाद में पूरा करें", saved: "सहेजा गया। 30 दिनों के भीतर लौटने के लिए यह लिंक इस्तेमाल करें:",
-    copy: "लिंक कॉपी करें", copied: "कॉपी हो गया", thanks: "धन्यवाद। आपका अनुरोध भेज दिया गया है।", language: "भाषा",
-  },
-};
 
 export interface SubmitPayload {
   unsure: string;
@@ -105,7 +89,7 @@ export default function GuidanceForm({
   const browserLang = useSyncExternalStore(noSubscribe, () => navigator.language.slice(0, 2), () => "");
   const [picked, setLang] = useState<string | null>(null);
   const lang = picked ?? (def.languages.includes(browserLang) ? browserLang : (def.languages[0] ?? "en"));
-  const t = (k: string) => UI[lang]?.[k] ?? UI.en[k];
+  const t = (k: string) => UI[lang]?.[k as UiKey] ?? UI.en[k as UiKey] ?? k;
   const [answers, setAnswers] = useState<Answers>({});
   const [unsure, setUnsure] = useState("");
   // Prefill (inside Edulexa it arrives after the first render) until the person types
@@ -269,7 +253,7 @@ export default function GuidanceForm({
     );
 
   return (
-    <div ref={top} style={style} className="text-sm">
+    <div ref={top} style={style} className="text-sm" dir={RTL.includes(lang) ? "rtl" : "ltr"} lang={lang}>
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           {!bare && s.logoUrl && (
@@ -651,7 +635,7 @@ function Field({
             />
           </label>
         )}
-        <span className="mt-1 block text-xs text-muted-foreground">PDF, Word, JPG or PNG, up to 5 MB.</span>
+        <span className="mt-1 block text-xs text-muted-foreground">{t("fileHint")}</span>
         {errorEl}
       </div>
     );
