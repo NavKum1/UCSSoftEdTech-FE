@@ -133,7 +133,8 @@ export default function FormBuilder({ formId, backHref }: { formId: string; back
     async (d: FormDef, n: string) => {
       const mine = editVersion.current;
       setStatus("saving");
-      const res = await apiFetch(`/api/guidance-forms/${formId}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ definition: d, name: n }) });
+      const clean = { ...d, questions: d.questions.map((q) => ({ ...q, options: q.options.filter((o) => o.trim()) })) };
+      const res = await apiFetch(`/api/guidance-forms/${formId}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ definition: clean, name: n }) });
       const body = await res.json().catch(() => null);
       if (!res.ok) {
         setStatus("error");
@@ -147,11 +148,14 @@ export default function FormBuilder({ formId, backHref }: { formId: string; back
     },
     [apiFetch, formId],
   );
+  const unfinished = def
+    ? def.questions.find((q) => !q.label.trim() || (WITH_OPTIONS.includes(q.kind) && q.options.filter((o) => o.trim()).length < 2))
+    : undefined;
   useEffect(() => {
-    if (status !== "dirty" || !def) return;
+    if (status !== "dirty" || !def || unfinished) return;
     const t = setTimeout(() => save(def, name), 1200);
     return () => clearTimeout(t);
-  }, [status, def, name, save]);
+  }, [status, def, name, save, unfinished]);
 
   const change = (d: FormDef) => {
     editVersion.current++;
@@ -208,7 +212,7 @@ export default function FormBuilder({ formId, backHref }: { formId: string; back
         </div>
         <div className="flex flex-wrap items-center gap-2 text-xs">
           <span className="text-muted-foreground" role="status">
-            {status === "saving" ? "Saving…" : status === "dirty" ? "Unsaved changes" : status === "error" ? "Not saved" : view.hasDraft ? "Draft saved, not published" : `Published · version ${view.version}`}
+            {status === "dirty" && unfinished ? "Finish the new question to save (text and at least two options)" : status === "saving" ? "Saving…" : status === "dirty" ? "Unsaved changes" : status === "error" ? "Not saved" : view.hasDraft ? "Draft saved, not published" : `Published · version ${view.version}`}
           </span>
           {canEdit && view.hasDraft && (
             <button type="button" onClick={discard} className={small}>
@@ -272,7 +276,7 @@ export default function FormBuilder({ formId, backHref }: { formId: string; back
             </div>
             <div className={`mx-auto max-h-[75vh] overflow-y-auto rounded-2xl border border-border bg-background p-4 shadow-sm ${device === "phone" ? "max-w-[375px]" : ""}`}>
               <GuidanceForm
-                fill={{ formId: view.id, name, version: view.version, instituteId: view.instituteId, instituteName: "your institute", definition: def, languageNames: Object.fromEntries(languages.map((l) => [l.code, l.name])) }}
+                fill={{ formId: view.id, name, version: view.version, instituteId: view.instituteId, instituteName: "your institute", definition: { ...def, questions: def.questions.map((x) => ({ ...x, label: x.label || "(question text)", options: x.options.filter((o) => o.trim()) })) }, languageNames: Object.fromEntries(languages.map((l) => [l.code, l.name])) }}
                 mode="preview"
                 consentText="Send this to your institute so an advisor can contact me."
                 onSubmit={async () => null}
@@ -324,9 +328,9 @@ function QuestionsEditor({
           id: newId(),
           sectionId,
           kind,
-          label: kind === "info" ? "Something people should know" : kind === "consent" ? "I agree to be contacted about courses" : "New question",
+          label: kind === "consent" ? "I agree to be contacted about courses" : "",
           required: kind === "consent",
-          options: WITH_OPTIONS.includes(kind) ? ["Option 1", "Option 2"] : [],
+          options: WITH_OPTIONS.includes(kind) ? ["", ""] : [],
           min: kind === "scale" ? 1 : null,
           max: kind === "scale" ? 5 : kind === "file" ? 1 : null,
           rules: [],
@@ -476,12 +480,12 @@ function QuestionsEditor({
                         {isOpen ? <ChevronDown aria-hidden="true" className="h-4 w-4 shrink-0" /> : <ChevronRight aria-hidden="true" className="h-4 w-4 shrink-0" />}
                         <span className="min-w-0 flex-1">
                           <span className="block truncate text-sm font-medium">
-                            {q.label}
+                            {q.label || <span className="font-normal italic text-muted-foreground">New question (type it below)</span>}
                             {q.required && <span className="text-red-600"> *</span>}
                           </span>
                           <span className="flex flex-wrap items-center gap-1.5 text-[11px] text-muted-foreground">
                             {KIND_LABEL[q.kind]}
-                            {q.options.length > 0 && ` · ${q.options.length} options`}
+                            {q.options.filter((o) => o.trim()).length > 0 && ` · ${q.options.filter((o) => o.trim()).length} options`}
                             {q.showIf && (
                               <span className="inline-flex items-center gap-0.5 text-violet-700 dark:text-violet-300">
                                 <GitBranch aria-hidden="true" className="h-3 w-3" /> shown only sometimes
@@ -506,7 +510,7 @@ function QuestionsEditor({
                           <button type="button" className={small} onClick={() => addQuestion(q.sectionId, q.kind, q)} aria-label="Duplicate">
                             <Copy aria-hidden="true" className="h-3.5 w-3.5" />
                           </button>
-                          <button type="button" className={small} onClick={() => removeQ(q.id)} aria-label="Delete">
+                          <button type="button" className={`${small} hover:border-red-500/40 hover:bg-red-500/10 hover:text-red-700 dark:hover:text-red-400`} onClick={() => removeQ(q.id)} aria-label="Delete" title="Delete question">
                             <Trash2 aria-hidden="true" className="h-3.5 w-3.5" />
                           </button>
                         </div>
@@ -620,155 +624,174 @@ function QuestionEditor({
   isPlatform: boolean;
 }) {
   const hasOptions = WITH_OPTIONS.includes(q.kind);
-  const [optionsText, setOptionsText] = useState(q.options.join("\n"));
-  const ruleTargets = q.kind === "yesno" ? ["Yes", "No"] : hasOptions ? q.options : [];
+  const named = q.options.filter((o) => o.trim());
+  const ruleTargets = q.kind === "yesno" ? ["Yes", "No"] : hasOptions ? named : [];
+  const [limits, setLimits] = useState(q.kind === "multi" && (q.min != null || q.max != null));
   const rule = (when: string) => q.rules?.find((r) => r.when === when);
   const setRule = (when: string, patch: Partial<Rule>) => {
     const others = (q.rules ?? []).filter((r) => r.when !== when);
     const next = { ...(rule(when) ?? { when }), ...patch };
     update({ rules: next.tag || next.ownerMemberId || next.priority ? [...others, next] : others });
   };
+  const num = (v: string) => (v === "" ? null : Number(v));
 
   return (
-    <fieldset disabled={readOnly} className="space-y-3 border-t border-border p-3 text-sm">
-      <div className="grid gap-3 sm:grid-cols-[1fr_12rem]">
+    <fieldset disabled={readOnly} className="space-y-4 border-t border-border p-4 text-sm">
+      {/* The question, its type and whether it's required */}
+      <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_13rem]">
         <label className="block text-xs font-medium text-muted-foreground">
-          {q.kind === "info" ? "Text" : "Question"}
-          <textarea rows={2} className={input} value={q.label} maxLength={300} onChange={(e) => update({ label: e.target.value })} />
-        </label>
-        <label className="block text-xs font-medium text-muted-foreground">
-          Type
-          <select
+          {q.kind === "info" ? "Text to show" : "Question"}
+          <textarea
+            rows={2}
+            autoFocus={!q.label}
             className={input}
-            value={q.kind}
-            onChange={(e) => {
-              const kind = e.target.value as Kind;
-              update({
-                kind,
-                options: WITH_OPTIONS.includes(kind) ? (q.options.length >= 2 ? q.options : ["Option 1", "Option 2"]) : [],
-                min: kind === "scale" ? 1 : null,
-                max: kind === "scale" ? 5 : kind === "file" ? 1 : null,
-                rules: WITH_OPTIONS.includes(kind) || kind === "yesno" ? q.rules : [],
-              });
-              setOptionsText(WITH_OPTIONS.includes(kind) ? (q.options.length >= 2 ? q.options : ["Option 1", "Option 2"]).join("\n") : "");
-            }}
-          >
-            {KINDS.map((k) => (
-              <option key={k.kind} value={k.kind}>
-                {k.label}
-              </option>
-            ))}
-          </select>
+            value={q.label}
+            maxLength={300}
+            placeholder={q.kind === "info" ? "e.g. We reply within two working days." : "Type your question, e.g. Which area interests you most?"}
+            onChange={(e) => update({ label: e.target.value })}
+          />
         </label>
-      </div>
-      <div className="grid gap-3 sm:grid-cols-2">
-        <label className="block text-xs font-medium text-muted-foreground">
-          Help text (optional)
-          <input className={input} value={q.help ?? ""} maxLength={500} onChange={(e) => update({ help: e.target.value })} />
-        </label>
-        {["text", "longtext", "number", "email", "phone"].includes(q.kind) && (
+        <div className="space-y-2.5">
           <label className="block text-xs font-medium text-muted-foreground">
-            Placeholder (optional)
-            <input className={input} value={q.placeholder ?? ""} maxLength={120} onChange={(e) => update({ placeholder: e.target.value })} />
+            Type
+            <select
+              className={input}
+              value={q.kind}
+              onChange={(e) => {
+                const kind = e.target.value as Kind;
+                const keep = q.options.length >= 2 ? q.options : ["", ""];
+                update({
+                  kind,
+                  options: WITH_OPTIONS.includes(kind) ? keep : [],
+                  min: kind === "scale" ? 1 : null,
+                  max: kind === "scale" ? 5 : kind === "file" ? 1 : null,
+                  rules: WITH_OPTIONS.includes(kind) || kind === "yesno" ? q.rules : [],
+                });
+              }}
+            >
+              {KINDS.map((k) => (
+                <option key={k.kind} value={k.kind}>
+                  {k.label}
+                </option>
+              ))}
+            </select>
           </label>
-        )}
+          {q.kind !== "info" && (
+            <label className="flex cursor-pointer items-center justify-between gap-2 rounded-lg border border-border px-3 py-2 text-xs font-medium">
+              Required
+              <span className="relative inline-flex">
+                <input type="checkbox" role="switch" className="peer sr-only" checked={q.required} onChange={(e) => update({ required: e.target.checked })} />
+                <span className="h-5 w-9 rounded-full bg-muted-foreground/30 transition-colors peer-checked:bg-cyan-700 peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-cyan-600" />
+                <span className="absolute left-0.5 top-0.5 h-4 w-4 rounded-full bg-white shadow transition-transform peer-checked:translate-x-4" />
+              </span>
+            </label>
+          )}
+        </div>
       </div>
 
+      <label className="block text-xs font-medium text-muted-foreground">
+        Help text <span className="font-normal">(optional, shown under the question)</span>
+        <input className={input} value={q.help ?? ""} maxLength={500} placeholder="e.g. Pick the one closest to you; you can explain more later." onChange={(e) => update({ help: e.target.value })} />
+      </label>
+
+      {["text", "longtext", "number", "email", "phone"].includes(q.kind) && (
+        <label className="block text-xs font-medium text-muted-foreground">
+          Example answer in the box <span className="font-normal">(optional)</span>
+          <input className={input} value={q.placeholder ?? ""} maxLength={120} placeholder="e.g. 8 hours" onChange={(e) => update({ placeholder: e.target.value })} />
+        </label>
+      )}
+
       {hasOptions && (
-        <div className="grid gap-3 sm:grid-cols-2">
-          <label className="block text-xs font-medium text-muted-foreground">
-            Options, one per line
-            <textarea
-              rows={Math.min(10, Math.max(3, optionsText.split("\n").length))}
-              className={input}
-              value={optionsText}
-              onChange={(e) => {
-                setOptionsText(e.target.value);
-                update({ options: e.target.value.split("\n").map((x) => x.trim()).filter(Boolean) });
-              }}
-            />
-          </label>
-          <div className="space-y-2 pt-5 text-xs">
+        <div>
+          <p className="text-xs font-medium text-muted-foreground">Options</p>
+          <OptionsEditor options={q.options} onChange={(options) => update({ options })} />
+          <div className="mt-2 flex flex-wrap items-center gap-x-5 gap-y-2 text-xs">
             <label className="flex items-center gap-2">
               <input type="checkbox" checked={!!q.allowOther} onChange={(e) => update({ allowOther: e.target.checked })} /> Add “Other (please specify)”
             </label>
-            {q.kind === "multi" && (
-              <div className="flex gap-2">
-                <label>
-                  Fewest
-                  <input type="number" min={0} className={`${input} w-20`} value={q.min ?? ""} onChange={(e) => update({ min: e.target.value === "" ? null : Number(e.target.value) })} />
-                </label>
-                <label>
-                  Most
-                  <input type="number" min={1} className={`${input} w-20`} value={q.max ?? ""} onChange={(e) => update({ max: e.target.value === "" ? null : Number(e.target.value) })} />
-                </label>
-              </div>
+            {q.kind === "multi" && !limits && (
+              <button type="button" onClick={() => setLimits(true)} className="text-cyan-700 hover:underline dark:text-cyan-400">
+                Limit how many they can pick
+              </button>
             )}
           </div>
+          {q.kind === "multi" && limits && (
+            <div className="mt-2 flex flex-wrap items-center gap-2 rounded-lg bg-muted/40 px-3 py-2 text-xs">
+              People pick at least
+              <input type="number" min={0} aria-label="At least" className="w-16 rounded-md border border-border bg-background px-2 py-1" value={q.min ?? ""} placeholder="—" onChange={(e) => update({ min: num(e.target.value) })} />
+              and at most
+              <input type="number" min={1} aria-label="At most" className="w-16 rounded-md border border-border bg-background px-2 py-1" value={q.max ?? ""} placeholder="—" onChange={(e) => update({ max: num(e.target.value) })} />
+              <span className="text-muted-foreground">(leave empty for no limit)</span>
+              <button
+                type="button"
+                className="ml-auto rounded p-0.5 hover:bg-muted"
+                aria-label="Remove the limit"
+                onClick={() => {
+                  update({ min: null, max: null });
+                  setLimits(false);
+                }}
+              >
+                <X aria-hidden="true" className="h-3.5 w-3.5" />
+              </button>
+            </div>
+          )}
         </div>
       )}
 
       {q.kind === "number" && (
-        <div className="flex gap-3 text-xs font-medium text-muted-foreground">
-          <label>
-            Lowest
-            <input type="number" className={`${input} w-28`} value={q.min ?? ""} onChange={(e) => update({ min: e.target.value === "" ? null : Number(e.target.value) })} />
-          </label>
-          <label>
-            Highest
-            <input type="number" className={`${input} w-28`} value={q.max ?? ""} onChange={(e) => update({ max: e.target.value === "" ? null : Number(e.target.value) })} />
-          </label>
+        <div className="flex flex-wrap items-center gap-2 text-xs">
+          Allowed from
+          <input type="number" aria-label="Lowest" className="w-24 rounded-md border border-border bg-background px-2 py-1" value={q.min ?? ""} placeholder="any" onChange={(e) => update({ min: num(e.target.value) })} />
+          to
+          <input type="number" aria-label="Highest" className="w-24 rounded-md border border-border bg-background px-2 py-1" value={q.max ?? ""} placeholder="any" onChange={(e) => update({ max: num(e.target.value) })} />
         </div>
       )}
       {q.kind === "scale" && (
-        <div className="flex flex-wrap gap-3 text-xs font-medium text-muted-foreground">
-          <label>
-            From
-            <select className={`${input} w-20`} value={q.min ?? 1} onChange={(e) => update({ min: Number(e.target.value) })}>
+        <div className="space-y-2 text-xs">
+          <div className="flex flex-wrap items-center gap-2">
+            Scale from
+            <select className="rounded-md border border-border bg-background px-2 py-1" value={q.min ?? 1} onChange={(e) => update({ min: Number(e.target.value) })} aria-label="From">
               <option value={0}>0</option>
               <option value={1}>1</option>
             </select>
-          </label>
-          <label>
-            To
-            <select className={`${input} w-20`} value={q.max ?? 5} onChange={(e) => update({ max: Number(e.target.value) })}>
+            to
+            <select className="rounded-md border border-border bg-background px-2 py-1" value={q.max ?? 5} onChange={(e) => update({ max: Number(e.target.value) })} aria-label="To">
               {[3, 4, 5, 6, 7, 8, 9, 10].map((n) => (
                 <option key={n} value={n}>
                   {n}
                 </option>
               ))}
             </select>
-          </label>
-          <label>
-            Low end label
-            <input className={`${input} w-36`} value={q.minLabel ?? ""} maxLength={40} placeholder="Not at all" onChange={(e) => update({ minLabel: e.target.value })} />
-          </label>
-          <label>
-            High end label
-            <input className={`${input} w-36`} value={q.maxLabel ?? ""} maxLength={40} placeholder="Very" onChange={(e) => update({ maxLabel: e.target.value })} />
-          </label>
+          </div>
+          <div className="grid gap-2 sm:grid-cols-2">
+            <label className="font-medium text-muted-foreground">
+              Words under the lowest
+              <input className={input} value={q.minLabel ?? ""} maxLength={40} placeholder="e.g. Not at all" onChange={(e) => update({ minLabel: e.target.value })} />
+            </label>
+            <label className="font-medium text-muted-foreground">
+              Words under the highest
+              <input className={input} value={q.maxLabel ?? ""} maxLength={40} placeholder="e.g. Very sure" onChange={(e) => update({ maxLabel: e.target.value })} />
+            </label>
+          </div>
         </div>
       )}
       {q.kind === "file" && (
-        <label className="block w-40 text-xs font-medium text-muted-foreground">
-          Files allowed
-          <select className={input} value={q.max ?? 1} onChange={(e) => update({ max: Number(e.target.value) })}>
+        <div className="flex items-center gap-2 text-xs">
+          People can attach up to
+          <select className="rounded-md border border-border bg-background px-2 py-1" value={q.max ?? 1} onChange={(e) => update({ max: Number(e.target.value) })} aria-label="Files allowed">
             {[1, 2, 3].map((n) => (
               <option key={n} value={n}>
                 {n}
               </option>
             ))}
           </select>
-        </label>
+          {(q.max ?? 1) === 1 ? "file" : "files"} (PDF, Word, JPG or PNG, 5 MB each)
+        </div>
       )}
 
-      {q.kind !== "info" && (
-        <label className="flex items-center gap-2 text-xs">
-          <input type="checkbox" checked={q.required} onChange={(e) => update({ required: e.target.checked })} /> Required
-        </label>
-      )}
-
-      <ConditionEditor value={q.showIf ?? null} earlier={earlier} onChange={(c) => update({ showIf: c })} what="this question" readOnly={readOnly} />
+      <div className="border-t border-border pt-3">
+        <ConditionEditor value={q.showIf ?? null} earlier={earlier} onChange={(c) => update({ showIf: c })} what="this question" readOnly={readOnly} />
+      </div>
 
       {ruleTargets.length > 0 && !isPlatform && (
         <details className="rounded-lg border border-amber-500/30 bg-amber-500/5 p-2 text-xs" open={(q.rules?.length ?? 0) > 0}>
@@ -813,6 +836,112 @@ function QuestionEditor({
         </details>
       )}
     </fieldset>
+  );
+}
+
+/**
+ * The options of a choice question, one row each: type, Enter for the next one, Backspace on an empty row removes it,
+ * pasting several lines adds several options, rows move up and down.
+ */
+function OptionsEditor({ options, onChange }: { options: string[]; onChange: (o: string[]) => void }) {
+  const refs = useRef<(HTMLInputElement | null)[]>([]);
+  const pending = useRef<number | null>(null);
+  const setFocus = (i: number) => {
+    pending.current = i;
+  };
+  useEffect(() => {
+    if (pending.current != null) {
+      refs.current[pending.current]?.focus();
+      pending.current = null;
+    }
+  });
+
+  const set = (i: number, v: string) => onChange(options.map((o, j) => (j === i ? v : o)));
+  const insert = (i: number, values: string[]) => {
+    const list = [...options];
+    list.splice(i, 0, ...values);
+    onChange(list.slice(0, 30));
+  };
+  const remove = (i: number) => onChange(options.filter((_, j) => j !== i));
+  const move = (i: number, d: -1 | 1) => {
+    const j = i + d;
+    if (j < 0 || j >= options.length) return;
+    const list = [...options];
+    [list[i], list[j]] = [list[j], list[i]];
+    onChange(list);
+  };
+  const dupes = new Set(options.map((o) => o.trim().toLowerCase()).filter((o, i, a) => o && a.indexOf(o) !== i));
+
+  return (
+    <div className="mt-1 space-y-1.5">
+      <ol className="space-y-1.5">
+        {options.map((o, i) => (
+          <li key={i} className="group flex items-center gap-1.5">
+            <span className="w-5 shrink-0 text-right text-xs tabular-nums text-muted-foreground">{i + 1}.</span>
+            <input
+              ref={(el) => {
+                refs.current[i] = el;
+              }}
+              value={o}
+              maxLength={120}
+              placeholder={`Option ${i + 1}`}
+              aria-label={`Option ${i + 1}`}
+              aria-invalid={dupes.has(o.trim().toLowerCase())}
+              onChange={(e) => set(i, e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  // Go to the next empty row, or add one
+                  if (options[i + 1] !== undefined && !options[i + 1].trim()) refs.current[i + 1]?.focus();
+                  else {
+                    insert(i + 1, [""]);
+                    setFocus(i + 1);
+                  }
+                } else if (e.key === "Backspace" && o === "" && options.length > 2) {
+                  e.preventDefault();
+                  remove(i);
+                  setFocus(Math.max(0, i - 1));
+                }
+              }}
+              onPaste={(e) => {
+                const lines = e.clipboardData.getData("text").split(/\r?\n/).map((x) => x.trim()).filter(Boolean);
+                if (lines.length < 2) return;
+                e.preventDefault();
+                const list = [...options];
+                list.splice(i, o ? 0 : 1, ...lines);
+                onChange(list.slice(0, 30));
+              }}
+              className={`min-w-0 flex-1 rounded-lg border bg-background px-3 py-1.5 text-sm focus:border-cyan-600 focus:outline-none focus:ring-2 focus:ring-cyan-600/20 ${dupes.has(o.trim().toLowerCase()) ? "border-red-500" : "border-border"}`}
+            />
+            <div className="flex shrink-0 opacity-60 transition-opacity group-focus-within:opacity-100 group-hover:opacity-100">
+              <button type="button" onClick={() => move(i, -1)} disabled={i === 0} aria-label={`Move option ${i + 1} up`} className="rounded p-1 hover:bg-muted disabled:opacity-30">
+                <ArrowUp aria-hidden="true" className="h-3.5 w-3.5" />
+              </button>
+              <button type="button" onClick={() => move(i, 1)} disabled={i === options.length - 1} aria-label={`Move option ${i + 1} down`} className="rounded p-1 hover:bg-muted disabled:opacity-30">
+                <ArrowDown aria-hidden="true" className="h-3.5 w-3.5" />
+              </button>
+              <button type="button" onClick={() => remove(i)} disabled={options.length <= 2} aria-label={`Remove option ${i + 1}`} className="rounded p-1 hover:bg-red-500/10 hover:text-red-700 disabled:opacity-30">
+                <X aria-hidden="true" className="h-3.5 w-3.5" />
+              </button>
+            </div>
+          </li>
+        ))}
+      </ol>
+      {dupes.size > 0 && <p className="pl-6 text-xs text-red-700 dark:text-red-400">Two options are the same.</p>}
+      {options.length < 30 && (
+        <button
+          type="button"
+          onClick={() => {
+            insert(options.length, [""]);
+            setFocus(options.length);
+          }}
+          className="ml-6 inline-flex items-center gap-1 text-xs font-medium text-cyan-700 hover:underline dark:text-cyan-400"
+        >
+          <Plus aria-hidden="true" className="h-3.5 w-3.5" /> Add option
+        </button>
+      )}
+      <p className="pl-6 text-[11px] text-muted-foreground">Tip: press Enter for the next option, or paste a list to add many at once.</p>
+    </div>
   );
 }
 
