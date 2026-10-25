@@ -8,7 +8,22 @@
  */
 
 import React, { useMemo, useState } from "react";
-import { CalendarClock, Mail, MessageCircle, MessageSquare, NotebookPen, Phone, Pin, PinOff, Reply, Search } from "lucide-react";
+import {
+  ArrowRightLeft,
+  CalendarClock,
+  CheckSquare,
+  Info,
+  Mail,
+  MessageCircle,
+  MessageSquare,
+  NotebookPen,
+  Phone,
+  Pin,
+  PinOff,
+  Reply,
+  Search,
+  UserRound,
+} from "lucide-react";
 import { CALL_OUTCOMES, relative, type Activity } from "./api";
 
 const OUT = ["Email", "Sms", "WhatsApp"];
@@ -43,6 +58,33 @@ function day(iso: string) {
   return d.toLocaleDateString([], { weekday: "short", day: "numeric", month: "short", year: d.getFullYear() === today.getFullYear() ? undefined : "numeric" });
 }
 const time = (iso: string) => new Date(iso).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+const shortDate = (iso: string) => new Date(iso).toLocaleDateString([], { day: "numeric", month: "short" });
+
+const MARKER: Record<string, { icon: React.ElementType; tone: string }> = {
+  EmailReply: { icon: Mail, tone: "bg-cyan-600 text-white" },
+  Email: { icon: Mail, tone: "bg-slate-600 text-white" },
+  Sms: { icon: MessageSquare, tone: "bg-slate-600 text-white" },
+  WhatsApp: { icon: MessageCircle, tone: "bg-emerald-600 text-white" },
+  Call: { icon: Phone, tone: "bg-indigo-600 text-white" },
+  Meeting: { icon: CalendarClock, tone: "bg-violet-600 text-white" },
+  Note: { icon: NotebookPen, tone: "bg-amber-500 text-white" },
+  Stage: { icon: ArrowRightLeft, tone: "bg-card text-muted-foreground border border-border" },
+  Assignment: { icon: UserRound, tone: "bg-card text-muted-foreground border border-border" },
+  Task: { icon: CheckSquare, tone: "bg-card text-muted-foreground border border-border" },
+  System: { icon: Info, tone: "bg-card text-muted-foreground border border-border" },
+};
+
+function Marker({ kind }: { kind: string }) {
+  const m = MARKER[kind] ?? MARKER.System;
+  const Icon = m.icon;
+  return (
+    <span className={`relative z-1 mt-1.5 flex h-6 w-6 items-center justify-center rounded-full ${m.tone}`}>
+      <Icon className="h-3 w-3" />
+    </span>
+  );
+}
+
+const CHANGE_LABEL: Record<string, string> = { Stage: "Stage changed", Assignment: "Owner changed", Task: "Follow-up", System: "Update" };
 
 export default function Communication({
   items,
@@ -149,9 +191,25 @@ export default function Communication({
       {groups.map(([d, list]) => (
         <section key={d} aria-label={d}>
           <h3 className="sticky top-0 z-1 mb-2 bg-card py-1 text-center text-[11px] font-medium uppercase tracking-wide text-muted-foreground">{d}</h3>
-          <ol className="space-y-2.5">
-            {list.map((a) => (
-              <Item key={a.id} a={a} personName={personName} busy={busy} onPin={onPin} onReply={onReply} />
+          <ol>
+            {list.map((a, i) => (
+              <li key={a.id} className="grid grid-cols-[4.75rem_1.5rem_1fr] gap-x-2">
+                {/* When: first, on the left */}
+                <div className="pt-2 text-right text-xs leading-tight">
+                  <time dateTime={a.createdAt} className="block font-medium text-foreground">
+                    {time(a.createdAt)}
+                  </time>
+                  <span className="text-muted-foreground">{shortDate(a.createdAt)}</span>
+                </div>
+                {/* The vertical line with a marker for the kind of event */}
+                <div className="relative flex justify-center" aria-hidden="true">
+                  <span className={`absolute left-1/2 top-0 w-px -translate-x-1/2 bg-border ${i === list.length - 1 ? "h-3" : "h-full"}`} />
+                  <Marker kind={a.kind} />
+                </div>
+                <div className="min-w-0 pb-4">
+                  <Item a={a} personName={personName} busy={busy} onPin={onPin} onReply={onReply} />
+                </div>
+              </li>
             ))}
           </ol>
         </section>
@@ -204,22 +262,21 @@ function Item({ a, personName, busy, onPin, onReply }: { a: Activity; personName
   const meta = a.meta ?? {};
   const failed = meta.delivered === false || meta.sent === false;
 
+  // Pipeline changes: one compact row (what changed, then who)
   if (CHANGES.includes(a.kind)) {
     return (
-      <li className="text-center text-xs text-muted-foreground">
-        {a.body} · {a.actorName} · {time(a.createdAt)}
-      </li>
+      <div className="pt-2 text-sm">
+        <span className="font-medium">{CHANGE_LABEL[a.kind] ?? a.kind}</span>
+        <span className="text-muted-foreground"> · {a.body}</span>
+        <span className="block text-xs text-muted-foreground">by {a.actorName}</span>
+      </div>
     );
   }
 
-  const Icon = CHANNEL[a.kind]?.icon ?? NotebookPen;
   const head = (who: string, what: string) => (
-    <div className="flex items-center justify-between gap-2 text-xs text-muted-foreground">
-      <span className="inline-flex min-w-0 items-center gap-1.5">
-        <Icon aria-hidden="true" className="h-3.5 w-3.5 shrink-0" />
-        <span className="truncate">
-          <span className="font-medium text-foreground">{who}</span> · {what} · {time(a.createdAt)}
-        </span>
+    <div className="flex items-start justify-between gap-2 text-xs text-muted-foreground">
+      <span className="min-w-0">
+        <span className="font-medium text-foreground">{who}</span> {what}
       </span>
       <PinButton a={a} busy={busy} onPin={onPin} />
     </div>
@@ -227,7 +284,7 @@ function Item({ a, personName, busy, onPin, onReply }: { a: Activity; personName
 
   if (a.kind === "EmailReply") {
     return (
-      <li className="mr-8 rounded-2xl rounded-tl-sm border border-cyan-600/40 bg-cyan-600/5 p-3 text-sm">
+      <div className="rounded-xl border border-cyan-600/40 bg-cyan-600/5 p-3 text-sm">
         {head(personName, "replied by email")}
         <div className="mt-1.5">
           <Body text={a.body} />
@@ -235,26 +292,26 @@ function Item({ a, personName, busy, onPin, onReply }: { a: Activity; personName
         <button type="button" onClick={() => onReply(a.subject ?? "")} className="mt-2 inline-flex items-center gap-1 rounded-lg border border-border bg-card px-2.5 py-1 text-xs font-medium hover:bg-muted">
           <Reply aria-hidden="true" className="h-3.5 w-3.5" /> Reply
         </button>
-      </li>
+      </div>
     );
   }
 
   if (OUT.includes(a.kind)) {
     const what = a.kind === "Email" ? `emailed ${typeof meta.to === "string" ? meta.to : ""}` : a.kind === "Sms" ? "sent an SMS" : "opened a WhatsApp chat";
     return (
-      <li className="ml-8 rounded-2xl rounded-tr-sm border border-border bg-muted/50 p-3 text-sm">
+      <div className="rounded-xl border border-border bg-muted/40 p-3 text-sm">
         {head(a.actorName, what)}
         {a.subject && <p className="mt-1.5 font-medium">{a.subject}</p>}
         <div className="mt-1">{a.body ? <Body text={a.body} /> : <p className="text-muted-foreground">No message text.</p>}</div>
         {failed && <p className="mt-1 text-xs font-medium text-red-700 dark:text-red-400">Not delivered{typeof meta.error === "string" ? ` (${meta.error})` : ""}. Try again or use another channel.</p>}
-      </li>
+      </div>
     );
   }
 
   if (a.kind === "Call") {
     const outcome = String(meta.outcome ?? "");
     return (
-      <li className="rounded-xl border border-border p-3 text-sm">
+      <div className="rounded-xl border border-border p-3 text-sm">
         {head(a.actorName, "called")}
         <p className="mt-1.5">
           <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${outcome === "Reached" ? "bg-emerald-500/10 text-emerald-800 dark:text-emerald-300" : "bg-muted text-muted-foreground"}`}>
@@ -266,26 +323,26 @@ function Item({ a, personName, busy, onPin, onReply }: { a: Activity; personName
             <Body text={a.body} />
           </div>
         )}
-      </li>
+      </div>
     );
   }
 
   if (a.kind === "Meeting") {
     return (
-      <li className="rounded-xl border border-violet-500/30 bg-violet-500/5 p-3 text-sm">
-        {head(a.actorName, "booked a meeting")}
+      <div className="rounded-xl border border-violet-500/30 bg-violet-500/5 p-3 text-sm">
+        {head(a.actorName, "booked a meeting for")}
         <p className="mt-1.5 font-medium">{typeof meta.at === "string" ? new Date(meta.at).toLocaleString([], { dateStyle: "full", timeStyle: "short" }) : ""}</p>
         {a.body && <Body text={a.body} />}
-      </li>
+      </div>
     );
   }
 
   return (
-    <li className="rounded-xl border border-amber-500/30 bg-amber-500/5 p-3 text-sm">
-      {head(a.actorName, "note")}
+    <div className="rounded-xl border border-amber-500/30 bg-amber-500/5 p-3 text-sm">
+      {head(a.actorName, "added a note")}
       <div className="mt-1.5">
         <Body text={a.body} />
       </div>
-    </li>
+    </div>
   );
 }
