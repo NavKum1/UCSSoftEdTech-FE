@@ -1,0 +1,62 @@
+"use client";
+
+/**
+ * Confirming a career guidance request from the link in the email (forms that require email confirmation). Once
+ * confirmed, the request reaches the institute; the institute's thank-you message is shown, or its own page opens.
+ */
+
+import React, { Suspense, useEffect, useRef, useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { CheckCircle2, XCircle } from "lucide-react";
+import { getApiBaseUrl } from "@/lib/apiClient";
+
+export default function ConfirmGuidancePage() {
+  return (
+    <Suspense fallback={<div className="mx-auto mt-10 h-40 max-w-md animate-pulse rounded-2xl bg-muted motion-reduce:animate-none" aria-busy="true" />}>
+      <Confirm />
+    </Suspense>
+  );
+}
+
+function Confirm() {
+  const token = useSearchParams().get("token") ?? "";
+  const [state, setState] = useState<{ ok: boolean; institute?: string | null; thankYou?: string | null; error?: string } | null>(null);
+  const sent = useRef(false);
+
+  useEffect(() => {
+    if (sent.current) return;
+    sent.current = true;
+    fetch(`${getApiBaseUrl().replace(/\/$/, "")}/api/public/guidance-forms/confirm/${encodeURIComponent(token)}`, { method: "POST" })
+      .then(async (res) => {
+        const body = await res.json().catch(() => null);
+        if (!res.ok) return setState({ ok: false, error: body?.error ?? "This link didn't work. Please fill in the form again." });
+        if (body?.redirectUrl) {
+          window.location.href = body.redirectUrl;
+          return;
+        }
+        setState({ ok: true, institute: body?.instituteName, thankYou: body?.thankYou });
+      })
+      .catch(() => setState({ ok: false, error: "We couldn't reach the server. Please check your connection and open the link again." }));
+  }, [token]);
+
+  if (!state) return <div className="mx-auto mt-10 h-40 max-w-md animate-pulse rounded-2xl bg-muted motion-reduce:animate-none" aria-busy="true" />;
+  return (
+    <div className="mx-auto mt-10 max-w-md p-6 text-center" role="status">
+      {state.ok ? (
+        <>
+          <CheckCircle2 aria-hidden="true" className="mx-auto h-10 w-10 text-emerald-600" />
+          <h1 className="mt-3 text-lg font-semibold">Confirmed. Thank you.</h1>
+          <p className="mt-1 whitespace-pre-wrap text-sm text-muted-foreground">
+            {state.thankYou || `Your request is with ${state.institute ?? "the institute"}. An advisor will get back to you by email.`}
+          </p>
+        </>
+      ) : (
+        <>
+          <XCircle aria-hidden="true" className="mx-auto h-10 w-10 text-red-600" />
+          <h1 className="mt-3 text-lg font-semibold">This link didn&apos;t work</h1>
+          <p className="mt-1 text-sm text-muted-foreground">{state.error}</p>
+        </>
+      )}
+    </div>
+  );
+}

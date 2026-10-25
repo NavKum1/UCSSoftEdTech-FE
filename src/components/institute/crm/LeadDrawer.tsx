@@ -201,6 +201,16 @@ export default function LeadDrawer({
                 <Contact label="Email" value={lead.email} href={lead.email ? `mailto:${lead.email}` : undefined} />
                 <Contact label="Phone" value={lead.phone} href={lead.phone ? `tel:${lead.phone.replace(/\s/g, "")}` : undefined} />
               </div>
+              {lead.spam && (
+                <div className="mt-2 flex flex-wrap items-center justify-between gap-2 rounded-lg border border-zinc-500/30 bg-zinc-500/10 px-3 py-2 text-xs">
+                  <span>
+                    <span className="font-medium">Possible spam.</span> {lead.spamReasons ? `Why: ${lead.spamReasons}.` : ""} It&apos;s kept out of your leads until you say it&apos;s real.
+                  </span>
+                  <button type="button" disabled={busy} onClick={() => update({ spam: false }, "Moved to your leads.")} className="rounded-lg bg-cyan-700 px-3 py-1.5 font-medium text-white hover:bg-cyan-800">
+                    Not spam
+                  </button>
+                </div>
+              )}
               {lead.duplicates.length > 0 && (
                 <p className="mt-2 flex items-center gap-1.5 text-xs text-amber-800 dark:text-amber-300">
                   <AlertTriangle aria-hidden="true" className="h-3.5 w-3.5" />
@@ -356,6 +366,11 @@ export default function LeadDrawer({
                   <span className="font-medium">High priority</span>
                   <span className="text-muted-foreground">(set by form rules too)</span>
                 </label>
+                {!lead.spam && (
+                  <button type="button" disabled={busy} onClick={() => update({ spam: true }, "Moved to Possible spam.")} className="text-xs text-muted-foreground underline-offset-2 hover:text-foreground hover:underline">
+                    This is spam
+                  </button>
+                )}
               </section>
 
               {/* Tabs */}

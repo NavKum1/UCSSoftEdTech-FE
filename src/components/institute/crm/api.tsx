@@ -74,6 +74,8 @@ export interface Filters {
   awaiting?: boolean;
   /** Only high-priority leads */
   priority?: boolean;
+  /** Only leads the spam check flagged */
+  spam?: boolean;
   /** Received on or after (ISO) */
   from?: string;
   /** activity (default), received, followup or name */
@@ -103,6 +105,8 @@ export interface LeadRow {
   lastReplyAt: string | null;
   awaitingReply: boolean;
   highPriority?: boolean;
+  spam?: boolean;
+  spamReasons?: string | null;
 }
 
 export interface LeadList {
@@ -120,6 +124,8 @@ export interface LeadList {
   mineOpen: number;
   awaiting: number;
   highPriority?: number;
+  /** Leads in Possible spam */
+  spam?: number;
   unassignedOpen: number;
 }
 
@@ -174,6 +180,8 @@ export interface LeadFull {
   firstResponseAt: string | null;
   doNotContact: boolean;
   highPriority?: boolean;
+  spam?: boolean;
+  spamReasons?: string | null;
   duplicates: string[];
   channels: { email: boolean; sms: boolean; whatsapp: boolean; replyByEmail: boolean };
   activities: Activity[];

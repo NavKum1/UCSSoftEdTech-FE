@@ -15,6 +15,8 @@ interface Insights {
   startRate: number;
   completionRate: number;
   medianSeconds: number | null;
+  awaitingConfirmation?: number;
+  possibleSpam?: number;
   dropOff: { questionId: string; question: string; stopped: number }[];
   bySource: { key: string; count: number }[];
   byPage: { key: string; count: number }[];
@@ -80,6 +82,12 @@ export default function InsightsTab({ formId, apiFetch, instituteId }: { formId:
         <Tile label="Typical time to fill in" value={data.medianSeconds == null ? "—" : data.medianSeconds < 90 ? `${data.medianSeconds} s` : `${Math.round(data.medianSeconds / 60)} min`} />
         <Tile label="Stopped part way" value={Math.max(0, data.starts - data.completed)} />
       </div>
+      {((data.awaitingConfirmation ?? 0) > 0 || (data.possibleSpam ?? 0) > 0) && (
+        <p className="text-sm text-muted-foreground">
+          {data.awaitingConfirmation ? `${data.awaitingConfirmation} waiting for the person to confirm their email. ` : ""}
+          {data.possibleSpam ? `${data.possibleSpam} in Possible spam in your CRM.` : ""}
+        </p>
+      )}
 
       <div className="grid gap-4 lg:grid-cols-2">
         <Card title="Where people stopped" note="The last question reached by people who started but didn't send.">

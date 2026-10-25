@@ -42,6 +42,8 @@ function Embedded() {
   const base = `${getApiBaseUrl().replace(/\/$/, "")}/api/public/guidance/${instituteId}`;
   const [loaded, setFill] = useState<Fillable | null>(null);
   const [missing, setMissing] = useState(false);
+  const [checkEmail, setCheckEmail] = useState<string | null>(null);
+  const [reloads, setReloads] = useState(0);
   const box = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -56,7 +58,7 @@ function Embedded() {
     return () => {
       cancelled = true;
     };
-  }, [base, formId]);
+  }, [base, formId, reloads]);
 
   // The site's colour, when it set one
   const fill = useMemo(() => {
@@ -81,7 +83,7 @@ function Embedded() {
     ro.observe(el);
     send();
     return () => ro.disconnect();
-  }, [embedded, theme, fill, missing]);
+  }, [embedded, theme, fill, missing, checkEmail]);
 
   const upload = async (file: File) => {
     const data = new FormData();
@@ -98,8 +100,16 @@ function Embedded() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ name: p.name, email: p.email, phone: p.phone, unsure: p.unsure, answers: p.answers, consent: true, meta: p.meta }),
     });
-    if (res.ok) return null;
     const body = await res.json().catch(() => null);
+    if (res.ok) {
+      if (body?.confirmEmail) setCheckEmail(p.email);
+      return null;
+    }
+    // The form was open too long: get a fresh one (answers stay) and ask to send again
+    if (body?.code === "reload") {
+      setReloads((n) => n + 1);
+      return "This form had been open a long time. Please press Send again.";
+    }
     return res.status === 429 ? "Too many requests from here just now. Please try again later." : (body?.error ?? "Your request couldn't be sent. Please try again.");
   };
 
@@ -115,6 +125,14 @@ function Embedded() {
       )}
       {missing ? (
         <p className="p-6 text-center text-sm text-muted-foreground">This form isn&apos;t available right now.</p>
+      ) : checkEmail ? (
+        <div className="p-6 text-center" role="status">
+          <p className="text-base font-semibold">Check your email to confirm</p>
+          <p className="mt-1 text-sm text-muted-foreground">
+            We sent a link to <span className="font-medium text-foreground">{checkEmail}</span>. Your request reaches {fill?.instituteName ?? "the institute"} once you click it. The
+            link works for 48 hours; check your spam folder if you don&apos;t see it.
+          </p>
+        </div>
       ) : !fill ? (
         <div className="h-64 animate-pulse rounded-2xl bg-muted motion-reduce:animate-none" aria-busy="true" />
       ) : (
@@ -128,6 +146,7 @@ function Embedded() {
           campaign={campaign}
           referrer={page}
           resumeToken={params.get("resume")}
+          apiBase={base}
         />
       )}
     </div>

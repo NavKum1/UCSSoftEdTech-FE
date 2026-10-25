@@ -39,6 +39,7 @@ const QUICK: { key: string; label: string; filters: Filters }[] = [
   { key: "priority", label: "High priority", filters: { priority: true } },
   { key: "overdue", label: "Follow-up overdue", filters: { overdue: true } },
   { key: "unassigned", label: "Unassigned", filters: { owner: "none" } },
+  { key: "spam", label: "Possible spam", filters: { spam: true } },
 ];
 
 const LAYOUT_KEY = "crm_layout";
@@ -203,7 +204,7 @@ export default function LeadsView({
       <div className="flex flex-wrap items-center gap-1.5">
         {QUICK.map((q) => {
           const on = same(q.filters, { ...filters, q: undefined });
-          const count = q.key === "new" ? data?.counts?.New : q.key === "awaiting" ? data?.awaiting : q.key === "priority" ? data?.highPriority : undefined;
+          const count = q.key === "new" ? data?.counts?.New : q.key === "awaiting" ? data?.awaiting : q.key === "priority" ? data?.highPriority : q.key === "spam" ? data?.spam : undefined;
           return (
             <button
               key={q.key}
@@ -381,6 +382,11 @@ export default function LeadsView({
                       {l.duplicate && <span className="inline-flex items-center gap-0.5 text-amber-800 dark:text-amber-300" title="Another inquiry has the same email"><AlertTriangle aria-hidden="true" className="h-3 w-3" />Duplicate</span>}
                       {l.doNotContact && <span className="inline-flex items-center gap-0.5 text-red-700 dark:text-red-400"><Ban aria-hidden="true" className="h-3 w-3" />Do not contact</span>}
                       {l.highPriority && <PriorityBadge />}
+                      {l.spam && (
+                        <span className="rounded-full border border-zinc-500/30 bg-zinc-500/10 px-1.5 py-0.5 text-[11px] font-medium text-zinc-700 dark:text-zinc-300" title={l.spamReasons ?? undefined}>
+                          Possible spam
+                        </span>
+                      )}
                       {l.tags.map((t) => <span key={t} className="rounded-full bg-muted px-1.5">{t}</span>)}
                     </div>
                   </td>

@@ -16,7 +16,6 @@ import {
   ArrowLeft,
   ArrowUp,
   BookOpen,
-  Check,
   ChevronDown,
   ChevronRight,
   Copy,
@@ -84,6 +83,8 @@ function normalise(d: FormDef): FormDef {
       askUnsure: d.settings?.askUnsure ?? true,
       askPhone: d.settings?.askPhone ?? true,
       phoneRequired: d.settings?.phoneRequired ?? false,
+      requireEmailConfirmation: d.settings?.requireEmailConfirmation ?? true,
+      requirePhoneCheck: d.settings?.requirePhoneCheck ?? false,
       translations: d.settings?.translations ?? {},
     },
   };
@@ -1096,10 +1097,54 @@ function SettingsEditor({
         <p className="text-xs text-muted-foreground">
           {isDefault ? "Signed-in Edulexa members always use this form when they ask you for guidance." : "Inside Edulexa, members use your default form; this one is for links and your website."}
         </p>
-        <p className="flex items-center gap-1 text-xs text-muted-foreground">
-          <Check aria-hidden="true" className="h-3.5 w-3.5" /> Bots are filtered out (hidden field, time check, rate limits).
-        </p>
+      </section>
+
+      <section className="space-y-3 rounded-2xl border border-border bg-card p-4 text-sm">
+        <div>
+          <h2 className="text-sm font-semibold">Protection against bots and fake requests</h2>
+          <p className="text-xs text-muted-foreground">For the public link and your website. Members signed in to Edulexa are already verified.</p>
+        </div>
+        <Switch
+          checked={s.requireEmailConfirmation !== false}
+          onChange={(v) => set({ requireEmailConfirmation: v })}
+          title="Confirm by email (recommended)"
+          detail="People click a link in an email before their request reaches your CRM. Bots can't, and mistyped emails are caught. Adds one step for people."
+        />
+        <Switch
+          checked={!!s.requirePhoneCheck}
+          onChange={(v) => set({ requirePhoneCheck: v, askPhone: v || s.askPhone, phoneRequired: v || s.phoneRequired })}
+          title="Check the phone number by SMS code"
+          detail="People enter a code we send to their phone. Needs your Pulse Relay connection (Career centre → Settings → Chat & SMS); each code is a normal SMS."
+        />
+        <div className="rounded-lg bg-muted/40 p-3 text-xs text-muted-foreground">
+          <p className="font-medium text-foreground">Always on</p>
+          <ul className="mt-1 list-disc space-y-0.5 pl-4">
+            <li>A hidden field bots fill in, and a check that the form wasn&apos;t sent within seconds of opening (timed by our server).</li>
+            <li>Limits on how often one visitor can send, and on files.</li>
+            <li>An invisible human check by Cloudflare, once Edulexa has it switched on.</li>
+            <li>
+              A spam check (throwaway emails, links, random text, repeats): suspicious requests go to <span className="font-medium text-foreground">Possible spam</span> in your CRM,
+              never deleted.
+            </li>
+          </ul>
+        </div>
       </section>
     </fieldset>
+  );
+}
+
+function Switch({ checked, onChange, title, detail }: { checked: boolean; onChange: (v: boolean) => void; title: string; detail: string }) {
+  return (
+    <label className="flex cursor-pointer items-start justify-between gap-4">
+      <span>
+        <span className="font-medium">{title}</span>
+        <span className="block text-xs text-muted-foreground">{detail}</span>
+      </span>
+      <span className="relative mt-0.5 inline-flex shrink-0">
+        <input type="checkbox" role="switch" className="peer sr-only" checked={checked} onChange={(e) => onChange(e.target.checked)} />
+        <span className="h-5 w-9 rounded-full bg-muted-foreground/30 transition-colors peer-checked:bg-cyan-700 peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-cyan-600" />
+        <span className="absolute left-0.5 top-0.5 h-4 w-4 rounded-full bg-white shadow transition-transform peer-checked:translate-x-4" />
+      </span>
+    </label>
   );
 }

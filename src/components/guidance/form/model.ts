@@ -64,6 +64,10 @@ export interface Settings {
   askUnsure: boolean;
   askPhone: boolean;
   phoneRequired: boolean;
+  /** Website inquiries reach the CRM only after the person confirms their email (on by default) */
+  requireEmailConfirmation?: boolean;
+  /** Website inquiries need the phone checked by an SMS code */
+  requirePhoneCheck?: boolean;
   translations?: Record<string, FormText>;
 }
 
@@ -83,6 +87,10 @@ export interface Fillable {
   instituteName: string;
   definition: FormDef;
   languageNames: Record<string, string>;
+  /** Website forms: when the form was opened, signed by the server */
+  startToken?: string;
+  /** Website forms: Cloudflare Turnstile, when Edulexa has it set up */
+  turnstileSiteKey?: string | null;
 }
 
 /** An answer as the form holds it */

@@ -27,6 +27,7 @@ import {
   type Question,
 } from "./model";
 import { RTL, UI, type UiKey } from "./uiText";
+import { HumanCheck, PhoneCheck } from "./Protection";
 
 
 export interface SubmitPayload {
@@ -35,7 +36,17 @@ export interface SubmitPayload {
   email: string;
   phone: string | null;
   answers: ReturnType<typeof toApi>;
-  meta: { formId: string; language: string; campaign: string | null; referrer: string | null; visitId: string; durationSeconds: number };
+  meta: {
+    formId: string;
+    language: string;
+    campaign: string | null;
+    referrer: string | null;
+    visitId: string;
+    durationSeconds: number;
+    startToken?: string | null;
+    turnstile?: string | null;
+    phoneCheckId?: string | null;
+  };
 }
 
 const api = () => getApiBaseUrl().replace(/\/$/, "");
@@ -65,6 +76,7 @@ export default function GuidanceForm({
   campaign,
   referrer,
   resumeToken,
+  apiBase,
 }: {
   fill: Fillable;
   /** website (public), app (signed in) or preview (editor; nothing is sent) */
@@ -82,6 +94,8 @@ export default function GuidanceForm({
   /** The page the form is on (embedded); else the referring site */
   referrer?: string | null;
   resumeToken?: string | null;
+  /** Website forms: the public API for this institute (phone codes) */
+  apiBase?: string;
 }) {
   const def = fill.definition;
   const s = def.settings;
@@ -100,6 +114,10 @@ export default function GuidanceForm({
   const [phone, setPhone] = useState("");
   const [consent, setConsent] = useState(false);
   const [website, setWebsite] = useState(""); // hidden bot trap
+  const [human, setHuman] = useState<string | null>(null);
+  const [phoneCheckId, setPhoneCheckId] = useState<string | null>(null);
+  const checksPhone = mode === "website" && !!s.requirePhoneCheck && !!apiBase;
+  const needsHuman = mode === "website" && !!fill.turnstileSiteKey;
   const [step, setStep] = useState(0);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [error, setError] = useState<string | null>(null);
@@ -192,6 +210,8 @@ export default function GuidanceForm({
     if (current === 0 && !validateStep()) return;
     if (!consent) return setError("Please tick the box to send.");
     if (s.phoneRequired && !phone.trim()) return setError("Please give your phone number.");
+    if (checksPhone && !phoneCheckId) return setError("Please verify your phone number with the code we send by SMS.");
+    if (needsHuman && !human) return setError("Please complete the check that you're not a robot.");
     if (website) return setSent(true);
     setSending(true);
     setError(null);
@@ -208,11 +228,15 @@ export default function GuidanceForm({
         referrer: referrer || (typeof document !== "undefined" && document.referrer ? new URL(document.referrer).hostname : null),
         visitId: visit.current?.id ?? randomId(),
         durationSeconds: secondsSince(visit.current?.at),
+        startToken: fill.startToken ?? null,
+        turnstile: human,
+        phoneCheckId,
       },
     }).catch(() => "We couldn't send your request. Please check your connection and try again.");
     setSending(false);
     if (err) return setError(err);
-    if (s.redirectUrl && mode === "website") {
+    // With email confirmation the redirect happens after the person confirms (the confirm page does it)
+    if (s.redirectUrl && mode === "website" && s.requireEmailConfirmation === false) {
       window.open(s.redirectUrl, "_top");
       return;
     }
@@ -342,7 +366,9 @@ export default function GuidanceForm({
                 <span className="font-medium">{t("email")}</span>
                 <input required type="email" value={email} maxLength={254} onChange={(e) => setEmail(e.target.value)} className={field} autoComplete="email" />
               </label>
-              {s.askPhone && (
+              {checksPhone ? (
+                <PhoneCheck apiBase={apiBase!} formId={fill.formId} phone={phone} setPhone={setPhone} onVerified={setPhoneCheckId} label={t("phone")} />
+              ) : s.askPhone && (
                 <label className="block sm:col-span-2">
                   <span className="font-medium">{t("phone")}</span> {!s.phoneRequired && <span className="text-muted-foreground">({t("optional")})</span>}
                   <input type="tel" required={s.phoneRequired} value={phone} maxLength={64} onChange={(e) => setPhone(e.target.value)} className={field} autoComplete="tel" />
@@ -354,6 +380,7 @@ export default function GuidanceForm({
               <input tabIndex={-1} autoComplete="off" value={website} onChange={(e) => setWebsite(e.target.value)} />
             </label>
             {extras}
+            {needsHuman && <HumanCheck siteKey={fill.turnstileSiteKey!} onToken={setHuman} />}
             <label className="flex items-start gap-2">
               <input type="checkbox" checked={consent} onChange={(e) => setConsent(e.target.checked)} className="mt-0.5 h-4 w-4 accent-[var(--gf-accent)]" />
               <span>{consentText}</span>
