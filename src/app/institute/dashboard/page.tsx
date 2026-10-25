@@ -74,6 +74,22 @@ function Crm() {
     if (res?.ok) setProfile(await res.json());
   }, [getToken]);
 
+  // The next page of the table (50 at a time)
+  const [loadingMore, setLoadingMore] = useState(false);
+  const loadMore = useCallback(async () => {
+    if (!data?.hasMore) return;
+    setLoadingMore(true);
+    try {
+      const q = query(filters);
+      const r = await crm<LeadList>(getToken, `/leads${q}${q ? "&" : "?"}summary=false&page=${data.page + 1}`);
+      setData((d) => (d ? { ...d, leads: [...d.leads, ...r.leads.filter((l) => !d.leads.some((x) => x.leadId === l.leadId))], page: r.page, hasMore: r.hasMore } : d));
+    } catch (e) {
+      setError((e as Error).message);
+    } finally {
+      setLoadingMore(false);
+    }
+  }, [data, filters, getToken]);
+
   const loadLeadsRef = useLatestRef(loadLeads);
   const loadSetupRef = useLatestRef(loadSetup);
   useEffect(() => {
@@ -120,7 +136,7 @@ function Crm() {
           <h1 className="text-2xl font-semibold tracking-tight">Admissions</h1>
           <p className="mt-0.5 text-sm text-muted-foreground">
             {profile?.name ? `${profile.name} · ` : ""}
-            {data ? `${data.total.toLocaleString()} ${data.total === 1 ? "lead" : "leads"}` : "Your leads from Edulexa and your website"}
+            {data ? `${data.totalAll.toLocaleString()} ${data.totalAll === 1 ? "lead" : "leads"}` : "Your leads from Edulexa and your website"}
             {data?.me ? ` · signed in as ${data.me.name}` : ""}
           </p>
         </div>
@@ -167,7 +183,7 @@ function Crm() {
       </div>
 
       {tab === "leads" && (
-        <LeadsView getToken={getToken} team={team} data={data} filters={filters} setFilters={setFilters} loading={loading} error={error} openLead={openLead} reload={refresh} />
+        <LeadsView getToken={getToken} team={team} data={data} filters={filters} setFilters={setFilters} loading={loading} error={error} openLead={openLead} reload={refresh} loadMore={loadMore} loadingMore={loadingMore} />
       )}
       {tab === "followups" && <TasksView getToken={getToken} openLead={openLead} version={version} />}
       {tab === "insights" && <InsightsView getToken={getToken} />}

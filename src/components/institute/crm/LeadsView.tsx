@@ -5,7 +5,8 @@
  * a table or a board by stage (drag a card, or use its stage menu), selection with bulk assign / move / tag, and CSV export.
  */
 
-import React, { useEffect, useMemo, useState, useSyncExternalStore } from "react";
+import React, { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from "react";
+import { useLatestRef } from "@/lib/legacyApi";
 import { AlertTriangle, Ban, Bookmark, Download, KanbanSquare, List, Search, SlidersHorizontal, X } from "lucide-react";
 import { authenticatedFetch } from "@/lib/apiClient";
 import {
@@ -54,6 +55,13 @@ function subscribeLayout(cb: () => void) {
   };
 }
 
+/** Received ranges: [key, label, ISO start] (computed when the page loads) */
+const RANGES: [string, string, string][] = [
+  ["30", "Last 30 days", new Date(Date.now() - 30 * 86400e3).toISOString().slice(0, 10)],
+  ["90", "Last 90 days", new Date(Date.now() - 90 * 86400e3).toISOString().slice(0, 10)],
+  ["365", "Last 12 months", new Date(Date.now() - 365 * 86400e3).toISOString().slice(0, 10)],
+];
+
 const same = (a: Filters, b: Filters) => JSON.stringify(clean(a)) === JSON.stringify(clean(b));
 function clean(f: Filters): Filters {
   const out: Record<string, unknown> = {};
@@ -74,6 +82,8 @@ export default function LeadsView({
   error,
   openLead,
   reload,
+  loadMore,
+  loadingMore,
 }: {
   getToken: GetToken;
   team: Member[];
@@ -84,6 +94,8 @@ export default function LeadsView({
   error: string | null;
   openLead: (id: string) => void;
   reload: () => void;
+  loadMore: () => void;
+  loadingMore: boolean;
 }) {
   // The remembered layout is read from this browser only after hydration (the server always renders the table)
   const layout = useSyncExternalStore(subscribeLayout, readLayout, () => "table" as const);
@@ -234,6 +246,17 @@ export default function LeadsView({
         <button type="button" onClick={() => setMore(!more)} aria-expanded={more} className={`inline-flex items-center gap-1.5 rounded-lg border px-3 py-2 text-sm ${advanced ? "border-cyan-600 text-cyan-800 dark:text-cyan-300" : "border-border"} hover:bg-muted`}>
           <SlidersHorizontal aria-hidden="true" className="h-4 w-4" /> Filters
         </button>
+        {layout === "table" && (
+          <label className="inline-flex items-center gap-1.5 text-sm">
+            <span className="sr-only">Sort</span>
+            <select value={filters.sort ?? ""} onChange={(e) => setFilters({ ...filters, sort: e.target.value || undefined })} className={`${input} py-2`}>
+              <option value="">Recent activity first</option>
+              <option value="received">Newest received first</option>
+              <option value="followup">Next follow-up first</option>
+              <option value="name">Name A–Z</option>
+            </select>
+          </label>
+        )}
         <div className="inline-flex rounded-lg border border-border p-0.5" role="group" aria-label="Layout">
           <button type="button" aria-pressed={layout === "table"} onClick={() => switchLayout("table")} className={`inline-flex items-center gap-1 rounded-md px-2.5 py-1.5 text-sm ${layout === "table" ? "bg-muted font-medium" : "text-muted-foreground"}`}>
             <List aria-hidden="true" className="h-4 w-4" /> Table
@@ -248,7 +271,7 @@ export default function LeadsView({
       </div>
 
       {more && (
-        <div className="grid gap-2 rounded-xl border border-border bg-muted/30 p-3 sm:grid-cols-2 lg:grid-cols-5">
+        <div className="grid gap-2 rounded-xl border border-border bg-muted/30 p-3 sm:grid-cols-2 lg:grid-cols-6">
           <Select label="Stage" value={filters.stage ?? ""} onChange={(v) => setFilters({ ...filters, stage: v || undefined })} options={STAGES.map((s) => [s, STAGE_LABEL[s]])} />
           <Select
             label="Owner"
@@ -258,8 +281,14 @@ export default function LeadsView({
           />
           <Select label="Request" value={filters.type ?? ""} onChange={(v) => setFilters({ ...filters, type: v || undefined })} options={[["course", "Course inquiry"], ["guidance", "Career guidance"]]} />
           <Select label="Source" value={filters.source ?? ""} onChange={(v) => setFilters({ ...filters, source: v || undefined })} options={(data?.sources ?? []).map((s) => [s, s])} />
+          <Select
+            label="Received"
+            value={RANGES.find((r) => r[2] === filters.from)?.[0] ?? (filters.from ? "custom" : "")}
+            onChange={(v) => setFilters({ ...filters, from: RANGES.find((r) => r[0] === v)?.[2] })}
+            options={RANGES.map((r) => [r[0], r[1]])}
+          />
           <Select label="Tag" value={filters.tag ?? ""} onChange={(v) => setFilters({ ...filters, tag: v || undefined })} options={(data?.tags ?? []).map((t) => [t, t])} />
-          <div className="flex items-center gap-3 sm:col-span-2 lg:col-span-5">
+          <div className="flex items-center gap-3 sm:col-span-2 lg:col-span-6">
             <label className="flex items-center gap-2 text-sm">
               <input type="checkbox" checked={!!filters.overdue} onChange={(e) => setFilters({ ...filters, overdue: e.target.checked || undefined })} /> Follow-up overdue only
             </label>
@@ -311,7 +340,7 @@ export default function LeadsView({
 
       {loading && !data ? (
         <div className="h-64 animate-pulse rounded-2xl bg-muted motion-reduce:animate-none" aria-busy="true" />
-      ) : data && data.total === 0 ? (
+      ) : data && data.totalAll === 0 ? (
         <Empty />
       ) : layout === "table" ? (
         <div className="overflow-x-auto rounded-2xl border border-border bg-card">
@@ -377,10 +406,22 @@ export default function LeadsView({
               ))}
             </tbody>
           </table>
-          {data && data.leads.length >= 1000 && <p className="p-3 text-xs text-muted-foreground">Showing the 1,000 most recently active. Narrow the filters to see others.</p>}
+          {data && data.total > 0 && (
+            <div className="flex flex-wrap items-center justify-between gap-2 border-t border-border px-3 py-2.5 text-xs text-muted-foreground">
+              <span>
+                Showing {leads.length.toLocaleString()} of {data.total.toLocaleString()}
+                {data.total !== data.totalAll ? ` matching (${data.totalAll.toLocaleString()} in all)` : ""}
+              </span>
+              {data.hasMore && (
+                <button type="button" onClick={loadMore} disabled={loadingMore} className="rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-foreground hover:bg-muted disabled:opacity-50">
+                  {loadingMore ? "Loading…" : "Load 50 more"}
+                </button>
+              )}
+            </div>
+          )}
         </div>
       ) : (
-        <Board leads={leads} onMove={move} openLead={openLead} />
+        <Board getToken={getToken} filters={filters} refreshKey={data} onMove={move} openLead={openLead} />
       )}
     </div>
   );
@@ -436,74 +477,163 @@ function StageMenu({ lead, onMove }: { lead: LeadRow; onMove: (l: LeadRow, s: st
   );
 }
 
-function Board({ leads, onMove, openLead }: { leads: LeadRow[]; onMove: (l: LeadRow, s: string) => void; openLead: (id: string) => void }) {
+/**
+ * The board: one column per stage, each loading its own leads (25 at a time, "Load more") with its true total, so it
+ * works with any number of leads. Columns reload whenever the list reloads (after a move, a filter change, …).
+ */
+function Board({
+  getToken,
+  filters,
+  refreshKey,
+  onMove,
+  openLead,
+}: {
+  getToken: GetToken;
+  filters: Filters;
+  refreshKey: unknown;
+  onMove: (l: LeadRow, s: string) => void;
+  openLead: (id: string) => void;
+}) {
   const [dragging, setDragging] = useState<LeadRow | null>(null);
-  const [over, setOver] = useState<string | null>(null);
   const columns = [...OPEN_STAGES, "Enrolled", "Lost"];
   return (
     <div className="flex gap-3 overflow-x-auto pb-2">
-      {columns.map((stage) => {
-        const items = leads.filter((l) => l.stage === stage);
-        return (
-          <section
-            key={stage}
-            aria-label={STAGE_LABEL[stage]}
-            onDragOver={(e) => {
-              e.preventDefault();
-              setOver(stage);
-            }}
-            onDragLeave={() => setOver(null)}
-            onDrop={() => {
-              if (dragging) onMove(dragging, stage);
-              setDragging(null);
-              setOver(null);
-            }}
-            className={`flex w-64 shrink-0 flex-col rounded-2xl border border-t-4 p-2 ${STAGE_BORDER[stage]} ${over === stage ? "bg-cyan-600/5 ring-2 ring-cyan-600/40" : "border-x-border border-b-border bg-muted/30"}`}
-          >
-            <h3 className="flex items-center justify-between px-1.5 pb-2 text-xs font-semibold">
-              <span className="inline-flex items-center gap-1.5">
-                <StageDot stage={stage} />
-                {STAGE_LABEL[stage]}
-              </span>
-              <span className="tabular-nums text-muted-foreground">{items.length}</span>
-            </h3>
-            <ul className="space-y-2">
-              {items.slice(0, 100).map((l) => (
-                <li
-                  key={l.leadId}
-                  draggable
-                  onDragStart={() => setDragging(l)}
-                  onDragEnd={() => setDragging(null)}
-                  className="cursor-grab rounded-xl border border-border bg-card p-2.5 text-sm shadow-sm active:cursor-grabbing"
-                >
-                  <button type="button" onClick={() => openLead(l.leadId)} className="block w-full text-left font-medium hover:underline">
-                    {l.name || l.email || "Unnamed lead"}
-                  </button>
-                  <p className="truncate text-xs text-muted-foreground">{l.requestType === "guidance" ? "Career guidance" : (l.course ?? "Course")}</p>
-                  {l.awaitingReply && <p className="mt-1 inline-block rounded-full bg-cyan-600/10 px-2 py-0.5 text-[11px] font-medium text-cyan-800 dark:text-cyan-300">Replied, needs answer</p>}
-                  <p className="mt-1.5 truncate text-xs text-muted-foreground">{l.owner ?? "Unassigned"}</p>
-                  <p className={`text-xs ${l.overdue ? "font-medium text-red-700 dark:text-red-400" : "text-muted-foreground"}`}>
-                    {l.nextFollowUpAt ? `${l.overdue ? "Follow-up overdue" : "Next follow-up"} ${relative(l.nextFollowUpAt)}` : "No follow-up scheduled"}
-                  </p>
-                  <button type="button" onClick={() => openLead(l.leadId)} className="mt-1.5 w-full rounded-md border border-cyan-600/40 px-1.5 py-1 text-xs font-medium text-cyan-800 hover:bg-cyan-600/10 dark:text-cyan-300">
-                    Open: notes, calls, follow-ups
-                  </button>
-                  <select aria-label={`Move ${l.name ?? "lead"}`} value={l.stage} onChange={(e) => onMove(l, e.target.value)} className="mt-1.5 w-full rounded-md border border-border bg-background px-1.5 py-1 text-xs">
-                    {STAGES.map((s) => (
-                      <option key={s} value={s}>
-                        {STAGE_LABEL[s]}
-                      </option>
-                    ))}
-                  </select>
-                </li>
-              ))}
-              {items.length > 100 && <li className="px-1.5 text-xs text-muted-foreground">+{items.length - 100} more; use the table or filters.</li>}
-              {items.length === 0 && <li className="px-1.5 py-4 text-center text-xs text-muted-foreground">Drop a lead here</li>}
-            </ul>
-          </section>
-        );
-      })}
+      {columns.map((stage) => (
+        <BoardColumn
+          key={stage}
+          stage={stage}
+          getToken={getToken}
+          filters={filters}
+          refreshKey={refreshKey}
+          dragging={dragging}
+          setDragging={setDragging}
+          onMove={onMove}
+          openLead={openLead}
+        />
+      ))}
     </div>
+  );
+}
+
+function BoardColumn({
+  stage,
+  getToken,
+  filters,
+  refreshKey,
+  dragging,
+  setDragging,
+  onMove,
+  openLead,
+}: {
+  stage: string;
+  getToken: GetToken;
+  filters: Filters;
+  refreshKey: unknown;
+  dragging: LeadRow | null;
+  setDragging: (l: LeadRow | null) => void;
+  onMove: (l: LeadRow, s: string) => void;
+  openLead: (id: string) => void;
+}) {
+  const [items, setItems] = useState<LeadRow[]>([]);
+  const [total, setTotal] = useState<number | null>(null);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [over, setOver] = useState(false);
+
+  // A filter on one stage hides the other columns' leads
+  const hidden = !!filters.stage && filters.stage !== stage;
+  const path = useCallback(
+    (p: number) => `/leads${query({ ...filters, stage })}${query({ ...filters, stage }) ? "&" : "?"}pageSize=25&summary=false&page=${p}`,
+    [filters, stage]
+  );
+
+  const load = useCallback(
+    async (p: number) => {
+      setBusy(true);
+      try {
+        const r = await crm<{ leads: LeadRow[]; total: number; hasMore: boolean }>(getToken, path(p));
+        setItems((prev) => (p === 1 ? r.leads : [...prev, ...r.leads]));
+        setTotal(r.total);
+        setHasMore(r.hasMore);
+        setPage(p);
+      } catch {
+        setHasMore(false);
+      } finally {
+        setBusy(false);
+      }
+    },
+    [getToken, path]
+  );
+  const loadRef = useLatestRef(load);
+  useEffect(() => {
+    if (!hidden) loadRef.current(1);
+  }, [loadRef, hidden, refreshKey, filters]);
+
+  const shown = hidden ? [] : items;
+  return (
+    <section
+      aria-label={STAGE_LABEL[stage]}
+      onDragOver={(e) => {
+        e.preventDefault();
+        setOver(true);
+      }}
+      onDragLeave={() => setOver(false)}
+      onDrop={() => {
+        if (dragging) onMove(dragging, stage);
+        setDragging(null);
+        setOver(false);
+      }}
+      className={`flex w-64 shrink-0 flex-col rounded-2xl border border-t-4 p-2 ${STAGE_BORDER[stage]} ${over ? "bg-cyan-600/5 ring-2 ring-cyan-600/40" : "border-x-border border-b-border bg-muted/30"}`}
+    >
+      <h3 className="flex items-center justify-between px-1.5 pb-2 text-xs font-semibold">
+        <span className="inline-flex items-center gap-1.5">
+          <StageDot stage={stage} />
+          {STAGE_LABEL[stage]}
+        </span>
+        <span className="tabular-nums text-muted-foreground">{hidden ? "—" : (total ?? "…").toLocaleString()}</span>
+      </h3>
+      <ul className="space-y-2">
+        {shown.map((l) => (
+          <li
+            key={l.leadId}
+            draggable
+            onDragStart={() => setDragging(l)}
+            onDragEnd={() => setDragging(null)}
+            className="cursor-grab rounded-xl border border-border bg-card p-2.5 text-sm shadow-sm active:cursor-grabbing"
+          >
+            <button type="button" onClick={() => openLead(l.leadId)} className="block w-full text-left font-medium hover:underline">
+              {l.name || l.email || "Unnamed lead"}
+            </button>
+            <p className="truncate text-xs text-muted-foreground">{l.requestType === "guidance" ? "Career guidance" : (l.course ?? "Course")}</p>
+            {l.awaitingReply && <p className="mt-1 inline-block rounded-full bg-cyan-600/10 px-2 py-0.5 text-[11px] font-medium text-cyan-800 dark:text-cyan-300">Replied, needs answer</p>}
+            <p className="mt-1.5 truncate text-xs text-muted-foreground">{l.owner ?? "Unassigned"}</p>
+            <p className={`text-xs ${l.overdue ? "font-medium text-red-700 dark:text-red-400" : "text-muted-foreground"}`}>
+              {l.nextFollowUpAt ? `${l.overdue ? "Follow-up overdue" : "Next follow-up"} ${relative(l.nextFollowUpAt)}` : "No follow-up scheduled"}
+            </p>
+            <button type="button" onClick={() => openLead(l.leadId)} className="mt-1.5 w-full rounded-md border border-cyan-600/40 px-1.5 py-1 text-xs font-medium text-cyan-800 hover:bg-cyan-600/10 dark:text-cyan-300">
+              Open: notes, calls, follow-ups
+            </button>
+            <select aria-label={`Move ${l.name ?? "lead"}`} value={l.stage} onChange={(e) => onMove(l, e.target.value)} className="mt-1.5 w-full rounded-md border border-border bg-background px-1.5 py-1 text-xs">
+              {STAGES.map((s) => (
+                <option key={s} value={s}>
+                  {STAGE_LABEL[s]}
+                </option>
+              ))}
+            </select>
+          </li>
+        ))}
+        {!hidden && hasMore && (
+          <li>
+            <button type="button" disabled={busy} onClick={() => load(page + 1)} className="w-full rounded-lg border border-dashed border-border py-1.5 text-xs font-medium hover:bg-muted disabled:opacity-50">
+              {busy ? "Loading…" : `Load more (${((total ?? 0) - shown.length).toLocaleString()} more)`}
+            </button>
+          </li>
+        )}
+        {!hidden && !busy && total === 0 && <li className="px-1.5 py-4 text-center text-xs text-muted-foreground">Drop a lead here</li>}
+        {hidden && <li className="px-1.5 py-4 text-center text-xs text-muted-foreground">Filtered out</li>}
+      </ul>
+    </section>
   );
 }
 

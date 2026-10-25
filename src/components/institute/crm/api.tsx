@@ -72,6 +72,10 @@ export interface Filters {
   type?: string;
   overdue?: boolean;
   awaiting?: boolean;
+  /** Received on or after (ISO) */
+  from?: string;
+  /** activity (default), received, followup or name */
+  sort?: string;
 }
 
 export interface LeadRow {
@@ -100,7 +104,12 @@ export interface LeadRow {
 
 export interface LeadList {
   leads: LeadRow[];
+  /** Leads matching the filters */
   total: number;
+  /** All the institute's leads */
+  totalAll: number;
+  page: number;
+  hasMore: boolean;
   counts: Record<string, number>;
   sources: string[];
   tags: string[];
