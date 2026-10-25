@@ -19,6 +19,7 @@ const SHORTCUTS = [
   { role: "Recruiter", label: "Recruiter", hint: "Assessments and integrity reviews", href: "/recruiter/dashboard", icon: Briefcase },
   { role: "Candidate", label: "Candidate", hint: "Sprints, voice defense and katas", href: "/dashboard", icon: UserCheck },
   { role: "InstituteAdmin", label: "Institute admin", hint: "Cohorts and institute reports", href: "/institute/dashboard", icon: GraduationCap },
+  { role: "EdulexaAdvisor", label: "Edulexa advisor", hint: "Career guidance requests to Edulexa", href: "/advisor/guidance", icon: UserCheck },
 ];
 
 export default function DevShortcuts() {

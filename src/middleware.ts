@@ -14,6 +14,9 @@ const isProtectedRoute = createRouteMatcher([
   "/credentials(.*)",
   "/defend-repo(.*)",
   "/referrals(.*)",
+  // Career guidance: Edulexa advisors and community mentors (the API decides who sees what)
+  "/advisor(.*)",
+  "/mentor(.*)",
   // Career suite: sign-in is enough here; the API decides access from career-center, employer and faculty
   // memberships stored per institute. /supervisor and /kiosk use signed single-purpose links and stay public.
   "/student(.*)",

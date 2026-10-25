@@ -26,7 +26,7 @@ export const CAREER_STANDALONE_PREFIXES = ["/partner/callback", "/career-unsubsc
 export const AUTH_PAGES = ["/login"];
 
 // Portals with a header of their own (app/<portal>/layout.tsx): the global navigation would show a second header there
-export const PORTAL_PREFIXES = ["/recruiter", "/institute", "/admin"];
+export const PORTAL_PREFIXES = ["/recruiter", "/institute", "/admin", "/advisor"];
 
 // Pages embedded on other websites (e.g. an institute's guidance form): no Edulexa header
 export const EMBED_PREFIXES = ["/embed"];

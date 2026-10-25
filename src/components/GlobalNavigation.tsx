@@ -52,6 +52,7 @@ const GROUPS: { title: string; items: NavItem[] }[] = [
     title: "Your record",
     items: [
       { name: "My results", href: "/my/results", desc: "Feedback on every submission, reviews and appeals" },
+      { name: "My guidance requests", href: "/my/guidance", desc: "Your questions to Edulexa and the replies" },
       { name: "Credentials", href: "/credentials", desc: "Signed credentials you can share with employers" },
       { name: "Skill passport", href: "/passport", desc: "Your verified skills and a link to share" },
       { name: "Career path", href: "/prep/career", desc: "Where you are and what to learn next" },

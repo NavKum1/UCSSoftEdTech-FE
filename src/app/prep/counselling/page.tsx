@@ -291,7 +291,7 @@ function CounsellingInner() {
         <h1 className="mt-1 text-2xl font-semibold tracking-tight">{status?.scope ? `${status.scope.instituteName}: career quiz` : "Find the area of tech that suits you"}</h1>
       </header>
 
-      {loaded && !problem && <AdvisorRequest apiFetch={apiFetch} scope={status?.scope ?? null} hasQuizResult={history.length > 0 || !!result} />}
+      {loaded && !problem && <AdvisorRequest apiFetch={apiFetch} scope={status?.scope ?? null} hasQuizResult={history.length > 0 || !!result} track={result?.primaryTrack ?? history[0]?.primaryTrack ?? null} />}
 
       {problem && (
         <p role="alert" className="mb-6 rounded-xl border border-amber-500/40 bg-amber-500/10 px-4 py-3 text-sm">
