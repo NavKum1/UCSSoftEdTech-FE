@@ -30,6 +30,7 @@ const QUICK: { key: string; label: string; filters: Filters }[] = [
   { key: "all", label: "All leads", filters: {} },
   { key: "mine", label: "My leads", filters: { owner: "me" } },
   { key: "new", label: "New", filters: { stage: "New" } },
+  { key: "awaiting", label: "Replied, needs answer", filters: { awaiting: true } },
   { key: "overdue", label: "Follow-up overdue", filters: { overdue: true } },
   { key: "unassigned", label: "Unassigned", filters: { owner: "none" } },
 ];
@@ -173,7 +174,7 @@ export default function LeadsView({
       <div className="flex flex-wrap items-center gap-1.5">
         {QUICK.map((q) => {
           const on = same(q.filters, { ...filters, q: undefined });
-          const count = q.key === "new" ? data?.counts?.New : undefined;
+          const count = q.key === "new" ? data?.counts?.New : q.key === "awaiting" ? data?.awaiting : undefined;
           return (
             <button
               key={q.key}
@@ -311,7 +312,7 @@ export default function LeadsView({
                 <th className="px-3 py-2.5 font-medium">Stage</th>
                 <th className="px-3 py-2.5 font-medium">Owner</th>
                 <th className="px-3 py-2.5 font-medium">Next follow-up</th>
-                <th className="px-3 py-2.5 font-medium">Last activity</th>
+                <th className="px-3 py-2.5 font-medium">Last contact</th>
               </tr>
             </thead>
             <tbody>
@@ -349,7 +350,15 @@ export default function LeadsView({
                   <td className={`px-3 py-2.5 whitespace-nowrap ${l.overdue ? "font-medium text-red-700 dark:text-red-400" : ""}`}>
                     {l.nextFollowUpAt ? relative(l.nextFollowUpAt) : <span className="text-muted-foreground">—</span>}
                   </td>
-                  <td className="px-3 py-2.5 whitespace-nowrap text-muted-foreground">{relative(l.lastActivityAt)}</td>
+                  <td className="px-3 py-2.5 whitespace-nowrap">
+                    {l.awaitingReply ? (
+                      <span className="rounded-full bg-cyan-600/10 px-2 py-0.5 text-xs font-medium text-cyan-800 dark:text-cyan-300">Replied {relative(l.lastReplyAt)}</span>
+                    ) : l.lastContactAt ? (
+                      <span className="text-muted-foreground">{relative(l.lastContactAt)}</span>
+                    ) : (
+                      <span className="text-xs font-medium text-amber-800 dark:text-amber-300">Not contacted</span>
+                    )}
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -453,6 +462,7 @@ function Board({ leads, onMove, openLead }: { leads: LeadRow[]; onMove: (l: Lead
                     {l.name || l.email || "Unnamed lead"}
                   </button>
                   <p className="truncate text-xs text-muted-foreground">{l.requestType === "guidance" ? "Career guidance" : (l.course ?? "Course")}</p>
+                  {l.awaitingReply && <p className="mt-1 inline-block rounded-full bg-cyan-600/10 px-2 py-0.5 text-[11px] font-medium text-cyan-800 dark:text-cyan-300">Replied, needs answer</p>}
                   <p className="mt-1.5 truncate text-xs text-muted-foreground">{l.owner ?? "Unassigned"}</p>
                   <p className={`text-xs ${l.overdue ? "font-medium text-red-700 dark:text-red-400" : "text-muted-foreground"}`}>
                     {l.nextFollowUpAt ? `${l.overdue ? "Follow-up overdue" : "Next follow-up"} ${relative(l.nextFollowUpAt)}` : "No follow-up scheduled"}

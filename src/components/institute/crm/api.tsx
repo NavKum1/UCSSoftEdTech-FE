@@ -47,6 +47,7 @@ export interface Filters {
   source?: string;
   type?: string;
   overdue?: boolean;
+  awaiting?: boolean;
 }
 
 export interface LeadRow {
@@ -68,6 +69,9 @@ export interface LeadRow {
   duplicate: boolean;
   doNotContact: boolean;
   overdue: boolean;
+  lastContactAt: string | null;
+  lastReplyAt: string | null;
+  awaitingReply: boolean;
 }
 
 export interface LeadList {
@@ -78,6 +82,7 @@ export interface LeadList {
   tags: string[];
   me: { id: string; name: string } | null;
   mineOpen: number;
+  awaiting: number;
   unassignedOpen: number;
 }
 
@@ -98,6 +103,7 @@ export interface Activity {
   subject: string | null;
   meta: Record<string, unknown> | null;
   actorName: string;
+  pinned: boolean;
   createdAt: string;
 }
 

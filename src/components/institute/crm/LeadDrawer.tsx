@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 import { useLatestRef } from "@/lib/legacyApi";
 import LeadProfile from "./LeadProfile";
+import Communication from "./Communication";
 import {
   CALL_OUTCOMES,
   crm,
@@ -32,7 +33,6 @@ import {
   StageBadge,
   STAGE_LABEL,
   STAGES,
-  type Activity,
   type GetToken,
   type LeadFull,
   type Member,
@@ -49,20 +49,6 @@ const ACTIONS: { mode: Mode; label: string; icon: React.ElementType }[] = [
   { mode: "Meeting", label: "Meeting", icon: CalendarClock },
   { mode: "Note", label: "Note", icon: NotebookPen },
 ];
-
-const KIND_LABEL: Record<string, string> = {
-  Note: "Note",
-  Call: "Call",
-  Email: "Email sent",
-  EmailReply: "Reply by email",
-  Sms: "SMS",
-  WhatsApp: "WhatsApp chat opened",
-  Meeting: "Meeting booked",
-  Stage: "Stage",
-  Assignment: "Owner",
-  Task: "Follow-up",
-  System: "Update",
-};
 
 const input = "w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:border-cyan-600 focus:outline-none focus:ring-2 focus:ring-cyan-600/20";
 const primary = "inline-flex items-center gap-1.5 rounded-lg bg-cyan-700 px-3.5 py-2 text-sm font-medium text-white hover:bg-cyan-800 disabled:opacity-50";
@@ -109,6 +95,7 @@ export default function LeadDrawer({
   const [tab, setTab] = useState<"timeline" | "followups" | "shared">("timeline");
   const [mode, setMode] = useState<Mode | null>(null);
   const [losing, setLosing] = useState(false);
+  const [replySubject, setReplySubject] = useState("");
   const closeRef = useRef<HTMLButtonElement>(null);
   const activeTeam = team.filter((m) => m.active);
 
@@ -212,6 +199,15 @@ export default function LeadDrawer({
                   This person sent {lead.duplicates.length} other {lead.duplicates.length === 1 ? "inquiry" : "inquiries"} with the same email. Check before contacting twice.
                 </p>
               )}
+              {(() => {
+                const lastIn = lead.activities.find((a) => a.kind === "EmailReply");
+                const lastOut = lead.activities.find((a) => ["Email", "Sms", "WhatsApp", "Call", "Meeting"].includes(a.kind));
+                return lastIn && (!lastOut || new Date(lastIn.createdAt) > new Date(lastOut.createdAt)) ? (
+                  <p className="mt-2 rounded-lg bg-cyan-600/10 px-3 py-2 text-xs font-medium text-cyan-900 dark:text-cyan-200">
+                    {lead.name?.split(" ")[0] || "They"} replied {relative(lastIn.createdAt)} and is waiting for your answer. Read it below.
+                  </p>
+                ) : null;
+              })()}
               {lead.stage === "New" && !lead.firstResponseAt && (
                 <p className="mt-2 rounded-lg bg-sky-500/10 px-3 py-2 text-xs text-sky-900 dark:text-sky-200">
                   Not contacted yet. Call, email or message them; the lead moves to Contacted when you do.
@@ -264,15 +260,22 @@ export default function LeadDrawer({
             <>
               {mode && (
                 <Composer
-                  key={mode}
+                  key={mode + replySubject}
                   mode={mode}
+                  initialSubject={replySubject}
                   lead={lead}
                   templates={templates}
                   isAdmin={isAdmin}
                   busy={busy}
-                  onCancel={() => setMode(null)}
+                  onCancel={() => {
+                    setMode(null);
+                    setReplySubject("");
+                  }}
                   act={act}
-                  done={() => setMode(null)}
+                  done={() => {
+                    setMode(null);
+                    setReplySubject("");
+                  }}
                   getToken={getToken}
                   setError={setError}
                   reload={load}
@@ -354,7 +357,7 @@ export default function LeadDrawer({
               <div role="tablist" aria-label="Lead details" className="mt-6 flex gap-4 border-b border-border text-sm">
                 {(
                   [
-                    ["timeline", `Timeline (${lead.activities.length})`],
+                    ["timeline", `Communication (${lead.activities.filter((a) => !["Stage", "Assignment", "Task", "System"].includes(a.kind)).length})`],
                     ["followups", `Follow-ups (${lead.tasks.filter((t) => !t.doneAt).length})`],
                     ["shared", "What they shared"],
                   ] as const
@@ -373,7 +376,20 @@ export default function LeadDrawer({
               </div>
 
               <div className="pt-4">
-                {tab === "timeline" && <Timeline items={lead.activities} />}
+                {tab === "timeline" && (
+                  <Communication
+                    items={lead.activities}
+                    personName={lead.name?.split(" ")[0] || "them"}
+                    busy={busy}
+                    onPin={(a, pinned) => act(`/leads/${leadId}/activities/${a.id}/pin`, { pinned }, pinned ? "Pinned to key facts." : "Unpinned.")}
+                    onReply={() => {
+                      const last = lead.activities.find((x) => x.kind === "Email" && x.subject)?.subject ?? "Your inquiry";
+                      setReplySubject(last.startsWith("Re: ") ? last : `Re: ${last}`);
+                      setMode("Email");
+                      document.getElementById("lead-title")?.scrollIntoView({ behavior: "smooth" });
+                    }}
+                  />
+                )}
                 {tab === "followups" && <FollowUps lead={lead} team={activeTeam} busy={busy} act={act} />}
                 {tab === "shared" && <LeadProfile lead={lead} />}
               </div>
@@ -482,37 +498,6 @@ function Tags({ tags, busy, onChange }: { tags: string[]; busy: boolean; onChang
   );
 }
 
-function Timeline({ items }: { items: Activity[] }) {
-  if (items.length === 0) return <p className="text-sm text-muted-foreground">Nothing yet. Calls, emails, notes and changes show up here.</p>;
-  return (
-    <ol className="space-y-3">
-      {items.map((a) => {
-        const reply = a.kind === "EmailReply";
-        const meta = a.meta ?? {};
-        return (
-          <li key={a.id} className={`rounded-xl border p-3 text-sm ${reply ? "border-cyan-600/40 bg-cyan-600/5" : "border-border"}`}>
-            <div className="flex flex-wrap items-baseline justify-between gap-2 text-xs text-muted-foreground">
-              <span>
-                <span className="font-medium text-foreground">{KIND_LABEL[a.kind] ?? a.kind}</span>
-                {a.kind === "Call" && typeof meta.outcome === "string" && ` · ${CALL_OUTCOMES[meta.outcome] ?? meta.outcome}`}
-                {a.kind === "Meeting" && typeof meta.at === "string" && ` · ${new Date(meta.at).toLocaleString([], { dateStyle: "medium", timeStyle: "short" })}`}
-                {" · "}
-                {a.actorName}
-              </span>
-              <time dateTime={a.createdAt} title={new Date(a.createdAt).toLocaleString()}>
-                {relative(a.createdAt)}
-              </time>
-            </div>
-            {a.subject && <p className="mt-1 font-medium">{a.subject}</p>}
-            {a.body && <p className="mt-1 whitespace-pre-wrap">{a.body}</p>}
-            {(meta.delivered === false || meta.sent === false) && <p className="mt-1 text-xs text-red-700 dark:text-red-400">Not delivered{typeof meta.error === "string" ? ` (${meta.error})` : ""}.</p>}
-          </li>
-        );
-      })}
-    </ol>
-  );
-}
-
 function DuePicker({ value, onChange }: { value: string; onChange: (v: string) => void }) {
   return (
     <div className="space-y-1.5">
@@ -598,6 +583,7 @@ function FollowUps({ lead, team, busy, act }: { lead: LeadFull; team: Member[]; 
 
 function Composer({
   mode,
+  initialSubject,
   lead,
   templates,
   isAdmin,
@@ -611,6 +597,7 @@ function Composer({
   onChanged,
 }: {
   mode: Mode;
+  initialSubject: string;
   lead: LeadFull;
   templates: Template[];
   isAdmin: boolean;
@@ -624,7 +611,7 @@ function Composer({
   onChanged: () => void;
 }) {
   const [text, setText] = useState("");
-  const [subject, setSubject] = useState("");
+  const [subject, setSubject] = useState(initialSubject);
   const [templateId, setTemplateId] = useState("");
   const [outcome, setOutcome] = useState("");
   const [at, setAt] = useState(() => localInput(presets()[1].at));

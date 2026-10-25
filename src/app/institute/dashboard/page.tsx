@@ -8,7 +8,7 @@
 
 import React, { Suspense, useCallback, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { AlertTriangle, CalendarClock, Inbox, UserRound } from "lucide-react";
+import { AlertTriangle, CalendarClock, Inbox, Reply, UserRound } from "lucide-react";
 import { useAppAuth as useAuth } from "@/lib/appAuth";
 import { authenticatedFetch } from "@/lib/apiClient";
 import { useLatestRef } from "@/lib/legacyApi";
@@ -127,8 +127,9 @@ function Crm() {
       </div>
 
       {/* Today */}
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-5">
         <Today icon={Inbox} label="New, not contacted" value={newCount} tone={newCount > 0 ? "sky" : undefined} onClick={() => showLeads({ stage: "New" })} />
+        <Today icon={Reply} label="Replied, need your answer" value={data?.awaiting ?? 0} tone={(data?.awaiting ?? 0) > 0 ? "sky" : undefined} onClick={() => showLeads({ awaiting: true })} />
         <Today icon={AlertTriangle} label="Follow-ups overdue" value={overdue} tone={overdue > 0 ? "red" : undefined} onClick={() => showLeads({ overdue: true })} />
         <Today icon={CalendarClock} label="Follow-ups due today" value={dueToday} onClick={() => setTab("followups")} />
         {data?.me ? (
