@@ -246,17 +246,15 @@ export default function LeadsView({
         <button type="button" onClick={() => setMore(!more)} aria-expanded={more} className={`inline-flex items-center gap-1.5 rounded-lg border px-3 py-2 text-sm ${advanced ? "border-cyan-600 text-cyan-800 dark:text-cyan-300" : "border-border"} hover:bg-muted`}>
           <SlidersHorizontal aria-hidden="true" className="h-4 w-4" /> Filters
         </button>
-        {layout === "table" && (
-          <label className="inline-flex items-center gap-1.5 text-sm">
-            <span className="sr-only">Sort</span>
-            <select value={filters.sort ?? ""} onChange={(e) => setFilters({ ...filters, sort: e.target.value || undefined })} className={`${input} py-2`}>
-              <option value="">Recent activity first</option>
-              <option value="received">Newest received first</option>
-              <option value="followup">Next follow-up first</option>
-              <option value="name">Name A–Z</option>
-            </select>
-          </label>
-        )}
+        <label className="inline-flex items-center gap-1.5 text-sm">
+          <span className="sr-only">Sort</span>
+          <select value={filters.sort ?? ""} onChange={(e) => setFilters({ ...filters, sort: e.target.value || undefined })} className={`${input} py-2`}>
+            <option value="">Recent activity first</option>
+            <option value="received">Newest received first</option>
+            <option value="followup">Next follow-up first</option>
+            <option value="name">Name A–Z</option>
+          </select>
+        </label>
         <div className="inline-flex rounded-lg border border-border p-0.5" role="group" aria-label="Layout">
           <button type="button" aria-pressed={layout === "table"} onClick={() => switchLayout("table")} className={`inline-flex items-center gap-1 rounded-md px-2.5 py-1.5 text-sm ${layout === "table" ? "bg-muted font-medium" : "text-muted-foreground"}`}>
             <List aria-hidden="true" className="h-4 w-4" /> Table
@@ -340,7 +338,7 @@ export default function LeadsView({
 
       {loading && !data ? (
         <div className="h-64 animate-pulse rounded-2xl bg-muted motion-reduce:animate-none" aria-busy="true" />
-      ) : data && data.totalAll === 0 ? (
+      ) : data && (data.totalAll ?? data.total) === 0 ? (
         <Empty />
       ) : layout === "table" ? (
         <div className="overflow-x-auto rounded-2xl border border-border bg-card">
@@ -410,7 +408,7 @@ export default function LeadsView({
             <div className="flex flex-wrap items-center justify-between gap-2 border-t border-border px-3 py-2.5 text-xs text-muted-foreground">
               <span>
                 Showing {leads.length.toLocaleString()} of {data.total.toLocaleString()}
-                {data.total !== data.totalAll ? ` matching (${data.totalAll.toLocaleString()} in all)` : ""}
+                {data.total !== (data.totalAll ?? data.total) ? ` matching (${(data.totalAll ?? data.total).toLocaleString()} in all)` : ""}
               </span>
               {data.hasMore && (
                 <button type="button" onClick={loadMore} disabled={loadingMore} className="rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-foreground hover:bg-muted disabled:opacity-50">

@@ -136,7 +136,7 @@ function Crm() {
           <h1 className="text-2xl font-semibold tracking-tight">Admissions</h1>
           <p className="mt-0.5 text-sm text-muted-foreground">
             {profile?.name ? `${profile.name} · ` : ""}
-            {data ? `${data.totalAll.toLocaleString()} ${data.totalAll === 1 ? "lead" : "leads"}` : "Your leads from Edulexa and your website"}
+            {data ? `${(data.totalAll ?? data.total ?? 0).toLocaleString()} ${(data.totalAll ?? data.total) === 1 ? "lead" : "leads"}` : "Your leads from Edulexa and your website"}
             {data?.me ? ` · signed in as ${data.me.name}` : ""}
           </p>
         </div>
