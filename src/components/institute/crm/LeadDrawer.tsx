@@ -77,6 +77,7 @@ export default function LeadDrawer({
   team,
   templates,
   isAdmin,
+  me,
   onClose,
   onChanged,
 }: {
@@ -85,6 +86,8 @@ export default function LeadDrawer({
   team: Member[];
   templates: Template[];
   isAdmin: boolean;
+  /** The caller on the team list, if they are on it */
+  me: { id: string; name: string } | null;
   onClose: () => void;
   onChanged: () => void;
 }) {
@@ -148,6 +151,7 @@ export default function LeadDrawer({
       setLosing(true);
       return;
     }
+    setLosing(false);
     update({ stage }, `Moved to ${STAGE_LABEL[stage]}.`);
   };
 
@@ -296,7 +300,9 @@ export default function LeadDrawer({
                         onClick={() => moveStage(s)}
                         aria-pressed={lead.stage === s}
                         className={`rounded-full border px-2.5 py-1 text-xs transition-colors ${
-                          lead.stage === s
+                          s === "Lost" && losing && lead.stage !== "Lost"
+                            ? "border-zinc-500 bg-zinc-500/15"
+                            : lead.stage === s
                             ? s === "Lost"
                               ? "border-zinc-500 bg-zinc-600 text-white"
                               : "border-cyan-700 bg-cyan-700 text-white"
@@ -312,25 +318,17 @@ export default function LeadDrawer({
                 </div>
 
                 <div className="grid gap-3 sm:grid-cols-2">
-                  <label className="block text-xs font-medium text-muted-foreground">
-                    Owner
-                    <select
-                      className={`${input} mt-1`}
-                      value={lead.ownerMemberId ?? ""}
-                      disabled={busy}
-                      onChange={(e) => update({ ownerSet: true, ownerMemberId: e.target.value || null }, "Owner updated.")}
-                    >
-                      <option value="">Unassigned</option>
-                      {activeTeam.map((m) => (
-                        <option key={m.id} value={m.id}>
-                          {m.name}
-                        </option>
-                      ))}
-                    </select>
-                    {activeTeam.length === 0 && (
-                      <span className="mt-1 block font-normal">{isAdmin ? "Add your team in Settings to assign leads." : "Your admin hasn't added the team yet."}</span>
-                    )}
-                  </label>
+                  <OwnerField
+                    lead={lead}
+                    team={activeTeam}
+                    me={me}
+                    isAdmin={isAdmin}
+                    busy={busy}
+                    getToken={getToken}
+                    assign={(id, done) => update({ ownerSet: true, ownerMemberId: id }, done)}
+                    setError={setError}
+                    onTeamChanged={onChanged}
+                  />
                   <div className="text-xs font-medium text-muted-foreground">
                     Next follow-up
                     <p className="mt-1 rounded-lg border border-border px-3 py-2 text-sm font-normal text-foreground">
@@ -431,6 +429,100 @@ function Contact({ label, value, href }: { label: string; value: string | null; 
         {copied ? <Check aria-hidden="true" className="h-3.5 w-3.5" /> : <Copy aria-hidden="true" className="h-3.5 w-3.5" />}
       </button>
     </span>
+  );
+}
+
+/**
+ * The lead's owner: anyone active on the team. Admins can add themselves or someone new right here and assign in one
+ * step, so they don't have to leave the lead for Settings.
+ */
+function OwnerField({
+  lead,
+  team,
+  me,
+  isAdmin,
+  busy,
+  getToken,
+  assign,
+  setError,
+  onTeamChanged,
+}: {
+  lead: LeadFull;
+  team: Member[];
+  me: { id: string; name: string } | null;
+  isAdmin: boolean;
+  busy: boolean;
+  getToken: GetToken;
+  assign: (id: string | null, done: string) => Promise<boolean>;
+  setError: (e: string | null) => void;
+  onTeamChanged: () => void;
+}) {
+  const [adding, setAdding] = useState(false);
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [saving, setSaving] = useState(false);
+
+  const addAndAssign = async (path: string, body?: unknown) => {
+    setSaving(true);
+    try {
+      const m = await crm<Member>(getToken, path, { method: "POST", body });
+      onTeamChanged();
+      setAdding(false);
+      setName("");
+      setEmail("");
+      await assign(m.id, `${m.name} added to the team and assigned.`);
+    } catch (e) {
+      setError((e as Error).message);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const pick = (v: string) => {
+    if (v === "__me") addAndAssign("/team/me");
+    else if (v === "__new") setAdding(true);
+    else assign(v || null, v ? "Owner updated." : "Unassigned.");
+  };
+
+  return (
+    <div className="text-xs font-medium text-muted-foreground">
+      <label htmlFor="lead-owner">Owner</label>
+      <select id="lead-owner" className={`${input} mt-1`} value={lead.ownerMemberId ?? ""} disabled={busy || saving} onChange={(e) => pick(e.target.value)}>
+        <option value="">Unassigned</option>
+        {me && <option value={me.id}>Me ({me.name})</option>}
+        {team
+          .filter((m) => m.id !== me?.id)
+          .map((m) => (
+            <option key={m.id} value={m.id}>
+              {m.name}
+            </option>
+          ))}
+        {isAdmin && !me && <option value="__me">+ Add me to the team and assign to me</option>}
+        {isAdmin && <option value="__new">+ Add someone to the team…</option>}
+      </select>
+      {!isAdmin && team.length === 0 && <span className="mt-1 block font-normal">Your admin hasn&apos;t added the team yet, so leads can&apos;t be assigned.</span>}
+      {!isAdmin && team.length > 0 && !me && <span className="mt-1 block font-normal">You&apos;re not on the team list; ask your admin to add your sign-in email.</span>}
+      {adding && (
+        <form
+          className="mt-2 space-y-1.5 rounded-lg border border-border bg-muted/40 p-2 font-normal"
+          onSubmit={(e) => {
+            e.preventDefault();
+            addAndAssign("/team", { name, email, role: "Counsellor", active: true });
+          }}
+        >
+          <input className={input} placeholder="Name" aria-label="Name" value={name} onChange={(e) => setName(e.target.value)} required maxLength={200} />
+          <input className={input} type="email" placeholder="Email they sign in with" aria-label="Email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+          <div className="flex gap-2">
+            <button type="submit" className={primary} disabled={saving}>
+              Add and assign
+            </button>
+            <button type="button" className={secondary} onClick={() => setAdding(false)}>
+              Cancel
+            </button>
+          </div>
+        </form>
+      )}
+    </div>
   );
 }
 
