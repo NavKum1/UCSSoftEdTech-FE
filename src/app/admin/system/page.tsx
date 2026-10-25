@@ -88,8 +88,8 @@ export default function SystemOperationsDashboard() {
       const data = await res.json();
       setActionLog(data.message || "Cache action completed successfully.");
       await fetchMetrics();
-    } catch (err) {
-      setActionLog(`Invalidation error: ${(err as Error).message}`);
+    } catch {
+      setActionLog("We couldn't clear the cache. Please try again.");
     } finally {
       setIsProcessing(false);
     }
@@ -105,10 +105,10 @@ export default function SystemOperationsDashboard() {
       });
 
       const data = await res.json();
-      setActionLog(`Job Enqueued! ID: ${data.jobId} into ${data.priority} channel.`);
+      setActionLog(`Test job added to the ${data.priority === "HighPriority" ? "high priority" : "standard"} queue.`);
       await fetchMetrics();
-    } catch (err) {
-      setActionLog(`Queue error: ${(err as Error).message}`);
+    } catch {
+      setActionLog("We couldn't add the test job. Please try again.");
     } finally {
       setIsProcessing(false);
     }
@@ -125,10 +125,10 @@ export default function SystemOperationsDashboard() {
       });
 
       const data = await res.json();
-      setActionLog(data.message || `Re-enqueued ${data.reEnqueuedCount} jobs from DLQ.`);
+      setActionLog(data.message || `Retried ${data.reEnqueuedCount} failed jobs.`);
       await fetchMetrics();
-    } catch (err) {
-      setActionLog(`DLQ Retry error: ${(err as Error).message}`);
+    } catch {
+      setActionLog("We couldn't retry the failed jobs. Please try again.");
     } finally {
       setIsProcessing(false);
     }

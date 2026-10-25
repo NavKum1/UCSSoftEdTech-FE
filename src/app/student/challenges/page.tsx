@@ -80,7 +80,7 @@ export default function StudentChallengesPage() {
       setAgree(false);
       reload();
     } catch (e2) {
-      setErr((e2 as Error).message);
+      setErr(e2 instanceof TypeError ? "We couldn't reach the server. Please check your connection and try again." : (e2 as Error).message);
     } finally {
       setBusy(null);
     }
@@ -95,7 +95,7 @@ export default function StudentChallengesPage() {
       setMsg(t("youLeftTitleAndStopped", { title: item.challenge.title, employer: item.employer ?? t("theEmployer") }));
       reload();
     } catch (e) {
-      setErr((e as Error).message);
+      setErr(e instanceof TypeError ? "We couldn't reach the server. Please check your connection and try again." : (e as Error).message);
     } finally {
       setBusy(null);
     }

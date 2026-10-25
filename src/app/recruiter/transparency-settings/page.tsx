@@ -16,7 +16,7 @@ interface Participation {
 
 async function readParticipation(res: Response): Promise<Participation> {
   if (res.status === 401 || res.status === 403) throw new Error("You need recruiter or institute admin access to change this setting.");
-  if (!res.ok) throw new Error(`Could not load the setting (HTTP ${res.status}).`);
+  if (!res.ok) throw new Error(`Could not load the setting. Please try again.`);
   return (await res.json()) as Participation;
 }
 

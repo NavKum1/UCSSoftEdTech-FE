@@ -116,7 +116,7 @@ export default function EmployerChallengesPage() {
                 }
               >
                 <div className="flex flex-wrap items-center gap-2 text-sm">
-                  <Badge tone={STATUS_TONES[c.status]}>{c.status}</Badge>
+                  <Badge tone={STATUS_TONES[c.status]}>{String(c.status ?? "").replace(/([a-z])([A-Z])/g, (_m, a: string, b: string) => `${a} ${b.toLowerCase()}`)}</Badge>
                   <span>{formatDate(c.opensAt)} – {formatDate(c.closesAt)}</span>
                   <span>{tr("participantsParticipants", { participants: c.participants })}{c.maxParticipants ? tr("ofMaxParticipants", { maxParticipants: c.maxParticipants }) : ""}</span>
                   <span>{tr("countSchools", { count: c.schools.length })}</span>
@@ -269,7 +269,7 @@ function Manage({ employerId, challengeId, onChanged }: { employerId: string; ch
       detail.reload();
       onChanged();
     } catch (e) {
-      setErr((e as Error).message);
+      setErr(e instanceof TypeError ? "We couldn't reach the server. Please check your connection and try again." : (e as Error).message);
     } finally {
       setBusy(null);
     }
@@ -361,7 +361,7 @@ function ResultsView({ employerId, challengeId }: { employerId: string; challeng
     try {
       setPack({ id: row.participantId, data: await api<Record<string, unknown>>(`/api/career/challenges/employer/${employerId}/${challengeId}/participants/${row.participantId}/evidence`) });
     } catch (e) {
-      setErr((e as Error).message);
+      setErr(e instanceof TypeError ? "We couldn't reach the server. Please check your connection and try again." : (e as Error).message);
     } finally {
       setBusy(null);
     }

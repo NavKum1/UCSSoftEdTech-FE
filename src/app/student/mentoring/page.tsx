@@ -151,7 +151,7 @@ function WithdrawButton({ id, onDone }: { id: string; onDone: () => void }) {
             await api(`/api/career/mentoring/student/relationships/${id}/withdraw`, { method: "POST" });
             onDone();
           } catch (e) {
-            setErr((e as Error).message);
+            setErr(e instanceof TypeError ? "We couldn't reach the server. Please check your connection and try again." : (e as Error).message);
           } finally {
             setBusy(false);
           }
@@ -411,7 +411,7 @@ function PreferencesForm({ initial, options, onSaved }: { initial: Preferences; 
         try {
           onSaved(await api<Preferences>("/api/career/mentoring/student/preferences", { method: "PUT", json: { topics, industries: splitList(industries), functions: splitList(functions) } }));
         } catch (e2) {
-          setErr((e2 as Error).message);
+          setErr(e2 instanceof TypeError ? "We couldn't reach the server. Please check your connection and try again." : (e2 as Error).message);
         } finally {
           setBusy(false);
         }
@@ -461,7 +461,7 @@ function RequestForm({ mentor, options, onCancel, onDone }: { mentor: MentorCard
             setOk(tr("requestSent"));
             onDone(res.relationship.id);
           } catch (e2) {
-            setErr((e2 as Error).message);
+            setErr(e2 instanceof TypeError ? "We couldn't reach the server. Please check your connection and try again." : (e2 as Error).message);
           } finally {
             setBusy(false);
           }

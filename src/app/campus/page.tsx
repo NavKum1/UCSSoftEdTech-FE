@@ -159,7 +159,7 @@ export default function CampusStudentPage() {
     authenticatedFetch("/api/campus/my-assignments", {}, getToken)
       .then(async (res) => {
         if (res.status === 401) throw new Error("Please sign in to see your assignments.");
-        if (!res.ok) throw new Error(`Could not load your assignments (HTTP ${res.status}).`);
+        if (!res.ok) throw new Error("We couldn't load your assignments. Please try again.");
         return (await res.json()) as MyAssignments;
       })
       .then((d) => {
@@ -167,7 +167,7 @@ export default function CampusStudentPage() {
         setData(d);
         if (d.preferredLanguage) setLanguage(d.preferredLanguage);
       })
-      .catch((e) => active && setLoadError(e instanceof Error ? e.message : "Could not load your assignments."));
+      .catch((e) => active && setLoadError(e instanceof Error && !(e instanceof TypeError) ? e.message : "Could not load your assignments."));
 
     authenticatedFetch("/api/interview/languages", {}, getToken)
       .then((res) => (res.ok ? res.json() : null))
@@ -195,7 +195,7 @@ export default function CampusStudentPage() {
       );
       const body = await res.json().catch(() => null);
       if (!res.ok) {
-        setSaveMessage({ ok: false, text: body?.error || `Could not save (HTTP ${res.status}).` });
+        setSaveMessage({ ok: false, text: body?.error || "We couldn't save your changes. Please try again." });
         return;
       }
       setSaveMessage({ ok: true, text: `Saved. Your defense will default to ${body?.label || "this language"}.` });

@@ -130,7 +130,7 @@ function BookFlow({ onBooked }: { onBooked: (a: Appointment) => void }) {
       });
       onBooked(a);
     } catch (err) {
-      setError((err as Error).message);
+      setError(err instanceof TypeError ? "We couldn't reach the server. Please check your connection and try again." : (err as Error).message);
       setSlot(null);
       setRefresh((n) => n + 1);
     } finally {
@@ -320,7 +320,7 @@ function AppointmentCard({ a, onChanged, past }: { a: Appointment; onChanged: (m
     try {
       await fn();
     } catch (e) {
-      setError((e as Error).message);
+      setError(e instanceof TypeError ? "We couldn't reach the server. Please check your connection and try again." : (e as Error).message);
     } finally {
       setBusy(false);
     }
@@ -486,7 +486,7 @@ function DropIn() {
       await fn();
       reload();
     } catch (e) {
-      setError((e as Error).message);
+      setError(e instanceof TypeError ? "We couldn't reach the server. Please check your connection and try again." : (e as Error).message);
     } finally {
       setBusy(null);
     }
@@ -557,7 +557,7 @@ function NotesAndTasks() {
       const saved = await api<{ id: string; status: string; completedAt?: string | null }>(`/api/career/appointments/student/tasks/${t.id}`, { method: "POST", json: { done: t.status !== "Done" } });
       tasks.setData((d) => (d ? d.map((x) => (x.id === t.id ? { ...x, status: saved.status, completedAt: saved.completedAt } : x)) : d));
     } catch (e) {
-      setError((e as Error).message);
+      setError(e instanceof TypeError ? "We couldn't reach the server. Please check your connection and try again." : (e as Error).message);
     }
   };
 

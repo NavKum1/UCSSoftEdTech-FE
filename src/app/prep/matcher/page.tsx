@@ -84,10 +84,11 @@ export default function ResumeMatcherPrepPage() {
         setAnalysisResult(data);
       } else {
         const err = await res.json();
-        setErrorMsg(err.error || "Failed to analyze resume competencies.");
+        setErrorMsg(err.error || "We couldn't analyse your resume. Please try again.");
       }
     } catch (e) {
-      setErrorMsg("Network error connecting to analysis engine: " + (e as Error).message);
+      void e;
+      setErrorMsg("We couldn't reach the server. Please check your connection and try again.");
     } finally {
       setIsAnalyzing(false);
     }

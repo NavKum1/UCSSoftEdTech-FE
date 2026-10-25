@@ -128,7 +128,7 @@ function Compose({ onSent }: { onSent: (id: string) => void }) {
     try {
       setResults(await api(`/api/career/messaging/staff/students?q=${encodeURIComponent(q)}`));
     } catch (e) {
-      setError((e as Error).message);
+      setError(e instanceof TypeError ? "We couldn't reach the server. Please check your connection and try again." : (e as Error).message);
     }
   };
   const send = async (e: React.FormEvent) => {
@@ -145,7 +145,7 @@ function Compose({ onSent }: { onSent: (id: string) => void }) {
       const res = await api<{ id: string }>("/api/career/messaging/staff/threads", { method: "POST", body: form });
       onSent(res.id);
     } catch (err) {
-      setError((err as Error).message);
+      setError(err instanceof TypeError ? "We couldn't reach the server. Please check your connection and try again." : (err as Error).message);
     } finally {
       setBusy(false);
     }
@@ -253,7 +253,7 @@ function Reports() {
           <Card key={r.id} title={`${r.reason}: ${r.thread?.subject ?? tr("conversation")}`}>
             <p className="text-sm text-muted-foreground">
               {tr("reportedByReporterOnCreatedAt", { reporter: r.reporter, createdAt: formatDate(r.createdAt, true) })}{" "}{r.thread?.kind === "Mentorship" ? tr("mentorshipMentorNameStudentName", { mentorName: String(r.thread.mentorName), studentName: r.thread.studentName }) : tr("careerCenterStudentName", { studentName: String(r.thread?.studentName) })}{" "}
-              <Badge tone={r.status === "Open" ? "warn" : "good"}>{r.status}</Badge>
+              <Badge tone={r.status === "Open" ? "warn" : "good"}>{String(r.status ?? "").replace(/([a-z])([A-Z])/g, (_m, a: string, b: string) => `${a} ${b.toLowerCase()}`)}</Badge>
             </p>
             {r.details && <p className="mt-2 text-sm">{r.details}</p>}
             {r.post && (

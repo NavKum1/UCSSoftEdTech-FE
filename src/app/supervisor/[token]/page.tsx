@@ -131,7 +131,7 @@ export default function SupervisorPage() {
       if (finished) setView(null);
       else setTick((t) => t + 1);
     } catch (e) {
-      setError((e as Error).message);
+      setError(e instanceof TypeError ? "We couldn't reach the server. Please check your connection and try again." : (e as Error).message);
     }
   };
 

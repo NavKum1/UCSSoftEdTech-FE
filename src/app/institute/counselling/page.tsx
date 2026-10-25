@@ -631,7 +631,7 @@ function InquiriesTab({ scope, apiFetch }: { scope: string | null; apiFetch: Api
               <td className="p-3">{l.courseName ?? "—"}</td>
               <td className="p-3 text-muted-foreground">{l.primaryTrack || "—"}</td>
               <td className="max-w-xs p-3 text-muted-foreground">{l.notes || "—"}</td>
-              <td className="p-3">{l.status}</td>
+              <td className="p-3">{String(l.status ?? "").replace(/([a-z])([A-Z])/g, (_m, a: string, b: string) => `${a} ${b.toLowerCase()}`)}</td>
             </tr>
           ))}
         </tbody>

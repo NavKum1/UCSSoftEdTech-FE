@@ -69,7 +69,7 @@ export default function ChallengeSynthesizerPage() {
       }
     } catch (e) {
       console.error("Error synthesizing challenge:", e);
-      setMessage("Failed to synthesize challenge. Ensure backend is running.");
+      setMessage("We couldn't create the challenge. Please try again in a moment.");
     } finally {
       setLoading(false);
     }

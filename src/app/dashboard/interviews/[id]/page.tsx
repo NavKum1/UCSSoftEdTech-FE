@@ -83,12 +83,12 @@ export default function StudentInterviewReplayPage() {
           setSessionData(data);
           if (data.durationSeconds) setDuration(data.durationSeconds);
         } else {
-          setFetchError(`Interview defense record not found (HTTP ${res.status}). The requested session does not exist.`);
+          setFetchError("We couldn't find this interview. It may have been removed, or the link may be wrong.");
           setSessionData(null);
         }
       } catch (err) {
         console.error("Failed to load interview session replay:", err);
-        setFetchError((err as Error).message || "Failed to connect to interview session service.");
+        setFetchError(err instanceof TypeError ? "We couldn't reach the server. Please check your connection and try again." : (err as Error).message || "We couldn't load this interview. Please try again.");
         setSessionData(null);
       } finally {
         setLoading(false);

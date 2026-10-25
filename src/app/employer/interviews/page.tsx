@@ -136,7 +136,7 @@ function ScheduleDetail({ employerId, schedule, onChanged, onMessage }: { employ
       if (done) onMessage(done);
       cands.reload();
     } catch (e) {
-      setErr((e as Error).message);
+      setErr(e instanceof TypeError ? "We couldn't reach the server. Please check your connection and try again." : (e as Error).message);
     } finally {
       setBusy(null);
     }

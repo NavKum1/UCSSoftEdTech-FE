@@ -22,7 +22,7 @@ async function readError(res: Response, fallback: string) {
   } catch {
     // non-JSON body
   }
-  return `${fallback} (HTTP ${res.status}).`;
+  return `${fallback}. Please try again.`;
 }
 
 function previousMonth() {
@@ -67,7 +67,7 @@ export default function AdminTransparencyPage() {
         return (await res.json()) as AdminReport[];
       })
       .then((data) => active && setList({ key: listKey, data, error: null }))
-      .catch((e) => active && setList({ key: listKey, data: null, error: e instanceof Error ? e.message : "Could not load reports." }));
+      .catch((e) => active && setList({ key: listKey, data: null, error: e instanceof Error && !(e instanceof TypeError) ? e.message : "Could not load reports." }));
     return () => {
       active = false;
     };
@@ -83,7 +83,7 @@ export default function AdminTransparencyPage() {
         return (await res.json()) as AdminReport;
       })
       .then((data) => active && setDetail({ key: detailKey, data, error: null }))
-      .catch((e) => active && setDetail({ key: detailKey, data: null, error: e instanceof Error ? e.message : "Could not load the report." }));
+      .catch((e) => active && setDetail({ key: detailKey, data: null, error: e instanceof Error && !(e instanceof TypeError) ? e.message : "Could not load the report." }));
     return () => {
       active = false;
     };
@@ -286,7 +286,7 @@ export default function AdminTransparencyPage() {
               {selected.report ? (
                 <TransparencyReportView report={selected.report} meta={selected} draft={selected.status !== "Published"} />
               ) : (
-                <p className="text-sm text-rose-700 dark:text-rose-400">The stored report payload could not be read.</p>
+                <p className="text-sm text-rose-700 dark:text-rose-400">We couldn&apos;t open this report. Please try again or create it again.</p>
               )}
             </>
           ) : null}

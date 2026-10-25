@@ -505,10 +505,11 @@ export default function WrittenExamPrepPage() {
       try {
         parsedQuestions = JSON.parse(uploadJson);
         if (!Array.isArray(parsedQuestions)) {
-          throw new Error("JSON must be an array of question objects.");
+          throw new Error("The questions must be a list.");
         }
       } catch (parseErr) {
-        setUploadError("Invalid JSON: " + (parseErr as Error).message);
+        void parseErr;
+        setUploadError("We couldn't read the questions. Please check the format and try again.");
         setIsUploading(false);
         return;
       }
@@ -534,10 +535,11 @@ export default function WrittenExamPrepPage() {
         startExam(data.id);
       } else {
         const err = await res.json();
-        setUploadError(err.error || "Failed to upload question bank.");
+        setUploadError(err.error || "We couldn't upload the questions. Please try again.");
       }
     } catch (err) {
-      setUploadError("Upload failed: " + (err as Error).message);
+      void err;
+      setUploadError("We couldn't upload the questions. Please check your connection and try again.");
     } finally {
       setIsUploading(false);
     }
@@ -1683,14 +1685,14 @@ export default function WrittenExamPrepPage() {
                     className="w-full py-2 px-3 rounded-xl border border-border bg-muted/30 text-xs font-semibold text-foreground hover:bg-muted/60 transition-colors flex items-center justify-center gap-1.5"
                   >
                     <FileCode className="w-3.5 h-3.5 text-primary" />
-                    <span>Load Sample JSON</span>
+                    <span>Load an example</span>
                   </button>
                 </div>
               </div>
 
               <div className="space-y-1.5">
                 <label className="text-xs font-semibold text-foreground flex items-center justify-between">
-                  <span>Questions JSON Payload</span>
+                  <span>Questions (JSON format)</span>
                   <span className="text-[10px] text-muted-foreground font-normal">
                     Array of objects with questionText, options, correctOptionIndex, explanation
                   </span>

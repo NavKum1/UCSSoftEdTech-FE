@@ -171,13 +171,13 @@ async function apiJson<T>(path: string, getToken: GetToken, init: RequestInit = 
   const res = await authenticatedFetch(path, init, getToken);
   const body = res.status === 204 ? null : await res.json().catch(() => null);
   if (res.status === 401) throw new Error("Please sign in with your placement cell account.");
-  if (!res.ok) throw new Error(body?.error || (res.status === 403 ? "You need institute admin access." : `Request failed (HTTP ${res.status}).`));
+  if (!res.ok) throw new Error(body?.error || (res.status === 403 ? "You need institute admin access." : "Something went wrong on our side. Please try again."));
   return body as T;
 }
 
 async function downloadAuthed(path: string, fallbackName: string, getToken: GetToken) {
   const res = await authenticatedFetch(path, {}, getToken);
-  if (!res.ok) throw new Error(`Download failed (HTTP ${res.status}).`);
+  if (!res.ok) throw new Error("We couldn't download the file. Please try again.");
   const disposition = res.headers.get("content-disposition") ?? "";
   const match = /filename\*?=(?:UTF-8'')?"?([^";]+)"?/i.exec(disposition);
   const blob = await res.blob();
@@ -190,7 +190,7 @@ async function downloadAuthed(path: string, fallbackName: string, getToken: GetT
 }
 
 function errorText(e: unknown, fallback: string) {
-  return e instanceof Error ? e.message : fallback;
+  return e instanceof Error && !(e instanceof TypeError) ? e.message : fallback;
 }
 
 function fmt(v: number | null | undefined, suffix = "") {
@@ -482,7 +482,7 @@ function MembersTab({ cohortId, getToken, onChanged }: { cohortId: string; getTo
           onChanged();
         }
       } else {
-        setImportError(body?.error || `Import failed (HTTP ${res.status}).`);
+        setImportError(body?.error || "We couldn't import the file. Please check it and try again.");
       }
     } catch {
       setImportError("Network error during import.");

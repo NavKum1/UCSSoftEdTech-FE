@@ -19,7 +19,6 @@ import {
   RefreshCw,
   Eye,
   EyeOff,
-  Radio,
   Send,
 } from "lucide-react";
 import { authenticatedFetch } from "@/lib/apiClient";
@@ -202,7 +201,7 @@ export default function SuperAdminDashboard() {
         setError(err.error || "Failed to create partner institute.");
       }
     } catch (err) {
-      setError((err as Error).message || "Error creating institute.");
+      setError(err instanceof TypeError ? "We couldn't reach the server. Please check your connection and try again." : (err as Error).message || "We couldn't create the institute. Please try again.");
     }
   };
 
@@ -217,7 +216,7 @@ export default function SuperAdminDashboard() {
         loadData();
       }
     } catch (err) {
-      setError((err as Error).message || "Failed to delete institute.");
+      setError(err instanceof TypeError ? "We couldn't reach the server. Please check your connection and try again." : (err as Error).message || "We couldn't delete the institute. Please try again.");
     }
   };
 
@@ -251,7 +250,7 @@ export default function SuperAdminDashboard() {
         loadData();
       }
     } catch (err) {
-      setError((err as Error).message || "Failed to create course.");
+      setError(err instanceof TypeError ? "We couldn't reach the server. Please check your connection and try again." : (err as Error).message || "We couldn't create the course. Please try again.");
     }
   };
 
@@ -266,7 +265,7 @@ export default function SuperAdminDashboard() {
         loadData();
       }
     } catch (err) {
-      setError((err as Error).message || "Failed to delete course.");
+      setError(err instanceof TypeError ? "We couldn't reach the server. Please check your connection and try again." : (err as Error).message || "We couldn't delete the course. Please try again.");
     }
   };
 
@@ -287,7 +286,7 @@ export default function SuperAdminDashboard() {
         loadData();
       }
     } catch (err) {
-      setError((err as Error).message || "Failed to add skill mapping.");
+      setError(err instanceof TypeError ? "We couldn't reach the server. Please check your connection and try again." : (err as Error).message || "We couldn't add the skill. Please try again.");
     }
   };
 
@@ -317,7 +316,7 @@ export default function SuperAdminDashboard() {
 
       showNotification("CSV export successfully generated and downloaded.");
     } catch (err) {
-      setError((err as Error).message || "Error generating CSV export.");
+      setError(err instanceof TypeError ? "We couldn't reach the server. Please check your connection and try again." : (err as Error).message || "We couldn't create the export. Please try again.");
     } finally {
       setIsExportingCsv(false);
     }
@@ -535,39 +534,6 @@ export default function SuperAdminDashboard() {
             </div>
           </div>
 
-          {/* Real-time Infrastructure & Engine Status Panel */}
-          <div className="glass-panel rounded-3xl p-6 border border-border space-y-4 shadow-xl">
-            <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground flex items-center space-x-2">
-              <Radio className="w-4 h-4 text-emerald-700 dark:text-emerald-400 animate-pulse" />
-              <span>Engine Status &amp; Integration Health</span>
-            </h3>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
-              <div className="p-4 rounded-xl bg-card/60 border border-border/80 flex items-start space-x-3">
-                <div className="w-2.5 h-2.5 rounded-full bg-emerald-400 mt-1 shrink-0" />
-                <div>
-                  <p className="font-bold text-foreground">Clerk RBAC &amp; Public Metadata</p>
-                  <p className="text-muted-foreground mt-0.5">Policy enforcement: [Authorize(Policy = &quot;SuperAdmin&quot;)] verified.</p>
-                </div>
-              </div>
-
-              <div className="p-4 rounded-xl bg-card/60 border border-border/80 flex items-start space-x-3">
-                <div className="w-2.5 h-2.5 rounded-full bg-emerald-400 mt-1 shrink-0" />
-                <div>
-                  <p className="font-bold text-foreground">Transactional Email Engine</p>
-                  <p className="text-muted-foreground mt-0.5">Dual Resend &amp; SendGrid hooks connected on Vapi end-of-call.</p>
-                </div>
-              </div>
-
-              <div className="p-4 rounded-xl bg-card/60 border border-border/80 flex items-start space-x-3">
-                <div className="w-2.5 h-2.5 rounded-full bg-emerald-400 mt-1 shrink-0" />
-                <div>
-                  <p className="font-bold text-foreground">B2B Multi-Tenant Lead Router</p>
-                  <p className="text-muted-foreground mt-0.5">Global Query Filters enabled with isolated tenant connection strings.</p>
-                </div>
-              </div>
-            </div>
-          </div>
         </div>
       )}
 
@@ -584,7 +550,7 @@ export default function SuperAdminDashboard() {
                   <Building2 className="w-5 h-5 text-indigo-700 dark:text-indigo-400" />
                   <span>Partner Institutes ({institutes.length})</span>
                 </h2>
-                <p className="text-xs text-muted-foreground">B2B affiliate education providers receiving qualified candidate leads.</p>
+                <p className="text-xs text-muted-foreground">Partner education providers who receive interested learners as leads.</p>
               </div>
 
               <button
@@ -623,14 +589,14 @@ export default function SuperAdminDashboard() {
 
                   <div className="space-y-1.5 text-xs text-muted-foreground">
                     <div className="flex items-center justify-between py-1 border-t border-border/60">
-                      <span className="text-muted-foreground">Webhook Endpoint:</span>
+                      <span className="text-muted-foreground">Lead delivery address:</span>
                       <span className="font-mono text-[11px] text-indigo-600 dark:text-indigo-300 truncate max-w-[240px]" title={inst.webhookUrl}>
-                        {inst.webhookUrl || "No webhook URL configured"}
+                        {inst.webhookUrl || "Not set up"}
                       </span>
                     </div>
 
                     <div className="flex items-center justify-between py-1 border-t border-border/60">
-                      <span className="text-muted-foreground">API Key:</span>
+                      <span className="text-muted-foreground">Access key:</span>
                       <div className="flex items-center space-x-1 font-mono text-[11px] text-muted-foreground">
                         <span>{visibleKeys[inst.id] ? inst.apiKey : "••••••••••••••••"}</span>
                         <button
@@ -970,7 +936,7 @@ export default function SuperAdminDashboard() {
               </div>
 
               <div>
-                <label className="block text-muted-foreground font-semibold mb-1">Webhook Dispatch URL</label>
+                <label className="block text-muted-foreground font-semibold mb-1">Lead delivery address (web address where we send new leads)</label>
                 <input
                   type="url"
                   placeholder="https://institute.domain.com/webhooks/leads"
@@ -981,7 +947,7 @@ export default function SuperAdminDashboard() {
               </div>
 
               <div>
-                <label className="block text-muted-foreground font-semibold mb-1">API Secret Key (Optional)</label>
+                <label className="block text-muted-foreground font-semibold mb-1">Access key (optional)</label>
                 <input
                   type="text"
                   placeholder="Leave empty to auto-generate secret"

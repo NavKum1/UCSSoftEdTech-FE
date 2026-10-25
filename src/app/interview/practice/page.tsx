@@ -276,7 +276,6 @@ export default function MultiStreamInterviewPracticePage() {
     const speechWindow = window as BrowserSpeechWindow;
     const SpeechRec = speechWindow.SpeechRecognition || speechWindow.webkitSpeechRecognition;
     if (!SpeechRec) {
-      console.log("Web Speech API not available on this browser, relying solely on WebRTC DataChannel.");
       return;
     }
 
@@ -359,7 +358,7 @@ export default function MultiStreamInterviewPracticePage() {
 
       if (!res.ok) {
         const errJson = await res.json().catch(() => ({}));
-        throw new Error(errJson.error || "Failed to generate ephemeral interview session token.");
+        throw new Error(errJson.error || "We couldn't start the interview. Please try again.");
       }
 
       const { client_secret } = await res.json();
@@ -394,7 +393,6 @@ export default function MultiStreamInterviewPracticePage() {
       dcRef.current = dc;
 
       dc.onopen = () => {
-        console.log("WebRTC DataChannel opened for live transcription events");
         // Instruct AI to open interview session
         const openingEvent = {
           type: "response.create",
@@ -496,7 +494,7 @@ export default function MultiStreamInterviewPracticePage() {
       }, 1000);
     } catch (err) {
       console.error("Interview setup failed:", err);
-      setErrorMsg((err as Error).message || "Could not connect to AI voice agent. Please verify microphone permissions.");
+      setErrorMsg(err instanceof TypeError ? "We couldn't reach the server. Please check your connection and try again." : (err as Error).message || "We couldn't start the voice interview. Please allow microphone access and try again.");
       endSessionCleanup();
     } finally {
       setIsConnecting(false);
@@ -900,7 +898,7 @@ export default function MultiStreamInterviewPracticePage() {
                     <MessageSquare className="w-8 h-8 opacity-40 animate-pulse text-primary" />
                     <p className="font-semibold text-foreground text-xs">Live Conversation Feed Connecting...</p>
                     <p className="text-[11px] max-w-sm leading-relaxed">
-                      Your spoken dialogue and the AI interviewer&apos;s responses stream here in real time via WebRTC DataChannel and Whisper speech-to-text.
+                      Your spoken dialogue and the AI interviewer&apos;s responses appear here as you speak.
                     </p>
                   </div>
                 )}

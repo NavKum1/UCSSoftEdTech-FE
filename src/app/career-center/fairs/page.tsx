@@ -67,7 +67,7 @@ export default function CareerCenterFairsPage() {
     try {
       await fn();
     } catch (e) {
-      setErr((e as Error).message);
+      setErr(e instanceof TypeError ? "We couldn't reach the server. Please check your connection and try again." : (e as Error).message);
     } finally {
       setBusy(null);
     }
@@ -156,7 +156,7 @@ export default function CareerCenterFairsPage() {
                     </div>
                     <div className="flex flex-wrap items-center gap-2">
                       {ev.isCareerFair && <Badge tone="info">{t("careerFair")}</Badge>}
-                      {ev.status && <Badge tone={STATUS_TONE[ev.status] ?? "neutral"}>{ev.status}</Badge>}
+                      {ev.status && <Badge tone={STATUS_TONE[ev.status] ?? "neutral"}>{String(ev.status ?? "").replace(/([a-z])([A-Z])/g, (_m, a: string, b: string) => `${a} ${b.toLowerCase()}`)}</Badge>}
                       {ev.isCareerFair && (
                         <Button variant="secondary" onClick={() => showFair(ev.id)} aria-expanded={open === ev.id}>
                           {open === ev.id ? t("hideBooths") : t("booths")}

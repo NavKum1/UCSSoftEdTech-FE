@@ -274,7 +274,7 @@ function Integrations({ getToken, webhookUrl, reload }: { getToken: GetToken; we
     setMsg(null);
     try {
       const r = await crm<{ delivered: boolean; status: number; error: string | null }>(getToken, "/webhook/test", { method: "POST" });
-      setMsg(r.delivered ? { ok: true, text: `Your endpoint accepted the test event (HTTP ${r.status}).` } : { ok: false, text: r.error ?? `Your endpoint answered HTTP ${r.status}.` });
+      setMsg(r.delivered ? { ok: true, text: `Your system received the test event (response code ${r.status}).` } : { ok: false, text: r.error ?? `Your system didn't accept the test event (response code ${r.status}). Ask your IT team to check the URL.` });
     } catch (e) {
       setMsg({ ok: false, text: (e as Error).message });
     } finally {
@@ -288,7 +288,8 @@ function Integrations({ getToken, webhookUrl, reload }: { getToken: GetToken; we
         <div>
           <h2 className="text-base font-semibold">Send leads to your own systems</h2>
           <p className="mt-0.5 text-sm text-muted-foreground">
-            Optional. If you also use another CRM (HubSpot, Salesforce, Zoho, or Zapier/Make), Edulexa posts each event to this URL as JSON, signed with your
+            Optional. If you also use another CRM (HubSpot, Salesforce, Zoho, or Zapier/Make), Edulexa can send each new lead and update there for you.
+            For your IT team: each event is posted to this URL as JSON, signed with your
             institute&apos;s API key in the <code className="text-xs">X-Edulexa-Signature</code> header (<code className="text-xs">t=timestamp,v1=HMAC-SHA256 of &quot;timestamp.body&quot;</code>).
           </p>
         </div>

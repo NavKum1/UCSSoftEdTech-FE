@@ -167,7 +167,7 @@ async function errorMessage(res: Response, fallback: string) {
   }
   if (res.status === 401 || res.status === 403) return "You need recruiter access to manage work trials.";
   if (res.status === 429) return "Too many requests. Wait a minute and try again.";
-  return `${fallback} (HTTP ${res.status}).`;
+  return `${fallback}. Please try again.`;
 }
 
 function StatusBadge({ status }: { status: string }) {
@@ -337,7 +337,7 @@ function NewTrialWizard({
       }
       onCreated((await res.json()) as TrialDetail);
     } catch {
-      setError("Network error while fetching the source.");
+      setError("We couldn't reach the server while fetching the source. Please check your connection and try again.");
     } finally {
       setSubmitting(false);
     }
@@ -648,7 +648,7 @@ function TrialReview({
       applyTrial(body as TrialDetail);
       if (success) setNotice(success);
     } catch {
-      setError(`Network error while trying to ${action}.`);
+      setError(`We couldn't reach the server while trying to ${action}. Please check your connection and try again.`);
     } finally {
       setBusy(null);
     }

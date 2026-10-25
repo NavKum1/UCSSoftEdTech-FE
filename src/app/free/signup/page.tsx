@@ -30,7 +30,7 @@ export default function FreeSignupPage() {
     } catch (err) {
       // An existing account goes straight to its home
       if (err instanceof ApiError && err.status === 409) router.push("/free/home");
-      else setError(err instanceof Error ? err.message : t("genericError"));
+      else setError(err instanceof Error && !(err instanceof TypeError) ? err.message : t("genericError"));
     } finally {
       setBusy(false);
     }

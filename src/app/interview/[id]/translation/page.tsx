@@ -83,12 +83,12 @@ export default function MultiLanguageTranslationStudioPage() {
         const json = await res.json();
         setSegments(json.transcript || []);
       } else {
-        setFetchError(`Translation service returned HTTP ${res.status}. No transcript recorded for this session.`);
+        setFetchError("There is no transcript to translate for this interview yet.");
         setSegments([]);
       }
     } catch (e) {
       console.warn("[TRANSCRIPT FETCH NOTICE]:", e);
-      setFetchError((e as Error).message || "Failed to connect to transcript translation service.");
+      setFetchError(e instanceof TypeError ? "We couldn't reach the server. Please check your connection and try again." : (e as Error).message || "We couldn't load the translation. Please try again.");
       setSegments([]);
     } finally {
       setLoading(false);

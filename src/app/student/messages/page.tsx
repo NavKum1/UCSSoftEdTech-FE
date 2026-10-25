@@ -43,7 +43,7 @@ function StudentMessages() {
       reload();
       select(res.id);
     } catch (err) {
-      setComposeError((err as Error).message);
+      setComposeError(err instanceof TypeError ? "We couldn't reach the server. Please check your connection and try again." : (err as Error).message);
     } finally {
       setBusy(false);
     }

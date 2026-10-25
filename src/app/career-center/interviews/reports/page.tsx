@@ -67,7 +67,7 @@ export default function InterviewReportsPage() {
             try {
               await download(`/api/career/ocr/staff/reports/interviews.csv${qs ? `?${qs}` : ""}`, "interviews-report.csv");
             } catch (e) {
-              setErr((e as Error).message);
+              setErr(e instanceof TypeError ? "We couldn't reach the server. Please check your connection and try again." : (e as Error).message);
             }
           }}
         >

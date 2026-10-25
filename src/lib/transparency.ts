@@ -184,10 +184,10 @@ export async function fetchPublic<T>(path: string): Promise<PublicFetchResult<T>
     const res = await fetch(`${API_BASE_URL}${path}`, { cache: "no-store" });
     if (res.status === 404) return { kind: "not-found" };
     if (res.status === 410) return { kind: "withdrawn", data: (await res.json()) as ArchiveEntry };
-    if (!res.ok) return { kind: "error", message: `The server returned HTTP ${res.status}.` };
+    if (!res.ok) return { kind: "error", message: "This page couldn't be loaded right now. Please try again in a moment." };
     return { kind: "ok", data: (await res.json()) as T };
   } catch {
-    return { kind: "error", message: "Could not reach the server." };
+    return { kind: "error", message: "We couldn't connect. Check your internet connection and try again." };
   }
 }
 

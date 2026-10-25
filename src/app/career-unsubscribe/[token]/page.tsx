@@ -77,7 +77,7 @@ export default function CareerUnsubscribePage() {
       })
       .catch((e: Error) => {
         if (cancelled) return;
-        setError(e.message);
+        setError(e instanceof TypeError ? "We couldn't reach the server. Please check your connection and try again." : e.message);
         call<Brand>(`/api/career/brand?host=${encodeURIComponent(window.location.hostname)}`).then((b) => !cancelled && setBrand(b)).catch(() => {});
       })
       .finally(() => !cancelled && setLoading(false));
@@ -95,7 +95,7 @@ export default function CareerUnsubscribePage() {
       setMsg(success);
       setTick((t) => t + 1);
     } catch (e) {
-      setError((e as Error).message);
+      setError(e instanceof TypeError ? "We couldn't reach the server. Please check your connection and try again." : (e as Error).message);
     } finally {
       setBusy(false);
     }

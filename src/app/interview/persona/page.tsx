@@ -125,10 +125,10 @@ export default function PersonaSelectorPage() {
       if (res.ok) {
         const data = await res.json();
         setPreviewConfig(data);
-        setStatusMessage(`Adapted system prompt dynamically compiled for ${data.displayName}.`);
+        setStatusMessage(`Preview ready for ${data.displayName}.`);
       }
     } catch (err) {
-      setStatusMessage(`Error compiling prompt: ${(err as Error).message}`);
+      setStatusMessage("We couldn't build the interviewer preview. Please try again.");
     } finally {
       setGeneratingPreview(false);
     }

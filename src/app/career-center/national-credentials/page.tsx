@@ -115,7 +115,7 @@ export default function NationalCredentialsStaffPage() {
     try {
       await fn();
     } catch (e) {
-      setError((e as Error).message);
+      setError(e instanceof TypeError ? "We couldn't reach the server. Please check your connection and try again." : (e as Error).message);
     } finally {
       setBusy(null);
     }
@@ -416,7 +416,7 @@ function ConnectionCard({
         </div>
       </div>
       <p className="text-sm">{repo.model}</p>
-      <p className="mt-1 text-sm text-muted-foreground">{repo.status}</p>
+      <p className="mt-1 text-sm text-muted-foreground">{String(repo.status ?? "").replace(/([a-z])([A-Z])/g, (_m, a: string, b: string) => `${a} ${b.toLowerCase()}`)}</p>
       {repo.ownerMustDo.length > 0 && (
         <details className="mt-3 text-sm">
           <summary className="cursor-pointer font-medium">{t("ownerMustDo")}</summary>

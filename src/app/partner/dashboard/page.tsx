@@ -89,7 +89,7 @@ export default function PartnerDashboardPage() {
   };
 
   const testWebhook = async () => {
-    setWebhookStatus("Sending a test inquiry to your endpoint…");
+    setWebhookStatus("Sending a test inquiry to your address…");
     try {
       const res = await apiFetch("/api/partner/dispatch-test-webhook", { method: "POST" });
       const json = await res.json().catch(() => null);

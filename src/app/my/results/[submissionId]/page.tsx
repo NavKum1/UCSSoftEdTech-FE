@@ -164,7 +164,7 @@ export default function SubmissionReportPage() {
       setReason("");
       reload();
     } catch {
-      setAppealMsg({ kind: "error", text: "Network error while submitting your appeal." });
+      setAppealMsg({ kind: "error", text: "We couldn't reach the server while submitting your appeal. Please check your connection and try again." });
     } finally {
       setAppealBusy(false);
     }
@@ -180,7 +180,7 @@ export default function SubmissionReportPage() {
       }
       reload();
     } catch {
-      setAppealMsg({ kind: "error", text: "Network error while withdrawing the appeal." });
+      setAppealMsg({ kind: "error", text: "We couldn't reach the server while withdrawing the appeal. Please check your connection and try again." });
     }
   };
 
@@ -206,7 +206,7 @@ export default function SubmissionReportPage() {
       setAccDetails("");
       reload();
     } catch {
-      setAccMsg({ kind: "error", text: "Network error while sending your request." });
+      setAccMsg({ kind: "error", text: "We couldn't reach the server while sending your request. Please check your connection and try again." });
     } finally {
       setAccBusy(false);
     }
@@ -233,7 +233,7 @@ export default function SubmissionReportPage() {
       const data = (await res.json()) as { sessionId: string };
       router.push(`/written-defense/${data.sessionId}`);
     } catch {
-      setWdError("Network error while starting the written defense.");
+      setWdError("We couldn't reach the server while starting the written defense. Please check your connection and try again.");
     } finally {
       setWdBusy(false);
     }
@@ -288,7 +288,7 @@ export default function SubmissionReportPage() {
               label="Defense score"
               value={defense?.technicalScore != null ? `${Math.round(defense.technicalScore)}/100` : defense ? defense.status : "Not defended yet"}
             />
-            <Stat label="Review" value={review.status} />
+            <Stat label="Review" value={review.status.replace(/([a-z])([A-Z])/g, "$1 $2")} />
             <Stat label="Integrity" value={report.integrity} />
           </div>
         </div>
@@ -296,7 +296,7 @@ export default function SubmissionReportPage() {
         {/* Review status */}
         <Section title="Review status" icon={<Gavel className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />}>
           <div className="flex flex-wrap items-center gap-2 text-sm">
-            <span className="font-semibold text-foreground">{review.status}</span>
+            <span className="font-semibold text-foreground">{review.status.replace(/([a-z])([A-Z])/g, "$1 $2")}</span>
             {review.reviewedAt && <span className="text-xs text-muted-foreground">on {fmtDate(review.reviewedAt)}</span>}
             {review.outcome && (
               <span
@@ -366,7 +366,7 @@ export default function SubmissionReportPage() {
         {/* Tests */}
         <Section title={`Tests: ${tests.passed}/${tests.total} passed`} icon={<CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />}>
           {tests.cases.length === 0 ? (
-            <p className="text-xs text-muted-foreground">No per-test results were recorded (status: {tests.status}).</p>
+            <p className="text-xs text-muted-foreground">No per-test results were recorded (status: {tests.status.replace(/([a-z])([A-Z])/g, "$1 $2").toLowerCase()}).</p>
           ) : (
             <ul className="grid sm:grid-cols-2 gap-1.5">
               {tests.cases.map((c) => (

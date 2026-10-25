@@ -38,7 +38,7 @@ export async function errorMessage(res: Response, fallback: string): Promise<str
   } catch {
     // non-JSON body
   }
-  return `${fallback} (HTTP ${res.status}).`;
+  return `${fallback.replace(/\.$/, "")}. Please try again in a moment.`;
 }
 
 export const STATUS_STYLES: Record<string, string> = {

@@ -288,7 +288,7 @@ export default function CandidateAssessmentBundlePage() {
       setTestResults(null);
       setExecutionConsole({
         stdout: "",
-        stderr: err instanceof Error ? err.message : "Failed to execute code in sandbox.",
+        stderr: err instanceof Error && !(err instanceof TypeError) ? err.message : "We couldn't run your code. Please try again.",
         version: "Sandbox Error",
         durationMs: 0,
         success: false,

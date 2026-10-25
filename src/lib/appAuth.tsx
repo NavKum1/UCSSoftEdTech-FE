@@ -227,9 +227,15 @@ export function useApi() {
         const message =
           (body && typeof body === "object" && ("message" in body || "error" in body || "title" in body)
             ? String((body as Record<string, unknown>).message ?? (body as Record<string, unknown>).error ?? (body as Record<string, unknown>).title)
-            : typeof body === "string" && body
+            : typeof body === "string" && body && body.length <= 300 && !body.trimStart().startsWith("<")
               ? body
-              : `Request failed (${res.status})`);
+              : res.status === 401
+                ? "Your session has ended. Sign in again to continue."
+                : res.status === 403
+                  ? "You don't have access to this. Ask your administrator if you need it."
+                  : res.status === 404
+                    ? "We couldn't find what you were looking for. It may have been removed."
+                    : "Something went wrong on our side. Please try again in a moment.");
         throw new ApiError(res.status, message, body);
       }
       return body as T;

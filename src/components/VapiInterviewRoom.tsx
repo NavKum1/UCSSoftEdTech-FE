@@ -402,11 +402,11 @@ export default function VapiInterviewRoom({
           return;
         }
         if (res.status === 401) throw new Error("Please sign in to start a defense.");
-        throw new Error(err?.error || err?.message || `Server returned ${res.status}`);
+        throw new Error(err?.error || err?.message || "The defense couldn't start. Please try again in a moment.");
       }
 
       const data = await readJson<StartResponse>(res);
-      if (!data?.sessionId || !data.assistant) throw new Error("The server did not return a session.");
+      if (!data?.sessionId || !data.assistant) throw new Error("The session couldn't be set up. Please try again.");
 
       const vapi = vapiRef.current;
       if (!vapi) throw new Error("Voice client is unavailable in this browser.");
@@ -436,7 +436,7 @@ export default function VapiInterviewRoom({
     } catch (err) {
       sessionRef.current = null;
       setCallStatus("idle");
-      setStatusMessage(`Could not start the defense: ${err instanceof Error ? err.message : "unknown error"}`);
+      setStatusMessage(err instanceof Error && err.message ? `Could not start the defense. ${err.message}` : "Could not start the defense. Please try again in a moment.");
     } finally {
       setIsLoading(false);
     }

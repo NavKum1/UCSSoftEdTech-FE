@@ -288,10 +288,10 @@ export default function RecruiterDashboardPage() {
           fetchCandidates();
         }, 2000);
       } else {
-        setCreateStatus("Failed to create challenge.");
+        setCreateStatus("We couldn't create the challenge. Please try again.");
       }
     } catch (e) {
-      setCreateStatus("Network error occurred.");
+      setCreateStatus("We couldn't reach the server. Please check your connection and try again.");
     }
   };
 
@@ -319,10 +319,10 @@ export default function RecruiterDashboardPage() {
         setBundleStatus(null);
         fetchBundles();
       } else {
-        setBundleStatus("Failed to generate assessment bundle.");
+        setBundleStatus("We couldn't create the assessment bundle. Please try again.");
       }
     } catch (e) {
-      setBundleStatus("Network error occurred.");
+      setBundleStatus("We couldn't reach the server. Please check your connection and try again.");
     }
   };
 
@@ -339,7 +339,7 @@ export default function RecruiterDashboardPage() {
         fetchBundles();
       }
     } catch {
-      setLinkMessage("Network error occurred.");
+      setLinkMessage("We couldn't reach the server. Please check your connection and try again.");
     } finally {
       setLinkBusyId(null);
     }
@@ -363,7 +363,7 @@ export default function RecruiterDashboardPage() {
         setLinkMessage(body.error || "Could not create a new link.");
       }
     } catch {
-      setLinkMessage("Network error occurred.");
+      setLinkMessage("We couldn't reach the server. Please check your connection and try again.");
     } finally {
       setLinkBusyId(null);
     }

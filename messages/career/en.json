@@ -382,7 +382,7 @@
       "skippedLine": "Line {line}: {reason}",
       "reportLink": "Workforce localisation reports",
       "tablesHeading": "Citizen graduate employment",
-      "exportFailedStatus": "Export failed ({status})"
+      "exportFailedStatus": "The export didn't work. Please try again."
     },
     "billing": {
       "title": "Billing",
@@ -1636,7 +1636,7 @@
       "returnedToTheStudentTheyve": "Returned to the student. They've been notified.",
       "commentDeleted": "Comment deleted.",
       "annotatedFileUploaded": "Annotated file uploaded.",
-      "exportFailedStatus": "Export failed ({status}).",
+      "exportFailedStatus": "The export didn't work. Please try again.",
       "submitted": "Submitted",
       "openNowUnassigned": "Open now (unassigned)",
       "overdueNow": "Overdue now",
@@ -2207,7 +2207,7 @@
         "Withdrawn": "Withdrawn",
         "Cancelled": "Cancelled"
       },
-      "couldntLoadAgenda": "Couldn't load the agenda ({status})"
+      "couldntLoadAgenda": "We couldn't load the agenda. Please try again."
     },
     "careerCenterInterviewsReports": {
       "interviewReports": "Interview reports",
@@ -2345,7 +2345,7 @@
       "careerCenterApprovesEachMatch": "Career center approves each match after the mentor accepts (contact details are exchanged only after approval)",
       "onlyCareerAdminsCanChange": "Only career admins can change settings.",
       "saveSettings": "Save settings",
-      "exportFailedStatus": "Export failed ({status})",
+      "exportFailedStatus": "The export didn't work. Please try again.",
       "downloadStarted": "Download started.",
       "nameActionDone": "{name}: {action} done.",
       "invitedName": "Invited {name}.",
@@ -2502,7 +2502,7 @@
       "correlationNotCausationSmallSamples": "Correlation, not causation; small samples.",
       "whenAnEmployerUsesHire": "When an employer uses Hire, it reports offers and hires for applications we sent it. Linking our application id to the student lets those reports become employer-verified placements.",
       "linkApplication": "Link application",
-      "exportFailedStatus": "Export failed ({status})",
+      "exportFailedStatus": "The export didn't work. Please try again.",
       "chooseAStudentFirst": "Choose a student first.",
       "statusRecordedStatus": "Status recorded: {status}.",
       "titleAtEmployerNameEmploymentType": "{title} at {employerName} · {employmentType}",
@@ -3000,9 +3000,9 @@
       "savePreset": "Save preset",
       "fromToToTimeZone": "{from} to {to} ({timeZone})",
       "save": "Save",
-      "exportFailedStatus": "Export failed ({status})",
+      "exportFailedStatus": "The export didn't work. Please try again.",
       "downloadStarted": "Download started.",
-      "couldntBuildTheSummaryStatus": "Couldn't build the summary ({status})",
+      "couldntBuildTheSummaryStatus": "We couldn't build the summary. Please try again.",
       "allowPopUpsToOpen": "Allow pop-ups to open the printable summary.",
       "presetDeleted": "Preset deleted.",
       "presetSaved": "Preset saved.",
@@ -3568,7 +3568,7 @@
       "defended": "Defended",
       "didTheStudentDoThis": "Did the student do this work?",
       "sendMyAnswer": "Send my answer",
-      "somethingWentWrongStatus": "Something went wrong ({status}).",
+      "somethingWentWrongStatus": "Something went wrong. Please try again.",
       "answerYes": "Yes, this is their work",
       "answerPartly": "Partly: some of it is overstated or was done by others",
       "answerNo": "No, this is not their work"
@@ -3638,7 +3638,7 @@
       "hoursApproved": "Hours approved.",
       "returnedToTheStudent": "Returned to the student.",
       "evaluationSubmittedThankYouYou": "Evaluation submitted. Thank you! You can close this page.",
-      "somethingWentWrongStatus": "Something went wrong ({status}).",
+      "somethingWentWrongStatus": "Something went wrong. Please try again.",
       "titleAgreement": "Learning agreement for {name}",
       "titleHours": "Hours for {name}",
       "titleMidterm": "Midterm evaluation for {name}",
@@ -3667,7 +3667,7 @@
       "schoolEmailOrStudentNumber": "School email or student number",
       "whatWouldYouLikeHelp": "What would you like help with? (optional)",
       "poweredByBrandName": "Powered by {brandName}",
-      "somethingWentWrongStatus": "Something went wrong ({status}).",
+      "somethingWentWrongStatus": "Something went wrong. Please try again.",
       "documentTitle": "Check in · {school}"
     },
     "careerUnsubscribe": {
@@ -3688,7 +3688,7 @@
       "unsubscribedFromAllCampaignEmails": "Unsubscribed from all campaign emails.",
       "subscribedToCategoryEmailsAgain": "Subscribed to \"{category}\" emails again.",
       "campaignEmailsTurnedBackOn": "Campaign emails turned back on.",
-      "somethingWentWrongStatus": "Something went wrong ({status})."
+      "somethingWentWrongStatus": "Something went wrong. Please try again."
     },
     "verifyInternship": {
       "siteSupervisorConfirmedOnSupervisorConfi": "Site supervisor confirmed on {supervisorConfirmedAt}",
@@ -3706,7 +3706,7 @@
       "howItWasVerified": "How it was verified",
       "valid": "Valid",
       "issuedAtToValidUntil": "{issuedAt} to {validUntil}",
-      "somethingWentWrongStatus": "Something went wrong ({status}).",
+      "somethingWentWrongStatus": "Something went wrong. Please try again.",
       "meta": {
         "title": "Verify an internship",
         "description": "Check a verified internship credential and its live status."
@@ -3785,7 +3785,7 @@
       "withNameModeEmail": "With {name} · {mode} · {email}"
     },
     "appointmentsShared": {
-      "downloadFailedStatus": "Download failed ({status})",
+      "downloadFailedStatus": "The download didn't work. Please try again.",
       "previousTwoWeeks": "Previous two weeks",
       "nextTwoWeeks": "Next two weeks",
       "inPersonLocation": "In person: {location}",
@@ -4102,7 +4102,7 @@
         "NotApplicable": "Not applicable"
       },
       "fileNotAvailable": "That file isn't available to you.",
-      "downloadFailedStatus": "Download failed ({status}).",
+      "downloadFailedStatus": "The download didn't work. Please try again.",
       "sizeBytes": "{n} B",
       "sizeKb": "{n} KB",
       "sizeMb": "{n} MB"
@@ -4581,8 +4581,8 @@
       "eachEvidenceMeasureMappedTo": "Each evidence measure mapped to an outcome, with students assessed, share at or above target and attainment level.",
       "direct": "Direct",
       "indirect": "Indirect",
-      "exportFailedStatus": "Export failed ({status})",
-      "couldntBuildTheReportStatus": "Couldn't build the report ({status})",
+      "exportFailedStatus": "The export didn't work. Please try again.",
+      "couldntBuildTheReportStatus": "We couldn't build the report. Please try again.",
       "allowPopUpsToOpen": "Allow pop-ups to open the printable report.",
       "colOutcome": "Outcome",
       "colMeasure": "Measure",
@@ -4985,7 +4985,7 @@
       "conversationClosed": "Conversation closed.",
       "thanksTheCareerCenterWill": "Thanks. The career center will review this report.",
       "fileNotAvailable": "That file isn't available to you.",
-      "downloadFailedStatus": "Download failed ({status}).",
+      "downloadFailedStatus": "The download didn't work. Please try again.",
       "reportReason": {
         "Harassment": "Harassment",
         "Spam": "Spam",
@@ -5204,11 +5204,11 @@
         "check": "Check",
         "notEligible": "Not eligible"
       },
-      "exportFailedStatus": "Export failed ({status})",
+      "exportFailedStatus": "The export didn't work. Please try again.",
       "downloadStarted": "Download started."
     },
     "workforceShared": {
-      "exportFailed": "Export failed ({status})",
+      "exportFailed": "The export didn't work. Please try again.",
       "verified": "Verified",
       "unconfirmed": "Unconfirmed",
       "source": "Source",
@@ -5743,7 +5743,7 @@
       "reviewedOn": "Reviewed on {date}."
     },
     "sponsorSignoff": {
-      "failed": "Something went wrong ({status}). Try again.",
+      "failed": "Something went wrong. Please try again.",
       "pageTitle": "Apprenticeship sign-off",
       "title": {
         "ProgressReview": "Progress review for {name}",

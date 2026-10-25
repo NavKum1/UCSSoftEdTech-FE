@@ -71,7 +71,7 @@ export async function startBillingRedirect(
     const data = (await res.json().catch(() => null)) as { checkoutUrl?: string; portalUrl?: string; error?: string } | null;
     if (res.status === 401) return "Please sign in first.";
     const url = data?.checkoutUrl || data?.portalUrl;
-    if (!res.ok || !url) return data?.error || `Billing is unavailable right now (HTTP ${res.status}).`;
+    if (!res.ok || !url) return data?.error || "Billing is unavailable right now. Please try again in a moment.";
     window.location.href = url;
     return null;
   } catch {

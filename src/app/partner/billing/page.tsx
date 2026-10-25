@@ -154,7 +154,7 @@ export default function InstituteBillingPage() {
               <p className="text-xs text-muted-foreground">Current plan</p>
               <h2 className="text-xl font-semibold">{planLabel(sub.planTier)}</h2>
               <p className="text-sm text-muted-foreground">
-                {usd(sub.pricePerMonthCents ?? 0)} a month, billed {sub.billingCycle?.toLowerCase()} · {sub.status}
+                {usd(sub.pricePerMonthCents ?? 0)} a month, billed {sub.billingCycle?.toLowerCase()} · {(sub.status ?? "").replace(/([a-z])([A-Z])/g, "$1 $2")}
               </p>
             </div>
             {sub.currentPeriodEnd && <p className="text-sm text-muted-foreground">Current period ends {new Date(sub.currentPeriodEnd).toLocaleDateString()}</p>}
@@ -242,7 +242,7 @@ export default function InstituteBillingPage() {
                   <td className="p-3 font-mono text-xs">{st.invoiceNumber}</td>
                   <td className="p-3">{st.billingPeriod}</td>
                   <td className="p-3 text-right tabular-nums">{usd(st.totalCents)}</td>
-                  <td className="p-3">{st.status === "Draft" ? "Draft, unpaid" : st.status}</td>
+                  <td className="p-3">{st.status === "Draft" ? "Draft, unpaid" : st.status.replace(/([a-z])([A-Z])/g, "$1 $2")}</td>
                   <td className="p-3 text-right">
                     <button type="button" onClick={() => void openStatement(st.invoiceId)} className="text-sm font-semibold text-indigo-700 hover:underline dark:text-indigo-300">
                       View

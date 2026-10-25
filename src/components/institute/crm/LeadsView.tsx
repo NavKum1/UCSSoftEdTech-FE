@@ -5,6 +5,7 @@
  * a table or a board by stage (drag a card, or use its stage menu), selection with bulk assign / move / tag, and CSV export.
  */
 
+import Link from "next/link";
 import React, { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import { useLatestRef } from "@/lib/legacyApi";
 import { AlertTriangle, Ban, Bookmark, Download, KanbanSquare, List, Search, SlidersHorizontal, X } from "lucide-react";
@@ -650,9 +651,9 @@ function Empty() {
       <p className="mx-auto mt-1 max-w-md text-sm text-muted-foreground">
         Leads arrive when people ask about your courses on Edulexa, request career guidance from you, or fill in the guidance form on your website.
       </p>
-      <a href="/institute/guidance" className="mt-3 inline-block text-sm text-cyan-700 hover:underline dark:text-cyan-400">
+      <Link href="/institute/guidance" className="mt-3 inline-block text-sm text-cyan-700 hover:underline dark:text-cyan-400">
         Get the form for your website
-      </a>
+      </Link>
     </div>
   );
 }

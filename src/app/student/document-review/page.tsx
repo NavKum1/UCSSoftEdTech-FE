@@ -150,7 +150,7 @@ function SubmitForm({
       const d = await api<ReviewDetail>(resubmit ? `/api/career/doc-review/requests/${requestId}/versions` : "/api/career/doc-review/requests", { method: "POST", body: fd });
       onDone(d);
     } catch (err) {
-      setError((err as Error).message);
+      setError(err instanceof TypeError ? "We couldn't reach the server. Please check your connection and try again." : (err as Error).message);
     } finally {
       setBusy(false);
     }
@@ -240,7 +240,7 @@ function ThreadDetail({ id, options, onBack }: { id: string; options: ReviewOpti
       setMessage(ok);
       detail.reload();
     } catch (e) {
-      setError((e as Error).message);
+      setError(e instanceof TypeError ? "We couldn't reach the server. Please check your connection and try again." : (e as Error).message);
     } finally {
       setBusy(null);
     }

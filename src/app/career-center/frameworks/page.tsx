@@ -75,7 +75,7 @@ function MappingEditor({ framework, sources, canEdit, onSaved }: { framework: Fr
       setSuccess(tr("mappingsSaved"));
       onSaved();
     } catch (e) {
-      setError((e as Error).message);
+      setError(e instanceof TypeError ? "We couldn't reach the server. Please check your connection and try again." : (e as Error).message);
     } finally {
       setBusy(false);
     }
@@ -223,7 +223,7 @@ function FrameworksSetup({ cat, onChanged }: { cat: Catalog; onChanged: () => vo
       setSuccess(done);
       onChanged();
     } catch (e) {
-      setError((e as Error).message);
+      setError(e instanceof TypeError ? "We couldn't reach the server. Please check your connection and try again." : (e as Error).message);
     } finally {
       setBusy(null);
     }

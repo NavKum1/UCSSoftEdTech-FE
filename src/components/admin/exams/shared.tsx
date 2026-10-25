@@ -37,7 +37,7 @@ export function useExamAdminApi() {
       }
       if (!res.ok) {
         const msg = (body && typeof body === "object" && "error" in body && typeof (body as { error: unknown }).error === "string" ? (body as { error: string }).error : null)
-          ?? (res.status === 404 ? "Not found, or you don't manage this exam." : `The request failed (${res.status}).`);
+          ?? (res.status === 404 ? "We couldn't find this exam, or you don't manage it." : "Something went wrong. Please try again in a moment.");
         throw new ExamApiError(msg, res.status, body);
       }
       return body as T;

@@ -45,7 +45,7 @@ export default function DefendInternshipPage() {
       if (success) setMsg(success);
       return next;
     } catch (e) {
-      setErr((e as Error).message);
+      setErr(e instanceof TypeError ? "We couldn't reach the server. Please check your connection and try again." : (e as Error).message);
       return null;
     }
   };
@@ -336,7 +336,7 @@ function VoiceDefense({ resume, complete, setErr }: { resume: () => Promise<Defe
       callRef.current = call?.id ?? null;
       if (!callRef.current) throw new Error(t("theCallDidntStartCheck"));
     } catch (e) {
-      setErr((e as Error).message);
+      setErr(e instanceof TypeError ? "We couldn't reach the server. Please check your connection and try again." : (e as Error).message);
       setPhase("idle");
     }
   };

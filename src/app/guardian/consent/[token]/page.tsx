@@ -55,7 +55,7 @@ export default function GuardianConsentPage() {
         setView(v);
         setChosen(Object.fromEntries(v.purposes.map((p) => [p.key, p.granted])));
       })
-      .catch((e) => setErr((e as Error).message));
+      .catch((e) => setErr(e instanceof TypeError ? "We couldn't reach the server. Please check your connection and try again." : (e as Error).message));
   }, [token, call]);
 
   const submit = async (e: React.FormEvent) => {

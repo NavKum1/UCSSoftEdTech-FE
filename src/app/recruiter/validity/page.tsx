@@ -60,7 +60,7 @@ interface Loaded<T> {
 async function fetchJson<T>(path: string, getToken: () => Promise<string | null>, what: string): Promise<T> {
   const res = await authenticatedFetch(path, {}, getToken);
   if (res.status === 401 || res.status === 403) throw new Error(`You need recruiter access to view the ${what}.`);
-  if (!res.ok) throw new Error(`Could not load the ${what} (HTTP ${res.status}).`);
+  if (!res.ok) throw new Error(`Could not load the ${what}. Please try again.`);
   return (await res.json()) as T;
 }
 
@@ -182,7 +182,7 @@ export default function ValidityPage() {
         getToken
       );
       if (!res.ok) {
-        let text = `Could not record the outcome (HTTP ${res.status}).`;
+        let text = `Could not record the outcome. Please try again.`;
         try {
           const body = await res.json();
           if (body?.error) text = body.error;
@@ -198,7 +198,7 @@ export default function ValidityPage() {
       setRetained("");
       setReportVersion((v) => v + 1);
     } catch {
-      setOutcomeMessage({ ok: false, text: "Network error while recording the outcome." });
+      setOutcomeMessage({ ok: false, text: "We couldn't reach the server while recording the outcome. Please check your connection and try again." });
     } finally {
       setSavingOutcome(false);
     }

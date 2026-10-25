@@ -91,12 +91,12 @@ export default function AudioReplayStudioPage() {
           setReplay(data);
           if (data.durationSeconds) setAudioDuration(data.durationSeconds);
         } else {
-          setFetchError(`Interview recording not found (HTTP ${res.status}). The requested session ID does not exist in the database.`);
+          setFetchError("We couldn't find this recording. It may have been removed, or the link may be wrong.");
           setReplay(null);
         }
       } catch (e) {
         console.error("Replay fetch error:", e);
-        setFetchError((e as Error).message || "Failed to connect to audio replay service.");
+        setFetchError(e instanceof TypeError ? "We couldn't reach the server. Please check your connection and try again." : (e as Error).message || "We couldn't load this recording. Please try again.");
         setReplay(null);
       } finally {
         setLoading(false);

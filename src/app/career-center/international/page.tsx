@@ -202,7 +202,7 @@ function OptStudents() {
     try {
       setDetail(await api<StudentDetail>(`/api/career/international/staff/students/${id}`));
     } catch (e) {
-      setErr((e as Error).message);
+      setErr(e instanceof TypeError ? "We couldn't reach the server. Please check your connection and try again." : (e as Error).message);
     } finally {
       setOpening(null);
     }
@@ -332,7 +332,7 @@ function EmployerLinks() {
       setPicking(null);
       setMatches(null);
     } catch (e) {
-      setErr((e as Error).message);
+      setErr(e instanceof TypeError ? "We couldn't reach the server. Please check your connection and try again." : (e as Error).message);
     } finally {
       setBusy(null);
     }

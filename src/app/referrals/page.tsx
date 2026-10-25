@@ -99,18 +99,18 @@ export default function ReferralsPage() {
         );
         if (!res.ok) {
           const err = (await res.json().catch(() => null)) as { error?: string } | null;
-          throw new Error(err?.error || `HTTP ${res.status}`);
+          throw new Error(err?.error || "We couldn't share your details. Please try again.");
         }
         setNotice(`Your details were shared with ${confirm.rec.instituteName}. You can withdraw at any time below.`);
       } else {
         const res = await authenticatedFetch(`/api/referrals/${confirm.referral.referralId}/withdraw`, { method: "POST" }, getToken);
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        if (!res.ok) throw new Error("We couldn't withdraw your referral. Please try again.");
         setNotice(`Withdrawn. ${confirm.referral.instituteName} has been asked to stop contacting you and delete your data.`);
       }
       setConfirm(null);
       await load();
     } catch (e) {
-      setError(e instanceof Error ? `Something went wrong: ${e.message}` : "Something went wrong.");
+      setError(e instanceof TypeError ? "We couldn't reach the server. Please check your connection and try again." : e instanceof Error ? e.message : "Something went wrong. Please try again.");
       setConfirm(null);
     } finally {
       setWorking(false);
@@ -261,7 +261,7 @@ export default function ReferralsPage() {
                         <p className="text-sm font-semibold text-foreground">{r.courseName}</p>
                         <p className="text-xs text-muted-foreground">
                           {r.instituteName} · shared {new Date(r.candidateConsentedAt ?? r.createdAt).toLocaleDateString()} · status:{" "}
-                          <span className="font-medium text-foreground">{r.status}</span>
+                          <span className="font-medium text-foreground">{r.status.replace(/([a-z])([A-Z])/g, "$1 $2")}</span>
                         </p>
                       </div>
                       {r.status !== "Withdrawn" && (

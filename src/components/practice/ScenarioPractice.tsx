@@ -114,7 +114,7 @@ export default function ScenarioPractice({ track, title, intro }: { track: strin
     try {
       const res = await apiFetch(path, { method: "POST", body: body === undefined ? undefined : JSON.stringify(body) });
       const data = await res.json();
-      if (!res.ok) throw new Error(data?.error);
+      if (!res.ok) throw new Error(data?.error || "That didn't go through. Please try again.");
       setAttempt(data as Attempt);
       if ((data as Attempt).result) await loadHistory();
     } catch (e) {

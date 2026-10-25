@@ -44,7 +44,7 @@ function DecisionForm({ row, onDone, getToken }: { row: ReviewAccommodation; onD
       }
       onDone();
     } catch {
-      setError("Network error while recording the decision.");
+      setError("We couldn't reach the server while recording the decision. Please check your connection and try again.");
     } finally {
       setBusy(null);
     }
@@ -166,7 +166,7 @@ export default function RecruiterAccommodationsPage() {
           {rows.map((r) => (
             <li key={r.id} className="glass-panel rounded-2xl p-4 border border-border space-y-2">
               <div className="flex flex-wrap items-center gap-2 text-sm">
-                <span className={`inline-flex px-2 py-0.5 rounded-full text-[11px] font-semibold border ${STATUS_STYLES[r.status] ?? ""}`}>{r.status}</span>
+                <span className={`inline-flex px-2 py-0.5 rounded-full text-[11px] font-semibold border ${STATUS_STYLES[r.status] ?? ""}`}>{r.status.replace(/([a-z])([A-Z])/g, "$1 $2")}</span>
                 <span className="font-semibold text-foreground">{r.candidateName}</span>
                 <span className="text-xs text-muted-foreground">
                   {accommodationLabel(r.type)} · {r.sprintTitle ?? r.scope} · requested {fmtDate(r.createdAt)}
@@ -177,7 +177,7 @@ export default function RecruiterAccommodationsPage() {
                 <DecisionForm row={r} getToken={getToken} onDone={() => setReloadKey((k) => k + 1)} />
               ) : (
                 <p className="text-xs text-muted-foreground">
-                  {r.status} by {r.decidedBy ?? "reviewer"} on {fmtDate(r.decidedAt)}
+                  {r.status.replace(/([a-z])([A-Z])/g, "$1 $2")} by {r.decidedBy ?? "reviewer"} on {fmtDate(r.decidedAt)}
                   {r.decisionNote ? ` · Note: ${r.decisionNote}` : ""}
                 </p>
               )}

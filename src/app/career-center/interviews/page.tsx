@@ -148,7 +148,7 @@ function Manage({ id, onChanged }: { id: string; onChanged: (m: string) => void 
       onChanged(msg);
       d.reload();
     } catch (e) {
-      setErr((e as Error).message);
+      setErr(e instanceof TypeError ? "We couldn't reach the server. Please check your connection and try again." : (e as Error).message);
     } finally {
       setBusy(null);
     }
@@ -287,7 +287,7 @@ function Rooms({ onMessage }: { onMessage: (m: string) => void }) {
       onMessage(m);
       rooms.reload();
     } catch (e) {
-      setErr((e as Error).message);
+      setErr(e instanceof TypeError ? "We couldn't reach the server. Please check your connection and try again." : (e as Error).message);
     } finally {
       setBusy(false);
     }
@@ -387,7 +387,7 @@ function Day() {
       await api(path, body ? { json: body } : { method: "POST" });
       day.reload();
     } catch (e) {
-      setErr((e as Error).message);
+      setErr(e instanceof TypeError ? "We couldn't reach the server. Please check your connection and try again." : (e as Error).message);
     }
   };
 
@@ -396,7 +396,7 @@ function Day() {
     try {
       await openHtml(await api<Response>(`/api/career/ocr/staff/day/print?date=${date}`, { raw: true }), (status) => tr("couldntLoadAgenda", { status }));
     } catch (e) {
-      setErr((e as Error).message);
+      setErr(e instanceof TypeError ? "We couldn't reach the server. Please check your connection and try again." : (e as Error).message);
     }
   };
 
@@ -470,7 +470,7 @@ function NoShows({ onMessage }: { onMessage: (m: string) => void }) {
                     onMessage(tr("clearedForName", { name: String(s.name) }));
                     list.reload();
                   } catch (e) {
-                    setErr((e as Error).message);
+                    setErr(e instanceof TypeError ? "We couldn't reach the server. Please check your connection and try again." : (e as Error).message);
                   }
                 }}
               >

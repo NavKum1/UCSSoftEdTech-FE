@@ -60,12 +60,12 @@ export default function ProctoringVideoReviewPage({ params }: { params: Promise<
             setSelectedMarker(data.markers[0]);
           }
         } else {
-          setFetchError(`Recording not found in forensic vault (HTTP ${res.status}).`);
+          setFetchError("We couldn't find this recording. It may have been removed.");
           setPlayerData(null);
         }
       } catch (err) {
         console.error('Failed to load video player payload', err);
-        setFetchError((err as Error).message || 'Failed to connect to video recording service.');
+        setFetchError("We couldn't load this recording. Please check your connection and try again.");
         setPlayerData(null);
       } finally {
         setLoading(false);

@@ -44,10 +44,11 @@ export default function EnterpriseSsoLoginPage() {
           setErrorMsg(`Domain '@${data.domain}' is not enrolled in Enterprise SSO yet. Please use standard email sign-in or contact your IT administrator.`);
         }
       } else {
-        setErrorMsg("Failed to connect to identity discovery service.");
+        setErrorMsg("We couldn't check your organization's sign-in settings. Please try again in a moment.");
       }
     } catch (err: unknown) {
-      setErrorMsg("Network error connecting to API: " + (err instanceof Error ? err.message : String(err)));
+      void err;
+      setErrorMsg("We couldn't reach the server. Please check your connection and try again.");
     } finally {
       setIsDiscovering(false);
     }

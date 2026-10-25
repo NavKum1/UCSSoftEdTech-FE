@@ -115,7 +115,7 @@ export default function SisSettingsPage() {
     try {
       await fn();
     } catch (e) {
-      setErr((e as Error).message);
+      setErr(e instanceof TypeError ? "We couldn't reach the server. Please check your connection and try again." : (e as Error).message);
     } finally {
       setBusy(null);
     }
@@ -340,7 +340,7 @@ export default function SisSettingsPage() {
                     <td className="py-2 pe-3">{formatDate(r.startedAt, true)}<div className="text-xs text-muted-foreground">{r.trigger}</div></td>
                     <td className="py-2 pe-3">{KIND_LABELS[r.kind] ?? r.kind}</td>
                     <td className="py-2 pe-3 text-xs">{r.dryRun ? t("dryRun") : r.fullSync ? (r.deactivateMissing ? t("fullSuspendMissing") : t("full")) : t("changesOnly")}</td>
-                    <td className="py-2 pe-3"><Badge tone={r.status === "Succeeded" ? "good" : r.status === "Failed" ? "bad" : "warn"}>{r.status}</Badge></td>
+                    <td className="py-2 pe-3"><Badge tone={r.status === "Succeeded" ? "good" : r.status === "Failed" ? "bad" : "warn"}>{String(r.status ?? "").replace(/([a-z])([A-Z])/g, (_m, a: string, b: string) => `${a} ${b.toLowerCase()}`)}</Badge></td>
                     <td className="py-2 text-xs">
                       {r.status === "Failed" ? r.message : t("createdAddedUpdatedUpdatedReactivated", { created: r.counts.created ?? 0, updated: r.counts.updated ?? 0, reactivated: r.counts.reactivated ?? 0, deactivated: r.counts.deactivated ?? 0, skipped: r.counts.skipped ?? 0 })}
                     </td>

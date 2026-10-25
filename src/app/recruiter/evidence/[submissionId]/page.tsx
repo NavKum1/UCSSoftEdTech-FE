@@ -253,7 +253,7 @@ export default function EvidencePackPage() {
       const res = await authenticatedFetch(`/api/evidence/${submissionId}`, {}, getToken);
       if (res.status === 404) throw new Error("This submission was not found.");
       if (res.status === 401 || res.status === 403) throw new Error("You need recruiter access to view evidence packs.");
-      if (!res.ok) throw new Error(`Could not load the evidence pack (HTTP ${res.status}).`);
+      if (!res.ok) throw new Error(`Could not load the evidence pack. Please try again.`);
       return (await res.json()) as EvidencePack;
     })()
       .then((data) => {
@@ -301,7 +301,7 @@ export default function EvidencePackPage() {
         getToken
       );
       if (!res.ok) {
-        let message = `Could not record the decision (HTTP ${res.status}).`;
+        let message = `Could not record the decision. Please try again.`;
         try {
           const body = await res.json();
           if (body?.error) message = body.error;
@@ -317,7 +317,7 @@ export default function EvidencePackPage() {
       setRationale("");
       setReloadKey((k) => k + 1);
     } catch {
-      setSubmitError("Network error while recording the decision.");
+      setSubmitError("We couldn't reach the server while recording the decision. Please check your connection and try again.");
     } finally {
       setSubmitting(false);
     }

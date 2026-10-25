@@ -75,7 +75,7 @@ export default function PrivacySettingsPage() {
       a.remove();
       setTimeout(() => URL.revokeObjectURL(url), 1000);
     } catch {
-      setExportError("Network error while preparing your export.");
+      setExportError("We couldn't reach the server while preparing your export. Please check your connection and try again.");
     } finally {
       setExporting(false);
     }
@@ -95,7 +95,7 @@ export default function PrivacySettingsPage() {
       setResult((await res.json()) as EraseResult);
       setConfirm("");
     } catch {
-      setDeleteError("Network error while deleting your data. The deletion may or may not have completed; try again (it is safe to repeat).");
+      setDeleteError("We couldn't reach the server while deleting your data. The deletion may or may not have completed; try again (it is safe to repeat).");
     } finally {
       setDeleting(false);
     }

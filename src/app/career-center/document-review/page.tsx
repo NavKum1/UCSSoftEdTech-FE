@@ -340,7 +340,7 @@ function Workspace({ id, isAdmin, onBack }: { id: string; isAdmin: boolean; onBa
       setMessage(ok);
       after?.();
     } catch (e) {
-      setError((e as Error).message);
+      setError(e instanceof TypeError ? "We couldn't reach the server. Please check your connection and try again." : (e as Error).message);
     } finally {
       setBusy(null);
     }
@@ -710,7 +710,7 @@ function MetricsPanel() {
       a.click();
       setTimeout(() => URL.revokeObjectURL(url), 1000);
     } catch (e) {
-      setError((e as Error).message);
+      setError(e instanceof TypeError ? "We couldn't reach the server. Please check your connection and try again." : (e as Error).message);
     }
   };
   const stat = (label: string, value: React.ReactNode) => (
@@ -830,7 +830,7 @@ function SettingsPanel({ isAdmin }: { isAdmin: boolean }) {
       setEdits({ rubrics: {} });
       setMessage(tr("settingsSaved"));
     } catch (err) {
-      setError((err as Error).message);
+      setError(err instanceof TypeError ? "We couldn't reach the server. Please check your connection and try again." : (err as Error).message);
     } finally {
       setBusy(false);
     }

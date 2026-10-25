@@ -214,7 +214,7 @@ export default function EdulexaConsolePage() {
       const res = await apiFetch(path, { method, body: body === undefined ? undefined : JSON.stringify(body) });
       const data = (await res.json().catch(() => null)) as (T & { error?: string }) | null;
       if (!res.ok) {
-        setNotice({ ok: false, text: data?.error ?? `The request failed (HTTP ${res.status}).` });
+        setNotice({ ok: false, text: data?.error ?? "That didn't work. Please try again." });
         return null;
       }
       setNotice({ ok: true, text: success });
@@ -497,7 +497,7 @@ function CallsTab({ settings, metrics, calls, consents, optOuts, audit, busy, se
                     <span className="block text-xs text-muted-foreground">{c.phone}</span>
                   </td>
                   <td className="py-2 pr-3">{c.topic}</td>
-                  <td className={`py-2 pr-3 font-medium ${STATUS[c.status] ?? ""}`}>{c.status}</td>
+                  <td className={`py-2 pr-3 font-medium ${STATUS[c.status] ?? ""}`}>{String(c.status ?? "").replace(/([a-z])([A-Z])/g, (_m, a: string, b: string) => `${a} ${b.toLowerCase()}`)}</td>
                   <td className="py-2 pr-3 text-xs">
                     {c.status === "Scheduled" && <span className="block">For {when(c.scheduledFor)}</span>}
                     {c.placedAt && <span className="block">Placed {when(c.placedAt)}</span>}
@@ -709,7 +709,7 @@ function PaymentsTab({ metrics, payouts, busy, send, apiFetch, setNotice }: {
 
   const exportNeft = async () => {
     const res = await apiFetch("/v1/payouts/export-neft", { method: "POST" });
-    if (!res.ok) return setNotice({ ok: false, text: `The export failed (HTTP ${res.status}).` });
+    if (!res.ok) return setNotice({ ok: false, text: "We couldn't create the export. Please try again." });
     const url = URL.createObjectURL(await res.blob());
     const a = document.createElement("a");
     a.href = url;
@@ -723,7 +723,7 @@ function PaymentsTab({ metrics, payouts, busy, send, apiFetch, setNotice }: {
     setStatement(null);
     const res = await apiFetch(`/v1/payouts/tds-statement?pan=${encodeURIComponent(pan.trim())}`);
     if (res.ok) setStatement((await res.json()) as TdsStatement);
-    else setNotice({ ok: false, text: res.status === 404 ? "No recorded payments for that PAN." : `The lookup failed (HTTP ${res.status}).` });
+    else setNotice({ ok: false, text: res.status === 404 ? "No recorded payments for that PAN." : "We couldn't look that up. Please try again." });
   };
 
   return (

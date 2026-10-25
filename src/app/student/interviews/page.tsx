@@ -89,7 +89,7 @@ function MyInterviews({ onMessage }: { onMessage: (m: string) => void }) {
       onMessage(tr("cancelled"));
       mine.reload();
     } catch (e) {
-      setErr((e as Error).message);
+      setErr(e instanceof TypeError ? "We couldn't reach the server. Please check your connection and try again." : (e as Error).message);
     } finally {
       setBusy(null);
     }
@@ -164,7 +164,7 @@ function FindInterviews({ onDone }: { onDone: (m: string) => void }) {
       await api(`/api/career/ocr/student/schedules/${id}/decline`, { method: "POST" });
       list.reload();
     } catch (e) {
-      setErr((e as Error).message);
+      setErr(e instanceof TypeError ? "We couldn't reach the server. Please check your connection and try again." : (e as Error).message);
     }
   };
 
@@ -245,7 +245,7 @@ function SignupForm({ schedule, timeZone, onDone }: { schedule: Listed; timeZone
       resumes.reload();
       setResumeId(r.id);
     } catch (e) {
-      setErr((e as Error).message);
+      setErr(e instanceof TypeError ? "We couldn't reach the server. Please check your connection and try again." : (e as Error).message);
     }
   };
 
@@ -259,7 +259,7 @@ function SignupForm({ schedule, timeZone, onDone }: { schedule: Listed; timeZone
       });
       onDone(r.bookingId ? tr("youreBookedWithEmployerName", { employerName: String(schedule.employerName) }) : tr("youreOnTheAlternateList2", { employerName: String(schedule.employerName) }));
     } catch (e2) {
-      setErr((e2 as Error).message);
+      setErr(e2 instanceof TypeError ? "We couldn't reach the server. Please check your connection and try again." : (e2 as Error).message);
       detail.reload();
     } finally {
       setBusy(false);

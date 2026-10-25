@@ -95,7 +95,7 @@ export default function AdminSponsorDataPage() {
     try {
       await fn();
     } catch (e) {
-      setErr((e as Error).message);
+      setErr(e instanceof TypeError ? "We couldn't reach the server. Please check your connection and try again." : (e as Error).message);
     } finally {
       setBusy(null);
     }
@@ -291,7 +291,7 @@ export default function AdminSponsorDataPage() {
                       </span>
                     </td>
                     <td className="py-2 pr-3">
-                      <Badge tone={statusTone(i.status)}>{i.status}</Badge>
+                      <Badge tone={statusTone(i.status)}>{String(i.status ?? "").replace(/([a-z])([A-Z])/g, (_m, a: string, b: string) => `${a} ${b.toLowerCase()}`)}</Badge>
                     </td>
                     <td className="py-2 pr-3 tabular-nums text-xs">
                       {i.rowsRead.toLocaleString()} read

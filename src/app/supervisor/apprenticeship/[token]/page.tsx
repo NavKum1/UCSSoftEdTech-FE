@@ -107,7 +107,7 @@ export default function ApprenticeshipSponsorPage() {
       setDone(approve ? t("thanksApproved") : t("thanksDeclined"));
       setView(null);
     } catch (e) {
-      setError((e as Error).message);
+      setError(e instanceof TypeError ? "We couldn't reach the server. Please check your connection and try again." : (e as Error).message);
     } finally {
       setBusy(null);
     }

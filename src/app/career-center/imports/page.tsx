@@ -145,7 +145,7 @@ export default function ImportsPage() {
     try {
       await fn();
     } catch (e) {
-      setErr((e as Error).message);
+      setErr(e instanceof TypeError ? "We couldn't reach the server. Please check your connection and try again." : (e as Error).message);
     } finally {
       setBusy(null);
     }
@@ -297,7 +297,7 @@ export default function ImportsPage() {
       </Card>
 
       {view && (
-        <Card title={t("n2CheckTheColumnMapping", { fileName: view.batch.fileName })} className="mb-6" actions={<Badge tone={STATUS_TONE[view.batch.status] ?? "neutral"}>{view.batch.status}</Badge>}>
+        <Card title={t("n2CheckTheColumnMapping", { fileName: view.batch.fileName })} className="mb-6" actions={<Badge tone={STATUS_TONE[view.batch.status] ?? "neutral"}>{String(view.batch.status ?? "").replace(/([a-z])([A-Z])/g, (_m, a: string, b: string) => `${a} ${b.toLowerCase()}`)}</Badge>}>
           <p className="mb-3 rounded-md border border-amber-300 bg-amber-50 p-2 text-sm text-amber-900 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-200">
             {presets.data?.notice ?? view.batch.presetNotice}
           </p>
@@ -528,7 +528,7 @@ export default function ImportsPage() {
                     <td className="py-2 pe-3">{sourceLabel(b.source)}</td>
                     <td className="py-2 pe-3">{KIND_LABELS[b.entityKind] ?? b.entityKind}</td>
                     <td className="py-2 pe-3">
-                      <Badge tone={STATUS_TONE[b.status] ?? "neutral"}>{b.status}</Badge>
+                      <Badge tone={STATUS_TONE[b.status] ?? "neutral"}>{String(b.status ?? "").replace(/([a-z])([A-Z])/g, (_m, a: string, b: string) => `${a} ${b.toLowerCase()}`)}</Badge>
                       {b.undoneAt && <div className="text-xs text-muted-foreground">{t("undoneUndoneAt", { undoneAt: formatDate(b.undoneAt, true) })}</div>}
                     </td>
                     <td className="py-2 pe-3 text-xs">

@@ -68,7 +68,7 @@ export default function WrittenDefensePage() {
       setState((await res.json()) as WrittenDefenseState);
       setAnswer("");
     } catch {
-      setActionError("Network error while sending your answer. Your text is still here; try again.");
+      setActionError("We couldn't reach the server while sending your answer. Your text is still here; try again.");
     } finally {
       setBusy(null);
     }
@@ -85,7 +85,7 @@ export default function WrittenDefensePage() {
       }
       setReloadKey((k) => k + 1);
     } catch {
-      setActionError("Network error while finishing. Try again.");
+      setActionError("We couldn't reach the server while finishing. Please check your connection and try again.");
     } finally {
       setBusy(null);
     }

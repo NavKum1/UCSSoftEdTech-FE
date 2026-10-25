@@ -530,12 +530,12 @@ async function executeCode(
       getToken
     );
     const data = await res.json().catch(() => ({}));
-    if (!res.ok) return { output: `Run failed: ${data.error || res.statusText}`, status: res.status };
+    if (!res.ok) return { output: `Run failed: ${data.error || "the code runner couldn't run your code. Please try again."}`, status: res.status };
     const parts = [data.stdOut, data.stdErr].filter((p: unknown) => typeof p === "string" && p.trim().length > 0);
     const footer = `\n[exit code ${data.exitCode ?? "?"}${data.executionTimeMs != null ? `, ${data.executionTimeMs} ms` : ""}]`;
     return { output: (parts.join("\n") || "(no output)") + footer, status: res.status };
   } catch (err) {
-    return { output: `Couldn't reach the code runner: ${err instanceof Error ? err.message : String(err)}`, status: 0 };
+    return { output: (void err, "Couldn't reach the code runner. Please check your connection and try again."), status: 0 };
   }
 }
 
@@ -872,11 +872,12 @@ function GradedWorkspace({ sprintId }: { sprintId: string }) {
         setStatusMessage("This attempt was already submitted. Reload the page to see your latest attempt.");
         setPipelineState("editor");
       } else {
-        setStatusMessage("Submission failed: " + (data.error || data.message || res.statusText));
+        setStatusMessage(data.error || data.message || "We couldn't submit your solution. Please try again.");
         setPipelineState("editor");
       }
     } catch (err) {
-      setStatusMessage("Error connecting to server: " + (err instanceof Error ? err.message : String(err)));
+      void err;
+      setStatusMessage("We couldn't reach the server. Please check your connection and try again.");
       setPipelineState("editor");
     }
   };

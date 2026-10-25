@@ -49,7 +49,7 @@ export default function CareerCenterExperienceDetailPage() {
       else detail.setData(r as ExperienceDetail);
       setMsg(success);
     } catch (e) {
-      setErr((e as Error).message);
+      setErr(e instanceof TypeError ? "We couldn't reach the server. Please check your connection and try again." : (e as Error).message);
     }
   };
 
@@ -139,7 +139,7 @@ export default function CareerCenterExperienceDetailPage() {
                       <td>{formatDate(l.expiresAt)}</td>
                       <td>{l.lastUsedAt ? formatDate(l.lastUsedAt, true) : "—"}</td>
                       <td>
-                        <Badge tone={l.state === "Active" ? "good" : "neutral"}>{l.state}</Badge>
+                        <Badge tone={l.state === "Active" ? "good" : "neutral"}>{String(l.state ?? "").replace(/([a-z])([A-Z])/g, (_m, a: string, b: string) => `${a} ${b.toLowerCase()}`)}</Badge>
                       </td>
                     </tr>
                   ))}

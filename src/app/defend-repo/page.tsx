@@ -125,7 +125,7 @@ export default function DefendRepoPage() {
         getToken
       );
       const body = (await res.json().catch(() => null)) as (CreatedDefense & { error?: string }) | null;
-      if (!res.ok || !body?.id) throw new Error(body?.error || `HTTP ${res.status}`);
+      if (!res.ok || !body?.id) throw new Error(body?.error || "Something went wrong. Please try again.");
 
       setInstructions(body.instructions);
       setCurrent({
@@ -138,7 +138,7 @@ export default function DefendRepoPage() {
       setCopied(false);
       await refreshHistory();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Could not register the repository.");
+      setError(err instanceof Error && !(err instanceof TypeError) ? err.message : "Could not register the repository.");
     } finally {
       setCreating(false);
     }
@@ -152,11 +152,11 @@ export default function DefendRepoPage() {
       const res = await authenticatedFetch(`/api/repo-defense/${current.id}/verify`, { method: "POST" }, getToken);
       const body = (await res.json().catch(() => null)) as (RepoDefense & { error?: string }) | null;
       if (res.status === 429) throw new Error("Too many verification attempts. Please wait a minute and try again.");
-      if (!res.ok || !body) throw new Error(body?.error || `HTTP ${res.status}`);
+      if (!res.ok || !body) throw new Error(body?.error || "Something went wrong. Please try again.");
       setCurrent({ ...current, ...body, id: current.id });
       await refreshHistory();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Verification failed.");
+      setError(err instanceof Error && !(err instanceof TypeError) ? err.message : "We couldn't check your repository. Please try again.");
     } finally {
       setVerifying(false);
     }

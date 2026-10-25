@@ -47,7 +47,7 @@ export default function FreeHomePage() {
       setDone(message);
       reload();
     } catch (e) {
-      setActionError(e instanceof Error ? e.message : t("genericError"));
+      setActionError(e instanceof Error && !(e instanceof TypeError) ? e.message : t("genericError"));
     } finally {
       setBusy(null);
     }

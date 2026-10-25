@@ -153,7 +153,12 @@ export async function authenticatedFetch(
     }
   }
 
-  const send = () => fetch(relative ? `${getApiBaseUrl()}${endpoint}` : endpoint, { ...options, headers });
+  const send = () =>
+    fetch(relative ? `${getApiBaseUrl()}${endpoint}` : endpoint, { ...options, headers }).catch((error: unknown) => {
+      // Keep cancellations as they are; a network failure ("Failed to fetch") stays a TypeError but reads plainly on screen
+      if (error instanceof TypeError) throw new TypeError("We couldn't reach Edulexa. Check your internet connection and try again.");
+      throw error;
+    });
   const res = await send();
   // G8: the API refuses a school hosted elsewhere before doing anything, so one retry at the right region is safe.
   // A school keeps the same id in every region, so the X-Career-Institute header stays valid there.

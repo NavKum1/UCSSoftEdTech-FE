@@ -159,14 +159,14 @@ export default function OpenAIRealtimeInterviewRoom({
           return;
         }
         if (res.status === 401) throw new Error("Please sign in to start a practice session.");
-        throw new Error(err?.error || `Server returned ${res.status}`);
+        throw new Error(err?.error || "The practice session couldn't start. Please try again in a moment.");
       }
 
       const data = await readJson<{ client_secret?: string }>(res);
-      if (!data?.client_secret) throw new Error("The server did not return a session token.");
+      if (!data?.client_secret) throw new Error("The session couldn't be set up. Please try again.");
       ephemeralToken = data.client_secret;
     } catch (error) {
-      setStatusMessage(`Error: ${error instanceof Error ? error.message : "could not start session"}`);
+      setStatusMessage(error instanceof Error && error.message ? error.message : "The practice session couldn't start. Please try again in a moment.");
       setIsLoading(false);
       return;
     }
@@ -238,13 +238,14 @@ export default function OpenAIRealtimeInterviewRoom({
 
       if (!sdpResponse.ok) {
         const errDetail = await sdpResponse.text().catch(() => "");
-        throw new Error(`Failed to connect to the realtime endpoint (${sdpResponse.status}): ${errDetail}`);
+        console.warn("Realtime connection failed", sdpResponse.status, errDetail);
+        throw new Error("connect");
       }
 
       await pc.setRemoteDescription({ type: "answer", sdp: await sdpResponse.text() });
-    } catch (error) {
+    } catch {
       releaseMedia();
-      setStatusMessage(`Connection error: ${error instanceof Error ? error.message : "unknown error"}`);
+      setStatusMessage("We couldn't connect the voice session. Check your internet connection and microphone, then try again.");
       setCallStatus("idle");
     } finally {
       setIsLoading(false);

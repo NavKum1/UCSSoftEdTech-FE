@@ -73,7 +73,7 @@ export default function KioskPage() {
       setLoadError(null);
       setSessionId((cur) => (data.sessions.some((s) => s.id === cur) ? cur : data.sessions[0]?.id ?? ""));
     } catch (e) {
-      setLoadError((e as { status?: number }).status === 404 ? tr("thisKioskLinkIsNo") : (e as Error).message);
+      setLoadError((e as { status?: number }).status === 404 ? tr("thisKioskLinkIsNo") : e instanceof TypeError ? "We couldn't reach the server. Please check your connection and try again." : (e as Error).message);
     }
   }, [token, tr, kioskFetch]);
 
@@ -115,7 +115,7 @@ export default function KioskPage() {
       setResult(r);
       void load();
     } catch (err) {
-      setError((err as Error).message);
+      setError(err instanceof TypeError ? "We couldn't reach the server. Please check your connection and try again." : (err as Error).message);
     } finally {
       setBusy(false);
     }

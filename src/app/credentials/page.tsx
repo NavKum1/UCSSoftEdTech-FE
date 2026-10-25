@@ -91,7 +91,7 @@ type Dialog =
 
 async function readError(res: Response): Promise<string> {
   const body = (await res.json().catch(() => null)) as { error?: string } | null;
-  return body?.error || `HTTP ${res.status}`;
+  return body?.error || "Something went wrong on our side. Please try again in a moment.";
 }
 
 async function fetchWallet(getToken: GetToken): Promise<WalletResponse | string> {
@@ -100,7 +100,7 @@ async function fetchWallet(getToken: GetToken): Promise<WalletResponse | string>
     if (!res.ok) return await readError(res);
     return (await res.json()) as WalletResponse;
   } catch {
-    return "We couldn't reach the server.";
+    return "We couldn't reach the server. Please check your connection and try again.";
   }
 }
 
@@ -108,7 +108,7 @@ async function fetchWallet(getToken: GetToken): Promise<WalletResponse | string>
 async function saveExport(res: Response): Promise<void> {
   if (!res.ok) {
     const body = (await res.json().catch(() => null)) as { message?: string; error?: string } | null;
-    throw new Error(body?.message || body?.error || `HTTP ${res.status}`);
+    throw new Error(body?.message || body?.error || "We couldn't prepare the download. Please try again.");
   }
   const disposition = res.headers.get("content-disposition") || "";
   const name = /filename*?=(?:UTF-8'')?"?([^";]+)"?/i.exec(disposition)?.[1] || "credential.json";
@@ -136,8 +136,8 @@ function ClrDialog({ getToken, onClose, onDone }: { getToken: GetToken; onClose:
 
   useEffect(() => {
     authenticatedFetch("/api/career/openbadges/mine", {}, getToken)
-      .then(async (res) => (res.ok ? setItems((await res.json()) as ExportableResponse) : setErr(`Could not load your items (HTTP ${res.status}).`)))
-      .catch(() => setErr("We couldn't reach the server."));
+      .then(async (res) => (res.ok ? setItems((await res.json()) as ExportableResponse) : setErr("We couldn't load your items. Please try again.")))
+      .catch(() => setErr("We couldn't reach the server. Please check your connection and try again."));
   }, [getToken]);
 
   const chosen = Object.keys(selected).filter((k) => selected[k]);
@@ -152,7 +152,7 @@ function ClrDialog({ getToken, onClose, onDone }: { getToken: GetToken; onClose:
       await saveExport(res);
       onDone();
     } catch (e) {
-      setErr(e instanceof Error ? e.message : "The download failed.");
+      setErr(e instanceof Error && !(e instanceof TypeError) ? e.message : "We couldn't download the file. Please try again.");
     } finally {
       setWorking(false);
     }
@@ -262,7 +262,7 @@ function ShareDialog({ credential, getToken, onClose, onCreated }: { credential:
       const body = (await res.json()) as { url: string; expiresAt: string };
       onCreated({ url: body.url, expiresAt: body.expiresAt });
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Could not create the link.");
+      setError(e instanceof Error && !(e instanceof TypeError) ? e.message : "Could not create the link.");
     } finally {
       setWorking(false);
     }
@@ -365,7 +365,7 @@ function InviteDialog({ credential, getToken, onClose, onUsed }: { credential: W
       const body = (await res.json()) as { url: string; expiresAt: string; employer: string };
       onUsed({ url: body.url, expiresAt: body.expiresAt, employer: body.employer });
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Could not use the credential.");
+      setError(e instanceof Error && !(e instanceof TypeError) ? e.message : "Could not use the credential.");
     } finally {
       setWorking(false);
     }
@@ -456,7 +456,7 @@ function RevokeDialog({ credential, getToken, onClose, onRevoked }: { credential
       if (!res.ok) throw new Error(await readError(res));
       onRevoked();
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Could not revoke the credential.");
+      setError(e instanceof Error && !(e instanceof TypeError) ? e.message : "Could not revoke the credential.");
     } finally {
       setWorking(false);
     }
@@ -514,7 +514,7 @@ function ShareLinksPanel({ credential, getToken, reloadKey }: { credential: Wall
           }
         },
         (e: unknown) => {
-          if (!cancelled) setError(e instanceof Error ? e.message : "Could not load share links.");
+          if (!cancelled) setError(e instanceof Error && !(e instanceof TypeError) ? e.message : "Could not load share links.");
         }
       );
     return () => {
@@ -666,7 +666,7 @@ function CredentialCard({
             {credential.status === "Revoked" ? `revoked ${formatDate(credential.revokedAt)}` : `valid until ${formatDate(credential.validUntil)}`}
           </p>
         </div>
-        <span className={`px-2.5 py-0.5 rounded-md text-[11px] font-bold uppercase tracking-wider border ${statusBadgeClass(credential.status)}`}>{credential.status}</span>
+        <span className={`px-2.5 py-0.5 rounded-md text-[11px] font-bold uppercase tracking-wider border ${statusBadgeClass(credential.status)}`}>{String(credential.status ?? "").replace(/([a-z])([A-Z])/g, (_m, a: string, b: string) => `${a} ${b.toLowerCase()}`)}</span>
       </div>
 
       <div className="flex flex-wrap gap-x-6 gap-y-1 text-sm">

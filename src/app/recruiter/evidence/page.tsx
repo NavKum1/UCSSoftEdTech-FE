@@ -58,7 +58,7 @@ export default function EvidenceQueuePage() {
     let active = true;
     (async () => {
       const res = await authenticatedFetch("/api/evidence/queue?take=200", {}, getToken);
-      if (!res.ok) throw new Error(res.status === 401 || res.status === 403 ? "You need recruiter access to view the review queue." : `Could not load the queue (HTTP ${res.status}).`);
+      if (!res.ok) throw new Error(res.status === 401 || res.status === 403 ? "You need recruiter access to view the review queue." : `Could not load the queue. Please try again.`);
       return (await res.json()) as QueueRow[];
     })()
       .then((data) => {

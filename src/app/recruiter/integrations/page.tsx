@@ -103,7 +103,7 @@ async function errorMessage(res: Response, fallback: string) {
     // non-JSON body
   }
   if (res.status === 401 || res.status === 403) return "You need recruiter access to manage integrations.";
-  return `${fallback} (HTTP ${res.status}).`;
+  return `${fallback}. Please try again.`;
 }
 
 function CopyField({ label, value }: { label: string; value: string }) {
@@ -278,7 +278,7 @@ export default function IntegrationsPage() {
       setLeverPerformAs("");
       refresh();
     } catch {
-      setCreateError("Network error while creating the connection.");
+      setCreateError("We couldn't reach the server while creating the connection. Please check your connection and try again.");
     } finally {
       setCreating(false);
     }
@@ -302,7 +302,7 @@ export default function IntegrationsPage() {
       }));
       setOpenLogs((o) => (id in o ? { ...o, [id]: o[id] + 1 } : o));
     } catch {
-      setRowMessage((m) => ({ ...m, [id]: { ok: false, text: "Network error while sending the test." } }));
+      setRowMessage((m) => ({ ...m, [id]: { ok: false, text: "We couldn't reach the server while sending the test. Please check your connection and try again." } }));
     } finally {
       setBusy(null);
     }
@@ -320,7 +320,7 @@ export default function IntegrationsPage() {
       }
       setConnections((list) => list.map((x) => (x.id === c.id ? { ...x, isActive: false } : x)));
     } catch {
-      setRowMessage((m) => ({ ...m, [c.id]: { ok: false, text: "Network error while disabling." } }));
+      setRowMessage((m) => ({ ...m, [c.id]: { ok: false, text: "We couldn't reach the server while disabling. Please check your connection and try again." } }));
     } finally {
       setBusy(null);
     }

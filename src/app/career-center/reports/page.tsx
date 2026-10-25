@@ -95,7 +95,7 @@ export default function ReportsPage() {
       await fn();
       if (done) setSuccess(done);
     } catch (e) {
-      setError((e as Error).message);
+      setError(e instanceof TypeError ? "We couldn't reach the server. Please check your connection and try again." : (e as Error).message);
     } finally {
       setBusy(null);
     }

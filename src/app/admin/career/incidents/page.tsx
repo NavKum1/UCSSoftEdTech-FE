@@ -19,7 +19,7 @@ function IncidentPanel({ inc, onChanged }: { inc: Incident; onChanged: () => voi
   const [err, setErr] = useState<string | null>(null);
   const act = async (fn: () => Promise<void>) => {
     setErr(null);
-    try { await fn(); } catch (e) { setErr((e as Error).message); }
+    try { await fn(); } catch (e) { setErr(e instanceof TypeError ? "We couldn't reach the server. Please check your connection and try again." : (e as Error).message); }
   };
   return (
     <div className="space-y-4 text-sm">
@@ -126,7 +126,7 @@ export default function IncidentsPage() {
               <li key={i.id} className="py-3">
                 <div className="flex flex-wrap items-center gap-2">
                   <h2 className="font-medium">{i.title}</h2>
-                  <Badge tone={i.status === "Closed" ? "good" : "warn"}>{i.status}</Badge>
+                  <Badge tone={i.status === "Closed" ? "good" : "warn"}>{String(i.status ?? "").replace(/([a-z])([A-Z])/g, (_m, a: string, b: string) => `${a} ${b.toLowerCase()}`)}</Badge>
                   <Badge tone={i.severity === "Critical" || i.severity === "High" ? "bad" : "neutral"}>{i.severity}</Badge>
                   <span className="text-xs text-muted-foreground">Discovered {formatDate(i.discoveredAt, true)}</span>
                   <Button variant="secondary" className="ms-auto" onClick={() => setOpen(open === i.id ? null : i.id)} aria-expanded={open === i.id}>{open === i.id ? "Close" : "Open"}</Button>

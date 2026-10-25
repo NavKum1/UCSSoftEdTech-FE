@@ -90,7 +90,7 @@ export default function RecruiterAppealsPage() {
       setResolving(null);
       setReloadKey((k) => k + 1);
     } catch {
-      setResolveError("Network error while resolving the appeal.");
+      setResolveError("We couldn't reach the server while resolving the appeal. Please check your connection and try again.");
     } finally {
       setBusy(false);
     }

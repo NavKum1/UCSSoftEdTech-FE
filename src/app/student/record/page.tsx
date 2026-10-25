@@ -93,7 +93,7 @@ export default function StudentRecordPage() {
       setProfile(null);
       setMsg(t("yourProfileWasSaved"));
     } catch (e2) {
-      setErr((e2 as Error).message);
+      setErr(e2 instanceof TypeError ? "We couldn't reach the server. Please check your connection and try again." : (e2 as Error).message);
     } finally {
       setSaving(false);
     }
@@ -143,7 +143,7 @@ export default function StudentRecordPage() {
       setMsg(t("educationSaved"));
       reload();
     } catch (e2) {
-      setErr((e2 as Error).message);
+      setErr(e2 instanceof TypeError ? "We couldn't reach the server. Please check your connection and try again." : (e2 as Error).message);
     } finally {
       setSaving(false);
     }
@@ -157,7 +157,7 @@ export default function StudentRecordPage() {
       setMsg(t("educationEntryDeleted"));
       reload();
     } catch (e2) {
-      setErr((e2 as Error).message);
+      setErr(e2 instanceof TypeError ? "We couldn't reach the server. Please check your connection and try again." : (e2 as Error).message);
     }
   };
 

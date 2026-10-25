@@ -45,7 +45,7 @@ function RequestPanel({ id, onChanged }: { id: string; onChanged: () => void }) 
       detail.reload();
       onChanged();
     } catch (e) {
-      setErr((e as Error).message);
+      setErr(e instanceof TypeError ? "We couldn't reach the server. Please check your connection and try again." : (e as Error).message);
     } finally {
       setBusy(null);
     }
@@ -307,7 +307,7 @@ function MinorsCard() {
                     {s.guardians.length === 0 ? <span className="text-muted-foreground">{tr("none")}</span> : s.guardians.map((g) => (
                       <div key={g.id} className="flex flex-wrap items-center gap-2">
                         <span>{g.name}</span>
-                        <Badge tone={g.status === "Consented" ? "good" : g.status === "Declined" ? "bad" : "neutral"}>{g.status}</Badge>
+                        <Badge tone={g.status === "Consented" ? "good" : g.status === "Declined" ? "bad" : "neutral"}>{String(g.status ?? "").replace(/([a-z])([A-Z])/g, (_m, a: string, b: string) => `${a} ${b.toLowerCase()}`)}</Badge>
                         {g.status !== "Consented" && (
                           <Button variant="ghost" busy={busy === g.id} onClick={run(g.id, async () => { await api(`/api/career/privacy/admin/guardians/${g.id}/resend`, { method: "POST" }); setMsg(tr("sentANewLinkTo", { name: g.name })); })} aria-label={tr("resendLinkToName", { name: g.name })}>{tr("resend")}</Button>
                         )}
