@@ -24,6 +24,7 @@ export const DEV_PERSONAS: Record<string, { label: string; token: string; perUse
   Candidate: { label: "Candidate", token: "candidate-dev-token", perUser: true },
   Recruiter: { label: "Recruiter", token: "recruiter-dev-token", perUser: false },
   InstituteAdmin: { label: "Institute admin", token: "institute-admin-dev-token", perUser: false },
+  Counselor: { label: "Institute counsellor", token: "institute-counsellor-dev-token", perUser: false },
   EdulexaAdvisor: { label: "Edulexa advisor", token: "advisor-dev-token", perUser: false },
 };
 

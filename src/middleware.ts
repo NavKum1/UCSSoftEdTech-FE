@@ -73,8 +73,10 @@ function gate(req: NextRequest, userId: string | null | undefined, hasRole: (...
       return NextResponse.redirect(new URL("/login?redirect_url=" + encodeURIComponent(req.nextUrl.pathname), req.url));
     }
 
-    const isInstituteAdmin = hasRole("InstituteAdmin", "SuperAdmin");
-    if (!isInstituteAdmin) {
+    // The admissions CRM (/institute/dashboard) is also for the institute's counsellors; the settings pages are admin-only
+    const crm = req.nextUrl.pathname.startsWith("/institute/dashboard");
+    const allowed = crm ? hasRole("InstituteAdmin", "Counselor", "SuperAdmin") : hasRole("InstituteAdmin", "SuperAdmin");
+    if (!allowed) {
       return NextResponse.redirect(new URL("/dashboard", req.url));
     }
   }

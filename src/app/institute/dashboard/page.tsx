@@ -1,466 +1,194 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+/**
+ * The institute admissions CRM (API: /api/institute/crm). Opens on the day's work: leads not contacted yet, follow-ups
+ * due, and the caller's own leads, then Leads (table or board), Follow-ups, Insights and, for institute admins, Settings
+ * (team, email templates, integrations). ?lead=<id> opens a lead directly (links in reminder and reply emails).
+ */
+
+import React, { Suspense, useCallback, useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { AlertTriangle, CalendarClock, Inbox, UserRound } from "lucide-react";
 import { useAppAuth as useAuth } from "@/lib/appAuth";
 import { authenticatedFetch } from "@/lib/apiClient";
-import {
-  Inbox,
-  Link as LinkIcon,
-  RefreshCw,
-  Send,
-  CheckCircle2,
-  Users,
-  Search,
-  Activity,
-  BarChart3,
-} from "lucide-react";
-import FunnelChart from "@/components/charts/FunnelChart";
 import { useLatestRef } from "@/lib/legacyApi";
-import LeadDetail from "@/components/institute/LeadDetail";
+import { crm, query, type Filters, type LeadList, type Member, type OpenTask, type Template } from "@/components/institute/crm/api";
+import LeadsView from "@/components/institute/crm/LeadsView";
+import LeadDrawer from "@/components/institute/crm/LeadDrawer";
+import TasksView from "@/components/institute/crm/TasksView";
+import InsightsView from "@/components/institute/crm/InsightsView";
+import SettingsView from "@/components/institute/crm/SettingsView";
 
-interface Lead {
-  leadId: string;
-  candidateUserId: string;
-  candidateName: string | null;
-  candidateEmail: string | null;
-  candidatePhone?: string | null;
-  quizShared?: boolean;
-  requestType?: "guidance" | "course";
-  notes?: string | null;
-  courseId: string;
-  courseName: string | null;
-  status: string;
-  createdAt: string;
+type Tab = "leads" | "followups" | "insights" | "settings";
+
+export default function InstituteCrmPage() {
+  return (
+    <Suspense fallback={<div className="h-64 animate-pulse rounded-2xl bg-muted motion-reduce:animate-none" aria-busy="true" />}>
+      <Crm />
+    </Suspense>
+  );
 }
 
-export default function InstituteDashboardPage() {
-  const { getToken, isLoaded, isSignedIn } = useAuth();
-  const [activeTab, setActiveTab] = useState<"leads" | "webhook" | "analytics">("leads");
+function Crm() {
+  const { getToken, isLoaded, isSignedIn, roles } = useAuth();
+  const router = useRouter();
+  const params = useSearchParams();
+  const isAdmin = roles.includes("InstituteAdmin") || roles.includes("SuperAdmin");
 
-  const [instituteId, setInstituteId] = useState<string>("");
-  const [instituteName, setInstituteName] = useState<string>("Institute Partner");
-  const [outboundWebhookUrl, setOutboundWebhookUrl] = useState<string>("");
-  const [webhookInput, setWebhookInput] = useState<string>("");
+  const [tab, setTab] = useState<Tab>("leads");
+  const [filters, setFilters] = useState<Filters>({});
+  const [data, setData] = useState<LeadList | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [team, setTeam] = useState<Member[]>([]);
+  const [templates, setTemplates] = useState<Template[]>([]);
+  const [profile, setProfile] = useState<{ name: string; outboundWebhookUrl: string | null } | null>(null);
+  const [mine, setMine] = useState<OpenTask[]>([]);
+  const [version, setVersion] = useState(0);
+  const openId = params.get("lead");
 
-  const [leads, setLeads] = useState<Lead[]>([]);
-  const [searchQuery, setSearchQuery] = useState<string>("");
-  const [openLead, setOpenLead] = useState<string | null>(null);
-  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const ready = isLoaded && isSignedIn;
 
-  const [loading, setLoading] = useState<boolean>(true);
-  const [savingWebhook, setSavingWebhook] = useState<boolean>(false);
-  const [testingPing, setTestingPing] = useState<boolean>(false);
-  const [feedbackMessage, setFeedbackMessage] = useState<string>("");
-
-  // Load Institute Profile & Leads
-  const fetchData = async () => {
+  const loadLeads = useCallback(async () => {
     setLoading(true);
     try {
-      // 1. Fetch Profile
-      const profileRes = await authenticatedFetch("/api/institute/profile", {}, getToken);
-      if (profileRes.ok) {
-        const profileData = await profileRes.json();
-        setInstituteId(profileData.id || "");
-        setInstituteName(profileData.name || "");
-        setOutboundWebhookUrl(profileData.outboundWebhookUrl || "");
-        setWebhookInput(profileData.outboundWebhookUrl || "");
-      }
-
-      // 2. Fetch Lead Inbox
-      const leadsRes = await authenticatedFetch("/api/institute/leads", {}, getToken);
-      if (leadsRes.ok) {
-        const leadsData = await leadsRes.json();
-        setLeads(leadsData.leads || []);
-      }
-    } catch (err) {
-      console.error("Error fetching institute data:", err);
+      setData(await crm<LeadList>(getToken, `/leads${query(filters)}`));
+      setError(null);
+    } catch (e) {
+      setError((e as Error).message);
     } finally {
       setLoading(false);
     }
-  };
+  }, [getToken, filters]);
 
-  const fetchDataRef = useLatestRef(fetchData);
+  const loadSetup = useCallback(async () => {
+    const [t, tp, tasks] = await Promise.all([
+      crm<Member[]>(getToken, "/team").catch(() => []),
+      crm<Template[]>(getToken, "/templates").catch(() => []),
+      crm<OpenTask[]>(getToken, "/tasks?scope=all").catch(() => []),
+    ]);
+    setTeam(t);
+    setTemplates(tp);
+    setMine(tasks);
+    const res = await authenticatedFetch("/api/institute/profile", {}, getToken).catch(() => null);
+    if (res?.ok) setProfile(await res.json());
+  }, [getToken]);
+
+  const loadLeadsRef = useLatestRef(loadLeads);
+  const loadSetupRef = useLatestRef(loadSetup);
   useEffect(() => {
-    // Load once signed in (loading before sign-in finished got a 401 and showed an empty inbox)
-    if (isLoaded && isSignedIn) fetchDataRef.current();
-  }, [fetchDataRef, isLoaded, isSignedIn]);
+    if (ready) loadLeadsRef.current();
+  }, [ready, loadLeadsRef, filters]);
 
-  // Save CRM Webhook URL
-  const handleSaveWebhook = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!webhookInput.trim()) return;
+  useEffect(() => {
+    if (ready) loadSetupRef.current();
+  }, [ready, loadSetupRef, version]);
 
-    setSavingWebhook(true);
-    setFeedbackMessage("");
+  const refresh = useCallback(() => {
+    loadLeads();
+    setVersion((v) => v + 1);
+  }, [loadLeads]);
 
-    try {
-      const res = await authenticatedFetch(
-        "/api/institute/webhook-config",
-        {
-          method: "POST",
-          body: JSON.stringify({ outboundWebhookUrl: webhookInput.trim() }),
-        },
-        getToken
-      );
+  const openLead = (id: string) => router.push(`/institute/dashboard?lead=${id}`, { scroll: false });
+  const closeLead = useCallback(() => router.push("/institute/dashboard", { scroll: false }), [router]);
 
-      if (res.ok) {
-        setOutboundWebhookUrl(webhookInput.trim());
-        setFeedbackMessage("CRM Webhook URL updated successfully. Leads will now auto-dispatch to this endpoint.");
-      } else {
-        const errData = await res.json();
-        setFeedbackMessage("Error saving webhook: " + (errData.error || res.statusText));
-      }
-    } catch (err) {
-      setFeedbackMessage("Failed to connect to API: " + (err as Error).message);
-    } finally {
-      setSavingWebhook(false);
-    }
+  const showLeads = (f: Filters) => {
+    setFilters(f);
+    setTab("leads");
   };
 
-  // Dispatch Test Webhook Ping
-  const handleTestPing = async () => {
-    if (!outboundWebhookUrl) {
-      setFeedbackMessage("Please configure and save an Outbound Webhook URL first.");
-      return;
-    }
+  const newCount = data?.counts?.New ?? 0;
+  const overdue = mine.filter((t) => t.overdue).length;
+  const dueToday = mine.filter((t) => {
+    const end = new Date();
+    end.setHours(23, 59, 59, 999);
+    return !t.overdue && new Date(t.dueAt) <= end;
+  }).length;
+  const unassigned = data?.unassignedOpen ?? 0;
 
-    setTestingPing(true);
-    setFeedbackMessage("");
-
-    try {
-      const res = await fetch(outboundWebhookUrl, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          event: "test.webhook_ping",
-          instituteName: instituteName,
-          instituteId: instituteId,
-          testCandidate: "John Doe",
-          testEmail: "johndoe@example.com",
-          recommendedCourse: "Full-Stack Distributed Systems Masterclass",
-          timestamp: new Date().toISOString(),
-        }),
-      });
-
-      if (res.ok) {
-        setFeedbackMessage(`Test webhook ping successfully received by CRM endpoint (HTTP ${res.status}).`);
-      } else {
-        setFeedbackMessage(`CRM endpoint returned HTTP ${res.status}. Please verify your webhook receiver.`);
-      }
-    } catch (err) {
-      setFeedbackMessage("Error pinging CRM webhook endpoint: " + (err as Error).message);
-    } finally {
-      setTestingPing(false);
-    }
-  };
-
-  const filteredLeads = leads.filter((lead) => {
-    // Some leads have no name, email or course recorded (null from the API)
-    const q = searchQuery.toLowerCase();
-    const matchesSearch = [lead.candidateName, lead.candidateEmail, lead.courseName].some((v) => (v ?? "").toLowerCase().includes(q));
-
-    const matchesStatus = statusFilter === "all" || lead.status.toLowerCase() === statusFilter.toLowerCase();
-
-    return matchesSearch && matchesStatus;
-  });
-
-  const funnelData = [
-    { name: "Total Leads", value: leads.length, fill: "#06b6d4" },
-    { name: "Contacted", value: leads.filter(l => l.status.toLowerCase() !== "pending").length, fill: "#3b82f6" },
-    { name: "Enrolled", value: leads.filter(l => l.status.toLowerCase() === "enrolled").length, fill: "#10b981" }
+  const TABS: [Tab, string][] = [
+    ["leads", "Leads"],
+    ["followups", "Follow-ups"],
+    ["insights", "Insights"],
+    ...(isAdmin ? [["settings", "Settings"] as [Tab, string]] : []),
   ];
 
   return (
-    <div className="space-y-8">
-      {/* Top Welcome Banner */}
-      <div className="glass-panel rounded-3xl p-6 border border-border flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div className="space-y-6">
+      <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <div className="flex items-center space-x-2">
-            <h1 className="text-2xl font-bold text-foreground tracking-tight">{instituteName}</h1>
-            <span className="text-xs px-2.5 py-0.5 rounded-full bg-cyan-500/10 text-cyan-700 dark:text-cyan-400 font-semibold border border-cyan-500/20">
-              Active Partner
-            </span>
-          </div>
-          <p className="text-xs text-muted-foreground mt-1">
-            Manage your incoming student referrals and configure direct CRM webhook integration (Salesforce, HubSpot, or Custom HTTP endpoint).
-          </p>
-        </div>
-
-        <button
-          onClick={fetchData}
-          disabled={loading}
-          className="px-4 py-2 bg-card hover:bg-muted text-foreground text-xs font-semibold rounded-xl border border-border flex items-center space-x-2 transition-all self-start md:self-auto cursor-pointer"
-        >
-          <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} />
-          <span>Sync Data</span>
-        </button>
-      </div>
-
-      {/* KPI Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="glass-panel rounded-2xl p-5 border border-border space-y-1">
-          <div className="flex items-center justify-between text-xs text-muted-foreground">
-            <span>Total Student Leads</span>
-            <Users className="w-4 h-4 text-cyan-700 dark:text-cyan-400" />
-          </div>
-          <p className="text-2xl font-extrabold text-foreground">{leads.length}</p>
-          <p className="text-[11px] text-cyan-700 dark:text-cyan-400 font-medium">Referred via AI Voice Skill Gap Engine</p>
-        </div>
-
-        <div className="glass-panel rounded-2xl p-5 border border-border space-y-1">
-          <div className="flex items-center justify-between text-xs text-muted-foreground">
-            <span>Pending Outreach</span>
-            <Inbox className="w-4 h-4 text-amber-700 dark:text-amber-400" />
-          </div>
-          <p className="text-2xl font-extrabold text-foreground">
-            {leads.filter((l) => l.status.toLowerCase() === "pending").length}
-          </p>
-          <p className="text-[11px] text-amber-700 dark:text-amber-400 font-medium">Awaiting contact or enrollment</p>
-        </div>
-
-        <div className="glass-panel rounded-2xl p-5 border border-border space-y-1">
-          <div className="flex items-center justify-between text-xs text-muted-foreground">
-            <span>CRM Webhook Status</span>
-            <Activity className="w-4 h-4 text-emerald-700 dark:text-emerald-400" />
-          </div>
-          <p className="text-base font-bold text-foreground truncate">
-            {outboundWebhookUrl ? "Configured & Live" : "Not Configured"}
-          </p>
-          <p className="text-[11px] text-muted-foreground truncate">
-            {outboundWebhookUrl ? outboundWebhookUrl : "Enter CRM webhook to automate leads"}
+          <h1 className="text-2xl font-semibold tracking-tight">Admissions</h1>
+          <p className="mt-0.5 text-sm text-muted-foreground">
+            {profile?.name ? `${profile.name} · ` : ""}
+            {data ? `${data.total.toLocaleString()} ${data.total === 1 ? "lead" : "leads"}` : "Your leads from Edulexa and your website"}
+            {data?.me ? ` · signed in as ${data.me.name}` : ""}
           </p>
         </div>
       </div>
 
-      {/* Tab Navigation */}
-      <div className="flex border-b border-border space-x-8">
-        <button
-          onClick={() => setActiveTab("leads")}
-          className={`pb-3 text-sm font-semibold flex items-center space-x-2 transition-all cursor-pointer ${
-            activeTab === "leads" ? "text-cyan-700 dark:text-cyan-400 border-b-2 border-cyan-400" : "text-muted-foreground hover:text-foreground"
-          }`}
-        >
-          <Inbox className="w-4 h-4" />
-          <span>Lead Inbox ({leads.length})</span>
-        </button>
-
-        <button
-          onClick={() => setActiveTab("webhook")}
-          className={`pb-3 text-sm font-semibold flex items-center space-x-2 transition-all cursor-pointer ${
-            activeTab === "webhook" ? "text-cyan-700 dark:text-cyan-400 border-b-2 border-cyan-400" : "text-muted-foreground hover:text-foreground"
-          }`}
-        >
-          <LinkIcon className="w-4 h-4" />
-          <span>CRM Webhook Configurator</span>
-        </button>
-
-        <button
-          onClick={() => setActiveTab("analytics")}
-          className={`pb-3 text-sm font-semibold flex items-center space-x-2 transition-all cursor-pointer ${
-            activeTab === "analytics" ? "text-cyan-700 dark:text-cyan-400 border-b-2 border-cyan-400" : "text-muted-foreground hover:text-foreground"
-          }`}
-        >
-          <BarChart3 className="w-4 h-4" />
-          <span>Analytics</span>
-        </button>
+      {/* Today */}
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+        <Today icon={Inbox} label="New, not contacted" value={newCount} tone={newCount > 0 ? "sky" : undefined} onClick={() => showLeads({ stage: "New" })} />
+        <Today icon={AlertTriangle} label="Follow-ups overdue" value={overdue} tone={overdue > 0 ? "red" : undefined} onClick={() => showLeads({ overdue: true })} />
+        <Today icon={CalendarClock} label="Follow-ups due today" value={dueToday} onClick={() => setTab("followups")} />
+        {data?.me ? (
+          <Today icon={UserRound} label="My open leads" value={data.mineOpen} onClick={() => showLeads({ owner: "me" })} />
+        ) : (
+          <Today icon={UserRound} label="Unassigned open leads" value={unassigned} tone={unassigned > 0 ? "amber" : undefined} onClick={() => showLeads({ owner: "none" })} />
+        )}
       </div>
 
-      {/* Tab 1: Lead Inbox Data Table */}
-      {activeTab === "leads" && (
-        <div className="space-y-4">
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div className="relative w-full sm:w-80">
-              <Search className="w-4 h-4 text-muted-foreground absolute left-3 top-1/2 -translate-y-1/2" />
-              <input
-                type="text"
-                placeholder="Search candidate name, email, or course..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full bg-card border border-border rounded-xl pl-9 pr-4 py-2 text-xs text-foreground focus:outline-none focus:border-cyan-500"
-              />
-            </div>
-
-            <div className="flex items-center space-x-3 w-full sm:w-auto">
-              <select
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
-                className="bg-card border border-border rounded-xl px-3 py-2 text-xs text-muted-foreground focus:outline-none focus:border-cyan-500"
-              >
-                <option value="all">All Statuses</option>
-                <option value="pending">Pending</option>
-                <option value="contacted">Contacted</option>
-                <option value="enrolled">Enrolled</option>
-              </select>
-            </div>
-          </div>
-
-          <div className="glass-panel rounded-2xl border border-border overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs text-muted-foreground">
-                <thead className="bg-card/80 border-b border-border text-muted-foreground font-semibold uppercase text-[10px] tracking-wider">
-                  <tr>
-                    <th className="px-6 py-3">Candidate Name</th>
-                    <th className="px-6 py-3">Email</th>
-                    <th className="px-6 py-3">Recommended Course</th>
-                    <th className="px-6 py-3">Referral Date</th>
-                    <th className="px-6 py-3">Status</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-800/60">
-                  {loading ? (
-                    <tr>
-                      <td colSpan={5} className="px-6 py-12 text-center text-muted-foreground">
-                        Loading lead referrals...
-                      </td>
-                    </tr>
-                  ) : filteredLeads.length === 0 ? (
-                    <tr>
-                      <td colSpan={5} className="px-6 py-12 text-center text-muted-foreground">
-                        No student lead referrals found matching criteria.
-                      </td>
-                    </tr>
-                  ) : (
-                    filteredLeads.map((lead) => (
-                      <tr key={lead.leadId} className="hover:bg-card/40 transition-colors">
-                        <td className="px-6 py-4 font-semibold text-foreground">
-                          <button type="button" onClick={() => setOpenLead(lead.leadId)} className="text-left underline-offset-2 hover:underline">
-                            {lead.candidateName ?? "—"}
-                          </button>
-                          {lead.quizShared && <span className="mt-0.5 block text-[11px] font-normal text-indigo-700 dark:text-indigo-300">Quiz answers shared</span>}
-                        </td>
-                        <td className="px-6 py-4 font-mono text-[11px] text-cyan-700 dark:text-cyan-300">
-                          {lead.candidateEmail || "—"}
-                          {lead.candidatePhone && <span className="block text-muted-foreground">{lead.candidatePhone}</span>}
-                        </td>
-                        <td className="px-6 py-4 text-foreground">{lead.requestType === "guidance" ? <span className="text-indigo-700 dark:text-indigo-300">Career guidance</span> : (lead.courseName ?? "Course no longer listed")}</td>
-                        <td className="px-6 py-4 text-muted-foreground">
-                          {new Date(lead.createdAt).toLocaleDateString("en-US", {
-                            month: "short",
-                            day: "numeric",
-                            year: "numeric",
-                          })}
-                        </td>
-                        <td className="px-6 py-4">
-                          <span
-                            className={`px-2.5 py-0.5 rounded-full text-[10px] font-semibold border ${
-                              lead.status.toLowerCase() === "enrolled"
-                                ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/30"
-                                : lead.status.toLowerCase() === "contacted"
-                                ? "bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-500/30"
-                                : "bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/30"
-                            }`}
-                          >
-                            {lead.status}
-                          </span>
-                        </td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </div>
+      {isAdmin && team.length === 0 && profile && (
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-cyan-600/30 bg-cyan-600/5 p-4 text-sm">
+          <p>
+            <span className="font-medium">Set up your team</span> to assign leads and send follow-up reminders. Add your email templates while you&apos;re there.
+          </p>
+          <button type="button" onClick={() => setTab("settings")} className="rounded-lg bg-cyan-700 px-3.5 py-2 font-medium text-white hover:bg-cyan-800">
+            Add your team
+          </button>
         </div>
       )}
 
-      {/* Tab 2: CRM Webhook Configurator */}
-      {activeTab === "webhook" && (
-        <div className="max-w-2xl space-y-6">
-          <div className="glass-panel rounded-2xl p-6 border border-border space-y-4">
-            <div>
-              <h3 className="text-base font-bold text-foreground">Outbound CRM Webhook Configuration</h3>
-              <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
-                Connect your CRM (Salesforce, HubSpot, Zapier, Make, or custom HTTP server). Whenever an AI voice evaluation reveals a skill gap matching your courses, our Automated B2B Lead Dispatcher will push the lead payload in real-time.
-              </p>
-            </div>
+      <div role="tablist" aria-label="CRM" className="flex gap-5 border-b border-border text-sm">
+        {TABS.map(([k, label]) => (
+          <button
+            key={k}
+            role="tab"
+            type="button"
+            aria-selected={tab === k}
+            onClick={() => setTab(k)}
+            className={`-mb-px border-b-2 pb-2.5 ${tab === k ? "border-cyan-600 font-medium text-foreground" : "border-transparent text-muted-foreground hover:text-foreground"}`}
+          >
+            {label}
+            {k === "followups" && overdue > 0 && <span className="ml-1.5 rounded-full bg-red-600 px-1.5 text-[11px] font-medium text-white">{overdue}</span>}
+          </button>
+        ))}
+      </div>
 
-            {feedbackMessage && (
-              <div
-                className={`p-3 rounded-xl text-xs flex items-center space-x-2 ${
-                  feedbackMessage.includes("Error") || feedbackMessage.includes("failed")
-                    ? "bg-red-950/50 border border-red-500/30 text-red-600 dark:text-red-300"
-                    : "bg-emerald-950/50 border border-emerald-500/30 text-emerald-600 dark:text-emerald-300"
-                }`}
-              >
-                <CheckCircle2 className="w-4 h-4 shrink-0" />
-                <span>{feedbackMessage}</span>
-              </div>
-            )}
-
-            <form onSubmit={handleSaveWebhook} className="space-y-4">
-              <div>
-                <label className="block text-xs font-semibold text-muted-foreground mb-1.5">
-                  CRM Outbound Webhook URL
-                </label>
-                <input
-                  type="url"
-                  placeholder="https://api.salesforce.com/services/apexrest/leads or https://crm.yourdomain.com/webhooks/leads"
-                  value={webhookInput}
-                  onChange={(e) => setWebhookInput(e.target.value)}
-                  required
-                  className="w-full bg-background border border-border rounded-xl px-4 py-2.5 text-xs text-foreground focus:outline-none focus:border-cyan-500 font-mono"
-                />
-              </div>
-
-              <div className="flex items-center space-x-3 pt-2">
-                <button
-                  type="submit"
-                  disabled={savingWebhook}
-                  className="px-5 py-2.5 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white text-xs font-semibold rounded-xl shadow-lg shadow-cyan-500/20 flex items-center space-x-2 transition-all cursor-pointer"
-                >
-                  <Send className="w-3.5 h-3.5" />
-                  <span>{savingWebhook ? "Saving URL..." : "Save Webhook URL"}</span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={handleTestPing}
-                  disabled={testingPing || !outboundWebhookUrl}
-                  className="px-4 py-2.5 bg-card hover:bg-muted text-foreground text-xs font-semibold rounded-xl border border-border flex items-center space-x-2 transition-all cursor-pointer disabled:opacity-50"
-                >
-                  <Activity className="w-3.5 h-3.5 text-cyan-700 dark:text-cyan-400" />
-                  <span>{testingPing ? "Pinging..." : "Test Webhook Ping"}</span>
-                </button>
-              </div>
-            </form>
-          </div>
-
-          {/* Sample JSON Payload Card */}
-          <div className="glass-panel rounded-2xl p-6 border border-border space-y-2">
-            <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Dispatched Lead JSON Payload Schema</h4>
-            <pre className="bg-background p-4 rounded-xl text-[11px] font-mono text-cyan-600 dark:text-cyan-300 border border-slate-900 overflow-x-auto">
-{`{
-  "event": "lead.skill_gap_referral",
-  "leadId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-  "candidateUserId": "user_2testCandidate123",
-  "name": "Jane Developer",
-  "email": "jane.dev@example.com",
-  "missingSkills": ["Connection Pooling", "Microservices Resiliency"],
-  "recommendedCourse": "Full-Stack Distributed Systems Masterclass",
-  "courseId": "c4b9d072-1b15-4e31-8975-dcf45448db54",
-  "instituteId": "${instituteId || "6c370735-4615-44f6-9d61-dbbb41d5d5cf"}",
-  "technicalScore": 62.0,
-  "timestamp": "2026-09-02T10:00:00Z"
-}`}
-            </pre>
-          </div>
-        </div>
+      {tab === "leads" && (
+        <LeadsView getToken={getToken} team={team} data={data} filters={filters} setFilters={setFilters} loading={loading} error={error} openLead={openLead} reload={refresh} />
+      )}
+      {tab === "followups" && <TasksView getToken={getToken} openLead={openLead} version={version} />}
+      {tab === "insights" && <InsightsView getToken={getToken} />}
+      {tab === "settings" && isAdmin && (
+        <SettingsView getToken={getToken} team={team} templates={templates} webhookUrl={profile?.outboundWebhookUrl ?? ""} reload={() => setVersion((v) => v + 1)} />
       )}
 
-      {/* Tab 3: Analytics Dashboard */}
-      {activeTab === "analytics" && (
-        <div className="space-y-6">
-          <div className="glass-panel rounded-2xl p-6 border border-border">
-            <h3 className="text-base font-bold text-foreground mb-2">Lead Conversion Funnel</h3>
-            <p className="text-xs text-muted-foreground mb-6">Track the progression of your AI-referred candidates from initial lead to final enrollment.</p>
-            
-            <div className="bg-background/50 p-4 rounded-xl border border-border">
-              <FunnelChart data={funnelData} />
-            </div>
-          </div>
-        </div>
-      )}
-      {openLead && <LeadDetail leadId={openLead} getToken={getToken} onClose={() => setOpenLead(null)} />}
+      {openId && ready && <LeadDrawer key={openId} leadId={openId} getToken={getToken} team={team} templates={templates} isAdmin={isAdmin} onClose={closeLead} onChanged={refresh} />}
     </div>
+  );
+}
+
+function Today({ icon: Icon, label, value, tone, onClick }: { icon: React.ElementType; label: string; value: number; tone?: "sky" | "red" | "amber"; onClick: () => void }) {
+  const color = tone === "red" ? "text-red-700 dark:text-red-400" : tone === "amber" ? "text-amber-700 dark:text-amber-400" : tone === "sky" ? "text-sky-700 dark:text-sky-400" : "";
+  return (
+    <button type="button" onClick={onClick} className="group rounded-2xl border border-border bg-card p-4 text-left transition-colors hover:border-cyan-600/50">
+      <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
+        <Icon aria-hidden="true" className="h-3.5 w-3.5" />
+        {label}
+      </span>
+      <span className={`mt-1 block text-2xl font-semibold tabular-nums ${color}`}>{value}</span>
+      <span className="text-xs text-cyan-700 opacity-0 transition-opacity group-hover:opacity-100 dark:text-cyan-400">View</span>
+    </button>
   );
 }
