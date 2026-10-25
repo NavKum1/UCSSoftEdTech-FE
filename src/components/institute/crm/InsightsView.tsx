@@ -6,7 +6,7 @@
  */
 
 import React, { useEffect, useState } from "react";
-import { crm, STAGE_LABEL, type GetToken } from "./api";
+import { crm, StageDot, STAGE_LABEL, STAGE_SOLID, type GetToken } from "./api";
 
 interface Group {
   key: string;
@@ -88,14 +88,17 @@ export default function InsightsView({ getToken }: { getToken: GetToken }) {
                   return (
                     <li key={f.stage}>
                       <div className="flex justify-between text-sm">
-                        <span>{STAGE_LABEL[f.stage]}</span>
+                        <span className="inline-flex items-center gap-1.5">
+                          <StageDot stage={f.stage} />
+                          {STAGE_LABEL[f.stage]}
+                        </span>
                         <span className="tabular-nums text-muted-foreground">
                           {f.reached}
                           {prev ? ` · ${Math.round((100 * f.reached) / prev)}% of previous` : ""}
                         </span>
                       </div>
                       <div className="mt-1 h-2 rounded-full bg-muted" aria-hidden="true">
-                        <div className="h-full rounded-full bg-cyan-600" style={{ width: `${pct}%` }} />
+                        <div className={`h-full rounded-full ${STAGE_SOLID[f.stage].split(" ")[0]}`} style={{ width: `${pct}%` }} />
                       </div>
                     </li>
                   );

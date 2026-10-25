@@ -29,6 +29,30 @@ export const STAGE_TONE: Record<string, string> = {
   Lost: "bg-zinc-500/10 text-zinc-700 dark:text-zinc-300 border-zinc-500/30",
 };
 
+/** Solid stage colours (selected buttons, dots, bars, column accents): the same hue as STAGE_TONE everywhere */
+export const STAGE_SOLID: Record<string, string> = {
+  New: "bg-sky-600 border-sky-600 text-white",
+  Contacted: "bg-indigo-600 border-indigo-600 text-white",
+  CounsellingBooked: "bg-violet-600 border-violet-600 text-white",
+  Applied: "bg-amber-500 border-amber-500 text-white",
+  Enrolled: "bg-emerald-600 border-emerald-600 text-white",
+  Lost: "bg-zinc-500 border-zinc-500 text-white",
+};
+export const STAGE_BORDER: Record<string, string> = {
+  New: "border-t-sky-600",
+  Contacted: "border-t-indigo-600",
+  CounsellingBooked: "border-t-violet-600",
+  Applied: "border-t-amber-500",
+  Enrolled: "border-t-emerald-600",
+  Lost: "border-t-zinc-500",
+};
+/** The stage key for a label as written in the timeline ("Counselling booked" → CounsellingBooked) */
+export const stageFromLabel = (label: string) => Object.keys(STAGE_LABEL).find((k) => STAGE_LABEL[k] === label.trim()) ?? null;
+
+export function StageDot({ stage }: { stage: string }) {
+  return <span aria-hidden="true" className={`inline-block h-2 w-2 shrink-0 rounded-full ${(STAGE_SOLID[stage] ?? STAGE_SOLID.Lost).split(" ")[0]}`} />;
+}
+
 export const CALL_OUTCOMES: Record<string, string> = {
   Reached: "Spoke to them",
   NoAnswer: "No answer",

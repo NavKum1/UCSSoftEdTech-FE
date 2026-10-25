@@ -32,6 +32,8 @@ import {
   relative,
   StageBadge,
   STAGE_LABEL,
+  STAGE_SOLID,
+  STAGE_TONE,
   STAGES,
   type GetToken,
   type LeadFull,
@@ -300,13 +302,11 @@ export default function LeadDrawer({
                         onClick={() => moveStage(s)}
                         aria-pressed={lead.stage === s}
                         className={`rounded-full border px-2.5 py-1 text-xs transition-colors ${
-                          s === "Lost" && losing && lead.stage !== "Lost"
-                            ? "border-zinc-500 bg-zinc-500/15"
-                            : lead.stage === s
-                            ? s === "Lost"
-                              ? "border-zinc-500 bg-zinc-600 text-white"
-                              : "border-cyan-700 bg-cyan-700 text-white"
-                            : "border-border hover:bg-muted"
+                          lead.stage === s
+                            ? `${STAGE_SOLID[s]} font-medium`
+                            : s === "Lost" && losing
+                              ? STAGE_TONE.Lost
+                              : `${STAGE_TONE[s]} opacity-70 hover:opacity-100`
                         }`}
                       >
                         {STAGE_LABEL[s]}

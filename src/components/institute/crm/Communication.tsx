@@ -9,6 +9,7 @@
 
 import React, { useMemo, useState } from "react";
 import {
+  ArrowRight,
   ArrowRightLeft,
   CalendarClock,
   CheckSquare,
@@ -24,7 +25,7 @@ import {
   Search,
   UserRound,
 } from "lucide-react";
-import { CALL_OUTCOMES, relative, type Activity } from "./api";
+import { CALL_OUTCOMES, relative, StageBadge, stageFromLabel, type Activity } from "./api";
 
 const OUT = ["Email", "Sms", "WhatsApp"];
 const CHANGES = ["Stage", "Assignment", "Task", "System"];
@@ -258,6 +259,22 @@ function PinButton({ a, busy, onPin }: { a: Activity; busy: boolean; onPin: (a: 
   );
 }
 
+/** "Applied → Lost: Fees too high" shown with each stage in its colour */
+function StageChange({ body }: { body: string }) {
+  const m = body.match(/^(.+?) → ([^:]+)(?::\s*(.*))?$/);
+  const from = m && stageFromLabel(m[1]);
+  const to = m && stageFromLabel(m[2]);
+  if (!m || !from || !to) return <span className="text-muted-foreground">· {body}</span>;
+  return (
+    <span className="inline-flex flex-wrap items-center gap-1 align-middle">
+      <StageBadge stage={from} />
+      <ArrowRight aria-label="to" className="h-3 w-3 text-muted-foreground" />
+      <StageBadge stage={to} />
+      {m[3] && <span className="text-xs text-muted-foreground">({m[3]})</span>}
+    </span>
+  );
+}
+
 function Item({ a, personName, busy, onPin, onReply }: { a: Activity; personName: string; busy: boolean; onPin: (a: Activity, p: boolean) => void; onReply: (s: string) => void }) {
   const meta = a.meta ?? {};
   const failed = meta.delivered === false || meta.sent === false;
@@ -266,8 +283,8 @@ function Item({ a, personName, busy, onPin, onReply }: { a: Activity; personName
   if (CHANGES.includes(a.kind)) {
     return (
       <div className="pt-2 text-sm">
-        <span className="font-medium">{CHANGE_LABEL[a.kind] ?? a.kind}</span>
-        <span className="text-muted-foreground"> · {a.body}</span>
+        <span className="font-medium">{CHANGE_LABEL[a.kind] ?? a.kind}</span>{" "}
+        {a.kind === "Stage" ? <StageChange body={a.body} /> : <span className="text-muted-foreground">· {a.body}</span>}
         <span className="block text-xs text-muted-foreground">by {a.actorName}</span>
       </div>
     );

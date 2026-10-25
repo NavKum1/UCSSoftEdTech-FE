@@ -14,6 +14,8 @@ import {
   query,
   relative,
   StageBadge,
+  StageDot,
+  STAGE_BORDER,
   STAGE_LABEL,
   STAGES,
   type Filters,
@@ -456,10 +458,14 @@ function Board({ leads, onMove, openLead }: { leads: LeadRow[]; onMove: (l: Lead
               setDragging(null);
               setOver(null);
             }}
-            className={`flex w-64 shrink-0 flex-col rounded-2xl border p-2 ${over === stage ? "border-cyan-600 bg-cyan-600/5" : "border-border bg-muted/30"}`}
+            className={`flex w-64 shrink-0 flex-col rounded-2xl border border-t-4 p-2 ${STAGE_BORDER[stage]} ${over === stage ? "bg-cyan-600/5 ring-2 ring-cyan-600/40" : "border-x-border border-b-border bg-muted/30"}`}
           >
             <h3 className="flex items-center justify-between px-1.5 pb-2 text-xs font-semibold">
-              {STAGE_LABEL[stage]} <span className="tabular-nums text-muted-foreground">{items.length}</span>
+              <span className="inline-flex items-center gap-1.5">
+                <StageDot stage={stage} />
+                {STAGE_LABEL[stage]}
+              </span>
+              <span className="tabular-nums text-muted-foreground">{items.length}</span>
             </h3>
             <ul className="space-y-2">
               {items.slice(0, 100).map((l) => (
