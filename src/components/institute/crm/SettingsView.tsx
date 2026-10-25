@@ -29,7 +29,7 @@ export default function SettingsView({
 }) {
   const [section, setSection] = useState<"team" | "templates" | "integrations">(team.length === 0 ? "team" : "team");
   return (
-    <div className="grid gap-6 md:grid-cols-[12rem,1fr]">
+    <div className="grid gap-6 md:grid-cols-[12rem_1fr]">
       <nav aria-label="Settings" className="flex gap-1 md:flex-col">
         {(
           [
@@ -97,7 +97,7 @@ function TeamSettings({ getToken, team, reload }: { getToken: GetToken; team: Me
           e.preventDefault();
           save(form, form.id ? "Saved." : `${form.name} added.`);
         }}
-        className="grid gap-2 rounded-xl border border-border p-3 sm:grid-cols-[1fr,1fr,10rem,auto]"
+        className="grid gap-2 rounded-xl border border-border p-3 sm:grid-cols-[1fr_1fr_10rem_auto]"
       >
         <input className={input} placeholder="Name" aria-label="Name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required maxLength={200} />
         <input className={input} type="email" placeholder="Email" aria-label="Email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} required />

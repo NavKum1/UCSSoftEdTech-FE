@@ -52,7 +52,7 @@ export default function ShareTab({
       </section>
       {view.hasDraft && <p className="rounded-lg bg-amber-500/10 px-3 py-2 text-sm text-amber-900 dark:text-amber-200">You have unpublished changes. People see the published version until you publish.</p>}
 
-      <section className="grid gap-5 rounded-2xl border border-border bg-card p-5 lg:grid-cols-[1fr,14rem]">
+      <section className="grid gap-5 rounded-2xl border border-border bg-card p-5 lg:grid-cols-[1fr_14rem]">
         <div className="space-y-3">
           <h2 className="text-base font-semibold">Link and QR code</h2>
           <div>

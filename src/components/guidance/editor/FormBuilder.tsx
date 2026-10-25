@@ -250,7 +250,7 @@ export default function FormBuilder({ formId, backHref }: { formId: string; back
       </div>
 
       {(tab === "questions" || tab === "settings") && (
-        <div className="grid gap-6 xl:grid-cols-[1fr,26rem]">
+        <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(20rem,26rem)]">
           <div className="min-w-0">
             {tab === "questions" ? (
               <QuestionsEditor def={def} onChange={change} team={team} bank={bank} open={open} setOpen={setOpen} readOnly={readOnly} isPlatform={view.instituteId === "ceacdd2c-975f-41fd-959e-cc530240931c"} />
@@ -258,7 +258,7 @@ export default function FormBuilder({ formId, backHref }: { formId: string; back
               <SettingsEditor def={def} onChange={change} languages={languages} readOnly={readOnly} publicEnabled={view.publicEnabled} setPublic={setPublic} isDefault={view.isDefault} />
             )}
           </div>
-          <aside className="xl:sticky xl:top-20 xl:self-start">
+          <aside className="lg:sticky lg:top-24 lg:self-start">
             <div className="mb-2 flex items-center justify-between">
               <p className="text-xs font-medium text-muted-foreground">Live preview (nothing is sent)</p>
               <div className="inline-flex rounded-lg border border-border p-0.5" role="group" aria-label="Preview size">
@@ -631,7 +631,7 @@ function QuestionEditor({
 
   return (
     <fieldset disabled={readOnly} className="space-y-3 border-t border-border p-3 text-sm">
-      <div className="grid gap-3 sm:grid-cols-[1fr,12rem]">
+      <div className="grid gap-3 sm:grid-cols-[1fr_12rem]">
         <label className="block text-xs font-medium text-muted-foreground">
           {q.kind === "info" ? "Text" : "Question"}
           <textarea rows={2} className={input} value={q.label} maxLength={300} onChange={(e) => update({ label: e.target.value })} />

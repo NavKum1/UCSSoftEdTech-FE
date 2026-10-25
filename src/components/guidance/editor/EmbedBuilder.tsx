@@ -55,7 +55,7 @@ export default function EmbedBuilder({ instituteId, formId, formName, publicEnab
   );
 
   return (
-    <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr),minmax(0,1fr)]">
+    <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
       <div className="space-y-4 text-sm">
         {!publicEnabled && (
           <p className="rounded-lg bg-amber-500/10 px-3 py-2 text-amber-900 dark:text-amber-200">

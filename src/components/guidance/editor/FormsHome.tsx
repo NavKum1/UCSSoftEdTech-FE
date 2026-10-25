@@ -309,7 +309,7 @@ function NewForm({
             <X aria-hidden="true" className="h-5 w-5" />
           </button>
         </div>
-        <div className="grid min-h-0 flex-1 md:grid-cols-[22rem,1fr]">
+        <div className="grid min-h-0 flex-1 md:grid-cols-[22rem_1fr]">
           <div className="space-y-2 overflow-y-auto border-r border-border p-4">
             <p className="text-xs font-medium text-muted-foreground">Start from</p>
             {templates.map((t) => (

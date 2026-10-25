@@ -102,7 +102,7 @@ function AdvisorDesk() {
   if (forbidden) return <AccessNotice problem="forbidden" feature="the advisors' desk" />;
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[360px,1fr]">
+    <div className="grid gap-6 lg:grid-cols-[360px_1fr]">
       <section aria-labelledby="desk-list" className="space-y-3">
         <div className="flex items-center justify-between gap-2">
           <h1 id="desk-list" className="text-lg font-semibold">
