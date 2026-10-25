@@ -3,6 +3,7 @@
 /** A guidance conversation: messages (staff-only notes marked) and a reply box. Shared by the person, advisors and mentors. */
 
 import React, { useState } from "react";
+import AnswerFiles, { type AnswerFile } from "@/components/guidance/AnswerFiles";
 
 export interface GuidanceMessage {
   id: string;
@@ -23,7 +24,7 @@ export interface GuidanceRequestView {
   status: string;
   createdAt: string;
   lastActivityAt: string;
-  answers: { question: string; answer: string }[] | null;
+  answers: { question: string; answer: string; files?: AnswerFile[] }[] | null;
   quiz: {
     primaryTrack: string;
     secondaryTrack: string;
@@ -118,7 +119,7 @@ export function ReplyBox({ onSend, allowInternal, placeholder }: { onSend: (body
 }
 
 /** What the person told us: their answers and, if shared, their quiz. */
-export function RequestDetails({ r }: { r: GuidanceRequestView }) {
+export function RequestDetails({ r, files = false }: { r: GuidanceRequestView; /** Staff who may open attached files (advisors) */ files?: boolean }) {
   return (
     <div className="space-y-3 text-sm">
       <p className="whitespace-pre-wrap">
@@ -129,7 +130,10 @@ export function RequestDetails({ r }: { r: GuidanceRequestView }) {
           {r.answers.map((a, i) => (
             <div key={i}>
               <dt className="text-muted-foreground">{a.question}</dt>
-              <dd className="font-medium">{a.answer}</dd>
+              <dd className="font-medium">
+                {a.answer}
+                {files && <AnswerFiles files={a.files} />}
+              </dd>
             </div>
           ))}
         </dl>

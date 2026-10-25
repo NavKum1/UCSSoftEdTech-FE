@@ -8,6 +8,7 @@
 
 import React from "react";
 import type { LeadFull } from "./api";
+import AnswerFiles from "@/components/guidance/AnswerFiles";
 
 const CONFIDENCE: Record<string, string> = {
   clear: "A clear match: their answers point mostly to one area.",
@@ -32,7 +33,10 @@ export default function LeadProfile({ lead }: { lead: LeadFull }) {
             {lead.situation.map((s, i) => (
               <div key={i}>
                 <dt className="text-muted-foreground">{s.question}</dt>
-                <dd className="whitespace-pre-wrap font-medium">{s.answer}</dd>
+                <dd className="whitespace-pre-wrap font-medium">
+                  {s.answer}
+                  <AnswerFiles files={s.files} />
+                </dd>
               </div>
             ))}
           </dl>

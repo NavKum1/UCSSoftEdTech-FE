@@ -72,6 +72,8 @@ export interface Filters {
   type?: string;
   overdue?: boolean;
   awaiting?: boolean;
+  /** Only high-priority leads */
+  priority?: boolean;
   /** Received on or after (ISO) */
   from?: string;
   /** activity (default), received, followup or name */
@@ -100,6 +102,7 @@ export interface LeadRow {
   lastContactAt: string | null;
   lastReplyAt: string | null;
   awaitingReply: boolean;
+  highPriority?: boolean;
 }
 
 export interface LeadList {
@@ -116,6 +119,7 @@ export interface LeadList {
   me: { id: string; name: string } | null;
   mineOpen: number;
   awaiting: number;
+  highPriority?: number;
   unassignedOpen: number;
 }
 
@@ -159,7 +163,7 @@ export interface LeadFull {
   createdAt: string;
   requestType: "guidance" | "course";
   course: string | null;
-  situation: { question: string; answer: string }[] | null;
+  situation: { question: string; answer: string; files?: { id: string; name: string; size: number }[] }[] | null;
   quiz: QuizShare | null;
   stage: string;
   lostReason: string | null;
@@ -169,6 +173,7 @@ export interface LeadFull {
   nextFollowUpAt: string | null;
   firstResponseAt: string | null;
   doNotContact: boolean;
+  highPriority?: boolean;
   duplicates: string[];
   channels: { email: boolean; sms: boolean; whatsapp: boolean; replyByEmail: boolean };
   activities: Activity[];
@@ -247,6 +252,14 @@ export function relative(iso: string | null | undefined): string {
 export function localInput(d: Date): string {
   const p = (n: number) => String(n).padStart(2, "0");
   return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`;
+}
+
+export function PriorityBadge() {
+  return (
+    <span className="inline-flex items-center whitespace-nowrap rounded-full border border-rose-500/30 bg-rose-500/10 px-1.5 py-0.5 text-[11px] font-medium text-rose-800 dark:text-rose-300">
+      High priority
+    </span>
+  );
 }
 
 export function StageBadge({ stage }: { stage: string }) {

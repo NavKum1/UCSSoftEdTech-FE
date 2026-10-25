@@ -13,7 +13,8 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { MapPin, MessageCircleQuestion, X } from "lucide-react";
-import GuidanceFields, { fieldInput as input, toAnswers, type GuidanceQuestion } from "@/components/counselling/GuidanceFields";
+import GuidanceForm, { type SubmitPayload } from "@/components/guidance/form/GuidanceForm";
+import type { Fillable } from "@/components/guidance/form/model";
 import { COMMUNITY_INSTITUTE_ID } from "@/lib/community";
 
 type ApiFetch = (path: string, init?: RequestInit) => Promise<Response>;
@@ -219,31 +220,25 @@ function RequestDialog({
 }) {
   const formOwner = to.kind === "edulexa" ? COMMUNITY_INSTITUTE_ID : to.id;
   const recipient = to.kind === "edulexa" ? "Edulexa" : to.name;
-  const [questions, setQuestions] = useState<GuidanceQuestion[]>([]);
-  const [values, setValues] = useState<Record<string, string>>({});
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [phone, setPhone] = useState("");
-  const [unsure, setUnsure] = useState("");
+  const [fill, setFill] = useState<Fillable | null>(null);
+  const [failed, setFailed] = useState(false);
+  const [prefill, setPrefill] = useState<{ name?: string; email?: string }>({});
   const [shareQuiz, setShareQuiz] = useState(false);
-  const [consent, setConsent] = useState(false);
-  const [sending, setSending] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
     void (async () => {
       try {
-        const [me, form] = await Promise.all([apiFetch("/api/me/overview"), apiFetch(`/api/quiz/counselling/guidance-form?instituteId=${formOwner}`)]);
+        const [me, form] = await Promise.all([apiFetch("/api/me/overview"), apiFetch(`/api/guidance-forms/fill/${formOwner}`)]);
         if (cancelled) return;
         if (me.ok) {
           const o = (await me.json()) as { profile?: { name?: string; email?: string } };
-          setName((n) => n || realName(o.profile?.name));
-          setEmail((e) => e || o.profile?.email || "");
+          setPrefill({ name: realName(o.profile?.name), email: o.profile?.email ?? "" });
         }
-        if (form.ok) setQuestions(((await form.json()) as { questions: GuidanceQuestion[] }).questions);
+        if (form.ok) setFill((await form.json()) as Fillable);
+        else setFailed(true);
       } catch {
-        // the person types them in
+        if (!cancelled) setFailed(true);
       }
     })();
     return () => {
@@ -251,18 +246,23 @@ function RequestDialog({
     };
   }, [apiFetch, formOwner]);
 
-  const send = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setSending(true);
-    setError(null);
-    const common = { name: name.trim(), email: email.trim(), phone: phone.trim() || null };
+  const upload = async (file: File) => {
+    const data = new FormData();
+    data.append("file", file);
+    const res = await apiFetch(`/api/public/guidance/${formOwner}/upload?form=${fill?.formId}`, { method: "POST", body: data });
+    const body = await res.json().catch(() => null);
+    if (!res.ok) throw new Error(body?.error ?? "The file couldn't be attached.");
+    return body as { id: string; name: string; size: number };
+  };
+
+  const submit = async (p: SubmitPayload): Promise<string | null> => {
     try {
       const res =
         to.kind === "edulexa"
           ? await apiFetch("/api/guidance/requests", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ ...common, question: unsure.trim(), answers: toAnswers(values), shareQuizResult: hasQuizResult && shareQuiz, consent }),
+              body: JSON.stringify({ name: p.name, email: p.email, phone: p.phone, question: p.unsure, answers: p.answers, meta: p.meta, shareQuizResult: hasQuizResult && shareQuiz, consent: true }),
             })
           : await apiFetch("/api/quiz/counselling/refer-lead", {
               method: "POST",
@@ -270,91 +270,63 @@ function RequestDialog({
               body: JSON.stringify({
                 instituteId: to.id,
                 guidanceOnly: true,
-                candidateName: common.name,
-                candidateEmail: common.email,
-                candidatePhone: common.phone,
-                guidanceAnswers: toAnswers(values),
-                notes: unsure.trim(),
-                referralSource: "Ask an advisor",
+                candidateName: p.name,
+                candidateEmail: p.email,
+                candidatePhone: p.phone,
+                guidanceAnswers: p.answers,
+                guidanceFormId: p.meta.formId,
+                guidanceMeta: p.meta,
+                notes: p.unsure,
                 shareQuizResult: hasQuizResult && shareQuiz,
-                consent,
+                consent: true,
               }),
             });
-      const body = await res.json().catch(() => null);
-      if (res.ok)
+      if (res.ok) {
         onSent(
           to.kind === "edulexa"
-            ? `Sent to Edulexa. We'll reply in Edulexa and by email at ${common.email}.`
-            : `Sent to ${to.name}. An advisor will contact you at ${common.email}.`,
+            ? `Sent to Edulexa. We'll reply in Edulexa and by email at ${p.email}.`
+            : `Sent to ${to.name}. An advisor will contact you at ${p.email}.`,
         );
-      else if (res.status === 429 || res.status === 409) setError(body?.error ?? "You've sent several requests in a short time. Please try again later.");
-      else setError(body?.error ?? "The request couldn't be sent. Please try again.");
+        return null;
+      }
+      const body = await res.json().catch(() => null);
+      return res.status === 429 || res.status === 409 ? (body?.error ?? "You've sent several requests in a short time. Please try again later.") : (body?.error ?? "The request couldn't be sent. Please try again.");
     } catch {
-      setError("We couldn't reach the server. Please check your connection and try again.");
-    } finally {
-      setSending(false);
+      return "We couldn't reach the server. Please check your connection and try again.";
     }
   };
 
   const title = useMemo(() => (to.kind === "edulexa" ? "Ask Edulexa" : `Ask ${to.name}`), [to]);
   return (
     <Modal title={title} onClose={onClose}>
-      <form onSubmit={send} className="mt-4 space-y-4 text-sm">
-        <label className="block">
-          <span className="font-medium">What are you unsure about?</span>
-          <textarea
-            required
-            value={unsure}
-            maxLength={2000}
-            rows={3}
-            onChange={(e) => setUnsure(e.target.value)}
-            className={input}
-            placeholder="e.g. I can't decide between cloud and data, or which certification would help me get a job"
+      <div className="mt-4">
+        {failed && <p className="text-sm text-red-700 dark:text-red-400">The form couldn&apos;t be loaded. Please try again.</p>}
+        {!fill && !failed && <div className="h-48 animate-pulse rounded-xl bg-muted motion-reduce:animate-none" aria-busy="true" />}
+        {fill && (
+          <GuidanceForm
+            fill={fill}
+            mode="app"
+            bare
+            prefill={prefill}
+            upload={upload}
+            onSubmit={submit}
+            onSent={() => undefined}
+            consentText={
+              to.kind === "edulexa"
+                ? "Edulexa may use what I've written to help me. Nothing goes to an institute unless I approve it."
+                : `Send this to ${recipient} so an advisor can contact me.`
+            }
+            extras={
+              hasQuizResult ? (
+                <label className="flex items-start gap-2">
+                  <input type="checkbox" checked={shareQuiz} onChange={(e) => setShareQuiz(e.target.checked)} className="mt-0.5 h-4 w-4 accent-indigo-600" />
+                  <span>Also share my latest quiz answers and result (optional).</span>
+                </label>
+              ) : null
+            }
           />
-        </label>
-        <GuidanceFields questions={questions} values={values} onChange={(id, v) => setValues((s) => ({ ...s, [id]: v }))} />
-        <div className="grid gap-3 sm:grid-cols-2">
-          <label className="block">
-            <span className="font-medium">Name</span>
-            <input required value={name} maxLength={200} onChange={(e) => setName(e.target.value)} className={input} autoComplete="name" />
-          </label>
-          <label className="block">
-            <span className="font-medium">Email</span>
-            <input required type="email" value={email} maxLength={254} onChange={(e) => setEmail(e.target.value)} className={input} autoComplete="email" />
-          </label>
-          <label className="block sm:col-span-2">
-            <span className="font-medium">Phone</span> <span className="text-muted-foreground">(optional)</span>
-            <input type="tel" value={phone} maxLength={64} onChange={(e) => setPhone(e.target.value)} className={input} autoComplete="tel" />
-          </label>
-        </div>
-        {hasQuizResult && (
-          <label className="flex items-start gap-2">
-            <input type="checkbox" checked={shareQuiz} onChange={(e) => setShareQuiz(e.target.checked)} className="mt-0.5 h-4 w-4 accent-indigo-600" />
-            <span>Also share my latest quiz answers and result (optional).</span>
-          </label>
         )}
-        <label className="flex items-start gap-2">
-          <input type="checkbox" required checked={consent} onChange={(e) => setConsent(e.target.checked)} className="mt-0.5 h-4 w-4 accent-indigo-600" />
-          <span>
-            {to.kind === "edulexa"
-              ? "Edulexa may use what I've written to help me. Nothing goes to an institute unless I approve it."
-              : `Send this to ${recipient} so an advisor can contact me.`}
-          </span>
-        </label>
-        {error && (
-          <p role="alert" className="text-red-700 dark:text-red-400">
-            {error}
-          </p>
-        )}
-        <div className="flex justify-end gap-2">
-          <button type="button" onClick={onClose} className="rounded-xl border border-border px-4 py-2 font-medium hover:bg-muted">
-            Cancel
-          </button>
-          <button type="submit" disabled={!consent || sending} className="rounded-xl bg-indigo-600 px-4 py-2 font-semibold text-white hover:bg-indigo-500 disabled:opacity-60">
-            {sending ? "Sending…" : "Send"}
-          </button>
-        </div>
-      </form>
+      </div>
     </Modal>
   );
 }

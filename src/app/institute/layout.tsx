@@ -8,7 +8,7 @@ import { useAppAuth } from "@/lib/appAuth";
 const SECTIONS = [
   { href: "/institute/dashboard", label: "Admissions CRM" },
   { href: "/institute/counselling", label: "Counselling quiz and courses" },
-  { href: "/institute/guidance", label: "Career guidance form" },
+  { href: "/institute/guidance", label: "Guidance forms" },
 ];
 
 export default function InstituteLayout({ children }: { children: React.ReactNode }) {

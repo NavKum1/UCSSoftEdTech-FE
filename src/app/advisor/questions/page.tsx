@@ -1,14 +1,14 @@
-import GuidanceFormEditor from "@/components/guidance/GuidanceFormEditor";
+import FormsHome from "@/components/guidance/editor/FormsHome";
 import { COMMUNITY_INSTITUTE_ID } from "@/lib/community";
 
-// Edulexa's own guidance form: the questions people answer when they ask Edulexa (the platform tenant's form)
+// Edulexa's own guidance forms: the questions people answer when they ask Edulexa (the platform tenant's forms)
 export default function EdulexaQuestionsPage() {
   return (
-    <GuidanceFormEditor
+    <FormsHome
       instituteId={COMMUNITY_INSTITUTE_ID}
-      title="Edulexa's guidance questions"
+      basePath="/advisor/questions"
+      title="Edulexa's guidance forms"
       intro="The questions people answer when they ask Edulexa for career guidance."
-      withPublicForm={false}
       withProfile={false}
     />
   );

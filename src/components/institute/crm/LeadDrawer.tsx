@@ -30,6 +30,7 @@ import {
   localInput,
   LOST_REASONS,
   relative,
+  PriorityBadge,
   StageBadge,
   STAGE_LABEL,
   STAGE_SOLID,
@@ -175,6 +176,7 @@ export default function LeadDrawer({
                   {lead?.name || lead?.email || "Lead"}
                 </h2>
                 {lead && <StageBadge stage={lead.stage} />}
+                {lead?.highPriority && <PriorityBadge />}
                 {lead?.doNotContact && (
                   <span className="inline-flex items-center gap-1 rounded-full border border-red-500/30 bg-red-500/10 px-2 py-0.5 text-[11px] font-medium text-red-800 dark:text-red-300">
                     <Ban aria-hidden="true" className="h-3 w-3" /> Do not contact
@@ -349,6 +351,11 @@ export default function LeadDrawer({
                 </div>
 
                 <Tags tags={lead.tags} busy={busy} onChange={(tags) => update({ tags })} />
+                <label className="flex items-center gap-2 text-xs">
+                  <input type="checkbox" checked={!!lead.highPriority} disabled={busy} onChange={(e) => update({ highPriority: e.target.checked }, e.target.checked ? "Marked high priority." : "No longer high priority.")} />
+                  <span className="font-medium">High priority</span>
+                  <span className="text-muted-foreground">(set by form rules too)</span>
+                </label>
               </section>
 
               {/* Tabs */}

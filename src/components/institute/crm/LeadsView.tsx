@@ -14,6 +14,7 @@ import {
   OPEN_STAGES,
   query,
   relative,
+  PriorityBadge,
   StageBadge,
   StageDot,
   STAGE_BORDER,
@@ -34,6 +35,7 @@ const QUICK: { key: string; label: string; filters: Filters }[] = [
   { key: "mine", label: "My leads", filters: { owner: "me" } },
   { key: "new", label: "New", filters: { stage: "New" } },
   { key: "awaiting", label: "Replied, needs answer", filters: { awaiting: true } },
+  { key: "priority", label: "High priority", filters: { priority: true } },
   { key: "overdue", label: "Follow-up overdue", filters: { overdue: true } },
   { key: "unassigned", label: "Unassigned", filters: { owner: "none" } },
 ];
@@ -200,7 +202,7 @@ export default function LeadsView({
       <div className="flex flex-wrap items-center gap-1.5">
         {QUICK.map((q) => {
           const on = same(q.filters, { ...filters, q: undefined });
-          const count = q.key === "new" ? data?.counts?.New : q.key === "awaiting" ? data?.awaiting : undefined;
+          const count = q.key === "new" ? data?.counts?.New : q.key === "awaiting" ? data?.awaiting : q.key === "priority" ? data?.highPriority : undefined;
           return (
             <button
               key={q.key}
@@ -377,6 +379,7 @@ export default function LeadsView({
                       <span>{l.email ?? l.phone ?? "No contact details"}</span>
                       {l.duplicate && <span className="inline-flex items-center gap-0.5 text-amber-800 dark:text-amber-300" title="Another inquiry has the same email"><AlertTriangle aria-hidden="true" className="h-3 w-3" />Duplicate</span>}
                       {l.doNotContact && <span className="inline-flex items-center gap-0.5 text-red-700 dark:text-red-400"><Ban aria-hidden="true" className="h-3 w-3" />Do not contact</span>}
+                      {l.highPriority && <PriorityBadge />}
                       {l.tags.map((t) => <span key={t} className="rounded-full bg-muted px-1.5">{t}</span>)}
                     </div>
                   </td>
@@ -604,6 +607,11 @@ function BoardColumn({
               {l.name || l.email || "Unnamed lead"}
             </button>
             <p className="truncate text-xs text-muted-foreground">{l.requestType === "guidance" ? "Career guidance" : (l.course ?? "Course")}</p>
+            {l.highPriority && (
+              <p className="mt-1">
+                <PriorityBadge />
+              </p>
+            )}
             {l.awaitingReply && <p className="mt-1 inline-block rounded-full bg-cyan-600/10 px-2 py-0.5 text-[11px] font-medium text-cyan-800 dark:text-cyan-300">Replied, needs answer</p>}
             <p className="mt-1.5 truncate text-xs text-muted-foreground">{l.owner ?? "Unassigned"}</p>
             <p className={`text-xs ${l.overdue ? "font-medium text-red-700 dark:text-red-400" : "text-muted-foreground"}`}>

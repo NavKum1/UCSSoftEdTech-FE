@@ -171,7 +171,7 @@ function AdvisorDesk() {
                 </button>
               </div>
               <div className="mt-3">
-                <RequestDetails r={item} />
+                <RequestDetails r={item} files />
               </div>
             </div>
 
