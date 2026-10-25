@@ -5,7 +5,7 @@
  * a table or a board by stage (drag a card, or use its stage menu), selection with bulk assign / move / tag, and CSV export.
  */
 
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import { AlertTriangle, Ban, Bookmark, Download, KanbanSquare, List, Search, SlidersHorizontal, X } from "lucide-react";
 import { authenticatedFetch } from "@/lib/apiClient";
 import {
@@ -34,6 +34,23 @@ const QUICK: { key: string; label: string; filters: Filters }[] = [
   { key: "overdue", label: "Follow-up overdue", filters: { overdue: true } },
   { key: "unassigned", label: "Unassigned", filters: { owner: "none" } },
 ];
+
+const LAYOUT_KEY = "crm_layout";
+function readLayout(): "table" | "board" {
+  try {
+    return localStorage.getItem(LAYOUT_KEY) === "board" ? "board" : "table";
+  } catch {
+    return "table";
+  }
+}
+function subscribeLayout(cb: () => void) {
+  window.addEventListener(LAYOUT_KEY, cb);
+  window.addEventListener("storage", cb);
+  return () => {
+    window.removeEventListener(LAYOUT_KEY, cb);
+    window.removeEventListener("storage", cb);
+  };
+}
 
 const same = (a: Filters, b: Filters) => JSON.stringify(clean(a)) === JSON.stringify(clean(b));
 function clean(f: Filters): Filters {
@@ -66,13 +83,8 @@ export default function LeadsView({
   openLead: (id: string) => void;
   reload: () => void;
 }) {
-  const [layout, setLayout] = useState<"table" | "board">(() => {
-    try {
-      return (localStorage.getItem("crm_layout") as "table" | "board") || "table";
-    } catch {
-      return "table";
-    }
-  });
+  // The remembered layout is read from this browser only after hydration (the server always renders the table)
+  const layout = useSyncExternalStore(subscribeLayout, readLayout, () => "table" as const);
   const [more, setMore] = useState(false);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [views, setViews] = useState<SavedView[]>([]);
@@ -92,10 +104,10 @@ export default function LeadsView({
   }, [search, filters, setFilters]);
 
   const switchLayout = (l: "table" | "board") => {
-    setLayout(l);
     try {
-      localStorage.setItem("crm_layout", l);
+      localStorage.setItem(LAYOUT_KEY, l);
     } catch {}
+    window.dispatchEvent(new Event(LAYOUT_KEY));
   };
 
   const leads = useMemo(() => data?.leads ?? [], [data]);
