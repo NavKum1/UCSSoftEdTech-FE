@@ -79,6 +79,7 @@ export default function GuidanceForm({
   onSubmit,
   onSent,
   campaign,
+  referrer,
   resumeToken,
 }: {
   fill: Fillable;
@@ -94,6 +95,8 @@ export default function GuidanceForm({
   /** Called after sending (the caller shows its own confirmation); without it the form thanks the person */
   onSent?: () => void;
   campaign?: string | null;
+  /** The page the form is on (embedded); else the referring site */
+  referrer?: string | null;
   resumeToken?: string | null;
 }) {
   const def = fill.definition;
@@ -218,7 +221,7 @@ export default function GuidanceForm({
         formId: fill.formId,
         language: lang,
         campaign: campaign ?? null,
-        referrer: typeof document !== "undefined" && document.referrer ? new URL(document.referrer).hostname : null,
+        referrer: referrer || (typeof document !== "undefined" && document.referrer ? new URL(document.referrer).hostname : null),
         visitId: visit.current?.id ?? randomId(),
         durationSeconds: secondsSince(visit.current?.at),
       },

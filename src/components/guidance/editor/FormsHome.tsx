@@ -9,7 +9,8 @@
 import React, { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Copy, ExternalLink, FileText, Plus, Star, Trash2, X } from "lucide-react";
+import { Code2, Copy, ExternalLink, FileText, Plus, Star, Trash2, X } from "lucide-react";
+import EmbedBuilder from "./EmbedBuilder";
 import { AccessNotice, useLatestRef, useLegacyApi } from "@/lib/legacyApi";
 import GuidanceForm from "@/components/guidance/form/GuidanceForm";
 import type { FormDef } from "@/components/guidance/form/model";
@@ -66,6 +67,8 @@ export default function FormsHome({
   const [notice, setNotice] = useState<{ ok: boolean; text: string } | null>(null);
   const [creating, setCreating] = useState(false);
   const [copied, setCopied] = useState<string | null>(null);
+  const [embedFor, setEmbedFor] = useState<FormRow | null>(null);
+  const [owner, setOwner] = useState<string>("");
 
   const load = useCallback(async () => {
     const res = await apiFetch(`/api/guidance-forms${q}`);
@@ -73,6 +76,7 @@ export default function FormsHome({
     const d = await res.json();
     setForms(d.forms);
     setCanEdit(d.canEdit);
+    setOwner(d.instituteId);
   }, [apiFetch, q]);
   const loadRef = useLatestRef(load);
   useEffect(() => {
@@ -140,19 +144,21 @@ export default function FormsHome({
                 <Link href={`${basePath}/${f.id}?tab=insights`} className="rounded-lg border border-border px-3 py-1.5 text-xs hover:bg-muted">
                   Insights
                 </Link>
+                <button
+                  type="button"
+                  onClick={() => navigator.clipboard?.writeText(f.link).then(() => setCopied(f.id))}
+                  title={f.publicEnabled ? undefined : "Works once the public link is on"}
+                  className="inline-flex items-center gap-1 rounded-lg border border-border px-3 py-1.5 text-xs hover:bg-muted"
+                >
+                  <Copy aria-hidden="true" className="h-3 w-3" /> {copied === f.id ? "Copied" : "Copy link"}
+                </button>
+                <button type="button" onClick={() => setEmbedFor(f)} className="inline-flex items-center gap-1 rounded-lg border border-border px-3 py-1.5 text-xs hover:bg-muted">
+                  <Code2 aria-hidden="true" className="h-3 w-3" /> Put on your website
+                </button>
                 {f.publicEnabled && (
-                  <>
-                    <button
-                      type="button"
-                      onClick={() => navigator.clipboard?.writeText(f.link).then(() => setCopied(f.id))}
-                      className="inline-flex items-center gap-1 rounded-lg border border-border px-3 py-1.5 text-xs hover:bg-muted"
-                    >
-                      <Copy aria-hidden="true" className="h-3 w-3" /> {copied === f.id ? "Copied" : "Copy link"}
-                    </button>
-                    <a href={f.link} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 rounded-lg border border-border px-3 py-1.5 text-xs hover:bg-muted">
-                      <ExternalLink aria-hidden="true" className="h-3 w-3" /> Open
-                    </a>
-                  </>
+                  <a href={f.link} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 rounded-lg border border-border px-3 py-1.5 text-xs hover:bg-muted">
+                    <ExternalLink aria-hidden="true" className="h-3 w-3" /> Open
+                  </a>
                 )}
                 {canEdit && (
                   <>
@@ -182,6 +188,39 @@ export default function FormsHome({
       )}
 
       {withProfile && canEdit && <ProfileCard apiFetch={apiFetch} q={q} ready={ready} />}
+
+      {embedFor && (
+        <div className="fixed inset-0 z-100 flex items-start justify-center overflow-y-auto bg-black/40 p-4" onClick={() => setEmbedFor(null)}>
+          <div role="dialog" aria-modal="true" aria-labelledby="embed-title" className="my-8 w-full max-w-5xl rounded-2xl bg-card p-5 shadow-xl" onClick={(e) => e.stopPropagation()}>
+            <div className="mb-4 flex items-center justify-between gap-3">
+              <h2 id="embed-title" className="text-base font-semibold">
+                Put “{embedFor.name}” on your website
+              </h2>
+              <div className="flex items-center gap-2">
+                {canEdit && !embedFor.publicEnabled && (
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      const res = await apiFetch(`/api/guidance-forms/${embedFor.id}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ publicEnabled: true }) });
+                      if (res.ok) {
+                        setEmbedFor({ ...embedFor, publicEnabled: true });
+                        load();
+                      }
+                    }}
+                    className="rounded-lg bg-cyan-700 px-3 py-1.5 text-xs font-medium text-white hover:bg-cyan-800"
+                  >
+                    Turn on the public link
+                  </button>
+                )}
+                <button type="button" onClick={() => setEmbedFor(null)} aria-label="Close" className="rounded-lg p-1.5 hover:bg-muted">
+                  <X aria-hidden="true" className="h-5 w-5" />
+                </button>
+              </div>
+            </div>
+            <EmbedBuilder instituteId={owner} formId={embedFor.id} formName={embedFor.name} publicEnabled={embedFor.publicEnabled} />
+          </div>
+        </div>
+      )}
 
       {creating && (
         <NewForm

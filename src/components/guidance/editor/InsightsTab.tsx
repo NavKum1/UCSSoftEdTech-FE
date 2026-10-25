@@ -17,6 +17,7 @@ interface Insights {
   medianSeconds: number | null;
   dropOff: { questionId: string; question: string; stopped: number }[];
   bySource: { key: string; count: number }[];
+  byPage: { key: string; count: number }[];
   byLanguage: { key: string; name: string; count: number }[];
   daily: { day: string; count: number }[];
 }
@@ -113,6 +114,9 @@ export default function InsightsTab({ formId, apiFetch, instituteId }: { formId:
         </Card>
         <Card title="Sources and campaigns">
           <List rows={data.bySource.map((x) => [x.key === "website" ? "Website / link" : x.key === "app" ? "Inside Edulexa" : x.key, x.count])} />
+        </Card>
+        <Card title="Pages it was sent from" note="Where the form sits on your website (or the site people came from).">
+          <List rows={(data.byPage ?? []).map((x) => [x.key, x.count])} />
         </Card>
         <Card title="Languages">
           <List rows={data.byLanguage.map((x) => [x.name, x.count])} />
