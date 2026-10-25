@@ -180,6 +180,7 @@ export default function LeadsView({
               type="button"
               aria-pressed={on}
               onClick={() => setFilters({ ...q.filters, q: filters.q })}
+              title={q.key === "overdue" ? "Leads with a follow-up whose due time has passed and isn't ticked off" : undefined}
               className={`rounded-full border px-3 py-1.5 text-xs font-medium ${on ? "border-cyan-700 bg-cyan-700 text-white" : "border-border bg-card hover:bg-muted"}`}
             >
               {q.label}
@@ -452,10 +453,13 @@ function Board({ leads, onMove, openLead }: { leads: LeadRow[]; onMove: (l: Lead
                     {l.name || l.email || "Unnamed lead"}
                   </button>
                   <p className="truncate text-xs text-muted-foreground">{l.requestType === "guidance" ? "Career guidance" : (l.course ?? "Course")}</p>
-                  <div className="mt-1.5 flex items-center justify-between gap-2 text-xs">
-                    <span className="truncate text-muted-foreground">{l.owner ?? "Unassigned"}</span>
-                    {l.nextFollowUpAt && <span className={l.overdue ? "font-medium text-red-700 dark:text-red-400" : "text-muted-foreground"}>{relative(l.nextFollowUpAt)}</span>}
-                  </div>
+                  <p className="mt-1.5 truncate text-xs text-muted-foreground">{l.owner ?? "Unassigned"}</p>
+                  <p className={`text-xs ${l.overdue ? "font-medium text-red-700 dark:text-red-400" : "text-muted-foreground"}`}>
+                    {l.nextFollowUpAt ? `${l.overdue ? "Follow-up overdue" : "Next follow-up"} ${relative(l.nextFollowUpAt)}` : "No follow-up scheduled"}
+                  </p>
+                  <button type="button" onClick={() => openLead(l.leadId)} className="mt-1.5 w-full rounded-md border border-cyan-600/40 px-1.5 py-1 text-xs font-medium text-cyan-800 hover:bg-cyan-600/10 dark:text-cyan-300">
+                    Open: notes, calls, follow-ups
+                  </button>
                   <select aria-label={`Move ${l.name ?? "lead"}`} value={l.stage} onChange={(e) => onMove(l, e.target.value)} className="mt-1.5 w-full rounded-md border border-border bg-background px-1.5 py-1 text-xs">
                     {STAGES.map((s) => (
                       <option key={s} value={s}>
