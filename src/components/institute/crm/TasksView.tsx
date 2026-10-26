@@ -3,7 +3,7 @@
 /** Open follow-ups across all leads: mine, overdue or everyone's, soonest first; tick one off or open its lead. */
 
 import React, { useCallback, useEffect, useState } from "react";
-import { crm, relative, type GetToken, type OpenTask } from "./api";
+import { crm, PriorityBadge, relative, STAGE_LABEL, StageDot, type GetToken, type OpenTask } from "./api";
 
 export default function TasksView({ getToken, openLead, version }: { getToken: GetToken; openLead: (id: string) => void; version: number }) {
   const [scope, setScope] = useState<"mine" | "overdue" | "all">("mine");
@@ -78,13 +78,39 @@ export default function TasksView({ getToken, openLead, version }: { getToken: G
                 <li key={t.id} className="flex items-center gap-3 px-4 py-3 text-sm">
                   <input type="checkbox" aria-label={`Done: ${t.title}`} onChange={() => done(t.id)} />
                   <div className="min-w-0 flex-1">
-                    <p className="font-medium">{t.title}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {new Date(t.dueAt).toLocaleString([], { dateStyle: "medium", timeStyle: "short" })} ({relative(t.dueAt)}){t.assignee ? ` · ${t.assignee}` : ""}
+                    <p className="font-medium">
+                      {t.title}
+                      {t.lead && (
+                        <>
+                          <span className="font-normal text-muted-foreground"> with </span>
+                          <button type="button" onClick={() => openLead(t.leadId)} className="hover:underline">
+                            {t.lead}
+                          </button>
+                        </>
+                      )}
                     </p>
+                    <p className="text-xs text-muted-foreground">
+                      {new Date(t.dueAt).toLocaleString([], { dateStyle: "medium", timeStyle: "short" })} ({relative(t.dueAt)}){t.assignee ? ` · for ${t.assignee}` : ""}
+                    </p>
+                    <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
+                      {t.phone && (
+                        <a href={`tel:${t.phone}`} className="text-cyan-700 hover:underline dark:text-cyan-400">
+                          {t.phone}
+                        </a>
+                      )}
+                      {t.email && <span className="truncate">{t.email}</span>}
+                      {t.interest && <span>{t.interest}</span>}
+                      {t.stage && (
+                        <span className="inline-flex items-center gap-1">
+                          <StageDot stage={t.stage} />
+                          {STAGE_LABEL[t.stage] ?? t.stage}
+                        </span>
+                      )}
+                      {t.highPriority && <PriorityBadge />}
+                    </div>
                   </div>
                   <button type="button" onClick={() => openLead(t.leadId)} className="shrink-0 rounded-lg border border-border px-2.5 py-1.5 text-xs hover:bg-muted">
-                    {t.lead ?? "Open lead"}
+                    Open lead
                   </button>
                 </li>
               ))}

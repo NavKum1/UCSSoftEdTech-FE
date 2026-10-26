@@ -33,7 +33,7 @@ export default function AiDraft({
 }: {
   leadId: string;
   getToken: GetToken;
-  onDraft: (d: { subject: string; body: string; sample: boolean }) => void;
+  onDraft: (d: { subject: string; body: string; sample: boolean; sentToAi?: string }) => void;
   onClose: () => void;
   /** Suggested purpose from the lead's state */
   suggest?: string;
@@ -49,7 +49,7 @@ export default function AiDraft({
     setBusy(true);
     setError(null);
     try {
-      const d = await crm<{ subject: string; body: string; sample: boolean }>(getToken, `/leads/${leadId}/email/draft`, {
+      const d = await crm<{ subject: string; body: string; sample: boolean; sentToAi?: string }>(getToken, `/leads/${leadId}/email/draft`, {
         method: "POST",
         body: { purpose, tone, language, instructions: instructions.trim() || null },
       });
@@ -119,7 +119,7 @@ export default function AiDraft({
           <Sparkles aria-hidden="true" className="h-4 w-4" /> {busy ? "Writing…" : "Write a draft"}
         </button>
         <p className="text-xs text-muted-foreground">
-          Uses what they shared and your conversation; facts like fees or dates come only from what you write above. Check it before sending.
+          Uses what they shared and your conversation; facts like fees or dates come only from what you write above. Names, contact details and ID numbers are removed before anything goes to the AI. Check it before sending.
         </p>
       </div>
     </div>

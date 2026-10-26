@@ -6,7 +6,7 @@
 export type UiKey =
   | "next" | "back" | "send" | "sending" | "optional" | "unsure" | "unsurePh" | "details" | "name" | "email" | "phone" | "step" | "of"
   | "minutes" | "other" | "otherPh" | "yes" | "no" | "choose" | "attach" | "uploading" | "remove" | "saveLater" | "saved" | "copy" | "copied"
-  | "thanks" | "language" | "fileHint";
+  | "thanks" | "language" | "fileHint" | "partialNotice";
 
 export const UI: Record<string, Record<UiKey, string>> = {
   en: {
@@ -16,6 +16,7 @@ export const UI: Record<string, Record<UiKey, string>> = {
     choose: "Choose…", attach: "Attach a file", uploading: "Uploading…", remove: "Remove", saveLater: "Save and finish later",
     saved: "Saved. Use this link to come back within 30 days:", copy: "Copy link", copied: "Copied", thanks: "Thank you. Your request was sent.",
     language: "Language", fileHint: "PDF, Word, JPG or PNG, up to 5 MB.",
+    partialNotice: "We save your details as you go so {institute} can help you.",
   },
   hi: {
     next: "आगे", back: "पीछे", send: "भेजें", sending: "भेजा जा रहा है…", optional: "वैकल्पिक", unsure: "आप किस बारे में निश्चित नहीं हैं?",
@@ -24,6 +25,7 @@ export const UI: Record<string, Record<UiKey, string>> = {
     attach: "फ़ाइल जोड़ें", uploading: "अपलोड हो रहा है…", remove: "हटाएँ", saveLater: "सहेजें और बाद में पूरा करें",
     saved: "सहेजा गया। 30 दिनों के भीतर लौटने के लिए यह लिंक इस्तेमाल करें:", copy: "लिंक कॉपी करें", copied: "कॉपी हो गया",
     thanks: "धन्यवाद। आपका अनुरोध भेज दिया गया है।", language: "भाषा", fileHint: "PDF, Word, JPG या PNG, 5 MB तक।",
+    partialNotice: "हम आपकी जानकारी साथ-साथ सहेजते हैं ताकि {institute} आपकी मदद कर सके।",
   },
   bn: {
     next: "পরবর্তী", back: "পিছনে", send: "পাঠান", sending: "পাঠানো হচ্ছে…", optional: "ঐচ্ছিক", unsure: "আপনি কোন বিষয়ে নিশ্চিত নন?",
@@ -32,6 +34,7 @@ export const UI: Record<string, Record<UiKey, string>> = {
     attach: "ফাইল যোগ করুন", uploading: "আপলোড হচ্ছে…", remove: "সরান", saveLater: "সংরক্ষণ করে পরে শেষ করুন",
     saved: "সংরক্ষিত। ৩০ দিনের মধ্যে ফিরে আসতে এই লিঙ্কটি ব্যবহার করুন:", copy: "লিঙ্ক কপি করুন", copied: "কপি হয়েছে",
     thanks: "ধন্যবাদ। আপনার অনুরোধ পাঠানো হয়েছে।", language: "ভাষা", fileHint: "PDF, Word, JPG বা PNG, সর্বোচ্চ 5 MB।",
+    partialNotice: "আমরা আপনার তথ্য সঙ্গে সঙ্গে সংরক্ষণ করি, যাতে {institute} আপনাকে সাহায্য করতে পারে।",
   },
   ta: {
     next: "அடுத்து", back: "பின்செல்", send: "அனுப்பு", sending: "அனுப்பப்படுகிறது…", optional: "விருப்பத்தேர்வு", unsure: "எதைப் பற்றி உங்களுக்குத் தெளிவில்லை?",
@@ -40,6 +43,7 @@ export const UI: Record<string, Record<UiKey, string>> = {
     attach: "கோப்பை இணைக்கவும்", uploading: "பதிவேற்றப்படுகிறது…", remove: "நீக்கு", saveLater: "சேமித்து பிறகு முடிக்கவும்",
     saved: "சேமிக்கப்பட்டது. 30 நாட்களுக்குள் திரும்ப வர இந்த இணைப்பைப் பயன்படுத்தவும்:", copy: "இணைப்பை நகலெடு", copied: "நகலெடுக்கப்பட்டது",
     thanks: "நன்றி. உங்கள் கோரிக்கை அனுப்பப்பட்டது.", language: "மொழி", fileHint: "PDF, Word, JPG அல்லது PNG, 5 MB வரை.",
+    partialNotice: "{institute} உங்களுக்கு உதவ, நீங்கள் நிரப்பும்போதே உங்கள் விவரங்களைச் சேமிக்கிறோம்.",
   },
   te: {
     next: "తదుపరి", back: "వెనుకకు", send: "పంపండి", sending: "పంపుతోంది…", optional: "ఐచ్ఛికం", unsure: "మీకు దేని గురించి స్పష్టత లేదు?",
@@ -48,6 +52,7 @@ export const UI: Record<string, Record<UiKey, string>> = {
     attach: "ఫైల్ జత చేయండి", uploading: "అప్‌లోడ్ అవుతోంది…", remove: "తీసివేయండి", saveLater: "సేవ్ చేసి తర్వాత పూర్తి చేయండి",
     saved: "సేవ్ అయింది. 30 రోజుల్లో తిరిగి రావడానికి ఈ లింక్ వాడండి:", copy: "లింక్ కాపీ చేయండి", copied: "కాపీ అయింది",
     thanks: "ధన్యవాదాలు. మీ అభ్యర్థన పంపబడింది.", language: "భాష", fileHint: "PDF, Word, JPG లేదా PNG, 5 MB వరకు.",
+    partialNotice: "{institute} మీకు సహాయం చేయడానికి, మీరు నింపుతున్నప్పుడే మీ వివరాలను సేవ్ చేస్తాము.",
   },
   mr: {
     next: "पुढे", back: "मागे", send: "पाठवा", sending: "पाठवत आहे…", optional: "ऐच्छिक", unsure: "तुम्हाला कशाबद्दल खात्री नाही?",
@@ -56,6 +61,7 @@ export const UI: Record<string, Record<UiKey, string>> = {
     attach: "फाइल जोडा", uploading: "अपलोड होत आहे…", remove: "काढा", saveLater: "जतन करा आणि नंतर पूर्ण करा",
     saved: "जतन झाले. 30 दिवसांत परत येण्यासाठी ही लिंक वापरा:", copy: "लिंक कॉपी करा", copied: "कॉपी झाले",
     thanks: "धन्यवाद. तुमची विनंती पाठवली आहे.", language: "भाषा", fileHint: "PDF, Word, JPG किंवा PNG, 5 MB पर्यंत.",
+    partialNotice: "{institute} तुम्हाला मदत करू शकेल म्हणून आम्ही तुमची माहिती भरताना जतन करतो.",
   },
   kn: {
     next: "ಮುಂದೆ", back: "ಹಿಂದೆ", send: "ಕಳುಹಿಸಿ", sending: "ಕಳುಹಿಸಲಾಗುತ್ತಿದೆ…", optional: "ಐಚ್ಛಿಕ", unsure: "ನಿಮಗೆ ಯಾವುದರ ಬಗ್ಗೆ ಖಚಿತತೆ ಇಲ್ಲ?",
@@ -64,6 +70,7 @@ export const UI: Record<string, Record<UiKey, string>> = {
     attach: "ಫೈಲ್ ಲಗತ್ತಿಸಿ", uploading: "ಅಪ್‌ಲೋಡ್ ಆಗುತ್ತಿದೆ…", remove: "ತೆಗೆದುಹಾಕಿ", saveLater: "ಉಳಿಸಿ, ನಂತರ ಪೂರ್ಣಗೊಳಿಸಿ",
     saved: "ಉಳಿಸಲಾಗಿದೆ. 30 ದಿನಗಳಲ್ಲಿ ಹಿಂತಿರುಗಲು ಈ ಲಿಂಕ್ ಬಳಸಿ:", copy: "ಲಿಂಕ್ ನಕಲಿಸಿ", copied: "ನಕಲಿಸಲಾಗಿದೆ",
     thanks: "ಧನ್ಯವಾದಗಳು. ನಿಮ್ಮ ವಿನಂತಿಯನ್ನು ಕಳುಹಿಸಲಾಗಿದೆ.", language: "ಭಾಷೆ", fileHint: "PDF, Word, JPG ಅಥವಾ PNG, 5 MB ವರೆಗೆ.",
+    partialNotice: "{institute} ನಿಮಗೆ ಸಹಾಯ ಮಾಡಲು, ನೀವು ತುಂಬುತ್ತಿರುವಾಗಲೇ ನಿಮ್ಮ ವಿವರಗಳನ್ನು ಉಳಿಸುತ್ತೇವೆ.",
   },
   ml: {
     next: "അടുത്തത്", back: "പിന്നോട്ട്", send: "അയയ്ക്കുക", sending: "അയയ്ക്കുന്നു…", optional: "ഐച്ഛികം", unsure: "എന്തിനെക്കുറിച്ചാണ് നിങ്ങൾക്ക് ഉറപ്പില്ലാത്തത്?",
@@ -72,6 +79,7 @@ export const UI: Record<string, Record<UiKey, string>> = {
     attach: "ഫയൽ ചേർക്കുക", uploading: "അപ്‌ലോഡ് ചെയ്യുന്നു…", remove: "നീക്കം ചെയ്യുക", saveLater: "സേവ് ചെയ്ത് പിന്നീട് പൂർത്തിയാക്കുക",
     saved: "സേവ് ചെയ്തു. 30 ദിവസത്തിനുള്ളിൽ തിരികെ വരാൻ ഈ ലിങ്ക് ഉപയോഗിക്കുക:", copy: "ലിങ്ക് പകർത്തുക", copied: "പകർത്തി",
     thanks: "നന്ദി. നിങ്ങളുടെ അഭ്യർത്ഥന അയച്ചു.", language: "ഭാഷ", fileHint: "PDF, Word, JPG അല്ലെങ്കിൽ PNG, 5 MB വരെ.",
+    partialNotice: "{institute} നിങ്ങളെ സഹായിക്കാൻ, നിങ്ങൾ പൂരിപ്പിക്കുമ്പോൾ തന്നെ നിങ്ങളുടെ വിവരങ്ങൾ ഞങ്ങൾ സൂക്ഷിക്കുന്നു.",
   },
   gu: {
     next: "આગળ", back: "પાછળ", send: "મોકલો", sending: "મોકલી રહ્યા છીએ…", optional: "વૈકલ્પિક", unsure: "તમને શેના વિશે ખાતરી નથી?",
@@ -80,6 +88,7 @@ export const UI: Record<string, Record<UiKey, string>> = {
     attach: "ફાઇલ જોડો", uploading: "અપલોડ થઈ રહ્યું છે…", remove: "દૂર કરો", saveLater: "સાચવો અને પછી પૂરું કરો",
     saved: "સાચવ્યું. 30 દિવસમાં પાછા આવવા આ લિંક વાપરો:", copy: "લિંક કૉપિ કરો", copied: "કૉપિ થયું",
     thanks: "આભાર. તમારી વિનંતી મોકલાઈ ગઈ છે.", language: "ભાષા", fileHint: "PDF, Word, JPG અથવા PNG, 5 MB સુધી.",
+    partialNotice: "{institute} તમારી મદદ કરી શકે તે માટે અમે તમારી વિગતો ભરતાં ભરતાં સાચવીએ છીએ.",
   },
   pa: {
     next: "ਅੱਗੇ", back: "ਪਿੱਛੇ", send: "ਭੇਜੋ", sending: "ਭੇਜਿਆ ਜਾ ਰਿਹਾ ਹੈ…", optional: "ਵਿਕਲਪਿਕ", unsure: "ਤੁਹਾਨੂੰ ਕਿਸ ਬਾਰੇ ਯਕੀਨ ਨਹੀਂ?",
@@ -88,6 +97,7 @@ export const UI: Record<string, Record<UiKey, string>> = {
     attach: "ਫ਼ਾਈਲ ਜੋੜੋ", uploading: "ਅੱਪਲੋਡ ਹੋ ਰਿਹਾ ਹੈ…", remove: "ਹਟਾਓ", saveLater: "ਸੰਭਾਲੋ ਅਤੇ ਬਾਅਦ ਵਿੱਚ ਪੂਰਾ ਕਰੋ",
     saved: "ਸੰਭਾਲਿਆ ਗਿਆ। 30 ਦਿਨਾਂ ਵਿੱਚ ਵਾਪਸ ਆਉਣ ਲਈ ਇਹ ਲਿੰਕ ਵਰਤੋ:", copy: "ਲਿੰਕ ਕਾਪੀ ਕਰੋ", copied: "ਕਾਪੀ ਹੋ ਗਿਆ",
     thanks: "ਧੰਨਵਾਦ। ਤੁਹਾਡੀ ਬੇਨਤੀ ਭੇਜ ਦਿੱਤੀ ਗਈ ਹੈ।", language: "ਭਾਸ਼ਾ", fileHint: "PDF, Word, JPG ਜਾਂ PNG, 5 MB ਤੱਕ।",
+    partialNotice: "{institute} ਤੁਹਾਡੀ ਮਦਦ ਕਰ ਸਕੇ, ਇਸ ਲਈ ਅਸੀਂ ਤੁਹਾਡੀ ਜਾਣਕਾਰੀ ਨਾਲ-ਨਾਲ ਸੰਭਾਲਦੇ ਹਾਂ।",
   },
   ur: {
     next: "آگے", back: "پیچھے", send: "بھیجیں", sending: "بھیجا جا رہا ہے…", optional: "اختیاری", unsure: "آپ کو کس بارے میں یقین نہیں؟",
@@ -96,6 +106,7 @@ export const UI: Record<string, Record<UiKey, string>> = {
     attach: "فائل منسلک کریں", uploading: "اپ لوڈ ہو رہا ہے…", remove: "ہٹائیں", saveLater: "محفوظ کریں اور بعد میں مکمل کریں",
     saved: "محفوظ ہو گیا۔ 30 دن کے اندر واپس آنے کے لیے یہ لنک استعمال کریں:", copy: "لنک کاپی کریں", copied: "کاپی ہو گیا",
     thanks: "شکریہ۔ آپ کی درخواست بھیج دی گئی ہے۔", language: "زبان", fileHint: "PDF، Word، JPG یا PNG، 5 MB تک۔",
+    partialNotice: "ہم آپ کی معلومات ساتھ ساتھ محفوظ کرتے ہیں تاکہ {institute} آپ کی مدد کر سکے۔",
   },
   ar: {
     next: "التالي", back: "السابق", send: "إرسال", sending: "جارٍ الإرسال…", optional: "اختياري", unsure: "ما الذي لست متأكدًا منه؟",
@@ -104,6 +115,7 @@ export const UI: Record<string, Record<UiKey, string>> = {
     attach: "إرفاق ملف", uploading: "جارٍ الرفع…", remove: "إزالة", saveLater: "احفظ وأكمل لاحقًا",
     saved: "تم الحفظ. استخدم هذا الرابط للعودة خلال 30 يومًا:", copy: "نسخ الرابط", copied: "تم النسخ",
     thanks: "شكرًا لك. تم إرسال طلبك.", language: "اللغة", fileHint: "PDF أو Word أو JPG أو PNG، حتى 5 ميغابايت.",
+    partialNotice: "نحفظ بياناتك أثناء التعبئة حتى يتمكن {institute} من مساعدتك.",
   },
   es: {
     next: "Siguiente", back: "Atrás", send: "Enviar", sending: "Enviando…", optional: "opcional", unsure: "¿Sobre qué tienes dudas?",
@@ -112,6 +124,7 @@ export const UI: Record<string, Record<UiKey, string>> = {
     yes: "Sí", no: "No", choose: "Elige…", attach: "Adjuntar un archivo", uploading: "Subiendo…", remove: "Quitar", saveLater: "Guardar y terminar después",
     saved: "Guardado. Usa este enlace para volver en un plazo de 30 días:", copy: "Copiar enlace", copied: "Copiado",
     thanks: "Gracias. Tu solicitud se ha enviado.", language: "Idioma", fileHint: "PDF, Word, JPG o PNG, hasta 5 MB.",
+    partialNotice: "Guardamos tus datos a medida que avanzas para que {institute} pueda ayudarte.",
   },
   fr: {
     next: "Suivant", back: "Retour", send: "Envoyer", sending: "Envoi…", optional: "facultatif", unsure: "Sur quoi hésitez-vous ?",
@@ -120,6 +133,7 @@ export const UI: Record<string, Record<UiKey, string>> = {
     yes: "Oui", no: "Non", choose: "Choisir…", attach: "Joindre un fichier", uploading: "Envoi du fichier…", remove: "Retirer",
     saveLater: "Enregistrer et terminer plus tard", saved: "Enregistré. Utilisez ce lien pour revenir sous 30 jours :", copy: "Copier le lien",
     copied: "Copié", thanks: "Merci. Votre demande a été envoyée.", language: "Langue", fileHint: "PDF, Word, JPG ou PNG, jusqu'à 5 Mo.",
+    partialNotice: "Nous enregistrons vos informations au fur et à mesure pour que {institute} puisse vous aider.",
   },
 };
 

@@ -42,6 +42,7 @@ import {
   type Rule,
   type Section,
 } from "@/components/guidance/form/model";
+import { UI } from "@/components/guidance/form/uiText";
 import ShareTab from "./ShareTab";
 import InsightsTab from "./InsightsTab";
 import TranslationsTab from "./TranslationsTab";
@@ -72,6 +73,9 @@ const TABS: [Tab, string][] = [
 export const input = "mt-1 block w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:border-cyan-600 focus:outline-none focus:ring-2 focus:ring-cyan-600/20";
 const small = "rounded-lg border border-border px-2.5 py-1.5 text-xs hover:bg-muted disabled:opacity-40";
 
+/** The notice when the institute writes none (the form shows it in each language) */
+const DEFAULT_PARTIAL_NOTICE = UI.en.partialNotice;
+
 /** Fill in fields the API may leave out */
 function normalise(d: FormDef): FormDef {
   return {
@@ -85,6 +89,9 @@ function normalise(d: FormDef): FormDef {
       phoneRequired: d.settings?.phoneRequired ?? false,
       requireEmailConfirmation: d.settings?.requireEmailConfirmation ?? true,
       requirePhoneCheck: d.settings?.requirePhoneCheck ?? false,
+      savePartial: d.settings?.savePartial ?? false,
+      partialRetentionDays: d.settings?.partialRetentionDays ?? 30,
+      notifyOnPartial: d.settings?.notifyOnPartial ?? false,
       translations: d.settings?.translations ?? {},
     },
   };
@@ -1097,6 +1104,67 @@ function SettingsEditor({
         <p className="text-xs text-muted-foreground">
           {isDefault ? "Signed-in Edulexa members always use this form when they ask you for guidance." : "Inside Edulexa, members use your default form; this one is for links and your website."}
         </p>
+      </section>
+
+      <section className="space-y-3 rounded-2xl border border-border bg-card p-4 text-sm">
+        <div>
+          <h2 className="text-sm font-semibold">People who don&apos;t finish</h2>
+          <p className="text-xs text-muted-foreground">For the public link and your website. Answers are always kept in the person&apos;s own browser, so they can pick up where they left off.</p>
+        </div>
+        <Switch
+          checked={!!s.savePartial}
+          onChange={(v) => set({ savePartial: v })}
+          title="Save answers as people go"
+          detail="Once someone has given their email or phone and moves to the next step, what they've filled in reaches your CRM under Incomplete, even if they never press Send. If they finish later, it becomes a normal lead."
+        />
+        {s.savePartial && (
+          <div className="space-y-3 border-l-2 border-border pl-4">
+            <label className="block text-xs font-medium text-muted-foreground">
+              Start saving after
+              <select className={input} value={s.partialAfter ?? ""} onChange={(e) => set({ partialAfter: e.target.value || null })}>
+                <option value="">Their contact details (asked first, so you can follow up)</option>
+                {def.questions
+                  .filter((q) => q.kind !== "info")
+                  .map((q) => (
+                    <option key={q.id} value={q.id}>
+                      The step with “{q.label.length > 60 ? `${q.label.slice(0, 60)}…` : q.label}”
+                    </option>
+                  ))}
+              </select>
+            </label>
+            <label className="block text-xs font-medium text-muted-foreground">
+              Message shown on the form
+              <input
+                className={input}
+                value={s.partialNotice ?? ""}
+                maxLength={300}
+                placeholder={DEFAULT_PARTIAL_NOTICE}
+                onChange={(e) => set({ partialNotice: e.target.value })}
+              />
+              <span className="mt-1 block font-normal">{"{institute}"} becomes your institute&apos;s name. Translate it in the Translations tab.</span>
+            </label>
+            <label className="block text-xs font-medium text-muted-foreground">
+              Remove unfinished answers after
+              <span className="mt-1 flex items-center gap-2">
+                <input
+                  type="number"
+                  min={1}
+                  max={365}
+                  className="w-24 rounded-lg border border-border bg-background px-2 py-1.5 text-sm"
+                  value={s.partialRetentionDays ?? 30}
+                  onChange={(e) => set({ partialRetentionDays: Math.round(Number(e.target.value) || 0) })}
+                />
+                <span className="font-normal">days (1 to 365). Leads your team has worked on are kept.</span>
+              </span>
+            </label>
+            <Switch
+              checked={!!s.notifyOnPartial}
+              onChange={(v) => set({ notifyOnPartial: v })}
+              title="Email my team when someone stops part way"
+              detail="Your CRM admins (or the whole team if there are none) get an email with a link to the lead."
+            />
+          </div>
+        )}
       </section>
 
       <section className="space-y-3 rounded-2xl border border-border bg-card p-4 text-sm">

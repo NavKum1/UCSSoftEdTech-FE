@@ -91,6 +91,7 @@ export default function EmailComposer({
   const [html, setHtml] = useState("");
   const [ai, setAi] = useState(false);
   const [aiSample, setAiSample] = useState(false);
+  const [sentToAi, setSentToAi] = useState<string | null>(null);
   const [sendAt, setSendAt] = useState<string | null>(null);
   const [laterOpen, setLaterOpen] = useState(false);
   const [pickTime, setPickTime] = useState("");
@@ -200,12 +201,13 @@ export default function EmailComposer({
   ];
   const fmt = (d: Date) => d.toLocaleString([], { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
 
-  const applyDraft = (d: { subject: string; body: string; sample: boolean }) => {
+  const applyDraft = (d: { subject: string; body: string; sample: boolean; sentToAi?: string }) => {
     if ((subject.trim() || !empty) && !window.confirm("Replace what you've written with the AI draft?")) return;
     if (d.subject) setSubject(d.subject);
     editor?.commands.setContent(d.body);
     setHtml(editor?.getHTML() ?? d.body);
     setAiSample(d.sample);
+    setSentToAi(d.sentToAi || null);
     setAi(false);
     setMsg({ ok: true, text: d.sample ? "A sample draft (AI isn't connected here). Edit it before sending." : "Draft ready. Read it and edit anything before sending." });
   };
@@ -278,6 +280,12 @@ export default function EmailComposer({
       />
 
       {ai && <AiDraft leadId={lead.leadId} getToken={getToken} onDraft={applyDraft} onClose={() => setAi(false)} suggest={lead.activities.some((a) => a.kind === "Email") ? "follow-up" : "first-reply"} />}
+      {sentToAi && (
+        <details className="border-b border-border px-4 py-1.5 text-xs text-muted-foreground">
+          <summary className="cursor-pointer">What the AI was shown (personal details removed)</summary>
+          <pre className="mt-1 max-h-48 overflow-auto whitespace-pre-wrap font-sans">{sentToAi}</pre>
+        </details>
+      )}
       {aiSample && <p className="border-b border-border bg-amber-500/10 px-4 py-1.5 text-xs text-amber-900 dark:text-amber-200">Sample text: AI drafting isn&apos;t connected on this server.</p>}
 
       {/* Toolbar */}

@@ -4,8 +4,9 @@
  * A career guidance form as people fill it in: on an institute's website (embedded), inside Edulexa ("Ask an advisor",
  * "Ask Edulexa") and in the editor's preview. Sections are steps with a progress bar; questions appear only when earlier
  * answers call for them; the form can be shown in the institute's languages, in its colours and with its logo; files are
- * uploaded as they're chosen; on websites answers can be saved to finish later. The person's details and consent are
- * the last step.
+ * uploaded as they're chosen; on websites answers can be saved to finish later, and are kept in the browser so a reload
+ * or a later visit resumes. The person's details and consent are the last step; on forms that save as people go, the
+ * details come first (with a short notice) and what's given so far reaches the CRM as an Incomplete lead at each step.
  */
 
 import React, { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
@@ -46,7 +47,46 @@ export interface SubmitPayload {
     startToken?: string | null;
     turnstile?: string | null;
     phoneCheckId?: string | null;
+    /** Forms that save as people go: finishes this visit's Incomplete lead instead of making another */
+    partialToken?: string | null;
   };
+}
+
+/** What the browser keeps of a website form between visits (per form; never sent anywhere) */
+interface Stored {
+  answers: Answers;
+  unsure: string;
+  name: string;
+  email: string;
+  phone: string;
+  language: string | null;
+  step: number;
+  visitId: string | null;
+  partialToken: string | null;
+  savedAt: number;
+  /** When it was read back (this visit), for how long the form took */
+  openedAt?: number;
+}
+const storeKey = (formId: string) => `edulexa-guidance:${formId}`;
+const KEEP_MS = 30 * 86400e3;
+
+function readStored(formId: string): Stored | null {
+  try {
+    const raw = window.localStorage.getItem(storeKey(formId));
+    const d = raw ? (JSON.parse(raw) as Stored) : null;
+    return d && typeof d === "object" && Date.now() - (d.savedAt ?? 0) < KEEP_MS ? { ...d, openedAt: Date.now() } : null;
+  } catch {
+    return null;
+  }
+}
+
+function writeStored(formId: string, d: Stored | null) {
+  try {
+    if (d) window.localStorage.setItem(storeKey(formId), JSON.stringify(d));
+    else window.localStorage.removeItem(storeKey(formId));
+  } catch {
+    // Private browsing or storage turned off: the form works, it just won't remember
+  }
 }
 
 const api = () => getApiBaseUrl().replace(/\/$/, "");
@@ -99,26 +139,29 @@ export default function GuidanceForm({
 }) {
   const def = fill.definition;
   const s = def.settings;
+  // Website forms remember their answers in this browser, so a reload or a later visit picks up where the person left off
+  // (not when opening a "finish later" link, which brings its own answers)
+  const [stored] = useState<Stored | null>(() => (mode === "website" && !resumeToken && typeof window !== "undefined" ? readStored(fill.formId) : null));
   // The browser's language when the form offers it (read after hydration), until the person picks one
   const browserLang = useSyncExternalStore(noSubscribe, () => navigator.language.slice(0, 2), () => "");
-  const [picked, setLang] = useState<string | null>(null);
+  const [picked, setLang] = useState<string | null>(stored?.language && def.languages.includes(stored.language) ? stored.language : null);
   const lang = picked ?? (def.languages.includes(browserLang) ? browserLang : (def.languages[0] ?? "en"));
   const t = (k: string) => UI[lang]?.[k as UiKey] ?? UI.en[k as UiKey] ?? k;
-  const [answers, setAnswers] = useState<Answers>({});
-  const [unsure, setUnsure] = useState("");
+  const [answers, setAnswers] = useState<Answers>(stored?.answers ?? {});
+  const [unsure, setUnsure] = useState(stored?.unsure ?? "");
   // Prefill (inside Edulexa it arrives after the first render) until the person types
-  const [typedName, setName] = useState<string | null>(null);
-  const [typedEmail, setEmail] = useState<string | null>(null);
+  const [typedName, setName] = useState<string | null>(stored?.name || null);
+  const [typedEmail, setEmail] = useState<string | null>(stored?.email || null);
   const name = typedName ?? prefill?.name ?? "";
   const email = typedEmail ?? prefill?.email ?? "";
-  const [phone, setPhone] = useState("");
+  const [phone, setPhone] = useState(stored?.phone ?? "");
   const [consent, setConsent] = useState(false);
   const [website, setWebsite] = useState(""); // hidden bot trap
   const [human, setHuman] = useState<string | null>(null);
   const [phoneCheckId, setPhoneCheckId] = useState<string | null>(null);
   const checksPhone = mode === "website" && !!s.requirePhoneCheck && !!apiBase;
   const needsHuman = mode === "website" && !!fill.turnstileSiteKey;
-  const [step, setStep] = useState(0);
+  const [step, setStep] = useState(stored?.step ?? 0);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [error, setError] = useState<string | null>(null);
   const [sending, setSending] = useState(false);
@@ -126,8 +169,13 @@ export default function GuidanceForm({
   const [saveLink, setSaveLink] = useState<string | null>(null);
   const [draftToken, setDraftToken] = useState<string | null>(resumeToken ?? null);
   const [copied, setCopied] = useState(false);
-  const visit = useRef<{ id: string; started: boolean; at: number } | null>(null);
+  // A returning visitor keeps their visit (and its Incomplete lead, when the form saves as people go)
+  const visit = useRef<{ id: string; started: boolean; at: number } | null>(stored?.visitId ? { id: stored.visitId, started: true, at: stored.openedAt ?? 0 } : null);
+  const partialToken = useRef<string | null>(stored?.partialToken ?? null);
   const top = useRef<HTMLDivElement>(null);
+  // Saving as people go (website forms that turn it on): the contact details come first unless the institute picked a question
+  const savesPartial = mode !== "app" && !!s.savePartial;
+  const contactFirst = savesPartial && !s.partialAfter;
 
   // Insights: the visit (opened / started / last question reached); not in the editor's preview
   const track = useCallback(
@@ -166,12 +214,28 @@ export default function GuidanceForm({
   }, [resumeToken, def.languages]);
 
   const sections = useMemo(() => def.sections.filter((x) => sectionVisible(def, x, answers) && def.questions.some((q) => q.sectionId === x.id && questionVisible(def, q, answers))), [def, answers]);
-  // Steps: each visible section, then "Your details" (the unsure box sits at the top of the first step)
+  // Steps: each visible section, then "Your details" (first instead when saving as people go); the unsure box sits at the
+  // top of the first section's step. Sending (consent, human check) is always on the last step.
   const steps = sections.length + 1;
   const current = Math.min(step, steps - 1);
-  const isDetails = current === steps - 1;
-  const section = isDetails ? null : sections[current];
+  const detailsStep = contactFirst ? 0 : steps - 1;
+  const isDetails = current === detailsStep;
+  const isLast = current === steps - 1;
+  const unsureStep = Math.min(contactFirst ? 1 : 0, steps - 1);
+  const section = isDetails ? null : sections[contactFirst ? current - 1 : current];
   const stepQuestions = section ? def.questions.filter((q) => q.sectionId === section.id && questionVisible(def, q, answers)) : [];
+  // The step after which progress is saved: the contact details, or the step with the question the institute picked
+  const afterSection = s.partialAfter ? sections.findIndex((x) => x.id === def.questions.find((q) => q.id === s.partialAfter)?.sectionId) : -1;
+  const saveFrom = contactFirst ? 0 : afterSection >= 0 ? afterSection : Number.POSITIVE_INFINITY;
+
+  // Kept in this browser as the person types (website forms), cleared once sent
+  useEffect(() => {
+    if (mode !== "website" || sent) return;
+    writeStored(fill.formId, {
+      answers, unsure, name: typedName ?? "", email: typedEmail ?? "", phone, language: picked, step: current,
+      visitId: visit.current?.id ?? null, partialToken: partialToken.current, savedAt: Date.now(),
+    });
+  }, [mode, sent, fill.formId, answers, unsure, typedName, typedEmail, phone, picked, current]);
 
   const set = (id: string, a: Answer) => {
     if (!visit.current?.started) track(id, true);
@@ -181,7 +245,12 @@ export default function GuidanceForm({
 
   const validateStep = (): boolean => {
     const e: Record<string, string> = {};
-    if (current === 0 && s.askUnsure && !unsure.trim()) e.__unsure = "Please tell us what you'd like help with.";
+    if (current === unsureStep && s.askUnsure && !unsure.trim()) e.__unsure = "Please tell us what you'd like help with.";
+    if (isDetails && !isLast) {
+      if (!name.trim()) e.__name = "Please give your name.";
+      if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email.trim())) e.__email = "Please give a valid email address.";
+      if (s.phoneRequired && !phone.trim()) e.__phone = "Please give your phone number.";
+    }
     for (const q of stepQuestions) {
       const msg = check(q, answers[q.id]);
       if (msg) e[q.id] = msg;
@@ -198,16 +267,39 @@ export default function GuidanceForm({
     top.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
+  // Forms that save as people go: what's been given so far, once there's an email or phone to follow up on. In the
+  // background; a failure never holds the person up.
+  const saveProgress = () => {
+    if (mode !== "website" || !s.savePartial || !apiBase || website || !fill.startToken) return;
+    const asked = (kind: string) => def.questions.some((q) => q.kind === kind && answers[q.id]?.value?.trim());
+    if (!email.trim() && !phone.trim() && !asked("email") && !asked("phone")) return;
+    fetch(`${apiBase}/partial`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        name: name.trim(), email: email.trim(), phone: phone.trim() || null, unsure: unsure.trim(), answers: toApi(def, answers),
+        meta: { formId: fill.formId, language: lang, campaign: campaign ?? null, referrer: referrer ?? null, visitId: visit.current?.id, startToken: fill.startToken, partialToken: partialToken.current },
+      }),
+      keepalive: true,
+    })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        if (typeof d?.partialToken === "string") partialToken.current = d.partialToken;
+      })
+      .catch(() => undefined);
+  };
+
   const next = () => {
     if (!validateStep()) return;
     track(stepQuestions[stepQuestions.length - 1]?.id, true);
+    if (current >= saveFrom) saveProgress();
     go(current + 1);
   };
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!isDetails) return next();
-    if (current === 0 && !validateStep()) return;
+    if (!isLast) return next();
+    if (!validateStep()) return;
     if (!consent) return setError("Please tick the box to send.");
     if (s.phoneRequired && !phone.trim()) return setError("Please give your phone number.");
     if (checksPhone && !phoneCheckId) return setError("Please verify your phone number with the code we send by SMS.");
@@ -231,10 +323,13 @@ export default function GuidanceForm({
         startToken: fill.startToken ?? null,
         turnstile: human,
         phoneCheckId,
+        partialToken: partialToken.current,
       },
     }).catch(() => "We couldn't send your request. Please check your connection and try again.");
     setSending(false);
     if (err) return setError(err);
+    // Sent: nothing more to resume in this browser
+    if (mode === "website") writeStored(fill.formId, null);
     // With email confirmation the redirect happens after the person confirms (the confirm page does it)
     if (s.redirectUrl && mode === "website" && s.requireEmailConfirmation === false) {
       window.open(s.redirectUrl, "_top");
@@ -289,6 +384,12 @@ export default function GuidanceForm({
           <p className="mt-1 inline-flex items-center gap-1 text-xs text-muted-foreground">
             <Clock aria-hidden="true" className="h-3.5 w-3.5" /> {t("minutes").replace("{n}", String(estimateMinutes(def)))}
           </p>
+          {savesPartial && (
+            <p className="mt-1 flex items-start gap-1 text-xs text-muted-foreground">
+              <Save aria-hidden="true" className="mt-px h-3.5 w-3.5 shrink-0" />
+              {(s.partialNotice?.trim() ? tr(s.translations, lang, "notice", s.partialNotice) : t("partialNotice")).replaceAll("{institute}", fill.instituteName)}
+            </p>
+          )}
         </div>
         {def.languages.length > 1 && (
           <label className="shrink-0 text-xs">
@@ -320,7 +421,7 @@ export default function GuidanceForm({
       )}
 
       <form onSubmit={submit} className="mt-5 space-y-5" noValidate>
-        {current === 0 && s.askUnsure && (
+        {current === unsureStep && s.askUnsure && (
           <label className="block">
             <span className="font-medium">{t("unsure")}</span>
             <textarea
@@ -360,25 +461,73 @@ export default function GuidanceForm({
             <div className="grid gap-3 sm:grid-cols-2">
               <label className="block">
                 <span className="font-medium">{t("name")}</span>
-                <input required value={name} maxLength={200} onChange={(e) => setName(e.target.value)} className={field} autoComplete="name" />
+                <input
+                  id="gf-__name"
+                  required
+                  value={name}
+                  maxLength={200}
+                  onChange={(e) => {
+                    setName(e.target.value);
+                    setErrors((x) => (x.__name ? { ...x, __name: "" } : x));
+                  }}
+                  className={field}
+                  autoComplete="name"
+                  aria-invalid={!!errors.__name}
+                />
+                {errors.__name && <span className="mt-1 block text-red-700 dark:text-red-400">{errors.__name}</span>}
               </label>
               <label className="block">
                 <span className="font-medium">{t("email")}</span>
-                <input required type="email" value={email} maxLength={254} onChange={(e) => setEmail(e.target.value)} className={field} autoComplete="email" />
+                <input
+                  id="gf-__email"
+                  required
+                  type="email"
+                  value={email}
+                  maxLength={254}
+                  onChange={(e) => {
+                    setEmail(e.target.value);
+                    setErrors((x) => (x.__email ? { ...x, __email: "" } : x));
+                  }}
+                  className={field}
+                  autoComplete="email"
+                  aria-invalid={!!errors.__email}
+                />
+                {errors.__email && <span className="mt-1 block text-red-700 dark:text-red-400">{errors.__email}</span>}
               </label>
               {checksPhone ? (
                 <PhoneCheck apiBase={apiBase!} formId={fill.formId} phone={phone} setPhone={setPhone} onVerified={setPhoneCheckId} label={t("phone")} />
               ) : s.askPhone && (
                 <label className="block sm:col-span-2">
                   <span className="font-medium">{t("phone")}</span> {!s.phoneRequired && <span className="text-muted-foreground">({t("optional")})</span>}
-                  <input type="tel" required={s.phoneRequired} value={phone} maxLength={64} onChange={(e) => setPhone(e.target.value)} className={field} autoComplete="tel" />
+                  <input
+                    id="gf-__phone"
+                    type="tel"
+                    required={s.phoneRequired}
+                    value={phone}
+                    maxLength={64}
+                    onChange={(e) => {
+                      setPhone(e.target.value);
+                      setErrors((x) => (x.__phone ? { ...x, __phone: "" } : x));
+                    }}
+                    className={field}
+                    autoComplete="tel"
+                    aria-invalid={!!errors.__phone}
+                  />
+                  {errors.__phone && <span className="mt-1 block text-red-700 dark:text-red-400">{errors.__phone}</span>}
                 </label>
               )}
             </div>
-            <label className="absolute -left-[9999px]" aria-hidden="true">
-              Website
-              <input tabIndex={-1} autoComplete="off" value={website} onChange={(e) => setWebsite(e.target.value)} />
-            </label>
+          </>
+        )}
+
+        {/* Hidden from people on every step (bots fill it in) */}
+        <label className="absolute -left-[9999px]" aria-hidden="true">
+          Website
+          <input tabIndex={-1} autoComplete="off" value={website} onChange={(e) => setWebsite(e.target.value)} />
+        </label>
+
+        {isLast && (
+          <>
             {extras}
             {needsHuman && <HumanCheck siteKey={fill.turnstileSiteKey!} onToken={setHuman} />}
             <label className="flex items-start gap-2">
@@ -416,7 +565,7 @@ export default function GuidanceForm({
               <ArrowLeft aria-hidden="true" className="h-4 w-4" /> {t("back")}
             </button>
           )}
-          {isDetails ? (
+          {isLast ? (
             <button
               type="submit"
               disabled={sending || mode === "preview"}

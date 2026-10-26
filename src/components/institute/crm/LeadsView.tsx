@@ -8,7 +8,7 @@
 import Link from "next/link";
 import React, { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import { useLatestRef } from "@/lib/legacyApi";
-import { AlertTriangle, Ban, Bookmark, Download, KanbanSquare, List, Search, SlidersHorizontal, X } from "lucide-react";
+import { AlertTriangle, ArrowDown, ArrowUp, ArrowUpDown, Ban, Bookmark, Download, KanbanSquare, List, Search, SlidersHorizontal, X } from "lucide-react";
 import { authenticatedFetch } from "@/lib/apiClient";
 import {
   crm,
@@ -40,6 +40,7 @@ const QUICK: { key: string; label: string; filters: Filters }[] = [
   { key: "overdue", label: "Follow-up overdue", filters: { overdue: true } },
   { key: "unassigned", label: "Unassigned", filters: { owner: "none" } },
   { key: "spam", label: "Possible spam", filters: { spam: true } },
+  { key: "incomplete", label: "Incomplete", filters: { incomplete: true } },
 ];
 
 const LAYOUT_KEY = "crm_layout";
@@ -204,14 +205,14 @@ export default function LeadsView({
       <div className="flex flex-wrap items-center gap-1.5">
         {QUICK.map((q) => {
           const on = same(q.filters, { ...filters, q: undefined });
-          const count = q.key === "new" ? data?.counts?.New : q.key === "awaiting" ? data?.awaiting : q.key === "priority" ? data?.highPriority : q.key === "spam" ? data?.spam : undefined;
+          const count = q.key === "new" ? data?.counts?.New : q.key === "awaiting" ? data?.awaiting : q.key === "priority" ? data?.highPriority : q.key === "spam" ? data?.spam : q.key === "incomplete" ? data?.incomplete : undefined;
           return (
             <button
               key={q.key}
               type="button"
               aria-pressed={on}
               onClick={() => setFilters({ ...q.filters, q: filters.q })}
-              title={q.key === "overdue" ? "Leads with a follow-up whose due time has passed and isn't ticked off" : undefined}
+              title={q.key === "overdue" ? "Leads with a follow-up whose due time has passed and isn't ticked off" : q.key === "incomplete" ? "People who started a website form and gave their contact details but haven't sent it yet" : undefined}
               className={`rounded-full border px-3 py-1.5 text-xs font-medium ${on ? "border-cyan-700 bg-cyan-700 text-white" : "border-border bg-card hover:bg-muted"}`}
             >
               {q.label}
@@ -245,18 +246,22 @@ export default function LeadsView({
         <label className="relative min-w-56 flex-1">
           <span className="sr-only">Search leads</span>
           <Search aria-hidden="true" className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <input className={`${input} w-full pl-9`} placeholder="Search name, email, phone, course or question" value={search} onChange={(e) => setSearch(e.target.value)} />
+          <input className={`${input} w-full pl-9`} placeholder="Search name, email, phone, course, source, tag or question" value={search} onChange={(e) => setSearch(e.target.value)} />
         </label>
         <button type="button" onClick={() => setMore(!more)} aria-expanded={more} className={`inline-flex items-center gap-1.5 rounded-lg border px-3 py-2 text-sm ${advanced ? "border-cyan-600 text-cyan-800 dark:text-cyan-300" : "border-border"} hover:bg-muted`}>
           <SlidersHorizontal aria-hidden="true" className="h-4 w-4" /> Filters
         </button>
         <label className="inline-flex items-center gap-1.5 text-sm">
           <span className="sr-only">Sort</span>
-          <select value={filters.sort ?? ""} onChange={(e) => setFilters({ ...filters, sort: e.target.value || undefined })} className={`${input} py-2`}>
+          <select value={filters.sort ?? ""} onChange={(e) => setFilters({ ...filters, sort: e.target.value || undefined, dir: undefined })} className={`${input} py-2`}>
             <option value="">Recent activity first</option>
             <option value="received">Newest received first</option>
             <option value="followup">Next follow-up first</option>
+            <option value="contact">Last contacted first</option>
             <option value="name">Name A–Z</option>
+            <option value="course">Interested in A–Z</option>
+            <option value="stage">Stage (pipeline order)</option>
+            <option value="owner">Owner A–Z</option>
           </select>
         </label>
         <div className="inline-flex rounded-lg border border-border p-0.5" role="group" aria-label="Layout">
@@ -352,18 +357,19 @@ export default function LeadsView({
                 <th className="w-10 px-3 py-2.5">
                   <input type="checkbox" aria-label="Select all shown" checked={allChecked} onChange={() => setSelected(allChecked ? new Set() : new Set(visibleIds))} />
                 </th>
-                <th className="px-3 py-2.5 font-medium">Lead</th>
-                <th className="px-3 py-2.5 font-medium">Interested in</th>
-                <th className="px-3 py-2.5 font-medium">Stage</th>
-                <th className="px-3 py-2.5 font-medium">Owner</th>
-                <th className="px-3 py-2.5 font-medium">Next follow-up</th>
-                <th className="px-3 py-2.5 font-medium">Last contact</th>
+                <SortHeader label="Lead" sort="name" filters={filters} setFilters={setFilters} />
+                <SortHeader label="Interested in" sort="course" filters={filters} setFilters={setFilters} />
+                <SortHeader label="Stage" sort="stage" filters={filters} setFilters={setFilters} />
+                <SortHeader label="Owner" sort="owner" filters={filters} setFilters={setFilters} />
+                <SortHeader label="Next follow-up" sort="followup" filters={filters} setFilters={setFilters} />
+                <SortHeader label="Last contact" sort="contact" filters={filters} setFilters={setFilters} />
+                <SortHeader label="Received" sort="received" filters={filters} setFilters={setFilters} />
               </tr>
             </thead>
             <tbody>
               {leads.length === 0 && (
                 <tr>
-                  <td colSpan={7} className="px-3 py-10 text-center text-muted-foreground">
+                  <td colSpan={8} className="px-3 py-10 text-center text-muted-foreground">
                     No leads match. <button type="button" className="text-cyan-700 hover:underline dark:text-cyan-400" onClick={() => { setFilters({}); setSearch(""); }}>Show all leads</button>
                   </td>
                 </tr>
@@ -378,7 +384,7 @@ export default function LeadsView({
                       {l.name || l.email || "Unnamed lead"}
                     </button>
                     <div className="flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground">
-                      <span>{l.email ?? l.phone ?? "No contact details"}</span>
+                      <span>{[l.email, l.phone].filter(Boolean).join(" · ") || "No contact details"}</span>
                       {l.duplicate && <span className="inline-flex items-center gap-0.5 text-amber-800 dark:text-amber-300" title="Another inquiry has the same email"><AlertTriangle aria-hidden="true" className="h-3 w-3" />Duplicate</span>}
                       {l.doNotContact && <span className="inline-flex items-center gap-0.5 text-red-700 dark:text-red-400"><Ban aria-hidden="true" className="h-3 w-3" />Do not contact</span>}
                       {l.highPriority && <PriorityBadge />}
@@ -387,6 +393,7 @@ export default function LeadsView({
                           Possible spam
                         </span>
                       )}
+                      {l.incomplete && <IncompleteBadge unconfirmed={l.unconfirmed} />}
                       {l.tags.map((t) => <span key={t} className="rounded-full bg-muted px-1.5">{t}</span>)}
                     </div>
                   </td>
@@ -409,6 +416,9 @@ export default function LeadsView({
                     ) : (
                       <span className="text-xs font-medium text-amber-800 dark:text-amber-300">Not contacted</span>
                     )}
+                  </td>
+                  <td className="px-3 py-2.5 whitespace-nowrap text-muted-foreground" title={new Date(l.createdAt).toLocaleString()}>
+                    {relative(l.createdAt)}
                   </td>
                 </tr>
               ))}
@@ -664,3 +674,38 @@ function Empty() {
   );
 }
 
+
+/** Natural first direction for each column: A–Z / pipeline order / soonest for text and follow-ups, newest first for dates */
+const ASC_FIRST = new Set(["name", "course", "stage", "owner", "followup"]);
+
+/** A column header that sorts the list by that column; a second click reverses the order. */
+function SortHeader({ label, sort, filters, setFilters }: { label: string; sort: string; filters: Filters; setFilters: (f: Filters) => void }) {
+  const active = (filters.sort ?? "") === sort;
+  const natural = ASC_FIRST.has(sort) ? "asc" : "desc";
+  const dir = active ? (filters.dir ?? natural) : null;
+  const Icon = dir === "asc" ? ArrowUp : dir === "desc" ? ArrowDown : ArrowUpDown;
+  const click = () => {
+    const next = active ? (dir === "asc" ? "desc" : "asc") : natural;
+    setFilters({ ...filters, sort, dir: next === natural ? undefined : next });
+  };
+  return (
+    <th className="px-3 py-2.5 font-medium" aria-sort={dir === "asc" ? "ascending" : dir === "desc" ? "descending" : "none"}>
+      <button type="button" onClick={click} className={`inline-flex items-center gap-1 rounded hover:text-foreground ${active ? "text-foreground" : ""}`} title={`Sort by ${label.toLowerCase()}`}>
+        {label}
+        <Icon aria-hidden="true" className={`h-3.5 w-3.5 ${active ? "" : "opacity-40"}`} />
+      </button>
+    </th>
+  );
+}
+
+/** A website form saved part way (not sent yet) */
+function IncompleteBadge({ unconfirmed }: { unconfirmed?: boolean }) {
+  return (
+    <span
+      className="rounded-full border border-amber-500/30 bg-amber-500/10 px-1.5 py-0.5 text-[11px] font-medium text-amber-800 dark:text-amber-300"
+      title={`Started your website form but hasn't sent it yet${unconfirmed ? "; email not confirmed" : ""}`}
+    >
+      Incomplete
+    </span>
+  );
+}

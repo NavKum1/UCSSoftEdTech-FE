@@ -76,10 +76,14 @@ export interface Filters {
   priority?: boolean;
   /** Only leads the spam check flagged */
   spam?: boolean;
+  /** Only Incomplete leads (website forms saved part way, not sent yet) */
+  incomplete?: boolean;
   /** Received on or after (ISO) */
   from?: string;
-  /** activity (default), received, followup or name */
+  /** activity (default), received, followup, contact, name, course, stage or owner */
   sort?: string;
+  /** asc or desc (each sort has its own natural default) */
+  dir?: string;
 }
 
 export interface LeadRow {
@@ -107,6 +111,10 @@ export interface LeadRow {
   highPriority?: boolean;
   spam?: boolean;
   spamReasons?: string | null;
+  /** Saved part way through a website form; not sent yet */
+  incomplete?: boolean;
+  /** The form asks people to confirm their email and this person hasn't yet */
+  unconfirmed?: boolean;
 }
 
 export interface LeadList {
@@ -126,6 +134,8 @@ export interface LeadList {
   highPriority?: number;
   /** Leads in Possible spam */
   spam?: number;
+  /** Incomplete leads (website forms saved part way) */
+  incomplete?: number;
   unassignedOpen: number;
 }
 
@@ -187,6 +197,8 @@ export interface LeadFull {
   highPriority?: boolean;
   spam?: boolean;
   spamReasons?: string | null;
+  incomplete?: boolean;
+  unconfirmed?: boolean;
   duplicates: string[];
   channels: { email: boolean; sms: boolean; whatsapp: boolean; replyByEmail: boolean };
   activities: Activity[];
@@ -218,6 +230,12 @@ export interface OpenTask {
   id: string;
   leadId: string;
   lead: string | null;
+  email: string | null;
+  phone: string | null;
+  /** The course, or "Career guidance" */
+  interest: string | null;
+  stage: string | null;
+  highPriority: boolean;
   title: string;
   dueAt: string;
   overdue: boolean;

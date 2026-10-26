@@ -52,6 +52,7 @@ export default function TranslationsTab({
   count(def.settings.title, def.settings.translations?.[current]?.title);
   count(def.settings.intro, def.settings.translations?.[current]?.description);
   count(def.settings.thankYou, def.settings.translations?.[current]?.label);
+  if (def.settings.savePartial) count(def.settings.partialNotice, def.settings.translations?.[current]?.notice);
   def.sections.forEach((s) => count(s.title, s.translations?.[current]?.title));
   def.questions.forEach((q) => {
     count(q.label, q.translations?.[current]?.label);
@@ -76,6 +77,7 @@ export default function TranslationsTab({
         <Row original={def.settings.title} value={def.settings.translations?.[current]?.title} onChange={(v) => setS("title", v)} />
         <Row original={def.settings.intro} value={def.settings.translations?.[current]?.description} onChange={(v) => setS("description", v)} long />
         <Row original={def.settings.thankYou} value={def.settings.translations?.[current]?.label} onChange={(v) => setS("label", v)} long />
+        {def.settings.savePartial && <Row original={def.settings.partialNotice} value={def.settings.translations?.[current]?.notice} onChange={(v) => setS("notice", v)} />}
       </Group>
 
       {def.sections.map((s) => (

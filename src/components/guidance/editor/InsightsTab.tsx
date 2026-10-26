@@ -17,6 +17,10 @@ interface Insights {
   medianSeconds: number | null;
   awaitingConfirmation?: number;
   possibleSpam?: number;
+  /** Stopped part way but their details were saved (Incomplete in the CRM) */
+  incompleteSaved?: number;
+  /** Their details were saved part way and they finished later */
+  finishedAfterSave?: number;
   dropOff: { questionId: string; question: string; stopped: number }[];
   bySource: { key: string; count: number }[];
   byPage: { key: string; count: number }[];
@@ -82,6 +86,12 @@ export default function InsightsTab({ formId, apiFetch, instituteId }: { formId:
         <Tile label="Typical time to fill in" value={data.medianSeconds == null ? "—" : data.medianSeconds < 90 ? `${data.medianSeconds} s` : `${Math.round(data.medianSeconds / 60)} min`} />
         <Tile label="Stopped part way" value={Math.max(0, data.starts - data.completed)} />
       </div>
+      {((data.incompleteSaved ?? 0) > 0 || (data.finishedAfterSave ?? 0) > 0) && (
+        <div className="grid grid-cols-2 gap-3 lg:grid-cols-5">
+          <Tile label="Saved part way" value={data.incompleteSaved ?? 0} sub="Under Incomplete in your CRM" />
+          <Tile label="Finished after saving" value={data.finishedAfterSave ?? 0} sub="Came back and pressed Send" />
+        </div>
+      )}
       {((data.awaitingConfirmation ?? 0) > 0 || (data.possibleSpam ?? 0) > 0) && (
         <p className="text-sm text-muted-foreground">
           {data.awaitingConfirmation ? `${data.awaitingConfirmation} waiting for the person to confirm their email. ` : ""}

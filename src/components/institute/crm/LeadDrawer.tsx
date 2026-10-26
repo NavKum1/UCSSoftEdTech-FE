@@ -212,6 +212,13 @@ export default function LeadDrawer({
                   </button>
                 </div>
               )}
+              {lead.incomplete && (
+                <p className="mt-2 rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-xs">
+                  <span className="font-medium">Incomplete.</span> They started your website form and haven&apos;t sent it yet; below is what they&apos;d filled in so far.
+                  {lead.unconfirmed ? " Their email isn't confirmed yet." : ""} It stays out of your leads until they finish, and is removed after the form&apos;s set number of days
+                  unless someone on your team works on it.
+                </p>
+              )}
               {lead.duplicates.length > 0 && (
                 <p className="mt-2 flex items-center gap-1.5 text-xs text-amber-800 dark:text-amber-300">
                   <AlertTriangle aria-hidden="true" className="h-3.5 w-3.5" />

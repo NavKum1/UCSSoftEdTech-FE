@@ -12,6 +12,8 @@ export interface FormText {
   options?: string[] | null;
   title?: string | null;
   description?: string | null;
+  /** Form settings: the notice shown while the form saves as people go */
+  notice?: string | null;
 }
 
 export interface Condition {
@@ -68,6 +70,16 @@ export interface Settings {
   requireEmailConfirmation?: boolean;
   /** Website inquiries need the phone checked by an SMS code */
   requirePhoneCheck?: boolean;
+  /** Website forms: what people give reaches the CRM as an Incomplete lead as they go (off by default) */
+  savePartial?: boolean;
+  /** null: after the contact details (then asked first); else a question id (saved once people move past its step) */
+  partialAfter?: string | null;
+  /** Incomplete leads nobody worked on are removed after this many days (1–365, 30 by default) */
+  partialRetentionDays?: number;
+  /** Email the team when someone stops part way */
+  notifyOnPartial?: boolean;
+  /** The notice shown while saving as people go ({institute} is the institute's name); empty: the built-in one */
+  partialNotice?: string | null;
   translations?: Record<string, FormText>;
 }
 
