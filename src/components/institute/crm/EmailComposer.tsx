@@ -14,6 +14,8 @@ import { Placeholder } from "@tiptap/extensions";
 import {
   Bold,
   ChevronDown,
+  Clock,
+  Sparkles,
   Eye,
   Heading3,
   Italic,
@@ -31,6 +33,7 @@ import {
 } from "lucide-react";
 import { authenticatedFetch } from "@/lib/apiClient";
 import { crm, type GetToken, type LeadFull, type Template } from "./api";
+import AiDraft from "./AiDraft";
 
 const FIELDS: [string, string][] = [
   ["{name}", "Their name"],
@@ -71,7 +74,7 @@ export default function EmailComposer({
   getToken: GetToken;
   busy: boolean;
   /** Sends through Edulexa; resolves true when sent */
-  send: (body: { templateId: string | null; subject: string; body: string; attachmentIds: string[] }) => Promise<boolean>;
+  send: (body: { templateId: string | null; subject: string; body: string; attachmentIds: string[]; sendAt?: string | null }) => Promise<boolean>;
   onCancel: () => void;
   onTemplatesChanged: () => void;
   /** After recording an email sent from the person's own mail app */
@@ -86,6 +89,11 @@ export default function EmailComposer({
   const [external, setExternal] = useState<null | "opened">(null);
   const [menu, setMenu] = useState<"fields" | "app" | null>(null);
   const [html, setHtml] = useState("");
+  const [ai, setAi] = useState(false);
+  const [aiSample, setAiSample] = useState(false);
+  const [sendAt, setSendAt] = useState<string | null>(null);
+  const [laterOpen, setLaterOpen] = useState(false);
+  const [pickTime, setPickTime] = useState("");
   const subjectRef = useRef<HTMLInputElement>(null);
   const first = (lead.name ?? "").split(" ")[0] || "there";
 
@@ -170,7 +178,36 @@ export default function EmailComposer({
 
   const doSend = async () => {
     if (!subject.trim() || empty) return setMsg({ ok: false, text: "Write a subject and a message." });
-    await send({ templateId: templateId || null, subject, body: html, attachmentIds: files.map((f) => f.id) });
+    await send({ templateId: templateId || null, subject, body: html, attachmentIds: files.map((f) => f.id), sendAt });
+  };
+
+  // Quick times to send later (the person's evening is often a good time; these are the counsellor's local times)
+  const at = (days: number, hour: number) => {
+    const d = new Date();
+    d.setDate(d.getDate() + days);
+    d.setHours(hour, 0, 0, 0);
+    return d;
+  };
+  const monday = (() => {
+    const d = new Date();
+    const add = ((8 - d.getDay()) % 7) || 7;
+    return at(add, 9);
+  })();
+  const LATER: [string, Date][] = [
+    ["Tomorrow 9:00", at(1, 9)],
+    ["Tomorrow 18:00", at(1, 18)],
+    ["Monday 9:00", monday],
+  ];
+  const fmt = (d: Date) => d.toLocaleString([], { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
+
+  const applyDraft = (d: { subject: string; body: string; sample: boolean }) => {
+    if ((subject.trim() || !empty) && !window.confirm("Replace what you've written with the AI draft?")) return;
+    if (d.subject) setSubject(d.subject);
+    editor?.commands.setContent(d.body);
+    setHtml(editor?.getHTML() ?? d.body);
+    setAiSample(d.sample);
+    setAi(false);
+    setMsg({ ok: true, text: d.sample ? "A sample draft (AI isn't connected here). Edit it before sending." : "Draft ready. Read it and edit anything before sending." });
   };
 
   const saveTemplate = async () => {
@@ -240,6 +277,9 @@ export default function EmailComposer({
         className="w-full border-b border-border bg-transparent px-4 py-2.5 text-sm font-medium focus:outline-none"
       />
 
+      {ai && <AiDraft leadId={lead.leadId} getToken={getToken} onDraft={applyDraft} onClose={() => setAi(false)} suggest={lead.activities.some((a) => a.kind === "Email") ? "follow-up" : "first-reply"} />}
+      {aiSample && <p className="border-b border-border bg-amber-500/10 px-4 py-1.5 text-xs text-amber-900 dark:text-amber-200">Sample text: AI drafting isn&apos;t connected on this server.</p>}
+
       {/* Toolbar */}
       <div className="flex flex-wrap items-center gap-0.5 border-b border-border px-2 py-1" role="toolbar" aria-label="Formatting">
         {[
@@ -273,7 +313,10 @@ export default function EmailComposer({
             </div>
           )}
         </div>
-        <label className={`${tool} ml-auto inline-flex cursor-pointer items-center gap-1 text-xs font-medium`} title="Attach files">
+        <button type="button" disabled={preview} onClick={() => setAi(!ai)} aria-pressed={ai} className={`${tool} ml-auto inline-flex items-center gap-1 text-xs font-medium text-violet-700 dark:text-violet-300 ${ai ? "bg-violet-500/10" : ""}`}>
+          <Sparkles aria-hidden="true" className="h-4 w-4" /> Draft with AI
+        </button>
+        <label className={`${tool} inline-flex cursor-pointer items-center gap-1 text-xs font-medium`} title="Attach files">
           <Paperclip aria-hidden="true" className="h-4 w-4" /> {uploading ? "Attaching…" : "Attach"}
           <input type="file" multiple className="sr-only" disabled={uploading || files.length >= 5} accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.jpg,.jpeg,.png" onChange={(e) => {
             attach(e.target.files);
@@ -332,9 +375,40 @@ export default function EmailComposer({
         </div>
       ) : (
         <div className="flex flex-wrap items-center gap-2 border-t border-border px-4 py-3">
-          <button type="button" onClick={doSend} disabled={busy || uploading} className="inline-flex items-center gap-1.5 rounded-lg bg-cyan-700 px-4 py-2 text-sm font-medium text-white hover:bg-cyan-800 disabled:opacity-50">
-            <Send aria-hidden="true" className="h-4 w-4" /> Send
-          </button>
+          <div className="relative inline-flex">
+            <button type="button" onClick={doSend} disabled={busy || uploading} className="inline-flex items-center gap-1.5 rounded-l-lg bg-cyan-700 px-4 py-2 text-sm font-medium text-white hover:bg-cyan-800 disabled:opacity-50">
+              {sendAt ? <Clock aria-hidden="true" className="h-4 w-4" /> : <Send aria-hidden="true" className="h-4 w-4" />} {sendAt ? `Send ${fmt(new Date(sendAt))}` : "Send now"}
+            </button>
+            <button type="button" aria-label="Send later" aria-expanded={laterOpen} onClick={() => setLaterOpen(!laterOpen)} className="rounded-r-lg border-l border-cyan-900/30 bg-cyan-700 px-2 text-white hover:bg-cyan-800">
+              <ChevronDown aria-hidden="true" className="h-4 w-4" />
+            </button>
+            {laterOpen && (
+              <div className="absolute bottom-full left-0 z-30 mb-1 w-64 rounded-xl border border-border bg-card p-1 shadow-lg">
+                <button type="button" onClick={() => { setSendAt(null); setLaterOpen(false); }} className="block w-full rounded-lg px-2.5 py-1.5 text-left text-sm hover:bg-muted">
+                  Send now
+                </button>
+                {LATER.map(([label, d]) => (
+                  <button key={label} type="button" onClick={() => { setSendAt(d.toISOString()); setLaterOpen(false); }} className="flex w-full justify-between rounded-lg px-2.5 py-1.5 text-left text-sm hover:bg-muted">
+                    {label} <span className="text-xs text-muted-foreground">{d.toLocaleDateString([], { weekday: "short", day: "numeric", month: "short" })}</span>
+                  </button>
+                ))}
+                <div className="border-t border-border p-2">
+                  <label className="text-xs text-muted-foreground">
+                    Pick a time
+                    <input type="datetime-local" value={pickTime} onChange={(e) => setPickTime(e.target.value)} className="mt-1 block w-full rounded-md border border-border bg-background px-2 py-1 text-sm" />
+                  </label>
+                  <button
+                    type="button"
+                    disabled={!pickTime || new Date(pickTime) <= new Date()}
+                    onClick={() => { setSendAt(new Date(pickTime).toISOString()); setLaterOpen(false); }}
+                    className="mt-1.5 w-full rounded-md bg-cyan-700 px-2 py-1 text-xs font-medium text-white disabled:opacity-40"
+                  >
+                    Schedule
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
           <div className="relative">
             <button type="button" onClick={() => setMenu(menu === "app" ? null : "app")} className="inline-flex items-center gap-1 rounded-lg border border-border px-3 py-2 text-sm hover:bg-muted" aria-expanded={menu === "app"}>
               Write in my email app <ChevronDown aria-hidden="true" className="h-3.5 w-3.5" />
@@ -364,6 +438,7 @@ export default function EmailComposer({
             Cancel
           </button>
           <p className="w-full text-xs text-muted-foreground">
+            {sendAt ? `It goes out ${fmt(new Date(sendAt))} (your time); you can cancel it until then. ` : ""}
             {lead.channels.replyByEmail ? "Their reply comes back to this timeline. " : ""}A link to stop further contact is added at the bottom.
           </p>
         </div>

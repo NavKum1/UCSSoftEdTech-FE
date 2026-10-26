@@ -287,7 +287,11 @@ export default function LeadDrawer({
                   getToken={getToken}
                   busy={busy}
                   send={async (body) => {
-                    const ok = await act(`/leads/${leadId}/email`, body, `Email sent to ${lead.email}.`);
+                    const ok = await act(
+                      `/leads/${leadId}/email`,
+                      body,
+                      body.sendAt ? `Scheduled for ${new Date(body.sendAt).toLocaleString([], { dateStyle: "medium", timeStyle: "short" })}.` : `Email sent to ${lead.email}.`,
+                    );
                     if (ok) {
                       setMode(null);
                       setReplySubject("");
@@ -403,6 +407,25 @@ export default function LeadDrawer({
                   </button>
                 )}
               </section>
+
+              {(lead.scheduled?.length ?? 0) > 0 && (
+                <section aria-label="Scheduled emails" className="mt-5 space-y-1.5 rounded-xl border border-cyan-600/30 bg-cyan-600/5 p-3 text-sm">
+                  <p className="text-xs font-semibold">Scheduled to send</p>
+                  {lead.scheduled!.map((x) => (
+                    <div key={x.id} className="flex flex-wrap items-center justify-between gap-2">
+                      <span className="min-w-0">
+                        <span className="font-medium">{x.subject}</span>{" "}
+                        <span className="text-xs text-muted-foreground">
+                          · {new Date(x.sendAt).toLocaleString([], { dateStyle: "medium", timeStyle: "short" })} · by {x.createdByName}
+                        </span>
+                      </span>
+                      <button type="button" disabled={busy} onClick={() => act(`/leads/${leadId}/scheduled/${x.id}`, undefined, "Scheduled email cancelled.", "DELETE")} className="rounded-lg border border-border bg-card px-2.5 py-1 text-xs hover:bg-muted">
+                        Cancel
+                      </button>
+                    </div>
+                  ))}
+                </section>
+              )}
 
               {/* Tabs */}
               <div role="tablist" aria-label="Lead details" className="mt-6 flex gap-4 border-b border-border text-sm">

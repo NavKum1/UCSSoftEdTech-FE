@@ -380,6 +380,13 @@ function Item({ a, personName, busy, onPin, onReply }: { a: Activity; personName
           )}
         </div>
         {files.length > 0 && <CrmFiles files={files} />}
+        {a.opens?.tracked && (
+          <p className="mt-1.5 text-xs text-muted-foreground" title="Some mail apps open emails automatically, so treat this as a hint.">
+            {a.opens.count > 0
+              ? `Opened${a.opens.count > 1 ? ` ${a.opens.count} times` : ""} · first ${relative(a.opens.first)}${a.opens.count > 1 ? `, last ${relative(a.opens.last)}` : ""}`
+              : "Not opened yet"}
+          </p>
+        )}
         {failed && <p className="mt-1 text-xs font-medium text-red-700 dark:text-red-400">Not delivered{typeof meta.error === "string" ? ` (${meta.error})` : ""}. Try again or use another channel.</p>}
       </div>
     );

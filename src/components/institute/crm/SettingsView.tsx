@@ -249,6 +249,33 @@ function TemplateSettings({ getToken, templates, reload }: { getToken: GetToken;
   );
 }
 
+/** Whether CRM emails note when they're opened (a tiny image in the email). */
+function OpenTracking({ getToken }: { getToken: GetToken }) {
+  const [on, setOn] = useState<boolean | null>(null);
+  React.useEffect(() => {
+    crm<{ trackOpens: boolean }>(getToken, "/settings").then((d) => setOn(d.trackOpens)).catch(() => setOn(true));
+  }, [getToken]);
+  const save = async (v: boolean) => {
+    setOn(v);
+    await crm(getToken, "/settings", { method: "PUT", body: { trackOpens: v } }).catch(() => setOn(!v));
+  };
+  return (
+    <section className="space-y-1">
+      <h2 className="text-base font-semibold">Email opens</h2>
+      <label className="flex items-start gap-2 text-sm">
+        <input type="checkbox" className="mt-1" checked={on ?? true} disabled={on === null} onChange={(e) => save(e.target.checked)} />
+        <span>
+          Show when people open your emails
+          <span className="block text-xs text-muted-foreground">
+            A tiny invisible image in each email tells us when it&apos;s opened. Some mail apps (like Apple Mail) open emails automatically, so treat it as a hint. Turn
+            it off if your institute&apos;s privacy policy prefers.
+          </span>
+        </span>
+      </label>
+    </section>
+  );
+}
+
 function Integrations({ getToken, webhookUrl, reload }: { getToken: GetToken; webhookUrl: string; reload: () => void }) {
   const [url, setUrl] = useState(webhookUrl);
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
@@ -314,6 +341,8 @@ function Integrations({ getToken, webhookUrl, reload }: { getToken: GetToken; we
           </dl>
         </div>
       </section>
+
+      <OpenTracking getToken={getToken} />
 
       <section className="space-y-1">
         <h2 className="text-base font-semibold">SMS and WhatsApp</h2>

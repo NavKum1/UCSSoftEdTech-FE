@@ -148,6 +148,8 @@ export interface Activity {
   actorName: string;
   pinned: boolean;
   createdAt: string;
+  /** Emails: opens, when tracking is on */
+  opens?: { tracked: boolean; count: number; first: string | null; last: string | null } | null;
 }
 
 export interface Task {
@@ -162,6 +164,8 @@ export interface Task {
 export interface LeadFull {
   leadId: string;
   instituteName?: string | null;
+  /** Emails waiting to go out */
+  scheduled?: { id: string; subject: string; sendAt: string; createdByName: string }[];
   name: string | null;
   email: string | null;
   phone: string | null;
