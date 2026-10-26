@@ -161,6 +161,7 @@ export interface Task {
 
 export interface LeadFull {
   leadId: string;
+  instituteName?: string | null;
   name: string | null;
   email: string | null;
   phone: string | null;

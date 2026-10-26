@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 import { useLatestRef } from "@/lib/legacyApi";
 import LeadProfile from "./LeadProfile";
+import EmailComposer from "./EmailComposer";
 import Communication from "./Communication";
 import {
   CALL_OUTCOMES,
@@ -276,7 +277,37 @@ export default function LeadDrawer({
 
           {lead && (
             <>
-              {mode && (
+              {mode === "Email" && lead.channels.email && !lead.doNotContact ? (
+                <EmailComposer
+                  key={replySubject}
+                  lead={lead}
+                  templates={templates}
+                  isAdmin={isAdmin}
+                  initialSubject={replySubject}
+                  getToken={getToken}
+                  busy={busy}
+                  send={async (body) => {
+                    const ok = await act(`/leads/${leadId}/email`, body, `Email sent to ${lead.email}.`);
+                    if (ok) {
+                      setMode(null);
+                      setReplySubject("");
+                    }
+                    return ok;
+                  }}
+                  onCancel={() => {
+                    setMode(null);
+                    setReplySubject("");
+                  }}
+                  onTemplatesChanged={onChanged}
+                  onRecorded={(updated) => {
+                    setLead(updated);
+                    setMode(null);
+                    setReplySubject("");
+                    setNotice("Recorded on the timeline.");
+                    onChanged();
+                  }}
+                />
+              ) : mode && (
                 <Composer
                   key={mode + replySubject}
                   mode={mode}

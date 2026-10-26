@@ -18,6 +18,7 @@ import {
   MessageCircle,
   MessageSquare,
   NotebookPen,
+  Paperclip,
   Phone,
   Pin,
   PinOff,
@@ -25,6 +26,8 @@ import {
   Search,
   UserRound,
 } from "lucide-react";
+import { useAppAuth } from "@/lib/appAuth";
+import { authenticatedFetch } from "@/lib/apiClient";
 import { CALL_OUTCOMES, relative, StageBadge, stageFromLabel, type Activity } from "./api";
 
 const OUT = ["Email", "Sms", "WhatsApp"];
@@ -275,6 +278,46 @@ function StageChange({ body }: { body: string }) {
   );
 }
 
+/** An email as sent, with its formatting (cleaned on the server); long ones fold */
+function FormattedEmail({ html }: { html: string }) {
+  const [open, setOpen] = useState(false);
+  const long = html.length > 900;
+  return (
+    <>
+      <div className={`email-body ${long && !open ? "max-h-40 overflow-hidden [mask-image:linear-gradient(to_bottom,black_70%,transparent)]" : ""}`} dangerouslySetInnerHTML={{ __html: html }} />
+      {long && (
+        <button type="button" onClick={() => setOpen(!open)} className="mt-1 text-xs font-medium text-cyan-700 hover:underline dark:text-cyan-400">
+          {open ? "Show less" : "Show the full message"}
+        </button>
+      )}
+    </>
+  );
+}
+
+/** Files sent with an email; staff download them */
+function CrmFiles({ files }: { files: { id: string; name: string; size: number }[] }) {
+  const { getToken } = useAppAuth();
+  const open = async (f: { id: string; name: string }) => {
+    const res = await authenticatedFetch(`/api/institute/crm/files/${f.id}`, {}, getToken).catch(() => null);
+    if (!res?.ok) return;
+    const url = URL.createObjectURL(await res.blob());
+    const el = document.createElement("a");
+    el.href = url;
+    el.download = f.name;
+    el.click();
+    setTimeout(() => URL.revokeObjectURL(url), 10000);
+  };
+  return (
+    <div className="mt-2 flex flex-wrap gap-1.5">
+      {files.map((f) => (
+        <button key={f.id} type="button" onClick={() => open(f)} className="inline-flex items-center gap-1 rounded-lg border border-border bg-background px-2 py-1 text-xs hover:bg-muted">
+          <Paperclip aria-hidden="true" className="h-3 w-3" /> {f.name} <span className="text-muted-foreground">({Math.ceil(f.size / 1024)} KB)</span>
+        </button>
+      ))}
+    </div>
+  );
+}
+
 function Item({ a, personName, busy, onPin, onReply }: { a: Activity; personName: string; busy: boolean; onPin: (a: Activity, p: boolean) => void; onReply: (s: string) => void }) {
   const meta = a.meta ?? {};
   const failed = meta.delivered === false || meta.sent === false;
@@ -314,12 +357,29 @@ function Item({ a, personName, busy, onPin, onReply }: { a: Activity; personName
   }
 
   if (OUT.includes(a.kind)) {
-    const what = a.kind === "Email" ? `emailed ${typeof meta.to === "string" ? meta.to : ""}` : a.kind === "Sms" ? "sent an SMS" : "opened a WhatsApp chat";
+    const what =
+      a.kind === "Email"
+        ? meta.external
+          ? "emailed from their own mail app"
+          : `emailed ${typeof meta.to === "string" ? meta.to : ""}`
+        : a.kind === "Sms"
+          ? "sent an SMS"
+          : "opened a WhatsApp chat";
+    const files = Array.isArray(meta.attachments) ? (meta.attachments as { id: string; name: string; size: number }[]) : [];
     return (
       <div className="rounded-xl border border-border bg-muted/40 p-3 text-sm">
         {head(a.actorName, what)}
         {a.subject && <p className="mt-1.5 font-medium">{a.subject}</p>}
-        <div className="mt-1">{a.body ? <Body text={a.body} /> : <p className="text-muted-foreground">No message text.</p>}</div>
+        <div className="mt-1">
+          {typeof meta.html === "string" && meta.html ? (
+            <FormattedEmail html={meta.html} />
+          ) : a.body ? (
+            <Body text={a.body} />
+          ) : (
+            <p className="text-muted-foreground">No message text.</p>
+          )}
+        </div>
+        {files.length > 0 && <CrmFiles files={files} />}
         {failed && <p className="mt-1 text-xs font-medium text-red-700 dark:text-red-400">Not delivered{typeof meta.error === "string" ? ` (${meta.error})` : ""}. Try again or use another channel.</p>}
       </div>
     );

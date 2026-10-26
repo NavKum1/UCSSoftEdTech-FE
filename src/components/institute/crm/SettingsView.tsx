@@ -9,6 +9,7 @@ import React, { useState } from "react";
 import { Check, Pencil, Plus, Send, Trash2 } from "lucide-react";
 import { authenticatedFetch } from "@/lib/apiClient";
 import { crm, type GetToken, type Member, type Template } from "./api";
+import RichTextEditor from "./RichTextEditor";
 
 const input = "w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:border-cyan-600 focus:outline-none focus:ring-2 focus:ring-cyan-600/20";
 const primary = "inline-flex items-center gap-1.5 rounded-lg bg-cyan-700 px-3.5 py-2 text-sm font-medium text-white hover:bg-cyan-800 disabled:opacity-50";
@@ -206,7 +207,7 @@ function TemplateSettings({ getToken, templates, reload }: { getToken: GetToken;
       >
         <input className={input} placeholder="Template name, e.g. First reply" aria-label="Template name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required maxLength={120} />
         <input className={input} placeholder="Subject" aria-label="Subject" value={form.subject} onChange={(e) => setForm({ ...form, subject: e.target.value })} required maxLength={300} />
-        <textarea className={`${input} min-h-36`} placeholder="Message" aria-label="Message" value={form.body} onChange={(e) => setForm({ ...form, body: e.target.value })} required maxLength={10000} />
+        <RichTextEditor value={form.body} onChange={(body) => setForm((f) => ({ ...f, body }))} placeholder="Message" />
         <div className="flex gap-2">
           <button type="submit" className={primary} disabled={busy}>
             {form.id ? "Save changes" : "Add template"}

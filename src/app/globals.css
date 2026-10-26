@@ -209,3 +209,12 @@
 .auth-scope {
   font-family: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
 }
+
+/* CRM emails: the editor, the preview and the timeline show the same formatting */
+.email-body p { margin: 0.25rem 0; }
+.email-body h3 { font-weight: 600; font-size: 1rem; margin: 0.5rem 0 0.25rem; }
+.email-body ul { list-style: disc; padding-left: 1.25rem; margin: 0.25rem 0; }
+.email-body ol { list-style: decimal; padding-left: 1.25rem; margin: 0.25rem 0; }
+.email-body blockquote { border-left: 3px solid var(--color-border, #d4d4d8); padding-left: 0.75rem; color: var(--color-muted-foreground, #71717a); margin: 0.25rem 0; }
+.email-body a { color: #0e7490; text-decoration: underline; }
+.email-body .ProseMirror p.is-editor-empty:first-child::before { content: attr(data-placeholder); float: left; height: 0; pointer-events: none; color: #a1a1aa; }
