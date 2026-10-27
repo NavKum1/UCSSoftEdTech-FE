@@ -13,7 +13,6 @@ export interface RegionComplianceConfig {
   symbol: string;
   locale: string;
   rateMultiplier: number;
-  complianceBadges: Array<{ label: string; desc: string; dot: string }>;
   tax: {
     regimeTitle: string;
     withholdingRatePercent: number;
@@ -41,11 +40,6 @@ export const REGIONS: Record<Region, RegionComplianceConfig> = {
     symbol: "$",
     locale: "en-US",
     rateMultiplier: 0.05, // e.g. 1500 INR -> $75.00
-    complianceBadges: [
-      { label: "Designed for FERPA", desc: "Built with US higher-ed privacy obligations in mind", dot: "bg-blue-400" },
-      { label: "CCPA / CPRA", desc: "Consumer data rights supported", dot: "bg-purple-400" },
-      { label: "Hash-Chained Audit Log", desc: "Tamper-evident event trail", dot: "bg-emerald-400" },
-    ],
     tax: {
       regimeTitle: "IRS Form 1099-NEC & W-9 Independent Contractor Ledger",
       withholdingRatePercent: 0,
@@ -71,11 +65,6 @@ export const REGIONS: Record<Region, RegionComplianceConfig> = {
     symbol: "₹",
     locale: "en-IN",
     rateMultiplier: 1.0, // base 1500 INR -> ₹1,500
-    complianceBadges: [
-      { label: "Designed for DPDP Act 2023", desc: "Built with India data-protection obligations in mind", dot: "bg-purple-400" },
-      { label: "Hash-Chained Audit Log", desc: "Tamper-evident event trail", dot: "bg-cyan-400" },
-      { label: "Section 194J TDS", desc: "Automated TDS calculation & Form 16A", dot: "bg-emerald-400" },
-    ],
     tax: {
       regimeTitle: "Indian Statutory Section 194J Professional Services Ledger",
       withholdingRatePercent: 10,
@@ -101,11 +90,6 @@ export const REGIONS: Record<Region, RegionComplianceConfig> = {
     symbol: "€",
     locale: "en-GB",
     rateMultiplier: 0.046, // e.g. 1500 INR -> €70.00
-    complianceBadges: [
-      { label: "Designed for GDPR & UK GDPR", desc: "Built with EU/UK data-protection obligations in mind", dot: "bg-purple-400" },
-      { label: "EU AI Act Safeguards", desc: "Emotion analysis disabled in EU/EEA; humans make hiring decisions", dot: "bg-emerald-400" },
-      { label: "Hash-Chained Audit Log", desc: "Tamper-evident event trail", dot: "bg-cyan-400" },
-    ],
     tax: {
       regimeTitle: "EU DAC7 Directive & VAT Reverse Charge Ledger",
       withholdingRatePercent: 0,
@@ -320,7 +304,7 @@ export function ProductRegionSwitcher({ className = "" }: { className?: string }
                     <span className="text-left">
                       <div className="font-medium">{r.name}</div>
                       <div className="text-[10px] text-muted-foreground font-mono">
-                        {r.symbol} {r.currency} • {r.complianceBadges[0].label}
+                        {r.symbol} {r.currency}
                       </div>
                     </span>
                   </span>
