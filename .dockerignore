@@ -1,0 +1,10 @@
+# Never copy local settings or secrets into an image
+.env
+.env.*
+!.env.production.example
+node_modules
+.next
+.git
+*.log
+playwright-report
+test-results
