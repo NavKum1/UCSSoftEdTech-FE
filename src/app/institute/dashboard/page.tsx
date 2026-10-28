@@ -17,9 +17,10 @@ import LeadsView from "@/components/institute/crm/LeadsView";
 import LeadDrawer from "@/components/institute/crm/LeadDrawer";
 import TasksView from "@/components/institute/crm/TasksView";
 import InsightsView from "@/components/institute/crm/InsightsView";
+import PeopleView from "@/components/institute/crm/PeopleView";
 import SettingsView from "@/components/institute/crm/SettingsView";
 
-type Tab = "leads" | "followups" | "insights" | "settings";
+type Tab = "leads" | "people" | "followups" | "insights" | "settings";
 
 export default function InstituteCrmPage() {
   return (
@@ -124,6 +125,7 @@ function Crm() {
 
   const TABS: [Tab, string][] = [
     ["leads", "Leads"],
+    ["people", "People"],
     ["followups", "Follow-ups"],
     ["insights", "Insights"],
     ...(isAdmin ? [["settings", "Settings"] as [Tab, string]] : []),
@@ -185,6 +187,7 @@ function Crm() {
       {tab === "leads" && (
         <LeadsView getToken={getToken} team={team} data={data} filters={filters} setFilters={setFilters} loading={loading} error={error} openLead={openLead} reload={refresh} loadMore={loadMore} loadingMore={loadingMore} />
       )}
+      {tab === "people" && <PeopleView getToken={getToken} openLead={openLead} />}
       {tab === "followups" && <TasksView getToken={getToken} openLead={openLead} version={version} />}
       {tab === "insights" && <InsightsView getToken={getToken} />}
       {tab === "settings" && isAdmin && (

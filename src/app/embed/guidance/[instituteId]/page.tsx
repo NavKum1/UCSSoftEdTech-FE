@@ -103,7 +103,8 @@ function Embedded() {
     const body = await res.json().catch(() => null);
     if (res.ok) {
       if (body?.confirmEmail) setCheckEmail(p.email);
-      return null;
+      // The meeting they asked for (booked, or a request the team confirms); with email confirmation it's arranged once they confirm
+      return { meeting: body?.booking ?? null };
     }
     // The form was open too long: get a fresh one (answers stay) and ask to send again
     if (body?.code === "reload") {
@@ -113,26 +114,38 @@ function Embedded() {
     return res.status === 429 ? "Too many requests from here just now. Please try again later." : (body?.error ?? "Your request couldn't be sent. Please try again.");
   };
 
+  // The photo layout fills the page; results stay on screen with the "check your email" note under them
+  const cover = fill?.definition.settings.layout === "cover";
+  const r = fill?.definition.results;
+  const showsResults = !!r?.showToPerson && (r.outcomeEnabled || r.matchEnabled);
+  const confirmNote = checkEmail && (
+    <div className="p-6 text-center" role="status">
+      <p className="text-base font-semibold">Check your email to confirm</p>
+      <p className="mt-1 text-sm text-muted-foreground">
+        We sent a link to <span className="font-medium text-foreground">{checkEmail}</span>. Your request reaches {fill?.instituteName ?? "the institute"} once you click it. The
+        link works for 48 hours; check your spam folder if you don&apos;t see it.
+      </p>
+    </div>
+  );
+
   return (
     <div
       ref={box}
       data-gf-square={square ? "" : undefined}
       style={font ? { fontFamily: font } : undefined}
-      className={`mx-auto max-w-lg ${embedded ? "px-3 py-4 sm:px-4" : "p-4 sm:p-6"} ${params.get("popup") === "1" ? "pt-8" : ""}`}
+      className={
+        cover
+          ? `flex flex-col ${embedded ? "" : "min-h-dvh"}`
+          : `mx-auto max-w-lg ${embedded ? "px-3 py-4 sm:px-4" : "p-4 sm:p-6"} ${params.get("popup") === "1" ? "pt-8" : ""}`
+      }
     >
       {square && (
         <style>{`[data-gf-square] .rounded-xl,[data-gf-square] .rounded-2xl,[data-gf-square] .rounded-lg,[data-gf-square] .rounded-full{border-radius:4px}`}</style>
       )}
       {missing ? (
         <p className="p-6 text-center text-sm text-muted-foreground">This form isn&apos;t available right now.</p>
-      ) : checkEmail ? (
-        <div className="p-6 text-center" role="status">
-          <p className="text-base font-semibold">Check your email to confirm</p>
-          <p className="mt-1 text-sm text-muted-foreground">
-            We sent a link to <span className="font-medium text-foreground">{checkEmail}</span>. Your request reaches {fill?.instituteName ?? "the institute"} once you click it. The
-            link works for 48 hours; check your spam folder if you don&apos;t see it.
-          </p>
-        </div>
+      ) : checkEmail && !showsResults ? (
+        confirmNote
       ) : !fill ? (
         <div className="h-64 animate-pulse rounded-2xl bg-muted motion-reduce:animate-none" aria-busy="true" />
       ) : (
@@ -147,6 +160,7 @@ function Embedded() {
           referrer={page}
           resumeToken={params.get("resume")}
           apiBase={base}
+          sentNotice={confirmNote || undefined}
         />
       )}
     </div>

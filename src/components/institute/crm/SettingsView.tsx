@@ -10,6 +10,7 @@ import { Check, Pencil, Plus, Send, Trash2 } from "lucide-react";
 import { authenticatedFetch } from "@/lib/apiClient";
 import { crm, type GetToken, type Member, type Template } from "./api";
 import RichTextEditor from "./RichTextEditor";
+import WebhookEvents from "./WebhookEvents";
 
 const input = "w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:border-cyan-600 focus:outline-none focus:ring-2 focus:ring-cyan-600/20";
 const primary = "inline-flex items-center gap-1.5 rounded-lg bg-cyan-700 px-3.5 py-2 text-sm font-medium text-white hover:bg-cyan-800 disabled:opacity-50";
@@ -316,7 +317,7 @@ function Integrations({ getToken, webhookUrl, reload }: { getToken: GetToken; we
         <div>
           <h2 className="text-base font-semibold">Send leads to your own systems</h2>
           <p className="mt-0.5 text-sm text-muted-foreground">
-            Optional. If you also use another CRM (HubSpot, Salesforce, Zoho, or Zapier/Make), Edulexa can send each new lead and update there for you.
+            Optional. If you also use another CRM (HubSpot, Salesforce, Zoho, or Zapier/Make), Edulexa can send each new lead, form and meeting there for you. The address must be https on a public host.
             For your IT team: each event is posted to this URL as JSON, signed with your
             institute&apos;s API key in the <code className="text-xs">X-Edulexa-Signature</code> header (<code className="text-xs">t=timestamp,v1=HMAC-SHA256 of &quot;timestamp.body&quot;</code>).
           </p>
@@ -331,15 +332,7 @@ function Integrations({ getToken, webhookUrl, reload }: { getToken: GetToken; we
             <Send aria-hidden="true" className="h-4 w-4" /> Send a test event
           </button>
         </div>
-        <div className="rounded-xl border border-border p-3 text-sm">
-          <p className="font-medium">Events</p>
-          <dl className="mt-2 space-y-1.5 text-xs">
-            <div><dt className="inline font-mono">lead.candidate_opt_in</dt> <dd className="inline text-muted-foreground">a candidate agreed to be contacted about a course (name, email, course)</dd></div>
-            <div><dt className="inline font-mono">lead.stage_changed</dt> <dd className="inline text-muted-foreground">a lead moved stage in this CRM (leadId, from, to)</dd></div>
-            <div><dt className="inline font-mono">lead.withdrawn</dt> <dd className="inline text-muted-foreground">the person withdrew consent: stop contacting them and delete their data</dd></div>
-            <div><dt className="inline font-mono">lead.test</dt> <dd className="inline text-muted-foreground">the test button above</dd></div>
-          </dl>
-        </div>
+        <WebhookEvents getToken={getToken} version={webhookUrl.length} />
       </section>
 
       <OpenTracking getToken={getToken} />

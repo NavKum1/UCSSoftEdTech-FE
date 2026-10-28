@@ -1,5 +1,5 @@
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
-import { NextResponse, type NextRequest } from "next/server";
+import { NextResponse, type NextFetchEvent, type NextMiddleware, type NextRequest } from "next/server";
 import { auth as keycloakAuth } from "@/auth";
 
 // Route Matchers
@@ -143,7 +143,55 @@ const keycloakHandler = () =>
     return gate(req, signedIn ? session.user?.id ?? "signed-in" : null, hasRole);
   });
 
-export default process.env.NEXT_PUBLIC_AUTH_PROVIDER === "keycloak" ? keycloakHandler() : clerkHandler();
+const authHandler = (process.env.NEXT_PUBLIC_AUTH_PROVIDER === "keycloak" ? keycloakHandler() : clerkHandler()) as unknown as (
+  req: NextRequest,
+  ev: NextFetchEvent,
+) => ReturnType<NextMiddleware>;
+
+// Institutes' own addresses for their guidance form (GUIDANCE_SITES=1): a request for a host that isn't the app's own
+// (AUTH_URL's host, plus APP_HOSTS) is looked up in the API; a school's subdomain or verified domain opens its public
+// form at "/". Unknown hosts carry on as usual. Answers are kept for 5 minutes.
+const SITES = process.env.GUIDANCE_SITES === "1";
+const APP_HOSTS = new Set(
+  [process.env.AUTH_URL, ...(process.env.APP_HOSTS ?? "").split(",")]
+    .map((h) => {
+      try {
+        return (h?.includes("://") ? new URL(h).hostname : (h ?? "")).trim().toLowerCase();
+      } catch {
+        return "";
+      }
+    })
+    .filter(Boolean),
+);
+const SITES_API = (process.env.GUIDANCE_SITES_API || process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5000").replace(/\/$/, "");
+const siteCache = new Map<string, { at: number; to: { instituteId: string; formId: string } | null }>();
+
+async function guidanceSite(req: NextRequest): Promise<NextResponse | null> {
+  if (!SITES || req.nextUrl.pathname !== "/") return null;
+  const host = (req.headers.get("host") ?? "").split(":")[0].toLowerCase();
+  if (!host || host === "localhost" || APP_HOSTS.has(host)) return null;
+  let hit = siteCache.get(host);
+  if (!hit || Date.now() - hit.at > 300_000) {
+    try {
+      const res = await fetch(`${SITES_API}/api/public/guidance-sites/resolve?host=${encodeURIComponent(host)}`, { cache: "no-store" });
+      hit = { at: Date.now(), to: res.ok ? ((await res.json()) as { instituteId: string; formId: string }) : null };
+    } catch {
+      // The API can't be reached: carry on as usual (not cached)
+      return null;
+    }
+    if (siteCache.size > 5000) siteCache.clear();
+    siteCache.set(host, hit);
+  }
+  if (!hit.to) return null;
+  const url = req.nextUrl.clone();
+  url.pathname = `/embed/guidance/${hit.to.instituteId}`;
+  url.searchParams.set("form", hit.to.formId);
+  return NextResponse.rewrite(url);
+}
+
+export default async function middleware(req: NextRequest, ev: NextFetchEvent) {
+  return (await guidanceSite(req)) ?? authHandler(req, ev);
+}
 
 export const config = {
   matcher: [

@@ -6,11 +6,14 @@
  * details shown on the institute's card when people choose an institute to talk to.
  */
 
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState, useSyncExternalStore } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Code2, Copy, ExternalLink, FileText, Plus, Star, Trash2, X } from "lucide-react";
 import EmbedBuilder from "./EmbedBuilder";
+import NotificationsView from "./NotificationsView";
+import StatisticsView from "./StatisticsView";
+import SiteCard from "./SiteCard";
 import { AccessNotice, useLatestRef, useLegacyApi } from "@/lib/legacyApi";
 import GuidanceForm from "@/components/guidance/form/GuidanceForm";
 import type { FormDef } from "@/components/guidance/form/model";
@@ -43,6 +46,8 @@ interface Profile {
 const card = "rounded-2xl border border-border bg-card p-5";
 const input = "mt-1 block w-full rounded-lg border border-border bg-background px-3 py-2 text-sm";
 const MODES = ["Online", "In person", "Hybrid"];
+const noSubscribe = () => () => undefined;
+type View = "forms" | "statistics" | "notifications";
 
 export default function FormsHome({
   instituteId,
@@ -69,6 +74,17 @@ export default function FormsHome({
   const [copied, setCopied] = useState<string | null>(null);
   const [embedFor, setEmbedFor] = useState<FormRow | null>(null);
   const [owner, setOwner] = useState<string>("");
+  // The forms, or every automatic message they sent (?view=notifications, e.g. from a form's Automatic messages tab)
+  const fromUrl = useSyncExternalStore(noSubscribe, () => new URLSearchParams(window.location.search).get("view"), () => null);
+  const [picked, setPicked] = useState<View | null>(null);
+  const view: View = picked ?? (fromUrl === "notifications" || fromUrl === "statistics" ? fromUrl : "forms");
+  const showView = (v: View) => {
+    setPicked(v);
+    const u = new URL(window.location.href);
+    if (v !== "forms") u.searchParams.set("view", v);
+    else u.searchParams.delete("view");
+    window.history.replaceState(null, "", u);
+  };
 
   const load = useCallback(async () => {
     const res = await apiFetch(`/api/guidance-forms${q}`);
@@ -114,7 +130,32 @@ export default function FormsHome({
         </p>
       )}
 
-      {!forms ? (
+      <div role="tablist" aria-label="Forms and messages" className="flex gap-5 border-b border-border text-sm">
+        {(
+          [
+            ["forms", "Forms"],
+            ["statistics", "Statistics"],
+            ["notifications", "Notifications"],
+          ] as const
+        ).map(([k, label]) => (
+          <button
+            key={k}
+            role="tab"
+            type="button"
+            aria-selected={view === k}
+            onClick={() => showView(k)}
+            className={`-mb-px border-b-2 pb-2.5 ${view === k ? "border-cyan-600 font-medium text-foreground" : "border-transparent text-muted-foreground hover:text-foreground"}`}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+
+      {view === "statistics" ? (
+        <StatisticsView instituteId={instituteId} />
+      ) : view === "notifications" ? (
+        <NotificationsView instituteId={instituteId} forms={forms ?? []} canEdit={canEdit} />
+      ) : !forms ? (
         <div className="h-40 animate-pulse rounded-2xl bg-muted motion-reduce:animate-none" aria-busy="true" />
       ) : (
         <ul className="grid gap-3 md:grid-cols-2">
@@ -187,7 +228,8 @@ export default function FormsHome({
         </ul>
       )}
 
-      {withProfile && canEdit && <ProfileCard apiFetch={apiFetch} q={q} ready={ready} />}
+      {view === "forms" && forms && withProfile && <SiteCard instituteId={instituteId} forms={forms} canEdit={canEdit} />}
+      {view === "forms" && withProfile && canEdit && <ProfileCard apiFetch={apiFetch} q={q} ready={ready} />}
 
       {embedFor && (
         <div className="fixed inset-0 z-100 flex items-start justify-center overflow-y-auto bg-black/40 p-4" onClick={() => setEmbedFor(null)}>

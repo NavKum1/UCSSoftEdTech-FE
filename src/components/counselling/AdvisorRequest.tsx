@@ -282,10 +282,15 @@ function RequestDialog({
               }),
             });
       if (res.ok) {
+        // A meeting they asked for on the form's "Next steps"
+        const done = await res.json().catch(() => null);
+        const m = done?.booking as { status?: string; when?: string | null; taken?: boolean } | null | undefined;
+        const meeting =
+          m?.status === "Booked" && m.when ? ` Your meeting is booked for ${m.when}.` : m?.taken ? " The time you picked was just taken, so they'll email you to agree another." : m ? " They'll confirm your meeting time by email." : "";
         onSent(
           to.kind === "edulexa"
             ? `Sent to Edulexa. We'll reply in Edulexa and by email at ${p.email}.`
-            : `Sent to ${to.name}. An advisor will contact you at ${p.email}.`,
+            : `Sent to ${to.name}. An advisor will contact you at ${p.email}.${meeting}`,
         );
         return null;
       }

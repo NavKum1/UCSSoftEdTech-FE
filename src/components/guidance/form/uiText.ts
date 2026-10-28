@@ -6,9 +6,13 @@
 export type UiKey =
   | "next" | "back" | "send" | "sending" | "optional" | "unsure" | "unsurePh" | "details" | "name" | "email" | "phone" | "step" | "of"
   | "minutes" | "other" | "otherPh" | "yes" | "no" | "choose" | "attach" | "uploading" | "remove" | "saveLater" | "saved" | "copy" | "copied"
-  | "thanks" | "language" | "fileHint" | "partialNotice";
+  | "thanks" | "language" | "fileHint" | "partialNotice"
+  | "addRow" | "sliderHint" | "leansTo" | "middle" | "yourResults" | "yourResult" | "match" | "continue" | "done"
+  | "topics" | "howMeet" | "pickDay" | "timeOfDay" | "morning" | "afternoon" | "evening" | "anyTime" | "pickTime" | "laterTimes" | "earlierTimes"
+  | "noTimes" | "loadingTimes" | "Phone" | "Video" | "InPerson" | "meetingBooked" | "meetingAsked" | "meetingTaken" | "clearMeeting" | "timesIn";
 
-export const UI: Record<string, Record<UiKey, string>> = {
+/** English has every text; other languages fall back to it for texts not yet translated */
+export const UI: { en: Record<UiKey, string> } & Record<string, Partial<Record<UiKey, string>>> = {
   en: {
     next: "Next", back: "Back", send: "Send", sending: "Sending…", optional: "optional", unsure: "What are you unsure about?",
     unsurePh: "e.g. I can't decide between cloud and data, or which certification would help me get a job", details: "Your details", name: "Name",
@@ -17,6 +21,15 @@ export const UI: Record<string, Record<UiKey, string>> = {
     saved: "Saved. Use this link to come back within 30 days:", copy: "Copy link", copied: "Copied", thanks: "Thank you. Your request was sent.",
     language: "Language", fileHint: "PDF, Word, JPG or PNG, up to 5 MB.",
     partialNotice: "We save your details as you go so {institute} can help you.",
+    addRow: "Add another", sliderHint: "Move the slider to where you fit, or leave it in the middle.", leansTo: "Leans to “{x}”", middle: "In the middle",
+    yourResults: "Your results", yourResult: "Your result", match: "Match", continue: "Continue", done: "Done",
+    topics: "What would you like to talk about?", howMeet: "How would you like to meet?", pickDay: "Which day suits you?", timeOfDay: "What time of day?",
+    morning: "Morning", afternoon: "Afternoon", evening: "Evening", anyTime: "Any time", pickTime: "Pick a time", laterTimes: "Later dates", earlierTimes: "Earlier dates",
+    noTimes: "No free times in these two weeks.", loadingTimes: "Finding free times…", Phone: "Phone call", Video: "Video call", InPerson: "In person",
+    meetingBooked: "Your meeting is booked for {when}. We've emailed you the details.",
+    meetingAsked: "We've got your request for a meeting. We'll confirm the time by email.",
+    meetingTaken: "That time was taken just before your request arrived, so we'll email you to agree another.",
+    clearMeeting: "Clear", timesIn: "Times are in {tz}.",
   },
   hi: {
     next: "आगे", back: "पीछे", send: "भेजें", sending: "भेजा जा रहा है…", optional: "वैकल्पिक", unsure: "आप किस बारे में निश्चित नहीं हैं?",
@@ -26,6 +39,13 @@ export const UI: Record<string, Record<UiKey, string>> = {
     saved: "सहेजा गया। 30 दिनों के भीतर लौटने के लिए यह लिंक इस्तेमाल करें:", copy: "लिंक कॉपी करें", copied: "कॉपी हो गया",
     thanks: "धन्यवाद। आपका अनुरोध भेज दिया गया है।", language: "भाषा", fileHint: "PDF, Word, JPG या PNG, 5 MB तक।",
     partialNotice: "हम आपकी जानकारी साथ-साथ सहेजते हैं ताकि {institute} आपकी मदद कर सके।",
+    topics: "आप किस बारे में बात करना चाहेंगे?", howMeet: "आप कैसे मिलना चाहेंगे?", pickDay: "कौन सा दिन ठीक रहेगा?", timeOfDay: "दिन का कौन सा समय?",
+    morning: "सुबह", afternoon: "दोपहर", evening: "शाम", anyTime: "कभी भी", pickTime: "समय चुनें", laterTimes: "आगे की तारीखें", earlierTimes: "पहले की तारीखें",
+    noTimes: "इन दो हफ़्तों में कोई खाली समय नहीं है।", loadingTimes: "खाली समय देखे जा रहे हैं…", Phone: "फ़ोन कॉल", Video: "वीडियो कॉल", InPerson: "आमने-सामने",
+    meetingBooked: "आपकी मीटिंग {when} के लिए बुक हो गई है। विवरण ईमेल कर दिया गया है।",
+    meetingAsked: "मीटिंग का आपका अनुरोध मिल गया है। हम समय ईमेल से पक्का करेंगे।",
+    meetingTaken: "आपका अनुरोध पहुँचने से ठीक पहले वह समय बुक हो गया, इसलिए हम दूसरा समय तय करने के लिए ईमेल करेंगे।",
+    clearMeeting: "हटाएँ", timesIn: "समय {tz} के अनुसार है।",
   },
   bn: {
     next: "পরবর্তী", back: "পিছনে", send: "পাঠান", sending: "পাঠানো হচ্ছে…", optional: "ঐচ্ছিক", unsure: "আপনি কোন বিষয়ে নিশ্চিত নন?",

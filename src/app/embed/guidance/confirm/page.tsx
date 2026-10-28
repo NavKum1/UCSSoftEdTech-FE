@@ -9,6 +9,9 @@ import React, { Suspense, useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { CheckCircle2, XCircle } from "lucide-react";
 import { getApiBaseUrl } from "@/lib/apiClient";
+import { MeetingNotice } from "@/components/guidance/form/Meeting";
+import type { MeetingTold } from "@/components/guidance/form/GuidanceForm";
+import { UI } from "@/components/guidance/form/uiText";
 
 export default function ConfirmGuidancePage() {
   return (
@@ -20,7 +23,7 @@ export default function ConfirmGuidancePage() {
 
 function Confirm() {
   const token = useSearchParams().get("token") ?? "";
-  const [state, setState] = useState<{ ok: boolean; institute?: string | null; thankYou?: string | null; error?: string } | null>(null);
+  const [state, setState] = useState<{ ok: boolean; institute?: string | null; thankYou?: string | null; meeting?: MeetingTold | null; error?: string } | null>(null);
   const sent = useRef(false);
 
   useEffect(() => {
@@ -30,11 +33,12 @@ function Confirm() {
       .then(async (res) => {
         const body = await res.json().catch(() => null);
         if (!res.ok) return setState({ ok: false, error: body?.error ?? "This link didn't work. Please fill in the form again." });
-        if (body?.redirectUrl) {
+        // A meeting they asked for is arranged now: they see it before going on to the institute's own page
+        if (body?.redirectUrl && !body?.booking) {
           window.location.href = body.redirectUrl;
           return;
         }
-        setState({ ok: true, institute: body?.instituteName, thankYou: body?.thankYou });
+        setState({ ok: true, institute: body?.instituteName, thankYou: body?.thankYou, meeting: body?.booking ?? null });
       })
       .catch(() => setState({ ok: false, error: "We couldn't reach the server. Please check your connection and open the link again." }));
   }, [token]);
@@ -49,6 +53,11 @@ function Confirm() {
           <p className="mt-1 whitespace-pre-wrap text-sm text-muted-foreground">
             {state.thankYou || `Your request is with ${state.institute ?? "the institute"}. An advisor will get back to you by email.`}
           </p>
+          {state.meeting && (
+            <div className="mt-4 text-left" style={{ "--gf-accent": "#059669" } as React.CSSProperties}>
+              <MeetingNotice meeting={state.meeting} t={(k) => UI.en[k as keyof typeof UI.en] ?? k} />
+            </div>
+          )}
         </>
       ) : (
         <>

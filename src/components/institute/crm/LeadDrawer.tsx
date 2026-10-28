@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 import { useLatestRef } from "@/lib/legacyApi";
 import LeadProfile from "./LeadProfile";
+import Meetings from "./Meetings";
 import EmailComposer from "./EmailComposer";
 import Communication from "./Communication";
 import {
@@ -239,6 +240,7 @@ export default function LeadDrawer({
                   Not contacted yet. Call, email or message them; the lead moves to Contacted when you do.
                 </p>
               )}
+              <Meetings lead={lead} busy={busy} act={act} />
 
               {/* One-click actions */}
               <div className="mt-3 flex flex-wrap gap-1.5" role="toolbar" aria-label="Actions">

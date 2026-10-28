@@ -7,6 +7,7 @@
 
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
+import { Download } from "lucide-react";
 
 interface Insights {
   views: number;
@@ -64,6 +65,19 @@ export default function InsightsTab({ formId, apiFetch, instituteId }: { formId:
     };
   }, [apiFetch, formId, days]);
 
+  // Every sending of the form as a spreadsheet (signed in, so fetched and saved here)
+  const download = async () => {
+    const res = await apiFetch(`/api/guidance-forms/${formId}/submissions.csv`);
+    if (!res.ok) return setError("The answers couldn't be downloaded.");
+    const name = /filename="?([^";]+)"?/.exec(res.headers.get("content-disposition") ?? "")?.[1] ?? "answers.csv";
+    const url = URL.createObjectURL(await res.blob());
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = name;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   if (error) return <p className="text-sm text-red-700 dark:text-red-400">{error}</p>;
   if (!data) return <div className="h-48 animate-pulse rounded-2xl bg-muted motion-reduce:animate-none" aria-busy="true" />;
   const maxStop = Math.max(1, ...data.dropOff.map((d) => d.stopped));
@@ -71,12 +85,15 @@ export default function InsightsTab({ formId, apiFetch, instituteId }: { formId:
 
   return (
     <div className="space-y-5">
-      <div className="flex flex-wrap gap-1.5">
+      <div className="flex flex-wrap items-center gap-1.5">
         {RANGES.map((d) => (
           <button key={d} type="button" aria-pressed={days === d} onClick={() => setDays(d)} className={`rounded-full border px-3 py-1.5 text-xs font-medium ${days === d ? "border-cyan-700 bg-cyan-700 text-white" : "border-border bg-card hover:bg-muted"}`}>
             Last {d === 365 ? "12 months" : `${d} days`}
           </button>
         ))}
+        <button type="button" onClick={download} className="ml-auto inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-xs font-medium hover:bg-muted">
+          <Download aria-hidden="true" className="h-3.5 w-3.5" /> Download every answer (CSV)
+        </button>
       </div>
 
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-5">

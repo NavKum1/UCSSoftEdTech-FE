@@ -184,8 +184,20 @@ export interface LeadFull {
   createdAt: string;
   requestType: "guidance" | "course";
   course: string | null;
-  situation: { question: string; answer: string; files?: { id: string; name: string; size: number }[] }[] | null;
+  situation: { question: string; answer: string; questionId?: string; files?: { id: string; name: string; size: number }[]; table?: { columns: string[]; rows: string[][] } | null }[] | null;
   quiz: QuizShare | null;
+  /** What the lead's guidance form worked out (outcome, match score), with notes for the counsellor */
+  formResult?: FormResultView | null;
+  /** Which sending the result came from (it may be another inquiry by the same person) */
+  formResultFrom?: { otherInquiry: boolean; at: string; form?: string | null } | null;
+  /** Visits to the institute's forms by this person: sent, waiting for the email to be confirmed, stopped part way or still going */
+  visits?: FormVisit[];
+  /** The form's notes for the counsellor on the answers given (questionId → notes) */
+  coaching?: { questionId: string; tips: string[] }[] | null;
+  /** What the server saw when the form was sent (no IP address kept) */
+  visitor?: VisitorInfo | null;
+  /** Meetings asked for on the form's "Next steps" */
+  meetings?: Meeting[];
   stage: string;
   lostReason: string | null;
   ownerMemberId: string | null;
@@ -299,4 +311,66 @@ export function StageBadge({ stage }: { stage: string }) {
       {STAGE_LABEL[stage] ?? stage}
     </span>
   );
+}
+
+export interface FormResultView {
+  outcomeTitle?: string | null;
+  outcome?: { id: string; name: string; summary?: string | null; coaching?: string | null } | null;
+  points?: { name: string; points: number }[];
+  matchTitle?: string | null;
+  match?: { percent: number; label?: string | null; message?: string | null; coaching?: string | null } | null;
+}
+
+export interface VisitorInfo {
+  /** "Mobile · Chrome on Android" */
+  device: string | null;
+  /** ISO country code */
+  country: string | null;
+  /** The page of the institute's website it was sent from */
+  page: string | null;
+  campaign: string | null;
+  language: string | null;
+  channel: string;
+  seconds: number | null;
+  spamScore: number | null;
+  spamReasons: string | null;
+  spamThreshold: number;
+  sentAt: string;
+}
+
+export interface Meeting {
+  id: string;
+  kind: "request" | "slot";
+  status: "Requested" | "Booked" | "Cancelled";
+  topics: string[];
+  preferredDate: string | null;
+  timeOfDay: string | null;
+  mode: "Phone" | "Video" | "InPerson";
+  start: string | null;
+  end: string | null;
+  /** The time as the person sees it, in the form's time zone */
+  when: string | null;
+  timeZone: string;
+  counsellor: string | null;
+  location: string | null;
+  meetingUrl: string | null;
+  note: string | null;
+  cancelReason: string | null;
+  confirmedBy: string | null;
+  createdAt: string;
+}
+
+export interface FormVisit {
+  id: string;
+  form: string;
+  status: "completed" | "awaitingConfirmation" | "inProgress" | "stopped";
+  /** The step of the last question they answered */
+  step: string | null;
+  seconds: number;
+  startedAt: string;
+  lastActiveAt: string;
+  channel: string;
+  campaign: string | null;
+  /** From another inquiry by the same person */
+  otherInquiry: boolean;
 }

@@ -2,11 +2,12 @@
 
 /**
  * Translating a form: every text of the form (heading, introduction, thank-you, step titles, questions, help texts,
- * options) beside its translation, one language at a time, with a count of what's still missing.
+ * options, slider and scale ends, list columns and their choices, and the results people read) beside its translation,
+ * one language at a time, with a count of what's still missing.
  */
 
 import React, { useState } from "react";
-import type { FormDef, FormText } from "@/components/guidance/form/model";
+import type { FormDef, FormText, ResultsText } from "@/components/guidance/form/model";
 
 type Texts = Record<string, FormText> | undefined;
 
@@ -38,8 +39,16 @@ export default function TranslationsTab({
   const setS = (key: keyof FormText, v: string) => onChange({ ...def, settings: { ...def.settings, translations: put(def.settings.translations, key, v) } });
   const setSection = (id: string, key: keyof FormText, v: string) =>
     onChange({ ...def, sections: def.sections.map((s) => (s.id === id ? { ...s, translations: put(s.translations, key, v) } : s)) });
-  const setQ = (id: string, key: keyof FormText, v: string | string[]) =>
-    onChange({ ...def, questions: def.questions.map((q) => (q.id === id ? { ...q, translations: put(q.translations, key, v) } : q)) });
+  const setQ = (id: string, key: keyof FormText, v: string | string[] | string[][]) =>
+    onChange({ ...def, questions: def.questions.map((q) => (q.id === id ? { ...q, translations: { ...(q.translations ?? {}), [current]: { ...(q.translations?.[current] ?? {}), [key]: v } } } : q)) });
+  const r = def.results;
+  const rt: ResultsText = r?.translations?.[current] ?? {};
+  const setR = (patch: Partial<ResultsText>) => r && onChange({ ...def, results: { ...r, translations: { ...(r.translations ?? {}), [current]: { ...rt, ...patch } } } });
+  // Outcomes and bands line up one to one with the form's own
+  const line = (list: { name?: string | null; summary?: string | null }[] | null | undefined, n: number) => Array.from({ length: n }, (_, i) => list?.[i] ?? {});
+  const setOutcome = (i: number, key: "name" | "summary", v: string) => setR({ outcomes: line(rt.outcomes, r!.outcomes.length).map((x, j) => (j === i ? { ...x, [key]: v } : x)) });
+  const setBand = (i: number, key: "name" | "summary", v: string) => setR({ bands: line(rt.bands, r!.bands.length).map((x, j) => (j === i ? { ...x, [key]: v } : x)) });
+  const results = !!r && (r.outcomeEnabled || r.matchEnabled) && r.showToPerson;
 
   // What still needs translating
   let total = 0;
@@ -55,10 +64,35 @@ export default function TranslationsTab({
   if (def.settings.savePartial) count(def.settings.partialNotice, def.settings.translations?.[current]?.notice);
   def.sections.forEach((s) => count(s.title, s.translations?.[current]?.title));
   def.questions.forEach((q) => {
-    count(q.label, q.translations?.[current]?.label);
-    count(q.help, q.translations?.[current]?.help);
-    if (q.options.length) count("options", q.translations?.[current]?.options?.length === q.options.length ? "ok" : "");
+    const t = q.translations?.[current];
+    count(q.label, t?.label);
+    count(q.help, t?.help);
+    if (q.options.length) count("options", t?.options?.length === q.options.length ? "ok" : "");
+    if (q.kind === "scale" || q.kind === "slider") {
+      count(q.minLabel, t?.minLabel);
+      count(q.maxLabel, t?.maxLabel);
+    }
+    (q.columns ?? []).forEach((c, i) => {
+      count(c.label, t?.columns?.[i]);
+      if (c.options.length) count("choices", t?.columnOptions?.[i]?.length === c.options.length ? "ok" : "");
+    });
   });
+  if (results) {
+    if (r!.outcomeEnabled) {
+      count(r!.outcomeTitle, rt.outcomeTitle);
+      r!.outcomes.forEach((o, i) => {
+        count(o.name, rt.outcomes?.[i]?.name);
+        count(o.summary, rt.outcomes?.[i]?.summary);
+      });
+    }
+    if (r!.matchEnabled) {
+      count(r!.matchTitle, rt.matchTitle);
+      r!.bands.forEach((b, i) => {
+        count(b.label, rt.bands?.[i]?.name);
+        count(b.message, rt.bands?.[i]?.summary);
+      });
+    }
+  }
 
   return (
     <fieldset disabled={readOnly} className="space-y-4">
@@ -91,24 +125,76 @@ export default function TranslationsTab({
                 <Row original={q.label} value={q.translations?.[current]?.label} onChange={(v) => setQ(q.id, "label", v)} />
                 <Row original={q.help} value={q.translations?.[current]?.help} onChange={(v) => setQ(q.id, "help", v)} />
                 <Row original={q.placeholder} value={q.translations?.[current]?.placeholder} onChange={(v) => setQ(q.id, "placeholder", v)} />
-                {q.options.length > 0 && (
-                  <div className="grid gap-2 sm:grid-cols-2">
-                    <p className="whitespace-pre-line rounded-lg bg-muted/50 px-3 py-2 text-xs text-muted-foreground">{q.options.join("\n")}</p>
-                    <textarea
-                      rows={q.options.length}
-                      aria-label="Options, one per line, in the same order"
-                      placeholder="One per line, same order"
-                      className="rounded-lg border border-border bg-background px-3 py-2 text-xs"
-                      value={(q.translations?.[current]?.options ?? []).join("\n")}
-                      onChange={(e) => setQ(q.id, "options", e.target.value.split("\n"))}
-                    />
-                  </div>
+                {q.options.length > 0 && <Lines original={q.options} value={q.translations?.[current]?.options} onChange={(v) => setQ(q.id, "options", v)} />}
+                {(q.kind === "scale" || q.kind === "slider") && (
+                  <>
+                    <Row original={q.minLabel} value={q.translations?.[current]?.minLabel} onChange={(v) => setQ(q.id, "minLabel", v)} />
+                    <Row original={q.maxLabel} value={q.translations?.[current]?.maxLabel} onChange={(v) => setQ(q.id, "maxLabel", v)} />
+                  </>
                 )}
+                {(q.columns ?? []).map((c, i) => {
+                  const t = q.translations?.[current];
+                  const cols = Array.from({ length: q.columns!.length }, (_, j) => t?.columns?.[j] ?? "");
+                  const opts = Array.from({ length: q.columns!.length }, (_, j) => t?.columnOptions?.[j] ?? []);
+                  return (
+                    <div key={c.id} className="space-y-2">
+                      <Row original={c.label} value={cols[i]} onChange={(v) => setQ(q.id, "columns", cols.map((x, j) => (j === i ? v : x)))} />
+                      {c.options.length > 0 && (
+                        <Lines original={c.options} value={opts[i]} onChange={(v) => setQ(q.id, "columnOptions", opts.map((x, j) => (j === i ? v : x)))} />
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             ))}
         </Group>
       ))}
+
+      {results && (
+        <Group title="Results people read">
+          {r!.outcomeEnabled && (
+            <>
+              <Row original={r!.outcomeTitle} value={rt.outcomeTitle} onChange={(v) => setR({ outcomeTitle: v })} />
+              {r!.outcomes.map((o, i) => (
+                <div key={o.id} className="space-y-2 rounded-xl border border-border p-3">
+                  <Row original={o.name} value={rt.outcomes?.[i]?.name} onChange={(v) => setOutcome(i, "name", v)} />
+                  <Row original={o.summary} value={rt.outcomes?.[i]?.summary} onChange={(v) => setOutcome(i, "summary", v)} long />
+                </div>
+              ))}
+            </>
+          )}
+          {r!.matchEnabled && (
+            <>
+              <Row original={r!.matchTitle} value={rt.matchTitle} onChange={(v) => setR({ matchTitle: v })} />
+              {r!.bands.map((b, i) => (
+                <div key={b.from} className="space-y-2 rounded-xl border border-border p-3">
+                  <Row original={b.label} value={rt.bands?.[i]?.name} onChange={(v) => setBand(i, "name", v)} />
+                  <Row original={b.message} value={rt.bands?.[i]?.summary} onChange={(v) => setBand(i, "summary", v)} long />
+                </div>
+              ))}
+            </>
+          )}
+          <p className="text-xs text-muted-foreground">Notes for counsellors aren&apos;t translated: only your team reads them.</p>
+        </Group>
+      )}
     </fieldset>
+  );
+}
+
+/** Choices, one per line beside their translations in the same order */
+function Lines({ original, value, onChange }: { original: string[]; value: string[] | null | undefined; onChange: (v: string[]) => void }) {
+  return (
+    <div className="grid gap-2 sm:grid-cols-2">
+      <p className="whitespace-pre-line rounded-lg bg-muted/50 px-3 py-2 text-xs text-muted-foreground">{original.join("\n")}</p>
+      <textarea
+        rows={original.length}
+        aria-label="Translations, one per line, in the same order"
+        placeholder="One per line, same order"
+        className="rounded-lg border border-border bg-background px-3 py-2 text-xs"
+        value={(value ?? []).join("\n")}
+        onChange={(e) => onChange(e.target.value.split("\n"))}
+      />
+    </div>
   );
 }
 

@@ -3,7 +3,9 @@
 /**
  * The guidance form builder. Questions: sections (steps) and questions of every type, dragged or moved to reorder, each
  * with help text, options, limits, "show only if" logic and CRM rules (tag, assign, high priority), plus the question
- * bank. Settings: texts, branding, contact fields, languages, public link. Translations: every text side by side.
+ * bank, notes for counsellors beside the answers, and "Book a meeting" questions. Automatic messages: emails, SMS and
+ * WhatsApp the form sends by itself. Settings: texts, branding, contact fields, languages, public link. Translations:
+ * every text side by side.
  * Share: link, campaign links, embed code, QR code. Insights: visits, starts, completions, where people stop. A live
  * preview sits beside the questions. Changes save as a draft automatically; Publish makes them live as a new version.
  */
@@ -20,32 +22,41 @@ import {
   ChevronRight,
   Copy,
   GitBranch,
+  Lightbulb,
   GripVertical,
   Monitor,
   Plus,
   Smartphone,
   Tag,
   Trash2,
+  Trophy,
   X,
 } from "lucide-react";
 import { AccessNotice, useLatestRef, useLegacyApi } from "@/lib/legacyApi";
-import GuidanceForm from "@/components/guidance/form/GuidanceForm";
+import GuidanceForm, { ResultsView } from "@/components/guidance/form/GuidanceForm";
 import {
   KIND_LABEL,
   KINDS,
   newId,
   WITH_OPTIONS,
   type Condition,
+  type Band,
   type FormDef,
   type Kind,
+  type ListColumn,
+  type Outcome,
   type Question,
+  type Results,
   type Rule,
+  type Score,
   type Section,
 } from "@/components/guidance/form/model";
 import { UI } from "@/components/guidance/form/uiText";
 import ShareTab from "./ShareTab";
 import InsightsTab from "./InsightsTab";
 import TranslationsTab from "./TranslationsTab";
+import AutomationsTab from "./AutomationsTab";
+import MeetingEditor, { EditingInstitute } from "./MeetingEditor";
 
 interface View {
   id: string;
@@ -61,9 +72,11 @@ interface View {
   link: string;
 }
 
-type Tab = "questions" | "settings" | "translations" | "share" | "insights";
+type Tab = "questions" | "results" | "automations" | "settings" | "translations" | "share" | "insights";
 const TABS: [Tab, string][] = [
   ["questions", "Questions"],
+  ["results", "Results"],
+  ["automations", "Automatic messages"],
   ["settings", "Settings"],
   ["translations", "Translations"],
   ["share", "Share"],
@@ -81,9 +94,31 @@ function normalise(d: FormDef): FormDef {
   return {
     languages: d.languages?.length ? d.languages : ["en"],
     sections: (d.sections ?? []).map((s) => ({ ...s, translations: s.translations ?? {} })),
-    questions: (d.questions ?? []).map((q) => ({ ...q, options: q.options ?? [], rules: q.rules ?? [], translations: q.translations ?? {}, required: !!q.required })),
+    questions: (d.questions ?? []).map((q) => ({
+      ...q,
+      options: q.options ?? [],
+      rules: q.rules ?? [],
+      scores: q.scores ?? [],
+      tips: q.tips ?? [],
+      booking: q.kind === "booking" ? (q.booking ?? newBooking()) : null,
+      columns: q.columns ?? [],
+      translations: q.translations ?? {},
+      required: !!q.required,
+    })),
+    results: {
+      outcomeEnabled: d.results?.outcomeEnabled ?? false,
+      outcomeTitle: d.results?.outcomeTitle ?? null,
+      outcomes: d.results?.outcomes ?? [],
+      matchEnabled: d.results?.matchEnabled ?? false,
+      matchTitle: d.results?.matchTitle ?? null,
+      bands: d.results?.bands ?? [],
+      showToPerson: d.results?.showToPerson ?? true,
+      translations: d.results?.translations ?? {},
+    },
+    automations: (d.automations ?? []).map((a) => ({ ...a, variables: a.variables ?? [] })),
     settings: {
       ...(d.settings ?? {}),
+      layout: d.settings?.layout === "cover" ? "cover" : "classic",
       askUnsure: d.settings?.askUnsure ?? true,
       askPhone: d.settings?.askPhone ?? true,
       phoneRequired: d.settings?.phoneRequired ?? false,
@@ -157,13 +192,24 @@ export default function FormBuilder({ formId, backHref }: { formId: string; back
     [apiFetch, formId],
   );
   const unfinished = def
-    ? def.questions.find((q) => !q.label.trim() || (WITH_OPTIONS.includes(q.kind) && q.options.filter((o) => o.trim()).length < 2))
+    ? def.questions.find(
+        (q) =>
+          !q.label.trim() ||
+          (WITH_OPTIONS.includes(q.kind) && q.options.filter((o) => o.trim()).length < 2) ||
+          (q.kind === "slider" && (!q.minLabel?.trim() || !q.maxLabel?.trim())) ||
+          (q.kind === "list" && (!(q.columns ?? []).length || (q.columns ?? []).some((c) => !c.label.trim()))) ||
+          (q.kind === "booking" && q.booking?.mode === "slots" && !q.booking.typeId),
+      )
     : undefined;
+  // Outcomes and bands need their names, and a match score a band from 0%, before the server takes them
+  const resultsUnfinished =
+    !!def?.results &&
+    (def.results.outcomes.some((o) => !o.name.trim()) || def.results.bands.some((b) => !b.label.trim()) || (def.results.matchEnabled && !def.results.bands.some((b) => b.from === 0)));
   useEffect(() => {
-    if (status !== "dirty" || !def || unfinished) return;
+    if (status !== "dirty" || !def || unfinished || resultsUnfinished) return;
     const t = setTimeout(() => save(def, name), 1200);
     return () => clearTimeout(t);
-  }, [status, def, name, save, unfinished]);
+  }, [status, def, name, save, unfinished, resultsUnfinished]);
 
   const change = (d: FormDef) => {
     editVersion.current++;
@@ -198,6 +244,7 @@ export default function FormBuilder({ formId, backHref }: { formId: string; back
   const readOnly = !canEdit;
 
   return (
+    <EditingInstitute.Provider value={view.instituteId}>
     <div className="space-y-4">
       {/* Header */}
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -220,7 +267,7 @@ export default function FormBuilder({ formId, backHref }: { formId: string; back
         </div>
         <div className="flex flex-wrap items-center gap-2 text-xs">
           <span className="text-muted-foreground" role="status">
-            {status === "dirty" && unfinished ? "Finish the new question to save (text and at least two options)" : status === "saving" ? "Saving…" : status === "dirty" ? "Unsaved changes" : status === "error" ? "Not saved" : view.hasDraft ? "Draft saved, not published" : `Published · version ${view.version}`}
+            {status === "dirty" && unfinished ? "Finish the new question to save (its text, and options, slider ends, column names or the meeting's appointment)" : status === "dirty" && resultsUnfinished ? "Finish the results to save (name every outcome and band; one band starts at 0%)" : status === "saving" ? "Saving…" : status === "dirty" ? "Unsaved changes" : status === "error" ? "Not saved" : view.hasDraft ? "Draft saved, not published" : `Published · version ${view.version}`}
           </span>
           {canEdit && view.hasDraft && (
             <button type="button" onClick={discard} className={small}>
@@ -261,15 +308,44 @@ export default function FormBuilder({ formId, backHref }: { formId: string; back
         ))}
       </div>
 
-      {(tab === "questions" || tab === "settings") && (
+      {(tab === "questions" || tab === "results" || tab === "settings") && (
         <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(20rem,26rem)]">
           <div className="min-w-0">
             {tab === "questions" ? (
               <QuestionsEditor def={def} onChange={change} team={team} bank={bank} open={open} setOpen={setOpen} readOnly={readOnly} isPlatform={view.instituteId === "ceacdd2c-975f-41fd-959e-cc530240931c"} />
+            ) : tab === "results" ? (
+              <ResultsEditor def={def} onChange={change} readOnly={readOnly} />
             ) : (
               <SettingsEditor def={def} onChange={change} languages={languages} readOnly={readOnly} publicEnabled={view.publicEnabled} setPublic={setPublic} isDefault={view.isDefault} />
             )}
           </div>
+          {tab === "results" ? (
+            <aside className="lg:sticky lg:top-24 lg:self-start">
+              <p className="mb-2 text-xs font-medium text-muted-foreground">Example of what people see after sending</p>
+              <div className="rounded-2xl border border-border bg-background p-4 text-sm shadow-sm" style={{ "--gf-accent": def.settings.accent || "#4f46e5" } as React.CSSProperties}>
+                {(() => {
+                  const r = def.results!;
+                  const outcome = r.outcomeEnabled ? r.outcomes.find((o) => o.name.trim()) : undefined;
+                  const band = r.matchEnabled ? [...r.bands].sort((a, b) => b.from - a.from)[0] : undefined;
+                  if (!outcome && !band) return <p className="text-muted-foreground">Switch on an outcome or a match score to see an example.</p>;
+                  if (!r.showToPerson) return <p className="text-muted-foreground">People see only your thank-you message; your team sees the results in the CRM.</p>;
+                  return (
+                    <ResultsView
+                      accent={def.settings.accent || "#4f46e5"}
+                      t={(k) => (UI.en as Record<string, string>)[k] ?? k}
+                      result={{
+                        outcomeTitle: r.outcomeTitle,
+                        outcome: outcome ?? null,
+                        points: [],
+                        matchTitle: r.matchTitle,
+                        match: band ? { percent: Math.max(band.from, 86), label: band.label, message: band.message } : null,
+                      }}
+                    />
+                  );
+                })()}
+              </div>
+            </aside>
+          ) : (
           <aside className="lg:sticky lg:top-24 lg:self-start">
             <div className="mb-2 flex items-center justify-between">
               <p className="text-xs font-medium text-muted-foreground">Live preview (nothing is sent)</p>
@@ -291,16 +367,42 @@ export default function FormBuilder({ formId, backHref }: { formId: string; back
               />
             </div>
           </aside>
+          )}
         </div>
       )}
+      {tab === "automations" && <AutomationsTab def={def} onChange={change} readOnly={readOnly} instituteId={view.instituteId} />}
       {tab === "translations" && <TranslationsTab def={def} onChange={change} languages={languages} readOnly={readOnly} />}
       {tab === "share" && <ShareTab view={view} setPublic={setPublic} canEdit={canEdit} />}
       {tab === "insights" && <InsightsTab formId={view.id} apiFetch={apiFetch} instituteId={view.instituteId} />}
     </div>
+    </EditingInstitute.Provider>
   );
 }
 
 // ------------------------------------------------------------------ questions
+
+/** The limits and parts a new question of this type starts with */
+function kindDefaults(kind: Kind): Partial<Question> {
+  return {
+    min: kind === "scale" || kind === "slider" ? 1 : null,
+    max: kind === "scale" ? 5 : kind === "slider" ? 7 : kind === "list" ? 5 : kind === "file" ? 1 : null,
+    minLabel: null,
+    maxLabel: null,
+    columns: kind === "list" ? [{ id: newId(), label: "Name", options: [] }] : [],
+    booking: kind === "booking" ? newBooking() : null,
+  };
+}
+
+/** A new "Book a meeting" question: people ask for a day, by phone or video, in this browser's time zone */
+function newBooking(): NonNullable<Question["booking"]> {
+  let timeZone = "Asia/Kolkata";
+  try {
+    timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone || timeZone;
+  } catch {
+    // keep the default
+  }
+  return { mode: "request", modes: ["Phone", "Video"], daysAhead: 14, timeZone };
+}
 
 function QuestionsEditor({
   def,
@@ -339,9 +441,9 @@ function QuestionsEditor({
           label: kind === "consent" ? "I agree to be contacted about courses" : "",
           required: kind === "consent",
           options: WITH_OPTIONS.includes(kind) ? ["", ""] : [],
-          min: kind === "scale" ? 1 : null,
-          max: kind === "scale" ? 5 : kind === "file" ? 1 : null,
+          ...kindDefaults(kind),
           rules: [],
+          scores: [],
           translations: {},
         };
     setQuestions([...def.questions, q]);
@@ -499,6 +601,11 @@ function QuestionsEditor({
                                 <GitBranch aria-hidden="true" className="h-3 w-3" /> shown only sometimes
                               </span>
                             )}
+                            {(q.scores?.length ?? 0) > 0 && (
+                              <span className="inline-flex items-center gap-0.5 text-emerald-700 dark:text-emerald-300">
+                                <Trophy aria-hidden="true" className="h-3 w-3" /> counts towards results
+                              </span>
+                            )}
                             {(q.rules?.length ?? 0) > 0 && (
                               <span className="inline-flex items-center gap-0.5 text-amber-800 dark:text-amber-300">
                                 <Tag aria-hidden="true" className="h-3 w-3" /> {q.rules!.length} CRM rule{q.rules!.length > 1 ? "s" : ""}
@@ -524,7 +631,7 @@ function QuestionsEditor({
                         </div>
                       )}
                     </div>
-                    {isOpen && <QuestionEditor q={q} update={(p) => updateQ(q.id, p)} earlier={before} team={team} readOnly={readOnly} isPlatform={isPlatform} />}
+                    {isOpen && <QuestionEditor q={q} update={(p) => updateQ(q.id, p)} earlier={before} team={team} readOnly={readOnly} isPlatform={isPlatform} results={def.results ?? null} />}
                   </li>
                 );
               })}
@@ -568,7 +675,7 @@ function QuestionsEditor({
 }
 
 function ConditionEditor({ value, earlier, onChange, what, readOnly }: { value: Condition | null; earlier: Question[]; onChange: (c: Condition | null) => void; what: string; readOnly: boolean }) {
-  const usable = earlier.filter((q) => !["info", "file", "consent"].includes(q.kind));
+  const usable = earlier.filter((q) => !["info", "file", "consent", "slider"].includes(q.kind));
   const q = usable.find((x) => x.id === value?.questionId);
   const options = q ? (q.kind === "yesno" ? ["Yes", "No"] : q.options) : [];
   if (!value)
@@ -593,7 +700,7 @@ function ConditionEditor({ value, earlier, onChange, what, readOnly }: { value: 
         {options.length > 0 && q?.kind !== "multi" && <option value="is">is</option>}
         {options.length > 0 && q?.kind !== "multi" && <option value="isNot">is not</option>}
         {q?.kind === "multi" && <option value="includes">includes</option>}
-        {options.length === 0 && <option value="is">is exactly</option>}
+        {options.length === 0 && q?.kind !== "list" && <option value="is">is exactly</option>}
       </select>
       {value.op !== "answered" &&
         (options.length > 0 ? (
@@ -623,6 +730,7 @@ function QuestionEditor({
   team,
   readOnly,
   isPlatform,
+  results,
 }: {
   q: Question;
   update: (p: Partial<Question>) => void;
@@ -630,6 +738,7 @@ function QuestionEditor({
   team: { id: string; name: string }[];
   readOnly: boolean;
   isPlatform: boolean;
+  results: Results | null;
 }) {
   const hasOptions = WITH_OPTIONS.includes(q.kind);
   const named = q.options.filter((o) => o.trim());
@@ -671,9 +780,12 @@ function QuestionEditor({
                 update({
                   kind,
                   options: WITH_OPTIONS.includes(kind) ? keep : [],
-                  min: kind === "scale" ? 1 : null,
-                  max: kind === "scale" ? 5 : kind === "file" ? 1 : null,
+                  ...kindDefaults(kind),
+                  minLabel: kind === "scale" || kind === "slider" ? q.minLabel : null,
+                  maxLabel: kind === "scale" || kind === "slider" ? q.maxLabel : null,
                   rules: WITH_OPTIONS.includes(kind) || kind === "yesno" ? q.rules : [],
+                  // Scores name answers of the old type
+                  scores: [],
                 });
               }}
             >
@@ -783,6 +895,33 @@ function QuestionEditor({
           </div>
         </div>
       )}
+      {q.kind === "slider" && (
+        <div className="space-y-2 text-xs">
+          <div className="grid gap-2 sm:grid-cols-2">
+            <label className="font-medium text-muted-foreground">
+              Left end
+              <input className={input} value={q.minLabel ?? ""} maxLength={40} placeholder="e.g. Support others" onChange={(e) => update({ minLabel: e.target.value })} />
+            </label>
+            <label className="font-medium text-muted-foreground">
+              Right end
+              <input className={input} value={q.maxLabel ?? ""} maxLength={40} placeholder="e.g. Take charge" onChange={(e) => update({ maxLabel: e.target.value })} />
+            </label>
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            Positions
+            <select className="rounded-md border border-border bg-background px-2 py-1" value={q.max ?? 7} onChange={(e) => update({ min: 1, max: Number(e.target.value) })} aria-label="Positions">
+              {[3, 5, 7, 9, 11].map((n) => (
+                <option key={n} value={n}>
+                  {n}
+                </option>
+              ))}
+            </select>
+            <span className="text-muted-foreground">It starts in the middle; left there, the answer is the middle.</span>
+          </div>
+        </div>
+      )}
+      {q.kind === "list" && <ColumnsEditor q={q} update={update} />}
+      {q.kind === "booking" && <MeetingEditor q={q} update={update} />}
       {q.kind === "file" && (
         <div className="flex items-center gap-2 text-xs">
           People can attach up to
@@ -800,6 +939,26 @@ function QuestionEditor({
       <div className="border-t border-border pt-3">
         <ConditionEditor value={q.showIf ?? null} earlier={earlier} onChange={(c) => update({ showIf: c })} what="this question" readOnly={readOnly} />
       </div>
+
+      {results && (results.outcomeEnabled || results.matchEnabled) && SCORABLE.includes(q.kind) && <ScoresEditor q={q} update={update} results={results} />}
+
+      {q.kind !== "info" && !isPlatform && <TipsEditor q={q} update={update} />}
+
+      {!["info", "consent", "file"].includes(q.kind) && !isPlatform && (
+        <label className="flex flex-wrap items-center gap-2 text-xs">
+          <span className="font-medium">Show the answer on the person&apos;s profile (People)</span>
+          <select
+            className="rounded-md border border-border bg-background px-2 py-1"
+            value={q.profileCard ?? ""}
+            onChange={(e) => update({ profileCard: (e.target.value || null) as Question["profileCard"] })}
+          >
+            <option value="">No</option>
+            <option value="background">Background</option>
+            <option value="logistics">Logistics</option>
+            <option value="motivation">Motivation</option>
+          </select>
+        </label>
+      )}
 
       {ruleTargets.length > 0 && !isPlatform && (
         <details className="rounded-lg border border-amber-500/30 bg-amber-500/5 p-2 text-xs" open={(q.rules?.length ?? 0) > 0}>
@@ -997,6 +1156,355 @@ function BankPicker({ bank, onPick, onClose }: { bank: { topic: string; question
   );
 }
 
+/** The columns of a "list of rows" question (1 to 4), each typed or picked from choices, and how many rows people can add */
+/**
+ * Notes for counsellors beside an answer in the CRM (the green boxes): one per answer, or one for any answer. Rules
+ * written by the institute, never AI; never shown to the person.
+ */
+function TipsEditor({ q, update }: { q: Question; update: (p: Partial<Question>) => void }) {
+  const targets: [string, string][] =
+    q.kind === "slider"
+      ? [["left", `Leans to “${q.minLabel || "left"}”`], ["right", `Leans to “${q.maxLabel || "right"}”`]]
+      : q.kind === "yesno"
+        ? [["Yes", "Yes"], ["No", "No"]]
+        : WITH_OPTIONS.includes(q.kind)
+          ? q.options.filter((o) => o.trim()).map((o) => [o, o])
+          : [];
+  const all: [string, string][] = [...targets, ["answered", targets.length ? "Any answer" : "When they answer"]];
+  const tip = (when: string) => q.tips?.find((t) => t.when === when)?.text ?? "";
+  const setTip = (when: string, text: string) => {
+    const others = (q.tips ?? []).filter((t) => t.when !== when);
+    update({ tips: text ? [...others, { when, text }] : others });
+  };
+  return (
+    <details className="rounded-lg border border-emerald-600/30 bg-emerald-600/5 p-2 text-xs" open={(q.tips?.length ?? 0) > 0}>
+      <summary className="cursor-pointer font-medium">
+        <Lightbulb aria-hidden="true" className="mr-1 inline h-3.5 w-3.5" /> Notes for counsellors beside this answer
+      </summary>
+      <p className="mt-1 text-muted-foreground">Shown in green beside the answer on the lead, to help your team talk with the person. Never shown to the person.</p>
+      <div className="mt-2 space-y-2">
+        {all.map(([when, label]) => (
+          <label key={when} className="block">
+            <span className="font-medium">{label}</span>
+            <textarea
+              rows={tip(when) ? 2 : 1}
+              maxLength={600}
+              className="mt-1 block w-full rounded-md border border-border bg-background px-2 py-1.5"
+              value={tip(when)}
+              placeholder={when === "answered" ? "e.g. Ask what they meant and what matters most to them." : "e.g. Explain the instalment plan and scholarships early."}
+              onChange={(e) => setTip(when, e.target.value)}
+            />
+          </label>
+        ))}
+      </div>
+    </details>
+  );
+}
+
+function ColumnsEditor({ q, update }: { q: Question; update: (p: Partial<Question>) => void }) {
+  const cols = q.columns ?? [];
+  const set = (i: number, patch: Partial<ListColumn>) => update({ columns: cols.map((c, j) => (j === i ? { ...c, ...patch } : c)) });
+  return (
+    <div className="space-y-2 text-xs">
+      <p className="font-medium text-muted-foreground">Columns of each row</p>
+      <ol className="space-y-2">
+        {cols.map((c, i) => (
+          <li key={c.id} className="space-y-2 rounded-lg border border-border p-2.5">
+            <div className="flex items-center gap-2">
+              <input className={`${input} mt-0`} value={c.label} maxLength={60} placeholder={`Column ${i + 1}, e.g. Relationship`} aria-label={`Column ${i + 1} name`} onChange={(e) => set(i, { label: e.target.value })} />
+              <button type="button" className={small} disabled={cols.length === 1} onClick={() => update({ columns: cols.filter((_, j) => j !== i) })} aria-label={`Remove column ${i + 1}`}>
+                <Trash2 aria-hidden="true" className="h-3.5 w-3.5" />
+              </button>
+            </div>
+            <label className="flex items-center gap-2">
+              <input type="checkbox" checked={c.options.length > 0} onChange={(e) => set(i, { options: e.target.checked ? ["", ""] : [] })} /> People pick from choices
+            </label>
+            {c.options.length > 0 && (
+              <label className="block font-medium text-muted-foreground">
+                Choices, one per line
+                <textarea
+                  rows={3}
+                  className={input}
+                  value={c.options.join("\n")}
+                  placeholder={"Parent\nFriend\nEmployer"}
+                  onChange={(e) => set(i, { options: e.target.value.split("\n").slice(0, 15) })}
+                />
+              </label>
+            )}
+          </li>
+        ))}
+      </ol>
+      <div className="flex flex-wrap items-center gap-3">
+        {cols.length < 4 && (
+          <button type="button" className={small} onClick={() => update({ columns: [...cols, { id: newId(), label: "", options: [] }] })}>
+            <Plus aria-hidden="true" className="mr-1 inline h-3.5 w-3.5" /> Add a column
+          </button>
+        )}
+        <span className="flex items-center gap-2">
+          People can add up to
+          <select className="rounded-md border border-border bg-background px-2 py-1" value={q.max ?? 5} onChange={(e) => update({ max: Number(e.target.value) })} aria-label="Most rows">
+            {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((n) => (
+              <option key={n} value={n}>
+                {n}
+              </option>
+            ))}
+          </select>
+          rows
+        </span>
+      </div>
+    </div>
+  );
+}
+
+const SCORABLE: Kind[] = ["choice", "multi", "dropdown", "yesno", "slider"];
+
+/** What each answer counts for in the results: outcomes it gives a point to, and match points */
+function ScoresEditor({ q, update, results }: { q: Question; update: (p: Partial<Question>) => void; results: Results }) {
+  const targets: [string, string][] =
+    q.kind === "slider"
+      ? [
+          ["left", `Towards “${q.minLabel || "left end"}”`],
+          ["right", `Towards “${q.maxLabel || "right end"}”`],
+        ]
+      : q.kind === "yesno"
+        ? [
+            ["Yes", "Yes"],
+            ["No", "No"],
+          ]
+        : q.options.filter((o) => o.trim()).map((o) => [o, o]);
+  const scores = q.scores ?? [];
+  const score = (when: string) => scores.find((s) => s.when === when);
+  const set = (when: string, patch: Partial<Score>) => {
+    const next = { ...(score(when) ?? { when, outcomes: [] }), ...patch };
+    const others = scores.filter((s) => s.when !== when);
+    update({ scores: next.outcomes.length || next.match ? [...others, next] : others });
+  };
+  const outcomes = results.outcomeEnabled ? results.outcomes.filter((o) => o.name.trim()) : [];
+  return (
+    <details className="rounded-lg border border-emerald-600/30 bg-emerald-500/5 p-2 text-xs" open={scores.length > 0}>
+      <summary className="cursor-pointer font-medium">
+        <Trophy aria-hidden="true" className="mr-1 inline h-3.5 w-3.5" /> Counts towards results
+      </summary>
+      {q.kind === "slider" && <p className="mt-1 text-muted-foreground">A slider counts by how far it is towards an end: all the way gives the full points, the middle gives none.</p>}
+      {targets.length === 0 ? (
+        <p className="mt-2 text-muted-foreground">Add the options first.</p>
+      ) : (
+        <table className="mt-2 w-full">
+          <thead className="text-muted-foreground">
+            <tr>
+              <th className="pb-1 text-left font-medium">If they pick</th>
+              {outcomes.length > 0 && <th className="pb-1 text-left font-medium">A point for</th>}
+              {results.matchEnabled && <th className="w-24 pb-1 text-left font-medium">Match points</th>}
+            </tr>
+          </thead>
+          <tbody>
+            {targets.map(([when, label]) => {
+              const sc = score(when);
+              return (
+                <tr key={when} className="border-t border-emerald-600/20 align-top">
+                  <td className="py-1.5 pr-2">{label}</td>
+                  {outcomes.length > 0 && (
+                    <td className="py-1.5 pr-2">
+                      <div className="flex flex-wrap gap-1">
+                        {outcomes.map((o) => {
+                          const on = !!sc?.outcomes.includes(o.id);
+                          return (
+                            <button
+                              key={o.id}
+                              type="button"
+                              aria-pressed={on}
+                              onClick={() => set(when, { outcomes: on ? sc!.outcomes.filter((x) => x !== o.id) : [...(sc?.outcomes ?? []), o.id] })}
+                              className={`rounded-full border px-2 py-0.5 ${on ? "border-emerald-700 bg-emerald-700 text-white" : "border-border bg-background hover:bg-muted"}`}
+                            >
+                              {o.name}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </td>
+                  )}
+                  {results.matchEnabled && (
+                    <td className="py-1.5">
+                      <input
+                        type="number"
+                        step={1}
+                        min={-100}
+                        max={100}
+                        aria-label={`Match points for ${label}`}
+                        className="w-20 rounded-md border border-border bg-background px-1.5 py-1"
+                        value={sc?.match ?? ""}
+                        placeholder="0"
+                        onChange={(e) => set(when, { match: e.target.value === "" ? null : Number(e.target.value) })}
+                      />
+                    </td>
+                  )}
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      )}
+    </details>
+  );
+}
+
+// ------------------------------------------------------------------ results
+
+/**
+ * What the form works out from the answers, each switched on separately: an outcome (e.g. a work style; the answers'
+ * points decide) and a match score (points earned out of the most possible, in bands). Each outcome and band has words
+ * for the person and a note for the counsellor.
+ */
+function ResultsEditor({ def, onChange, readOnly }: { def: FormDef; onChange: (d: FormDef) => void; readOnly: boolean }) {
+  const r = def.results!;
+  const set = (patch: Partial<Results>) => onChange({ ...def, results: { ...r, ...patch } });
+  const setOutcome = (i: number, patch: Partial<Outcome>) => set({ outcomes: r.outcomes.map((o, j) => (j === i ? { ...o, ...patch } : o)) });
+  const setBand = (i: number, patch: Partial<Band>) => set({ bands: r.bands.map((b, j) => (j === i ? { ...b, ...patch } : b)) });
+  const scored = def.questions.filter((q) => (q.scores?.length ?? 0) > 0);
+  const removeOutcome = (id: string) =>
+    onChange({
+      ...def,
+      results: { ...r, outcomes: r.outcomes.filter((o) => o.id !== id) },
+      // Points for it go too
+      questions: def.questions.map((q) => (q.scores?.length ? { ...q, scores: q.scores.map((s) => ({ ...s, outcomes: s.outcomes.filter((x) => x !== id) })).filter((s) => s.outcomes.length || s.match) } : q)),
+    });
+  return (
+    <fieldset disabled={readOnly} className="space-y-5">
+      <section className="space-y-2 rounded-2xl border border-border bg-card p-4 text-sm">
+        <h2 className="text-sm font-semibold">How results work</h2>
+        <p className="text-xs text-muted-foreground">
+          Switch on an outcome, a match score or both. Then, in the Questions tab, open a question with options, yes/no or a slider and set what each answer
+          counts for. Your team sees the result on the lead in your CRM, with your note on how to talk with them.
+        </p>
+        <p className="text-xs text-muted-foreground">
+          {scored.length === 0 ? "No question counts towards results yet." : `${scored.length} question${scored.length > 1 ? "s count" : " counts"} towards results.`}
+        </p>
+        <Switch
+          checked={r.showToPerson}
+          onChange={(v) => set({ showToPerson: v })}
+          title="Show people their results after they send"
+          detail="Off: only your team sees them, in the CRM."
+        />
+      </section>
+
+      <section className="space-y-3 rounded-2xl border border-border bg-card p-4 text-sm">
+        <Switch
+          checked={r.outcomeEnabled}
+          onChange={(v) => set({ outcomeEnabled: v, outcomes: v ? (r.outcomes.length === 0 ? [{ id: newId(), name: "" }, { id: newId(), name: "" }] : r.outcomes) : r.outcomes.filter((o) => o.name.trim()) })}
+          title="Outcome"
+          detail="Each answer gives points to one or more outcomes; the one with the most points is the result (e.g. a work style, or the course that suits them best)."
+        />
+        {r.outcomeEnabled && (
+          <div className="space-y-3 border-l-2 border-border pl-4">
+            <label className="block text-xs font-medium text-muted-foreground">
+              Heading on the result
+              <input className={input} value={r.outcomeTitle ?? ""} maxLength={80} placeholder="e.g. Your work style" onChange={(e) => set({ outcomeTitle: e.target.value })} />
+            </label>
+            <ol className="space-y-2">
+              {r.outcomes.map((o, i) => (
+                <li key={o.id} className="space-y-2 rounded-xl border border-border p-3">
+                  <div className="flex items-center gap-2">
+                    <input className={`${input} mt-0 font-medium`} value={o.name} maxLength={60} placeholder={`Outcome ${i + 1}, e.g. Analytical`} aria-label={`Outcome ${i + 1} name`} onChange={(e) => setOutcome(i, { name: e.target.value })} />
+                    <button type="button" className={small} onClick={() => removeOutcome(o.id)} aria-label={`Remove ${o.name || `outcome ${i + 1}`}`}>
+                      <Trash2 aria-hidden="true" className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
+                  <label className="block text-xs font-medium text-muted-foreground">
+                    What the person reads
+                    <textarea rows={2} className={input} value={o.summary ?? ""} maxLength={1500} onChange={(e) => setOutcome(i, { summary: e.target.value })} />
+                  </label>
+                  <label className="block text-xs font-medium text-muted-foreground">
+                    Note for your counsellor <span className="font-normal">(only in the CRM)</span>
+                    <textarea rows={2} className={input} value={o.coaching ?? ""} maxLength={1500} placeholder="e.g. Give facts and proof; don't rush them." onChange={(e) => setOutcome(i, { coaching: e.target.value })} />
+                  </label>
+                </li>
+              ))}
+            </ol>
+            {r.outcomes.length < 12 && (
+              <button type="button" className={small} onClick={() => set({ outcomes: [...r.outcomes, { id: newId(), name: "" }] })}>
+                <Plus aria-hidden="true" className="mr-1 inline h-3.5 w-3.5" /> Add an outcome
+              </button>
+            )}
+          </div>
+        )}
+      </section>
+
+      <section className="space-y-3 rounded-2xl border border-border bg-card p-4 text-sm">
+        <Switch
+          checked={r.matchEnabled}
+          onChange={(v) =>
+            set({
+              matchEnabled: v,
+              bands:
+                v && r.bands.length === 0
+                  ? [
+                      { from: 0, label: "Let's talk" },
+                      { from: 50, label: "A good match" },
+                      { from: 80, label: "A great match" },
+                    ]
+                  : v
+                    ? r.bands
+                    : r.bands.filter((b) => b.label.trim()),
+            })
+          }
+          title="Match score"
+          detail="Answers earn match points; the score is the points earned out of the most possible, as a percentage (e.g. how well your school fits what they want)."
+        />
+        {r.matchEnabled && (
+          <div className="space-y-3 border-l-2 border-border pl-4">
+            <label className="block text-xs font-medium text-muted-foreground">
+              Heading on the score
+              <input className={input} value={r.matchTitle ?? ""} maxLength={80} placeholder="e.g. School match" onChange={(e) => set({ matchTitle: e.target.value })} />
+            </label>
+            <p className="text-xs text-muted-foreground">Bands: the highest one the score reaches applies. One band starts at 0%, for the lowest scores.</p>
+            {r.bands.length > 0 && !r.bands.some((b) => b.from === 0) && (
+              <p role="alert" className="rounded-lg bg-amber-500/10 p-2 text-xs text-amber-800 dark:text-amber-200">
+                No band starts at 0%, so low scores would have no words. Set one band to start at 0%.
+              </p>
+            )}
+            <ol className="space-y-2">
+              {r.bands.map((b, i) => (
+                <li key={i} className="space-y-2 rounded-xl border border-border p-3">
+                  <div className="flex flex-wrap items-center gap-2 text-xs">
+                    From
+                    <input
+                      type="number"
+                      min={0}
+                      max={100}
+                      aria-label={`Band ${i + 1} starts at`}
+                      className="w-16 rounded-md border border-border bg-background px-2 py-1"
+                      value={b.from}
+                      onChange={(e) => setBand(i, { from: Math.max(0, Math.min(100, Math.round(Number(e.target.value) || 0))) })}
+                    />
+                    %
+                    <input className={`${input} mt-0 min-w-40 flex-1 font-medium`} value={b.label} maxLength={60} placeholder="e.g. A great match" aria-label={`Band ${i + 1} name`} onChange={(e) => setBand(i, { label: e.target.value })} />
+                    <button type="button" className={small} disabled={r.bands.length === 1} onClick={() => set({ bands: r.bands.filter((_, j) => j !== i) })} aria-label={`Remove band ${i + 1}`}>
+                      <Trash2 aria-hidden="true" className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
+                  <label className="block text-xs font-medium text-muted-foreground">
+                    What the person reads
+                    <textarea rows={2} className={input} value={b.message ?? ""} maxLength={1000} onChange={(e) => setBand(i, { message: e.target.value })} />
+                  </label>
+                  <label className="block text-xs font-medium text-muted-foreground">
+                    Note for your counsellor <span className="font-normal">(only in the CRM)</span>
+                    <textarea rows={2} className={input} value={b.coaching ?? ""} maxLength={1000} onChange={(e) => setBand(i, { coaching: e.target.value })} />
+                  </label>
+                </li>
+              ))}
+            </ol>
+            {r.bands.length < 6 && (
+              <button type="button" className={small} onClick={() => set({ bands: [...r.bands, { from: Math.min(100, (r.bands.at(-1)?.from ?? 0) + 10), label: "" }] })}>
+                <Plus aria-hidden="true" className="mr-1 inline h-3.5 w-3.5" /> Add a band
+              </button>
+            )}
+          </div>
+        )}
+      </section>
+    </fieldset>
+  );
+}
+
 // ------------------------------------------------------------------ settings
 
 function SettingsEditor({
@@ -1055,6 +1563,43 @@ function SettingsEditor({
             <input className={input} value={s.logoUrl ?? ""} maxLength={500} placeholder="https://your-site.example/logo.png" onChange={(e) => set({ logoUrl: e.target.value })} />
           </label>
         </div>
+        <div role="radiogroup" aria-label="Layout" className="grid gap-2 sm:grid-cols-2">
+          {(
+            [
+              ["classic", "Classic", "A clean card that fits into your page."],
+              ["cover", "Photo background", "A full-page photo behind the form, each step's title over it. On your website and the public link."],
+            ] as const
+          ).map(([value, title, detail]) => {
+            const on = (s.layout ?? "classic") === value;
+            return (
+              <button
+                key={value}
+                type="button"
+                role="radio"
+                aria-checked={on}
+                onClick={() => set({ layout: value })}
+                className={`rounded-xl border p-3 text-left text-xs ${on ? "border-cyan-600 bg-cyan-600/5 ring-1 ring-cyan-600" : "border-border hover:bg-muted"}`}
+              >
+                <span
+                  aria-hidden="true"
+                  className="mb-2 flex h-14 items-center justify-center rounded-lg bg-cover bg-center"
+                  style={value === "cover" ? { backgroundImage: s.backgroundUrl ? `url(${JSON.stringify(s.backgroundUrl)})` : `linear-gradient(135deg, ${s.accent || "#4f46e5"}, #0f172a)` } : { background: "var(--muted)" }}
+                >
+                  <span className="h-8 w-16 rounded-md bg-background shadow" />
+                </span>
+                <span className="block text-sm font-medium">{title}</span>
+                <span className="text-muted-foreground">{detail}</span>
+              </button>
+            );
+          })}
+        </div>
+        {s.layout === "cover" && (
+          <label className="block text-xs font-medium text-muted-foreground">
+            Background photo (https link to an image; without one, your colour is used)
+            <input className={input} value={s.backgroundUrl ?? ""} maxLength={500} placeholder="https://your-site.example/campus.jpg" onChange={(e) => set({ backgroundUrl: e.target.value })} />
+            <span className="mt-1 block font-normal">Use a photo you have the rights to, at least 1600 pixels wide. It&apos;s darkened so the titles stay readable.</span>
+          </label>
+        )}
       </section>
 
       <section className="space-y-2 rounded-2xl border border-border bg-card p-4 text-sm">
