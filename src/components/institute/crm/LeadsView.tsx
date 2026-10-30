@@ -398,7 +398,7 @@ export default function LeadsView({
                     </div>
                   </td>
                   <td className="px-3 py-2.5">
-                    <span>{l.requestType === "guidance" ? "Career guidance" : (l.course ?? "Course no longer listed")}</span>
+                    <span>{l.requestType === "guidance" ? (l.course ?? "Career guidance") : (l.course ?? "Course no longer listed")}</span>
                     <div className="text-xs text-muted-foreground">{l.source}{l.quizShared ? " · quiz shared" : ""}</div>
                   </td>
                   <td className="px-3 py-2.5" onClick={(e) => e.stopPropagation()}>
@@ -413,6 +413,9 @@ export default function LeadsView({
                       <span className="rounded-full bg-cyan-600/10 px-2 py-0.5 text-xs font-medium text-cyan-800 dark:text-cyan-300">Replied {relative(l.lastReplyAt)}</span>
                     ) : l.lastContactAt ? (
                       <span className="text-muted-foreground">{relative(l.lastContactAt)}</span>
+                    ) : l.stage !== "New" ? (
+                      // Moved on (or imported at a later stage) with no contact recorded here
+                      <span className="text-muted-foreground" title="No contact recorded in Edulexa">—</span>
                     ) : (
                       <span className="text-xs font-medium text-amber-800 dark:text-amber-300">Not contacted</span>
                     )}
@@ -623,7 +626,7 @@ function BoardColumn({
             <button type="button" onClick={() => openLead(l.leadId)} className="block w-full text-left font-medium hover:underline">
               {l.name || l.email || "Unnamed lead"}
             </button>
-            <p className="truncate text-xs text-muted-foreground">{l.requestType === "guidance" ? "Career guidance" : (l.course ?? "Course")}</p>
+            <p className="truncate text-xs text-muted-foreground">{l.requestType === "guidance" ? (l.course ?? "Career guidance") : (l.course ?? "Course")}</p>
             {l.highPriority && (
               <p className="mt-1">
                 <PriorityBadge />

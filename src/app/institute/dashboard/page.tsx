@@ -3,7 +3,8 @@
 /**
  * The institute admissions CRM (API: /api/institute/crm). Opens on the day's work: leads not contacted yet, follow-ups
  * due, and the caller's own leads, then Leads (table or board), Follow-ups, Insights and, for institute admins, Settings
- * (team, email templates, integrations). ?lead=<id> opens a lead directly (links in reminder and reply emails).
+ * (team, email templates, integrations), Staff access and Import (leads from another system's CSV export). ?lead=<id>
+ * opens a lead directly (links in reminder and reply emails).
  */
 
 import React, { Suspense, useCallback, useEffect, useState } from "react";
@@ -19,9 +20,10 @@ import TasksView from "@/components/institute/crm/TasksView";
 import InsightsView from "@/components/institute/crm/InsightsView";
 import PeopleView from "@/components/institute/crm/PeopleView";
 import SettingsView from "@/components/institute/crm/SettingsView";
+import ImportView from "@/components/institute/crm/ImportView";
 import StaffAccess from "@/components/institute/StaffAccess";
 
-type Tab = "leads" | "people" | "followups" | "insights" | "settings" | "staff";
+type Tab = "leads" | "people" | "followups" | "insights" | "settings" | "staff" | "import";
 
 export default function InstituteCrmPage() {
   return (
@@ -129,7 +131,7 @@ function Crm() {
     ["people", "People"],
     ["followups", "Follow-ups"],
     ["insights", "Insights"],
-    ...(isAdmin ? [["settings", "Settings"] as [Tab, string], ["staff", "Staff access"] as [Tab, string]] : []),
+    ...(isAdmin ? [["settings", "Settings"] as [Tab, string], ["staff", "Staff access"] as [Tab, string], ["import", "Import"] as [Tab, string]] : []),
   ];
 
   return (
@@ -196,6 +198,7 @@ function Crm() {
       )}
 
       {tab === "staff" && isAdmin && <StaffAccess getToken={getToken} />}
+      {tab === "import" && isAdmin && <ImportView getToken={getToken} onImported={refresh} />}
 
       {openId && ready && <LeadDrawer key={openId} leadId={openId} getToken={getToken} team={team} templates={templates} isAdmin={isAdmin} me={data?.me ?? null} onClose={closeLead} onChanged={refresh} />}
     </div>
