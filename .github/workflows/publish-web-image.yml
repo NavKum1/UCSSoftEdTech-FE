@@ -1,4 +1,5 @@
 name: Publish web image
+run-name: Publish web image ${{ inputs.region }} ${{ inputs.release_id }}
 
 # The web app has its public addresses baked in at build time, so one image is built per region.
 # Run it from the Actions tab: region "us" or "in", and that region's app and API addresses.
@@ -15,6 +16,10 @@ on:
       api_url:
         description: API address, e.g. https://api.us.example.com
         required: true
+      release_id:
+        description: Set by the backend repository's Release workflow (tags the image <region>-<release_id>); leave empty by hand
+        required: false
+        default: ""
 
 permissions:
   contents: read
@@ -36,7 +41,9 @@ jobs:
         id: tags
         run: |
           image=ghcr.io/$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')/edulexa-web
-          echo "list=$image:${{ inputs.region }}-${GITHUB_SHA::7},$image:${{ inputs.region }}-latest" >> "$GITHUB_OUTPUT"
+          list="$image:${{ inputs.region }}-${GITHUB_SHA::7},$image:${{ inputs.region }}-latest"
+          if [ -n "${{ inputs.release_id }}" ]; then list="$list,$image:${{ inputs.region }}-${{ inputs.release_id }}"; fi
+          echo "list=$list" >> "$GITHUB_OUTPUT"
       - uses: docker/build-push-action@v6
         with:
           context: .
