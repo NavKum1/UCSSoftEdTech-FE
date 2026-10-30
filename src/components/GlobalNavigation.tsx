@@ -77,7 +77,15 @@ const HIRING: NavItem[] = [
   { name: "Placement cell", href: "/campus/admin", desc: "Campus placement for colleges" },
 ];
 
+const ADMINISTRATION: NavItem[] = [
+  { name: "Admin console", href: "/admin", desc: "Institutes, staff access, access requests and the platform" },
+];
+const INSTITUTE: NavItem[] = [
+  { name: "Institute dashboard", href: "/institute/dashboard", desc: "Leads, follow-ups, settings and staff access" },
+];
+
 const isRecruiterRole = (roles: string[]) => roles.some((r) => ["recruiter", "admin", "instituteadmin", "superadmin"].includes(r.toLowerCase()));
+const hasAnyRole = (roles: string[], wanted: string[]) => roles.some((r) => wanted.includes(r.toLowerCase()));
 const active = (pathname: string | null, href: string) => (href === "/dashboard" ? pathname === href : !!pathname && (pathname === href || pathname.startsWith(href + "/")));
 
 export default function GlobalNavigation() {
@@ -103,7 +111,13 @@ export default function GlobalNavigation() {
     : returnPath;
   const signInLink = loginRedirect ? signInHref(loginRedirect) : "/login";
   const signUpLink = signUpHref(loginRedirect || "/dashboard");
-  const groups = isRecruiterRole(roles) ? [...GROUPS, { title: "Hiring", items: HIRING }] : GROUPS;
+  // Staff see where they work: the admin console for platform admins, the institute dashboard for institute staff
+  const groups = [
+    ...GROUPS,
+    ...(isRecruiterRole(roles) ? [{ title: "Hiring", items: HIRING }] : []),
+    ...(hasAnyRole(roles, ["instituteadmin", "counselor", "superadmin"]) ? [{ title: "Institute", items: INSTITUTE }] : []),
+    ...(hasAnyRole(roles, ["superadmin"]) ? [{ title: "Administration", items: ADMINISTRATION }] : []),
+  ];
 
   useEffect(() => {
     if (!isSignedIn) return;

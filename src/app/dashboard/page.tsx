@@ -26,6 +26,16 @@ import {
   Timer,
 } from "lucide-react";
 import { AccessNotice, useLegacyApi } from "@/lib/legacyApi";
+import { useAppAuth } from "@/lib/appAuth";
+
+/** What a staff member's work is, from their roles; null for learners */
+function staffRole(roles: string[]): { label: string; href: string; action: string } | null {
+  const has = (r: string) => roles.some((x) => x.toLowerCase() === r.toLowerCase());
+  if (has("SuperAdmin")) return { label: "Platform administrator", href: "/admin", action: "Open the admin console" };
+  if (has("InstituteAdmin")) return { label: "Institute admin", href: "/institute/dashboard", action: "Open the institute dashboard" };
+  if (has("Counselor")) return { label: "Counsellor", href: "/institute/dashboard", action: "Open the institute dashboard" };
+  return null;
+}
 
 interface Skill {
   skillCategory: string;
@@ -119,6 +129,8 @@ const card = "rounded-2xl border border-border bg-card shadow-[0_1px_2px_rgb(16_
 
 export default function DashboardPage() {
   const { apiFetch, ready, access } = useLegacyApi();
+  const { roles } = useAppAuth();
+  const staff = staffRole(roles);
   const [data, setData] = useState<Overview | null>(null);
   const [failed, setFailed] = useState<number | null>(null);
   const [attempt, setAttempt] = useState(0);
@@ -175,7 +187,7 @@ export default function DashboardPage() {
       <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div className="space-y-1.5">
           <p className="text-sm font-medium text-muted-foreground">
-            {data.profile.organization ? data.profile.organization.name : "Individual member"}
+            {[data.profile.organization?.name, staff?.label].filter(Boolean).join(" · ") || "Individual member"}
             {data.profile.targetRole ? ` · Aiming for ${data.profile.targetRole}` : ""}
           </p>
           <h1 className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
@@ -190,7 +202,16 @@ export default function DashboardPage() {
                 : ""}
           </p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
+          {staff && (
+            <Link
+              href={staff.href}
+              className="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-indigo-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+            >
+              {staff.action}
+              <ArrowRight aria-hidden="true" className="h-4 w-4" />
+            </Link>
+          )}
           <Link
             href="/passport"
             className="inline-flex items-center gap-2 rounded-xl border border-border bg-card px-4 py-2.5 text-sm font-semibold text-foreground hover:bg-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
