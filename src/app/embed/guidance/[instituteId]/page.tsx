@@ -5,7 +5,8 @@
  * link or QR code. A visitor with no account asks the institute's advisor for help. Only forms the institute made public
  * open here.
  * ?form= one of the institute's forms (its default otherwise) · ?resume= answers saved for later ·
- * utm_campaign / utm_source / ?campaign= where the visitor came from · ?page= the page it's embedded on.
+ * utm_campaign / utm_source / ?campaign= where the visitor came from · ?page= the page it's embedded on ·
+ * ?fresh=1 starts empty and keeps nothing in this browser (the Share page's preview).
  * Embedded (?embed=1): transparent background, tells the parent page its height (so the frame fits the form), and
  * ?theme=light|dark|auto, ?corners=square, ?font=…, ?heading=hide, ?accent=#rrggbb match the institute's site.
  */
@@ -119,9 +120,9 @@ function Embedded() {
   const r = fill?.definition.results;
   const showsResults = !!r?.showToPerson && (r.outcomeEnabled || r.matchEnabled);
   const confirmNote = checkEmail && (
-    <div className="p-6 text-center" role="status">
-      <p className="text-base font-semibold">Check your email to confirm</p>
-      <p className="mt-1 text-sm text-muted-foreground">
+    <div className="rounded-2xl border border-border bg-background p-6 text-left" role="status">
+      <p className="text-lg font-semibold tracking-tight">Check your email to confirm</p>
+      <p className="mt-1.5 text-[15px] leading-relaxed text-muted-foreground">
         We sent a link to <span className="font-medium text-foreground">{checkEmail}</span>. Your request reaches {fill?.instituteName ?? "the institute"} once you click it. The
         link works for 48 hours; check your spam folder if you don&apos;t see it.
       </p>
@@ -152,6 +153,7 @@ function Embedded() {
         <GuidanceForm
           fill={fill}
           mode="website"
+          remember={params.get("fresh") !== "1"}
           bare={hideHeading}
           consentText={`Send this to ${fill.instituteName} so an advisor can contact me.`}
           upload={upload}

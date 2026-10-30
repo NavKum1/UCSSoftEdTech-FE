@@ -45,6 +45,8 @@ export default function EmbedBuilder({ instituteId, formId, formName, publicEnab
     if (validAccent) p.set("accent", validAccent);
     if (slug) p.set("campaign", slug);
     p.set("page", "preview");
+    // Starts empty each time: no answers kept from an earlier try in this browser
+    p.set("fresh", "1");
     return `/embed/guidance/${instituteId}?${p}`;
   }, [formId, theme, corners, heading, validAccent, slug, instituteId]);
 

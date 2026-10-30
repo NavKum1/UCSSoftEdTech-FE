@@ -111,7 +111,12 @@ function writeStored(formId: string, d: Stored | null) {
 
 const api = () => getApiBaseUrl().replace(/\/$/, "");
 const field =
-  "mt-1 block w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus:outline-2 focus:outline-[var(--gf-accent)]";
+  "mt-2.5 block w-full rounded-xl border border-border bg-background px-3.5 py-2.5 text-[15px] shadow-xs transition-[border-color,box-shadow] placeholder:text-muted-foreground/70 focus:border-[var(--gf-accent)] focus:outline-none focus:ring-4 focus:ring-[var(--gf-ring)]";
+/** The form's main button (Next, Send) and its quiet partner (Back) */
+const primary =
+  "inline-flex h-12 items-center justify-center gap-1.5 rounded-xl bg-[var(--gf-accent)] px-7 text-[15px] font-semibold text-[var(--gf-on)] shadow-sm transition-[filter] hover:brightness-110 focus:outline-none focus-visible:ring-4 focus-visible:ring-[var(--gf-ring)] disabled:opacity-60";
+const secondary =
+  "inline-flex h-12 items-center justify-center gap-1.5 rounded-xl border border-border bg-background px-5 text-[15px] font-medium transition-colors hover:bg-muted focus:outline-none focus-visible:ring-4 focus-visible:ring-[var(--gf-ring)]";
 
 /** Seconds since a moment (for how long the form took) */
 const secondsSince = (t: number | undefined) => Math.round((Date.now() - (t ?? Date.now())) / 1000);
@@ -138,6 +143,7 @@ export default function GuidanceForm({
   resumeToken,
   apiBase,
   sentNotice,
+  remember = true,
 }: {
   fill: Fillable;
   /** website (public), app (signed in) or preview (editor; nothing is sent) */
@@ -159,12 +165,16 @@ export default function GuidanceForm({
   apiBase?: string;
   /** Shown once sent, instead of the thank-you (e.g. "check your email to confirm"), under the results when there are any */
   sentNotice?: React.ReactNode;
+  /** Website forms keep unfinished answers in this browser; false for the Share page's preview, which starts empty each time */
+  remember?: boolean;
 }) {
   const def = fill.definition;
   const s = def.settings;
   // Website forms remember their answers in this browser, so a reload or a later visit picks up where the person left off
   // (not when opening a "finish later" link, which brings its own answers)
-  const [stored] = useState<Stored | null>(() => (mode === "website" && !resumeToken && typeof window !== "undefined" ? readStored(fill.formId) : null));
+  const [stored] = useState<Stored | null>(() => (mode === "website" && remember && !resumeToken && typeof window !== "undefined" ? readStored(fill.formId) : null));
+  // Said plainly when answers come back, with a way to start afresh (a shared computer, or someone else's turn)
+  const [resumed, setResumed] = useState(() => !!stored && (Object.keys(stored.answers ?? {}).length > 0 || !!stored.name || !!stored.email || !!stored.unsure));
   // The browser's language when the form offers it (read after hydration), until the person picks one
   const browserLang = useSyncExternalStore(noSubscribe, () => navigator.language.slice(0, 2), () => "");
   const [picked, setLang] = useState<string | null>(stored?.language && def.languages.includes(stored.language) ? stored.language : null);
@@ -256,12 +266,12 @@ export default function GuidanceForm({
 
   // Kept in this browser as the person types (website forms), cleared once sent
   useEffect(() => {
-    if (mode !== "website" || sent) return;
+    if (mode !== "website" || !remember || sent) return;
     writeStored(fill.formId, {
       answers, unsure, name: typedName ?? "", email: typedEmail ?? "", phone, language: picked, step: current,
       visitId: visit.current?.id ?? null, partialToken: partialToken.current, savedAt: Date.now(),
     });
-  }, [mode, sent, fill.formId, answers, unsure, typedName, typedEmail, phone, picked, current]);
+  }, [mode, remember, sent, fill.formId, answers, unsure, typedName, typedEmail, phone, picked, current]);
 
   const set = (id: string, a: Answer) => {
     if (!visit.current?.started) track(id, true);
@@ -297,8 +307,30 @@ export default function GuidanceForm({
     return !first;
   };
 
+  /**
+   * Start over: forgets what this browser kept and begins a new visit, so the answers given now become a lead of their own
+   * (never added to the earlier person's unfinished one)
+   */
+  const startOver = () => {
+    writeStored(fill.formId, null);
+    visit.current = null;
+    partialToken.current = null;
+    setAnswers({});
+    setUnsure("");
+    setName(null);
+    setEmail(null);
+    setPhone("");
+    setLang(null);
+    setStep(0);
+    setErrors({});
+    setError(null);
+    setResumed(false);
+    track();
+  };
+
   const go = (to: number) => {
     setStep(to);
+    setResumed(false);
     setError(null);
     top.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
@@ -405,52 +437,145 @@ export default function GuidanceForm({
   };
 
   const accent = s.accent || "#4f46e5";
-  const style = { "--gf-accent": accent, "--gf-on": onAccent(accent) } as React.CSSProperties;
+  // The accent, a tint of it for chosen answers, a soft ring for focus, and a deep shade for the photo layout's panel
+  const deep = `color-mix(in srgb, ${accent} 52%, #0a0e1a)`;
+  const style = {
+    "--gf-accent": accent,
+    "--gf-on": onAccent(accent),
+    "--gf-tint": `color-mix(in srgb, ${accent} 8%, transparent)`,
+    "--gf-ring": `color-mix(in srgb, ${accent} 22%, transparent)`,
+  } as React.CSSProperties;
   const title = tr(s.translations, lang, "title", s.title) || `Get career guidance from ${fill.instituteName}`;
   const intro = tr(s.translations, lang, "description", s.intro);
+  const minutes = t("minutes").replace("{n}", String(estimateMinutes(def)));
+  const partialText = (s.partialNotice?.trim() ? tr(s.translations, lang, "notice", s.partialNotice) : t("partialNotice")).replaceAll("{institute}", fill.instituteName);
+  // Each step's name: the visible sections, and "Your details" (first when saving as people go, else last)
+  /** The panel's list of steps: back to an earlier one */
+  const jumpTo = (e: React.MouseEvent<HTMLButtonElement>) => go(Number(e.currentTarget.dataset.step));
+  const stepLabels = Array.from({ length: steps }, (_, i) => {
+    if (i === detailsStep) return t("details");
+    const x = sections[contactFirst ? i - 1 : i];
+    return x ? tr(x.translations, lang, "title", x.title) : "";
+  });
 
-  // The photo layout: a full-page photo (or the form's colour) with the step's title over it and the form on a card.
-  // Not inside Edulexa's own dialogs, which have their own frame.
+  // The photo layout: a split page, the institute's panel (logo, the form's name, its steps) beside a wide sheet with the
+  // questions. On phones the panel is a band above the sheet. Not inside Edulexa's own dialogs, which have their own frame.
   const cover = s.layout === "cover" && mode !== "app";
-  const frame = (heading: string, children: React.ReactNode) =>
+  const segments = (light: boolean) => (
+    <div className="mt-2 flex gap-1" aria-hidden="true">
+      {stepLabels.map((_, i) => (
+        <span
+          key={i}
+          className={`h-1 flex-1 rounded-full transition-colors ${i <= current ? (light ? "bg-white" : "bg-[var(--gf-accent)]") : light ? "bg-white/25" : "bg-muted"}`}
+        />
+      ))}
+    </div>
+  );
+  const frame = (children: React.ReactNode, done = false) =>
     !cover ? (
       children
     ) : (
-      <div className="relative isolate flex-1 overflow-hidden rounded-[inherit]" style={style}>
-        <div
-          aria-hidden="true"
-          className="absolute inset-0 -z-10 bg-cover bg-center"
-          style={{ backgroundImage: s.backgroundUrl ? `url(${JSON.stringify(s.backgroundUrl)})` : `linear-gradient(135deg, ${accent}, #0f172a)` }}
-        />
-        <div aria-hidden="true" className="absolute inset-0 -z-10 bg-slate-950/45" />
-        <div className="mx-auto max-w-2xl px-3 py-8 sm:px-6 sm:py-12">
-          <p className="text-balance text-center text-2xl font-light tracking-tight text-white drop-shadow-md sm:text-3xl" aria-hidden="true">
-            {heading}
-          </p>
-          <div className="mt-5 rounded-2xl bg-background p-5 text-foreground shadow-2xl sm:p-8">{children}</div>
+      // Split by the room the form has (the editor's preview is narrow even on a wide screen), not the window's width
+      <div className="@container relative flex flex-1 flex-col bg-background">
+        <div className="flex-1 @4xl:grid @4xl:grid-cols-[minmax(300px,380px)_minmax(0,1fr)]" style={style}>
+          <aside className="relative isolate overflow-hidden text-white">
+            <div
+              aria-hidden="true"
+              className="absolute inset-0 -z-20 bg-cover bg-center"
+              style={{ backgroundColor: deep, backgroundImage: s.backgroundUrl ? `url(${JSON.stringify(s.backgroundUrl)})` : undefined }}
+            />
+            <div
+              aria-hidden="true"
+              className="absolute inset-0 -z-10"
+              style={{
+                background: s.backgroundUrl
+                  ? "linear-gradient(180deg, rgb(8 10 18 / .45), rgb(8 10 18 / .82))"
+                  : "radial-gradient(120% 70% at 0% 0%, rgb(255 255 255 / .12), transparent 62%)",
+              }}
+            />
+            {/* The panel's colour fills the column; what's on it stays in view while the questions scroll */}
+            <div className="flex flex-col px-5 py-5 sm:px-8 sm:py-7 @4xl:sticky @4xl:top-0 @4xl:h-dvh @4xl:min-h-[560px] @4xl:px-10 @4xl:py-12">
+              {s.logoUrl ? (
+                <span className="inline-flex self-start rounded-xl bg-white px-3 py-2 shadow-sm">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={s.logoUrl} alt={fill.instituteName} className="h-7 w-auto max-w-40 object-contain" />
+                </span>
+              ) : (
+                <span className="text-[15px] font-semibold">{fill.instituteName}</span>
+              )}
+              <p className="mt-5 text-balance text-xl font-semibold leading-tight tracking-tight @4xl:mt-14 @4xl:text-[26px]">{title}</p>
+              <p className="mt-2 inline-flex items-center gap-1.5 text-sm text-white/70">
+                <Clock aria-hidden="true" className="h-4 w-4" /> {minutes}
+              </p>
+              {!done && steps > 1 && (
+                <div className="mt-5 @4xl:hidden">
+                  <p className="text-xs text-white/75">
+                    {t("step")} {current + 1} {t("of")} {steps}
+                  </p>
+                  {segments(true)}
+                </div>
+              )}
+              {steps > 1 && (
+                <ol className="mt-12 hidden space-y-0.5 @4xl:block" aria-label={`${t("step")} ${current + 1} ${t("of")} ${steps}`}>
+                  {stepLabels.map((label, i) => {
+                    const past = done || i < current;
+                    const now = !done && i === current;
+                    return (
+                      <li key={i}>
+                        <button
+                          type="button"
+                          disabled={done || i >= current}
+                          data-step={i}
+                          onClick={jumpTo}
+                          aria-current={now ? "step" : undefined}
+                          className="flex w-full items-center gap-3 rounded-lg px-2 py-1.5 text-left text-[15px] transition-colors enabled:hover:bg-white/10 disabled:cursor-default focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70"
+                        >
+                          <span
+                            aria-hidden="true"
+                            className={`grid h-6 w-6 shrink-0 place-items-center rounded-full text-xs font-semibold ${
+                              past ? "bg-white" : now ? "text-white ring-2 ring-white" : "text-white/55 ring-1 ring-white/30"
+                            }`}
+                            style={past ? { color: deep } : undefined}
+                          >
+                            {past ? <Check className="h-3.5 w-3.5" strokeWidth={3} /> : i + 1}
+                          </span>
+                          <span className={now ? "font-semibold text-white" : past ? "text-white/85" : "text-white/55"}>{label}</span>
+                        </button>
+                      </li>
+                    );
+                  })}
+                </ol>
+              )}
+              {savesPartial && !done && (
+                <p className="mt-auto hidden items-start gap-2 pt-10 text-xs leading-relaxed text-white/65 @4xl:flex">
+                  <Save aria-hidden="true" className="mt-px h-3.5 w-3.5 shrink-0" /> {partialText}
+                </p>
+              )}
+            </div>
+          </aside>
+          <div className="mx-auto w-full max-w-[700px] px-5 pb-12 pt-8 text-foreground sm:px-10 @4xl:px-14 @4xl:pb-16 @4xl:pt-16">{children}</div>
         </div>
       </div>
     );
 
   if (sent)
     return frame(
-      result ? t("yourResults") : title,
-      <div ref={top} className={result ? "space-y-5 text-sm" : "p-6 text-center"} role="status" style={style} dir={RTL.includes(lang) ? "rtl" : "ltr"} lang={lang}>
+      <div ref={top} className={result ? "space-y-6 text-[15px]" : "py-6 text-center"} role="status" style={style} dir={RTL.includes(lang) ? "rtl" : "ltr"} lang={lang}>
         {result ? (
           <>
-            {!cover && <h1 className="text-lg font-semibold">{t("yourResults")}</h1>}
+            <h1 className={cover ? "text-[28px] font-semibold leading-tight tracking-tight sm:text-[32px]" : "text-xl font-semibold tracking-tight"}>{t("yourResults")}</h1>
             <ResultsView result={result} accent={accent} t={t} />
             {meeting && <MeetingNotice meeting={meeting} t={t} />}
-            {sentNotice ?? <p className="whitespace-pre-wrap text-muted-foreground">{tr(s.translations, lang, "label", s.thankYou) || t("thanks")}</p>}
+            {sentNotice ?? <p className="whitespace-pre-wrap leading-relaxed text-muted-foreground">{tr(s.translations, lang, "label", s.thankYou) || t("thanks")}</p>}
             {(onSent || (s.redirectUrl && mode === "website" && s.requireEmailConfirmation === false)) && (
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap gap-3">
                 {s.redirectUrl && mode === "website" && s.requireEmailConfirmation === false && (
-                  <a href={s.redirectUrl} target="_top" rel="noopener" className="inline-flex flex-1 items-center justify-center gap-1 rounded-xl bg-[var(--gf-accent)] px-4 py-2.5 font-semibold text-[var(--gf-on)] hover:opacity-90">
+                  <a href={s.redirectUrl} target="_top" rel="noopener" className={`${primary} flex-1`}>
                     {t("continue")} <ArrowRight aria-hidden="true" className="h-4 w-4" />
                   </a>
                 )}
                 {onSent && (
-                  <button type="button" onClick={onSent} className="flex-1 rounded-xl bg-[var(--gf-accent)] px-4 py-2.5 font-semibold text-[var(--gf-on)] hover:opacity-90">
+                  <button type="button" onClick={onSent} className={`${primary} flex-1`}>
                     {t("done")}
                   </button>
                 )}
@@ -460,11 +585,13 @@ export default function GuidanceForm({
         ) : (
           sentNotice ?? (
             <>
-              <CheckCircle2 aria-hidden="true" className="mx-auto h-9 w-9" style={{ color: accent }} />
-              <p className="mt-2 whitespace-pre-wrap text-base font-semibold">{tr(s.translations, lang, "label", s.thankYou) || t("thanks")}</p>
-              {!s.thankYou && <p className="mt-1 text-sm text-muted-foreground">An advisor from {fill.instituteName} will contact you at {email.trim()}.</p>}
+              <span className="mx-auto grid h-14 w-14 place-items-center rounded-full bg-[var(--gf-tint)]">
+                <CheckCircle2 aria-hidden="true" className="h-8 w-8" style={{ color: accent }} />
+              </span>
+              <p className="mt-4 whitespace-pre-wrap text-xl font-semibold tracking-tight">{tr(s.translations, lang, "label", s.thankYou) || t("thanks")}</p>
+              {!s.thankYou && <p className="mt-2 text-muted-foreground">An advisor from {fill.instituteName} will contact you at {email.trim()}.</p>}
               {meeting && (
-                <div className="mt-4 text-left">
+                <div className="mt-6 text-left">
                   <MeetingNotice meeting={meeting} t={t} />
                 </div>
               )}
@@ -472,106 +599,125 @@ export default function GuidanceForm({
           )
         )}
       </div>,
+      true,
     );
 
-  const stepTitle = section ? tr(section.translations, lang, "title", section.title) : t("details");
-  // On the photo layout the form's heading and introduction show on the first step only (the step titles are on the photo)
-  const showHead = !cover || current === 0;
+  const stepTitle = stepLabels[current];
+  // The heading, introduction and time: in the panel on the photo layout (the introduction opens the first step), at the
+  // top of the card otherwise
+  const showHead = !cover;
+  const languagePicker = def.languages.length > 1 && (
+    <label className="shrink-0 text-sm">
+      <span className="sr-only">{t("language")}</span>
+      <select value={lang} onChange={(e) => setLang(e.target.value)} className="rounded-lg border border-border bg-background px-2.5 py-1.5 focus:outline-none focus-visible:ring-4 focus-visible:ring-[var(--gf-ring)]">
+        {def.languages.map((l) => (
+          <option key={l} value={l}>
+            {fill.languageNames[l] ?? l}
+          </option>
+        ))}
+      </select>
+    </label>
+  );
 
   return frame(
-    stepTitle,
-    <div ref={top} style={style} className="text-sm" dir={RTL.includes(lang) ? "rtl" : "ltr"} lang={lang}>
-      <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          {!bare && showHead && s.logoUrl && (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={s.logoUrl} alt={fill.instituteName} className="mb-3 h-10 w-auto max-w-48 object-contain" />
-          )}
-          {!bare && showHead && <h1 className="text-lg font-semibold">{title}</h1>}
-          {showHead && intro && <p className="mt-1 whitespace-pre-wrap text-muted-foreground">{intro}</p>}
-          {showHead && (
-            <p className="mt-1 inline-flex items-center gap-1 text-xs text-muted-foreground">
-              <Clock aria-hidden="true" className="h-3.5 w-3.5" /> {t("minutes").replace("{n}", String(estimateMinutes(def)))}
-            </p>
-          )}
-          {savesPartial && (
-            <p className="mt-1 flex items-start gap-1 text-xs text-muted-foreground">
-              <Save aria-hidden="true" className="mt-px h-3.5 w-3.5 shrink-0" />
-              {(s.partialNotice?.trim() ? tr(s.translations, lang, "notice", s.partialNotice) : t("partialNotice")).replaceAll("{institute}", fill.instituteName)}
-            </p>
-          )}
+    <div ref={top} style={style} className="scroll-mt-4 text-[15px]" dir={RTL.includes(lang) ? "rtl" : "ltr"} lang={lang}>
+      {resumed && (
+        <div className="mb-8 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-[var(--gf-tint)] px-4 py-3" role="status">
+          <p className="text-sm leading-relaxed">{t("welcomeBack")}</p>
+          <button type="button" onClick={startOver} className="rounded-lg border border-border bg-background px-3 py-1.5 text-sm font-medium hover:bg-muted focus:outline-none focus-visible:ring-4 focus-visible:ring-[var(--gf-ring)]">
+            {t("startOver")}
+          </button>
         </div>
-        {def.languages.length > 1 && (
-          <label className="shrink-0 text-xs">
-            <span className="sr-only">{t("language")}</span>
-            <select value={lang} onChange={(e) => setLang(e.target.value)} className="rounded-lg border border-border bg-background px-2 py-1.5">
-              {def.languages.map((l) => (
-                <option key={l} value={l}>
-                  {fill.languageNames[l] ?? l}
-                </option>
-              ))}
-            </select>
-          </label>
-        )}
-      </div>
+      )}
+      {showHead ? (
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            {!bare && s.logoUrl && (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={s.logoUrl} alt={fill.instituteName} className="mb-4 h-10 w-auto max-w-48 object-contain" />
+            )}
+            {!bare && <h1 className="text-xl font-semibold tracking-tight">{title}</h1>}
+            {intro && <p className="mt-1.5 whitespace-pre-wrap leading-relaxed text-muted-foreground">{intro}</p>}
+            <p className="mt-2 inline-flex items-center gap-1.5 text-sm text-muted-foreground">
+              <Clock aria-hidden="true" className="h-4 w-4" /> {minutes}
+            </p>
+            {savesPartial && (
+              <p className="mt-1 flex items-start gap-1.5 text-sm text-muted-foreground">
+                <Save aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0" /> {partialText}
+              </p>
+            )}
+          </div>
+          {languagePicker}
+        </div>
+      ) : (
+        (languagePicker || (current === 0 && intro) || savesPartial) && (
+          <div className="mb-8 flex items-start justify-between gap-4">
+            <div className="min-w-0 space-y-2">
+              {current === 0 && intro && <p className="max-w-[60ch] whitespace-pre-wrap text-[17px] leading-relaxed text-muted-foreground">{intro}</p>}
+              {savesPartial && (
+                <p className="flex items-start gap-1.5 text-sm text-muted-foreground @4xl:hidden">
+                  <Save aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0" /> {partialText}
+                </p>
+              )}
+            </div>
+            {languagePicker}
+          </div>
+        )
+      )}
 
-      {/* Progress */}
-      {steps > 1 && (
-        <div className="mt-4" aria-label={`${t("step")} ${current + 1} ${t("of")} ${steps}`}>
-          <div className="flex justify-between text-xs text-muted-foreground">
-            <span>
-              {t("step")} {current + 1} {t("of")} {steps}
-            </span>
-            <span>{section ? tr(section.translations, lang, "title", section.title) : t("details")}</span>
-          </div>
-          <div className="mt-1 h-1.5 rounded-full bg-muted" aria-hidden="true">
-            <div className="h-full rounded-full bg-[var(--gf-accent)] transition-all" style={{ width: `${((current + 1) / steps) * 100}%` }} />
-          </div>
+      {/* Progress (the photo layout shows it in its panel) */}
+      {!cover && steps > 1 && (
+        <div className="mt-6" aria-label={`${t("step")} ${current + 1} ${t("of")} ${steps}`}>
+          <p className="text-xs text-muted-foreground">
+            {t("step")} {current + 1} {t("of")} {steps}
+          </p>
+          {segments(false)}
         </div>
       )}
 
-      <form onSubmit={submit} className="mt-5 space-y-5" noValidate>
+      <form onSubmit={submit} className={`@container ${cover ? "" : "mt-7"}`} noValidate>
         {def.questions.some((q) => q.kind === "slider") && <style>{SLIDER_CSS}</style>}
-        {current === unsureStep && s.askUnsure && (
-          <label className="block">
-            <span className="font-medium">{t("unsure")}</span>
-            <textarea
-              id="gf-__unsure"
-              value={unsure}
-              maxLength={2000}
-              rows={3}
-              onChange={(e) => {
-                setUnsure(e.target.value);
-                if (!visit.current?.started) track(undefined, true);
-              }}
-              className={field}
-              placeholder={t("unsurePh")}
-              aria-invalid={!!errors.__unsure}
-            />
-            {errors.__unsure && <span className="mt-1 block text-red-700 dark:text-red-400">{errors.__unsure}</span>}
-          </label>
+
+        {/* The step's heading and what it's about */}
+        {(steps > 1 || (section?.description ?? "") !== "") && (
+          <div className="mb-8">
+            {steps > 1 && <h2 className={cover ? "text-[28px] font-semibold leading-tight tracking-tight sm:text-[32px]" : "text-lg font-semibold tracking-tight"}>{stepTitle}</h2>}
+            {section?.description && (
+              <p className={`max-w-[62ch] leading-relaxed text-muted-foreground ${cover ? "mt-3 text-base" : "mt-1"}`}>{tr(section.translations, lang, "description", section.description)}</p>
+            )}
+          </div>
         )}
 
-        {section && (
-          <>
-            {(sections.length > 1 || section.description) && (
-              <div>
-                {sections.length > 1 && <h2 className={cover ? "sr-only" : "text-base font-semibold"}>{tr(section.translations, lang, "title", section.title)}</h2>}
-                {section.description && <p className="text-muted-foreground">{tr(section.translations, lang, "description", section.description)}</p>}
-              </div>
-            )}
-            {stepQuestions.map((q) => (
+        <div className="space-y-9">
+          {current === unsureStep && s.askUnsure && (
+            <label className="block">
+              <span className="text-base font-semibold leading-snug">{t("unsure")}</span>
+              <textarea
+                id="gf-__unsure"
+                value={unsure}
+                maxLength={2000}
+                rows={3}
+                onChange={(e) => {
+                  setUnsure(e.target.value);
+                  if (!visit.current?.started) track(undefined, true);
+                }}
+                className={field}
+                placeholder={t("unsurePh")}
+                aria-invalid={!!errors.__unsure}
+              />
+              {errors.__unsure && <span className="mt-1.5 block text-sm text-red-700 dark:text-red-400">{errors.__unsure}</span>}
+            </label>
+          )}
+
+          {section &&
+            stepQuestions.map((q) => (
               <Field key={q.id} q={q} lang={lang} t={t} a={answers[q.id]} error={errors[q.id]} onChange={(a) => set(q.id, a)} upload={upload} preview={mode === "preview"} fill={fill} />
             ))}
-          </>
-        )}
 
-        {isDetails && (
-          <>
-            <h2 className="text-base font-semibold">{t("details")}</h2>
-            <div className="grid gap-3 sm:grid-cols-2">
+          {isDetails && (
+            <div className="grid gap-5 sm:grid-cols-2">
               <label className="block">
-                <span className="font-medium">{t("name")}</span>
+                <span className="text-base font-semibold">{t("name")}</span>
                 <input
                   id="gf-__name"
                   required
@@ -585,10 +731,10 @@ export default function GuidanceForm({
                   autoComplete="name"
                   aria-invalid={!!errors.__name}
                 />
-                {errors.__name && <span className="mt-1 block text-red-700 dark:text-red-400">{errors.__name}</span>}
+                {errors.__name && <span className="mt-1.5 block text-sm text-red-700 dark:text-red-400">{errors.__name}</span>}
               </label>
               <label className="block">
-                <span className="font-medium">{t("email")}</span>
+                <span className="text-base font-semibold">{t("email")}</span>
                 <input
                   id="gf-__email"
                   required
@@ -603,13 +749,13 @@ export default function GuidanceForm({
                   autoComplete="email"
                   aria-invalid={!!errors.__email}
                 />
-                {errors.__email && <span className="mt-1 block text-red-700 dark:text-red-400">{errors.__email}</span>}
+                {errors.__email && <span className="mt-1.5 block text-sm text-red-700 dark:text-red-400">{errors.__email}</span>}
               </label>
               {checksPhone ? (
                 <PhoneCheck apiBase={apiBase!} formId={fill.formId} phone={phone} setPhone={setPhone} onVerified={setPhoneCheckId} label={t("phone")} />
               ) : s.askPhone && (
                 <label className="block sm:col-span-2">
-                  <span className="font-medium">{t("phone")}</span> {!s.phoneRequired && <span className="text-muted-foreground">({t("optional")})</span>}
+                  <span className="text-base font-semibold">{t("phone")}</span> {!s.phoneRequired && <span className="text-muted-foreground">({t("optional")})</span>}
                   <input
                     id="gf-__phone"
                     type="tel"
@@ -620,16 +766,27 @@ export default function GuidanceForm({
                       setPhone(e.target.value);
                       setErrors((x) => (x.__phone ? { ...x, __phone: "" } : x));
                     }}
-                    className={field}
+                    className={`${field} sm:max-w-[calc(50%-0.625rem)]`}
                     autoComplete="tel"
                     aria-invalid={!!errors.__phone}
                   />
-                  {errors.__phone && <span className="mt-1 block text-red-700 dark:text-red-400">{errors.__phone}</span>}
+                  {errors.__phone && <span className="mt-1.5 block text-sm text-red-700 dark:text-red-400">{errors.__phone}</span>}
                 </label>
               )}
             </div>
-          </>
-        )}
+          )}
+
+          {isLast && (
+            <>
+              {extras}
+              {needsHuman && <HumanCheck siteKey={fill.turnstileSiteKey!} onToken={setHuman} />}
+              <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-border p-4 transition-colors has-[:checked]:border-[var(--gf-accent)] has-[:checked]:bg-[var(--gf-tint)]">
+                <input type="checkbox" checked={consent} onChange={(e) => setConsent(e.target.checked)} className="mt-0.5 h-[18px] w-[18px] shrink-0 accent-[var(--gf-accent)]" />
+                <span className="leading-relaxed">{consentText}</span>
+              </label>
+            </>
+          )}
+        </div>
 
         {/* Hidden from people on every step (bots fill it in) */}
         <label className="absolute -left-[9999px]" aria-hidden="true">
@@ -637,64 +794,60 @@ export default function GuidanceForm({
           <input tabIndex={-1} autoComplete="off" value={website} onChange={(e) => setWebsite(e.target.value)} />
         </label>
 
-        {isLast && (
-          <>
-            {extras}
-            {needsHuman && <HumanCheck siteKey={fill.turnstileSiteKey!} onToken={setHuman} />}
-            <label className="flex items-start gap-2">
-              <input type="checkbox" checked={consent} onChange={(e) => setConsent(e.target.checked)} className="mt-0.5 h-4 w-4 accent-[var(--gf-accent)]" />
-              <span>{consentText}</span>
-            </label>
-          </>
-        )}
-
         {error && (
-          <p role="alert" className="text-red-700 dark:text-red-400">
+          <p role="alert" className="mt-6 rounded-xl bg-red-500/10 px-4 py-3 text-sm text-red-800 dark:text-red-300">
             {error}
           </p>
         )}
 
         {saveLink && (
-          <div className="rounded-xl border border-border bg-muted/40 p-3 text-xs" role="status">
+          <div className="mt-6 rounded-xl border border-border bg-muted/40 p-4 text-sm" role="status">
             <p>{t("saved")}</p>
-            <div className="mt-1.5 flex gap-2">
-              <input readOnly value={saveLink} className="min-w-0 flex-1 rounded-lg border border-border bg-background px-2 py-1 font-mono" onFocus={(e) => e.target.select()} />
+            <div className="mt-2 flex gap-2">
+              <input readOnly value={saveLink} className="min-w-0 flex-1 rounded-lg border border-border bg-background px-2.5 py-1.5 font-mono text-xs" onFocus={(e) => e.target.select()} />
               <button
                 type="button"
-                className="inline-flex items-center gap-1 rounded-lg border border-border px-2 py-1"
+                className="inline-flex items-center gap-1 rounded-lg border border-border px-3 py-1.5 hover:bg-muted"
                 onClick={() => navigator.clipboard?.writeText(saveLink).then(() => setCopied(true))}
               >
-                {copied ? <Check aria-hidden="true" className="h-3.5 w-3.5" /> : <Copy aria-hidden="true" className="h-3.5 w-3.5" />} {copied ? t("copied") : t("copy")}
+                {copied ? <Check aria-hidden="true" className="h-4 w-4" /> : <Copy aria-hidden="true" className="h-4 w-4" />} {copied ? t("copied") : t("copy")}
               </button>
             </div>
           </div>
         )}
 
-        <div className="flex flex-wrap items-center gap-2 pt-1">
-          {current > 0 && (
-            <button type="button" onClick={() => go(current - 1)} className="inline-flex items-center gap-1 rounded-xl border border-border px-4 py-2.5 font-medium hover:bg-muted">
-              <ArrowLeft aria-hidden="true" className="h-4 w-4" /> {t("back")}
-            </button>
-          )}
-          {isLast ? (
+        {/* Actions: finish later on the left, Back and Next (or Send) on the right */}
+        <div className={`mt-10 flex flex-col-reverse gap-3 sm:flex-row sm:items-center ${cover ? "border-t border-border pt-6" : ""}`}>
+          {mode === "website" ? (
             <button
-              type="submit"
-              disabled={sending || mode === "preview"}
-              title={mode === "preview" ? "This is a preview; nothing is sent" : undefined}
-              className="flex-1 rounded-xl bg-[var(--gf-accent)] px-4 py-2.5 font-semibold text-[var(--gf-on)] hover:opacity-90 disabled:opacity-60"
+              type="button"
+              onClick={saveForLater}
+              className="inline-flex items-center justify-center gap-1.5 rounded-lg px-1 py-2 text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline focus:outline-none focus-visible:ring-4 focus-visible:ring-[var(--gf-ring)] sm:justify-start"
             >
-              {sending ? t("sending") : t("send")}
+              <Save aria-hidden="true" className="h-4 w-4" /> {t("saveLater")}
             </button>
-          ) : (
-            <button type="button" onClick={next} className="inline-flex flex-1 items-center justify-center gap-1 rounded-xl bg-[var(--gf-accent)] px-4 py-2.5 font-semibold text-[var(--gf-on)] hover:opacity-90">
-              {t("next")} <ArrowRight aria-hidden="true" className="h-4 w-4" />
-            </button>
-          )}
-          {mode === "website" && (
-            <button type="button" onClick={saveForLater} className="inline-flex items-center gap-1 px-2 py-2 text-xs text-muted-foreground hover:text-foreground">
-              <Save aria-hidden="true" className="h-3.5 w-3.5" /> {t("saveLater")}
-            </button>
-          )}
+          ) : null}
+          <div className="flex gap-3 sm:ml-auto">
+            {current > 0 && (
+              <button type="button" onClick={() => go(current - 1)} className={secondary}>
+                <ArrowLeft aria-hidden="true" className="h-4 w-4" /> {t("back")}
+              </button>
+            )}
+            {isLast ? (
+              <button
+                type="submit"
+                disabled={sending || mode === "preview"}
+                title={mode === "preview" ? "This is a preview; nothing is sent" : undefined}
+                className={`${primary} flex-1 sm:min-w-44 sm:flex-none`}
+              >
+                {sending ? t("sending") : t("send")}
+              </button>
+            ) : (
+              <button type="button" onClick={next} className={`${primary} flex-1 sm:min-w-44 sm:flex-none`}>
+                {t("next")} <ArrowRight aria-hidden="true" className="h-4 w-4" />
+              </button>
+            )}
+          </div>
         </div>
       </form>
     </div>,
@@ -723,17 +876,17 @@ export function ResultsView({ result, accent, t }: { result: FormResult; accent:
     <div className="space-y-4">
       {result.outcome && (
         <section className="overflow-hidden rounded-2xl border border-border">
-          <div className="px-5 py-4" style={{ background: `color-mix(in srgb, ${accent} 12%, transparent)` }}>
-            <h2 className="text-xs font-semibold uppercase tracking-wide" style={{ color: accent }}>
+          <div className="px-6 py-5" style={{ background: `color-mix(in srgb, ${accent} 10%, transparent)` }}>
+            <h2 className="text-sm font-medium" style={{ color: accent }}>
               {result.outcomeTitle || t("yourResult")}
             </h2>
-            <p className="mt-1 text-2xl font-semibold">{result.outcome.name}</p>
+            <p className="mt-1 text-[28px] font-semibold leading-tight tracking-tight">{result.outcome.name}</p>
           </div>
-          {result.outcome.summary && <p className="whitespace-pre-wrap px-5 py-4 leading-relaxed">{result.outcome.summary}</p>}
+          {result.outcome.summary && <p className="whitespace-pre-wrap px-6 py-5 leading-relaxed">{result.outcome.summary}</p>}
         </section>
       )}
       {result.match && (
-        <section className="flex items-center gap-5 rounded-2xl border border-border p-5">
+        <section className="flex items-center gap-6 rounded-2xl border border-border p-6">
           <svg viewBox="0 0 80 80" className="h-24 w-24 shrink-0 -rotate-90" role="img" aria-label={`${result.match.percent}%`}>
             <circle cx="40" cy="40" r={r} fill="none" strokeWidth="8" className="stroke-muted" />
             <circle
@@ -752,11 +905,11 @@ export function ResultsView({ result, accent, t }: { result: FormResult; accent:
             </text>
           </svg>
           <div className="min-w-0">
-            <h2 className="text-xs font-semibold uppercase tracking-wide" style={{ color: accent }}>
+            <h2 className="text-sm font-medium" style={{ color: accent }}>
               {result.matchTitle || t("match")}
             </h2>
-            {result.match.label && <p className="mt-0.5 text-lg font-semibold">{result.match.label}</p>}
-            {result.match.message && <p className="mt-1 text-muted-foreground">{result.match.message}</p>}
+            {result.match.label && <p className="mt-0.5 text-xl font-semibold tracking-tight">{result.match.label}</p>}
+            {result.match.message && <p className="mt-1 leading-relaxed text-muted-foreground">{result.match.message}</p>}
           </div>
         </section>
       )}
@@ -768,9 +921,9 @@ function Label({ q, lang, t, htmlFor }: { q: Question; lang: string; t: (k: stri
   const help = tr(q.translations, lang, "help", q.help);
   const content = (
     <>
-      <span className="font-medium">{tr(q.translations, lang, "label", q.label)}</span>
-      {!q.required && q.kind !== "info" && <span className="text-muted-foreground"> ({t("optional")})</span>}
-      {help && <span className="mt-0.5 block text-xs text-muted-foreground">{help}</span>}
+      <span className="text-base font-semibold leading-snug text-foreground">{tr(q.translations, lang, "label", q.label)}</span>
+      {!q.required && q.kind !== "info" && <span className="text-[15px] font-normal text-muted-foreground"> ({t("optional")})</span>}
+      {help && <span className="mt-1 block text-sm leading-relaxed text-muted-foreground">{help}</span>}
     </>
   );
   return htmlFor ? (
@@ -782,19 +935,48 @@ function Label({ q, lang, t, htmlFor }: { q: Question; lang: string; t: (k: stri
   );
 }
 
-function Pill({ on, onClick, children, id }: { on: boolean; onClick: () => void; children: React.ReactNode; id?: string }) {
+/**
+ * One answer as a tile: a round marker where one answer is picked, a square one where several can be. Chosen: the
+ * form's colour on the border and marker, and a tint behind.
+ */
+function Option({ on, multi, onClick, children, id }: { on: boolean; multi: boolean; onClick: () => void; children: React.ReactNode; id?: string }) {
   return (
     <button
       id={id}
       type="button"
       aria-pressed={on}
       onClick={onClick}
-      className={`rounded-full border px-3 py-1.5 text-sm transition-colors ${on ? "border-[var(--gf-accent)] bg-[var(--gf-accent)] text-[var(--gf-on)]" : "border-border hover:bg-muted"}`}
+      className={`flex min-h-12 w-full items-center gap-3 rounded-xl border px-4 py-3 text-left text-[15px] leading-snug transition-[border-color,background-color,box-shadow] focus:outline-none focus-visible:ring-4 focus-visible:ring-[var(--gf-ring)] ${
+        on ? "border-[var(--gf-accent)] bg-[var(--gf-tint)] shadow-[inset_0_0_0_1px_var(--gf-accent)]" : "border-border bg-background hover:border-foreground/30"
+      }`}
     >
-      {children}
+      <span
+        aria-hidden="true"
+        className={`grid h-5 w-5 shrink-0 place-items-center border-2 transition-colors ${multi ? "rounded-md" : "rounded-full"} ${
+          on ? "border-[var(--gf-accent)] bg-[var(--gf-accent)] text-[var(--gf-on)]" : "border-foreground/25"
+        }`}
+      >
+        {on && (multi ? <Check className="h-3.5 w-3.5" strokeWidth={3} /> : <span className="h-2 w-2 rounded-full bg-[var(--gf-on)]" />)}
+      </span>
+      <span className={on ? "font-medium" : ""}>{children}</span>
     </button>
   );
 }
+
+/**
+ * Answers side by side, so a long list stays short: short ones (Yes, CompTIA) two to a row, three where the form is wide;
+ * everyday ones (Cloud computing) two to a row; longer ones wider; sentences one under another
+ */
+const optionGrid = (labels: string[]) => {
+  const longest = Math.max(0, ...labels.map((l) => l.length));
+  return longest > 32
+    ? "grid gap-2.5"
+    : longest > 24
+      ? "grid gap-2.5 [grid-template-columns:repeat(auto-fill,minmax(min(100%,13.5rem),1fr))]"
+      : longest > 14
+        ? "grid grid-cols-2 gap-2.5"
+        : "grid grid-cols-2 gap-2.5 @xl:grid-cols-3";
+};
 
 function Field({
   q,
@@ -827,13 +1009,13 @@ function Field({
   const [busy, setBusy] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const err = error || uploadError;
-  const errorEl = err ? <span className="mt-1 block text-red-700 dark:text-red-400">{err}</span> : null;
+  const errorEl = err ? <span className="mt-2 block text-sm text-red-700 dark:text-red-400">{err}</span> : null;
 
   if (q.kind === "info")
     return (
-      <div className="rounded-xl bg-muted/50 p-3">
-        <p className="whitespace-pre-wrap">{tr(q.translations, lang, "label", q.label)}</p>
-        {q.help && <p className="mt-1 text-xs text-muted-foreground">{tr(q.translations, lang, "help", q.help)}</p>}
+      <div className="rounded-xl border-l-4 border-[var(--gf-accent)] bg-[var(--gf-tint)] px-4 py-3">
+        <p className="whitespace-pre-wrap leading-relaxed">{tr(q.translations, lang, "label", q.label)}</p>
+        {q.help && <p className="mt-1 text-sm text-muted-foreground">{tr(q.translations, lang, "help", q.help)}</p>}
       </div>
     );
 
@@ -846,22 +1028,24 @@ function Field({
     return (
       <fieldset aria-invalid={!!err}>
         <Label q={q} lang={lang} t={t} />
-        <div className="mt-1.5 flex flex-wrap gap-2">
+        <div className={`mt-3 ${q.kind === "yesno" ? "grid max-w-md grid-cols-2 gap-2.5" : optionGrid(shown)}`}>
           {list.map((o, i) => {
             const on = multi ? values.includes(o) : v === o;
             return (
-              <Pill
+              <Option
                 key={o}
                 id={i === 0 ? id : undefined}
                 on={on}
+                multi={multi}
                 onClick={() => (multi ? onChange({ ...a, values: on ? values.filter((x) => x !== o) : [...values, o] }) : onChange({ value: on ? "" : o }))}
               >
                 {shown[i]}
-              </Pill>
+              </Option>
             );
           })}
           {q.allowOther && (
-            <Pill
+            <Option
+              multi={multi}
               on={otherOn}
               onClick={() =>
                 multi
@@ -870,7 +1054,7 @@ function Field({
               }
             >
               {t("other")}
-            </Pill>
+            </Option>
           )}
         </div>
         {q.allowOther && otherOn && (
@@ -905,7 +1089,7 @@ function Field({
     return (
       <fieldset aria-invalid={!!err}>
         <Label q={q} lang={lang} t={t} />
-        <div className="mt-1.5 flex flex-wrap gap-1.5">
+        <div className="mt-3 flex max-w-md flex-wrap gap-2">
           {Array.from({ length: hi - lo + 1 }, (_, i) => String(lo + i)).map((n, i) => (
             <button
               key={n}
@@ -913,14 +1097,16 @@ function Field({
               type="button"
               aria-pressed={v === n}
               onClick={() => onChange({ value: v === n ? "" : n })}
-              className={`h-10 w-10 rounded-xl border text-sm font-medium ${v === n ? "border-[var(--gf-accent)] bg-[var(--gf-accent)] text-[var(--gf-on)]" : "border-border hover:bg-muted"}`}
+              className={`h-12 min-w-12 flex-1 rounded-xl border text-[15px] font-medium transition-colors focus:outline-none focus-visible:ring-4 focus-visible:ring-[var(--gf-ring)] ${
+                v === n ? "border-[var(--gf-accent)] bg-[var(--gf-accent)] text-[var(--gf-on)]" : "border-border bg-background hover:border-foreground/30"
+              }`}
             >
               {n}
             </button>
           ))}
         </div>
         {(minLabel || maxLabel) && (
-          <div className="mt-1 flex max-w-md justify-between text-xs text-muted-foreground">
+          <div className="mt-2 flex max-w-md justify-between text-sm text-muted-foreground">
             <span>{minLabel}</span>
             <span>{maxLabel}</span>
           </div>
@@ -940,7 +1126,7 @@ function Field({
     return (
       <div>
         <Label q={q} lang={lang} t={t} htmlFor={id} />
-        <div className="mt-2 flex justify-between gap-4 text-xs font-medium" aria-hidden="true">
+        <div className="mt-3 flex justify-between gap-4 text-sm font-medium" aria-hidden="true">
           <span>{minLabel}</span>
           <span className="text-right">{maxLabel}</span>
         </div>
@@ -960,7 +1146,7 @@ function Field({
             <span key={i} className={`h-1.5 w-1.5 rounded-full ${lo + i === pos && moved ? "bg-[var(--gf-accent)]" : "bg-muted-foreground/30"}`} />
           ))}
         </div>
-        <p className="mt-1 text-xs text-muted-foreground" aria-hidden="true">
+        <p className="mt-1.5 text-sm text-muted-foreground" aria-hidden="true">
           {moved ? where : t("sliderHint")}
         </p>
         {errorEl}
@@ -976,11 +1162,11 @@ function Field({
     return (
       <fieldset aria-invalid={!!err}>
         <Label q={q} lang={lang} t={t} />
-        <ul className="mt-2 space-y-2">
+        <ul className="mt-3 space-y-2.5">
           {rows.map((r, i) => (
             <li
               key={i}
-              className="grid items-end gap-2 rounded-xl border border-border bg-muted/30 p-3 sm:grid-cols-[repeat(var(--gf-cols),minmax(0,1fr))_auto]"
+              className="grid items-end gap-3 rounded-xl border border-border bg-muted/30 p-4 sm:grid-cols-[repeat(var(--gf-cols),minmax(0,1fr))_auto]"
               style={{ "--gf-cols": cols.length } as React.CSSProperties}
             >
               {cols.map((c, ci) => {
@@ -988,7 +1174,7 @@ function Field({
                 const value = r[c.id] ?? "";
                 const set = (x: string) => setRows(rows.map((row, j) => (j === i ? { ...row, [c.id]: x } : row)));
                 return (
-                  <label key={c.id} htmlFor={cid} className="block text-xs font-medium text-muted-foreground">
+                  <label key={c.id} htmlFor={cid} className="block text-sm font-medium text-muted-foreground">
                     {c.label}
                     {c.options.length > 0 ? (
                       <select id={cid} className={field} value={value} onChange={(e) => set(e.target.value)}>
@@ -1021,7 +1207,7 @@ function Field({
           <button
             type="button"
             onClick={() => setRows([...rows, {}])}
-            className="mt-2 inline-flex items-center gap-1 rounded-xl border border-dashed border-border px-3 py-2 text-sm font-medium hover:bg-muted"
+            className="mt-2.5 inline-flex items-center gap-1.5 rounded-xl border border-dashed border-border px-4 py-2.5 text-[15px] font-medium hover:border-foreground/30 hover:bg-muted focus:outline-none focus-visible:ring-4 focus-visible:ring-[var(--gf-ring)]"
           >
             <Plus aria-hidden="true" className="h-4 w-4" /> {t("addRow")}
           </button>
@@ -1043,11 +1229,11 @@ function Field({
   if (q.kind === "consent")
     return (
       <div>
-        <label className="flex items-start gap-2">
-          <input id={id} type="checkbox" checked={v === "Yes"} onChange={(e) => onChange({ value: e.target.checked ? "Yes" : "" })} className="mt-0.5 h-4 w-4 accent-[var(--gf-accent)]" />
-          <span>
+        <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-border p-4 transition-colors has-[:checked]:border-[var(--gf-accent)] has-[:checked]:bg-[var(--gf-tint)]">
+          <input id={id} type="checkbox" checked={v === "Yes"} onChange={(e) => onChange({ value: e.target.checked ? "Yes" : "" })} className="mt-0.5 h-[18px] w-[18px] shrink-0 accent-[var(--gf-accent)]" />
+          <span className="leading-relaxed">
             {tr(q.translations, lang, "label", q.label)}
-            {q.help && <span className="block text-xs text-muted-foreground">{tr(q.translations, lang, "help", q.help)}</span>}
+            {q.help && <span className="mt-0.5 block text-sm text-muted-foreground">{tr(q.translations, lang, "help", q.help)}</span>}
           </span>
         </label>
         {errorEl}
@@ -1073,7 +1259,7 @@ function Field({
           ))}
         </ul>
         {files.length < max && (
-          <label className="mt-1.5 inline-flex cursor-pointer items-center gap-1.5 rounded-xl border border-dashed border-border px-3 py-2 hover:bg-muted">
+          <label className="mt-3 inline-flex cursor-pointer items-center gap-2 rounded-xl border border-dashed border-border px-4 py-3 text-[15px] font-medium hover:border-foreground/30 hover:bg-muted has-[:focus-visible]:ring-4 has-[:focus-visible]:ring-[var(--gf-ring)]">
             <Paperclip aria-hidden="true" className="h-4 w-4" /> {busy ? t("uploading") : t("attach")}
             <input
               id={id}
@@ -1100,7 +1286,7 @@ function Field({
             />
           </label>
         )}
-        <span className="mt-1 block text-xs text-muted-foreground">{t("fileHint")}</span>
+        <span className="mt-1.5 block text-sm text-muted-foreground">{t("fileHint")}</span>
         {errorEl}
       </div>
     );
