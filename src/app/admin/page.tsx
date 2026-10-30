@@ -21,7 +21,10 @@ import {
   EyeOff,
   Send,
 } from "lucide-react";
+import { UserCog, ShieldCheck, X as CloseIcon } from "lucide-react";
 import { authenticatedFetch } from "@/lib/apiClient";
+import StaffAccess from "@/components/institute/StaffAccess";
+import AccessRequestsAdmin from "@/components/admin/AccessRequestsAdmin";
 import { useGeo } from "@/context/GeoContext";
 import { useLatestRef } from "@/lib/legacyApi";
 
@@ -73,7 +76,9 @@ export default function SuperAdminDashboard() {
   const { config } = useGeo();
 
   // Tab State
-  const [activeTab, setActiveTab] = useState<"analytics" | "partners" | "leads">("analytics");
+  const [activeTab, setActiveTab] = useState<"analytics" | "partners" | "leads" | "access">("analytics");
+  // Staff access for one institute (its first admin, and everyone else), in a dialog
+  const [staffFor, setStaffFor] = useState<Institute | null>(null);
 
   // Data States
   const [analytics, setAnalytics] = useState<AnalyticsData | null>(null);
@@ -419,6 +424,19 @@ export default function SuperAdminDashboard() {
               <FileSpreadsheet className="w-3.5 h-3.5" />
               <span>Leads ({leads.length})</span>
             </button>
+
+            <button
+              onClick={() => setActiveTab("access")}
+              id="admin-tab-access"
+              className={`flex items-center space-x-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                activeTab === "access"
+                  ? "bg-gradient-to-r from-indigo-600 to-indigo-500 text-white shadow-lg shadow-indigo-600/30"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              <ShieldCheck className="w-3.5 h-3.5" />
+              <span>Access requests</span>
+            </button>
           </div>
         </div>
       </div>
@@ -577,6 +595,14 @@ export default function SuperAdminDashboard() {
                     </div>
 
                     <div className="flex items-center space-x-1">
+                      <button
+                        onClick={() => setStaffFor(inst)}
+                        className="inline-flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs text-muted-foreground hover:text-foreground hover:bg-muted transition-all cursor-pointer"
+                        title="Invite this institute's admin and staff"
+                      >
+                        <UserCog className="w-4 h-4" />
+                        <span>Staff access</span>
+                      </button>
                       <button
                         onClick={() => handleDeleteInstitute(inst.id, inst.name)}
                         className="p-1.5 rounded-lg text-muted-foreground hover:text-rose-400 hover:bg-rose-500/10 transition-all cursor-pointer"
@@ -758,6 +784,28 @@ export default function SuperAdminDashboard() {
                 </div>
               ))}
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* TAB 4: ACCESS REQUESTS (recruiters) */}
+      {/* ========================================================================= */}
+      {activeTab === "access" && <AccessRequestsAdmin getToken={getToken} />}
+
+      {staffFor && (
+        <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/50 p-4" role="dialog" aria-modal="true" aria-labelledby="staff-dialog-title">
+          <div className="my-8 w-full max-w-2xl space-y-4 rounded-2xl border border-border bg-background p-5 shadow-xl">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <h2 id="staff-dialog-title" className="text-lg font-semibold">Staff access: {staffFor.name}</h2>
+                <p className="text-sm text-muted-foreground">Start with the institute admin; they can invite everyone else themselves.</p>
+              </div>
+              <button type="button" onClick={() => setStaffFor(null)} className="rounded-lg p-1.5 hover:bg-muted" aria-label="Close">
+                <CloseIcon className="h-5 w-5" />
+              </button>
+            </div>
+            <StaffAccess getToken={getToken} instituteId={staffFor.id} compact />
           </div>
         </div>
       )}

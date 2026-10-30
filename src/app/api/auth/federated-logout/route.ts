@@ -11,7 +11,10 @@ export async function GET(req: NextRequest) {
   const secureCookie = req.nextUrl.protocol === "https:" || (process.env.AUTH_URL ?? "").startsWith("https:");
   const token = await getToken({ req, secret: process.env.AUTH_SECRET, secureCookie });
 
-  const postLogout = new URL("/login", req.nextUrl.origin).toString();
+  // The public address, not the request's: behind the proxy the request can carry the container's own host, which
+  // Keycloak would refuse as a post-logout redirect
+  const publicOrigin = process.env.AUTH_URL ? new URL(process.env.AUTH_URL).origin : req.nextUrl.origin;
+  const postLogout = new URL("/login", publicOrigin).toString();
   const endSession = new URL(`${keycloakIssuer}/protocol/openid-connect/logout`);
   endSession.searchParams.set("client_id", keycloakClientId);
   endSession.searchParams.set("post_logout_redirect_uri", postLogout);

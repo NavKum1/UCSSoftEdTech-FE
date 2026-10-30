@@ -88,7 +88,8 @@ function gate(req: NextRequest, userId: string | null | undefined, hasRole: (...
 
     const isRecruiter = hasRole("Recruiter", "SuperAdmin");
     if (!isRecruiter) {
-      return NextResponse.redirect(new URL("/dashboard", req.url));
+      // Not a recruiter yet: the page where they can ask for access
+      return NextResponse.redirect(new URL("/access/recruiter", req.url));
     }
   }
   // 4. General Candidate Protected Routes

@@ -19,8 +19,9 @@ import TasksView from "@/components/institute/crm/TasksView";
 import InsightsView from "@/components/institute/crm/InsightsView";
 import PeopleView from "@/components/institute/crm/PeopleView";
 import SettingsView from "@/components/institute/crm/SettingsView";
+import StaffAccess from "@/components/institute/StaffAccess";
 
-type Tab = "leads" | "people" | "followups" | "insights" | "settings";
+type Tab = "leads" | "people" | "followups" | "insights" | "settings" | "staff";
 
 export default function InstituteCrmPage() {
   return (
@@ -128,7 +129,7 @@ function Crm() {
     ["people", "People"],
     ["followups", "Follow-ups"],
     ["insights", "Insights"],
-    ...(isAdmin ? [["settings", "Settings"] as [Tab, string]] : []),
+    ...(isAdmin ? [["settings", "Settings"] as [Tab, string], ["staff", "Staff access"] as [Tab, string]] : []),
   ];
 
   return (
@@ -193,6 +194,8 @@ function Crm() {
       {tab === "settings" && isAdmin && (
         <SettingsView getToken={getToken} team={team} templates={templates} webhookUrl={profile?.outboundWebhookUrl ?? ""} reload={() => setVersion((v) => v + 1)} />
       )}
+
+      {tab === "staff" && isAdmin && <StaffAccess getToken={getToken} />}
 
       {openId && ready && <LeadDrawer key={openId} leadId={openId} getToken={getToken} team={team} templates={templates} isAdmin={isAdmin} me={data?.me ?? null} onClose={closeLead} onChanged={refresh} />}
     </div>
