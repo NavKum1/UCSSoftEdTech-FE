@@ -187,7 +187,7 @@ export default function LeadDrawer({
               </div>
               {lead && (
                 <p className="mt-0.5 text-xs text-muted-foreground">
-                  {lead.requestType === "guidance" ? (lead.course ? `Career guidance: ${lead.course}` : "Career guidance request") : (lead.course ?? "Course no longer listed")} · {lead.source ?? "Edulexa"} · received{" "}
+                  {lead.requestType === "guidance" ? "Career guidance request" : (lead.course ?? "Course no longer listed")} · {lead.source ?? "Edulexa"} · received{" "}
                   {relative(lead.createdAt)}
                 </p>
               )}

@@ -76,6 +76,8 @@ export default function ImportView({ getToken, onImported }: { getToken: GetToke
   const [message, setMessage] = useState<{ ok: boolean; text: string } | null>(null);
   const [batches, setBatches] = useState<Batch[]>([]);
   const fileInput = useRef<HTMLInputElement>(null);
+  // Previews run as options change; only the latest one's answer is shown (an earlier one can come back last)
+  const latest = useRef(0);
 
   const loadBatches = useCallback(async () => {
     setBatches(await crm<Batch[]>(getToken, "/import/batches").catch(() => []));
@@ -100,17 +102,20 @@ export default function ImportView({ getToken, onImported }: { getToken: GetToke
 
   const check = async (f: File | null = file, m: string[] | null = mapping) => {
     if (!f) return;
+    const mine = ++latest.current;
     setBusy(true);
     setMessage(null);
     try {
       const p = (await send("/import/preview", f, m)) as Preview;
+      if (mine !== latest.current) return;
       setPreview(p);
       setMapping(p.columns.map((c) => c.field));
     } catch (e) {
+      if (mine !== latest.current) return;
       setPreview(null);
       setMessage({ ok: false, text: (e as Error).message });
     } finally {
-      setBusy(false);
+      if (mine === latest.current) setBusy(false);
     }
   };
 
@@ -362,12 +367,18 @@ export default function ImportView({ getToken, onImported }: { getToken: GetToke
             )}
 
             <div className="mt-5 flex flex-wrap items-center gap-3">
-              <button type="button" disabled={busy || preview.create + preview.duplicates === 0} onClick={runImport} className="rounded-lg bg-cyan-700 px-4 py-2 text-sm font-medium text-white hover:bg-cyan-800 disabled:opacity-50">
+              <button type="button" disabled={busy || preview.create + (duplicates === "note" ? preview.duplicates : 0) === 0} onClick={runImport} className="rounded-lg bg-cyan-700 px-4 py-2 text-sm font-medium text-white hover:bg-cyan-800 disabled:opacity-50">
                 {preview.create === 0 && duplicates === "note" && preview.duplicates > 0
                   ? `Add ${plural(preview.duplicates, "note")}`
                   : `Import ${plural(preview.create, "lead")}${duplicates === "note" && preview.duplicates ? ` and ${plural(preview.duplicates, "note")}` : ""}`}
               </button>
-              <span className="text-xs text-muted-foreground">from {preview.fileName} · tagged “{preview.source}” · you can undo it below</span>
+              {preview.create + (duplicates === "note" ? preview.duplicates : 0) === 0 ? (
+                <span className="text-xs text-muted-foreground">
+                  {preview.duplicates > 0 ? "Everyone in this file is already in your CRM. Choose “Add the row to their lead as a note” to add their rows." : "None of the rows can be used."}
+                </span>
+              ) : (
+                <span className="text-xs text-muted-foreground">from {preview.fileName} · tagged “{preview.source}” · you can undo it below</span>
+              )}
             </div>
           </section>
         </>

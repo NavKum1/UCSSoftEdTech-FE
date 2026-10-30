@@ -174,6 +174,8 @@ export default function GuidanceForm({
   // (not when opening a "finish later" link, which brings its own answers)
   const [stored] = useState<Stored | null>(() => (mode === "website" && remember && !resumeToken && typeof window !== "undefined" ? readStored(fill.formId) : null));
   // Said plainly when answers come back, with a way to start afresh (a shared computer, or someone else's turn)
+  // Start over: a new round remounts the phone and human checks, so nothing of theirs carries over
+  const [round, setRound] = useState(0);
   const [resumed, setResumed] = useState(() => !!stored && (Object.keys(stored.answers ?? {}).length > 0 || !!stored.name || !!stored.email || !!stored.unsure));
   // The browser's language when the form offers it (read after hydration), until the person picks one
   const browserLang = useSyncExternalStore(noSubscribe, () => navigator.language.slice(0, 2), () => "");
@@ -321,6 +323,14 @@ export default function GuidanceForm({
     setEmail(null);
     setPhone("");
     setLang(null);
+    // Their phone check, saved-for-later link (saving again would overwrite their draft), consent and human check go too
+    setPhoneCheckId(null);
+    setSaveLink(null);
+    setDraftToken(null);
+    setCopied(false);
+    setConsent(false);
+    setHuman(null);
+    setRound((r) => r + 1);
     setStep(0);
     setErrors({});
     setError(null);
@@ -495,7 +505,8 @@ export default function GuidanceForm({
             />
             {/* The panel's colour fills the column; what's on it stays in view while the questions scroll */}
             <div className="flex flex-col px-5 py-5 sm:px-8 sm:py-7 @4xl:sticky @4xl:top-0 @4xl:h-dvh @4xl:min-h-[560px] @4xl:px-10 @4xl:py-12">
-              {s.logoUrl ? (
+              {/* heading=hide: the page has its own name and logo; the panel keeps the steps */}
+              {bare ? null : s.logoUrl ? (
                 <span className="inline-flex self-start rounded-xl bg-white px-3 py-2 shadow-sm">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src={s.logoUrl} alt={fill.instituteName} className="h-7 w-auto max-w-40 object-contain" />
@@ -503,7 +514,7 @@ export default function GuidanceForm({
               ) : (
                 <span className="text-[15px] font-semibold">{fill.instituteName}</span>
               )}
-              <p className="mt-5 text-balance text-xl font-semibold leading-tight tracking-tight @4xl:mt-14 @4xl:text-[26px]">{title}</p>
+              {!bare && <p className="mt-5 text-balance text-xl font-semibold leading-tight tracking-tight @4xl:mt-14 @4xl:text-[26px]">{title}</p>}
               <p className="mt-2 inline-flex items-center gap-1.5 text-sm text-white/70">
                 <Clock aria-hidden="true" className="h-4 w-4" /> {minutes}
               </p>
@@ -752,7 +763,7 @@ export default function GuidanceForm({
                 {errors.__email && <span className="mt-1.5 block text-sm text-red-700 dark:text-red-400">{errors.__email}</span>}
               </label>
               {checksPhone ? (
-                <PhoneCheck apiBase={apiBase!} formId={fill.formId} phone={phone} setPhone={setPhone} onVerified={setPhoneCheckId} label={t("phone")} />
+                <PhoneCheck key={round} apiBase={apiBase!} formId={fill.formId} phone={phone} setPhone={setPhone} onVerified={setPhoneCheckId} label={t("phone")} />
               ) : s.askPhone && (
                 <label className="block sm:col-span-2">
                   <span className="text-base font-semibold">{t("phone")}</span> {!s.phoneRequired && <span className="text-muted-foreground">({t("optional")})</span>}
@@ -779,7 +790,7 @@ export default function GuidanceForm({
           {isLast && (
             <>
               {extras}
-              {needsHuman && <HumanCheck siteKey={fill.turnstileSiteKey!} onToken={setHuman} />}
+              {needsHuman && <HumanCheck key={round} siteKey={fill.turnstileSiteKey!} onToken={setHuman} />}
               <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-border p-4 transition-colors has-[:checked]:border-[var(--gf-accent)] has-[:checked]:bg-[var(--gf-tint)]">
                 <input type="checkbox" checked={consent} onChange={(e) => setConsent(e.target.checked)} className="mt-0.5 h-[18px] w-[18px] shrink-0 accent-[var(--gf-accent)]" />
                 <span className="leading-relaxed">{consentText}</span>
