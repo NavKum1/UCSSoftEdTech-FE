@@ -213,6 +213,12 @@ export default function LeadDrawer({
                   </button>
                 </div>
               )}
+              {lead.unconfirmed && !lead.incomplete && (
+                <p className="mt-2 rounded-lg border border-sky-500/30 bg-sky-500/10 px-3 py-2 text-xs">
+                  <span className="font-medium">Email not confirmed.</span> They sent your form but haven&apos;t clicked the link in the confirmation email yet, so the
+                  address may not be theirs. The form&apos;s automatic messages to them wait until they do (the link works for 48 hours).
+                </p>
+              )}
               {lead.incomplete && (
                 <p className="mt-2 rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-xs">
                   <span className="font-medium">Incomplete.</span> They started your website form and haven&apos;t sent it yet; below is what they&apos;d filled in so far.

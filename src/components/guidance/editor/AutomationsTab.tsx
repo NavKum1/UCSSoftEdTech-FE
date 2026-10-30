@@ -2,9 +2,9 @@
 
 /**
  * A form's automatic messages: when something happens (the form is sent, someone stops part way, a meeting is asked
- * for), after a wait, an email to the person or to the team, or an SMS or WhatsApp through Pulse Relay, optionally only
- * for one outcome or a range of match scores, and skipped when they've already opened their results or asked for a
- * meeting. Saved with the form (a draft until published). Every message sent is listed in Notifications.
+ * for), after a wait, an email to the person or to the team (the lead's owner, chosen team members, other addresses), or
+ * an SMS or WhatsApp through Pulse Relay, optionally only for one outcome or a range of match scores, and skipped when
+ * they've already opened their results or asked for a meeting. Saved with the form (a draft until published). Every message sent is listed in Notifications.
  */
 
 import React, { useState } from "react";
@@ -70,7 +70,9 @@ function waitText(m: number): string {
   return `after ${m} minutes`;
 }
 
-export default function AutomationsTab({ def, onChange, readOnly, instituteId }: { def: FormDef; onChange: (d: FormDef) => void; readOnly: boolean; instituteId: string }) {
+type Member = { id: string; name: string };
+
+export default function AutomationsTab({ def, onChange, readOnly, instituteId, team }: { def: FormDef; onChange: (d: FormDef) => void; readOnly: boolean; instituteId: string; team: Member[] }) {
   const list = def.automations ?? [];
   const [open, setOpen] = useState<string | null>(null);
   const set = (next: Automation[]) => onChange({ ...def, automations: next });
@@ -87,7 +89,7 @@ export default function AutomationsTab({ def, onChange, readOnly, instituteId }:
       <div className="rounded-2xl border border-border bg-card p-4 text-sm">
         <p className="font-medium">Messages this form sends by itself</p>
         <p className="mt-1 text-muted-foreground">
-          They go to people who sent (or started) this form, and to your team. Nobody who asked not to be contacted gets one, nor a lead in Possible spam. Changes take effect when you publish.{" "}
+          They go to people who sent (or started) this form, and to your team. Nobody who asked not to be contacted gets one, nor a lead in Possible spam. When the form asks people to confirm their email, messages to them wait until they do. Changes take effect when you publish.{" "}
           <Link href={`/institute/guidance?view=notifications${instituteId ? `&instituteId=${instituteId}` : ""}`} className="text-cyan-700 underline-offset-2 hover:underline dark:text-cyan-400">
             See every message sent in Notifications
           </Link>
@@ -128,7 +130,7 @@ export default function AutomationsTab({ def, onChange, readOnly, instituteId }:
                   <Trash2 aria-hidden="true" className="h-4 w-4" />
                 </button>
               </div>
-              {expanded && <AutomationEditor a={a} update={(p) => update(a.id, p)} outcomes={outcomes} match={match} />}
+              {expanded && <AutomationEditor a={a} update={(p) => update(a.id, p)} outcomes={outcomes} match={match} team={team} />}
             </li>
           );
         })}
@@ -160,7 +162,7 @@ export default function AutomationsTab({ def, onChange, readOnly, instituteId }:
   );
 }
 
-function AutomationEditor({ a, update, outcomes, match }: { a: Automation; update: (p: Partial<Automation>) => void; outcomes: { id: string; name: string }[]; match: boolean }) {
+function AutomationEditor({ a, update, outcomes, match, team }: { a: Automation; update: (p: Partial<Automation>) => void; outcomes: { id: string; name: string }[]; match: boolean; team: Member[] }) {
   const unit = a.delayMinutes > 0 && a.delayMinutes % 1440 === 0 ? 1440 : a.delayMinutes > 0 && a.delayMinutes % 60 === 0 ? 60 : 1;
   const email = a.channel === "email" || a.channel === "team";
   const fill = (t: string | null | undefined) => (t ?? "").replace(/\{(\w+)\}/g, (m, k: string) => FIELDS.find((f) => f[0] === k)?.[1] ?? m);
@@ -219,6 +221,8 @@ function AutomationEditor({ a, update, outcomes, match }: { a: Automation; updat
           {a.trigger === "stopped" && <span className="mt-1 block font-normal text-muted-foreground">At least 30 minutes, so people still filling it in aren&apos;t interrupted. Skipped if they finish first.</span>}
         </div>
       </div>
+
+      {a.channel === "team" && <Recipients a={a} update={update} team={team} />}
 
       {email && (
         <label className="block font-medium">
@@ -304,6 +308,45 @@ function AutomationEditor({ a, update, outcomes, match }: { a: Automation; updat
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+/** Who an email to the team goes to: the lead's owner, chosen team members and other addresses (any mix) */
+function Recipients({ a, update, team }: { a: Automation; update: (p: Partial<Automation>) => void; team: Member[] }) {
+  const members = a.members ?? [];
+  const emails = a.emails ?? [];
+  const toOwner = a.toOwner !== false;
+  const nobody = !toOwner && members.length === 0 && !emails.some((e) => e.trim());
+  return (
+    <div className="space-y-2.5 rounded-lg bg-muted/40 p-3">
+      <p className="font-medium">Send to</p>
+      <label className="flex items-start gap-2">
+        <input type="checkbox" className="mt-0.5" checked={toOwner} onChange={(e) => update({ toOwner: e.target.checked })} />
+        <span>
+          The lead&apos;s owner <span className="text-muted-foreground">(your CRM admins when nobody owns it yet)</span>
+        </span>
+      </label>
+      {team.length > 0 ? (
+        <div>
+          <p className="text-muted-foreground">Also these team members</p>
+          <div className="mt-1 flex flex-wrap gap-x-4 gap-y-1.5">
+            {team.map((m) => (
+              <label key={m.id} className="flex items-center gap-1.5">
+                <input type="checkbox" checked={members.includes(m.id)} onChange={(e) => update({ members: e.target.checked ? [...members, m.id] : members.filter((x) => x !== m.id) })} />
+                {m.name}
+              </label>
+            ))}
+          </div>
+        </div>
+      ) : (
+        <p className="text-muted-foreground">Add your team in the CRM&apos;s Settings to choose people here.</p>
+      )}
+      <label className="block font-medium">
+        Other email addresses <span className="font-normal text-muted-foreground">(one per line, up to 10, e.g. your admissions inbox)</span>
+        <textarea rows={2} className={field} value={emails.join("\n")} onChange={(e) => update({ emails: e.target.value.split("\n").slice(0, 10) })} placeholder="admissions@yourschool.edu" />
+      </label>
+      {nobody && <p role="alert" className="text-amber-700 dark:text-amber-400">Choose who it goes to.</p>}
     </div>
   );
 }

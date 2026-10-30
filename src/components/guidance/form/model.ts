@@ -65,8 +65,14 @@ export interface Automation {
   /** sent, stopped (part way), booking (a meeting asked for) */
   trigger: "sent" | "stopped" | "booking";
   delayMinutes: number;
-  /** email (to the person), team (email to the owner or admins), sms, whatsapp */
+  /** email (to the person), team (email to the team: toOwner, members, emails), sms, whatsapp */
   channel: "email" | "team" | "sms" | "whatsapp";
+  /** team: to the lead's owner (else the CRM admins); on unless set to false */
+  toOwner?: boolean;
+  /** team: these CRM team members too (ids) */
+  members?: string[];
+  /** team: these addresses too (e.g. an admissions inbox) */
+  emails?: string[];
   subject?: string | null;
   body?: string | null;
   templateName?: string | null;
@@ -445,8 +451,9 @@ export interface FormResult {
  * The form's results from the answers: the same rules as the server (Services/Counselling/GuidanceScoring.cs), which
  * keeps its own copy for the CRM. Outcome: each answer gives a point to the outcomes it lists (a slider up to one point,
  * by how far towards that end); the most points wins, ties going to the outcome listed first. Match: the answers' match
- * points out of the most the answered questions could give (a multi-pick question: its best answers, up to how many may
- * be picked), as a percentage, in the highest band reached (one band always starts at 0%).
+ * points out of the most every question shown could give (a multi-pick question: its best answers, up to how many may
+ * be picked), as a percentage, in the highest band reached (one band always starts at 0%). A skipped question gives no
+ * points; no scored question answered, no match.
  */
 export function computeResult(def: FormDef, answers: Answers): FormResult | null {
   const r = def.results;
@@ -457,13 +464,23 @@ export function computeResult(def: FormDef, answers: Answers): FormResult | null
   const totals = new Map(r.outcomes.map((o) => [o.id, 0]));
   let earned = 0;
   let possible = 0;
+  let answered = false;
   for (const q of def.questions) {
     const scores = q.scores ?? [];
     if (scores.length === 0 || !questionVisible(def, q, answers)) continue;
     const a = answers[q.id];
     const positive = (s: Score) => Math.max(0, s.match ?? 0);
     let weight: ((s: Score) => number) | null = null;
-    let best = 0;
+    // The most it could give counts whether or not they answered it (skipping isn't a perfect answer)
+    const best =
+      q.kind === "multi"
+        ? scores
+            .map(positive)
+            .sort((x, y) => y - x)
+            .slice(0, q.max != null && q.max >= 1 ? q.max : undefined)
+            .reduce((n, m) => n + m, 0)
+        : Math.max(0, ...scores.map(positive));
+    possible += best;
     if (q.kind === "slider") {
       const pos = Number.parseInt(a?.value ?? "", 10);
       if (!Number.isFinite(pos)) continue;
@@ -474,24 +491,17 @@ export function computeResult(def: FormDef, answers: Answers): FormResult | null
       const left = pos < mid ? (mid - pos) / half : 0;
       const right = pos > mid ? (pos - mid) / half : 0;
       weight = (s) => (s.when === "left" ? left : right);
-      best = Math.max(0, ...scores.map(positive));
     } else if (q.kind === "multi") {
       const picked = (a?.values ?? []).map((v) => v.trim()).filter(Boolean);
       if (picked.length === 0) continue;
       weight = (s) => (picked.includes(s.when) ? 1 : 0);
-      // The best answers, as many as the question lets them pick
-      best = scores
-        .map(positive)
-        .sort((x, y) => y - x)
-        .slice(0, q.max != null && q.max >= 1 ? q.max : undefined)
-        .reduce((n, m) => n + m, 0);
     } else {
       const single = (a?.value ?? "").trim();
       if (!single) continue;
       weight = (s) => (s.when === single ? 1 : 0);
-      best = Math.max(0, ...scores.map(positive));
     }
-    possible += best;
+    // A match needs at least one answer to a question that gives match points (not only work-style sliders)
+    if (best > 0) answered = true;
     for (const s of scores) {
       const w = weight(s);
       if (w <= 0) continue;
@@ -506,7 +516,7 @@ export function computeResult(def: FormDef, answers: Answers): FormResult | null
     result.points = ranked.map((x) => ({ name: x.o.name, points: Math.round(x.p * 100) / 100 }));
     if (ranked[0].p > 0) result.outcome = ranked[0].o;
   }
-  if (matchOn && possible > 0) {
+  if (matchOn && answered && possible > 0) {
     const percent = Math.round((100 * Math.min(Math.max(earned, 0), possible)) / possible);
     const sorted = [...r.bands].sort((x, y) => x.from - y.from);
     const band = [...sorted].reverse().find((b) => b.from <= percent) ?? sorted[0];

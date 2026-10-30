@@ -121,10 +121,10 @@ function Embedded() {
   const showsResults = !!r?.showToPerson && (r.outcomeEnabled || r.matchEnabled);
   const confirmNote = checkEmail && (
     <div className="rounded-2xl border border-border bg-background p-6 text-left" role="status">
-      <p className="text-lg font-semibold tracking-tight">Check your email to confirm</p>
+      <p className="text-lg font-semibold tracking-tight">Please confirm your email</p>
       <p className="mt-1.5 text-[15px] leading-relaxed text-muted-foreground">
-        We sent a link to <span className="font-medium text-foreground">{checkEmail}</span>. Your request reaches {fill?.instituteName ?? "the institute"} once you click it. The
-        link works for 48 hours; check your spam folder if you don&apos;t see it.
+        {fill?.instituteName ?? "The institute"} has your request. We sent a link to <span className="font-medium text-foreground">{checkEmail}</span>: click it so they can
+        send you your results and reply to you. The link works for 48 hours; check your spam folder if you don&apos;t see it.
       </p>
     </div>
   );

@@ -394,6 +394,14 @@ export default function LeadsView({
                         </span>
                       )}
                       {l.incomplete && <IncompleteBadge unconfirmed={l.unconfirmed} />}
+                      {l.unconfirmed && !l.incomplete && (
+                        <span
+                          className="rounded-full border border-sky-500/30 bg-sky-500/10 px-1.5 py-0.5 text-[11px] font-medium text-sky-800 dark:text-sky-300"
+                          title="They haven't clicked the link in the confirmation email yet. The form's automatic messages to them wait until they do."
+                        >
+                          Email not confirmed
+                        </span>
+                      )}
                       {l.tags.map((t) => <span key={t} className="rounded-full bg-muted px-1.5">{t}</span>)}
                     </div>
                   </td>

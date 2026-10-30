@@ -370,7 +370,7 @@ export default function FormBuilder({ formId, backHref }: { formId: string; back
           )}
         </div>
       )}
-      {tab === "automations" && <AutomationsTab def={def} onChange={change} readOnly={readOnly} instituteId={view.instituteId} />}
+      {tab === "automations" && <AutomationsTab def={def} onChange={change} readOnly={readOnly} instituteId={view.instituteId} team={team} />}
       {tab === "translations" && <TranslationsTab def={def} onChange={change} languages={languages} readOnly={readOnly} />}
       {tab === "share" && <ShareTab view={view} setPublic={setPublic} canEdit={canEdit} />}
       {tab === "insights" && <InsightsTab formId={view.id} apiFetch={apiFetch} instituteId={view.instituteId} />}
@@ -1448,7 +1448,7 @@ function ResultsEditor({ def, onChange, readOnly }: { def: FormDef; onChange: (d
             })
           }
           title="Match score"
-          detail="Answers earn match points; the score is the points earned out of the most possible, as a percentage (e.g. how well your school fits what they want)."
+          detail="Answers earn match points; the score is the points earned out of the most possible, as a percentage (e.g. how well your school fits what they want). A skipped question earns no points."
         />
         {r.matchEnabled && (
           <div className="space-y-3 border-l-2 border-border pl-4">
@@ -1721,7 +1721,7 @@ function SettingsEditor({
           checked={s.requireEmailConfirmation !== false}
           onChange={(v) => set({ requireEmailConfirmation: v })}
           title="Confirm by email (recommended)"
-          detail="People click a link in an email before their request reaches your CRM. Bots can't, and mistyped emails are caught. Adds one step for people."
+          detail="Requests reach your CRM straight away, marked “Email not confirmed” until the person clicks the link in an email. Messages to them wait for it, so nothing goes to a mistyped or someone else's address."
         />
         <Switch
           checked={!!s.requirePhoneCheck}

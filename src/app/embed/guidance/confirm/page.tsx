@@ -1,8 +1,9 @@
 "use client";
 
 /**
- * Confirming a career guidance request from the link in the email (forms that require email confirmation). Once
- * confirmed, the request reaches the institute; the institute's thank-you message is shown, or its own page opens.
+ * Confirming a career guidance request from the link in the email (forms that require email confirmation). The request
+ * is already in the institute's CRM, marked unconfirmed; once confirmed, its messages to them go out. The institute's
+ * thank-you message is shown, or its own page opens.
  */
 
 import React, { Suspense, useEffect, useRef, useState } from "react";
