@@ -47,8 +47,6 @@ interface Report {
   meeting: { status: string; mode: string; when: string | null; counsellor: string | null; meetingUrl: string | null; location: string | null } | null;
 }
 
-const MODE: Record<string, string> = { Phone: "Phone call", Video: "Video call", InPerson: "In person" };
-
 export default function GuidanceReportPage() {
   return (
     <Suspense fallback={<div className="mx-auto mt-10 h-64 max-w-3xl animate-pulse rounded-3xl bg-muted motion-reduce:animate-none" aria-busy="true" />}>
@@ -191,7 +189,7 @@ function ReportView() {
             </section>
           ))}
 
-          {report.meeting && <MeetingCard meeting={report.meeting} institute={report.instituteName} accent={accent} />}
+          {report.meeting && <MeetingCard meeting={report.meeting} institute={report.instituteName} accent={accent} t={t} />}
 
           <details className="group rounded-2xl border border-border print:hidden">
             <summary className="flex min-h-12 cursor-pointer list-none items-center justify-between gap-3 px-5 py-3 font-semibold focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gf-accent)] [&::-webkit-details-marker]:hidden">
@@ -288,27 +286,28 @@ function OutcomeCard({ title, name, summary }: { title?: string | null; name: st
   );
 }
 
-function MeetingCard({ meeting, institute, accent }: { meeting: NonNullable<Report["meeting"]>; institute: string | null; accent: string }) {
+/** Their meeting, in their language */
+function MeetingCard({ meeting, institute, accent, t }: { meeting: NonNullable<Report["meeting"]>; institute: string | null; accent: string; t: (k: string) => string }) {
   return (
     <section className="flex items-start gap-3 rounded-2xl border border-border p-5 text-[15px]">
       <CalendarCheck aria-hidden="true" className="mt-0.5 h-5 w-5 shrink-0" style={{ color: accent }} />
       <div>
         {meeting.status === "Booked" && meeting.when ? (
           <>
-            <p className="font-semibold">Your meeting: {meeting.when}</p>
+            <p className="font-semibold">{t("yourMeeting").replace("{when}", meeting.when)}</p>
             <p className="text-muted-foreground">
-              {MODE[meeting.mode] ?? meeting.mode}
-              {meeting.counsellor ? ` with ${meeting.counsellor}` : ""}
+              {["Phone", "Video", "InPerson"].includes(meeting.mode) ? t(meeting.mode) : meeting.mode}
+              {meeting.counsellor ? ` ${t("meetingWith").replace("{name}", meeting.counsellor)}` : ""}
               {meeting.location ? `, ${meeting.location}` : ""}
             </p>
             {meeting.meetingUrl && (
               <a href={meeting.meetingUrl} target="_blank" rel="noreferrer" className="mt-1 inline-block font-medium underline-offset-2 hover:underline" style={{ color: accent }}>
-                Join the video call
+                {t("joinVideo")}
               </a>
             )}
           </>
         ) : (
-          <p>You asked for a meeting; {institute ?? "they"} will confirm the time by email.</p>
+          <p>{t("meetingRequested").replace("{institute}", institute ?? "")}</p>
         )}
       </div>
     </section>

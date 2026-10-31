@@ -10,7 +10,8 @@ export type UiKey =
   | "addRow" | "sliderHint" | "leansTo" | "middle" | "yourResults" | "yourResult" | "match" | "continue" | "done"
   | "topics" | "howMeet" | "pickDay" | "timeOfDay" | "morning" | "afternoon" | "evening" | "anyTime" | "pickTime" | "laterTimes" | "earlierTimes"
   | "noTimes" | "loadingTimes" | "Phone" | "Video" | "InPerson" | "meetingBooked" | "meetingAsked" | "meetingTaken" | "clearMeeting" | "timesIn"
-  | "yourScore" | "share" | "shareText" | "seeReport" | "allAnswers" | "yourStyle" | "noAnswersKept" | "privateNote" | "sent" | "downloadPdf";
+  | "yourScore" | "share" | "shareText" | "seeReport" | "allAnswers" | "yourStyle" | "noAnswersKept" | "privateNote" | "sent" | "downloadPdf"
+  | "yourMeeting" | "meetingWith" | "joinVideo" | "meetingRequested";
 
 /** English has every text; other languages fall back to it for texts not yet translated */
 export const UI: { en: Record<UiKey, string> } & Record<string, Partial<Record<UiKey, string>>> = {
@@ -33,6 +34,8 @@ export const UI: { en: Record<UiKey, string> } & Record<string, Partial<Record<U
     clearMeeting: "Clear", timesIn: "Times are in {tz}.",
     yourScore: "Your score", share: "Share", shareText: "I scored {n}% on {form}.", seeReport: "See your full report", allAnswers: "All your answers",
     yourStyle: "Your style is", noAnswersKept: "Your answers are no longer kept.", sent: "Sent {date}", downloadPdf: "Download PDF",
+    yourMeeting: "Your meeting: {when}", meetingWith: "with {name}", joinVideo: "Join the video call",
+    meetingRequested: "You asked for a meeting; {institute} will confirm the time by email.",
     privateNote: "This page is private to you. Anyone with the link can see it, so keep it to yourself. It stops working 180 days after you sent the form.",
   },
   hi: {
@@ -152,6 +155,8 @@ export const UI: { en: Record<UiKey, string> } & Record<string, Partial<Record<U
     yourResults: "Tus resultados", yourResult: "Tu resultado", match: "Afinidad", continue: "Continuar", done: "Listo",
     yourScore: "Tu puntuación", share: "Compartir", shareText: "Obtuve un {n}% en {form}.", seeReport: "Ver tu informe completo", allAnswers: "Todas tus respuestas",
     yourStyle: "Tu estilo es", noAnswersKept: "Tus respuestas ya no se conservan.", sent: "Enviado el {date}", downloadPdf: "Descargar PDF",
+    yourMeeting: "Tu reunión: {when}", meetingWith: "con {name}", joinVideo: "Unirse a la videollamada",
+    meetingRequested: "Pediste una reunión; {institute} te confirmará la hora por correo.",
     privateNote: "Esta página es solo para ti. Cualquiera con el enlace puede verla, así que no la compartas. Deja de funcionar 180 días después de enviar el formulario.",
   },
   fr: {
@@ -162,6 +167,12 @@ export const UI: { en: Record<UiKey, string> } & Record<string, Partial<Record<U
     saveLater: "Enregistrer et terminer plus tard", welcomeBack: "Bon retour. Vos réponses jusqu'ici sont gardées dans ce navigateur.", startOver: "Recommencer", saved: "Enregistré. Utilisez ce lien pour revenir sous 30 jours :", copy: "Copier le lien",
     copied: "Copié", thanks: "Merci. Votre demande a été envoyée.", language: "Langue", fileHint: "PDF, Word, JPG ou PNG, jusqu'à 5 Mo.",
     partialNotice: "Nous enregistrons vos informations au fur et à mesure pour que {institute} puisse vous aider.",
+    yourResults: "Vos résultats", yourResult: "Votre résultat", match: "Correspondance", continue: "Continuer", done: "Terminé",
+    yourScore: "Votre score", share: "Partager", shareText: "J'ai obtenu {n} % à {form}.", seeReport: "Voir votre rapport complet", allAnswers: "Toutes vos réponses",
+    yourStyle: "Votre style est", noAnswersKept: "Vos réponses ne sont plus conservées.", sent: "Envoyé le {date}", downloadPdf: "Télécharger le PDF",
+    privateNote: "Cette page vous est réservée. Toute personne ayant le lien peut la voir : gardez-le pour vous. Elle cesse de fonctionner 180 jours après l'envoi du formulaire.",
+    yourMeeting: "Votre rendez-vous : {when}", meetingWith: "avec {name}", joinVideo: "Rejoindre l'appel vidéo",
+    meetingRequested: "Vous avez demandé un rendez-vous ; {institute} vous confirmera l'heure par e-mail.",
   },
 };
 

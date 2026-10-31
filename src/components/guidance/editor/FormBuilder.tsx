@@ -314,13 +314,16 @@ export default function FormBuilder({ formId, backHref }: { formId: string; back
   };
 
   // The template this form was built from (most of its questions' ids match one with report texts)
-  const source = def
-    ? templates
-        .filter((t) => t.definition.questions.some((q) => (q.explain?.length ?? 0) > 0))
-        .map((t) => ({ t, n: t.definition.questions.filter((q) => def.questions.some((x) => x.id === q.id)).length }))
-        .filter((x) => x.n >= 3)
-        .sort((a, b) => b.n - a.n)[0]?.t
-    : undefined;
+  const questions = def?.questions;
+  const source = useMemo(() => {
+    if (!questions) return undefined;
+    const ids = new Set(questions.map((q) => q.id));
+    return templates
+      .filter((t) => t.definition.questions.some((q) => (q.explain?.length ?? 0) > 0))
+      .map((t) => ({ t, n: t.definition.questions.filter((q) => ids.has(q.id)).length }))
+      .filter((x) => x.n >= 3)
+      .sort((a, b) => b.n - a.n)[0]?.t;
+  }, [templates, questions]);
   const fillTemplate = () => {
     if (!source || !def) return;
     const { def: next, filled } = fillFromTemplate(def, normalise(source.definition));
