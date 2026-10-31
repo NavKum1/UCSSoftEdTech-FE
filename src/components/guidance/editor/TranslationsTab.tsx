@@ -53,6 +53,8 @@ export default function TranslationsTab({
   const explainOf = (q: FormDef["questions"][number]) => Array.from({ length: q.explain?.length ?? 0 }, (_, i) => q.translations?.[current]?.explain?.[i] ?? "");
   const gridEnds = r?.grid ? [r.grid.top, r.grid.bottom, r.grid.left, r.grid.right] : [];
   const gridT = Array.from({ length: 4 }, (_, i) => rt.gridEnds?.[i] ?? "");
+  // The report's own texts are used whether or not results show after sending
+  const reportTexts = !!r && !!(r.reportTitle || r.intro || r.nextTitle || r.nextText || r.nextLabel || r.grid);
 
   // What still needs translating
   let total = 0;
@@ -85,6 +87,10 @@ export default function TranslationsTab({
       if (c.options.length) count("choices", t?.columnOptions?.[i]?.length === c.options.length ? "ok" : "");
     });
   });
+  if (reportTexts) {
+    for (const k of ["reportTitle", "intro", "nextTitle", "nextText", "nextLabel"] as const) count(r![k], rt[k]);
+    gridEnds.forEach((e, i) => count(e, gridT[i]));
+  }
   if (results) {
     if (r!.outcomeEnabled) {
       count(r!.outcomeTitle, rt.outcomeTitle);
@@ -93,8 +99,6 @@ export default function TranslationsTab({
         count(o.summary, rt.outcomes?.[i]?.summary);
       });
     }
-    for (const k of ["reportTitle", "intro", "nextTitle", "nextText", "nextLabel"] as const) count(r![k], rt[k]);
-    gridEnds.forEach((e, i) => count(e, gridT[i]));
     if (r!.matchEnabled) {
       count(r!.matchTitle, rt.matchTitle);
       r!.bands.forEach((b, i) => {
@@ -164,8 +168,8 @@ export default function TranslationsTab({
         </Group>
       ))}
 
-      {results && (
-        <Group title="Results and report people read">
+      {reportTexts && (
+        <Group title="The report people read">
           <Row original={r!.reportTitle} value={rt.reportTitle} onChange={(v) => setR({ reportTitle: v })} />
           <Row original={r!.intro} value={rt.intro} onChange={(v) => setR({ intro: v })} long />
           <Row original={r!.nextTitle} value={rt.nextTitle} onChange={(v) => setR({ nextTitle: v })} />
@@ -174,6 +178,11 @@ export default function TranslationsTab({
           {gridEnds.map((e, i) => (
             <Row key={i} original={e} value={gridT[i]} onChange={(v) => setR({ gridEnds: gridT.map((x, j) => (j === i ? v : x)) })} />
           ))}
+        </Group>
+      )}
+
+      {results && (
+        <Group title="Results people read">
           {r!.outcomeEnabled && (
             <>
               <Row original={r!.outcomeTitle} value={rt.outcomeTitle} onChange={(v) => setR({ outcomeTitle: v })} />

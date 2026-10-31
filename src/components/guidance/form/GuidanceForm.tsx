@@ -466,7 +466,7 @@ export default function GuidanceForm({
   const minutes = t("minutes").replace("{n}", String(estimateMinutes(def)));
   const partialText = (s.partialNotice?.trim() ? tr(s.translations, lang, "notice", s.partialNotice) : t("partialNotice")).replaceAll("{institute}", fill.instituteName);
   // After sending: the school's next steps for this score, and sharing it (a link to this form, never their answers)
-  const nextSteps = result ? nextFor(def, result, lang, fill.instituteName) : null;
+  const nextSteps = sent ? nextFor(def, result, lang, fill.instituteName) : null;
   const share = mode === "website" && def.results?.share && result?.match ? shareOf(result.match.percent, title, t) : null;
   // Each step's name: the visible sections, and "Your details" (first when saving as people go, else last)
   /** The panel's list of steps: back to an earlier one */
@@ -603,20 +603,33 @@ export default function GuidanceForm({
             )}
           </>
         ) : (
-          sentNotice ?? (
-            <>
-              <span className="mx-auto grid h-14 w-14 place-items-center rounded-full bg-[var(--gf-tint)]">
-                <CheckCircle2 aria-hidden="true" className="h-8 w-8" style={{ color: accent }} />
-              </span>
-              <p className="mt-4 whitespace-pre-wrap text-xl font-semibold tracking-tight">{tr(s.translations, lang, "label", s.thankYou) || t("thanks")}</p>
-              {!s.thankYou && <p className="mt-2 text-muted-foreground">An advisor from {fill.instituteName} will contact you at {email.trim()}.</p>}
-              {meeting && (
-                <div className="mt-6 text-left">
-                  <MeetingNotice meeting={meeting} t={t} />
-                </div>
-              )}
-            </>
-          )
+          <>
+            {sentNotice ?? (
+              <>
+                <span className="mx-auto grid h-14 w-14 place-items-center rounded-full bg-[var(--gf-tint)]">
+                  <CheckCircle2 aria-hidden="true" className="h-8 w-8" style={{ color: accent }} />
+                </span>
+                <p className="mt-4 whitespace-pre-wrap text-xl font-semibold tracking-tight">{tr(s.translations, lang, "label", s.thankYou) || t("thanks")}</p>
+                {!s.thankYou && <p className="mt-2 text-muted-foreground">An advisor from {fill.instituteName} will contact you at {email.trim()}.</p>}
+                {meeting && (
+                  <div className="mt-6 text-left">
+                    <MeetingNotice meeting={meeting} t={t} />
+                  </div>
+                )}
+              </>
+            )}
+            {/* No results shown: the school's next steps for everyone, and their report, still are */}
+            {nextSteps && (
+              <div className="mt-6 rounded-2xl border border-border px-5 py-6">
+                <NextStepsBlock next={nextSteps} />
+              </div>
+            )}
+            {reportUrl && (
+              <div className="mt-4">
+                <ReportLink url={reportUrl} accent={accent} t={t} />
+              </div>
+            )}
+          </>
         )}
       </div>,
       true,
@@ -955,18 +968,23 @@ export function ResultsView({
           {result.outcome.summary && <p className="whitespace-pre-wrap px-6 py-5 leading-relaxed">{result.outcome.summary}</p>}
         </section>
       )}
-      {reportUrl && (
-        <a
-          href={reportUrl}
-          target="_blank"
-          rel="noopener"
-          className="flex min-h-12 items-center justify-center gap-2 rounded-xl border-2 px-5 py-2.5 font-semibold transition-colors hover:bg-[var(--gf-tint)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gf-accent)]"
-          style={{ borderColor: accent, color: accent }}
-        >
-          <FileText aria-hidden="true" className="h-4 w-4" /> {t("seeReport")}
-        </a>
-      )}
+      {reportUrl && <ReportLink url={reportUrl} accent={accent} t={t} />}
     </div>
+  );
+}
+
+/** The button to the person's full report (opens in a new tab) */
+function ReportLink({ url, accent, t }: { url: string; accent: string; t: (k: string) => string }) {
+  return (
+    <a
+      href={url}
+      target="_blank"
+      rel="noopener"
+      className="flex min-h-12 items-center justify-center gap-2 rounded-xl border-2 px-5 py-2.5 font-semibold transition-colors hover:bg-[var(--gf-tint)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gf-accent)]"
+      style={{ borderColor: accent, color: accent }}
+    >
+      <FileText aria-hidden="true" className="h-4 w-4" /> {t("seeReport")}
+    </a>
   );
 }
 

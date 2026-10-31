@@ -101,6 +101,9 @@ const DEFAULT_PARTIAL_NOTICE = UI.en.partialNotice;
 function fillFromTemplate(d: FormDef, tpl: FormDef): { def: FormDef; filled: number } {
   let filled = 0;
   const blank = (s: string | null | undefined) => !s?.trim();
+  // Sharing, the score card and the PDF are switched on only for a form getting its report for the first time (no
+  // heading yet); after that, off is the school's choice
+  const first = blank(d.results?.reportTitle);
   const questions = d.questions.map((q) => {
     const t = tpl.questions.find((x) => x.id === q.id);
     if (!t || (q.explain?.length ?? 0) > 0) return q;
@@ -131,7 +134,7 @@ function fillFromTemplate(d: FormDef, tpl: FormDef): { def: FormDef; filled: num
         filled++;
       }
     if (r.nextFrom == null && tr.nextFrom != null && r.nextTitle === tr.nextTitle) r.nextFrom = tr.nextFrom;
-    if (!r.share && tr.share) {
+    if (first && !r.share && tr.share) {
       r.share = true;
       filled++;
     }
@@ -144,7 +147,7 @@ function fillFromTemplate(d: FormDef, tpl: FormDef): { def: FormDef; filled: num
   // The template's results email: its score card and PDF, on the form's copy of it when both are off
   const automations = (d.automations ?? []).map((a) => {
     const t = tpl.automations?.find((x) => x.id === a.id && x.channel === "email");
-    if (!t || a.channel !== "email" || a.scoreCard || a.attachReport || !(t.scoreCard || t.attachReport)) return a;
+    if (!first || !t || a.channel !== "email" || a.scoreCard || a.attachReport || !(t.scoreCard || t.attachReport)) return a;
     filled++;
     return { ...a, scoreCard: !!t.scoreCard, attachReport: !!t.attachReport };
   });
@@ -1337,6 +1340,7 @@ function ExplainEditor({ q, update }: { q: Question; update: (p: Partial<Questio
   const setText = (when: string, value: string) => {
     const list = q.explain ?? [];
     const i = list.findIndex((t) => t.when === when);
+    if (!value.trim()) value = ""; // only spaces: no text (the server would drop it)
     if (i >= 0 && value) return update({ explain: list.map((t, j) => (j === i ? { ...t, text: value } : t)) });
     if (i >= 0) return update({ explain: list.filter((_, j) => j !== i), translations: mapExplain(q.translations, (a) => a.filter((_, j) => j !== i)) });
     if (value) update({ explain: [...list, { when, text: value }], translations: mapExplain(q.translations, (a) => [...a, ""]) });
