@@ -153,7 +153,13 @@ function ReportView() {
             </section>
           ) : null}
 
-          {outcome && !outcomeInParts && <OutcomeCard title={report.result?.outcomeTitle} name={outcome.name} summary={outcome.summary} />}
+          {outcome && !outcomeInParts && (
+            <>
+              {/* No part holds the grid (none of its questions was answered): it goes with the outcome */}
+              {report.grid && <StyleGrid grid={report.grid} t={t} />}
+              <OutcomeCard title={report.result?.outcomeTitle} name={outcome.name} summary={outcome.summary} />
+            </>
+          )}
 
           {report.parts.map((p, i) => (
             <section key={i} aria-labelledby={`part-${i}`} className="space-y-5">

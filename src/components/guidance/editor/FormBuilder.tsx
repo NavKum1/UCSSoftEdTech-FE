@@ -131,17 +131,20 @@ function fillFromTemplate(d: FormDef, tpl: FormDef): { def: FormDef; filled: num
         filled++;
       }
     if (r.nextFrom == null && tr.nextFrom != null && r.nextTitle === tr.nextTitle) r.nextFrom = tr.nextFrom;
-    if (r.share == null && tr.share) r.share = true;
+    if (!r.share && tr.share) {
+      r.share = true;
+      filled++;
+    }
     // The grid only when the form still has the template's four outcomes
     if (!r.grid && tr.grid && tr.grid.cells.every((c) => r.outcomes.some((o) => o.id === c))) {
       r.grid = tr.grid;
       filled++;
     }
   }
-  // The template's results email: its score card and PDF, on the form's copy of it when neither was set
+  // The template's results email: its score card and PDF, on the form's copy of it when both are off
   const automations = (d.automations ?? []).map((a) => {
     const t = tpl.automations?.find((x) => x.id === a.id && x.channel === "email");
-    if (!t || a.channel !== "email" || a.scoreCard != null || a.attachReport != null || !(t.scoreCard || t.attachReport)) return a;
+    if (!t || a.channel !== "email" || a.scoreCard || a.attachReport || !(t.scoreCard || t.attachReport)) return a;
     filled++;
     return { ...a, scoreCard: !!t.scoreCard, attachReport: !!t.attachReport };
   });
@@ -244,7 +247,7 @@ export default function FormBuilder({ formId, backHref }: { formId: string; back
     async (d: FormDef, n: string) => {
       const mine = editVersion.current;
       setStatus("saving");
-      const clean = { ...d, questions: d.questions.map((q) => ({ ...q, options: q.options.filter((o) => o.trim()) })) };
+      const clean = { ...d, questions: d.questions.map((q) => pruneAnswerTexts({ ...q, options: q.options.filter((o) => o.trim()) })) };
       const res = await apiFetch(`/api/guidance-forms/${formId}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ definition: clean, name: n }) });
       const body = await res.json().catch(() => null);
       if (!res.ok) {
@@ -1296,6 +1299,31 @@ function SectionReportEditor({ s, readOnly, update }: { s: Section; readOnly: bo
   );
 }
 
+/** A question's translated report texts, changed in every language the same way */
+function mapExplain(t: Question["translations"], fn: (a: string[]) => string[]): Question["translations"] {
+  return Object.fromEntries(Object.entries(t ?? {}).map(([lang, x]) => [lang, x?.explain ? { ...x, explain: fn(x.explain) } : x]));
+}
+
+/**
+ * Before saving: coaching notes and report texts for answers the question no longer has (an option renamed or removed,
+ * or the question's type changed) are dropped, with their translations, as the server only takes current answers.
+ */
+function pruneAnswerTexts(q: Question): Question {
+  const valid = (when: string) =>
+    q.kind !== "info" &&
+    (when === "answered" ||
+      (q.kind === "slider" ? when === "left" || when === "right" : q.kind === "yesno" ? when === "Yes" || when === "No" : WITH_OPTIONS.includes(q.kind) && q.options.includes(when)));
+  const explain = q.explain ?? [];
+  const keep = explain.map((e) => valid(e.when));
+  if (keep.every(Boolean) && (q.tips ?? []).every((t) => valid(t.when))) return q;
+  return {
+    ...q,
+    tips: (q.tips ?? []).filter((t) => valid(t.when)),
+    explain: explain.filter((_, i) => keep[i]),
+    translations: mapExplain(q.translations, (a) => a.filter((_, i) => keep[i] ?? true)),
+  };
+}
+
 /** Kinds whose answers show in the report's parts (sliders make the grid; the rest are contact details, files, meetings) */
 const IN_REPORT_PARTS: Kind[] = ["choice", "multi", "dropdown", "yesno", "scale", "text", "longtext", "number", "date", "list"];
 
@@ -1305,9 +1333,13 @@ function ExplainEditor({ q, update }: { q: Question; update: (p: Partial<Questio
     q.kind === "yesno" ? [["Yes", "Yes"], ["No", "No"]] : WITH_OPTIONS.includes(q.kind) ? q.options.filter((o) => o.trim()).map((o) => [o, o]) : [];
   const all: [string, string][] = [...targets, ["answered", targets.length ? "Any answer" : "When they answer"]];
   const text = (when: string) => q.explain?.find((t) => t.when === when)?.text ?? "";
+  // Edited in place, so its translations (matched by position) stay with it; adding or removing one moves them along
   const setText = (when: string, value: string) => {
-    const others = (q.explain ?? []).filter((t) => t.when !== when);
-    update({ explain: value ? [...others, { when, text: value }] : others });
+    const list = q.explain ?? [];
+    const i = list.findIndex((t) => t.when === when);
+    if (i >= 0 && value) return update({ explain: list.map((t, j) => (j === i ? { ...t, text: value } : t)) });
+    if (i >= 0) return update({ explain: list.filter((_, j) => j !== i), translations: mapExplain(q.translations, (a) => a.filter((_, j) => j !== i)) });
+    if (value) update({ explain: [...list, { when, text: value }], translations: mapExplain(q.translations, (a) => [...a, ""]) });
   };
   return (
     <details className="rounded-lg border border-sky-600/30 bg-sky-600/5 p-2 text-xs" open={(q.explain?.length ?? 0) > 0}>
