@@ -182,6 +182,172 @@ function Visitor({ v }: { v: VisitorInfo }) {
   );
 }
 
+type Situation = NonNullable<LeadFull["situation"]>[number];
+
+/** One answer: a table's rows, or the text, with the files attached and the form's notes for the counsellor */
+function AnswerValue({ s, tips }: { s: Situation; tips?: string[] }) {
+  return (
+    <>
+      {s.table && s.table.rows.length > 0 ? (
+        <div className="mt-1 overflow-x-auto">
+          <table className="w-full text-xs">
+            <thead>
+              <tr className="text-left text-muted-foreground">
+                {s.table.columns.map((c) => (
+                  <th key={c} className="pb-1 pr-3 font-medium">
+                    {c}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {s.table.rows.map((r, ri) => (
+                <tr key={ri} className="border-t border-border">
+                  {r.map((cell, ci) => (
+                    <td key={ci} className="py-1 pr-3">
+                      {cell || "—"}
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      ) : (
+        s.answer
+      )}
+      <AnswerFiles files={s.files} />
+      {/* The form's notes for the counsellor on this answer */}
+      {tips?.map((tip, ti) => (
+        <p key={ti} className="mt-1.5 flex gap-2 rounded-lg border border-emerald-600/30 bg-emerald-600/10 px-2.5 py-1.5 text-xs font-normal text-emerald-950 dark:text-emerald-100">
+          <Lightbulb aria-hidden="true" className="mt-px h-3.5 w-3.5 shrink-0 text-emerald-700 dark:text-emerald-300" />
+          <span>{tip}</span>
+        </p>
+      ))}
+    </>
+  );
+}
+
+/** A section guide's text: lines starting "- " are points, the rest paragraphs */
+function GuideText({ text }: { text: string }) {
+  const blocks: { points: boolean; lines: string[] }[] = [];
+  for (const raw of text.split(/\r?\n/)) {
+    const line = raw.trim();
+    if (!line) continue;
+    const point = line.startsWith("- ");
+    const last = blocks[blocks.length - 1];
+    if (last && last.points === point) last.lines.push(point ? line.slice(2) : line);
+    else blocks.push({ points: point, lines: [point ? line.slice(2) : line] });
+  }
+  return (
+    <div className="mt-1.5 space-y-1.5">
+      {blocks.map((b, i) =>
+        b.points ? (
+          <ul key={i} className="list-disc space-y-0.5 pl-5">
+            {b.lines.map((l, j) => (
+              <li key={j}>{l}</li>
+            ))}
+          </ul>
+        ) : (
+          b.lines.map((l, j) => <p key={i + "-" + j}>{l}</p>)
+        ),
+      )}
+    </div>
+  );
+}
+
+/**
+ * Their answers to the guidance form, two ways: the Insights summary (the form's parts, each with the counsellor's guide
+ * to it and the notes beside the answers) and the Quick summary (every answer, compact).
+ */
+function FormAnswers({ lead, tips }: { lead: LeadFull; tips: Map<string, string[]> }) {
+  const answers = lead.situation ?? [];
+  const parts = (lead.guide ?? [])
+    .map((g) => ({ ...g, answers: g.questions.map((id) => answers.find((a) => a.questionId === id)).filter((a): a is Situation => !!a) }))
+    .filter((g) => g.answers.length > 0);
+  const grouped = new Set(parts.flatMap((p) => p.answers));
+  const rest = answers.filter((a) => !grouped.has(a));
+  const [view, setView] = React.useState<"insights" | "quick">(parts.length > 0 ? "insights" : "quick");
+  const tab = (v: "insights" | "quick", label: string) => (
+    <button
+      type="button"
+      role="tab"
+      aria-selected={view === v}
+      onClick={() => setView(v)}
+      className={`rounded-md px-2.5 py-1 text-xs font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+        view === v ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+      }`}
+    >
+      {label}
+    </button>
+  );
+  return (
+    <section>
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <h3 className="font-semibold">Their answers to your guidance form</h3>
+        {parts.length > 0 && (
+          <div role="tablist" aria-label="How to show the answers" className="inline-flex rounded-lg bg-muted p-0.5">
+            {tab("insights", "Insights summary")}
+            {tab("quick", "Quick summary")}
+          </div>
+        )}
+      </div>
+      {view === "insights" ? (
+        <div className="mt-2 space-y-4">
+          {parts.map((p, i) => (
+            <div key={i} className="space-y-2">
+              {p.guideTitle || p.guide ? (
+                <div className="rounded-lg border border-emerald-600/40 bg-emerald-600/5 px-3 py-2.5 text-emerald-950 dark:text-emerald-100">
+                  <p className="font-semibold text-emerald-800 dark:text-emerald-300">{p.guideTitle || p.title}</p>
+                  {p.guide && <GuideText text={p.guide} />}
+                </div>
+              ) : (
+                <p className="text-xs font-semibold text-muted-foreground">{p.title}</p>
+              )}
+              <dl className="space-y-2">
+                {p.answers.map((s, j) => (
+                  <div key={j}>
+                    <dt className="text-muted-foreground">{s.question}</dt>
+                    <dd className="whitespace-pre-wrap font-medium">
+                      <AnswerValue s={s} tips={s.questionId ? tips.get(s.questionId) : undefined} />
+                    </dd>
+                  </div>
+                ))}
+              </dl>
+            </div>
+          ))}
+          {rest.length > 0 && (
+            <div className="space-y-2">
+              <p className="text-xs font-semibold text-muted-foreground">Other answers</p>
+              <dl className="space-y-2">
+                {rest.map((s, j) => (
+                  <div key={j}>
+                    <dt className="text-muted-foreground">{s.question}</dt>
+                    <dd className="whitespace-pre-wrap font-medium">
+                      <AnswerValue s={s} tips={s.questionId ? tips.get(s.questionId) : undefined} />
+                    </dd>
+                  </div>
+                ))}
+              </dl>
+            </div>
+          )}
+        </div>
+      ) : (
+        <dl className="mt-2 divide-y divide-border rounded-lg border border-border">
+          {answers.map((s, i) => (
+            <div key={i} className="grid gap-x-4 gap-y-0.5 px-3 py-2 sm:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
+              <dt className="text-muted-foreground">{s.question}</dt>
+              <dd className="whitespace-pre-wrap font-medium">
+                <AnswerValue s={s} />
+              </dd>
+            </div>
+          ))}
+        </dl>
+      )}
+    </section>
+  );
+}
+
 export default function LeadProfile({ lead }: { lead: LeadFull }) {
   const q = lead.quiz;
   const tips = new Map((lead.coaching ?? []).map((c) => [c.questionId, c.tips]));
@@ -193,57 +359,7 @@ export default function LeadProfile({ lead }: { lead: LeadFull }) {
         <p className="mt-1 whitespace-pre-wrap text-muted-foreground">{lead.notes?.trim() || "They didn't add a question."}</p>
       </section>
 
-      {lead.situation && lead.situation.length > 0 && (
-        <section>
-          <h3 className="font-semibold">Their answers to your guidance form</h3>
-          <dl className="mt-1 space-y-2">
-            {lead.situation.map((s, i) => (
-              <div key={i}>
-                <dt className="text-muted-foreground">{s.question}</dt>
-                <dd className="whitespace-pre-wrap font-medium">
-                  {s.table && s.table.rows.length > 0 ? (
-                    <div className="mt-1 overflow-x-auto">
-                      <table className="w-full text-xs">
-                        <thead>
-                          <tr className="text-left text-muted-foreground">
-                            {s.table.columns.map((c) => (
-                              <th key={c} className="pb-1 pr-3 font-medium">
-                                {c}
-                              </th>
-                            ))}
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {s.table.rows.map((r, ri) => (
-                            <tr key={ri} className="border-t border-border">
-                              {r.map((cell, ci) => (
-                                <td key={ci} className="py-1 pr-3">
-                                  {cell || "—"}
-                                </td>
-                              ))}
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  ) : (
-                    s.answer
-                  )}
-                  <AnswerFiles files={s.files} />
-                  {/* The form's notes for the counsellor on this answer */}
-                  {s.questionId &&
-                    tips.get(s.questionId)?.map((tip, ti) => (
-                      <p key={ti} className="mt-1.5 flex gap-2 rounded-lg border border-emerald-600/30 bg-emerald-600/10 px-2.5 py-1.5 text-xs font-normal text-emerald-950 dark:text-emerald-100">
-                        <Lightbulb aria-hidden="true" className="mt-px h-3.5 w-3.5 shrink-0 text-emerald-700 dark:text-emerald-300" />
-                        <span>{tip}</span>
-                      </p>
-                    ))}
-                </dd>
-              </div>
-            ))}
-          </dl>
-        </section>
-      )}
+      {lead.situation && lead.situation.length > 0 && <FormAnswers lead={lead} tips={tips} />}
 
       {lead.visitor && <Visitor v={lead.visitor} />}
 

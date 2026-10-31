@@ -194,6 +194,8 @@ export interface LeadFull {
   visits?: FormVisit[];
   /** The form's notes for the counsellor on the answers given (questionId → notes) */
   coaching?: { questionId: string; tips: string[] }[] | null;
+  /** The form's parts, each with the counsellor's guide to it and its questions (the Insights summary) */
+  guide?: { title: string; guideTitle?: string | null; guide?: string | null; questions: string[] }[] | null;
   /** What the server saw when the form was sent (no IP address kept) */
   visitor?: VisitorInfo | null;
   /** Meetings asked for on the form's "Next steps" */

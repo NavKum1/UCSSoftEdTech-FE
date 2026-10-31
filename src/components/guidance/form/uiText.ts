@@ -9,7 +9,8 @@ export type UiKey =
   | "thanks" | "language" | "fileHint" | "partialNotice"
   | "addRow" | "sliderHint" | "leansTo" | "middle" | "yourResults" | "yourResult" | "match" | "continue" | "done"
   | "topics" | "howMeet" | "pickDay" | "timeOfDay" | "morning" | "afternoon" | "evening" | "anyTime" | "pickTime" | "laterTimes" | "earlierTimes"
-  | "noTimes" | "loadingTimes" | "Phone" | "Video" | "InPerson" | "meetingBooked" | "meetingAsked" | "meetingTaken" | "clearMeeting" | "timesIn";
+  | "noTimes" | "loadingTimes" | "Phone" | "Video" | "InPerson" | "meetingBooked" | "meetingAsked" | "meetingTaken" | "clearMeeting" | "timesIn"
+  | "yourScore" | "share" | "shareText" | "seeReport" | "allAnswers" | "yourStyle" | "noAnswersKept" | "privateNote" | "sent" | "downloadPdf";
 
 /** English has every text; other languages fall back to it for texts not yet translated */
 export const UI: { en: Record<UiKey, string> } & Record<string, Partial<Record<UiKey, string>>> = {
@@ -30,6 +31,9 @@ export const UI: { en: Record<UiKey, string> } & Record<string, Partial<Record<U
     meetingAsked: "We've got your request for a meeting. We'll confirm the time by email.",
     meetingTaken: "That time was taken just before your request arrived, so we'll email you to agree another.",
     clearMeeting: "Clear", timesIn: "Times are in {tz}.",
+    yourScore: "Your score", share: "Share", shareText: "I scored {n}% on {form}.", seeReport: "See your full report", allAnswers: "All your answers",
+    yourStyle: "Your style is", noAnswersKept: "Your answers are no longer kept.", sent: "Sent {date}", downloadPdf: "Download PDF",
+    privateNote: "This page is private to you. Anyone with the link can see it, so keep it to yourself. It stops working 180 days after you sent the form.",
   },
   hi: {
     next: "आगे", back: "पीछे", send: "भेजें", sending: "भेजा जा रहा है…", optional: "वैकल्पिक", unsure: "आप किस बारे में निश्चित नहीं हैं?",
@@ -145,6 +149,10 @@ export const UI: { en: Record<UiKey, string> } & Record<string, Partial<Record<U
     saved: "Guardado. Usa este enlace para volver en un plazo de 30 días:", copy: "Copiar enlace", copied: "Copiado",
     thanks: "Gracias. Tu solicitud se ha enviado.", language: "Idioma", fileHint: "PDF, Word, JPG o PNG, hasta 5 MB.",
     partialNotice: "Guardamos tus datos a medida que avanzas para que {institute} pueda ayudarte.",
+    yourResults: "Tus resultados", yourResult: "Tu resultado", match: "Afinidad", continue: "Continuar", done: "Listo",
+    yourScore: "Tu puntuación", share: "Compartir", shareText: "Obtuve un {n}% en {form}.", seeReport: "Ver tu informe completo", allAnswers: "Todas tus respuestas",
+    yourStyle: "Tu estilo es", noAnswersKept: "Tus respuestas ya no se conservan.", sent: "Enviado el {date}", downloadPdf: "Descargar PDF",
+    privateNote: "Esta página es solo para ti. Cualquiera con el enlace puede verla, así que no la compartas. Deja de funcionar 180 días después de enviar el formulario.",
   },
   fr: {
     next: "Suivant", back: "Retour", send: "Envoyer", sending: "Envoi…", optional: "facultatif", unsure: "Sur quoi hésitez-vous ?",

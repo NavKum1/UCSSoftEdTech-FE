@@ -21,6 +21,7 @@ import {
   ChevronDown,
   ChevronRight,
   Copy,
+  FileText,
   GitBranch,
   Lightbulb,
   GripVertical,
@@ -38,6 +39,8 @@ import {
   KIND_LABEL,
   KINDS,
   newId,
+  nextFor,
+  onAccent,
   WITH_OPTIONS,
   type Condition,
   type Band,
@@ -89,6 +92,62 @@ const small = "rounded-lg border border-border px-2.5 py-1.5 text-xs hover:bg-mu
 /** The notice when the institute writes none (the form shows it in each language) */
 const DEFAULT_PARTIAL_NOTICE = UI.en.partialNotice;
 
+/**
+ * The report texts a template has for this form, only where the form's are blank (never over the school's own): each
+ * question's texts for its answers (those that are still its options), each step's report text and counsellor guide,
+ * and the report's heading, introduction, next steps, sharing and grid. Matched by question and step id. Returns the
+ * form and how many texts were added.
+ */
+function fillFromTemplate(d: FormDef, tpl: FormDef): { def: FormDef; filled: number } {
+  let filled = 0;
+  const blank = (s: string | null | undefined) => !s?.trim();
+  const questions = d.questions.map((q) => {
+    const t = tpl.questions.find((x) => x.id === q.id);
+    if (!t || (q.explain?.length ?? 0) > 0) return q;
+    const valid = (when: string) => when === "answered" || (q.kind === "yesno" ? when === "Yes" || when === "No" : q.options.includes(when));
+    const explain = (t.explain ?? []).filter((e) => valid(e.when));
+    filled += explain.length;
+    const hide = !q.hideInReport && !!t.hideInReport;
+    if (hide) filled++;
+    return { ...q, explain, hideInReport: q.hideInReport || !!t.hideInReport };
+  });
+  const sections = d.sections.map((s) => {
+    const t = tpl.sections.find((x) => x.id === s.id);
+    if (!t) return s;
+    const next = { ...s };
+    for (const k of ["report", "guideTitle", "guide"] as const)
+      if (blank(s[k]) && !blank(t[k])) {
+        next[k] = t[k];
+        filled++;
+      }
+    return next;
+  });
+  const r = { ...d.results! };
+  const tr = tpl.results;
+  if (tr) {
+    for (const k of ["reportTitle", "intro", "nextTitle", "nextText", "nextLabel"] as const)
+      if (blank(r[k]) && !blank(tr[k])) {
+        r[k] = tr[k];
+        filled++;
+      }
+    if (r.nextFrom == null && tr.nextFrom != null && r.nextTitle === tr.nextTitle) r.nextFrom = tr.nextFrom;
+    if (r.share == null && tr.share) r.share = true;
+    // The grid only when the form still has the template's four outcomes
+    if (!r.grid && tr.grid && tr.grid.cells.every((c) => r.outcomes.some((o) => o.id === c))) {
+      r.grid = tr.grid;
+      filled++;
+    }
+  }
+  // The template's results email: its score card and PDF, on the form's copy of it when neither was set
+  const automations = (d.automations ?? []).map((a) => {
+    const t = tpl.automations?.find((x) => x.id === a.id && x.channel === "email");
+    if (!t || a.channel !== "email" || a.scoreCard != null || a.attachReport != null || !(t.scoreCard || t.attachReport)) return a;
+    filled++;
+    return { ...a, scoreCard: !!t.scoreCard, attachReport: !!t.attachReport };
+  });
+  return { def: { ...d, questions, sections, results: r, automations }, filled };
+}
+
 /** Fill in fields the API may leave out */
 function normalise(d: FormDef): FormDef {
   return {
@@ -100,12 +159,15 @@ function normalise(d: FormDef): FormDef {
       rules: q.rules ?? [],
       scores: q.scores ?? [],
       tips: q.tips ?? [],
+      explain: q.explain ?? [],
       booking: q.kind === "booking" ? (q.booking ?? newBooking()) : null,
       columns: q.columns ?? [],
       translations: q.translations ?? {},
       required: !!q.required,
     })),
     results: {
+      // The report's texts, next steps, sharing and grid as the API gives them
+      ...(d.results ?? {}),
       outcomeEnabled: d.results?.outcomeEnabled ?? false,
       outcomeTitle: d.results?.outcomeTitle ?? null,
       outcomes: d.results?.outcomes ?? [],
@@ -143,6 +205,8 @@ export default function FormBuilder({ formId, backHref }: { formId: string; back
   const [languages, setLanguages] = useState<{ code: string; name: string }[]>([]);
   const [canEdit, setCanEdit] = useState(false);
   const [bank, setBank] = useState<{ topic: string; questions: Question[] }[]>([]);
+  /** The templates' own definitions (their report texts fill blanks on a form built from one) */
+  const [templates, setTemplates] = useState<{ key: string; name: string; definition: FormDef }[]>([]);
   const [status, setStatus] = useState<"saved" | "saving" | "dirty" | "error">("saved");
   const [notice, setNotice] = useState<{ ok: boolean; text: string } | null>(null);
   const [open, setOpen] = useState<string | null>(null);
@@ -164,7 +228,11 @@ export default function FormBuilder({ formId, backHref }: { formId: string; back
       setLanguages(d.languages);
       setCanEdit(d.canEdit);
     }
-    if (t.ok) setBank((await t.json()).bank);
+    if (t.ok) {
+      const body = await t.json();
+      setBank(body.bank);
+      setTemplates(body.templates ?? []);
+    }
   }, [apiFetch, formId]);
   const loadRef = useLatestRef(load);
   useEffect(() => {
@@ -237,6 +305,22 @@ export default function FormBuilder({ formId, backHref }: { formId: string; back
   const setPublic = async (on: boolean) => {
     const res = await apiFetch(`/api/guidance-forms/${formId}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ publicEnabled: on }) });
     if (res.ok) setView((v) => (v ? { ...v, publicEnabled: on } : v));
+  };
+
+  // The template this form was built from (most of its questions' ids match one with report texts)
+  const source = def
+    ? templates
+        .filter((t) => t.definition.questions.some((q) => (q.explain?.length ?? 0) > 0))
+        .map((t) => ({ t, n: t.definition.questions.filter((q) => def.questions.some((x) => x.id === q.id)).length }))
+        .filter((x) => x.n >= 3)
+        .sort((a, b) => b.n - a.n)[0]?.t
+    : undefined;
+  const fillTemplate = () => {
+    if (!source || !def) return;
+    const { def: next, filled } = fillFromTemplate(def, normalise(source.definition));
+    if (filled === 0) return setNotice({ ok: true, text: "Every report text already has your own words; nothing was changed." });
+    change(next);
+    setNotice({ ok: true, text: `Added ${filled} text${filled > 1 ? "s" : ""} from the ${source.name} template where yours were blank. Check them, then publish.` });
   };
 
   if (access) return <AccessNotice problem={access} />;
@@ -314,7 +398,7 @@ export default function FormBuilder({ formId, backHref }: { formId: string; back
             {tab === "questions" ? (
               <QuestionsEditor def={def} onChange={change} team={team} bank={bank} open={open} setOpen={setOpen} readOnly={readOnly} isPlatform={view.instituteId === "ceacdd2c-975f-41fd-959e-cc530240931c"} />
             ) : tab === "results" ? (
-              <ResultsEditor def={def} onChange={change} readOnly={readOnly} />
+              <ResultsEditor def={def} onChange={change} readOnly={readOnly} onFill={source ? fillTemplate : undefined} />
             ) : (
               <SettingsEditor def={def} onChange={change} languages={languages} readOnly={readOnly} publicEnabled={view.publicEnabled} setPublic={setPublic} isDefault={view.isDefault} />
             )}
@@ -322,24 +406,29 @@ export default function FormBuilder({ formId, backHref }: { formId: string; back
           {tab === "results" ? (
             <aside className="lg:sticky lg:top-24 lg:self-start">
               <p className="mb-2 text-xs font-medium text-muted-foreground">Example of what people see after sending</p>
-              <div className="rounded-2xl border border-border bg-background p-4 text-sm shadow-sm" style={{ "--gf-accent": def.settings.accent || "#4f46e5" } as React.CSSProperties}>
+              <div
+                className="rounded-2xl border border-border bg-background p-4 text-sm shadow-sm"
+                style={{ "--gf-accent": def.settings.accent || "#4f46e5", "--gf-on": onAccent(def.settings.accent || "#4f46e5") } as React.CSSProperties}
+              >
                 {(() => {
                   const r = def.results!;
                   const outcome = r.outcomeEnabled ? r.outcomes.find((o) => o.name.trim()) : undefined;
                   const band = r.matchEnabled ? [...r.bands].sort((a, b) => b.from - a.from)[0] : undefined;
                   if (!outcome && !band) return <p className="text-muted-foreground">Switch on an outcome or a match score to see an example.</p>;
                   if (!r.showToPerson) return <p className="text-muted-foreground">People see only your thank-you message; your team sees the results in the CRM.</p>;
+                  const example = {
+                    outcomeTitle: r.outcomeTitle,
+                    outcome: outcome ?? null,
+                    points: [],
+                    matchTitle: r.matchTitle,
+                    match: band ? { percent: Math.max(band.from, 86), label: band.label, message: band.message } : null,
+                  };
                   return (
                     <ResultsView
                       accent={def.settings.accent || "#4f46e5"}
                       t={(k) => (UI.en as Record<string, string>)[k] ?? k}
-                      result={{
-                        outcomeTitle: r.outcomeTitle,
-                        outcome: outcome ?? null,
-                        points: [],
-                        matchTitle: r.matchTitle,
-                        match: band ? { percent: Math.max(band.from, 86), label: band.label, message: band.message } : null,
-                      }}
+                      result={example}
+                      next={nextFor(def, example, def.languages[0] ?? "en", "your school")}
                     />
                   );
                 })()}
@@ -549,6 +638,7 @@ function QuestionsEditor({
                   className="w-full rounded-lg border border-transparent bg-transparent px-2 py-1 text-xs text-muted-foreground hover:border-border focus:border-cyan-600 focus:outline-none"
                 />
                 {si > 0 && <ConditionEditor value={s.showIf ?? null} earlier={earlier} onChange={(c) => updateS(s.id, { showIf: c })} what="this step" readOnly={readOnly} />}
+                <SectionReportEditor s={s} readOnly={readOnly} update={(p) => updateS(s.id, p)} />
               </div>
               {!readOnly && (
                 <div className="flex gap-1">
@@ -943,6 +1033,7 @@ function QuestionEditor({
       {results && (results.outcomeEnabled || results.matchEnabled) && SCORABLE.includes(q.kind) && <ScoresEditor q={q} update={update} results={results} />}
 
       {q.kind !== "info" && !isPlatform && <TipsEditor q={q} update={update} />}
+      {IN_REPORT_PARTS.includes(q.kind) && !isPlatform && <ExplainEditor q={q} update={update} />}
 
       {!["info", "consent", "file"].includes(q.kind) && !isPlatform && (
         <label className="flex flex-wrap items-center gap-2 text-xs">
@@ -1161,6 +1252,94 @@ function BankPicker({ bank, onPick, onClose }: { bank: { topic: string; question
  * Notes for counsellors beside an answer in the CRM (the green boxes): one per answer, or one for any answer. Rules
  * written by the institute, never AI; never shown to the person.
  */
+/** A step's text in the person's report, and the counsellor's guide to it beside the answers in the CRM */
+function SectionReportEditor({ s, readOnly, update }: { s: Section; readOnly: boolean; update: (p: Partial<Section>) => void }) {
+  return (
+    <details className="px-2 text-xs" open={!!(s.report || s.guide || s.guideTitle)}>
+      <summary className="cursor-pointer py-1 font-medium text-muted-foreground">Report text and counsellor guide</summary>
+      <fieldset disabled={readOnly} className="mt-1 space-y-2">
+        <label className="block font-medium">
+          What the person reads at the top of this part of their report
+          <textarea
+            rows={2}
+            maxLength={1500}
+            className="mt-1 block w-full rounded-md border border-border bg-background px-2 py-1.5 font-normal"
+            value={s.report ?? ""}
+            placeholder="e.g. Knowing where you are today helps you see where you want to go."
+            onChange={(e) => update({ report: e.target.value })}
+          />
+        </label>
+        <div className="space-y-1 rounded-lg border border-emerald-600/30 bg-emerald-600/5 p-2">
+          <p className="font-medium">
+            Counsellor guide <span className="font-normal text-muted-foreground">(above this part&apos;s answers in the CRM&apos;s Insights summary; never shown to the person)</span>
+          </p>
+          <input
+            maxLength={120}
+            aria-label="Guide heading"
+            className="block w-full rounded-md border border-border bg-background px-2 py-1.5"
+            value={s.guideTitle ?? ""}
+            placeholder="Heading, e.g. Current situation: why they want a change"
+            onChange={(e) => update({ guideTitle: e.target.value })}
+          />
+          <textarea
+            rows={3}
+            maxLength={2000}
+            aria-label="Guide"
+            className="block w-full rounded-md border border-border bg-background px-2 py-1.5"
+            value={s.guide ?? ""}
+            placeholder={"Start a line with \"- \" for a point, e.g.\n- If they're unhappy, ask what's behind it"}
+            onChange={(e) => update({ guide: e.target.value })}
+          />
+        </div>
+      </fieldset>
+    </details>
+  );
+}
+
+/** Kinds whose answers show in the report's parts (sliders make the grid; the rest are contact details, files, meetings) */
+const IN_REPORT_PARTS: Kind[] = ["choice", "multi", "dropdown", "yesno", "scale", "text", "longtext", "number", "date", "list"];
+
+/** What the person reads in their report under each answer, and whether the question shows in the report's parts */
+function ExplainEditor({ q, update }: { q: Question; update: (p: Partial<Question>) => void }) {
+  const targets: [string, string][] =
+    q.kind === "yesno" ? [["Yes", "Yes"], ["No", "No"]] : WITH_OPTIONS.includes(q.kind) ? q.options.filter((o) => o.trim()).map((o) => [o, o]) : [];
+  const all: [string, string][] = [...targets, ["answered", targets.length ? "Any answer" : "When they answer"]];
+  const text = (when: string) => q.explain?.find((t) => t.when === when)?.text ?? "";
+  const setText = (when: string, value: string) => {
+    const others = (q.explain ?? []).filter((t) => t.when !== when);
+    update({ explain: value ? [...others, { when, text: value }] : others });
+  };
+  return (
+    <details className="rounded-lg border border-sky-600/30 bg-sky-600/5 p-2 text-xs" open={(q.explain?.length ?? 0) > 0}>
+      <summary className="cursor-pointer font-medium">
+        <FileText aria-hidden="true" className="mr-1 inline h-3.5 w-3.5" /> What the person reads in their report
+      </summary>
+      <p className="mt-1 text-muted-foreground">Shown under their answer in their report, its PDF and the results email. Leave blank for just the answer.</p>
+      <label className="mt-2 flex items-center gap-2">
+        <input type="checkbox" checked={!!q.hideInReport} onChange={(e) => update({ hideInReport: e.target.checked })} />
+        Leave this question out of the report&apos;s parts <span className="text-muted-foreground">(it stays under &ldquo;All your answers&rdquo;)</span>
+      </label>
+      {!q.hideInReport && (
+        <div className="mt-2 space-y-2">
+          {all.map(([when, label]) => (
+            <label key={when} className="block">
+              <span className="font-medium">{label}</span>
+              <textarea
+                rows={text(when) ? 2 : 1}
+                maxLength={1500}
+                className="mt-1 block w-full rounded-md border border-border bg-background px-2 py-1.5"
+                value={text(when)}
+                placeholder={when === "answered" ? "e.g. Each of these areas leads to recognised certifications." : "e.g. You're doing something about it, and that's the hardest step."}
+                onChange={(e) => setText(when, e.target.value)}
+              />
+            </label>
+          ))}
+        </div>
+      )}
+    </details>
+  );
+}
+
 function TipsEditor({ q, update }: { q: Question; update: (p: Partial<Question>) => void }) {
   const targets: [string, string][] =
     q.kind === "slider"
@@ -1355,7 +1534,7 @@ function ScoresEditor({ q, update, results }: { q: Question; update: (p: Partial
  * points decide) and a match score (points earned out of the most possible, in bands). Each outcome and band has words
  * for the person and a note for the counsellor.
  */
-function ResultsEditor({ def, onChange, readOnly }: { def: FormDef; onChange: (d: FormDef) => void; readOnly: boolean }) {
+function ResultsEditor({ def, onChange, readOnly, onFill }: { def: FormDef; onChange: (d: FormDef) => void; readOnly: boolean; onFill?: () => void }) {
   const r = def.results!;
   const set = (patch: Partial<Results>) => onChange({ ...def, results: { ...r, ...patch } });
   const setOutcome = (i: number, patch: Partial<Outcome>) => set({ outcomes: r.outcomes.map((o, j) => (j === i ? { ...o, ...patch } : o)) });
@@ -1364,7 +1543,8 @@ function ResultsEditor({ def, onChange, readOnly }: { def: FormDef; onChange: (d
   const removeOutcome = (id: string) =>
     onChange({
       ...def,
-      results: { ...r, outcomes: r.outcomes.filter((o) => o.id !== id) },
+      // The grid goes too when it showed this outcome
+      results: { ...r, outcomes: r.outcomes.filter((o) => o.id !== id), grid: r.grid?.cells.includes(id) ? null : r.grid },
       // Points for it go too
       questions: def.questions.map((q) => (q.scores?.length ? { ...q, scores: q.scores.map((s) => ({ ...s, outcomes: s.outcomes.filter((x) => x !== id) })).filter((s) => s.outcomes.length || s.match) } : q)),
     });
@@ -1501,7 +1681,125 @@ function ResultsEditor({ def, onChange, readOnly }: { def: FormDef; onChange: (d
           </div>
         )}
       </section>
+
+      <ReportSettings r={r} set={set} onFill={onFill} />
     </fieldset>
+  );
+}
+
+/** The person's report: heading, introduction, next steps for a score, sharing, and the outcomes as a grid */
+function ReportSettings({ r, set, onFill }: { r: Results; set: (p: Partial<Results>) => void; onFill?: () => void }) {
+  const named = r.outcomes.filter((o) => o.name.trim());
+  const grid = r.grid ?? null;
+  const setGrid = (patch: Partial<NonNullable<Results["grid"]>>) => grid && set({ grid: { ...grid, ...patch } });
+  const CELLS = ["Top left", "Top right", "Bottom left", "Bottom right"];
+  return (
+    <section className="space-y-3 rounded-2xl border border-border bg-card p-4 text-sm">
+      <div className="flex flex-wrap items-start justify-between gap-2">
+        <div>
+          <h2 className="text-sm font-semibold">The person&apos;s report</h2>
+          <p className="mt-0.5 text-xs text-muted-foreground">
+            Their private report (linked on the thank-you page and in the results email): the score, your next steps, your introduction, then each step with their
+            answers and what you say about them (set on each step and question).
+          </p>
+        </div>
+        {onFill && (
+          <button type="button" className={small} onClick={onFill}>
+            Fill empty texts from the template
+          </button>
+        )}
+      </div>
+      <label className="block text-xs font-medium text-muted-foreground">
+        Report heading
+        <input className={input} value={r.reportTitle ?? ""} maxLength={120} placeholder="e.g. Your IT career training readiness report" onChange={(e) => set({ reportTitle: e.target.value })} />
+      </label>
+      <label className="block text-xs font-medium text-muted-foreground">
+        Your introduction <span className="font-normal">({"{institute}"} is your name)</span>
+        <textarea rows={3} className={input} value={r.intro ?? ""} maxLength={2000} placeholder="What your school offers, and what this report is for." onChange={(e) => set({ intro: e.target.value })} />
+      </label>
+
+      <div className="space-y-2 rounded-xl border border-border p-3">
+        <p className="text-xs font-semibold">Next steps under the score</p>
+        <label className="flex flex-wrap items-center gap-2 text-xs">
+          Show from a score of
+          <input
+            type="number"
+            min={0}
+            max={100}
+            className="w-16 rounded-md border border-border bg-background px-2 py-1"
+            value={r.nextFrom ?? ""}
+            placeholder="any"
+            aria-label="Show next steps from this score"
+            onChange={(e) => set({ nextFrom: e.target.value === "" ? null : Math.max(0, Math.min(100, Math.round(Number(e.target.value) || 0))) })}
+          />
+          % <span className="text-muted-foreground">(blank: everyone)</span>
+        </label>
+        <label className="block text-xs font-medium text-muted-foreground">
+          Heading
+          <input className={input} value={r.nextTitle ?? ""} maxLength={200} placeholder="e.g. Congratulations! You qualify for a free consultation" onChange={(e) => set({ nextTitle: e.target.value })} />
+        </label>
+        <label className="block text-xs font-medium text-muted-foreground">
+          Line under it
+          <input className={input} value={r.nextText ?? ""} maxLength={300} placeholder="e.g. Talk through your results with an admissions adviser." onChange={(e) => set({ nextText: e.target.value })} />
+        </label>
+        <div className="grid gap-2 sm:grid-cols-2">
+          <label className="block text-xs font-medium text-muted-foreground">
+            Button
+            <input className={input} value={r.nextLabel ?? ""} maxLength={40} placeholder="e.g. Book my consultation" onChange={(e) => set({ nextLabel: e.target.value })} />
+          </label>
+          <label className="block text-xs font-medium text-muted-foreground">
+            Button link <span className="font-normal">(https; no link, no button)</span>
+            <input className={input} type="url" value={r.nextUrl ?? ""} maxLength={500} placeholder="https://" onChange={(e) => set({ nextUrl: e.target.value || null })} />
+          </label>
+        </div>
+      </div>
+
+      <Switch
+        checked={!!r.share}
+        onChange={(v) => set({ share: v })}
+        title="Share buttons"
+        detail="People can share their score on Facebook, X or LinkedIn, or copy a link. The link is to this form, never to their report or answers."
+      />
+
+      {r.outcomeEnabled && named.length >= 4 && (
+        <div className="space-y-2">
+          <Switch
+            checked={!!grid}
+            onChange={(v) =>
+              set({ grid: v ? { top: "Focus on tasks", bottom: "Focus on people", left: "Asks", right: "Tells", cells: named.slice(0, 4).map((o) => o.id) } : null })
+            }
+            title="Show the outcomes as a grid"
+            detail="Four outcomes in a two-by-two grid with words at each end of the axes (e.g. social styles), theirs picked out."
+          />
+          {grid && (
+            <div className="grid gap-2 border-l-2 border-border pl-4 sm:grid-cols-2">
+              {CELLS.map((label, i) => (
+                <label key={label} className="block text-xs font-medium text-muted-foreground">
+                  {label}
+                  <select
+                    className={input}
+                    value={grid.cells[i] ?? ""}
+                    onChange={(e) => setGrid({ cells: grid.cells.map((c, j) => (j === i ? e.target.value : c)) })}
+                  >
+                    {named.map((o) => (
+                      <option key={o.id} value={o.id}>
+                        {o.name}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              ))}
+              {(["top", "bottom", "left", "right"] as const).map((end) => (
+                <label key={end} className="block text-xs font-medium capitalize text-muted-foreground">
+                  {end} end
+                  <input className={input} value={grid[end]} maxLength={40} onChange={(e) => setGrid({ [end]: e.target.value })} />
+                </label>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+    </section>
   );
 }
 

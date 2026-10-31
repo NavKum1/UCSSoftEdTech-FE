@@ -105,7 +105,7 @@ function Embedded() {
     if (res.ok) {
       if (body?.confirmEmail) setCheckEmail(p.email);
       // The meeting they asked for (booked, or a request the team confirms); with email confirmation it's arranged once they confirm
-      return { meeting: body?.booking ?? null };
+      return { meeting: body?.booking ?? null, report: body?.report ?? null };
     }
     // The form was open too long: get a fresh one (answers stay) and ask to send again
     if (body?.code === "reload") {

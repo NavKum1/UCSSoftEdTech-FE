@@ -10,12 +10,13 @@
  */
 
 import React, { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
-import { ArrowLeft, ArrowRight, Check, CheckCircle2, Clock, Copy, Paperclip, Plus, Save, X } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, CheckCircle2, Clock, Copy, FileText, Paperclip, Plus, Save, X } from "lucide-react";
 import { getApiBaseUrl } from "@/lib/apiClient";
 import {
   check,
   computeResult,
   estimateMinutes,
+  nextFor,
   onAccent,
   OTHER,
   questionVisible,
@@ -30,8 +31,10 @@ import {
   type Answers,
   type Fillable,
   type FormResult,
+  type NextSteps,
   type Question,
 } from "./model";
+import { NextStepsBlock, ScoreDial, ShareRow } from "./ReportParts";
 import { RTL, UI, type UiKey } from "./uiText";
 import { HumanCheck, PhoneCheck } from "./Protection";
 import { MeetingField, MeetingNotice } from "./Meeting";
@@ -70,7 +73,7 @@ export interface MeetingTold {
 }
 
 /** onSubmit's answer: an error message, or done (with the meeting, when one was asked for) */
-export type SubmitResult = string | null | { meeting?: MeetingTold | null };
+export type SubmitResult = string | null | { meeting?: MeetingTold | null; report?: string | null };
 
 /** What the browser keeps of a website form between visits (per form; never sent anywhere) */
 interface Stored {
@@ -204,6 +207,8 @@ export default function GuidanceForm({
   // The results the person sees after sending (forms with results shown to people)
   const [result, setResult] = useState<FormResult | null>(null);
   const [meeting, setMeeting] = useState<MeetingTold | null>(null);
+  /** The person's private report, once the server has made it (website forms) */
+  const [reportUrl, setReportUrl] = useState<string | null>(null);
   const [saveLink, setSaveLink] = useState<string | null>(null);
   const [draftToken, setDraftToken] = useState<string | null>(resumeToken ?? null);
   const [copied, setCopied] = useState(false);
@@ -409,6 +414,7 @@ export default function GuidanceForm({
     setSending(false);
     if (typeof err === "string") return setError(err);
     if (err?.meeting) setMeeting(err.meeting);
+    if (err?.report) setReportUrl(err.report);
     // Sent: nothing more to resume in this browser
     if (mode === "website") writeStored(fill.formId, null);
     // Results to show: they stay on screen (the page after sending opens from a button; "Done" closes it inside Edulexa)
@@ -459,6 +465,9 @@ export default function GuidanceForm({
   const intro = tr(s.translations, lang, "description", s.intro);
   const minutes = t("minutes").replace("{n}", String(estimateMinutes(def)));
   const partialText = (s.partialNotice?.trim() ? tr(s.translations, lang, "notice", s.partialNotice) : t("partialNotice")).replaceAll("{institute}", fill.instituteName);
+  // After sending: the school's next steps for this score, and sharing it (a link to this form, never their answers)
+  const nextSteps = result ? nextFor(def, result, lang, fill.instituteName) : null;
+  const share = mode === "website" && def.results?.share && result?.match ? shareOf(result.match.percent, title, t) : null;
   // Each step's name: the visible sections, and "Your details" (first when saving as people go, else last)
   /** The panel's list of steps: back to an earlier one */
   const jumpTo = (e: React.MouseEvent<HTMLButtonElement>) => go(Number(e.currentTarget.dataset.step));
@@ -575,7 +584,7 @@ export default function GuidanceForm({
         {result ? (
           <>
             <h1 className={cover ? "text-[28px] font-semibold leading-tight tracking-tight sm:text-[32px]" : "text-xl font-semibold tracking-tight"}>{t("yourResults")}</h1>
-            <ResultsView result={result} accent={accent} t={t} />
+            <ResultsView result={result} accent={accent} t={t} next={nextSteps} share={share} reportUrl={reportUrl} />
             {meeting && <MeetingNotice meeting={meeting} t={t} />}
             {sentNotice ?? <p className="whitespace-pre-wrap leading-relaxed text-muted-foreground">{tr(s.translations, lang, "label", s.thankYou) || t("thanks")}</p>}
             {(onSent || (s.redirectUrl && mode === "website" && s.requireEmailConfirmation === false)) && (
@@ -880,12 +889,62 @@ const SLIDER_CSS = `
 `;
 
 /** What the form worked out: the outcome (e.g. a work style) and the match score as a ring */
-export function ResultsView({ result, accent, t }: { result: FormResult; accent: string; t: (k: string) => string }) {
-  const r = 34;
-  const length = 2 * Math.PI * r;
+/** What a share says and links to: the score and this form's own address (its "form" choice kept, nothing else) */
+function shareOf(percent: number, formTitle: string, t: (k: string) => string): { url: string; text: string } | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const u = new URL(window.location.href);
+    const form = u.searchParams.get("form");
+    u.search = "";
+    u.hash = "";
+    if (form) u.searchParams.set("form", form);
+    return { url: u.toString(), text: t("shareText").replace("{n}", String(percent)).replace("{form}", formTitle) };
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * The results after sending (and in the editor's preview): the score on a dial with the school's next steps and share
+ * buttons, the outcome, and a link to the person's full report once the server has made it.
+ */
+export function ResultsView({
+  result,
+  accent,
+  t,
+  next,
+  share,
+  reportUrl,
+  showOutcome = true,
+}: {
+  result: FormResult;
+  accent: string;
+  t: (k: string) => string;
+  next?: NextSteps | null;
+  share?: { url: string; text: string } | null;
+  reportUrl?: string | null;
+  showOutcome?: boolean;
+}) {
   return (
     <div className="space-y-4">
-      {result.outcome && (
+      {result.match && (
+        <section className="space-y-5 rounded-2xl border border-border px-5 py-7 sm:px-8">
+          <ScoreDial percent={result.match.percent} label={result.match.label} title={result.matchTitle || t("yourScore")} />
+          {result.match.message && <p className="mx-auto max-w-prose text-pretty text-center leading-relaxed text-muted-foreground">{result.match.message}</p>}
+          {next && (
+            <div className="border-t border-border pt-5">
+              <NextStepsBlock next={next} />
+            </div>
+          )}
+          {share && <ShareRow url={share.url} text={share.text} t={t} />}
+        </section>
+      )}
+      {!result.match && next && (
+        <section className="rounded-2xl border border-border px-5 py-6">
+          <NextStepsBlock next={next} />
+        </section>
+      )}
+      {showOutcome && result.outcome && (
         <section className="overflow-hidden rounded-2xl border border-border">
           <div className="px-6 py-5" style={{ background: `color-mix(in srgb, ${accent} 10%, transparent)` }}>
             <h2 className="text-sm font-medium" style={{ color: accent }}>
@@ -896,33 +955,16 @@ export function ResultsView({ result, accent, t }: { result: FormResult; accent:
           {result.outcome.summary && <p className="whitespace-pre-wrap px-6 py-5 leading-relaxed">{result.outcome.summary}</p>}
         </section>
       )}
-      {result.match && (
-        <section className="flex items-center gap-6 rounded-2xl border border-border p-6">
-          <svg viewBox="0 0 80 80" className="h-24 w-24 shrink-0 -rotate-90" role="img" aria-label={`${result.match.percent}%`}>
-            <circle cx="40" cy="40" r={r} fill="none" strokeWidth="8" className="stroke-muted" />
-            <circle
-              cx="40"
-              cy="40"
-              r={r}
-              fill="none"
-              strokeWidth="8"
-              strokeLinecap="round"
-              stroke={accent}
-              strokeDasharray={length}
-              strokeDashoffset={length * (1 - result.match.percent / 100)}
-            />
-            <text x="40" y="40" textAnchor="middle" dominantBaseline="central" transform="rotate(90 40 40)" className="fill-foreground text-[17px] font-semibold">
-              {result.match.percent}%
-            </text>
-          </svg>
-          <div className="min-w-0">
-            <h2 className="text-sm font-medium" style={{ color: accent }}>
-              {result.matchTitle || t("match")}
-            </h2>
-            {result.match.label && <p className="mt-0.5 text-xl font-semibold tracking-tight">{result.match.label}</p>}
-            {result.match.message && <p className="mt-1 leading-relaxed text-muted-foreground">{result.match.message}</p>}
-          </div>
-        </section>
+      {reportUrl && (
+        <a
+          href={reportUrl}
+          target="_blank"
+          rel="noopener"
+          className="flex min-h-12 items-center justify-center gap-2 rounded-xl border-2 px-5 py-2.5 font-semibold transition-colors hover:bg-[var(--gf-tint)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gf-accent)]"
+          style={{ borderColor: accent, color: accent }}
+        >
+          <FileText aria-hidden="true" className="h-4 w-4" /> {t("seeReport")}
+        </a>
       )}
     </div>
   );

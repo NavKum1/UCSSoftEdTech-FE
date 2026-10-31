@@ -289,6 +289,17 @@ function AutomationEditor({ a, update, outcomes, match, team }: { a: Automation;
             <input type="number" min={0} max={100} aria-label="Highest match" className="w-16 rounded-md border border-border bg-background px-2 py-1" value={a.matchTo ?? ""} placeholder="100" onChange={(e) => update({ matchTo: e.target.value === "" ? null : Number(e.target.value) })} />%
           </div>
         )}
+        {a.channel === "email" && (
+          <>
+            <label className="flex items-center gap-2">
+              <input type="checkbox" checked={!!a.scoreCard} onChange={(e) => update({ scoreCard: e.target.checked })} /> Show their score card above the message (your logo, the score,
+              next steps and a button to their report)
+            </label>
+            <label className="flex items-center gap-2">
+              <input type="checkbox" checked={!!a.attachReport} onChange={(e) => update({ attachReport: e.target.checked })} /> Attach their report as a PDF
+            </label>
+          </>
+        )}
         <label className="flex items-center gap-2">
           <input type="checkbox" checked={!!a.unlessReportOpened} onChange={(e) => update({ unlessReportOpened: e.target.checked })} /> Not if they&apos;ve opened their results by then
         </label>

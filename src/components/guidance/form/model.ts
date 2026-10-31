@@ -20,6 +20,10 @@ export interface FormText {
   /** list: the column names, and each column's choices (one to one with the form's own) */
   columns?: string[] | null;
   columnOptions?: string[][] | null;
+  /** Questions: what the person reads in their report for each answer (one to one with the question's own) */
+  explain?: string[] | null;
+  /** Sections: what the person reads at the top of this part of their report */
+  report?: string | null;
 }
 
 /** The results' words in another language (outcomes and bands one to one with the form's own) */
@@ -30,6 +34,13 @@ export interface ResultsText {
   outcomes?: { name?: string | null; summary?: string | null }[] | null;
   /** label (as name) and message (as summary) of each band */
   bands?: { name?: string | null; summary?: string | null }[] | null;
+  reportTitle?: string | null;
+  intro?: string | null;
+  nextTitle?: string | null;
+  nextText?: string | null;
+  nextLabel?: string | null;
+  /** The work-style grid's ends: top, bottom, left, right */
+  gridEnds?: string[] | null;
 }
 
 /** A note for the counsellor beside an answer in the CRM (never shown to the person) */
@@ -84,6 +95,10 @@ export interface Automation {
   matchTo?: number | null;
   unlessReportOpened?: boolean;
   unlessMeeting?: boolean;
+  /** email: their score card (logo, score, next steps, a button to their report) above the message */
+  scoreCard?: boolean;
+  /** email: their report attached as a PDF */
+  attachReport?: boolean;
 }
 
 export interface Condition {
@@ -130,6 +145,15 @@ export interface Band {
   coaching?: string | null;
 }
 
+/** Four outcomes as a two-by-two grid on the report (cells: top left, top right, bottom left, bottom right) */
+export interface Grid {
+  top: string;
+  bottom: string;
+  left: string;
+  right: string;
+  cells: string[];
+}
+
 export interface Results {
   outcomeEnabled: boolean;
   outcomeTitle?: string | null;
@@ -138,6 +162,19 @@ export interface Results {
   matchTitle?: string | null;
   bands: Band[];
   showToPerson: boolean;
+  /** The report's heading */
+  reportTitle?: string | null;
+  /** The school's introduction at the top of the report ({institute} is the school's name) */
+  intro?: string | null;
+  /** Next steps from this match percentage up (null: everyone): a heading, a line, and a button to nextUrl */
+  nextFrom?: number | null;
+  nextTitle?: string | null;
+  nextText?: string | null;
+  nextLabel?: string | null;
+  nextUrl?: string | null;
+  /** Share buttons (the score and a link to the form, never the report) */
+  share?: boolean;
+  grid?: Grid | null;
   /** per language code: the words the person reads */
   translations?: Record<string, ResultsText>;
 }
@@ -162,6 +199,10 @@ export interface Question {
   scores?: Score[];
   /** Notes for the counsellor beside the answer in the CRM */
   tips?: Tip[];
+  /** What the person reads in their report under this answer (when: as for tips) */
+  explain?: Tip[];
+  /** Left out of the report's parts (still under "All your answers") */
+  hideInReport?: boolean;
   /** booking: how the meeting is arranged */
   booking?: Booking | null;
   /** The card on the person's profile (People) the answer shows on */
@@ -174,6 +215,11 @@ export interface Section {
   title: string;
   description?: string | null;
   showIf?: Condition | null;
+  /** What the person reads at the top of this part of their report */
+  report?: string | null;
+  /** The counsellor's guide to this part in the CRM (lines starting "- " are points); never shown to the person */
+  guideTitle?: string | null;
+  guide?: string | null;
   translations?: Record<string, FormText>;
 }
 
@@ -321,6 +367,31 @@ export function trResult(def: FormDef, result: FormResult, lang: string): FormRe
     matchTitle: t.matchTitle?.trim() || result.matchTitle,
     outcome: result.outcome && oi >= 0 ? { ...result.outcome, name: t.outcomes?.[oi]?.name?.trim() || result.outcome.name, summary: t.outcomes?.[oi]?.summary?.trim() || result.outcome.summary } : result.outcome,
     match: result.match && bi >= 0 ? { ...result.match, label: t.bands?.[bi]?.name?.trim() || result.match.label, message: t.bands?.[bi]?.summary?.trim() || result.match.message } : result.match,
+  };
+}
+
+export interface NextSteps {
+  title?: string | null;
+  text?: string | null;
+  label?: string | null;
+  url?: string | null;
+}
+
+/**
+ * The results' next steps for this score, in the person's language (as the server's report works them out): from the
+ * form's percentage up, or for everyone when it sets none. No link: no button.
+ */
+export function nextFor(def: FormDef, result: FormResult | null, lang: string, institute: string): NextSteps | null {
+  const r = def.results;
+  if (!r || !(r.nextTitle || r.nextUrl)) return null;
+  if (r.nextFrom != null && !(result?.match && result.match.percent >= r.nextFrom)) return null;
+  const t = r.translations?.[lang];
+  const fill = (s: string | null | undefined) => s?.replaceAll("{institute}", institute) ?? null;
+  return {
+    title: fill(t?.nextTitle?.trim() || r.nextTitle),
+    text: fill(t?.nextText?.trim() || r.nextText),
+    label: r.nextUrl ? t?.nextLabel?.trim() || r.nextLabel : null,
+    url: r.nextUrl ?? null,
   };
 }
 

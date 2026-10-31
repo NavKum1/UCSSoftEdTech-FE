@@ -2,7 +2,7 @@
 
 /**
  * Translating a form: every text of the form (heading, introduction, thank-you, step titles, questions, help texts,
- * options, slider and scale ends, list columns and their choices, and the results people read) beside its translation,
+ * options, slider and scale ends, list columns and their choices, the results and the report people read) beside its translation,
  * one language at a time, with a count of what's still missing.
  */
 
@@ -49,6 +49,10 @@ export default function TranslationsTab({
   const setOutcome = (i: number, key: "name" | "summary", v: string) => setR({ outcomes: line(rt.outcomes, r!.outcomes.length).map((x, j) => (j === i ? { ...x, [key]: v } : x)) });
   const setBand = (i: number, key: "name" | "summary", v: string) => setR({ bands: line(rt.bands, r!.bands.length).map((x, j) => (j === i ? { ...x, [key]: v } : x)) });
   const results = !!r && (r.outcomeEnabled || r.matchEnabled) && r.showToPerson;
+  // A question's report texts line up one to one with its own
+  const explainOf = (q: FormDef["questions"][number]) => Array.from({ length: q.explain?.length ?? 0 }, (_, i) => q.translations?.[current]?.explain?.[i] ?? "");
+  const gridEnds = r?.grid ? [r.grid.top, r.grid.bottom, r.grid.left, r.grid.right] : [];
+  const gridT = Array.from({ length: 4 }, (_, i) => rt.gridEnds?.[i] ?? "");
 
   // What still needs translating
   let total = 0;
@@ -62,7 +66,10 @@ export default function TranslationsTab({
   count(def.settings.intro, def.settings.translations?.[current]?.description);
   count(def.settings.thankYou, def.settings.translations?.[current]?.label);
   if (def.settings.savePartial) count(def.settings.partialNotice, def.settings.translations?.[current]?.notice);
-  def.sections.forEach((s) => count(s.title, s.translations?.[current]?.title));
+  def.sections.forEach((s) => {
+    count(s.title, s.translations?.[current]?.title);
+    count(s.report, s.translations?.[current]?.report);
+  });
   def.questions.forEach((q) => {
     const t = q.translations?.[current];
     count(q.label, t?.label);
@@ -72,6 +79,7 @@ export default function TranslationsTab({
       count(q.minLabel, t?.minLabel);
       count(q.maxLabel, t?.maxLabel);
     }
+    (q.explain ?? []).forEach((e, i) => count(e.text, t?.explain?.[i]));
     (q.columns ?? []).forEach((c, i) => {
       count(c.label, t?.columns?.[i]);
       if (c.options.length) count("choices", t?.columnOptions?.[i]?.length === c.options.length ? "ok" : "");
@@ -85,6 +93,8 @@ export default function TranslationsTab({
         count(o.summary, rt.outcomes?.[i]?.summary);
       });
     }
+    for (const k of ["reportTitle", "intro", "nextTitle", "nextText", "nextLabel"] as const) count(r![k], rt[k]);
+    gridEnds.forEach((e, i) => count(e, gridT[i]));
     if (r!.matchEnabled) {
       count(r!.matchTitle, rt.matchTitle);
       r!.bands.forEach((b, i) => {
@@ -118,6 +128,7 @@ export default function TranslationsTab({
         <Group key={s.id} title={`Step: ${s.title}`}>
           <Row original={s.title} value={s.translations?.[current]?.title} onChange={(v) => setSection(s.id, "title", v)} />
           <Row original={s.description} value={s.translations?.[current]?.description} onChange={(v) => setSection(s.id, "description", v)} />
+          <Row original={s.report} value={s.translations?.[current]?.report} onChange={(v) => setSection(s.id, "report", v)} long />
           {def.questions
             .filter((q) => q.sectionId === s.id)
             .map((q) => (
@@ -145,13 +156,24 @@ export default function TranslationsTab({
                     </div>
                   );
                 })}
+                {(q.explain ?? []).map((e, i) => (
+                  <Row key={e.when} original={e.text} value={explainOf(q)[i]} onChange={(v) => setQ(q.id, "explain", explainOf(q).map((x, j) => (j === i ? v : x)))} long />
+                ))}
               </div>
             ))}
         </Group>
       ))}
 
       {results && (
-        <Group title="Results people read">
+        <Group title="Results and report people read">
+          <Row original={r!.reportTitle} value={rt.reportTitle} onChange={(v) => setR({ reportTitle: v })} />
+          <Row original={r!.intro} value={rt.intro} onChange={(v) => setR({ intro: v })} long />
+          <Row original={r!.nextTitle} value={rt.nextTitle} onChange={(v) => setR({ nextTitle: v })} />
+          <Row original={r!.nextText} value={rt.nextText} onChange={(v) => setR({ nextText: v })} />
+          <Row original={r!.nextLabel} value={rt.nextLabel} onChange={(v) => setR({ nextLabel: v })} />
+          {gridEnds.map((e, i) => (
+            <Row key={i} original={e} value={gridT[i]} onChange={(v) => setR({ gridEnds: gridT.map((x, j) => (j === i ? v : x)) })} />
+          ))}
           {r!.outcomeEnabled && (
             <>
               <Row original={r!.outcomeTitle} value={rt.outcomeTitle} onChange={(v) => setR({ outcomeTitle: v })} />
