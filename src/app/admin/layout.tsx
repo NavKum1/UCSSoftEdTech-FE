@@ -5,7 +5,7 @@ import { AdminRoleBadge } from "@/components/admin/AdminRoleBadge";
 
 export const metadata = {
   title: "Admin · Edulexa",
-  description: "Platform administration: exams, career suite, transparency and system status.",
+  description: "Platform administration: exams, career suite, transparency, email and uploads, and system status.",
 };
 
 // The API decides what each user may do; institute admins and exam creators reach /admin/exams too (H12)
@@ -14,6 +14,7 @@ const SECTIONS = [
   { href: "/admin/exams", label: "Exams" },
   { href: "/admin/career", label: "Career suite" },
   { href: "/admin/transparency", label: "Transparency" },
+  { href: "/admin/settings", label: "Email and uploads" },
   { href: "/admin/system", label: "System" },
 ];
 

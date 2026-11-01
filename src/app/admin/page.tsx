@@ -25,6 +25,7 @@ import { UserCog, ShieldCheck, X as CloseIcon } from "lucide-react";
 import { authenticatedFetch } from "@/lib/apiClient";
 import StaffAccess from "@/components/institute/StaffAccess";
 import AccessRequestsAdmin from "@/components/admin/AccessRequestsAdmin";
+import PlatformSetupBanner from "@/components/admin/PlatformSetupBanner";
 import { useGeo } from "@/context/GeoContext";
 import { useLatestRef } from "@/lib/legacyApi";
 
@@ -336,6 +337,8 @@ export default function SuperAdminDashboard() {
           <span>{actionMessage}</span>
         </div>
       )}
+
+      <PlatformSetupBanner />
 
       {/* Global Error Banner */}
       {error && (

@@ -34,7 +34,27 @@ interface Template {
   name: string;
   audience: string;
   description: string;
+  /** The kind of organisation it's for: school, college, training, coaching, any */
+  group: string;
+  /** An ISO code when its wording is for one country, "any" otherwise */
+  country: string;
   definition: FormDef;
+}
+
+const GROUP_NAMES: Record<string, string> = {
+  school: "Schools",
+  college: "Colleges and universities",
+  training: "Career and training schools",
+  coaching: "Coaching",
+  any: "Anyone",
+};
+const COUNTRY_NAMES: Record<string, string> = { IN: "India", US: "United States" };
+
+/** What the person gets back: the score and the result */
+function reportOf(d: FormDef) {
+  const r = d.results;
+  const parts = [r?.matchEnabled && r.matchTitle, r?.outcomeEnabled && r.outcomeTitle].filter(Boolean);
+  return parts.length ? `Report: ${parts.join(" + ")}` : null;
 }
 interface Profile {
   city: string | null;
@@ -313,6 +333,8 @@ function NewForm({
   onCreated: (id: string) => void;
 }) {
   const [templates, setTemplates] = useState<Template[]>([]);
+  const [groups, setGroups] = useState<string[]>([]);
+  const [country, setCountry] = useState("all");
   const [pick, setPick] = useState("general");
   const [name, setName] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -321,11 +343,16 @@ function NewForm({
   useEffect(() => {
     apiFetch("/api/guidance-forms/templates")
       .then((r) => r.json())
-      .then((d) => setTemplates(d.templates))
+      .then((d) => {
+        setTemplates(d.templates);
+        setGroups(d.groups ?? []);
+      })
       .catch(() => setError("Templates couldn't be loaded."));
   }, [apiFetch]);
 
   const chosen = templates.find((t) => t.key === pick);
+  const countries = [...new Set(templates.map((t) => t.country).filter((c) => c !== "any"))];
+  const shown = templates.filter((t) => country === "all" || t.country === "any" || t.country === country);
   const create = async () => {
     setBusy(true);
     setError(null);
@@ -353,23 +380,55 @@ function NewForm({
         </div>
         <div className="grid min-h-0 flex-1 md:grid-cols-[22rem_1fr]">
           <div className="space-y-2 overflow-y-auto border-r border-border p-4">
-            <p className="text-xs font-medium text-muted-foreground">Start from</p>
-            {templates.map((t) => (
-              <button
-                key={t.key}
-                type="button"
-                onClick={() => setPick(t.key)}
-                aria-pressed={pick === t.key}
-                className={`block w-full rounded-xl border p-3 text-left text-sm ${pick === t.key ? "border-cyan-600 bg-cyan-600/5" : "border-border hover:bg-muted"}`}
-              >
-                <span className="font-medium">{t.name}</span>
-                <span className="block text-xs text-muted-foreground">For: {t.audience}</span>
-                <span className="mt-1 block text-xs text-muted-foreground">{t.description}</span>
-                <span className="mt-1 block text-xs text-muted-foreground">
-                  {t.definition.questions.length} questions · {t.definition.sections.length} {t.definition.sections.length === 1 ? "step" : "steps"}
-                </span>
-              </button>
-            ))}
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <p className="text-xs font-medium text-muted-foreground">Start from</p>
+              {countries.length > 0 && (
+                <label className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                  For
+                  <select aria-label="Show templates for" className="rounded-md border border-border bg-background px-2 py-1 text-xs text-foreground" value={country} onChange={(e) => setCountry(e.target.value)}>
+                    <option value="all">Any country</option>
+                    {countries.map((c) => (
+                      <option key={c} value={c}>
+                        {COUNTRY_NAMES[c] ?? c}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              )}
+            </div>
+            {(groups.length ? groups : [...new Set(shown.map((t) => t.group))]).map((g) => {
+              const inGroup = shown.filter((t) => t.group === g);
+              if (inGroup.length === 0) return null;
+              return (
+                <section key={g} aria-labelledby={`tpl-group-${g}`} className="space-y-2 pt-1">
+                  <h3 id={`tpl-group-${g}`} className="text-xs font-semibold">
+                    {GROUP_NAMES[g] ?? g}
+                  </h3>
+                  {inGroup.map((t) => (
+                    <button
+                      key={t.key}
+                      type="button"
+                      onClick={() => setPick(t.key)}
+                      aria-pressed={pick === t.key}
+                      className={`block w-full rounded-xl border p-3 text-left text-sm ${pick === t.key ? "border-cyan-600 bg-cyan-600/5" : "border-border hover:bg-muted"}`}
+                    >
+                      <span className="flex items-start justify-between gap-2">
+                        <span className="font-medium">{t.name}</span>
+                        {t.country !== "any" && (
+                          <span className="shrink-0 rounded-full border border-border px-2 py-0.5 text-[11px] text-muted-foreground">{COUNTRY_NAMES[t.country] ?? t.country}</span>
+                        )}
+                      </span>
+                      <span className="block text-xs text-muted-foreground">For: {t.audience}</span>
+                      <span className="mt-1 block text-xs text-muted-foreground">{t.description}</span>
+                      {reportOf(t.definition) && <span className="mt-1 block text-xs font-medium text-cyan-800 dark:text-cyan-300">{reportOf(t.definition)}</span>}
+                      <span className="mt-1 block text-xs text-muted-foreground">
+                        {t.definition.questions.length} questions · {t.definition.sections.length} {t.definition.sections.length === 1 ? "step" : "steps"}
+                      </span>
+                    </button>
+                  ))}
+                </section>
+              );
+            })}
             <label className="block pt-2 text-xs font-medium text-muted-foreground">
               Name
               <input className={input} value={name} maxLength={120} placeholder={chosen?.name ?? "e.g. Data Science open day 2027"} onChange={(e) => setName(e.target.value)} />

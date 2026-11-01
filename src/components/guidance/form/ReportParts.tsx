@@ -128,27 +128,38 @@ export function StyleGrid({ grid, t }: { grid: GridView; t: (k: string) => strin
   return (
     <figure className="mx-auto w-full max-w-md" aria-label={activeName ? `${t("yourStyle")} ${activeName}` : undefined}>
       <p className="text-center text-xs font-medium text-muted-foreground">{grid.top}</p>
-      <div className="mt-1.5 grid grid-cols-[auto_1fr_auto] items-center gap-2">
-        <span className="w-12 text-right text-xs font-medium text-muted-foreground sm:w-16">{grid.left}</span>
-        <ul className="grid aspect-square grid-cols-2 gap-1.5">
+      {/* On a phone the left and right ends go under the grid, so the squares get the whole width for long names */}
+      <div className="mt-1.5 grid grid-cols-1 items-center gap-2 sm:grid-cols-[auto_1fr_auto]">
+        <span className="hidden w-20 hyphens-auto wrap-break-word text-right text-xs font-medium leading-tight text-muted-foreground sm:block">{grid.left}</span>
+        <ul className="grid aspect-square min-w-0 grid-cols-2 gap-1.5">
           {grid.cells.map((c, i) => {
             const on = c.id === grid.active;
             return (
               <li
                 key={c.id}
-                className={`relative grid place-items-center rounded-md ${CORNERS[i]} p-2 text-center text-sm font-semibold sm:text-base ${
+                className={`relative grid min-w-0 place-items-center rounded-md ${CORNERS[i]} px-2 py-5 text-center text-sm font-semibold leading-tight hyphens-auto wrap-anywhere sm:text-base ${
                   on ? "bg-[var(--gf-accent)] text-[var(--gf-on)] shadow-md" : "bg-[color-mix(in_srgb,var(--gf-accent)_9%,transparent)] text-foreground/70"
                 }`}
                 aria-current={on ? "true" : undefined}
               >
-                {on && <Check aria-hidden="true" className="absolute right-2 top-2 h-4 w-4" strokeWidth={3} />}
+                {on && <Check aria-hidden="true" className="absolute right-1.5 top-1.5 h-3.5 w-3.5 sm:right-2 sm:top-2 sm:h-4 sm:w-4" strokeWidth={3} />}
                 {c.name}
               </li>
             );
           })}
         </ul>
-        <span className="w-12 text-xs font-medium text-muted-foreground sm:w-16">{grid.right}</span>
+        <span className="hidden w-20 hyphens-auto wrap-break-word text-xs font-medium leading-tight text-muted-foreground sm:block">{grid.right}</span>
       </div>
+      <p className="mt-1.5 flex justify-between gap-4 text-xs font-medium text-muted-foreground sm:hidden">
+        <span>
+          <span aria-hidden="true">← </span>
+          {grid.left}
+        </span>
+        <span className="text-right">
+          {grid.right}
+          <span aria-hidden="true"> →</span>
+        </span>
+      </p>
       <p className="mt-1.5 text-center text-xs font-medium text-muted-foreground">{grid.bottom}</p>
     </figure>
   );
