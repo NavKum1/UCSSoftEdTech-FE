@@ -355,18 +355,20 @@ export function trColumns(q: Question, lang: string): (ListColumn & { optionLabe
 }
 
 /** The results' words in the chosen language */
-export function trResult(def: FormDef, result: FormResult, lang: string): FormResult {
+export function trResult(def: FormDef, result: FormResult, lang: string, institute: string): FormResult {
   const t = def.results?.translations?.[lang];
-  if (!t || !def.results) return result;
-  const oi = result.outcome ? def.results.outcomes.findIndex((o) => o.id === result.outcome!.id) : -1;
-  const sorted = def.results.bands;
-  const bi = result.match ? sorted.findIndex((b) => b.label === result.match!.label) : -1;
+  const oi = result.outcome && def.results ? def.results.outcomes.findIndex((o) => o.id === result.outcome!.id) : -1;
+  const bi = result.match && def.results ? def.results.bands.findIndex((b) => b.label === result.match!.label) : -1;
+  const ot = oi >= 0 ? t?.outcomes?.[oi] : undefined;
+  const bt = bi >= 0 ? t?.bands?.[bi] : undefined;
+  // {institute} in what the person reads becomes the institute's name
+  const fill = <T extends string | null | undefined>(v: T) => (v ? v.replaceAll("{institute}", institute) : v) as T;
   return {
     ...result,
-    outcomeTitle: t.outcomeTitle?.trim() || result.outcomeTitle,
-    matchTitle: t.matchTitle?.trim() || result.matchTitle,
-    outcome: result.outcome && oi >= 0 ? { ...result.outcome, name: t.outcomes?.[oi]?.name?.trim() || result.outcome.name, summary: t.outcomes?.[oi]?.summary?.trim() || result.outcome.summary } : result.outcome,
-    match: result.match && bi >= 0 ? { ...result.match, label: t.bands?.[bi]?.name?.trim() || result.match.label, message: t.bands?.[bi]?.summary?.trim() || result.match.message } : result.match,
+    outcomeTitle: t?.outcomeTitle?.trim() || result.outcomeTitle,
+    matchTitle: t?.matchTitle?.trim() || result.matchTitle,
+    outcome: result.outcome ? { ...result.outcome, name: ot?.name?.trim() || result.outcome.name, summary: fill(ot?.summary?.trim() || result.outcome.summary) } : result.outcome,
+    match: result.match ? { ...result.match, label: bt?.name?.trim() || result.match.label, message: fill(bt?.summary?.trim() || result.match.message) } : result.match,
   };
 }
 
@@ -384,7 +386,9 @@ export interface NextSteps {
 export function nextFor(def: FormDef, result: FormResult | null, lang: string, institute: string): NextSteps | null {
   const r = def.results;
   if (!r || !(r.nextTitle || r.nextUrl)) return null;
-  if (r.nextFrom != null && !(result?.match && result.match.percent >= r.nextFrom)) return null;
+  // From a score only when people are shown one
+  const from = r.matchEnabled && r.showToPerson ? r.nextFrom : null;
+  if (from != null && !(result?.match && result.match.percent >= from)) return null;
   const t = r.translations?.[lang];
   const fill = (s: string | null | undefined) => s?.replaceAll("{institute}", institute) ?? null;
   return {

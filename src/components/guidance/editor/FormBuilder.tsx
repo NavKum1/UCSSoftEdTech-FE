@@ -41,6 +41,7 @@ import {
   newId,
   nextFor,
   onAccent,
+  trResult,
   WITH_OPTIONS,
   type Condition,
   type Band,
@@ -128,18 +129,19 @@ function fillFromTemplate(d: FormDef, tpl: FormDef): { def: FormDef; filled: num
   const r = { ...d.results! };
   const tr = tpl.results;
   if (tr) {
+    // The score next steps start from goes with the template's heading, when that's filled in now
+    if (r.nextFrom == null && tr.nextFrom != null && blank(r.nextTitle) && !blank(tr.nextTitle)) r.nextFrom = tr.nextFrom;
     for (const k of ["reportTitle", "intro", "nextTitle", "nextText", "nextLabel"] as const)
       if (blank(r[k]) && !blank(tr[k])) {
         r[k] = tr[k];
         filled++;
       }
-    if (r.nextFrom == null && tr.nextFrom != null && r.nextTitle === tr.nextTitle) r.nextFrom = tr.nextFrom;
     if (first && !r.share && tr.share) {
       r.share = true;
       filled++;
     }
-    // The grid only when the form still has the template's four outcomes
-    if (!r.grid && tr.grid && tr.grid.cells.every((c) => r.outcomes.some((o) => o.id === c))) {
+    // The grid only when the form still has the template's four outcomes (and only the first time: it may have been turned off)
+    if (first && !r.grid && tr.grid && tr.grid.cells.every((c) => r.outcomes.some((o) => o.id === c))) {
       r.grid = tr.grid;
       filled++;
     }
@@ -436,7 +438,7 @@ export default function FormBuilder({ formId, backHref }: { formId: string; back
                     <ResultsView
                       accent={def.settings.accent || "#4f46e5"}
                       t={(k) => (UI.en as Record<string, string>)[k] ?? k}
-                      result={example}
+                      result={trResult(def, example, def.languages[0] ?? "en", "your school")}
                       next={nextFor(def, example, def.languages[0] ?? "en", "your school")}
                     />
                   );
@@ -1629,7 +1631,7 @@ function ResultsEditor({ def, onChange, readOnly, onFill }: { def: FormDef; onCh
                     </button>
                   </div>
                   <label className="block text-xs font-medium text-muted-foreground">
-                    What the person reads
+                    What the person reads <span className="font-normal">({"{institute}"} is your name)</span>
                     <textarea rows={2} className={input} value={o.summary ?? ""} maxLength={1500} onChange={(e) => setOutcome(i, { summary: e.target.value })} />
                   </label>
                   <label className="block text-xs font-medium text-muted-foreground">
@@ -1702,7 +1704,7 @@ function ResultsEditor({ def, onChange, readOnly, onFill }: { def: FormDef; onCh
                     </button>
                   </div>
                   <label className="block text-xs font-medium text-muted-foreground">
-                    What the person reads
+                    What the person reads <span className="font-normal">({"{institute}"} is your name)</span>
                     <textarea rows={2} className={input} value={b.message ?? ""} maxLength={1000} onChange={(e) => setBand(i, { message: e.target.value })} />
                   </label>
                   <label className="block text-xs font-medium text-muted-foreground">
@@ -1759,20 +1761,24 @@ function ReportSettings({ r, set, onFill }: { r: Results; set: (p: Partial<Resul
 
       <div className="space-y-2 rounded-xl border border-border p-3">
         <p className="text-xs font-semibold">Next steps under the score</p>
-        <label className="flex flex-wrap items-center gap-2 text-xs">
-          Show from a score of
-          <input
-            type="number"
-            min={0}
-            max={100}
-            className="w-16 rounded-md border border-border bg-background px-2 py-1"
-            value={r.nextFrom ?? ""}
-            placeholder="any"
-            aria-label="Show next steps from this score"
-            onChange={(e) => set({ nextFrom: e.target.value === "" ? null : Math.max(0, Math.min(100, Math.round(Number(e.target.value) || 0))) })}
-          />
-          % <span className="text-muted-foreground">(blank: everyone)</span>
-        </label>
+        {r.matchEnabled && r.showToPerson ? (
+          <label className="flex flex-wrap items-center gap-2 text-xs">
+            Show from a score of
+            <input
+              type="number"
+              min={0}
+              max={100}
+              className="w-16 rounded-md border border-border bg-background px-2 py-1"
+              value={r.nextFrom ?? ""}
+              placeholder="any"
+              aria-label="Show next steps from this score"
+              onChange={(e) => set({ nextFrom: e.target.value === "" ? null : Math.max(0, Math.min(100, Math.round(Number(e.target.value) || 0))) })}
+            />
+            % <span className="text-muted-foreground">(blank: everyone)</span>
+          </label>
+        ) : (
+          <p className="text-xs text-muted-foreground">Shown to everyone (it can start from a score when the form shows people their match score).</p>
+        )}
         <label className="block text-xs font-medium text-muted-foreground">
           Heading
           <input className={input} value={r.nextTitle ?? ""} maxLength={200} placeholder="e.g. Congratulations! You qualify for a free consultation" onChange={(e) => set({ nextTitle: e.target.value })} />

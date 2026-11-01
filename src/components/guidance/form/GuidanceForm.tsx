@@ -420,7 +420,7 @@ export default function GuidanceForm({
     // Results to show: they stay on screen (the page after sending opens from a button; "Done" closes it inside Edulexa)
     const shown = def.results?.showToPerson ? computeResult(def, answers) : null;
     if (shown) {
-      setResult(trResult(def, shown, lang));
+      setResult(trResult(def, shown, lang, fill.instituteName));
       setSent(true);
       top.current?.scrollIntoView({ behavior: "smooth", block: "start" });
       return;
