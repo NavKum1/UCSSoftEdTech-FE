@@ -5,9 +5,6 @@ import { keycloakClientId, keycloakIssuer } from "@/auth";
 // Ends the Keycloak SSO session too (RP-initiated logout), then clears the Auth.js session cookies.
 // Signing out of Auth.js alone would leave the Keycloak session alive and sign the user straight back in.
 export async function GET(req: NextRequest) {
-  if (process.env.NEXT_PUBLIC_AUTH_PROVIDER !== "keycloak") {
-    return NextResponse.json({ error: "Not found" }, { status: 404 });
-  }
   const secureCookie = req.nextUrl.protocol === "https:" || (process.env.AUTH_URL ?? "").startsWith("https:");
   const token = await getToken({ req, secret: process.env.AUTH_SECRET, secureCookie });
 

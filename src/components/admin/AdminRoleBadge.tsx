@@ -4,7 +4,7 @@ import { useAppAuth } from "@/lib/appAuth";
 
 /**
  * The role badge in the /admin top bar. Since H12, institute admins and exam creators reach /admin/exams too, so the
- * "SUPER ADMIN" badge is shown only to a SuperAdmin; anyone else sees their own platform role (Clerk public metadata or
+ * "SUPER ADMIN" badge is shown only to a SuperAdmin; anyone else sees their own platform role (their
  * Keycloak realm roles), or nothing when they have none. Nothing is shown until auth has loaded, so the badge never
  * flashes the wrong role. Display only: the API decides what each user may do.
  */

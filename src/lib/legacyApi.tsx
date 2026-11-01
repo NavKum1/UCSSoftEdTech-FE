@@ -3,7 +3,7 @@
 /**
  * H7: the API now requires a signed-in user for everything except a short public list (see the backend's
  * `// H7 public:` markers). The older, non-career pages used plain fetch() with no token; they call the API through
- * this hook instead, which sends the provider-neutral token from useAppAuth (Clerk, Keycloak or a partner session)
+ * this hook instead, which sends the token from useAppAuth (Keycloak, or a partner session)
  * and remembers a 401/403 so the page can show a sign-in or not-allowed state instead of crashing on empty data.
  */
 

@@ -1,42 +1,26 @@
 "use client";
 
 /**
- * Provider-neutral auth for new pages. Career-suite pages use these hooks instead of importing Clerk directly,
- * so moving the platform to Keycloak changes this module only.
- *
- * NEXT_PUBLIC_AUTH_PROVIDER selects the identity provider at build time: "clerk" (default) or "keycloak"
- * (Auth.js + Keycloak, see src/auth.ts). The value is inlined by Next, so each build uses exactly one set of hooks.
+ * The app's sign-in: Keycloak through Auth.js (see src/auth.ts). Pages use these hooks, never the provider directly.
+ * Clerk was removed on 1 Nov 2026 (plan item A6); production had already moved to Keycloak.
  */
 
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { useAuth, useUser, UserButton } from "@clerk/nextjs";
 import { SessionProvider, getSession, signIn, useSession } from "next-auth/react";
-import { LogOut } from "lucide-react";
+import { CreditCard, LogOut, Scale } from "lucide-react";
+import Link from "next/link";
 import { API_BASE_URL, REGION_ROUTING, authenticatedFetch, getApiRegion, setApiRegion } from "@/lib/apiClient";
 import { getPartnerSession, usePartnerToken } from "@/lib/partnerSession";
 import { getDevSession, useDevSession } from "@/lib/devSession";
 
-export type AuthProviderName = "clerk" | "keycloak";
-export const AUTH_PROVIDER: AuthProviderName = process.env.NEXT_PUBLIC_AUTH_PROVIDER === "keycloak" ? "keycloak" : "clerk";
 
 export interface AppAuth {
   isLoaded: boolean;
   isSignedIn: boolean;
   userId: string | null;
-  /** Platform roles (Clerk public metadata role/roles, or the Keycloak realm roles) */
+  /** Platform roles (the Keycloak realm roles) */
   roles: string[];
   getToken: () => Promise<string | null>;
-}
-
-function useClerkAppAuth(): AppAuth {
-  const { isLoaded, isSignedIn, userId, getToken } = useAuth();
-  const { user } = useUser();
-  const token = useCallback(() => getToken(), [getToken]);
-  const metadata = (user?.publicMetadata ?? {}) as { role?: unknown; roles?: unknown };
-  const roles = [...(typeof metadata.role === "string" ? [metadata.role] : []), ...(Array.isArray(metadata.roles) ? metadata.roles : [])].filter(
-    (r): r is string => typeof r === "string",
-  );
-  return { isLoaded, isSignedIn: !!isSignedIn, userId: userId ?? null, roles, getToken: token };
 }
 
 function useKeycloakAppAuth(): AppAuth {
@@ -67,12 +51,11 @@ function useKeycloakAppAuth(): AppAuth {
   };
 }
 
-const useProviderAppAuth: () => AppAuth = AUTH_PROVIDER === "keycloak" ? useKeycloakAppAuth : useClerkAppAuth;
 
 // F9 partner sign-in: a partner session token (sessionStorage, set by /partner/callback) takes precedence while valid
 // Local development: a developer session from the sign-in page shortcuts (lib/devSession) signs in as that persona
 export function useAppAuth(): AppAuth {
-  const provider = useProviderAppAuth();
+  const provider = useKeycloakAppAuth();
   const partnerToken = usePartnerToken();
   const dev = useDevSession();
   const providerGetToken = provider.getToken;
@@ -101,19 +84,12 @@ export async function keycloakSignIn(redirectTo: string, options: { loginHint?: 
 }
 
 // G8 regional hosting: who is signed in, for routing this tab to the region that hosts their school
-function useClerkIdentity(): { userId: string | null; email: string | null } {
-  const { userId } = useAuth();
-  const { user } = useUser();
-  return { userId: userId ?? null, email: user?.primaryEmailAddress?.emailAddress ?? null };
-}
-
 function useKeycloakIdentity(): { userId: string | null; email: string | null } {
   const { data: session, status } = useSession();
   const ok = status === "authenticated" && !session?.error;
   return { userId: ok ? (session?.user?.id ?? null) : null, email: ok ? (session?.user?.email ?? null) : null };
 }
 
-const useIdentity = AUTH_PROVIDER === "keycloak" ? useKeycloakIdentity : useClerkIdentity;
 
 /**
  * G8: after sign-in, asks the default API (the region directory) which region hosts the user's email domain and points this
@@ -121,7 +97,7 @@ const useIdentity = AUTH_PROVIDER === "keycloak" ? useKeycloakIdentity : useCler
  * A wrong-region answer from any API call does the same, so this is only a head start that saves one refused request.
  */
 function RegionRouting() {
-  const { userId, email } = useIdentity();
+  const { userId, email } = useKeycloakIdentity();
   useEffect(() => {
     if (!userId) return;
     const stored = getApiRegion();
@@ -149,16 +125,9 @@ function RegionRouting() {
   return null;
 }
 
-/** Wraps the app in the session context the Keycloak hooks need; a no-op in Clerk mode (ClerkProvider is in the root layout). */
+/** Wraps the app in the session context the Keycloak hooks need */
 export function AppAuthProvider({ children }: { children: React.ReactNode }) {
   const routing = REGION_ROUTING ? <RegionRouting /> : null;
-  if (AUTH_PROVIDER !== "keycloak")
-    return (
-      <>
-        {routing}
-        {children}
-      </>
-    );
   // Re-check the session every 4 minutes so the access token is refreshed before the 5-minute expiry
   return (
     <SessionProvider refetchInterval={240}>
@@ -287,6 +256,14 @@ function KeycloakUserButton() {
             <div className="text-xs font-bold text-foreground truncate">{session?.user?.name}</div>
             <div className="text-[11px] text-muted-foreground truncate">{session?.user?.email}</div>
           </div>
+          <Link href="/pricing" onClick={() => setOpen(false)} className="mt-1 flex items-center gap-2 px-3 py-2 rounded-xl text-xs text-foreground hover:bg-muted">
+            <CreditCard aria-hidden="true" className="w-3.5 h-3.5" />
+            Pricing and minutes
+          </Link>
+          <Link href="/settings/self-identification" onClick={() => setOpen(false)} className="flex items-center gap-2 px-3 py-2 rounded-xl text-xs text-foreground hover:bg-muted">
+            <Scale aria-hidden="true" className="w-3.5 h-3.5" />
+            Fairness self-ID
+          </Link>
           {/* Full-page GET (no client routing/prefetch): the route ends the Keycloak session as well */}
           <form method="get" action="/api/auth/federated-logout">
           <button
@@ -304,5 +281,5 @@ function KeycloakUserButton() {
 }
 
 export function AppUserButton() {
-  return AUTH_PROVIDER === "keycloak" ? <KeycloakUserButton /> : <UserButton />;
+  return <KeycloakUserButton />;
 }

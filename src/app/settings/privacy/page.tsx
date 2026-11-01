@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { AUTH_PROVIDER, useAppAuth as useAuth } from "@/lib/appAuth";
+import { useAppAuth as useAuth } from "@/lib/appAuth";
 import { endDevSession, getDevSession } from "@/lib/devSession";
 import { AlertTriangle, CheckCircle2, Download, Loader2, Lock, Trash2 } from "lucide-react";
 import { authenticatedFetch } from "@/lib/apiClient";
@@ -47,7 +47,7 @@ export default function PrivacySettingsPage() {
     if (getDevSession()) {
       endDevSession();
       window.location.replace("/");
-    } else window.location.replace(AUTH_PROVIDER === "keycloak" ? "/api/auth/federated-logout" : "/");
+    } else window.location.replace("/api/auth/federated-logout");
   };
   const [exporting, setExporting] = useState(false);
   const [exportError, setExportError] = useState<string | null>(null);

@@ -1,8 +1,12 @@
-import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 import { NextResponse, type NextFetchEvent, type NextMiddleware, type NextRequest } from "next/server";
 import { auth as keycloakAuth } from "@/auth";
 
-// Route Matchers
+// Route matchers: each pattern is a regular expression for the whole path ("/sprint(.*)" is /sprint and below)
+function createRouteMatcher(patterns: string[]) {
+  const res = patterns.map((p) => new RegExp("^" + p + "$"));
+  return (req: NextRequest) => res.some((re) => re.test(req.nextUrl.pathname));
+}
+
 // /verify, /transparency and /pricing are intentionally public
 const isProtectedRoute = createRouteMatcher([
   "/sprint(.*)",
@@ -37,7 +41,7 @@ const isInstituteRoute = createRouteMatcher(["/institute(.*)", "/campus/admin(.*
 const isInstituteOrRecruiterRoute = createRouteMatcher(["/recruiter/transparency-settings(.*)"]);
 const isRecruiterRoute = createRouteMatcher(["/recruiter(.*)"]);
 
-// Route gating shared by both identity providers (NEXT_PUBLIC_AUTH_PROVIDER, inlined at build time)
+// Route gating (A6: Keycloak is the only identity provider; Clerk was removed on 1 Nov 2026)
 function gate(req: NextRequest, userId: string | null | undefined, hasRole: (...wanted: string[]) => boolean) {
   if (isInstituteOrRecruiterRoute(req)) {
     if (!userId) {
@@ -107,29 +111,6 @@ function gate(req: NextRequest, userId: string | null | undefined, hasRole: (...
 // In local development, permit seamless traversal across portals for live evaluation and testability
 const isDev = process.env.NODE_ENV === "development";
 
-const clerkHandler = () =>
-  clerkMiddleware(async (auth, req) => {
-    if (isDev) {
-      return NextResponse.next();
-    }
-
-    const { userId, sessionClaims } = await auth();
-
-    // Roles may arrive as `role` or a `roles` array, on the claims or in (public) metadata, matching the API's role mapping
-    const claims = (sessionClaims ?? {}) as Record<string, unknown>;
-    const roleList: string[] = [claims, claims.metadata, claims.publicMetadata, claims.public_metadata]
-      .flatMap((source) => {
-        if (!source || typeof source !== "object") return [];
-        const s = source as { role?: unknown; roles?: unknown };
-        return [s.role, ...(Array.isArray(s.roles) ? s.roles : [])];
-      })
-      .filter((r): r is string => typeof r === "string" && r.length > 0)
-      .map((r) => r.toLowerCase());
-    const hasRole = (...wanted: string[]) => wanted.some((w) => roleList.includes(w.toLowerCase()));
-
-    return gate(req, userId, hasRole);
-  });
-
 // Keycloak (Auth.js): req.auth is the session; roles are the realm roles from the access token. A failed refresh
 // (Keycloak session ended) counts as signed out.
 const keycloakHandler = () =>
@@ -144,7 +125,7 @@ const keycloakHandler = () =>
     return gate(req, signedIn ? session.user?.id ?? "signed-in" : null, hasRole);
   });
 
-const authHandler = (process.env.NEXT_PUBLIC_AUTH_PROVIDER === "keycloak" ? keycloakHandler() : clerkHandler()) as unknown as (
+const authHandler = keycloakHandler() as unknown as (
   req: NextRequest,
   ev: NextFetchEvent,
 ) => ReturnType<NextMiddleware>;

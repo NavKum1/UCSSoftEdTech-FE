@@ -2,7 +2,7 @@
 
 /**
  * The one signed-in-required state for the app: a heading, a one-line explanation, a primary "Sign in" button that
- * brings the visitor back to this page (`/login?redirect_url=...`) and, with Clerk, a secondary "Create account".
+ * brings the visitor back to this page (`/login?redirect_url=...`) and a secondary "Create account".
  * The "not allowed" (403) variant uses the same layout. `variant="page"` fills a page; `variant="inline"` sits inside
  * a card on an otherwise usable page (e.g. the graded challenges list next to the public practice editor).
  *
@@ -34,13 +34,13 @@ export function signInHref(returnPath: string): string {
   return `/login?redirect_url=${encodeURIComponent(returnPath)}`;
 }
 
-/** Sign-up (Clerk's form, or Keycloak's registration page), returning to `returnPath` afterwards. */
+/** Sign-up (Keycloak's registration page), returning to `returnPath` afterwards. */
 export function signUpHref(returnPath: string): string {
   return `/login?mode=signup&redirect_url=${encodeURIComponent(returnPath)}`;
 }
 
 /**
- * Both providers allow self-registration: the TotalOffice realm takes sign-ups from any country (email, name, country;
+ * Self-registration is open: the TotalOffice realm takes sign-ups from any country (email, name, country;
  * infrastructure/identity/realms/totaloffice). Set NEXT_PUBLIC_DISABLE_SIGN_UP=true where accounts may only come from
  * an organization's identity provider.
  */
@@ -67,7 +67,7 @@ export interface SignInRequiredProps {
   variant?: "page" | "inline";
   /** Defaults to 1 for a page and 3 inline. */
   headingLevel?: HeadingLevel;
-  /** Show "Create account" next to "Sign in" (Clerk only). Default true. */
+  /** Show "Create account" next to "Sign in". Default true. */
   signUp?: boolean;
   className?: string;
 }

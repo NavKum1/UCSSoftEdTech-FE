@@ -2,7 +2,7 @@ import { getDevSession } from "@/lib/devSession";
 
 /**
  * Authenticated API fetch for the Edulexa frontend.
- * Automatically attaches Clerk JWT Session Bearer Token in HTTP Authorization Header.
+ * Attaches the signed-in user's bearer token (Keycloak, a partner session or a local dev session) in the Authorization header.
  */
 
 /** The default (home) API. With regional hosting this is also the directory that answers region lookups. */
@@ -138,7 +138,7 @@ export async function authenticatedFetch(
     if (locale) headers.set("Accept-Language", locale);
   }
 
-  // Attach Clerk JWT Bearer Token if available
+  // The bearer token, if signed in
   if (getToken) {
     try {
       const token = await getToken();
@@ -149,7 +149,7 @@ export async function authenticatedFetch(
         if (dev?.userId && token === dev.token && !headers.has("X-User-Id")) headers.set("X-User-Id", dev.userId);
       }
     } catch (error) {
-      console.warn("[API CLIENT] Could not retrieve Clerk JWT token:", error);
+      console.warn("[API CLIENT] Could not get the sign-in token:", error);
     }
   }
 
@@ -163,6 +163,20 @@ export async function authenticatedFetch(
   // G8: the API refuses a school hosted elsewhere before doing anything, so one retry at the right region is safe.
   // A school keeps the same id in every region, so the X-Career-Institute header stays valid there.
   if (relative && (await followWrongRegion(res))) return send();
+  if (res.status === 403) void announceMfaRequired(res);
   return res;
+}
+
+/** The window event the app listens for when a staff page needs two-step sign-in (A6; components/auth/MfaRequiredNotice) */
+export const MFA_REQUIRED_EVENT = "edulexa:mfa-required";
+
+/** A 403 with code "mfa_required": the signed-in person's role needs two-step sign-in, so the app asks them to sign in again */
+async function announceMfaRequired(res: Response) {
+  try {
+    const body = await res.clone().json();
+    if (body?.code === "mfa_required" && typeof window !== "undefined") window.dispatchEvent(new CustomEvent(MFA_REQUIRED_EVENT));
+  } catch {
+    // not JSON: an ordinary refusal
+  }
 }
 

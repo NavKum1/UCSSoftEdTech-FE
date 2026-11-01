@@ -10,9 +10,8 @@
 import React, { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { UserButton } from "@clerk/nextjs";
-import { ChevronDown, CreditCard, LogIn, Menu, Mic, Scale, Shield, X } from "lucide-react";
-import { AUTH_PROVIDER, AppUserButton, useAppAuth } from "@/lib/appAuth";
+import { ChevronDown, LogIn, Menu, Mic, Shield, X } from "lucide-react";
+import { AppUserButton, useAppAuth } from "@/lib/appAuth";
 import { endDevSession, useDevSession } from "@/lib/devSession";
 import { CAN_SIGN_UP, signInHref, signUpHref, useReturnPath } from "@/components/SignInRequired";
 import { hidesGlobalNavigation } from "@/lib/careerNav";
@@ -183,15 +182,8 @@ export default function GlobalNavigation() {
         End
       </button>
     </span>
-  ) : isSignedIn && AUTH_PROVIDER === "keycloak" ? (
-    <AppUserButton />
   ) : isSignedIn ? (
-    <UserButton appearance={{ elements: { avatarBox: "w-8 h-8 rounded-lg ring-1 ring-border" } }}>
-      <UserButton.MenuItems>
-        <UserButton.Link label="Pricing and minutes" labelIcon={<CreditCard className="w-4 h-4" />} href="/pricing" />
-        <UserButton.Link label="Fairness self-ID" labelIcon={<Scale className="w-4 h-4" />} href="/settings/self-identification" />
-      </UserButton.MenuItems>
-    </UserButton>
+    <AppUserButton />
   ) : !isLoaded ? (
     <div className="h-8 w-8 animate-pulse rounded-lg bg-muted" aria-hidden="true" />
   ) : (

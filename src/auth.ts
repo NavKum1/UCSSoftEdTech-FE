@@ -1,5 +1,5 @@
 /**
- * Auth.js (next-auth v5) configuration for NEXT_PUBLIC_AUTH_PROVIDER=keycloak.
+ * Auth.js (next-auth v5) configuration: Keycloak is the app's identity provider.
  * Authorization code + PKCE (S256) against the public `edulexa-web` client of the TotalOffice Keycloak realm. Tokens live
  * in the encrypted, httpOnly Auth.js session cookie; the access token is refreshed here before it expires and handed to
  * the browser through the session so useAppAuth().getToken() can call the API.
