@@ -63,8 +63,8 @@ function Done() {
 
   const open = () => {
     // A local developer session already acts as the admin; a real account signs in again to pick up its school
-    if (getDevSession()) window.location.replace("/institute/dashboard");
-    else void keycloakSignIn("/institute/dashboard");
+    if (getDevSession()) window.location.replace("/institute/setup");
+    else void keycloakSignIn("/institute/setup");
   };
 
   const ready = status?.status === "Created";

@@ -171,7 +171,7 @@ function Crm() {
         </div>
       )}
 
-      <div role="tablist" aria-label="CRM" className="flex gap-5 border-b border-border text-sm">
+      <div role="tablist" aria-label="CRM" className="flex gap-5 overflow-x-auto text-sm shadow-[inset_0_-1px_0_var(--color-border)] [scrollbar-width:none]">
         {TABS.map(([k, label]) => (
           <button
             key={k}
@@ -179,7 +179,7 @@ function Crm() {
             type="button"
             aria-selected={tab === k}
             onClick={() => setTab(k)}
-            className={`-mb-px border-b-2 pb-2.5 ${tab === k ? "border-cyan-600 font-medium text-foreground" : "border-transparent text-muted-foreground hover:text-foreground"}`}
+            className={`shrink-0 whitespace-nowrap border-b-2 pb-2.5 ${tab === k ? "border-cyan-600 font-medium text-foreground" : "border-transparent text-muted-foreground hover:text-foreground"}`}
           >
             {label}
             {k === "followups" && overdue > 0 && <span className="ml-1.5 rounded-full bg-red-600 px-1.5 text-[11px] font-medium text-white">{overdue}</span>}

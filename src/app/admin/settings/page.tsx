@@ -28,7 +28,7 @@ interface UploadsState {
   records: { source: string; action: string; fileName: string; signature: string; instituteId: string | null; at: string }[];
 }
 
-const SOURCE_NAMES: Record<string, string> = { career: "Career centre files", guidance: "Guidance form uploads", crm: "CRM email attachments" };
+const SOURCE_NAMES: Record<string, string> = { career: "Career centre files", guidance: "Guidance form uploads", crm: "CRM email attachments", branding: "School logos" };
 const card = "rounded-2xl border border-border bg-card p-5";
 const input = "mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm";
 const button = "inline-flex items-center gap-1.5 rounded-lg px-3.5 py-2 text-sm font-medium disabled:opacity-50";
