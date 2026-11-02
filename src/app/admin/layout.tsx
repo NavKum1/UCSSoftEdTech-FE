@@ -13,6 +13,7 @@ const SECTIONS = [
   { href: "/admin", label: "Overview" },
   { href: "/admin/exams", label: "Exams" },
   { href: "/admin/career", label: "Career suite" },
+  { href: "/admin/schools", label: "Schools" },
   { href: "/admin/transparency", label: "Transparency" },
   { href: "/admin/settings", label: "Email and uploads" },
   { href: "/admin/system", label: "System" },
