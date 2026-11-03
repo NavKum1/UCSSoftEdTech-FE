@@ -7,6 +7,7 @@ import { AlertTriangle, CheckCircle2, Download, Loader2, Lock, Trash2 } from "lu
 import { authenticatedFetch } from "@/lib/apiClient";
 import { errorMessage } from "@/lib/candidateExperience";
 import SignInRequired from "@/components/SignInRequired";
+import { useEn } from "@/lib/english/EnglishProvider";
 
 const CONFIRM = "DELETE MY DATA";
 
@@ -26,7 +27,7 @@ const DELETED = [
   "Speaking-practice measurements (pace, filler words, pauses)",
   "GitHub repository defenses, résumés and language preferences",
   "Course referrals (providers are told to stop contact and delete your data)",
-  "Personalised feedback, accommodation requests and written-defense answers",
+  "Personalised feedback, accommodation requests and written-defense answers", // en() where shown
 ];
 
 const ANONYMISED = [
@@ -41,6 +42,7 @@ const KEPT = [
 ];
 
 export default function PrivacySettingsPage() {
+  const en = useEn();
   const { getToken, isLoaded, isSignedIn } = useAuth();
   // After erasure: end the session (Keycloak signs out everywhere; a local dev session just ends)
   const signOut = () => {
@@ -150,7 +152,7 @@ export default function PrivacySettingsPage() {
           {result ? (
             <div className="space-y-3 text-sm">
               <p className="flex items-center gap-2 text-emerald-700 dark:text-emerald-400 font-semibold">
-                <CheckCircle2 className="w-4 h-4" /> Your data has been deleted and your account anonymised.
+                <CheckCircle2 className="w-4 h-4" />{en(" Your data has been deleted and your account anonymised.")}
               </p>
               <ul className="text-xs text-muted-foreground list-disc ml-5 space-y-0.5">
                 {Object.entries(result.deleted)
@@ -185,23 +187,22 @@ export default function PrivacySettingsPage() {
                 <div>
                   <p className="font-semibold text-foreground">Deleted</p>
                   <ul className="list-disc ml-5 mt-1 space-y-0.5 text-muted-foreground">
-                    {DELETED.map((d) => <li key={d}>{d}</li>)}
+                    {DELETED.map((d) => <li key={d}>{en(d)}</li>)}
                   </ul>
                 </div>
                 <div>
-                  <p className="font-semibold text-foreground">Anonymised</p>
+                  <p className="font-semibold text-foreground">{en("Anonymised")}</p>
                   <ul className="list-disc ml-5 mt-1 space-y-0.5 text-muted-foreground">
-                    {ANONYMISED.map((d) => <li key={d}>{d}</li>)}
+                    {ANONYMISED.map((d) => <li key={d}>{en(d)}</li>)}
                   </ul>
                 </div>
                 <div>
                   <p className="font-semibold text-foreground">Kept, de-identified</p>
                   <ul className="list-disc ml-5 mt-1 space-y-0.5 text-muted-foreground">
-                    {KEPT.map((d) => <li key={d}>{d}</li>)}
+                    {KEPT.map((d) => <li key={d}>{en(d)}</li>)}
                   </ul>
                   <p className="mt-1 text-muted-foreground">
-                    Employers must be able to show how past hiring decisions were made, so these records stay, linked only to an
-                    anonymised account with no name, email, country or GitHub login.
+                    {en("Employers must be able to show how past hiring decisions were made, so these records stay, linked only to an anonymised account with no name, email, country or GitHub login.")}
                   </p>
                 </div>
               </div>
@@ -209,8 +210,7 @@ export default function PrivacySettingsPage() {
               <div className="rounded-xl border border-amber-500/30 bg-amber-500/5 p-3 text-xs text-foreground flex gap-2">
                 <AlertTriangle className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0" />
                 <span>
-                  This cannot be undone. Download your data first if you want a copy. Your sign-in account with our identity provider is
-                  separate: delete it from your account settings too, otherwise signing in again reconnects to the anonymised record.
+                  {en("This cannot be undone. Download your data first if you want a copy. Your sign-in account with our identity provider is separate: delete it from your account settings too, otherwise signing in again reconnects to the anonymised record.")}
                 </span>
               </div>
 

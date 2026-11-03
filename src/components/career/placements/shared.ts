@@ -9,6 +9,7 @@ export const MODE_LABELS_KEYS = ["OnCampus", "Virtual", "PoolCampus", "OffCampus
 export function usePlacementModeLabels(): Record<string, string> {
   return useCareerLabels("placementsShared.mode", MODE_LABELS_KEYS);
 }
+// not text: status codes (labels come from the messages)
 export const DRIVE_STATUS_LABELS_KEYS = ["Planned", "InProgress", "Completed", "Cancelled"];
 /** drive status labels in the career language (G1) */
 export function useDriveStatusLabels(): Record<string, string> {

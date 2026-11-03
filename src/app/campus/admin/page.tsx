@@ -18,6 +18,7 @@ import {
   Upload,
   Users,
 } from "lucide-react";
+import { useEn } from "@/lib/english/EnglishProvider";
 
 type GetToken = () => Promise<string | null>;
 
@@ -644,6 +645,7 @@ function formatDate(iso: string) {
 }
 
 function AssignTab({ cohortId, assignments, getToken, onChanged }: { cohortId: string; assignments: AssignmentRow[]; getToken: GetToken; onChanged: () => void }) {
+  const en = useEn();
   const [sprints, setSprints] = useState<SprintOption[] | null>(null);
   const [sprintId, setSprintId] = useState("");
   const [manualId, setManualId] = useState("");
@@ -744,7 +746,7 @@ function AssignTab({ cohortId, assignments, getToken, onChanged }: { cohortId: s
           </label>
           {manualId.trim() && (
             <label className="block text-xs font-semibold text-foreground sm:col-span-2">
-              Invite code (needed for private sprints owned by another organisation)
+              {en("Invite code (needed for private sprints owned by another organisation)")}
               <input className={`${inputClass} mt-1`} value={inviteCode} onChange={(e) => setInviteCode(e.target.value)} />
             </label>
           )}
@@ -868,6 +870,7 @@ function Histogram({ title, dist, suffix }: { title: string; dist: Distribution;
 }
 
 function DashboardTab({ cohortId, assignments, getToken }: { cohortId: string; assignments: AssignmentRow[]; getToken: GetToken }) {
+  const en = useEn();
   const [sprintId, setSprintId] = useState(assignments[0]?.sprintId ?? "");
   const [dashboard, setDashboard] = useState<Loaded<DashboardData> | null>(null);
   const [band, setBand] = useState("");
@@ -941,7 +944,7 @@ function DashboardTab({ cohortId, assignments, getToken }: { cohortId: string; a
               <div>
                 <h5 className="text-[11px] font-semibold text-muted-foreground mb-1">Integrity review (submissions)</h5>
                 <div className="flex flex-wrap gap-2 text-[11px]">
-                  {[["Clear", "Clear"], ["Review", "Review"], ["HighRisk", "High risk"], ["Unknown", "Not analysed"]].map(([k, label]) => (
+                  {[["Clear", "Clear"], ["Review", "Review"], ["HighRisk", "High risk"], ["Unknown", en("Not analysed")]].map(([k, label]) => (
                     <span key={k} className="px-2 py-1 rounded-lg border border-border bg-card text-foreground">
                       {label}: <strong className="tabular-nums">{d.integrityReview[k] ?? 0}</strong>
                     </span>
@@ -1061,6 +1064,7 @@ function DashboardTab({ cohortId, assignments, getToken }: { cohortId: string; a
 let nextRowId = 1;
 
 function OutcomesTab({ cohortId, assignments, getToken }: { cohortId: string; assignments: AssignmentRow[]; getToken: GetToken }) {
+  const en = useEn();
   const [sprintId, setSprintId] = useState(assignments[0]?.sprintId ?? "");
   const [mappingVersion, setMappingVersion] = useState(0);
   const [mappings, setMappings] = useState<Loaded<{ isDefault: boolean }> | null>(null);
@@ -1114,7 +1118,7 @@ function OutcomesTab({ cohortId, assignments, getToken }: { cohortId: string; as
     };
   }, [getToken, cohortId, sprintId, target, attainmentKey]);
 
-  if (assignments.length === 0) return <p className="text-sm text-muted-foreground">Assign a sprint to map it to programme outcomes.</p>;
+  if (assignments.length === 0) return <p className="text-sm text-muted-foreground">{en("Assign a sprint to map it to programme outcomes.")}</p>;
 
   const save = async (reset: boolean) => {
     setSaving(true);
@@ -1151,8 +1155,7 @@ function OutcomesTab({ cohortId, assignments, getToken }: { cohortId: string; as
       <div className="rounded-xl border border-border bg-card/60 p-4 space-y-3">
         <h3 className="text-sm font-bold text-foreground">Outcome mapping for this sprint</h3>
         <p className="text-[11px] text-muted-foreground">
-          Choose which programme outcomes this sprint provides evidence for and which measure to use: tests (code correctness), defense (explaining the work) or
-          combined. Weight is carried into the export for your own CO-PO calculation (for example correlation level 1–3).
+          {en("Choose which programme outcomes this sprint provides evidence for and which measure to use: tests (code correctness), defense (explaining the work) or combined. Weight is carried into the export for your own CO-PO calculation (for example correlation level 1–3).")}
         </p>
         {!mappings || mappings.key !== mappingKey ? (
           <Spinner text="Loading mapping..." />
@@ -1160,14 +1163,14 @@ function OutcomesTab({ cohortId, assignments, getToken }: { cohortId: string; as
           <Message ok={false} text={mappings.error} />
         ) : (
           <>
-            {mappings.data?.isDefault && <p className="text-[11px] text-muted-foreground">Showing the default mapping. Save to customise it.</p>}
+            {mappings.data?.isDefault && <p className="text-[11px] text-muted-foreground">{en("Showing the default mapping. Save to customise it.")}</p>}
             <div className="space-y-2">
               {rows.map((r) => (
                 <div key={r.rowId} className="grid grid-cols-[1fr_auto] sm:grid-cols-[minmax(0,1fr)_140px_90px_auto] gap-2 items-center">
                   <select className={inputClass} value={r.outcomeCode} onChange={(e) => update(r.rowId, { outcomeCode: e.target.value })} aria-label="Outcome">
                     {[...PO_CODES, ...PSO_CODES].map((c) => (
                       <option key={c} value={c} disabled={c !== r.outcomeCode && usedCodes.has(c)}>
-                        {c} {titles[c] ? `· ${titles[c]}` : c.startsWith("PSO") ? "· Programme-specific" : ""}
+                        {c} {titles[c] ? `· ${titles[c]}` : c.startsWith("PSO") ? en("· Programme-specific") : ""}
                       </option>
                     ))}
                   </select>

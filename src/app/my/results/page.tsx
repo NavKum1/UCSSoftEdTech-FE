@@ -7,6 +7,7 @@ import { AlertCircle, ChevronRight, ClipboardList, Inbox, Loader2, Lock } from "
 import { authenticatedFetch } from "@/lib/apiClient";
 import { errorMessage, fmtDate, MySubmissionRow } from "@/lib/candidateExperience";
 import SignInRequired from "@/components/SignInRequired";
+import { useEn } from "@/lib/english/EnglishProvider";
 
 function Badge({ children, tone = "muted" }: { children: React.ReactNode; tone?: "muted" | "good" | "warn" | "info" }) {
   const cls =
@@ -21,6 +22,7 @@ function Badge({ children, tone = "muted" }: { children: React.ReactNode; tone?:
 }
 
 export default function MyResultsPage() {
+  const en = useEn();
   const { getToken, isLoaded, isSignedIn } = useAuth();
   const [rows, setRows] = useState<MySubmissionRow[] | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -56,7 +58,7 @@ export default function MyResultsPage() {
               My results
             </h1>
             <p className="text-sm text-muted-foreground mt-1">
-              Every submission, your test results, your defense, personalised feedback and where the review stands.
+              {en("Every submission, your test results, your defense, personalised feedback and where the review stands.")}
             </p>
           </div>
           <Link href="/settings/privacy" className="text-xs text-muted-foreground hover:text-foreground inline-flex items-center gap-1">

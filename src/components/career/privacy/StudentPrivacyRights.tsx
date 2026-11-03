@@ -46,6 +46,7 @@ export const REQUEST_TYPE_LABELS_KEYS = ["Export", "Erasure", "Correction"];
 export function useRequestTypeLabels(): Record<string, string> {
   return useCareerLabels("studentPrivacyRights.requestType", REQUEST_TYPE_LABELS_KEYS);
 }
+// not text: status codes (labels come from the messages)
 export const REQUEST_STATUS_LABELS_KEYS = ["Submitted", "InProgress", "Completed", "Rejected", "Cancelled"];
 /** request status labels in the career language (G1) */
 export function useRequestStatusLabels(): Record<string, string> {

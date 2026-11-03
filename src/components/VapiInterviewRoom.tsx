@@ -193,7 +193,7 @@ export default function VapiInterviewRoom({
     try {
       vapiInstance = new Vapi(process.env.NEXT_PUBLIC_VAPI_PUBLIC_KEY || "");
     } catch (e) {
-      console.warn("Vapi SDK could not be initialised:", e);
+      console.warn("Vapi SDK could not be initialised:", e); // not text: a developer log
       return;
     }
     vapiRef.current = vapiInstance;

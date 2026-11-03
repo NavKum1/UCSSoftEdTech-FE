@@ -13,6 +13,8 @@ import { usePathname, useRouter } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { AppUserButton } from "@/lib/appAuth";
 import { endDevSession, useDevSession } from "@/lib/devSession";
+import EnglishPicker from "@/components/EnglishPicker";
+import { useEn } from "@/lib/english/EnglishProvider";
 
 export interface PortalSection {
   href: string;
@@ -41,6 +43,7 @@ export default function PortalShell({
   footer?: React.ReactNode;
   children: React.ReactNode;
 }) {
+  const en = useEn();
   const pathname = usePathname();
   const router = useRouter();
   const dev = useDevSession();
@@ -61,6 +64,7 @@ export default function PortalShell({
             {badge}
           </Link>
           <div className="flex shrink-0 items-center gap-3">
+            <EnglishPicker className="hidden md:inline-flex" />
             <Link href="/" className="hidden items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground sm:inline-flex">
               <ArrowLeft aria-hidden="true" className="h-3.5 w-3.5" />
               Main app
@@ -98,7 +102,7 @@ export default function PortalShell({
                         active ? "border-indigo-600 font-medium text-foreground" : "border-transparent text-muted-foreground hover:border-border hover:text-foreground"
                       }`}
                     >
-                      {s.label}
+                      {en(s.label)}
                     </Link>
                   </li>
                 );

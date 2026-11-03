@@ -10,6 +10,7 @@ import { Check, CreditCard, Loader2 } from "lucide-react";
 import { AccessNotice, useLatestRef, useLegacyApi } from "@/lib/legacyApi";
 import { REASONS, day, money, type PlanOption, type SchoolPlanState } from "@/components/institute/SchoolPlan";
 import { openRazorpayCheckout } from "@/lib/razorpayCheckout";
+import { useEn } from "@/lib/english/EnglishProvider";
 
 const STATUS: Record<string, { label: string; tone: string }> = {
   Trialing: { label: "Free trial", tone: "border-indigo-300 bg-indigo-50 text-indigo-900 dark:border-indigo-800 dark:bg-indigo-950/50 dark:text-indigo-200" },
@@ -19,6 +20,7 @@ const STATUS: Record<string, { label: string; tone: string }> = {
 };
 
 export default function SchoolBillingPage() {
+  const en = useEn();
   const { apiFetch, ready, access, getToken } = useLegacyApi();
   const [s, setS] = useState<SchoolPlanState | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -150,15 +152,15 @@ export default function SchoolBillingPage() {
         <p className="mt-4 text-[15px]">
           {s.status === "Trialing" &&
             (s.cancelAtPeriodEnd
-              ? `Your free trial ends on ${day(s.trialEndsAt)}. You cancelled, so nothing will be charged and your school becomes read-only then.`
+              ? en(`Your free trial ends on ${day(s.trialEndsAt)}. You cancelled, so nothing will be charged and your school becomes read-only then.`)
               : `Your free trial ends on ${day(s.trialEndsAt)}. Then the first payment is taken from the ${s.provider === "razorpay" ? "card or UPI mandate" : "card"} you gave.`)}
           {s.status === "Active" &&
             (s.cancelAtPeriodEnd
-              ? `Cancelled: your school stays open until ${day(s.currentPeriodEnd)}, then becomes read-only.`
+              ? en(`Cancelled: your school stays open until ${day(s.currentPeriodEnd)}, then becomes read-only.`)
               : `Paid until ${day(s.currentPeriodEnd)}; it renews automatically.`)}
           {s.status === "PastDue" && "The last payment didn't go through. Update your payment method; the school becomes read-only a week after a failed payment."}
           {s.status === "ReadOnly" &&
-            `Your school is read-only because ${REASONS[s.readOnlyReason ?? ""] ?? "its plan isn't paid"}. You can see and export everything until ${day(s.deleteAfter)}, when its data is deleted. Choose a plan below to carry on.`}
+            en(`Your school is read-only because ${REASONS[s.readOnlyReason ?? ""] ?? "its plan isn't paid"}. You can see and export everything until ${day(s.deleteAfter)}, when its data is deleted. Choose a plan below to carry on.`)}
         </p>
         <dl className="mt-5 grid gap-4 border-t border-slate-100 pt-5 text-sm dark:border-slate-800 sm:grid-cols-2">
           <div>

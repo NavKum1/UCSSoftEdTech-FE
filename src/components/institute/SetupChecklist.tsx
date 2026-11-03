@@ -11,6 +11,7 @@ import { usePathname } from "next/navigation";
 import { CheckCircle2, Circle, X } from "lucide-react";
 import { useAppAuth } from "@/lib/appAuth";
 import { authenticatedFetch } from "@/lib/apiClient";
+import { useEn } from "@/lib/english/EnglishProvider";
 
 export interface ChecklistItem {
   key: "school" | "form" | "team" | "website" | "careerSuite";
@@ -40,12 +41,16 @@ export interface SetupState {
   complete: boolean;
   hidden: boolean;
   wizardDone: boolean;
+  /** The school's English: US or GB spelling for its forms, reports and e-mails (chosen, or from its country) */
+  english: { value: "US" | "GB"; chosen: "US" | "GB" | null; fromCountry: "US" | "GB"; britishForms: number };
 }
 
 /** What each item asks for, and where it's done (the wizard's step, or Billing) */
 export const CHECK_TEXT: Record<ChecklistItem["key"], { title: string; text: string; href: string; action: string }> = {
+  // en() where shown
   school: { title: "Add your logo and colour", text: "They go on your forms, reports and e-mails.", href: "/institute/setup?step=school", action: "Add logo" },
   form: { title: "Publish your inquiry form", text: "Start from a template made for schools like yours.", href: "/institute/setup?step=form", action: "Choose a template" },
+  // en() where shown
   team: { title: "Invite your team", text: "Counsellors work the inquiries; admins help run the school.", href: "/institute/setup?step=team", action: "Invite" },
   website: { title: "Get your first inquiry", text: "Put the form on your website, or share its link.", href: "/institute/setup?step=website", action: "Get the code" },
   careerSuite: { title: "Add the career suite", text: "Career services, events and AI interview practice for your students, on Growth and Pro.", href: "/institute/billing", action: "See plans" },
@@ -53,6 +58,7 @@ export const CHECK_TEXT: Record<ChecklistItem["key"], { title: string; text: str
 
 /** The checklist card on the Admissions CRM (administrators; nothing once setup is done or hidden) */
 export function SetupChecklist() {
+  const en = useEn();
   const { getToken, isSignedIn, roles } = useAppAuth();
   const pathname = usePathname();
   const [s, setS] = useState<SetupState | null>(null);
@@ -108,12 +114,12 @@ export function SetupChecklist() {
                 <Circle aria-label={c.optional ? "Optional" : "To do"} className="mt-0.5 h-5 w-5 shrink-0 text-muted-foreground" />
               )}
               <div className="min-w-0">
-                <p className={`text-sm font-medium ${c.done ? "text-muted-foreground line-through decoration-1" : ""}`}>{t.title}</p>
+                <p className={`text-sm font-medium ${c.done ? "text-muted-foreground line-through decoration-1" : ""}`}>{en(t.title)}</p>
                 {!c.done && (
                   <>
-                    <p className="mt-0.5 text-xs text-muted-foreground">{t.text}</p>
+                    <p className="mt-0.5 text-xs text-muted-foreground">{en(t.text)}</p>
                     <Link href={t.href} className="mt-1.5 inline-block text-sm font-semibold text-cyan-700 hover:underline dark:text-cyan-400">
-                      {t.action}
+                      {en(t.action)}
                     </Link>
                   </>
                 )}

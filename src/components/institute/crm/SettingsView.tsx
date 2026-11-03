@@ -11,6 +11,7 @@ import { authenticatedFetch } from "@/lib/apiClient";
 import { crm, type GetToken, type Member, type Template } from "./api";
 import RichTextEditor from "./RichTextEditor";
 import WebhookEvents from "./WebhookEvents";
+import { useEn } from "@/lib/english/EnglishProvider";
 
 const input = "w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:border-cyan-600 focus:outline-none focus:ring-2 focus:ring-cyan-600/20";
 const primary = "inline-flex items-center gap-1.5 rounded-lg bg-cyan-700 px-3.5 py-2 text-sm font-medium text-white hover:bg-cyan-800 disabled:opacity-50";
@@ -64,7 +65,8 @@ function Message({ m }: { m: { ok: boolean; text: string } | null }) {
 }
 
 function TeamSettings({ getToken, team, reload }: { getToken: GetToken; team: Member[]; reload: () => void }) {
-  const blank = { name: "", email: "", role: "Counsellor" as Member["role"], active: true };
+  const en = useEn();
+  const blank = { name: "", email: "", role: "Counsellor" as Member["role"], active: true }; // not text: the role value
   const [form, setForm] = useState<typeof blank & { id?: string }>(blank);
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
   const [busy, setBusy] = useState(false);
@@ -89,8 +91,7 @@ function TeamSettings({ getToken, team, reload }: { getToken: GetToken; team: Me
       <div>
         <h2 className="text-base font-semibold">Admissions team</h2>
         <p className="mt-0.5 text-sm text-muted-foreground">
-          People who can own leads and get follow-up reminders. Use the email they sign in with, so &ldquo;My leads&rdquo; finds theirs. Counsellors also need the
-          Counselor role on their Edulexa account to open the CRM.
+          {en("People who can own leads and get follow-up reminders. Use the email they sign in with, so “My leads” finds theirs. Counsellors also need the Counselor role on their Edulexa account to open the CRM.")}
         </p>
       </div>
       <Message m={msg} />
@@ -104,7 +105,7 @@ function TeamSettings({ getToken, team, reload }: { getToken: GetToken; team: Me
         <input className={input} placeholder="Name" aria-label="Name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required maxLength={200} />
         <input className={input} type="email" placeholder="Email" aria-label="Email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} required />
         <select className={input} aria-label="Role" value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value as Member["role"] })}>
-          <option value="Counsellor">Counsellor</option>
+          <option value="Counsellor">{en("Counsellor")}</option>
           <option value="Admin">Admin</option>
         </select>
         <div className="flex gap-2">
@@ -120,7 +121,7 @@ function TeamSettings({ getToken, team, reload }: { getToken: GetToken; team: Me
         </div>
       </form>
       {team.length === 0 ? (
-        <p className="text-sm text-muted-foreground">No one yet. Add yourself first, then your counsellors.</p>
+        <p className="text-sm text-muted-foreground">{en("No one yet. Add yourself first, then your counsellors.")}</p>
       ) : (
         <ul className="divide-y divide-border rounded-xl border border-border bg-card">
           {team.map((m) => (

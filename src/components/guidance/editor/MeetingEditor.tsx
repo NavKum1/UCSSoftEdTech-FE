@@ -9,6 +9,7 @@
 import React, { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { useLegacyApi } from "@/lib/legacyApi";
 import { MEETING_MODES, type MeetingMode, type Question } from "@/components/guidance/form/model";
+import { useEn } from "@/lib/english/EnglishProvider";
 
 /** The institute whose form is being edited (for its appointment types) */
 export const EditingInstitute = createContext<string | null>(null);
@@ -29,6 +30,7 @@ function zones(): string[] {
 }
 
 export default function MeetingEditor({ q, update }: { q: Question; update: (p: Partial<Question>) => void }) {
+  const en = useEn();
   const institute = useContext(EditingInstitute);
   const { apiFetch, ready } = useLegacyApi();
   const [options, setOptions] = useState<BookingOptions | null>(null);
@@ -61,7 +63,7 @@ export default function MeetingEditor({ q, update }: { q: Question; update: (p: 
           {(
             [
               ["request", "They ask for a day", "They choose a day and a time of day; your team confirms a time from the lead, and they get a calendar invite."],
-              ["slots", "They pick a free time", "They pick from your counsellors' free hours (Career centre → Appointments); it's booked straight away."],
+              ["slots", "They pick a free time", en("They pick from your counsellors' free hours (Career centre → Appointments); it's booked straight away.")],
             ] as const
           ).map(([mode, title, detail]) => (
             <label key={mode} className={`flex cursor-pointer gap-2 rounded-lg border p-2.5 ${b.mode === mode ? "border-cyan-600 bg-background" : "border-border"}`}>
@@ -80,20 +82,20 @@ export default function MeetingEditor({ q, update }: { q: Question; update: (p: 
           Appointment people book
           {options && options.types.length === 0 ? (
             <span className="mt-1 block rounded-lg bg-amber-500/10 p-2 font-normal text-amber-900 dark:text-amber-200" role="alert">
-              Set up an appointment type and your counsellors&apos; weekly hours in Career centre → Appointments first. Until then, let people ask for a day.
+              {en("Set up an appointment type and your counsellors' weekly hours in Career centre → Appointments first. Until then, let people ask for a day.")}
             </span>
           ) : (
             <select className={field} value={b.typeId ?? ""} onChange={(e) => set({ typeId: e.target.value || null })}>
               <option value="">Choose…</option>
               {(options?.types ?? []).map((t) => (
                 <option key={t.id} value={t.id}>
-                  {t.name} ({t.minutes} min, {t.counsellors === 1 ? "1 counsellor" : `${t.counsellors} counsellors`})
+                  {t.name} ({t.minutes} min, {t.counsellors === 1 ? en("1 counsellor") : en(`${t.counsellors} counsellors`)})
                 </option>
               ))}
             </select>
           )}
           {type && type.counsellors === 0 && (
-            <span className="mt-1 block font-normal text-amber-800 dark:text-amber-300">No counsellor offers this appointment with weekly hours yet, so no times will show.</span>
+            <span className="mt-1 block font-normal text-amber-800 dark:text-amber-300">{en("No counsellor offers this appointment with weekly hours yet, so no times will show.")}</span>
           )}
         </label>
       )}
@@ -130,7 +132,7 @@ export default function MeetingEditor({ q, update }: { q: Question; update: (p: 
         <label className="block font-medium">
           Time zone of the times
           {b.mode === "slots" ? (
-            <span className="mt-1 block font-normal text-muted-foreground">{options?.timeZone ?? b.timeZone} (your counsellors&apos; hours are set in it)</span>
+            <span className="mt-1 block font-normal text-muted-foreground">{options?.timeZone ?? b.timeZone}{en(" (your counsellors' hours are set in it)")}</span>
           ) : (
             <select className={field} value={b.timeZone} onChange={(e) => set({ timeZone: e.target.value })}>
               {(allZones.includes(b.timeZone) ? allZones : [b.timeZone, ...allZones]).map((z) => (

@@ -10,6 +10,7 @@ import React, { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { Mail, MessageSquare, RotateCcw, Send, Users, X } from "lucide-react";
 import { useLatestRef, useLegacyApi } from "@/lib/legacyApi";
+import { useEn } from "@/lib/english/EnglishProvider";
 
 interface Row {
   id: string;
@@ -42,7 +43,7 @@ const STATUSES: [string, string][] = [
   ["Read", "Read"],
   ["Skipped", "Skipped"],
   ["Failed", "Failed"],
-  ["Cancelled", "Cancelled"],
+  ["Cancelled", "Cancelled"], // en() where shown (the label; the code stays)
 ];
 const TONE: Record<string, string> = {
   Scheduled: "bg-sky-500/10 text-sky-800 dark:text-sky-300",
@@ -59,6 +60,7 @@ const CHANNEL = { email: "Email", team: "Team email", sms: "SMS", whatsapp: "Wha
 const when = (iso: string | null) => (iso ? new Date(iso).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" }) : "");
 
 export default function NotificationsView({ instituteId, forms, canEdit }: { instituteId?: string; forms: { id: string; name: string }[]; canEdit: boolean }) {
+  const en = useEn();
   const { apiFetch, ready } = useLegacyApi();
   const [status, setStatus] = useState("");
   const [channel, setChannel] = useState("");
@@ -121,7 +123,7 @@ export default function NotificationsView({ instituteId, forms, canEdit }: { ins
           const n = k ? (counts[k] ?? 0) : total;
           return (
             <button key={k} type="button" aria-pressed={status === k} onClick={() => setStatus(k)} className={`rounded-full border px-3 py-1.5 text-xs font-medium ${status === k ? "border-cyan-700 bg-cyan-700 text-white" : "border-border bg-card hover:bg-muted"}`}>
-              {label} <span className="tabular-nums opacity-75">{n}</span>
+              {en(label)} <span className="tabular-nums opacity-75">{n}</span>
             </button>
           );
         })}

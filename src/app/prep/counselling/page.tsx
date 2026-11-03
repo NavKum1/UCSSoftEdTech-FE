@@ -15,6 +15,7 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { ArrowLeft, ArrowRight, Check, ChevronRight, Clock, Compass, GraduationCap, History, Lightbulb, Send } from "lucide-react";
 import { AccessNotice, useLatestRef, useLegacyApi } from "@/lib/legacyApi";
+import { useEn } from "@/lib/english/EnglishProvider";
 
 // ------------------------------------------------------------------ API types
 
@@ -120,7 +121,7 @@ function clarityText(r: Result): string {
   }
 }
 
-const draftKey = (attemptId: string) => `edulexa.counselling.${attemptId}`;
+const draftKey = (attemptId: string) => `edulexa.counselling.${attemptId}`; // not text: a storage key
 function loadDraft(attemptId: string): Record<number, number> {
   try {
     const raw = sessionStorage.getItem(draftKey(attemptId));
@@ -147,8 +148,9 @@ function clearDraft(attemptId: string) {
 // ------------------------------------------------------------------ page
 
 export default function CounsellingPage() {
+  const en = useEn();
   return (
-    <Suspense fallback={<Loading label="Loading the counselling quiz" />}>
+    <Suspense fallback={<Loading label={en("Loading the counselling quiz")} />}>
       <CounsellingInner />
     </Suspense>
   );
@@ -163,6 +165,7 @@ function Loading({ label }: { label: string }) {
 }
 
 function CounsellingInner() {
+  const en = useEn();
   const params = useSearchParams();
   const scopeQuery = useMemo(() => {
     const q = new URLSearchParams();
@@ -259,8 +262,8 @@ function CounsellingInner() {
     }
   };
 
-  if (access) return <AccessNotice problem={access} feature="The counselling quiz" />;
-  if (!loaded) return <Loading label="Loading the counselling quiz" />;
+  if (access) return <AccessNotice problem={access} feature={en("The counselling quiz")} />;
+  if (!loaded) return <Loading label={en("Loading the counselling quiz")} />;
 
   if (attempt)
     return (
@@ -286,7 +289,7 @@ function CounsellingInner() {
       <header className="mb-6">
         <p className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-indigo-700 dark:text-indigo-300">
           <Compass aria-hidden="true" className="h-4 w-4" />
-          Career counselling
+          {en("Career counselling")}
         </p>
         <h1 className="mt-1 text-2xl font-semibold tracking-tight">{status?.scope ? `${status.scope.instituteName}: career quiz` : "Find the area of tech that suits you"}</h1>
       </header>
@@ -341,13 +344,13 @@ function CounsellingInner() {
 // ------------------------------------------------------------------ intro
 
 function Intro({ status, busy, onStart, onOpenLatest }: { status: Status; busy: boolean; onStart: () => void; onOpenLatest: (id: string) => void }) {
+  const en = useEn();
   const minutes = Math.max(3, Math.round(status.questionsPerAttempt / 3));
   return (
     <div className="grid gap-6 lg:grid-cols-3">
       <section className={`${card} p-6 lg:col-span-2`}>
         <p className="text-sm text-muted-foreground">
-          {status.questionsPerAttempt} short questions about what you enjoy and how you like to work. There are no right or wrong answers, and no
-          experience is needed. Your result shows which area of tech your answers point to, the answers that led there, and how to start practising it.
+          {status.questionsPerAttempt}{en(" short questions about what you enjoy and how you like to work. There are no right or wrong answers, and no experience is needed. Your result shows which area of tech your answers point to, the answers that led there, and how to start practising it.")}
         </p>
         <ul className="mt-5 grid gap-3 text-sm sm:grid-cols-3">
           <li className="rounded-xl border border-border p-3">
@@ -548,6 +551,7 @@ function ResultView({
   onClose: () => void;
   status: Status | null;
 }) {
+  const en = useEn();
   if (result.legacy)
     return (
       <section className={`${card} p-6`}>
@@ -663,7 +667,7 @@ function ResultView({
       {(result.nextSteps?.length ?? 0) > 0 && (
         <section aria-labelledby="cq-next">
           <h3 id="cq-next" className="mb-3 text-base font-semibold">
-            Start practising here
+            {en("Start practising here")}
           </h3>
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {result.nextSteps!.map((s) => (
@@ -717,6 +721,7 @@ function CoursesSection({
   scope: Scope | null;
   apiFetch: (path: string, init?: RequestInit) => Promise<Response>;
 }) {
+  const en = useEn();
   const [inquiring, setInquiring] = useState<Course | null>(null);
   const [sent, setSent] = useState<Record<string, string>>({});
 
@@ -726,7 +731,7 @@ function CoursesSection({
         <h3 className="flex items-center gap-2 text-base font-semibold">
           <GraduationCap aria-hidden="true" className="h-4 w-4" /> Courses
         </h3>
-        <p className="mt-2 text-sm text-muted-foreground">{scope.instituteName} hasn&apos;t listed courses here yet. Ask your counsellor about courses in this area.</p>
+        <p className="mt-2 text-sm text-muted-foreground">{scope.instituteName}{en(" hasn't listed courses here yet. Ask your counsellor about courses in this area.")}</p>
       </section>
     ) : null;
 
@@ -859,7 +864,7 @@ function InquiryDialog({
           candidatePhone: phone.trim() || null,
           notes: notes.trim() || null,
           primaryTrack,
-          referralSource: "Counselling quiz",
+          referralSource: "Counselling quiz", // not text: what the API records
           consent,
           shareQuizResult: shareQuiz,
         }),

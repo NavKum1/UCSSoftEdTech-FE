@@ -56,7 +56,7 @@ export default function IndiaReportsPage() {
   const [selfReported, setSelfReported] = useState(false);
   const [applied, setApplied] = useState({ years: "", programme: "", variant: "college", selfReported: false });
 
-  const query = `years=${encodeURIComponent(applied.years)}&programme=${encodeURIComponent(applied.programme)}&variant=${applied.variant}&includeSelfReported=${applied.selfReported}`;
+  const query = `years=${encodeURIComponent(applied.years)}&programme=${encodeURIComponent(applied.programme)}&variant=${applied.variant}&includeSelfReported=${applied.selfReported}`; // not text: the query
   const view = useLoad(() => api<PackView>(`/api/career/frameworks/packs/${key}?${query}`), [api, schoolId, key, query]);
   const programmes = view.data?.info.meta.programmes ?? [];
 

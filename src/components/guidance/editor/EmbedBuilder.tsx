@@ -9,10 +9,12 @@
 
 import React, { useMemo, useState } from "react";
 import { Check, Copy } from "lucide-react";
+import { useEn } from "@/lib/english/EnglishProvider";
 
 type Mode = "inline" | "button" | "floating";
 
 export default function EmbedBuilder({ instituteId, formId, formName, publicEnabled }: { instituteId: string; formId: string; formName: string; publicEnabled: boolean }) {
+  const en = useEn();
   const [mode, setMode] = useState<Mode>("inline");
   const [theme, setTheme] = useState<"light" | "dark" | "auto">("light");
   const [corners, setCorners] = useState<"rounded" | "square">("rounded");
@@ -75,7 +77,7 @@ export default function EmbedBuilder({ instituteId, formId, formName, publicEnab
             <input value={buttonText} maxLength={40} onChange={(e) => setButtonText(e.target.value)} className="mt-1 block w-full max-w-xs rounded-lg border border-border bg-background px-3 py-2 text-sm" />
           </label>
         )}
-        <Row label="Colours">
+        <Row label={en("Colours")}>
           {opt("Light", "light", theme, setTheme)}
           {opt("Dark", "dark", theme, setTheme)}
           {opt("Follow the visitor", "auto", theme, setTheme)}
@@ -94,7 +96,7 @@ export default function EmbedBuilder({ instituteId, formId, formName, publicEnab
         </Row>
         <div className="flex flex-wrap gap-4">
           <label className="block text-xs font-medium text-muted-foreground">
-            Colour (optional; else the form&apos;s)
+            {en("Colour (optional; else the form's)")}
             <span className="mt-1 flex items-center gap-2">
               <input type="color" value={validAccent || "#4f46e5"} onChange={(e) => setAccent(e.target.value)} className="h-9 w-12 rounded border border-border" />
               <input value={accent} onChange={(e) => setAccent(e.target.value)} placeholder="#rrggbb" className="w-24 rounded-lg border border-border bg-background px-2 py-1.5 font-mono text-xs" />

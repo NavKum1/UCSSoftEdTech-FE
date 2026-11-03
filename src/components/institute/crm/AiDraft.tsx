@@ -9,11 +9,12 @@
 import React, { useState } from "react";
 import { Sparkles, X } from "lucide-react";
 import { crm, type GetToken } from "./api";
+import { useEn } from "@/lib/english/EnglishProvider";
 
 const PURPOSES: [string, string][] = [
   ["first-reply", "First reply"],
   ["follow-up", "Follow up (no reply yet)"],
-  ["book-counselling", "Invite to a counselling session"],
+  ["book-counselling", "Invite to a counselling session"], // en() where shown (the label; the code stays)
   ["after-call", "Recap after a call"],
   ["custom", "Something else (describe below)"],
 ];
@@ -38,6 +39,7 @@ export default function AiDraft({
   /** Suggested purpose from the lead's state */
   suggest?: string;
 }) {
+  const en = useEn();
   const [purpose, setPurpose] = useState(suggest ?? "first-reply");
   const [tone, setTone] = useState("friendly");
   const [language, setLanguage] = useState("English");
@@ -78,7 +80,7 @@ export default function AiDraft({
           <select value={purpose} onChange={(e) => setPurpose(e.target.value)} className={select}>
             {PURPOSES.map(([v, l]) => (
               <option key={v} value={v}>
-                {l}
+                {en(l)}
               </option>
             ))}
           </select>
@@ -88,7 +90,7 @@ export default function AiDraft({
           <select value={tone} onChange={(e) => setTone(e.target.value)} className={select}>
             {TONES.map(([v, l]) => (
               <option key={v} value={v}>
-                {l}
+                {en(l)}
               </option>
             ))}
           </select>

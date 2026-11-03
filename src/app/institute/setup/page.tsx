@@ -14,11 +14,12 @@ import { SCHOOL_KINDS, countryList, countryName } from "@/lib/schoolKinds";
 import { CHECK_TEXT, type SetupState } from "@/components/institute/SetupChecklist";
 import StaffAccess from "@/components/institute/StaffAccess";
 import EmbedBuilder from "@/components/guidance/editor/EmbedBuilder";
+import { useEn } from "@/lib/english/EnglishProvider";
 
 const STEPS = [
-  { key: "school", title: "Your school", text: "Logo, colour and details" },
+  { key: "school", title: "Your school", text: "Logo, colour and details" }, // en() where shown
   { key: "form", title: "Your first form", text: "From a template" },
-  { key: "team", title: "Your team", text: "Counsellors and admins" },
+  { key: "team", title: "Your team", text: "Counsellors and admins" }, // en() where shown
   { key: "website", title: "Your website", text: "Link and code" },
 ] as const;
 type Step = (typeof STEPS)[number]["key"];
@@ -39,6 +40,7 @@ export default function SetupPage() {
 }
 
 function Setup() {
+  const en = useEn();
   const { apiFetch, ready, access, getToken } = useLegacyApi();
   const router = useRouter();
   const params = useSearchParams();
@@ -110,8 +112,8 @@ function Setup() {
                     {done(x.key) ? <Check aria-label="Done" className="h-4 w-4" strokeWidth={3} /> : i + 1}
                   </span>
                   <span>
-                    <span className="block text-sm font-medium">{x.title}</span>
-                    <span className="block text-xs text-muted-foreground">{x.text}</span>
+                    <span className="block text-sm font-medium">{en(x.title)}</span>
+                    <span className="block text-xs text-muted-foreground">{en(x.text)}</span>
                   </span>
                 </button>
               </li>
@@ -171,6 +173,7 @@ function Problem({ text }: { text: string | null }) {
 // ------------------------------------------------------------------ 1. the school
 
 function SchoolStep({ s, setS, apiFetch, next }: StepProps) {
+  const en = useEn();
   const [f, setF] = useState({
     kind: s.school.kind,
     country: s.school.country,
@@ -178,6 +181,7 @@ function SchoolStep({ s, setS, apiFetch, next }: StepProps) {
     contactEmail: s.school.contactEmail ?? "",
     address: s.school.address ?? "",
     accent: s.school.accent ?? "",
+    english: s.english.chosen ?? "",
   });
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -206,6 +210,20 @@ function SchoolStep({ s, setS, apiFetch, next }: StepProps) {
     setBusy(null);
     if (res.ok) setS(b);
   };
+  // A US school's forms made before it chose US English: converted on request (answers already sent keep their wording)
+  const convertForms = async () => {
+    setBusy("forms");
+    setError(null);
+    const res = await apiFetch("/api/institute/setup/forms-english", { method: "POST" });
+    const b = await res.json().catch(() => null);
+    if (!res.ok) {
+      setBusy(null);
+      return setError(b?.error ?? "Your forms couldn't be changed.");
+    }
+    const st = await apiFetch("/api/institute/setup");
+    if (st.ok) setS(await st.json());
+    setBusy(null);
+  };
   const save = async () => {
     setBusy("save");
     setError(null);
@@ -219,10 +237,10 @@ function SchoolStep({ s, setS, apiFetch, next }: StepProps) {
 
   return (
     <>
-      <Heading title="Your school" text="Your logo and colour go on your inquiry forms, the reports people receive, and your e-mails." />
+      <Heading title="Your school" text={en("Your logo and colour go on your inquiry forms, the reports people receive, and your e-mails.")} />
 
       <fieldset>
-        <legend className="text-sm font-medium">What kind of organisation are you?</legend>
+        <legend className="text-sm font-medium">{en("What kind of organisation are you?")}</legend>
         <div className="mt-2 grid gap-2 sm:grid-cols-2">
           {SCHOOL_KINDS.map((k) => (
             <label
@@ -231,8 +249,8 @@ function SchoolStep({ s, setS, apiFetch, next }: StepProps) {
             >
               <input type="radio" name="kind" value={k.value} checked={f.kind === k.value} onChange={() => setF({ ...f, kind: k.value })} className="mt-1 accent-cyan-700" />
               <span>
-                <span className="block text-sm font-medium">{k.label}</span>
-                <span className="block text-xs text-muted-foreground">{k.text}</span>
+                <span className="block text-sm font-medium">{en(k.label)}</span>
+                <span className="block text-xs text-muted-foreground">{en(k.text)}</span>
               </span>
             </label>
           ))}
@@ -269,7 +287,7 @@ function SchoolStep({ s, setS, apiFetch, next }: StepProps) {
 
         <div>
           <label htmlFor="accent" className="text-sm font-medium">
-            Brand colour
+            {en("Brand colour")}
           </label>
           <div className="mt-2 flex flex-wrap items-center gap-2">
             {SWATCHES.map((c) => (
@@ -285,7 +303,7 @@ function SchoolStep({ s, setS, apiFetch, next }: StepProps) {
             ))}
             <input
               type="color"
-              aria-label="Pick any colour"
+              aria-label={en("Pick any colour")}
               value={validAccent ? f.accent : "#0e7490"}
               onChange={(e) => setF({ ...f, accent: e.target.value })}
               className="h-8 w-10 cursor-pointer rounded border border-border bg-background"
@@ -340,6 +358,36 @@ function SchoolStep({ s, setS, apiFetch, next }: StepProps) {
         </div>
       </div>
 
+      <fieldset className="mt-7">
+        <legend className="text-sm font-medium">Spelling on your forms, reports and e-mails</legend>
+        <p className="mt-0.5 text-xs text-muted-foreground">Students and families see your school&apos;s English. Each person on your team can still choose their own.</p>
+        <div className="mt-2 grid gap-2 sm:grid-cols-3">
+          {([
+            ["", `Automatic (${s.english.fromCountry === "US" ? "US" : "UK/Indian"}, from your country)`],
+            ["US", "US English (color, center, program)"],
+            ["GB", "UK/Indian English (colour, centre, programme)"], // not text: the British spellings are the example
+          ] as const).map(([v, label]) => (
+            <label
+              key={v}
+              className={`flex cursor-pointer items-start gap-2.5 rounded-xl border p-3 text-sm transition ${f.english === v ? "border-cyan-600 bg-cyan-50/60 ring-1 ring-cyan-600 dark:bg-cyan-950/30" : "border-border hover:bg-muted/50"}`}
+            >
+              <input type="radio" name="english" value={v} checked={f.english === v} onChange={() => setF({ ...f, english: v })} className="mt-0.5 accent-cyan-700" />
+              {label}
+            </label>
+          ))}
+        </div>
+        {s.english.value === "US" && s.english.britishForms > 0 && (
+          <div className="mt-3 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-amber-300 bg-amber-50 p-3.5 text-sm text-amber-950 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-100">
+            <span>
+              {s.english.britishForms === 1 ? "1 of your forms still uses" : `${s.english.britishForms} of your forms still use`} UK spelling. Answers already received keep their wording.
+            </span>
+            <button type="button" onClick={() => void convertForms()} disabled={busy != null} className={`${secondary} bg-background py-1.5 text-sm`}>
+              {busy === "forms" && <Loader2 aria-hidden="true" className="h-4 w-4 animate-spin" />} Switch them to US spelling
+            </button>
+          </div>
+        )}
+      </fieldset>
+
       <Problem text={error} />
       <button type="button" onClick={() => void save()} disabled={busy != null} className={`${primary} mt-6`}>
         {busy === "save" && <Loader2 aria-hidden="true" className="h-4 w-4 animate-spin" />} Save and continue
@@ -351,6 +399,7 @@ function SchoolStep({ s, setS, apiFetch, next }: StepProps) {
 // ------------------------------------------------------------------ 2. the first form
 
 function FormStep({ s, setS, apiFetch }: StepProps) {
+  const en = useEn();
   const own = s.forms.find((f) => f.customized && f.publicEnabled);
   const [choice, setChoice] = useState(s.suggested[0]?.key ?? "");
   const [busy, setBusy] = useState(false);
@@ -382,7 +431,7 @@ function FormStep({ s, setS, apiFetch }: StepProps) {
         <div className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-950 dark:border-emerald-900 dark:bg-emerald-950/40 dark:text-emerald-100">
           <span className="flex items-center gap-2">
             <Check aria-hidden="true" className="h-4 w-4" strokeWidth={3} />
-            {made ? `"${made}" is published with your logo and colour.` : `"${own.name}" is published.`}
+            {made ? `"${made}" ${en("is published with your logo and colour.")}` : `"${own.name}" is published.`}
           </span>
           <Link href="/institute/guidance" className="font-semibold underline underline-offset-2">
             Change its questions
@@ -430,11 +479,12 @@ function FormStep({ s, setS, apiFetch }: StepProps) {
 // ------------------------------------------------------------------ 3. the team
 
 function TeamStep({ s, getToken }: StepProps & { getToken: () => Promise<string | null> }) {
+  const en = useEn();
   return (
     <>
       <Heading
         title="Your team"
-        text="Counsellors work the inquiries and meetings; admins can change everything, including billing. Each person gets an e-mail to set up their sign-in."
+        text={en("Counsellors work the inquiries and meetings; admins can change everything, including billing. Each person gets an e-mail to set up their sign-in.")}
       />
       <p className="mb-5 text-sm">
         {s.team.limit == null ? `${s.team.used} on your team.` : `${s.team.used} of ${s.team.limit} places on your ${s.plan?.name ?? ""} plan are used.`}{" "}
@@ -452,6 +502,7 @@ function TeamStep({ s, getToken }: StepProps & { getToken: () => Promise<string 
 // ------------------------------------------------------------------ 4. the website
 
 function WebsiteStep({ s, apiFetch }: StepProps) {
+  const en = useEn();
   const form = s.forms.find((f) => f.isDefault && f.publicEnabled) ?? s.forms.find((f) => f.publicEnabled);
   const [copied, setCopied] = useState(false);
   const [to, setTo] = useState("");
@@ -530,7 +581,7 @@ function WebsiteStep({ s, apiFetch }: StepProps) {
           .
         </p>
       )}
-      <p className="mt-4 text-sm text-muted-foreground">{s.inquiries > 0 ? `${s.inquiries} ${s.inquiries === 1 ? "inquiry has" : "inquiries have"} come in so far.` : CHECK_TEXT.website.text}</p>
+      <p className="mt-4 text-sm text-muted-foreground">{s.inquiries > 0 ? `${s.inquiries} ${s.inquiries === 1 ? "inquiry has" : "inquiries have"} come in so far.` : en(CHECK_TEXT.website.text)}</p>
     </>
   );
 }

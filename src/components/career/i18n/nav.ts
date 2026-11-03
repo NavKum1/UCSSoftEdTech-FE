@@ -3,6 +3,7 @@
 import { useCallback } from "react";
 import { careerNav, personaTitle, type CareerNavItem, type CareerPersona } from "@/lib/careerNav";
 import { useCareerT } from "./CareerI18nProvider";
+import { useEn } from "@/lib/english/EnglishProvider";
 
 /**
  * Message key for a nav entry, derived from its route so lib/careerNav.ts keeps plain English labels:
@@ -17,13 +18,14 @@ export function navKey(persona: CareerPersona, href: string) {
 
 export function useCareerNavLabels(persona: CareerPersona) {
   const t = useCareerT();
+  const en = useEn();
   const label = useCallback(
     (item: CareerNavItem) => {
       const key = `nav.${persona}.${navKey(persona, item.href)}`;
-      return t.has(key) ? t(key) : item.label;
+      return t.has(key) ? t(key) : en(item.label);
     },
-    [t, persona],
+    [t, en, persona],
   );
-  const title = t.has(`persona.${persona}`) ? t(`persona.${persona}`) : personaTitle[persona];
+  const title = t.has(`persona.${persona}`) ? t(`persona.${persona}`) : en(personaTitle[persona]);
   return { label, title };
 }

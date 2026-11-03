@@ -10,6 +10,7 @@ import React, { useCallback, useEffect, useState } from "react";
 import { History, Mail, RefreshCw, Trash2, UserPlus } from "lucide-react";
 import { authenticatedFetch } from "@/lib/apiClient";
 import { useLatestRef } from "@/lib/legacyApi";
+import { useEn } from "@/lib/english/EnglishProvider";
 
 type GetToken = () => Promise<string | null>;
 
@@ -30,7 +31,7 @@ type AuditRow = { id: string; action: string; targetEmail: string; role: string 
 
 export const ROLE_LABEL: Record<string, string> = {
   InstituteAdmin: "Institute admin",
-  Counselor: "Counsellor",
+  Counselor: "Counsellor", // en() where shown
   Faculty: "Faculty",
   Recruiter: "Recruiter",
 };
@@ -72,6 +73,7 @@ async function api<T>(getToken: GetToken, path: string, instituteId?: string, in
 const when = (iso: string) => new Date(iso).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" });
 
 export default function StaffAccess({ getToken, instituteId, compact = false }: { getToken: GetToken; instituteId?: string; compact?: boolean }) {
+  const en = useEn();
   const [members, setMembers] = useState<StaffMember[]>([]);
   const [roles, setRoles] = useState<string[]>(["InstituteAdmin", "Counselor", "Faculty"]);
   const [enabled, setEnabled] = useState(true);
@@ -145,7 +147,7 @@ export default function StaffAccess({ getToken, instituteId, compact = false }: 
   };
 
   const remove = (m: StaffMember) => {
-    const what = m.status === "pending" ? `Withdraw the invitation for ${m.email}?` : `Remove ${ROLE_LABEL[m.role] ?? m.role} access for ${m.name || m.email}? They are signed out.`;
+    const what = m.status === "pending" ? `Withdraw the invitation for ${m.email}?` : `Remove ${en(ROLE_LABEL[m.role] ?? m.role)} access for ${m.name || m.email}? They are signed out.`;
     if (!window.confirm(what)) return;
     void run(m.id, () => api(getToken, `/${m.id}`, instituteId, { method: "DELETE" }), m.status === "pending" ? "Invitation withdrawn." : "Access removed.");
   };
@@ -210,7 +212,7 @@ export default function StaffAccess({ getToken, instituteId, compact = false }: 
             {roles.map((r) => (
               <label key={r} className={`cursor-pointer rounded-lg border px-3 py-2 text-sm ${form.role === r ? "border-cyan-600 bg-cyan-600/5" : "border-border"}`}>
                 <input type="radio" name="role" value={r} checked={form.role === r} onChange={() => setForm({ ...form, role: r })} className="sr-only" />
-                <span className="block font-medium">{ROLE_LABEL[r] ?? r}</span>
+                <span className="block font-medium">{en(ROLE_LABEL[r] ?? r)}</span>
                 <span className="block text-xs text-muted-foreground">{ROLE_HELP[r]}</span>
               </label>
             ))}
@@ -240,7 +242,7 @@ export default function StaffAccess({ getToken, instituteId, compact = false }: 
                 <div className="min-w-0 flex-1">
                   <div className="truncate font-medium">{m.name || m.email}</div>
                   <div className="truncate text-xs text-muted-foreground">
-                    {m.email} · {ROLE_LABEL[m.role] ?? m.role}
+                    {m.email} · {en(ROLE_LABEL[m.role] ?? m.role)}
                   </div>
                 </div>
                 {m.status === "pending" ? (
@@ -301,7 +303,7 @@ export default function StaffAccess({ getToken, instituteId, compact = false }: 
                   <span className="font-medium">{ACTION_LABEL[a.action] ?? a.action}</span>
                   {": "}
                   {a.targetEmail}
-                  {a.role ? ` (${ROLE_LABEL[a.role] ?? a.role})` : ""}
+                  {a.role ? ` (${en(ROLE_LABEL[a.role] ?? a.role)})` : ""}
                   <span className="block text-xs text-muted-foreground">
                     {when(a.createdAt)} · by {a.actorName}
                     {a.detail ? ` · ${a.detail}` : ""}

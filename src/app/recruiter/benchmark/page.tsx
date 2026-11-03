@@ -12,6 +12,7 @@ import React, { Suspense, useCallback, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { AlertTriangle, Search } from "lucide-react";
 import { AccessNotice, useLatestRef, useLegacyApi } from "@/lib/legacyApi";
+import { useEn } from "@/lib/english/EnglishProvider";
 
 interface ChallengeCohort {
   sprintId: string;
@@ -67,6 +68,7 @@ export default function ChallengeResultsPage() {
 }
 
 function ChallengeResults() {
+  const en = useEn();
   const params = useSearchParams();
   const { apiFetch, ready, access } = useLegacyApi();
   const [analytics, setAnalytics] = useState<Analytics | null>(null);
@@ -90,12 +92,12 @@ function ChallengeResults() {
       try {
         const res = await apiFetch(`/api/benchmark/submission/${id.trim()}`, {}, { quiet: true });
         if (res.ok) setBenchmark(((await res.json()) as { benchmark: Benchmark }).benchmark);
-        else setLookupError("No submission with this id in your organisation.");
+        else setLookupError(en("No submission with this id in your organisation."));
       } finally {
         setBusy(false);
       }
     },
-    [apiFetch],
+    [apiFetch, en],
   );
 
   const load = useCallback(async () => {

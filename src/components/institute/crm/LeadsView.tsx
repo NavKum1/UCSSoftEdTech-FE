@@ -28,6 +28,7 @@ import {
   type Member,
   type SavedView,
 } from "./api";
+import { useEn } from "@/lib/english/EnglishProvider";
 
 const input = "rounded-lg border border-border bg-background px-3 py-2 text-sm focus:border-cyan-600 focus:outline-none focus:ring-2 focus:ring-cyan-600/20";
 
@@ -103,6 +104,7 @@ export default function LeadsView({
   loadingMore: boolean;
 }) {
   // The remembered layout is read from this browser only after hydration (the server always renders the table)
+  const en = useEn();
   const layout = useSyncExternalStore(subscribeLayout, readLayout, () => "table" as const);
   const [more, setMore] = useState(false);
   const [selected, setSelected] = useState<Set<string>>(new Set());
@@ -279,7 +281,7 @@ export default function LeadsView({
 
       {more && (
         <div className="grid gap-2 rounded-xl border border-border bg-muted/30 p-3 sm:grid-cols-2 lg:grid-cols-6">
-          <Select label="Stage" value={filters.stage ?? ""} onChange={(v) => setFilters({ ...filters, stage: v || undefined })} options={STAGES.map((s) => [s, STAGE_LABEL[s]])} />
+          <Select label="Stage" value={filters.stage ?? ""} onChange={(v) => setFilters({ ...filters, stage: v || undefined })} options={STAGES.map((s) => [s, en(STAGE_LABEL[s])])} />
           <Select
             label="Owner"
             value={filters.owner ?? ""}
@@ -327,7 +329,7 @@ export default function LeadsView({
         <div className="sticky top-16 z-10 flex flex-wrap items-center gap-2 rounded-xl border border-cyan-600/40 bg-card p-2.5 shadow-sm">
           <span className="px-1 text-sm font-medium">{selected.size} selected</span>
           <BulkSelect label="Assign to…" onPick={(v) => bulk({ ownerSet: true, ownerMemberId: v === "none" ? null : v }, "Assigned")} options={[["none", "Unassigned"], ...activeTeam.map((m) => [m.id, m.name] as [string, string])]} />
-          <BulkSelect label="Move to…" onPick={(v) => bulk({ stage: v }, `Moved to ${STAGE_LABEL[v]}`)} options={STAGES.filter((s) => s !== "Lost").map((s) => [s, STAGE_LABEL[s]])} />
+          <BulkSelect label="Move to…" onPick={(v) => bulk({ stage: v }, `Moved to ${en(STAGE_LABEL[v])}`)} options={STAGES.filter((s) => s !== "Lost").map((s) => [s, en(STAGE_LABEL[s])])} />
           <button
             type="button"
             className="rounded-lg border border-border px-2.5 py-1.5 text-sm hover:bg-muted"
@@ -491,6 +493,7 @@ function BulkSelect({ label, onPick, options }: { label: string; onPick: (v: str
 }
 
 function StageMenu({ lead, onMove }: { lead: LeadRow; onMove: (l: LeadRow, s: string) => void }) {
+  const en = useEn();
   return (
     <label className="relative inline-flex">
       <span className="sr-only">Stage for {lead.name}</span>
@@ -498,7 +501,7 @@ function StageMenu({ lead, onMove }: { lead: LeadRow; onMove: (l: LeadRow, s: st
       <select value={lead.stage} onChange={(e) => onMove(lead, e.target.value)} className="absolute inset-0 cursor-pointer opacity-0">
         {STAGES.map((s) => (
           <option key={s} value={s}>
-            {STAGE_LABEL[s]}
+            {en(STAGE_LABEL[s])}
           </option>
         ))}
       </select>
@@ -563,6 +566,7 @@ function BoardColumn({
   onMove: (l: LeadRow, s: string) => void;
   openLead: (id: string) => void;
 }) {
+  const en = useEn();
   const [items, setItems] = useState<LeadRow[]>([]);
   const [total, setTotal] = useState<number | null>(null);
   const [page, setPage] = useState(1);
@@ -602,7 +606,7 @@ function BoardColumn({
   const shown = hidden ? [] : items;
   return (
     <section
-      aria-label={STAGE_LABEL[stage]}
+      aria-label={en(STAGE_LABEL[stage])}
       onDragOver={(e) => {
         e.preventDefault();
         setOver(true);
@@ -618,7 +622,7 @@ function BoardColumn({
       <h3 className="flex items-center justify-between px-1.5 pb-2 text-xs font-semibold">
         <span className="inline-flex items-center gap-1.5">
           <StageDot stage={stage} />
-          {STAGE_LABEL[stage]}
+          {en(STAGE_LABEL[stage])}
         </span>
         <span className="tabular-nums text-muted-foreground">{hidden ? "—" : (total ?? "…").toLocaleString()}</span>
       </h3>
@@ -651,7 +655,7 @@ function BoardColumn({
             <select aria-label={`Move ${l.name ?? "lead"}`} value={l.stage} onChange={(e) => onMove(l, e.target.value)} className="mt-1.5 w-full rounded-md border border-border bg-background px-1.5 py-1 text-xs">
               {STAGES.map((s) => (
                 <option key={s} value={s}>
-                  {STAGE_LABEL[s]}
+                  {en(STAGE_LABEL[s])}
                 </option>
               ))}
             </select>

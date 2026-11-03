@@ -30,6 +30,8 @@ interface Report {
   accent: string | null;
   logoUrl: string | null;
   sentAt: string;
+  /** The school's English: US or GB spelling and date style */
+  english?: "US" | "GB";
   language: string;
   reportTitle: string | null;
   intro: string | null;
@@ -90,7 +92,7 @@ function ReportView() {
   const match = report.result?.match;
   const outcome = report.result?.outcome;
   const heading = report.title || report.form;
-  const sent = new Date(report.sentAt).toLocaleDateString(report.language, { dateStyle: "long" });
+  const sent = new Date(report.sentAt).toLocaleDateString(report.language === "en" ? (report.english === "US" ? "en-US" : "en-GB") : report.language, { dateStyle: "long" });
   const share = report.shareUrl && match ? { url: report.shareUrl, text: t("shareText").replace("{n}", String(match.percent)).replace("{form}", heading) } : null;
   // The outcome goes beside the grid when there is one, else in a card of its own
   const outcomeInParts = report.parts.some((p) => p.grid);

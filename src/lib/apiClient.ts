@@ -1,4 +1,5 @@
 import { getDevSession } from "@/lib/devSession";
+import { browserEnglish } from "@/lib/english/browser";
 
 /**
  * Authenticated API fetch for the Edulexa frontend.
@@ -137,6 +138,9 @@ export async function authenticatedFetch(
     const locale = careerLocaleCookie();
     if (locale) headers.set("Accept-Language", locale);
   }
+
+  // The API's own messages in the reader's English (US or British/Indian spelling)
+  if (typeof window !== "undefined" && !headers.has("X-English")) headers.set("X-English", browserEnglish());
 
   // The bearer token, if signed in
   if (getToken) {

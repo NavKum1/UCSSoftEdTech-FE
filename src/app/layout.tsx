@@ -6,6 +6,7 @@ import AppMain from "@/components/AppMain";
 import MfaRequiredNotice from "@/components/auth/MfaRequiredNotice";
 import { GeoProvider } from "@/context/GeoContext";
 import { ThemeProvider } from "@/components/ThemeProvider";
+import { EnglishProvider } from "@/lib/english/EnglishProvider";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -41,9 +42,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <AppAuthProvider>
           <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
             <GeoProvider>
+              <EnglishProvider>
               <GlobalNavigation />
               <AppMain>{children}</AppMain>
               <MfaRequiredNotice />
+              </EnglishProvider>
             </GeoProvider>
           </ThemeProvider>
         </AppAuthProvider>

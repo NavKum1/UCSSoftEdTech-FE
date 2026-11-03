@@ -8,6 +8,7 @@
 import React, { useEffect, useState } from "react";
 import { AlertTriangle, CheckCircle2, Loader2, Mail, Send, ShieldCheck } from "lucide-react";
 import { AccessNotice, useLatestRef, useLegacyApi } from "@/lib/legacyApi";
+import { useEn } from "@/lib/english/EnglishProvider";
 
 interface EmailState {
   working: boolean;
@@ -28,6 +29,7 @@ interface UploadsState {
   records: { source: string; action: string; fileName: string; signature: string; instituteId: string | null; at: string }[];
 }
 
+// en() where shown
 const SOURCE_NAMES: Record<string, string> = { career: "Career centre files", guidance: "Guidance form uploads", crm: "CRM email attachments", branding: "School logos" };
 const card = "rounded-2xl border border-border bg-card p-5";
 const input = "mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm";
@@ -37,6 +39,7 @@ const when = (iso: string) => new Date(iso).toLocaleString(undefined, { dateStyl
 const from = (source: string) => (source === "page" ? "saved on this page" : source === "server" ? "from the server file" : "default");
 
 export default function PlatformSettingsPage() {
+  const en = useEn();
   const { apiFetch, ready, access } = useLegacyApi();
   const [email, setEmail] = useState<EmailState | null>(null);
   const [uploads, setUploads] = useState<UploadsState | null>(null);
@@ -325,7 +328,7 @@ export default function PlatformSettingsPage() {
                     <tr key={i} className="border-t border-border align-top">
                       <td className="py-2 pr-3 whitespace-nowrap">{when(r.at)}</td>
                       <td className="py-2 pr-3">{r.action === "Refused" ? "Refused at upload" : "Removed from storage"}</td>
-                      <td className="py-2 pr-3">{SOURCE_NAMES[r.source] ?? r.source}</td>
+                      <td className="py-2 pr-3">{en(SOURCE_NAMES[r.source] ?? r.source)}</td>
                       <td className="py-2 pr-3 break-all">{r.fileName || "—"}</td>
                       <td className="py-2 break-all">{r.signature}</td>
                     </tr>

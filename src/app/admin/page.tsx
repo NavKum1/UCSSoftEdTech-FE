@@ -21,13 +21,14 @@ import {
   EyeOff,
   Send,
 } from "lucide-react";
-import { UserCog, ShieldCheck, X as CloseIcon } from "lucide-react";
+import { UserCog, ShieldCheck, X as CloseIcon, Pencil } from "lucide-react";
 import { authenticatedFetch } from "@/lib/apiClient";
 import StaffAccess from "@/components/institute/StaffAccess";
 import AccessRequestsAdmin from "@/components/admin/AccessRequestsAdmin";
 import PlatformSetupBanner from "@/components/admin/PlatformSetupBanner";
 import { useGeo } from "@/context/GeoContext";
 import { useLatestRef } from "@/lib/legacyApi";
+import { useEn } from "@/lib/english/EnglishProvider";
 
 interface AnalyticsData {
   totalUsers: number;
@@ -73,6 +74,7 @@ interface Lead {
 }
 
 export default function SuperAdminDashboard() {
+  const en = useEn();
   const { getToken } = useAuth();
   const { config } = useGeo();
 
@@ -80,6 +82,13 @@ export default function SuperAdminDashboard() {
   const [activeTab, setActiveTab] = useState<"analytics" | "partners" | "leads" | "access">("analytics");
   // Staff access for one institute (its first admin, and everyone else), in a dialog
   const [staffFor, setStaffFor] = useState<Institute | null>(null);
+  // Renaming an institute (or changing where its leads are sent), in a dialog; after saving, where the old name is still written
+  const [editFor, setEditFor] = useState<Institute | null>(null);
+  const [editName, setEditName] = useState("");
+  const [editWebhook, setEditWebhook] = useState("");
+  const [editBusy, setEditBusy] = useState(false);
+  const [editError, setEditError] = useState<string | null>(null);
+  const [editResult, setEditResult] = useState<{ from: string; to: string; stillMentioned: string[] } | null>(null);
 
   // Data States
   const [analytics, setAnalytics] = useState<AnalyticsData | null>(null);
@@ -208,6 +217,43 @@ export default function SuperAdminDashboard() {
       }
     } catch (err) {
       setError(err instanceof TypeError ? "We couldn't reach the server. Please check your connection and try again." : (err as Error).message || "We couldn't create the institute. Please try again.");
+    }
+  };
+
+  const openEdit = (inst: Institute) => {
+    setEditFor(inst);
+    setEditName(inst.name);
+    setEditWebhook(inst.webhookUrl ?? "");
+    setEditError(null);
+    setEditResult(null);
+  };
+
+  const handleSaveInstitute = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editFor) return;
+    setEditBusy(true);
+    setEditError(null);
+    try {
+      const res = await customFetch(`/api/admin/institutes/${editFor.id}`, {
+        method: "PUT",
+        body: JSON.stringify({ name: editName.trim(), webhookUrl: editWebhook.trim() }),
+      });
+      const body = await res.json().catch(() => null);
+      if (!res.ok) {
+        setEditError(body?.error ?? "The institute couldn't be saved.");
+        return;
+      }
+      loadData();
+      if (body?.renamedFrom && body.stillMentioned?.length) {
+        setEditResult({ from: body.renamedFrom, to: body.name, stillMentioned: body.stillMentioned });
+      } else {
+        setEditFor(null);
+        showNotification(body?.renamedFrom ? `Renamed "${body.renamedFrom}" to "${body.name}".` : "Saved.");
+      }
+    } catch (err) {
+      setEditError(err instanceof TypeError ? "We couldn't reach the server. Please check your connection and try again." : "The institute couldn't be saved.");
+    } finally {
+      setEditBusy(false);
     }
   };
 
@@ -599,6 +645,15 @@ export default function SuperAdminDashboard() {
 
                     <div className="flex items-center space-x-1">
                       <button
+                        type="button"
+                        onClick={() => openEdit(inst)}
+                        className="inline-flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs text-muted-foreground hover:text-foreground hover:bg-muted transition-all cursor-pointer"
+                        title="Rename this institute or change where its leads are sent"
+                      >
+                        <Pencil className="w-4 h-4" />
+                        <span>Edit</span>
+                      </button>
+                      <button
                         onClick={() => setStaffFor(inst)}
                         className="inline-flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs text-muted-foreground hover:text-foreground hover:bg-muted transition-all cursor-pointer"
                         title="Invite this institute's admin and staff"
@@ -795,6 +850,80 @@ export default function SuperAdminDashboard() {
       {/* TAB 4: ACCESS REQUESTS (recruiters) */}
       {/* ========================================================================= */}
       {activeTab === "access" && <AccessRequestsAdmin getToken={getToken} />}
+
+      {editFor && (
+        <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/50 p-4" role="dialog" aria-modal="true" aria-labelledby="edit-dialog-title">
+          <div className="my-8 w-full max-w-lg space-y-4 rounded-2xl border border-border bg-background p-5 shadow-xl">
+            <div className="flex items-start justify-between gap-3">
+              <h2 id="edit-dialog-title" className="text-lg font-semibold">
+                {editResult ? "Renamed" : `Edit ${editFor.name}`}
+              </h2>
+              <button type="button" onClick={() => setEditFor(null)} className="rounded-lg p-1.5 hover:bg-muted" aria-label="Close">
+                <CloseIcon className="h-5 w-5" />
+              </button>
+            </div>
+            {editResult ? (
+              <div className="space-y-3 text-sm">
+                <p>
+                  &quot;{editResult.from}&quot; is now &quot;{editResult.to}{en("\" everywhere Edulexa shows the institute's name: the CRM, forms, reports, e-mails and the career centre.")}
+                </p>
+                <p>The old name is still written in text the institute wrote itself. Change it there:</p>
+                <ul className="list-disc space-y-1 pl-5">
+                  {editResult.stillMentioned.map((m) => (
+                    <li key={m}>{m}</li>
+                  ))}
+                </ul>
+                <div className="flex justify-end">
+                  <button type="button" onClick={() => setEditFor(null)} className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700">
+                    Done
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <form onSubmit={handleSaveInstitute} className="space-y-4 text-sm">
+                <div>
+                  <label htmlFor="edit-inst-name" className="mb-1 block font-semibold text-muted-foreground">
+                    Name
+                  </label>
+                  <input
+                    id="edit-inst-name"
+                    required
+                    maxLength={200}
+                    value={editName}
+                    onChange={(e) => setEditName(e.target.value)}
+                    className="w-full rounded-lg border border-border bg-background px-3 py-2 text-foreground focus:border-indigo-500 focus:outline-none"
+                  />
+                  <p className="mt-1 text-xs text-muted-foreground">Shown to students, families and staff wherever the institute appears.</p>
+                </div>
+                <div>
+                  <label htmlFor="edit-inst-webhook" className="mb-1 block font-semibold text-muted-foreground">
+                    Lead delivery address
+                  </label>
+                  <input
+                    id="edit-inst-webhook"
+                    value={editWebhook}
+                    onChange={(e) => setEditWebhook(e.target.value)}
+                    className="w-full rounded-lg border border-border bg-background px-3 py-2 font-mono text-xs text-foreground focus:border-indigo-500 focus:outline-none"
+                  />
+                </div>
+                {editError && (
+                  <p role="alert" className="text-rose-600 dark:text-rose-400">
+                    {editError}
+                  </p>
+                )}
+                <div className="flex justify-end gap-2">
+                  <button type="button" onClick={() => setEditFor(null)} className="rounded-lg border border-border px-4 py-2 hover:bg-muted">
+                    Cancel
+                  </button>
+                  <button type="submit" disabled={editBusy || !editName.trim()} className="rounded-lg bg-indigo-600 px-4 py-2 font-semibold text-white hover:bg-indigo-700 disabled:opacity-50">
+                    {editBusy ? "Saving…" : "Save"}
+                  </button>
+                </div>
+              </form>
+            )}
+          </div>
+        </div>
+      )}
 
       {staffFor && (
         <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/50 p-4" role="dialog" aria-modal="true" aria-labelledby="staff-dialog-title">

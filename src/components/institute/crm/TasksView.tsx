@@ -4,8 +4,10 @@
 
 import React, { useCallback, useEffect, useState } from "react";
 import { crm, PriorityBadge, relative, STAGE_LABEL, StageDot, type GetToken, type OpenTask } from "./api";
+import { useEn } from "@/lib/english/EnglishProvider";
 
 export default function TasksView({ getToken, openLead, version }: { getToken: GetToken; openLead: (id: string) => void; version: number }) {
+  const en = useEn();
   const [scope, setScope] = useState<"mine" | "overdue" | "all">("mine");
   const [tasks, setTasks] = useState<OpenTask[] | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -103,7 +105,7 @@ export default function TasksView({ getToken, openLead, version }: { getToken: G
                       {t.stage && (
                         <span className="inline-flex items-center gap-1">
                           <StageDot stage={t.stage} />
-                          {STAGE_LABEL[t.stage] ?? t.stage}
+                          {en(STAGE_LABEL[t.stage] ?? t.stage)}
                         </span>
                       )}
                       {t.highPriority && <PriorityBadge />}

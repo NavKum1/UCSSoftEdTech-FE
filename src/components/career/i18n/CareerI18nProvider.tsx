@@ -22,9 +22,12 @@ import {
   directionOf,
   isPseudoLocale,
   formatLocaleFor,
+  languageOf,
   matchCareerLocale,
 } from "./config";
 import { englishMessages, type CareerMessages } from "./messages";
+import { useEnglish } from "@/lib/english/EnglishProvider";
+import { americanMessages } from "@/lib/english";
 
 interface CareerI18nState {
   locale: string;
@@ -146,14 +149,18 @@ export default function CareerI18nProvider({
     [api, isSignedIn, router],
   );
 
+  // English in the reader's spelling: US readers get the messages in US spelling (lib/english)
+  const { english } = useEnglish();
+  const shown = useMemo(() => (languageOf(locale) === "en" && english === "US" ? americanMessages(messages) : messages), [locale, english, messages]);
+
   const value = useMemo<CareerI18nState>(
-    () => ({ locale, dir, formatLocale, messages, schoolTimeZone, available: availableCareerLocales(), setLocale }),
-    [locale, dir, formatLocale, messages, schoolTimeZone, setLocale],
+    () => ({ locale, dir, formatLocale, messages: shown, schoolTimeZone, available: availableCareerLocales(), setLocale }),
+    [locale, dir, formatLocale, shown, schoolTimeZone, setLocale],
   );
 
   return (
     <CareerI18nContext.Provider value={value}>
-      <NextIntlClientProvider locale={locale} messages={messages as AbstractIntlMessages} timeZone={schoolTimeZone ?? undefined}>
+      <NextIntlClientProvider locale={locale} messages={shown as AbstractIntlMessages} timeZone={schoolTimeZone ?? undefined}>
         {children}
       </NextIntlClientProvider>
     </CareerI18nContext.Provider>

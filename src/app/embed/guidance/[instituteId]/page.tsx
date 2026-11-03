@@ -16,6 +16,7 @@ import { useParams, useSearchParams } from "next/navigation";
 import { getApiBaseUrl } from "@/lib/apiClient";
 import GuidanceForm, { type SubmitPayload } from "@/components/guidance/form/GuidanceForm";
 import type { Fillable } from "@/components/guidance/form/model";
+import { EnglishScope } from "@/lib/english/EnglishProvider";
 
 export default function EmbeddedGuidancePage() {
   return (
@@ -150,6 +151,7 @@ function Embedded() {
       ) : !fill ? (
         <div className="h-64 animate-pulse rounded-2xl bg-muted motion-reduce:animate-none" aria-busy="true" />
       ) : (
+        <EnglishScope english={fill.english}>
         <GuidanceForm
           fill={fill}
           mode="website"
@@ -164,6 +166,7 @@ function Embedded() {
           apiBase={base}
           sentNotice={confirmNote || undefined}
         />
+        </EnglishScope>
       )}
     </div>
   );

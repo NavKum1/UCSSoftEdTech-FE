@@ -7,6 +7,7 @@
 
 import React, { useEffect, useState } from "react";
 import { crm, StageDot, STAGE_LABEL, STAGE_SOLID, type GetToken } from "./api";
+import { useEn } from "@/lib/english/EnglishProvider";
 
 interface Group {
   key: string;
@@ -44,6 +45,7 @@ function hours(h: number | null) {
 }
 
 export default function InsightsView({ getToken }: { getToken: GetToken }) {
+  const en = useEn();
   const [days, setDays] = useState<number | null>(90);
   const [data, setData] = useState<Insights | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -90,7 +92,7 @@ export default function InsightsView({ getToken }: { getToken: GetToken }) {
                       <div className="flex justify-between text-sm">
                         <span className="inline-flex items-center gap-1.5">
                           <StageDot stage={f.stage} />
-                          {STAGE_LABEL[f.stage]}
+                          {en(STAGE_LABEL[f.stage])}
                         </span>
                         <span className="tabular-nums text-muted-foreground">
                           {f.reached}

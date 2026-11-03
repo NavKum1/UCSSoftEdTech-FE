@@ -5,6 +5,7 @@ import { useAppAuth as useAuth } from "@/lib/appAuth";
 import { BookOpen, Info, Loader2, AlertTriangle, Share2, Undo2, CheckCircle2, X, Mail } from "lucide-react";
 import { authenticatedFetch } from "@/lib/apiClient";
 import SignInRequired from "@/components/SignInRequired";
+import { useEn } from "@/lib/english/EnglishProvider";
 
 interface Recommendation {
   courseId: string;
@@ -53,6 +54,7 @@ type PendingConfirm =
   | { kind: "withdraw"; referral: MyReferral };
 
 export default function ReferralsPage() {
+  const en = useEn();
   const { getToken, isLoaded, isSignedIn } = useAuth();
   const [data, setData] = useState<RecommendationsResponse | null>(null);
   const [mine, setMine] = useState<MyReferral[]>([]);
@@ -332,7 +334,7 @@ export default function ReferralsPage() {
                     </li>
                   </ul>
                   <p className="font-medium text-foreground">Your scores, transcripts and recordings are not shared.</p>
-                  {confirm.rec.sponsored && <p>This is a sponsored listing; we may earn a referral fee if you enrol.</p>}
+                  {confirm.rec.sponsored && <p>{en("This is a sponsored listing; we may earn a referral fee if you enrol.")}</p>}
                   <p>You can withdraw at any time, and the provider will be asked to stop contacting you and delete your data.</p>
                 </div>
               </>

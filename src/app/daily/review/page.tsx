@@ -11,6 +11,7 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { ArrowLeft, CheckCircle2, Clock, XCircle } from "lucide-react";
 import { AccessNotice, useLatestRef, useLegacyApi } from "@/lib/legacyApi";
+import { useEn } from "@/lib/english/EnglishProvider";
 
 interface Review {
   id: string;
@@ -65,6 +66,7 @@ const primary =
   "inline-flex items-center justify-center gap-2 rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-indigo-500 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600";
 
 export default function DailyCodeReviewPage() {
+  const en = useEn();
   const { apiFetch, ready, access } = useLegacyApi();
   const [review, setReview] = useState<Review | null>(null);
   const [status, setStatus] = useState<Status | null>(null);
@@ -196,7 +198,7 @@ export default function DailyCodeReviewPage() {
 
       {status.completed && !result && (
         <p className="mt-4 rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-sm">
-          You completed this review and earned {status.points ?? 0} points. You can practise it again; repeats don&apos;t earn points.
+          You completed this review and earned {status.points ?? 0}{en(" points. You can practise it again; repeats don't earn points.")}
         </p>
       )}
 
@@ -209,7 +211,7 @@ export default function DailyCodeReviewPage() {
             <li>Line and call right within 3 minutes: 20 bonus points. The time is measured from when you open it.</li>
           </ul>
           <button type="button" className={`${primary} mt-5`} disabled={busy} onClick={() => void start()}>
-            {status.completed ? "Practise again" : "Open the pull request"}
+            {status.completed ? en("Practise again") : "Open the pull request"}
           </button>
         </section>
       ) : (
@@ -313,6 +315,7 @@ function Mark({ ok, children }: { ok: boolean; children: React.ReactNode }) {
 }
 
 function ReviewResultPanel({ result, onAgain, busy }: { result: Result; onAgain: () => void; busy: boolean }) {
+  const en = useEn();
   return (
     <section className={`${card} space-y-4 p-5`} aria-live="polite">
       <div>
@@ -339,7 +342,7 @@ function ReviewResultPanel({ result, onAgain, busy }: { result: Result; onAgain:
         </div>
       )}
       <button type="button" className="text-sm font-semibold text-indigo-700 hover:underline disabled:opacity-50 dark:text-indigo-300" disabled={busy} onClick={onAgain}>
-        Practise again (no points)
+        {en("Practise again (no points)")}
       </button>
     </section>
   );

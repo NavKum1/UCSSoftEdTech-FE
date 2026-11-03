@@ -16,6 +16,7 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { AlertTriangle, CheckCircle2, Copy, Download, PhoneCall, Search, Shield, Wallet, Webhook } from "lucide-react";
 import { AccessNotice, useLatestRef, useLegacyApi } from "@/lib/legacyApi";
 import { getApiBaseUrl } from "@/lib/apiClient";
+import { useEn } from "@/lib/english/EnglishProvider";
 
 interface Metrics {
   tenantId: string;
@@ -154,6 +155,7 @@ function Stat({ label, value }: { label: string; value: React.ReactNode }) {
 }
 
 export default function EdulexaConsolePage() {
+  const en = useEn();
   const { apiFetch, ready, access } = useLegacyApi();
   const [tab, setTab] = useState<Tab>("calls");
   const [metrics, setMetrics] = useState<Metrics | null>(null);
@@ -256,8 +258,7 @@ export default function EdulexaConsolePage() {
       <header>
         <h1 className="text-2xl font-semibold tracking-tight">Edulexa console</h1>
         <p className="mt-1 max-w-3xl text-sm text-muted-foreground">
-          Follow-up calls, protected content, mentor payments and integration for your organisation. Every number here is a count of your own
-          records.
+          {en("Follow-up calls, protected content, mentor payments and integration for your organisation. Every number here is a count of your own records.")}
         </p>
       </header>
 
@@ -304,6 +305,7 @@ function CallsTab({ settings, metrics, calls, consents, optOuts, audit, busy, se
   busy: boolean;
   send: Send;
 }) {
+  const en = useEn();
   const [form, setForm] = useState({ enabled: settings.enabled, callerName: settings.callerName, windowStart: settings.windowStart, windowEnd: settings.windowEnd });
   const browserZone = useMemo(() => {
     try {
@@ -506,7 +508,7 @@ function CallsTab({ settings, metrics, calls, consents, optOuts, audit, busy, se
                   </td>
                   <td className="py-2">
                     {c.status === "Scheduled" && (
-                      <button className={ghost} disabled={busy} onClick={() => void send(`/v1/voice/calls/${c.id}/cancel`, "POST", undefined, "Call cancelled.")}>
+                      <button className={ghost} disabled={busy} onClick={() => void send(`/v1/voice/calls/${c.id}/cancel`, "POST", undefined, en("Call cancelled."))}>
                         Cancel
                       </button>
                     )}
@@ -874,6 +876,7 @@ function PaymentsTab({ metrics, payouts, busy, send, apiFetch, setNotice }: {
 }
 
 function IntegrationTab({ tenantId, busy, send }: { tenantId: string; busy: boolean; send: Send }) {
+  const en = useEn();
   const [copied, setCopied] = useState(false);
   const [result, setResult] = useState<{ delivered: boolean; responseStatusCode: number; error?: string | null; targetWebhookUrl: string } | null>(null);
   const api = getApiBaseUrl().replace(/\/$/, "");
@@ -898,8 +901,7 @@ function IntegrationTab({ tenantId, busy, send }: { tenantId: string; busy: bool
           Checkout pixel
         </h2>
         <p className="text-sm text-muted-foreground">
-          Add it to your checkout page. It sends only what your code passes to it; a follow-up call is requested only when the person ticked a box
-          agreeing to be called, and the call still goes through every check. Your organisation needs an active API key for the pixel to work.
+          {en("Add it to your checkout page. It sends only what your code passes to it; a follow-up call is requested only when the person ticked a box agreeing to be called, and the call still goes through every check. Your organisation needs an active API key for the pixel to work.")}
         </p>
         <pre className="overflow-x-auto rounded-xl bg-muted/60 p-3 text-xs">
           <code>{snippet}</code>

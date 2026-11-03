@@ -9,6 +9,7 @@
 import React, { useState } from "react";
 import { CalendarCheck, CalendarClock, Link2, MapPin, Phone, Video } from "lucide-react";
 import { localInput, type LeadFull, type Meeting } from "./api";
+import { useEn } from "@/lib/english/EnglishProvider";
 
 const MODE: Record<Meeting["mode"], { label: string; icon: React.ComponentType<{ className?: string; "aria-hidden"?: boolean | "true" }> }> = {
   Phone: { label: "Phone call", icon: Phone },
@@ -25,6 +26,7 @@ function wanted(m: Meeting): string {
 }
 
 export default function Meetings({ lead, busy, act }: { lead: LeadFull; busy: boolean; act: (path: string, body: unknown, done?: string, method?: string) => Promise<boolean> }) {
+  const en = useEn();
   const [editing, setEditing] = useState<string | null>(null);
   const meetings = lead.meetings ?? [];
   const open = meetings.filter((m) => m.status !== "Cancelled");
@@ -34,7 +36,7 @@ export default function Meetings({ lead, busy, act }: { lead: LeadFull; busy: bo
   const cancel = (m: Meeting) => {
     const reason = window.prompt(m.status === "Booked" ? "Cancel this meeting? They'll get an email. Add a reason for them (optional):" : "Close this request? Add a note (optional):");
     if (reason === null) return;
-    act(`/leads/${lead.leadId}/meetings/${m.id}/cancel`, { reason }, m.status === "Booked" ? "Meeting cancelled; they've been emailed." : "Request closed.");
+    act(`/leads/${lead.leadId}/meetings/${m.id}/cancel`, { reason }, m.status === "Booked" ? en("Meeting cancelled; they've been emailed.") : "Request closed.");
   };
 
   return (
@@ -87,7 +89,7 @@ export default function Meetings({ lead, busy, act }: { lead: LeadFull; busy: bo
           </div>
         );
       })}
-      {cancelled > 0 && <p className="text-xs text-muted-foreground">{cancelled === 1 ? "1 meeting was cancelled." : `${cancelled} meetings were cancelled.`}</p>}
+      {cancelled > 0 && <p className="text-xs text-muted-foreground">{cancelled === 1 ? en("1 meeting was cancelled.") : en(`${cancelled} meetings were cancelled.`)}</p>}
     </section>
   );
 }

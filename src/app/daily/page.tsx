@@ -10,6 +10,7 @@ import React, { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { ArrowRight, CheckCircle2, Flame, GitPullRequest, Snowflake, Swords, Terminal, Trophy } from "lucide-react";
 import { AccessNotice, useLatestRef, useLegacyApi } from "@/lib/legacyApi";
+import { useEn } from "@/lib/english/EnglishProvider";
 
 interface Summary {
   streak: {
@@ -41,6 +42,7 @@ interface Board {
 const card = "rounded-2xl border border-border bg-card shadow-[0_1px_2px_rgb(16_24_40/0.04)]";
 
 export default function DailyPracticePage() {
+  const en = useEn();
   const { apiFetch, ready, access } = useLegacyApi();
   const [summary, setSummary] = useState<Summary | null>(null);
   const [incident, setIncident] = useState<{ title: string; track: string; status: DrillStatus } | null>(null);
@@ -118,7 +120,7 @@ export default function DailyPracticePage() {
             {streak.current} <span className="text-base font-normal text-muted-foreground">day{streak.current === 1 ? "" : "s"}</span>
           </p>
           <p className="mt-1 text-xs text-muted-foreground">
-            {streak.practisedToday ? "Practised today." : streak.current > 0 ? "Practise today to keep it going." : "Practise today to start one."} Best: {streak.longest}.
+            {streak.practisedToday ? en("Practised today.") : streak.current > 0 ? en("Practise today to keep it going.") : en("Practise today to start one.")} Best: {streak.longest}.
           </p>
           <p className="mt-3 flex items-center gap-1.5 text-xs text-muted-foreground" title={`Earn a freeze for every ${streak.daysPerFreeze} days in a row; it covers one missed day.`}>
             <Snowflake aria-hidden="true" className="h-3.5 w-3.5 text-sky-500" />
@@ -152,7 +154,7 @@ export default function DailyPracticePage() {
                 className={`h-6 flex-1 rounded ${d.count > 0 ? "bg-emerald-500" : frozen.has(d.date) ? "bg-sky-300 dark:bg-sky-700" : "bg-muted"}`}
               >
                 <span className="sr-only">
-                  {d.date}: {d.count > 0 ? "practised" : frozen.has(d.date) ? "streak freeze" : "no practice"}
+                  {d.date}: {d.count > 0 ? en("practised") : frozen.has(d.date) ? "streak freeze" : "no practice"}
                 </span>
               </li>
             ))}
@@ -188,7 +190,7 @@ export default function DailyPracticePage() {
               <Swords aria-hidden="true" className="h-5 w-5" />
               <span className="text-xs font-semibold uppercase tracking-wider">System design duel</span>
             </span>
-            <span className="mt-3 text-sm text-muted-foreground">Practise a system design problem against an AI opponent. Duels don&apos;t count towards points.</span>
+            <span className="mt-3 text-sm text-muted-foreground">{en("Practise a system design problem against an AI opponent. Duels don't count towards points.")}</span>
             <span className="mt-auto inline-flex items-center gap-1 pt-4 text-sm font-semibold">
               Open <ArrowRight aria-hidden="true" className="h-4 w-4 transition-transform group-hover:translate-x-0.5 motion-reduce:transition-none" />
             </span>
@@ -252,6 +254,7 @@ function DrillCard({
   status?: DrillStatus;
   description: string;
 }) {
+  const en = useEn();
   return (
     <Link href={href} className={`${card} group flex flex-col p-5 hover:border-indigo-400`}>
       <span className="flex items-center justify-between gap-2">
@@ -269,7 +272,7 @@ function DrillCard({
       {meta && <span className="mt-1 text-xs text-muted-foreground">{meta}</span>}
       <span className="mt-2 text-sm text-muted-foreground">{description}</span>
       <span className="mt-auto inline-flex items-center gap-1 pt-4 text-sm font-semibold">
-        {status?.completed ? "Practise again (no points)" : status?.openAttemptId ? "Continue" : "Start"}
+        {status?.completed ? en("Practise again (no points)") : status?.openAttemptId ? "Continue" : "Start"}
         <ArrowRight aria-hidden="true" className="h-4 w-4 transition-transform group-hover:translate-x-0.5 motion-reduce:transition-none" />
       </span>
     </Link>

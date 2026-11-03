@@ -4,6 +4,7 @@ import { useCareerLabels } from "@/components/career/ui";
  * student pages. Rupee amounts use the placement helpers (Indian grouping, lakh/crore).
  */
 
+// not text: status codes (labels come from the messages)
 export const JOB_STATUS_KEYS = ["Draft", "Published", "Paused", "Closed", "Cancelled"];
 export function useJobStatusLabels(): Record<string, string> {
   return useCareerLabels("campusShared.jobStatus", JOB_STATUS_KEYS);

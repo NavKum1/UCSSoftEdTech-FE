@@ -7,6 +7,7 @@ import { useCareerShell } from "@/components/career/CareerShell";
 import { Badge, Button, Card, EmptyState, ErrorBanner, Field, Loading, PageHeader, SuccessBanner, useLoad, ScrollArea, useCareerT, useCareerFormat } from "@/components/career/ui";
 import { TabPanel, Tabs, inZone, todayIn } from "@/components/career/appointments/shared";
 import { type OcrSchedule, StatusBadge, openHtml, useSignupLabels, useInterviewWorkAuthLabels, useDaysText, useEligibilityText } from "@/components/career/interviews/shared";
+import { useEn } from "@/lib/english/EnglishProvider";
 
 type Tab = "requests" | "rooms" | "day" | "noshows" | "settings";
 
@@ -20,6 +21,7 @@ interface Room {
   blocks: { id: string; startUtc: string; endUtc: string; note?: string | null }[];
 }
 
+// not text: status codes (shown through tr())
 const SCHEDULE_STATUSES = ["Requested", "Approved", "Published", "Declined", "Withdrawn", "Cancelled"];
 
 export default function CareerCenterInterviewsPage() {
@@ -130,6 +132,7 @@ interface Detail extends OcrSchedule {
 }
 
 function Manage({ id, onChanged }: { id: string; onChanged: (m: string) => void }) {
+  const en = useEn();
   const tr = useCareerT("careerCenterInterviews");
   const api = useApi();
   const d = useLoad(() => api<Detail>(`/api/career/ocr/staff/schedules/${id}`), [api, id]);
@@ -242,7 +245,7 @@ function Manage({ id, onChanged }: { id: string; onChanged: (m: string) => void 
                     <td>{x.booking ? <>{x.booking.student}{x.booking.source === "Promoted" && <> <Badge tone="info">{tr("alternate")}</Badge></>}</> : <span className="text-muted-foreground">{tr("open")}</span>}</td>
                     <td>
                       {x.booking && (
-                        <Button variant="secondary" busy={busy === x.id} onClick={() => window.confirm(tr("cancelThisStudentsInterviewThe")) && run(x.id, () => api(`/api/career/ocr/staff/bookings/${x.booking!.id}/cancel`, { json: { note: "Cancelled by the career center." } }), tr("cancelled"))}>
+                        <Button variant="secondary" busy={busy === x.id} onClick={() => window.confirm(tr("cancelThisStudentsInterviewThe")) && run(x.id, () => api(`/api/career/ocr/staff/bookings/${x.booking!.id}/cancel`, { json: { note: en("Cancelled by the career center.") } }), tr("cancelled"))}>
                           {tr("cancel")}
                         </Button>
                       )}

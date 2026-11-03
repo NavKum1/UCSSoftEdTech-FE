@@ -28,6 +28,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { AccessNotice, useLegacyApi, useLatestRef } from "@/lib/legacyApi";
+import { useEn } from "@/lib/english/EnglishProvider";
 
 function LinkedInIcon({ className = "w-4 h-4" }: { className?: string }) {
   return (
@@ -189,6 +190,7 @@ function inCooldown(nextAttemptAt?: string | null): boolean {
 }
 
 export default function WrittenExamPrepPage() {
+  const en = useEn();
   const { apiFetch, ready, access } = useLegacyApi();
   const [catalog, setCatalog] = useState<ExamCatalogItem[]>([]);
   const [selectedStream, setSelectedStream] = useState<string>("All");
@@ -1115,7 +1117,7 @@ export default function WrittenExamPrepPage() {
               className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-border bg-card/60 hover:bg-card text-foreground text-xs font-semibold transition-colors"
             >
               <BrainCircuit className="w-4 h-4 text-primary" />
-              Career Counselling Diagnostic
+              {en("Career Counselling Diagnostic")}
             </Link>
             <Link
               href="/interview/practice"

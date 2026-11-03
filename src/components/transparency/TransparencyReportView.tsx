@@ -16,6 +16,7 @@ import {
   Users,
 } from "lucide-react";
 import { downloadJson, formatDate, formatPeriod, pct, type ShareRow, type TransparencyReport } from "@/lib/transparency";
+import { useEn } from "@/lib/english/EnglishProvider";
 
 interface Meta {
   id: string;
@@ -112,6 +113,7 @@ function Insufficient({ children }: { children: React.ReactNode }) {
 }
 
 export default function TransparencyReportView({ report, meta, draft = false }: { report: TransparencyReport; meta: Meta; draft?: boolean }) {
+  const en = useEn();
   const { headline, volume, integrity, appeals, validity, fairness, accessibility } = report;
   const oversight = integrity.oversight;
 
@@ -211,7 +213,7 @@ export default function TransparencyReportView({ report, meta, draft = false }: 
           </div>
           <div>
             <h3 className="text-sm font-bold text-foreground mb-2">How often each signal appeared</h3>
-            <ShareTable rows={integrity.signals} keyHeader="Signal" caption="Share of analysed submissions with each signal" formatKey={(k) => k} />
+            <ShareTable rows={integrity.signals} keyHeader="Signal" caption={en("Share of analysed submissions with each signal")} formatKey={(k) => k} />
           </div>
         </div>
 

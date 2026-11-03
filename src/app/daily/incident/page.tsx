@@ -14,6 +14,7 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { ArrowLeft, CheckCircle2, Clock, Sparkles, XCircle } from "lucide-react";
 import { AccessNotice, useLatestRef, useLegacyApi } from "@/lib/legacyApi";
+import { useEn } from "@/lib/english/EnglishProvider";
 
 const TRACKS = [
   { id: "DevOps", label: "DevOps and SRE" },
@@ -86,6 +87,7 @@ export default function IncidentDrillPage() {
 }
 
 function IncidentDrill() {
+  const en = useEn();
   const params = useSearchParams();
   const { apiFetch, ready, access } = useLegacyApi();
   const [track, setTrack] = useState("DevOps");
@@ -264,7 +266,7 @@ function IncidentDrill() {
 
           {status.completed && !result && (
             <p className="mt-4 rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-sm">
-              You completed this drill and earned {status.points ?? 0} points. You can practise it again; repeats don&apos;t earn points.
+              You completed this drill and earned {status.points ?? 0}{en(" points. You can practise it again; repeats don't earn points.")}
             </p>
           )}
 
@@ -279,7 +281,7 @@ function IncidentDrill() {
                 <li>Both right within 5 minutes: 20 bonus points. The time is measured from when you open the drill.</li>
               </ul>
               <button type="button" className={`${primary} mt-5`} disabled={busy} onClick={() => void start()}>
-                {status.completed ? "Practise again" : "Open the drill"}
+                {status.completed ? en("Practise again") : "Open the drill"}
               </button>
             </section>
           ) : (
@@ -361,6 +363,7 @@ function IncidentDrill() {
 }
 
 function IncidentResultView({ result, onAgain, busy }: { result: Result; onAgain: () => void; busy: boolean }) {
+  const en = useEn();
   return (
     <div className="mt-6 space-y-4" aria-live="polite">
       <section className={`${card} p-6`}>
@@ -371,7 +374,7 @@ function IncidentResultView({ result, onAgain, busy }: { result: Result; onAgain
         </p>
         <p className="mt-3 text-sm">{result.feedback}</p>
         <button type="button" className="mt-4 text-sm font-semibold text-amber-700 hover:underline disabled:opacity-50 dark:text-amber-400" disabled={busy} onClick={onAgain}>
-          Practise again (no points)
+          {en("Practise again (no points)")}
         </button>
       </section>
       <div className="grid gap-4 lg:grid-cols-2">

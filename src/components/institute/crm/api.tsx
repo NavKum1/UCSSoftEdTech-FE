@@ -3,6 +3,7 @@
 import React from "react";
 
 import { authenticatedFetch } from "@/lib/apiClient";
+import { useEn } from "@/lib/english/EnglishProvider";
 
 export type GetToken = () => Promise<string | null>;
 
@@ -13,7 +14,7 @@ export const OPEN_STAGES: Stage[] = ["New", "Contacted", "CounsellingBooked", "A
 export const STAGE_LABEL: Record<string, string> = {
   New: "New",
   Contacted: "Contacted",
-  CounsellingBooked: "Counselling booked",
+  CounsellingBooked: "Counselling booked", // en() where shown
   Applied: "Applied",
   Enrolled: "Enrolled",
   Lost: "Lost",
@@ -308,9 +309,10 @@ export function PriorityBadge() {
 }
 
 export function StageBadge({ stage }: { stage: string }) {
+  const en = useEn();
   return (
     <span className={`inline-flex items-center whitespace-nowrap rounded-full border px-2 py-0.5 text-[11px] font-medium ${STAGE_TONE[stage] ?? STAGE_TONE.Lost}`}>
-      {STAGE_LABEL[stage] ?? stage}
+      {en(STAGE_LABEL[stage] ?? stage)}
     </span>
   );
 }

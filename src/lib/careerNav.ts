@@ -88,6 +88,7 @@ export const careerNav: Record<CareerPersona, CareerNavItem[]> = {
     { label: "Campus drives", href: "/career-center/placements/drives", module: "H1", ready: true },
     { label: "Reports", href: "/career-center/reports", module: "C11", ready: true },
     { label: "NIRF, NAAC and NBA reports", href: "/career-center/reports/india", module: "G3/G4", ready: true },
+    // en() where shown (careerNav labels)
     { label: "Workforce localisation", href: "/career-center/reports/localisation", module: "G12", ready: true },
     { label: "Workforce (WIOA) reports", href: "/career-center/reports/workforce", module: "G15", ready: true },
     { label: "Apprenticeships", href: "/career-center/apprenticeships", module: "G15", ready: true },

@@ -14,8 +14,10 @@ import {
   startBillingRedirect,
 } from "@/components/VoiceUsageCard";
 import { signInHref } from "@/components/SignInRequired";
+import { useEn } from "@/lib/english/EnglishProvider";
 
 export default function PricingPage() {
+  const en = useEn();
   const { getToken, isLoaded, isSignedIn } = useAuth();
   const [plans, setPlans] = useState<BillingPlans | null>(null);
   const [usage, setUsage] = useState<VoiceUsage | null>(null);
@@ -70,7 +72,7 @@ export default function PricingPage() {
       <div className="max-w-xl mx-auto px-6 py-16 text-center space-y-3">
         <AlertTriangle className="w-8 h-8 mx-auto text-amber-600 dark:text-amber-400" />
         <h1 className="text-xl font-bold text-foreground">Pricing is unavailable</h1>
-        <p className="text-sm text-muted-foreground">We couldn&apos;t load the plan catalogue. Please try again shortly.</p>
+        <p className="text-sm text-muted-foreground">{en("We couldn't load the plan catalogue. Please try again shortly.")}</p>
       </div>
     );
   }

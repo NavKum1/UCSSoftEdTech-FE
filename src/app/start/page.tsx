@@ -14,6 +14,7 @@ import { keycloakSignIn, useAppAuth } from "@/lib/appAuth";
 import { authenticatedFetch } from "@/lib/apiClient";
 import { openRazorpayCheckout, type RazorpayStart } from "@/lib/razorpayCheckout";
 import { SCHOOL_KINDS, countryList, type SchoolKind } from "@/lib/schoolKinds";
+import { useEn } from "@/lib/english/EnglishProvider";
 
 type Kind = SchoolKind;
 interface Plan {
@@ -86,6 +87,7 @@ export default function StartPage() {
 }
 
 function Wizard() {
+  const en = useEn();
   const { isSignedIn, isLoaded, getToken } = useAppAuth();
   const router = useRouter();
   const [d, setD] = useState<Draft>(load);
@@ -143,7 +145,7 @@ function Wizard() {
   };
 
   const chooseSchool = async () => {
-    if (!d.country || !d.kind) return setError("Choose your country and what kind of organisation you are.");
+    if (!d.country || !d.kind) return setError(en("Choose your country and what kind of organisation you are."));
     setBusy(true);
     try {
       const p = await fetchPlans(d.country);
@@ -303,7 +305,7 @@ function Wizard() {
               </select>
             </label>
             <fieldset className="mt-7">
-              <legend className="text-sm font-medium">What kind of organisation are you?</legend>
+              <legend className="text-sm font-medium">{en("What kind of organisation are you?")}</legend>
               <div className="mt-2 grid gap-2.5 sm:grid-cols-2">
                 {KINDS.map((k) => (
                   <label
@@ -314,8 +316,8 @@ function Wizard() {
                   >
                     <input type="radio" name="kind" className="mt-1 accent-indigo-600" checked={d.kind === k.value} onChange={() => update({ kind: k.value })} />
                     <span>
-                      <span className="block font-medium">{k.label}</span>
-                      <span className="block text-sm text-slate-500 dark:text-slate-400">{k.text}</span>
+                      <span className="block font-medium">{en(k.label)}</span>
+                      <span className="block text-sm text-slate-500 dark:text-slate-400">{en(k.text)}</span>
                     </span>
                   </label>
                 ))}
@@ -388,7 +390,7 @@ function Wizard() {
                 </label>
               ))}
             </div>
-            <p className="mt-4 text-sm text-slate-500 dark:text-slate-400">Universities and districts: contact us for an annual licence.</p>
+            <p className="mt-4 text-sm text-slate-500 dark:text-slate-400">{en("Universities and districts: contact us for an annual licence.")}</p>
             <div className="mt-8">
               <button type="button" className={primary} onClick={() => go(isSignedIn ? 4 : 3)}>
                 Continue with {plan?.name ?? "this plan"}

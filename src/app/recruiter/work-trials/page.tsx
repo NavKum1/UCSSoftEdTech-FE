@@ -30,6 +30,7 @@ import {
   X,
   XCircle,
 } from "lucide-react";
+import { useEn } from "@/lib/english/EnglishProvider";
 
 type Language = "python" | "javascript" | "typescript";
 type AiPolicy = "Prohibited" | "Allowed" | "Evaluated";
@@ -264,6 +265,7 @@ function NewTrialWizard({
   onCreated: (detail: TrialDetail) => void;
   onCancel: () => void;
 }) {
+  const en = useEn();
   const [source, setSource] = useState<"github" | "files">("github");
   const [repository, setRepository] = useState("");
   const [branch, setBranch] = useState("");
@@ -490,7 +492,7 @@ function NewTrialWizard({
         </div>
         <label className="flex items-start gap-2 text-xs font-semibold text-foreground cursor-pointer">
           <input type="checkbox" checked={consent} onChange={(e) => setConsent(e.target.checked)} className="mt-0.5" />
-          I am authorised to share this code, and I agree that it is sanitized and then sent to an AI model to generate the work trial.
+          {en("I am authorised to share this code, and I agree that it is sanitized and then sent to an AI model to generate the work trial.")}
         </label>
       </div>
 

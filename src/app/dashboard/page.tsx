@@ -27,12 +27,14 @@ import {
 } from "lucide-react";
 import { AccessNotice, useLegacyApi } from "@/lib/legacyApi";
 import { useAppAuth } from "@/lib/appAuth";
+import { useEn } from "@/lib/english/EnglishProvider";
 
 /** What a staff member's work is, from their roles; null for learners */
 function staffRole(roles: string[]): { label: string; href: string; action: string } | null {
   const has = (r: string) => roles.some((x) => x.toLowerCase() === r.toLowerCase());
   if (has("SuperAdmin")) return { label: "Platform administrator", href: "/admin", action: "Open the admin console" };
   if (has("InstituteAdmin")) return { label: "Institute admin", href: "/institute/dashboard", action: "Open the institute dashboard" };
+  // en() where shown
   if (has("Counselor")) return { label: "Counsellor", href: "/institute/dashboard", action: "Open the institute dashboard" };
   return null;
 }
@@ -128,6 +130,7 @@ const scoreTone = (score: number) =>
 const card = "rounded-2xl border border-border bg-card shadow-[0_1px_2px_rgb(16_24_40/0.04)]";
 
 export default function DashboardPage() {
+  const en = useEn();
   const { apiFetch, ready, access } = useLegacyApi();
   const { roles } = useAppAuth();
   const staff = staffRole(roles);
@@ -208,7 +211,7 @@ export default function DashboardPage() {
               href={staff.href}
               className="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-indigo-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
             >
-              {staff.action}
+              {en(staff.action)}
               <ArrowRight aria-hidden="true" className="h-4 w-4" />
             </Link>
           )}
@@ -228,7 +231,7 @@ export default function DashboardPage() {
           icon={Flame}
           label="Current streak"
           value={`${data.activity.currentStreakDays} ${data.activity.currentStreakDays === 1 ? "day" : "days"}`}
-          hint={data.activity.longestStreakDays > 0 ? `Longest: ${data.activity.longestStreakDays} days` : "Practise today to start one"}
+          hint={data.activity.longestStreakDays > 0 ? `Longest: ${data.activity.longestStreakDays} days` : en("Practise today to start one")}
         />
         <Stat icon={CalendarDays} label="Active days" value={`${data.activity.activeDaysLast30}`} hint="In the last 30 days" />
         <Stat
@@ -446,7 +449,7 @@ export default function DashboardPage() {
                 { href: "/interview/practice", label: "Interviews", icon: Mic, n: data.totals.interviews },
                 { href: "/daily/incident", label: "Incidents", icon: Siren, n: data.totals.incidents },
                 { href: "/daily/review", label: "Code review", icon: Bug, n: data.totals.codeReviews },
-                { href: "/prep/counselling", label: "Counselling", icon: Compass, n: data.counselling ? 1 : 0 },
+                { href: "/prep/counselling", label: en("Counselling"), icon: Compass, n: data.counselling ? 1 : 0 },
               ].map((p) => (
                 <li key={p.href + p.label}>
                   <Link

@@ -11,6 +11,7 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { Plus, RotateCcw, Save, Trash2 } from "lucide-react";
 import { AccessNotice, useLatestRef, useLegacyApi } from "@/lib/legacyApi";
+import { useEn } from "@/lib/english/EnglishProvider";
 
 const CORE_TRACKS = [
   "Distributed Backend & Systems",
@@ -92,6 +93,7 @@ const blankCourse = (instituteId: string): CourseItem => ({
 });
 
 export default function InstituteCounsellingPage() {
+  const en = useEn();
   const { apiFetch, ready, access, roles } = useLegacyApi();
   const isSuper = roles.includes("SuperAdmin");
   const isAdmin = isSuper || roles.includes("InstituteAdmin");
@@ -116,15 +118,15 @@ export default function InstituteCounsellingPage() {
     if (ready) void loadRef.current();
   }, [ready, loadRef]);
 
-  if (access) return <AccessNotice problem={access} feature="The counselling builders" />;
+  if (access) return <AccessNotice problem={access} feature={en("The counselling builders")} />;
   if (ready && !isAdmin && !roles.includes("Counselor"))
     return (
       <section className={`${card} p-6`}>
         <h1 className="text-lg font-semibold">For institute staff</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          This is where institute administrators and counselors manage the counselling quiz. To take the quiz, open{" "}
+          {en("This is where institute administrators and counselors manage the counselling quiz. To take the quiz, open")}{" "}
           <Link href="/prep/counselling" className="font-medium text-cyan-700 underline dark:text-cyan-400">
-            Career counselling
+            {en("Career counselling")}
           </Link>
           .
         </p>
@@ -150,7 +152,7 @@ export default function InstituteCounsellingPage() {
     <div className="space-y-6">
       <header className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="text-xl font-semibold">Counselling quiz and courses</h1>
+          <h1 className="text-xl font-semibold">{en("Counselling quiz and courses")}</h1>
           <p className="mt-1 text-sm text-muted-foreground">
             {scope
               ? `${ownInstitute && scope === ownInstitute.id ? ownInstitute.name : `Institute ${scope}`}: the questions your members answer and the courses suggested with their results.`
@@ -201,6 +203,7 @@ export default function InstituteCounsellingPage() {
 // ------------------------------------------------------------------ questions
 
 function QuestionsTab({ scope, apiFetch, canEdit }: { scope: string | null; apiFetch: ApiFetch; canEdit: boolean }) {
+  const en = useEn();
   const query = scope ? `instituteId=${encodeURIComponent(scope)}&` : "";
   const [questions, setQuestions] = useState<Question[] | null>(null);
   const [meta, setMeta] = useState<{ version: number; ownBank: boolean; source: string; questionsPerAttempt: number } | null>(null);
@@ -271,7 +274,7 @@ function QuestionsTab({ scope, apiFetch, canEdit }: { scope: string | null; apiF
         <p className="text-sm text-muted-foreground">
           {active} active question{active === 1 ? "" : "s"}; each member answers {Math.min(meta?.questionsPerAttempt ?? 15, active)} drawn at random.
           {scope && meta && !meta.ownBank ? " This institute uses the platform question pool until you save your own." : ""}
-          {" "}Members never see the areas or weights; give every area the same number of options and weights so none is favoured.
+          {" "}{en("Members never see the areas or weights; give every area the same number of options and weights so none is favoured.")}
         </p>
         {canEdit && (
           <div className="flex gap-2">
@@ -397,6 +400,7 @@ function QuestionsTab({ scope, apiFetch, canEdit }: { scope: string | null; apiF
 // ------------------------------------------------------------------ courses
 
 function CoursesTab({ scope, apiFetch, canEdit, isSuper }: { scope: string; apiFetch: ApiFetch; canEdit: boolean; isSuper: boolean }) {
+  const en = useEn();
   const q = `instituteId=${encodeURIComponent(scope)}`;
   const [courses, setCourses] = useState<CourseItem[] | null>(null);
   const [listed, setListed] = useState(false);
@@ -430,7 +434,7 @@ function CoursesTab({ scope, apiFetch, canEdit, isSuper }: { scope: string; apiF
     else setMessage({ text: body?.error ?? "The course couldn't be saved.", error: true });
   };
   const remove = async (c: CourseItem) => {
-    if (!window.confirm(`Remove "${c.courseName}" from the catalogue? Inquiries already sent about it are kept.`)) return;
+    if (!window.confirm(`Remove "${c.courseName}" ${en("from the catalogue? Inquiries already sent about it are kept.")}`)) return;
     const res = await apiFetch(`/api/quiz/counselling/courses/${c.courseId}?${q}`, { method: "DELETE" });
     setMessage(res.ok ? { text: "Course removed." } : { text: "That didn't work. Please try again.", error: true });
     await load();

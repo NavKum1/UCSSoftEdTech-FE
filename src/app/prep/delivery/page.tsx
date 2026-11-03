@@ -14,6 +14,7 @@ import React, { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { AlertTriangle, Loader2, Lock, Mic, ShieldOff, Square, Trash2 } from "lucide-react";
 import { AccessNotice, useLatestRef, useLegacyApi } from "@/lib/legacyApi";
+import { useEn } from "@/lib/english/EnglishProvider";
 
 interface Decision {
   enabled: boolean;
@@ -95,6 +96,7 @@ function secs(ms: number) {
 }
 
 export default function DeliveryCoachingPage() {
+  const en = useEn();
   const { apiFetch, ready, access } = useLegacyApi();
   const [decision, setDecision] = useState<Decision | null>(null);
   const [note, setNote] = useState("");
@@ -419,7 +421,7 @@ export default function DeliveryCoachingPage() {
 
       <section className={`${card} space-y-4 p-5`} aria-labelledby="dc-practice">
         <h2 id="dc-practice" className="text-base font-semibold">
-          Practise an answer
+          {en("Practise an answer")}
         </h2>
         <label className="block text-sm">
           <span className="font-medium">Question</span>

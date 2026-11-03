@@ -17,6 +17,8 @@ import { CAN_SIGN_UP, signInHref, signUpHref, useReturnPath } from "@/components
 import { hidesGlobalNavigation } from "@/lib/careerNav";
 import { ProductRegionSwitcher } from "@/context/GeoContext";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import EnglishPicker from "@/components/EnglishPicker";
+import { useEn } from "@/lib/english/EnglishProvider";
 import { authenticatedFetch } from "@/lib/apiClient";
 
 interface NavItem {
@@ -31,7 +33,7 @@ const TABS: NavItem[] = [
   { name: "Exams", href: "/prep/exam" },
   { name: "Interviews", href: "/interview/practice" },
   { name: "Incidents", href: "/daily/incident" },
-  { name: "Counselling", href: "/prep/counselling" },
+  { name: "Counselling", href: "/prep/counselling" }, // en() where shown
   { name: "Mentoring", href: "/mentors" },
 ];
 
@@ -88,6 +90,7 @@ const hasAnyRole = (roles: string[], wanted: string[]) => roles.some((r) => want
 const active = (pathname: string | null, href: string) => (href === "/dashboard" ? pathname === href : !!pathname && (pathname === href || pathname.startsWith(href + "/")));
 
 export default function GlobalNavigation() {
+  const en = useEn();
   const pathname = usePathname();
   const router = useRouter();
   const { isLoaded, isSignedIn, roles, getToken } = useAppAuth();
@@ -226,6 +229,7 @@ export default function GlobalNavigation() {
               </Link>
             )}
             <ProductRegionSwitcher />
+            <EnglishPicker className="hidden sm:inline-flex" />
             <ThemeToggle />
             <div className="pl-1">{account}</div>
             <button
@@ -253,7 +257,7 @@ export default function GlobalNavigation() {
                     active(pathname, t.href) ? "border-indigo-600 font-medium text-foreground" : "border-transparent text-muted-foreground hover:border-border hover:text-foreground"
                   }`}
                 >
-                  {t.name}
+                  {en(t.name)}
                 </Link>
               </li>
             ))}
@@ -284,7 +288,7 @@ export default function GlobalNavigation() {
                               aria-current={active(pathname, i.href) ? "page" : undefined}
                               className={`block rounded-lg px-2 py-1.5 hover:bg-muted ${active(pathname, i.href) ? "bg-muted" : ""}`}
                             >
-                              <span className="block text-sm font-medium">{i.name}</span>
+                              <span className="block text-sm font-medium">{en(i.name)}</span>
                               {i.desc && <span className="block text-xs text-muted-foreground">{i.desc}</span>}
                             </Link>
                           </li>
@@ -308,7 +312,7 @@ export default function GlobalNavigation() {
                     aria-current={active(pathname, t.href) ? "page" : undefined}
                     className={`block rounded-lg px-3 py-2 text-sm ${active(pathname, t.href) ? "bg-muted font-medium" : "text-muted-foreground hover:bg-muted"}`}
                   >
-                    {t.name}
+                    {en(t.name)}
                   </Link>
                 </li>
               ))}
@@ -320,7 +324,7 @@ export default function GlobalNavigation() {
                   {g.items.map((i) => (
                     <li key={i.href}>
                       <Link href={i.href} className="block rounded-lg px-3 py-2 text-sm text-muted-foreground hover:bg-muted hover:text-foreground">
-                        {i.name}
+                        {en(i.name)}
                       </Link>
                     </li>
                   ))}

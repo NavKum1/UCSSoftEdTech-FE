@@ -276,6 +276,8 @@ export interface Fillable {
   startToken?: string;
   /** Website forms: Cloudflare Turnstile, when Edulexa has it set up */
   turnstileSiteKey?: string | null;
+  /** The school's English (US or GB spelling) */
+  english?: "US" | "GB";
 }
 
 /** An answer as the form holds it */

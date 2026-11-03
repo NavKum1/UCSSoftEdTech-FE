@@ -36,6 +36,7 @@ import {
   statusLabel,
 } from "@/lib/candidateExperience";
 import SignInRequired from "@/components/SignInRequired";
+import { useEn } from "@/lib/english/EnglishProvider";
 
 function Section({ title, icon, children }: { title: string; icon: React.ReactNode; children: React.ReactNode }) {
   return (
@@ -87,6 +88,7 @@ function DiffView({ diff }: { diff: string }) {
 }
 
 export default function SubmissionReportPage() {
+  const en = useEn();
   const params = useParams<{ submissionId: string }>();
   const submissionId = params?.submissionId ?? "";
   const router = useRouter();
@@ -320,9 +322,9 @@ export default function SubmissionReportPage() {
         </Section>
 
         {/* Feedback */}
-        <Section title="Personalised feedback" icon={<Lightbulb className="w-4 h-4 text-amber-600 dark:text-amber-400" />}>
+        <Section title={en("Personalised feedback")} icon={<Lightbulb className="w-4 h-4 text-amber-600 dark:text-amber-400" />}>
           {!feedback ? (
-            <p className="text-xs text-muted-foreground">Personalised feedback is not available right now.</p>
+            <p className="text-xs text-muted-foreground">{en("Personalised feedback is not available right now.")}</p>
           ) : (
             <div className="space-y-3 text-sm">
               {feedback.simulated && (

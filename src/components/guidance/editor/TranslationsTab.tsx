@@ -8,6 +8,7 @@
 
 import React, { useState } from "react";
 import type { FormDef, FormText, ResultsText } from "@/components/guidance/form/model";
+import { useEn } from "@/lib/english/EnglishProvider";
 
 type Texts = Record<string, FormText> | undefined;
 
@@ -22,6 +23,7 @@ export default function TranslationsTab({
   languages: { code: string; name: string }[];
   readOnly: boolean;
 }) {
+  const en = useEn();
   const others = def.languages.slice(1);
   const [lang, setLang] = useState(others[0] ?? "");
   const nameOf = (c: string) => languages.find((l) => l.code === c)?.name ?? c;
@@ -205,7 +207,7 @@ export default function TranslationsTab({
               ))}
             </>
           )}
-          <p className="text-xs text-muted-foreground">Notes for counsellors aren&apos;t translated: only your team reads them.</p>
+          <p className="text-xs text-muted-foreground">{en("Notes for counsellors aren't translated: only your team reads them.")}</p>
         </Group>
       )}
     </fieldset>

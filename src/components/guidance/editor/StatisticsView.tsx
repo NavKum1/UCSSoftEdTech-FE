@@ -8,6 +8,7 @@
 
 import React, { useCallback, useEffect, useState } from "react";
 import { useLatestRef, useLegacyApi } from "@/lib/legacyApi";
+import { useEn } from "@/lib/english/EnglishProvider";
 
 interface FormStats {
   formId: string;
@@ -86,6 +87,7 @@ function Tile({ label, value, note }: { label: string; value: string; note?: str
 }
 
 export default function StatisticsView({ instituteId }: { instituteId?: string }) {
+  const en = useEn();
   const { apiFetch, ready } = useLegacyApi();
   const [days, setDays] = useState(90);
   const [stats, setStats] = useState<Stats | null>(null);
@@ -145,7 +147,7 @@ export default function StatisticsView({ instituteId }: { instituteId?: string }
                 <th className="px-3 py-2 text-right font-medium">Time</th>
                 <th className="px-3 py-2 text-right font-medium">Meetings</th>
                 <th className="px-3 py-2 text-right font-medium">Messages</th>
-                <th className="px-3 py-2 text-right font-medium">Counselling booked</th>
+                <th className="px-3 py-2 text-right font-medium">{en("Counselling booked")}</th>
                 <th className="px-3 py-2 text-right font-medium">Enrolled</th>
               </tr>
             </thead>

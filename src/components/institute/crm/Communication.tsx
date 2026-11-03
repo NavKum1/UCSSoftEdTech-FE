@@ -29,6 +29,7 @@ import {
 import { useAppAuth } from "@/lib/appAuth";
 import { authenticatedFetch } from "@/lib/apiClient";
 import { CALL_OUTCOMES, relative, StageBadge, stageFromLabel, type Activity } from "./api";
+import { useEn } from "@/lib/english/EnglishProvider";
 
 const OUT = ["Email", "Sms", "WhatsApp"];
 const CHANGES = ["Stage", "Assignment", "Task", "System"];
@@ -103,6 +104,7 @@ export default function Communication({
   onPin: (a: Activity, pinned: boolean) => void;
   onReply: (subject: string) => void;
 }) {
+  const en = useEn();
   const [filter, setFilter] = useState<Filter>("all");
   const [q, setQ] = useState("");
 
@@ -150,7 +152,7 @@ export default function Communication({
         </h3>
         {pinned.length === 0 ? (
           <p className="mt-1 text-xs text-muted-foreground">
-            Pin what every counsellor should know before talking to {personName} (budget, preferred time, what they decided). Use the pin on any note, call or message.
+            {en("Pin what every counsellor should know before talking to ")}{personName} (budget, preferred time, what they decided). Use the pin on any note, call or message.
           </p>
         ) : (
           <ul className="mt-1.5 space-y-1.5 text-sm">

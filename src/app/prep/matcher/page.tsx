@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { AccessNotice, useLegacyApi } from "@/lib/legacyApi";
+import { useEn } from "@/lib/english/EnglishProvider";
 
 /** Resume-to-role analysis result (fields this page shows). */
 interface ResumeMatchResult {
@@ -44,6 +45,7 @@ const PRESET_ROLES: TargetRolePreset[] = [
 ];
 
 export default function ResumeMatcherPrepPage() {
+  const en = useEn();
   const { apiFetch, access } = useLegacyApi();
   const [resumeText, setResumeText] = useState(
     "Senior Full-Stack Engineer with 5+ years building backend systems using Python, TypeScript, Docker, PostgreSQL, Microservices, and Redis. Experienced in REST APIs and CI/CD pipelines."
@@ -84,7 +86,7 @@ export default function ResumeMatcherPrepPage() {
         setAnalysisResult(data);
       } else {
         const err = await res.json();
-        setErrorMsg(err.error || "We couldn't analyse your resume. Please try again.");
+        setErrorMsg(err.error || en("We couldn't analyse your resume. Please try again."));
       }
     } catch (e) {
       void e;

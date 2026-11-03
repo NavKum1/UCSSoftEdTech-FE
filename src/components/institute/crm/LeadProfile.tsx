@@ -10,6 +10,7 @@ import React from "react";
 import { CheckCircle2, CircleSlash, Clock, Lightbulb, MailQuestion, ShieldAlert, ShieldCheck } from "lucide-react";
 import type { FormResultView, FormVisit, LeadFull, VisitorInfo } from "./api";
 import AnswerFiles from "@/components/guidance/AnswerFiles";
+import { useEn } from "@/lib/english/EnglishProvider";
 
 const CONFIDENCE: Record<string, string> = {
   clear: "A clear match: their answers point mostly to one area.",
@@ -349,6 +350,7 @@ function FormAnswers({ lead, tips }: { lead: LeadFull; tips: Map<string, string[
 }
 
 export default function LeadProfile({ lead }: { lead: LeadFull }) {
+  const en = useEn();
   const q = lead.quiz;
   const tips = new Map((lead.coaching ?? []).map((c) => [c.questionId, c.tips]));
   return (
@@ -366,11 +368,11 @@ export default function LeadProfile({ lead }: { lead: LeadFull }) {
       {(lead.visits?.length ?? 0) > 0 && <Visits visits={lead.visits!} />}
 
       {!q ? (
-        <p className="rounded-xl bg-muted/60 p-3 text-muted-foreground">They didn&apos;t share counselling quiz answers with this inquiry.</p>
+        <p className="rounded-xl bg-muted/60 p-3 text-muted-foreground">{en("They didn't share counselling quiz answers with this inquiry.")}</p>
       ) : (
         <>
           <section>
-            <h3 className="font-semibold">Counselling quiz result</h3>
+            <h3 className="font-semibold">{en("Counselling quiz result")}</h3>
             <p className="mt-1 text-xs text-muted-foreground">Taken {new Date(q.takenAt).toLocaleDateString()}. Shared by the person with this inquiry.</p>
             <p className="mt-2">
               Suggested area: <span className="font-medium">{q.primaryTrack}</span>

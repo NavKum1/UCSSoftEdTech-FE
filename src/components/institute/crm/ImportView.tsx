@@ -12,6 +12,7 @@ import { AlertTriangle, CheckCircle2, FileUp, History, Undo2 } from "lucide-reac
 import { authenticatedFetch } from "@/lib/apiClient";
 import { useLatestRef } from "@/lib/legacyApi";
 import { crm, StageBadge, type GetToken } from "./api";
+import { useEn } from "@/lib/english/EnglishProvider";
 
 interface Preview {
   fileName: string;
@@ -66,6 +67,7 @@ const plural = (n: number, one: string, many = `${one}s`) => `${n.toLocaleString
 const when = (iso: string) => new Date(iso).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" });
 
 export default function ImportView({ getToken, onImported }: { getToken: GetToken; onImported: () => void }) {
+  const en = useEn();
   const [file, setFile] = useState<File | null>(null);
   const [source, setSource] = useState("VirtualAdviser");
   const [duplicates, setDuplicates] = useState<"skip" | "note">("note");
@@ -296,7 +298,7 @@ export default function ImportView({ getToken, onImported }: { getToken: GetToke
                           <span aria-hidden="true" className="text-muted-foreground">→</span>
                           <StageBadge stage={s.stage} />
                           <span className="text-xs text-muted-foreground">{plural(s.count, "lead")}</span>
-                          {!s.known && <span className="text-xs text-amber-800 dark:text-amber-300">not recognised, so New</span>}
+                          {!s.known && <span className="text-xs text-amber-800 dark:text-amber-300">{en("not recognised, so New")}</span>}
                         </li>
                       ))}
                     </ul>

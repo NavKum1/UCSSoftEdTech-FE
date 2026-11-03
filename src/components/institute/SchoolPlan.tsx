@@ -10,6 +10,7 @@ import { usePathname } from "next/navigation";
 import { AlertTriangle, Info } from "lucide-react";
 import { useAppAuth } from "@/lib/appAuth";
 import { authenticatedFetch } from "@/lib/apiClient";
+import { useEn } from "@/lib/english/EnglishProvider";
 
 export interface PlanOption {
   key: string;
@@ -46,7 +47,7 @@ export const money = (minor: number, currency: string) =>
 const daysLeft = (iso: string) => Math.ceil((new Date(iso).getTime() - Date.now()) / 86_400_000);
 
 export const REASONS: Record<string, string> = {
-  Cancelled: "the plan was cancelled",
+  Cancelled: "the plan was cancelled", // en() where shown
   PaymentFailed: "the payment for the plan didn't go through",
   Suspended: "Edulexa's team suspended it",
   TrialEnded: "the free trial ended without a payment",
@@ -57,6 +58,7 @@ export function SchoolPlanBanner() {
   const { getToken, isSignedIn, roles } = useAppAuth();
   const [s, setS] = useState<SchoolPlanState | null>(null);
   const admin = roles.includes("InstituteAdmin");
+  const en = useEn();
   // The Billing page says all of this itself; leaving it (after paying, say) checks the plan again
   const pathname = usePathname();
   const onBilling = pathname === "/institute/billing";
@@ -78,14 +80,14 @@ export function SchoolPlanBanner() {
   let text = "";
   if (s.status === "ReadOnly") {
     tone = "error";
-    text = `Your school is read-only because ${REASONS[s.readOnlyReason ?? ""] ?? "its plan isn't paid"}. You can still see and export everything until ${day(s.deleteAfter)}; then its data is deleted.`;
+    text = en(`Your school is read-only because ${REASONS[s.readOnlyReason ?? ""] ?? "its plan isn't paid"}. You can still see and export everything until ${day(s.deleteAfter)}; then its data is deleted.`);
   } else if (s.status === "PastDue") {
     tone = "warn";
     text = "The last payment for your plan didn't go through. Update your payment method in Billing so your school stays open.";
   } else if (s.status === "Trialing" && daysLeft(s.trialEndsAt) <= 7) {
     tone = "info";
     text = s.cancelAtPeriodEnd
-      ? `Your free trial ends on ${day(s.trialEndsAt)}. You cancelled, so your school becomes read-only then.`
+      ? en(`Your free trial ends on ${day(s.trialEndsAt)}. You cancelled, so your school becomes read-only then.`)
       : `Your free trial ends on ${day(s.trialEndsAt)}. Your ${s.plan} plan starts then.`;
   }
   if (!tone) return null;

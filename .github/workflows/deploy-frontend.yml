@@ -30,6 +30,10 @@ jobs:
       - name: Run Next.js Linter
         run: npm run lint
 
+      # US and British/Indian English: the converter's checks, and no British-spelled text outside en()
+      - name: Check English spelling
+        run: npm run check:english
+
       - name: Run Frontend Production Build
         env:
           NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL || 'https://api.ucss.edtech.dev' }}

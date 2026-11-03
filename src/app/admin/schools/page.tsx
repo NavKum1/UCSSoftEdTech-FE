@@ -9,6 +9,7 @@ import React, { useEffect, useState } from "react";
 import { Loader2, Search } from "lucide-react";
 import { AccessNotice, useLatestRef, useLegacyApi } from "@/lib/legacyApi";
 import { REASONS, day } from "@/components/institute/SchoolPlan";
+import { useEn } from "@/lib/english/EnglishProvider";
 
 interface SchoolRow {
   instituteId: string;
@@ -49,7 +50,7 @@ const TONE: Record<string, string> = {
 const button = "rounded-lg border border-border px-3 py-1.5 text-sm font-medium hover:bg-muted disabled:opacity-50";
 
 function stateLine(s: SchoolRow) {
-  if (s.status === "Trialing") return `Trial ends ${day(s.trialEndsAt)}${s.cancelAtPeriodEnd ? " (cancelled)" : ""}`;
+  if (s.status === "Trialing") return `Trial ends ${day(s.trialEndsAt)}${s.cancelAtPeriodEnd ? " (cancelled)" : ""}`; // en() where shown
   if (s.status === "Active") return `${s.cancelAtPeriodEnd ? "Ends" : "Renews"} ${day(s.currentPeriodEnd)}`;
   if (s.status === "PastDue") return "Last payment failed";
   if (s.status === "ReadOnly") return `Read-only: ${REASONS[s.readOnlyReason ?? ""] ?? "not paid"}. Deleted ${day(s.deleteAfter)}`;
@@ -57,6 +58,7 @@ function stateLine(s: SchoolRow) {
 }
 
 export default function PlatformSchoolsPage() {
+  const en = useEn();
   const { apiFetch, ready, access } = useLegacyApi();
   const [rows, setRows] = useState<SchoolRow[] | null>(null);
   const [filter, setFilter] = useState("");
@@ -173,7 +175,7 @@ export default function PlatformSchoolsPage() {
               </div>
               <div className="flex flex-wrap items-center gap-2 text-sm">
                 <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${TONE[s.status]}`}>{FILTERS.find((f) => f.key === s.status)?.label}</span>
-                <span className="text-muted-foreground">{stateLine(s)}</span>
+                <span className="text-muted-foreground">{en(stateLine(s))}</span>
               </div>
               <div className="flex flex-wrap gap-2 md:justify-end">
                 {s.status === "Trialing" && (

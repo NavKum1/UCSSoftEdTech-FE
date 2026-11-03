@@ -11,6 +11,7 @@ import React, { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { Building2, Link2, RefreshCw, Send } from "lucide-react";
 import { AccessNotice, useLatestRef, useLegacyApi } from "@/lib/legacyApi";
+import { useEn } from "@/lib/english/EnglishProvider";
 
 interface PartnerLead {
   leadId: string;
@@ -33,6 +34,7 @@ const card = "rounded-2xl border border-border bg-card shadow-[0_1px_2px_rgb(16_
 const input = "mt-1 block w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus:outline-2 focus:outline-indigo-600";
 
 export default function PartnerDashboardPage() {
+  const en = useEn();
   const { apiFetch, ready, access } = useLegacyApi();
   const [data, setData] = useState<PartnerDashboardData | null>(null);
   const [failed, setFailed] = useState(false);
@@ -161,7 +163,7 @@ export default function PartnerDashboardPage() {
           <h2 id="pd-interest" className="text-base font-semibold">
             What members asked about
           </h2>
-          <p className="mt-1 text-xs text-muted-foreground">The area of each member&apos;s counselling result, as sent with their inquiry.</p>
+          <p className="mt-1 text-xs text-muted-foreground">{en("The area of each member's counselling result, as sent with their inquiry.")}</p>
           {data.interestByArea.length === 0 ? (
             <p className="mt-4 text-sm text-muted-foreground">No inquiries yet.</p>
           ) : (

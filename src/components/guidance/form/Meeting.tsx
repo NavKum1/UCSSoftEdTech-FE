@@ -11,6 +11,7 @@ import { CalendarCheck, ChevronLeft, ChevronRight } from "lucide-react";
 import { getApiBaseUrl } from "@/lib/apiClient";
 import type { Answer, Fillable, Question } from "./model";
 import type { MeetingTold } from "./GuidanceForm";
+import { useEn } from "@/lib/english/EnglishProvider";
 
 const TIMES_OF_DAY = ["morning", "afternoon", "evening", "any"] as const;
 
@@ -77,6 +78,7 @@ export function MeetingField({
   fill: Fillable;
   id: string;
 }) {
+  const en = useEn();
   const cfg = q.booking ?? { mode: "request", modes: ["Phone"], daysAhead: 14, timeZone: "Asia/Kolkata" };
   const b = a?.booking ?? {};
   const set = (patch: Partial<NonNullable<Answer["booking"]>>) => onChange({ booking: { ...b, ...patch } });
@@ -146,7 +148,7 @@ export function MeetingField({
           <p className="text-xs font-medium text-muted-foreground">{t("pickTime")}</p>
           {preview ? (
             <p className="mt-1.5 rounded-xl border border-dashed border-border p-3 text-xs text-muted-foreground">
-              People pick from your counsellors&apos; free times here, two weeks at a time.
+              {en("People pick from your counsellors' free times here, two weeks at a time.")}
             </p>
           ) : failed ? (
             <p className="mt-1.5 text-xs text-muted-foreground">{t("noTimes")}</p>

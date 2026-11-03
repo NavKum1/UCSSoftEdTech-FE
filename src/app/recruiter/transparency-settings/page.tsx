@@ -6,6 +6,7 @@ import { useAppAuth as useAuth } from "@/lib/appAuth";
 import { authenticatedFetch } from "@/lib/apiClient";
 import { AlertCircle, CheckCircle2, ExternalLink, FileBarChart, Loader2 } from "lucide-react";
 import { formatDate } from "@/lib/transparency";
+import { useEn } from "@/lib/english/EnglishProvider";
 
 interface Participation {
   includeOutcomeData: boolean;
@@ -21,6 +22,7 @@ async function readParticipation(res: Response): Promise<Participation> {
 }
 
 export default function TransparencySettingsPage() {
+  const en = useEn();
   const { getToken } = useAuth();
   const [state, setState] = useState<{ data: Participation | null; error: string | null } | null>(null);
   const [saving, setSaving] = useState(false);
@@ -84,7 +86,7 @@ export default function TransparencySettingsPage() {
             <div>
               <h2 id="participation-label" className="text-sm font-bold text-foreground">Include our hire-outcome data</h2>
               <p className="text-xs text-muted-foreground mt-0.5">
-                {data.outcomesRecorded} outcome{data.outcomesRecorded === 1 ? "" : "s"} recorded by your organisation
+                {data.outcomesRecorded} outcome{data.outcomesRecorded === 1 ? "" : "s"}{en(" recorded by your organisation")}
                 {data.updatedAt ? ` · last changed ${formatDate(data.updatedAt)}` : ""}.
               </p>
             </div>

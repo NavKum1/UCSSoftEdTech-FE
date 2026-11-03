@@ -9,8 +9,8 @@ export const SCHOOL_KINDS: { value: SchoolKind; label: string; text: string }[] 
   { value: "school", label: "School", text: "Grades 9 to 12, or classes 8 to 12" },
   { value: "college", label: "College or university", text: "Admissions, careers and placements" },
   { value: "training", label: "Career or training school", text: "Healthcare, IT, trades and more" },
-  { value: "coaching", label: "Coaching centre", text: "Test preparation and tuition" },
-  { value: "other", label: "Something else", text: "Any other kind of organisation" },
+  { value: "coaching", label: "Coaching centre", text: "Test preparation and tuition" }, // en() where shown
+  { value: "other", label: "Something else", text: "Any other kind of organisation" }, // en() where shown
 ];
 
 export const COUNTRY_CODES =

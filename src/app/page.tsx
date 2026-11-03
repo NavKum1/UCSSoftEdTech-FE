@@ -12,6 +12,7 @@ import { useRouter } from "next/navigation";
 import { BadgeCheck, Code2, Compass, GraduationCap, Mic, ShieldCheck, Terminal } from "lucide-react";
 import { useAppAuth } from "@/lib/appAuth";
 import { CAN_SIGN_UP } from "@/components/SignInRequired";
+import { useEn } from "@/lib/english/EnglishProvider";
 
 const FEATURES = [
   {
@@ -32,7 +33,7 @@ const FEATURES = [
   {
     icon: Mic,
     title: "Interview practice",
-    text: "Practise technical interviews with an AI interviewer and get feedback afterwards.",
+    text: "Practise technical interviews with an AI interviewer and get feedback afterwards." /* en() where shown */,
   },
   {
     icon: Compass,
@@ -47,6 +48,7 @@ const FEATURES = [
 ];
 
 export default function HomePage() {
+  const en = useEn();
   const { isLoaded, isSignedIn } = useAppAuth();
   const router = useRouter();
 
@@ -63,7 +65,7 @@ export default function HomePage() {
         <p className="text-sm font-semibold uppercase tracking-wider text-indigo-700 dark:text-indigo-300">Edulexa</p>
         <h1 className="mt-2 text-4xl font-semibold tracking-tight sm:text-5xl">Show what you can build, and explain how it works.</h1>
         <p className="mt-4 text-lg text-muted-foreground">
-          Practise real engineering work, get graded on it fairly, and turn the results into credentials people can verify.
+          {en("Practise real engineering work, get graded on it fairly, and turn the results into credentials people can verify.")}
         </p>
         <div className="mt-8 flex flex-wrap gap-3">
           {CAN_SIGN_UP && (
@@ -84,8 +86,8 @@ export default function HomePage() {
         {FEATURES.map(({ icon: Icon, title, text }) => (
           <div key={title} className="rounded-2xl border border-border bg-card p-5">
             <Icon aria-hidden="true" className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
-            <h2 className="mt-3 font-semibold">{title}</h2>
-            <p className="mt-1 text-sm text-muted-foreground">{text}</p>
+            <h2 className="mt-3 font-semibold">{en(title)}</h2>
+            <p className="mt-1 text-sm text-muted-foreground">{en(text)}</p>
           </div>
         ))}
       </section>

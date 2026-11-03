@@ -61,6 +61,7 @@ import InsightsTab from "./InsightsTab";
 import TranslationsTab from "./TranslationsTab";
 import AutomationsTab from "./AutomationsTab";
 import MeetingEditor, { EditingInstitute } from "./MeetingEditor";
+import { useEn } from "@/lib/english/EnglishProvider";
 
 interface View {
   id: string;
@@ -1265,9 +1266,10 @@ function BankPicker({ bank, onPick, onClose }: { bank: { topic: string; question
  */
 /** A step's text in the person's report, and the counsellor's guide to it beside the answers in the CRM */
 function SectionReportEditor({ s, readOnly, update }: { s: Section; readOnly: boolean; update: (p: Partial<Section>) => void }) {
+  const en = useEn();
   return (
     <details className="px-2 text-xs" open={!!(s.report || s.guide || s.guideTitle)}>
-      <summary className="cursor-pointer py-1 font-medium text-muted-foreground">Report text and counsellor guide</summary>
+      <summary className="cursor-pointer py-1 font-medium text-muted-foreground">{en("Report text and counsellor guide")}</summary>
       <fieldset disabled={readOnly} className="mt-1 space-y-2">
         <label className="block font-medium">
           What the person reads at the top of this part of their report
@@ -1282,7 +1284,7 @@ function SectionReportEditor({ s, readOnly, update }: { s: Section; readOnly: bo
         </label>
         <div className="space-y-1 rounded-lg border border-emerald-600/30 bg-emerald-600/5 p-2">
           <p className="font-medium">
-            Counsellor guide <span className="font-normal text-muted-foreground">(above this part&apos;s answers in the CRM&apos;s Insights summary; never shown to the person)</span>
+            {en("Counsellor guide ")}<span className="font-normal text-muted-foreground">(above this part&apos;s answers in the CRM&apos;s Insights summary; never shown to the person)</span>
           </p>
           <input
             maxLength={120}
@@ -1337,6 +1339,7 @@ const IN_REPORT_PARTS: Kind[] = ["choice", "multi", "dropdown", "yesno", "scale"
 
 /** What the person reads in their report under each answer, and whether the question shows in the report's parts */
 function ExplainEditor({ q, update }: { q: Question; update: (p: Partial<Question>) => void }) {
+  const en = useEn();
   const targets: [string, string][] =
     q.kind === "yesno" ? [["Yes", "Yes"], ["No", "No"]] : WITH_OPTIONS.includes(q.kind) ? q.options.filter((o) => o.trim()).map((o) => [o, o]) : [];
   const all: [string, string][] = [...targets, ["answered", targets.length ? "Any answer" : "When they answer"]];
@@ -1370,7 +1373,7 @@ function ExplainEditor({ q, update }: { q: Question; update: (p: Partial<Questio
                 maxLength={1500}
                 className="mt-1 block w-full rounded-md border border-border bg-background px-2 py-1.5"
                 value={text(when)}
-                placeholder={when === "answered" ? "e.g. Each of these areas leads to recognised certifications." : "e.g. You're doing something about it, and that's the hardest step."}
+                placeholder={when === "answered" ? en("e.g. Each of these areas leads to recognised certifications.") : "e.g. You're doing something about it, and that's the hardest step."}
                 onChange={(e) => setText(when, e.target.value)}
               />
             </label>
@@ -1382,6 +1385,7 @@ function ExplainEditor({ q, update }: { q: Question; update: (p: Partial<Questio
 }
 
 function TipsEditor({ q, update }: { q: Question; update: (p: Partial<Question>) => void }) {
+  const en = useEn();
   const targets: [string, string][] =
     q.kind === "slider"
       ? [["left", `Leans to “${q.minLabel || "left"}”`], ["right", `Leans to “${q.maxLabel || "right"}”`]]
@@ -1399,7 +1403,7 @@ function TipsEditor({ q, update }: { q: Question; update: (p: Partial<Question>)
   return (
     <details className="rounded-lg border border-emerald-600/30 bg-emerald-600/5 p-2 text-xs" open={(q.tips?.length ?? 0) > 0}>
       <summary className="cursor-pointer font-medium">
-        <Lightbulb aria-hidden="true" className="mr-1 inline h-3.5 w-3.5" /> Notes for counsellors beside this answer
+        <Lightbulb aria-hidden="true" className="mr-1 inline h-3.5 w-3.5" />{en(" Notes for counsellors beside this answer")}
       </summary>
       <p className="mt-1 text-muted-foreground">Shown in green beside the answer on the lead, to help your team talk with the person. Never shown to the person.</p>
       <div className="mt-2 space-y-2">
@@ -1411,7 +1415,7 @@ function TipsEditor({ q, update }: { q: Question; update: (p: Partial<Question>)
               maxLength={600}
               className="mt-1 block w-full rounded-md border border-border bg-background px-2 py-1.5"
               value={tip(when)}
-              placeholder={when === "answered" ? "e.g. Ask what they meant and what matters most to them." : "e.g. Explain the instalment plan and scholarships early."}
+              placeholder={when === "answered" ? "e.g. Ask what they meant and what matters most to them." : en("e.g. Explain the instalment plan and scholarships early.")}
               onChange={(e) => setTip(when, e.target.value)}
             />
           </label>
@@ -1576,6 +1580,7 @@ function ScoresEditor({ q, update, results }: { q: Question; update: (p: Partial
  * for the person and a note for the counsellor.
  */
 function ResultsEditor({ def, onChange, readOnly, onFill }: { def: FormDef; onChange: (d: FormDef) => void; readOnly: boolean; onFill?: () => void }) {
+  const en = useEn();
   const r = def.results!;
   const set = (patch: Partial<Results>) => onChange({ ...def, results: { ...r, ...patch } });
   const setOutcome = (i: number, patch: Partial<Outcome>) => set({ outcomes: r.outcomes.map((o, j) => (j === i ? { ...o, ...patch } : o)) });
@@ -1635,7 +1640,7 @@ function ResultsEditor({ def, onChange, readOnly, onFill }: { def: FormDef; onCh
                     <textarea rows={2} className={input} value={o.summary ?? ""} maxLength={1500} onChange={(e) => setOutcome(i, { summary: e.target.value })} />
                   </label>
                   <label className="block text-xs font-medium text-muted-foreground">
-                    Note for your counsellor <span className="font-normal">(only in the CRM)</span>
+                    {en("Note for your counsellor ")}<span className="font-normal">(only in the CRM)</span>
                     <textarea rows={2} className={input} value={o.coaching ?? ""} maxLength={1500} placeholder="e.g. Give facts and proof; don't rush them." onChange={(e) => setOutcome(i, { coaching: e.target.value })} />
                   </label>
                 </li>
@@ -1708,7 +1713,7 @@ function ResultsEditor({ def, onChange, readOnly, onFill }: { def: FormDef; onCh
                     <textarea rows={2} className={input} value={b.message ?? ""} maxLength={1000} onChange={(e) => setBand(i, { message: e.target.value })} />
                   </label>
                   <label className="block text-xs font-medium text-muted-foreground">
-                    Note for your counsellor <span className="font-normal">(only in the CRM)</span>
+                    {en("Note for your counsellor ")}<span className="font-normal">(only in the CRM)</span>
                     <textarea rows={2} className={input} value={b.coaching ?? ""} maxLength={1000} onChange={(e) => setBand(i, { coaching: e.target.value })} />
                   </label>
                 </li>
@@ -1867,6 +1872,7 @@ function SettingsEditor({
   setPublic: (on: boolean) => void;
   isDefault: boolean;
 }) {
+  const en = useEn();
   const s = def.settings;
   const set = (patch: Partial<FormDef["settings"]>) => onChange({ ...def, settings: { ...s, ...patch } });
   return (
@@ -1895,7 +1901,7 @@ function SettingsEditor({
         <h2 className="text-sm font-semibold">Look</h2>
         <div className="flex flex-wrap items-end gap-4">
           <label className="block text-xs font-medium text-muted-foreground">
-            Colour
+            {en("Colour")}
             <span className="mt-1 flex items-center gap-2">
               <input type="color" value={s.accent ?? "#4f46e5"} onChange={(e) => set({ accent: e.target.value })} className="h-9 w-14 rounded border border-border" />
               <input className="w-28 rounded-lg border border-border bg-background px-2 py-1.5 font-mono text-xs" value={s.accent ?? ""} placeholder="#4f46e5" onChange={(e) => set({ accent: e.target.value })} />
@@ -1938,7 +1944,7 @@ function SettingsEditor({
         </div>
         {s.layout === "cover" && (
           <label className="block text-xs font-medium text-muted-foreground">
-            Background photo (https link to an image; without one, your colour is used)
+            {en("Background photo (https link to an image; without one, your colour is used)")}
             <input className={input} value={s.backgroundUrl ?? ""} maxLength={500} placeholder="https://your-site.example/campus.jpg" onChange={(e) => set({ backgroundUrl: e.target.value })} />
             <span className="mt-1 block font-normal">Use a photo you have the rights to, at least 1600 pixels wide. It&apos;s darkened so the titles stay readable.</span>
           </label>
@@ -2070,7 +2076,7 @@ function SettingsEditor({
           checked={!!s.requirePhoneCheck}
           onChange={(v) => set({ requirePhoneCheck: v, askPhone: v || s.askPhone, phoneRequired: v || s.phoneRequired })}
           title="Check the phone number by SMS code"
-          detail="People enter a code we send to their phone. Needs your Pulse Relay connection (Career centre → Settings → Chat & SMS); each code is a normal SMS."
+          detail={en("People enter a code we send to their phone. Needs your Pulse Relay connection (Career centre → Settings → Chat & SMS); each code is a normal SMS.")}
         />
         <div className="rounded-lg bg-muted/40 p-3 text-xs text-muted-foreground">
           <p className="font-medium text-foreground">Always on</p>

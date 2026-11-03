@@ -70,6 +70,7 @@ interface Row {
   pendingHours: number;
 }
 
+// not text: status codes
 const STATUSES = ["Active", "Suspended", "Completed", "Cancelled"];
 const KINDS = ["ProgressReview", "YearCompleted", "WageIncrease", "Completion"];
 

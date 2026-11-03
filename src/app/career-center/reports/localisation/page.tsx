@@ -52,7 +52,7 @@ interface ImportResult {
 export default function LocalisationReportsPage() {
   const api = useApi();
   const { schoolId, me } = useCareerShell();
-  const t = useCareerT("localisation");
+  const t = useCareerT("localisation"); // not text: a message area
   const fmt = useCareerFormat();
   const isAdmin = !!me?.memberships.some((m) => m.role === "CareerAdmin" && (!schoolId || m.instituteId === schoolId));
   const fws = useLoad(() => api<FrameworksResponse>("/api/career/localisation/frameworks"), [api]);
@@ -79,7 +79,7 @@ export default function LocalisationReportsPage() {
         const body = await res.json().catch(() => null);
         throw new Error((body && body.message) || t("exportFailedStatus", { status: res.status }));
       }
-      const name = /filename="?([^";]+)"?/.exec(res.headers.get("content-disposition") ?? "")?.[1] ?? `localisation.${format}`;
+      const name = /filename="?([^";]+)"?/.exec(res.headers.get("content-disposition") ?? "")?.[1] ?? `localisation.${format}` /* not text: a file name */;
       const url = URL.createObjectURL(await res.blob());
       const a = document.createElement("a");
       a.href = url;

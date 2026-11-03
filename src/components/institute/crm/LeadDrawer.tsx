@@ -43,6 +43,7 @@ import {
   type Member,
   type Template,
 } from "./api";
+import { useEn } from "@/lib/english/EnglishProvider";
 
 type Mode = "Call" | "Email" | "Sms" | "WhatsApp" | "Note" | "Meeting";
 
@@ -96,6 +97,7 @@ export default function LeadDrawer({
   onClose: () => void;
   onChanged: () => void;
 }) {
+  const en = useEn();
   const [lead, setLead] = useState<LeadFull | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
@@ -157,7 +159,7 @@ export default function LeadDrawer({
       return;
     }
     setLosing(false);
-    update({ stage }, `Moved to ${STAGE_LABEL[stage]}.`);
+    update({ stage }, `Moved to ${en(STAGE_LABEL[stage])}.`);
   };
 
   return (
@@ -371,7 +373,7 @@ export default function LeadDrawer({
                               : `${STAGE_TONE[s]} opacity-70 hover:opacity-100`
                         }`}
                       >
-                        {STAGE_LABEL[s]}
+                        {en(STAGE_LABEL[s])}
                       </button>
                     ))}
                   </div>
@@ -434,7 +436,7 @@ export default function LeadDrawer({
                           · {new Date(x.sendAt).toLocaleString([], { dateStyle: "medium", timeStyle: "short" })} · by {x.createdByName}
                         </span>
                       </span>
-                      <button type="button" disabled={busy} onClick={() => act(`/leads/${leadId}/scheduled/${x.id}`, undefined, "Scheduled email cancelled.", "DELETE")} className="rounded-lg border border-border bg-card px-2.5 py-1 text-xs hover:bg-muted">
+                      <button type="button" disabled={busy} onClick={() => act(`/leads/${leadId}/scheduled/${x.id}`, undefined, en("Scheduled email cancelled."), "DELETE")} className="rounded-lg border border-border bg-card px-2.5 py-1 text-xs hover:bg-muted">
                         Cancel
                       </button>
                     </div>
@@ -598,7 +600,7 @@ function OwnerField({
           className="mt-2 space-y-1.5 rounded-lg border border-border bg-muted/40 p-2 font-normal"
           onSubmit={(e) => {
             e.preventDefault();
-            addAndAssign("/team", { name, email, role: "Counsellor", active: true });
+            addAndAssign("/team", { name, email, role: "Counsellor", active: true }); // not text: the role value
           }}
         >
           <input className={input} placeholder="Name" aria-label="Name" value={name} onChange={(e) => setName(e.target.value)} required maxLength={200} />
@@ -793,6 +795,7 @@ function Composer({
   reload: () => void;
   onChanged: () => void;
 }) {
+  const en = useEn();
   const [text, setText] = useState("");
   const [subject, setSubject] = useState(initialSubject);
   const [templateId, setTemplateId] = useState("");
@@ -843,7 +846,7 @@ function Composer({
     Sms: `SMS to ${lead.phone ?? ""}`,
     WhatsApp: `WhatsApp ${lead.phone ?? ""}`,
     Note: "Add a note",
-    Meeting: "Book a counselling meeting",
+    Meeting: en("Book a counselling meeting"),
   };
 
   const unavailable =

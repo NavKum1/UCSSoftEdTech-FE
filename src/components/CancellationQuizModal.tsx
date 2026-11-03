@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { authenticatedFetch } from "@/lib/apiClient";
 import { useAppAuth } from "@/lib/appAuth";
+import { useEn } from "@/lib/english/EnglishProvider";
 
 /** The cancellation API response, or the local acknowledgement shown when it can't be reached. */
 interface CancellationResult {
@@ -40,6 +41,7 @@ export function CancellationQuizModal({
   sessionType = "Interview",
   onConfirmedCancel,
 }: CancellationQuizModalProps) {
+  const en = useEn();
   const [selectedReason, setSelectedReason] = useState<string>(PRESET_REASONS[0]);
   const [details, setDetails] = useState<string>("");
   const [wantsReschedule, setWantsReschedule] = useState<boolean>(true);
@@ -168,7 +170,7 @@ export function CancellationQuizModal({
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
               <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                Primary Reason for Cancelling
+                {en("Primary Reason for Cancelling")}
               </label>
               <div className="space-y-2">
                 {PRESET_REASONS.map((reason) => (
