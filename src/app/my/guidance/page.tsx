@@ -9,8 +9,10 @@ import React, { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { AccessNotice, useLatestRef, useLegacyApi } from "@/lib/legacyApi";
 import { Messages, ReplyBox, STATUS_LABEL, type GuidanceRequestView } from "@/components/guidance/Conversation";
+import { useEn } from "@/lib/english/EnglishProvider";
 
 export default function MyGuidancePage() {
+  const en = useEn();
   const { apiFetch, ready, access } = useLegacyApi();
   const [items, setItems] = useState<GuidanceRequestView[] | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -39,11 +41,11 @@ export default function MyGuidancePage() {
   return (
     <main className="mx-auto max-w-3xl space-y-6 px-4 pb-16 pt-8 sm:px-6">
       <header>
-        <h1 className="text-2xl font-semibold tracking-tight">My guidance requests</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">{en("My guidance requests")}</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          Your questions to Edulexa and the replies. You can also reply to our emails.{" "}
+          {en("Your questions to Edulexa and the replies. You can also reply to our emails.")}{" "}
           <Link href="/prep/counselling" className="font-medium text-indigo-700 hover:underline dark:text-indigo-300">
-            Ask something new
+            {en("Ask something new")}
           </Link>
         </p>
       </header>
@@ -51,7 +53,7 @@ export default function MyGuidancePage() {
       {!items ? (
         <div className="h-40 animate-pulse rounded-2xl bg-muted motion-reduce:animate-none" aria-busy="true" />
       ) : items.length === 0 ? (
-        <p className="text-sm text-muted-foreground">You haven&apos;t asked anything yet.</p>
+        <p className="text-sm text-muted-foreground">{en("You haven't asked anything yet.")}</p>
       ) : (
         items.map((r) => (
           <section key={r.id} className="space-y-4 rounded-2xl border border-border bg-card p-5">
@@ -63,15 +65,14 @@ export default function MyGuidancePage() {
             {r.status === "InstituteSuggested" && r.suggestedInstitute && (
               <div className="rounded-xl border border-indigo-500/40 bg-indigo-500/5 p-4 text-sm">
                 <p>
-                  We suggest talking to <span className="font-semibold">{r.suggestedInstitute}</span>. Send them your request so they can contact you?
-                  Nothing goes to them unless you agree.
+                  {en("We suggest talking to ")}<span className="font-semibold">{r.suggestedInstitute}</span>{en(". Send them your request so they can contact you? Nothing goes to them unless you agree.")}
                 </p>
                 <div className="mt-3 flex gap-2">
                   <button type="button" onClick={() => void post(`/api/guidance/requests/${r.id}/suggestion`, { approve: true })} className="rounded-xl bg-indigo-600 px-4 py-2 font-semibold text-white hover:bg-indigo-500">
-                    Yes, send it
+                    {en("Yes, send it")}
                   </button>
                   <button type="button" onClick={() => void post(`/api/guidance/requests/${r.id}/suggestion`, { approve: false })} className="rounded-xl border border-border px-4 py-2 font-medium hover:bg-muted">
-                    No, thanks
+                    {en("No, thanks")}
                   </button>
                 </div>
               </div>

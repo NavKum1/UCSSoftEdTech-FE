@@ -76,18 +76,18 @@ export function CancellationQuizModal({
       } else if (res.status === 401) {
         setResult({
           status: "Sign in required",
-          message: "Sign in again to record your cancellation feedback.",
+          message: en("Sign in again to record your cancellation feedback."),
         });
       } else {
         setResult({
           status: "Processed",
-          message: "Your cancellation feedback has been recorded.",
+          message: en("Your cancellation feedback has been recorded."),
         });
       }
     } catch {
       setResult({
         status: "Processed",
-        message: "Your cancellation feedback has been recorded.",
+        message: en("Your cancellation feedback has been recorded."),
       });
     } finally {
       setSubmitting(false);
@@ -105,10 +105,10 @@ export function CancellationQuizModal({
             </div>
             <div>
               <h3 className="text-lg font-bold text-foreground">
-                Cancel {sessionType} Session
+                {en("Cancel ")}{sessionType}{en(" Session")}
               </h3>
               <p className="text-xs text-muted-foreground">
-                Help us improve by sharing your cancellation reason
+                {en("Help us improve by sharing your cancellation reason")}
               </p>
             </div>
           </div>
@@ -127,7 +127,7 @@ export function CancellationQuizModal({
               <div>
                 <p className="text-sm font-semibold">{result.message}</p>
                 <p className="text-xs opacity-80 mt-0.5">
-                  Cancellation processed successfully.
+                  {en("Cancellation processed successfully.")}
                 </p>
               </div>
             </div>
@@ -136,7 +136,7 @@ export function CancellationQuizModal({
               <div className="space-y-2 p-4 rounded-xl border border-border bg-muted/30">
                 <div className="flex items-center gap-2 text-xs font-semibold text-foreground">
                   <Calendar className="w-4 h-4 text-primary" />
-                  <span>Priority Reschedule Slots Reserved For You:</span>
+                  <span>{en("Priority Reschedule Slots Reserved For You:")}</span>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-1">
                   {result.suggestedRescheduleSlots.map((slot: string, i: number) => (
@@ -163,7 +163,7 @@ export function CancellationQuizModal({
               onClick={onClose}
               className="w-full py-2.5 px-4 rounded-xl bg-primary text-primary-foreground font-semibold text-sm hover:opacity-95 transition-opacity"
             >
-              Done
+              {en("Done")}
             </button>
           </div>
         ) : (
@@ -197,13 +197,13 @@ export function CancellationQuizModal({
 
             <div className="space-y-1.5">
               <label className="text-xs font-semibold text-muted-foreground">
-                Additional Comments (Optional)
+                {en("Additional Comments (Optional)")}
               </label>
               <textarea
                 value={details}
                 onChange={(e) => setDetails(e.target.value)}
                 rows={2}
-                placeholder="Let us know what we could do to make this experience better..."
+                placeholder={en("Let us know what we could do to make this experience better...")}
                 className="w-full rounded-xl border border-border bg-background px-3 py-2 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
               />
             </div>
@@ -217,10 +217,10 @@ export function CancellationQuizModal({
               />
               <div className="text-xs">
                 <span className="font-semibold text-foreground">
-                  Reserve a priority reschedule slot
+                  {en("Reserve a priority reschedule slot")}
                 </span>
                 <p className="text-muted-foreground">
-                  Keep your progress active and select a new time slot without penalties.
+                  {en("Keep your progress active and select a new time slot without penalties.")}
                 </p>
               </div>
             </label>
@@ -231,14 +231,14 @@ export function CancellationQuizModal({
                 onClick={onClose}
                 className="px-4 py-2 rounded-xl border border-border text-xs font-semibold text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
               >
-                Nevermind, Keep Session
+                {en("Nevermind, Keep Session")}
               </button>
               <button
                 type="submit"
                 disabled={submitting}
                 className="px-4 py-2 rounded-xl bg-destructive text-destructive-foreground text-xs font-semibold hover:opacity-90 transition-opacity disabled:opacity-50"
               >
-                {submitting ? "Processing..." : "Confirm Cancellation"}
+                {submitting ? en("Processing...") : en("Confirm Cancellation")}
               </button>
             </div>
           </form>

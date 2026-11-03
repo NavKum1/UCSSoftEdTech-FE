@@ -116,9 +116,9 @@ export default function GlobalNavigation() {
   // Staff see where they work: the admin console for platform admins, the institute dashboard for institute staff
   const groups = [
     ...GROUPS,
-    ...(isRecruiterRole(roles) ? [{ title: "Hiring", items: HIRING }] : []),
-    ...(hasAnyRole(roles, ["instituteadmin", "counselor", "superadmin"]) ? [{ title: "Institute", items: INSTITUTE }] : []),
-    ...(hasAnyRole(roles, ["superadmin"]) ? [{ title: "Administration", items: ADMINISTRATION }] : []),
+    ...(isRecruiterRole(roles) ? [{ title: en("Hiring"), items: HIRING }] : []),
+    ...(hasAnyRole(roles, ["instituteadmin", "counselor", "superadmin"]) ? [{ title: en("Institute"), items: INSTITUTE }] : []),
+    ...(hasAnyRole(roles, ["superadmin"]) ? [{ title: en("Administration"), items: ADMINISTRATION }] : []),
   ];
 
   useEffect(() => {
@@ -173,7 +173,7 @@ export default function GlobalNavigation() {
 
   const account = dev ? (
     <span className="inline-flex items-center gap-2 text-xs">
-      <span className="rounded-full border border-amber-600/30 bg-amber-500/10 px-2 py-1 font-medium text-amber-800 dark:text-amber-300">Dev: {dev.label}</span>
+      <span className="rounded-full border border-amber-600/30 bg-amber-500/10 px-2 py-1 font-medium text-amber-800 dark:text-amber-300">{en("Dev: ")}{dev.label}</span>
       <button
         type="button"
         onClick={() => {
@@ -182,7 +182,7 @@ export default function GlobalNavigation() {
         }}
         className="rounded-md border border-border px-2 py-1 font-medium hover:bg-muted"
       >
-        End
+        {en("End")}
       </button>
     </span>
   ) : isSignedIn ? (
@@ -192,11 +192,11 @@ export default function GlobalNavigation() {
   ) : (
     <div className="flex items-center gap-1.5" data-nav-signed-out>
       <Link href={signInLink} className="inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-indigo-500">
-        <LogIn aria-hidden="true" className="h-3.5 w-3.5" /> Sign in
+        <LogIn aria-hidden="true" className="h-3.5 w-3.5" />{en(" Sign in")}
       </Link>
       {CAN_SIGN_UP && (
         <Link href={signUpLink} className="hidden rounded-lg border border-border px-3 py-1.5 text-xs font-semibold hover:bg-muted sm:inline-flex">
-          Sign up
+          {en("Sign up")}
         </Link>
       )}
     </div>
@@ -206,9 +206,9 @@ export default function GlobalNavigation() {
     <>
       <a
         href="#main-content"
-        className="sr-only focus:not-sr-only focus:fixed focus:left-2 focus:top-2 focus:z-200 focus:rounded-md focus:bg-card focus:px-3 focus:py-2 focus:text-sm focus:text-foreground focus:shadow-lg"
+        className="sr-only focus:not-sr-only focus:fixed focus:start-2 focus:top-2 focus:z-200 focus:rounded-md focus:bg-card focus:px-3 focus:py-2 focus:text-sm focus:text-foreground focus:shadow-lg"
       >
-        Skip to content
+        {en("Skip to content")}
       </a>
       <header className="sticky top-0 z-50 border-b border-border bg-card/90 backdrop-blur-md">
         <div className="mx-auto flex h-14 max-w-7xl items-center justify-between gap-3 px-4 sm:px-6">
@@ -216,7 +216,7 @@ export default function GlobalNavigation() {
             <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-600 text-white">
               <Shield aria-hidden="true" className="h-4 w-4" />
             </span>
-            <span className="text-sm font-semibold tracking-tight">Edulexa</span>
+            <span className="text-sm font-semibold tracking-tight">{en("Edulexa")}</span>
           </Link>
           <div className="flex items-center gap-2">
             {isSignedIn && minutes !== null && (
@@ -225,19 +225,19 @@ export default function GlobalNavigation() {
                 title={`${minutes} voice minutes left`}
                 className="hidden items-center gap-1 rounded-full border border-border px-2.5 py-1 text-xs text-muted-foreground hover:text-foreground md:inline-flex"
               >
-                <Mic aria-hidden="true" className="h-3.5 w-3.5" /> {minutes} min left
+                <Mic aria-hidden="true" className="h-3.5 w-3.5" /> {minutes}{en(" min left")}
               </Link>
             )}
             <ProductRegionSwitcher />
             <EnglishPicker className="hidden sm:inline-flex" />
             <ThemeToggle />
-            <div className="pl-1">{account}</div>
+            <div className="ps-1">{account}</div>
             <button
               ref={mobileButtonRef}
               type="button"
               onClick={() => setMobileOpen(!mobileOpen)}
               className="rounded-lg p-2 text-muted-foreground hover:bg-muted hover:text-foreground lg:hidden"
-              aria-label="Menu"
+              aria-label={en("Menu")}
               aria-expanded={mobileOpen}
               aria-controls="mobile-navigation"
             >
@@ -246,7 +246,7 @@ export default function GlobalNavigation() {
           </div>
         </div>
 
-        <nav aria-label="Main" className="mx-auto hidden max-w-7xl px-2 sm:px-4 lg:block">
+        <nav aria-label={en("Main")} className="mx-auto hidden max-w-7xl px-2 sm:px-4 lg:block">
           <ul className="-mb-px flex items-center gap-1">
             {TABS.map((t) => (
               <li key={t.href}>
@@ -272,10 +272,10 @@ export default function GlobalNavigation() {
                   moreActive ? "border-indigo-600 font-medium text-foreground" : "border-transparent text-muted-foreground hover:text-foreground"
                 }`}
               >
-                More <ChevronDown aria-hidden="true" className={`h-3.5 w-3.5 transition-transform ${moreOpen ? "rotate-180" : ""}`} />
+                {en("More ")}<ChevronDown aria-hidden="true" className={`h-3.5 w-3.5 transition-transform ${moreOpen ? "rotate-180" : ""}`} />
               </button>
               {moreOpen && (
-                <div id="more-menu" className="absolute left-0 top-full z-100 mt-1 grid w-[min(92vw,720px)] gap-4 rounded-xl border border-border bg-card p-4 shadow-xl sm:grid-cols-3">
+                <div id="more-menu" className="absolute start-0 top-full z-100 mt-1 grid w-[min(92vw,720px)] gap-4 rounded-xl border border-border bg-card p-4 shadow-xl sm:grid-cols-3">
                   {groups.map((g) => (
                     <div key={g.title}>
                       <p className="px-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">{g.title}</p>
@@ -303,7 +303,7 @@ export default function GlobalNavigation() {
         </nav>
 
         {mobileOpen && (
-          <nav id="mobile-navigation" aria-label="Main (mobile)" className="max-h-[75vh] space-y-4 overflow-y-auto border-t border-border px-4 py-4 lg:hidden">
+          <nav id="mobile-navigation" aria-label={en("Main (mobile)")} className="max-h-[75vh] space-y-4 overflow-y-auto border-t border-border px-4 py-4 lg:hidden">
             <ul className="grid grid-cols-2 gap-1">
               {TABS.map((t) => (
                 <li key={t.href}>

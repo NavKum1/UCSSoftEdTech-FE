@@ -5,8 +5,10 @@ import { AlertCircle, Loader2 } from "lucide-react";
 import TransparencyReportView from "@/components/transparency/TransparencyReportView";
 import { TransparencyArchive, TransparencyIntro } from "@/components/transparency/TransparencyArchive";
 import { fetchPublic, type ArchiveEntry, type PublicFetchResult, type PublishedReport } from "@/lib/transparency";
+import { useEn } from "@/lib/english/EnglishProvider";
 
 export default function TransparencyPage() {
+  const en = useEn();
   const [latest, setLatest] = useState<PublicFetchResult<PublishedReport> | null>(null);
   const [archive, setArchive] = useState<PublicFetchResult<ArchiveEntry[]> | null>(null);
 
@@ -25,23 +27,23 @@ export default function TransparencyPage() {
 
       {latest == null ? (
         <div className="glass-panel rounded-2xl border border-border py-10 flex items-center justify-center gap-2 text-sm text-muted-foreground">
-          <Loader2 className="w-4 h-4 animate-spin" /> Loading the latest report...
+          <Loader2 className="w-4 h-4 animate-spin" />{en(" Loading the latest report...")}
         </div>
       ) : latest.kind === "ok" && latest.data.report ? (
         <TransparencyReportView report={latest.data.report} meta={latest.data} />
       ) : latest.kind === "error" ? (
         <div className="glass-panel rounded-2xl border border-border p-6 text-sm text-rose-700 dark:text-rose-400 flex items-center gap-2">
-          <AlertCircle className="w-4 h-4" /> Could not load the report. {latest.message}
+          <AlertCircle className="w-4 h-4" />{en(" Could not load the report. ")}{latest.message}
         </div>
       ) : (
         <div className="glass-panel rounded-2xl border border-border p-6 text-sm text-muted-foreground">
-          No transparency report has been published yet. The first one will appear here once it has been reviewed.
+          {en("No transparency report has been published yet. The first one will appear here once it has been reviewed.")}
         </div>
       )}
 
       {archive?.kind === "ok" && <TransparencyArchive entries={archive.data} />}
       {archive?.kind === "error" && (
-        <p className="text-sm text-rose-700 dark:text-rose-400 flex items-center gap-2"><AlertCircle className="w-4 h-4" /> Could not load the archive. {archive.message}</p>
+        <p className="text-sm text-rose-700 dark:text-rose-400 flex items-center gap-2"><AlertCircle className="w-4 h-4" />{en(" Could not load the archive. ")}{archive.message}</p>
       )}
     </div>
   );

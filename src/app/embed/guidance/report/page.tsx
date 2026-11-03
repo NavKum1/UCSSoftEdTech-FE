@@ -113,7 +113,7 @@ function ReportView() {
             ) : (
               <p className="text-[15px] font-semibold">{report.instituteName}</p>
             )}
-            <div className="text-right text-sm">
+            <div className="text-end text-sm">
               <p className="text-muted-foreground">{t("sent").replace("{date}", sent)}</p>
               <a
                 href={`${getApiBaseUrl().replace(/\/$/, "")}/api/public/guidance-report/${encodeURIComponent(token)}/pdf`}
@@ -163,7 +163,7 @@ function ReportView() {
 
           {report.parts.map((p, i) => (
             <section key={i} aria-labelledby={`part-${i}`} className="space-y-5">
-              <div className="border-l-4 border-[var(--gf-accent)] pl-4">
+              <div className="border-s-4 border-[var(--gf-accent)] ps-4">
                 <h2 id={`part-${i}`} className="text-xl font-semibold tracking-tight">
                   {p.title}
                 </h2>
@@ -183,7 +183,7 @@ function ReportView() {
                     <div className="text-center">
                       <p className="text-sm text-muted-foreground">{report.result?.outcomeTitle || t("yourStyle")}</p>
                       <p className="text-2xl font-semibold tracking-tight text-[var(--gf-accent)]">{outcome.name}</p>
-                      {outcome.summary && <p className="mx-auto mt-2 max-w-prose whitespace-pre-wrap text-pretty text-left leading-relaxed">{outcome.summary}</p>}
+                      {outcome.summary && <p className="mx-auto mt-2 max-w-prose whitespace-pre-wrap text-pretty text-start leading-relaxed">{outcome.summary}</p>}
                     </div>
                   )}
                 </div>
@@ -228,7 +228,7 @@ function Answer({ a }: { a: Item }) {
       <dd className="mt-1">
         {a.table && a.table.rows.length > 0 ? (
           <div className="overflow-x-auto rounded-xl border border-border">
-            <table className="w-full text-left text-sm">
+            <table className="w-full text-start text-sm">
               <thead className="bg-muted/50 text-muted-foreground">
                 <tr>
                   {a.table.columns.map((c) => (

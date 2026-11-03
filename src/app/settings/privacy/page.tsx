@@ -105,7 +105,7 @@ export default function PrivacySettingsPage() {
 
   if (isLoaded && !isSignedIn) {
     return (
-      <SignInRequired title="Privacy and your data" message="Sign in to export or delete your data." />
+      <SignInRequired title={en("Privacy and your data")} message="Sign in to export or delete your data." />
     );
   }
 
@@ -115,23 +115,19 @@ export default function PrivacySettingsPage() {
         <div>
           <h1 className="text-2xl font-black tracking-tight text-foreground flex items-center gap-2">
             <Lock className="w-6 h-6 text-indigo-700 dark:text-indigo-400" />
-            Privacy and your data
+            {en("Privacy and your data")}
           </h1>
           <p className="text-sm text-muted-foreground mt-1">
-            Download a copy of your data, or delete it. These are your rights under data-protection laws such as the GDPR and
-            India&apos;s DPDP Act.
+            {en("Download a copy of your data, or delete it. These are your rights under data-protection laws such as the GDPR and India's DPDP Act.")}
           </p>
         </div>
 
         <section className="glass-panel rounded-2xl p-5 border border-border space-y-3">
           <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
-            <Download className="w-4 h-4 text-indigo-600 dark:text-indigo-400" /> Export your data
+            <Download className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />{en(" Export your data")}
           </h2>
           <p className="text-xs text-muted-foreground">
-            A JSON file with your profile, assessment attempts and editor activity, AI-assistant conversations, submissions, interviews
-            and transcripts, evaluations, credentials, referrals, repository defenses, self-identification answers, appeals,
-            accommodations and speaking-practice measurements. Integrity-analysis details and reviewers&apos; internal rationale are not
-            included in the self-service export; the file explains why and how to request them.
+            {en("A JSON file with your profile, assessment attempts and editor activity, AI-assistant conversations, submissions, interviews and transcripts, evaluations, credentials, referrals, repository defenses, self-identification answers, appeals, accommodations and speaking-practice measurements. Integrity-analysis details and reviewers' internal rationale are not included in the self-service export; the file explains why and how to request them.")}
           </p>
           <button
             onClick={downloadExport}
@@ -139,14 +135,14 @@ export default function PrivacySettingsPage() {
             className="py-2 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white text-sm font-semibold inline-flex items-center gap-2 cursor-pointer"
           >
             {exporting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
-            Download my data (JSON)
+            {en("Download my data (JSON)")}
           </button>
           {exportError && <p className="text-xs text-rose-700 dark:text-rose-400">{exportError}</p>}
         </section>
 
         <section className="glass-panel rounded-2xl p-5 border border-rose-500/30 space-y-4">
           <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
-            <Trash2 className="w-4 h-4 text-rose-600 dark:text-rose-400" /> Delete my data
+            <Trash2 className="w-4 h-4 text-rose-600 dark:text-rose-400" />{en(" Delete my data")}
           </h2>
 
           {result ? (
@@ -154,7 +150,7 @@ export default function PrivacySettingsPage() {
               <p className="flex items-center gap-2 text-emerald-700 dark:text-emerald-400 font-semibold">
                 <CheckCircle2 className="w-4 h-4" />{en(" Your data has been deleted and your account anonymised.")}
               </p>
-              <ul className="text-xs text-muted-foreground list-disc ml-5 space-y-0.5">
+              <ul className="text-xs text-muted-foreground list-disc ms-5 space-y-0.5">
                 {Object.entries(result.deleted)
                   .filter(([, n]) => n > 0)
                   .map(([k, n]) => (
@@ -165,12 +161,12 @@ export default function PrivacySettingsPage() {
                   .map(([k, n]) => (
                     <li key={k}>{k}: {n}</li>
                   ))}
-                {result.referralProvidersNotified > 0 && <li>Course providers notified: {result.referralProvidersNotified}</li>}
+                {result.referralProvidersNotified > 0 && <li>{en("Course providers notified: ")}{result.referralProvidersNotified}</li>}
               </ul>
               <p className="text-xs text-foreground">{result.keptDeidentified.description}</p>
               <div className="text-xs text-muted-foreground">
-                <p className="font-semibold text-foreground">Not covered by this deletion:</p>
-                <ul className="list-disc ml-5 mt-1 space-y-0.5">
+                <p className="font-semibold text-foreground">{en("Not covered by this deletion:")}</p>
+                <ul className="list-disc ms-5 mt-1 space-y-0.5">
                   {result.notDeleted.map((n) => <li key={n}>{n}</li>)}
                 </ul>
               </div>
@@ -178,27 +174,27 @@ export default function PrivacySettingsPage() {
                 onClick={signOut}
                 className="py-2 px-4 rounded-xl bg-card hover:bg-muted border border-border text-sm font-semibold text-foreground cursor-pointer"
               >
-                Sign out
+                {en("Sign out")}
               </button>
             </div>
           ) : (
             <>
               <div className="grid gap-3 text-xs">
                 <div>
-                  <p className="font-semibold text-foreground">Deleted</p>
-                  <ul className="list-disc ml-5 mt-1 space-y-0.5 text-muted-foreground">
+                  <p className="font-semibold text-foreground">{en("Deleted")}</p>
+                  <ul className="list-disc ms-5 mt-1 space-y-0.5 text-muted-foreground">
                     {DELETED.map((d) => <li key={d}>{en(d)}</li>)}
                   </ul>
                 </div>
                 <div>
                   <p className="font-semibold text-foreground">{en("Anonymised")}</p>
-                  <ul className="list-disc ml-5 mt-1 space-y-0.5 text-muted-foreground">
+                  <ul className="list-disc ms-5 mt-1 space-y-0.5 text-muted-foreground">
                     {ANONYMISED.map((d) => <li key={d}>{en(d)}</li>)}
                   </ul>
                 </div>
                 <div>
-                  <p className="font-semibold text-foreground">Kept, de-identified</p>
-                  <ul className="list-disc ml-5 mt-1 space-y-0.5 text-muted-foreground">
+                  <p className="font-semibold text-foreground">{en("Kept, de-identified")}</p>
+                  <ul className="list-disc ms-5 mt-1 space-y-0.5 text-muted-foreground">
                     {KEPT.map((d) => <li key={d}>{en(d)}</li>)}
                   </ul>
                   <p className="mt-1 text-muted-foreground">
@@ -216,7 +212,7 @@ export default function PrivacySettingsPage() {
 
               <form onSubmit={erase} className="space-y-2">
                 <label htmlFor="confirm" className="text-xs font-semibold text-foreground">
-                  Type <span className="font-mono">{CONFIRM}</span> to confirm
+                  {en("Type ")}<span className="font-mono">{CONFIRM}</span>{en(" to confirm")}
                 </label>
                 <input
                   id="confirm"
@@ -231,7 +227,7 @@ export default function PrivacySettingsPage() {
                   className="py-2 px-4 rounded-xl bg-rose-600 hover:bg-rose-500 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-semibold inline-flex items-center gap-2 cursor-pointer"
                 >
                   {deleting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
-                  Delete my data
+                  {en("Delete my data")}
                 </button>
                 {deleteError && <p className="text-xs text-rose-700 dark:text-rose-400">{deleteError}</p>}
               </form>

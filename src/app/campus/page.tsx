@@ -17,6 +17,7 @@ import {
   Mic,
   Wifi,
 } from "lucide-react";
+import { useEn } from "@/lib/english/EnglishProvider";
 
 interface Assignment {
   assignmentId: string;
@@ -140,6 +141,7 @@ const ADVICE: Record<ConnectionResult["verdict"], { title: string; text: string;
 };
 
 export default function CampusStudentPage() {
+  const en = useEn();
   const { getToken, isLoaded, isSignedIn } = useAppAuth();
   // Signed out: the connection check and the guide below stay usable; assignments and the language preference need an account
   const signedOut = isLoaded && !isSignedIn;
@@ -200,7 +202,7 @@ export default function CampusStudentPage() {
       }
       setSaveMessage({ ok: true, text: `Saved. Your defense will default to ${body?.label || "this language"}.` });
     } catch {
-      setSaveMessage({ ok: false, text: "Network error while saving." });
+      setSaveMessage({ ok: false, text: en("Network error while saving.") });
     } finally {
       setSaving(false);
     }
@@ -222,30 +224,30 @@ export default function CampusStudentPage() {
     <div className="max-w-3xl mx-auto px-4 py-6 sm:py-8 space-y-6">
       <div>
         <div className="flex items-center gap-2 text-xs font-semibold text-indigo-700 dark:text-indigo-400 uppercase tracking-wider">
-          <GraduationCap className="w-4 h-4" /> Campus placements
+          <GraduationCap className="w-4 h-4" />{en(" Campus placements")}
         </div>
-        <h1 className="text-xl sm:text-2xl font-extrabold text-foreground mt-1">My placement assessments</h1>
-        {data?.email && <p className="text-xs text-muted-foreground mt-1">Signed in as {data.email}</p>}
+        <h1 className="text-xl sm:text-2xl font-extrabold text-foreground mt-1">{en("My placement assessments")}</h1>
+        {data?.email && <p className="text-xs text-muted-foreground mt-1">{en("Signed in as ")}{data.email}</p>}
       </div>
 
       {/* Assignments */}
       <section className="glass-panel rounded-2xl border border-border p-4 sm:p-5 space-y-3">
         <h2 className="text-base font-bold text-foreground flex items-center gap-2">
-          <CalendarClock className="w-4 h-4 text-indigo-600 dark:text-indigo-400" /> Assignments
+          <CalendarClock className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />{en(" Assignments")}
         </h2>
         {signedOut ? (
           <SignInRequired
             variant="inline"
-            title="Sign in to see your assignments"
+            title={en("Sign in to see your assignments")}
             message="Your placement cell assigns assessments to your account. Sign in with the email address they added for you."
           />
         ) : loadError ? (
           <p className="text-sm text-rose-700 dark:text-rose-400 flex items-center gap-2"><AlertCircle className="w-4 h-4 shrink-0" /> {loadError}</p>
         ) : !data ? (
-          <p className="text-sm text-muted-foreground flex items-center gap-2"><Loader2 className="w-4 h-4 animate-spin" /> Loading...</p>
+          <p className="text-sm text-muted-foreground flex items-center gap-2"><Loader2 className="w-4 h-4 animate-spin" />{en(" Loading...")}</p>
         ) : assignments.length === 0 ? (
           <p className="text-sm text-muted-foreground">
-            {data.message || "No assessments have been assigned to you yet."} If you expected one, ask your placement cell to check the email address they added for you.
+            {data.message || "No assessments have been assigned to you yet."}{en(" If you expected one, ask your placement cell to check the email address they added for you.")}
           </p>
         ) : (
           <ul className="space-y-3">
@@ -263,14 +265,14 @@ export default function CampusStudentPage() {
                   <span className={`text-xs font-semibold px-2.5 py-1 rounded-full border ${STATUS_CLASS[a.status]}`}>{STATUS_LABEL[a.status]}</span>
                 </div>
                 <p className="text-xs text-muted-foreground mt-2">
-                  Opens {formatDate(a.opensAt)} · <span className={a.isOverdue ? "text-rose-700 dark:text-rose-400 font-semibold" : ""}>Due {formatDate(a.dueAt)}</span>
-                  {a.isOverdue && " (past due)"}
+                  {en("Opens ")}{formatDate(a.opensAt)} · <span className={a.isOverdue ? "text-rose-700 dark:text-rose-400 font-semibold" : ""}>{en("Due ")}{formatDate(a.dueAt)}</span>
+                  {a.isOverdue && en(" (past due)")}
                 </p>
                 {(a.testsPercent != null || a.defenseScore != null) && (
                   <p className="text-xs text-foreground mt-1">
-                    {a.testsPercent != null && <>Tests passed: {Math.round(a.testsPercent)}%</>}
+                    {a.testsPercent != null && <>{en("Tests passed: ")}{Math.round(a.testsPercent)}%</>}
                     {a.testsPercent != null && a.defenseScore != null && " · "}
-                    {a.defenseScore != null && <>Defense score: {Math.round(a.defenseScore)}</>}
+                    {a.defenseScore != null && <>{en("Defense score: ")}{Math.round(a.defenseScore)}</>}
                   </p>
                 )}
                 {a.status !== "defended" && (
@@ -278,7 +280,7 @@ export default function CampusStudentPage() {
                     href={a.link}
                     className="mt-3 inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-semibold"
                   >
-                    {a.status === "not-started" ? "Start" : a.status === "submitted" ? "Open assignment" : "Continue"}
+                    {a.status === "not-started" ? en("Start") : a.status === "submitted" ? en("Open assignment") : en("Continue")}
                     <ArrowRight className="w-4 h-4" />
                   </Link>
                 )}
@@ -291,22 +293,22 @@ export default function CampusStudentPage() {
       {/* Language */}
       <section className="glass-panel rounded-2xl border border-border p-4 sm:p-5 space-y-3">
         <h2 className="text-base font-bold text-foreground flex items-center gap-2">
-          <Languages className="w-4 h-4 text-indigo-600 dark:text-indigo-400" /> Defense language
+          <Languages className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />{en(" Defense language")}
         </h2>
         <p className="text-xs text-muted-foreground">
-          Choose the language you are most comfortable explaining your code in. Technical terms can stay in English. You can still change it on the defense screen.
+          {en("Choose the language you are most comfortable explaining your code in. Technical terms can stay in English. You can still change it on the defense screen.")}
         </p>
         {signedOut ? (
-          <p className="text-xs text-muted-foreground">Sign in above to save your preferred language.</p>
+          <p className="text-xs text-muted-foreground">{en("Sign in above to save your preferred language.")}</p>
         ) : (
         <div className="flex flex-col sm:flex-row gap-2">
           <select
             value={language}
             onChange={(e) => setLanguage(e.target.value)}
             className="flex-1 px-3 py-2.5 rounded-xl bg-card border border-border text-sm text-foreground"
-            aria-label="Preferred defense language"
+            aria-label={en("Preferred defense language")}
           >
-            {languages.length === 0 && <option value="">Loading languages...</option>}
+            {languages.length === 0 && <option value="">{en("Loading languages...")}</option>}
             {languages.map((l) => (
               <option key={l.key} value={l.key}>{l.label}</option>
             ))}
@@ -316,12 +318,12 @@ export default function CampusStudentPage() {
             disabled={saving || !language || !data?.inCohort}
             className="px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-semibold flex items-center justify-center gap-2 cursor-pointer"
           >
-            {saving && <Loader2 className="w-4 h-4 animate-spin" />} Save
+            {saving && <Loader2 className="w-4 h-4 animate-spin" />}{en(" Save")}
           </button>
         </div>
         )}
         {data && !data.inCohort && (
-          <p className="text-[11px] text-muted-foreground">You can save a preference once your placement cell adds you to a cohort.</p>
+          <p className="text-[11px] text-muted-foreground">{en("You can save a preference once your placement cell adds you to a cohort.")}</p>
         )}
         {saveMessage && (
           <p className={`text-xs flex items-center gap-1.5 ${saveMessage.ok ? "text-emerald-700 dark:text-emerald-400" : "text-rose-700 dark:text-rose-400"}`}>
@@ -333,10 +335,10 @@ export default function CampusStudentPage() {
       {/* Connection check */}
       <section className="glass-panel rounded-2xl border border-border p-4 sm:p-5 space-y-3">
         <h2 className="text-base font-bold text-foreground flex items-center gap-2">
-          <Wifi className="w-4 h-4 text-indigo-600 dark:text-indigo-400" /> Check my connection
+          <Wifi className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />{en(" Check my connection")}
         </h2>
         <p className="text-xs text-muted-foreground">
-          A quick, rough check from this browser: 5 small requests to our server and a small download. It uses very little data.
+          {en("A quick, rough check from this browser: 5 small requests to our server and a small download. It uses very little data.")}
         </p>
         <button
           onClick={checkConnection}
@@ -344,14 +346,14 @@ export default function CampusStudentPage() {
           className="w-full sm:w-auto px-4 py-2.5 rounded-xl border border-border bg-card hover:bg-muted text-sm font-semibold text-foreground flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60"
         >
           {checking ? <Loader2 className="w-4 h-4 animate-spin" /> : <Wifi className="w-4 h-4" />}
-          {checking ? "Checking..." : "Check my connection"}
+          {checking ? en("Checking...") : en("Check my connection")}
         </button>
         {connection && (
           <div className={`rounded-xl border p-3 text-sm space-y-1 ${ADVICE[connection.verdict].className}`}>
             <p className="font-semibold">{ADVICE[connection.verdict].title}</p>
             <p className="text-xs">{ADVICE[connection.verdict].text}</p>
             <p className="text-[11px] opacity-80">
-              Response time: {connection.medianRtt != null ? `${Math.round(connection.medianRtt)} ms (median)` : "no response"}
+              {en("Response time: ")}{connection.medianRtt != null ? en("{ms} ms (median)", { ms: Math.round(connection.medianRtt) }) : en("no response")}
               {connection.jitter != null && ` · variation ${Math.round(connection.jitter)} ms`}
               {` · download: ${connection.kbps != null ? (connection.kbps >= 1000 ? `${(connection.kbps / 1000).toFixed(1)} Mbit/s` : `${Math.round(connection.kbps)} kbit/s`) : "not measured"}`}
               {connection.failures > 0 && ` · ${connection.failures} of 5 requests failed`}
@@ -363,19 +365,18 @@ export default function CampusStudentPage() {
       {/* How it works */}
       <section className="glass-panel rounded-2xl border border-border p-4 sm:p-5 space-y-3">
         <h2 className="text-base font-bold text-foreground flex items-center gap-2">
-          <Info className="w-4 h-4 text-indigo-600 dark:text-indigo-400" /> How the assessment works
+          <Info className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />{en(" How the assessment works")}
         </h2>
-        <ol className="list-decimal pl-5 space-y-2 text-sm text-foreground">
-          <li><strong>Build.</strong> Open the assignment and write or fix code in the browser. A laptop or desktop is easiest. Your edits are sent to the server as you go, so you can usually pick up where you left off after a dropped connection.</li>
-          <li><strong>Test.</strong> When you submit, hidden tests run on your code. Your score is the share of tests that pass.</li>
+        <ol className="list-decimal ps-5 space-y-2 text-sm text-foreground">
+          <li><strong>{en("Build.")}</strong>{en(" Open the assignment and write or fix code in the browser. A laptop or desktop is easiest. Your edits are sent to the server as you go, so you can usually pick up where you left off after a dropped connection.")}</li>
+          <li><strong>{en("Test.")}</strong>{en(" When you submit, hidden tests run on your code. Your score is the share of tests that pass.")}</li>
           <li>
-            <strong>Defend.</strong> <Mic className="inline w-3.5 h-3.5" /> You then have a short voice conversation with an AI interviewer about the code you wrote: why you made your choices and what you would change. It is audio only. You need a microphone and a quiet place.
+            <strong>{en("Defend.")}</strong> <Mic className="inline w-3.5 h-3.5" />{en(" You then have a short voice conversation with an AI interviewer about the code you wrote: why you made your choices and what you would change. It is audio only. You need a microphone and a quiet place.")}
           </li>
-          <li><strong>Results.</strong> You see your tests and defense scores here. Your placement cell sees your scores and a readiness band (Ready, Nearly ready, Needs practice) to plan practice and support.</li>
+          <li><strong>{en("Results.")}</strong>{en(" You see your tests and defense scores here. Your placement cell sees your scores and a readiness band (Ready, Nearly ready, Needs practice) to plan practice and support.")}</li>
         </ol>
         <p className="text-xs text-muted-foreground">
-          Only work you start after your placement cell assigns a sprint is shared with them. Integrity checks (for example, large pastes) flag work for a person to review; they never fail you automatically.
-          Speak in the language you chose; mixing in English technical words is normal and fine.
+          {en("Only work you start after your placement cell assigns a sprint is shared with them. Integrity checks (for example, large pastes) flag work for a person to review; they never fail you automatically. Speak in the language you chose; mixing in English technical words is normal and fine.")}
         </p>
       </section>
     </div>

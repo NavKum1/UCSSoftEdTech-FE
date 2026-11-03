@@ -2,9 +2,13 @@
  * Career-suite locales (G1). Shared by the server layout and the client provider; no React here.
  * See docs/career_suite_i18n_guide.md for how a language is added.
  */
+import { LIVE_LANGUAGES } from "@/lib/i18n/languages";
 
-/** Languages with a messages/career/<locale>.json file. English is the source and the fallback for missing keys. */
-export const CAREER_LOCALES = ["en"] as const;
+/**
+ * Languages people can choose: English and the reviewed ones (lib/i18n/languages: live after a native speaker's review).
+ * Each has a messages/career/<locale>.json file; English is the source and the fallback for missing keys.
+ */
+export const CAREER_LOCALES: readonly string[] = LIVE_LANGUAGES;
 
 /** Test-only locales generated from English: accented and ~35% longer, and mirrored right-to-left. */
 export const PSEUDO_LOCALES = ["en-XA", "ar-XB"] as const;

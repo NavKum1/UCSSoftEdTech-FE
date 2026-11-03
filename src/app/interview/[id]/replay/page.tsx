@@ -22,6 +22,7 @@ import {
   Globe2,
   Fingerprint
 } from "lucide-react";
+import { useEn } from "@/lib/english/EnglishProvider";
 
 interface TranscriptSegment {
   index: number;
@@ -54,6 +55,7 @@ interface ReplayData {
 }
 
 export default function AudioReplayStudioPage() {
+  const en = useEn();
   const { apiFetch, ready, access } = useLegacyApi();
   const params = useParams();
   const router = useRouter();
@@ -157,7 +159,7 @@ export default function AudioReplayStudioPage() {
       <div className="min-h-screen bg-background text-foreground flex items-center justify-center font-sans">
         <div className="flex items-center space-x-3 text-indigo-700 dark:text-indigo-400">
           <Sparkles className="w-6 h-6 animate-spin" />
-          <span className="text-base font-semibold">Loading Audio Replay Studio...</span>
+          <span className="text-base font-semibold">{en("Loading Audio Replay Studio...")}</span>
         </div>
       </div>
     );
@@ -170,7 +172,7 @@ export default function AudioReplayStudioPage() {
           <div className="w-12 h-12 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-700 dark:text-amber-400 flex items-center justify-center mx-auto">
             <AlertTriangle className="w-6 h-6" />
           </div>
-          <h2 className="text-xl font-bold text-foreground">Interview Session Record Not Found</h2>
+          <h2 className="text-xl font-bold text-foreground">{en("Interview Session Record Not Found")}</h2>
           <p className="text-sm text-muted-foreground">
             {fetchError || "The requested audio defense replay session does not exist in the database or has expired."}
           </p>
@@ -178,7 +180,7 @@ export default function AudioReplayStudioPage() {
             onClick={() => router.push("/dashboard")}
             className="w-full py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-sm transition-colors cursor-pointer"
           >
-            Return to Dashboard
+            {en("Return to Dashboard")}
           </button>
         </div>
       </div>
@@ -192,7 +194,7 @@ export default function AudioReplayStudioPage() {
   return (
     <div className="min-h-screen bg-background text-foreground font-sans p-6 md:p-12 relative overflow-hidden">
       {/* Background Ambience Glow */}
-      <div className="absolute top-1/4 left-1/3 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-gradient-to-tr from-indigo-600/20 to-cyan-500/20 blur-3xl rounded-full pointer-events-none" />
+      <div className="absolute top-1/4 start-1/3 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-gradient-to-tr from-indigo-600/20 to-cyan-500/20 blur-3xl rounded-full pointer-events-none" />
 
       {/* Hidden Audio Element */}
       <audio
@@ -210,25 +212,25 @@ export default function AudioReplayStudioPage() {
             className="flex items-center space-x-2 text-muted-foreground hover:text-white transition-colors text-xs font-semibold px-3 py-2 rounded-xl bg-card border border-border cursor-pointer"
           >
             <ArrowLeft className="w-4 h-4" />
-            <span>Return</span>
+            <span>{en("Return")}</span>
           </button>
 
           <div className="flex items-center space-x-2">
             <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-indigo-500/10 text-indigo-700 dark:text-indigo-400 border border-indigo-500/30">
-              <Sparkles className="w-3.5 h-3.5 mr-1.5" />
-              VOICE DEFENSE REPLAY STUDIO
+              <Sparkles className="w-3.5 h-3.5 me-1.5" />
+              {en("VOICE DEFENSE REPLAY STUDIO")}
             </span>
             <button
               onClick={() => router.push(`/interview/${sessionId}/translation`)}
               className="inline-flex items-center px-3.5 py-1 rounded-full text-xs font-semibold bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-700 dark:text-cyan-400 border border-cyan-500/30 transition-colors cursor-pointer"
             >
-              <Globe2 className="w-3.5 h-3.5 mr-1.5" />
-              <span>Multi-Language Subtitles & Dubbing</span>
+              <Globe2 className="w-3.5 h-3.5 me-1.5" />
+              <span>{en("Multi-Language Subtitles & Dubbing")}</span>
             </button>
 
             <div className="hidden sm:flex items-center space-x-1.5 px-3 py-1 rounded-full text-xs font-mono bg-cyan-950/60 text-cyan-700 dark:text-cyan-400 border border-cyan-500/30">
               <Fingerprint className="w-3.5 h-3.5 text-cyan-700 dark:text-cyan-400 animate-pulse" />
-              <span>FORENSIC WATERMARK ACTIVE</span>
+              <span>{en("FORENSIC WATERMARK ACTIVE")}</span>
             </div>
           </div>
         </div>
@@ -239,10 +241,10 @@ export default function AudioReplayStudioPage() {
             <div>
               <div className="flex items-center space-x-2 text-xs font-mono text-cyan-700 dark:text-cyan-400 uppercase tracking-wider">
                 <Cpu className="w-4 h-4" />
-                <span>WebRTC Session: {sessionId || "AI-REVIEW-LIVE"}</span>
+                <span>{en("WebRTC Session: ")}{sessionId || "AI-REVIEW-LIVE"}</span>
               </div>
               <h1 className="text-2xl md:text-3xl font-black text-foreground mt-1">
-                Candidate Defense: {replay?.candidateName}
+                {en("Candidate Defense: ")}{replay?.candidateName}
               </h1>
               <p className="text-xs text-muted-foreground mt-1 max-w-2xl leading-relaxed">
                 {replay?.jobDescription}
@@ -252,8 +254,8 @@ export default function AudioReplayStudioPage() {
             {/* Score Pill Highlights */}
             <div className="flex items-center space-x-3">
               <div className="bg-background/80 border border-indigo-500/40 rounded-2xl px-5 py-3 text-center">
-                <span className="text-[10px] uppercase font-semibold text-muted-foreground">Technical Score</span>
-                <div className="text-2xl font-black text-indigo-700 dark:text-indigo-400">{technicalScore === null ? "Not scored" : `${technicalScore}%`}</div>
+                <span className="text-[10px] uppercase font-semibold text-muted-foreground">{en("Technical Score")}</span>
+                <div className="text-2xl font-black text-indigo-700 dark:text-indigo-400">{technicalScore === null ? en("Not scored") : `${technicalScore}%`}</div>
               </div>
             </div>
           </div>
@@ -263,7 +265,7 @@ export default function AudioReplayStudioPage() {
             <div className="flex items-center justify-between text-xs font-mono text-muted-foreground">
               <div className="flex items-center space-x-2">
                 <Volume2 className="w-4 h-4 text-indigo-700 dark:text-indigo-400" />
-                <span>High-Definition WebRTC Audio Playback</span>
+                <span>{en("High-Definition WebRTC Audio Playback")}</span>
               </div>
               <span>{formatSec(currentTime)} / {formatSec(audioDuration)}</span>
             </div>
@@ -295,7 +297,7 @@ export default function AudioReplayStudioPage() {
                   onClick={togglePlay}
                   className="w-10 h-10 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white flex items-center justify-center transition-transform active:scale-95 shadow-lg shadow-indigo-600/30 cursor-pointer"
                 >
-                  {isPlaying ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5 ml-0.5" />}
+                  {isPlaying ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5 ms-0.5" />}
                 </button>
 
                 <button
@@ -311,13 +313,13 @@ export default function AudioReplayStudioPage() {
                 </button>
 
                 <span className="text-xs text-muted-foreground font-medium">
-                  {isPlaying ? "Playing recording..." : "Paused"}
+                  {isPlaying ? en("Playing recording...") : en("Paused")}
                 </span>
               </div>
 
               <div className="flex items-center space-x-2 text-xs text-muted-foreground">
                 <Clock className="w-3.5 h-3.5 text-cyan-700 dark:text-cyan-400" />
-                <span>Session Duration: {replay?.durationFormatted}</span>
+                <span>{en("Session Duration: ")}{replay?.durationFormatted}</span>
               </div>
             </div>
 
@@ -325,10 +327,10 @@ export default function AudioReplayStudioPage() {
             <div className="flex flex-wrap items-center justify-between pt-2 border-t border-slate-900 text-[10px] text-muted-foreground font-mono">
               <span className="flex items-center gap-1.5 text-cyan-700 dark:text-cyan-400/80">
                 <ShieldCheck className="w-3.5 h-3.5 text-cyan-700 dark:text-cyan-400" />
-                Edulexa LSB Steganography &amp; Anti-Piracy Watermark Encoded
+                {en("Edulexa LSB Steganography & Anti-Piracy Watermark Encoded")}
               </span>
               <span>
-                Target: {replay?.candidateEmail || "alex.morgan@example.com"} • Timestamp: {liveUtcTimestamp}
+                {en("Target: ")}{replay?.candidateEmail || "alex.morgan@example.com"}{en(" • Timestamp: ")}{liveUtcTimestamp}
               </span>
             </div>
           </div>
@@ -341,19 +343,19 @@ export default function AudioReplayStudioPage() {
             <div className="flex items-center justify-between">
               <h2 className="text-base font-bold text-foreground flex items-center space-x-2">
                 <Layers className="w-4 h-4 text-indigo-700 dark:text-indigo-400" />
-                <span>Synchronized Audio Transcript</span>
+                <span>{en("Synchronized Audio Transcript")}</span>
               </h2>
-              <span className="text-xs text-muted-foreground">Click any dialogue block to jump audio</span>
+              <span className="text-xs text-muted-foreground">{en("Click any dialogue block to jump audio")}</span>
             </div>
 
-            <div className="space-y-3 max-h-[600px] overflow-y-auto pr-2">
+            <div className="space-y-3 max-h-[600px] overflow-y-auto pe-2">
               {replay?.transcriptSegments.map((seg) => {
                 const isActive = activeSegmentIndex === seg.index;
                 return (
                   <div
                     key={seg.index}
                     onClick={() => seekToSegment(seg.timeOffsetSeconds, seg.index)}
-                    className={`p-4 rounded-2xl border transition-all cursor-pointer text-left ${
+                    className={`p-4 rounded-2xl border transition-all cursor-pointer text-start ${
                       isActive
                         ? "bg-indigo-950/40 border-indigo-500/60 shadow-lg shadow-indigo-500/10"
                         : "bg-card/60 border-border hover:bg-card hover:border-border"
@@ -394,11 +396,11 @@ export default function AudioReplayStudioPage() {
             <div className="bg-card/80 rounded-3xl p-6 border border-border shadow-xl space-y-4">
               <h2 className="text-base font-bold text-foreground flex items-center space-x-2">
                 <Code2 className="w-4 h-4 text-cyan-700 dark:text-cyan-400" />
-                <span>Identified Code Flaws Examined</span>
+                <span>{en("Identified Code Flaws Examined")}</span>
               </h2>
 
               <p className="text-xs text-muted-foreground leading-relaxed">
-                During the voice review, the AI Technical Examiner dynamically challenged the candidate on these flaws:
+                {en("During the voice review, the AI Technical Examiner dynamically challenged the candidate on these flaws:")}
               </p>
 
               <div className="space-y-2">
@@ -415,14 +417,14 @@ export default function AudioReplayStudioPage() {
             <div className="bg-card/80 rounded-3xl p-6 border border-border shadow-xl space-y-4">
               <h2 className="text-base font-bold text-foreground flex items-center space-x-2">
                 <ShieldCheck className="w-4 h-4 text-emerald-700 dark:text-emerald-400" />
-                <span>Defense Assessment</span>
+                <span>{en("Defense Assessment")}</span>
               </h2>
 
               <div className="space-y-3">
                 <div>
                   <div className="flex justify-between text-xs text-muted-foreground mb-1">
-                    <span>Technical Architecture Defense</span>
-                    <span className="font-bold text-indigo-700 dark:text-indigo-400">{technicalScore === null ? "Not scored" : `${technicalScore}%`}</span>
+                    <span>{en("Technical Architecture Defense")}</span>
+                    <span className="font-bold text-indigo-700 dark:text-indigo-400">{technicalScore === null ? en("Not scored") : `${technicalScore}%`}</span>
                   </div>
                   <div className="w-full bg-muted h-2 rounded-full overflow-hidden">
                     <div className="bg-indigo-500 h-full rounded-full" style={{ width: `${technicalScore ?? 0}%` }} />
@@ -436,7 +438,7 @@ export default function AudioReplayStudioPage() {
                   className="w-full py-2.5 bg-indigo-600/20 hover:bg-indigo-600/30 border border-indigo-500/40 text-indigo-600 dark:text-indigo-300 rounded-xl text-xs font-semibold flex items-center justify-center space-x-2 transition-colors cursor-pointer"
                 >
                   <Award className="w-4 h-4" />
-                  <span>View Global Community Leaderboard</span>
+                  <span>{en("View Global Community Leaderboard")}</span>
                 </button>
               </div>
             </div>
@@ -453,7 +455,7 @@ export default function AudioReplayStudioPage() {
           >
             {Array.from({ length: 4 }).map((_, cIdx) => (
               <span key={cIdx} className="px-10">
-                {replay?.candidateEmail || "alex.morgan@example.com"} • REPLAY-SESSION:{sessionId.slice(0, 8)} • {liveUtcTimestamp} • EDULEXA-LSB-DRM
+                {replay?.candidateEmail || "alex.morgan@example.com"}{en(" • REPLAY-SESSION:")}{sessionId.slice(0, 8)} • {liveUtcTimestamp}{en(" • EDULEXA-LSB-DRM")}
               </span>
             ))}
           </div>

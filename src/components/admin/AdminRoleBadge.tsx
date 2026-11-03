@@ -32,7 +32,7 @@ export function AdminRoleBadge() {
         data-admin-role="SuperAdmin"
         className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-rose-500/20 text-rose-800 dark:text-rose-300 border border-rose-500/30 flex items-center space-x-1"
       >
-        <span className="w-1.5 h-1.5 rounded-full bg-rose-400 animate-ping inline-block mr-1" aria-hidden></span>
+        <span className="w-1.5 h-1.5 rounded-full bg-rose-400 animate-ping inline-block me-1" aria-hidden></span>
         SUPER ADMIN
       </span>
     );

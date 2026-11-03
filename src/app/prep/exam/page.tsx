@@ -337,7 +337,7 @@ export default function WrittenExamPrepPage() {
       }
     } catch (err) {
       console.error("Failed to start the exam:", err);
-      setAttemptNotice({ message: "This exam could not be started. Check your connection and try again." });
+      setAttemptNotice({ message: en("This exam could not be started. Check your connection and try again.") });
     } finally {
       setExamLoading(false);
     }
@@ -456,14 +456,14 @@ export default function WrittenExamPrepPage() {
       <div className="space-y-0.5">
         <p className="font-semibold">{attemptNotice.message}</p>
         {attemptNotice.nextAttemptAt && (
-          <p className="text-muted-foreground">Next attempt available from {formatDateTime(attemptNotice.nextAttemptAt)}.</p>
+          <p className="text-muted-foreground">{en("Next attempt available from ")}{formatDateTime(attemptNotice.nextAttemptAt)}.</p>
         )}
       </div>
       <button
         type="button"
         onClick={() => setAttemptNotice(null)}
-        aria-label="Dismiss message"
-        className="ml-auto rounded-lg p-0.5 text-muted-foreground hover:text-foreground"
+        aria-label={en("Dismiss message")}
+        className="ms-auto rounded-lg p-0.5 text-muted-foreground hover:text-foreground"
       >
         <X className="w-4 h-4" />
       </button>
@@ -615,13 +615,13 @@ export default function WrittenExamPrepPage() {
               <div className="space-y-1">
                 <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-semibold">
                   <Award className="w-3.5 h-3.5" />
-                  <span>Exam Evaluation Complete</span>
+                  <span>{en("Exam Evaluation Complete")}</span>
                 </div>
                 <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
                   {evaluation.examTitle}
                 </h1>
                 <p className="text-xs text-muted-foreground">
-                  Submitted at {new Date(evaluation.submittedAt).toLocaleTimeString()}
+                  {en("Submitted at ")}{new Date(evaluation.submittedAt).toLocaleTimeString()}
                 </p>
               </div>
 
@@ -639,7 +639,7 @@ export default function WrittenExamPrepPage() {
                 )}
                 <div>
                   <div className="text-xs font-semibold uppercase tracking-wider">
-                    {evaluation.passed ? (isCredentialExam ? "PASSED (Certified)" : "PASSED") : "NEEDS PRACTICE"}
+                    {evaluation.passed ? (isCredentialExam ? en("PASSED (Certified)") : en("PASSED")) : en("NEEDS PRACTICE")}
                   </div>
                   <div className="text-2xl font-black">{evaluation.percentage}%</div>
                 </div>
@@ -650,7 +650,7 @@ export default function WrittenExamPrepPage() {
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2 border-t border-border">
               <div className="p-3 rounded-xl bg-muted/40 border border-border/60">
                 <span className="text-[11px] text-muted-foreground uppercase font-semibold">
-                  Correct
+                  {en("Correct")}
                 </span>
                 <p className="text-xl font-bold text-foreground mt-0.5">
                   {evaluation.correctAnswers} / {evaluation.totalQuestions}
@@ -658,7 +658,7 @@ export default function WrittenExamPrepPage() {
               </div>
               <div className="p-3 rounded-xl bg-muted/40 border border-border/60">
                 <span className="text-[11px] text-muted-foreground uppercase font-semibold">
-                  Passing Bar
+                  {en("Passing Bar")}
                 </span>
                 <p className="text-xl font-bold text-foreground mt-0.5">
                   {evaluation.passingPercentage}%
@@ -666,20 +666,20 @@ export default function WrittenExamPrepPage() {
               </div>
               <div className="p-3 rounded-xl bg-muted/40 border border-border/60">
                 <span className="text-[11px] text-muted-foreground uppercase font-semibold">
-                  Percentile
+                  {en("Percentile")}
                 </span>
                 {evaluation.percentileRank == null ? (
-                  <p className="text-sm text-muted-foreground mt-1">Shown once 20 people have taken this exam</p>
+                  <p className="text-sm text-muted-foreground mt-1">{en("Shown once 20 people have taken this exam")}</p>
                 ) : (
-                  <p className="text-xl font-bold text-primary mt-0.5">Better than {evaluation.percentileRank}%</p>
+                  <p className="text-xl font-bold text-primary mt-0.5">{en("Better than ")}{evaluation.percentileRank}%</p>
                 )}
               </div>
               <div className="p-3 rounded-xl bg-muted/40 border border-border/60">
                 <span className="text-[11px] text-muted-foreground uppercase font-semibold">
-                  Skill Verified
+                  {en("Skill Verified")}
                 </span>
                 <p className="text-xl font-bold text-foreground mt-0.5">
-                  {!isCredentialExam ? "Practice" : evaluation.passed ? "Yes" : "In Progress"}
+                  {!isCredentialExam ? en("Practice") : evaluation.passed ? en("Yes") : en("In Progress")}
                 </p>
               </div>
             </div>
@@ -688,7 +688,7 @@ export default function WrittenExamPrepPage() {
             {evaluation.passed && !isCredentialExam ? (
               <div role="status" className="p-4 rounded-xl border border-emerald-500/30 bg-emerald-500/10 text-xs text-foreground flex items-center gap-2">
                 <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" aria-hidden="true" />
-                <span>You passed this practice exam. Practice exams don&apos;t issue a credential.</span>
+                <span>{en("You passed this practice exam. Practice exams don't issue a credential.")}</span>
               </div>
             ) : evaluation.passed ? (
               <div className="p-4 sm:p-5 rounded-2xl border border-amber-500/30 bg-gradient-to-r from-amber-500/10 via-primary/5 to-amber-500/10 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-sm">
@@ -699,17 +699,17 @@ export default function WrittenExamPrepPage() {
                   <div>
                     <div className="flex items-center gap-2">
                       <span className="text-xs font-bold text-amber-500 uppercase tracking-wider">
-                        Official Certification Earned
+                        {en("Official Certification Earned")}
                       </span>
                       <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-[10px] font-bold">
-                        {evaluation.percentage}% Passed
+                        {evaluation.percentage}{en("% Passed")}
                       </span>
                     </div>
                     <h3 className="text-sm font-bold text-foreground mt-0.5">
-                      Cryptographic Verified Credential &amp; Skill Passport Badge
+                      {en("Cryptographic Verified Credential & Skill Passport Badge")}
                     </h3>
                     <p className="text-xs text-muted-foreground mt-0.5">
-                      Mint your SHA-256 tamper-evident certificate, sync to your active Gold Skill Passport, and share directly on LinkedIn.
+                      {en("Mint your SHA-256 tamper-evident certificate, sync to your active Gold Skill Passport, and share directly on LinkedIn.")}
                     </p>
                   </div>
                 </div>
@@ -721,14 +721,14 @@ export default function WrittenExamPrepPage() {
                     className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-bold text-xs shadow-md flex items-center justify-center gap-2 transition-all disabled:opacity-50"
                   >
                     <Award className="w-4 h-4" />
-                    <span>{claiming ? "Minting Certificate..." : claimedCredential && claimedAttemptId === evaluation.attemptId ? "View Claimed Credential" : "Claim Verified Credential"}</span>
+                    <span>{claiming ? en("Minting Certificate...") : claimedCredential && claimedAttemptId === evaluation.attemptId ? en("View Claimed Credential") : en("Claim Verified Credential")}</span>
                   </button>
                   {claimError && <span role="alert" className="text-xs text-red-500">{claimError}</span>}
                   <Link
                     href="/passport"
                     className="hidden sm:inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-border bg-card/60 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors"
                   >
-                    <span>View Passport</span>
+                    <span>{en("View Passport")}</span>
                     <ExternalLink className="w-3.5 h-3.5" />
                   </Link>
                 </div>
@@ -736,19 +736,19 @@ export default function WrittenExamPrepPage() {
             ) : (
               <div className="p-4 rounded-xl border border-border bg-muted/20 text-xs text-muted-foreground flex items-center justify-between">
                 <span>
-                  Passing score is {evaluation.passingPercentage}%.{" "}
+                  {en("Passing score is ")}{evaluation.passingPercentage}%.{" "}
                   {!isCredentialExam
-                    ? "Retake the practice exam when you are ready."
+                    ? en("Retake the practice exam when you are ready.")
                     : retakeBlocked
-                      ? "You can't retake this exam right now (see below)."
-                      : "Retake the exam to unlock your official verified credential badge."}
+                      ? en("You can't retake this exam right now (see below).")
+                      : en("Retake the exam to unlock your official verified credential badge.")}
                 </span>
                 {!retakeBlocked && (
                   <button
                     onClick={() => startExam(evaluation.examId)}
-                    className="font-semibold text-primary hover:underline ml-2"
+                    className="font-semibold text-primary hover:underline ms-2"
                   >
-                    Retry Now
+                    {en("Retry Now")}
                   </button>
                 )}
               </div>
@@ -760,7 +760,7 @@ export default function WrittenExamPrepPage() {
                 <Clock className="w-3.5 h-3.5 text-primary" aria-hidden="true" />
                 {evaluationAttempts && <span className="font-semibold text-foreground">{evaluationAttempts}</span>}
                 {inCooldown(evaluation.nextAttemptAt) && evaluation.attemptsRemaining !== 0 && (
-                  <span>Next attempt available from {formatDateTime(evaluation.nextAttemptAt as string)}.</span>
+                  <span>{en("Next attempt available from ")}{formatDateTime(evaluation.nextAttemptAt as string)}.</span>
                 )}
               </div>
             )}
@@ -772,7 +772,7 @@ export default function WrittenExamPrepPage() {
                 className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-primary text-primary-foreground font-semibold text-xs hover:opacity-95 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <RotateCcw className="w-3.5 h-3.5" />
-                Retake Exam
+                {en("Retake Exam")}
               </button>
               <button
                 onClick={() => {
@@ -781,14 +781,14 @@ export default function WrittenExamPrepPage() {
                 }}
                 className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-border bg-card/60 text-foreground font-semibold text-xs hover:bg-card transition-colors"
               >
-                Back to Exam Catalog
+                {en("Back to Exam Catalog")}
               </button>
               <Link
                 href="/prep/counselling"
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-border/80 text-muted-foreground hover:text-foreground text-xs font-semibold ml-auto"
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-border/80 text-muted-foreground hover:text-foreground text-xs font-semibold ms-auto"
               >
                 <BrainCircuit className="w-3.5 h-3.5 text-primary" />
-                Take Career Diagnostic Quiz
+                {en("Take Career Diagnostic Quiz")}
               </Link>
             </div>
           </div>
@@ -798,11 +798,11 @@ export default function WrittenExamPrepPage() {
             <div role="note" className="p-5 rounded-2xl border border-border bg-card shadow-sm text-xs text-muted-foreground flex items-start gap-3">
               <ShieldCheck className="w-5 h-5 text-primary shrink-0" aria-hidden="true" />
               <div className="space-y-1">
-                <h2 className="text-sm font-bold text-foreground">Answers are not shown for this exam</h2>
+                <h2 className="text-sm font-bold text-foreground">{en("Answers are not shown for this exam")}</h2>
                 <p>
                   {isCredentialExam
-                    ? "This exam issues a credential, so the correct answers and explanations stay private. You see your score and whether you passed."
-                    : "The exam owner has chosen not to show the correct answers for this exam. You see your score and whether you passed."}
+                    ? en("This exam issues a credential, so the correct answers and explanations stay private. You see your score and whether you passed.")
+                    : en("The exam owner has chosen not to show the correct answers for this exam. You see your score and whether you passed.")}
                 </p>
               </div>
             </div>
@@ -813,7 +813,7 @@ export default function WrittenExamPrepPage() {
           <div className="space-y-4">
             <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
               <BookOpen className="w-4 h-4 text-primary" />
-              Detailed Technical Explanations & Rationale
+              {en("Detailed Technical Explanations & Rationale")}
             </h2>
 
             <div className="space-y-4">
@@ -852,11 +852,11 @@ export default function WrittenExamPrepPage() {
                       >
                         {isCorrect ? (
                           <>
-                            <CheckCircle2 className="w-4 h-4" /> Correct
+                            <CheckCircle2 className="w-4 h-4" />{en(" Correct")}
                           </>
                         ) : (
                           <>
-                            <XCircle className="w-4 h-4" /> Incorrect
+                            <XCircle className="w-4 h-4" />{en(" Incorrect")}
                           </>
                         )}
                       </span>
@@ -877,7 +877,7 @@ export default function WrittenExamPrepPage() {
                           }`}
                         >
                           <span className="font-bold block text-[10px] uppercase tracking-wider opacity-80">
-                            Your Selected Answer:
+                            {en("Your Selected Answer:")}
                           </span>
                           <span className="font-medium mt-0.5 block">{selectedText || "None"}</span>
                         </div>
@@ -885,7 +885,7 @@ export default function WrittenExamPrepPage() {
                         {!isCorrect && correctText && (
                           <div className="p-2.5 rounded-xl border border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300">
                             <span className="font-bold block text-[10px] uppercase tracking-wider opacity-80">
-                              Correct Answer:
+                              {en("Correct Answer:")}
                             </span>
                             <span className="font-medium mt-0.5 block">{correctText}</span>
                           </div>
@@ -896,7 +896,7 @@ export default function WrittenExamPrepPage() {
                     <div className="p-3.5 rounded-xl bg-background/80 border border-border/60 text-xs space-y-1.5">
                       <div className="font-semibold text-foreground flex items-center gap-1.5">
                         <Sparkles className="w-3.5 h-3.5 text-primary" />
-                        <span>Concept Explanation &amp; Rationale:</span>
+                        <span>{en("Concept Explanation & Rationale:")}</span>
                       </div>
                       <p className="text-muted-foreground leading-relaxed">
                         {explanation}
@@ -934,11 +934,11 @@ export default function WrittenExamPrepPage() {
             <div className="flex items-center gap-2 text-xs text-muted-foreground">
               <span>{activeExam.stream}</span>
               <span>•</span>
-              <span>Question {currentQuestionIndex + 1} of {activeExam.questions.length}</span>
+              <span>{en("Question ")}{currentQuestionIndex + 1} of {activeExam.questions.length}</span>
               {activeExam.attemptNumber && activeExam.maxAttempts ? (
                 <>
                   <span>•</span>
-                  <span>Attempt {activeExam.attemptNumber} of {activeExam.maxAttempts}</span>
+                  <span>{en("Attempt ")}{activeExam.attemptNumber} of {activeExam.maxAttempts}</span>
                 </>
               ) : null}
             </div>
@@ -962,7 +962,7 @@ export default function WrittenExamPrepPage() {
               disabled={submitting}
               className="px-4 py-2 rounded-xl bg-primary text-primary-foreground font-semibold text-xs hover:opacity-95 transition-opacity disabled:opacity-50"
             >
-              {submitting ? "Grading..." : "Submit Exam"}
+              {submitting ? en("Grading...") : en("Submit Exam")}
             </button>
           </div>
         </header>
@@ -983,7 +983,7 @@ export default function WrittenExamPrepPage() {
                 {currentQ.topic}
               </span>
               <span className="text-xs text-muted-foreground">
-                Answered {answeredCount} of {activeExam.questions.length}
+                {en("Answered ")}{answeredCount} of {activeExam.questions.length}
               </span>
             </div>
 
@@ -1007,7 +1007,7 @@ export default function WrittenExamPrepPage() {
                     key={idx}
                     type="button"
                     onClick={() => handleSelectOption(currentQ.id, idx)}
-                    className={`w-full text-left p-4 rounded-xl border text-sm transition-all flex items-center justify-between ${
+                    className={`w-full text-start p-4 rounded-xl border text-sm transition-all flex items-center justify-between ${
                       isSelected
                         ? "border-primary bg-primary/5 text-foreground font-medium ring-1 ring-primary shadow-sm"
                         : "border-border/80 bg-muted/20 text-muted-foreground hover:bg-muted/40 hover:text-foreground"
@@ -1015,7 +1015,7 @@ export default function WrittenExamPrepPage() {
                   >
                     <span>{option}</span>
                     <div
-                      className={`w-5 h-5 rounded-full border flex items-center justify-center shrink-0 ml-3 ${
+                      className={`w-5 h-5 rounded-full border flex items-center justify-center shrink-0 ms-3 ${
                         isSelected
                           ? "border-primary bg-primary text-primary-foreground"
                           : "border-border"
@@ -1036,7 +1036,7 @@ export default function WrittenExamPrepPage() {
                 disabled={currentQuestionIndex === 0}
                 className="px-4 py-2 rounded-xl border border-border text-xs font-semibold text-muted-foreground hover:text-foreground disabled:opacity-40 transition-colors"
               >
-                Previous Question
+                {en("Previous Question")}
               </button>
 
               <div className="flex items-center gap-1.5">
@@ -1071,7 +1071,7 @@ export default function WrittenExamPrepPage() {
                   }
                   className="px-4 py-2 rounded-xl bg-primary text-primary-foreground text-xs font-semibold hover:opacity-95 transition-opacity"
                 >
-                  Next Question
+                  {en("Next Question")}
                 </button>
               ) : (
                 <button
@@ -1080,7 +1080,7 @@ export default function WrittenExamPrepPage() {
                   disabled={submitting}
                   className="px-4 py-2 rounded-xl bg-emerald-600 text-white text-xs font-semibold hover:bg-emerald-700 transition-colors"
                 >
-                  Submit Final Exam
+                  {en("Submit Final Exam")}
                 </button>
               )}
             </div>
@@ -1101,13 +1101,13 @@ export default function WrittenExamPrepPage() {
           <div className="space-y-2">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-semibold">
               <GraduationCap className="w-3.5 h-3.5" />
-              <span>Campus & Placement Written Exam Practice</span>
+              <span>{en("Campus & Placement Written Exam Practice")}</span>
             </div>
             <h1 className="text-3xl sm:text-4xl font-extrabold text-foreground tracking-tight">
-              Written Exams & Concept Practice Sets
+              {en("Written Exams & Concept Practice Sets")}
             </h1>
             <p className="text-sm text-muted-foreground max-w-2xl">
-              Take timed diagnostic written exams covering systems engineering, quantitative aptitude, algorithmic reasoning, and domain strategy with automated grading.
+              {en("Take timed diagnostic written exams covering systems engineering, quantitative aptitude, algorithmic reasoning, and domain strategy with automated grading.")}
             </p>
           </div>
 
@@ -1124,7 +1124,7 @@ export default function WrittenExamPrepPage() {
               className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-primary text-primary-foreground text-xs font-semibold hover:opacity-95 transition-opacity"
             >
               <Sparkles className="w-4 h-4" />
-              Multi-Stream Voice AI Interview
+              {en("Multi-Stream Voice AI Interview")}
             </Link>
           </div>
         </div>
@@ -1140,7 +1140,7 @@ export default function WrittenExamPrepPage() {
             }`}
           >
             <BookOpen className="w-3.5 h-3.5 text-primary" />
-            <span>Available Exams ({catalog.length})</span>
+            <span>{en("Available Exams (")}{catalog.length})</span>
           </button>
           <button
             onClick={() => {
@@ -1154,7 +1154,7 @@ export default function WrittenExamPrepPage() {
             }`}
           >
             <History className="w-3.5 h-3.5 text-primary" />
-            <span>My Attempt History &amp; Credentials ({examHistory.length})</span>
+            <span>{en("My Attempt History & Credentials (")}{examHistory.length})</span>
           </button>
         </div>
 
@@ -1189,7 +1189,7 @@ export default function WrittenExamPrepPage() {
                   className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-600 text-white text-xs font-semibold hover:opacity-95 shadow-sm transition-all"
                 >
                   <Wand2 className="w-3.5 h-3.5" />
-                  <span>Synthesize AI Exam</span>
+                  <span>{en("Synthesize AI Exam")}</span>
                 </button>
 
                 <button
@@ -1198,7 +1198,7 @@ export default function WrittenExamPrepPage() {
                   className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl border border-border bg-card/80 text-foreground text-xs font-semibold hover:bg-card transition-colors"
                 >
                   <Upload className="w-3.5 h-3.5 text-primary" />
-                  <span>Import Question Bank</span>
+                  <span>{en("Import Question Bank")}</span>
                 </button>
               </div>
             </div>
@@ -1252,12 +1252,12 @@ export default function WrittenExamPrepPage() {
                         {exam.issuesCredential ? (
                           <>
                             <Award className="w-3 h-3" aria-hidden="true" />
-                            Credential exam: answers not shown
+                            {en("Credential exam: answers not shown")}
                           </>
                         ) : (
                           <>
                             <BookOpen className="w-3 h-3" aria-hidden="true" />
-                            {exam.revealAnswerKey === false ? "Practice exam" : "Practice exam: answers shown after you submit"}
+                            {exam.revealAnswerKey === false ? en("Practice exam") : en("Practice exam: answers shown after you submit")}
                           </>
                         )}
                       </span>
@@ -1271,14 +1271,14 @@ export default function WrittenExamPrepPage() {
                         </div>
                         <div className="flex items-center gap-1.5">
                           <FileText className="w-3.5 h-3.5 text-primary" />
-                          <span>{exam.totalQuestions} Questions</span>
+                          <span>{exam.totalQuestions}{en(" Questions")}</span>
                         </div>
                       </div>
 
                       {(attemptsLine || cooling) && (
                         <div className="text-[11px] text-muted-foreground space-y-0.5">
                           {attemptsLine && <p className="font-semibold text-foreground">{attemptsLine}</p>}
-                          {cooling && !exhausted && <p>Next attempt available from {formatDateTime(exam.nextAttemptAt as string)}.</p>}
+                          {cooling && !exhausted && <p>{en("Next attempt available from ")}{formatDateTime(exam.nextAttemptAt as string)}.</p>}
                         </div>
                       )}
 
@@ -1289,14 +1289,14 @@ export default function WrittenExamPrepPage() {
                       >
                         <span>
                           {exam.hasOpenAttempt
-                            ? "Resume Exam"
+                            ? en("Resume Exam")
                             : exhausted
-                              ? "No Attempts Left"
+                              ? en("No Attempts Left")
                               : cooling
-                                ? "Available Later"
+                                ? en("Available Later")
                                 : exam.issuesCredential
-                                  ? "Start Exam"
-                                  : "Start Practice Exam"}
+                                  ? en("Start Exam")
+                                  : en("Start Practice Exam")}
                         </span>
                         <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
                       </button>
@@ -1317,65 +1317,65 @@ export default function WrittenExamPrepPage() {
               <div className="p-4 rounded-2xl border border-border bg-card/60 shadow-sm">
                 <span className="text-[11px] text-muted-foreground uppercase font-semibold flex items-center gap-1.5">
                   <FileText className="w-3.5 h-3.5 text-primary" />
-                  <span>Total Attempts</span>
+                  <span>{en("Total Attempts")}</span>
                 </span>
                 <p className="text-2xl font-black text-foreground mt-1">
                   {historyStats.totalAttempts}
                 </p>
-                <span className="text-[10px] text-muted-foreground">Comprehensive diagnostics</span>
+                <span className="text-[10px] text-muted-foreground">{en("Comprehensive diagnostics")}</span>
               </div>
 
               <div className="p-4 rounded-2xl border border-border bg-card/60 shadow-sm">
                 <span className="text-[11px] text-muted-foreground uppercase font-semibold flex items-center gap-1.5">
                   <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
-                  <span>Pass Rate</span>
+                  <span>{en("Pass Rate")}</span>
                 </span>
                 <p className="text-2xl font-black text-emerald-500 mt-1">
                   {historyStats.passRatePercentage}%
                 </p>
-                <span className="text-[10px] text-muted-foreground">{historyStats.passedCount} exams certified</span>
+                <span className="text-[10px] text-muted-foreground">{historyStats.passedCount}{en(" exams certified")}</span>
               </div>
 
               <div className="p-4 rounded-2xl border border-border bg-card/60 shadow-sm">
                 <span className="text-[11px] text-muted-foreground uppercase font-semibold flex items-center gap-1.5">
                   <TrendingUp className="w-3.5 h-3.5 text-indigo-500" />
-                  <span>Average Score</span>
+                  <span>{en("Average Score")}</span>
                 </span>
                 <p className="text-2xl font-black text-indigo-500 mt-1">
                   {historyStats.averageScore}%
                 </p>
-                <span className="text-[10px] text-muted-foreground">Across all tracks</span>
+                <span className="text-[10px] text-muted-foreground">{en("Across all tracks")}</span>
               </div>
 
               <div className="p-4 rounded-2xl border border-border bg-card/60 shadow-sm">
                 <span className="text-[11px] text-muted-foreground uppercase font-semibold flex items-center gap-1.5">
                   <Award className="w-3.5 h-3.5 text-amber-500" />
-                  <span>Highest Mastery</span>
+                  <span>{en("Highest Mastery")}</span>
                 </span>
                 <p className="text-2xl font-black text-amber-500 mt-1">
                   {historyStats.highestScore}%
                 </p>
-                <span className="text-[10px] text-muted-foreground">Top percentile ranking</span>
+                <span className="text-[10px] text-muted-foreground">{en("Top percentile ranking")}</span>
               </div>
             </div>
 
             {/* Past Attempts Table / Cards */}
             {historyLoading ? (
               <div className="p-12 text-center text-muted-foreground text-xs">
-                Loading exam attempt records...
+                {en("Loading exam attempt records...")}
               </div>
             ) : examHistory.length === 0 ? (
               <div className="p-12 text-center border border-dashed border-border rounded-2xl space-y-3">
                 <FileText className="w-8 h-8 text-muted-foreground mx-auto" />
-                <h4 className="text-sm font-bold text-foreground">No Exam Attempts Recorded Yet</h4>
+                <h4 className="text-sm font-bold text-foreground">{en("No Exam Attempts Recorded Yet")}</h4>
                 <p className="text-xs text-muted-foreground max-w-sm mx-auto">
-                  Take any written diagnostic exam from the catalog to record your scorecards, analyze question breakdowns, and claim verifiable credentials.
+                  {en("Take any written diagnostic exam from the catalog to record your scorecards, analyze question breakdowns, and claim verifiable credentials.")}
                 </p>
                 <button
                   onClick={() => setActiveTab("catalog")}
                   className="px-4 py-2 rounded-xl bg-primary text-primary-foreground text-xs font-semibold hover:opacity-95"
                 >
-                  Browse Exam Catalog
+                  {en("Browse Exam Catalog")}
                 </button>
               </div>
             ) : (
@@ -1408,15 +1408,15 @@ export default function WrittenExamPrepPage() {
 
                       {att.status === "Expired" ? (
                         <div className="text-xs text-muted-foreground">
-                          Time ran out before this attempt was submitted, so it was not graded. It counts as an attempt.
+                          {en("Time ran out before this attempt was submitted, so it was not graded. It counts as an attempt.")}
                         </div>
                       ) : (
                       <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                        <span>Score: <strong className={att.passed ? "text-emerald-500" : "text-rose-500"}>{att.percentage}%</strong></span>
+                        <span>{en("Score: ")}<strong className={att.passed ? "text-emerald-500" : "text-rose-500"}>{att.percentage}%</strong></span>
                         <span>•</span>
-                        <span>Questions: {att.correctAnswers}/{att.totalQuestions}</span>
+                        <span>{en("Questions: ")}{att.correctAnswers}/{att.totalQuestions}</span>
                         <span>•</span>
-                        {att.percentileRank != null && <span>Better than {att.percentileRank}% of test takers</span>}
+                        {att.percentileRank != null && <span>{en("Better than ")}{att.percentileRank}{en("% of test takers")}</span>}
                       </div>
                       )}
                     </div>
@@ -1428,7 +1428,7 @@ export default function WrittenExamPrepPage() {
                           className="px-3.5 py-2 rounded-xl border border-amber-500/30 bg-amber-500/10 hover:bg-amber-500/20 text-amber-500 text-xs font-semibold flex items-center gap-1.5 transition-colors"
                         >
                           <Award className="w-3.5 h-3.5" />
-                          <span>View Credential</span>
+                          <span>{en("View Credential")}</span>
                           <ExternalLink className="w-3 h-3" />
                         </Link>
                       ) : (att.canClaimCredential ?? att.passed) ? (
@@ -1438,7 +1438,7 @@ export default function WrittenExamPrepPage() {
                           className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white text-xs font-bold shadow-sm flex items-center gap-1.5 transition-all"
                         >
                           <Award className="w-3.5 h-3.5" />
-                          <span>Claim Credential</span>
+                          <span>{en("Claim Credential")}</span>
                         </button>
                       ) : null}
 
@@ -1447,7 +1447,7 @@ export default function WrittenExamPrepPage() {
                         className="px-3.5 py-2 rounded-xl border border-border bg-card/60 hover:bg-card text-foreground text-xs font-semibold flex items-center gap-1.5 transition-colors"
                       >
                         <RotateCcw className="w-3.5 h-3.5 text-primary" />
-                        <span>Retake Exam</span>
+                        <span>{en("Retake Exam")}</span>
                       </button>
                     </div>
                   </div>
@@ -1471,10 +1471,10 @@ export default function WrittenExamPrepPage() {
                 </div>
                 <div>
                   <h3 className="text-base font-bold text-foreground">
-                    Synthesize Custom AI Exam
+                    {en("Synthesize Custom AI Exam")}
                   </h3>
                   <p className="text-xs text-muted-foreground">
-                    Generate on-demand multiple choice questions with explanations
+                    {en("Generate on-demand multiple choice questions with explanations")}
                   </p>
                 </div>
               </div>
@@ -1489,13 +1489,13 @@ export default function WrittenExamPrepPage() {
             <form onSubmit={handleSynthesizeExam} className="space-y-4">
               <div className="space-y-1.5">
                 <label className="text-xs font-semibold text-foreground">
-                  Exam Topic / Domain Focus
+                  {en("Exam Topic / Domain Focus")}
                 </label>
                 <input
                   type="text"
                   value={aiTopic}
                   onChange={(e) => setAiTopic(e.target.value)}
-                  placeholder="e.g. Kubernetes Ingress & Helm, Zero-Trust AppSec"
+                  placeholder={en("e.g. Kubernetes Ingress & Helm, Zero-Trust AppSec")}
                   className="w-full px-3.5 py-2.5 rounded-xl border border-border bg-background text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
                   required
                 />
@@ -1522,42 +1522,42 @@ export default function WrittenExamPrepPage() {
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1">
                   <label className="text-xs font-semibold text-foreground">
-                    Stream / Category
+                    {en("Stream / Category")}
                   </label>
                   <select
                     value={aiStream}
                     onChange={(e) => setAiStream(e.target.value)}
                     className="w-full px-3 py-2 rounded-xl border border-border bg-background text-xs text-foreground cursor-pointer"
                   >
-                    <option value="Software Engineering">Software Engineering</option>
-                    <option value="Cloud and DevOps">Cloud and DevOps</option>
-                    <option value="Aptitude & Logic">Aptitude &amp; Logic</option>
-                    <option value="Product Management">Product Management</option>
-                    <option value="Cybersecurity">Cybersecurity</option>
-                    <option value="Finance & Banking">Finance &amp; Banking</option>
+                    <option value="Software Engineering">{en("Software Engineering")}</option>
+                    <option value="Cloud and DevOps">{en("Cloud and DevOps")}</option>
+                    <option value="Aptitude & Logic">{en("Aptitude & Logic")}</option>
+                    <option value="Product Management">{en("Product Management")}</option>
+                    <option value="Cybersecurity">{en("Cybersecurity")}</option>
+                    <option value="Finance & Banking">{en("Finance & Banking")}</option>
                   </select>
                 </div>
 
                 <div className="space-y-1">
                   <label className="text-xs font-semibold text-foreground">
-                    Difficulty Level
+                    {en("Difficulty Level")}
                   </label>
                   <select
                     value={aiDifficulty}
                     onChange={(e) => setAiDifficulty(e.target.value)}
                     className="w-full px-3 py-2 rounded-xl border border-border bg-background text-xs text-foreground cursor-pointer"
                   >
-                    <option value="Beginner">Beginner</option>
-                    <option value="Intermediate">Intermediate</option>
-                    <option value="Advanced">Advanced</option>
-                    <option value="Staff">Staff</option>
+                    <option value="Beginner">{en("Beginner")}</option>
+                    <option value="Intermediate">{en("Intermediate")}</option>
+                    <option value="Advanced">{en("Advanced")}</option>
+                    <option value="Staff">{en("Staff")}</option>
                   </select>
                 </div>
               </div>
 
               <div className="space-y-1.5">
                 <label className="text-xs font-semibold text-foreground">
-                  Number of Questions
+                  {en("Number of Questions")}
                 </label>
                 <div className="grid grid-cols-3 gap-2">
                   {[3, 5, 10].map((num) => (
@@ -1571,7 +1571,7 @@ export default function WrittenExamPrepPage() {
                           : "border-border bg-muted/20 text-muted-foreground hover:bg-muted/40"
                       }`}
                     >
-                      {num} Questions
+                      {num}{en(" Questions")}
                     </button>
                   ))}
                 </div>
@@ -1583,7 +1583,7 @@ export default function WrittenExamPrepPage() {
                   onClick={() => setShowAiModal(false)}
                   className="px-4 py-2 rounded-xl border border-border text-xs font-semibold text-muted-foreground hover:text-foreground"
                 >
-                  Cancel
+                  {en("Cancel")}
                 </button>
                 <button
                   type="submit"
@@ -1591,7 +1591,7 @@ export default function WrittenExamPrepPage() {
                   className="px-5 py-2 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-600 text-white text-xs font-semibold hover:opacity-95 disabled:opacity-50 flex items-center gap-2"
                 >
                   <Wand2 className="w-3.5 h-3.5" />
-                  <span>{isSynthesizing ? "Synthesizing AI Exam..." : "Generate & Launch"}</span>
+                  <span>{isSynthesizing ? en("Synthesizing AI Exam...") : en("Generate & Launch")}</span>
                 </button>
               </div>
             </form>
@@ -1612,10 +1612,10 @@ export default function WrittenExamPrepPage() {
                 </div>
                 <div>
                   <h3 className="text-base font-bold text-foreground">
-                    Import Custom Question Bank
+                    {en("Import Custom Question Bank")}
                   </h3>
                   <p className="text-xs text-muted-foreground">
-                    Upload your institution or recruiter questions via JSON schema
+                    {en("Upload your institution or recruiter questions via JSON schema")}
                   </p>
                 </div>
               </div>
@@ -1638,13 +1638,13 @@ export default function WrittenExamPrepPage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="space-y-1">
                   <label className="text-xs font-semibold text-foreground">
-                    Exam Title
+                    {en("Exam Title")}
                   </label>
                   <input
                     type="text"
                     value={uploadTitle}
                     onChange={(e) => setUploadTitle(e.target.value)}
-                    placeholder="e.g. Distributed Concurrency Midterm"
+                    placeholder={en("e.g. Distributed Concurrency Midterm")}
                     className="w-full px-3 py-2 rounded-xl border border-border bg-background text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
                     required
                   />
@@ -1652,13 +1652,13 @@ export default function WrittenExamPrepPage() {
 
                 <div className="space-y-1">
                   <label className="text-xs font-semibold text-foreground">
-                    Stream / Category
+                    {en("Stream / Category")}
                   </label>
                   <input
                     type="text"
                     value={uploadStream}
                     onChange={(e) => setUploadStream(e.target.value)}
-                    placeholder="e.g. Software Engineering"
+                    placeholder={en("e.g. Software Engineering")}
                     className="w-full px-3 py-2 rounded-xl border border-border bg-background text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
                     required
                   />
@@ -1668,7 +1668,7 @@ export default function WrittenExamPrepPage() {
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1">
                   <label className="text-xs font-semibold text-foreground">
-                    Duration (Minutes)
+                    {en("Duration (Minutes)")}
                   </label>
                   <input
                     type="number"
@@ -1687,23 +1687,23 @@ export default function WrittenExamPrepPage() {
                     className="w-full py-2 px-3 rounded-xl border border-border bg-muted/30 text-xs font-semibold text-foreground hover:bg-muted/60 transition-colors flex items-center justify-center gap-1.5"
                   >
                     <FileCode className="w-3.5 h-3.5 text-primary" />
-                    <span>Load an example</span>
+                    <span>{en("Load an example")}</span>
                   </button>
                 </div>
               </div>
 
               <div className="space-y-1.5">
                 <label className="text-xs font-semibold text-foreground flex items-center justify-between">
-                  <span>Questions (JSON format)</span>
+                  <span>{en("Questions (JSON format)")}</span>
                   <span className="text-[10px] text-muted-foreground font-normal">
-                    Array of objects with questionText, options, correctOptionIndex, explanation
+                    {en("Array of objects with questionText, options, correctOptionIndex, explanation")}
                   </span>
                 </label>
                 <textarea
                   rows={8}
                   value={uploadJson}
                   onChange={(e) => setUploadJson(e.target.value)}
-                  placeholder={`[\n  {\n    "questionText": "Question description",\n    "options": ["Option A", "Option B", "Option C", "Option D"],\n    "correctOptionIndex": 0,\n    "explanation": "Rationale...",\n    "topic": "Topic"\n  }\n]`}
+                  placeholder={en(`[\n  {\n    "questionText": "Question description",\n    "options": ["Option A", "Option B", "Option C", "Option D"],\n    "correctOptionIndex": 0,\n    "explanation": "Rationale...",\n    "topic": "Topic"\n  }\n]`)}
                   className="w-full px-3.5 py-2.5 rounded-xl border border-border bg-background font-mono text-[11px] text-foreground focus:outline-none focus:ring-1 focus:ring-primary leading-relaxed"
                   required
                 />
@@ -1715,7 +1715,7 @@ export default function WrittenExamPrepPage() {
                   onClick={() => setShowUploadModal(false)}
                   className="px-4 py-2 rounded-xl border border-border text-xs font-semibold text-muted-foreground hover:text-foreground"
                 >
-                  Cancel
+                  {en("Cancel")}
                 </button>
                 <button
                   type="submit"
@@ -1723,7 +1723,7 @@ export default function WrittenExamPrepPage() {
                   className="px-5 py-2 rounded-xl bg-primary text-primary-foreground text-xs font-semibold hover:opacity-95 disabled:opacity-50 flex items-center gap-2"
                 >
                   <Upload className="w-3.5 h-3.5" />
-                  <span>{isUploading ? "Validating & Publishing..." : "Publish Question Bank"}</span>
+                  <span>{isUploading ? en("Validating & Publishing...") : en("Publish Question Bank")}</span>
                 </button>
               </div>
             </form>
@@ -1739,7 +1739,7 @@ export default function WrittenExamPrepPage() {
           <div className="bg-card border border-amber-500/40 rounded-3xl max-w-xl w-full p-6 sm:p-8 space-y-6 shadow-2xl relative">
             <button
               onClick={() => setShowCredentialModal(false)}
-              className="absolute top-5 right-5 p-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
+              className="absolute top-5 end-5 p-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
             >
               <X className="w-5 h-5" />
             </button>
@@ -1750,13 +1750,13 @@ export default function WrittenExamPrepPage() {
                 <Award className="w-9 h-9" />
               </div>
               <span className="text-[11px] font-bold text-amber-500 uppercase tracking-widest px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 inline-block">
-                Official Verifiable Credential
+                {en("Official Verifiable Credential")}
               </span>
               <h2 className="text-xl sm:text-2xl font-black text-foreground tracking-tight">
                 {claimedCredential.badgeTitle || "Verified credential"}
               </h2>
               <p className="text-xs text-muted-foreground">
-                Issued by <strong className="text-foreground">Edulexa</strong>. Anyone can check it at its verification link.
+                {en("Issued by ")}<strong className="text-foreground">{en("Edulexa")}</strong>{en(". Anyone can check it at its verification link.")}
               </p>
             </div>
 
@@ -1764,19 +1764,19 @@ export default function WrittenExamPrepPage() {
             <div className="p-5 rounded-2xl bg-gradient-to-b from-amber-500/5 to-transparent border border-amber-500/30 space-y-4">
               <div className="grid grid-cols-2 gap-3 text-xs">
                 <div>
-                  <span className="text-muted-foreground text-[10px] uppercase font-semibold">Candidate Name</span>
+                  <span className="text-muted-foreground text-[10px] uppercase font-semibold">{en("Candidate Name")}</span>
                   <p className="font-bold text-foreground text-sm mt-0.5">{claimedCredential.candidateName}</p>
                 </div>
                 <div>
-                  <span className="text-muted-foreground text-[10px] uppercase font-semibold">Verified Score</span>
-                  <p className="font-bold text-emerald-500 text-sm mt-0.5">{claimedCredential.percentage}% (Gold Mastery)</p>
+                  <span className="text-muted-foreground text-[10px] uppercase font-semibold">{en("Verified Score")}</span>
+                  <p className="font-bold text-emerald-500 text-sm mt-0.5">{claimedCredential.percentage}{en("% (Gold Mastery)")}</p>
                 </div>
                 <div>
-                  <span className="text-muted-foreground text-[10px] uppercase font-semibold">Certificate Number</span>
+                  <span className="text-muted-foreground text-[10px] uppercase font-semibold">{en("Certificate Number")}</span>
                   <p className="font-mono font-bold text-foreground text-xs mt-0.5">{claimedCredential.certificateNumber}</p>
                 </div>
                 <div>
-                  <span className="text-muted-foreground text-[10px] uppercase font-semibold">Issue Date</span>
+                  <span className="text-muted-foreground text-[10px] uppercase font-semibold">{en("Issue Date")}</span>
                   <p className="font-medium text-foreground text-xs mt-0.5">
                     {new Date(claimedCredential.issuedAt).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" })}
                   </p>
@@ -1788,7 +1788,7 @@ export default function WrittenExamPrepPage() {
                 <div className="flex items-center justify-between text-[10px]">
                   <span className="font-bold text-muted-foreground flex items-center gap-1">
                     <ShieldCheck className="w-3.5 h-3.5 text-amber-500" />
-                    <span>Cryptographic SHA-256 Seal</span>
+                    <span>{en("Cryptographic SHA-256 Seal")}</span>
                   </span>
                   <button
                     onClick={() => {
@@ -1799,7 +1799,7 @@ export default function WrittenExamPrepPage() {
                     className="text-primary hover:underline font-semibold flex items-center gap-1"
                   >
                     {copiedSignature ? <Check className="w-3 h-3 text-emerald-500" /> : <Copy className="w-3 h-3" />}
-                    <span>{copiedSignature ? "Copied Seal" : "Copy Hash"}</span>
+                    <span>{copiedSignature ? en("Copied Seal") : en("Copy Hash")}</span>
                   </button>
                 </div>
                 <p className="font-mono text-[10px] text-muted-foreground break-all leading-tight">
@@ -1810,7 +1810,7 @@ export default function WrittenExamPrepPage() {
               {/* Skill Passport Sync Status */}
               <div className="flex items-center gap-2 p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-xs text-emerald-600 dark:text-emerald-400">
                 <CheckCircle2 className="w-4 h-4 shrink-0" />
-                <span>Synchronized to Dynamic Skill Passport. Anti-decay timer frozen for 30 days.</span>
+                <span>{en("Synchronized to Dynamic Skill Passport. Anti-decay timer frozen for 30 days.")}</span>
               </div>
             </div>
 
@@ -1834,7 +1834,7 @@ export default function WrittenExamPrepPage() {
                 className="w-full py-2.5 px-4 rounded-xl bg-[#0A66C2] hover:bg-[#004182] text-white font-bold text-xs flex items-center justify-center gap-2 shadow-sm transition-colors"
               >
                 <LinkedInIcon className="w-4 h-4" />
-                <span>1-Click Add Certificate to LinkedIn Profile</span>
+                <span>{en("1-Click Add Certificate to LinkedIn Profile")}</span>
               </a>
 
               <div className="grid grid-cols-2 gap-2.5">
@@ -1850,7 +1850,7 @@ export default function WrittenExamPrepPage() {
                   className="py-2.5 px-3 rounded-xl border border-border bg-card hover:bg-muted/40 text-xs font-semibold text-foreground flex items-center justify-center gap-1.5 transition-colors"
                 >
                   {copiedLink ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Copy className="w-3.5 h-3.5 text-muted-foreground" />}
-                  <span>{copiedLink ? "Link Copied!" : "Copy Public Link"}</span>
+                  <span>{copiedLink ? en("Link Copied!") : en("Copy Public Link")}</span>
                 </button>
 
                 <Link
@@ -1858,7 +1858,7 @@ export default function WrittenExamPrepPage() {
                   className="py-2.5 px-3 rounded-xl border border-border bg-card hover:bg-muted/40 text-xs font-semibold text-foreground flex items-center justify-center gap-1.5 transition-colors"
                 >
                   <Award className="w-3.5 h-3.5 text-amber-500" />
-                  <span>Open Skill Passport</span>
+                  <span>{en("Open Skill Passport")}</span>
                 </Link>
               </div>
             </div>

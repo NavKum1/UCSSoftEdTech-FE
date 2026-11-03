@@ -44,7 +44,7 @@ export default function MyResultsPage() {
 
   if (isLoaded && !isSignedIn) {
     return (
-      <SignInRequired title="My results" message="Sign in to see your assessment results." />
+      <SignInRequired title={en("My results")} message="Sign in to see your assessment results." />
     );
   }
 
@@ -55,20 +55,19 @@ export default function MyResultsPage() {
           <div>
             <h1 className="text-2xl font-black tracking-tight text-foreground flex items-center gap-2">
               <ClipboardList className="w-6 h-6 text-indigo-700 dark:text-indigo-400" />
-              My results
+              {en("My results")}
             </h1>
             <p className="text-sm text-muted-foreground mt-1">
               {en("Every submission, your test results, your defense, personalised feedback and where the review stands.")}
             </p>
           </div>
           <Link href="/settings/privacy" className="text-xs text-muted-foreground hover:text-foreground inline-flex items-center gap-1">
-            <Lock className="w-3.5 h-3.5" /> Privacy and your data
+            <Lock className="w-3.5 h-3.5" />{en(" Privacy and your data")}
           </Link>
         </div>
 
         <div className="glass-panel rounded-2xl p-4 border border-border text-xs text-muted-foreground">
-          A person reviews every submission; nothing is decided automatically. If something went wrong, you can appeal from a
-          submission&apos;s report, and a different reviewer will look at it.
+          {en("A person reviews every submission; nothing is decided automatically. If something went wrong, you can appeal from a submission's report, and a different reviewer will look at it.")}
         </div>
 
         {error ? (
@@ -77,15 +76,15 @@ export default function MyResultsPage() {
           </div>
         ) : rows === null ? (
           <div className="p-12 flex items-center justify-center gap-2 text-sm text-muted-foreground">
-            <Loader2 className="w-4 h-4 animate-spin" /> Loading your results...
+            <Loader2 className="w-4 h-4 animate-spin" />{en(" Loading your results...")}
           </div>
         ) : rows.length === 0 ? (
           <div className="glass-panel rounded-2xl p-10 border border-border text-center space-y-2">
             <Inbox className="w-8 h-8 mx-auto text-muted-foreground" />
-            <p className="text-sm text-foreground font-semibold">No submissions yet</p>
-            <p className="text-xs text-muted-foreground">When you submit a coding sprint, its results appear here.</p>
+            <p className="text-sm text-foreground font-semibold">{en("No submissions yet")}</p>
+            <p className="text-xs text-muted-foreground">{en("When you submit a coding sprint, its results appear here.")}</p>
             <Link href="/dashboard" className="inline-block mt-2 text-xs text-indigo-700 dark:text-indigo-400 underline">
-              Find a sprint
+              {en("Find a sprint")}
             </Link>
           </div>
         ) : (
@@ -98,15 +97,15 @@ export default function MyResultsPage() {
                 >
                   <div className="min-w-0 space-y-1.5">
                     <div className="font-semibold text-foreground truncate">{r.sprintTitle}</div>
-                    <div className="text-xs text-muted-foreground">Submitted {fmtDate(r.submittedAt)}</div>
+                    <div className="text-xs text-muted-foreground">{en("Submitted ")}{fmtDate(r.submittedAt)}</div>
                     <div className="flex flex-wrap gap-1.5">
                       <Badge tone={r.totalTests > 0 && r.passedTests === r.totalTests ? "good" : "muted"}>
-                        Tests {r.passedTests}/{r.totalTests}
+                        {en("Tests ")}{r.passedTests}/{r.totalTests}
                       </Badge>
-                      <Badge tone={r.defenseStatus === "Completed" ? "good" : "muted"}>Defense: {r.defenseStatus}</Badge>
+                      <Badge tone={r.defenseStatus === "Completed" ? "good" : "muted"}>{en("Defense: ")}{r.defenseStatus}</Badge>
                       <Badge tone={r.reviewStatus === "Reviewed" ? "info" : "warn"}>{r.reviewStatus}</Badge>
                       {r.outcome && <Badge tone={r.outcome === "Advanced" ? "good" : "muted"}>{r.outcome}</Badge>}
-                      {r.hasOpenAppeal && <Badge tone="warn">Appeal open</Badge>}
+                      {r.hasOpenAppeal && <Badge tone="warn">{en("Appeal open")}</Badge>}
                     </div>
                   </div>
                   <ChevronRight className="w-4 h-4 text-muted-foreground shrink-0" />

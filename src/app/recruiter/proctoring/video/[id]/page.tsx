@@ -221,7 +221,7 @@ export default function ProctoringVideoReviewPage({ params }: { params: Promise<
                 Screen Capture (1080p)
               </button>
             </div>
-            <div className="flex items-center gap-2 text-xs font-mono text-muted-foreground pr-2">
+            <div className="flex items-center gap-2 text-xs font-mono text-muted-foreground pe-2">
               <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
               Audio Synced (Opus 128kbps)
             </div>
@@ -258,7 +258,7 @@ export default function ProctoringVideoReviewPage({ params }: { params: Promise<
               )}
 
               {/* PiP Inset (Picture in Picture for other track) */}
-              <div className="absolute bottom-4 right-4 w-44 aspect-video bg-card/90 rounded-lg border border-border overflow-hidden shadow-lg flex items-center justify-center cursor-pointer hover:border-indigo-500 transition">
+              <div className="absolute bottom-4 end-4 w-44 aspect-video bg-card/90 rounded-lg border border-border overflow-hidden shadow-lg flex items-center justify-center cursor-pointer hover:border-indigo-500 transition">
                 <span className="text-[10px] font-mono text-muted-foreground">
                   {activeTrack === 'Webcam' ? 'Screen (PiP)' : 'Webcam (PiP)'}
                 </span>
@@ -266,7 +266,7 @@ export default function ProctoringVideoReviewPage({ params }: { params: Promise<
 
               {/* Real-Time Violation Flash Overlay if current time matches marker */}
               {playerData?.markers.some((m) => Math.abs(m.timestampSeconds - currentTime) <= 2) && (
-                <div className="absolute top-4 left-4 bg-rose-950/90 border border-rose-600 px-3 py-1.5 rounded-lg flex items-center gap-2 text-rose-300 text-xs font-mono animate-bounce">
+                <div className="absolute top-4 start-4 bg-rose-950/90 border border-rose-600 px-3 py-1.5 rounded-lg flex items-center gap-2 text-rose-300 text-xs font-mono animate-bounce">
                   <span className="w-2 h-2 rounded-full bg-rose-500"></span>
                   Active Violation Flagged at {formatSeconds(currentTime)}
                 </div>
@@ -400,7 +400,7 @@ export default function ProctoringVideoReviewPage({ params }: { params: Promise<
               <span className="text-indigo-700 dark:text-indigo-400">{playerData?.markers.length} Tagged</span>
             </h2>
 
-            <div className="flex-1 overflow-y-auto space-y-2 pr-1 max-h-[380px]">
+            <div className="flex-1 overflow-y-auto space-y-2 pe-1 max-h-[380px]">
               {playerData?.markers.map((marker) => {
                 const isSelected = selectedMarker?.id === marker.id;
                 const isCritical = marker.severity === 'Critical';
@@ -456,7 +456,7 @@ export default function ProctoringVideoReviewPage({ params }: { params: Promise<
                     alt="Proctoring Frame Snapshot"
                     className="w-full h-full object-cover"
                   />
-                  <div className="absolute bottom-1 right-2 text-[10px] font-mono text-white/80 bg-black/60 px-1.5 py-0.5 rounded">
+                  <div className="absolute bottom-1 end-2 text-[10px] font-mono text-white/80 bg-black/60 px-1.5 py-0.5 rounded">
                     Tagged by Vision Sensor
                   </div>
                 </div>

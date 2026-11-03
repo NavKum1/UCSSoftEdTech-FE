@@ -55,7 +55,7 @@ function Confirm() {
             {state.thankYou || `Your request is with ${state.institute ?? "the institute"}. An advisor will get back to you by email.`}
           </p>
           {state.meeting && (
-            <div className="mt-4 text-left" style={{ "--gf-accent": "#059669" } as React.CSSProperties}>
+            <div className="mt-4 text-start" style={{ "--gf-accent": "#059669" } as React.CSSProperties}>
               <MeetingNotice meeting={state.meeting} t={(k) => UI.en[k as keyof typeof UI.en] ?? k} />
             </div>
           )}

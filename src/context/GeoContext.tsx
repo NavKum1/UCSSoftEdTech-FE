@@ -1,6 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, useRef } from "react";
+import { useEn } from "@/lib/english/EnglishProvider";
 
 export type Region = "US" | "IN" | "EU";
 
@@ -237,6 +238,7 @@ export function useGeo() {
 }
 
 export function ProductRegionSwitcher({ className = "" }: { className?: string }) {
+  const en = useEn();
   const { region, setRegion } = useGeo();
   const [isOpen, setIsOpen] = useState(false);
   const buttonRef = useRef<HTMLButtonElement>(null);
@@ -254,13 +256,13 @@ export function ProductRegionSwitcher({ className = "" }: { className?: string }
   }, [isOpen]);
 
   return (
-    <div className={`relative inline-block text-left ${className}`}>
+    <div className={`relative inline-block text-start ${className}`}>
       <button
         ref={buttonRef}
         type="button"
         onClick={() => setIsOpen(!isOpen)}
         className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-card border border-border text-xs font-medium text-muted-foreground hover:text-foreground hover:border-border transition-colors shadow-sm"
-        title="Change Country & Compliance Jurisdiction"
+        title={en("Change Country & Compliance Jurisdiction")}
         aria-label={`Region and currency: ${REGIONS[region].name}, ${REGIONS[region].currency}`}
         aria-expanded={isOpen}
         aria-controls="region-switcher-list"
@@ -277,9 +279,9 @@ export function ProductRegionSwitcher({ className = "" }: { className?: string }
             aria-hidden
             onClick={() => setIsOpen(false)}
           />
-          <div id="region-switcher-list" className="absolute right-0 mt-2 z-[100] w-56 rounded-xl border border-border bg-white dark:bg-slate-900 p-1.5 shadow-2xl">
+          <div id="region-switcher-list" className="absolute end-0 mt-2 z-[100] w-56 rounded-xl border border-border bg-white dark:bg-slate-900 p-1.5 shadow-2xl">
             <div className="px-2.5 py-1.5 font-mono text-[10px] uppercase text-muted-foreground border-b border-border/80 mb-1">
-              Select Region &amp; Currency
+              {en("Select Region & Currency")}
             </div>
             {(Object.keys(REGIONS) as Region[]).map((rKey) => {
               const r = REGIONS[rKey];
@@ -301,7 +303,7 @@ export function ProductRegionSwitcher({ className = "" }: { className?: string }
                 >
                   <span className="flex items-center gap-2">
                     <span className="text-base" aria-hidden>{r.flag}</span>
-                    <span className="text-left">
+                    <span className="text-start">
                       <div className="font-medium">{r.name}</div>
                       <div className="text-[10px] text-muted-foreground font-mono">
                         {r.symbol} {r.currency}

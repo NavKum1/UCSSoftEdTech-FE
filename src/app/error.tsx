@@ -2,6 +2,7 @@
 
 import React, { useEffect } from "react";
 import { RefreshCw, ShieldAlert, Home } from "lucide-react";
+import { useEn } from "@/lib/english/EnglishProvider";
 
 export default function GlobalErrorPage({
   error,
@@ -10,6 +11,7 @@ export default function GlobalErrorPage({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
+  const en = useEn();
   useEffect(() => {
     // Log unexpected client-side crash to error tracking service (e.g. Sentry / Datadog)
     console.error("[BUILD & DEFEND CLIENT CRASH]:", error);
@@ -18,7 +20,7 @@ export default function GlobalErrorPage({
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col items-center justify-center p-6 font-sans">
       {/* Ambient Red Glow */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-red-600/20 blur-3xl rounded-full pointer-events-none"></div>
+      <div className="absolute top-1/2 start-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-red-600/20 blur-3xl rounded-full pointer-events-none"></div>
 
       <div className="max-w-md w-full glass-panel rounded-3xl p-8 border border-red-500/30 text-center space-y-6 relative z-10 shadow-2xl">
         <div className="w-16 h-16 rounded-2xl bg-red-500/10 border border-red-500/30 text-red-700 dark:text-red-400 flex items-center justify-center mx-auto shadow-lg shadow-red-500/10">
@@ -27,17 +29,17 @@ export default function GlobalErrorPage({
 
         <div className="space-y-2">
           <span className="text-xs font-semibold text-red-700 dark:text-red-400 uppercase tracking-widest">
-            Service Notice
+            {en("Service Notice")}
           </span>
-          <h1 className="text-2xl font-extrabold text-foreground">Something Went Wrong</h1>
+          <h1 className="text-2xl font-extrabold text-foreground">{en("Something Went Wrong")}</h1>
           <p className="text-xs text-muted-foreground leading-relaxed">
-            We encountered an unexpected issue while loading this page. Please try again or return to your dashboard.
+            {en("We encountered an unexpected issue while loading this page. Please try again or return to your dashboard.")}
           </p>
         </div>
 
         {error?.digest && (
           <div className="bg-card/80 p-3 rounded-xl border border-border text-[11px] font-mono text-muted-foreground flex items-center justify-between">
-            <span>Reference Code:</span>
+            <span>{en("Reference Code:")}</span>
             <span className="text-red-700 dark:text-red-400 font-bold">{error.digest}</span>
           </div>
         )}
@@ -48,7 +50,7 @@ export default function GlobalErrorPage({
             className="w-full py-3 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-xs flex items-center justify-center space-x-2 transition-all shadow-lg shadow-indigo-600/25 cursor-pointer"
           >
             <RefreshCw className="w-4 h-4" />
-            <span>Try Again</span>
+            <span>{en("Try Again")}</span>
           </button>
 
           {/* eslint-disable-next-line @next/next/no-html-link-for-pages -- a full page load on purpose: it resets client state after a crash, which a client-side <Link> would keep */}
@@ -57,7 +59,7 @@ export default function GlobalErrorPage({
             className="w-full py-3 px-4 rounded-xl bg-card hover:bg-muted text-muted-foreground font-medium text-xs flex items-center justify-center space-x-2 border border-border transition-colors cursor-pointer"
           >
             <Home className="w-4 h-4" />
-            <span>Go to Dashboard</span>
+            <span>{en("Go to Dashboard")}</span>
           </a>
         </div>
       </div>

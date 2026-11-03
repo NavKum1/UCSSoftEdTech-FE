@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { AccessNotice, useLegacyApi, useLatestRef } from "@/lib/legacyApi";
+import { useEn } from "@/lib/english/EnglishProvider";
 
 interface Campus {
   id: string;
@@ -59,6 +60,7 @@ interface VerificationResult {
 }
 
 export default function MultiCampusGovernancePage() {
+  const en = useEn();
   const { apiFetch, ready, access } = useLegacyApi();
   const [parentInstituteId] = useState<string>("8c353f80-0a21-41fb-8b43-2287413d98bf");
   const [rollup, setRollup] = useState<SystemRollup | null>(null);
@@ -184,17 +186,17 @@ export default function MultiCampusGovernancePage() {
             href="/partner/dashboard"
             className="text-xs font-semibold px-3 py-1.5 rounded-lg bg-muted hover:bg-slate-700 text-muted-foreground border border-border transition"
           >
-            ← Partner Portal
+            {en("← Partner Portal")}
           </Link>
           <div className="h-4 w-px bg-muted" />
           <div className="flex items-center space-x-2">
             <span className="text-xl">🏛️</span>
             <div>
               <h1 className="text-base font-bold bg-gradient-to-r from-emerald-400 via-teal-300 to-cyan-400 bg-clip-text text-transparent">
-                Executive Multi-Campus Governance &amp; Compliance Records
+                {en("Executive Multi-Campus Governance & Compliance Records")}
               </h1>
               <p className="text-[11px] text-muted-foreground">
-                Institutional Consortium • Verified Compliance Record
+                {en("Institutional Consortium • Verified Compliance Record")}
               </p>
             </div>
           </div>
@@ -202,10 +204,10 @@ export default function MultiCampusGovernancePage() {
 
         {/* Global Accreditation Status Badge */}
         <div className="flex items-center space-x-3">
-          <div className="text-right hidden sm:block">
-            <div className="text-xs text-muted-foreground">System Accreditation Health</div>
+          <div className="text-end hidden sm:block">
+            <div className="text-xs text-muted-foreground">{en("System Accreditation Health")}</div>
             <div className="text-sm font-mono font-bold text-foreground">
-              {rollup?.averageSystemComplianceScore != null ? `${rollup.averageSystemComplianceScore}% compliance` : "Not assessed yet"}
+              {rollup?.averageSystemComplianceScore != null ? `${rollup.averageSystemComplianceScore}% compliance` : en("Not assessed yet")}
             </div>
           </div>
           <span
@@ -215,7 +217,7 @@ export default function MultiCampusGovernancePage() {
                 : "bg-amber-950 text-amber-700 dark:text-amber-400 border-amber-500/50"
             }`}
           >
-            ● {!rollup?.accreditationReadinessStatus || rollup.accreditationReadinessStatus === "NotAssessed" ? "Not assessed" : rollup.accreditationReadinessStatus}
+            ● {!rollup?.accreditationReadinessStatus || rollup.accreditationReadinessStatus === "NotAssessed" ? en("Not assessed") : rollup.accreditationReadinessStatus}
           </span>
         </div>
       </header>
@@ -225,38 +227,38 @@ export default function MultiCampusGovernancePage() {
         {/* KPI Summary Cards */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <div className="p-4 rounded-2xl bg-card/60 border border-border/80 shadow-sm">
-            <div className="text-muted-foreground text-xs font-medium">Chartered Campuses</div>
+            <div className="text-muted-foreground text-xs font-medium">{en("Chartered Campuses")}</div>
             <div className="text-2xl font-black text-foreground mt-1">
               {rollup?.totalCampuses || 0}
             </div>
-            <div className="text-[11px] text-emerald-700 dark:text-emerald-400 mt-1 font-mono">100% Fully Isolated</div>
+            <div className="text-[11px] text-emerald-700 dark:text-emerald-400 mt-1 font-mono">{en("100% Fully Isolated")}</div>
           </div>
 
           <div className="p-4 rounded-2xl bg-card/60 border border-border/80 shadow-sm">
-            <div className="text-muted-foreground text-xs font-medium">Total Student Body</div>
+            <div className="text-muted-foreground text-xs font-medium">{en("Total Student Body")}</div>
             <div className="text-2xl font-black text-cyan-700 dark:text-cyan-400 mt-1 font-mono">
               {(rollup?.totalStudentsEnrolled || 0).toLocaleString()}
             </div>
             <div className="text-[11px] text-muted-foreground mt-1">
-              {(rollup?.totalFacultyMembers || 0).toLocaleString()} Faculty Members
+              {(rollup?.totalFacultyMembers || 0).toLocaleString()}{en(" Faculty Members")}
             </div>
           </div>
 
           <div className="p-4 rounded-2xl bg-card/60 border border-border/80 shadow-sm">
-            <div className="text-muted-foreground text-xs font-medium">Immutable Audit Blocks</div>
+            <div className="text-muted-foreground text-xs font-medium">{en("Immutable Audit Blocks")}</div>
             <div className="text-2xl font-black text-purple-700 dark:text-purple-400 mt-1 font-mono">
               {rollup?.totalAuditLedgerBlocks || 0}
             </div>
-            <div className="text-[11px] text-purple-600 dark:text-purple-300 mt-1 font-mono">SHA-256 Hash Chain</div>
+            <div className="text-[11px] text-purple-600 dark:text-purple-300 mt-1 font-mono">{en("SHA-256 Hash Chain")}</div>
           </div>
 
           <div className="p-4 rounded-2xl bg-card/60 border border-border/80 shadow-sm">
-            <div className="text-muted-foreground text-xs font-medium">Compliance Certifications</div>
+            <div className="text-muted-foreground text-xs font-medium">{en("Compliance Certifications")}</div>
             <div className="text-2xl font-black text-emerald-700 dark:text-emerald-400 mt-1 font-mono">
               {(rollup?.totalGradeCertifications || 0) + (rollup?.totalAccreditationClearances || 0)}
             </div>
             <div className="text-[11px] text-muted-foreground mt-1">
-              {rollup?.totalProctoringOverrides || 0} Proctoring Overrides
+              {rollup?.totalProctoringOverrides || 0}{en(" Proctoring Overrides")}
             </div>
           </div>
         </div>
@@ -267,10 +269,10 @@ export default function MultiCampusGovernancePage() {
           <div className="lg:col-span-4 space-y-4">
             <div className="flex items-center justify-between">
               <h2 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">
-                Institutional Campuses
+                {en("Institutional Campuses")}
               </h2>
               <span className="text-xs px-2 py-0.5 rounded bg-muted text-muted-foreground font-mono">
-                {rollup?.campuses?.length || 0} Registered
+                {rollup?.campuses?.length || 0}{en(" Registered")}
               </span>
             </div>
 
@@ -295,13 +297,13 @@ export default function MultiCampusGovernancePage() {
                     </div>
 
                     <div className="mt-2 text-xs text-muted-foreground flex items-center justify-between">
-                      <span>Dean: {c.deanEmail}</span>
+                      <span>{en("Dean: ")}{c.deanEmail}</span>
                       <span className="font-mono text-emerald-700 dark:text-emerald-400 font-bold">{c.complianceScore}%</span>
                     </div>
 
                     <div className="mt-2 text-[11px] text-muted-foreground flex items-center justify-between font-mono">
-                      <span>Students: {c.studentCount.toLocaleString()}</span>
-                      <span>Tier: {c.accreditationTier}</span>
+                      <span>{en("Students: ")}{c.studentCount.toLocaleString()}</span>
+                      <span>{en("Tier: ")}{c.accreditationTier}</span>
                     </div>
                   </div>
                 );
@@ -314,10 +316,10 @@ export default function MultiCampusGovernancePage() {
             <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border pb-3">
               <div>
                 <h2 className="text-sm font-bold text-foreground">
-                  {selectedCampus ? `${selectedCampus.campusName} Compliance Records` : "Campus Compliance Records"}
+                  {selectedCampus ? `${selectedCampus.campusName} Compliance Records` : en("Campus Compliance Records")}
                 </h2>
                 <p className="text-xs text-muted-foreground">
-                  Verified compliance records certified by Academic Leadership
+                  {en("Verified compliance records certified by Academic Leadership")}
                 </p>
               </div>
 
@@ -328,7 +330,7 @@ export default function MultiCampusGovernancePage() {
                   className="px-3.5 py-1.5 rounded-lg bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-600 dark:text-emerald-300 border border-emerald-500/40 text-xs font-semibold transition flex items-center space-x-1.5"
                 >
                   <span>{isVerifying ? "⏳" : "🛡️"}</span>
-                  <span>{isVerifying ? "Verifying..." : "Verify Records Integrity"}</span>
+                  <span>{isVerifying ? en("Verifying...") : en("Verify Records Integrity")}</span>
                 </button>
 
                 <button
@@ -337,7 +339,7 @@ export default function MultiCampusGovernancePage() {
                   className="px-3.5 py-1.5 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-semibold transition shadow-md shadow-cyan-600/20 flex items-center space-x-1"
                 >
                   <span>+</span>
-                  <span>Certify New Event</span>
+                  <span>{en("Certify New Event")}</span>
                 </button>
               </div>
             </div>
@@ -354,23 +356,23 @@ export default function MultiCampusGovernancePage() {
                 <div className="flex items-center space-x-2">
                   <span className="text-base">{verification.isTamperFree ? "✅" : "❌"}</span>
                   <div>
-                    <span className="font-bold">STATUS: {verification.status}</span>
-                    <span className="ml-2 text-muted-foreground">
-                      ({verification.totalBlocksVerified} blocks verified across chain)
+                    <span className="font-bold">{en("STATUS: ")}{verification.status}</span>
+                    <span className="ms-2 text-muted-foreground">
+                      ({verification.totalBlocksVerified}{en(" blocks verified across chain)")}
                     </span>
                   </div>
                 </div>
                 <div className="text-[10px] text-muted-foreground">
-                  Verified: {new Date(verification.verifiedAt).toLocaleTimeString()}
+                  {en("Verified: ")}{new Date(verification.verifiedAt).toLocaleTimeString()}
                 </div>
               </div>
             )}
 
             {/* Block Chain Timeline */}
-            <div className="space-y-3 max-h-[600px] overflow-y-auto pr-1">
+            <div className="space-y-3 max-h-[600px] overflow-y-auto pe-1">
               {ledgerBlocks.length === 0 ? (
                 <div className="p-8 text-center border border-dashed border-border rounded-2xl bg-card/30 text-muted-foreground text-xs">
-                  No audit blocks recorded for this campus.
+                  {en("No audit blocks recorded for this campus.")}
                 </div>
               ) : (
                 ledgerBlocks.map((b) => (
@@ -398,11 +400,11 @@ export default function MultiCampusGovernancePage() {
                     {/* Cryptographic Hashes Bar */}
                     <div className="pt-2 border-t border-border/80 grid grid-cols-1 md:grid-cols-2 gap-2 text-[10px] font-mono text-muted-foreground">
                       <div className="truncate">
-                        <span className="text-muted-foreground">Block Hash: </span>
+                        <span className="text-muted-foreground">{en("Block Hash: ")}</span>
                         <span className="text-emerald-700 dark:text-emerald-400">{b.blockHash}</span>
                       </div>
                       <div className="truncate">
-                        <span className="text-muted-foreground">Prev Hash: </span>
+                        <span className="text-muted-foreground">{en("Prev Hash: ")}</span>
                         <span className="text-muted-foreground">{b.previousBlockHash}</span>
                       </div>
                     </div>
@@ -420,7 +422,7 @@ export default function MultiCampusGovernancePage() {
           <div className="bg-card border border-border rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl">
             <div className="flex items-center justify-between border-b border-border pb-3">
               <h3 className="text-sm font-bold text-foreground">
-                Certify Audit Block: {selectedCampus?.campusName}
+                {en("Certify Audit Block: ")}{selectedCampus?.campusName}
               </h3>
               <button
                 onClick={() => setShowAppendModal(false)}
@@ -432,7 +434,7 @@ export default function MultiCampusGovernancePage() {
 
             <form onSubmit={handleAppendBlock} className="space-y-3 text-xs">
               <div>
-                <label className="block text-muted-foreground mb-1">Actor Email</label>
+                <label className="block text-muted-foreground mb-1">{en("Actor Email")}</label>
                 <input
                   type="email"
                   value={newActorEmail}
@@ -443,36 +445,36 @@ export default function MultiCampusGovernancePage() {
               </div>
 
               <div>
-                <label className="block text-muted-foreground mb-1">Actor Role</label>
+                <label className="block text-muted-foreground mb-1">{en("Actor Role")}</label>
                 <select
                   value={newActorRole}
                   onChange={(e) => setNewActorRole(e.target.value)}
                   className="w-full bg-background text-foreground p-2.5 rounded-lg border border-border focus:outline-none focus:ring-1 focus:ring-cyan-500"
                 >
-                  <option value="AcademicDean">Academic Dean</option>
-                  <option value="CampusProvost">Campus Provost</option>
-                  <option value="ChiefComplianceOfficer">Chief Compliance Officer</option>
-                  <option value="ExternalAuditor">External Auditor</option>
+                  <option value="AcademicDean">{en("Academic Dean")}</option>
+                  <option value="CampusProvost">{en("Campus Provost")}</option>
+                  <option value="ChiefComplianceOfficer">{en("Chief Compliance Officer")}</option>
+                  <option value="ExternalAuditor">{en("External Auditor")}</option>
                 </select>
               </div>
 
               <div>
-                <label className="block text-muted-foreground mb-1">Event Type</label>
+                <label className="block text-muted-foreground mb-1">{en("Event Type")}</label>
                 <select
                   value={newEventType}
                   onChange={(e) => setNewEventType(e.target.value)}
                   className="w-full bg-background text-foreground p-2.5 rounded-lg border border-border focus:outline-none focus:ring-1 focus:ring-cyan-500"
                 >
-                  <option value="GradeCertification">Grade Certification</option>
-                  <option value="ProctoringAnomalyOverride">Proctoring Anomaly Override</option>
-                  <option value="AccreditationClearance">Accreditation Clearance</option>
-                  <option value="FERPA_AuditExport">FERPA Audit Export</option>
-                  <option value="CurriculumReviewApproved">Curriculum Review Approved</option>
+                  <option value="GradeCertification">{en("Grade Certification")}</option>
+                  <option value="ProctoringAnomalyOverride">{en("Proctoring Anomaly Override")}</option>
+                  <option value="AccreditationClearance">{en("Accreditation Clearance")}</option>
+                  <option value="FERPA_AuditExport">{en("FERPA Audit Export")}</option>
+                  <option value="CurriculumReviewApproved">{en("Curriculum Review Approved")}</option>
                 </select>
               </div>
 
               <div>
-                <label className="block text-muted-foreground mb-1">Compliance Notes & Rationale</label>
+                <label className="block text-muted-foreground mb-1">{en("Compliance Notes & Rationale")}</label>
                 <textarea
                   value={newNotes}
                   onChange={(e) => setNewNotes(e.target.value)}
@@ -488,14 +490,14 @@ export default function MultiCampusGovernancePage() {
                   onClick={() => setShowAppendModal(false)}
                   className="px-4 py-2 rounded-lg bg-muted hover:bg-slate-700 text-muted-foreground font-semibold"
                 >
-                  Cancel
+                  {en("Cancel")}
                 </button>
                 <button
                   type="submit"
                   disabled={isAppending}
                   className="px-4 py-2 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white font-semibold shadow-md shadow-cyan-600/20 disabled:opacity-50"
                 >
-                  {isAppending ? "Signing Block..." : "Sign & Append Block"}
+                  {isAppending ? en("Signing Block...") : en("Sign & Append Block")}
                 </button>
               </div>
             </form>

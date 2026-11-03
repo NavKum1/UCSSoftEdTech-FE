@@ -171,7 +171,7 @@ export default function LeadsView({
   const exportCsv = async () => {
     const res = await authenticatedFetch(`/api/institute/crm/export${query(filters)}`, {}, getToken);
     if (!res.ok) {
-      setMessage({ ok: false, text: "The export failed. Please try again." });
+      setMessage({ ok: false, text: en("The export failed. Please try again.") });
       return;
     }
     const url = URL.createObjectURL(await res.blob());
@@ -214,11 +214,11 @@ export default function LeadsView({
               type="button"
               aria-pressed={on}
               onClick={() => setFilters({ ...q.filters, q: filters.q })}
-              title={q.key === "overdue" ? "Leads with a follow-up whose due time has passed and isn't ticked off" : q.key === "incomplete" ? "People who started a website form and gave their contact details but haven't sent it yet" : undefined}
+              title={q.key === "overdue" ? en("Leads with a follow-up whose due time has passed and isn't ticked off") : q.key === "incomplete" ? en("People who started a website form and gave their contact details but haven't sent it yet") : undefined}
               className={`rounded-full border px-3 py-1.5 text-xs font-medium ${on ? "border-cyan-700 bg-cyan-700 text-white" : "border-border bg-card hover:bg-muted"}`}
             >
               {q.label}
-              {count ? <span className="ml-1 tabular-nums opacity-80">{count}</span> : null}
+              {count ? <span className="ms-1 tabular-nums opacity-80">{count}</span> : null}
             </button>
           );
         })}
@@ -226,11 +226,11 @@ export default function LeadsView({
           const on = same(v.filters, filters);
           return (
             <span key={v.id} className={`inline-flex items-center rounded-full border text-xs font-medium ${on ? "border-cyan-700 bg-cyan-700 text-white" : "border-border bg-card"}`}>
-              <button type="button" onClick={() => { setFilters(v.filters); setSearch(v.filters.q ?? ""); }} className="inline-flex items-center gap-1 py-1.5 pl-3 pr-1.5">
+              <button type="button" onClick={() => { setFilters(v.filters); setSearch(v.filters.q ?? ""); }} className="inline-flex items-center gap-1 py-1.5 ps-3 pe-1.5">
                 <Bookmark aria-hidden="true" className="h-3 w-3" />
                 {v.name}
               </button>
-              <button type="button" aria-label={`Delete view ${v.name}`} onClick={() => deleteView(v.id)} className="rounded-full py-1.5 pr-2 opacity-60 hover:opacity-100">
+              <button type="button" aria-label={`Delete view ${v.name}`} onClick={() => deleteView(v.id)} className="rounded-full py-1.5 pe-2 opacity-60 hover:opacity-100">
                 <X aria-hidden="true" className="h-3 w-3" />
               </button>
             </span>
@@ -238,7 +238,7 @@ export default function LeadsView({
         })}
         {!isQuick && !views.some((v) => same(v.filters, filters)) && (
           <button type="button" onClick={saveView} className="inline-flex items-center gap-1 rounded-full border border-dashed border-border px-3 py-1.5 text-xs text-muted-foreground hover:bg-muted">
-            <Bookmark aria-hidden="true" className="h-3 w-3" /> Save this view
+            <Bookmark aria-hidden="true" className="h-3 w-3" />{en(" Save this view")}
           </button>
         )}
       </div>
@@ -246,63 +246,63 @@ export default function LeadsView({
       {/* Search, filters, layout, export */}
       <div className="flex flex-wrap items-center gap-2">
         <label className="relative min-w-56 flex-1">
-          <span className="sr-only">Search leads</span>
-          <Search aria-hidden="true" className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <input className={`${input} w-full pl-9`} placeholder="Search name, email, phone, course, source, tag or question" value={search} onChange={(e) => setSearch(e.target.value)} />
+          <span className="sr-only">{en("Search leads")}</span>
+          <Search aria-hidden="true" className="pointer-events-none absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <input className={`${input} w-full ps-9`} placeholder={en("Search name, email, phone, course, source, tag or question")} value={search} onChange={(e) => setSearch(e.target.value)} />
         </label>
         <button type="button" onClick={() => setMore(!more)} aria-expanded={more} className={`inline-flex items-center gap-1.5 rounded-lg border px-3 py-2 text-sm ${advanced ? "border-cyan-600 text-cyan-800 dark:text-cyan-300" : "border-border"} hover:bg-muted`}>
-          <SlidersHorizontal aria-hidden="true" className="h-4 w-4" /> Filters
+          <SlidersHorizontal aria-hidden="true" className="h-4 w-4" />{en(" Filters")}
         </button>
         <label className="inline-flex items-center gap-1.5 text-sm">
-          <span className="sr-only">Sort</span>
+          <span className="sr-only">{en("Sort")}</span>
           <select value={filters.sort ?? ""} onChange={(e) => setFilters({ ...filters, sort: e.target.value || undefined, dir: undefined })} className={`${input} py-2`}>
-            <option value="">Recent activity first</option>
-            <option value="received">Newest received first</option>
-            <option value="followup">Next follow-up first</option>
-            <option value="contact">Last contacted first</option>
-            <option value="name">Name A–Z</option>
-            <option value="course">Interested in A–Z</option>
-            <option value="stage">Stage (pipeline order)</option>
-            <option value="owner">Owner A–Z</option>
+            <option value="">{en("Recent activity first")}</option>
+            <option value="received">{en("Newest received first")}</option>
+            <option value="followup">{en("Next follow-up first")}</option>
+            <option value="contact">{en("Last contacted first")}</option>
+            <option value="name">{en("Name A–Z")}</option>
+            <option value="course">{en("Interested in A–Z")}</option>
+            <option value="stage">{en("Stage (pipeline order)")}</option>
+            <option value="owner">{en("Owner A–Z")}</option>
           </select>
         </label>
-        <div className="inline-flex rounded-lg border border-border p-0.5" role="group" aria-label="Layout">
+        <div className="inline-flex rounded-lg border border-border p-0.5" role="group" aria-label={en("Layout")}>
           <button type="button" aria-pressed={layout === "table"} onClick={() => switchLayout("table")} className={`inline-flex items-center gap-1 rounded-md px-2.5 py-1.5 text-sm ${layout === "table" ? "bg-muted font-medium" : "text-muted-foreground"}`}>
-            <List aria-hidden="true" className="h-4 w-4" /> Table
+            <List aria-hidden="true" className="h-4 w-4" />{en(" Table")}
           </button>
           <button type="button" aria-pressed={layout === "board"} onClick={() => switchLayout("board")} className={`inline-flex items-center gap-1 rounded-md px-2.5 py-1.5 text-sm ${layout === "board" ? "bg-muted font-medium" : "text-muted-foreground"}`}>
-            <KanbanSquare aria-hidden="true" className="h-4 w-4" /> Board
+            <KanbanSquare aria-hidden="true" className="h-4 w-4" />{en(" Board")}
           </button>
         </div>
-        <button type="button" onClick={exportCsv} className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-2 text-sm hover:bg-muted" title="Download the leads shown as a CSV file">
-          <Download aria-hidden="true" className="h-4 w-4" /> Export
+        <button type="button" onClick={exportCsv} className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-2 text-sm hover:bg-muted" title={en("Download the leads shown as a CSV file")}>
+          <Download aria-hidden="true" className="h-4 w-4" />{en(" Export")}
         </button>
       </div>
 
       {more && (
         <div className="grid gap-2 rounded-xl border border-border bg-muted/30 p-3 sm:grid-cols-2 lg:grid-cols-6">
-          <Select label="Stage" value={filters.stage ?? ""} onChange={(v) => setFilters({ ...filters, stage: v || undefined })} options={STAGES.map((s) => [s, en(STAGE_LABEL[s])])} />
+          <Select label={en("Stage")} value={filters.stage ?? ""} onChange={(v) => setFilters({ ...filters, stage: v || undefined })} options={STAGES.map((s) => [s, en(STAGE_LABEL[s])])} />
           <Select
-            label="Owner"
+            label={en("Owner")}
             value={filters.owner ?? ""}
             onChange={(v) => setFilters({ ...filters, owner: v || undefined })}
             options={[["me", "Me"], ["none", "Unassigned"], ...activeTeam.map((m) => [m.id, m.name] as [string, string])]}
           />
-          <Select label="Request" value={filters.type ?? ""} onChange={(v) => setFilters({ ...filters, type: v || undefined })} options={[["course", "Course inquiry"], ["guidance", "Career guidance"]]} />
-          <Select label="Source" value={filters.source ?? ""} onChange={(v) => setFilters({ ...filters, source: v || undefined })} options={(data?.sources ?? []).map((s) => [s, s])} />
+          <Select label={en("Request")} value={filters.type ?? ""} onChange={(v) => setFilters({ ...filters, type: v || undefined })} options={[["course", "Course inquiry"], ["guidance", "Career guidance"]]} />
+          <Select label={en("Source")} value={filters.source ?? ""} onChange={(v) => setFilters({ ...filters, source: v || undefined })} options={(data?.sources ?? []).map((s) => [s, s])} />
           <Select
-            label="Received"
+            label={en("Received")}
             value={RANGES.find((r) => r[2] === filters.from)?.[0] ?? (filters.from ? "custom" : "")}
             onChange={(v) => setFilters({ ...filters, from: RANGES.find((r) => r[0] === v)?.[2] })}
             options={RANGES.map((r) => [r[0], r[1]])}
           />
-          <Select label="Tag" value={filters.tag ?? ""} onChange={(v) => setFilters({ ...filters, tag: v || undefined })} options={(data?.tags ?? []).map((t) => [t, t])} />
+          <Select label={en("Tag")} value={filters.tag ?? ""} onChange={(v) => setFilters({ ...filters, tag: v || undefined })} options={(data?.tags ?? []).map((t) => [t, t])} />
           <div className="flex items-center gap-3 sm:col-span-2 lg:col-span-6">
             <label className="flex items-center gap-2 text-sm">
-              <input type="checkbox" checked={!!filters.overdue} onChange={(e) => setFilters({ ...filters, overdue: e.target.checked || undefined })} /> Follow-up overdue only
+              <input type="checkbox" checked={!!filters.overdue} onChange={(e) => setFilters({ ...filters, overdue: e.target.checked || undefined })} />{en(" Follow-up overdue only")}
             </label>
-            <button type="button" className="ml-auto text-sm text-cyan-700 hover:underline dark:text-cyan-400" onClick={() => { setFilters({}); setSearch(""); }}>
-              Clear filters
+            <button type="button" className="ms-auto text-sm text-cyan-700 hover:underline dark:text-cyan-400" onClick={() => { setFilters({}); setSearch(""); }}>
+              {en("Clear filters")}
             </button>
           </div>
         </div>
@@ -310,7 +310,7 @@ export default function LeadsView({
 
       {data?.me === null && filters.owner === "me" && (
         <p className="rounded-lg bg-amber-500/10 px-3 py-2 text-sm text-amber-900 dark:text-amber-200">
-          You&apos;re not on your institute&apos;s team list yet, so no leads are yours. Ask your admin to add you with your sign-in email.
+          {en("You're not on your institute's team list yet, so no leads are yours. Ask your admin to add you with your sign-in email.")}
         </p>
       )}
       {message && (
@@ -328,8 +328,8 @@ export default function LeadsView({
       {selected.size > 0 && (
         <div className="sticky top-16 z-10 flex flex-wrap items-center gap-2 rounded-xl border border-cyan-600/40 bg-card p-2.5 shadow-sm">
           <span className="px-1 text-sm font-medium">{selected.size} selected</span>
-          <BulkSelect label="Assign to…" onPick={(v) => bulk({ ownerSet: true, ownerMemberId: v === "none" ? null : v }, "Assigned")} options={[["none", "Unassigned"], ...activeTeam.map((m) => [m.id, m.name] as [string, string])]} />
-          <BulkSelect label="Move to…" onPick={(v) => bulk({ stage: v }, `Moved to ${en(STAGE_LABEL[v])}`)} options={STAGES.filter((s) => s !== "Lost").map((s) => [s, en(STAGE_LABEL[s])])} />
+          <BulkSelect label={en("Assign to…")} onPick={(v) => bulk({ ownerSet: true, ownerMemberId: v === "none" ? null : v }, "Assigned")} options={[["none", "Unassigned"], ...activeTeam.map((m) => [m.id, m.name] as [string, string])]} />
+          <BulkSelect label={en("Move to…")} onPick={(v) => bulk({ stage: v }, `Moved to ${en(STAGE_LABEL[v])}`)} options={STAGES.filter((s) => s !== "Lost").map((s) => [s, en(STAGE_LABEL[s])])} />
           <button
             type="button"
             className="rounded-lg border border-border px-2.5 py-1.5 text-sm hover:bg-muted"
@@ -338,11 +338,11 @@ export default function LeadsView({
               if (t?.trim()) bulk({ addTag: t.trim() }, `Tagged "${t.trim()}"`);
             }}
           >
-            Add tag
+            {en("Add tag")}
           </button>
-          {(data?.tags.length ?? 0) > 0 && <BulkSelect label="Remove tag…" onPick={(v) => bulk({ removeTag: v }, `Removed "${v}"`)} options={(data?.tags ?? []).map((t) => [t, t])} />}
-          <button type="button" className="ml-auto rounded-lg px-2.5 py-1.5 text-sm text-muted-foreground hover:bg-muted" onClick={() => setSelected(new Set())}>
-            Clear
+          {(data?.tags.length ?? 0) > 0 && <BulkSelect label={en("Remove tag…")} onPick={(v) => bulk({ removeTag: v }, `Removed "${v}"`)} options={(data?.tags ?? []).map((t) => [t, t])} />}
+          <button type="button" className="ms-auto rounded-lg px-2.5 py-1.5 text-sm text-muted-foreground hover:bg-muted" onClick={() => setSelected(new Set())}>
+            {en("Clear")}
           </button>
         </div>
       )}
@@ -353,26 +353,26 @@ export default function LeadsView({
         <Empty />
       ) : layout === "table" ? (
         <div className="overflow-x-auto rounded-2xl border border-border bg-card">
-          <table className="w-full text-left text-sm">
+          <table className="w-full text-start text-sm">
             <thead className="border-b border-border bg-muted/40 text-xs text-muted-foreground">
               <tr>
                 <th className="w-10 px-3 py-2.5">
-                  <input type="checkbox" aria-label="Select all shown" checked={allChecked} onChange={() => setSelected(allChecked ? new Set() : new Set(visibleIds))} />
+                  <input type="checkbox" aria-label={en("Select all shown")} checked={allChecked} onChange={() => setSelected(allChecked ? new Set() : new Set(visibleIds))} />
                 </th>
-                <SortHeader label="Lead" sort="name" filters={filters} setFilters={setFilters} />
-                <SortHeader label="Interested in" sort="course" filters={filters} setFilters={setFilters} />
-                <SortHeader label="Stage" sort="stage" filters={filters} setFilters={setFilters} />
-                <SortHeader label="Owner" sort="owner" filters={filters} setFilters={setFilters} />
-                <SortHeader label="Next follow-up" sort="followup" filters={filters} setFilters={setFilters} />
-                <SortHeader label="Last contact" sort="contact" filters={filters} setFilters={setFilters} />
-                <SortHeader label="Received" sort="received" filters={filters} setFilters={setFilters} />
+                <SortHeader label={en("Lead")} sort="name" filters={filters} setFilters={setFilters} />
+                <SortHeader label={en("Interested in")} sort="course" filters={filters} setFilters={setFilters} />
+                <SortHeader label={en("Stage")} sort="stage" filters={filters} setFilters={setFilters} />
+                <SortHeader label={en("Owner")} sort="owner" filters={filters} setFilters={setFilters} />
+                <SortHeader label={en("Next follow-up")} sort="followup" filters={filters} setFilters={setFilters} />
+                <SortHeader label={en("Last contact")} sort="contact" filters={filters} setFilters={setFilters} />
+                <SortHeader label={en("Received")} sort="received" filters={filters} setFilters={setFilters} />
               </tr>
             </thead>
             <tbody>
               {leads.length === 0 && (
                 <tr>
                   <td colSpan={8} className="px-3 py-10 text-center text-muted-foreground">
-                    No leads match. <button type="button" className="text-cyan-700 hover:underline dark:text-cyan-400" onClick={() => { setFilters({}); setSearch(""); }}>Show all leads</button>
+                    {en("No leads match. ")}<button type="button" className="text-cyan-700 hover:underline dark:text-cyan-400" onClick={() => { setFilters({}); setSearch(""); }}>{en("Show all leads")}</button>
                   </td>
                 </tr>
               )}
@@ -382,52 +382,52 @@ export default function LeadsView({
                     <input type="checkbox" aria-label={`Select ${l.name ?? l.email ?? "lead"}`} checked={selected.has(l.leadId)} onChange={() => toggle(l.leadId)} />
                   </td>
                   <td className="px-3 py-2.5">
-                    <button type="button" className="text-left font-medium hover:underline" onClick={(e) => { e.stopPropagation(); openLead(l.leadId); }}>
+                    <button type="button" className="text-start font-medium hover:underline" onClick={(e) => { e.stopPropagation(); openLead(l.leadId); }}>
                       {l.name || l.email || "Unnamed lead"}
                     </button>
                     <div className="flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground">
                       <span>{[l.email, l.phone].filter(Boolean).join(" · ") || "No contact details"}</span>
-                      {l.duplicate && <span className="inline-flex items-center gap-0.5 text-amber-800 dark:text-amber-300" title="Another inquiry has the same email"><AlertTriangle aria-hidden="true" className="h-3 w-3" />Duplicate</span>}
-                      {l.doNotContact && <span className="inline-flex items-center gap-0.5 text-red-700 dark:text-red-400"><Ban aria-hidden="true" className="h-3 w-3" />Do not contact</span>}
+                      {l.duplicate && <span className="inline-flex items-center gap-0.5 text-amber-800 dark:text-amber-300" title={en("Another inquiry has the same email")}><AlertTriangle aria-hidden="true" className="h-3 w-3" />{en("Duplicate")}</span>}
+                      {l.doNotContact && <span className="inline-flex items-center gap-0.5 text-red-700 dark:text-red-400"><Ban aria-hidden="true" className="h-3 w-3" />{en("Do not contact")}</span>}
                       {l.highPriority && <PriorityBadge />}
                       {l.spam && (
                         <span className="rounded-full border border-zinc-500/30 bg-zinc-500/10 px-1.5 py-0.5 text-[11px] font-medium text-zinc-700 dark:text-zinc-300" title={l.spamReasons ?? undefined}>
-                          Possible spam
+                          {en("Possible spam")}
                         </span>
                       )}
                       {l.incomplete && <IncompleteBadge unconfirmed={l.unconfirmed} />}
                       {l.unconfirmed && !l.incomplete && (
                         <span
                           className="rounded-full border border-sky-500/30 bg-sky-500/10 px-1.5 py-0.5 text-[11px] font-medium text-sky-800 dark:text-sky-300"
-                          title="They haven't clicked the link in the confirmation email yet. The form's automatic messages to them wait until they do."
+                          title={en("They haven't clicked the link in the confirmation email yet. The form's automatic messages to them wait until they do.")}
                         >
-                          Email not confirmed
+                          {en("Email not confirmed")}
                         </span>
                       )}
                       {l.tags.map((t) => <span key={t} className="rounded-full bg-muted px-1.5">{t}</span>)}
                     </div>
                   </td>
                   <td className="px-3 py-2.5">
-                    <span>{l.requestType === "guidance" ? "Career guidance" : (l.course ?? "Course no longer listed")}</span>
-                    <div className="text-xs text-muted-foreground">{l.source}{l.quizShared ? " · quiz shared" : ""}</div>
+                    <span>{l.requestType === "guidance" ? en("Career guidance") : (l.course ?? "Course no longer listed")}</span>
+                    <div className="text-xs text-muted-foreground">{l.source}{l.quizShared ? en(" · quiz shared") : ""}</div>
                   </td>
                   <td className="px-3 py-2.5" onClick={(e) => e.stopPropagation()}>
                     <StageMenu lead={l} onMove={move} />
                   </td>
-                  <td className="px-3 py-2.5">{l.owner ?? <span className="text-muted-foreground">Unassigned</span>}</td>
+                  <td className="px-3 py-2.5">{l.owner ?? <span className="text-muted-foreground">{en("Unassigned")}</span>}</td>
                   <td className={`px-3 py-2.5 whitespace-nowrap ${l.overdue ? "font-medium text-red-700 dark:text-red-400" : ""}`}>
                     {l.nextFollowUpAt ? relative(l.nextFollowUpAt) : <span className="text-muted-foreground">—</span>}
                   </td>
                   <td className="px-3 py-2.5 whitespace-nowrap">
                     {l.awaitingReply ? (
-                      <span className="rounded-full bg-cyan-600/10 px-2 py-0.5 text-xs font-medium text-cyan-800 dark:text-cyan-300">Replied {relative(l.lastReplyAt)}</span>
+                      <span className="rounded-full bg-cyan-600/10 px-2 py-0.5 text-xs font-medium text-cyan-800 dark:text-cyan-300">{en("Replied ")}{relative(l.lastReplyAt)}</span>
                     ) : l.lastContactAt ? (
                       <span className="text-muted-foreground">{relative(l.lastContactAt)}</span>
                     ) : l.stage !== "New" ? (
                       // Moved on (or imported at a later stage) with no contact recorded here
-                      <span className="text-muted-foreground" title="No contact recorded in Edulexa">—</span>
+                      <span className="text-muted-foreground" title={en("No contact recorded in Edulexa")}>—</span>
                     ) : (
-                      <span className="text-xs font-medium text-amber-800 dark:text-amber-300">Not contacted</span>
+                      <span className="text-xs font-medium text-amber-800 dark:text-amber-300">{en("Not contacted")}</span>
                     )}
                   </td>
                   <td className="px-3 py-2.5 whitespace-nowrap text-muted-foreground" title={new Date(l.createdAt).toLocaleString()}>
@@ -440,12 +440,12 @@ export default function LeadsView({
           {data && data.total > 0 && (
             <div className="flex flex-wrap items-center justify-between gap-2 border-t border-border px-3 py-2.5 text-xs text-muted-foreground">
               <span>
-                Showing {leads.length.toLocaleString()} of {data.total.toLocaleString()}
+                {en("Showing ")}{leads.length.toLocaleString()} of {data.total.toLocaleString()}
                 {data.total !== (data.totalAll ?? data.total) ? ` matching (${(data.totalAll ?? data.total).toLocaleString()} in all)` : ""}
               </span>
               {data.hasMore && (
                 <button type="button" onClick={loadMore} disabled={loadingMore} className="rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-foreground hover:bg-muted disabled:opacity-50">
-                  {loadingMore ? "Loading…" : "Load 50 more"}
+                  {loadingMore ? en("Loading…") : en("Load 50 more")}
                 </button>
               )}
             </div>
@@ -459,11 +459,12 @@ export default function LeadsView({
 }
 
 function Select({ label, value, onChange, options }: { label: string; value: string; onChange: (v: string) => void; options: [string, string][] }) {
+  const en = useEn();
   return (
     <label className="text-xs font-medium text-muted-foreground">
       {label}
       <select className={`${input} mt-1 w-full`} value={value} onChange={(e) => onChange(e.target.value)}>
-        <option value="">Any</option>
+        <option value="">{en("Any")}</option>
         {options.map(([v, l]) => (
           <option key={v} value={v}>
             {l}
@@ -496,7 +497,7 @@ function StageMenu({ lead, onMove }: { lead: LeadRow; onMove: (l: LeadRow, s: st
   const en = useEn();
   return (
     <label className="relative inline-flex">
-      <span className="sr-only">Stage for {lead.name}</span>
+      <span className="sr-only">{en("Stage for ")}{lead.name}</span>
       <StageBadge stage={lead.stage} />
       <select value={lead.stage} onChange={(e) => onMove(lead, e.target.value)} className="absolute inset-0 cursor-pointer opacity-0">
         {STAGES.map((s) => (
@@ -635,22 +636,22 @@ function BoardColumn({
             onDragEnd={() => setDragging(null)}
             className="cursor-grab rounded-xl border border-border bg-card p-2.5 text-sm shadow-sm active:cursor-grabbing"
           >
-            <button type="button" onClick={() => openLead(l.leadId)} className="block w-full text-left font-medium hover:underline">
+            <button type="button" onClick={() => openLead(l.leadId)} className="block w-full text-start font-medium hover:underline">
               {l.name || l.email || "Unnamed lead"}
             </button>
-            <p className="truncate text-xs text-muted-foreground">{l.requestType === "guidance" ? "Career guidance" : (l.course ?? "Course")}</p>
+            <p className="truncate text-xs text-muted-foreground">{l.requestType === "guidance" ? en("Career guidance") : (l.course ?? "Course")}</p>
             {l.highPriority && (
               <p className="mt-1">
                 <PriorityBadge />
               </p>
             )}
-            {l.awaitingReply && <p className="mt-1 inline-block rounded-full bg-cyan-600/10 px-2 py-0.5 text-[11px] font-medium text-cyan-800 dark:text-cyan-300">Replied, needs answer</p>}
+            {l.awaitingReply && <p className="mt-1 inline-block rounded-full bg-cyan-600/10 px-2 py-0.5 text-[11px] font-medium text-cyan-800 dark:text-cyan-300">{en("Replied, needs answer")}</p>}
             <p className="mt-1.5 truncate text-xs text-muted-foreground">{l.owner ?? "Unassigned"}</p>
             <p className={`text-xs ${l.overdue ? "font-medium text-red-700 dark:text-red-400" : "text-muted-foreground"}`}>
-              {l.nextFollowUpAt ? `${l.overdue ? "Follow-up overdue" : "Next follow-up"} ${relative(l.nextFollowUpAt)}` : "No follow-up scheduled"}
+              {l.nextFollowUpAt ? `${l.overdue ? "Follow-up overdue" : "Next follow-up"} ${relative(l.nextFollowUpAt)}` : en("No follow-up scheduled")}
             </p>
             <button type="button" onClick={() => openLead(l.leadId)} className="mt-1.5 w-full rounded-md border border-cyan-600/40 px-1.5 py-1 text-xs font-medium text-cyan-800 hover:bg-cyan-600/10 dark:text-cyan-300">
-              Open: notes, calls, follow-ups
+              {en("Open: notes, calls, follow-ups")}
             </button>
             <select aria-label={`Move ${l.name ?? "lead"}`} value={l.stage} onChange={(e) => onMove(l, e.target.value)} className="mt-1.5 w-full rounded-md border border-border bg-background px-1.5 py-1 text-xs">
               {STAGES.map((s) => (
@@ -664,26 +665,27 @@ function BoardColumn({
         {!hidden && hasMore && (
           <li>
             <button type="button" disabled={busy} onClick={() => load(page + 1)} className="w-full rounded-lg border border-dashed border-border py-1.5 text-xs font-medium hover:bg-muted disabled:opacity-50">
-              {busy ? "Loading…" : `Load more (${((total ?? 0) - shown.length).toLocaleString()} more)`}
+              {busy ? en("Loading…") : `Load more (${((total ?? 0) - shown.length).toLocaleString()} more)`}
             </button>
           </li>
         )}
-        {!hidden && !busy && total === 0 && <li className="px-1.5 py-4 text-center text-xs text-muted-foreground">Drop a lead here</li>}
-        {hidden && <li className="px-1.5 py-4 text-center text-xs text-muted-foreground">Filtered out</li>}
+        {!hidden && !busy && total === 0 && <li className="px-1.5 py-4 text-center text-xs text-muted-foreground">{en("Drop a lead here")}</li>}
+        {hidden && <li className="px-1.5 py-4 text-center text-xs text-muted-foreground">{en("Filtered out")}</li>}
       </ul>
     </section>
   );
 }
 
 function Empty() {
+  const en = useEn();
   return (
     <div className="rounded-2xl border border-dashed border-border p-10 text-center">
-      <p className="font-medium">No leads yet</p>
+      <p className="font-medium">{en("No leads yet")}</p>
       <p className="mx-auto mt-1 max-w-md text-sm text-muted-foreground">
-        Leads arrive when people ask about your courses on Edulexa, request career guidance from you, or fill in the guidance form on your website.
+        {en("Leads arrive when people ask about your courses on Edulexa, request career guidance from you, or fill in the guidance form on your website.")}
       </p>
       <Link href="/institute/guidance" className="mt-3 inline-block text-sm text-cyan-700 hover:underline dark:text-cyan-400">
-        Get the form for your website
+        {en("Get the form for your website")}
       </Link>
     </div>
   );
@@ -715,12 +717,13 @@ function SortHeader({ label, sort, filters, setFilters }: { label: string; sort:
 
 /** A website form saved part way (not sent yet) */
 function IncompleteBadge({ unconfirmed }: { unconfirmed?: boolean }) {
+  const en = useEn();
   return (
     <span
       className="rounded-full border border-amber-500/30 bg-amber-500/10 px-1.5 py-0.5 text-[11px] font-medium text-amber-800 dark:text-amber-300"
       title={`Started your website form but hasn't sent it yet${unconfirmed ? "; email not confirmed" : ""}`}
     >
-      Incomplete
+      {en("Incomplete")}
     </span>
   );
 }

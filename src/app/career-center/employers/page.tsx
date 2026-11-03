@@ -5,6 +5,7 @@ import { useApi } from "@/lib/appAuth";
 import { useCareerShell } from "@/components/career/CareerShell";
 import { Badge, Button, EmptyState, ErrorBanner, Field, Loading, PageHeader, SuccessBanner, formatDate, useLoad, useCareerT } from "@/components/career/ui";
 import { RELATIONSHIP_KEYS, RELATIONSHIP_TONES, useRelationshipLabels, useVerification } from "@/components/career/coreLabels";
+import { useEn } from "@/lib/english/EnglishProvider";
 
 interface EmployerRequest {
   id: string;
@@ -30,6 +31,7 @@ interface EmployerRequest {
 const TABS = RELATIONSHIP_KEYS;
 
 export default function CareerCenterEmployersPage() {
+  const en = useEn();
   const tr = useCareerT("careerCenterEmployers");
   const VERIFICATION = useVerification();
   const STATUS = useRelationshipLabels();
@@ -111,7 +113,7 @@ export default function CareerCenterEmployersPage() {
                     </div>
                   </div>
                   {r.employer?.flagReason && <p className="mt-2 text-sm text-red-700 dark:text-red-400">{tr("flaggedFlagReason", { flagReason: r.employer.flagReason })}</p>}
-                  {r.requestNote && <p className="mt-3 rounded-md bg-muted p-3 text-sm">&ldquo;{r.requestNote}&rdquo;</p>}
+                  {r.requestNote && <p className="mt-3 rounded-md bg-muted p-3 text-sm">{en("“")}{r.requestNote}{en("”")}</p>}
                   <p className="mt-2 text-xs text-muted-foreground">
                     {tr("requestedRequestedAt", { requestedAt: formatDate(r.requestedAt, true) })}
                     {r.decidedAt && tr("decidedDecidedAt", { decidedAt: formatDate(r.decidedAt, true) })}

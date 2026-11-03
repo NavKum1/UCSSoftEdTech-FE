@@ -136,16 +136,15 @@ function ChallengeResults() {
   return (
     <div className="space-y-8">
       <header>
-        <h1 className="text-2xl font-semibold tracking-tight">Challenge results</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">{en("Challenge results")}</h1>
         <p className="mt-1 max-w-3xl text-sm text-muted-foreground">
-          How candidates did on each coding challenge, from graded results only: the share of hidden tests passed, or a mentor&apos;s adjusted score.
-          Integrity signals are reasons to review a submission, not conclusions.
+          {en("How candidates did on each coding challenge, from graded results only: the share of hidden tests passed, or a mentor's adjusted score. Integrity signals are reasons to review a submission, not conclusions.")}
         </p>
       </header>
 
       <section aria-labelledby="cr-lookup" className={`${card} p-5`}>
         <h2 id="cr-lookup" className="text-base font-semibold">
-          Look up a submission
+          {en("Look up a submission")}
         </h2>
         <form
           className="mt-3 flex flex-wrap gap-2"
@@ -157,12 +156,12 @@ function ChallengeResults() {
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Submission id"
-            aria-label="Submission id"
+            placeholder={en("Submission id")}
+            aria-label={en("Submission id")}
             className="min-w-0 flex-1 rounded-xl border border-border bg-background px-3 py-2 font-mono text-sm"
           />
           <button type="submit" disabled={busy} className="inline-flex items-center gap-1.5 rounded-xl bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-500 disabled:opacity-50">
-            <Search aria-hidden="true" className="h-4 w-4" /> Show
+            <Search aria-hidden="true" className="h-4 w-4" />{en(" Show")}
           </button>
         </form>
         {lookupError && <p className="mt-3 text-sm text-red-700 dark:text-red-400">{lookupError}</p>}
@@ -170,31 +169,31 @@ function ChallengeResults() {
           <div className="mt-5 grid gap-4 md:grid-cols-3">
             <div className="rounded-xl border border-border p-4">
               <p className="text-xs text-muted-foreground">{benchmark.challengeTitle ?? "Challenge"}</p>
-              <p className="mt-1 text-3xl font-semibold tabular-nums">{benchmark.score != null ? `${benchmark.score}%` : "Not graded"}</p>
+              <p className="mt-1 text-3xl font-semibold tabular-nums">{benchmark.score != null ? `${benchmark.score}%` : en("Not graded")}</p>
               <p className="text-xs text-muted-foreground">
-                {benchmark.scoreSource === "mentor-adjusted" ? "Mentor-adjusted score" : benchmark.totalTests > 0 ? `${benchmark.passedTests} of ${benchmark.totalTests} hidden tests passed` : "No test results yet"}
+                {benchmark.scoreSource === "mentor-adjusted" ? en("Mentor-adjusted score") : benchmark.totalTests > 0 ? `${benchmark.passedTests} of ${benchmark.totalTests} hidden tests passed` : en("No test results yet")}
               </p>
             </div>
             <div className="rounded-xl border border-border p-4">
-              <p className="text-xs text-muted-foreground">Compared with others who took it</p>
+              <p className="text-xs text-muted-foreground">{en("Compared with others who took it")}</p>
               {benchmark.percentile != null ? (
                 <>
                   <p className="mt-1 text-3xl font-semibold tabular-nums">{benchmark.percentile}th</p>
                   <p className="text-xs text-muted-foreground">
-                    percentile of {benchmark.cohortSize} candidates (median {benchmark.cohortMedianPercent}%)
+                    {en("percentile of ")}{benchmark.cohortSize}{en(" candidates (median ")}{benchmark.cohortMedianPercent}%)
                   </p>
                 </>
               ) : (
                 <p className="mt-1 text-sm text-muted-foreground">
-                  Shown once at least {benchmark.minCohort} others have taken this challenge ({benchmark.cohortSize} so far
+                  {en("Shown once at least ")}{benchmark.minCohort}{en(" others have taken this challenge (")}{benchmark.cohortSize}{en(" so far")}
                   {benchmark.cohortMedianPercent != null ? `, median ${benchmark.cohortMedianPercent}%` : ""}).
                 </p>
               )}
             </div>
             <div className="rounded-xl border border-border p-4">
-              <p className="text-xs text-muted-foreground">For review</p>
+              <p className="text-xs text-muted-foreground">{en("For review")}</p>
               {benchmark.reviewFlags.length === 0 ? (
-                <p className="mt-1 text-sm">No integrity signals were recorded.</p>
+                <p className="mt-1 text-sm">{en("No integrity signals were recorded.")}</p>
               ) : (
                 <ul className="mt-1 space-y-1 text-sm">
                   {benchmark.reviewFlags.map((f) => (
@@ -205,7 +204,7 @@ function ChallengeResults() {
                 </ul>
               )}
               <button type="button" onClick={() => void checkSimilarity()} disabled={busy} className="mt-3 text-sm font-semibold text-indigo-700 hover:underline disabled:opacity-50 dark:text-indigo-300">
-                Compare with other submissions of this challenge
+                {en("Compare with other submissions of this challenge")}
               </button>
               {similarity && (
                 <p className={`mt-2 text-sm ${similarity.needsReview ? "text-amber-700 dark:text-amber-400" : "text-muted-foreground"}`}>
@@ -214,7 +213,7 @@ function ChallengeResults() {
                     <>
                       {" "}
                       <button type="button" className="font-mono text-xs underline" onClick={() => { setQuery(similarity.matchedSubmissionId!); void lookup(similarity.matchedSubmissionId!); }}>
-                        Open the other submission
+                        {en("Open the other submission")}
                       </button>
                     </>
                   )}
@@ -228,7 +227,7 @@ function ChallengeResults() {
       <section aria-labelledby="cr-cohorts">
         <div className="mb-3 flex flex-wrap items-baseline justify-between gap-2">
           <h2 id="cr-cohorts" className="text-base font-semibold">
-            By challenge
+            {en("By challenge")}
           </h2>
           {analytics && (
             <p className="text-xs text-muted-foreground">
@@ -237,21 +236,21 @@ function ChallengeResults() {
           )}
         </div>
         {failed ? (
-          <p className={`${card} p-6 text-sm text-muted-foreground`}>The results couldn&apos;t be loaded. Please refresh the page.</p>
+          <p className={`${card} p-6 text-sm text-muted-foreground`}>{en("The results couldn't be loaded. Please refresh the page.")}</p>
         ) : !analytics ? (
           <div className={`${card} h-40 animate-pulse motion-reduce:animate-none`} aria-busy="true" />
         ) : analytics.challenges.length === 0 ? (
-          <p className={`${card} p-6 text-sm text-muted-foreground`}>No candidate has submitted a challenge yet.</p>
+          <p className={`${card} p-6 text-sm text-muted-foreground`}>{en("No candidate has submitted a challenge yet.")}</p>
         ) : (
           <div className={`${card} overflow-x-auto`}>
             <table className="w-full text-sm">
-              <thead className="border-b border-border text-left text-xs text-muted-foreground">
+              <thead className="border-b border-border text-start text-xs text-muted-foreground">
                 <tr>
-                  <th className="p-3 font-medium">Challenge</th>
-                  <th className="p-3 text-right font-medium">Candidates</th>
-                  <th className="p-3 text-right font-medium">Median tests passed</th>
-                  <th className="p-3 font-medium">Spread (best result per candidate)</th>
-                  <th className="p-3 text-right font-medium">For review</th>
+                  <th className="p-3 font-medium">{en("Challenge")}</th>
+                  <th className="p-3 text-end font-medium">{en("Candidates")}</th>
+                  <th className="p-3 text-end font-medium">{en("Median tests passed")}</th>
+                  <th className="p-3 font-medium">{en("Spread (best result per candidate)")}</th>
+                  <th className="p-3 text-end font-medium">{en("For review")}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
@@ -260,11 +259,11 @@ function ChallengeResults() {
                   return (
                     <tr key={c.sprintId}>
                       <td className="p-3 font-medium">{c.title ?? "Untitled challenge"}</td>
-                      <td className="p-3 text-right tabular-nums">{c.candidates}</td>
-                      <td className="p-3 text-right tabular-nums">{c.medianTestsPassedPercent != null ? `${c.medianTestsPassedPercent}%` : "—"}</td>
+                      <td className="p-3 text-end tabular-nums">{c.candidates}</td>
+                      <td className="p-3 text-end tabular-nums">{c.medianTestsPassedPercent != null ? `${c.medianTestsPassedPercent}%` : "—"}</td>
                       <td className="p-3">
                         {total === 0 ? (
-                          <span className="text-muted-foreground">Not graded yet</span>
+                          <span className="text-muted-foreground">{en("Not graded yet")}</span>
                         ) : (
                           <div className="flex h-3 w-48 overflow-hidden rounded-full bg-muted" role="img" aria-label={BUCKETS.map((b) => `${BUCKET_LABEL[b]}: ${c.distribution[b] ?? 0}`).join(", ")}>
                             {BUCKETS.map((b, i) => (
@@ -278,7 +277,7 @@ function ChallengeResults() {
                           </div>
                         )}
                       </td>
-                      <td className="p-3 text-right tabular-nums">{c.reviewFlagged}</td>
+                      <td className="p-3 text-end tabular-nums">{c.reviewFlagged}</td>
                     </tr>
                   );
                 })}

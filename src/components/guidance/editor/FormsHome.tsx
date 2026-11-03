@@ -17,6 +17,7 @@ import SiteCard from "./SiteCard";
 import { AccessNotice, useLatestRef, useLegacyApi } from "@/lib/legacyApi";
 import GuidanceForm from "@/components/guidance/form/GuidanceForm";
 import type { FormDef } from "@/components/guidance/form/model";
+import { useEn } from "@/lib/english/EnglishProvider";
 
 interface FormRow {
   id: string;
@@ -84,6 +85,7 @@ export default function FormsHome({
   intro: React.ReactNode;
   withProfile?: boolean;
 }) {
+  const en = useEn();
   const q = instituteId ? `?instituteId=${instituteId}` : "";
   const router = useRouter();
   const { apiFetch, ready, access } = useLegacyApi();
@@ -108,12 +110,12 @@ export default function FormsHome({
 
   const load = useCallback(async () => {
     const res = await apiFetch(`/api/guidance-forms${q}`);
-    if (!res.ok) return setNotice({ ok: false, text: "We couldn't load your forms." });
+    if (!res.ok) return setNotice({ ok: false, text: en("We couldn't load your forms.") });
     const d = await res.json();
     setForms(d.forms);
     setCanEdit(d.canEdit);
     setOwner(d.instituteId);
-  }, [apiFetch, q]);
+  }, [apiFetch, q, en]);
   const loadRef = useLatestRef(load);
   useEffect(() => {
     if (ready) loadRef.current();
@@ -139,7 +141,7 @@ export default function FormsHome({
         </div>
         {canEdit && (
           <button type="button" onClick={() => setCreating(true)} className="inline-flex items-center gap-1.5 rounded-lg bg-cyan-700 px-3.5 py-2 text-sm font-medium text-white hover:bg-cyan-800">
-            <Plus aria-hidden="true" className="h-4 w-4" /> New form
+            <Plus aria-hidden="true" className="h-4 w-4" />{en(" New form")}
           </button>
         )}
       </div>
@@ -150,7 +152,7 @@ export default function FormsHome({
         </p>
       )}
 
-      <div role="tablist" aria-label="Forms and messages" className="flex gap-5 border-b border-border text-sm">
+      <div role="tablist" aria-label={en("Forms and messages")} className="flex gap-5 border-b border-border text-sm">
         {(
           [
             ["forms", "Forms"],
@@ -187,56 +189,56 @@ export default function FormsHome({
                     <FileText aria-hidden="true" className="h-4 w-4 text-cyan-700" /> {f.name}
                   </Link>
                   <div className="mt-1 flex flex-wrap gap-1.5 text-[11px]">
-                    {f.isDefault && <Badge tone="cyan">Used for “Ask an advisor”</Badge>}
-                    <Badge tone={f.publicEnabled ? "emerald" : "zinc"}>{f.publicEnabled ? "Public link on" : "Public link off"}</Badge>
-                    <Badge tone="zinc">Version {f.version}</Badge>
-                    {f.hasDraft && <Badge tone="amber">Unpublished changes</Badge>}
+                    {f.isDefault && <Badge tone="cyan">{en("Used for “Ask an advisor”")}</Badge>}
+                    <Badge tone={f.publicEnabled ? "emerald" : "zinc"}>{f.publicEnabled ? en("Public link on") : en("Public link off")}</Badge>
+                    <Badge tone="zinc">{en("Version ")}{f.version}</Badge>
+                    {f.hasDraft && <Badge tone="amber">{en("Unpublished changes")}</Badge>}
                   </div>
                 </div>
-                <span className="shrink-0 text-right text-xs text-muted-foreground">
+                <span className="shrink-0 text-end text-xs text-muted-foreground">
                   <span className="block text-lg font-semibold tabular-nums text-foreground">{f.submissions.toLocaleString()}</span>
                   sent
                 </span>
               </div>
               <div className="mt-auto flex flex-wrap gap-1.5">
                 <Link href={`${basePath}/${f.id}`} className="rounded-lg bg-cyan-700 px-3 py-1.5 text-xs font-medium text-white hover:bg-cyan-800">
-                  {canEdit ? "Edit" : "Open"}
+                  {canEdit ? en("Edit") : en("Open")}
                 </Link>
                 <Link href={`${basePath}/${f.id}?tab=insights`} className="rounded-lg border border-border px-3 py-1.5 text-xs hover:bg-muted">
-                  Insights
+                  {en("Insights")}
                 </Link>
                 <button
                   type="button"
                   onClick={() => navigator.clipboard?.writeText(f.link).then(() => setCopied(f.id))}
-                  title={f.publicEnabled ? undefined : "Works once the public link is on"}
+                  title={f.publicEnabled ? undefined : en("Works once the public link is on")}
                   className="inline-flex items-center gap-1 rounded-lg border border-border px-3 py-1.5 text-xs hover:bg-muted"
                 >
-                  <Copy aria-hidden="true" className="h-3 w-3" /> {copied === f.id ? "Copied" : "Copy link"}
+                  <Copy aria-hidden="true" className="h-3 w-3" /> {copied === f.id ? en("Copied") : en("Copy link")}
                 </button>
                 <button type="button" onClick={() => setEmbedFor(f)} className="inline-flex items-center gap-1 rounded-lg border border-border px-3 py-1.5 text-xs hover:bg-muted">
-                  <Code2 aria-hidden="true" className="h-3 w-3" /> Put on your website
+                  <Code2 aria-hidden="true" className="h-3 w-3" />{en(" Put on your website")}
                 </button>
                 {f.publicEnabled && (
                   <a href={f.link} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 rounded-lg border border-border px-3 py-1.5 text-xs hover:bg-muted">
-                    <ExternalLink aria-hidden="true" className="h-3 w-3" /> Open
+                    <ExternalLink aria-hidden="true" className="h-3 w-3" />{en(" Open")}
                   </a>
                 )}
                 {canEdit && (
                   <>
                     <button type="button" onClick={() => createCopy(apiFetch, q, f, router, basePath, setNotice)} className="rounded-lg border border-border px-3 py-1.5 text-xs hover:bg-muted">
-                      Duplicate
+                      {en("Duplicate")}
                     </button>
                     {!f.isDefault && (
                       <>
                         <button type="button" onClick={() => act(`/api/guidance-forms/${f.id}/default`, "POST", `"${f.name}" is now used for “Ask an advisor”.`)} className="inline-flex items-center gap-1 rounded-lg border border-border px-3 py-1.5 text-xs hover:bg-muted">
-                          <Star aria-hidden="true" className="h-3 w-3" /> Use for “Ask an advisor”
+                          <Star aria-hidden="true" className="h-3 w-3" />{en(" Use for “Ask an advisor”")}
                         </button>
                         <button
                           type="button"
                           onClick={() => window.confirm(`Remove "${f.name}"? Its link stops working; inquiries already sent are kept.`) && act(`/api/guidance-forms/${f.id}`, "DELETE", `"${f.name}" removed.`)}
                           className="inline-flex items-center gap-1 rounded-lg border border-border px-3 py-1.5 text-xs text-red-700 hover:bg-red-500/10 dark:text-red-400"
                         >
-                          <Trash2 aria-hidden="true" className="h-3 w-3" /> Remove
+                          <Trash2 aria-hidden="true" className="h-3 w-3" />{en(" Remove")}
                         </button>
                       </>
                     )}
@@ -256,7 +258,7 @@ export default function FormsHome({
           <div role="dialog" aria-modal="true" aria-labelledby="embed-title" className="my-8 w-full max-w-5xl rounded-2xl bg-card p-5 shadow-xl" onClick={(e) => e.stopPropagation()}>
             <div className="mb-4 flex items-center justify-between gap-3">
               <h2 id="embed-title" className="text-base font-semibold">
-                Put “{embedFor.name}” on your website
+                {en("Put “")}{embedFor.name}{en("” on your website")}
               </h2>
               <div className="flex items-center gap-2">
                 {canEdit && !embedFor.publicEnabled && (
@@ -271,10 +273,10 @@ export default function FormsHome({
                     }}
                     className="rounded-lg bg-cyan-700 px-3 py-1.5 text-xs font-medium text-white hover:bg-cyan-800"
                   >
-                    Turn on the public link
+                    {en("Turn on the public link")}
                   </button>
                 )}
-                <button type="button" onClick={() => setEmbedFor(null)} aria-label="Close" className="rounded-lg p-1.5 hover:bg-muted">
+                <button type="button" onClick={() => setEmbedFor(null)} aria-label={en("Close")} className="rounded-lg p-1.5 hover:bg-muted">
                   <X aria-hidden="true" className="h-5 w-5" />
                 </button>
               </div>
@@ -332,6 +334,7 @@ function NewForm({
   onClose: () => void;
   onCreated: (id: string) => void;
 }) {
+  const en = useEn();
   const [templates, setTemplates] = useState<Template[]>([]);
   const [groups, setGroups] = useState<string[]>([]);
   const [country, setCountry] = useState("all");
@@ -347,8 +350,8 @@ function NewForm({
         setTemplates(d.templates);
         setGroups(d.groups ?? []);
       })
-      .catch(() => setError("Templates couldn't be loaded."));
-  }, [apiFetch]);
+      .catch(() => setError(en("Templates couldn't be loaded.")));
+  }, [apiFetch, en]);
 
   const chosen = templates.find((t) => t.key === pick);
   const countries = [...new Set(templates.map((t) => t.country).filter((c) => c !== "any"))];
@@ -372,21 +375,21 @@ function NewForm({
       <div role="dialog" aria-modal="true" aria-labelledby="new-form-title" className="flex max-h-[90vh] w-full max-w-5xl flex-col overflow-hidden rounded-2xl bg-card shadow-xl" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-between border-b border-border px-5 py-3">
           <h2 id="new-form-title" className="text-base font-semibold">
-            New form
+            {en("New form")}
           </h2>
-          <button type="button" onClick={onClose} aria-label="Close" className="rounded-lg p-1.5 hover:bg-muted">
+          <button type="button" onClick={onClose} aria-label={en("Close")} className="rounded-lg p-1.5 hover:bg-muted">
             <X aria-hidden="true" className="h-5 w-5" />
           </button>
         </div>
         <div className="grid min-h-0 flex-1 md:grid-cols-[22rem_1fr]">
-          <div className="space-y-2 overflow-y-auto border-r border-border p-4">
+          <div className="space-y-2 overflow-y-auto border-e border-border p-4">
             <div className="flex flex-wrap items-center justify-between gap-2">
-              <p className="text-xs font-medium text-muted-foreground">Start from</p>
+              <p className="text-xs font-medium text-muted-foreground">{en("Start from")}</p>
               {countries.length > 0 && (
                 <label className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                  For
-                  <select aria-label="Show templates for" className="rounded-md border border-border bg-background px-2 py-1 text-xs text-foreground" value={country} onChange={(e) => setCountry(e.target.value)}>
-                    <option value="all">Any country</option>
+                  {en("For")}
+                  <select aria-label={en("Show templates for")} className="rounded-md border border-border bg-background px-2 py-1 text-xs text-foreground" value={country} onChange={(e) => setCountry(e.target.value)}>
+                    <option value="all">{en("Any country")}</option>
                     {countries.map((c) => (
                       <option key={c} value={c}>
                         {COUNTRY_NAMES[c] ?? c}
@@ -410,7 +413,7 @@ function NewForm({
                       type="button"
                       onClick={() => setPick(t.key)}
                       aria-pressed={pick === t.key}
-                      className={`block w-full rounded-xl border p-3 text-left text-sm ${pick === t.key ? "border-cyan-600 bg-cyan-600/5" : "border-border hover:bg-muted"}`}
+                      className={`block w-full rounded-xl border p-3 text-start text-sm ${pick === t.key ? "border-cyan-600 bg-cyan-600/5" : "border-border hover:bg-muted"}`}
                     >
                       <span className="flex items-start justify-between gap-2">
                         <span className="font-medium">{t.name}</span>
@@ -418,11 +421,11 @@ function NewForm({
                           <span className="shrink-0 rounded-full border border-border px-2 py-0.5 text-[11px] text-muted-foreground">{COUNTRY_NAMES[t.country] ?? t.country}</span>
                         )}
                       </span>
-                      <span className="block text-xs text-muted-foreground">For: {t.audience}</span>
+                      <span className="block text-xs text-muted-foreground">{en("For: ")}{t.audience}</span>
                       <span className="mt-1 block text-xs text-muted-foreground">{t.description}</span>
                       {reportOf(t.definition) && <span className="mt-1 block text-xs font-medium text-cyan-800 dark:text-cyan-300">{reportOf(t.definition)}</span>}
                       <span className="mt-1 block text-xs text-muted-foreground">
-                        {t.definition.questions.length} questions · {t.definition.sections.length} {t.definition.sections.length === 1 ? "step" : "steps"}
+                        {t.definition.questions.length}{en(" questions · ")}{t.definition.sections.length} {t.definition.sections.length === 1 ? "step" : "steps"}
                       </span>
                     </button>
                   ))}
@@ -430,17 +433,17 @@ function NewForm({
               );
             })}
             <label className="block pt-2 text-xs font-medium text-muted-foreground">
-              Name
+              {en("Name")}
               <input className={input} value={name} maxLength={120} placeholder={chosen?.name ?? "e.g. Data Science open day 2027"} onChange={(e) => setName(e.target.value)} />
             </label>
             {error && <p className="text-sm text-red-700 dark:text-red-400">{error}</p>}
             <button type="button" disabled={busy || !chosen} onClick={create} className="w-full rounded-lg bg-cyan-700 px-3.5 py-2 text-sm font-medium text-white hover:bg-cyan-800 disabled:opacity-50">
-              Create and edit
+              {en("Create and edit")}
             </button>
-            <p className="text-xs text-muted-foreground">You can change every question before publishing.</p>
+            <p className="text-xs text-muted-foreground">{en("You can change every question before publishing.")}</p>
           </div>
           <div className="overflow-y-auto bg-muted/30 p-5">
-            <p className="mb-3 text-xs font-medium text-muted-foreground">Preview</p>
+            <p className="mb-3 text-xs font-medium text-muted-foreground">{en("Preview")}</p>
             {chosen && (
               <div className="mx-auto max-w-lg rounded-2xl border border-border bg-background p-5">
                 <GuidanceForm
@@ -460,6 +463,7 @@ function NewForm({
 }
 
 function ProfileCard({ apiFetch, q, ready }: { apiFetch: (p: string, i?: RequestInit) => Promise<Response>; q: string; ready: boolean }) {
+  const en = useEn();
   const [p, setP] = useState<Profile>({ city: null, modes: [], feesRange: null, about: null });
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
   useEffect(() => {
@@ -471,23 +475,23 @@ function ProfileCard({ apiFetch, q, ready }: { apiFetch: (p: string, i?: Request
   }, [apiFetch, q, ready]);
   const save = async () => {
     const res = await apiFetch(`/api/guidance-forms/profile${q}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(p) });
-    setMsg(res.ok ? { ok: true, text: "Saved." } : { ok: false, text: "That couldn't be saved." });
+    setMsg(res.ok ? { ok: true, text: en("Saved.") } : { ok: false, text: en("That couldn't be saved.") });
   };
   return (
     <section className={card}>
-      <h2 className="text-base font-semibold">Your institute&apos;s card</h2>
-      <p className="mt-0.5 text-sm text-muted-foreground">Shown when people on Edulexa choose an institute to talk to. Only what you fill in is shown, with your real courses.</p>
+      <h2 className="text-base font-semibold">{en("Your institute's card")}</h2>
+      <p className="mt-0.5 text-sm text-muted-foreground">{en("Shown when people on Edulexa choose an institute to talk to. Only what you fill in is shown, with your real courses.")}</p>
       <div className="mt-3 grid gap-3 sm:grid-cols-2">
         <label className="text-sm">
-          City
+          {en("City")}
           <input className={input} value={p.city ?? ""} maxLength={120} onChange={(e) => setP({ ...p, city: e.target.value })} />
         </label>
         <label className="text-sm">
-          Fees range
-          <input className={input} value={p.feesRange ?? ""} maxLength={200} placeholder="e.g. ₹40,000 to ₹80,000" onChange={(e) => setP({ ...p, feesRange: e.target.value })} />
+          {en("Fees range")}
+          <input className={input} value={p.feesRange ?? ""} maxLength={200} placeholder={en("e.g. ₹40,000 to ₹80,000")} onChange={(e) => setP({ ...p, feesRange: e.target.value })} />
         </label>
         <fieldset className="text-sm sm:col-span-2">
-          <legend>How you teach</legend>
+          <legend>{en("How you teach")}</legend>
           <div className="mt-1 flex gap-3">
             {MODES.map((m) => (
               <label key={m} className="flex items-center gap-1.5">
@@ -498,13 +502,13 @@ function ProfileCard({ apiFetch, q, ready }: { apiFetch: (p: string, i?: Request
           </div>
         </fieldset>
         <label className="text-sm sm:col-span-2">
-          About
+          {en("About")}
           <textarea className={input} rows={3} value={p.about ?? ""} maxLength={600} onChange={(e) => setP({ ...p, about: e.target.value })} />
         </label>
       </div>
       <div className="mt-3 flex items-center gap-3">
         <button type="button" onClick={save} className="rounded-lg bg-cyan-700 px-3.5 py-2 text-sm font-medium text-white hover:bg-cyan-800">
-          Save card
+          {en("Save card")}
         </button>
         {msg && <span className={`text-sm ${msg.ok ? "text-emerald-700 dark:text-emerald-400" : "text-red-700 dark:text-red-400"}`}>{msg.text}</span>}
       </div>

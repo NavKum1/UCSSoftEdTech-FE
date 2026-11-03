@@ -68,15 +68,15 @@ export default function AiDraft({
     <div className="space-y-3 border-b border-border bg-violet-500/5 px-4 py-3 text-sm">
       <div className="flex items-start justify-between gap-2">
         <p className="flex items-center gap-1.5 font-medium">
-          <Sparkles aria-hidden="true" className="h-4 w-4 text-violet-600" /> Draft with AI
+          <Sparkles aria-hidden="true" className="h-4 w-4 text-violet-600" />{en(" Draft with AI")}
         </p>
-        <button type="button" onClick={onClose} aria-label="Close" className="rounded p-1 hover:bg-muted">
+        <button type="button" onClick={onClose} aria-label={en("Close")} className="rounded p-1 hover:bg-muted">
           <X aria-hidden="true" className="h-4 w-4" />
         </button>
       </div>
       <div className="grid gap-2 sm:grid-cols-3">
         <label className="text-xs font-medium text-muted-foreground">
-          The email is
+          {en("The email is")}
           <select value={purpose} onChange={(e) => setPurpose(e.target.value)} className={select}>
             {PURPOSES.map(([v, l]) => (
               <option key={v} value={v}>
@@ -86,7 +86,7 @@ export default function AiDraft({
           </select>
         </label>
         <label className="text-xs font-medium text-muted-foreground">
-          Tone
+          {en("Tone")}
           <select value={tone} onChange={(e) => setTone(e.target.value)} className={select}>
             {TONES.map(([v, l]) => (
               <option key={v} value={v}>
@@ -96,7 +96,7 @@ export default function AiDraft({
           </select>
         </label>
         <label className="text-xs font-medium text-muted-foreground">
-          Language
+          {en("Language")}
           <select value={language} onChange={(e) => setLanguage(e.target.value)} className={select}>
             {LANGUAGES.map((l) => (
               <option key={l}>{l}</option>
@@ -105,23 +105,23 @@ export default function AiDraft({
         </label>
       </div>
       <label className="block text-xs font-medium text-muted-foreground">
-        Anything to include? <span className="font-normal">(optional)</span>
+        {en("Anything to include? ")}<span className="font-normal">{en("(optional)")}</span>
         <textarea
           rows={2}
           maxLength={500}
           value={instructions}
           onChange={(e) => setInstructions(e.target.value)}
-          placeholder="e.g. Mention the weekend batch starting 5 January and the 10% early fee discount"
+          placeholder={en("e.g. Mention the weekend batch starting 5 January and the 10% early fee discount")}
           className={select}
         />
       </label>
       {error && <p className="text-red-700 dark:text-red-400" role="alert">{error}</p>}
       <div className="flex flex-wrap items-center gap-3">
         <button type="button" onClick={write} disabled={busy} className="inline-flex items-center gap-1.5 rounded-lg bg-violet-700 px-3.5 py-1.5 font-medium text-white hover:bg-violet-800 disabled:opacity-50">
-          <Sparkles aria-hidden="true" className="h-4 w-4" /> {busy ? "Writing…" : "Write a draft"}
+          <Sparkles aria-hidden="true" className="h-4 w-4" /> {busy ? en("Writing…") : en("Write a draft")}
         </button>
         <p className="text-xs text-muted-foreground">
-          Uses what they shared and your conversation; facts like fees or dates come only from what you write above. Names, contact details and ID numbers are removed before anything goes to the AI. Check it before sending.
+          {en("Uses what they shared and your conversation; facts like fees or dates come only from what you write above. Names, contact details and ID numbers are removed before anything goes to the AI. Check it before sending.")}
         </p>
       </div>
     </div>

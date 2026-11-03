@@ -5,6 +5,7 @@ import Editor, { type OnMount } from "@monaco-editor/react";
 import type { editor as MonacoEditor, IDisposable } from "monaco-editor";
 import { FileCode2, RotateCcw } from "lucide-react";
 import { normalizeEol, type EditorTelemetry } from "@/lib/editorTelemetry";
+import { useEn } from "@/lib/english/EnglishProvider";
 
 export interface EditorFile {
   name: string;
@@ -94,6 +95,7 @@ export default function MultiFileEditor({
   starterFiles,
   onReady,
 }: MultiFileEditorProps) {
+  const en = useEn();
   const [ordered] = useState(() => orderFiles(files, entryFile));
   const [activeFile, setActiveFile] = useState<string>(() => ordered[0]?.name ?? "");
 
@@ -219,14 +221,14 @@ export default function MultiFileEditor({
     <div className="border border-border rounded-xl overflow-hidden bg-background">
       {(showTabs || starterForActive) && (
         <div className="flex items-center justify-between border-b border-border bg-card/80">
-          <div className="flex items-center overflow-x-auto" role="tablist" aria-label="Project files">
+          <div className="flex items-center overflow-x-auto" role="tablist" aria-label={en("Project files")}>
             {ordered.map((f) => (
               <button
                 key={f.name}
                 role="tab"
                 aria-selected={f.name === activeFile}
                 onClick={() => switchFile(f.name)}
-                className={`flex items-center gap-1.5 px-3 py-2 text-[11px] font-mono whitespace-nowrap border-r border-border transition-colors cursor-pointer ${
+                className={`flex items-center gap-1.5 px-3 py-2 text-[11px] font-mono whitespace-nowrap border-e border-border transition-colors cursor-pointer ${
                   f.name === activeFile
                     ? "bg-background text-foreground font-semibold"
                     : "text-muted-foreground hover:text-foreground hover:bg-muted"
@@ -247,7 +249,7 @@ export default function MultiFileEditor({
               className="flex items-center gap-1 px-3 py-2 text-[11px] text-muted-foreground hover:text-foreground transition-colors cursor-pointer shrink-0"
             >
               <RotateCcw className="w-3.5 h-3.5" />
-              Reset file
+              {en("Reset file")}
             </button>
           )}
         </div>

@@ -9,8 +9,10 @@ import { Button, Card, EmptyState, ErrorBanner, Loading, PageHeader, formatDate,
 import { StatusBadge, type ExperienceDetail, type ExperienceSummary, type Program } from "@/components/career/experiences/shared";
 import { RegistrationForm, toPayload, valuesFrom } from "@/components/career/experiences/RegistrationForm";
 import { ApprenticeshipCard } from "@/components/career/workforce/ApprenticeshipCard";
+import { useEn } from "@/lib/english/EnglishProvider";
 
 export default function StudentExperiencesPage() {
+  const en = useEn();
   const api = useApi();
   const router = useRouter();
   const { schoolId } = useCareerShell();
@@ -22,11 +24,11 @@ export default function StudentExperiencesPage() {
   return (
     <div>
       <PageHeader
-        title="Internships for credit"
-        description="Register an internship or other work experience for academic credit, sign the learning agreement, log your hours and write reflections."
+        title={en("Internships for credit")}
+        description={en("Register an internship or other work experience for academic credit, sign the learning agreement, log your hours and write reflections.")}
         actions={
           !registering && (programs.data?.programs.length ?? 0) > 0 ? (
-            <Button onClick={() => setRegistering(true)}>Register an experience</Button>
+            <Button onClick={() => setRegistering(true)}>{en("Register an experience")}</Button>
           ) : undefined
         }
       />
@@ -34,7 +36,7 @@ export default function StudentExperiencesPage() {
       {/* G15: registered apprenticeship progress and short-term credentials (renders nothing when there are none) */}
       <ApprenticeshipCard />
       {registering && programs.data && (
-        <Card title="Register an experience" className="mb-6">
+        <Card title={en("Register an experience")} className="mb-6">
           <RegistrationForm
             api={api}
             programs={programs.data.programs}
@@ -53,15 +55,15 @@ export default function StudentExperiencesPage() {
             }}
           />
           <Button variant="ghost" className="mt-2" onClick={() => setRegistering(false)}>
-            Cancel
+            {en("Cancel")}
           </Button>
         </Card>
       )}
       {list.loading ? (
         <Loading />
       ) : !list.data?.length ? (
-        <EmptyState title="No experiences yet">
-          {(programs.data?.programs.length ?? 0) > 0 ? "Register an internship to start the approval process." : "Your school hasn't set up a credit program yet."}
+        <EmptyState title={en("No experiences yet")}>
+          {(programs.data?.programs.length ?? 0) > 0 ? en("Register an internship to start the approval process.") : en("Your school hasn't set up a credit program yet.")}
         </EmptyState>
       ) : (
         <ul className="space-y-3">

@@ -121,7 +121,7 @@ function Embedded() {
   const r = fill?.definition.results;
   const showsResults = !!r?.showToPerson && (r.outcomeEnabled || r.matchEnabled);
   const confirmNote = checkEmail && (
-    <div className="rounded-2xl border border-border bg-background p-6 text-left" role="status">
+    <div className="rounded-2xl border border-border bg-background p-6 text-start" role="status">
       <p className="text-lg font-semibold tracking-tight">Please confirm your email</p>
       <p className="mt-1.5 text-[15px] leading-relaxed text-muted-foreground">
         {fill?.instituteName ?? "The institute"} has your request. We sent a link to <span className="font-medium text-foreground">{checkEmail}</span>: click it so they can

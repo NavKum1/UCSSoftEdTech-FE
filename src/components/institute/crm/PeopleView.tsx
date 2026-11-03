@@ -10,6 +10,7 @@ import React, { useCallback, useEffect, useState } from "react";
 import { CalendarCheck, CalendarClock, CheckCircle2, CircleSlash, Clock, FileText, Mail, Search, Send, UserRound, X } from "lucide-react";
 import { useLatestRef } from "@/lib/legacyApi";
 import { crm, relative, StageBadge, type GetToken } from "./api";
+import { useEn } from "@/lib/english/EnglishProvider";
 
 interface PersonRow {
   leadId: string;
@@ -62,6 +63,7 @@ const KIND_ICON: Record<string, React.ComponentType<{ className?: string; "aria-
 };
 
 export default function PeopleView({ getToken, openLead }: { getToken: GetToken; openLead: (id: string) => void }) {
+  const en = useEn();
   const [q, setQ] = useState("");
   const [search, setSearch] = useState("");
   const [rows, setRows] = useState<PersonRow[] | null>(null);
@@ -101,16 +103,16 @@ export default function PeopleView({ getToken, openLead }: { getToken: GetToken;
         }}
       >
         <label className="relative min-w-64 flex-1">
-          <span className="sr-only">Search people</span>
-          <Search aria-hidden="true" className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search by name, email, phone or what they asked about" className="w-full rounded-lg border border-border bg-background py-2 pl-9 pr-3 text-sm" />
+          <span className="sr-only">{en("Search people")}</span>
+          <Search aria-hidden="true" className="absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <input value={q} onChange={(e) => setQ(e.target.value)} placeholder={en("Search by name, email, phone or what they asked about")} className="w-full rounded-lg border border-border bg-background py-2 ps-9 pe-3 text-sm" />
         </label>
         <button type="submit" className="rounded-lg bg-cyan-700 px-3.5 py-2 text-sm font-medium text-white hover:bg-cyan-800">
-          Search
+          {en("Search")}
         </button>
         <span className="text-xs text-muted-foreground">{total.toLocaleString()} {total === 1 ? "person" : "people"}</span>
       </form>
-      <p className="text-xs text-muted-foreground">One profile per person: their inquiries are joined by email (or phone). Possible spam is left out.</p>
+      <p className="text-xs text-muted-foreground">{en("One profile per person: their inquiries are joined by email (or phone). Possible spam is left out.")}</p>
 
       {error && (
         <p role="alert" className="rounded-lg bg-red-500/10 px-3 py-2 text-sm text-red-800 dark:text-red-300">
@@ -121,33 +123,33 @@ export default function PeopleView({ getToken, openLead }: { getToken: GetToken;
       {!rows ? (
         <div className="h-40 animate-pulse rounded-2xl bg-muted motion-reduce:animate-none" aria-busy="true" />
       ) : rows.length === 0 ? (
-        <p className="rounded-2xl border border-dashed border-border p-8 text-center text-sm text-muted-foreground">{search ? "Nobody matches that search." : "No people yet."}</p>
+        <p className="rounded-2xl border border-dashed border-border p-8 text-center text-sm text-muted-foreground">{search ? en("Nobody matches that search.") : en("No people yet.")}</p>
       ) : (
         <div className="overflow-x-auto rounded-2xl border border-border bg-card">
           <table className="w-full text-sm">
-            <thead className="text-left text-xs text-muted-foreground">
+            <thead className="text-start text-xs text-muted-foreground">
               <tr>
-                <th className="px-3 py-2 font-medium">Person</th>
-                <th className="px-3 py-2 font-medium">Stage</th>
-                <th className="px-3 py-2 font-medium">Result</th>
-                <th className="px-3 py-2 font-medium">Meeting</th>
-                <th className="px-3 py-2 font-medium">Inquiries</th>
-                <th className="px-3 py-2 font-medium">Last active</th>
+                <th className="px-3 py-2 font-medium">{en("Person")}</th>
+                <th className="px-3 py-2 font-medium">{en("Stage")}</th>
+                <th className="px-3 py-2 font-medium">{en("Result")}</th>
+                <th className="px-3 py-2 font-medium">{en("Meeting")}</th>
+                <th className="px-3 py-2 font-medium">{en("Inquiries")}</th>
+                <th className="px-3 py-2 font-medium">{en("Last active")}</th>
               </tr>
             </thead>
             <tbody>
               {rows.map((p) => (
                 <tr key={p.leadId} className="cursor-pointer border-t border-border hover:bg-muted/40" onClick={() => setOpen(p.leadId)}>
                   <td className="px-3 py-2">
-                    <button type="button" className="text-left font-medium hover:underline" onClick={(e) => (e.stopPropagation(), setOpen(p.leadId))}>
+                    <button type="button" className="text-start font-medium hover:underline" onClick={(e) => (e.stopPropagation(), setOpen(p.leadId))}>
                       {p.name || p.email || p.phone}
                     </button>
                     <span className="block text-xs text-muted-foreground">{[p.email, p.phone].filter(Boolean).join(" · ")}</span>
                   </td>
-                  <td className="px-3 py-2">{p.incomplete ? <span className="text-xs text-amber-800 dark:text-amber-300">Incomplete</span> : <StageBadge stage={p.stage} />}</td>
+                  <td className="px-3 py-2">{p.incomplete ? <span className="text-xs text-amber-800 dark:text-amber-300">{en("Incomplete")}</span> : <StageBadge stage={p.stage} />}</td>
                   <td className="px-3 py-2 text-xs">
                     {p.outcome && <span className="block font-medium">{p.outcome}</span>}
-                    {p.match != null && <span className="text-muted-foreground">{p.match}% match</span>}
+                    {p.match != null && <span className="text-muted-foreground">{p.match}{en("% match")}</span>}
                     {!p.outcome && p.match == null && <span className="text-muted-foreground">—</span>}
                   </td>
                   <td className="px-3 py-2 text-xs">
@@ -158,7 +160,7 @@ export default function PeopleView({ getToken, openLead }: { getToken: GetToken;
                         </span>
                       ) : (
                         <span className="inline-flex items-center gap-1 text-amber-800 dark:text-amber-300">
-                          <CalendarClock aria-hidden="true" className="h-3.5 w-3.5" /> Asked
+                          <CalendarClock aria-hidden="true" className="h-3.5 w-3.5" />{en(" Asked")}
                         </span>
                       )
                     ) : (
@@ -167,7 +169,7 @@ export default function PeopleView({ getToken, openLead }: { getToken: GetToken;
                   </td>
                   <td className="px-3 py-2 text-xs tabular-nums">
                     {p.inquiries}
-                    {p.forms > 0 && <span className="text-muted-foreground"> · {p.forms === 1 ? "1 form" : `${p.forms} forms`}</span>}
+                    {p.forms > 0 && <span className="text-muted-foreground"> · {p.forms === 1 ? en("1 form") : `${p.forms} forms`}</span>}
                   </td>
                   <td className="px-3 py-2 text-xs text-muted-foreground">{relative(p.lastActivity)}</td>
                 </tr>
@@ -178,7 +180,7 @@ export default function PeopleView({ getToken, openLead }: { getToken: GetToken;
       )}
       {more && (
         <button type="button" onClick={() => load(page + 1)} className="rounded-lg border border-border px-3 py-1.5 text-xs hover:bg-muted">
-          Show more
+          {en("Show more")}
         </button>
       )}
 
@@ -188,6 +190,7 @@ export default function PeopleView({ getToken, openLead }: { getToken: GetToken;
 }
 
 function PersonPanel({ leadId, getToken, onClose, openLead }: { leadId: string; getToken: GetToken; onClose: () => void; openLead: (id: string) => void }) {
+  const en = useEn();
   const [p, setP] = useState<Person | null>(null);
   const [error, setError] = useState<string | null>(null);
   useEffect(() => {
@@ -220,11 +223,11 @@ function PersonPanel({ leadId, getToken, onClose, openLead }: { leadId: string; 
                 )}
                 {p.phone && <span>{p.phone}</span>}
                 <StageBadge stage={p.stage} />
-                <span className="text-xs">First seen {new Date(p.firstSeen).toLocaleDateString(undefined, { dateStyle: "medium" })}</span>
+                <span className="text-xs">{en("First seen ")}{new Date(p.firstSeen).toLocaleDateString(undefined, { dateStyle: "medium" })}</span>
               </p>
             )}
           </div>
-          <button type="button" aria-label="Close" onClick={onClose} className="rounded-lg p-1.5 hover:bg-muted">
+          <button type="button" aria-label={en("Close")} onClick={onClose} className="rounded-lg p-1.5 hover:bg-muted">
             <X aria-hidden="true" className="h-5 w-5" />
           </button>
         </div>
@@ -244,7 +247,7 @@ function PersonPanel({ leadId, getToken, onClose, openLead }: { leadId: string; 
                 <section key={c.card} className="rounded-2xl border border-border bg-card p-4">
                   <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{CARD[c.card] ?? c.card}</h3>
                   {c.answers.length === 0 ? (
-                    <p className="mt-2 text-xs text-muted-foreground">Nothing yet. Tag questions for this card in the form builder.</p>
+                    <p className="mt-2 text-xs text-muted-foreground">{en("Nothing yet. Tag questions for this card in the form builder.")}</p>
                   ) : (
                     <dl className="mt-2 space-y-2">
                       {c.answers.map((a, i) => (
@@ -261,18 +264,18 @@ function PersonPanel({ leadId, getToken, onClose, openLead }: { leadId: string; 
 
             {/* Pathways */}
             <section>
-              <h3 className="font-semibold">Pathways</h3>
+              <h3 className="font-semibold">{en("Pathways")}</h3>
               {p.pathways.length === 0 ? (
-                <p className="mt-1 text-xs text-muted-foreground">No guidance forms yet.</p>
+                <p className="mt-1 text-xs text-muted-foreground">{en("No guidance forms yet.")}</p>
               ) : (
                 <div className="mt-2 overflow-x-auto rounded-xl border border-border">
                   <table className="w-full text-sm">
-                    <thead className="text-left text-xs text-muted-foreground">
+                    <thead className="text-start text-xs text-muted-foreground">
                       <tr>
-                        <th className="px-3 py-2 font-medium">Form</th>
-                        <th className="px-3 py-2 font-medium">Progress</th>
-                        <th className="px-3 py-2 font-medium">Result</th>
-                        <th className="px-3 py-2 font-medium">When</th>
+                        <th className="px-3 py-2 font-medium">{en("Form")}</th>
+                        <th className="px-3 py-2 font-medium">{en("Progress")}</th>
+                        <th className="px-3 py-2 font-medium">{en("Result")}</th>
+                        <th className="px-3 py-2 font-medium">{en("When")}</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -293,14 +296,14 @@ function PersonPanel({ leadId, getToken, onClose, openLead }: { leadId: string; 
                                   <CircleSlash aria-hidden="true" className="h-3.5 w-3.5 text-muted-foreground" />
                                 )}
                                 {x.status === "completed"
-                                  ? "Sent"
+                                  ? en("Sent")
                                   : x.status === "awaitingConfirmation"
-                                    ? "Sent, email not confirmed"
+                                    ? en("Sent, email not confirmed")
                                     : x.status === "inProgress"
-                                      ? "Filling it in"
+                                      ? en("Filling it in")
                                       : x.reached
                                         ? `Stopped at step ${x.reached} of ${x.steps}`
-                                        : "Started"}
+                                        : en("Started")}
                               </span>
                             </span>
                           </td>
@@ -324,31 +327,31 @@ function PersonPanel({ leadId, getToken, onClose, openLead }: { leadId: string; 
 
             <div className="grid gap-6 md:grid-cols-2">
               <section>
-                <h3 className="font-semibold">Inquiries</h3>
+                <h3 className="font-semibold">{en("Inquiries")}</h3>
                 <ul className="mt-2 space-y-1.5">
                   {p.inquiries.map((i) => (
                     <li key={i.leadId}>
-                      <button type="button" onClick={() => openLead(i.leadId)} className="flex w-full items-center justify-between gap-2 rounded-lg border border-border px-3 py-2 text-left hover:bg-muted/50">
+                      <button type="button" onClick={() => openLead(i.leadId)} className="flex w-full items-center justify-between gap-2 rounded-lg border border-border px-3 py-2 text-start hover:bg-muted/50">
                         <span className="min-w-0">
-                          <span className="block truncate font-medium">{i.isGuidance ? "Career guidance" : (i.course ?? "A course")}</span>
+                          <span className="block truncate font-medium">{i.isGuidance ? en("Career guidance") : (i.course ?? "A course")}</span>
                           <span className="block truncate text-xs text-muted-foreground">
                             {i.source ?? "Edulexa"} · {new Date(i.createdAt).toLocaleDateString(undefined, { dateStyle: "medium" })}
                           </span>
                         </span>
-                        {i.spam ? <span className="text-xs text-muted-foreground">Possible spam</span> : i.incomplete ? <span className="text-xs text-amber-800 dark:text-amber-300">Incomplete</span> : <StageBadge stage={i.stage} />}
+                        {i.spam ? <span className="text-xs text-muted-foreground">{en("Possible spam")}</span> : i.incomplete ? <span className="text-xs text-amber-800 dark:text-amber-300">{en("Incomplete")}</span> : <StageBadge stage={i.stage} />}
                       </button>
                     </li>
                   ))}
                 </ul>
               </section>
               <section>
-                <h3 className="font-semibold">Timeline</h3>
-                <ol className="mt-2 space-y-2 border-l border-border pl-4">
+                <h3 className="font-semibold">{en("Timeline")}</h3>
+                <ol className="mt-2 space-y-2 border-s border-border ps-4">
                   {p.timeline.map((t, i) => {
                     const Icon = KIND_ICON[t.kind] ?? FileText;
                     return (
                       <li key={i} className="relative">
-                        <span className="absolute -left-[1.4rem] top-0.5 grid h-5 w-5 place-items-center rounded-full border border-border bg-background">
+                        <span className="absolute -start-[1.4rem] top-0.5 grid h-5 w-5 place-items-center rounded-full border border-border bg-background">
                           <Icon aria-hidden="true" className="h-3 w-3 text-muted-foreground" />
                         </span>
                         <p className="text-sm">{t.text}</p>

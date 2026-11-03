@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { useEn } from "@/lib/english/EnglishProvider";
 
 export interface FunnelData {
   name: string;
@@ -13,12 +14,13 @@ export interface FunnelChartProps {
 }
 
 export default function FunnelChart({ data }: FunnelChartProps) {
+  const en = useEn();
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
 
   if (!data || data.length === 0) {
     return (
       <div className="w-full py-12 flex flex-col items-center justify-center text-muted-foreground text-sm">
-        <p>No funnel metrics available yet.</p>
+        <p>{en("No funnel metrics available yet.")}</p>
       </div>
     );
   }
@@ -32,9 +34,9 @@ export default function FunnelChart({ data }: FunnelChartProps) {
     <div className="w-full space-y-5">
       {/* Top Conversion Summary */}
       <div className="flex items-center justify-between px-2 text-xs">
-        <span className="text-muted-foreground font-medium">Pipeline Progression</span>
+        <span className="text-muted-foreground font-medium">{en("Pipeline Progression")}</span>
         <div className="flex items-center space-x-2">
-          <span className="text-muted-foreground">End-to-End Conversion:</span>
+          <span className="text-muted-foreground">{en("End-to-End Conversion:")}</span>
           <span className="font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
             {overallConversion}%
           </span>
@@ -66,10 +68,10 @@ export default function FunnelChart({ data }: FunnelChartProps) {
             >
               {/* Between step conversion connector indicator */}
               {idx > 0 && (
-                <div className="flex items-center pl-6 py-1 text-[11px] text-muted-foreground">
-                  <div className="w-0.5 h-3 bg-border mr-2" />
+                <div className="flex items-center ps-6 py-1 text-[11px] text-muted-foreground">
+                  <div className="w-0.5 h-3 bg-border me-2" />
                   <span className="text-muted-foreground/80 font-mono">
-                    {stepConversion}% conversion from {data[idx - 1].name}
+                    {stepConversion}{en("% conversion from ")}{data[idx - 1].name}
                   </span>
                 </div>
               )}

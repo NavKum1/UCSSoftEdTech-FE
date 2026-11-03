@@ -90,17 +90,17 @@ export function SetupChecklist() {
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h2 id="setup-checklist" className="text-base font-semibold">
-            Finish setting up {s.school.name}
+            {en("Finish setting up ")}{s.school.name}
           </h2>
           <p className="mt-0.5 text-sm text-muted-foreground">
-            {done} of {needed.length} done. Each step ticks itself when it&apos;s done.
+            {done} of {needed.length}{en(" done. Each step ticks itself when it's done.")}
           </p>
         </div>
         <button type="button" onClick={() => void hide()} className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-sm text-muted-foreground hover:bg-muted">
-          <X aria-hidden="true" className="h-4 w-4" /> Hide
+          <X aria-hidden="true" className="h-4 w-4" />{en(" Hide")}
         </button>
       </div>
-      <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-muted" role="progressbar" aria-label="Setup" aria-valuemin={0} aria-valuemax={needed.length} aria-valuenow={done}>
+      <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-muted" role="progressbar" aria-label={en("Setup")} aria-valuemin={0} aria-valuemax={needed.length} aria-valuenow={done}>
         <div className="h-full rounded-full bg-cyan-600 transition-[width] motion-reduce:transition-none" style={{ width: `${(done / needed.length) * 100}%` }} />
       </div>
       <ul className="mt-4 grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
@@ -109,9 +109,9 @@ export function SetupChecklist() {
           return (
             <li key={c.key} className={`flex gap-3 rounded-xl border p-3.5 ${c.done ? "border-transparent bg-muted/60" : "border-border"} ${c.optional ? "border-dashed" : ""}`}>
               {c.done ? (
-                <CheckCircle2 aria-label="Done" className="mt-0.5 h-5 w-5 shrink-0 text-emerald-600" />
+                <CheckCircle2 aria-label={en("Done")} className="mt-0.5 h-5 w-5 shrink-0 text-emerald-600" />
               ) : (
-                <Circle aria-label={c.optional ? "Optional" : "To do"} className="mt-0.5 h-5 w-5 shrink-0 text-muted-foreground" />
+                <Circle aria-label={c.optional ? en("Optional") : en("To do")} className="mt-0.5 h-5 w-5 shrink-0 text-muted-foreground" />
               )}
               <div className="min-w-0">
                 <p className={`text-sm font-medium ${c.done ? "text-muted-foreground line-through decoration-1" : ""}`}>{en(t.title)}</p>

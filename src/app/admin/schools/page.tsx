@@ -130,14 +130,14 @@ export default function PlatformSchoolsPage() {
             </button>
           ))}
         </div>
-        <label className="relative ml-auto w-full sm:w-64">
+        <label className="relative ms-auto w-full sm:w-64">
           <span className="sr-only">Search schools</span>
-          <Search aria-hidden="true" className="pointer-events-none absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+          <Search aria-hidden="true" className="pointer-events-none absolute start-3 top-2.5 h-4 w-4 text-muted-foreground" />
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Name, address, owner or country"
-            className="w-full rounded-lg border border-border bg-background py-2 pl-9 pr-3 text-sm"
+            className="w-full rounded-lg border border-border bg-background py-2 ps-9 pe-3 text-sm"
           />
         </label>
       </div>
@@ -162,7 +162,7 @@ export default function PlatformSchoolsPage() {
                 <p className="truncate font-medium">{s.name ?? "School"}</p>
                 <p className="truncate text-sm text-muted-foreground">
                   {s.ownerEmail}
-                  {s.freeEmail && <span className="ml-1.5 rounded bg-amber-50 px-1.5 py-0.5 text-xs text-amber-800 dark:bg-amber-950/60 dark:text-amber-200">personal e-mail</span>}
+                  {s.freeEmail && <span className="ms-1.5 rounded bg-amber-50 px-1.5 py-0.5 text-xs text-amber-800 dark:bg-amber-950/60 dark:text-amber-200">personal e-mail</span>}
                 </p>
               </div>
               <div className="text-sm">

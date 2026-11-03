@@ -30,10 +30,11 @@ export default function SettingsView({
   webhookUrl: string;
   reload: () => void;
 }) {
+  const en = useEn();
   const [section, setSection] = useState<"team" | "templates" | "integrations">(team.length === 0 ? "team" : "team");
   return (
     <div className="grid gap-6 md:grid-cols-[12rem_1fr]">
-      <nav aria-label="Settings" className="flex gap-1 md:flex-col">
+      <nav aria-label={en("Settings")} className="flex gap-1 md:flex-col">
         {(
           [
             ["team", "Team"],
@@ -41,7 +42,7 @@ export default function SettingsView({
             ["integrations", "Integrations"],
           ] as const
         ).map(([k, label]) => (
-          <button key={k} type="button" aria-current={section === k ? "page" : undefined} onClick={() => setSection(k)} className={`rounded-lg px-3 py-2 text-left text-sm ${section === k ? "bg-muted font-medium" : "text-muted-foreground hover:bg-muted/60"}`}>
+          <button key={k} type="button" aria-current={section === k ? "page" : undefined} onClick={() => setSection(k)} className={`rounded-lg px-3 py-2 text-start text-sm ${section === k ? "bg-muted font-medium" : "text-muted-foreground hover:bg-muted/60"}`}>
             {label}
           </button>
         ))}
@@ -89,7 +90,7 @@ function TeamSettings({ getToken, team, reload }: { getToken: GetToken; team: Me
   return (
     <div className="space-y-4">
       <div>
-        <h2 className="text-base font-semibold">Admissions team</h2>
+        <h2 className="text-base font-semibold">{en("Admissions team")}</h2>
         <p className="mt-0.5 text-sm text-muted-foreground">
           {en("People who can own leads and get follow-up reminders. Use the email they sign in with, so “My leads” finds theirs. Counsellors also need the Counselor role on their Edulexa account to open the CRM.")}
         </p>
@@ -102,20 +103,20 @@ function TeamSettings({ getToken, team, reload }: { getToken: GetToken; team: Me
         }}
         className="grid gap-2 rounded-xl border border-border p-3 sm:grid-cols-[1fr_1fr_10rem_auto]"
       >
-        <input className={input} placeholder="Name" aria-label="Name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required maxLength={200} />
-        <input className={input} type="email" placeholder="Email" aria-label="Email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} required />
-        <select className={input} aria-label="Role" value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value as Member["role"] })}>
+        <input className={input} placeholder={en("Name")} aria-label={en("Name")} value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required maxLength={200} />
+        <input className={input} type="email" placeholder={en("Email")} aria-label={en("Email")} value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} required />
+        <select className={input} aria-label={en("Role")} value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value as Member["role"] })}>
           <option value="Counsellor">{en("Counsellor")}</option>
-          <option value="Admin">Admin</option>
+          <option value="Admin">{en("Admin")}</option>
         </select>
         <div className="flex gap-2">
           <button type="submit" className={primary} disabled={busy}>
             {form.id ? <Check aria-hidden="true" className="h-4 w-4" /> : <Plus aria-hidden="true" className="h-4 w-4" />}
-            {form.id ? "Save" : "Add"}
+            {form.id ? en("Save") : en("Add")}
           </button>
           {form.id && (
             <button type="button" className={secondary} onClick={() => setForm(blank)}>
-              Cancel
+              {en("Cancel")}
             </button>
           )}
         </div>
@@ -128,15 +129,15 @@ function TeamSettings({ getToken, team, reload }: { getToken: GetToken; team: Me
             <li key={m.id} className={`flex flex-wrap items-center gap-3 px-4 py-3 text-sm ${m.active ? "" : "opacity-60"}`}>
               <div className="min-w-0 flex-1">
                 <p className="font-medium">
-                  {m.name} <span className="text-xs font-normal text-muted-foreground">· {m.role}{m.active ? "" : " · inactive"}</span>
+                  {m.name} <span className="text-xs font-normal text-muted-foreground">· {m.role}{m.active ? "" : en(" · inactive")}</span>
                 </p>
                 <p className="text-xs text-muted-foreground">{m.email}</p>
               </div>
               <button type="button" className={secondary} onClick={() => setForm({ ...m })} aria-label={`Edit ${m.name}`}>
-                <Pencil aria-hidden="true" className="h-3.5 w-3.5" /> Edit
+                <Pencil aria-hidden="true" className="h-3.5 w-3.5" />{en(" Edit")}
               </button>
               <button type="button" className={secondary} disabled={busy} onClick={() => save({ ...m, active: !m.active }, m.active ? `${m.name} deactivated; their leads keep them as owner until reassigned.` : `${m.name} is active again.`)}>
-                {m.active ? "Deactivate" : "Reactivate"}
+                {m.active ? en("Deactivate") : en("Reactivate")}
               </button>
             </li>
           ))}
@@ -160,6 +161,7 @@ const STARTERS = [
 ];
 
 function TemplateSettings({ getToken, templates, reload }: { getToken: GetToken; templates: Template[]; reload: () => void }) {
+  const en = useEn();
   const blank = { name: "", subject: "", body: "" };
   const [form, setForm] = useState<typeof blank & { id?: string }>(blank);
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
@@ -183,16 +185,15 @@ function TemplateSettings({ getToken, templates, reload }: { getToken: GetToken;
   return (
     <div className="space-y-4">
       <div>
-        <h2 className="text-base font-semibold">Email templates</h2>
+        <h2 className="text-base font-semibold">{en("Email templates")}</h2>
         <p className="mt-0.5 text-sm text-muted-foreground">
-          Save the emails your team sends often. {"{name}"}, {"{course}"}, {"{institute}"} and {"{counsellor}"} are filled in when sending, and the text can be changed
-          before it goes.
+          {en("Save the emails your team sends often. ")}{"{name}"}, {"{course}"}, {"{institute}"} and {"{counsellor}"}{en(" are filled in when sending, and the text can be changed before it goes.")}
         </p>
       </div>
       <Message m={msg} />
       {templates.length === 0 && !form.name && (
         <div className="flex flex-wrap items-center gap-2 text-sm">
-          <span className="text-muted-foreground">Start from:</span>
+          <span className="text-muted-foreground">{en("Start from:")}</span>
           {STARTERS.map((s) => (
             <button key={s.name} type="button" className={secondary} onClick={() => setForm(s)}>
               {s.name}
@@ -207,16 +208,16 @@ function TemplateSettings({ getToken, templates, reload }: { getToken: GetToken;
         }}
         className="space-y-2 rounded-xl border border-border p-3"
       >
-        <input className={input} placeholder="Template name, e.g. First reply" aria-label="Template name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required maxLength={120} />
-        <input className={input} placeholder="Subject" aria-label="Subject" value={form.subject} onChange={(e) => setForm({ ...form, subject: e.target.value })} required maxLength={300} />
-        <RichTextEditor value={form.body} onChange={(body) => setForm((f) => ({ ...f, body }))} placeholder="Message" />
+        <input className={input} placeholder={en("Template name, e.g. First reply")} aria-label={en("Template name")} value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required maxLength={120} />
+        <input className={input} placeholder={en("Subject")} aria-label={en("Subject")} value={form.subject} onChange={(e) => setForm({ ...form, subject: e.target.value })} required maxLength={300} />
+        <RichTextEditor value={form.body} onChange={(body) => setForm((f) => ({ ...f, body }))} placeholder={en("Message")} />
         <div className="flex gap-2">
           <button type="submit" className={primary} disabled={busy}>
-            {form.id ? "Save changes" : "Add template"}
+            {form.id ? en("Save changes") : en("Add template")}
           </button>
           {(form.id || form.name) && (
             <button type="button" className={secondary} onClick={() => setForm(blank)}>
-              Cancel
+              {en("Cancel")}
             </button>
           )}
         </div>
@@ -253,6 +254,7 @@ function TemplateSettings({ getToken, templates, reload }: { getToken: GetToken;
 
 /** Whether CRM emails note when they're opened (a tiny image in the email). */
 function OpenTracking({ getToken }: { getToken: GetToken }) {
+  const en = useEn();
   const [on, setOn] = useState<boolean | null>(null);
   React.useEffect(() => {
     crm<{ trackOpens: boolean }>(getToken, "/settings").then((d) => setOn(d.trackOpens)).catch(() => setOn(true));
@@ -263,14 +265,13 @@ function OpenTracking({ getToken }: { getToken: GetToken }) {
   };
   return (
     <section className="space-y-1">
-      <h2 className="text-base font-semibold">Email opens</h2>
+      <h2 className="text-base font-semibold">{en("Email opens")}</h2>
       <label className="flex items-start gap-2 text-sm">
         <input type="checkbox" className="mt-1" checked={on ?? true} disabled={on === null} onChange={(e) => save(e.target.checked)} />
         <span>
-          Show when people open your emails
+          {en("Show when people open your emails")}
           <span className="block text-xs text-muted-foreground">
-            A tiny invisible image in each email tells us when it&apos;s opened. Some mail apps (like Apple Mail) open emails automatically, so treat it as a hint. Turn
-            it off if your institute&apos;s privacy policy prefers.
+            {en("A tiny invisible image in each email tells us when it's opened. Some mail apps (like Apple Mail) open emails automatically, so treat it as a hint. Turn it off if your institute's privacy policy prefers.")}
           </span>
         </span>
       </label>
@@ -279,6 +280,7 @@ function OpenTracking({ getToken }: { getToken: GetToken }) {
 }
 
 function Integrations({ getToken, webhookUrl, reload }: { getToken: GetToken; webhookUrl: string; reload: () => void }) {
+  const en = useEn();
   const [url, setUrl] = useState(webhookUrl);
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
   const [busy, setBusy] = useState(false);
@@ -290,7 +292,7 @@ function Integrations({ getToken, webhookUrl, reload }: { getToken: GetToken; we
       const res = await authenticatedFetch("/api/institute/webhook-config", { method: "POST", body: JSON.stringify({ outboundWebhookUrl: url.trim() }) }, getToken);
       const data = await res.json().catch(() => null);
       if (!res.ok) throw new Error(data?.error ?? "The URL couldn't be saved.");
-      setMsg({ ok: true, text: "Saved. The events below are sent to this URL." });
+      setMsg({ ok: true, text: en("Saved. The events below are sent to this URL.") });
       reload();
     } catch (e) {
       setMsg({ ok: false, text: (e as Error).message });
@@ -316,21 +318,19 @@ function Integrations({ getToken, webhookUrl, reload }: { getToken: GetToken; we
     <div className="space-y-6">
       <section className="space-y-3">
         <div>
-          <h2 className="text-base font-semibold">Send leads to your own systems</h2>
+          <h2 className="text-base font-semibold">{en("Send leads to your own systems")}</h2>
           <p className="mt-0.5 text-sm text-muted-foreground">
-            Optional. If you also use another CRM (HubSpot, Salesforce, Zoho, or Zapier/Make), Edulexa can send each new lead, form and meeting there for you. The address must be https on a public host.
-            For your IT team: each event is posted to this URL as JSON, signed with your
-            institute&apos;s API key in the <code className="text-xs">X-Edulexa-Signature</code> header (<code className="text-xs">t=timestamp,v1=HMAC-SHA256 of &quot;timestamp.body&quot;</code>).
+            {en("Optional. If you also use another CRM (HubSpot, Salesforce, Zoho, or Zapier/Make), Edulexa can send each new lead, form and meeting there for you. The address must be https on a public host. For your IT team: each event is posted to this URL as JSON, signed with your institute's API key in the ")}<code className="text-xs">{en("X-Edulexa-Signature")}</code>{en(" header (")}<code className="text-xs">{en("t=timestamp,v1=HMAC-SHA256 of \"timestamp.body\"")}</code>).
           </p>
         </div>
         <Message m={msg} />
         <div className="flex flex-wrap gap-2">
-          <input className={`${input} min-w-64 flex-1 font-mono`} type="url" placeholder="https://" aria-label="Webhook URL" value={url} onChange={(e) => setUrl(e.target.value)} />
+          <input className={`${input} min-w-64 flex-1 font-mono`} type="url" placeholder="https://" aria-label={en("Webhook URL")} value={url} onChange={(e) => setUrl(e.target.value)} />
           <button type="button" className={primary} disabled={busy || !url.trim() || url.trim() === webhookUrl} onClick={save}>
-            Save
+            {en("Save")}
           </button>
-          <button type="button" className={secondary} disabled={busy || !webhookUrl} onClick={test} title={webhookUrl ? undefined : "Save a URL first"}>
-            <Send aria-hidden="true" className="h-4 w-4" /> Send a test event
+          <button type="button" className={secondary} disabled={busy || !webhookUrl} onClick={test} title={webhookUrl ? undefined : en("Save a URL first")}>
+            <Send aria-hidden="true" className="h-4 w-4" />{en(" Send a test event")}
           </button>
         </div>
         <WebhookEvents getToken={getToken} version={webhookUrl.length} />
@@ -339,12 +339,12 @@ function Integrations({ getToken, webhookUrl, reload }: { getToken: GetToken; we
       <OpenTracking getToken={getToken} />
 
       <section className="space-y-1">
-        <h2 className="text-base font-semibold">SMS and WhatsApp</h2>
+        <h2 className="text-base font-semibold">{en("SMS and WhatsApp")}</h2>
         <p className="text-sm text-muted-foreground">
-          WhatsApp works without setup: it opens the chat with your message ready. To send SMS from Edulexa, connect your Pulse Relay workspace.
+          {en("WhatsApp works without setup: it opens the chat with your message ready. To send SMS from Edulexa, connect your Pulse Relay workspace.")}
         </p>
         <a href="/career-center/settings/chat-sms" className="inline-block text-sm text-cyan-700 hover:underline dark:text-cyan-400">
-          Connect Pulse Relay
+          {en("Connect Pulse Relay")}
         </a>
       </section>
     </div>

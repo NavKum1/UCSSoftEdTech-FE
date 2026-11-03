@@ -8,8 +8,10 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { AccessNotice, useLatestRef, useLegacyApi } from "@/lib/legacyApi";
 import { Messages, ReplyBox, RequestDetails, STATUS_LABEL, type GuidanceRequestView } from "@/components/guidance/Conversation";
+import { useEn } from "@/lib/english/EnglishProvider";
 
 export default function MentorGuidancePage() {
+  const en = useEn();
   const { apiFetch, ready, access } = useLegacyApi();
   const [items, setItems] = useState<GuidanceRequestView[] | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -38,16 +40,16 @@ export default function MentorGuidancePage() {
   return (
     <main className="mx-auto max-w-3xl space-y-6 px-4 pb-16 pt-8 sm:px-6">
       <header>
-        <h1 className="text-2xl font-semibold tracking-tight">Guidance requests for you</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">{en("Guidance requests for you")}</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          Edulexa&apos;s advisors asked you to help these people choose an area or certification. Reply here or to the email. If you can&apos;t help, hand it back.
+          {en("Edulexa's advisors asked you to help these people choose an area or certification. Reply here or to the email. If you can't help, hand it back.")}
         </p>
       </header>
       {error && <p className="text-sm text-red-700 dark:text-red-400">{error}</p>}
       {!items ? (
         <div className="h-40 animate-pulse rounded-2xl bg-muted motion-reduce:animate-none" aria-busy="true" />
       ) : items.length === 0 ? (
-        <p className="text-sm text-muted-foreground">No requests for you right now.</p>
+        <p className="text-sm text-muted-foreground">{en("No requests for you right now.")}</p>
       ) : (
         items.map((r) => (
           <section key={r.id} className="space-y-4 rounded-2xl border border-border bg-card p-5">
@@ -59,7 +61,7 @@ export default function MentorGuidancePage() {
             <Messages messages={r.messages} />
             <ReplyBox allowInternal onSend={(body, internal) => post(`/api/guidance/mentor/${r.id}/messages`, { body, internal })} />
             <button type="button" onClick={() => void post(`/api/guidance/mentor/${r.id}/hand-back`, { body: "" })} className="rounded-lg border border-border px-3 py-1.5 text-sm hover:bg-muted">
-              Hand back to the advisors
+              {en("Hand back to the advisors")}
             </button>
           </section>
         ))

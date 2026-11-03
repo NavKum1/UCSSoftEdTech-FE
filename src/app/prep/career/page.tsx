@@ -11,6 +11,7 @@ import React, { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { ArrowRight, BadgeCheck, Compass, Target, Wallet } from "lucide-react";
 import { AccessNotice, useLatestRef, useLegacyApi } from "@/lib/legacyApi";
+import { useEn } from "@/lib/english/EnglishProvider";
 
 interface Skill {
   skillCategory: string;
@@ -43,6 +44,7 @@ interface Path {
 const card = "rounded-2xl border border-border bg-card shadow-[0_1px_2px_rgb(16_24_40/0.04)]";
 
 export default function CareerPathPage() {
+  const en = useEn();
   const { apiFetch, ready, access } = useLegacyApi();
   const [path, setPath] = useState<Path | null>(null);
   const [failed, setFailed] = useState(false);
@@ -65,13 +67,13 @@ export default function CareerPathPage() {
   if (failed)
     return (
       <main className="mx-auto max-w-md px-4 py-24 text-center">
-        <h1 className="text-xl font-semibold">We couldn&apos;t load your career path</h1>
-        <p className="mt-2 text-sm text-muted-foreground">Please refresh the page to try again.</p>
+        <h1 className="text-xl font-semibold">{en("We couldn't load your career path")}</h1>
+        <p className="mt-2 text-sm text-muted-foreground">{en("Please refresh the page to try again.")}</p>
       </main>
     );
   if (!path)
     return (
-      <main className="mx-auto max-w-5xl px-4 py-10" aria-busy="true" aria-label="Loading your career path">
+      <main className="mx-auto max-w-5xl px-4 py-10" aria-busy="true" aria-label={en("Loading your career path")}>
         <div className={`${card} h-40 animate-pulse motion-reduce:animate-none`} />
       </main>
     );
@@ -81,30 +83,29 @@ export default function CareerPathPage() {
   return (
     <main className="mx-auto max-w-5xl space-y-6 px-4 pb-16 pt-8 sm:px-6">
       <header>
-        <h1 className="text-2xl font-semibold tracking-tight">Your career path</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">{en("Your career path")}</h1>
         <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
-          Where you are, from your graded results, and what to do next. We don&apos;t predict promotions or salaries; salary data is shown only from a
-          named, licensed source.
+          {en("Where you are, from your graded results, and what to do next. We don't predict promotions or salaries; salary data is shown only from a named, licensed source.")}
         </p>
       </header>
 
       <div className="grid gap-4 md:grid-cols-2">
         <section className={`${card} p-5`}>
           <h2 className="flex items-center gap-2 text-base font-semibold">
-            <Target aria-hidden="true" className="h-4 w-4 text-indigo-600" /> Target role
+            <Target aria-hidden="true" className="h-4 w-4 text-indigo-600" />{en(" Target role")}
           </h2>
           {path.targetRole ? (
             <p className="mt-2 text-lg font-semibold">{path.targetRole}</p>
           ) : (
-            <p className="mt-2 text-sm text-muted-foreground">Not set yet.</p>
+            <p className="mt-2 text-sm text-muted-foreground">{en("Not set yet.")}</p>
           )}
           <Link href="/passport" className="mt-2 inline-block text-sm font-medium text-indigo-700 hover:underline dark:text-indigo-300">
-            {path.targetRole ? "Change it in your skill passport" : "Set it in your skill passport"}
+            {path.targetRole ? en("Change it in your skill passport") : en("Set it in your skill passport")}
           </Link>
         </section>
         <section className={`${card} p-5`}>
           <h2 className="flex items-center gap-2 text-base font-semibold">
-            <Compass aria-hidden="true" className="h-4 w-4 text-indigo-600" /> Area that suits you
+            <Compass aria-hidden="true" className="h-4 w-4 text-indigo-600" />{en(" Area that suits you")}
           </h2>
           {path.area && path.guide ? (
             <>
@@ -113,7 +114,7 @@ export default function CareerPathPage() {
             </>
           ) : (
             <p className="mt-2 text-sm text-muted-foreground">
-              Take the <Link href="/prep/counselling" className="font-medium text-indigo-700 hover:underline dark:text-indigo-300">career quiz</Link> to find it.
+              {en("Take the ")}<Link href="/prep/counselling" className="font-medium text-indigo-700 hover:underline dark:text-indigo-300">{en("career quiz")}</Link>{en(" to find it.")}
             </p>
           )}
         </section>
@@ -121,10 +122,10 @@ export default function CareerPathPage() {
 
       <section className={`${card} p-5`}>
         <h2 className="flex items-center gap-2 text-base font-semibold">
-          <BadgeCheck aria-hidden="true" className="h-4 w-4 text-emerald-600" /> Your skills
+          <BadgeCheck aria-hidden="true" className="h-4 w-4 text-emerald-600" />{en(" Your skills")}
         </h2>
         {path.verifiedSkills.length === 0 && path.practisedSkills.length === 0 ? (
-          <p className="mt-2 text-sm text-muted-foreground">No graded results yet. Your skills appear here as you complete challenges, exams and drills.</p>
+          <p className="mt-2 text-sm text-muted-foreground">{en("No graded results yet. Your skills appear here as you complete challenges, exams and drills.")}</p>
         ) : (
           <ul className="mt-3 flex flex-wrap gap-2">
             {[...path.verifiedSkills, ...path.practisedSkills].map((s) => (
@@ -133,16 +134,16 @@ export default function CareerPathPage() {
                 className={`rounded-full border px-3 py-1 text-sm ${s.verified ? "border-emerald-500/40 bg-emerald-50 dark:bg-emerald-500/10" : "border-border"}`}
               >
                 {s.skillCategory}
-                {s.bestScore != null && <span className="ml-1 text-xs text-muted-foreground">best {Math.round(s.bestScore)}</span>}
-                {s.verified && <span className="ml-1 text-xs text-emerald-700 dark:text-emerald-400">verified</span>}
+                {s.bestScore != null && <span className="ms-1 text-xs text-muted-foreground">best {Math.round(s.bestScore)}</span>}
+                {s.verified && <span className="ms-1 text-xs text-emerald-700 dark:text-emerald-400">verified</span>}
               </li>
             ))}
           </ul>
         )}
         {path.guide && path.guide.learnNext.length > 0 && (
           <div className="mt-5">
-            <h3 className="text-sm font-semibold">Good things to learn next for {path.area}</h3>
-            <ul className="mt-1 list-disc space-y-1 pl-5 text-sm">
+            <h3 className="text-sm font-semibold">{en("Good things to learn next for ")}{path.area}</h3>
+            <ul className="mt-1 list-disc space-y-1 ps-5 text-sm">
               {path.guide.learnNext.map((l) => (
                 <li key={l}>{l}</li>
               ))}
@@ -153,7 +154,7 @@ export default function CareerPathPage() {
 
       <section aria-labelledby="cp-next">
         <h2 id="cp-next" className="mb-3 text-base font-semibold">
-          Next steps
+          {en("Next steps")}
         </h2>
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {path.nextSteps.map((s) => (
@@ -170,7 +171,7 @@ export default function CareerPathPage() {
 
       <section className={`${card} p-5`}>
         <h2 className="flex items-center gap-2 text-base font-semibold">
-          <Wallet aria-hidden="true" className="h-4 w-4 text-indigo-600" /> Salary data
+          <Wallet aria-hidden="true" className="h-4 w-4 text-indigo-600" />{en(" Salary data")}
         </h2>
         {path.compensation ? (
           <>
@@ -190,7 +191,7 @@ export default function CareerPathPage() {
               ))}
             </dl>
             <p className="mt-3 text-xs text-muted-foreground">
-              Source: {path.compensation.source}, as of {new Date(path.compensation.asOf).toLocaleDateString()}. {path.compensation.licence}
+              {en("Source: ")}{path.compensation.source}{en(", as of ")}{new Date(path.compensation.asOf).toLocaleDateString()}. {path.compensation.licence}
             </p>
           </>
         ) : (

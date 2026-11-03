@@ -17,6 +17,7 @@ import {
   Radio,
   Headphones,
 } from "lucide-react";
+import { useEn } from "@/lib/english/EnglishProvider";
 
 interface TranscriptSegment {
   id: string;
@@ -44,6 +45,7 @@ const SUPPORTED_LANGUAGES = [
 ];
 
 export default function MultiLanguageTranslationStudioPage() {
+  const en = useEn();
   const { apiFetch, ready, access } = useLegacyApi();
   const params = useParams();
   const router = useRouter();
@@ -209,14 +211,14 @@ export default function MultiLanguageTranslationStudioPage() {
               <div>
                 <div className="flex items-center space-x-2">
                   <span className="font-bold text-base text-foreground tracking-wide">
-                    MULTI-LANGUAGE SUBTITLES &amp; AUDIO TRANSLATION
+                    {en("MULTI-LANGUAGE SUBTITLES & AUDIO TRANSLATION")}
                   </span>
                   <span className="text-[10px] px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-600 dark:text-cyan-300 font-semibold border border-cyan-500/40">
-                    Live Subtitles
+                    {en("Live Subtitles")}
                   </span>
                 </div>
                 <p className="text-[11px] text-muted-foreground">
-                  Real-time multilingual subtitles, bilingual transcript review, and voice translation.
+                  {en("Real-time multilingual subtitles, bilingual transcript review, and voice translation.")}
                 </p>
               </div>
             </div>
@@ -228,7 +230,7 @@ export default function MultiLanguageTranslationStudioPage() {
               className="px-3.5 py-1.5 rounded-xl bg-muted hover:bg-slate-700 text-foreground border border-border text-xs font-medium flex items-center space-x-1.5 transition-colors cursor-pointer"
             >
               <Download className="w-3.5 h-3.5 text-cyan-700 dark:text-cyan-400" />
-              <span>Download Subtitles ({selectedLanguage.toUpperCase()})</span>
+              <span>{en("Download Subtitles (")}{selectedLanguage.toUpperCase()})</span>
             </button>
           </div>
         </div>
@@ -241,10 +243,10 @@ export default function MultiLanguageTranslationStudioPage() {
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-muted-foreground flex items-center space-x-2">
               <Languages className="w-4 h-4 text-cyan-700 dark:text-cyan-400" />
-              <span>Select Subtitle &amp; Audio Language</span>
+              <span>{en("Select Subtitle & Audio Language")}</span>
             </span>
             <span className="text-xs text-muted-foreground">
-              Active: <strong className="text-cyan-700 dark:text-cyan-400">{SUPPORTED_LANGUAGES.find(l => l.code === selectedLanguage)?.label}</strong>
+              {en("Active: ")}<strong className="text-cyan-700 dark:text-cyan-400">{SUPPORTED_LANGUAGES.find(l => l.code === selectedLanguage)?.label}</strong>
             </span>
           </div>
 
@@ -282,14 +284,14 @@ export default function MultiLanguageTranslationStudioPage() {
                 onClick={() => setIsPlaying(!isPlaying)}
                 className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 flex items-center justify-center text-white shadow-lg shadow-cyan-500/30 transition-all cursor-pointer"
               >
-                {isPlaying ? <Pause className="w-5 h-5 fill-current" /> : <Play className="w-5 h-5 fill-current ml-0.5" />}
+                {isPlaying ? <Pause className="w-5 h-5 fill-current" /> : <Play className="w-5 h-5 fill-current ms-0.5" />}
               </button>
 
               <div>
                 <div className="flex items-center space-x-2">
-                  <h3 className="text-base font-bold text-foreground">Interview Audio Channel</h3>
+                  <h3 className="text-base font-bold text-foreground">{en("Interview Audio Channel")}</h3>
                   <span className="text-[10px] px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-600 dark:text-cyan-300 font-semibold border border-cyan-500/30">
-                    {audioTrackMode === "dubbed" ? "Simulated Neural Dubbing" : "Original Dialect"}
+                    {audioTrackMode === "dubbed" ? en("Simulated Neural Dubbing") : en("Original Dialect")}
                   </span>
                 </div>
                 <div className="text-xs text-muted-foreground mt-0.5 font-mono">
@@ -309,7 +311,7 @@ export default function MultiLanguageTranslationStudioPage() {
                 }`}
               >
                 <Headphones className="w-3.5 h-3.5" />
-                <span>Original Audio</span>
+                <span>{en("Original Audio")}</span>
               </button>
 
               <button
@@ -321,7 +323,7 @@ export default function MultiLanguageTranslationStudioPage() {
                 }`}
               >
                 <Radio className="w-3.5 h-3.5" />
-                <span>Neural Dubbed Track ({selectedLanguage.toUpperCase()})</span>
+                <span>{en("Neural Dubbed Track (")}{selectedLanguage.toUpperCase()})</span>
               </button>
             </div>
           </div>
@@ -336,7 +338,7 @@ export default function MultiLanguageTranslationStudioPage() {
             </div>
             <div className="flex justify-between text-[11px] text-muted-foreground font-mono">
               <span>00:00.0</span>
-              <span>Timeline synchronized with WebVTT captions</span>
+              <span>{en("Timeline synchronized with WebVTT captions")}</span>
               <span>00:20.0</span>
             </div>
           </div>
@@ -347,10 +349,10 @@ export default function MultiLanguageTranslationStudioPage() {
           <div className="flex items-center justify-between">
             <h3 className="text-base font-semibold text-foreground flex items-center space-x-2">
               <Languages className="w-4 h-4 text-cyan-700 dark:text-cyan-400" />
-              <span>Synchronized Bilingual Subtitle Timeline</span>
+              <span>{en("Synchronized Bilingual Subtitle Timeline")}</span>
             </h3>
             <span className="text-xs text-muted-foreground">
-              {segments.length} dialogue segments recorded
+              {segments.length}{en(" dialogue segments recorded")}
             </span>
           </div>
 
@@ -381,8 +383,8 @@ export default function MultiLanguageTranslationStudioPage() {
                             ? "bg-purple-500/20 text-purple-600 dark:text-purple-300 border border-purple-500/30"
                             : "bg-emerald-500/20 text-emerald-600 dark:text-emerald-300 border border-emerald-500/30"
                         }`}>
-                          {isAi ? <Bot className="w-3.5 h-3.5 mr-1" /> : <User className="w-3.5 h-3.5 mr-1" />}
-                          <span>{isAi ? "AI Technical Interviewer" : "Candidate"}</span>
+                          {isAi ? <Bot className="w-3.5 h-3.5 me-1" /> : <User className="w-3.5 h-3.5 me-1" />}
+                          <span>{isAi ? en("AI Technical Interviewer") : en("Candidate")}</span>
                         </span>
 
                         <span className="text-[11px] font-mono text-muted-foreground">
@@ -391,22 +393,22 @@ export default function MultiLanguageTranslationStudioPage() {
                       </div>
 
                       <span className="text-[10px] uppercase font-bold text-muted-foreground">
-                        Segment #{seg.sequenceNumber}
+                        {en("Segment #")}{seg.sequenceNumber}
                       </span>
                     </div>
 
                     {/* Original Spoken Text */}
-                    <div className="text-xs text-muted-foreground leading-relaxed pl-2 border-l-2 border-border">
+                    <div className="text-xs text-muted-foreground leading-relaxed ps-2 border-s-2 border-border">
                       <span className="text-[10px] uppercase font-semibold text-muted-foreground block mb-0.5">
-                        Spoken Original ({seg.originalLanguage.toUpperCase()}):
+                        {en("Spoken Original (")}{seg.originalLanguage.toUpperCase()}):
                       </span>
                       {seg.originalText}
                     </div>
 
                     {/* Translated Text in Active Target Language */}
-                    <div className="text-sm font-medium text-cyan-200 leading-relaxed pl-2 border-l-2 border-cyan-500">
+                    <div className="text-sm font-medium text-cyan-200 leading-relaxed ps-2 border-s-2 border-cyan-500">
                       <span className="text-[10px] uppercase font-semibold text-cyan-700 dark:text-cyan-400 block mb-0.5">
-                        Subtitles / Dubbing ({selectedLanguage.toUpperCase()}):
+                        {en("Subtitles / Dubbing (")}{selectedLanguage.toUpperCase()}):
                       </span>
                       {getTranslatedText(seg)}
                     </div>
@@ -421,15 +423,15 @@ export default function MultiLanguageTranslationStudioPage() {
         <div className="p-6 rounded-2xl bg-card/50 border border-border space-y-4">
           <div className="flex items-center space-x-2">
             <Sparkles className="w-4 h-4 text-cyan-700 dark:text-cyan-400" />
-            <h3 className="text-base font-bold text-foreground">Live Conversation &amp; Subtitle Preview</h3>
+            <h3 className="text-base font-bold text-foreground">{en("Live Conversation & Subtitle Preview")}</h3>
           </div>
           <p className="text-xs text-muted-foreground">
-            Enter a question or response to see real-time translation and captions across supported languages.
+            {en("Enter a question or response to see real-time translation and captions across supported languages.")}
           </p>
 
           <form onSubmit={handleIngestSegment} className="space-y-3">
             <div className="flex items-center space-x-3">
-              <label className="text-xs text-muted-foreground font-medium">Speaker:</label>
+              <label className="text-xs text-muted-foreground font-medium">{en("Speaker:")}</label>
               <div className="flex items-center space-x-2">
                 {["Candidate", "AiInterviewer", "Mentor"].map((spk) => (
                   <button
@@ -453,7 +455,7 @@ export default function MultiLanguageTranslationStudioPage() {
                 type="text"
                 value={inputText}
                 onChange={(e) => setInputText(e.target.value)}
-                placeholder="Enter technical interview speech to translate (e.g. 'I designed an async memory buffer queue...')"
+                placeholder={en("Enter technical interview speech to translate (e.g. 'I designed an async memory buffer queue...')")}
                 className="flex-1 rounded-xl bg-background border border-border px-4 py-2.5 text-xs text-foreground focus:outline-none focus:border-cyan-500"
               />
               <button
@@ -462,7 +464,7 @@ export default function MultiLanguageTranslationStudioPage() {
                 className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white text-xs font-semibold shadow-lg shadow-cyan-600/30 flex items-center space-x-1.5 cursor-pointer disabled:opacity-50"
               >
                 <Send className="w-3.5 h-3.5" />
-                <span>{isSubmitting ? "Translating..." : "Translate"}</span>
+                <span>{isSubmitting ? en("Translating...") : en("Translate")}</span>
               </button>
             </div>
           </form>

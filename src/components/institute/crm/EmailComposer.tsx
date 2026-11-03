@@ -34,6 +34,7 @@ import {
 import { authenticatedFetch } from "@/lib/apiClient";
 import { crm, type GetToken, type LeadFull, type Template } from "./api";
 import AiDraft from "./AiDraft";
+import { useEn } from "@/lib/english/EnglishProvider";
 
 const FIELDS: [string, string][] = [
   ["{name}", "Their name"],
@@ -80,6 +81,7 @@ export default function EmailComposer({
   /** After recording an email sent from the person's own mail app */
   onRecorded: (lead: LeadFull) => void;
 }) {
+  const en = useEn();
   const [subject, setSubject] = useState(initialSubject ?? "");
   const [templateId, setTemplateId] = useState("");
   const [preview, setPreview] = useState(false);
@@ -114,7 +116,7 @@ export default function EmailComposer({
     setTemplateId(id);
     const t = templates.find((x) => x.id === id);
     if (!t) return;
-    if ((subject.trim() || !empty) && !window.confirm("Replace what you've written with this template?")) return;
+    if ((subject.trim() || !empty) && !window.confirm(en("Replace what you've written with this template?"))) return;
     setSubject(t.subject);
     editor?.commands.setContent(toHtml(t.body));
     setHtml(editor?.getHTML() ?? "");
@@ -142,7 +144,7 @@ export default function EmailComposer({
     if (!list?.length) return;
     setMsg(null);
     for (const file of Array.from(list)) {
-      if (files.length >= 5) return setMsg({ ok: false, text: "Attach up to 5 files." });
+      if (files.length >= 5) return setMsg({ ok: false, text: en("Attach up to 5 files.") });
       if (file.size > 5 * 1024 * 1024) {
         setMsg({ ok: false, text: `${file.name} is over 5 MB.` });
         continue;
@@ -156,7 +158,7 @@ export default function EmailComposer({
         if (!res.ok) setMsg({ ok: false, text: d?.error ?? `${file.name} couldn't be attached.` });
         else setFiles((f) => [...f, d]);
       } catch {
-        setMsg({ ok: false, text: "We couldn't reach the server. Please check your connection and try again." });
+        setMsg({ ok: false, text: en("We couldn't reach the server. Please check your connection and try again.") });
       } finally {
         setUploading(false);
       }
@@ -178,7 +180,7 @@ export default function EmailComposer({
   const totalSize = files.reduce((n, f) => n + f.size, 0);
 
   const doSend = async () => {
-    if (!subject.trim() || empty) return setMsg({ ok: false, text: "Write a subject and a message." });
+    if (!subject.trim() || empty) return setMsg({ ok: false, text: en("Write a subject and a message.") });
     await send({ templateId: templateId || null, subject, body: html, attachmentIds: files.map((f) => f.id), sendAt });
   };
 
@@ -202,7 +204,7 @@ export default function EmailComposer({
   const fmt = (d: Date) => d.toLocaleString([], { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
 
   const applyDraft = (d: { subject: string; body: string; sample: boolean; sentToAi?: string }) => {
-    if ((subject.trim() || !empty) && !window.confirm("Replace what you've written with the AI draft?")) return;
+    if ((subject.trim() || !empty) && !window.confirm(en("Replace what you've written with the AI draft?"))) return;
     if (d.subject) setSubject(d.subject);
     editor?.commands.setContent(d.body);
     setHtml(editor?.getHTML() ?? d.body);
@@ -213,7 +215,7 @@ export default function EmailComposer({
   };
 
   const saveTemplate = async () => {
-    if (!subject.trim() || empty) return setMsg({ ok: false, text: "Write the subject and message you want to save." });
+    if (!subject.trim() || empty) return setMsg({ ok: false, text: en("Write the subject and message you want to save.") });
     const name = window.prompt("Name this template", subject.slice(0, 60));
     if (!name?.trim()) return;
     try {
@@ -254,13 +256,13 @@ export default function EmailComposer({
       {/* To, template */}
       <div className="flex flex-wrap items-center gap-x-4 gap-y-2 border-b border-border px-4 py-2.5 text-sm">
         <span className="min-w-0 truncate">
-          <span className="text-muted-foreground">To </span>
+          <span className="text-muted-foreground">{en("To ")}</span>
           <span className="font-medium">{lead.name ? `${lead.name} <${lead.email}>` : lead.email}</span>
         </span>
-        <label className="ml-auto flex items-center gap-2 text-xs text-muted-foreground">
-          Template
+        <label className="ms-auto flex items-center gap-2 text-xs text-muted-foreground">
+          {en("Template")}
           <select value={templateId} onChange={(e) => pickTemplate(e.target.value)} className="rounded-lg border border-border bg-background px-2 py-1 text-sm text-foreground">
-            <option value="">{templates.length ? "None" : "No templates yet"}</option>
+            <option value="">{templates.length ? en("None") : en("No templates yet")}</option>
             {templates.map((t) => (
               <option key={t.id} value={t.id}>
                 {t.name}
@@ -273,8 +275,8 @@ export default function EmailComposer({
         ref={subjectRef}
         value={subject}
         onChange={(e) => setSubject(e.target.value)}
-        placeholder="Subject"
-        aria-label="Subject"
+        placeholder={en("Subject")}
+        aria-label={en("Subject")}
         maxLength={300}
         className="w-full border-b border-border bg-transparent px-4 py-2.5 text-sm font-medium focus:outline-none"
       />
@@ -282,24 +284,24 @@ export default function EmailComposer({
       {ai && <AiDraft leadId={lead.leadId} getToken={getToken} onDraft={applyDraft} onClose={() => setAi(false)} suggest={lead.activities.some((a) => a.kind === "Email") ? "follow-up" : "first-reply"} />}
       {sentToAi && (
         <details className="border-b border-border px-4 py-1.5 text-xs text-muted-foreground">
-          <summary className="cursor-pointer">What the AI was shown (personal details removed)</summary>
+          <summary className="cursor-pointer">{en("What the AI was shown (personal details removed)")}</summary>
           <pre className="mt-1 max-h-48 overflow-auto whitespace-pre-wrap font-sans">{sentToAi}</pre>
         </details>
       )}
-      {aiSample && <p className="border-b border-border bg-amber-500/10 px-4 py-1.5 text-xs text-amber-900 dark:text-amber-200">Sample text: AI drafting isn&apos;t connected on this server.</p>}
+      {aiSample && <p className="border-b border-border bg-amber-500/10 px-4 py-1.5 text-xs text-amber-900 dark:text-amber-200">{en("Sample text: AI drafting isn't connected on this server.")}</p>}
 
       {/* Toolbar */}
-      <div className="flex flex-wrap items-center gap-0.5 border-b border-border px-2 py-1" role="toolbar" aria-label="Formatting">
+      <div className="flex flex-wrap items-center gap-0.5 border-b border-border px-2 py-1" role="toolbar" aria-label={en("Formatting")}>
         {[
-          { label: "Bold", icon: Bold, on: editor?.isActive("bold"), run: () => editor?.chain().focus().toggleBold().run() },
-          { label: "Italic", icon: Italic, on: editor?.isActive("italic"), run: () => editor?.chain().focus().toggleItalic().run() },
-          { label: "Underline", icon: Underline, on: editor?.isActive("underline"), run: () => editor?.chain().focus().toggleUnderline().run() },
-          { label: "Heading", icon: Heading3, on: editor?.isActive("heading"), run: () => editor?.chain().focus().toggleHeading({ level: 3 }).run() },
-          { label: "Bulleted list", icon: List, on: editor?.isActive("bulletList"), run: () => editor?.chain().focus().toggleBulletList().run() },
-          { label: "Numbered list", icon: ListOrdered, on: editor?.isActive("orderedList"), run: () => editor?.chain().focus().toggleOrderedList().run() },
-          { label: "Quote", icon: Quote, on: editor?.isActive("blockquote"), run: () => editor?.chain().focus().toggleBlockquote().run() },
-          { label: "Link", icon: Link2, on: editor?.isActive("link"), run: setLink },
-          { label: "Clear formatting", icon: RemoveFormatting, on: false, run: () => editor?.chain().focus().unsetAllMarks().clearNodes().run() },
+          { label: en("Bold"), icon: Bold, on: editor?.isActive("bold"), run: () => editor?.chain().focus().toggleBold().run() },
+          { label: en("Italic"), icon: Italic, on: editor?.isActive("italic"), run: () => editor?.chain().focus().toggleItalic().run() },
+          { label: en("Underline"), icon: Underline, on: editor?.isActive("underline"), run: () => editor?.chain().focus().toggleUnderline().run() },
+          { label: en("Heading"), icon: Heading3, on: editor?.isActive("heading"), run: () => editor?.chain().focus().toggleHeading({ level: 3 }).run() },
+          { label: en("Bulleted list"), icon: List, on: editor?.isActive("bulletList"), run: () => editor?.chain().focus().toggleBulletList().run() },
+          { label: en("Numbered list"), icon: ListOrdered, on: editor?.isActive("orderedList"), run: () => editor?.chain().focus().toggleOrderedList().run() },
+          { label: en("Quote"), icon: Quote, on: editor?.isActive("blockquote"), run: () => editor?.chain().focus().toggleBlockquote().run() },
+          { label: en("Link"), icon: Link2, on: editor?.isActive("link"), run: setLink },
+          { label: en("Clear formatting"), icon: RemoveFormatting, on: false, run: () => editor?.chain().focus().unsetAllMarks().clearNodes().run() },
         ].map(({ label, icon: Icon, on, run }) => (
           <button key={label} type="button" title={label} aria-label={label} aria-pressed={!!on} disabled={preview || !editor} onMouseDown={(e) => e.preventDefault()} onClick={run} className={`${tool} ${on ? active : ""}`}>
             <Icon aria-hidden="true" className="h-4 w-4" />
@@ -308,42 +310,42 @@ export default function EmailComposer({
         <span className="mx-1 h-5 w-px bg-border" aria-hidden="true" />
         <div className="relative">
           <button type="button" disabled={preview} onMouseDown={(e) => e.preventDefault()} onClick={() => setMenu(menu === "fields" ? null : "fields")} className="inline-flex items-center gap-1 rounded-md px-2 py-1.5 text-xs font-medium hover:bg-muted" aria-expanded={menu === "fields"}>
-            Insert field <ChevronDown aria-hidden="true" className="h-3.5 w-3.5" />
+            {en("Insert field ")}<ChevronDown aria-hidden="true" className="h-3.5 w-3.5" />
           </button>
           {menu === "fields" && (
-            <div className="absolute left-0 top-full z-30 mt-1 w-56 rounded-xl border border-border bg-card p-1 shadow-lg">
+            <div className="absolute start-0 top-full z-30 mt-1 w-56 rounded-xl border border-border bg-card p-1 shadow-lg">
               {FIELDS.map(([f, label]) => (
-                <button key={f} type="button" onMouseDown={(e) => e.preventDefault()} onClick={() => insertField(f)} className="flex w-full items-center justify-between rounded-lg px-2.5 py-1.5 text-left text-sm hover:bg-muted">
+                <button key={f} type="button" onMouseDown={(e) => e.preventDefault()} onClick={() => insertField(f)} className="flex w-full items-center justify-between rounded-lg px-2.5 py-1.5 text-start text-sm hover:bg-muted">
                   {label} <code className="text-xs text-muted-foreground">{f}</code>
                 </button>
               ))}
-              <p className="px-2.5 pb-1 pt-1.5 text-[11px] text-muted-foreground">Filled in for each person when it&apos;s sent. Works in the subject too.</p>
+              <p className="px-2.5 pb-1 pt-1.5 text-[11px] text-muted-foreground">{en("Filled in for each person when it's sent. Works in the subject too.")}</p>
             </div>
           )}
         </div>
-        <button type="button" disabled={preview} onClick={() => setAi(!ai)} aria-pressed={ai} className={`${tool} ml-auto inline-flex items-center gap-1 text-xs font-medium text-violet-700 dark:text-violet-300 ${ai ? "bg-violet-500/10" : ""}`}>
-          <Sparkles aria-hidden="true" className="h-4 w-4" /> Draft with AI
+        <button type="button" disabled={preview} onClick={() => setAi(!ai)} aria-pressed={ai} className={`${tool} ms-auto inline-flex items-center gap-1 text-xs font-medium text-violet-700 dark:text-violet-300 ${ai ? "bg-violet-500/10" : ""}`}>
+          <Sparkles aria-hidden="true" className="h-4 w-4" />{en(" Draft with AI")}
         </button>
-        <label className={`${tool} inline-flex cursor-pointer items-center gap-1 text-xs font-medium`} title="Attach files">
-          <Paperclip aria-hidden="true" className="h-4 w-4" /> {uploading ? "Attaching…" : "Attach"}
+        <label className={`${tool} inline-flex cursor-pointer items-center gap-1 text-xs font-medium`} title={en("Attach files")}>
+          <Paperclip aria-hidden="true" className="h-4 w-4" /> {uploading ? en("Attaching…") : en("Attach")}
           <input type="file" multiple className="sr-only" disabled={uploading || files.length >= 5} accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.jpg,.jpeg,.png" onChange={(e) => {
             attach(e.target.files);
             e.target.value = "";
           }} />
         </label>
         <button type="button" onClick={() => setPreview(!preview)} aria-pressed={preview} className={`${tool} inline-flex items-center gap-1 text-xs font-medium ${preview ? active : ""}`}>
-          {preview ? <PencilLine aria-hidden="true" className="h-4 w-4" /> : <Eye aria-hidden="true" className="h-4 w-4" />} {preview ? "Edit" : "Preview"}
+          {preview ? <PencilLine aria-hidden="true" className="h-4 w-4" /> : <Eye aria-hidden="true" className="h-4 w-4" />} {preview ? en("Edit") : en("Preview")}
         </button>
       </div>
 
       {/* Body or preview */}
       {preview ? (
         <div className="space-y-2 bg-muted/30 px-4 py-3 text-sm">
-          <p className="text-xs text-muted-foreground">What {first} will receive</p>
+          <p className="text-xs text-muted-foreground">{en("What ")}{first}{en(" will receive")}</p>
           <p className="font-semibold">{filled.subject || "(no subject)"}</p>
           <div className="email-body rounded-lg border border-border bg-background px-4 py-3" dangerouslySetInnerHTML={{ __html: filled.html || "<p></p>" }} />
           <p className="text-xs text-muted-foreground">
-            {lead.instituteName ?? "Your institute"} · Don&apos;t contact me again (link added automatically)
+            {lead.instituteName ?? "Your institute"}{en(" · Don't contact me again (link added automatically)")}
           </p>
         </div>
       ) : (
@@ -354,13 +356,13 @@ export default function EmailComposer({
         <ul className="flex flex-wrap gap-1.5 border-t border-border px-4 py-2">
           {files.map((f) => (
             <li key={f.id} className="inline-flex items-center gap-1 rounded-lg border border-border bg-muted/40 px-2 py-1 text-xs">
-              <Paperclip aria-hidden="true" className="h-3 w-3" /> {f.name} <span className="text-muted-foreground">({Math.ceil(f.size / 1024)} KB)</span>
+              <Paperclip aria-hidden="true" className="h-3 w-3" /> {f.name} <span className="text-muted-foreground">({Math.ceil(f.size / 1024)}{en(" KB)")}</span>
               <button type="button" aria-label={`Remove ${f.name}`} onClick={() => setFiles((x) => x.filter((y) => y.id !== f.id))} className="rounded p-0.5 hover:bg-muted">
                 <X aria-hidden="true" className="h-3 w-3" />
               </button>
             </li>
           ))}
-          <li className="self-center text-[11px] text-muted-foreground">{(totalSize / 1024 / 1024).toFixed(1)} of 10 MB</li>
+          <li className="self-center text-[11px] text-muted-foreground">{(totalSize / 1024 / 1024).toFixed(1)}{en(" of 10 MB")}</li>
         </ul>
       )}
 
@@ -372,37 +374,37 @@ export default function EmailComposer({
 
       {external === "opened" ? (
         <div className="flex flex-wrap items-center gap-2 border-t border-border bg-amber-500/5 px-4 py-3 text-sm">
-          <span>Sent it from your mail app?</span>
+          <span>{en("Sent it from your mail app?")}</span>
           <button type="button" onClick={recordExternal} className="rounded-lg bg-cyan-700 px-3 py-1.5 font-medium text-white hover:bg-cyan-800">
-            Yes, record it on the timeline
+            {en("Yes, record it on the timeline")}
           </button>
           <button type="button" onClick={() => setExternal(null)} className="rounded-lg border border-border px-3 py-1.5 hover:bg-muted">
-            Not yet
+            {en("Not yet")}
           </button>
-          <span className="w-full text-xs text-muted-foreground">Replies to your own mailbox don&apos;t come back to the timeline; attachments aren&apos;t carried over.</span>
+          <span className="w-full text-xs text-muted-foreground">{en("Replies to your own mailbox don't come back to the timeline; attachments aren't carried over.")}</span>
         </div>
       ) : (
         <div className="flex flex-wrap items-center gap-2 border-t border-border px-4 py-3">
           <div className="relative inline-flex">
-            <button type="button" onClick={doSend} disabled={busy || uploading} className="inline-flex items-center gap-1.5 rounded-l-lg bg-cyan-700 px-4 py-2 text-sm font-medium text-white hover:bg-cyan-800 disabled:opacity-50">
-              {sendAt ? <Clock aria-hidden="true" className="h-4 w-4" /> : <Send aria-hidden="true" className="h-4 w-4" />} {sendAt ? `Send ${fmt(new Date(sendAt))}` : "Send now"}
+            <button type="button" onClick={doSend} disabled={busy || uploading} className="inline-flex items-center gap-1.5 rounded-s-lg bg-cyan-700 px-4 py-2 text-sm font-medium text-white hover:bg-cyan-800 disabled:opacity-50">
+              {sendAt ? <Clock aria-hidden="true" className="h-4 w-4" /> : <Send aria-hidden="true" className="h-4 w-4" />} {sendAt ? `Send ${fmt(new Date(sendAt))}` : en("Send now")}
             </button>
-            <button type="button" aria-label="Send later" aria-expanded={laterOpen} onClick={() => setLaterOpen(!laterOpen)} className="rounded-r-lg border-l border-cyan-900/30 bg-cyan-700 px-2 text-white hover:bg-cyan-800">
+            <button type="button" aria-label={en("Send later")} aria-expanded={laterOpen} onClick={() => setLaterOpen(!laterOpen)} className="rounded-e-lg border-s border-cyan-900/30 bg-cyan-700 px-2 text-white hover:bg-cyan-800">
               <ChevronDown aria-hidden="true" className="h-4 w-4" />
             </button>
             {laterOpen && (
-              <div className="absolute bottom-full left-0 z-30 mb-1 w-64 rounded-xl border border-border bg-card p-1 shadow-lg">
-                <button type="button" onClick={() => { setSendAt(null); setLaterOpen(false); }} className="block w-full rounded-lg px-2.5 py-1.5 text-left text-sm hover:bg-muted">
-                  Send now
+              <div className="absolute bottom-full start-0 z-30 mb-1 w-64 rounded-xl border border-border bg-card p-1 shadow-lg">
+                <button type="button" onClick={() => { setSendAt(null); setLaterOpen(false); }} className="block w-full rounded-lg px-2.5 py-1.5 text-start text-sm hover:bg-muted">
+                  {en("Send now")}
                 </button>
                 {LATER.map(([label, d]) => (
-                  <button key={label} type="button" onClick={() => { setSendAt(d.toISOString()); setLaterOpen(false); }} className="flex w-full justify-between rounded-lg px-2.5 py-1.5 text-left text-sm hover:bg-muted">
+                  <button key={label} type="button" onClick={() => { setSendAt(d.toISOString()); setLaterOpen(false); }} className="flex w-full justify-between rounded-lg px-2.5 py-1.5 text-start text-sm hover:bg-muted">
                     {label} <span className="text-xs text-muted-foreground">{d.toLocaleDateString([], { weekday: "short", day: "numeric", month: "short" })}</span>
                   </button>
                 ))}
                 <div className="border-t border-border p-2">
                   <label className="text-xs text-muted-foreground">
-                    Pick a time
+                    {en("Pick a time")}
                     <input type="datetime-local" value={pickTime} onChange={(e) => setPickTime(e.target.value)} className="mt-1 block w-full rounded-md border border-border bg-background px-2 py-1 text-sm" />
                   </label>
                   <button
@@ -411,7 +413,7 @@ export default function EmailComposer({
                     onClick={() => { setSendAt(new Date(pickTime).toISOString()); setLaterOpen(false); }}
                     className="mt-1.5 w-full rounded-md bg-cyan-700 px-2 py-1 text-xs font-medium text-white disabled:opacity-40"
                   >
-                    Schedule
+                    {en("Schedule")}
                   </button>
                 </div>
               </div>
@@ -419,10 +421,10 @@ export default function EmailComposer({
           </div>
           <div className="relative">
             <button type="button" onClick={() => setMenu(menu === "app" ? null : "app")} className="inline-flex items-center gap-1 rounded-lg border border-border px-3 py-2 text-sm hover:bg-muted" aria-expanded={menu === "app"}>
-              Write in my email app <ChevronDown aria-hidden="true" className="h-3.5 w-3.5" />
+              {en("Write in my email app ")}<ChevronDown aria-hidden="true" className="h-3.5 w-3.5" />
             </button>
             {menu === "app" && (
-              <div className="absolute bottom-full left-0 z-30 mb-1 w-48 rounded-xl border border-border bg-card p-1 shadow-lg">
+              <div className="absolute bottom-full start-0 z-30 mb-1 w-48 rounded-xl border border-border bg-card p-1 shadow-lg">
                 {(
                   [
                     ["gmail", "Gmail"],
@@ -430,7 +432,7 @@ export default function EmailComposer({
                     ["default", "My default mail app"],
                   ] as const
                 ).map(([k, label]) => (
-                  <button key={k} type="button" onClick={() => openIn(k)} className="block w-full rounded-lg px-2.5 py-1.5 text-left text-sm hover:bg-muted">
+                  <button key={k} type="button" onClick={() => openIn(k)} className="block w-full rounded-lg px-2.5 py-1.5 text-start text-sm hover:bg-muted">
                     {label}
                   </button>
                 ))}
@@ -439,15 +441,15 @@ export default function EmailComposer({
           </div>
           {isAdmin && (
             <button type="button" onClick={saveTemplate} className="inline-flex items-center gap-1 rounded-lg px-2.5 py-2 text-sm text-muted-foreground hover:bg-muted hover:text-foreground">
-              <Save aria-hidden="true" className="h-4 w-4" /> Save as template
+              <Save aria-hidden="true" className="h-4 w-4" />{en(" Save as template")}
             </button>
           )}
-          <button type="button" onClick={onCancel} className="ml-auto rounded-lg border border-border px-3 py-2 text-sm hover:bg-muted">
-            Cancel
+          <button type="button" onClick={onCancel} className="ms-auto rounded-lg border border-border px-3 py-2 text-sm hover:bg-muted">
+            {en("Cancel")}
           </button>
           <p className="w-full text-xs text-muted-foreground">
             {sendAt ? `It goes out ${fmt(new Date(sendAt))} (your time); you can cancel it until then. ` : ""}
-            {lead.channels.replyByEmail ? "Their reply comes back to this timeline. " : ""}A link to stop further contact is added at the bottom.
+            {lead.channels.replyByEmail ? en("Their reply comes back to this timeline. ") : ""}{en("A link to stop further contact is added at the bottom.")}
           </p>
         </div>
       )}

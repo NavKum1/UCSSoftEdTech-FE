@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { useApi } from "@/lib/appAuth";
 import { Badge, Button, Card, ErrorBanner, Field, Loading, PageHeader, SuccessBanner, formatDate, useCareerT, useLoad } from "@/components/career/ui";
 import { DriveMessageDefaults } from "@/components/career/channels/DriveMessageDefaults";
+import { useEn } from "@/lib/english/EnglishProvider";
 
 interface ChannelInfo {
   channel: string;
@@ -166,6 +167,7 @@ function ConnectionCard({ s, onSaved }: { s: Settings; onSaved: (v: Settings) =>
 
 /** Career center: Pulse Relay connection, channels, allowed types, quiet hours, template mapping and the send log. */
 export default function ChannelSettings() {
+  const en = useEn();
   const t = useCareerT("careerCenterChatSms");
   const api = useApi();
   const loaded = useLoad(() => api<Settings>("/api/career/channels/admin/settings"), [api]);
@@ -358,7 +360,7 @@ export default function ChannelSettings() {
                     </Field>
                     <Field label={t("waParams")} hint={t("waParamsHint", { names: PARAMS.join(", ") })}>
                       {(p) => (
-                        <input {...p} dir="ltr" value={(wa.params ?? []).join(", ")} placeholder="brand, link"
+                        <input {...p} dir="ltr" value={(wa.params ?? []).join(", ")} placeholder={en("brand, link")}
                           onChange={(e) => setWa(type, { ...wa, params: e.target.value.split(",").map((x) => x.trim()).filter(Boolean) })} />
                       )}
                     </Field>

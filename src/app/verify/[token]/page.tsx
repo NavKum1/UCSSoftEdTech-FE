@@ -28,6 +28,7 @@ import {
   statusBadgeClass,
   verifyJwsInBrowser,
 } from "@/lib/credentialVerification";
+import { useEn } from "@/lib/english/EnglishProvider";
 
 interface CodeFile {
   name: string;
@@ -77,9 +78,10 @@ async function loadCredential(token: string): Promise<LoadState> {
 }
 
 function TranscriptView({ transcript }: { transcript: string }) {
+  const en = useEn();
   const lines = transcript.split("\n").filter((l) => l.trim().length > 0);
   return (
-    <div className="space-y-2 max-h-112 overflow-y-auto pr-1">
+    <div className="space-y-2 max-h-112 overflow-y-auto pe-1">
       {lines.map((line, i) => {
         const colon = line.indexOf(":");
         const speaker = colon > 0 && colon <= 15 ? line.slice(0, colon).trim() : null;
@@ -88,8 +90,8 @@ function TranscriptView({ transcript }: { transcript: string }) {
         return (
           <div key={i} className="text-sm leading-relaxed">
             {speaker && (
-              <span className={`font-semibold mr-1.5 ${isInterviewer ? "text-indigo-700 dark:text-indigo-300" : "text-foreground"}`}>
-                {isInterviewer ? "Interviewer" : "Candidate"}:
+              <span className={`font-semibold me-1.5 ${isInterviewer ? "text-indigo-700 dark:text-indigo-300" : "text-foreground"}`}>
+                {isInterviewer ? en("Interviewer") : en("Candidate")}:
               </span>
             )}
             <span className="text-muted-foreground">{text}</span>
@@ -101,8 +103,9 @@ function TranscriptView({ transcript }: { transcript: string }) {
 }
 
 function CodeViewer({ files }: { files: CodeFile[] }) {
+  const en = useEn();
   const [active, setActive] = useState(0);
-  if (files.length === 0) return <p className="text-sm text-muted-foreground">No code was stored for this submission.</p>;
+  if (files.length === 0) return <p className="text-sm text-muted-foreground">{en("No code was stored for this submission.")}</p>;
   const file = files[Math.min(active, files.length - 1)];
   return (
     <div className="rounded-xl border border-border overflow-hidden">
@@ -126,7 +129,7 @@ function CodeViewer({ files }: { files: CodeFile[] }) {
       <pre role="region" tabIndex={0} aria-label={`Code: ${file.name}`} className="p-3 text-xs font-mono leading-relaxed overflow-auto max-h-128 bg-slate-50 dark:bg-slate-950/60 text-foreground">
         {file.content.split("\n").map((line, i) => (
           <div key={i} className="flex">
-            <span className="select-none w-10 shrink-0 text-right pr-3 text-muted-foreground/60">{i + 1}</span>
+            <span className="select-none w-10 shrink-0 text-end pe-3 text-muted-foreground/60">{i + 1}</span>
             <span className="whitespace-pre">{line}</span>
           </div>
         ))}
@@ -136,6 +139,7 @@ function CodeViewer({ files }: { files: CodeFile[] }) {
 }
 
 export default function VerifyTokenPage() {
+  const en = useEn();
   const params = useParams<{ token: string }>();
   const token = typeof params?.token === "string" ? params.token : "";
   const [state, setState] = useState<LoadState>({ kind: "loading" });
@@ -153,7 +157,7 @@ export default function VerifyTokenPage() {
   if (state.kind === "loading") {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center text-sm text-muted-foreground gap-2">
-        <Loader2 className="w-4 h-4 animate-spin" /> Verifying credential...
+        <Loader2 className="w-4 h-4 animate-spin" />{en(" Verifying credential...")}
       </div>
     );
   }
@@ -164,15 +168,15 @@ export default function VerifyTokenPage() {
         <div className="max-w-xl mx-auto px-6 py-20 text-center space-y-4">
           <ShieldAlert className="w-10 h-10 mx-auto text-amber-600 dark:text-amber-400" />
           <h1 className="text-xl font-bold text-foreground">
-            {state.kind === "not-found" ? "This link isn't valid" : "Verification unavailable"}
+            {state.kind === "not-found" ? en("This link isn't valid") : en("Verification unavailable")}
           </h1>
           <p className="text-sm text-muted-foreground">
             {state.kind === "not-found"
-              ? "It may have expired, or the holder may have withdrawn it. Ask them for a new link, or paste their credential JWS into the verifier."
+              ? en("It may have expired, or the holder may have withdrawn it. Ask them for a new link, or paste their credential JWS into the verifier.")
               : state.message}
           </p>
           <Link href="/verify" className="inline-block px-4 py-2 rounded-xl bg-indigo-600 text-white text-sm font-semibold">
-            Open the JWS verifier
+            {en("Open the JWS verifier")}
           </Link>
         </div>
       </div>
@@ -194,10 +198,10 @@ export default function VerifyTokenPage() {
       <div className="max-w-4xl mx-auto px-6 py-10 space-y-6">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
-            <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Edulexa credential</p>
+            <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">{en("Edulexa credential")}</p>
             <h1 className="text-2xl font-black tracking-tight text-foreground mt-1">{claims.task.title}</h1>
             <p className="text-sm text-muted-foreground mt-1 flex items-center gap-1.5">
-              <User className="w-4 h-4" /> Held by <span className="font-semibold text-foreground">{claims.name}</span>
+              <User className="w-4 h-4" />{en(" Held by ")}<span className="font-semibold text-foreground">{claims.name}</span>
             </p>
           </div>
           <span className={`px-3 py-1 rounded-lg text-xs font-bold uppercase tracking-wider border ${statusBadgeClass(data.status)}`}>
@@ -207,12 +211,12 @@ export default function VerifyTokenPage() {
 
         {data.status === "Expired" && (
           <div className="p-3 rounded-xl border border-slate-400/40 bg-slate-50 dark:bg-slate-500/10 text-sm text-foreground flex gap-2">
-            <Info className="w-4 h-4 shrink-0 mt-0.5" /> This credential passed its validity date on {formatDate(claims.exp)}. The results below are historical.
+            <Info className="w-4 h-4 shrink-0 mt-0.5" />{en(" This credential passed its validity date on ")}{formatDate(claims.exp)}{en(". The results below are historical.")}
           </div>
         )}
         {data.status === "Under review" && (
           <div className="p-3 rounded-xl border border-amber-400/50 bg-amber-50 dark:bg-amber-500/10 text-sm text-amber-900 dark:text-amber-100 flex gap-2">
-            <Info className="w-4 h-4 shrink-0 mt-0.5" /> Some integrity signals on this submission are waiting for a human reviewer. That is not a finding of misconduct.
+            <Info className="w-4 h-4 shrink-0 mt-0.5" />{en(" Some integrity signals on this submission are waiting for a human reviewer. That is not a finding of misconduct.")}
           </div>
         )}
 
@@ -222,26 +226,26 @@ export default function VerifyTokenPage() {
             {check.state === "verified" ? (
               <>
                 <ShieldCheck className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
-                <span className="text-emerald-700 dark:text-emerald-300">Signature verified ✓ (ES256, key id {check.keyId})</span>
+                <span className="text-emerald-700 dark:text-emerald-300">{en("Signature verified ✓ (ES256, key id ")}{check.keyId})</span>
               </>
             ) : check.state === "failed" ? (
               <>
                 <XCircle className="w-5 h-5 text-red-600 dark:text-red-400" />
-                <span className="text-red-700 dark:text-red-300">Signature check failed in your browser</span>
+                <span className="text-red-700 dark:text-red-300">{en("Signature check failed in your browser")}</span>
               </>
             ) : (
               <>
                 <KeyRound className="w-5 h-5 text-muted-foreground" />
-                <span>Signature verified by the Edulexa server (ES256, key id {data.issuerKeyId})</span>
+                <span>{en("Signature verified by the Edulexa server (ES256, key id ")}{data.issuerKeyId})</span>
               </>
             )}
           </div>
           <p className="text-xs text-muted-foreground">
-            {check.detail} Issuer: <span className="font-mono">{claims.iss}</span>. Checked {formatDate(data.verifiedAt)}.
+            {check.detail}{en(" Issuer: ")}<span className="font-mono">{claims.iss}</span>{en(". Checked ")}{formatDate(data.verifiedAt)}.
           </p>
           {claims.evidenceHash && (
             <p className="text-xs text-muted-foreground break-all">
-              Evidence hash: <span className="font-mono">{claims.evidenceHash}</span>
+              {en("Evidence hash: ")}<span className="font-mono">{claims.evidenceHash}</span>
             </p>
           )}
         </div>
@@ -249,98 +253,98 @@ export default function VerifyTokenPage() {
         {/* Results */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           <div className="glass-panel rounded-2xl p-4 border border-border">
-            <p className="text-[11px] uppercase tracking-wider text-muted-foreground font-bold">Tests passed</p>
+            <p className="text-[11px] uppercase tracking-wider text-muted-foreground font-bold">{en("Tests passed")}</p>
             <p className="text-xl font-black mt-1">
               {results.testsTotal ? `${results.testsPassed ?? 0}/${results.testsTotal}` : "—"}
             </p>
           </div>
           <div className="glass-panel rounded-2xl p-4 border border-border">
-            <p className="text-[11px] uppercase tracking-wider text-muted-foreground font-bold">Voice defense</p>
+            <p className="text-[11px] uppercase tracking-wider text-muted-foreground font-bold">{en("Voice defense")}</p>
             <p className="text-xl font-black mt-1">{Math.round(results.defenseScore)}/100</p>
           </div>
           {results.defectsTotal !== undefined && (
             <div className="glass-panel rounded-2xl p-4 border border-border">
-              <p className="text-[11px] uppercase tracking-wider text-muted-foreground font-bold">Planted defects fixed</p>
+              <p className="text-[11px] uppercase tracking-wider text-muted-foreground font-bold">{en("Planted defects fixed")}</p>
               <p className="text-xl font-black mt-1">
                 {results.defectsFixed ?? 0}/{results.defectsTotal}
               </p>
             </div>
           )}
           <div className="glass-panel rounded-2xl p-4 border border-border">
-            <p className="text-[11px] uppercase tracking-wider text-muted-foreground font-bold">Integrity</p>
+            <p className="text-[11px] uppercase tracking-wider text-muted-foreground font-bold">{en("Integrity")}</p>
             <p className={`text-sm font-bold mt-2 ${integrityTone}`}>{claims.integrity}</p>
           </div>
         </div>
 
         <div className="glass-panel rounded-2xl p-5 border border-border grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
           <div>
-            <span className="text-muted-foreground">Task type: </span>
+            <span className="text-muted-foreground">{en("Task type: ")}</span>
             {claims.task.taskType ?? "—"}
           </div>
           <div>
-            <span className="text-muted-foreground">Language: </span>
+            <span className="text-muted-foreground">{en("Language: ")}</span>
             {claims.task.language ?? "—"}
           </div>
           <div>
-            <span className="text-muted-foreground">AI policy: </span>
+            <span className="text-muted-foreground">{en("AI policy: ")}</span>
             {claims.task.aiPolicy === "Prohibited"
-              ? "No AI assistance allowed"
+              ? en("No AI assistance allowed")
               : claims.task.aiPolicy === "Allowed"
-                ? "Built-in AI assistant allowed (logged)"
+                ? en("Built-in AI assistant allowed (logged)")
                 : claims.task.aiPolicy === "Evaluated"
-                  ? "AI use allowed and part of the review"
+                  ? en("AI use allowed and part of the review")
                   : "—"}
           </div>
           <div className="flex items-center gap-1.5">
             <Calendar className="w-4 h-4 text-muted-foreground" />
-            Issued {formatDate(claims.iat)} · valid until {formatDate(claims.exp)}
+            {en("Issued ")}{formatDate(claims.iat)}{en(" · valid until ")}{formatDate(claims.exp)}
           </div>
           {evidence.included.humanDecision && (
             <div className="sm:col-span-2 flex items-center gap-1.5">
               <BadgeCheck className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
               {claims.humanDecision === "Advanced"
-                ? "A human reviewer at a hiring company advanced this submission."
-                : "No human reviewer decision is included."}
+                ? en("A human reviewer at a hiring company advanced this submission.")
+                : en("No human reviewer decision is included.")}
             </div>
           )}
         </div>
 
         {/* Evidence */}
         <section className="space-y-4">
-          <h2 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Evidence shared by the holder</h2>
+          <h2 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">{en("Evidence shared by the holder")}</h2>
           {!evidence.included.code && !evidence.included.recording && !evidence.included.transcript && (
             <div className="glass-panel rounded-2xl p-5 border border-border text-sm text-muted-foreground">
-              The holder shared the signed results only, without code, recording or transcript.
+              {en("The holder shared the signed results only, without code, recording or transcript.")}
             </div>
           )}
           {evidence.included.code && (
             <div className="glass-panel rounded-2xl p-5 border border-border space-y-3">
               <h3 className="text-sm font-bold flex items-center gap-2">
-                <FileCode2 className="w-4 h-4" /> Submitted code
+                <FileCode2 className="w-4 h-4" />{en(" Submitted code")}
               </h3>
-              {evidence.codeFiles ? <CodeViewer files={evidence.codeFiles} /> : <p className="text-sm text-muted-foreground">No code is attached to this credential.</p>}
+              {evidence.codeFiles ? <CodeViewer files={evidence.codeFiles} /> : <p className="text-sm text-muted-foreground">{en("No code is attached to this credential.")}</p>}
             </div>
           )}
           {evidence.included.recording && (
             <div className="glass-panel rounded-2xl p-5 border border-border space-y-3">
               <h3 className="text-sm font-bold flex items-center gap-2">
-                <Mic className="w-4 h-4" /> Defense recording
+                <Mic className="w-4 h-4" />{en(" Defense recording")}
               </h3>
               {evidence.recordingUrl ? (
                 <audio controls preload="none" src={evidence.recordingUrl} className="w-full">
-                  Your browser can&apos;t play this recording.
+                  {en("Your browser can't play this recording.")}
                 </audio>
               ) : (
-                <p className="text-sm text-muted-foreground">No recording is available for this defense.</p>
+                <p className="text-sm text-muted-foreground">{en("No recording is available for this defense.")}</p>
               )}
             </div>
           )}
           {evidence.included.transcript && (
             <div className="glass-panel rounded-2xl p-5 border border-border space-y-3">
               <h3 className="text-sm font-bold flex items-center gap-2">
-                <ScrollText className="w-4 h-4" /> Defense transcript
+                <ScrollText className="w-4 h-4" />{en(" Defense transcript")}
               </h3>
-              {evidence.transcript ? <TranscriptView transcript={evidence.transcript} /> : <p className="text-sm text-muted-foreground">No transcript is available.</p>}
+              {evidence.transcript ? <TranscriptView transcript={evidence.transcript} /> : <p className="text-sm text-muted-foreground">{en("No transcript is available.")}</p>}
             </div>
           )}
         </section>
@@ -349,9 +353,9 @@ export default function VerifyTokenPage() {
         <section className="glass-panel rounded-2xl p-5 border border-border grid grid-cols-1 md:grid-cols-2 gap-5">
           <div>
             <h3 className="text-sm font-bold flex items-center gap-2 mb-2">
-              <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" /> What this shows
+              <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />{en(" What this shows")}
             </h3>
-            <ul className="space-y-1.5 text-xs text-muted-foreground list-disc pl-4">
+            <ul className="space-y-1.5 text-xs text-muted-foreground list-disc ps-4">
               {CREDENTIAL_DISCLAIMER_POINTS.proves.map((p) => (
                 <li key={p}>{p}</li>
               ))}
@@ -359,9 +363,9 @@ export default function VerifyTokenPage() {
           </div>
           <div>
             <h3 className="text-sm font-bold flex items-center gap-2 mb-2">
-              <AlertTriangle className="w-4 h-4 text-amber-600 dark:text-amber-400" /> What it doesn&apos;t show
+              <AlertTriangle className="w-4 h-4 text-amber-600 dark:text-amber-400" />{en(" What it doesn't show")}
             </h3>
-            <ul className="space-y-1.5 text-xs text-muted-foreground list-disc pl-4">
+            <ul className="space-y-1.5 text-xs text-muted-foreground list-disc ps-4">
               {CREDENTIAL_DISCLAIMER_POINTS.doesNotProve.map((p) => (
                 <li key={p}>{p}</li>
               ))}
@@ -370,10 +374,10 @@ export default function VerifyTokenPage() {
         </section>
 
         <p className="text-xs text-muted-foreground">
-          This link was shared {data.share.recipientLabel ? `with ${data.share.recipientLabel} ` : ""}and stops working on{" "}
-          {formatDate(data.share.expiresAt)}. The holder can see when it was viewed, the browser type and a one-way hash of the network address (never the address itself).{" "}
+          {en("This link was shared ")}{data.share.recipientLabel ? `with ${data.share.recipientLabel} ` : ""}{en("and stops working on")}{" "}
+          {formatDate(data.share.expiresAt)}{en(". The holder can see when it was viewed, the browser type and a one-way hash of the network address (never the address itself).")}{" "}
           <Link href="/verify" className="underline">
-            Verify a credential JWS
+            {en("Verify a credential JWS")}
           </Link>
         </p>
       </div>

@@ -28,6 +28,7 @@ import {
 import Link from "next/link";
 import { CancellationQuizModal } from "@/components/CancellationQuizModal";
 import { AccessNotice, useLegacyApi } from "@/lib/legacyApi";
+import { useEn } from "@/lib/english/EnglishProvider";
 
 interface JobPreset {
   stream: string;
@@ -179,6 +180,7 @@ const VOICES = [
 ];
 
 export default function MultiStreamInterviewPracticePage() {
+  const en = useEn();
   const { apiFetch, access } = useLegacyApi();
   const [selectedStream, setSelectedStream] = useState<string>("Technical");
   const [jobTitle, setJobTitle] = useState<string>(JOB_PRESETS[0].title);
@@ -624,10 +626,10 @@ export default function MultiStreamInterviewPracticePage() {
         candidateWords,
         transcripts: finalTranscripts,
         dimensions: [
-          { label: "Domain & Technical Competency", score: calculatedScore },
-          { label: "Communication & STAR Articulation", score: Math.min(100, calculatedScore + (hasDeflection ? -15 : 5)) },
-          { label: "Handling Pushback & Trade-offs", score: Math.max(0, calculatedScore - 5) },
-          { label: "Confidence & Executive Presence", score: calculatedScore },
+          { label: en("Domain & Technical Competency"), score: calculatedScore },
+          { label: en("Communication & STAR Articulation"), score: Math.min(100, calculatedScore + (hasDeflection ? -15 : 5)) },
+          { label: en("Handling Pushback & Trade-offs"), score: Math.max(0, calculatedScore - 5) },
+          { label: en("Confidence & Executive Presence"), score: calculatedScore },
         ],
         strengths,
         improvements
@@ -686,13 +688,13 @@ export default function MultiStreamInterviewPracticePage() {
           <div className="space-y-2">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-semibold">
               <Sparkles className="w-3.5 h-3.5" />
-              <span>Multi-Stream AI Voice Interview Simulation</span>
+              <span>{en("Multi-Stream AI Voice Interview Simulation")}</span>
             </div>
             <h1 className="text-3xl sm:text-4xl font-extrabold text-foreground tracking-tight">
-              Job-Specific Interview Practice Studio
+              {en("Job-Specific Interview Practice Studio")}
             </h1>
             <p className="text-sm text-muted-foreground max-w-2xl">
-              Simulate live, low-latency conversational voice interviews with real-time speech-to-text transcript streaming across Engineering, HR, Product, Sales, Finance, and Healthcare.
+              {en("Simulate live, low-latency conversational voice interviews with real-time speech-to-text transcript streaming across Engineering, HR, Product, Sales, Finance, and Healthcare.")}
             </p>
           </div>
 
@@ -701,14 +703,14 @@ export default function MultiStreamInterviewPracticePage() {
               href="/prep/exam"
               className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-border bg-card/60 hover:bg-card text-foreground text-xs font-semibold transition-colors"
             >
-              Written Exam Practice
+              {en("Written Exam Practice")}
             </Link>
             <Link
               href="/prep/counselling"
               className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-border bg-card/60 hover:bg-card text-foreground text-xs font-semibold transition-colors"
             >
               <Compass className="w-3.5 h-3.5 text-primary" />
-              Career Diagnostic
+              {en("Career Diagnostic")}
             </Link>
           </div>
         </div>
@@ -721,9 +723,9 @@ export default function MultiStreamInterviewPracticePage() {
             </div>
             <button
               onClick={() => setErrorMsg(null)}
-              className="font-bold underline ml-4 hover:opacity-80 cursor-pointer"
+              className="font-bold underline ms-4 hover:opacity-80 cursor-pointer"
             >
-              Dismiss
+              {en("Dismiss")}
             </button>
           </div>
         )}
@@ -736,18 +738,18 @@ export default function MultiStreamInterviewPracticePage() {
             {/* Left Column (5 cols): AI Voice Studio & Equalizer HUD */}
             <div className="lg:col-span-5 p-6 md:p-8 rounded-3xl border border-primary/30 bg-card/90 shadow-2xl relative overflow-hidden space-y-6">
               {/* Visualizer Glow */}
-              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-primary/10 rounded-full blur-[100px] pointer-events-none" />
+              <div className="absolute top-1/2 start-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-primary/10 rounded-full blur-[100px] pointer-events-none" />
 
               <div className="flex items-center justify-between relative z-10">
                 <div>
                   <span className="px-2.5 py-1 rounded-md bg-primary/10 text-primary text-[10px] font-bold uppercase tracking-wider">
-                    Live Session • {selectedStream}
+                    {en("Live Session • ")}{selectedStream}
                   </span>
                   <h2 className="text-lg font-bold text-foreground mt-1">
                     {jobTitle}
                   </h2>
                   <p className="text-xs text-muted-foreground">
-                    Voice: <span className="font-semibold text-foreground uppercase">{selectedVoice}</span>
+                    {en("Voice: ")}<span className="font-semibold text-foreground uppercase">{selectedVoice}</span>
                   </p>
                 </div>
 
@@ -796,10 +798,10 @@ export default function MultiStreamInterviewPracticePage() {
 
                 <div className="text-center space-y-1">
                   <span className="text-xs font-semibold px-3 py-1 rounded-full bg-muted border border-border/80 text-foreground">
-                    {aiStatus === "speaking" ? "AI Interviewer Speaking..." : "Listening to Candidate..."}
+                    {aiStatus === "speaking" ? en("AI Interviewer Speaking...") : en("Listening to Candidate...")}
                   </span>
                   <p className="text-[11px] text-muted-foreground">
-                    {isMuted ? "Your microphone is muted." : "Speak naturally into your mic. Spoken words transcribe live."}
+                    {isMuted ? en("Your microphone is muted.") : en("Speak naturally into your mic. Spoken words transcribe live.")}
                   </p>
                 </div>
               </div>
@@ -817,7 +819,7 @@ export default function MultiStreamInterviewPracticePage() {
                     }`}
                   >
                     {isMuted ? <MicOff className="w-3.5 h-3.5" /> : <Mic className="w-3.5 h-3.5" />}
-                    <span>{isMuted ? "Unmute Mic" : "Mute Mic"}</span>
+                    <span>{isMuted ? en("Unmute Mic") : en("Mute Mic")}</span>
                   </button>
 
                   <button
@@ -826,7 +828,7 @@ export default function MultiStreamInterviewPracticePage() {
                     className="flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl border border-rose-500/30 text-rose-500 hover:bg-rose-500/10 text-xs font-semibold transition-colors cursor-pointer"
                   >
                     <PhoneOff className="w-3.5 h-3.5" />
-                    <span>Cancel</span>
+                    <span>{en("Cancel")}</span>
                   </button>
                 </div>
 
@@ -836,18 +838,18 @@ export default function MultiStreamInterviewPracticePage() {
                   className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-primary text-primary-foreground text-xs font-bold hover:opacity-95 transition-opacity cursor-pointer shadow-lg shadow-primary/20"
                 >
                   <Award className="w-4 h-4" />
-                  <span>End &amp; Generate Feedback Scorecard</span>
+                  <span>{en("End & Generate Feedback Scorecard")}</span>
                 </button>
               </div>
 
               {/* Real-time Tips Card */}
-              <div className="p-3.5 rounded-2xl bg-muted/30 border border-border/80 text-left space-y-1.5">
+              <div className="p-3.5 rounded-2xl bg-muted/30 border border-border/80 text-start space-y-1.5">
                 <div className="text-[11px] font-bold text-foreground flex items-center gap-1.5">
                   <Sparkles className="w-3.5 h-3.5 text-primary" />
-                  <span>Real-Time Answering Strategy</span>
+                  <span>{en("Real-Time Answering Strategy")}</span>
                 </div>
                 <p className="text-[11px] text-muted-foreground leading-relaxed">
-                  Structure responses around situation, key trade-offs, and latency/business impacts. The interviewer will challenge edge-cases.
+                  {en("Structure responses around situation, key trade-offs, and latency/business impacts. The interviewer will challenge edge-cases.")}
                 </p>
               </div>
             </div>
@@ -860,10 +862,10 @@ export default function MultiStreamInterviewPracticePage() {
                   <div className="w-2.5 h-2.5 rounded-full bg-rose-500 animate-ping" />
                   <span className="text-xs font-bold text-foreground flex items-center gap-1.5">
                     <Radio className="w-3.5 h-3.5 text-rose-500" />
-                    <span>Live Speech-to-Text Transcript Stream</span>
+                    <span>{en("Live Speech-to-Text Transcript Stream")}</span>
                   </span>
                   <span className="px-2 py-0.5 rounded-full text-[10px] font-mono bg-primary/10 text-primary border border-primary/30">
-                    {transcripts.length} Turns
+                    {transcripts.length}{en(" Turns")}
                   </span>
                 </div>
 
@@ -873,19 +875,19 @@ export default function MultiStreamInterviewPracticePage() {
                     className={`px-2 py-1 rounded-lg text-[10px] font-semibold border transition-colors cursor-pointer ${
                       autoScroll ? "bg-primary/10 text-primary border-primary/30" : "bg-muted text-muted-foreground border-border"
                     }`}
-                    title="Toggle auto-scrolling as words arrive"
+                    title={en("Toggle auto-scrolling as words arrive")}
                   >
-                    Auto-scroll: {autoScroll ? "ON" : "OFF"}
+                    {en("Auto-scroll: ")}{autoScroll ? en("ON") : en("OFF")}
                   </button>
 
                   {transcripts.length > 0 && (
                     <button
                       onClick={() => handleCopyTranscript(transcripts)}
                       className="px-2.5 py-1 rounded-lg bg-card hover:bg-muted border border-border text-[11px] font-medium text-foreground flex items-center space-x-1 cursor-pointer"
-                      title="Copy full transcript to clipboard"
+                      title={en("Copy full transcript to clipboard")}
                     >
                       {copiedTranscript ? <Check className="w-3 h-3 text-emerald-500" /> : <Copy className="w-3 h-3 text-muted-foreground" />}
-                      <span>{copiedTranscript ? "Copied" : "Copy"}</span>
+                      <span>{copiedTranscript ? en("Copied") : en("Copy")}</span>
                     </button>
                   )}
                 </div>
@@ -896,9 +898,9 @@ export default function MultiStreamInterviewPracticePage() {
                 {transcripts.length === 0 && !currentAiInterim && !currentCandidateInterim && (
                   <div className="h-full flex flex-col items-center justify-center text-center p-6 space-y-3 text-muted-foreground">
                     <MessageSquare className="w-8 h-8 opacity-40 animate-pulse text-primary" />
-                    <p className="font-semibold text-foreground text-xs">Live Conversation Feed Connecting...</p>
+                    <p className="font-semibold text-foreground text-xs">{en("Live Conversation Feed Connecting...")}</p>
                     <p className="text-[11px] max-w-sm leading-relaxed">
-                      Your spoken dialogue and the AI interviewer&apos;s responses appear here as you speak.
+                      {en("Your spoken dialogue and the AI interviewer's responses appear here as you speak.")}
                     </p>
                   </div>
                 )}
@@ -915,7 +917,7 @@ export default function MultiStreamInterviewPracticePage() {
                         {isAi ? (
                           <>
                             <Bot className="w-3 h-3 text-indigo-500" />
-                            <span className="font-bold text-indigo-600 dark:text-indigo-400">AI Interviewer ({selectedVoice})</span>
+                            <span className="font-bold text-indigo-600 dark:text-indigo-400">{en("AI Interviewer (")}{selectedVoice})</span>
                           </>
                         ) : (
                           <>
@@ -930,8 +932,8 @@ export default function MultiStreamInterviewPracticePage() {
                       <div
                         className={`max-w-[85%] rounded-2xl p-3.5 leading-relaxed shadow-sm ${
                           isAi
-                            ? "bg-indigo-500/10 border border-indigo-500/30 text-foreground rounded-tl-sm"
-                            : "bg-emerald-500/10 border border-emerald-500/30 text-foreground rounded-tr-sm"
+                            ? "bg-indigo-500/10 border border-indigo-500/30 text-foreground rounded-ss-sm"
+                            : "bg-emerald-500/10 border border-emerald-500/30 text-foreground rounded-se-sm"
                         }`}
                       >
                         {msg.text}
@@ -945,11 +947,11 @@ export default function MultiStreamInterviewPracticePage() {
                   <div className="flex flex-col space-y-1 items-start">
                     <div className="flex items-center space-x-1.5 text-[10px] text-indigo-500 px-1 font-bold">
                       <Bot className="w-3 h-3 animate-spin" />
-                      <span>AI Interviewer Speaking...</span>
+                      <span>{en("AI Interviewer Speaking...")}</span>
                     </div>
-                    <div className="max-w-[85%] rounded-2xl rounded-tl-sm p-3.5 bg-indigo-500/10 border border-indigo-500/40 text-foreground shadow-sm">
+                    <div className="max-w-[85%] rounded-2xl rounded-ss-sm p-3.5 bg-indigo-500/10 border border-indigo-500/40 text-foreground shadow-sm">
                       <span>{currentAiInterim}</span>
-                      <span className="inline-block w-1.5 h-3 ml-1 bg-indigo-500 animate-pulse" />
+                      <span className="inline-block w-1.5 h-3 ms-1 bg-indigo-500 animate-pulse" />
                     </div>
                   </div>
                 )}
@@ -959,11 +961,11 @@ export default function MultiStreamInterviewPracticePage() {
                   <div className="flex flex-col space-y-1 items-end">
                     <div className="flex items-center space-x-1.5 text-[10px] text-emerald-500 px-1 font-bold">
                       <Mic className="w-3 h-3 animate-pulse" />
-                      <span>Transcribing {candidateName}...</span>
+                      <span>{en("Transcribing ")}{candidateName}...</span>
                     </div>
-                    <div className="max-w-[85%] rounded-2xl rounded-tr-sm p-3.5 bg-emerald-500/10 border border-emerald-500/40 text-foreground shadow-sm italic">
+                    <div className="max-w-[85%] rounded-2xl rounded-se-sm p-3.5 bg-emerald-500/10 border border-emerald-500/40 text-foreground shadow-sm italic">
                       <span>{currentCandidateInterim}</span>
-                      <span className="inline-block w-1.5 h-3 ml-1 bg-emerald-500 animate-pulse" />
+                      <span className="inline-block w-1.5 h-3 ms-1 bg-emerald-500 animate-pulse" />
                     </div>
                   </div>
                 )}
@@ -975,10 +977,10 @@ export default function MultiStreamInterviewPracticePage() {
               <div className="p-3 border-t border-border bg-muted/20 flex items-center justify-between text-[11px] text-muted-foreground shrink-0">
                 <div className="flex items-center space-x-2">
                   <Activity className="w-3 h-3 text-emerald-500" />
-                  <span>Ultra Low-Latency WebRTC STT Active</span>
+                  <span>{en("Ultra Low-Latency WebRTC STT Active")}</span>
                 </div>
                 <div className="font-mono text-[10px]">
-                  Audio Sampling: 16kHz Opus
+                  {en("Audio Sampling: 16kHz Opus")}
                 </div>
               </div>
             </div>
@@ -994,13 +996,13 @@ export default function MultiStreamInterviewPracticePage() {
             </div>
             <div className="space-y-1.5 max-w-lg">
               <span className="px-3 py-1 rounded-full bg-primary/10 text-primary text-[10px] font-bold uppercase tracking-wider">
-                AI Assessment Engine Active
+                {en("AI Assessment Engine Active")}
               </span>
               <h2 className="text-2xl font-extrabold text-foreground">
-                Analyzing Interview Transcript &amp; Technical Depth
+                {en("Analyzing Interview Transcript & Technical Depth")}
               </h2>
               <p className="text-xs text-muted-foreground leading-relaxed">
-                Evaluating dialogue turns against the competency rubric for <span className="font-semibold text-foreground">{jobTitle}</span>. Scoring relevance, domain mastery, STAR reasoning, and trade-off precision...
+                {en("Evaluating dialogue turns against the competency rubric for ")}<span className="font-semibold text-foreground">{jobTitle}</span>{en(". Scoring relevance, domain mastery, STAR reasoning, and trade-off precision...")}
               </p>
             </div>
           </div>
@@ -1014,34 +1016,34 @@ export default function MultiStreamInterviewPracticePage() {
                 {completedReport.overallScore === 0 || completedReport.status === "DISQUALIFIED" ? (
                   <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-red-600/20 border border-red-500/60 text-red-400 text-xs font-bold uppercase tracking-wider">
                     <XCircle className="w-3.5 h-3.5 text-red-500" />
-                    <span>Candidate Disqualified • Zero Readiness (0%)</span>
+                    <span>{en("Candidate Disqualified • Zero Readiness (0%)")}</span>
                   </div>
                 ) : completedReport.overallScore >= 85 ? (
                   <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-500/15 border border-purple-500/40 text-purple-400 text-xs font-semibold">
                     <Sparkles className="w-3.5 h-3.5" />
-                    <span>Exceptional • Staff &amp; Principal Bar ({completedReport.overallScore}%)</span>
+                    <span>{en("Exceptional • Staff & Principal Bar (")}{completedReport.overallScore}%)</span>
                   </div>
                 ) : completedReport.overallScore >= 70 ? (
                   <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/40 text-emerald-400 text-xs font-semibold">
                     <CheckCircle2 className="w-3.5 h-3.5" />
-                    <span>Qualified • Meets Enterprise Hiring Bar ({completedReport.overallScore}%)</span>
+                    <span>{en("Qualified • Meets Enterprise Hiring Bar (")}{completedReport.overallScore}%)</span>
                   </div>
                 ) : completedReport.overallScore >= 50 ? (
                   <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/15 border border-amber-500/40 text-amber-400 text-xs font-semibold">
                     <AlertTriangle className="w-3.5 h-3.5" />
-                    <span>Developing • Substantive Gaps Identified ({completedReport.overallScore}%)</span>
+                    <span>{en("Developing • Substantive Gaps Identified (")}{completedReport.overallScore}%)</span>
                   </div>
                 ) : (
                   <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-rose-500/15 border border-rose-500/40 text-rose-400 text-xs font-semibold">
                     <AlertTriangle className="w-3.5 h-3.5" />
-                    <span>Inadequate • Below Minimum Hiring Bar ({completedReport.overallScore}%)</span>
+                    <span>{en("Inadequate • Below Minimum Hiring Bar (")}{completedReport.overallScore}%)</span>
                   </div>
                 )}
                 <h2 className="text-2xl font-bold text-foreground">
-                  Performance Scorecard: {completedReport.jobTitle}
+                  {en("Performance Scorecard: ")}{completedReport.jobTitle}
                 </h2>
                 <p className="text-xs text-muted-foreground">
-                  Stream: {completedReport.stream} • Duration: {completedReport.durationMinutes} min • Candidate Turns: {completedReport.candidateTurns}
+                  {en("Stream: ")}{completedReport.stream}{en(" • Duration: ")}{completedReport.durationMinutes}{en(" min • Candidate Turns: ")}{completedReport.candidateTurns}
                 </p>
               </div>
 
@@ -1053,7 +1055,7 @@ export default function MultiStreamInterviewPracticePage() {
                     : "border-rose-500/30 bg-rose-500/5 text-rose-500"
               }`}>
                 <span className="text-[10px] font-bold uppercase tracking-wider opacity-80">
-                  Overall Readiness
+                  {en("Overall Readiness")}
                 </span>
                 <p className="text-3xl font-extrabold">
                   {completedReport.overallScore}%
@@ -1066,7 +1068,7 @@ export default function MultiStreamInterviewPracticePage() {
               <div className="p-4 rounded-2xl border border-red-500/40 bg-red-500/10 text-red-400 space-y-1.5 animate-in fade-in">
                 <div className="flex items-center gap-2 font-bold text-xs text-red-400">
                   <ShieldAlert className="w-4 h-4 text-red-500 shrink-0" />
-                  <span>Zero-Tolerance Disqualification Notice</span>
+                  <span>{en("Zero-Tolerance Disqualification Notice")}</span>
                 </div>
                 <p className="text-xs text-red-300 leading-relaxed">
                   {completedReport.disqualificationReason}
@@ -1100,7 +1102,7 @@ export default function MultiStreamInterviewPracticePage() {
               <div className="p-4 rounded-xl border border-emerald-500/20 bg-emerald-500/5 space-y-2">
                 <span className="text-xs font-bold text-emerald-500 uppercase tracking-wider flex items-center gap-1.5">
                   <CheckCircle2 className="w-3.5 h-3.5" />
-                  Demonstrated Strengths
+                  {en("Demonstrated Strengths")}
                 </span>
                 {completedReport.strengths && completedReport.strengths.length > 0 ? (
                   <ul className="text-xs space-y-1.5 text-muted-foreground">
@@ -1113,7 +1115,7 @@ export default function MultiStreamInterviewPracticePage() {
                   </ul>
                 ) : (
                   <p className="text-xs text-muted-foreground italic">
-                    No demonstrated competencies met the evaluation standard for this role.
+                    {en("No demonstrated competencies met the evaluation standard for this role.")}
                   </p>
                 )}
               </div>
@@ -1121,7 +1123,7 @@ export default function MultiStreamInterviewPracticePage() {
               <div className="p-4 rounded-xl border border-amber-500/20 bg-amber-500/5 space-y-2">
                 <span className="text-xs font-bold text-amber-500 uppercase tracking-wider flex items-center gap-1.5">
                   <AlertTriangle className="w-3.5 h-3.5" />
-                  Critical Improvements &amp; Gaps
+                  {en("Critical Improvements & Gaps")}
                 </span>
                 <ul className="text-xs space-y-1.5 text-muted-foreground">
                   {completedReport.improvements.map((imp: string, i: number) => (
@@ -1140,8 +1142,8 @@ export default function MultiStreamInterviewPracticePage() {
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 border-b border-border">
                   <div className="flex items-center space-x-2">
                     <MessageSquare className="w-4 h-4 text-indigo-500" />
-                    <h3 className="text-xs font-bold text-foreground">Verified Speech-to-Text Conversation Transcript</h3>
-                    <span className="text-[10px] font-mono text-muted-foreground">({completedReport.transcripts.length} exchanges)</span>
+                    <h3 className="text-xs font-bold text-foreground">{en("Verified Speech-to-Text Conversation Transcript")}</h3>
+                    <span className="text-[10px] font-mono text-muted-foreground">({completedReport.transcripts.length}{en(" exchanges)")}</span>
                   </div>
 
                   <div className="flex items-center space-x-2">
@@ -1150,7 +1152,7 @@ export default function MultiStreamInterviewPracticePage() {
                       className="px-2.5 py-1 rounded-lg bg-card hover:bg-muted border border-border text-[11px] font-medium text-foreground flex items-center space-x-1 cursor-pointer"
                     >
                       {copiedTranscript ? <Check className="w-3 h-3 text-emerald-500" /> : <Copy className="w-3 h-3 text-muted-foreground" />}
-                      <span>{copiedTranscript ? "Copied" : "Copy Log"}</span>
+                      <span>{copiedTranscript ? en("Copied") : en("Copy Log")}</span>
                     </button>
 
                     <button
@@ -1158,12 +1160,12 @@ export default function MultiStreamInterviewPracticePage() {
                       className="px-2.5 py-1 rounded-lg bg-indigo-600/10 hover:bg-indigo-600/20 text-indigo-700 dark:text-indigo-400 border border-indigo-500/30 text-[11px] font-medium flex items-center space-x-1 cursor-pointer"
                     >
                       <Download className="w-3 h-3" />
-                      <span>Download .TXT</span>
+                      <span>{en("Download .TXT")}</span>
                     </button>
                   </div>
                 </div>
 
-                <div className="max-h-64 overflow-y-auto space-y-2.5 pr-1 text-xs">
+                <div className="max-h-64 overflow-y-auto space-y-2.5 pe-1 text-xs">
                   {completedReport.transcripts.map((m: TranscriptMessage, i: number) => {
                     const isAi = m.role === "interviewer";
                     return (
@@ -1189,14 +1191,14 @@ export default function MultiStreamInterviewPracticePage() {
                 className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary text-primary-foreground font-semibold text-xs hover:opacity-95 transition-opacity cursor-pointer"
               >
                 <RotateCcw className="w-3.5 h-3.5" />
-                Practice Another Round
+                {en("Practice Another Round")}
               </button>
               <button
                 type="button"
                 onClick={() => setCompletedReport(null)}
                 className="px-4 py-2.5 rounded-xl border border-border text-xs font-semibold text-foreground hover:bg-muted/40 transition-colors cursor-pointer"
               >
-                Configure New Role
+                {en("Configure New Role")}
               </button>
             </div>
           </div>
@@ -1210,7 +1212,7 @@ export default function MultiStreamInterviewPracticePage() {
               {/* Stream Selector */}
               <div className="space-y-3">
                 <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                  1. Select Professional Stream
+                  {en("1. Select Professional Stream")}
                 </label>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {STREAM_OPTIONS.map((stream) => (
@@ -1218,7 +1220,7 @@ export default function MultiStreamInterviewPracticePage() {
                       key={stream.id}
                       type="button"
                       onClick={() => setSelectedStream(stream.id)}
-                      className={`p-4 rounded-2xl border text-left transition-all cursor-pointer ${
+                      className={`p-4 rounded-2xl border text-start transition-all cursor-pointer ${
                         selectedStream === stream.id
                           ? "border-primary bg-primary/5 text-foreground ring-1 ring-primary shadow-sm"
                           : "border-border/80 bg-card/60 text-muted-foreground hover:bg-card hover:text-foreground"
@@ -1239,10 +1241,10 @@ export default function MultiStreamInterviewPracticePage() {
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
                   <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                    2. Select AI Interviewer Persona &amp; Scrutiny Bar
+                    {en("2. Select AI Interviewer Persona & Scrutiny Bar")}
                   </label>
                   <span className="text-[11px] text-muted-foreground">
-                    Calibrated interrogation style
+                    {en("Calibrated interrogation style")}
                   </span>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -1251,7 +1253,7 @@ export default function MultiStreamInterviewPracticePage() {
                       key={persona.id}
                       type="button"
                       onClick={() => setSelectedPersona(persona.id)}
-                      className={`p-4 rounded-2xl border text-left transition-all cursor-pointer ${
+                      className={`p-4 rounded-2xl border text-start transition-all cursor-pointer ${
                         selectedPersona === persona.id
                           ? "border-primary bg-primary/5 text-foreground ring-1 ring-primary shadow-sm"
                           : "border-border/80 bg-card/60 text-muted-foreground hover:bg-card hover:text-foreground"
@@ -1280,35 +1282,35 @@ export default function MultiStreamInterviewPracticePage() {
               <div className="space-y-4 p-6 rounded-2xl border border-border bg-card/60">
                 <div className="flex items-center justify-between">
                   <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                    3. Target Job Details
+                    {en("3. Target Job Details")}
                   </label>
                   <span className="text-[11px] text-muted-foreground">
-                    Customize for any real job post
+                    {en("Customize for any real job post")}
                   </span>
                 </div>
 
                 <div className="space-y-2">
                   <label className="text-xs font-semibold text-foreground">
-                    Job Title / Role
+                    {en("Job Title / Role")}
                   </label>
                   <input
                     type="text"
                     value={jobTitle}
                     onChange={(e) => setJobTitle(e.target.value)}
-                    placeholder="e.g. Senior Backend Engineer"
+                    placeholder={en("e.g. Senior Backend Engineer")}
                     className="w-full px-3.5 py-2.5 rounded-xl border border-border bg-background text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
                   />
                 </div>
 
                 <div className="space-y-2">
                   <label className="text-xs font-semibold text-foreground">
-                    Job Description / Key Requirements
+                    {en("Job Description / Key Requirements")}
                   </label>
                   <textarea
                     rows={4}
                     value={jobDescription}
                     onChange={(e) => setJobDescription(e.target.value)}
-                    placeholder="Paste the job requirements, tech stack, or responsibilities here..."
+                    placeholder={en("Paste the job requirements, tech stack, or responsibilities here...")}
                     className="w-full px-3.5 py-2.5 rounded-xl border border-border bg-background text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-primary leading-relaxed"
                   />
                 </div>
@@ -1316,7 +1318,7 @@ export default function MultiStreamInterviewPracticePage() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-1.5">
                     <label className="text-xs font-semibold text-foreground">
-                      Candidate Name
+                      {en("Candidate Name")}
                     </label>
                     <input
                       type="text"
@@ -1328,7 +1330,7 @@ export default function MultiStreamInterviewPracticePage() {
 
                   <div className="space-y-1.5">
                     <label className="text-xs font-semibold text-foreground">
-                      AI Voice Profile
+                      {en("AI Voice Profile")}
                     </label>
                     <select
                       value={selectedVoice}
@@ -1351,7 +1353,7 @@ export default function MultiStreamInterviewPracticePage() {
                   className="w-full py-3.5 px-4 rounded-xl bg-primary text-primary-foreground font-bold text-sm flex items-center justify-center gap-2 hover:opacity-95 transition-opacity disabled:opacity-50 shadow-md cursor-pointer"
                 >
                   <Play className="w-4 h-4 fill-current" />
-                  <span>{isConnecting ? "Connecting Voice Session & Transcriber..." : "Launch Live AI Voice Interview"}</span>
+                  <span>{isConnecting ? en("Connecting Voice Session & Transcriber...") : en("Launch Live AI Voice Interview")}</span>
                 </button>
               </div>
             </div>
@@ -1359,7 +1361,7 @@ export default function MultiStreamInterviewPracticePage() {
             {/* Right Col: Preset Library */}
             <div className="space-y-4">
               <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                Quick Industry Presets
+                {en("Quick Industry Presets")}
               </label>
 
               <div className="space-y-3">
@@ -1368,7 +1370,7 @@ export default function MultiStreamInterviewPracticePage() {
                     key={idx}
                     type="button"
                     onClick={() => handleApplyPreset(preset)}
-                    className="w-full p-4 rounded-2xl border border-border/80 bg-card/60 hover:bg-card hover:border-primary/40 text-left transition-all space-y-1.5 group cursor-pointer"
+                    className="w-full p-4 rounded-2xl border border-border/80 bg-card/60 hover:bg-card hover:border-primary/40 text-start transition-all space-y-1.5 group cursor-pointer"
                   >
                     <div className="flex items-center justify-between">
                       <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded bg-muted text-muted-foreground group-hover:text-primary transition-colors">

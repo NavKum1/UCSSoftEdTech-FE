@@ -30,12 +30,13 @@ function took(seconds: number): string {
 
 /** The result the form worked out, with the institute's notes on how to talk with this person */
 function FormResultCard({ r, name, from }: { r: FormResultView; name: string; from: LeadFull["formResultFrom"] }) {
+  const en = useEn();
   const max = Math.max(1, ...(r.points ?? []).map((p) => p.points));
   return (
     <section className="space-y-3">
       {from?.otherInquiry && (
         <p className="text-xs text-muted-foreground">
-          From their other inquiry{from.form ? ` (${from.form})` : ""}, sent <time dateTime={from.at}>{new Date(from.at).toLocaleDateString(undefined, { dateStyle: "medium" })}</time>.
+          {en("From their other inquiry")}{from.form ? ` (${from.form})` : ""}{en(", sent ")}<time dateTime={from.at}>{new Date(from.at).toLocaleDateString(undefined, { dateStyle: "medium" })}</time>.
         </p>
       )}
       {r.outcome && (
@@ -60,7 +61,7 @@ function FormResultCard({ r, name, from }: { r: FormResultView; name: string; fr
       )}
       {(r.points?.length ?? 0) > 1 && (
         <details className="text-xs">
-          <summary className="cursor-pointer text-muted-foreground">How close it was</summary>
+          <summary className="cursor-pointer text-muted-foreground">{en("How close it was")}</summary>
           <ul className="mt-2 space-y-1.5">
             {r.points!.map((p) => (
               <li key={p.name} className="grid grid-cols-[7rem_minmax(0,1fr)_2.5rem] items-center gap-2">
@@ -68,7 +69,7 @@ function FormResultCard({ r, name, from }: { r: FormResultView; name: string; fr
                 <span className="h-2 rounded-full bg-muted" aria-hidden="true">
                   <span className="block h-full rounded-full bg-amber-500" style={{ width: `${(p.points / max) * 100}%` }} />
                 </span>
-                <span className="text-right tabular-nums text-muted-foreground">{p.points}</span>
+                <span className="text-end tabular-nums text-muted-foreground">{p.points}</span>
               </li>
             ))}
           </ul>
@@ -81,9 +82,10 @@ function FormResultCard({ r, name, from }: { r: FormResultView; name: string; fr
 /** Every visit to the institute's forms by this person: sent, waiting for the email to be confirmed, stopped part way
  * (where, after how long), or still going */
 function Visits({ visits }: { visits: FormVisit[] }) {
+  const en = useEn();
   return (
     <section>
-      <h3 className="font-semibold">Visits to your forms</h3>
+      <h3 className="font-semibold">{en("Visits to your forms")}</h3>
       <ul className="mt-1 divide-y divide-border">
         {visits.map((v) => (
           <li key={v.id} className="flex items-start gap-2 py-2">
@@ -100,16 +102,16 @@ function Visits({ visits }: { visits: FormVisit[] }) {
               <p className="font-medium">{v.form}</p>
               <p className="text-xs text-muted-foreground">
                 {v.status === "completed"
-                  ? "Sent"
+                  ? en("Sent")
                   : v.status === "awaitingConfirmation"
-                    ? "Sent, waiting for them to confirm their email"
+                    ? en("Sent, waiting for them to confirm their email")
                     : v.status === "inProgress"
-                      ? "Filling it in now"
-                      : "Stopped part way"}
-                {(v.status === "inProgress" || v.status === "stopped") && v.step ? <>, last answer in “{v.step}”</> : null} after {took(v.seconds)} ·{" "}
+                      ? en("Filling it in now")
+                      : en("Stopped part way")}
+                {(v.status === "inProgress" || v.status === "stopped") && v.step ? <>{en(", last answer in “")}{v.step}”</> : null} after {took(v.seconds)} ·{" "}
                 <time dateTime={v.startedAt}>{new Date(v.startedAt).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" })}</time>
                 {v.campaign ? ` · ${v.campaign}` : ""}
-                {v.otherInquiry ? " · another inquiry" : ""}
+                {v.otherInquiry ? en(" · another inquiry") : ""}
               </p>
             </div>
           </li>
@@ -130,49 +132,50 @@ function countryName(code: string): string {
 
 /** What the server saw when the form was sent: device, country (no IP address is kept), the page, and the spam check */
 function Visitor({ v }: { v: VisitorInfo }) {
+  const en = useEn();
   const flagged = v.spamScore != null && v.spamScore >= v.spamThreshold;
   return (
     <section>
-      <h3 className="font-semibold">How they sent it</h3>
+      <h3 className="font-semibold">{en("How they sent it")}</h3>
       <dl className="mt-1 grid grid-cols-[8rem_minmax(0,1fr)] gap-x-3 gap-y-1 text-xs">
-        <dt className="text-muted-foreground">When</dt>
+        <dt className="text-muted-foreground">{en("When")}</dt>
         <dd>
           {new Date(v.sentAt).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" })}
           {v.seconds ? ` · took ${took(v.seconds)}` : ""}
         </dd>
         {v.device && (
           <>
-            <dt className="text-muted-foreground">Device</dt>
+            <dt className="text-muted-foreground">{en("Device")}</dt>
             <dd>{v.device}</dd>
           </>
         )}
         {v.country && (
           <>
-            <dt className="text-muted-foreground">Country</dt>
+            <dt className="text-muted-foreground">{en("Country")}</dt>
             <dd>{countryName(v.country)}</dd>
           </>
         )}
         {v.page && (
           <>
-            <dt className="text-muted-foreground">Page</dt>
+            <dt className="text-muted-foreground">{en("Page")}</dt>
             <dd className="break-all">{v.page}</dd>
           </>
         )}
         {v.campaign && (
           <>
-            <dt className="text-muted-foreground">Campaign</dt>
+            <dt className="text-muted-foreground">{en("Campaign")}</dt>
             <dd>{v.campaign}</dd>
           </>
         )}
-        <dt className="text-muted-foreground">Sent from</dt>
-        <dd>{v.channel === "website" ? "Your website form" : "Inside Edulexa"}</dd>
+        <dt className="text-muted-foreground">{en("Sent from")}</dt>
+        <dd>{v.channel === "website" ? en("Your website form") : en("Inside Edulexa")}</dd>
         {v.spamScore != null && (
           <>
-            <dt className="text-muted-foreground">Spam check</dt>
+            <dt className="text-muted-foreground">{en("Spam check")}</dt>
             <dd className={`flex items-start gap-1 ${flagged ? "text-red-800 dark:text-red-300" : "text-emerald-800 dark:text-emerald-300"}`}>
               {flagged ? <ShieldAlert aria-hidden="true" className="h-3.5 w-3.5 shrink-0" /> : <ShieldCheck aria-hidden="true" className="h-3.5 w-3.5 shrink-0" />}
               <span>
-                {flagged ? "Flagged" : "Passed"} (score {v.spamScore}; {v.spamThreshold} or more is flagged)
+                {flagged ? en("Flagged") : en("Passed")}{en(" (score ")}{v.spamScore}; {v.spamThreshold}{en(" or more is flagged)")}
                 {v.spamReasons ? `: ${v.spamReasons}` : ""}
               </span>
             </dd>
@@ -193,9 +196,9 @@ function AnswerValue({ s, tips }: { s: Situation; tips?: string[] }) {
         <div className="mt-1 overflow-x-auto">
           <table className="w-full text-xs">
             <thead>
-              <tr className="text-left text-muted-foreground">
+              <tr className="text-start text-muted-foreground">
                 {s.table.columns.map((c) => (
-                  <th key={c} className="pb-1 pr-3 font-medium">
+                  <th key={c} className="pb-1 pe-3 font-medium">
                     {c}
                   </th>
                 ))}
@@ -205,7 +208,7 @@ function AnswerValue({ s, tips }: { s: Situation; tips?: string[] }) {
               {s.table.rows.map((r, ri) => (
                 <tr key={ri} className="border-t border-border">
                   {r.map((cell, ci) => (
-                    <td key={ci} className="py-1 pr-3">
+                    <td key={ci} className="py-1 pe-3">
                       {cell || "—"}
                     </td>
                   ))}
@@ -244,7 +247,7 @@ function GuideText({ text }: { text: string }) {
     <div className="mt-1.5 space-y-1.5">
       {blocks.map((b, i) =>
         b.points ? (
-          <ul key={i} className="list-disc space-y-0.5 pl-5">
+          <ul key={i} className="list-disc space-y-0.5 ps-5">
             {b.lines.map((l, j) => (
               <li key={j}>{l}</li>
             ))}
@@ -262,6 +265,7 @@ function GuideText({ text }: { text: string }) {
  * to it and the notes beside the answers) and the Quick summary (every answer, compact).
  */
 function FormAnswers({ lead, tips }: { lead: LeadFull; tips: Map<string, string[]> }) {
+  const en = useEn();
   const answers = lead.situation ?? [];
   const parts = (lead.guide ?? [])
     .map((g) => ({ ...g, answers: g.questions.map((id) => answers.find((a) => a.questionId === id)).filter((a): a is Situation => !!a) }))
@@ -285,9 +289,9 @@ function FormAnswers({ lead, tips }: { lead: LeadFull; tips: Map<string, string[
   return (
     <section>
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <h3 className="font-semibold">Their answers to your guidance form</h3>
+        <h3 className="font-semibold">{en("Their answers to your guidance form")}</h3>
         {parts.length > 0 && (
-          <div role="tablist" aria-label="How to show the answers" className="inline-flex rounded-lg bg-muted p-0.5">
+          <div role="tablist" aria-label={en("How to show the answers")} className="inline-flex rounded-lg bg-muted p-0.5">
             {tab("insights", "Insights summary")}
             {tab("quick", "Quick summary")}
           </div>
@@ -319,7 +323,7 @@ function FormAnswers({ lead, tips }: { lead: LeadFull; tips: Map<string, string[
           ))}
           {rest.length > 0 && (
             <div className="space-y-2">
-              <p className="text-xs font-semibold text-muted-foreground">Other answers</p>
+              <p className="text-xs font-semibold text-muted-foreground">{en("Other answers")}</p>
               <dl className="space-y-2">
                 {rest.map((s, j) => (
                   <div key={j}>
@@ -357,7 +361,7 @@ export default function LeadProfile({ lead }: { lead: LeadFull }) {
     <div className="space-y-6 text-sm">
       {lead.formResult && <FormResultCard r={lead.formResult} from={lead.formResultFrom} name={lead.name?.split(" ")[0] || "This person"} />}
       <section>
-        <h3 className="font-semibold">{lead.requestType === "guidance" ? "What they're unsure about" : "Their question"}</h3>
+        <h3 className="font-semibold">{lead.requestType === "guidance" ? en("What they're unsure about") : en("Their question")}</h3>
         <p className="mt-1 whitespace-pre-wrap text-muted-foreground">{lead.notes?.trim() || "They didn't add a question."}</p>
       </section>
 
@@ -373,12 +377,12 @@ export default function LeadProfile({ lead }: { lead: LeadFull }) {
         <>
           <section>
             <h3 className="font-semibold">{en("Counselling quiz result")}</h3>
-            <p className="mt-1 text-xs text-muted-foreground">Taken {new Date(q.takenAt).toLocaleDateString()}. Shared by the person with this inquiry.</p>
+            <p className="mt-1 text-xs text-muted-foreground">{en("Taken ")}{new Date(q.takenAt).toLocaleDateString()}{en(". Shared by the person with this inquiry.")}</p>
             <p className="mt-2">
-              Suggested area: <span className="font-medium">{q.primaryTrack}</span>
+              {en("Suggested area: ")}<span className="font-medium">{q.primaryTrack}</span>
               {q.secondaryTrack && (
                 <>
-                  , then <span className="font-medium">{q.secondaryTrack}</span>
+                  {en(", then ")}<span className="font-medium">{q.secondaryTrack}</span>
                 </>
               )}
             </p>
@@ -398,12 +402,12 @@ export default function LeadProfile({ lead }: { lead: LeadFull }) {
                 </li>
               ))}
             </ul>
-            <p className="mt-1 text-xs text-muted-foreground">Score per area: of the questions that offered that area, the share where they picked it.</p>
+            <p className="mt-1 text-xs text-muted-foreground">{en("Score per area: of the questions that offered that area, the share where they picked it.")}</p>
           </section>
 
           {q.reasons.length > 0 && (
             <section>
-              <h3 className="font-semibold">Why the quiz suggested it</h3>
+              <h3 className="font-semibold">{en("Why the quiz suggested it")}</h3>
               <ul className="mt-1 space-y-1.5">
                 {q.reasons.map((r, i) => (
                   <li key={i}>
@@ -416,8 +420,8 @@ export default function LeadProfile({ lead }: { lead: LeadFull }) {
           )}
 
           <details>
-            <summary className="cursor-pointer font-semibold">All their answers ({q.answers.length})</summary>
-            <ol className="mt-2 list-decimal space-y-2 pl-5">
+            <summary className="cursor-pointer font-semibold">{en("All their answers (")}{q.answers.length})</summary>
+            <ol className="mt-2 list-decimal space-y-2 ps-5">
               {q.answers.map((a, i) => (
                 <li key={i}>
                   <span className="text-muted-foreground">{a.question}</span>

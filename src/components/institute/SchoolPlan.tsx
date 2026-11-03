@@ -94,7 +94,7 @@ export function SchoolPlanBanner() {
   const styles = {
     info: "border-indigo-200 bg-indigo-50 text-indigo-950 dark:border-indigo-900 dark:bg-indigo-950/40 dark:text-indigo-100",
     warn: "border-amber-300 bg-amber-50 text-amber-950 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-100",
-    error: "border-red-300 bg-red-50 text-red-950 dark:border-red-900 dark:bg-red-950/40 dark:text-red-100",
+    error: en("border-red-300 bg-red-50 text-red-950 dark:border-red-900 dark:bg-red-950/40 dark:text-red-100"),
   }[tone];
   const Icon = tone === "info" ? Info : AlertTriangle;
   return (
@@ -104,7 +104,7 @@ export function SchoolPlanBanner() {
         {text}
       </span>
       <Link href="/institute/billing" className="font-semibold underline underline-offset-2">
-        {s.status === "ReadOnly" ? "Choose a plan" : "Billing"}
+        {s.status === "ReadOnly" ? en("Choose a plan") : en("Billing")}
       </Link>
     </div>
   );

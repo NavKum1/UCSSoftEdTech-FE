@@ -17,6 +17,7 @@ import {
   User,
   Filter,
 } from "lucide-react";
+import { useEn } from "@/lib/english/EnglishProvider";
 
 interface EvaluationData {
   technicalScore: number;
@@ -47,6 +48,7 @@ interface DialogueMessage {
 }
 
 export default function StudentInterviewReplayPage() {
+  const en = useEn();
   const { apiFetch, ready, access } = useLegacyApi();
   const params = useParams();
   const router = useRouter();
@@ -213,7 +215,7 @@ export default function StudentInterviewReplayPage() {
       <div className="min-h-screen bg-background text-foreground flex items-center justify-center font-sans">
         <div className="flex flex-col items-center gap-3">
           <div className="w-10 h-10 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin" />
-          <p className="text-sm text-muted-foreground font-mono">Loading Interview Recording & Feedback...</p>
+          <p className="text-sm text-muted-foreground font-mono">{en("Loading Interview Recording & Feedback...")}</p>
         </div>
       </div>
     );
@@ -226,7 +228,7 @@ export default function StudentInterviewReplayPage() {
           <div className="w-12 h-12 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-700 dark:text-amber-400 flex items-center justify-center mx-auto">
             <AlertTriangle className="w-6 h-6" />
           </div>
-          <h2 className="text-xl font-bold text-foreground">Interview Recording Not Found</h2>
+          <h2 className="text-xl font-bold text-foreground">{en("Interview Recording Not Found")}</h2>
           <p className="text-sm text-muted-foreground">
             {fetchError || "The requested interview recording could not be found. Please check your interview history."}
           </p>
@@ -234,7 +236,7 @@ export default function StudentInterviewReplayPage() {
             onClick={() => router.push("/dashboard")}
             className="w-full py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-sm transition-colors cursor-pointer"
           >
-            Return to Dashboard
+            {en("Return to Dashboard")}
           </button>
         </div>
       </div>
@@ -264,33 +266,33 @@ export default function StudentInterviewReplayPage() {
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
           <div className="flex items-center space-x-3 cursor-pointer" onClick={() => router.push("/")}>
             <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-600 to-purple-600 flex items-center justify-center font-bold text-white shadow-lg shadow-indigo-500/20">
-              BD
+              {en("BD")}
             </div>
             <div>
               <div className="flex items-center space-x-2">
-                <span className="font-bold text-base text-foreground tracking-wide">BUILD & DEFEND</span>
+                <span className="font-bold text-base text-foreground tracking-wide">{en("BUILD & DEFEND")}</span>
                 <span className="text-[10px] px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-600 dark:text-indigo-300 font-semibold border border-indigo-500/30">
-                  Recording & Review
+                  {en("Recording & Review")}
                 </span>
               </div>
-              <p className="text-[11px] text-muted-foreground">Interview Review & Discussion Transcript</p>
+              <p className="text-[11px] text-muted-foreground">{en("Interview Review & Discussion Transcript")}</p>
             </div>
           </div>
 
           <div className="flex items-center space-x-3">
             <button
               onClick={() => router.push("/leaderboard")}
-              className="text-xs text-amber-700 dark:text-amber-400 hover:text-amber-600 dark:text-amber-300 flex items-center space-x-1.5 transition-colors cursor-pointer mr-2"
+              className="text-xs text-amber-700 dark:text-amber-400 hover:text-amber-600 dark:text-amber-300 flex items-center space-x-1.5 transition-colors cursor-pointer me-2"
             >
               <Award className="w-3.5 h-3.5" />
-              <span>Leaderboard</span>
+              <span>{en("Leaderboard")}</span>
             </button>
             <button
               onClick={() => router.push("/dashboard")}
               className="text-xs text-muted-foreground hover:text-foreground flex items-center space-x-1.5 transition-colors cursor-pointer"
             >
               <ArrowLeft className="w-3.5 h-3.5" />
-              <span>Back to Dashboard</span>
+              <span>{en("Back to Dashboard")}</span>
             </button>
           </div>
         </div>
@@ -306,11 +308,11 @@ export default function StudentInterviewReplayPage() {
                 {sessionData?.jobDescription || "Interview Conversation Review"}
               </h1>
               <span className="text-[10px] px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-600 dark:text-emerald-300 font-semibold border border-emerald-500/30">
-                Completed
+                {en("Completed")}
               </span>
             </div>
             <p className="text-xs text-muted-foreground">
-              Candidate: <span className="text-foreground font-medium">{sessionData?.candidateName}</span> • Reference ID:{" "}
+              {en("Candidate: ")}<span className="text-foreground font-medium">{sessionData?.candidateName}</span>{en(" • Reference ID:")}{" "}
               <span className="font-mono text-indigo-600 dark:text-indigo-300">{sessionId.substring(0, 12)}...</span>
             </p>
           </div>
@@ -318,11 +320,11 @@ export default function StudentInterviewReplayPage() {
           {/* Scores Pills */}
           <div className="flex items-center space-x-4">
             <div className="glass-panel rounded-2xl px-4 py-2 border border-border/80 bg-card/60 text-center">
-              <span className="text-[10px] uppercase font-bold text-muted-foreground">Technical Skills</span>
+              <span className="text-[10px] uppercase font-bold text-muted-foreground">{en("Technical Skills")}</span>
               <p className="text-lg font-black text-indigo-700 dark:text-indigo-400">
                 {typeof sessionData?.evaluation?.technicalScore === "number" && sessionData.evaluation.technicalScore >= 0
                   ? `${sessionData.evaluation.technicalScore.toFixed(1)}%`
-                  : "Not scored"}
+                  : en("Not scored")}
               </p>
             </div>
 
@@ -334,7 +336,7 @@ export default function StudentInterviewReplayPage() {
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2 text-xs font-semibold text-indigo-600 dark:text-indigo-300">
               <Sparkles className="w-4 h-4 text-indigo-700 dark:text-indigo-400" />
-              <span>Interview Audio Recording</span>
+              <span>{en("Interview Audio Recording")}</span>
             </div>
             <span className="text-[11px] font-mono text-muted-foreground">
               {formatTime(currentTime)} / {formatTime(duration)}
@@ -362,7 +364,7 @@ export default function StudentInterviewReplayPage() {
                 onClick={togglePlay}
                 className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 flex items-center justify-center text-white shadow-lg shadow-indigo-500/25 transition-all cursor-pointer"
               >
-                {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4 ml-0.5" />}
+                {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4 ms-0.5" />}
               </button>
 
               {/* Reset to Start */}
@@ -391,7 +393,7 @@ export default function StudentInterviewReplayPage() {
                 onClick={cycleSpeed}
                 className="px-3 py-1.5 rounded-xl bg-muted hover:bg-slate-700 text-foreground text-xs font-semibold font-mono border border-border transition-all cursor-pointer"
               >
-                {playbackSpeed}x Speed
+                {playbackSpeed}{en("x Speed")}
               </button>
             </div>
           </div>
@@ -401,9 +403,9 @@ export default function StudentInterviewReplayPage() {
         <div className="glass-panel rounded-3xl p-6 border border-border space-y-6">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-border gap-3">
             <div>
-              <h2 className="text-base font-bold text-foreground">Full Interview Transcript & Key Highlights</h2>
+              <h2 className="text-base font-bold text-foreground">{en("Full Interview Transcript & Key Highlights")}</h2>
               <p className="text-xs text-muted-foreground mt-0.5">
-                Review the conversation below. Key topics and areas for discussion are highlighted in amber.
+                {en("Review the conversation below. Key topics and areas for discussion are highlighted in amber.")}
               </p>
             </div>
 
@@ -417,12 +419,12 @@ export default function StudentInterviewReplayPage() {
               }`}
             >
               <Filter className="w-3.5 h-3.5" />
-              <span>{filterFlaggedOnly ? "Showing Key Moments Only" : "Show Full Conversation"}</span>
+              <span>{filterFlaggedOnly ? en("Showing Key Moments Only") : en("Show Full Conversation")}</span>
             </button>
           </div>
 
           {/* Dialogue Stream */}
-          <div className="space-y-4 max-h-[600px] overflow-y-auto pr-2">
+          <div className="space-y-4 max-h-[600px] overflow-y-auto pe-2">
             {displayedDialogues.map((msg, idx) => (
               <div
                 key={idx}
@@ -431,7 +433,7 @@ export default function StudentInterviewReplayPage() {
                     ? "bg-amber-950/20 border-amber-500/40"
                     : msg.speaker === "AI"
                     ? "bg-card/60 border-border"
-                    : "bg-indigo-950/30 border-indigo-500/30 ml-6"
+                    : "bg-indigo-950/30 border-indigo-500/30 ms-6"
                 }`}
               >
                 <div className="flex items-center justify-between pb-1.5">
@@ -446,7 +448,7 @@ export default function StudentInterviewReplayPage() {
                       </div>
                     )}
                     <span className="text-xs font-bold text-foreground">
-                      {msg.speaker === "AI" ? "Interviewer" : sessionData?.candidateName || "Candidate"}
+                      {msg.speaker === "AI" ? en("Interviewer") : sessionData?.candidateName || "Candidate"}
                     </span>
                   </div>
 
@@ -458,7 +460,7 @@ export default function StudentInterviewReplayPage() {
                   )}
                 </div>
 
-                <p className="text-xs text-muted-foreground leading-relaxed pl-8 whitespace-pre-line">{msg.text}</p>
+                <p className="text-xs text-muted-foreground leading-relaxed ps-8 whitespace-pre-line">{msg.text}</p>
               </div>
             ))}
           </div>

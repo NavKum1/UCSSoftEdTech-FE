@@ -40,7 +40,7 @@ export default function Meetings({ lead, busy, act }: { lead: LeadFull; busy: bo
   };
 
   return (
-    <section className="mt-3 space-y-2" aria-label="Meetings">
+    <section className="mt-3 space-y-2" aria-label={en("Meetings")}>
       {open.map((m) => {
         const Icon = MODE[m.mode].icon;
         const booked = m.status === "Booked";
@@ -59,21 +59,21 @@ export default function Meetings({ lead, busy, act }: { lead: LeadFull; busy: bo
                   {booked && m.counsellor && <span>with {m.counsellor}</span>}
                   {m.meetingUrl && (
                     <a href={m.meetingUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-cyan-700 hover:underline dark:text-cyan-400">
-                      <Link2 aria-hidden="true" className="h-3.5 w-3.5" /> Video link
+                      <Link2 aria-hidden="true" className="h-3.5 w-3.5" />{en(" Video link")}
                     </a>
                   )}
                   {m.location && <span>{m.location}</span>}
-                  {m.kind === "slot" && booked && <span>Booked by them</span>}
+                  {m.kind === "slot" && booked && <span>{en("Booked by them")}</span>}
                 </p>
-                {m.topics.length > 0 && <p className="mt-0.5 text-xs">To talk about: {m.topics.join(", ")}</p>}
+                {m.topics.length > 0 && <p className="mt-0.5 text-xs">{en("To talk about: ")}{m.topics.join(", ")}</p>}
                 {m.note && <p className="mt-1 text-xs text-amber-900 dark:text-amber-200">{m.note}</p>}
               </div>
               <div className="flex shrink-0 gap-1.5">
                 <button type="button" disabled={busy} onClick={() => setEditing(editing === m.id ? null : m.id)} className="rounded-lg bg-cyan-700 px-2.5 py-1 text-xs font-medium text-white hover:bg-cyan-800 disabled:opacity-50">
-                  {booked ? "Move" : "Confirm a time"}
+                  {booked ? en("Move") : en("Confirm a time")}
                 </button>
                 <button type="button" disabled={busy} onClick={() => cancel(m)} className="rounded-lg border border-border px-2.5 py-1 text-xs hover:bg-muted disabled:opacity-50">
-                  {booked ? "Cancel" : "Close"}
+                  {booked ? en("Cancel") : en("Close")}
                 </button>
               </div>
             </div>
@@ -95,6 +95,7 @@ export default function Meetings({ lead, busy, act }: { lead: LeadFull; busy: bo
 }
 
 function ConfirmForm({ m, busy, onConfirm }: { m: Meeting; busy: boolean; onConfirm: (body: { at: string; minutes: number; mode: string; meetingUrl: string | null; location: string | null }) => void }) {
+  const en = useEn();
   const start = () => {
     if (m.start) return localInput(new Date(m.start));
     const d = m.preferredDate ? new Date(`${m.preferredDate}T00:00:00`) : new Date(Date.now() + 86400e3);
@@ -115,11 +116,11 @@ function ConfirmForm({ m, busy, onConfirm }: { m: Meeting; busy: boolean; onConf
       }}
     >
       <label className="font-medium">
-        When <span className="font-normal text-muted-foreground">(your time zone)</span>
+        {en("When ")}<span className="font-normal text-muted-foreground">{en("(your time zone)")}</span>
         <input type="datetime-local" required className={field} value={at} onChange={(e) => setAt(e.target.value)} />
       </label>
       <label className="font-medium">
-        Length
+        {en("Length")}
         <select className={field} value={minutes} onChange={(e) => setMinutes(Number(e.target.value))}>
           {[15, 20, 30, 45, 60, 90].map((n) => (
             <option key={n} value={n}>
@@ -129,7 +130,7 @@ function ConfirmForm({ m, busy, onConfirm }: { m: Meeting; busy: boolean; onConf
         </select>
       </label>
       <label className="font-medium">
-        How
+        {en("How")}
         <select className={field} value={mode} onChange={(e) => setMode(e.target.value as Meeting["mode"])}>
           {Object.entries(MODE).map(([k, v]) => (
             <option key={k} value={k}>
@@ -140,21 +141,21 @@ function ConfirmForm({ m, busy, onConfirm }: { m: Meeting; busy: boolean; onConf
       </label>
       {mode === "Video" && (
         <label className="font-medium">
-          Video link
+          {en("Video link")}
           <input type="url" className={field} value={url} placeholder="https://meet…" onChange={(e) => setUrl(e.target.value)} />
         </label>
       )}
       {mode === "InPerson" && (
         <label className="font-medium">
-          Where
-          <input className={field} maxLength={300} value={place} placeholder="e.g. Admissions office, 2nd floor" onChange={(e) => setPlace(e.target.value)} />
+          {en("Where")}
+          <input className={field} maxLength={300} value={place} placeholder={en("e.g. Admissions office, 2nd floor")} onChange={(e) => setPlace(e.target.value)} />
         </label>
       )}
       <div className="sm:col-span-2">
         <button type="submit" disabled={busy} className="rounded-lg bg-cyan-700 px-3 py-1.5 font-medium text-white hover:bg-cyan-800 disabled:opacity-50">
-          {m.status === "Booked" ? "Move and email them" : "Book and email them"}
+          {m.status === "Booked" ? en("Move and email them") : en("Book and email them")}
         </button>
-        <span className="ml-2 text-muted-foreground">They get the time and a calendar invite by email.</span>
+        <span className="ms-2 text-muted-foreground">{en("They get the time and a calendar invite by email.")}</span>
       </div>
     </form>
   );

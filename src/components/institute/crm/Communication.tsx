@@ -135,24 +135,24 @@ export default function Communication({
     <div className="space-y-4">
       {/* Summary */}
       <dl className="grid grid-cols-2 gap-2 text-xs sm:grid-cols-4">
-        <Fact label="Last contact" value={lastOut ? `${CHANNEL[lastOut.kind]?.label ?? lastOut.kind} ${relative(lastOut.createdAt)}` : "Never"} sub={lastOut?.actorName} warn={!lastOut} />
-        <Fact label="Their last reply" value={lastIn ? relative(lastIn.createdAt) : "None yet"} sub={awaiting ? "Waiting for your answer" : undefined} warn={awaiting} />
-        <Fact label="Calls" value={String(calls.length)} sub={calls.length ? `${reached} answered` : undefined} />
+        <Fact label={en("Last contact")} value={lastOut ? `${CHANNEL[lastOut.kind]?.label ?? lastOut.kind} ${relative(lastOut.createdAt)}` : "Never"} sub={lastOut?.actorName} warn={!lastOut} />
+        <Fact label={en("Their last reply")} value={lastIn ? relative(lastIn.createdAt) : "None yet"} sub={awaiting ? "Waiting for your answer" : undefined} warn={awaiting} />
+        <Fact label={en("Calls")} value={String(calls.length)} sub={calls.length ? `${reached} answered` : undefined} />
         <Fact
-          label="Messages"
+          label={en("Messages")}
           value={String(items.filter((a) => OUT.includes(a.kind)).length)}
           sub={`${items.filter((a) => a.kind === "EmailReply").length} replies`}
         />
       </dl>
 
       {/* Key facts */}
-      <section aria-label="Key facts" className="rounded-xl border border-amber-500/30 bg-amber-500/5 p-3">
+      <section aria-label={en("Key facts")} className="rounded-xl border border-amber-500/30 bg-amber-500/5 p-3">
         <h3 className="flex items-center gap-1.5 text-xs font-semibold">
-          <Pin aria-hidden="true" className="h-3.5 w-3.5" /> Key facts
+          <Pin aria-hidden="true" className="h-3.5 w-3.5" />{en(" Key facts")}
         </h3>
         {pinned.length === 0 ? (
           <p className="mt-1 text-xs text-muted-foreground">
-            {en("Pin what every counsellor should know before talking to ")}{personName} (budget, preferred time, what they decided). Use the pin on any note, call or message.
+            {en("Pin what every counsellor should know before talking to ")}{personName}{en(" (budget, preferred time, what they decided). Use the pin on any note, call or message.")}
           </p>
         ) : (
           <ul className="mt-1.5 space-y-1.5 text-sm">
@@ -165,7 +165,7 @@ export default function Communication({
                     {CHANNEL[a.kind]?.label ?? a.kind} · {a.actorName} · {day(a.createdAt)}
                   </span>
                 </span>
-                <button type="button" disabled={busy} onClick={() => onPin(a, false)} aria-label="Unpin" className="rounded p-1 text-muted-foreground hover:bg-muted">
+                <button type="button" disabled={busy} onClick={() => onPin(a, false)} aria-label={en("Unpin")} className="rounded p-1 text-muted-foreground hover:bg-muted">
                   <PinOff aria-hidden="true" className="h-3.5 w-3.5" />
                 </button>
               </li>
@@ -184,15 +184,15 @@ export default function Communication({
             </button>
           );
         })}
-        <label className="relative ml-auto min-w-40 flex-1 sm:flex-none">
-          <span className="sr-only">Search the history</span>
-          <Search aria-hidden="true" className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
-          <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search the history" className="w-full rounded-lg border border-border bg-background py-1.5 pl-8 pr-2 text-xs focus:border-cyan-600 focus:outline-none" />
+        <label className="relative ms-auto min-w-40 flex-1 sm:flex-none">
+          <span className="sr-only">{en("Search the history")}</span>
+          <Search aria-hidden="true" className="pointer-events-none absolute start-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+          <input value={q} onChange={(e) => setQ(e.target.value)} placeholder={en("Search the history")} className="w-full rounded-lg border border-border bg-background py-1.5 ps-8 pe-2 text-xs focus:border-cyan-600 focus:outline-none" />
         </label>
       </div>
 
-      {items.length === 0 && <p className="text-sm text-muted-foreground">No communication yet. Use the buttons above to call, email or message {personName}; everything is kept here.</p>}
-      {items.length > 0 && shown.length === 0 && <p className="text-sm text-muted-foreground">Nothing matches.</p>}
+      {items.length === 0 && <p className="text-sm text-muted-foreground">{en("No communication yet. Use the buttons above to call, email or message ")}{personName}{en("; everything is kept here.")}</p>}
+      {items.length > 0 && shown.length === 0 && <p className="text-sm text-muted-foreground">{en("Nothing matches.")}</p>}
 
       {groups.map(([d, list]) => (
         <section key={d} aria-label={d}>
@@ -201,7 +201,7 @@ export default function Communication({
             {list.map((a, i) => (
               <li key={a.id} className="grid grid-cols-[4.75rem_1.5rem_1fr] gap-x-2">
                 {/* When: first, on the left */}
-                <div className="pt-2 text-right text-xs leading-tight">
+                <div className="pt-2 text-end text-xs leading-tight">
                   <time dateTime={a.createdAt} className="block font-medium text-foreground">
                     {time(a.createdAt)}
                   </time>
@@ -209,7 +209,7 @@ export default function Communication({
                 </div>
                 {/* The vertical line with a marker for the kind of event */}
                 <div className="relative flex justify-center" aria-hidden="true">
-                  <span className={`absolute left-1/2 top-0 w-px -translate-x-1/2 bg-border ${i === list.length - 1 ? "h-3" : "h-full"}`} />
+                  <span className={`absolute start-1/2 top-0 w-px -translate-x-1/2 bg-border ${i === list.length - 1 ? "h-3" : "h-full"}`} />
                   <Marker kind={a.kind} />
                 </div>
                 <div className="min-w-0 pb-4">
@@ -235,6 +235,7 @@ function Fact({ label, value, sub, warn }: { label: string; value: string; sub?:
 }
 
 function Body({ text }: { text: string }) {
+  const en = useEn();
   const [open, setOpen] = useState(false);
   const long = text.length > 320 || text.split("\n").length > 6;
   return (
@@ -242,7 +243,7 @@ function Body({ text }: { text: string }) {
       <p className={`whitespace-pre-wrap ${long && !open ? "line-clamp-6" : ""}`}>{text}</p>
       {long && (
         <button type="button" onClick={() => setOpen(!open)} className="mt-1 text-xs font-medium text-cyan-700 hover:underline dark:text-cyan-400">
-          {open ? "Show less" : "Show the full message"}
+          {open ? en("Show less") : en("Show the full message")}
         </button>
       )}
     </>
@@ -250,13 +251,14 @@ function Body({ text }: { text: string }) {
 }
 
 function PinButton({ a, busy, onPin }: { a: Activity; busy: boolean; onPin: (a: Activity, p: boolean) => void }) {
+  const en = useEn();
   return (
     <button
       type="button"
       disabled={busy}
       onClick={() => onPin(a, !a.pinned)}
-      aria-label={a.pinned ? "Unpin from key facts" : "Pin as a key fact"}
-      title={a.pinned ? "Unpin from key facts" : "Pin as a key fact"}
+      aria-label={a.pinned ? en("Unpin from key facts") : en("Pin as a key fact")}
+      title={a.pinned ? en("Unpin from key facts") : en("Pin as a key fact")}
       className={`rounded p-1 hover:bg-muted ${a.pinned ? "text-amber-700 dark:text-amber-400" : "text-muted-foreground"}`}
     >
       <Pin aria-hidden="true" className="h-3.5 w-3.5" />
@@ -282,6 +284,7 @@ function StageChange({ body }: { body: string }) {
 
 /** An email as sent, with its formatting (cleaned on the server); long ones fold */
 function FormattedEmail({ html }: { html: string }) {
+  const en = useEn();
   const [open, setOpen] = useState(false);
   const long = html.length > 900;
   return (
@@ -289,7 +292,7 @@ function FormattedEmail({ html }: { html: string }) {
       <div className={`email-body ${long && !open ? "max-h-40 overflow-hidden [mask-image:linear-gradient(to_bottom,black_70%,transparent)]" : ""}`} dangerouslySetInnerHTML={{ __html: html }} />
       {long && (
         <button type="button" onClick={() => setOpen(!open)} className="mt-1 text-xs font-medium text-cyan-700 hover:underline dark:text-cyan-400">
-          {open ? "Show less" : "Show the full message"}
+          {open ? en("Show less") : en("Show the full message")}
         </button>
       )}
     </>
@@ -298,6 +301,7 @@ function FormattedEmail({ html }: { html: string }) {
 
 /** Files sent with an email; staff download them */
 function CrmFiles({ files }: { files: { id: string; name: string; size: number }[] }) {
+  const en = useEn();
   const { getToken } = useAppAuth();
   const open = async (f: { id: string; name: string }) => {
     const res = await authenticatedFetch(`/api/institute/crm/files/${f.id}`, {}, getToken).catch(() => null);
@@ -313,7 +317,7 @@ function CrmFiles({ files }: { files: { id: string; name: string; size: number }
     <div className="mt-2 flex flex-wrap gap-1.5">
       {files.map((f) => (
         <button key={f.id} type="button" onClick={() => open(f)} className="inline-flex items-center gap-1 rounded-lg border border-border bg-background px-2 py-1 text-xs hover:bg-muted">
-          <Paperclip aria-hidden="true" className="h-3 w-3" /> {f.name} <span className="text-muted-foreground">({Math.ceil(f.size / 1024)} KB)</span>
+          <Paperclip aria-hidden="true" className="h-3 w-3" /> {f.name} <span className="text-muted-foreground">({Math.ceil(f.size / 1024)}{en(" KB)")}</span>
         </button>
       ))}
     </div>
@@ -321,6 +325,7 @@ function CrmFiles({ files }: { files: { id: string; name: string; size: number }
 }
 
 function Item({ a, personName, busy, onPin, onReply }: { a: Activity; personName: string; busy: boolean; onPin: (a: Activity, p: boolean) => void; onReply: (s: string) => void }) {
+  const en = useEn();
   const meta = a.meta ?? {};
   const failed = meta.delivered === false || meta.sent === false;
 
@@ -352,7 +357,7 @@ function Item({ a, personName, busy, onPin, onReply }: { a: Activity; personName
           <Body text={a.body} />
         </div>
         <button type="button" onClick={() => onReply(a.subject ?? "")} className="mt-2 inline-flex items-center gap-1 rounded-lg border border-border bg-card px-2.5 py-1 text-xs font-medium hover:bg-muted">
-          <Reply aria-hidden="true" className="h-3.5 w-3.5" /> Reply
+          <Reply aria-hidden="true" className="h-3.5 w-3.5" />{en(" Reply")}
         </button>
       </div>
     );
@@ -378,18 +383,18 @@ function Item({ a, personName, busy, onPin, onReply }: { a: Activity; personName
           ) : a.body ? (
             <Body text={a.body} />
           ) : (
-            <p className="text-muted-foreground">No message text.</p>
+            <p className="text-muted-foreground">{en("No message text.")}</p>
           )}
         </div>
         {files.length > 0 && <CrmFiles files={files} />}
         {a.opens?.tracked && (
-          <p className="mt-1.5 text-xs text-muted-foreground" title="Some mail apps open emails automatically, so treat this as a hint.">
+          <p className="mt-1.5 text-xs text-muted-foreground" title={en("Some mail apps open emails automatically, so treat this as a hint.")}>
             {a.opens.count > 0
               ? `Opened${a.opens.count > 1 ? ` ${a.opens.count} times` : ""} · first ${relative(a.opens.first)}${a.opens.count > 1 ? `, last ${relative(a.opens.last)}` : ""}`
-              : "Not opened yet"}
+              : en("Not opened yet")}
           </p>
         )}
-        {failed && <p className="mt-1 text-xs font-medium text-red-700 dark:text-red-400">Not delivered{typeof meta.error === "string" ? ` (${meta.error})` : ""}. Try again or use another channel.</p>}
+        {failed && <p className="mt-1 text-xs font-medium text-red-700 dark:text-red-400">{en("Not delivered")}{typeof meta.error === "string" ? ` (${meta.error})` : ""}{en(". Try again or use another channel.")}</p>}
       </div>
     );
   }

@@ -163,16 +163,16 @@ export default function DashboardPage() {
   if (failed !== null && !data) {
     return (
       <main className="mx-auto flex min-h-[70vh] max-w-md flex-col items-center justify-center gap-4 px-4 text-center">
-        <h1 className="text-xl font-semibold">We couldn&apos;t load your dashboard</h1>
+        <h1 className="text-xl font-semibold">{en("We couldn't load your dashboard")}</h1>
         <p className="text-sm text-muted-foreground">
-          {failed === 0 ? "The connection to Edulexa failed." : "Something went wrong on our side."} Your work is saved; please try again.
+          {failed === 0 ? en("The connection to Edulexa failed.") : en("Something went wrong on our side.")}{en(" Your work is saved; please try again.")}
         </p>
         <button
           type="button"
           onClick={() => setAttempt((n) => n + 1)}
           className="rounded-xl bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
         >
-          Try again
+          {en("Try again")}
         </button>
       </main>
     );
@@ -199,7 +199,7 @@ export default function DashboardPage() {
           </h1>
           <p className="text-sm text-muted-foreground">
             {isNew
-              ? "Welcome to Edulexa. Start with one of the steps below; everything you do builds your verified skill record."
+              ? en("Welcome to Edulexa. Start with one of the steps below; everything you do builds your verified skill record.")
               : data.activity.lastActiveAt
                 ? `Last active ${relative(data.activity.lastActiveAt)}.`
                 : ""}
@@ -220,29 +220,29 @@ export default function DashboardPage() {
             className="inline-flex items-center gap-2 rounded-xl border border-border bg-card px-4 py-2.5 text-sm font-semibold text-foreground hover:bg-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
           >
             {data.passport.sharingEnabled ? <Share2 aria-hidden="true" className="h-4 w-4" /> : <ShieldCheck aria-hidden="true" className="h-4 w-4" />}
-            Skill passport
+            {en("Skill passport")}
           </Link>
         </div>
       </header>
 
       {/* Key figures */}
-      <section aria-label="Your progress" className="mt-8 grid grid-cols-2 gap-3 lg:grid-cols-4">
+      <section aria-label={en("Your progress")} className="mt-8 grid grid-cols-2 gap-3 lg:grid-cols-4">
         <Stat
           icon={Flame}
-          label="Current streak"
+          label={en("Current streak")}
           value={`${data.activity.currentStreakDays} ${data.activity.currentStreakDays === 1 ? "day" : "days"}`}
           hint={data.activity.longestStreakDays > 0 ? `Longest: ${data.activity.longestStreakDays} days` : en("Practise today to start one")}
         />
-        <Stat icon={CalendarDays} label="Active days" value={`${data.activity.activeDaysLast30}`} hint="In the last 30 days" />
+        <Stat icon={CalendarDays} label={en("Active days")} value={`${data.activity.activeDaysLast30}`} hint={en("In the last 30 days")} />
         <Stat
           icon={BadgeCheck}
-          label="Verified credentials"
+          label={en("Verified credentials")}
           value={`${data.totals.credentials}`}
           hint={`${totalResults} graded ${totalResults === 1 ? "result" : "results"} in total`}
         />
         <Stat
           icon={Timer}
-          label="Interview minutes"
+          label={en("Interview minutes")}
           value={`${data.plan.voiceMinutesRemaining} left`}
           hint={
             data.plan.resetsAt
@@ -260,7 +260,7 @@ export default function DashboardPage() {
             <section aria-labelledby="next-steps" className={`${card} p-5 sm:p-6`}>
               <h2 id="next-steps" className="flex items-center gap-2 text-base font-semibold">
                 <Sparkles aria-hidden="true" className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
-                {isNew ? "Get started" : "Up next"}
+                {isNew ? en("Get started") : en("Up next")}
               </h2>
               <ul className="mt-4 grid gap-3 sm:grid-cols-3">
                 {data.nextSteps.map((s) => {
@@ -277,7 +277,7 @@ export default function DashboardPage() {
                         <span className="text-sm font-semibold text-foreground">{s.title}</span>
                         <span className="text-xs leading-relaxed text-muted-foreground">{s.description}</span>
                         <span className="mt-auto inline-flex items-center gap-1 pt-1 text-xs font-semibold text-indigo-700 dark:text-indigo-300">
-                          Start
+                          {en("Start")}
                           <ArrowRight aria-hidden="true" className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5 motion-reduce:transition-none" />
                         </span>
                       </Link>
@@ -292,9 +292,9 @@ export default function DashboardPage() {
           <section aria-labelledby="activity" className={`${card} p-5 sm:p-6`}>
             <div className="flex items-baseline justify-between gap-4">
               <h2 id="activity" className="text-base font-semibold">
-                Activity
+                {en("Activity")}
               </h2>
-              <p className="text-xs text-muted-foreground">Last 12 weeks</p>
+              <p className="text-xs text-muted-foreground">{en("Last 12 weeks")}</p>
             </div>
             <ActivityCalendar days={data.activity.days} />
           </section>
@@ -303,12 +303,12 @@ export default function DashboardPage() {
           <section aria-labelledby="skills" className={`${card} p-5 sm:p-6`}>
             <div className="flex items-baseline justify-between gap-4">
               <h2 id="skills" className="text-base font-semibold">
-                Skills
+                {en("Skills")}
               </h2>
-              <p className="text-xs text-muted-foreground">Best graded result per area</p>
+              <p className="text-xs text-muted-foreground">{en("Best graded result per area")}</p>
             </div>
             {data.skills.length === 0 ? (
-              <EmptyState text="Your skills appear here as soon as your first challenge, exam or interview is graded." />
+              <EmptyState text={en("Your skills appear here as soon as your first challenge, exam or interview is graded.")} />
             ) : (
               <ul className="mt-4 divide-y divide-border">
                 {data.skills.map((s) => (
@@ -319,7 +319,7 @@ export default function DashboardPage() {
                         {s.verified && (
                           <span className="inline-flex items-center gap-1 rounded-full bg-emerald-600/10 px-2 py-0.5 text-[11px] font-semibold text-emerald-700 dark:text-emerald-400">
                             <BadgeCheck aria-hidden="true" className="h-3 w-3" />
-                            Verified
+                            {en("Verified")}
                           </span>
                         )}
                       </p>
@@ -328,13 +328,13 @@ export default function DashboardPage() {
                       </p>
                     </div>
                     {s.bestScore === null ? (
-                      <span className="text-xs text-muted-foreground">Not scored yet</span>
+                      <span className="text-xs text-muted-foreground">{en("Not scored yet")}</span>
                     ) : (
                       <div className="flex w-32 items-center gap-2 sm:w-44">
                         <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-muted" aria-hidden="true">
                           <div className="h-full rounded-full bg-indigo-600 dark:bg-indigo-400" style={{ width: `${Math.max(2, Math.min(100, s.bestScore))}%` }} />
                         </div>
-                        <span className={`w-12 text-right text-sm font-semibold tabular-nums ${scoreTone(s.bestScore)}`}>{Math.round(s.bestScore)}%</span>
+                        <span className={`w-12 text-end text-sm font-semibold tabular-nums ${scoreTone(s.bestScore)}`}>{Math.round(s.bestScore)}%</span>
                       </div>
                     )}
                   </li>
@@ -346,10 +346,10 @@ export default function DashboardPage() {
           {/* Recent results */}
           <section aria-labelledby="recent" className={`${card} p-5 sm:p-6`}>
             <h2 id="recent" className="text-base font-semibold">
-              Recent results
+              {en("Recent results")}
             </h2>
             {data.recent.length === 0 ? (
-              <EmptyState text="Nothing graded yet. Your results will be listed here with a link to the full report." />
+              <EmptyState text={en("Nothing graded yet. Your results will be listed here with a link to the full report.")} />
             ) : (
               <ul className="mt-3 divide-y divide-border">
                 {data.recent.map((r, i) => {
@@ -368,7 +368,7 @@ export default function DashboardPage() {
                           </span>
                         </span>
                         {r.score === null ? (
-                          <span className="text-xs text-muted-foreground">Pending</span>
+                          <span className="text-xs text-muted-foreground">{en("Pending")}</span>
                         ) : (
                           <span className={`text-sm font-semibold tabular-nums ${scoreTone(r.score)}`}>{Math.round(r.score)}%</span>
                         )}
@@ -386,10 +386,10 @@ export default function DashboardPage() {
           <section aria-labelledby="credentials" className={`${card} p-5 sm:p-6`}>
             <h2 id="credentials" className="flex items-center gap-2 text-base font-semibold">
               <Award aria-hidden="true" className="h-4 w-4 text-amber-600 dark:text-amber-400" />
-              Credentials
+              {en("Credentials")}
             </h2>
             {data.credentials.length === 0 ? (
-              <EmptyState text="Pass a credential exam or a hiring assessment to earn a credential anyone can verify." />
+              <EmptyState text={en("Pass a credential exam or a hiring assessment to earn a credential anyone can verify.")} />
             ) : (
               <ul className="mt-3 space-y-2">
                 {data.credentials.map((c) => (
@@ -400,8 +400,8 @@ export default function DashboardPage() {
                     >
                       <span className="block truncate text-sm font-medium text-foreground">{c.title}</span>
                       <span className="mt-0.5 block text-xs text-muted-foreground">
-                        {Math.round(c.score)}% · issued {new Date(c.issuedAt).toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" })}
-                        {c.underReview ? " · under review" : ""}
+                        {Math.round(c.score)}{en("% · issued ")}{new Date(c.issuedAt).toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" })}
+                        {c.underReview ? en(" · under review") : ""}
                       </span>
                     </Link>
                   </li>
@@ -414,24 +414,24 @@ export default function DashboardPage() {
           <section aria-labelledby="track" className={`${card} p-5 sm:p-6`}>
             <h2 id="track" className="flex items-center gap-2 text-base font-semibold">
               <Compass aria-hidden="true" className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
-              Career track
+              {en("Career track")}
             </h2>
             {data.counselling ? (
               <div className="mt-3 space-y-1">
                 <p className="text-sm font-semibold text-foreground">{data.counselling.primaryTrack}</p>
-                {data.counselling.secondaryTrack && <p className="text-xs text-muted-foreground">Also a good fit: {data.counselling.secondaryTrack}</p>}
+                {data.counselling.secondaryTrack && <p className="text-xs text-muted-foreground">{en("Also a good fit: ")}{data.counselling.secondaryTrack}</p>}
                 <Link href="/prep/counselling" className="inline-flex items-center gap-1 pt-2 text-xs font-semibold text-indigo-700 hover:underline dark:text-indigo-300">
-                  See your results <ArrowRight aria-hidden="true" className="h-3.5 w-3.5" />
+                  {en("See your results ")}<ArrowRight aria-hidden="true" className="h-3.5 w-3.5" />
                 </Link>
               </div>
             ) : (
               <div className="mt-3 space-y-3">
-                <p className="text-sm text-muted-foreground">A short quiz matches your interests and strengths to a career track and the skills it needs.</p>
+                <p className="text-sm text-muted-foreground">{en("A short quiz matches your interests and strengths to a career track and the skills it needs.")}</p>
                 <Link
                   href="/prep/counselling"
                   className="inline-flex items-center gap-1.5 rounded-xl bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
                 >
-                  Take the quiz <ArrowRight aria-hidden="true" className="h-4 w-4" />
+                  {en("Take the quiz ")}<ArrowRight aria-hidden="true" className="h-4 w-4" />
                 </Link>
               </div>
             )}
@@ -440,15 +440,15 @@ export default function DashboardPage() {
           {/* Practice */}
           <section aria-labelledby="practice" className={`${card} p-5 sm:p-6`}>
             <h2 id="practice" className="text-base font-semibold">
-              Practice
+              {en("Practice")}
             </h2>
             <ul className="mt-3 grid grid-cols-2 gap-2">
               {[
-                { href: "/sprint/distributed-database", label: "Challenges", icon: Code2, n: data.totals.challenges },
-                { href: "/prep/exam", label: "Exams", icon: GraduationCap, n: data.totals.exams },
-                { href: "/interview/practice", label: "Interviews", icon: Mic, n: data.totals.interviews },
-                { href: "/daily/incident", label: "Incidents", icon: Siren, n: data.totals.incidents },
-                { href: "/daily/review", label: "Code review", icon: Bug, n: data.totals.codeReviews },
+                { href: "/sprint/distributed-database", label: en("Challenges"), icon: Code2, n: data.totals.challenges },
+                { href: "/prep/exam", label: en("Exams"), icon: GraduationCap, n: data.totals.exams },
+                { href: "/interview/practice", label: en("Interviews"), icon: Mic, n: data.totals.interviews },
+                { href: "/daily/incident", label: en("Incidents"), icon: Siren, n: data.totals.incidents },
+                { href: "/daily/review", label: en("Code review"), icon: Bug, n: data.totals.codeReviews },
                 { href: "/prep/counselling", label: en("Counselling"), icon: Compass, n: data.counselling ? 1 : 0 },
               ].map((p) => (
                 <li key={p.href + p.label}>
@@ -506,6 +506,7 @@ function Stat({
 
 function ActivityCalendar({ days }: { days: { date: string; count: number }[] }) {
   // Columns are weeks (Monday first), rows are weekdays
+  const en = useEn();
   const weeks = useMemo(() => {
     if (days.length === 0) return [] as ({ date: string; count: number } | null)[][];
     const first = new Date(days[0].date + "T00:00:00");
@@ -538,11 +539,11 @@ function ActivityCalendar({ days }: { days: { date: string; count: number }[] })
         ))}
       </div>
       <div className="mt-2 flex items-center justify-end gap-1.5 text-[11px] text-muted-foreground" aria-hidden="true">
-        Less
+        {en("Less")}
         {[0, 1, 2, 4].map((n) => (
           <span key={n} className={`h-3 w-3 rounded-[3px] ${level(n)}`} />
         ))}
-        More
+        {en("More")}
       </div>
     </div>
   );
@@ -553,8 +554,9 @@ function EmptyState({ text }: { text: string }) {
 }
 
 function DashboardSkeleton() {
+  const en = useEn();
   return (
-    <main className="mx-auto max-w-7xl px-4 pb-16 pt-8 sm:px-6 lg:px-8" aria-busy="true" aria-label="Loading your dashboard">
+    <main className="mx-auto max-w-7xl px-4 pb-16 pt-8 sm:px-6 lg:px-8" aria-busy="true" aria-label={en("Loading your dashboard")}>
       <div className="h-4 w-40 animate-pulse rounded bg-muted motion-reduce:animate-none" />
       <div className="mt-3 h-8 w-72 animate-pulse rounded bg-muted motion-reduce:animate-none" />
       <div className="mt-8 grid grid-cols-2 gap-3 lg:grid-cols-4">

@@ -16,6 +16,7 @@ import { MapPin, MessageCircleQuestion, X } from "lucide-react";
 import GuidanceForm, { type SubmitPayload } from "@/components/guidance/form/GuidanceForm";
 import type { Fillable } from "@/components/guidance/form/model";
 import { COMMUNITY_INSTITUTE_ID } from "@/lib/community";
+import { useEn } from "@/lib/english/EnglishProvider";
 
 type ApiFetch = (path: string, init?: RequestInit) => Promise<Response>;
 
@@ -46,6 +47,7 @@ export default function AdvisorRequest({
   /** The area of their latest result, to show matching institutes first */
   track?: string | null;
 }) {
+  const en = useEn();
   const [dialog, setDialog] = useState<"edulexa" | "cards" | { id: string; name: string } | null>(null);
   const [sent, setSent] = useState<string | null>(null);
 
@@ -55,9 +57,9 @@ export default function AdvisorRequest({
         <div className="flex items-start gap-3">
           <MessageCircleQuestion aria-hidden="true" className="mt-0.5 h-5 w-5 shrink-0 text-indigo-600" />
           <div>
-            <p className="text-sm font-semibold">Not sure which area or certification is right for you?</p>
+            <p className="text-sm font-semibold">{en("Not sure which area or certification is right for you?")}</p>
             <p className="text-sm text-muted-foreground">
-              {sent ?? (scope ? `Ask an advisor at ${scope.instituteName}. You don't need to take the quiz first.` : "Ask Edulexa's advisors. You don't need to take the quiz first.")}
+              {sent ?? (scope ? `Ask an advisor at ${scope.instituteName}. You don't need to take the quiz first.` : en("Ask Edulexa's advisors. You don't need to take the quiz first."))}
             </p>
           </div>
         </div>
@@ -67,21 +69,21 @@ export default function AdvisorRequest({
             onClick={() => setDialog(scope ? { id: scope.instituteId, name: scope.instituteName } : "edulexa")}
             className="rounded-xl bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-500"
           >
-            {scope ? "Ask an advisor" : "Ask Edulexa"}
+            {scope ? en("Ask an advisor") : en("Ask Edulexa")}
           </button>
         )}
       </div>
       {!scope && (
-        <p className="mt-2 pl-8 text-sm text-muted-foreground">
+        <p className="mt-2 ps-8 text-sm text-muted-foreground">
           {sent ? (
             <Link href="/my/guidance" className="font-medium text-indigo-700 hover:underline dark:text-indigo-300">
-              See your requests and replies
+              {en("See your requests and replies")}
             </Link>
           ) : (
             <>
-              Prefer an institute?{" "}
+              {en("Prefer an institute?")}{" "}
               <button type="button" onClick={() => setDialog("cards")} className="font-medium text-indigo-700 hover:underline dark:text-indigo-300">
-                Talk to a specific institute
+                {en("Talk to a specific institute")}
               </button>
             </>
           )}
@@ -118,6 +120,7 @@ export default function AdvisorRequest({
 }
 
 function Modal({ title, onClose, children, wide }: { title: string; onClose: () => void; children: React.ReactNode; wide?: boolean }) {
+  const en = useEn();
   const closeRef = useRef<HTMLButtonElement>(null);
   useEffect(() => {
     closeRef.current?.focus();
@@ -136,7 +139,7 @@ function Modal({ title, onClose, children, wide }: { title: string; onClose: () 
       >
         <div className="flex items-start justify-between gap-3">
           <h2 className="text-base font-semibold">{title}</h2>
-          <button ref={closeRef} type="button" onClick={onClose} aria-label="Close" className="rounded-lg p-1 hover:bg-muted">
+          <button ref={closeRef} type="button" onClick={onClose} aria-label={en("Close")} className="rounded-lg p-1 hover:bg-muted">
             <X aria-hidden="true" className="h-5 w-5" />
           </button>
         </div>
@@ -147,6 +150,7 @@ function Modal({ title, onClose, children, wide }: { title: string; onClose: () 
 }
 
 function InstituteCards({ apiFetch, track, onClose, onChoose }: { apiFetch: ApiFetch; track?: string | null; onClose: () => void; onChoose: (id: string, name: string) => void }) {
+  const en = useEn();
   const [cards, setCards] = useState<Card[] | null>(null);
   useEffect(() => {
     let cancelled = false;
@@ -158,14 +162,14 @@ function InstituteCards({ apiFetch, track, onClose, onChoose }: { apiFetch: ApiF
     };
   }, [apiFetch, track]);
   return (
-    <Modal title="Talk to a specific institute" onClose={onClose} wide>
+    <Modal title={en("Talk to a specific institute")} onClose={onClose} wide>
       <p className="mt-1 text-sm text-muted-foreground">
-        {track ? `Institutes with courses in ${track} come first. ` : ""}Only details each institute has given are shown.
+        {track ? `Institutes with courses in ${track} come first. ` : ""}{en("Only details each institute has given are shown.")}
       </p>
       {!cards ? (
         <div className="mt-4 h-40 animate-pulse rounded-xl bg-muted motion-reduce:animate-none" aria-busy="true" />
       ) : cards.length === 0 ? (
-        <p className="mt-4 text-sm text-muted-foreground">No institutes are listed yet. Ask Edulexa instead.</p>
+        <p className="mt-4 text-sm text-muted-foreground">{en("No institutes are listed yet. Ask Edulexa instead.")}</p>
       ) : (
         <ul className="mt-4 grid gap-3 sm:grid-cols-2">
           {cards.map((c) => (
@@ -179,7 +183,7 @@ function InstituteCards({ apiFetch, track, onClose, onChoose }: { apiFetch: ApiF
                   </span>
                 )}
                 {c.modes.length > 0 && <span>{c.modes.join(", ")}</span>}
-                {c.feesRange && <span>Fees: {c.feesRange}</span>}
+                {c.feesRange && <span>{en("Fees: ")}{c.feesRange}</span>}
               </p>
               {c.about && <p className="mt-2 text-sm text-muted-foreground">{c.about}</p>}
               <ul className="mt-2 space-y-1 text-sm">
@@ -195,7 +199,7 @@ function InstituteCards({ apiFetch, track, onClose, onChoose }: { apiFetch: ApiF
                 onClick={() => onChoose(c.instituteId, c.name)}
                 className="mt-3 self-start rounded-lg border border-indigo-600 px-3 py-1.5 text-sm font-semibold text-indigo-700 hover:bg-indigo-50 dark:text-indigo-300 dark:hover:bg-indigo-500/10"
               >
-                Ask {c.name}
+                {en("Ask ")}{c.name}
               </button>
             </li>
           ))}
@@ -218,6 +222,7 @@ function RequestDialog({
   onClose: () => void;
   onSent: (message: string) => void;
 }) {
+  const en = useEn();
   const formOwner = to.kind === "edulexa" ? COMMUNITY_INSTITUTE_ID : to.id;
   const recipient = to.kind === "edulexa" ? "Edulexa" : to.name;
   const [fill, setFill] = useState<Fillable | null>(null);
@@ -305,7 +310,7 @@ function RequestDialog({
   return (
     <Modal title={title} onClose={onClose}>
       <div className="mt-4">
-        {failed && <p className="text-sm text-red-700 dark:text-red-400">The form couldn&apos;t be loaded. Please try again.</p>}
+        {failed && <p className="text-sm text-red-700 dark:text-red-400">{en("The form couldn't be loaded. Please try again.")}</p>}
         {!fill && !failed && <div className="h-48 animate-pulse rounded-xl bg-muted motion-reduce:animate-none" aria-busy="true" />}
         {fill && (
           <GuidanceForm
@@ -325,7 +330,7 @@ function RequestDialog({
               hasQuizResult ? (
                 <label className="flex items-start gap-2">
                   <input type="checkbox" checked={shareQuiz} onChange={(e) => setShareQuiz(e.target.checked)} className="mt-0.5 h-4 w-4 accent-indigo-600" />
-                  <span>Also share my latest quiz answers and result (optional).</span>
+                  <span>{en("Also share my latest quiz answers and result (optional).")}</span>
                 </label>
               ) : null
             }

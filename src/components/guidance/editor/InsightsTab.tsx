@@ -8,6 +8,7 @@
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { Download } from "lucide-react";
+import { useEn } from "@/lib/english/EnglishProvider";
 
 interface Insights {
   views: number;
@@ -45,6 +46,7 @@ const RANGES = [7, 30, 90, 365];
 const PLATFORM = "ceacdd2c-975f-41fd-959e-cc530240931c";
 
 export default function InsightsTab({ formId, apiFetch, instituteId }: { formId: string; apiFetch: (p: string, i?: RequestInit) => Promise<Response>; instituteId: string }) {
+  const en = useEn();
   const [days, setDays] = useState(30);
   const [data, setData] = useState<Insights | null>(null);
   const [subs, setSubs] = useState<Submission[]>([]);
@@ -55,20 +57,20 @@ export default function InsightsTab({ formId, apiFetch, instituteId }: { formId:
     Promise.all([apiFetch(`/api/guidance-forms/${formId}/insights?days=${days}`), apiFetch(`/api/guidance-forms/${formId}/submissions?take=20`)])
       .then(async ([a, b]) => {
         if (cancelled) return;
-        if (!a.ok) return setError("Insights couldn't be loaded.");
+        if (!a.ok) return setError(en("Insights couldn't be loaded."));
         setData(await a.json());
         if (b.ok) setSubs(await b.json());
       })
-      .catch(() => !cancelled && setError("Insights couldn't be loaded."));
+      .catch(() => !cancelled && setError(en("Insights couldn't be loaded.")));
     return () => {
       cancelled = true;
     };
-  }, [apiFetch, formId, days]);
+  }, [apiFetch, formId, days, en]);
 
   // Every sending of the form as a spreadsheet (signed in, so fetched and saved here)
   const download = async () => {
     const res = await apiFetch(`/api/guidance-forms/${formId}/submissions.csv`);
-    if (!res.ok) return setError("The answers couldn't be downloaded.");
+    if (!res.ok) return setError(en("The answers couldn't be downloaded."));
     const name = /filename="?([^";]+)"?/.exec(res.headers.get("content-disposition") ?? "")?.[1] ?? "answers.csv";
     const url = URL.createObjectURL(await res.blob());
     const a = document.createElement("a");
@@ -88,25 +90,25 @@ export default function InsightsTab({ formId, apiFetch, instituteId }: { formId:
       <div className="flex flex-wrap items-center gap-1.5">
         {RANGES.map((d) => (
           <button key={d} type="button" aria-pressed={days === d} onClick={() => setDays(d)} className={`rounded-full border px-3 py-1.5 text-xs font-medium ${days === d ? "border-cyan-700 bg-cyan-700 text-white" : "border-border bg-card hover:bg-muted"}`}>
-            Last {d === 365 ? "12 months" : `${d} days`}
+            {en("Last ")}{d === 365 ? en("12 months") : `${d} days`}
           </button>
         ))}
-        <button type="button" onClick={download} className="ml-auto inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-xs font-medium hover:bg-muted">
-          <Download aria-hidden="true" className="h-3.5 w-3.5" /> Download every answer (CSV)
+        <button type="button" onClick={download} className="ms-auto inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-xs font-medium hover:bg-muted">
+          <Download aria-hidden="true" className="h-3.5 w-3.5" />{en(" Download every answer (CSV)")}
         </button>
       </div>
 
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-5">
-        <Tile label="Opened" value={data.views} />
-        <Tile label="Started" value={data.starts} sub={`${data.startRate}% of visits`} />
-        <Tile label="Sent" value={data.completed} sub={`${data.completionRate}% of those who started`} />
-        <Tile label="Typical time to fill in" value={data.medianSeconds == null ? "—" : data.medianSeconds < 90 ? `${data.medianSeconds} s` : `${Math.round(data.medianSeconds / 60)} min`} />
-        <Tile label="Stopped part way" value={Math.max(0, data.starts - data.completed)} />
+        <Tile label={en("Opened")} value={data.views} />
+        <Tile label={en("Started")} value={data.starts} sub={`${data.startRate}% of visits`} />
+        <Tile label={en("Sent")} value={data.completed} sub={`${data.completionRate}% of those who started`} />
+        <Tile label={en("Typical time to fill in")} value={data.medianSeconds == null ? "—" : data.medianSeconds < 90 ? `${data.medianSeconds} s` : `${Math.round(data.medianSeconds / 60)} min`} />
+        <Tile label={en("Stopped part way")} value={Math.max(0, data.starts - data.completed)} />
       </div>
       {((data.incompleteSaved ?? 0) > 0 || (data.finishedAfterSave ?? 0) > 0) && (
         <div className="grid grid-cols-2 gap-3 lg:grid-cols-5">
-          <Tile label="Saved part way" value={data.incompleteSaved ?? 0} sub="Under Incomplete in your CRM" />
-          <Tile label="Finished after saving" value={data.finishedAfterSave ?? 0} sub="Came back and pressed Send" />
+          <Tile label={en("Saved part way")} value={data.incompleteSaved ?? 0} sub="Under Incomplete in your CRM" />
+          <Tile label={en("Finished after saving")} value={data.finishedAfterSave ?? 0} sub="Came back and pressed Send" />
         </div>
       )}
       {((data.awaitingConfirmation ?? 0) > 0 || (data.possibleSpam ?? 0) > 0) && (
@@ -117,9 +119,9 @@ export default function InsightsTab({ formId, apiFetch, instituteId }: { formId:
       )}
 
       <div className="grid gap-4 lg:grid-cols-2">
-        <Card title="Where people stopped" note="The last question reached by people who started but didn't send.">
+        <Card title={en("Where people stopped")} note="The last question reached by people who started but didn't send.">
           {data.dropOff.length === 0 ? (
-            <p className="text-sm text-muted-foreground">Nobody has stopped part way in this period.</p>
+            <p className="text-sm text-muted-foreground">{en("Nobody has stopped part way in this period.")}</p>
           ) : (
             <ul className="space-y-2">
               {data.dropOff.map((d) => (
@@ -136,9 +138,9 @@ export default function InsightsTab({ formId, apiFetch, instituteId }: { formId:
             </ul>
           )}
         </Card>
-        <Card title="Sent per day">
+        <Card title={en("Sent per day")}>
           {data.daily.length === 0 ? (
-            <p className="text-sm text-muted-foreground">Nothing sent in this period yet.</p>
+            <p className="text-sm text-muted-foreground">{en("Nothing sent in this period yet.")}</p>
           ) : (
             <div className="flex h-32 items-end gap-0.5" role="img" aria-label={`Sent per day: ${data.daily.map((d) => `${d.day} ${d.count}`).join(", ")}`}>
               {data.daily.map((d) => (
@@ -147,38 +149,38 @@ export default function InsightsTab({ formId, apiFetch, instituteId }: { formId:
             </div>
           )}
         </Card>
-        <Card title="Sources and campaigns">
+        <Card title={en("Sources and campaigns")}>
           <List rows={data.bySource.map((x) => [x.key === "website" ? "Website / link" : x.key === "app" ? "Inside Edulexa" : x.key, x.count])} />
         </Card>
-        <Card title="Pages it was sent from" note="Where the form sits on your website (or the site people came from).">
+        <Card title={en("Pages it was sent from")} note="Where the form sits on your website (or the site people came from).">
           <List rows={(data.byPage ?? []).map((x) => [x.key, x.count])} />
         </Card>
-        <Card title="Languages">
+        <Card title={en("Languages")}>
           <List rows={data.byLanguage.map((x) => [x.name, x.count])} />
         </Card>
       </div>
 
-      <Card title="Latest inquiries from this form">
+      <Card title={en("Latest inquiries from this form")}>
         {subs.length === 0 ? (
-          <p className="text-sm text-muted-foreground">None yet.</p>
+          <p className="text-sm text-muted-foreground">{en("None yet.")}</p>
         ) : (
           <ul className="divide-y divide-border">
             {subs.map((s) => (
               <li key={s.id} className="flex flex-wrap items-center justify-between gap-2 py-2 text-sm">
                 <span>
-                  <span className="font-medium">{s.name ?? (s.requestId ? "Ask Edulexa request" : "Inquiry")}</span>{" "}
+                  <span className="font-medium">{s.name ?? (s.requestId ? en("Ask Edulexa request") : en("Inquiry"))}</span>{" "}
                   <span className="text-xs text-muted-foreground">
-                    {new Date(s.createdAt).toLocaleString([], { dateStyle: "medium", timeStyle: "short" })} · version {s.formVersion} · {s.campaign ?? (s.channel === "app" ? "inside Edulexa" : "website")}
+                    {new Date(s.createdAt).toLocaleString([], { dateStyle: "medium", timeStyle: "short" })}{en(" · version ")}{s.formVersion} · {s.campaign ?? (s.channel === "app" ? en("inside Edulexa") : "website")}
                   </span>
                 </span>
                 {s.leadId && instituteId !== PLATFORM && (
                   <Link href={`/institute/dashboard?lead=${s.leadId}`} className="rounded-lg border border-border px-2.5 py-1 text-xs hover:bg-muted">
-                    Open in CRM
+                    {en("Open in CRM")}
                   </Link>
                 )}
                 {s.requestId && (
                   <Link href={`/advisor/guidance?request=${s.requestId}`} className="rounded-lg border border-border px-2.5 py-1 text-xs hover:bg-muted">
-                    Open request
+                    {en("Open request")}
                   </Link>
                 )}
               </li>
@@ -211,7 +213,8 @@ function Card({ title, note, children }: { title: string; note?: string; childre
 }
 
 function List({ rows }: { rows: [string, number][] }) {
-  if (rows.length === 0) return <p className="text-sm text-muted-foreground">Nothing yet.</p>;
+  const en = useEn();
+  if (rows.length === 0) return <p className="text-sm text-muted-foreground">{en("Nothing yet.")}</p>;
   return (
     <ul className="space-y-1 text-sm">
       {rows.map(([k, n]) => (

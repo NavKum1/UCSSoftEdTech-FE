@@ -71,10 +71,10 @@ export default function ReferralsPage() {
       setMine(result.mine);
       setError(null);
     } else {
-      setError("We couldn't load your recommendations right now.");
+      setError(en("We couldn't load your recommendations right now."));
     }
     setLoading(false);
-  }, []);
+  }, [en]);
 
   const load = useCallback(async () => applyLoaded(await fetchReferralData(getToken)), [applyLoaded, getToken]);
 
@@ -103,11 +103,11 @@ export default function ReferralsPage() {
           const err = (await res.json().catch(() => null)) as { error?: string } | null;
           throw new Error(err?.error || "We couldn't share your details. Please try again.");
         }
-        setNotice(`Your details were shared with ${confirm.rec.instituteName}. You can withdraw at any time below.`);
+        setNotice(en("Your details were shared with {institute}. You can withdraw at any time below.", { institute: confirm.rec.instituteName }));
       } else {
         const res = await authenticatedFetch(`/api/referrals/${confirm.referral.referralId}/withdraw`, { method: "POST" }, getToken);
         if (!res.ok) throw new Error("We couldn't withdraw your referral. Please try again.");
-        setNotice(`Withdrawn. ${confirm.referral.instituteName} has been asked to stop contacting you and delete your data.`);
+        setNotice(en("Withdrawn. {institute} has been asked to stop contacting you and delete your data.", { institute: confirm.referral.instituteName }));
       }
       setConfirm(null);
       await load();
@@ -133,7 +133,7 @@ export default function ReferralsPage() {
       const body = (await res.json()) as { sponsoredRecommendationEmails: boolean };
       setData({ ...data, sponsoredRecommendationEmails: body.sponsoredRecommendationEmails });
     } catch {
-      setError("Could not save your email preference.");
+      setError(en("Could not save your email preference."));
     } finally {
       setSavingPref(false);
     }
@@ -141,7 +141,7 @@ export default function ReferralsPage() {
 
   if (isLoaded && !isSignedIn) {
     return (
-      <SignInRequired title="Learning recommendations" message="Sign in to see course suggestions based on your defenses." />
+      <SignInRequired title={en("Learning recommendations")} message="Sign in to see course suggestions based on your defenses." />
     );
   }
 
@@ -154,10 +154,10 @@ export default function ReferralsPage() {
         <div>
           <h1 className="text-2xl font-black tracking-tight text-foreground flex items-center gap-2">
             <BookOpen className="w-6 h-6 text-indigo-700 dark:text-indigo-400" />
-            Learning recommendations
+            {en("Learning recommendations")}
           </h1>
           <p className="text-sm text-muted-foreground mt-1">
-            Courses that match the skills your latest defense suggested you strengthen. Nothing is shared unless you choose to.
+            {en("Courses that match the skills your latest defense suggested you strengthen. Nothing is shared unless you choose to.")}
           </p>
         </div>
 
@@ -173,7 +173,7 @@ export default function ReferralsPage() {
             <span className="flex items-center gap-2">
               <CheckCircle2 className="w-4 h-4 shrink-0" /> {notice}
             </span>
-            <button type="button" onClick={() => setNotice(null)} aria-label="Dismiss">
+            <button type="button" onClick={() => setNotice(null)} aria-label={en("Dismiss")}>
               <X className="w-3.5 h-3.5" />
             </button>
           </div>
@@ -184,7 +184,7 @@ export default function ReferralsPage() {
             <span className="flex items-center gap-2">
               <AlertTriangle className="w-4 h-4 shrink-0" /> {error}
             </span>
-            <button type="button" onClick={() => setError(null)} aria-label="Dismiss">
+            <button type="button" onClick={() => setError(null)} aria-label={en("Dismiss")}>
               <X className="w-3.5 h-3.5" />
             </button>
           </div>
@@ -192,15 +192,15 @@ export default function ReferralsPage() {
 
         {loading ? (
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Loader2 className="w-4 h-4 animate-spin" /> Loading recommendations...
+            <Loader2 className="w-4 h-4 animate-spin" />{en(" Loading recommendations...")}
           </div>
         ) : (
           <>
             <section className="space-y-3">
-              <h2 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Suggested courses</h2>
+              <h2 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">{en("Suggested courses")}</h2>
               {!data || data.recommendations.length === 0 ? (
                 <div className="glass-panel rounded-2xl p-6 border border-border text-sm text-muted-foreground">
-                  No recommendations yet. Complete a voice defense and we&apos;ll suggest courses for any skills to strengthen.
+                  {en("No recommendations yet. Complete a voice defense and we'll suggest courses for any skills to strengthen.")}
                 </div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -213,7 +213,7 @@ export default function ReferralsPage() {
                         </div>
                         {rec.sponsored && (
                           <span className="shrink-0 px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider bg-amber-100 dark:bg-amber-500/15 text-amber-800 dark:text-amber-300 border border-amber-300 dark:border-amber-500/40">
-                            Sponsored
+                            {en("Sponsored")}
                           </span>
                         )}
                       </div>
@@ -230,7 +230,7 @@ export default function ReferralsPage() {
                       <div className="mt-auto pt-2">
                         {rec.referralId ? (
                           <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-700 dark:text-emerald-400">
-                            <CheckCircle2 className="w-4 h-4" /> Details shared — manage below
+                            <CheckCircle2 className="w-4 h-4" />{en(" Details shared — manage below")}
                           </span>
                         ) : (
                           <button
@@ -239,7 +239,7 @@ export default function ReferralsPage() {
                             className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-border bg-card hover:bg-muted text-xs font-semibold text-foreground"
                           >
                             <Share2 className="w-3.5 h-3.5" />
-                            Share my details with {rec.instituteName}
+                            {en("Share my details with ")}{rec.instituteName}
                           </button>
                         )}
                       </div>
@@ -250,10 +250,10 @@ export default function ReferralsPage() {
             </section>
 
             <section className="space-y-3">
-              <h2 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Details you&apos;ve shared</h2>
+              <h2 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">{en("Details you've shared")}</h2>
               {mine.length === 0 ? (
                 <div className="glass-panel rounded-2xl p-5 border border-border text-sm text-muted-foreground">
-                  You haven&apos;t shared your details with any course provider.
+                  {en("You haven't shared your details with any course provider.")}
                 </div>
               ) : (
                 <div className="glass-panel rounded-2xl border border-border divide-y divide-border">
@@ -262,7 +262,7 @@ export default function ReferralsPage() {
                       <div className="min-w-0">
                         <p className="text-sm font-semibold text-foreground">{r.courseName}</p>
                         <p className="text-xs text-muted-foreground">
-                          {r.instituteName} · shared {new Date(r.candidateConsentedAt ?? r.createdAt).toLocaleDateString()} · status:{" "}
+                          {r.instituteName}{en(" · shared ")}{new Date(r.candidateConsentedAt ?? r.createdAt).toLocaleDateString()}{en(" · status:")}{" "}
                           <span className="font-medium text-foreground">{r.status.replace(/([a-z])([A-Z])/g, "$1 $2")}</span>
                         </p>
                       </div>
@@ -272,7 +272,7 @@ export default function ReferralsPage() {
                           onClick={() => setConfirm({ kind: "withdraw", referral: r })}
                           className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-red-500/30 text-red-700 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 text-xs font-semibold shrink-0"
                         >
-                          <Undo2 className="w-3.5 h-3.5" /> Withdraw
+                          <Undo2 className="w-3.5 h-3.5" />{en(" Withdraw")}
                         </button>
                       )}
                     </div>
@@ -286,9 +286,9 @@ export default function ReferralsPage() {
                 <div className="flex items-start gap-3">
                   <Mail className="w-5 h-5 shrink-0 text-muted-foreground mt-0.5" />
                   <div>
-                    <p className="text-sm font-semibold text-foreground">Include sponsored course suggestions in feedback emails</p>
+                    <p className="text-sm font-semibold text-foreground">{en("Include sponsored course suggestions in feedback emails")}</p>
                     <p className="text-xs text-muted-foreground mt-0.5">
-                      Off by default. Turning this on only changes what we email you; it never shares your details with a provider.
+                      {en("Off by default. Turning this on only changes what we email you; it never shares your details with a provider.")}
                     </p>
                   </div>
                 </div>
@@ -296,7 +296,7 @@ export default function ReferralsPage() {
                   type="button"
                   role="switch"
                   aria-checked={data.sponsoredRecommendationEmails}
-                  aria-label="Include sponsored course suggestions in feedback emails"
+                  aria-label={en("Include sponsored course suggestions in feedback emails")}
                   onClick={togglePreference}
                   disabled={savingPref}
                   className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors disabled:opacity-60 ${
@@ -320,30 +320,29 @@ export default function ReferralsPage() {
           <div className="w-full max-w-md rounded-2xl bg-white dark:bg-slate-900 border border-border shadow-2xl p-6 space-y-4">
             {confirm.kind === "opt-in" ? (
               <>
-                <h3 className="text-base font-bold text-foreground">Share your details with {confirm.rec.instituteName}?</h3>
+                <h3 className="text-base font-bold text-foreground">{en("Share your details with ")}{confirm.rec.instituteName}?</h3>
                 <div className="text-sm text-muted-foreground space-y-2">
                   <p>
-                    {confirm.rec.instituteName} will receive the following so they can contact you about &ldquo;{confirm.rec.courseName}&rdquo;:
+                    {confirm.rec.instituteName}{en(" will receive the following so they can contact you about “")}{confirm.rec.courseName}{en("”:")}
                   </p>
-                  <ul className="list-disc pl-5 space-y-1">
-                    <li>Your name</li>
-                    <li>Your email address</li>
+                  <ul className="list-disc ps-5 space-y-1">
+                    <li>{en("Your name")}</li>
+                    <li>{en("Your email address")}</li>
                     <li>
-                      Skills to improve
+                      {en("Skills to improve")}
                       {confirm.rec.matchedSkills.length > 0 && <>: {confirm.rec.matchedSkills.join(", ")}</>}
                     </li>
                   </ul>
-                  <p className="font-medium text-foreground">Your scores, transcripts and recordings are not shared.</p>
+                  <p className="font-medium text-foreground">{en("Your scores, transcripts and recordings are not shared.")}</p>
                   {confirm.rec.sponsored && <p>{en("This is a sponsored listing; we may earn a referral fee if you enrol.")}</p>}
-                  <p>You can withdraw at any time, and the provider will be asked to stop contacting you and delete your data.</p>
+                  <p>{en("You can withdraw at any time, and the provider will be asked to stop contacting you and delete your data.")}</p>
                 </div>
               </>
             ) : (
               <>
-                <h3 className="text-base font-bold text-foreground">Withdraw from {confirm.referral.instituteName}?</h3>
+                <h3 className="text-base font-bold text-foreground">{en("Withdraw from ")}{confirm.referral.instituteName}?</h3>
                 <p className="text-sm text-muted-foreground">
-                  We&apos;ll tell {confirm.referral.instituteName} to stop contacting you about &ldquo;{confirm.referral.courseName}&rdquo; and to
-                  delete the details you shared.
+                  {en("We'll tell ")}{confirm.referral.instituteName}{en(" to stop contacting you about “")}{confirm.referral.courseName}{en("” and to delete the details you shared.")}
                 </p>
               </>
             )}
@@ -354,7 +353,7 @@ export default function ReferralsPage() {
                 disabled={working}
                 className="px-4 py-2 rounded-xl border border-border text-sm font-medium text-foreground hover:bg-muted"
               >
-                Cancel
+                {en("Cancel")}
               </button>
               <button
                 type="button"
@@ -365,7 +364,7 @@ export default function ReferralsPage() {
                 }`}
               >
                 {working && <Loader2 className="w-4 h-4 animate-spin" />}
-                {confirm.kind === "opt-in" ? "Share my details" : "Withdraw"}
+                {confirm.kind === "opt-in" ? en("Share my details") : en("Withdraw")}
               </button>
             </div>
           </div>

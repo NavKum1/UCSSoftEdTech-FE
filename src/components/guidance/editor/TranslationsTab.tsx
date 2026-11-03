@@ -31,8 +31,8 @@ export default function TranslationsTab({
   if (others.length === 0)
     return (
       <div className="max-w-xl rounded-2xl border border-border bg-card p-5 text-sm">
-        <p className="font-medium">This form is in one language</p>
-        <p className="mt-1 text-muted-foreground">Add languages in Settings (for example हिन्दी or தமிழ்); then translate each text here. People pick their language on the form.</p>
+        <p className="font-medium">{en("This form is in one language")}</p>
+        <p className="mt-1 text-muted-foreground">{en("Add languages in Settings (for example हिन्दी or தமிழ்); then translate each text here. People pick their language on the form.")}</p>
       </div>
     );
   const current = others.includes(lang) ? lang : others[0];
@@ -118,12 +118,12 @@ export default function TranslationsTab({
             {nameOf(l)}
           </button>
         ))}
-        <span className="ml-auto text-xs text-muted-foreground">
-          {missing === 0 ? "Everything is translated." : `${missing} of ${total} texts not translated yet (they show in ${nameOf(def.languages[0])}).`}
+        <span className="ms-auto text-xs text-muted-foreground">
+          {missing === 0 ? en("Everything is translated.") : `${missing} of ${total} texts not translated yet (they show in ${nameOf(def.languages[0])}).`}
         </span>
       </div>
 
-      <Group title="Form texts">
+      <Group title={en("Form texts")}>
         <Row original={def.settings.title} value={def.settings.translations?.[current]?.title} onChange={(v) => setS("title", v)} />
         <Row original={def.settings.intro} value={def.settings.translations?.[current]?.description} onChange={(v) => setS("description", v)} long />
         <Row original={def.settings.thankYou} value={def.settings.translations?.[current]?.label} onChange={(v) => setS("label", v)} long />
@@ -171,7 +171,7 @@ export default function TranslationsTab({
       ))}
 
       {reportTexts && (
-        <Group title="The report people read">
+        <Group title={en("The report people read")}>
           <Row original={r!.reportTitle} value={rt.reportTitle} onChange={(v) => setR({ reportTitle: v })} />
           <Row original={r!.intro} value={rt.intro} onChange={(v) => setR({ intro: v })} long />
           <Row original={r!.nextTitle} value={rt.nextTitle} onChange={(v) => setR({ nextTitle: v })} />
@@ -184,7 +184,7 @@ export default function TranslationsTab({
       )}
 
       {results && (
-        <Group title="Results people read">
+        <Group title={en("Results people read")}>
           {r!.outcomeEnabled && (
             <>
               <Row original={r!.outcomeTitle} value={rt.outcomeTitle} onChange={(v) => setR({ outcomeTitle: v })} />
@@ -216,13 +216,14 @@ export default function TranslationsTab({
 
 /** Choices, one per line beside their translations in the same order */
 function Lines({ original, value, onChange }: { original: string[]; value: string[] | null | undefined; onChange: (v: string[]) => void }) {
+  const en = useEn();
   return (
     <div className="grid gap-2 sm:grid-cols-2">
       <p className="whitespace-pre-line rounded-lg bg-muted/50 px-3 py-2 text-xs text-muted-foreground">{original.join("\n")}</p>
       <textarea
         rows={original.length}
-        aria-label="Translations, one per line, in the same order"
-        placeholder="One per line, same order"
+        aria-label={en("Translations, one per line, in the same order")}
+        placeholder={en("One per line, same order")}
         className="rounded-lg border border-border bg-background px-3 py-2 text-xs"
         value={(value ?? []).join("\n")}
         onChange={(e) => onChange(e.target.value.split("\n"))}

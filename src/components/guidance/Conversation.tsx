@@ -4,6 +4,7 @@
 
 import React, { useState } from "react";
 import AnswerFiles, { type AnswerFile } from "@/components/guidance/AnswerFiles";
+import { useEn } from "@/lib/english/EnglishProvider";
 
 export interface GuidanceMessage {
   id: string;
@@ -50,6 +51,7 @@ export const STATUS_LABEL: Record<string, string> = {
 };
 
 export function Messages({ messages }: { messages: GuidanceMessage[] }) {
+  const en = useEn();
   return (
     <ol className="space-y-3">
       {messages.map((m) => (
@@ -61,10 +63,10 @@ export function Messages({ messages }: { messages: GuidanceMessage[] }) {
         >
           <p className="text-xs text-muted-foreground">
             <span className="font-medium text-foreground">{m.authorName}</span>
-            {m.authorRole === "mentor" && " (community mentor)"}
-            {m.authorRole === "advisor" && " (Edulexa advisor)"} · {new Date(m.createdAt).toLocaleString()}
-            {m.via === "email" && " · by email"}
-            {m.internal && " · note for staff only"}
+            {m.authorRole === "mentor" && en(" (community mentor)")}
+            {m.authorRole === "advisor" && en(" (Edulexa advisor)")} · {new Date(m.createdAt).toLocaleString()}
+            {m.via === "email" && en(" · by email")}
+            {m.internal && en(" · note for staff only")}
           </p>
           <p className="mt-1 whitespace-pre-wrap">{m.body}</p>
         </li>
@@ -74,6 +76,7 @@ export function Messages({ messages }: { messages: GuidanceMessage[] }) {
 }
 
 export function ReplyBox({ onSend, allowInternal, placeholder }: { onSend: (body: string, internal: boolean) => Promise<boolean>; allowInternal?: boolean; placeholder?: string }) {
+  const en = useEn();
   const [body, setBody] = useState("");
   const [internal, setInternal] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -92,7 +95,7 @@ export function ReplyBox({ onSend, allowInternal, placeholder }: { onSend: (body
       }}
     >
       <label className="block text-sm">
-        <span className="sr-only">Your reply</span>
+        <span className="sr-only">{en("Your reply")}</span>
         <textarea
           rows={3}
           value={body}
@@ -105,13 +108,13 @@ export function ReplyBox({ onSend, allowInternal, placeholder }: { onSend: (body
       <div className="flex flex-wrap items-center justify-between gap-2">
         {allowInternal ? (
           <label className="flex items-center gap-2 text-xs text-muted-foreground">
-            <input type="checkbox" checked={internal} onChange={(e) => setInternal(e.target.checked)} /> Note for staff only (the person doesn&apos;t see it)
+            <input type="checkbox" checked={internal} onChange={(e) => setInternal(e.target.checked)} />{en(" Note for staff only (the person doesn't see it)")}
           </label>
         ) : (
           <span />
         )}
         <button type="submit" disabled={busy || !body.trim()} className="rounded-xl bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-500 disabled:opacity-60">
-          {busy ? "Sending…" : internal ? "Add note" : "Send"}
+          {busy ? en("Sending…") : internal ? en("Add note") : en("Send")}
         </button>
       </div>
     </form>
@@ -120,10 +123,11 @@ export function ReplyBox({ onSend, allowInternal, placeholder }: { onSend: (body
 
 /** What the person told us: their answers and, if shared, their quiz. */
 export function RequestDetails({ r, files = false }: { r: GuidanceRequestView; /** Staff who may open attached files (advisors) */ files?: boolean }) {
+  const en = useEn();
   return (
     <div className="space-y-3 text-sm">
       <p className="whitespace-pre-wrap">
-        <span className="font-medium">What they&apos;re unsure about:</span> {r.question}
+        <span className="font-medium">{en("What they're unsure about:")}</span> {r.question}
       </p>
       {r.answers && r.answers.length > 0 && (
         <dl className="space-y-1">
@@ -141,8 +145,8 @@ export function RequestDetails({ r, files = false }: { r: GuidanceRequestView; /
       {r.quiz && (
         <details className="rounded-xl bg-muted/50 p-3">
           <summary className="cursor-pointer font-medium">
-            Shared quiz: {r.quiz.primaryTrack}
-            {r.quiz.secondaryTrack ? `, then ${r.quiz.secondaryTrack}` : ""} ({r.quiz.matchConfidence} match)
+            {en("Shared quiz: ")}{r.quiz.primaryTrack}
+            {r.quiz.secondaryTrack ? `, then ${r.quiz.secondaryTrack}` : ""} ({r.quiz.matchConfidence}{en(" match)")}
           </summary>
           <ul className="mt-2 text-xs">
             {r.quiz.ranking.map((x) => (
@@ -151,7 +155,7 @@ export function RequestDetails({ r, files = false }: { r: GuidanceRequestView; /
               </li>
             ))}
           </ul>
-          <ol className="mt-2 list-decimal space-y-1 pl-5 text-xs">
+          <ol className="mt-2 list-decimal space-y-1 ps-5 text-xs">
             {r.quiz.answers.map((a, i) => (
               <li key={i}>
                 {a.question} <span className="font-medium">{a.answer}</span>

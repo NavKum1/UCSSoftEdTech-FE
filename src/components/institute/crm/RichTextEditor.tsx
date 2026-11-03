@@ -7,6 +7,7 @@ import { EditorContent, useEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import { Placeholder } from "@tiptap/extensions";
 import { Bold, Italic, Link2, List, ListOrdered, Underline } from "lucide-react";
+import { useEn } from "@/lib/english/EnglishProvider";
 
 const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 export const asHtml = (body: string) =>
@@ -20,6 +21,7 @@ const FIELDS: [string, string][] = [
 ];
 
 export default function RichTextEditor({ value, onChange, placeholder }: { value: string; onChange: (html: string) => void; placeholder?: string }) {
+  const en = useEn();
   const editor = useEditor({
     immediatelyRender: false,
     extensions: [
@@ -43,7 +45,7 @@ export default function RichTextEditor({ value, onChange, placeholder }: { value
 
   return (
     <div className="mt-1 overflow-hidden rounded-lg border border-border bg-background focus-within:border-cyan-600">
-      <div className="flex flex-wrap items-center gap-0.5 border-b border-border px-1.5 py-1" role="toolbar" aria-label="Formatting">
+      <div className="flex flex-wrap items-center gap-0.5 border-b border-border px-1.5 py-1" role="toolbar" aria-label={en("Formatting")}>
         {tool("Bold", Bold, editor?.isActive("bold"), () => editor?.chain().focus().toggleBold().run())}
         {tool("Italic", Italic, editor?.isActive("italic"), () => editor?.chain().focus().toggleItalic().run())}
         {tool("Underline", Underline, editor?.isActive("underline"), () => editor?.chain().focus().toggleUnderline().run())}

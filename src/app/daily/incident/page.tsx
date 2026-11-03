@@ -134,12 +134,12 @@ function IncidentDrill() {
           setError(res.status === 404 ? "No drill was found for this link or track." : "The drill couldn't be loaded. Please try again.");
         }
       } catch {
-        setError("We couldn't reach the server. Please try again.");
+        setError(en("We couldn't reach the server. Please try again."));
       } finally {
         setLoading(false);
       }
     },
-    [apiFetch, params],
+    [apiFetch, params, en],
   );
   const loadRef = useLatestRef(load);
   useEffect(() => {
@@ -189,7 +189,7 @@ function IncidentDrill() {
         window.scrollTo({ top: 0, behavior: "smooth" });
       } else setError(body?.error ?? "Your answer couldn't be submitted. Please try again.");
     } catch {
-      setError("We couldn't reach the server. Please try again.");
+      setError(en("We couldn't reach the server. Please try again."));
     } finally {
       setBusy(false);
     }
@@ -203,7 +203,7 @@ function IncidentDrill() {
   return (
     <main className="mx-auto max-w-6xl px-4 pb-16 pt-8 sm:px-6">
       <Link href="/daily" className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
-        <ArrowLeft aria-hidden="true" className="h-4 w-4" /> Daily practice
+        <ArrowLeft aria-hidden="true" className="h-4 w-4" />{en(" Daily practice")}
       </Link>
 
       {!fromLink && !attempt && (
@@ -215,7 +215,7 @@ function IncidentDrill() {
           }}
         >
           <label className="text-sm">
-            <span className="font-medium">Track</span>
+            <span className="font-medium">{en("Track")}</span>
             <select value={track} onChange={(e) => setTrack(e.target.value)} className={select}>
               {TRACKS.map((t) => (
                 <option key={t.id} value={t.id}>
@@ -225,7 +225,7 @@ function IncidentDrill() {
             </select>
           </label>
           <label className="text-sm">
-            <span className="font-medium">Difficulty</span>
+            <span className="font-medium">{en("Difficulty")}</span>
             <select value={tier} onChange={(e) => setTier(e.target.value)} className={select}>
               {TIERS.map((t) => (
                 <option key={t}>{t}</option>
@@ -233,7 +233,7 @@ function IncidentDrill() {
             </select>
           </label>
           <button type="submit" className="rounded-xl border border-border px-4 py-2 text-sm font-semibold hover:bg-muted">
-            Show today&apos;s drill
+            {en("Show today's drill")}
           </button>
         </form>
       )}
@@ -246,7 +246,7 @@ function IncidentDrill() {
       {notice && <p className="mt-4 rounded-xl border border-sky-500/30 bg-sky-500/10 px-4 py-3 text-sm">{notice}</p>}
 
       {loading ? (
-        <div className={`${card} mt-6 h-64 animate-pulse motion-reduce:animate-none`} aria-busy="true" aria-label="Loading the drill" />
+        <div className={`${card} mt-6 h-64 animate-pulse motion-reduce:animate-none`} aria-busy="true" aria-label={en("Loading the drill")} />
       ) : drill && status ? (
         <>
           <header className="mt-6 flex flex-wrap items-start justify-between gap-4">
@@ -266,7 +266,7 @@ function IncidentDrill() {
 
           {status.completed && !result && (
             <p className="mt-4 rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-sm">
-              You completed this drill and earned {status.points ?? 0}{en(" points. You can practise it again; repeats don't earn points.")}
+              {en("You completed this drill and earned ")}{status.points ?? 0}{en(" points. You can practise it again; repeats don't earn points.")}
             </p>
           )}
 
@@ -274,28 +274,28 @@ function IncidentDrill() {
             <IncidentResultView result={result} onAgain={() => void start()} busy={busy} />
           ) : !attempt ? (
             <section className={`${card} mt-6 p-6`}>
-              <h2 className="text-base font-semibold">How it works</h2>
-              <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-muted-foreground">
-                <li>Read the symptoms, metrics and logs of the outage.</li>
-                <li>Choose the root cause (50 points) and the safe fix (50 points).</li>
-                <li>Both right within 5 minutes: 20 bonus points. The time is measured from when you open the drill.</li>
+              <h2 className="text-base font-semibold">{en("How it works")}</h2>
+              <ul className="mt-2 list-disc space-y-1 ps-5 text-sm text-muted-foreground">
+                <li>{en("Read the symptoms, metrics and logs of the outage.")}</li>
+                <li>{en("Choose the root cause (50 points) and the safe fix (50 points).")}</li>
+                <li>{en("Both right within 5 minutes: 20 bonus points. The time is measured from when you open the drill.")}</li>
               </ul>
               <button type="button" className={`${primary} mt-5`} disabled={busy} onClick={() => void start()}>
-                {status.completed ? en("Practise again") : "Open the drill"}
+                {status.completed ? en("Practise again") : en("Open the drill")}
               </button>
             </section>
           ) : (
             <div className="mt-6 grid gap-6 lg:grid-cols-5">
               <div className="space-y-4 lg:col-span-3">
                 <section className={`${card} p-5`}>
-                  <h2 className="text-sm font-semibold">Symptoms</h2>
+                  <h2 className="text-sm font-semibold">{en("Symptoms")}</h2>
                   <p className="mt-1 text-sm">{drill.outageSymptoms}</p>
-                  <h2 className="mt-4 text-sm font-semibold">System</h2>
+                  <h2 className="mt-4 text-sm font-semibold">{en("System")}</h2>
                   <p className="mt-1 text-sm text-muted-foreground">{drill.topologyDescription}</p>
                 </section>
                 {Object.keys(drill.telemetryMetrics ?? {}).length > 0 && (
                   <section className={`${card} p-5`}>
-                    <h2 className="text-sm font-semibold">Metrics</h2>
+                    <h2 className="text-sm font-semibold">{en("Metrics")}</h2>
                     <dl className="mt-2 grid grid-cols-2 gap-3 sm:grid-cols-3">
                       {Object.entries(drill.telemetryMetrics).map(([k, v]) => (
                         <div key={k} className="rounded-lg bg-muted/60 p-2.5">
@@ -307,7 +307,7 @@ function IncidentDrill() {
                   </section>
                 )}
                 <section className={`${card} overflow-hidden`}>
-                  <h2 className="border-b border-border px-5 py-2 text-sm font-semibold">Logs</h2>
+                  <h2 className="border-b border-border px-5 py-2 text-sm font-semibold">{en("Logs")}</h2>
                   <pre className="max-h-96 overflow-auto bg-neutral-950 p-4 text-xs leading-5 text-neutral-100">{drill.terminalLogs}</pre>
                 </section>
               </div>
@@ -320,7 +320,7 @@ function IncidentDrill() {
                 }}
               >
                 <fieldset>
-                  <legend className="text-sm font-semibold">Root cause</legend>
+                  <legend className="text-sm font-semibold">{en("Root cause")}</legend>
                   <div className="mt-2 space-y-2">
                     {drill.hypotheses.map((h) => (
                       <label key={h.key} className={`flex cursor-pointer gap-2.5 rounded-xl border p-3 text-sm ${hypothesis === h.key ? "border-amber-500 bg-amber-50 dark:bg-amber-500/10" : "border-border"}`}>
@@ -331,7 +331,7 @@ function IncidentDrill() {
                   </div>
                 </fieldset>
                 <fieldset>
-                  <legend className="text-sm font-semibold">What do you do now?</legend>
+                  <legend className="text-sm font-semibold">{en("What do you do now?")}</legend>
                   <div className="mt-2 space-y-2">
                     {drill.actions.map((a) => (
                       <label key={a.key} className={`flex cursor-pointer gap-2.5 rounded-xl border p-3 text-sm ${action === a.key ? "border-amber-500 bg-amber-50 dark:bg-amber-500/10" : "border-border"}`}>
@@ -345,11 +345,11 @@ function IncidentDrill() {
                   </div>
                 </fieldset>
                 <label className="block text-sm">
-                  <span className="font-medium">Your notes (optional)</span>
+                  <span className="font-medium">{en("Your notes (optional)")}</span>
                   <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={3} maxLength={2000} className={select} />
                 </label>
                 <button type="submit" className={`${primary} w-full`} disabled={busy || !hypothesis || !action}>
-                  {busy ? "Submitting…" : "Submit"}
+                  {busy ? en("Submitting…") : en("Submit")}
                 </button>
               </form>
             </div>
@@ -369,7 +369,7 @@ function IncidentResultView({ result, onAgain, busy }: { result: Result; onAgain
       <section className={`${card} p-6`}>
         <p className="text-3xl font-semibold tabular-nums">{result.score} / 100</p>
         <p className="text-sm text-muted-foreground">
-          {result.countsForPoints ? `${result.points} points${result.speedBonus ? `, including a ${result.speedBonus}-point speed bonus` : ""}.` : "Practice: no points for a repeat."} Time:{" "}
+          {result.countsForPoints ? `${result.points} points${result.speedBonus ? `, including a ${result.speedBonus}-point speed bonus` : ""}.` : en("Practice: no points for a repeat.")}{en(" Time:")}{" "}
           {Math.floor(result.timeSeconds / 60)}m {result.timeSeconds % 60}s.
         </p>
         <p className="mt-3 text-sm">{result.feedback}</p>
@@ -379,15 +379,15 @@ function IncidentResultView({ result, onAgain, busy }: { result: Result; onAgain
       </section>
       <div className="grid gap-4 lg:grid-cols-2">
         <section className={`${card} p-5`}>
-          <h2 className="text-sm font-semibold">Root cause</h2>
+          <h2 className="text-sm font-semibold">{en("Root cause")}</h2>
           <ul className="mt-2 space-y-3">
             {result.hypotheses.map((h) => (
               <li key={h.key} className="flex gap-2 text-sm">
-                {h.correct ? <CheckCircle2 aria-label="The root cause" className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" /> : <XCircle aria-label="Not the root cause" className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />}
+                {h.correct ? <CheckCircle2 aria-label={en("The root cause")} className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" /> : <XCircle aria-label={en("Not the root cause")} className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />}
                 <span>
                   <span className={`block ${h.correct ? "font-semibold" : ""}`}>
                     {h.label}
-                    {h.chosen && <span className="ml-1 text-xs font-normal text-muted-foreground">(your answer)</span>}
+                    {h.chosen && <span className="ms-1 text-xs font-normal text-muted-foreground">{en("(your answer)")}</span>}
                   </span>
                   {h.rationale && <span className="mt-0.5 block text-xs text-muted-foreground">{h.rationale}</span>}
                 </span>
@@ -396,17 +396,17 @@ function IncidentResultView({ result, onAgain, busy }: { result: Result; onAgain
           </ul>
         </section>
         <section className={`${card} p-5`}>
-          <h2 className="text-sm font-semibold">Actions and their risk</h2>
+          <h2 className="text-sm font-semibold">{en("Actions and their risk")}</h2>
           <ul className="mt-2 space-y-3">
             {result.actions.map((a) => (
               <li key={a.key} className="flex gap-2 text-sm">
-                {a.correct ? <CheckCircle2 aria-label="The safe fix" className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" /> : <XCircle aria-label="Not the safe fix" className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />}
+                {a.correct ? <CheckCircle2 aria-label={en("The safe fix")} className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" /> : <XCircle aria-label={en("Not the safe fix")} className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />}
                 <span>
                   <span className={`block ${a.correct ? "font-semibold" : ""}`}>
                     {a.label}
-                    {a.chosen && <span className="ml-1 text-xs font-normal text-muted-foreground">(your answer)</span>}
+                    {a.chosen && <span className="ms-1 text-xs font-normal text-muted-foreground">{en("(your answer)")}</span>}
                   </span>
-                  <span className="mt-0.5 block text-xs text-muted-foreground">Risk: {a.risk}</span>
+                  <span className="mt-0.5 block text-xs text-muted-foreground">{en("Risk: ")}{a.risk}</span>
                 </span>
               </li>
             ))}
@@ -415,7 +415,7 @@ function IncidentResultView({ result, onAgain, busy }: { result: Result; onAgain
       </div>
       {result.postMortem && (
         <section className={`${card} p-5`}>
-          <h2 className="text-sm font-semibold">Post-mortem</h2>
+          <h2 className="text-sm font-semibold">{en("Post-mortem")}</h2>
           <p className="mt-1 whitespace-pre-line text-sm text-muted-foreground">{result.postMortem}</p>
         </section>
       )}
@@ -430,6 +430,7 @@ function GenerateDrill({
   apiFetch: (path: string, init?: RequestInit) => Promise<Response>;
   onGenerated: (body: { incident: Drill }, message: string) => void;
 }) {
+  const en = useEn();
   const [open, setOpen] = useState(false);
   const [track, setTrack] = useState("Backend");
   const [tier, setTier] = useState("Silver");
@@ -473,7 +474,7 @@ function GenerateDrill({
       );
       setOpen(false);
     } catch {
-      setError("We couldn't reach the server. Please try again.");
+      setError(en("We couldn't reach the server. Please try again."));
     } finally {
       setBusy(false);
     }
@@ -482,17 +483,17 @@ function GenerateDrill({
   return (
     <section className={`${card} mt-8 p-5`}>
       <button type="button" onClick={() => setOpen((o) => !o)} aria-expanded={open} className="flex items-center gap-2 text-sm font-semibold">
-        <Sparkles aria-hidden="true" className="h-4 w-4 text-amber-500" /> Generate a drill for your own stack
+        <Sparkles aria-hidden="true" className="h-4 w-4 text-amber-500" />{en(" Generate a drill for your own stack")}
       </button>
       {share && (
         <p className="mt-3 text-sm">
-          Share this link with your team: <code className="break-all text-xs">{share}</code>
+          {en("Share this link with your team: ")}<code className="break-all text-xs">{share}</code>
         </p>
       )}
       {open && (
         <form onSubmit={generate} className="mt-4 grid gap-3 sm:grid-cols-2">
           <label className="text-sm">
-            <span className="font-medium">Track</span>
+            <span className="font-medium">{en("Track")}</span>
             <select value={track} onChange={(e) => setTrack(e.target.value)} className={select}>
               {TRACKS.map((t) => (
                 <option key={t.id} value={t.id}>
@@ -502,7 +503,7 @@ function GenerateDrill({
             </select>
           </label>
           <label className="text-sm">
-            <span className="font-medium">Difficulty</span>
+            <span className="font-medium">{en("Difficulty")}</span>
             <select value={tier} onChange={(e) => setTier(e.target.value)} className={select}>
               {TIERS.map((t) => (
                 <option key={t}>{t}</option>
@@ -510,20 +511,20 @@ function GenerateDrill({
             </select>
           </label>
           <label className="text-sm">
-            <span className="font-medium">Your stack (optional)</span>
-            <input value={stack} onChange={(e) => setStack(e.target.value)} maxLength={300} placeholder="e.g. Go services on Kubernetes with PostgreSQL" className={select} />
+            <span className="font-medium">{en("Your stack (optional)")}</span>
+            <input value={stack} onChange={(e) => setStack(e.target.value)} maxLength={300} placeholder={en("e.g. Go services on Kubernetes with PostgreSQL")} className={select} />
           </label>
           <label className="text-sm">
-            <span className="font-medium">Kind of failure (optional)</span>
-            <input value={failure} onChange={(e) => setFailure(e.target.value)} maxLength={300} placeholder="e.g. connection pool exhaustion" className={select} />
+            <span className="font-medium">{en("Kind of failure (optional)")}</span>
+            <input value={failure} onChange={(e) => setFailure(e.target.value)} maxLength={300} placeholder={en("e.g. connection pool exhaustion")} className={select} />
           </label>
           <label className="flex items-center gap-2 text-sm sm:col-span-2">
             <input type="checkbox" checked={isPrivate} onChange={(e) => setIsPrivate(e.target.checked)} className="accent-amber-600" />
-            Private drill for my team (shared by link, not shown to others)
+            {en("Private drill for my team (shared by link, not shown to others)")}
           </label>
           {isPrivate && (
             <label className="text-sm sm:col-span-2">
-              <span className="font-medium">Team name</span>
+              <span className="font-medium">{en("Team name")}</span>
               <input value={team} onChange={(e) => setTeam(e.target.value)} maxLength={120} className={select} />
             </label>
           )}
@@ -534,7 +535,7 @@ function GenerateDrill({
           )}
           <div className="sm:col-span-2">
             <button type="submit" className={primary} disabled={busy}>
-              {busy ? "Generating…" : "Generate"}
+              {busy ? en("Generating…") : en("Generate")}
             </button>
           </div>
         </form>

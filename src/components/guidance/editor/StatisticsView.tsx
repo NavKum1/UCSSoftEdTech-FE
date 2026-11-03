@@ -67,9 +67,9 @@ function Bars({ rows, label }: { rows: { name: string; count: number }[]; label:
         <li key={r.name} className="grid grid-cols-[8rem_minmax(0,1fr)_2.5rem] items-center gap-2 text-xs" title={`${r.name}: ${r.count}`}>
           <span className="truncate text-muted-foreground">{r.name}</span>
           <span className="h-2.5 rounded-sm bg-muted" aria-hidden="true">
-            <span className="block h-full rounded-r bg-cyan-600 dark:bg-cyan-500" style={{ width: `${(r.count / max) * 100}%` }} />
+            <span className="block h-full rounded-e bg-cyan-600 dark:bg-cyan-500" style={{ width: `${(r.count / max) * 100}%` }} />
           </span>
-          <span className="text-right tabular-nums">{r.count}</span>
+          <span className="text-end tabular-nums">{r.count}</span>
         </li>
       ))}
     </ul>
@@ -95,10 +95,10 @@ export default function StatisticsView({ instituteId }: { instituteId?: string }
 
   const load = useCallback(async () => {
     const res = await apiFetch(`/api/guidance-forms/statistics?days=${days}${instituteId ? `&instituteId=${instituteId}` : ""}`);
-    if (!res.ok) return setError("We couldn't load the statistics.");
+    if (!res.ok) return setError(en("We couldn't load the statistics."));
     setError(null);
     setStats(await res.json());
-  }, [apiFetch, days, instituteId]);
+  }, [apiFetch, days, instituteId, en]);
   const loadRef = useLatestRef(load);
   useEffect(() => {
     if (ready) loadRef.current();
@@ -117,38 +117,38 @@ export default function StatisticsView({ instituteId }: { instituteId?: string }
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <p className="text-sm text-muted-foreground">All your forms, last {stats.days} days. Possible spam is left out{t.possibleSpam ? ` (${t.possibleSpam})` : ""}.</p>
-        <select aria-label="Period" value={days} onChange={(e) => setDays(Number(e.target.value))} className="rounded-lg border border-border bg-background px-2 py-1.5 text-sm">
+        <p className="text-sm text-muted-foreground">{en("All your forms, last ")}{stats.days}{en(" days. Possible spam is left out")}{t.possibleSpam ? ` (${t.possibleSpam})` : ""}.</p>
+        <select aria-label={en("Period")} value={days} onChange={(e) => setDays(Number(e.target.value))} className="rounded-lg border border-border bg-background px-2 py-1.5 text-sm">
           {[7, 30, 90, 365].map((d) => (
             <option key={d} value={d}>
-              Last {d} days
+              {en("Last ")}{d} days
             </option>
           ))}
         </select>
       </div>
 
       <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-        <Tile label="Sent" value={t.sent.toLocaleString()} note={`${pct(t.sent, t.starts)} of those who started`} />
-        <Tile label="Stopped part way (saved)" value={t.stoppedPartWay.toLocaleString()} />
-        <Tile label="Meetings" value={t.meetingsBooked.toLocaleString()} note={`booked, of ${t.meetingsAsked} asked for`} />
-        <Tile label="Enrolled" value={t.enrolled.toLocaleString()} note={`${pct(t.enrolled, t.leads)} of ${t.leads} leads`} />
+        <Tile label={en("Sent")} value={t.sent.toLocaleString()} note={`${pct(t.sent, t.starts)} of those who started`} />
+        <Tile label={en("Stopped part way (saved)")} value={t.stoppedPartWay.toLocaleString()} />
+        <Tile label={en("Meetings")} value={t.meetingsBooked.toLocaleString()} note={`booked, of ${t.meetingsAsked} asked for`} />
+        <Tile label={en("Enrolled")} value={t.enrolled.toLocaleString()} note={`${pct(t.enrolled, t.leads)} of ${t.leads} leads`} />
       </div>
 
       <section>
-        <h2 className="text-base font-semibold">Each form</h2>
+        <h2 className="text-base font-semibold">{en("Each form")}</h2>
         <div className="mt-2 overflow-x-auto rounded-2xl border border-border bg-card">
           <table className="w-full text-sm">
-            <thead className="text-left text-xs text-muted-foreground">
+            <thead className="text-start text-xs text-muted-foreground">
               <tr>
-                <th className="px-3 py-2 font-medium">Form</th>
-                <th className="px-3 py-2 text-right font-medium">Visits</th>
-                <th className="px-3 py-2 text-right font-medium">Started</th>
-                <th className="px-3 py-2 text-right font-medium">Sent</th>
-                <th className="px-3 py-2 text-right font-medium">Time</th>
-                <th className="px-3 py-2 text-right font-medium">Meetings</th>
-                <th className="px-3 py-2 text-right font-medium">Messages</th>
-                <th className="px-3 py-2 text-right font-medium">{en("Counselling booked")}</th>
-                <th className="px-3 py-2 text-right font-medium">Enrolled</th>
+                <th className="px-3 py-2 font-medium">{en("Form")}</th>
+                <th className="px-3 py-2 text-end font-medium">{en("Visits")}</th>
+                <th className="px-3 py-2 text-end font-medium">{en("Started")}</th>
+                <th className="px-3 py-2 text-end font-medium">{en("Sent")}</th>
+                <th className="px-3 py-2 text-end font-medium">{en("Time")}</th>
+                <th className="px-3 py-2 text-end font-medium">{en("Meetings")}</th>
+                <th className="px-3 py-2 text-end font-medium">{en("Messages")}</th>
+                <th className="px-3 py-2 text-end font-medium">{en("Counselling booked")}</th>
+                <th className="px-3 py-2 text-end font-medium">{en("Enrolled")}</th>
               </tr>
             </thead>
             <tbody>
@@ -156,27 +156,27 @@ export default function StatisticsView({ instituteId }: { instituteId?: string }
                 <tr key={f.formId} className="border-t border-border tabular-nums">
                   <td className="px-3 py-2 font-medium">
                     {f.form}
-                    {f.archived && <span className="ml-1 text-xs font-normal text-muted-foreground">(removed)</span>}
+                    {f.archived && <span className="ms-1 text-xs font-normal text-muted-foreground">{en("(removed)")}</span>}
                   </td>
-                  <td className="px-3 py-2 text-right">{f.views}</td>
-                  <td className="px-3 py-2 text-right">
+                  <td className="px-3 py-2 text-end">{f.views}</td>
+                  <td className="px-3 py-2 text-end">
                     {f.starts} <span className="text-xs text-muted-foreground">{f.views ? `${f.startRate}%` : ""}</span>
                   </td>
-                  <td className="px-3 py-2 text-right">
+                  <td className="px-3 py-2 text-end">
                     {f.sent} <span className="text-xs text-muted-foreground">{f.starts ? `${f.completionRate}%` : ""}</span>
                   </td>
-                  <td className="px-3 py-2 text-right">{minutes(f.medianSeconds)}</td>
-                  <td className="px-3 py-2 text-right">
+                  <td className="px-3 py-2 text-end">{minutes(f.medianSeconds)}</td>
+                  <td className="px-3 py-2 text-end">
                     {f.meetingsBooked}/{f.meetingsAsked}
                   </td>
-                  <td className="px-3 py-2 text-right">
+                  <td className="px-3 py-2 text-end">
                     {f.messagesSent}
                     {f.emailsOpened ? <span className="text-xs text-muted-foreground"> · {f.emailsOpened} opened</span> : null}
                   </td>
-                  <td className="px-3 py-2 text-right">
+                  <td className="px-3 py-2 text-end">
                     {f.counsellingBooked} <span className="text-xs text-muted-foreground">{pct(f.counsellingBooked, f.leads)}</span>
                   </td>
-                  <td className="px-3 py-2 text-right">
+                  <td className="px-3 py-2 text-end">
                     {f.enrolled} <span className="text-xs text-muted-foreground">{pct(f.enrolled, f.leads)}</span>
                   </td>
                 </tr>
@@ -184,25 +184,25 @@ export default function StatisticsView({ instituteId }: { instituteId?: string }
             </tbody>
           </table>
         </div>
-        <p className="mt-1 text-xs text-muted-foreground">Started and sent show the share of the step before. Meetings: booked of asked for. The last two count leads that reached that stage or further.</p>
+        <p className="mt-1 text-xs text-muted-foreground">{en("Started and sent show the share of the step before. Meetings: booked of asked for. The last two count leads that reached that stage or further.")}</p>
       </section>
 
       {withResults.length > 0 && (
         <section>
-          <h2 className="text-base font-semibold">Results</h2>
+          <h2 className="text-base font-semibold">{en("Results")}</h2>
           <div className="mt-2 grid gap-3 md:grid-cols-2">
             {withResults.map((f) => (
               <div key={f.formId} className="space-y-4 rounded-2xl border border-border bg-card p-4">
                 <h3 className="text-sm font-semibold">{f.form}</h3>
                 {f.outcomes.length > 0 && (
                   <div>
-                    <p className="mb-1.5 text-xs font-medium text-muted-foreground">Outcomes</p>
+                    <p className="mb-1.5 text-xs font-medium text-muted-foreground">{en("Outcomes")}</p>
                     <Bars label={`Outcomes of ${f.form}`} rows={[...f.outcomes, ...(f.noOutcome ? [{ name: "No clear outcome", count: f.noOutcome }] : [])]} />
                   </div>
                 )}
                 {f.match && (
                   <div>
-                    <p className="mb-1.5 text-xs font-medium text-muted-foreground">Match scores{f.averageMatch != null ? ` · average ${f.averageMatch}%` : ""}</p>
+                    <p className="mb-1.5 text-xs font-medium text-muted-foreground">{en("Match scores")}{f.averageMatch != null ? ` · average ${f.averageMatch}%` : ""}</p>
                     <Bars label={`Match scores of ${f.form}`} rows={f.match.map((m) => ({ name: `${m.from}–${m.to}%`, count: m.count }))} />
                   </div>
                 )}
@@ -214,22 +214,22 @@ export default function StatisticsView({ instituteId }: { instituteId?: string }
 
       {stats.byCampaign.length > 0 && (
         <section>
-          <h2 className="text-base font-semibold">Where they came from</h2>
+          <h2 className="text-base font-semibold">{en("Where they came from")}</h2>
           <div className="mt-2 overflow-x-auto rounded-2xl border border-border bg-card">
             <table className="w-full text-sm">
-              <thead className="text-left text-xs text-muted-foreground">
+              <thead className="text-start text-xs text-muted-foreground">
                 <tr>
-                  <th className="px-3 py-2 font-medium">Campaign</th>
-                  <th className="px-3 py-2 text-right font-medium">Sent</th>
-                  <th className="px-3 py-2 text-right font-medium">Enrolled</th>
+                  <th className="px-3 py-2 font-medium">{en("Campaign")}</th>
+                  <th className="px-3 py-2 text-end font-medium">{en("Sent")}</th>
+                  <th className="px-3 py-2 text-end font-medium">{en("Enrolled")}</th>
                 </tr>
               </thead>
               <tbody>
                 {stats.byCampaign.map((c) => (
                   <tr key={c.key} className="border-t border-border tabular-nums">
                     <td className="px-3 py-2">{c.key}</td>
-                    <td className="px-3 py-2 text-right">{c.sent}</td>
-                    <td className="px-3 py-2 text-right">
+                    <td className="px-3 py-2 text-end">{c.sent}</td>
+                    <td className="px-3 py-2 text-end">
                       {c.enrolled} <span className="text-xs text-muted-foreground">{pct(c.enrolled, c.sent)}</span>
                     </td>
                   </tr>

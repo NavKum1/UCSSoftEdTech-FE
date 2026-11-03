@@ -60,21 +60,21 @@ export default function TransparencySettingsPage() {
     <div className="space-y-6 max-w-3xl">
       <div className="pb-4 border-b border-border">
         <div className="flex items-center gap-2 text-xs font-semibold text-indigo-700 dark:text-indigo-400 uppercase tracking-wider">
-          <FileBarChart className="w-4 h-4" /> Transparency
+          <FileBarChart className="w-4 h-4" />{en(" Transparency")}
         </div>
-        <h1 className="text-2xl font-extrabold text-foreground mt-1">Contribute to the public transparency report</h1>
+        <h1 className="text-2xl font-extrabold text-foreground mt-1">{en("Contribute to the public transparency report")}</h1>
         <p className="text-xs text-muted-foreground mt-1">
-          The public{" "}
+          {en("The public")}{" "}
           <Link href="/transparency" className="text-indigo-700 dark:text-indigo-400 hover:underline inline-flex items-center gap-0.5">
-            transparency report <ExternalLink className="w-3 h-3" />
+            {en("transparency report ")}<ExternalLink className="w-3 h-3" />
           </Link>{" "}
-          shows whether assessment scores predict on-the-job outcomes. That needs hire outcomes from employers like you. Taking part is optional and off by default.
+          {en("shows whether assessment scores predict on-the-job outcomes. That needs hire outcomes from employers like you. Taking part is optional and off by default.")}
         </p>
       </div>
 
       {state == null ? (
         <div className="glass-panel rounded-2xl border border-border py-8 flex items-center justify-center gap-2 text-sm text-muted-foreground">
-          <Loader2 className="w-4 h-4 animate-spin" /> Loading...
+          <Loader2 className="w-4 h-4 animate-spin" />{en(" Loading...")}
         </div>
       ) : state.error ? (
         <div className="glass-panel rounded-2xl border border-border p-6 text-sm text-rose-700 dark:text-rose-400 flex items-center gap-2">
@@ -84,7 +84,7 @@ export default function TransparencySettingsPage() {
         <div className="glass-panel rounded-2xl border border-border p-5 space-y-4">
           <div className="flex items-start justify-between gap-4">
             <div>
-              <h2 id="participation-label" className="text-sm font-bold text-foreground">Include our hire-outcome data</h2>
+              <h2 id="participation-label" className="text-sm font-bold text-foreground">{en("Include our hire-outcome data")}</h2>
               <p className="text-xs text-muted-foreground mt-0.5">
                 {data.outcomesRecorded} outcome{data.outcomesRecorded === 1 ? "" : "s"}{en(" recorded by your organisation")}
                 {data.updatedAt ? ` · last changed ${formatDate(data.updatedAt)}` : ""}.
@@ -106,9 +106,9 @@ export default function TransparencySettingsPage() {
           </div>
           <p className="text-sm text-muted-foreground">{data.explanation}</p>
           <p className="text-xs text-muted-foreground">
-            Outcomes are recorded on the <Link href="/recruiter/validity" className="text-indigo-700 dark:text-indigo-400 hover:underline">validity &amp; fairness</Link> page.
+            {en("Outcomes are recorded on the ")}<Link href="/recruiter/validity" className="text-indigo-700 dark:text-indigo-400 hover:underline">{en("validity & fairness")}</Link> page.
           </p>
-          {saving && <p className="text-xs text-muted-foreground flex items-center gap-1.5"><Loader2 className="w-3.5 h-3.5 animate-spin" /> Saving...</p>}
+          {saving && <p className="text-xs text-muted-foreground flex items-center gap-1.5"><Loader2 className="w-3.5 h-3.5 animate-spin" />{en(" Saving...")}</p>}
           {message && (
             <p className={`text-xs flex items-center gap-1.5 ${message.ok ? "text-emerald-700 dark:text-emerald-400" : "text-rose-700 dark:text-rose-400"}`}>
               {message.ok ? <CheckCircle2 className="w-3.5 h-3.5" /> : <AlertCircle className="w-3.5 h-3.5" />} {message.text}

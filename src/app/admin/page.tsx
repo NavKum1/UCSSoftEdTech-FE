@@ -378,7 +378,7 @@ export default function SuperAdminDashboard() {
     <div className="space-y-8">
       {/* Toast Notification */}
       {actionMessage && (
-        <div className="fixed bottom-6 right-6 z-50 px-5 py-3 rounded-2xl bg-emerald-500/90 text-white font-medium text-sm shadow-2xl flex items-center space-x-2 border border-emerald-400/40 backdrop-blur-md animate-in fade-in slide-in-from-bottom-5">
+        <div className="fixed bottom-6 end-6 z-50 px-5 py-3 rounded-2xl bg-emerald-500/90 text-white font-medium text-sm shadow-2xl flex items-center space-x-2 border border-emerald-400/40 backdrop-blur-md animate-in fade-in slide-in-from-bottom-5">
           <CheckCircle2 className="w-4 h-4" />
           <span>{actionMessage}</span>
         </div>
@@ -868,7 +868,7 @@ export default function SuperAdminDashboard() {
                   &quot;{editResult.from}&quot; is now &quot;{editResult.to}{en("\" everywhere Edulexa shows the institute's name: the CRM, forms, reports, e-mails and the career centre.")}
                 </p>
                 <p>The old name is still written in text the institute wrote itself. Change it there:</p>
-                <ul className="list-disc space-y-1 pl-5">
+                <ul className="list-disc space-y-1 ps-5">
                   {editResult.stillMentioned.map((m) => (
                     <li key={m}>{m}</li>
                   ))}
@@ -1018,7 +1018,7 @@ export default function SuperAdminDashboard() {
           {/* Leads Data Table */}
           <div className="glass-panel rounded-2xl border border-border overflow-hidden shadow-2xl">
             <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs">
+              <table className="w-full text-start text-xs">
                 <thead className="bg-card/90 text-muted-foreground uppercase tracking-wider font-semibold border-b border-border">
                   <tr>
                     <th className="py-3.5 px-4">Date &amp; Time</th>

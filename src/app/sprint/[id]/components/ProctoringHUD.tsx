@@ -16,6 +16,7 @@ import {
 
 import { API_BASE_URL, authenticatedFetch } from "@/lib/apiClient";
 import { useAppAuth } from "@/lib/appAuth";
+import { useEn } from "@/lib/english/EnglishProvider";
 
 interface ProctoringHUDProps {
   sessionId: string;
@@ -38,6 +39,7 @@ export default function ProctoringHUD({
   onViolationOccurred,
   apiBaseUrl = API_BASE_URL,
 }: ProctoringHUDProps) {
+  const en = useEn();
   const { getToken } = useAppAuth();
   const [integrityScore, setIntegrityScore] = useState<number>(100);
   const [riskLevel, setRiskLevel] = useState<"Clean" | "Suspicious" | "Flagged">("Clean");
@@ -98,7 +100,7 @@ export default function ProctoringHUD({
 
         setIncidents((prev) => [newIncident, ...prev].slice(0, 15));
 
-        setToastMessage(`Security Event: ${eventType} logged.`);
+        setToastMessage(en("Security Event: {event} logged.", { event: eventType }));
         setTimeout(() => setToastMessage(null), 4000);
 
         if (onViolationOccurred) {
@@ -209,7 +211,7 @@ export default function ProctoringHUD({
     <div className="w-full">
       {/* Toast Alert */}
       {toastMessage && (
-        <div className="fixed top-4 right-4 z-50 flex items-center gap-2 px-4 py-2 rounded-lg bg-zinc-900 border border-yellow-500/50 text-yellow-600 dark:text-yellow-300 text-xs shadow-2xl animate-bounce">
+        <div className="fixed top-4 end-4 z-50 flex items-center gap-2 px-4 py-2 rounded-lg bg-zinc-900 border border-yellow-500/50 text-yellow-600 dark:text-yellow-300 text-xs shadow-2xl animate-bounce">
           <AlertTriangle className="w-4 h-4 text-yellow-700 dark:text-yellow-400" />
           <span>{toastMessage}</span>
         </div>
@@ -226,7 +228,7 @@ export default function ProctoringHUD({
             ) : (
               <ShieldAlert className="w-5 h-5 text-yellow-700 dark:text-yellow-400 animate-pulse" />
             )}
-            <span className="absolute -top-1 -right-1 flex h-2 w-2">
+            <span className="absolute -top-1 -end-1 flex h-2 w-2">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
               <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
             </span>
@@ -235,7 +237,7 @@ export default function ProctoringHUD({
           <div>
             <div className="flex items-center gap-2">
               <span className="font-semibold text-xs tracking-wider uppercase text-foreground">
-                Integrity Monitor
+                {en("Integrity Monitor")}
               </span>
               <span
                 className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${
@@ -246,11 +248,11 @@ export default function ProctoringHUD({
                     : "bg-red-500/20 text-red-600 dark:text-red-300"
                 }`}
               >
-                {isDisqualified ? "DISQUALIFIED" : riskLevel}
+                {isDisqualified ? en("DISQUALIFIED") : riskLevel}
               </span>
             </div>
             <p className="text-[11px] text-muted-foreground">
-              Session Integrity Active (Focus, Tab, Clipboard)
+              {en("Session Integrity Active (Focus, Tab, Clipboard)")}
             </p>
           </div>
         </div>
@@ -259,21 +261,21 @@ export default function ProctoringHUD({
         <div className="flex items-center gap-4 mt-2 sm:mt-0">
           <div className="hidden md:flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-cyan-100 dark:bg-cyan-950/40 border border-cyan-300 dark:border-cyan-500/30 text-cyan-800 dark:text-cyan-300 text-[10px] font-mono shadow-sm">
             <Fingerprint className="w-3.5 h-3.5 text-cyan-700 dark:text-cyan-400 animate-pulse" />
-            <span>VERIFICATION ACTIVE</span>
+            <span>{en("VERIFICATION ACTIVE")}</span>
           </div>
 
-          <div className="text-right">
+          <div className="text-end">
             <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium block">
-              Integrity Score
+              {en("Integrity Score")}
             </span>
             <span className="text-lg font-black tracking-tight text-foreground">
               {integrityScore}%
             </span>
           </div>
 
-          <div className="text-right">
+          <div className="text-end">
             <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium block">
-              Notices
+              {en("Notices")}
             </span>
             <span className="text-sm font-semibold text-foreground">
               {totalViolations} logged
@@ -283,7 +285,7 @@ export default function ProctoringHUD({
           {/* Full-Screen Toggle */}
           <button
             onClick={toggleFullscreen}
-            title={isFullscreen ? "Exit Fullscreen" : "Enter Exam Fullscreen"}
+            title={isFullscreen ? en("Exit Fullscreen") : en("Enter Exam Fullscreen")}
             className="p-1.5 rounded-lg bg-card hover:bg-muted text-muted-foreground hover:text-foreground border border-border transition-colors"
           >
             {isFullscreen ? (
@@ -299,7 +301,7 @@ export default function ProctoringHUD({
             className="flex items-center gap-1 px-2.5 py-1 text-xs rounded-lg bg-card hover:bg-muted text-muted-foreground hover:text-foreground border border-border transition-colors"
           >
             <Activity className="w-3.5 h-3.5 text-muted-foreground" />
-            <span>Activity Log</span>
+            <span>{en("Activity Log")}</span>
             {isExpanded ? (
               <ChevronUp className="w-3.5 h-3.5" />
             ) : (
@@ -315,19 +317,19 @@ export default function ProctoringHUD({
           <div className="flex items-center justify-between pb-2 mb-2 border-b border-border text-muted-foreground">
             <span className="flex items-center gap-1.5 font-medium">
               <History className="w-3.5 h-3.5 text-indigo-700 dark:text-indigo-400" />
-              Session Activity History ({incidents.length})
+              {en("Session Activity History (")}{incidents.length})
             </span>
             <span className="text-[10px] text-muted-foreground">
-              Real-time activity log
+              {en("Real-time activity log")}
             </span>
           </div>
 
           {incidents.length === 0 ? (
             <p className="py-2 text-center text-zinc-500 text-xs italic">
-              No issues detected in this session. All good!
+              {en("No issues detected in this session. All good!")}
             </p>
           ) : (
-            <div className="space-y-1.5 max-h-48 overflow-y-auto pr-1">
+            <div className="space-y-1.5 max-h-48 overflow-y-auto pe-1">
               {incidents.map((inc) => (
                 <div
                   key={inc.id}
@@ -373,7 +375,7 @@ export default function ProctoringHUD({
           >
             {Array.from({ length: 4 }).map((_, cIdx) => (
               <span key={cIdx} className="px-8">
-                {candidateEmail} • Session ID: {sessionId.slice(0, 8)} • {liveTimestamp} • Verified Session
+                {candidateEmail}{en(" • Session ID: ")}{sessionId.slice(0, 8)} • {liveTimestamp}{en(" • Verified Session")}
               </span>
             ))}
           </div>

@@ -12,6 +12,7 @@ import Link from "next/link";
 import { API_BASE_URL, REGION_ROUTING, authenticatedFetch, getApiRegion, setApiRegion } from "@/lib/apiClient";
 import { getPartnerSession, usePartnerToken } from "@/lib/partnerSession";
 import { getDevSession, useDevSession } from "@/lib/devSession";
+import { useEn } from "@/lib/english/EnglishProvider";
 
 
 export interface AppAuth {
@@ -214,6 +215,7 @@ export function useApi() {
 }
 
 function KeycloakUserButton() {
+  const en = useEn();
   const { data: session } = useSession();
   const [open, setOpen] = useState(false);
   const buttonRef = useRef<HTMLButtonElement>(null);
@@ -251,18 +253,18 @@ function KeycloakUserButton() {
         {initials || "?"}
       </button>
       {open && (
-        <div id="account-menu" className="absolute right-0 mt-2 w-60 rounded-2xl bg-card border border-border shadow-2xl p-2 z-[100]">
+        <div id="account-menu" className="absolute end-0 mt-2 w-60 rounded-2xl bg-card border border-border shadow-2xl p-2 z-[100]">
           <div className="px-3 py-2 border-b border-border">
             <div className="text-xs font-bold text-foreground truncate">{session?.user?.name}</div>
             <div className="text-[11px] text-muted-foreground truncate">{session?.user?.email}</div>
           </div>
           <Link href="/pricing" onClick={() => setOpen(false)} className="mt-1 flex items-center gap-2 px-3 py-2 rounded-xl text-xs text-foreground hover:bg-muted">
             <CreditCard aria-hidden="true" className="w-3.5 h-3.5" />
-            Pricing and minutes
+            {en("Pricing and minutes")}
           </Link>
           <Link href="/settings/self-identification" onClick={() => setOpen(false)} className="flex items-center gap-2 px-3 py-2 rounded-xl text-xs text-foreground hover:bg-muted">
             <Scale aria-hidden="true" className="w-3.5 h-3.5" />
-            Fairness self-ID
+            {en("Fairness self-ID")}
           </Link>
           {/* Full-page GET (no client routing/prefetch): the route ends the Keycloak session as well */}
           <form method="get" action="/api/auth/federated-logout">
@@ -271,7 +273,7 @@ function KeycloakUserButton() {
             className="mt-1 w-full flex items-center gap-2 px-3 py-2 rounded-xl text-xs text-foreground hover:bg-muted"
           >
             <LogOut className="w-3.5 h-3.5" />
-            Sign out
+            {en("Sign out")}
           </button>
           </form>
         </div>

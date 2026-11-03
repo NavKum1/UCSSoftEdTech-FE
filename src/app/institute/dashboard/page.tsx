@@ -22,6 +22,7 @@ import PeopleView from "@/components/institute/crm/PeopleView";
 import SettingsView from "@/components/institute/crm/SettingsView";
 import ImportView from "@/components/institute/crm/ImportView";
 import StaffAccess from "@/components/institute/StaffAccess";
+import { useEn } from "@/lib/english/EnglishProvider";
 
 type Tab = "leads" | "people" | "followups" | "insights" | "settings" | "staff" | "import";
 
@@ -34,6 +35,7 @@ export default function InstituteCrmPage() {
 }
 
 function Crm() {
+  const en = useEn();
   const { getToken, isLoaded, isSignedIn, roles } = useAuth();
   const router = useRouter();
   const params = useSearchParams();
@@ -138,10 +140,10 @@ function Crm() {
     <div className="space-y-6">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Admissions</h1>
+          <h1 className="text-2xl font-semibold tracking-tight">{en("Admissions")}</h1>
           <p className="mt-0.5 text-sm text-muted-foreground">
             {profile?.name ? `${profile.name} · ` : ""}
-            {data ? `${(data.totalAll ?? data.total ?? 0).toLocaleString()} ${(data.totalAll ?? data.total) === 1 ? "lead" : "leads"}` : "Your leads from Edulexa and your website"}
+            {data ? `${(data.totalAll ?? data.total ?? 0).toLocaleString()} ${(data.totalAll ?? data.total) === 1 ? "lead" : "leads"}` : en("Your leads from Edulexa and your website")}
             {data?.me ? ` · signed in as ${data.me.name}` : ""}
           </p>
         </div>
@@ -149,29 +151,29 @@ function Crm() {
 
       {/* Today */}
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-5">
-        <Today icon={Inbox} label="New, not contacted" value={newCount} tone={newCount > 0 ? "sky" : undefined} onClick={() => showLeads({ stage: "New" })} />
-        <Today icon={Reply} label="Replied, need your answer" value={data?.awaiting ?? 0} tone={(data?.awaiting ?? 0) > 0 ? "sky" : undefined} onClick={() => showLeads({ awaiting: true })} />
-        <Today icon={AlertTriangle} label="Follow-ups overdue" value={overdue} tone={overdue > 0 ? "red" : undefined} onClick={() => showLeads({ overdue: true })} />
-        <Today icon={CalendarClock} label="Follow-ups due today" value={dueToday} onClick={() => setTab("followups")} />
+        <Today icon={Inbox} label={en("New, not contacted")} value={newCount} tone={newCount > 0 ? "sky" : undefined} onClick={() => showLeads({ stage: "New" })} />
+        <Today icon={Reply} label={en("Replied, need your answer")} value={data?.awaiting ?? 0} tone={(data?.awaiting ?? 0) > 0 ? "sky" : undefined} onClick={() => showLeads({ awaiting: true })} />
+        <Today icon={AlertTriangle} label={en("Follow-ups overdue")} value={overdue} tone={overdue > 0 ? "red" : undefined} onClick={() => showLeads({ overdue: true })} />
+        <Today icon={CalendarClock} label={en("Follow-ups due today")} value={dueToday} onClick={() => setTab("followups")} />
         {data?.me ? (
-          <Today icon={UserRound} label="My open leads" value={data.mineOpen} onClick={() => showLeads({ owner: "me" })} />
+          <Today icon={UserRound} label={en("My open leads")} value={data.mineOpen} onClick={() => showLeads({ owner: "me" })} />
         ) : (
-          <Today icon={UserRound} label="Unassigned open leads" value={unassigned} tone={unassigned > 0 ? "amber" : undefined} onClick={() => showLeads({ owner: "none" })} />
+          <Today icon={UserRound} label={en("Unassigned open leads")} value={unassigned} tone={unassigned > 0 ? "amber" : undefined} onClick={() => showLeads({ owner: "none" })} />
         )}
       </div>
 
       {isAdmin && team.length === 0 && profile && (
         <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-cyan-600/30 bg-cyan-600/5 p-4 text-sm">
           <p>
-            <span className="font-medium">Set up your team</span> to assign leads and send follow-up reminders. Add your email templates while you&apos;re there.
+            <span className="font-medium">{en("Set up your team")}</span>{en(" to assign leads and send follow-up reminders. Add your email templates while you're there.")}
           </p>
           <button type="button" onClick={() => setTab("settings")} className="rounded-lg bg-cyan-700 px-3.5 py-2 font-medium text-white hover:bg-cyan-800">
-            Add your team
+            {en("Add your team")}
           </button>
         </div>
       )}
 
-      <div role="tablist" aria-label="CRM" className="flex gap-5 overflow-x-auto text-sm shadow-[inset_0_-1px_0_var(--color-border)] [scrollbar-width:none]">
+      <div role="tablist" aria-label={en("CRM")} className="flex gap-5 overflow-x-auto text-sm shadow-[inset_0_-1px_0_var(--color-border)] [scrollbar-width:none]">
         {TABS.map(([k, label]) => (
           <button
             key={k}
@@ -182,7 +184,7 @@ function Crm() {
             className={`shrink-0 whitespace-nowrap border-b-2 pb-2.5 ${tab === k ? "border-cyan-600 font-medium text-foreground" : "border-transparent text-muted-foreground hover:text-foreground"}`}
           >
             {label}
-            {k === "followups" && overdue > 0 && <span className="ml-1.5 rounded-full bg-red-600 px-1.5 text-[11px] font-medium text-white">{overdue}</span>}
+            {k === "followups" && overdue > 0 && <span className="ms-1.5 rounded-full bg-red-600 px-1.5 text-[11px] font-medium text-white">{overdue}</span>}
           </button>
         ))}
       </div>
@@ -206,15 +208,16 @@ function Crm() {
 }
 
 function Today({ icon: Icon, label, value, tone, onClick }: { icon: React.ElementType; label: string; value: number; tone?: "sky" | "red" | "amber"; onClick: () => void }) {
+  const en = useEn();
   const color = tone === "red" ? "text-red-700 dark:text-red-400" : tone === "amber" ? "text-amber-700 dark:text-amber-400" : tone === "sky" ? "text-sky-700 dark:text-sky-400" : "";
   return (
-    <button type="button" onClick={onClick} className="group rounded-2xl border border-border bg-card p-4 text-left transition-colors hover:border-cyan-600/50">
+    <button type="button" onClick={onClick} className="group rounded-2xl border border-border bg-card p-4 text-start transition-colors hover:border-cyan-600/50">
       <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
         <Icon aria-hidden="true" className="h-3.5 w-3.5" />
         {label}
       </span>
       <span className={`mt-1 block text-2xl font-semibold tabular-nums ${color}`}>{value}</span>
-      <span className="text-xs text-cyan-700 opacity-0 transition-opacity group-hover:opacity-100 dark:text-cyan-400">View</span>
+      <span className="text-xs text-cyan-700 opacity-0 transition-opacity group-hover:opacity-100 dark:text-cyan-400">{en("View")}</span>
     </button>
   );
 }

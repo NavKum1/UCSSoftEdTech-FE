@@ -16,6 +16,7 @@ import {
   X,
 } from "lucide-react";
 import { authenticatedFetch } from "@/lib/apiClient";
+import { useEn } from "@/lib/english/EnglishProvider";
 
 interface ProjectFile {
   name: string;
@@ -169,6 +170,7 @@ function StatusBadge({ status }: { status: ProposalStatus }) {
 }
 
 export default function AgentSupervisorPanel({ attemptId, getFiles, applyFile, onTestRun, disabled = false }: AgentSupervisorPanelProps) {
+  const en = useEn();
   const { getToken } = useAuth();
   const [proposals, setProposals] = useState<Proposal[]>([]);
   const [testRuns, setTestRuns] = useState<TestRun[]>([]);
@@ -232,7 +234,7 @@ export default function AgentSupervisorPanel({ attemptId, getFiles, applyFile, o
         setError(data.error || "The agent is unavailable right now.");
       }
     } catch {
-      setError("Couldn't reach the agent. Check your connection and try again.");
+      setError(en("Couldn't reach the agent. Check your connection and try again."));
     } finally {
       setSending(false);
     }
@@ -288,7 +290,7 @@ export default function AgentSupervisorPanel({ attemptId, getFiles, applyFile, o
         )
       );
     } catch {
-      setError("Couldn't reach the server. Your decision wasn't saved.");
+      setError(en("Couldn't reach the server. Your decision wasn't saved."));
     } finally {
       setDeciding(null);
     }
@@ -318,12 +320,12 @@ export default function AgentSupervisorPanel({ attemptId, getFiles, applyFile, o
           setError(data.error || "The tests couldn't be run right now.");
         }
       } catch {
-        setError("Couldn't reach the test runner. Check your connection and try again.");
+        setError(en("Couldn't reach the test runner. Check your connection and try again."));
       } finally {
         setRunning(null);
       }
     },
-    [attemptId, disabled, getFiles, getToken, onTestRun, running]
+    [attemptId, disabled, getFiles, getToken, onTestRun, running, en]
   );
 
   const lastRun = testRuns[testRuns.length - 1];
@@ -335,32 +337,30 @@ export default function AgentSupervisorPanel({ attemptId, getFiles, applyFile, o
       <div className="flex items-center justify-between pb-3 border-b border-border">
         <div className="flex items-center space-x-2">
           <Wrench className="w-5 h-5 text-indigo-700 dark:text-indigo-400" />
-          <h3 className="text-sm font-semibold text-foreground">Coding Agent</h3>
+          <h3 className="text-sm font-semibold text-foreground">{en("Coding Agent")}</h3>
         </div>
         <span className="text-[10px] px-2.5 py-0.5 rounded bg-indigo-500/10 text-indigo-600 dark:text-indigo-300 font-semibold border border-indigo-500/20">
-          Supervision reviewed
+          {en("Supervision reviewed")}
         </span>
       </div>
 
       <div className="flex items-start gap-2 text-[11px] text-muted-foreground">
         <Info className="w-3.5 h-3.5 mt-0.5 shrink-0 text-indigo-700 dark:text-indigo-400" />
         <span>
-          Tell the agent what to change, then review each proposal before accepting it. Reviewers see your instructions, which
-          changes you accepted or rejected, how long you spent reviewing, and your test runs. The agent can be wrong, and the
-          visible tests don&apos;t cover everything.
+          {en("Tell the agent what to change, then review each proposal before accepting it. Reviewers see your instructions, which changes you accepted or rejected, how long you spent reviewing, and your test runs. The agent can be wrong, and the visible tests don't cover everything.")}
         </span>
       </div>
 
-      <div ref={scrollRef} className="space-y-4 max-h-[32rem] overflow-y-auto pr-1">
+      <div ref={scrollRef} className="space-y-4 max-h-[32rem] overflow-y-auto pe-1">
         {loading && (
           <div className="flex items-center gap-2 text-xs text-muted-foreground">
-            <Loader2 className="w-3.5 h-3.5 animate-spin" /> Loading agent history...
+            <Loader2 className="w-3.5 h-3.5 animate-spin" />{en(" Loading agent history...")}
           </div>
         )}
         {loadError && <p className="text-[11px] text-red-600 dark:text-red-400">{loadError}</p>}
         {!loading && !loadError && proposals.length === 0 && !sending && (
           <p className="text-xs text-muted-foreground italic">
-            No requests yet. The agent sees the current contents of your files when you send an instruction.
+            {en("No requests yet. The agent sees the current contents of your files when you send an instruction.")}
           </p>
         )}
 
@@ -372,20 +372,20 @@ export default function AgentSupervisorPanel({ attemptId, getFiles, applyFile, o
           const busy = deciding === p.proposalId;
           return (
             <div key={p.proposalId} className="space-y-2">
-              <div className="ml-8 p-2.5 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-xs text-foreground whitespace-pre-wrap">
+              <div className="ms-8 p-2.5 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-xs text-foreground whitespace-pre-wrap">
                 <span className="text-[10px] font-semibold text-indigo-700 dark:text-indigo-300 block mb-0.5">
-                  Request {p.requestNumber}
+                  {en("Request ")}{p.requestNumber}
                 </span>
                 {p.instruction}
               </div>
-              <div className="mr-2 rounded-xl bg-card border border-border text-xs text-foreground overflow-hidden">
+              <div className="me-2 rounded-xl bg-card border border-border text-xs text-foreground overflow-hidden">
                 <div className="flex items-start justify-between gap-2 p-2.5">
                   <p className="whitespace-pre-wrap leading-relaxed">{p.explanation}</p>
                   <StatusBadge status={p.status} />
                 </div>
 
                 {p.changes.length === 0 ? (
-                  <p className="px-2.5 pb-2.5 text-[11px] text-muted-foreground italic">No file changes proposed.</p>
+                  <p className="px-2.5 pb-2.5 text-[11px] text-muted-foreground italic">{en("No file changes proposed.")}</p>
                 ) : (
                   <>
                     <button
@@ -393,7 +393,7 @@ export default function AgentSupervisorPanel({ attemptId, getFiles, applyFile, o
                       className="w-full flex items-center gap-1 px-2.5 py-1.5 border-t border-border text-[11px] text-muted-foreground hover:text-foreground cursor-pointer"
                     >
                       {isCollapsed ? <ChevronRight className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
-                      {isCollapsed ? "Show" : "Hide"} changes ({p.changes.length} file{p.changes.length === 1 ? "" : "s"})
+                      {isCollapsed ? en("Show") : en("Hide")}{en(" changes (")}{p.changes.length} file{p.changes.length === 1 ? "" : "s"})
                     </button>
                     {!isCollapsed &&
                       p.changes.map((c) => {
@@ -403,14 +403,14 @@ export default function AgentSupervisorPanel({ attemptId, getFiles, applyFile, o
                             <div className="flex items-center justify-between px-2.5 py-1 bg-muted text-[10px] font-mono text-muted-foreground">
                               <span>{c.file}</span>
                               {fileAccepted ? (
-                                <span className="font-sans font-semibold text-emerald-700 dark:text-emerald-400">Accepted</span>
+                                <span className="font-sans font-semibold text-emerald-700 dark:text-emerald-400">{en("Accepted")}</span>
                               ) : actionable && p.changes.length > 1 ? (
                                 <button
                                   onClick={() => void decide(p, "PartiallyAccepted", [c])}
                                   disabled={busy}
                                   className="flex items-center gap-1 font-sans font-semibold text-emerald-700 dark:text-emerald-400 hover:text-emerald-500 disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
                                 >
-                                  <Check className="w-3 h-3" /> Accept file
+                                  <Check className="w-3 h-3" />{en(" Accept file")}
                                 </button>
                               ) : null}
                             </div>
@@ -430,7 +430,7 @@ export default function AgentSupervisorPanel({ attemptId, getFiles, applyFile, o
                         className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-[11px] font-semibold disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
                       >
                         {busy ? <Loader2 className="w-3 h-3 animate-spin" /> : <CheckCheck className="w-3 h-3" />}
-                        {p.changes.length > 1 ? (p.acceptedFiles.length > 0 ? "Accept remaining" : "Accept all") : "Accept"}
+                        {p.changes.length > 1 ? (p.acceptedFiles.length > 0 ? en("Accept remaining") : en("Accept all")) : en("Accept")}
                       </button>
                     )}
                     <button
@@ -438,17 +438,17 @@ export default function AgentSupervisorPanel({ attemptId, getFiles, applyFile, o
                       disabled={busy}
                       className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-border text-foreground hover:bg-muted text-[11px] font-semibold disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
                     >
-                      <X className="w-3 h-3" /> {p.acceptedFiles.length > 0 ? "Reject remaining" : "Reject"}
+                      <X className="w-3 h-3" /> {p.acceptedFiles.length > 0 ? en("Reject remaining") : en("Reject")}
                     </button>
                     {p.changes.length > 0 && (
                       <button
                         onClick={() => void runTests(p)}
                         disabled={running !== null || runsLeft === 0}
-                        title="Runs the visible tests on your current files with this proposal applied. Nothing changes in the editor."
+                        title={en("Runs the visible tests on your current files with this proposal applied. Nothing changes in the editor.")}
                         className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-border text-foreground hover:bg-muted text-[11px] font-semibold disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
                       >
                         {running === p.proposalId ? <Loader2 className="w-3 h-3 animate-spin" /> : <FlaskConical className="w-3 h-3" />}
-                        Test this change
+                        {en("Test this change")}
                       </button>
                     )}
                   </div>
@@ -460,7 +460,7 @@ export default function AgentSupervisorPanel({ attemptId, getFiles, applyFile, o
 
         {sending && (
           <div className="flex items-center gap-2 text-xs text-muted-foreground">
-            <Loader2 className="w-3.5 h-3.5 animate-spin" /> The agent is working...
+            <Loader2 className="w-3.5 h-3.5 animate-spin" />{en(" The agent is working...")}
           </div>
         )}
       </div>
@@ -482,24 +482,24 @@ export default function AgentSupervisorPanel({ attemptId, getFiles, applyFile, o
             disabled={disabled || proposalsLeft === 0}
             placeholder={
               disabled
-                ? "The agent is closed after submission."
+                ? en("The agent is closed after submission.")
                 : proposalsLeft === 0
-                  ? "You've used all requests to the agent."
-                  : "Tell the agent what to change..."
+                  ? en("You've used all requests to the agent.")
+                  : en("Tell the agent what to change...")
             }
             className="flex-1 resize-none rounded-xl border border-border bg-background px-3 py-2 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-indigo-500 disabled:opacity-60"
           />
           <button
             onClick={() => void send()}
             disabled={disabled || sending || !instruction.trim() || proposalsLeft === 0}
-            aria-label="Send instruction to the agent"
+            aria-label={en("Send instruction to the agent")}
             className="p-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white disabled:bg-muted disabled:text-muted-foreground transition-colors cursor-pointer disabled:cursor-not-allowed"
           >
             {sending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
           </button>
         </div>
         <p className="text-[10px] text-muted-foreground">
-          {proposalsLeft} of {limits.maxProposals} agent requests left · {runsLeft} of {limits.maxTestRuns} test runs left
+          {proposalsLeft} of {limits.maxProposals}{en(" agent requests left · ")}{runsLeft} of {limits.maxTestRuns}{en(" test runs left")}
         </p>
       </div>
 
@@ -507,7 +507,7 @@ export default function AgentSupervisorPanel({ attemptId, getFiles, applyFile, o
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Terminal className="w-4 h-4 text-emerald-700 dark:text-emerald-400" />
-            <span className="text-xs font-semibold text-foreground">Visible tests</span>
+            <span className="text-xs font-semibold text-foreground">{en("Visible tests")}</span>
             {lastRun && (
               <span
                 className={`text-[10px] px-2 py-0.5 rounded border font-semibold ${
@@ -516,7 +516,7 @@ export default function AgentSupervisorPanel({ attemptId, getFiles, applyFile, o
                     : "bg-red-500/10 text-red-700 dark:text-red-300 border-red-500/30"
                 }`}
               >
-                {lastRun.passed}/{lastRun.total} passed{lastRun.proposalId ? " (proposal preview)" : ""}
+                {lastRun.passed}/{lastRun.total} passed{lastRun.proposalId ? en(" (proposal preview)") : ""}
               </span>
             )}
           </div>
@@ -526,11 +526,11 @@ export default function AgentSupervisorPanel({ attemptId, getFiles, applyFile, o
             className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-border text-foreground hover:bg-muted text-[11px] font-semibold disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
           >
             {running === "all" ? <Loader2 className="w-3 h-3 animate-spin" /> : <FlaskConical className="w-3 h-3" />}
-            Run tests
+            {en("Run tests")}
           </button>
         </div>
         <p className="text-[10px] text-muted-foreground">
-          Runs a small set of visible tests against the code in your editor. Hidden tests run when you submit.
+          {en("Runs a small set of visible tests against the code in your editor. Hidden tests run when you submit.")}
         </p>
         {lastRun && (
           <pre className="max-h-48 overflow-auto rounded-lg bg-slate-950 text-slate-100 text-[11px] font-mono p-2.5 whitespace-pre-wrap">

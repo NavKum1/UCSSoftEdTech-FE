@@ -13,6 +13,7 @@ import React, { useId, useSyncExternalStore } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Lock, ShieldAlert } from "lucide-react";
+import { useEn } from "@/lib/english/EnglishProvider";
 
 export type AccessProblem = "signin" | "forbidden";
 
@@ -83,6 +84,7 @@ export default function SignInRequired({
   signUp = true,
   className = "",
 }: SignInRequiredProps) {
+  const en = useEn();
   const currentPath = useReturnPath();
   const back = returnTo ?? currentPath;
   const headingId = useId();
@@ -118,17 +120,17 @@ export default function SignInRequired({
         {signin ? (
           <>
             <Link href={signInHref(back)} className={`${primaryClass} ${size}`}>
-              Sign in
+              {en("Sign in")}
             </Link>
             {signUp && CAN_SIGN_UP && (
               <Link href={signUpHref(back)} className={`${secondaryClass} ${size}`}>
-                Create account
+                {en("Create account")}
               </Link>
             )}
           </>
         ) : (
           <Link href="/dashboard" className={`${primaryClass} ${size}`}>
-            Go to your dashboard
+            {en("Go to your dashboard")}
           </Link>
         )}
       </div>

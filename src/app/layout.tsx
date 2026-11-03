@@ -6,7 +6,9 @@ import AppMain from "@/components/AppMain";
 import MfaRequiredNotice from "@/components/auth/MfaRequiredNotice";
 import { GeoProvider } from "@/context/GeoContext";
 import { ThemeProvider } from "@/components/ThemeProvider";
-import { EnglishProvider } from "@/lib/english/EnglishProvider";
+import { TextProvider } from "@/lib/english/EnglishProvider";
+import { requestLanguage } from "@/lib/i18n/server";
+import { directionOf } from "@/lib/i18n/languages";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -27,11 +29,14 @@ export const metadata: Metadata = {
   description: "AI Voice Interview Simulations, Real-World Sprints, 1-on-1 Mentorship & Verifiable Certificates",
 };
 
-// AppAuthProvider holds the Keycloak (Auth.js) session for every page
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+// AppAuthProvider holds the Keycloak (Auth.js) session for every page; the reader's language is read here (A2), so
+// every page is rendered in it and in its direction from the first paint
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const { language, messages } = await requestLanguage();
   return (
     <html
-      lang="en"
+      lang={language}
+      dir={directionOf(language)}
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
       suppressHydrationWarning
     >
@@ -42,11 +47,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <AppAuthProvider>
           <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
             <GeoProvider>
-              <EnglishProvider>
+              <TextProvider language={language} messages={messages}>
               <GlobalNavigation />
               <AppMain>{children}</AppMain>
               <MfaRequiredNotice />
-              </EnglishProvider>
+              </TextProvider>
             </GeoProvider>
           </ThemeProvider>
         </AppAuthProvider>

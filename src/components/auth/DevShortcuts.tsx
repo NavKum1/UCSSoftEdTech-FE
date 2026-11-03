@@ -12,6 +12,7 @@ import { useRouter } from "next/navigation";
 import { ArrowUpRight, Briefcase, GraduationCap, Loader2, TerminalSquare, UserCheck } from "lucide-react";
 
 import { DEMO_LOGIN_ENABLED, startDevSession } from "@/lib/devSession";
+import { useEn } from "@/lib/english/EnglishProvider";
 
 export { DEMO_LOGIN_ENABLED };
 
@@ -24,6 +25,7 @@ const SHORTCUTS = [
 ];
 
 export default function DevShortcuts() {
+  const en = useEn();
   const router = useRouter();
   const [busy, setBusy] = useState<string | null>(null);
 
@@ -38,13 +40,13 @@ export default function DevShortcuts() {
       <div className="flex items-center justify-between gap-2">
         <h2 id="dev-shortcuts-title" className="inline-flex items-center gap-1.5 text-xs font-semibold text-foreground">
           <TerminalSquare aria-hidden="true" className="h-3.5 w-3.5 text-muted-foreground" />
-          Developer shortcuts
+          {en("Developer shortcuts")}
         </h2>
         <span className="rounded-full border border-amber-600/30 bg-amber-500/10 px-2 py-0.5 text-[11px] font-medium text-amber-800 dark:text-amber-300">
-          Local only
+          {en("Local only")}
         </span>
       </div>
-      <p className="mt-1 text-xs text-muted-foreground">Open a portal signed in as a test user (needs the API running in Development). Not part of production builds.</p>
+      <p className="mt-1 text-xs text-muted-foreground">{en("Open a portal signed in as a test user (needs the API running in Development). Not part of production builds.")}</p>
       <ul className="mt-3 flex flex-wrap gap-2">
         {SHORTCUTS.map(({ role, label, hint, href, icon: Icon }) => (
           <li key={role}>
@@ -53,7 +55,7 @@ export default function DevShortcuts() {
               onClick={() => open(role, href)}
               disabled={busy !== null}
               title={hint}
-              className="group inline-flex min-h-9 items-center gap-2 rounded-lg border border-[var(--auth-card-border)] bg-[var(--auth-card-bg)] px-2.5 py-2 text-left text-xs font-medium text-foreground transition-colors hover:border-[var(--auth-input-border)] hover:bg-[var(--auth-hover-bg)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--auth-ring)] disabled:cursor-wait disabled:opacity-70"
+              className="group inline-flex min-h-9 items-center gap-2 rounded-lg border border-[var(--auth-card-border)] bg-[var(--auth-card-bg)] px-2.5 py-2 text-start text-xs font-medium text-foreground transition-colors hover:border-[var(--auth-input-border)] hover:bg-[var(--auth-hover-bg)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--auth-ring)] disabled:cursor-wait disabled:opacity-70"
             >
               {busy === role ? (
                 <Loader2 aria-hidden="true" className="h-3.5 w-3.5 shrink-0 animate-spin text-muted-foreground motion-reduce:animate-none" />
@@ -62,7 +64,7 @@ export default function DevShortcuts() {
               )}
               <span>
                 {label}
-                <span className="sr-only"> portal ({hint})</span>
+                <span className="sr-only">{en(" portal (")}{hint})</span>
               </span>
               <ArrowUpRight aria-hidden="true" className="h-3 w-3 shrink-0 text-muted-foreground transition-colors group-hover:text-foreground" />
             </button>
@@ -70,7 +72,7 @@ export default function DevShortcuts() {
         ))}
       </ul>
       <p role="status" className="sr-only">
-        {busy ? "Opening the portal" : ""}
+        {busy ? en("Opening the portal") : ""}
       </p>
     </section>
   );

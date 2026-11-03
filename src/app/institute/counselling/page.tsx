@@ -122,7 +122,7 @@ export default function InstituteCounsellingPage() {
   if (ready && !isAdmin && !roles.includes("Counselor"))
     return (
       <section className={`${card} p-6`}>
-        <h1 className="text-lg font-semibold">For institute staff</h1>
+        <h1 className="text-lg font-semibold">{en("For institute staff")}</h1>
         <p className="mt-1 text-sm text-muted-foreground">
           {en("This is where institute administrators and counselors manage the counselling quiz. To take the quiz, open")}{" "}
           <Link href="/prep/counselling" className="font-medium text-cyan-700 underline dark:text-cyan-400">
@@ -136,15 +136,15 @@ export default function InstituteCounsellingPage() {
   if (!isSuper && !ownInstitute)
     return (
       <section className={`${card} p-6`}>
-        <h1 className="text-lg font-semibold">No institute on your account</h1>
-        <p className="mt-1 text-sm text-muted-foreground">Ask your institute&apos;s administrator to add you to the institute in Edulexa.</p>
+        <h1 className="text-lg font-semibold">{en("No institute on your account")}</h1>
+        <p className="mt-1 text-sm text-muted-foreground">{en("Ask your institute's administrator to add you to the institute in Edulexa.")}</p>
       </section>
     );
 
   const tabs: { key: Tab; label: string }[] = [
-    { key: "questions", label: "Questions" },
-    ...(scope ? [{ key: "courses" as Tab, label: "Courses" }] : []),
-    ...(isAdmin ? [{ key: "inquiries" as Tab, label: "Inquiries" }] : []),
+    { key: "questions", label: en("Questions") },
+    ...(scope ? [{ key: "courses" as Tab, label: en("Courses") }] : []),
+    ...(isAdmin ? [{ key: "inquiries" as Tab, label: en("Inquiries") }] : []),
   ];
   const activeTab = tabs.some((t) => t.key === tab) ? tab : "questions";
 
@@ -156,7 +156,7 @@ export default function InstituteCounsellingPage() {
           <p className="mt-1 text-sm text-muted-foreground">
             {scope
               ? `${ownInstitute && scope === ownInstitute.id ? ownInstitute.name : `Institute ${scope}`}: the questions your members answer and the courses suggested with their results.`
-              : "The platform question pool: the quiz every member takes unless their institute has its own questions."}
+              : en("The platform question pool: the quiz every member takes unless their institute has its own questions.")}
           </p>
         </div>
         {isSuper && (
@@ -168,17 +168,17 @@ export default function InstituteCounsellingPage() {
             }}
           >
             <label className="text-xs">
-              <span className="font-medium">Institute id (empty for the platform pool)</span>
+              <span className="font-medium">{en("Institute id (empty for the platform pool)")}</span>
               <input value={typedId} onChange={(e) => setTypedId(e.target.value)} className={`${input} w-80`} placeholder="00000000-0000-0000-0000-000000000000" />
             </label>
             <button type="submit" className={button}>
-              Open
+              {en("Open")}
             </button>
           </form>
         )}
       </header>
 
-      <div role="tablist" aria-label="Builder sections" className="flex gap-1 border-b border-border">
+      <div role="tablist" aria-label={en("Builder sections")} className="flex gap-1 border-b border-border">
         {tabs.map((t) => (
           <button
             key={t.key}
@@ -249,7 +249,7 @@ function QuestionsTab({ scope, apiFetch, canEdit }: { scope: string | null; apiF
       if (res.ok) {
         setMessage({ text: `Saved. ${body.activeCount} of ${body.count} questions are in use.` });
         await load();
-      } else if (res.status === 409) setMessage({ text: "Someone else changed these questions meanwhile. Reload them, then make your change again.", error: true });
+      } else if (res.status === 409) setMessage({ text: en("Someone else changed these questions meanwhile. Reload them, then make your change again."), error: true });
       else setMessage({ text: body?.error ?? "The questions couldn't be saved.", error: true });
     } finally {
       setSaving(false);
@@ -257,12 +257,12 @@ function QuestionsTab({ scope, apiFetch, canEdit }: { scope: string | null; apiF
   };
 
   const reset = async () => {
-    if (!window.confirm("Replace these questions with the platform question pool? Your own questions will be removed.")) return;
+    if (!window.confirm(en("Replace these questions with the platform question pool? Your own questions will be removed."))) return;
     const res = await apiFetch(`/api/quiz/counselling/questions/reset?${query.replace(/&$/, "")}`, { method: "POST" });
     if (res.ok) {
-      setMessage({ text: "Replaced with the platform question pool." });
+      setMessage({ text: en("Replaced with the platform question pool.") });
       await load();
-    } else setMessage({ text: "That didn't work. Please try again.", error: true });
+    } else setMessage({ text: en("That didn't work. Please try again."), error: true });
   };
 
   if (!questions) return <div className={`${card} h-40 animate-pulse motion-reduce:animate-none`} aria-busy="true" />;
@@ -272,15 +272,15 @@ function QuestionsTab({ scope, apiFetch, canEdit }: { scope: string | null; apiF
     <section className="space-y-4">
       <div className={`${card} flex flex-wrap items-center justify-between gap-3 p-4`}>
         <p className="text-sm text-muted-foreground">
-          {active} active question{active === 1 ? "" : "s"}; each member answers {Math.min(meta?.questionsPerAttempt ?? 15, active)} drawn at random.
-          {scope && meta && !meta.ownBank ? " This institute uses the platform question pool until you save your own." : ""}
+          {active}{en(" active question")}{active === 1 ? "" : "s"}{en("; each member answers ")}{Math.min(meta?.questionsPerAttempt ?? 15, active)}{en(" drawn at random.")}
+          {scope && meta && !meta.ownBank ? en(" This institute uses the platform question pool until you save your own.") : ""}
           {" "}{en("Members never see the areas or weights; give every area the same number of options and weights so none is favoured.")}
         </p>
         {canEdit && (
           <div className="flex gap-2">
             {scope && (
               <button type="button" className={button} onClick={() => void reset()}>
-                <RotateCcw aria-hidden="true" className="h-4 w-4" /> Use the platform pool
+                <RotateCcw aria-hidden="true" className="h-4 w-4" />{en(" Use the platform pool")}
               </button>
             )}
             <button
@@ -292,10 +292,10 @@ function QuestionsTab({ scope, apiFetch, canEdit }: { scope: string | null; apiF
                 setDirty(true);
               }}
             >
-              <Plus aria-hidden="true" className="h-4 w-4" /> Add a question
+              <Plus aria-hidden="true" className="h-4 w-4" />{en(" Add a question")}
             </button>
             <button type="button" className={primary} disabled={!dirty || saving} onClick={() => void save()}>
-              <Save aria-hidden="true" className="h-4 w-4" /> {saving ? "Saving…" : "Save"}
+              <Save aria-hidden="true" className="h-4 w-4" /> {saving ? en("Saving…") : en("Save")}
             </button>
           </div>
         )}
@@ -317,32 +317,32 @@ function QuestionsTab({ scope, apiFetch, canEdit }: { scope: string | null; apiF
               <span className="mt-2 w-8 text-xs font-semibold text-muted-foreground">#{q.id}</span>
               <div className="min-w-0 flex-1 space-y-2">
                 <label className="block text-xs">
-                  <span className="font-medium">Question</span>
+                  <span className="font-medium">{en("Question")}</span>
                   <input value={q.title} disabled={!canEdit} onChange={(e) => update(i, { title: e.target.value })} className={input} />
                 </label>
                 <label className="block text-xs">
-                  <span className="font-medium">Hint (optional)</span>
+                  <span className="font-medium">{en("Hint (optional)")}</span>
                   <input value={q.subtitle} disabled={!canEdit} onChange={(e) => update(i, { subtitle: e.target.value })} className={input} />
                 </label>
                 <table className="w-full text-xs">
                   <thead>
-                    <tr className="text-left text-muted-foreground">
-                      <th className="py-1 font-medium">Answer</th>
-                      <th className="py-1 font-medium">Points to area</th>
-                      <th className="w-20 py-1 font-medium">Weight</th>
+                    <tr className="text-start text-muted-foreground">
+                      <th className="py-1 font-medium">{en("Answer")}</th>
+                      <th className="py-1 font-medium">{en("Points to area")}</th>
+                      <th className="w-20 py-1 font-medium">{en("Weight")}</th>
                       {canEdit && <th className="w-8" />}
                     </tr>
                   </thead>
                   <tbody>
                     {q.options.map((o, j) => (
                       <tr key={j}>
-                        <td className="pr-2">
+                        <td className="pe-2">
                           <input aria-label={`Answer ${j + 1}`} value={o.text} disabled={!canEdit} onChange={(e) => updateOption(i, j, { text: e.target.value })} className={input} />
                         </td>
-                        <td className="pr-2">
+                        <td className="pe-2">
                           <input aria-label={`Area of answer ${j + 1}`} list="cq-tracks" value={o.targetTrack} disabled={!canEdit} onChange={(e) => updateOption(i, j, { targetTrack: e.target.value })} className={input} />
                         </td>
-                        <td className="pr-2">
+                        <td className="pe-2">
                           <input aria-label={`Weight of answer ${j + 1}`} type="number" value={o.weight} disabled={!canEdit} onChange={(e) => updateOption(i, j, { weight: Number(e.target.value) })} className={input} />
                         </td>
                         {canEdit && (
@@ -370,11 +370,11 @@ function QuestionsTab({ scope, apiFetch, canEdit }: { scope: string | null; apiF
                       disabled={q.options.length >= 12}
                       onClick={() => update(i, { options: [...q.options, { text: "", description: "", targetTrack: "", weight: 10 }] })}
                     >
-                      <Plus aria-hidden="true" className="h-4 w-4" /> Answer
+                      <Plus aria-hidden="true" className="h-4 w-4" />{en(" Answer")}
                     </button>
                     <label className="inline-flex items-center gap-2 text-sm">
                       <input type="checkbox" checked={q.isActive} onChange={(e) => update(i, { isActive: e.target.checked })} className="h-4 w-4 accent-cyan-700" />
-                      In use
+                      {en("In use")}
                     </label>
                     <button
                       type="button"
@@ -384,7 +384,7 @@ function QuestionsTab({ scope, apiFetch, canEdit }: { scope: string | null; apiF
                         setDirty(true);
                       }}
                     >
-                      <Trash2 aria-hidden="true" className="h-4 w-4" /> Delete
+                      <Trash2 aria-hidden="true" className="h-4 w-4" />{en(" Delete")}
                     </button>
                   </div>
                 )}
@@ -430,19 +430,19 @@ function CoursesTab({ scope, apiFetch, canEdit, isSuper }: { scope: string; apiF
       setEditing(null);
       setMessage({ text: body?.message ?? "Saved." });
       await load();
-    } else if (res.status === 409) setMessage({ text: "Someone else changed this course meanwhile. Reload and try again.", error: true });
+    } else if (res.status === 409) setMessage({ text: en("Someone else changed this course meanwhile. Reload and try again."), error: true });
     else setMessage({ text: body?.error ?? "The course couldn't be saved.", error: true });
   };
   const remove = async (c: CourseItem) => {
     if (!window.confirm(`Remove "${c.courseName}" ${en("from the catalogue? Inquiries already sent about it are kept.")}`)) return;
     const res = await apiFetch(`/api/quiz/counselling/courses/${c.courseId}?${q}`, { method: "DELETE" });
-    setMessage(res.ok ? { text: "Course removed." } : { text: "That didn't work. Please try again.", error: true });
+    setMessage(res.ok ? { text: en("Course removed.") } : { text: en("That didn't work. Please try again."), error: true });
     await load();
   };
   const toggleListing = async (value: boolean) => {
     const res = await apiFetch(`/api/quiz/counselling/courses/listing?${q}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ listed: value }) });
     if (res.ok) setListed(value);
-    else setMessage({ text: "The listing couldn't be changed.", error: true });
+    else setMessage({ text: en("The listing couldn't be changed."), error: true });
   };
 
   if (!courses) return <div className={`${card} h-40 animate-pulse motion-reduce:animate-none`} aria-busy="true" />;
@@ -451,19 +451,19 @@ function CoursesTab({ scope, apiFetch, canEdit, isSuper }: { scope: string; apiF
     <section className="space-y-4">
       <div className={`${card} flex flex-wrap items-center justify-between gap-3 p-4`}>
         <p className="text-sm text-muted-foreground">
-          Active courses are suggested to this institute&apos;s members with their quiz results, best match first.
-          {listed ? " They are also suggested to members of the platform quiz." : " They are not suggested to members of other institutes."}
+          {en("Active courses are suggested to this institute's members with their quiz results, best match first.")}
+          {listed ? en(" They are also suggested to members of the platform quiz.") : en(" They are not suggested to members of other institutes.")}
         </p>
         <div className="flex items-center gap-3">
           {isSuper && (
             <label className="inline-flex items-center gap-2 text-sm">
               <input type="checkbox" checked={listed} onChange={(e) => void toggleListing(e.target.checked)} className="h-4 w-4 accent-cyan-700" />
-              Suggest on the platform quiz
+              {en("Suggest on the platform quiz")}
             </label>
           )}
           {canEdit && (
             <button type="button" className={primary} onClick={() => setEditing(blankCourse(scope))}>
-              <Plus aria-hidden="true" className="h-4 w-4" /> Add a course
+              <Plus aria-hidden="true" className="h-4 w-4" />{en(" Add a course")}
             </button>
           )}
         </div>
@@ -475,16 +475,16 @@ function CoursesTab({ scope, apiFetch, canEdit, isSuper }: { scope: string; apiF
       )}
       {editing && <CourseForm course={editing} onCancel={() => setEditing(null)} onSave={(c) => void save(c)} />}
       {courses.length === 0 ? (
-        <p className={`${card} p-6 text-sm text-muted-foreground`}>No courses yet.{canEdit ? " Add the courses you want members to see." : ""}</p>
+        <p className={`${card} p-6 text-sm text-muted-foreground`}>{en("No courses yet.")}{canEdit ? en(" Add the courses you want members to see.") : ""}</p>
       ) : (
         <div className={`${card} overflow-x-auto`}>
           <table className="w-full text-sm">
-            <thead className="border-b border-border text-left text-xs text-muted-foreground">
+            <thead className="border-b border-border text-start text-xs text-muted-foreground">
               <tr>
-                <th className="p-3 font-medium">Course</th>
-                <th className="p-3 font-medium">Area</th>
-                <th className="p-3 font-medium">Qualification</th>
-                <th className="p-3 font-medium">Status</th>
+                <th className="p-3 font-medium">{en("Course")}</th>
+                <th className="p-3 font-medium">{en("Area")}</th>
+                <th className="p-3 font-medium">{en("Qualification")}</th>
+                <th className="p-3 font-medium">{en("Status")}</th>
                 {canEdit && <th className="p-3" />}
               </tr>
             </thead>
@@ -494,14 +494,14 @@ function CoursesTab({ scope, apiFetch, canEdit, isSuper }: { scope: string; apiF
                   <td className="p-3 font-medium">{c.courseName}</td>
                   <td className="p-3 text-muted-foreground">{c.targetTrack}</td>
                   <td className="p-3 text-muted-foreground">{c.credentialType || "—"}</td>
-                  <td className="p-3">{c.isActive ? "Shown" : "Hidden"}</td>
+                  <td className="p-3">{c.isActive ? en("Shown") : en("Hidden")}</td>
                   {canEdit && (
-                    <td className="whitespace-nowrap p-3 text-right">
+                    <td className="whitespace-nowrap p-3 text-end">
                       <button type="button" className={button} onClick={() => setEditing(c)}>
-                        Edit
+                        {en("Edit")}
                       </button>{" "}
                       <button type="button" className={`${button} text-red-700 dark:text-red-400`} onClick={() => void remove(c)}>
-                        Remove
+                        {en("Remove")}
                       </button>
                     </td>
                   )}
@@ -516,6 +516,7 @@ function CoursesTab({ scope, apiFetch, canEdit, isSuper }: { scope: string; apiF
 }
 
 function CourseForm({ course, onCancel, onSave }: { course: CourseItem; onCancel: () => void; onSave: (c: CourseItem) => void }) {
+  const en = useEn();
   const [c, setC] = useState<CourseItem>(course);
   const [features, setFeatures] = useState(course.features.join("\n"));
   const set = (change: Partial<CourseItem>) => setC((x) => ({ ...x, ...change }));
@@ -528,17 +529,17 @@ function CourseForm({ course, onCancel, onSave }: { course: CourseItem; onCancel
         onSave({ ...c, features: features.split("\n").map((f) => f.trim()).filter(Boolean) });
       }}
     >
-      <h2 className="text-base font-semibold sm:col-span-2">{course.courseId ? "Edit course" : "New course"}</h2>
+      <h2 className="text-base font-semibold sm:col-span-2">{course.courseId ? en("Edit course") : en("New course")}</h2>
       <label className="text-xs sm:col-span-2">
-        <span className="font-medium">Name</span>
+        <span className="font-medium">{en("Name")}</span>
         <input required value={c.courseName} maxLength={500} onChange={(e) => set({ courseName: e.target.value })} className={input} />
       </label>
       <label className="text-xs sm:col-span-2">
-        <span className="font-medium">Description</span>
+        <span className="font-medium">{en("Description")}</span>
         <textarea value={c.description} rows={3} maxLength={4000} onChange={(e) => set({ description: e.target.value })} className={input} />
       </label>
       <label className="text-xs">
-        <span className="font-medium">Area (matched to quiz results)</span>
+        <span className="font-medium">{en("Area (matched to quiz results)")}</span>
         <select value={c.targetTrack} onChange={(e) => set({ targetTrack: e.target.value })} className={input}>
           {tracks.map((t) => (
             <option key={t} value={t}>
@@ -548,35 +549,35 @@ function CourseForm({ course, onCancel, onSave }: { course: CourseItem; onCancel
         </select>
       </label>
       <label className="text-xs">
-        <span className="font-medium">Qualification (e.g. diploma, certificate)</span>
+        <span className="font-medium">{en("Qualification (e.g. diploma, certificate)")}</span>
         <input value={c.credentialType} maxLength={200} onChange={(e) => set({ credentialType: e.target.value })} className={input} />
       </label>
       <label className="text-xs">
-        <span className="font-medium">Length</span>
+        <span className="font-medium">{en("Length")}</span>
         <input value={c.duration} maxLength={200} onChange={(e) => set({ duration: e.target.value })} className={input} />
       </label>
       <label className="text-xs">
-        <span className="font-medium">Next intake</span>
+        <span className="font-medium">{en("Next intake")}</span>
         <input value={c.intake} maxLength={200} onChange={(e) => set({ intake: e.target.value })} className={input} />
       </label>
       <label className="text-xs sm:col-span-2">
-        <span className="font-medium">Accreditation (only what you can show members on request)</span>
+        <span className="font-medium">{en("Accreditation (only what you can show members on request)")}</span>
         <input value={c.accreditation} maxLength={300} onChange={(e) => set({ accreditation: e.target.value })} className={input} />
       </label>
       <label className="text-xs sm:col-span-2">
-        <span className="font-medium">Highlights (one per line)</span>
+        <span className="font-medium">{en("Highlights (one per line)")}</span>
         <textarea value={features} rows={3} onChange={(e) => setFeatures(e.target.value)} className={input} />
       </label>
       <label className="inline-flex items-center gap-2 text-sm">
         <input type="checkbox" checked={c.isActive} onChange={(e) => set({ isActive: e.target.checked })} className="h-4 w-4 accent-cyan-700" />
-        Shown to members
+        {en("Shown to members")}
       </label>
       <div className="flex justify-end gap-2 sm:col-span-2">
         <button type="button" className={button} onClick={onCancel}>
-          Cancel
+          {en("Cancel")}
         </button>
         <button type="submit" className={primary}>
-          <Save aria-hidden="true" className="h-4 w-4" /> Save course
+          <Save aria-hidden="true" className="h-4 w-4" />{en(" Save course")}
         </button>
       </div>
     </form>
@@ -586,6 +587,7 @@ function CourseForm({ course, onCancel, onSave }: { course: CourseItem; onCancel
 // ------------------------------------------------------------------ inquiries
 
 function InquiriesTab({ scope, apiFetch }: { scope: string | null; apiFetch: ApiFetch }) {
+  const en = useEn();
   const [leads, setLeads] = useState<Lead[] | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -605,19 +607,19 @@ function InquiriesTab({ scope, apiFetch }: { scope: string | null; apiFetch: Api
 
   if (!leads) return <div className={`${card} h-40 animate-pulse motion-reduce:animate-none`} aria-busy="true" />;
   if (error) return <p className={`${card} p-6 text-sm text-muted-foreground`}>{error}</p>;
-  if (leads.length === 0) return <p className={`${card} p-6 text-sm text-muted-foreground`}>No inquiries yet. They appear here when members ask about your courses.</p>;
+  if (leads.length === 0) return <p className={`${card} p-6 text-sm text-muted-foreground`}>{en("No inquiries yet. They appear here when members ask about your courses.")}</p>;
 
   return (
     <div className={`${card} overflow-x-auto`}>
       <table className="w-full text-sm">
-        <thead className="border-b border-border text-left text-xs text-muted-foreground">
+        <thead className="border-b border-border text-start text-xs text-muted-foreground">
           <tr>
-            <th className="p-3 font-medium">Received</th>
-            <th className="p-3 font-medium">From</th>
-            <th className="p-3 font-medium">Course</th>
-            <th className="p-3 font-medium">Area of their result</th>
-            <th className="p-3 font-medium">Question</th>
-            <th className="p-3 font-medium">Status</th>
+            <th className="p-3 font-medium">{en("Received")}</th>
+            <th className="p-3 font-medium">{en("From")}</th>
+            <th className="p-3 font-medium">{en("Course")}</th>
+            <th className="p-3 font-medium">{en("Area of their result")}</th>
+            <th className="p-3 font-medium">{en("Question")}</th>
+            <th className="p-3 font-medium">{en("Status")}</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-border">
@@ -630,7 +632,7 @@ function InquiriesTab({ scope, apiFetch }: { scope: string | null; apiFetch: Api
                   {l.candidateEmail}
                 </a>
                 {l.candidatePhone && <span className="block text-xs text-muted-foreground">{l.candidatePhone}</span>}
-                {!l.referredForSelf && <span className="block text-[11px] text-muted-foreground">Referred by staff</span>}
+                {!l.referredForSelf && <span className="block text-[11px] text-muted-foreground">{en("Referred by staff")}</span>}
               </td>
               <td className="p-3">{l.courseName ?? "—"}</td>
               <td className="p-3 text-muted-foreground">{l.primaryTrack || "—"}</td>

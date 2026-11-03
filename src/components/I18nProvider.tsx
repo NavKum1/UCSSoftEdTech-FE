@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { NextIntlClientProvider, type AbstractIntlMessages } from "next-intl";
+import { useEn } from "@/lib/english/EnglishProvider";
 
 interface I18nProviderProps {
   children: React.ReactNode;
@@ -10,6 +11,7 @@ interface I18nProviderProps {
 export default function I18nProvider({ children }: I18nProviderProps) {
   // Language from localStorage, or en. The server has no localStorage; it renders the loading state below either way,
   // since messages load in the effect, so the first render matches.
+  const en = useEn();
   const [locale, setLocale] = useState(() =>
     typeof window === "undefined" ? "en" : localStorage.getItem("preferredLanguage") || "en",
   );
@@ -26,15 +28,15 @@ export default function I18nProvider({ children }: I18nProviderProps) {
     });
   }, [locale]);
 
-  if (!messages) return <div className="h-screen w-full flex items-center justify-center bg-background text-muted-foreground">Loading language...</div>;
+  if (!messages) return <div className="h-screen w-full flex items-center justify-center bg-background text-muted-foreground">{en("Loading language...")}</div>;
 
   return (
     <NextIntlClientProvider locale={locale} messages={messages}>
       <div className="relative w-full h-full">
         {/* Language Switcher Overlay */}
-        <div className="absolute top-4 right-4 z-50">
+        <div className="absolute top-4 end-4 z-50">
           <select
-            aria-label="Page language"
+            aria-label={en("Page language")}
             value={locale} 
             onChange={(e) => {
               const newLocale = e.target.value;
@@ -43,8 +45,8 @@ export default function I18nProvider({ children }: I18nProviderProps) {
             }}
             className="bg-card border border-border text-xs text-muted-foreground rounded-md px-2 py-1"
           >
-            <option value="en">English (US)</option>
-            <option value="es">Español (ES)</option>
+            <option value="en">{en("English (US)")}</option>
+            <option value="es">{en("Español (ES)")}</option>
           </select>
         </div>
         {children}

@@ -10,6 +10,7 @@
 import React, { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { AccessNotice, useLatestRef, useLegacyApi } from "@/lib/legacyApi";
+import { useEn } from "@/lib/english/EnglishProvider";
 
 interface Quota {
   monthlyQuota?: number;
@@ -56,6 +57,7 @@ const planLabel = (id?: string) => PLANS.find((p) => p.id === id)?.label ?? id ?
 const card = "rounded-2xl border border-border bg-card shadow-[0_1px_2px_rgb(16_24_40/0.04)]";
 
 export default function InstituteBillingPage() {
+  const en = useEn();
   const { apiFetch, ready, access, roles } = useLegacyApi();
   const isSuper = roles.includes("SuperAdmin");
   const [sub, setSub] = useState<Subscription | null>(null);
@@ -113,13 +115,13 @@ export default function InstituteBillingPage() {
   if (failed)
     return (
       <main className="mx-auto max-w-md px-4 py-24 text-center">
-        <h1 className="text-xl font-semibold">We couldn&apos;t load billing</h1>
-        <p className="mt-2 text-sm text-muted-foreground">Please refresh the page to try again.</p>
+        <h1 className="text-xl font-semibold">{en("We couldn't load billing")}</h1>
+        <p className="mt-2 text-sm text-muted-foreground">{en("Please refresh the page to try again.")}</p>
       </main>
     );
   if (!sub)
     return (
-      <main className="mx-auto max-w-5xl px-4 py-10" aria-busy="true" aria-label="Loading billing">
+      <main className="mx-auto max-w-5xl px-4 py-10" aria-busy="true" aria-label={en("Loading billing")}>
         <div className={`${card} h-40 animate-pulse motion-reduce:animate-none`} />
       </main>
     );
@@ -134,30 +136,30 @@ export default function InstituteBillingPage() {
   return (
     <main className="mx-auto max-w-5xl space-y-6 px-4 pb-16 pt-8 sm:px-6">
       <header className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-xl font-semibold">Plan and billing</h1>
+        <h1 className="text-xl font-semibold">{en("Plan and billing")}</h1>
         <Link href="/partner/dashboard" className="text-sm font-medium text-indigo-700 hover:underline dark:text-indigo-300">
-          Back to the dashboard
+          {en("Back to the dashboard")}
         </Link>
       </header>
 
       {!sub.hasSubscription ? (
         <section className={`${card} p-6`}>
-          <h2 className="text-base font-semibold">No enterprise plan yet</h2>
+          <h2 className="text-base font-semibold">{en("No enterprise plan yet")}</h2>
           <p className="mt-1 text-sm text-muted-foreground">
-            Enterprise plans are set up with the Edulexa team. Once your plan is active, its seats, usage and statements appear here.
+            {en("Enterprise plans are set up with the Edulexa team. Once your plan is active, its seats, usage and statements appear here.")}
           </p>
         </section>
       ) : (
         <section className={`${card} p-6`}>
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
-              <p className="text-xs text-muted-foreground">Current plan</p>
+              <p className="text-xs text-muted-foreground">{en("Current plan")}</p>
               <h2 className="text-xl font-semibold">{planLabel(sub.planTier)}</h2>
               <p className="text-sm text-muted-foreground">
-                {usd(sub.pricePerMonthCents ?? 0)} a month, billed {sub.billingCycle?.toLowerCase()} · {(sub.status ?? "").replace(/([a-z])([A-Z])/g, "$1 $2")}
+                {usd(sub.pricePerMonthCents ?? 0)}{en(" a month, billed ")}{sub.billingCycle?.toLowerCase()} · {(sub.status ?? "").replace(/([a-z])([A-Z])/g, "$1 $2")}
               </p>
             </div>
-            {sub.currentPeriodEnd && <p className="text-sm text-muted-foreground">Current period ends {new Date(sub.currentPeriodEnd).toLocaleDateString()}</p>}
+            {sub.currentPeriodEnd && <p className="text-sm text-muted-foreground">{en("Current period ends ")}{new Date(sub.currentPeriodEnd).toLocaleDateString()}</p>}
           </div>
           <ul className="mt-5 grid gap-4 sm:grid-cols-2">
             {meters.map(([label, q, text]) =>
@@ -174,37 +176,37 @@ export default function InstituteBillingPage() {
               ) : null,
             )}
           </ul>
-          <p className="mt-3 text-xs text-muted-foreground">Usage as recorded for this period.</p>
+          <p className="mt-3 text-xs text-muted-foreground">{en("Usage as recorded for this period.")}</p>
         </section>
       )}
 
       {isSuper && (
         <section className={`${card} p-6`}>
-          <h2 className="text-base font-semibold">Set the plan (Edulexa staff)</h2>
+          <h2 className="text-base font-semibold">{en("Set the plan (Edulexa staff)")}</h2>
           <div className="mt-3 flex flex-wrap items-end gap-3">
             <label className="text-sm">
-              <span className="font-medium">Plan</span>
+              <span className="font-medium">{en("Plan")}</span>
               <select value={tier} onChange={(e) => setTier(e.target.value)} className="mt-1 block rounded-xl border border-border bg-background px-3 py-2 text-sm">
                 {PLANS.map((p) => (
                   <option key={p.id} value={p.id}>
-                    {p.label} (${p.price} a month, {p.seats} seats)
+                    {p.label} (${p.price}{en(" a month, ")}{p.seats}{en(" seats)")}
                   </option>
                 ))}
               </select>
             </label>
             <label className="text-sm">
-              <span className="font-medium">Billing</span>
+              <span className="font-medium">{en("Billing")}</span>
               <select value={cycle} onChange={(e) => setCycle(e.target.value)} className="mt-1 block rounded-xl border border-border bg-background px-3 py-2 text-sm">
-                <option value="Monthly">Monthly</option>
-                <option value="Annual">Annual</option>
+                <option value="Monthly">{en("Monthly")}</option>
+                <option value="Annual">{en("Annual")}</option>
               </select>
             </label>
             <button type="button" onClick={() => void setPlan()} className="rounded-xl bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-500">
-              Save plan
+              {en("Save plan")}
             </button>
             {sub.hasSubscription && (
               <button type="button" onClick={() => void makeStatement()} className="rounded-xl border border-border px-4 py-2 text-sm font-semibold hover:bg-muted">
-                Create this month&apos;s statement
+                {en("Create this month's statement")}
               </button>
             )}
           </div>
@@ -219,20 +221,20 @@ export default function InstituteBillingPage() {
       <section aria-labelledby="bl-statements" className={`${card} overflow-hidden`}>
         <div className="p-5">
           <h2 id="bl-statements" className="text-base font-semibold">
-            Statements
+            {en("Statements")}
           </h2>
-          <p className="mt-1 text-xs text-muted-foreground">Usage statements in US dollars. They are not tax invoices; tax is handled when a payment is arranged.</p>
+          <p className="mt-1 text-xs text-muted-foreground">{en("Usage statements in US dollars. They are not tax invoices; tax is handled when a payment is arranged.")}</p>
         </div>
         {statements.length === 0 ? (
-          <p className="px-5 pb-5 text-sm text-muted-foreground">No statements yet.</p>
+          <p className="px-5 pb-5 text-sm text-muted-foreground">{en("No statements yet.")}</p>
         ) : (
           <table className="w-full text-sm">
-            <thead className="border-y border-border text-left text-xs text-muted-foreground">
+            <thead className="border-y border-border text-start text-xs text-muted-foreground">
               <tr>
-                <th className="p-3 font-medium">Statement</th>
-                <th className="p-3 font-medium">Period</th>
-                <th className="p-3 text-right font-medium">Amount</th>
-                <th className="p-3 font-medium">Status</th>
+                <th className="p-3 font-medium">{en("Statement")}</th>
+                <th className="p-3 font-medium">{en("Period")}</th>
+                <th className="p-3 text-end font-medium">{en("Amount")}</th>
+                <th className="p-3 font-medium">{en("Status")}</th>
                 <th className="p-3" />
               </tr>
             </thead>
@@ -241,11 +243,11 @@ export default function InstituteBillingPage() {
                 <tr key={st.invoiceId}>
                   <td className="p-3 font-mono text-xs">{st.invoiceNumber}</td>
                   <td className="p-3">{st.billingPeriod}</td>
-                  <td className="p-3 text-right tabular-nums">{usd(st.totalCents)}</td>
-                  <td className="p-3">{st.status === "Draft" ? "Draft, unpaid" : st.status.replace(/([a-z])([A-Z])/g, "$1 $2")}</td>
-                  <td className="p-3 text-right">
+                  <td className="p-3 text-end tabular-nums">{usd(st.totalCents)}</td>
+                  <td className="p-3">{st.status === "Draft" ? en("Draft, unpaid") : st.status.replace(/([a-z])([A-Z])/g, "$1 $2")}</td>
+                  <td className="p-3 text-end">
                     <button type="button" onClick={() => void openStatement(st.invoiceId)} className="text-sm font-semibold text-indigo-700 hover:underline dark:text-indigo-300">
-                      View
+                      {en("View")}
                     </button>
                   </td>
                 </tr>
@@ -262,7 +264,7 @@ export default function InstituteBillingPage() {
               {open.invoiceNumber} · {open.billingPeriod}
             </h2>
             <button type="button" onClick={() => setOpen(null)} className="text-sm text-muted-foreground hover:text-foreground">
-              Close
+              {en("Close")}
             </button>
           </div>
           <table className="mt-3 w-full text-sm">
@@ -270,12 +272,12 @@ export default function InstituteBillingPage() {
               {open.lineItems.map((li, i) => (
                 <tr key={i}>
                   <td className="py-2">{li.description}</td>
-                  <td className="py-2 text-right tabular-nums">{usd(li.totalCents)}</td>
+                  <td className="py-2 text-end tabular-nums">{usd(li.totalCents)}</td>
                 </tr>
               ))}
               <tr className="font-semibold">
-                <td className="py-2">Total (before any tax)</td>
-                <td className="py-2 text-right tabular-nums">{usd(open.lineItems.reduce((n, li) => n + li.totalCents, 0))}</td>
+                <td className="py-2">{en("Total (before any tax)")}</td>
+                <td className="py-2 text-end tabular-nums">{usd(open.lineItems.reduce((n, li) => n + li.totalCents, 0))}</td>
               </tr>
             </tbody>
           </table>

@@ -86,13 +86,13 @@ export default function DailyPracticePage() {
   if (failed)
     return (
       <main className="mx-auto max-w-md px-4 py-24 text-center">
-        <h1 className="text-xl font-semibold">We couldn&apos;t load your daily practice</h1>
-        <p className="mt-2 text-sm text-muted-foreground">Please refresh the page to try again.</p>
+        <h1 className="text-xl font-semibold">{en("We couldn't load your daily practice")}</h1>
+        <p className="mt-2 text-sm text-muted-foreground">{en("Please refresh the page to try again.")}</p>
       </main>
     );
   if (!summary)
     return (
-      <main className="mx-auto max-w-6xl px-4 py-10" aria-busy="true" aria-label="Loading daily practice">
+      <main className="mx-auto max-w-6xl px-4 py-10" aria-busy="true" aria-label={en("Loading daily practice")}>
         <div className={`${card} h-40 animate-pulse motion-reduce:animate-none`} />
       </main>
     );
@@ -104,49 +104,48 @@ export default function DailyPracticePage() {
   return (
     <main className="mx-auto max-w-6xl px-4 pb-16 pt-8 sm:px-6">
       <header className="mb-6">
-        <h1 className="text-2xl font-semibold tracking-tight">Daily practice</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">{en("Daily practice")}</h1>
         <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
-          Two short drills a day: diagnose a production incident and review a pull request. Your first try at each drill earns points; the answers are
-          shown once you submit.
+          {en("Two short drills a day: diagnose a production incident and review a pull request. Your first try at each drill earns points; the answers are shown once you submit.")}
         </p>
       </header>
 
-      <section aria-label="Your progress" className="grid gap-4 sm:grid-cols-3">
+      <section aria-label={en("Your progress")} className="grid gap-4 sm:grid-cols-3">
         <div className={`${card} p-5`}>
           <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            <Flame aria-hidden="true" className="h-4 w-4 text-orange-500" /> Streak
+            <Flame aria-hidden="true" className="h-4 w-4 text-orange-500" />{en(" Streak")}
           </p>
           <p className="mt-2 text-3xl font-semibold tabular-nums">
             {streak.current} <span className="text-base font-normal text-muted-foreground">day{streak.current === 1 ? "" : "s"}</span>
           </p>
           <p className="mt-1 text-xs text-muted-foreground">
-            {streak.practisedToday ? en("Practised today.") : streak.current > 0 ? en("Practise today to keep it going.") : en("Practise today to start one.")} Best: {streak.longest}.
+            {streak.practisedToday ? en("Practised today.") : streak.current > 0 ? en("Practise today to keep it going.") : en("Practise today to start one.")}{en(" Best: ")}{streak.longest}.
           </p>
           <p className="mt-3 flex items-center gap-1.5 text-xs text-muted-foreground" title={`Earn a freeze for every ${streak.daysPerFreeze} days in a row; it covers one missed day.`}>
             <Snowflake aria-hidden="true" className="h-3.5 w-3.5 text-sky-500" />
-            {streak.freezesAvailable} of {streak.maxFreezes} streak freezes. Earn one every {streak.daysPerFreeze} days in a row; it covers a missed day.
+            {streak.freezesAvailable} of {streak.maxFreezes}{en(" streak freezes. Earn one every ")}{streak.daysPerFreeze}{en(" days in a row; it covers a missed day.")}
           </p>
         </div>
         <div className={`${card} p-5`}>
           <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            <Trophy aria-hidden="true" className="h-4 w-4 text-amber-500" /> This week
+            <Trophy aria-hidden="true" className="h-4 w-4 text-amber-500" />{en(" This week")}
           </p>
           <p className="mt-2 text-3xl font-semibold tabular-nums">
             {week.points} <span className="text-base font-normal text-muted-foreground">points</span>
           </p>
           <p className="mt-1 text-xs text-muted-foreground">
-            {week.rank ? `Rank ${week.rank} of ${week.rankedMembers}.` : "No points yet this week."} Resets{" "}
+            {week.rank ? `Rank ${week.rank} of ${week.rankedMembers}.` : en("No points yet this week.")}{en(" Resets")}{" "}
             {weekEnds.toLocaleDateString(undefined, { weekday: "long", day: "numeric", month: "short" })}.
           </p>
         </div>
         <div className={`${card} p-5`}>
           <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            <CheckCircle2 aria-hidden="true" className="h-4 w-4 text-emerald-500" /> All time
+            <CheckCircle2 aria-hidden="true" className="h-4 w-4 text-emerald-500" />{en(" All time")}
           </p>
           <p className="mt-2 text-3xl font-semibold tabular-nums">
             {summary.totalPoints} <span className="text-base font-normal text-muted-foreground">points</span>
           </p>
-          <ol aria-label="The last 14 days" className="mt-3 flex gap-1">
+          <ol aria-label={en("The last 14 days")} className="mt-3 flex gap-1">
             {streak.days.map((d) => (
               <li
                 key={d.date}
@@ -154,7 +153,7 @@ export default function DailyPracticePage() {
                 className={`h-6 flex-1 rounded ${d.count > 0 ? "bg-emerald-500" : frozen.has(d.date) ? "bg-sky-300 dark:bg-sky-700" : "bg-muted"}`}
               >
                 <span className="sr-only">
-                  {d.date}: {d.count > 0 ? en("practised") : frozen.has(d.date) ? "streak freeze" : "no practice"}
+                  {d.date}: {d.count > 0 ? en("practised") : frozen.has(d.date) ? en("streak freeze") : en("no practice")}
                 </span>
               </li>
             ))}
@@ -164,35 +163,35 @@ export default function DailyPracticePage() {
 
       <section aria-labelledby="dp-today" className="mt-8">
         <h2 id="dp-today" className="mb-3 text-base font-semibold">
-          Today&apos;s drills
+          {en("Today's drills")}
         </h2>
         <div className="grid gap-4 md:grid-cols-3">
           <DrillCard
             href="/daily/incident"
             icon={<Terminal aria-hidden="true" className="h-5 w-5" />}
-            label="Incident drill"
+            label={en("Incident drill")}
             title={incident?.title}
             meta={incident ? `${incident.track} · pick another track on the drill page` : undefined}
             status={incident?.status}
-            description="Read the logs and metrics of a production outage, choose the root cause and the safe fix. About 10 minutes."
+            description={en("Read the logs and metrics of a production outage, choose the root cause and the safe fix. About 10 minutes.")}
           />
           <DrillCard
             href="/daily/review"
             icon={<GitPullRequest aria-hidden="true" className="h-5 w-5" />}
-            label="Code review"
+            label={en("Code review")}
             title={review?.title}
             meta={review?.language}
             status={review?.status}
-            description="Find the defect in a pull request, name it and decide whether to approve. About 3 minutes."
+            description={en("Find the defect in a pull request, name it and decide whether to approve. About 3 minutes.")}
           />
           <Link href="/duels/arena" className={`${card} group flex flex-col p-5 hover:border-indigo-400`}>
             <span className="flex items-center gap-2 text-indigo-700 dark:text-indigo-300">
               <Swords aria-hidden="true" className="h-5 w-5" />
-              <span className="text-xs font-semibold uppercase tracking-wider">System design duel</span>
+              <span className="text-xs font-semibold uppercase tracking-wider">{en("System design duel")}</span>
             </span>
             <span className="mt-3 text-sm text-muted-foreground">{en("Practise a system design problem against an AI opponent. Duels don't count towards points.")}</span>
             <span className="mt-auto inline-flex items-center gap-1 pt-4 text-sm font-semibold">
-              Open <ArrowRight aria-hidden="true" className="h-4 w-4 transition-transform group-hover:translate-x-0.5 motion-reduce:transition-none" />
+              {en("Open ")}<ArrowRight aria-hidden="true" className="h-4 w-4 transition-transform group-hover:translate-x-0.5 motion-reduce:transition-none" />
             </span>
           </Link>
         </div>
@@ -201,22 +200,22 @@ export default function DailyPracticePage() {
       <section aria-labelledby="dp-board" className={`${card} mt-8 p-5 sm:p-6`}>
         <div className="flex flex-wrap items-center justify-between gap-3">
           <h2 id="dp-board" className="text-base font-semibold">
-            This week&apos;s leaderboard
+            {en("This week's leaderboard")}
           </h2>
           <Link href="/leaderboard" className="text-sm font-semibold text-indigo-700 hover:underline dark:text-indigo-300">
-            Full leaderboard
+            {en("Full leaderboard")}
           </Link>
         </div>
         {!board || board.entries.length === 0 ? (
-          <p className="mt-3 text-sm text-muted-foreground">Nobody has earned points this week yet. Finish a drill to be first.</p>
+          <p className="mt-3 text-sm text-muted-foreground">{en("Nobody has earned points this week yet. Finish a drill to be first.")}</p>
         ) : (
           <ol className="mt-3 divide-y divide-border text-sm">
             {board.entries.map((e) => (
               <li key={`${e.rank}-${e.displayName}`} className={`flex items-center justify-between gap-3 py-2.5 ${e.isYou ? "font-semibold" : ""}`}>
                 <span className="flex items-center gap-3">
-                  <span className="w-6 text-right tabular-nums text-muted-foreground">{e.rank}</span>
+                  <span className="w-6 text-end tabular-nums text-muted-foreground">{e.rank}</span>
                   {e.displayName}
-                  {e.isYou && <span className="text-xs font-normal text-muted-foreground">(you)</span>}
+                  {e.isYou && <span className="text-xs font-normal text-muted-foreground">{en("(you)")}</span>}
                 </span>
                 <span className="tabular-nums">{e.points} pts</span>
               </li>
@@ -224,8 +223,8 @@ export default function DailyPracticePage() {
             {board.you && !board.entries.some((e) => e.isYou) && (
               <li className="flex items-center justify-between gap-3 py-2.5 font-semibold">
                 <span className="flex items-center gap-3">
-                  <span className="w-6 text-right tabular-nums text-muted-foreground">{board.you.rank}</span>
-                  You{summary.leaderboardVisible ? "" : " (hidden from others)"}
+                  <span className="w-6 text-end tabular-nums text-muted-foreground">{board.you.rank}</span>
+                  {en("You")}{summary.leaderboardVisible ? "" : en(" (hidden from others)")}
                 </span>
                 <span className="tabular-nums">{board.you.points} pts</span>
               </li>
@@ -272,7 +271,7 @@ function DrillCard({
       {meta && <span className="mt-1 text-xs text-muted-foreground">{meta}</span>}
       <span className="mt-2 text-sm text-muted-foreground">{description}</span>
       <span className="mt-auto inline-flex items-center gap-1 pt-4 text-sm font-semibold">
-        {status?.completed ? en("Practise again (no points)") : status?.openAttemptId ? "Continue" : "Start"}
+        {status?.completed ? en("Practise again (no points)") : status?.openAttemptId ? en("Continue") : en("Start")}
         <ArrowRight aria-hidden="true" className="h-4 w-4 transition-transform group-hover:translate-x-0.5 motion-reduce:transition-none" />
       </span>
     </Link>

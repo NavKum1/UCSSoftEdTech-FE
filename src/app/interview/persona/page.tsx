@@ -15,6 +15,7 @@ import {
   Code2,
   RotateCw,
 } from "lucide-react";
+import { useEn } from "@/lib/english/EnglishProvider";
 
 interface PersonaItem {
   id: string;
@@ -40,6 +41,7 @@ interface AdaptedPromptConfig {
 }
 
 export default function PersonaSelectorPage() {
+  const en = useEn();
   const { apiFetch, ready, access } = useLegacyApi();
   const [personas, setPersonas] = useState<PersonaItem[]>([]);
   const [selectedPersona, setSelectedPersona] = useState<string>("StaffArchitectFAANG");
@@ -53,25 +55,25 @@ export default function PersonaSelectorPage() {
   const dialects = [
     {
       code: "US_WestCoast_Tech",
-      label: "Silicon Valley Tech",
+      label: en("Silicon Valley Tech"),
       region: "United States (West Coast)",
       desc: "Conversational, direct, Silicon Valley engineering vocabulary.",
     },
     {
       code: "UK_London_Financial",
-      label: "London Financial Tech",
+      label: en("London Financial Tech"),
       region: "United Kingdom (City of London)",
       desc: "Composed, analytical cadence with British technical phrasing.",
     },
     {
       code: "India_Bangalore_Enterprise",
-      label: "Bangalore Enterprise Cloud",
+      label: en("Bangalore Enterprise Cloud"),
       region: "India (Bangalore Hub)",
       desc: "High-scale architecture vocabulary, SLA and concurrency focus.",
     },
     {
       code: "EU_Berlin_Pragmatic",
-      label: "Berlin Engineering Precision",
+      label: en("Berlin Engineering Precision"),
       region: "European Union (Berlin)",
       desc: "Structured, specification-driven, zero-ambiguity inquiry.",
     },
@@ -170,17 +172,17 @@ export default function PersonaSelectorPage() {
                 <Sliders className="w-6 h-6" />
               </div>
               <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
-                AI Technical Interviewer Persona Studio
+                {en("AI Technical Interviewer Persona Studio")}
               </h1>
             </div>
             <p className="mt-1 text-sm text-muted-foreground">
-              Customize technical inquiry styles, voice aggression thresholds, and regional dialect profiles.
+              {en("Customize technical inquiry styles, voice aggression thresholds, and regional dialect profiles.")}
             </p>
           </div>
 
           <div className="flex items-center gap-2">
             <span className="px-3 py-1 rounded-lg bg-indigo-500/10 border border-indigo-500/20 text-indigo-600 dark:text-indigo-300 text-xs font-mono">
-              Vapi Real-Time Voice Engine Active
+              {en("Vapi Real-Time Voice Engine Active")}
             </span>
           </div>
         </div>
@@ -197,9 +199,9 @@ export default function PersonaSelectorPage() {
           <div className="flex items-center justify-between">
             <h2 className="text-base font-semibold text-foreground flex items-center gap-2">
               <Sparkles className="w-4 h-4 text-indigo-700 dark:text-indigo-400" />
-              1. Select Interviewer Persona & Scrutiny Style
+              {en("1. Select Interviewer Persona & Scrutiny Style")}
             </h2>
-            <span className="text-xs text-muted-foreground">{personas.length} Available Profiles</span>
+            <span className="text-xs text-muted-foreground">{personas.length}{en(" Available Profiles")}</span>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -240,7 +242,7 @@ export default function PersonaSelectorPage() {
                   </div>
 
                   <div className="pt-2 border-t border-border/60 flex items-center justify-between text-[11px] text-muted-foreground">
-                    <span>Interruption Rate</span>
+                    <span>{en("Interruption Rate")}</span>
                     <span className="font-mono font-semibold text-foreground">
                       {(persona.interruptionAggressiveness * 100).toFixed(0)}%
                     </span>
@@ -255,7 +257,7 @@ export default function PersonaSelectorPage() {
         <div className="space-y-4">
           <h2 className="text-base font-semibold text-foreground flex items-center gap-2">
             <Globe className="w-4 h-4 text-emerald-700 dark:text-emerald-400" />
-            2. Choose Speech Dialect & Regional Cadence
+            {en("2. Choose Speech Dialect & Regional Cadence")}
           </h2>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -288,7 +290,7 @@ export default function PersonaSelectorPage() {
             <div className="flex items-center gap-2">
               <Code2 className="w-5 h-5 text-indigo-700 dark:text-indigo-400" />
               <h2 className="text-sm font-bold text-foreground uppercase tracking-wider">
-                Live Vapi System Prompt & Directives Inspector
+                {en("Live Vapi System Prompt & Directives Inspector")}
               </h2>
             </div>
 
@@ -298,7 +300,7 @@ export default function PersonaSelectorPage() {
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-muted hover:bg-slate-700 text-xs text-muted-foreground transition-colors"
             >
               <RotateCw className={`w-3.5 h-3.5 ${generatingPreview ? "animate-spin" : ""}`} />
-              <span>Recompile Prompt</span>
+              <span>{en("Recompile Prompt")}</span>
             </button>
           </div>
 
@@ -306,19 +308,19 @@ export default function PersonaSelectorPage() {
             <div className="space-y-4">
               <div className="flex flex-wrap items-center gap-4 text-xs font-mono bg-background p-3 rounded-xl border border-border">
                 <div>
-                  <span className="text-muted-foreground block">Persona:</span>
+                  <span className="text-muted-foreground block">{en("Persona:")}</span>
                   <span className="text-indigo-700 dark:text-indigo-400 font-bold">{previewConfig.displayName}</span>
                 </div>
                 <div>
-                  <span className="text-muted-foreground block">Scrutiny:</span>
+                  <span className="text-muted-foreground block">{en("Scrutiny:")}</span>
                   <span className="text-foreground font-bold">{previewConfig.scrutinyLevel}</span>
                 </div>
                 <div>
-                  <span className="text-muted-foreground block">Dialect:</span>
+                  <span className="text-muted-foreground block">{en("Dialect:")}</span>
                   <span className="text-emerald-700 dark:text-emerald-400 font-bold">{previewConfig.dialectCode}</span>
                 </div>
                 <div>
-                  <span className="text-muted-foreground block">Voice ID:</span>
+                  <span className="text-muted-foreground block">{en("Voice ID:")}</span>
                   <span className="text-amber-700 dark:text-amber-400 font-bold">{previewConfig.voiceId}</span>
                 </div>
               </div>
@@ -329,7 +331,7 @@ export default function PersonaSelectorPage() {
             </div>
           ) : (
             <div className="py-8 text-center text-muted-foreground text-xs italic">
-              Loading adapted prompt directives...
+              {en("Loading adapted prompt directives...")}
             </div>
           )}
         </div>

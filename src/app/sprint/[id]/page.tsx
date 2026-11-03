@@ -34,6 +34,7 @@ import {
 import { useTheme } from "next-themes";
 import I18nProvider from "@/components/I18nProvider";
 import { useTranslations } from "next-intl";
+import { useEn } from "@/lib/english/EnglishProvider";
 
 type CandidateTrack =
   | "DevOps"
@@ -540,13 +541,14 @@ async function executeCode(
 }
 
 function ElapsedClock({ baseMs, startedAt }: { baseMs: number; startedAt: number }) {
+  const en = useEn();
   const [elapsed, setElapsed] = useState(baseMs);
   useEffect(() => {
     const id = setInterval(() => setElapsed(baseMs + performance.now() - startedAt), 1000);
     return () => clearInterval(id);
   }, [baseMs, startedAt]);
   return (
-    <span className="flex items-center gap-1 font-mono text-[11px] text-foreground" title="Time since this attempt started">
+    <span className="flex items-center gap-1 font-mono text-[11px] text-foreground" title={en("Time since this attempt started")}>
       <Clock className="w-3.5 h-3.5 text-indigo-700 dark:text-indigo-400" />
       {formatElapsed(elapsed)}
     </span>
@@ -564,12 +566,13 @@ function WorkspaceHeader({
   badges?: React.ReactNode;
   controls?: React.ReactNode;
 }) {
+  const en = useEn();
   const isOffline = useIsOffline();
   return (
     <header className="border-b border-border bg-card/90 backdrop-blur-md sticky top-16 z-20">
       {isOffline && (
         <div className="w-full bg-amber-500/10 text-amber-700 dark:text-amber-400 text-center text-xs py-1.5 font-semibold border-b border-amber-500/20">
-          No internet connection. Your edits stay in this tab and sync when you reconnect.
+          {en("No internet connection. Your edits stay in this tab and sync when you reconnect.")}
         </div>
       )}
       <div className="max-w-7xl mx-auto px-6 h-14 flex items-center justify-between">
@@ -578,7 +581,7 @@ function WorkspaceHeader({
             href="/dashboard"
             className="text-xs font-mono uppercase tracking-widest text-muted-foreground hover:text-foreground transition flex items-center gap-1"
           >
-            <span>←</span> Dashboard
+            <span>←</span>{en(" Dashboard")}
           </Link>
           <span className="text-border">|</span>
           <div className="flex items-center space-x-2 min-w-0">
@@ -593,7 +596,7 @@ function WorkspaceHeader({
             className="text-xs px-2.5 py-1 rounded-lg bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 border border-indigo-500/30 font-semibold font-mono tracking-wide"
             title={`Sprint Identifier: ${sprintId}`}
           >
-            ID: {formatChallengeId(sprintId)}
+            {en("ID: ")}{formatChallengeId(sprintId)}
           </span>
         </div>
       </div>
@@ -610,6 +613,7 @@ function CenteredCard({ children }: { children: React.ReactNode }) {
 }
 
 function GradedWorkspace({ sprintId }: { sprintId: string }) {
+  const en = useEn();
   const searchParams = useSearchParams();
   const { getToken, isLoaded, isSignedIn } = useAuth();
   const t = useTranslations("SprintHUD");
@@ -653,7 +657,7 @@ function GradedWorkspace({ sprintId }: { sprintId: string }) {
           getToken
         );
       } catch {
-        setStartIssue({ kind: "error", message: "Couldn't reach the server. Check your connection and try again." });
+        setStartIssue({ kind: "error", message: en("Couldn't reach the server. Check your connection and try again.") });
         setStarting(false);
         return;
       }
@@ -696,13 +700,13 @@ function GradedWorkspace({ sprintId }: { sprintId: string }) {
       } else if (res.status === 404 || res.status === 400) {
         setStartIssue({ kind: "notFound", message: data.error || "We couldn't find this sprint." });
       } else if (res.status === 401) {
-        setStartIssue({ kind: "error", message: "Your session has expired. Sign in again to continue." });
+        setStartIssue({ kind: "error", message: en("Your session has expired. Sign in again to continue.") });
       } else {
         setStartIssue({ kind: "error", message: data.error || "The sprint couldn't be started. Please try again." });
       }
       setStarting(false);
     },
-    [getToken, sprintId]
+    [getToken, sprintId, en]
   );
 
   useEffect(() => {
@@ -779,7 +783,7 @@ function GradedWorkspace({ sprintId }: { sprintId: string }) {
       }
       setStartIssue({ kind: "pro", message: data.error || "Checkout is unavailable right now. Please try again later." });
     } catch {
-      setStartIssue({ kind: "pro", message: "Couldn't reach the server. Check your connection and try again." });
+      setStartIssue({ kind: "pro", message: en("Couldn't reach the server. Check your connection and try again.") });
     }
     setUpgrading(false);
   };
@@ -907,11 +911,11 @@ function GradedWorkspace({ sprintId }: { sprintId: string }) {
           <>
             {isBrownfield && (
               <span className="text-[10px] px-2 py-0.5 rounded-full bg-purple-500/15 text-purple-700 dark:text-purple-300 font-semibold border border-purple-500/30">
-                Multi-file
+                {en("Multi-file")}
               </span>
             )}
             <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 font-semibold border border-emerald-500/30">
-              {attempt.aiPolicy === "Prohibited" ? "No AI tools" : attempt.aiPolicy === "Evaluated" ? "AI use reviewed" : "AI allowed"}
+              {attempt.aiPolicy === "Prohibited" ? en("No AI tools") : attempt.aiPolicy === "Evaluated" ? en("AI use reviewed") : en("AI allowed")}
             </span>
           </>
         )
@@ -925,7 +929,7 @@ function GradedWorkspace({ sprintId }: { sprintId: string }) {
         {header}
         <CenteredCard>
           <Loader2 className="w-8 h-8 text-indigo-700 dark:text-indigo-400 mx-auto animate-spin" />
-          <p className="text-sm text-muted-foreground">Preparing your sprint...</p>
+          <p className="text-sm text-muted-foreground">{en("Preparing your sprint...")}</p>
         </CenteredCard>
       </div>
     );
@@ -937,7 +941,7 @@ function GradedWorkspace({ sprintId }: { sprintId: string }) {
       <div className="flex flex-col font-sans pb-16">
         {header}
         <SignInRequired
-          title="Sign in to start this sprint"
+          title={en("Sign in to start this sprint")}
           message="Your attempt is timed from when you open it, and your progress is saved to your account."
           returnTo={back}
         />
@@ -953,7 +957,7 @@ function GradedWorkspace({ sprintId }: { sprintId: string }) {
           {startIssue?.kind === "invite" ? (
             <>
               <KeyRound className="w-10 h-10 text-indigo-700 dark:text-indigo-400 mx-auto" />
-              <h2 className="text-lg font-bold text-foreground">Invite code required</h2>
+              <h2 className="text-lg font-bold text-foreground">{en("Invite code required")}</h2>
               <p className="text-xs text-muted-foreground">{startIssue.message}</p>
               <form
                 className="flex gap-2 max-w-sm mx-auto"
@@ -965,7 +969,7 @@ function GradedWorkspace({ sprintId }: { sprintId: string }) {
                 <input
                   value={inviteInput}
                   onChange={(e) => setInviteInput(e.target.value)}
-                  placeholder="Invite code"
+                  placeholder={en("Invite code")}
                   autoFocus
                   className="flex-1 rounded-xl border border-border bg-background px-3 py-2 text-xs text-foreground font-mono focus:outline-none focus:ring-1 focus:ring-indigo-500"
                 />
@@ -974,14 +978,14 @@ function GradedWorkspace({ sprintId }: { sprintId: string }) {
                   disabled={!inviteInput.trim()}
                   className="py-2 px-4 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-xl text-xs disabled:bg-muted disabled:text-muted-foreground cursor-pointer disabled:cursor-not-allowed"
                 >
-                  Start sprint
+                  {en("Start sprint")}
                 </button>
               </form>
             </>
           ) : startIssue?.kind === "pro" ? (
             <>
               <Sparkles className="w-10 h-10 text-purple-700 dark:text-purple-400 mx-auto" />
-              <h2 className="text-lg font-bold text-foreground">Pro sprint</h2>
+              <h2 className="text-lg font-bold text-foreground">{en("Pro sprint")}</h2>
               <p className="text-xs text-muted-foreground">{startIssue.message}</p>
               <button
                 onClick={handleUpgrade}
@@ -989,14 +993,14 @@ function GradedWorkspace({ sprintId }: { sprintId: string }) {
                 className="inline-flex items-center gap-2 py-2.5 px-5 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-semibold rounded-xl text-xs shadow-lg shadow-indigo-500/25 cursor-pointer disabled:opacity-60"
               >
                 {upgrading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
-                Upgrade to Pro
+                {en("Upgrade to Pro")}
               </button>
             </>
           ) : (
             <>
               <AlertTriangle className="w-10 h-10 text-amber-700 dark:text-amber-400 mx-auto" />
               <h2 className="text-lg font-bold text-foreground">
-                {startIssue?.kind === "notFound" ? "Sprint not found" : "Couldn't start the sprint"}
+                {startIssue?.kind === "notFound" ? en("Sprint not found") : en("Couldn't start the sprint")}
               </h2>
               <p className="text-xs text-muted-foreground">{startIssue?.message || "Please try again."}</p>
               <div className="flex items-center justify-center gap-2">
@@ -1005,14 +1009,14 @@ function GradedWorkspace({ sprintId }: { sprintId: string }) {
                     onClick={retryStart}
                     className="inline-flex items-center gap-2 py-2 px-4 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-xl text-xs cursor-pointer"
                   >
-                    <RefreshCw className="w-4 h-4" /> Try again
+                    <RefreshCw className="w-4 h-4" />{en(" Try again")}
                   </button>
                 )}
                 <Link
                   href="/dashboard"
                   className="py-2 px-4 rounded-xl border border-border text-xs font-semibold text-foreground hover:bg-muted"
                 >
-                  Back to dashboard
+                  {en("Back to dashboard")}
                 </Link>
               </div>
             </>
@@ -1036,15 +1040,14 @@ function GradedWorkspace({ sprintId }: { sprintId: string }) {
             <div className="flex items-start gap-2 text-[11px] text-muted-foreground">
               <ShieldCheck className="w-3.5 h-3.5 mt-0.5 shrink-0 text-emerald-700 dark:text-emerald-400" />
               <span>
-                Your editing activity (edits, pastes and switching away from this window) is recorded and shared with
-                reviewers alongside your submission.
+                {en("Your editing activity (edits, pastes and switching away from this window) is recorded and shared with reviewers alongside your submission.")}
               </span>
             </div>
             {attempt.aiPolicy === "Prohibited" && <AiPolicyNotice aiPolicy="Prohibited" />}
             {attempt.resumed && (
               <div className="flex items-start gap-2 text-[11px] text-indigo-700 dark:text-indigo-300">
                 <RefreshCw className="w-3.5 h-3.5 mt-0.5 shrink-0" />
-                <span>Welcome back. Your attempt was resumed with the work saved so far.</span>
+                <span>{en("Welcome back. Your attempt was resumed with the work saved so far.")}</span>
               </div>
             )}
           </div>
@@ -1061,7 +1064,7 @@ function GradedWorkspace({ sprintId }: { sprintId: string }) {
                 }`}
               >
                 {syncState === "ok" ? <Lock className="w-3.5 h-3.5" /> : <CloudOff className="w-3.5 h-3.5" />}
-                {syncState === "ok" ? "Progress saved" : syncState === "retrying" ? "Reconnecting..." : "Not saving - reload the page"}
+                {syncState === "ok" ? en("Progress saved") : syncState === "retrying" ? en("Reconnecting...") : en("Not saving - reload the page")}
               </span>
             )}
           </div>
@@ -1071,19 +1074,19 @@ function GradedWorkspace({ sprintId }: { sprintId: string }) {
         <div className="glass-panel rounded-2xl p-4 border border-border flex items-center justify-between">
           <div className="flex flex-wrap items-center gap-2 text-xs font-semibold">
             <span className={`px-3 py-1 rounded-lg ${pipelineState === "editor" || pipelineState === "submitting" ? "bg-indigo-600 text-white" : "bg-muted text-muted-foreground"}`}>
-              1. Code Submission
+              {en("1. Code Submission")}
             </span>
             <ArrowRight className="w-3.5 h-3.5 text-muted-foreground" />
             <span className={`px-3 py-1 rounded-lg ${pipelineState === "running" || pipelineState === "completed" ? "bg-indigo-600 text-white" : "bg-muted text-muted-foreground"}`}>
-              2. Automated Test Runner
+              {en("2. Automated Test Runner")}
             </span>
             <ArrowRight className="w-3.5 h-3.5 text-muted-foreground" />
             <span className={`px-3 py-1 rounded-lg ${pipelineState === "voice_interview" ? "bg-indigo-600 text-white" : "bg-muted text-muted-foreground"}`}>
-              3. Voice Defense
+              {en("3. Voice Defense")}
             </span>
             <ArrowRight className="w-3.5 h-3.5 text-muted-foreground" />
             <span className={`px-3 py-1 rounded-lg ${pipelineState === "passed" ? "bg-emerald-600 text-white" : pipelineState === "not_passed" ? "bg-indigo-600 text-white" : "bg-muted text-muted-foreground"}`}>
-              4. Result
+              {en("4. Result")}
             </span>
           </div>
         </div>
@@ -1109,7 +1112,7 @@ function GradedWorkspace({ sprintId }: { sprintId: string }) {
             {isBrownfield && (
               <p className="text-[11px] text-muted-foreground flex items-start gap-1.5">
                 <Layers className="w-3.5 h-3.5 mt-0.5 shrink-0" />
-                This is an existing project. Find and fix the defects across its files; hidden tests run when you submit.
+                {en("This is an existing project. Find and fix the defects across its files; hidden tests run when you submit.")}
               </p>
             )}
 
@@ -1137,7 +1140,7 @@ function GradedWorkspace({ sprintId }: { sprintId: string }) {
                   className="py-3 px-4 rounded-xl font-medium text-xs flex items-center justify-center space-x-2 transition-all cursor-pointer border border-border text-foreground hover:bg-muted disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {isRunning ? <Loader2 className="w-4 h-4 animate-spin" /> : <Terminal className="w-4 h-4" />}
-                  <span>Run</span>
+                  <span>{en("Run")}</span>
                 </button>
               )}
               <button
@@ -1151,7 +1154,7 @@ function GradedWorkspace({ sprintId }: { sprintId: string }) {
               >
                 <Play className="w-4 h-4" />
                 <span>
-                  {isOffline ? "Offline - reconnect to submit" : pipelineState === "submitting" ? t("submitting") : t("submitSprint")}
+                  {isOffline ? en("Offline - reconnect to submit") : pipelineState === "submitting" ? t("submitting") : t("submitSprint")}
                 </span>
               </button>
             </div>
@@ -1182,7 +1185,7 @@ function GradedWorkspace({ sprintId }: { sprintId: string }) {
               <div className="flex items-center justify-between pb-3 border-b border-border">
                 <div className="flex items-center space-x-2">
                   <Terminal className="w-5 h-5 text-emerald-700 dark:text-emerald-400" />
-                  <h3 className="text-sm font-semibold text-foreground">Execution Output & Test Results</h3>
+                  <h3 className="text-sm font-semibold text-foreground">{en("Execution Output & Test Results")}</h3>
                 </div>
                 {pipelineState === "running" && <RefreshCw className="w-4 h-4 text-amber-700 dark:text-amber-400 animate-spin" />}
                 {testSummary && (
@@ -1193,7 +1196,7 @@ function GradedWorkspace({ sprintId }: { sprintId: string }) {
                         : "bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/30"
                     }`}
                   >
-                    Tests passed: {testSummary.passed} / {testSummary.total}
+                    {en("Tests passed: ")}{testSummary.passed} / {testSummary.total}
                   </span>
                 )}
               </div>
@@ -1209,9 +1212,9 @@ function GradedWorkspace({ sprintId }: { sprintId: string }) {
                 <div className="p-3 bg-indigo-500/5 border border-indigo-500/30 rounded-xl space-y-1">
                   <div className="flex items-center space-x-2 text-xs font-semibold text-indigo-700 dark:text-indigo-300">
                     <AlertTriangle className="w-4 h-4" />
-                    <span>Review topics for discussion:</span>
+                    <span>{en("Review topics for discussion:")}</span>
                   </div>
-                  <ul className="list-disc list-inside text-[11px] text-foreground space-y-0.5 pl-2">
+                  <ul className="list-disc list-inside text-[11px] text-foreground space-y-0.5 ps-2">
                     {architecturalFlaws.map((flaw, idx) => (
                       <li key={idx}>{flaw}</li>
                     ))}
@@ -1231,11 +1234,11 @@ function GradedWorkspace({ sprintId }: { sprintId: string }) {
             {pipelineState === "passed" && defenseResult && (
               <div className="glass-panel rounded-2xl p-6 border border-emerald-500/40 bg-emerald-500/5 text-center space-y-4">
                 <ShieldCheck className="w-12 h-12 text-emerald-700 dark:text-emerald-400 mx-auto" />
-                <h3 className="text-lg font-bold text-foreground">Congratulations! Certificate Issued</h3>
+                <h3 className="text-lg font-bold text-foreground">{en("Congratulations! Certificate Issued")}</h3>
                 <p className="text-xs text-muted-foreground">
                   {defenseResult.credentialUnderReview
-                    ? "You defended your implementation. Your certificate is under review and becomes publicly verifiable once a reviewer confirms it."
-                    : "You successfully defended your implementation. Your verified certificate has been issued."}
+                    ? en("You defended your implementation. Your certificate is under review and becomes publicly verifiable once a reviewer confirms it.")
+                    : en("You successfully defended your implementation. Your verified certificate has been issued.")}
                 </p>
                 {defenseResult.publicUrlSlug && (
                   <Link
@@ -1243,7 +1246,7 @@ function GradedWorkspace({ sprintId }: { sprintId: string }) {
                     className="py-2.5 px-5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-semibold rounded-xl text-xs shadow-lg shadow-emerald-500/25 inline-flex items-center space-x-2 transition-all"
                   >
                     <Award className="w-4 h-4" />
-                    <span>View Certificate</span>
+                    <span>{en("View Certificate")}</span>
                   </Link>
                 )}
               </div>
@@ -1252,16 +1255,16 @@ function GradedWorkspace({ sprintId }: { sprintId: string }) {
             {pipelineState === "not_passed" && defenseResult && (
               <div className="glass-panel rounded-2xl p-6 border border-border text-center space-y-4">
                 <BookOpen className="w-10 h-10 text-indigo-700 dark:text-indigo-400 mx-auto" />
-                <h3 className="text-lg font-bold text-foreground">Defense scored</h3>
+                <h3 className="text-lg font-bold text-foreground">{en("Defense scored")}</h3>
                 <p className="text-xs text-muted-foreground">
-                  A certificate wasn&apos;t issued for this attempt. Your scores and the skills to work on are shown above.
+                  {en("A certificate wasn't issued for this attempt. Your scores and the skills to work on are shown above.")}
                 </p>
                 <Link
                   href="/referrals"
                   className="py-2.5 px-5 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-xl text-xs inline-flex items-center space-x-2 transition-all"
                 >
                   <BookOpen className="w-4 h-4" />
-                  <span>See learning recommendations</span>
+                  <span>{en("See learning recommendations")}</span>
                 </Link>
               </div>
             )}
@@ -1281,6 +1284,7 @@ interface PublicSprint {
 
 function PracticeWorkspace({ sprintId }: { sprintId: string }) {
   // The practice editor is public; the challenge list (GET /api/sprint) and Run (POST /api/code/execute) need an account
+  const en = useEn();
   const { getToken, isLoaded, isSignedIn } = useAppAuth();
   const { resolvedTheme } = useTheme();
   const t = useTranslations("SprintHUD");
@@ -1365,29 +1369,29 @@ function PracticeWorkspace({ sprintId }: { sprintId: string }) {
         sprintId={sprintId}
         badges={
           <span className="text-[10px] px-2 py-0.5 rounded-full bg-muted text-muted-foreground font-semibold border border-border">
-            Practice
+            {en("Practice")}
           </span>
         }
         controls={
           <div className="hidden lg:flex items-center space-x-2 bg-card border border-border rounded-xl px-3 py-1.5 shadow-xs">
-            <select aria-label="Track" value={candidateTrack} onChange={(e) => handleTrackChange(e.target.value as CandidateTrack)} className="bg-transparent text-xs text-indigo-600 dark:text-indigo-400 font-semibold focus:outline-none cursor-pointer">
-              <option value="DevOps">🚀 DevOps &amp; SRE</option>
-              <option value="Backend">⚙️ Backend Systems</option>
-              <option value="Frontend">💻 Frontend &amp; Web</option>
-              <option value="FullStack">🌐 FullStack Systems</option>
-              <option value="DataMLOps">🧠 Data &amp; MLOps</option>
-              <option value="Cybersecurity">🛡️ Cybersecurity</option>
-              <option value="Mobile">📱 Mobile Architecture</option>
-              <option value="CloudFinOps">💰 Cloud FinOps</option>
-              <option value="DatabaseRE">🗄️ Database Reliability</option>
+            <select aria-label={en("Track")} value={candidateTrack} onChange={(e) => handleTrackChange(e.target.value as CandidateTrack)} className="bg-transparent text-xs text-indigo-600 dark:text-indigo-400 font-semibold focus:outline-none cursor-pointer">
+              <option value="DevOps">{en("🚀 DevOps & SRE")}</option>
+              <option value="Backend">{en("⚙️ Backend Systems")}</option>
+              <option value="Frontend">{en("💻 Frontend & Web")}</option>
+              <option value="FullStack">{en("🌐 FullStack Systems")}</option>
+              <option value="DataMLOps">{en("🧠 Data & MLOps")}</option>
+              <option value="Cybersecurity">{en("🛡️ Cybersecurity")}</option>
+              <option value="Mobile">{en("📱 Mobile Architecture")}</option>
+              <option value="CloudFinOps">{en("💰 Cloud FinOps")}</option>
+              <option value="DatabaseRE">{en("🗄️ Database Reliability")}</option>
             </select>
             <span className="text-border">|</span>
-            <select aria-label="Difficulty" value={difficultyTier} onChange={(e) => applySelection(candidateTrack, e.target.value as Tier, language)} className="bg-transparent text-xs text-emerald-700 dark:text-emerald-400 font-semibold focus:outline-none cursor-pointer">
-              <option value="Bronze (Junior)">Bronze (Junior)</option>
-              <option value="Diamond (Staff)">Diamond (Staff)</option>
+            <select aria-label={en("Difficulty")} value={difficultyTier} onChange={(e) => applySelection(candidateTrack, e.target.value as Tier, language)} className="bg-transparent text-xs text-emerald-700 dark:text-emerald-400 font-semibold focus:outline-none cursor-pointer">
+              <option value="Bronze (Junior)">{en("Bronze (Junior)")}</option>
+              <option value="Diamond (Staff)">{en("Diamond (Staff)")}</option>
             </select>
             <span className="text-border">|</span>
-            <select aria-label="Language" value={language} onChange={(e) => applySelection(candidateTrack, difficultyTier, e.target.value)} className="bg-transparent text-xs text-purple-700 dark:text-purple-400 font-semibold focus:outline-none cursor-pointer">
+            <select aria-label={en("Language")} value={language} onChange={(e) => applySelection(candidateTrack, difficultyTier, e.target.value)} className="bg-transparent text-xs text-purple-700 dark:text-purple-400 font-semibold focus:outline-none cursor-pointer">
               {TRACK_LANGUAGES[candidateTrack].options.map((opt) => (
                 <option key={opt} value={opt}>
                   {opt}
@@ -1402,8 +1406,7 @@ function PracticeWorkspace({ sprintId }: { sprintId: string }) {
         <div className="glass-panel rounded-2xl p-4 border border-border flex items-start gap-2 text-[11px] text-muted-foreground">
           <Sparkles className="w-3.5 h-3.5 mt-0.5 shrink-0 text-indigo-700 dark:text-indigo-400" />
           <span>
-            Practice mode: nothing here is graded or submitted. Pick a challenge below to start a timed sprint with
-            hidden tests and a voice defense.
+            {en("Practice mode: nothing here is graded or submitted. Pick a challenge below to start a timed sprint with hidden tests and a voice defense.")}
           </span>
         </div>
 
@@ -1415,7 +1418,7 @@ function PracticeWorkspace({ sprintId }: { sprintId: string }) {
                 <h3 className="text-sm font-semibold text-foreground">{t("codeEditor")}</h3>
               </div>
               <span className="text-[10px] px-2.5 py-0.5 rounded bg-indigo-500/10 text-indigo-600 dark:text-indigo-300 font-semibold border border-indigo-500/20">
-                Language: {language}
+                {en("Language: ")}{language}
               </span>
             </div>
 
@@ -1445,7 +1448,7 @@ function PracticeWorkspace({ sprintId }: { sprintId: string }) {
               className="py-3 px-4 rounded-xl font-medium text-xs flex items-center justify-center space-x-2 transition-all cursor-pointer border border-border text-foreground hover:bg-muted disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isRunning ? <Loader2 className="w-4 h-4 animate-spin" /> : <Terminal className="w-4 h-4" />}
-              <span>Run code</span>
+              <span>{en("Run code")}</span>
             </button>
           </div>
 
@@ -1453,14 +1456,14 @@ function PracticeWorkspace({ sprintId }: { sprintId: string }) {
             <div className="glass-panel rounded-2xl p-6 border border-border space-y-4">
               <div className="flex items-center space-x-2 pb-3 border-b border-border">
                 <Terminal className="w-5 h-5 text-emerald-700 dark:text-emerald-400" />
-                <h3 className="text-sm font-semibold text-foreground">Output</h3>
+                <h3 className="text-sm font-semibold text-foreground">{en("Output")}</h3>
               </div>
               <div aria-live="polite">
                 {runNeedsSignIn ? (
                   <SignInRequired
                     variant="inline"
                     headingLevel={4}
-                    title="Sign in to run your code"
+                    title={en("Sign in to run your code")}
                     message="Editing here is open to everyone. Running code on our servers needs an account."
                     className="rounded-xl border border-border bg-card"
                   />
@@ -1475,23 +1478,23 @@ function PracticeWorkspace({ sprintId }: { sprintId: string }) {
             <div className="glass-panel rounded-2xl p-6 border border-border space-y-3">
               <div className="flex items-center space-x-2 pb-3 border-b border-border">
                 <Award className="w-5 h-5 text-indigo-700 dark:text-indigo-400" />
-                <h3 className="text-sm font-semibold text-foreground">Graded challenges</h3>
+                <h3 className="text-sm font-semibold text-foreground">{en("Graded challenges")}</h3>
               </div>
               {challengeView === "loading" ? (
                 <p role="status" className="text-xs text-muted-foreground flex items-center gap-2">
-                  <Loader2 className="w-3.5 h-3.5 animate-spin" aria-hidden="true" /> Loading challenges...
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" aria-hidden="true" />{en(" Loading challenges...")}
                 </p>
               ) : challengeView === "signin" ? (
                 <SignInRequired
                   variant="inline"
                   headingLevel={4}
-                  title="Sign in to see graded challenges"
+                  title={en("Sign in to see graded challenges")}
                   message="Graded challenges are timed, with hidden tests and a voice defense, and count toward your results."
                 />
               ) : challengeView === "error" ? (
-                <p role="status" className="text-xs text-muted-foreground">Couldn&apos;t load the graded challenges. Try again in a moment.</p>
+                <p role="status" className="text-xs text-muted-foreground">{en("Couldn't load the graded challenges. Try again in a moment.")}</p>
               ) : challenges.length === 0 ? (
-                <p className="text-xs text-muted-foreground">No public challenges are available right now.</p>
+                <p className="text-xs text-muted-foreground">{en("No public challenges are available right now.")}</p>
               ) : (
                 <ul className="space-y-2">
                   {challenges.map((c) => (
@@ -1504,7 +1507,7 @@ function PracticeWorkspace({ sprintId }: { sprintId: string }) {
                         <span className="flex items-center gap-2 shrink-0 text-[10px] text-muted-foreground">
                           {c.requiredLanguage}
                           {c.isPremium && (
-                            <span className="px-1.5 py-0.5 rounded bg-purple-500/15 text-purple-700 dark:text-purple-300 font-semibold">Pro</span>
+                            <span className="px-1.5 py-0.5 rounded bg-purple-500/15 text-purple-700 dark:text-purple-300 font-semibold">{en("Pro")}</span>
                           )}
                           <ArrowRight className="w-3.5 h-3.5" />
                         </span>

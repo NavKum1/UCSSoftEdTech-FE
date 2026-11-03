@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { getApiBaseUrl } from "@/lib/apiClient";
+import { useEn } from "@/lib/english/EnglishProvider";
 
 /**
  * H7b: the candidate assessment link is public. The candidate needs no account; the bundle token in the URL is the
@@ -104,6 +105,7 @@ interface ExamQuestion {
 }
 
 export default function CandidateAssessmentBundlePage() {
+  const en = useEn();
   const params = useParams();
   const token = (params?.token as string) || "";
   const [linkProblem, setLinkProblem] = useState<LinkProblem | null>(null);
@@ -439,17 +441,17 @@ export default function CandidateAssessmentBundlePage() {
       <div className="min-h-screen bg-background text-foreground flex items-center justify-center font-sans">
         <div className="flex flex-col items-center gap-3">
           <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin" />
-          <p className="text-xs text-muted-foreground font-mono">Initializing 3-Stage Assessment Sandbox...</p>
+          <p className="text-xs text-muted-foreground font-mono">{en("Initializing 3-Stage Assessment Sandbox...")}</p>
         </div>
       </div>
     );
   }
 
   const stages = [
-    { num: 1, title: "Written Diagnostic", icon: FileText, desc: "System Design & Algorithms" },
-    { num: 2, title: "Production Sprint", icon: Code2, desc: "Hands-on Implementation" },
-    { num: 3, title: "AI Voice Defense", icon: Mic, desc: "Architectural Cross-Exam" },
-    { num: 4, title: "Certified Scorecard", icon: Award, desc: "Cryptographic Seal" },
+    { num: 1, title: en("Written Diagnostic"), icon: FileText, desc: "System Design & Algorithms" },
+    { num: 2, title: en("Production Sprint"), icon: Code2, desc: "Hands-on Implementation" },
+    { num: 3, title: en("AI Voice Defense"), icon: Mic, desc: "Architectural Cross-Exam" },
+    { num: 4, title: en("Certified Scorecard"), icon: Award, desc: "Cryptographic Seal" },
   ];
 
   return (
@@ -465,9 +467,9 @@ export default function CandidateAssessmentBundlePage() {
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="text-xs font-bold text-foreground">{bundle.companyName} Hiring Pipeline</span>
+                <span className="text-xs font-bold text-foreground">{bundle.companyName}{en(" Hiring Pipeline")}</span>
                 <span className="px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-[10px] font-bold">
-                  Verified Assessment Bundle
+                  {en("Verified Assessment Bundle")}
                 </span>
               </div>
               <h1 className="text-sm sm:text-base font-bold text-foreground">
@@ -475,7 +477,7 @@ export default function CandidateAssessmentBundlePage() {
               </h1>
               {bundle.expiresAt && bundle.currentStage < 4 && (
                 <p className="text-[11px] text-muted-foreground">
-                  This link works until{" "}
+                  {en("This link works until")}{" "}
                   {new Date(bundle.expiresAt).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" })}.
                 </p>
               )}
@@ -486,10 +488,10 @@ export default function CandidateAssessmentBundlePage() {
             {draftSavedAt && (
               <span className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20 text-[10px] font-semibold">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                Draft Saved ({draftSavedAt})
+                {en("Draft Saved (")}{draftSavedAt})
               </span>
             )}
-            <span>Candidate: <strong className="text-foreground">{bundle.candidateName}</strong></span>
+            <span>{en("Candidate: ")}<strong className="text-foreground">{bundle.candidateName}</strong></span>
             <span>•</span>
             <span className="px-2.5 py-1 rounded-md bg-muted text-foreground font-semibold">
               {bundle.token}
@@ -554,7 +556,7 @@ export default function CandidateAssessmentBundlePage() {
             <div className="flex items-center justify-between border-b border-border pb-4">
               <div>
                 <span className="text-[10px] font-bold text-primary uppercase tracking-wider">
-                  Stage 1 of 3: Written Diagnostic
+                  {en("Stage 1 of 3: Written Diagnostic")}
                 </span>
                 <h2 className="text-xl font-bold text-foreground mt-0.5">
                   {bundle.examTitle}
@@ -571,7 +573,7 @@ export default function CandidateAssessmentBundlePage() {
             {examQuestions.length > 0 ? (
               <div className="space-y-6">
                 <div className="flex items-center justify-between text-xs text-muted-foreground">
-                  <span>Question {examCurrentQIndex + 1} of {examQuestions.length}</span>
+                  <span>{en("Question ")}{examCurrentQIndex + 1} of {examQuestions.length}</span>
                   <span className="px-2 py-0.5 rounded-md bg-primary/10 text-primary text-[10px] font-bold uppercase">
                     {examQuestions[examCurrentQIndex].topic}
                   </span>
@@ -598,7 +600,7 @@ export default function CandidateAssessmentBundlePage() {
                           setExamAnswers(next);
                           saveDraft(candidateCode, next);
                         }}
-                        className={`w-full text-left p-4 rounded-xl border text-sm transition-all flex items-center justify-between ${
+                        className={`w-full text-start p-4 rounded-xl border text-sm transition-all flex items-center justify-between ${
                           isSelected
                             ? "border-primary bg-primary/10 text-foreground font-semibold ring-1 ring-primary"
                             : "border-border/80 bg-muted/20 text-muted-foreground hover:bg-muted/40 hover:text-foreground"
@@ -617,7 +619,7 @@ export default function CandidateAssessmentBundlePage() {
                     onClick={() => setExamCurrentQIndex((prev) => Math.max(0, prev - 1))}
                     className="px-4 py-2 rounded-xl border border-border text-xs font-semibold disabled:opacity-40"
                   >
-                    Previous
+                    {en("Previous")}
                   </button>
 
                   {examCurrentQIndex < examQuestions.length - 1 ? (
@@ -625,7 +627,7 @@ export default function CandidateAssessmentBundlePage() {
                       onClick={() => setExamCurrentQIndex((prev) => prev + 1)}
                       className="px-4 py-2 rounded-xl bg-primary text-primary-foreground text-xs font-semibold hover:opacity-95"
                     >
-                      Next Question
+                      {en("Next Question")}
                     </button>
                   ) : (
                     <button
@@ -633,7 +635,7 @@ export default function CandidateAssessmentBundlePage() {
                       disabled={submittingStage}
                       className="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold flex items-center gap-2 shadow-md transition-colors"
                     >
-                      <span>{submittingStage ? "Grading..." : "Submit Stage 1 & Advance to Coding"}</span>
+                      <span>{submittingStage ? en("Grading...") : en("Submit Stage 1 & Advance to Coding")}</span>
                       <ArrowRight className="w-3.5 h-3.5" />
                     </button>
                   )}
@@ -641,7 +643,7 @@ export default function CandidateAssessmentBundlePage() {
               </div>
             ) : (
               <div className="text-center py-12 text-xs text-muted-foreground">
-                Loading exam questions...
+                {en("Loading exam questions...")}
               </div>
             )}
           </div>
@@ -655,7 +657,7 @@ export default function CandidateAssessmentBundlePage() {
             <div className="flex items-center justify-between border-b border-border pb-4">
               <div>
                 <span className="text-[10px] font-bold text-indigo-500 uppercase tracking-wider">
-                  Stage 2 of 3: Production Code Sprint
+                  {en("Stage 2 of 3: Production Code Sprint")}
                 </span>
                 <h2 className="text-xl font-bold text-foreground mt-0.5">
                   {bundle.sprintTitle}
@@ -667,7 +669,7 @@ export default function CandidateAssessmentBundlePage() {
             </div>
 
             <div className="p-4 rounded-2xl bg-muted/30 border border-border text-xs leading-relaxed space-y-2">
-              <span className="font-bold text-foreground block">Problem Statement:</span>
+              <span className="font-bold text-foreground block">{en("Problem Statement:")}</span>
               <p className="text-muted-foreground">{bundle.problemStatement}</p>
             </div>
 
@@ -684,7 +686,7 @@ export default function CandidateAssessmentBundlePage() {
                   className="px-3 py-1.5 rounded-xl border border-border bg-card hover:bg-muted text-xs font-semibold flex items-center gap-1.5 transition-colors"
                 >
                   <Play className="w-3 h-3 text-emerald-500" />
-                  <span>{runningTests ? "Running Tests..." : "Run Test Suite"}</span>
+                  <span>{runningTests ? en("Running Tests...") : en("Run Test Suite")}</span>
                 </button>
               </div>
 
@@ -705,10 +707,10 @@ export default function CandidateAssessmentBundlePage() {
                 <div className="flex items-center justify-between border-b border-neutral-800 pb-2">
                   <span className="flex items-center gap-1.5 text-neutral-400 text-[11px]">
                     <Terminal className="w-3.5 h-3.5 text-emerald-400" />
-                    <span>Sandbox Compiler stdout ({executionConsole.version})</span>
+                    <span>{en("Sandbox Compiler stdout (")}{executionConsole.version})</span>
                   </span>
                   <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${executionConsole.success ? "bg-emerald-950/60 text-emerald-400 border border-emerald-800/50" : "bg-rose-950/60 text-rose-400 border border-rose-800/50"}`}>
-                    {executionConsole.durationMs}ms • {executionConsole.success ? "Exit Code 0" : "Failed"}
+                    {executionConsole.durationMs}{en("ms • ")}{executionConsole.success ? en("Exit Code 0") : en("Failed")}
                   </span>
                 </div>
                 <pre className="text-neutral-200 text-xs overflow-x-auto whitespace-pre-wrap leading-relaxed py-1 max-h-48">
@@ -725,7 +727,7 @@ export default function CandidateAssessmentBundlePage() {
             {/* Unit Test Results */}
             {testResults && (
               <div className="p-4 rounded-2xl bg-background/80 border border-border space-y-2.5 animate-in fade-in duration-150">
-                <span className="text-xs font-bold text-foreground block">Automated Test Execution Results:</span>
+                <span className="text-xs font-bold text-foreground block">{en("Automated Test Execution Results:")}</span>
                 <div className="space-y-2">
                   {testResults.map((tr, idx) => (
                     <div
@@ -749,7 +751,7 @@ export default function CandidateAssessmentBundlePage() {
 
             <div className="flex items-center justify-between pt-4 border-t border-border">
               <span className="text-xs text-muted-foreground">
-                Your last test run sets the sprint score.
+                {en("Your last test run sets the sprint score.")}
                 {typeof bundle.codeRunsRemaining === "number" && ` ${bundle.codeRunsRemaining} test runs left.`}
               </span>
               <button
@@ -757,7 +759,7 @@ export default function CandidateAssessmentBundlePage() {
                 disabled={submittingStage}
                 className="px-5 py-2.5 rounded-xl bg-primary text-primary-foreground font-bold text-xs hover:opacity-95 shadow-md flex items-center gap-2 transition-opacity"
               >
-                <span>{submittingStage ? "Submitting..." : "Submit Sprint & Advance to Voice Defense"}</span>
+                <span>{submittingStage ? en("Submitting...") : en("Submit Sprint & Advance to Voice Defense")}</span>
                 <ArrowRight className="w-3.5 h-3.5" />
               </button>
             </div>
@@ -772,10 +774,10 @@ export default function CandidateAssessmentBundlePage() {
             <div className="flex items-center justify-between border-b border-border pb-4">
               <div>
                 <span className="text-[10px] font-bold text-purple-500 uppercase tracking-wider">
-                  Stage 3 of 3: AI Voice Defense
+                  {en("Stage 3 of 3: AI Voice Defense")}
                 </span>
                 <h2 className="text-xl font-bold text-foreground mt-0.5">
-                  Architectural Cross-Examination
+                  {en("Architectural Cross-Examination")}
                 </h2>
               </div>
               <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl border border-border bg-muted/40 font-mono text-xs font-bold">
@@ -787,13 +789,13 @@ export default function CandidateAssessmentBundlePage() {
             <div className="p-5 rounded-2xl bg-purple-500/5 border border-purple-500/20 space-y-3">
               <div className="flex items-center gap-2 text-xs font-bold text-purple-600 dark:text-purple-400">
                 <Sparkles className="w-4 h-4" />
-                <span>Examiner Challenge Topic:</span>
+                <span>{en("Examiner Challenge Topic:")}</span>
               </div>
               <p className="text-sm font-semibold text-foreground leading-relaxed">
-                &ldquo;{bundle.defenseTopic}&rdquo;
+                {en("“")}{bundle.defenseTopic}{en("”")}
               </p>
               <p className="text-xs text-muted-foreground">
-                The AI Hiring Committee cross-examines the code you wrote in Stage 2. Speak naturally, articulate trade-offs, and defend your failure recovery mechanisms.
+                {en("The AI Hiring Committee cross-examines the code you wrote in Stage 2. Speak naturally, articulate trade-offs, and defend your failure recovery mechanisms.")}
               </p>
             </div>
 
@@ -821,14 +823,14 @@ export default function CandidateAssessmentBundlePage() {
                   }`}
                 >
                   <Mic className="w-4 h-4" />
-                  <span>{defenseActive ? "Pause Audio Stream" : "Connect & Defend Approach"}</span>
+                  <span>{defenseActive ? en("Pause Audio Stream") : en("Connect & Defend Approach")}</span>
                 </button>
               </div>
 
               <p className="text-[11px] text-neutral-400">
                 {defenseActive
-                  ? "AI Examiner listening... Voice stream authenticated with 24-bit prosody analysis."
-                  : "Click to activate WebRTC mic and begin voice defense with the AI Senior Architect."}
+                  ? en("AI Examiner listening... Voice stream authenticated with 24-bit prosody analysis.")
+                  : en("Click to activate WebRTC mic and begin voice defense with the AI Senior Architect.")}
               </p>
             </div>
 
@@ -836,34 +838,34 @@ export default function CandidateAssessmentBundlePage() {
             {spokenTranscript && (
               <div className="p-3.5 rounded-2xl bg-purple-500/10 border border-purple-500/20 space-y-1 animate-in fade-in">
                 <span className="text-[10px] uppercase font-bold text-purple-600 dark:text-purple-400 flex items-center gap-1.5">
-                  <Mic className="w-3 h-3 animate-pulse" /> Live Spoken Voice Recognition Stream:
+                  <Mic className="w-3 h-3 animate-pulse" />{en(" Live Spoken Voice Recognition Stream:")}
                 </span>
-                <p className="text-xs font-mono text-foreground italic">&ldquo;{spokenTranscript}&rdquo;</p>
+                <p className="text-xs font-mono text-foreground italic">{en("“")}{spokenTranscript}{en("”")}</p>
               </div>
             )}
 
             {/* Candidate Architectural Defense Notes */}
             <div className="space-y-2">
               <label className="text-xs font-semibold text-foreground flex items-center justify-between">
-                <span>Architectural Defense Notes & Trade-Off Summary</span>
-                <span className="text-[10px] text-muted-foreground font-normal">Optional written defense to accompany verbal statements</span>
+                <span>{en("Architectural Defense Notes & Trade-Off Summary")}</span>
+                <span className="text-[10px] text-muted-foreground font-normal">{en("Optional written defense to accompany verbal statements")}</span>
               </label>
               <textarea
                 value={candidateDefenseNotes}
                 onChange={(e) => setCandidateDefenseNotes(e.target.value)}
-                placeholder="Defend consistent hashing ring mechanics, virtual node distribution, leader lease fencing, and why your implementation guarantees linearizability..."
+                placeholder={en("Defend consistent hashing ring mechanics, virtual node distribution, leader lease fencing, and why your implementation guarantees linearizability...")}
                 className="w-full h-24 p-3 rounded-xl bg-muted/40 border border-border text-xs font-mono focus:outline-none focus:ring-1 focus:ring-purple-500 resize-none text-foreground"
               />
             </div>
 
             <div className="flex items-center justify-between pt-4 border-t border-border">
-              <span className="text-xs text-muted-foreground">Graded on how well you explain your solution, trade-offs and edge cases. Accent, grammar and language never count.</span>
+              <span className="text-xs text-muted-foreground">{en("Graded on how well you explain your solution, trade-offs and edge cases. Accent, grammar and language never count.")}</span>
               <button
                 onClick={handleSubmitStage3}
                 disabled={submittingStage}
                 className="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-md flex items-center gap-2 transition-colors"
               >
-                <span>{submittingStage ? "Finalizing..." : "Finish the assessment"}</span>
+                <span>{submittingStage ? en("Finalizing...") : en("Finish the assessment")}</span>
                 <Award className="w-4 h-4" />
               </button>
             </div>
@@ -879,23 +881,23 @@ export default function CandidateAssessmentBundlePage() {
               <div className="w-14 h-14 mx-auto rounded-2xl bg-emerald-600/10 text-emerald-700 dark:text-emerald-400 flex items-center justify-center">
                 <CheckCircle2 aria-hidden="true" className="w-8 h-8" />
               </div>
-              <h2 className="text-2xl font-semibold text-foreground tracking-tight">Assessment complete</h2>
+              <h2 className="text-2xl font-semibold text-foreground tracking-tight">{en("Assessment complete")}</h2>
               <p className="text-sm text-muted-foreground max-w-lg mx-auto">
-                Thank you{bundle.candidateName ? `, ${bundle.candidateName.split(" ")[0]}` : ""}. Your answers are saved.{" "}
-                {bundle.companyName ? `${bundle.companyName} reviews every assessment before any decision and will contact you.` : "The hiring team reviews every assessment before any decision."}
+                {en("Thank you")}{bundle.candidateName ? `, ${bundle.candidateName.split(" ")[0]}` : ""}{en(". Your answers are saved.")}{" "}
+                {bundle.companyName ? `${bundle.companyName} reviews every assessment before any decision and will contact you.` : en("The hiring team reviews every assessment before any decision.")}
               </p>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               {[
-                { label: "Stage 1: Written exam", score: bundle.stage1Score },
-                { label: "Stage 2: Coding task", score: bundle.stage2Score },
-                { label: "Stage 3: Defense", score: bundle.stage3Score },
+                { label: en("Stage 1: Written exam"), score: bundle.stage1Score },
+                { label: en("Stage 2: Coding task"), score: bundle.stage2Score },
+                { label: en("Stage 3: Defense"), score: bundle.stage3Score },
               ].map((st) => (
                 <div key={st.label} className="p-4 rounded-2xl bg-muted/30 border border-border text-center">
                   <span className="text-[11px] uppercase font-semibold text-muted-foreground">{st.label}</span>
                   {st.score == null ? (
-                    <p className="mt-2 text-sm font-medium text-muted-foreground">Being reviewed</p>
+                    <p className="mt-2 text-sm font-medium text-muted-foreground">{en("Being reviewed")}</p>
                   ) : (
                     <p className="text-2xl font-semibold text-foreground mt-1 tabular-nums">{Math.round(st.score * 10) / 10}%</p>
                   )}
@@ -905,16 +907,16 @@ export default function CandidateAssessmentBundlePage() {
 
             <div className="p-5 rounded-2xl border border-border flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider block">Overall score</span>
+                <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider block">{en("Overall score")}</span>
                 {bundle.compositeScore == null ? (
-                  <p className="mt-1 text-sm text-muted-foreground">Calculated once every stage has been scored.</p>
+                  <p className="mt-1 text-sm text-muted-foreground">{en("Calculated once every stage has been scored.")}</p>
                 ) : (
                   <div className="text-3xl font-semibold text-foreground mt-0.5 tabular-nums">{bundle.compositeScore}%</div>
                 )}
               </div>
               {bundle.certificateNumber && (
-                <div className="sm:text-right">
-                  <span className="text-xs text-muted-foreground block">You earned a verifiable credential</span>
+                <div className="sm:text-end">
+                  <span className="text-xs text-muted-foreground block">{en("You earned a verifiable credential")}</span>
                   <Link
                     href={`/credential/${bundle.certificateNumber.toLowerCase()}`}
                     className="font-mono text-sm font-semibold text-indigo-700 hover:underline dark:text-indigo-300"
@@ -930,7 +932,7 @@ export default function CandidateAssessmentBundlePage() {
                 <div className="flex items-center justify-between text-[11px]">
                   <span className="font-semibold text-muted-foreground flex items-center gap-1">
                     <ShieldCheck aria-hidden="true" className="w-3.5 h-3.5 text-emerald-600" />
-                    <span>Credential seal (SHA-256)</span>
+                    <span>{en("Credential seal (SHA-256)")}</span>
                   </span>
                   <button
                     onClick={() => {
@@ -941,7 +943,7 @@ export default function CandidateAssessmentBundlePage() {
                     className="text-primary hover:underline font-semibold flex items-center gap-1"
                   >
                     {copiedSignature ? <Check aria-hidden="true" className="w-3 h-3 text-emerald-500" /> : <Copy aria-hidden="true" className="w-3 h-3" />}
-                    <span>{copiedSignature ? "Copied" : "Copy"}</span>
+                    <span>{copiedSignature ? en("Copied") : en("Copy")}</span>
                   </button>
                 </div>
                 <p className="font-mono text-[11px] text-muted-foreground break-all leading-tight">{bundle.verificationSignatureSha256}</p>
@@ -949,7 +951,7 @@ export default function CandidateAssessmentBundlePage() {
             )}
 
             <p className="text-xs text-muted-foreground">
-              Keep this page&apos;s link private: it opens your assessment. To show your result to others, share the credential link instead.
+              {en("Keep this page's link private: it opens your assessment. To show your result to others, share the credential link instead.")}
             </p>
           </div>
         )}

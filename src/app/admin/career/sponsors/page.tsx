@@ -272,33 +272,33 @@ export default function AdminSponsorDataPage() {
           <ScrollArea><div aria-live="polite">
             <table className="w-full text-sm">
               <caption className="sr-only">Sponsorship data imports</caption>
-              <thead className="text-left text-xs uppercase text-muted-foreground">
+              <thead className="text-start text-xs uppercase text-muted-foreground">
                 <tr>
-                  <th scope="col" className="py-2 pr-3">File</th>
-                  <th scope="col" className="py-2 pr-3">Status</th>
-                  <th scope="col" className="py-2 pr-3">Rows</th>
-                  <th scope="col" className="py-2 pr-3">Fiscal years</th>
-                  <th scope="col" className="py-2 pr-3">Details</th>
+                  <th scope="col" className="py-2 pe-3">File</th>
+                  <th scope="col" className="py-2 pe-3">Status</th>
+                  <th scope="col" className="py-2 pe-3">Rows</th>
+                  <th scope="col" className="py-2 pe-3">Fiscal years</th>
+                  <th scope="col" className="py-2 pe-3">Details</th>
                 </tr>
               </thead>
               <tbody>
                 {imports.data.map((i) => (
                   <tr key={i.id} className="border-t border-border align-top">
-                    <td className="py-2 pr-3">
+                    <td className="py-2 pe-3">
                       {i.fileName}
                       <span className="block text-xs text-muted-foreground">
                         {(i.sizeBytes / 1e6).toFixed(1)} MB · {formatDate(i.createdAt, true)}
                       </span>
                     </td>
-                    <td className="py-2 pr-3">
+                    <td className="py-2 pe-3">
                       <Badge tone={statusTone(i.status)}>{String(i.status ?? "").replace(/([a-z])([A-Z])/g, (_m, a: string, b: string) => `${a} ${b.toLowerCase()}`)}</Badge>
                     </td>
-                    <td className="py-2 pr-3 tabular-nums text-xs">
+                    <td className="py-2 pe-3 tabular-nums text-xs">
                       {i.rowsRead.toLocaleString()} read
                       <span className="block">{i.rowsSkipped.toLocaleString()} skipped</span>
                     </td>
-                    <td className="py-2 pr-3 text-xs">{i.fiscalYears.length ? i.fiscalYears.join(", ") : "—"}</td>
-                    <td className="py-2 pr-3 text-xs">
+                    <td className="py-2 pe-3 text-xs">{i.fiscalYears.length ? i.fiscalYears.join(", ") : "—"}</td>
+                    <td className="py-2 pe-3 text-xs">
                       {i.error && <p className="text-red-700 dark:text-red-400">{i.error}</p>}
                       {Object.entries(i.skipReasons).map(([reason, n]) => (
                         <span key={reason} className="block">
@@ -356,25 +356,25 @@ export default function AdminSponsorDataPage() {
           <ScrollArea>
             <table className="w-full text-sm">
               <caption className="sr-only">Partner API keys</caption>
-              <thead className="text-left text-xs uppercase text-muted-foreground">
+              <thead className="text-start text-xs uppercase text-muted-foreground">
                 <tr>
-                  <th scope="col" className="py-2 pr-3">Partner</th>
-                  <th scope="col" className="py-2 pr-3">Key starts with</th>
-                  <th scope="col" className="py-2 pr-3">Used</th>
-                  <th scope="col" className="py-2 pr-3">Status</th>
+                  <th scope="col" className="py-2 pe-3">Partner</th>
+                  <th scope="col" className="py-2 pe-3">Key starts with</th>
+                  <th scope="col" className="py-2 pe-3">Used</th>
+                  <th scope="col" className="py-2 pe-3">Status</th>
                   <th scope="col" className="py-2"><span className="sr-only">Actions</span></th>
                 </tr>
               </thead>
               <tbody>
                 {keys.data.items.map((k) => (
                   <tr key={k.id} className="border-t border-border">
-                    <td className="py-2 pr-3">{k.partnerName}</td>
-                    <td className="py-2 pr-3 font-mono text-xs">{k.keyPrefix}…</td>
-                    <td className="py-2 pr-3 text-xs">
+                    <td className="py-2 pe-3">{k.partnerName}</td>
+                    <td className="py-2 pe-3 font-mono text-xs">{k.keyPrefix}…</td>
+                    <td className="py-2 pe-3 text-xs">
                       {k.useCount.toLocaleString()} calls{k.lastUsedAt ? `, last ${formatDate(k.lastUsedAt, true)}` : ""}
                     </td>
-                    <td className="py-2 pr-3">{k.active ? <Badge tone="good">Active</Badge> : <Badge tone="neutral">Revoked {formatDate(k.revokedAt)}</Badge>}</td>
-                    <td className="py-2 text-right">
+                    <td className="py-2 pe-3">{k.active ? <Badge tone="good">Active</Badge> : <Badge tone="neutral">Revoked {formatDate(k.revokedAt)}</Badge>}</td>
+                    <td className="py-2 text-end">
                       {k.active && (
                         <Button variant="danger" busy={busy === k.id} onClick={() => revoke(k)}>
                           Revoke

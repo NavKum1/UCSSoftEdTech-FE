@@ -10,6 +10,7 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { ShieldAlert, ShieldCheck } from "lucide-react";
 import { AccessNotice, useLatestRef, useLegacyApi } from "@/lib/legacyApi";
+import { useEn } from "@/lib/english/EnglishProvider";
 
 interface SessionRow {
   sessionId: string;
@@ -49,6 +50,7 @@ const EVENT_LABEL: Record<string, string> = {
 };
 
 export default function SessionIntegrityPage() {
+  const en = useEn();
   const { apiFetch, ready, access } = useLegacyApi();
   const [rows, setRows] = useState<SessionRow[] | null>(null);
   const [filter, setFilter] = useState<"all" | "review" | "Flagged" | "Suspicious" | "Clean">("all");
@@ -86,10 +88,10 @@ export default function SessionIntegrityPage() {
       body: JSON.stringify({ waiveDisqualification: true, notes: notes.trim() }),
     });
     if (res.ok) {
-      setMessage("Your review was recorded.");
+      setMessage(en("Your review was recorded."));
       await openReport(open.sessionId);
       await load();
-    } else setMessage("That didn't save. Please try again.");
+    } else setMessage(en("That didn't save. Please try again."));
   };
 
   if (access) return <AccessNotice problem={access} feature="Session integrity review" />;
@@ -99,14 +101,13 @@ export default function SessionIntegrityPage() {
   return (
     <div className="space-y-6">
       <header>
-        <h1 className="text-2xl font-semibold tracking-tight">Session integrity review</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">{en("Session integrity review")}</h1>
         <p className="mt-1 max-w-3xl text-sm text-muted-foreground">
-          Events logged during proctored sessions, for a person to review. Event severity is set by the kind of event, not by the candidate&apos;s browser.
-          No one is disqualified automatically, and no gaze or face detection is performed.
+          {en("Events logged during proctored sessions, for a person to review. Event severity is set by the kind of event, not by the candidate's browser. No one is disqualified automatically, and no gaze or face detection is performed.")}
         </p>
       </header>
 
-      <div role="tablist" aria-label="Filter sessions" className="flex flex-wrap gap-2">
+      <div role="tablist" aria-label={en("Filter sessions")} className="flex flex-wrap gap-2">
         {(
           [
             ["all", "All"],
@@ -130,21 +131,21 @@ export default function SessionIntegrityPage() {
       </div>
 
       {failed ? (
-        <p className={`${card} p-6 text-sm text-muted-foreground`}>The sessions couldn&apos;t be loaded. Please refresh the page.</p>
+        <p className={`${card} p-6 text-sm text-muted-foreground`}>{en("The sessions couldn't be loaded. Please refresh the page.")}</p>
       ) : !rows ? (
         <div className={`${card} h-40 animate-pulse motion-reduce:animate-none`} aria-busy="true" />
       ) : shown.length === 0 ? (
-        <p className={`${card} p-6 text-sm text-muted-foreground`}>{rows.length === 0 ? "No proctored sessions yet." : "No sessions match this filter."}</p>
+        <p className={`${card} p-6 text-sm text-muted-foreground`}>{rows.length === 0 ? en("No proctored sessions yet.") : en("No sessions match this filter.")}</p>
       ) : (
         <div className={`${card} overflow-x-auto`}>
           <table className="w-full text-sm">
-            <thead className="border-b border-border text-left text-xs text-muted-foreground">
+            <thead className="border-b border-border text-start text-xs text-muted-foreground">
               <tr>
-                <th className="p-3 font-medium">Candidate</th>
-                <th className="p-3 font-medium">Last activity</th>
-                <th className="p-3 text-right font-medium">Events</th>
-                <th className="p-3 text-right font-medium">Integrity score</th>
-                <th className="p-3 font-medium">Status</th>
+                <th className="p-3 font-medium">{en("Candidate")}</th>
+                <th className="p-3 font-medium">{en("Last activity")}</th>
+                <th className="p-3 text-end font-medium">{en("Events")}</th>
+                <th className="p-3 text-end font-medium">{en("Integrity score")}</th>
+                <th className="p-3 font-medium">{en("Status")}</th>
                 <th className="p-3" />
               </tr>
             </thead>
@@ -153,24 +154,24 @@ export default function SessionIntegrityPage() {
                 <tr key={r.sessionId}>
                   <td className="p-3">{r.candidateName ?? <span className="font-mono text-xs text-muted-foreground">{r.userId.slice(0, 8)}</span>}</td>
                   <td className="p-3 text-muted-foreground">{new Date(r.lastUpdatedAt).toLocaleString()}</td>
-                  <td className="p-3 text-right tabular-nums">{r.totalViolations}</td>
-                  <td className="p-3 text-right tabular-nums">{r.integrityScore}</td>
+                  <td className="p-3 text-end tabular-nums">{r.totalViolations}</td>
+                  <td className="p-3 text-end tabular-nums">{r.integrityScore}</td>
                   <td className="p-3">
                     {r.isOverriddenByAdmin ? (
                       <span className="inline-flex items-center gap-1 text-emerald-700 dark:text-emerald-400">
-                        <ShieldCheck aria-hidden="true" className="h-4 w-4" /> Reviewed
+                        <ShieldCheck aria-hidden="true" className="h-4 w-4" />{en(" Reviewed")}
                       </span>
                     ) : r.needsReview ? (
                       <span className="inline-flex items-center gap-1 text-amber-700 dark:text-amber-400">
-                        <ShieldAlert aria-hidden="true" className="h-4 w-4" /> Needs review
+                        <ShieldAlert aria-hidden="true" className="h-4 w-4" />{en(" Needs review")}
                       </span>
                     ) : (
                       r.riskLevel
                     )}
                   </td>
-                  <td className="p-3 text-right">
+                  <td className="p-3 text-end">
                     <button type="button" onClick={() => void openReport(r.sessionId)} className="text-sm font-semibold text-indigo-700 hover:underline dark:text-indigo-300">
-                      Open
+                      {en("Open")}
                     </button>
                   </td>
                 </tr>
@@ -185,12 +186,12 @@ export default function SessionIntegrityPage() {
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
               <h2 id="si-report" className="text-base font-semibold">
-                Session log
+                {en("Session log")}
               </h2>
               <p className="mt-1 text-sm text-muted-foreground">{open.auditSummary}</p>
             </div>
             <button type="button" onClick={() => setOpen(null)} className="text-sm text-muted-foreground hover:text-foreground">
-              Close
+              {en("Close")}
             </button>
           </div>
           {Object.keys(open.incidentBreakdown).length > 0 && (
@@ -214,7 +215,7 @@ export default function SessionIntegrityPage() {
           </ol>
           {open.isOverriddenByAdmin ? (
             <p className="mt-4 text-sm">
-              Reviewed by {open.overriddenByAdminEmail ?? "a reviewer"}: {open.adminOverrideNotes}
+              {en("Reviewed by ")}{open.overriddenByAdminEmail ?? "a reviewer"}: {open.adminOverrideNotes}
             </p>
           ) : (
             <form
@@ -225,11 +226,11 @@ export default function SessionIntegrityPage() {
               }}
             >
               <label className="block text-sm">
-                <span className="font-medium">Your review (recorded with your name)</span>
+                <span className="font-medium">{en("Your review (recorded with your name)")}</span>
                 <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={3} maxLength={2000} required className="mt-1 block w-full rounded-xl border border-border bg-background px-3 py-2 text-sm" />
               </label>
               <button type="submit" disabled={!notes.trim()} className="rounded-xl bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-500 disabled:opacity-50">
-                Record review
+                {en("Record review")}
               </button>
             </form>
           )}

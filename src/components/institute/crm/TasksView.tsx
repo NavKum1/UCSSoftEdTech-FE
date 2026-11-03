@@ -65,7 +65,7 @@ export default function TasksView({ getToken, openLead, version }: { getToken: G
       {!tasks && !error && <div className="h-40 animate-pulse rounded-2xl bg-muted motion-reduce:animate-none" aria-busy="true" />}
       {tasks && tasks.length === 0 && (
         <div className="rounded-2xl border border-dashed border-border p-8 text-center text-sm text-muted-foreground">
-          {scope === "mine" ? "No follow-ups for you. Schedule one from a lead's Follow-ups tab." : "Nothing here."}
+          {scope === "mine" ? en("No follow-ups for you. Schedule one from a lead's Follow-ups tab.") : en("Nothing here.")}
         </div>
       )}
       {groups
@@ -112,7 +112,7 @@ export default function TasksView({ getToken, openLead, version }: { getToken: G
                     </div>
                   </div>
                   <button type="button" onClick={() => openLead(t.leadId)} className="shrink-0 rounded-lg border border-border px-2.5 py-1.5 text-xs hover:bg-muted">
-                    Open lead
+                    {en("Open lead")}
                   </button>
                 </li>
               ))}

@@ -19,6 +19,7 @@ import {
   ArrowRight,
 } from "lucide-react";
 import { authenticatedFetch } from "@/lib/apiClient";
+import { useEn } from "@/lib/english/EnglishProvider";
 
 export interface DefenseRecommendation {
   courseId: string;
@@ -124,6 +125,7 @@ export default function VapiInterviewRoom({
   onResult,
   onLeadReferralGenerated,
 }: VapiInterviewRoomProps) {
+  const en = useEn();
   const { getToken, isLoaded } = useAuth();
 
   const vapiRef = useRef<Vapi | null>(null);
@@ -480,8 +482,8 @@ export default function VapiInterviewRoom({
             <Sparkles className="w-5 h-5" />
           </div>
           <div>
-            <h2 className="text-lg font-semibold text-foreground">AI Voice Defense</h2>
-            <p className="text-xs text-muted-foreground">Graded by the server from the recorded call</p>
+            <h2 className="text-lg font-semibold text-foreground">{en("AI Voice Defense")}</h2>
+            <p className="text-xs text-muted-foreground">{en("Graded by the server from the recorded call")}</p>
           </div>
         </div>
 
@@ -489,9 +491,9 @@ export default function VapiInterviewRoom({
           {(remainingMinutes !== null || sessionCapSeconds !== null) && (
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium border border-border bg-muted text-muted-foreground">
               <Clock className="w-3.5 h-3.5" />
-              {remainingMinutes !== null && <span>{remainingMinutes} min left</span>}
+              {remainingMinutes !== null && <span>{remainingMinutes}{en(" min left")}</span>}
               {remainingMinutes !== null && sessionCapSeconds !== null && <span>·</span>}
-              {sessionCapSeconds !== null && <span>{Math.floor(sessionCapSeconds / 60)} min max this session</span>}
+              {sessionCapSeconds !== null && <span>{Math.floor(sessionCapSeconds / 60)}{en(" min max this session")}</span>}
             </span>
           )}
           <span
@@ -505,7 +507,7 @@ export default function VapiInterviewRoom({
                     : "bg-muted text-muted-foreground border-border"
             }`}
           >
-            <span className={`w-2 h-2 rounded-full mr-2 ${callStatus === "active" ? "bg-emerald-400 animate-ping" : "bg-slate-500"}`}></span>
+            <span className={`w-2 h-2 rounded-full me-2 ${callStatus === "active" ? "bg-emerald-400 animate-ping" : "bg-slate-500"}`}></span>
             {callStatus.toUpperCase()}
           </span>
         </div>
@@ -514,9 +516,9 @@ export default function VapiInterviewRoom({
       <div className="my-6 grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="md:col-span-1 glass-card rounded-xl p-5 flex flex-col justify-between border border-border">
           <div>
-            <h3 className="text-sm font-semibold text-muted-foreground mb-2">Microphone</h3>
+            <h3 className="text-sm font-semibold text-muted-foreground mb-2">{en("Microphone")}</h3>
             <p className="text-xs text-muted-foreground mb-4">
-              Status: <span className="font-semibold text-indigo-700 dark:text-indigo-400">{micPermission}</span>
+              {en("Status: ")}<span className="font-semibold text-indigo-700 dark:text-indigo-400">{micPermission}</span>
             </p>
 
             <div className="h-24 bg-card/90 rounded-xl border border-border flex flex-col items-center justify-center space-y-2 px-4">
@@ -540,7 +542,7 @@ export default function VapiInterviewRoom({
                   </div>
                 </>
               ) : (
-                <span className="text-xs text-muted-foreground">Microphone idle</span>
+                <span className="text-xs text-muted-foreground">{en("Microphone idle")}</span>
               )}
             </div>
           </div>
@@ -548,7 +550,7 @@ export default function VapiInterviewRoom({
           <div className="mt-6 space-y-3">
             {languages.length > 1 && (
               <label className="block text-xs font-semibold text-muted-foreground">
-                Conversation language
+                {en("Conversation language")}
                 <select
                   value={selectedLanguage}
                   onChange={(e) => {
@@ -571,12 +573,12 @@ export default function VapiInterviewRoom({
                 className="w-full py-3 px-4 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 disabled:opacity-60 text-white font-medium rounded-xl shadow-lg shadow-indigo-500/25 flex items-center justify-center space-x-2 transition-all duration-200 cursor-pointer"
               >
                 {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <PhoneCall className="w-4 h-4" />}
-                <span>{isLoading ? "Starting..." : callStatus === "ended" ? "Start Another Defense" : "Start Defense"}</span>
+                <span>{isLoading ? en("Starting...") : callStatus === "ended" ? en("Start Another Defense") : en("Start Defense")}</span>
               </button>
             ) : callStatus === "finishing" ? (
               <div className="w-full py-3 px-4 rounded-xl border border-border bg-muted text-muted-foreground text-xs font-medium flex items-center justify-center gap-2">
                 <Loader2 className="w-4 h-4 animate-spin" />
-                <span>Evaluating...</span>
+                <span>{en("Evaluating...")}</span>
               </div>
             ) : (
               <div className="flex space-x-2">
@@ -589,14 +591,14 @@ export default function VapiInterviewRoom({
                   }`}
                 >
                   {isMuted ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
-                  <span>{isMuted ? "Muted" : "Mute Mic"}</span>
+                  <span>{isMuted ? en("Muted") : en("Mute Mic")}</span>
                 </button>
                 <button
                   onClick={handleEndCall}
                   className="flex-1 py-3 px-3 bg-red-600/90 hover:bg-red-500 text-white rounded-xl text-xs font-medium flex items-center justify-center space-x-1.5 cursor-pointer transition-colors"
                 >
                   <PhoneOff className="w-4 h-4" />
-                  <span>End Call</span>
+                  <span>{en("End Call")}</span>
                 </button>
               </div>
             )}
@@ -605,14 +607,14 @@ export default function VapiInterviewRoom({
 
         <div className="md:col-span-2 glass-card rounded-xl p-5 flex flex-col border border-border min-h-[220px]">
           <div className="flex items-center justify-between mb-3">
-            <h3 className="text-sm font-semibold text-muted-foreground">Live Transcript</h3>
+            <h3 className="text-sm font-semibold text-muted-foreground">{en("Live Transcript")}</h3>
             <span className="text-xs text-muted-foreground">{transcripts.length} messages</span>
           </div>
 
           <div className="flex-1 bg-background/80 rounded-xl p-4 border border-border overflow-y-auto max-h-[200px] space-y-3">
             {transcripts.length === 0 ? (
               <div className="h-full flex items-center justify-center text-xs text-muted-foreground italic">
-                The transcript appears here once the call starts.
+                {en("The transcript appears here once the call starts.")}
               </div>
             ) : (
               transcripts.map((t, idx) => (
@@ -621,8 +623,8 @@ export default function VapiInterviewRoom({
                   <div
                     className={`max-w-[85%] rounded-xl px-3 py-2 text-xs ${
                       t.role === "Candidate"
-                        ? "bg-indigo-600 text-white rounded-tr-none"
-                        : "bg-muted text-foreground border border-border rounded-tl-none"
+                        ? "bg-indigo-600 text-white rounded-se-none"
+                        : "bg-muted text-foreground border border-border rounded-ss-none"
                     }`}
                   >
                     {t.text}
@@ -642,7 +644,7 @@ export default function VapiInterviewRoom({
               <p className="font-semibold">{upgradePrompt.message}</p>
               {upgradePrompt.usageResetsAt && (
                 <p className="mt-0.5 text-amber-800/80 dark:text-amber-200/80">
-                  Your monthly minutes reset on {new Date(upgradePrompt.usageResetsAt).toLocaleDateString()}.
+                  {en("Your monthly minutes reset on ")}{new Date(upgradePrompt.usageResetsAt).toLocaleDateString()}.
                 </p>
               )}
             </div>
@@ -651,7 +653,7 @@ export default function VapiInterviewRoom({
             href="/pricing"
             className="inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold shrink-0"
           >
-            See plans &amp; top-ups
+            {en("See plans & top-ups")}
             <ArrowRight className="w-3.5 h-3.5" />
           </Link>
         </div>
@@ -667,16 +669,16 @@ export default function VapiInterviewRoom({
       {result?.status === "evaluated" && (
         <div className="mt-6 p-5 bg-card border border-border rounded-xl space-y-4">
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <h4 className="text-sm font-semibold text-foreground">Defense Evaluation</h4>
+            <h4 className="text-sm font-semibold text-foreground">{en("Defense Evaluation")}</h4>
             <div className="flex flex-wrap gap-2">
               {typeof result.technicalScore === "number" && (
                 <span className="text-sm font-bold text-indigo-700 dark:text-indigo-400 bg-indigo-500/10 px-3 py-1 rounded-lg border border-indigo-500/20">
-                  Technical: {Math.round(result.technicalScore)}%
+                  {en("Technical: ")}{Math.round(result.technicalScore)}%
                 </span>
               )}
               {typeof result.communicationScore === "number" && (
                 <span className="text-sm font-bold text-purple-700 dark:text-purple-400 bg-purple-500/10 px-3 py-1 rounded-lg border border-purple-500/20">
-                  Communication: {Math.round(result.communicationScore)}%
+                  {en("Communication: ")}{Math.round(result.communicationScore)}%
                 </span>
               )}
             </div>
@@ -684,7 +686,7 @@ export default function VapiInterviewRoom({
 
           {result.missingSkills && result.missingSkills.length > 0 ? (
             <div>
-              <p className="text-xs text-muted-foreground mb-2">Areas to strengthen:</p>
+              <p className="text-xs text-muted-foreground mb-2">{en("Areas to strengthen:")}</p>
               <div className="flex flex-wrap gap-2">
                 {result.missingSkills.map((skill) => (
                   <span
@@ -697,18 +699,18 @@ export default function VapiInterviewRoom({
               </div>
             </div>
           ) : (
-            <p className="text-xs text-emerald-700 dark:text-emerald-400 font-medium">No skill gaps identified.</p>
+            <p className="text-xs text-emerald-700 dark:text-emerald-400 font-medium">{en("No skill gaps identified.")}</p>
           )}
 
           {result.credentialIssued && (
             <div className="flex flex-wrap items-center gap-2 text-xs">
               <Award className="w-4 h-4 text-emerald-700 dark:text-emerald-400" />
               <span className="text-foreground font-medium">
-                {result.credentialUnderReview ? "Credential issued — pending integrity review." : "Credential issued."}
+                {result.credentialUnderReview ? en("Credential issued — pending integrity review.") : en("Credential issued.")}
               </span>
               {result.publicUrlSlug && (
                 <Link href={`/credential/${result.publicUrlSlug}`} className="text-indigo-700 dark:text-indigo-400 font-semibold hover:underline">
-                  View credential
+                  {en("View credential")}
                 </Link>
               )}
             </div>
@@ -720,7 +722,7 @@ export default function VapiInterviewRoom({
               className="inline-flex items-center gap-1.5 text-xs font-semibold text-indigo-700 dark:text-indigo-400 hover:underline"
             >
               <BookOpen className="w-3.5 h-3.5" />
-              Learning recommendations
+              {en("Learning recommendations")}
             </Link>
           )}
         </div>

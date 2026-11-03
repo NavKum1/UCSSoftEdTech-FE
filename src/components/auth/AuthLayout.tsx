@@ -15,6 +15,7 @@ import { BadgeCheck, Mic, ScanSearch, Shield } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { brandTextColors, accessibleBrandColor } from "@/components/career/brandColor";
 import type { AuthBrandState } from "@/components/auth/authBrand";
+import { useEn } from "@/lib/english/EnglishProvider";
 
 const PROOF_POINTS = [
   {
@@ -99,6 +100,7 @@ function Wordmark({ state, tone }: { state: AuthBrandState; tone: "light" | "aut
 }
 
 function BrandPanel({ state }: { state: AuthBrandState }) {
+  const en = useEn();
   const year = new Date().getFullYear();
   return (
     <div
@@ -107,11 +109,11 @@ function BrandPanel({ state }: { state: AuthBrandState }) {
     >
       {/* Decorative layers */}
       <div aria-hidden="true" className="absolute inset-0">
-        <div className="auth-orb auth-orb-a -left-24 -top-24 h-112 w-md bg-violet-500/40" />
-        <div className="auth-orb auth-orb-b -bottom-32 -right-24 h-128 w-lg bg-indigo-500/35" />
+        <div className="auth-orb auth-orb-a -start-24 -top-24 h-112 w-md bg-violet-500/40" />
+        <div className="auth-orb auth-orb-b -bottom-32 -end-24 h-128 w-lg bg-indigo-500/35" />
         <div className="auth-gridlines" />
         <div className="auth-grain" />
-        <div className="absolute inset-y-0 right-0 w-px bg-linear-to-b from-transparent via-white/15 to-transparent" />
+        <div className="absolute inset-y-0 end-0 w-px bg-linear-to-b from-transparent via-white/15 to-transparent" />
       </div>
 
       <div className="relative z-10 flex flex-1 flex-col justify-between p-10 xl:p-14">
@@ -122,16 +124,16 @@ function BrandPanel({ state }: { state: AuthBrandState }) {
             <div className="space-y-4">
               <p className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/7 px-3 py-1 text-xs font-medium text-indigo-100 backdrop-blur-sm">
                 <span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-emerald-400 shadow-[0_0_8px_rgb(52_211_153/0.8)]" />
-                AI career &amp; assessment platform
+                {en("AI career & assessment platform")}
               </p>
               <p className="text-4xl font-semibold leading-[1.1] tracking-tight xl:text-[2.75rem]">
-                <span className="block">Build it.</span>
+                <span className="block">{en("Build it.")}</span>
                 <span className="block bg-linear-to-r from-indigo-200 via-violet-200 to-fuchsia-200 bg-clip-text text-transparent">
-                  Then defend it.
+                  {en("Then defend it.")}
                 </span>
               </p>
               <p className="text-pretty text-base leading-relaxed text-indigo-100/85">
-                Real coding work and AI voice technical interviews, so skills are shown, not claimed.
+                {en("Real coding work and AI voice technical interviews, so skills are shown, not claimed.")}
               </p>
             </div>
             <ul className="space-y-5">
@@ -155,8 +157,8 @@ function BrandPanel({ state }: { state: AuthBrandState }) {
 
         {state.kind === "white-label" && (
           <div className="auth-rise max-w-md space-y-3">
-            <p className="text-balance text-4xl font-semibold leading-[1.1] tracking-tight">Welcome to {state.brand.displayName}</p>
-            <p className="text-base leading-relaxed text-white/85">Sign in to continue to your account.</p>
+            <p className="text-balance text-4xl font-semibold leading-[1.1] tracking-tight">{en("Welcome to ")}{state.brand.displayName}</p>
+            <p className="text-base leading-relaxed text-white/85">{en("Sign in to continue to your account.")}</p>
           </div>
         )}
 
@@ -165,17 +167,17 @@ function BrandPanel({ state }: { state: AuthBrandState }) {
         <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-xs text-white/75">
           {(state.kind === "edulexa" || state.kind === "white-label") && (
             <span>
-              &copy; {year} {state.brand.displayName}
+              {en("© ")}{year} {state.brand.displayName}
             </span>
           )}
           {state.kind === "white-label" && state.brand.privacyUrl && (
             <a href={state.brand.privacyUrl} className="underline-offset-4 hover:text-white hover:underline focus-visible:rounded focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white">
-              Privacy
+              {en("Privacy")}
             </a>
           )}
           {state.kind === "white-label" && state.brand.termsUrl && (
             <a href={state.brand.termsUrl} className="underline-offset-4 hover:text-white hover:underline focus-visible:rounded focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white">
-              Terms
+              {en("Terms")}
             </a>
           )}
         </div>

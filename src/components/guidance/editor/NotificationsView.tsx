@@ -88,7 +88,7 @@ export default function NotificationsView({ instituteId, forms, canEdit }: { ins
   const load = useCallback(
     async (p = 1) => {
       const res = await apiFetch(query(p));
-      if (!res.ok) return setError("We couldn't load the notifications.");
+      if (!res.ok) return setError(en("We couldn't load the notifications."));
       const d = await res.json();
       setError(null);
       setRows((x) => (p === 1 ? d.messages : [...(x ?? []), ...d.messages]));
@@ -96,7 +96,7 @@ export default function NotificationsView({ instituteId, forms, canEdit }: { ins
       setPage(p);
       setMore(d.hasMore);
     },
-    [apiFetch, query],
+    [apiFetch, query, en],
   );
   const loadRef = useLatestRef(load);
   useEffect(() => {
@@ -127,16 +127,16 @@ export default function NotificationsView({ instituteId, forms, canEdit }: { ins
             </button>
           );
         })}
-        <select aria-label="How it was sent" value={channel} onChange={(e) => setChannel(e.target.value)} className="ml-auto rounded-lg border border-border bg-background px-2 py-1.5 text-xs">
-          <option value="">Every channel</option>
+        <select aria-label={en("How it was sent")} value={channel} onChange={(e) => setChannel(e.target.value)} className="ms-auto rounded-lg border border-border bg-background px-2 py-1.5 text-xs">
+          <option value="">{en("Every channel")}</option>
           {Object.entries(CHANNEL).map(([k, v]) => (
             <option key={k} value={k}>
               {v}
             </option>
           ))}
         </select>
-        <select aria-label="Form" value={formId} onChange={(e) => setFormId(e.target.value)} className="rounded-lg border border-border bg-background px-2 py-1.5 text-xs">
-          <option value="">Every form</option>
+        <select aria-label={en("Form")} value={formId} onChange={(e) => setFormId(e.target.value)} className="rounded-lg border border-border bg-background px-2 py-1.5 text-xs">
+          <option value="">{en("Every form")}</option>
           {forms.map((f) => (
             <option key={f.id} value={f.id}>
               {f.name}
@@ -155,17 +155,17 @@ export default function NotificationsView({ instituteId, forms, canEdit }: { ins
         <div className="h-40 animate-pulse rounded-2xl bg-muted motion-reduce:animate-none" aria-busy="true" />
       ) : rows.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-border p-8 text-center text-sm text-muted-foreground">
-          No messages {status ? "with this status " : ""}yet. Set up automatic messages on a form&apos;s <span className="font-medium">Automatic messages</span> tab.
+          {en("No messages ")}{status ? en("with this status ") : ""}{en("yet. Set up automatic messages on a form's ")}<span className="font-medium">{en("Automatic messages")}</span> tab.
         </div>
       ) : (
         <div className="overflow-x-auto rounded-2xl border border-border bg-card">
           <table className="w-full text-sm">
-            <thead className="text-left text-xs text-muted-foreground">
+            <thead className="text-start text-xs text-muted-foreground">
               <tr>
-                <th className="px-3 py-2 font-medium">When</th>
-                <th className="px-3 py-2 font-medium">To</th>
-                <th className="px-3 py-2 font-medium">Message</th>
-                <th className="px-3 py-2 font-medium">Status</th>
+                <th className="px-3 py-2 font-medium">{en("When")}</th>
+                <th className="px-3 py-2 font-medium">{en("To")}</th>
+                <th className="px-3 py-2 font-medium">{en("Message")}</th>
+                <th className="px-3 py-2 font-medium">{en("Status")}</th>
               </tr>
             </thead>
             <tbody>
@@ -175,13 +175,13 @@ export default function NotificationsView({ instituteId, forms, canEdit }: { ins
                   <tr key={r.id} className="cursor-pointer border-t border-border hover:bg-muted/40" onClick={() => show(r.id)}>
                     <td className="whitespace-nowrap px-3 py-2 text-xs tabular-nums text-muted-foreground">{when(r.sentAt ?? r.sendAt)}</td>
                     <td className="px-3 py-2">
-                      <span className="block font-medium">{r.channel === "team" ? "Your team" : (r.lead ?? "—")}</span>
+                      <span className="block font-medium">{r.channel === "team" ? en("Your team") : (r.lead ?? "—")}</span>
                       {r.channel === "team" && r.lead && <span className="block text-xs text-muted-foreground">about {r.lead}</span>}
                     </td>
                     <td className="px-3 py-2">
                       <span className="flex items-center gap-1.5">
                         <Icon aria-hidden="true" className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
-                        <button type="button" className="truncate text-left font-medium hover:underline" onClick={(e) => (e.stopPropagation(), show(r.id))}>
+                        <button type="button" className="truncate text-start font-medium hover:underline" onClick={(e) => (e.stopPropagation(), show(r.id))}>
                           {r.automation}
                         </button>
                       </span>
@@ -189,7 +189,7 @@ export default function NotificationsView({ instituteId, forms, canEdit }: { ins
                     </td>
                     <td className="px-3 py-2">
                       <span className={`inline-flex rounded-full px-2 py-0.5 text-[11px] font-medium ${TONE[r.status] ?? TONE.Skipped}`}>{r.status}</span>
-                      {r.openedAt && <span className="ml-1 text-[11px] text-emerald-700 dark:text-emerald-400">Opened</span>}
+                      {r.openedAt && <span className="ms-1 text-[11px] text-emerald-700 dark:text-emerald-400">{en("Opened")}</span>}
                       {(r.status === "Failed" || r.status === "Skipped") && r.error && <span className="mt-0.5 block max-w-64 truncate text-xs text-muted-foreground">{r.error}</span>}
                     </td>
                   </tr>
@@ -201,12 +201,12 @@ export default function NotificationsView({ instituteId, forms, canEdit }: { ins
       )}
       {more && (
         <button type="button" onClick={() => load(page + 1)} className="rounded-lg border border-border px-3 py-1.5 text-xs hover:bg-muted">
-          Show more
+          {en("Show more")}
         </button>
       )}
 
       {open && (
-        <div className="fixed inset-0 z-50 flex justify-end bg-black/30" role="dialog" aria-modal="true" aria-label="Message details" onClick={() => setOpen(null)}>
+        <div className="fixed inset-0 z-50 flex justify-end bg-black/30" role="dialog" aria-modal="true" aria-label={en("Message details")} onClick={() => setOpen(null)}>
           <div className="h-full w-full max-w-lg overflow-y-auto bg-background p-5 shadow-2xl" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-start justify-between gap-3">
               <div>
@@ -215,17 +215,17 @@ export default function NotificationsView({ instituteId, forms, canEdit }: { ins
                 </p>
                 <h2 className="text-lg font-semibold">{open.automation}</h2>
               </div>
-              <button type="button" aria-label="Close" onClick={() => setOpen(null)} className="rounded-lg p-1.5 hover:bg-muted">
+              <button type="button" aria-label={en("Close")} onClick={() => setOpen(null)} className="rounded-lg p-1.5 hover:bg-muted">
                 <X aria-hidden="true" className="h-5 w-5" />
               </button>
             </div>
             <dl className="mt-4 grid grid-cols-[7rem_minmax(0,1fr)] gap-x-3 gap-y-2 text-sm">
-              <dt className="text-muted-foreground">Status</dt>
+              <dt className="text-muted-foreground">{en("Status")}</dt>
               <dd>
                 <span className={`inline-flex rounded-full px-2 py-0.5 text-[11px] font-medium ${TONE[open.status] ?? TONE.Skipped}`}>{open.status}</span>
                 {open.error && <span className="mt-1 block text-xs">{open.error}</span>}
               </dd>
-              <dt className="text-muted-foreground">Lead</dt>
+              <dt className="text-muted-foreground">{en("Lead")}</dt>
               <dd>
                 <Link href={`/institute/dashboard?lead=${open.leadId}`} className="text-cyan-700 hover:underline dark:text-cyan-400">
                   {open.lead ?? "Open the lead"}
@@ -233,23 +233,23 @@ export default function NotificationsView({ instituteId, forms, canEdit }: { ins
               </dd>
               {open.to && (
                 <>
-                  <dt className="text-muted-foreground">To</dt>
+                  <dt className="text-muted-foreground">{en("To")}</dt>
                   <dd className="break-all">{open.to}</dd>
                 </>
               )}
-              <dt className="text-muted-foreground">{open.sentAt ? "Sent" : "Due"}</dt>
+              <dt className="text-muted-foreground">{open.sentAt ? en("Sent") : en("Due")}</dt>
               <dd>{when(open.sentAt ?? open.sendAt)}</dd>
-              <dt className="text-muted-foreground">Attempts</dt>
+              <dt className="text-muted-foreground">{en("Attempts")}</dt>
               <dd>{open.attempts}</dd>
               {open.opens && (
                 <>
-                  <dt className="text-muted-foreground">Opened</dt>
-                  <dd>{open.opens.first ? `${open.opens.opens} time${open.opens.opens === 1 ? "" : "s"}, first ${when(open.opens.first)}` : "Not yet"}</dd>
+                  <dt className="text-muted-foreground">{en("Opened")}</dt>
+                  <dd>{open.opens.first ? `${open.opens.opens} time${open.opens.opens === 1 ? "" : "s"}, first ${when(open.opens.first)}` : en("Not yet")}</dd>
                 </>
               )}
               {open.providerMessageId && (
                 <>
-                  <dt className="text-muted-foreground">Pulse Relay id</dt>
+                  <dt className="text-muted-foreground">{en("Pulse Relay id")}</dt>
                   <dd className="break-all font-mono text-xs">{open.providerMessageId}</dd>
                 </>
               )}
@@ -260,17 +260,17 @@ export default function NotificationsView({ instituteId, forms, canEdit }: { ins
                 {open.body && <p className="mt-2 whitespace-pre-wrap">{open.body}</p>}
               </div>
             )}
-            {!open.body && open.status === "Scheduled" && <p className="mt-4 text-sm text-muted-foreground">The message is filled in when it&apos;s sent, from the form as published then.</p>}
+            {!open.body && open.status === "Scheduled" && <p className="mt-4 text-sm text-muted-foreground">{en("The message is filled in when it's sent, from the form as published then.")}</p>}
             {canEdit && (
               <div className="mt-4 flex gap-2">
                 {["Failed", "Skipped", "Cancelled"].includes(open.status) && (
                   <button type="button" onClick={() => act(open.id, "retry")} className="inline-flex items-center gap-1.5 rounded-lg bg-cyan-700 px-3 py-2 text-sm font-medium text-white hover:bg-cyan-800">
-                    <RotateCcw aria-hidden="true" className="h-4 w-4" /> Send again
+                    <RotateCcw aria-hidden="true" className="h-4 w-4" />{en(" Send again")}
                   </button>
                 )}
                 {open.status === "Scheduled" && (
                   <button type="button" onClick={() => act(open.id, "cancel")} className="rounded-lg border border-border px-3 py-2 text-sm hover:bg-muted">
-                    Cancel it
+                    {en("Cancel it")}
                   </button>
                 )}
               </div>

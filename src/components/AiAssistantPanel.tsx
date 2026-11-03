@@ -3,6 +3,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Bot, CornerDownLeft, Info, Loader2, Send, ShieldAlert } from "lucide-react";
 import { authenticatedFetch } from "@/lib/apiClient";
+import { useEn } from "@/lib/english/EnglishProvider";
 
 export type AiPolicy = "Prohibited" | "Allowed" | "Evaluated";
 
@@ -44,12 +45,13 @@ function splitFences(text: string): Segment[] {
 }
 
 export function AiPolicyNotice({ aiPolicy }: { aiPolicy: AiPolicy }) {
+  const en = useEn();
   if (aiPolicy === "Prohibited") {
     return (
       <div className="flex items-start gap-2 text-[11px] text-muted-foreground">
         <ShieldAlert className="w-3.5 h-3.5 mt-0.5 shrink-0 text-amber-700 dark:text-amber-400" />
         <span>
-          AI tools are not permitted for this sprint. Text pasted from outside the editor is visible to reviewers.
+          {en("AI tools are not permitted for this sprint. Text pasted from outside the editor is visible to reviewers.")}
         </span>
       </div>
     );
@@ -58,8 +60,8 @@ export function AiPolicyNotice({ aiPolicy }: { aiPolicy: AiPolicy }) {
     <div className="flex items-start gap-2 text-[11px] text-muted-foreground">
       <Info className="w-3.5 h-3.5 mt-0.5 shrink-0 text-indigo-700 dark:text-indigo-400" />
       <span>
-        AI use is allowed and logged. Reviewers see your prompts and how you used the answers.
-        {aiPolicy === "Evaluated" && " How you use AI is part of the review."}
+        {en("AI use is allowed and logged. Reviewers see your prompts and how you used the answers.")}
+        {aiPolicy === "Evaluated" && en(" How you use AI is part of the review.")}
       </span>
     </div>
   );
@@ -73,6 +75,7 @@ export default function AiAssistantPanel({
   onInsert,
   disabled = false,
 }: AiAssistantPanelProps) {
+  const en = useEn();
   const [interactions, setInteractions] = useState<Interaction[]>([]);
   const [prompt, setPrompt] = useState("");
   const [sending, setSending] = useState(false);
@@ -127,7 +130,7 @@ export default function AiAssistantPanel({
         setError(data.error || "The assistant is unavailable right now.");
       }
     } catch {
-      setError("Couldn't reach the assistant. Check your connection and try again.");
+      setError(en("Couldn't reach the assistant. Check your connection and try again."));
     } finally {
       setSending(false);
     }
@@ -138,7 +141,7 @@ export default function AiAssistantPanel({
       setInsertedKey(key);
       setTimeout(() => setInsertedKey((k) => (k === key ? null : k)), 1500);
     } else {
-      setError("Click into the editor where the code should go, then try again.");
+      setError(en("Click into the editor where the code should go, then try again."));
     }
   };
 
@@ -147,27 +150,27 @@ export default function AiAssistantPanel({
       <div className="flex items-center justify-between pb-3 border-b border-border">
         <div className="flex items-center space-x-2">
           <Bot className="w-5 h-5 text-indigo-700 dark:text-indigo-400" />
-          <h3 className="text-sm font-semibold text-foreground">AI Assistant</h3>
+          <h3 className="text-sm font-semibold text-foreground">{en("AI Assistant")}</h3>
         </div>
         <span className="text-[10px] px-2.5 py-0.5 rounded bg-indigo-500/10 text-indigo-600 dark:text-indigo-300 font-semibold border border-indigo-500/20">
-          {aiPolicy === "Evaluated" ? "AI use reviewed" : "AI allowed"}
+          {aiPolicy === "Evaluated" ? en("AI use reviewed") : en("AI allowed")}
         </span>
       </div>
 
       <AiPolicyNotice aiPolicy={aiPolicy} />
 
-      <div ref={scrollRef} className="space-y-3 max-h-80 overflow-y-auto pr-1">
+      <div ref={scrollRef} className="space-y-3 max-h-80 overflow-y-auto pe-1">
         {interactions.length === 0 && !sending && (
           <p className="text-xs text-muted-foreground italic">
-            Ask about the task or your code. The assistant sees the current contents of your files.
+            {en("Ask about the task or your code. The assistant sees the current contents of your files.")}
           </p>
         )}
         {interactions.map((item) => (
           <div key={item.interactionId} className="space-y-2">
-            <div className="ml-8 p-2.5 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-xs text-foreground whitespace-pre-wrap">
+            <div className="ms-8 p-2.5 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-xs text-foreground whitespace-pre-wrap">
               {item.prompt}
             </div>
-            <div className="mr-4 p-2.5 rounded-xl bg-card border border-border text-xs text-foreground space-y-2">
+            <div className="me-4 p-2.5 rounded-xl bg-card border border-border text-xs text-foreground space-y-2">
               {splitFences(item.response).map((seg, idx) => {
                 const key = `${item.interactionId}-${idx}`;
                 return seg.kind === "text" ? (
@@ -184,7 +187,7 @@ export default function AiAssistantPanel({
                         className="flex items-center gap-1 font-sans font-semibold text-indigo-700 dark:text-indigo-400 hover:text-indigo-500 disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
                       >
                         <CornerDownLeft className="w-3 h-3" />
-                        {insertedKey === key ? "Inserted" : "Insert at cursor"}
+                        {insertedKey === key ? en("Inserted") : en("Insert at cursor")}
                       </button>
                     </div>
                     <pre className="p-2.5 bg-slate-950 text-slate-100 text-[11px] font-mono overflow-x-auto">
@@ -198,7 +201,7 @@ export default function AiAssistantPanel({
         ))}
         {sending && (
           <div className="flex items-center gap-2 text-xs text-muted-foreground">
-            <Loader2 className="w-3.5 h-3.5 animate-spin" /> Thinking...
+            <Loader2 className="w-3.5 h-3.5 animate-spin" />{en(" Thinking...")}
           </div>
         )}
       </div>
@@ -217,13 +220,13 @@ export default function AiAssistantPanel({
           }}
           rows={2}
           disabled={disabled}
-          placeholder={disabled ? "The assistant is closed after submission." : "Ask the assistant..."}
+          placeholder={disabled ? en("The assistant is closed after submission.") : en("Ask the assistant...")}
           className="flex-1 resize-none rounded-xl border border-border bg-background px-3 py-2 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-indigo-500 disabled:opacity-60"
         />
         <button
           onClick={() => void send()}
           disabled={disabled || sending || !prompt.trim()}
-          aria-label="Send prompt"
+          aria-label={en("Send prompt")}
           className="p-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white disabled:bg-muted disabled:text-muted-foreground transition-colors cursor-pointer disabled:cursor-not-allowed"
         >
           {sending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}

@@ -6,6 +6,7 @@ import { useAppAuth as useAuth } from "@/lib/appAuth";
 import { AlertCircle, CheckCircle2, Flag, Inbox, Loader2, RefreshCw, X } from "lucide-react";
 import { authenticatedFetch } from "@/lib/apiClient";
 import { STATUS_STYLES, categoryLabel, errorMessage, fmtDate, statusLabel } from "@/lib/candidateExperience";
+import { useEn } from "@/lib/english/EnglishProvider";
 
 interface ReviewAppeal {
   id: string;
@@ -28,6 +29,7 @@ const FILTERS = ["Open", "Overturned", "Upheld", "Withdrawn", "All"] as const;
 const MIN_RESPONSE = 20;
 
 export default function RecruiterAppealsPage() {
+  const en = useEn();
   const { getToken } = useAuth();
   const [filter, setFilter] = useState<(typeof FILTERS)[number]>("Open");
   const [rows, setRows] = useState<ReviewAppeal[] | null>(null);
@@ -103,18 +105,17 @@ export default function RecruiterAppealsPage() {
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <h1 className="text-2xl font-extrabold text-foreground flex items-center gap-2">
-            <Flag className="w-6 h-6 text-amber-600 dark:text-amber-400" /> Candidate appeals
+            <Flag className="w-6 h-6 text-amber-600 dark:text-amber-400" />{en(" Candidate appeals")}
           </h1>
           <p className="text-sm text-muted-foreground mt-1">
-            Appeals must be resolved by someone other than the reviewer who recorded the latest decision. Your response is emailed to
-            the candidate.
+            {en("Appeals must be resolved by someone other than the reviewer who recorded the latest decision. Your response is emailed to the candidate.")}
           </p>
         </div>
         <button
           onClick={() => setReloadKey((k) => k + 1)}
           className="py-2 px-3 rounded-xl bg-card hover:bg-muted border border-border text-xs font-medium text-muted-foreground flex items-center gap-1.5 cursor-pointer"
         >
-          <RefreshCw className="w-3.5 h-3.5" /> Refresh
+          <RefreshCw className="w-3.5 h-3.5" />{en(" Refresh")}
         </button>
       </div>
 
@@ -141,7 +142,7 @@ export default function RecruiterAppealsPage() {
         <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/5 p-3 text-sm text-emerald-700 dark:text-emerald-400 flex flex-wrap items-center gap-2">
           <CheckCircle2 className="w-4 h-4" /> {notice.text}
           {notice.evidenceUrl && (
-            <Link href={notice.evidenceUrl} className="underline font-semibold">Open the evidence pack</Link>
+            <Link href={notice.evidenceUrl} className="underline font-semibold">{en("Open the evidence pack")}</Link>
           )}
         </div>
       )}
@@ -152,12 +153,12 @@ export default function RecruiterAppealsPage() {
         </div>
       ) : rows === null ? (
         <div className="p-12 flex items-center justify-center gap-2 text-sm text-muted-foreground">
-          <Loader2 className="w-4 h-4 animate-spin" /> Loading appeals...
+          <Loader2 className="w-4 h-4 animate-spin" />{en(" Loading appeals...")}
         </div>
       ) : rows.length === 0 ? (
         <div className="glass-panel rounded-2xl p-10 border border-border text-center space-y-2">
           <Inbox className="w-8 h-8 mx-auto text-muted-foreground" />
-          <p className="text-sm text-muted-foreground">No {filter === "All" ? "" : filter.toLowerCase() + " "}appeals.</p>
+          <p className="text-sm text-muted-foreground">{en("No ")}{filter === "All" ? "" : filter.toLowerCase() + " "}appeals.</p>
         </div>
       ) : (
         <ul className="space-y-3">
@@ -173,7 +174,7 @@ export default function RecruiterAppealsPage() {
                 </div>
                 <div className="flex items-center gap-2">
                   <Link href={`/recruiter/evidence/${a.submissionId}`} className="text-xs text-indigo-700 dark:text-indigo-400 underline">
-                    Evidence pack
+                    {en("Evidence pack")}
                   </Link>
                   {a.status === "Open" && (
                     <button
@@ -182,20 +183,20 @@ export default function RecruiterAppealsPage() {
                       title={a.cannotResolveReason ?? undefined}
                       className="py-1.5 px-3 rounded-lg bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed text-white text-xs font-semibold cursor-pointer"
                     >
-                      Resolve
+                      {en("Resolve")}
                     </button>
                   )}
                 </div>
               </div>
               <p className="text-sm text-foreground whitespace-pre-wrap">{a.reason}</p>
               <p className="text-xs text-muted-foreground">
-                Latest decision:{" "}
-                {a.latestDecision ? `${a.latestDecision.decision} by ${a.latestDecision.reviewerName} on ${fmtDate(a.latestDecision.createdAt)}` : "none yet"}
+                {en("Latest decision:")}{" "}
+                {a.latestDecision ? `${a.latestDecision.decision} by ${a.latestDecision.reviewerName} on ${fmtDate(a.latestDecision.createdAt)}` : en("none yet")}
               </p>
               {a.cannotResolveReason && <p className="text-xs text-amber-700 dark:text-amber-400">{a.cannotResolveReason}</p>}
               {a.response && (
                 <div className="rounded-lg bg-muted/40 border border-border p-2 text-xs">
-                  <span className="font-semibold text-foreground">Response by {a.resolverName ?? "reviewer"} ({fmtDate(a.resolvedAt)}): </span>
+                  <span className="font-semibold text-foreground">{en("Response by ")}{a.resolverName ?? "reviewer"} ({fmtDate(a.resolvedAt)}): </span>
                   <span className="text-foreground whitespace-pre-wrap">{a.response}</span>
                 </div>
               )}
@@ -208,17 +209,17 @@ export default function RecruiterAppealsPage() {
         <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="resolve-title">
           <form onSubmit={resolve} className="glass-panel bg-card rounded-2xl p-5 border border-border w-full max-w-lg space-y-4">
             <div className="flex items-center justify-between">
-              <h2 id="resolve-title" className="text-base font-bold text-foreground">Resolve appeal: {resolving.candidateName}</h2>
-              <button type="button" onClick={() => setResolving(null)} aria-label="Close" className="text-muted-foreground hover:text-foreground cursor-pointer">
+              <h2 id="resolve-title" className="text-base font-bold text-foreground">{en("Resolve appeal: ")}{resolving.candidateName}</h2>
+              <button type="button" onClick={() => setResolving(null)} aria-label={en("Close")} className="text-muted-foreground hover:text-foreground cursor-pointer">
                 <X className="w-4 h-4" />
               </button>
             </div>
             <p className="text-xs text-muted-foreground whitespace-pre-wrap max-h-32 overflow-y-auto">{resolving.reason}</p>
             <fieldset className="grid gap-2">
-              <legend className="sr-only">Outcome</legend>
+              <legend className="sr-only">{en("Outcome")}</legend>
               {[
-                { value: "Upheld" as const, label: "Uphold the original result", hint: "The appeal does not change the assessment." },
-                { value: "Overturned" as const, label: "Overturn: the appeal succeeds", hint: "Re-review the submission and record a new decision in the evidence pack. The earlier decision stays in its history." },
+                { value: "Upheld" as const, label: en("Uphold the original result"), hint: en("The appeal does not change the assessment.") },
+                { value: "Overturned" as const, label: en("Overturn: the appeal succeeds"), hint: en("Re-review the submission and record a new decision in the evidence pack. The earlier decision stays in its history.") },
               ].map((o) => (
                 <label
                   key={o.value}
@@ -233,7 +234,7 @@ export default function RecruiterAppealsPage() {
               ))}
             </fieldset>
             <div>
-              <label htmlFor="response" className="text-xs font-semibold text-foreground">Response to the candidate (emailed to them)</label>
+              <label htmlFor="response" className="text-xs font-semibold text-foreground">{en("Response to the candidate (emailed to them)")}</label>
               <textarea
                 id="response"
                 value={response}
@@ -243,7 +244,7 @@ export default function RecruiterAppealsPage() {
                 className="mt-1 w-full rounded-xl bg-background border border-border p-3 text-sm text-foreground"
               />
               <div className={`text-[11px] mt-1 ${responseLength >= MIN_RESPONSE ? "text-muted-foreground" : "text-amber-700 dark:text-amber-400"}`}>
-                {responseLength}/{MIN_RESPONSE} characters minimum
+                {responseLength}/{MIN_RESPONSE}{en(" characters minimum")}
               </div>
             </div>
             {resolveError && (
@@ -251,7 +252,7 @@ export default function RecruiterAppealsPage() {
             )}
             <div className="flex justify-end gap-2">
               <button type="button" onClick={() => setResolving(null)} className="py-2 px-3 rounded-xl bg-card hover:bg-muted border border-border text-sm cursor-pointer">
-                Cancel
+                {en("Cancel")}
               </button>
               <button
                 type="submit"
@@ -259,7 +260,7 @@ export default function RecruiterAppealsPage() {
                 className="py-2 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-semibold inline-flex items-center gap-2 cursor-pointer"
               >
                 {busy && <Loader2 className="w-4 h-4 animate-spin" />}
-                Resolve appeal
+                {en("Resolve appeal")}
               </button>
             </div>
           </form>

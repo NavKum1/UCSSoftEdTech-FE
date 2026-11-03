@@ -161,13 +161,13 @@ export default function StaffAccess({ getToken, instituteId, compact = false }: 
     }
   };
 
-  if (loading) return <p className="text-sm text-muted-foreground">Loading staff access…</p>;
+  if (loading) return <p className="text-sm text-muted-foreground">{en("Loading staff access…")}</p>;
   const loadAlert = loadError && (
     <div role="alert" className="flex flex-wrap items-center gap-2 rounded-lg bg-red-500/10 px-3 py-2 text-sm text-red-800 dark:text-red-300">
       {loaded ? `The list couldn't be refreshed: ${loadError}` : loadError}
       <button type="button" className={secondary} onClick={() => void load()}>
         <RefreshCw aria-hidden="true" className="h-4 w-4" />
-        Try again
+        {en("Try again")}
       </button>
     </div>
   );
@@ -175,7 +175,7 @@ export default function StaffAccess({ getToken, instituteId, compact = false }: 
   if (!enabled)
     return (
       <p className="rounded-lg border border-border bg-muted/40 px-4 py-3 text-sm text-muted-foreground">
-        Staff invitations aren&apos;t set up on this server yet. Ask your platform administrator to connect Edulexa to the sign-in service.
+        {en("Staff invitations aren't set up on this server yet. Ask your platform administrator to connect Edulexa to the sign-in service.")}
       </p>
     );
 
@@ -183,31 +183,31 @@ export default function StaffAccess({ getToken, instituteId, compact = false }: 
     <div className="space-y-6">
       {!compact && (
         <div>
-          <h2 className="text-lg font-semibold">Staff access</h2>
+          <h2 className="text-lg font-semibold">{en("Staff access")}</h2>
           <p className="text-sm text-muted-foreground">
-            Who can sign in for this institute, and as what. New people get an e-mail to set their password; people who already have an account get access at once.
+            {en("Who can sign in for this institute, and as what. New people get an e-mail to set their password; people who already have an account get access at once.")}
           </p>
         </div>
       )}
 
-      <form onSubmit={invite} className="space-y-3 rounded-2xl border border-border bg-card p-4" aria-label="Invite a staff member">
+      <form onSubmit={invite} className="space-y-3 rounded-2xl border border-border bg-card p-4" aria-label={en("Invite a staff member")}>
         <div className="grid gap-3 sm:grid-cols-2">
           <label className="block text-sm sm:col-span-2">
-            <span className="mb-1 block font-medium">Work e-mail</span>
-            <input type="email" required className={input} value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} placeholder="name@institute.edu" autoComplete="off" />
+            <span className="mb-1 block font-medium">{en("Work e-mail")}</span>
+            <input type="email" required className={input} value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} placeholder={en("name@institute.edu")} autoComplete="off" />
           </label>
           <label className="block text-sm">
-            <span className="mb-1 block font-medium">First name</span>
+            <span className="mb-1 block font-medium">{en("First name")}</span>
             <input className={input} value={form.firstName} onChange={(e) => setForm({ ...form, firstName: e.target.value })} autoComplete="off" />
           </label>
           <label className="block text-sm">
-            <span className="mb-1 block font-medium">Last name</span>
+            <span className="mb-1 block font-medium">{en("Last name")}</span>
             <input className={input} value={form.lastName} onChange={(e) => setForm({ ...form, lastName: e.target.value })} autoComplete="off" />
           </label>
         </div>
-        <p className="text-xs text-muted-foreground">Names are needed only for people who don&apos;t have an Edulexa account yet.</p>
+        <p className="text-xs text-muted-foreground">{en("Names are needed only for people who don't have an Edulexa account yet.")}</p>
         <fieldset>
-          <legend className="mb-1 text-sm font-medium">Role</legend>
+          <legend className="mb-1 text-sm font-medium">{en("Role")}</legend>
           <div className="grid gap-2 sm:grid-cols-3">
             {roles.map((r) => (
               <label key={r} className={`cursor-pointer rounded-lg border px-3 py-2 text-sm ${form.role === r ? "border-cyan-600 bg-cyan-600/5" : "border-border"}`}>
@@ -220,7 +220,7 @@ export default function StaffAccess({ getToken, instituteId, compact = false }: 
         </fieldset>
         <button type="submit" className={primary} disabled={busy === "invite" || !form.email.trim()}>
           <UserPlus aria-hidden="true" className="h-4 w-4" />
-          {busy === "invite" ? "Sending…" : "Send invitation"}
+          {busy === "invite" ? en("Sending…") : en("Send invitation")}
         </button>
       </form>
 
@@ -234,7 +234,7 @@ export default function StaffAccess({ getToken, instituteId, compact = false }: 
 
       <div className="overflow-hidden rounded-2xl border border-border">
         {members.length === 0 ? (
-          <p className="px-4 py-6 text-center text-sm text-muted-foreground">No one has been invited through Edulexa yet.</p>
+          <p className="px-4 py-6 text-center text-sm text-muted-foreground">{en("No one has been invited through Edulexa yet.")}</p>
         ) : (
           <ul className="divide-y divide-border">
             {members.map((m) => (
@@ -247,10 +247,10 @@ export default function StaffAccess({ getToken, instituteId, compact = false }: 
                 </div>
                 {m.status === "pending" ? (
                   <span className="rounded-full bg-amber-500/10 px-2 py-0.5 text-xs text-amber-800 dark:text-amber-300" title={`Last sent ${when(m.lastSentAt)}`}>
-                    Invited, password not set yet
+                    {en("Invited, password not set yet")}
                   </span>
                 ) : (
-                  <span className="rounded-full bg-emerald-500/10 px-2 py-0.5 text-xs text-emerald-800 dark:text-emerald-300">Active</span>
+                  <span className="rounded-full bg-emerald-500/10 px-2 py-0.5 text-xs text-emerald-800 dark:text-emerald-300">{en("Active")}</span>
                 )}
                 <div className="flex gap-1.5">
                   {m.status === "pending" && (
@@ -267,12 +267,12 @@ export default function StaffAccess({ getToken, instituteId, compact = false }: 
                       }
                     >
                       <Mail aria-hidden="true" className="h-4 w-4" />
-                      Resend
+                      {en("Resend")}
                     </button>
                   )}
                   <button type="button" className={secondary} disabled={busy === m.id} onClick={() => remove(m)} aria-label={m.status === "pending" ? `Withdraw invitation for ${m.email}` : `Remove access for ${m.email}`}>
                     <Trash2 aria-hidden="true" className="h-4 w-4" />
-                    {m.status === "pending" ? "Withdraw" : "Remove"}
+                    {m.status === "pending" ? en("Withdraw") : en("Remove")}
                   </button>
                 </div>
               </li>
@@ -284,18 +284,18 @@ export default function StaffAccess({ getToken, instituteId, compact = false }: 
       <div className="flex flex-wrap gap-2">
         <button type="button" className={secondary} onClick={() => void load()}>
           <RefreshCw aria-hidden="true" className="h-4 w-4" />
-          Refresh
+          {en("Refresh")}
         </button>
         <button type="button" className={secondary} onClick={() => void toggleAudit()} aria-expanded={audit !== null}>
           <History aria-hidden="true" className="h-4 w-4" />
-          {audit ? "Hide history" : "History of changes"}
+          {audit ? en("Hide history") : en("History of changes")}
         </button>
       </div>
 
       {audit && (
         <div className="rounded-2xl border border-border">
           {audit.length === 0 ? (
-            <p className="px-4 py-4 text-sm text-muted-foreground">No changes yet.</p>
+            <p className="px-4 py-4 text-sm text-muted-foreground">{en("No changes yet.")}</p>
           ) : (
             <ol className="divide-y divide-border text-sm">
               {audit.map((a) => (
@@ -305,7 +305,7 @@ export default function StaffAccess({ getToken, instituteId, compact = false }: 
                   {a.targetEmail}
                   {a.role ? ` (${en(ROLE_LABEL[a.role] ?? a.role)})` : ""}
                   <span className="block text-xs text-muted-foreground">
-                    {when(a.createdAt)} · by {a.actorName}
+                    {when(a.createdAt)}{en(" · by ")}{a.actorName}
                     {a.detail ? ` · ${a.detail}` : ""}
                   </span>
                 </li>
@@ -317,7 +317,7 @@ export default function StaffAccess({ getToken, instituteId, compact = false }: 
 
       {!compact && (
         <p className="text-xs text-muted-foreground">
-          People given access before invitations existed, directly in the sign-in service, aren&apos;t listed here. Changes take effect the next time the person signs in.
+          {en("People given access before invitations existed, directly in the sign-in service, aren't listed here. Changes take effect the next time the person signs in.")}
         </p>
       )}
     </div>

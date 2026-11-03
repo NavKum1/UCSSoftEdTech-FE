@@ -548,7 +548,7 @@ export default function GuidanceForm({
                           data-step={i}
                           onClick={jumpTo}
                           aria-current={now ? "step" : undefined}
-                          className="flex w-full items-center gap-3 rounded-lg px-2 py-1.5 text-left text-[15px] transition-colors enabled:hover:bg-white/10 disabled:cursor-default focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70"
+                          className="flex w-full items-center gap-3 rounded-lg px-2 py-1.5 text-start text-[15px] transition-colors enabled:hover:bg-white/10 disabled:cursor-default focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70"
                         >
                           <span
                             aria-hidden="true"
@@ -612,7 +612,7 @@ export default function GuidanceForm({
                 <p className="mt-4 whitespace-pre-wrap text-xl font-semibold tracking-tight">{tr(s.translations, lang, "label", s.thankYou) || t("thanks")}</p>
                 {!s.thankYou && <p className="mt-2 text-muted-foreground">An advisor from {fill.instituteName} will contact you at {email.trim()}.</p>}
                 {meeting && (
-                  <div className="mt-6 text-left">
+                  <div className="mt-6 text-start">
                     <MeetingNotice meeting={meeting} t={t} />
                   </div>
                 )}
@@ -822,7 +822,7 @@ export default function GuidanceForm({
         </div>
 
         {/* Hidden from people on every step (bots fill it in) */}
-        <label className="absolute -left-[9999px]" aria-hidden="true">
+        <label className="absolute -start-[9999px]" aria-hidden="true">
           Website
           <input tabIndex={-1} autoComplete="off" value={website} onChange={(e) => setWebsite(e.target.value)} />
         </label>
@@ -860,7 +860,7 @@ export default function GuidanceForm({
               <Save aria-hidden="true" className="h-4 w-4" /> {t("saveLater")}
             </button>
           ) : null}
-          <div className="flex gap-3 sm:ml-auto">
+          <div className="flex gap-3 sm:ms-auto">
             {current > 0 && (
               <button type="button" onClick={() => go(current - 1)} className={secondary}>
                 <ArrowLeft aria-hidden="true" className="h-4 w-4" /> {t("back")}
@@ -1017,7 +1017,7 @@ function Option({ on, multi, onClick, children, id }: { on: boolean; multi: bool
       type="button"
       aria-pressed={on}
       onClick={onClick}
-      className={`flex min-h-12 w-full items-center gap-3 rounded-xl border px-4 py-3 text-left text-[15px] leading-snug transition-[border-color,background-color,box-shadow] focus:outline-none focus-visible:ring-4 focus-visible:ring-[var(--gf-ring)] ${
+      className={`flex min-h-12 w-full items-center gap-3 rounded-xl border px-4 py-3 text-start text-[15px] leading-snug transition-[border-color,background-color,box-shadow] focus:outline-none focus-visible:ring-4 focus-visible:ring-[var(--gf-ring)] ${
         on ? "border-[var(--gf-accent)] bg-[var(--gf-tint)] shadow-[inset_0_0_0_1px_var(--gf-accent)]" : "border-border bg-background hover:border-foreground/30"
       }`}
     >
@@ -1084,7 +1084,7 @@ function Field({
 
   if (q.kind === "info")
     return (
-      <div className="rounded-xl border-l-4 border-[var(--gf-accent)] bg-[var(--gf-tint)] px-4 py-3">
+      <div className="rounded-xl border-s-4 border-[var(--gf-accent)] bg-[var(--gf-tint)] px-4 py-3">
         <p className="whitespace-pre-wrap leading-relaxed">{tr(q.translations, lang, "label", q.label)}</p>
         {q.help && <p className="mt-1 text-sm text-muted-foreground">{tr(q.translations, lang, "help", q.help)}</p>}
       </div>
@@ -1199,7 +1199,7 @@ function Field({
         <Label q={q} lang={lang} t={t} htmlFor={id} />
         <div className="mt-3 flex justify-between gap-4 text-sm font-medium" aria-hidden="true">
           <span>{minLabel}</span>
-          <span className="text-right">{maxLabel}</span>
+          <span className="text-end">{maxLabel}</span>
         </div>
         <input
           id={id}

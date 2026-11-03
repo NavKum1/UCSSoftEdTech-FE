@@ -120,7 +120,7 @@ export interface GridView {
 }
 
 /** Each square's outer corner is rounded, so the four read as one shape */
-const CORNERS = ["rounded-tl-2xl", "rounded-tr-2xl", "rounded-bl-2xl", "rounded-br-2xl"];
+const CORNERS = ["rounded-ss-2xl", "rounded-se-2xl", "rounded-es-2xl", "rounded-ee-2xl"];
 
 /** The four outcomes in a two-by-two grid with the words at each end of its axes; theirs filled with the form's colour */
 export function StyleGrid({ grid, t }: { grid: GridView; t: (k: string) => string }) {
@@ -130,7 +130,7 @@ export function StyleGrid({ grid, t }: { grid: GridView; t: (k: string) => strin
       <p className="text-center text-xs font-medium text-muted-foreground">{grid.top}</p>
       {/* On a phone the left and right ends go under the grid, so the squares get the whole width for long names */}
       <div className="mt-1.5 grid grid-cols-1 items-center gap-2 sm:grid-cols-[auto_1fr_auto]">
-        <span className="hidden w-20 hyphens-auto wrap-break-word text-right text-xs font-medium leading-tight text-muted-foreground sm:block">{grid.left}</span>
+        <span className="hidden w-20 hyphens-auto wrap-break-word text-end text-xs font-medium leading-tight text-muted-foreground sm:block">{grid.left}</span>
         <ul className="grid aspect-square min-w-0 grid-cols-2 gap-1.5">
           {grid.cells.map((c, i) => {
             const on = c.id === grid.active;
@@ -142,7 +142,7 @@ export function StyleGrid({ grid, t }: { grid: GridView; t: (k: string) => strin
                 }`}
                 aria-current={on ? "true" : undefined}
               >
-                {on && <Check aria-hidden="true" className="absolute right-1.5 top-1.5 h-3.5 w-3.5 sm:right-2 sm:top-2 sm:h-4 sm:w-4" strokeWidth={3} />}
+                {on && <Check aria-hidden="true" className="absolute end-1.5 top-1.5 h-3.5 w-3.5 sm:end-2 sm:top-2 sm:h-4 sm:w-4" strokeWidth={3} />}
                 {c.name}
               </li>
             );
@@ -155,7 +155,7 @@ export function StyleGrid({ grid, t }: { grid: GridView; t: (k: string) => strin
           <span aria-hidden="true">← </span>
           {grid.left}
         </span>
-        <span className="text-right">
+        <span className="text-end">
           {grid.right}
           <span aria-hidden="true"> →</span>
         </span>

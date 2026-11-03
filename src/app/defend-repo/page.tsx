@@ -16,6 +16,7 @@ import {
 import { authenticatedFetch } from "@/lib/apiClient";
 import VapiInterviewRoom from "@/components/VapiInterviewRoom";
 import SignInRequired from "@/components/SignInRequired";
+import { useEn } from "@/lib/english/EnglishProvider";
 
 type RepoDefenseStatus = "PendingVerification" | "Ready" | "Failed" | "Defended";
 
@@ -72,6 +73,7 @@ function StatusBadge({ status }: { status: RepoDefenseStatus }) {
 }
 
 export default function DefendRepoPage() {
+  const en = useEn();
   const { getToken, isLoaded, isSignedIn } = useAuth();
 
   const [repository, setRepository] = useState("");
@@ -184,7 +186,7 @@ export default function DefendRepoPage() {
 
   if (isLoaded && !isSignedIn) {
     return (
-      <SignInRequired title="Defend your real work" message="Sign in to link a GitHub repository or pull request." />
+      <SignInRequired title={en("Defend your real work")} message="Sign in to link a GitHub repository or pull request." />
     );
   }
 
@@ -196,11 +198,10 @@ export default function DefendRepoPage() {
         <div>
           <h1 className="text-2xl font-black tracking-tight text-foreground flex items-center gap-2">
             <GitBranch className="w-6 h-6 text-indigo-700 dark:text-indigo-400" />
-            Defend your real work
+            {en("Defend your real work")}
           </h1>
           <p className="text-sm text-muted-foreground mt-1 max-w-3xl">
-            Link a public GitHub repository or pull request you wrote, prove the GitHub account is yours, then explain your code in
-            a voice defense. The interviewer asks about the files you authored.
+            {en("Link a public GitHub repository or pull request you wrote, prove the GitHub account is yours, then explain your code in a voice defense. The interviewer asks about the files you authored.")}
           </p>
         </div>
 
@@ -213,10 +214,10 @@ export default function DefendRepoPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 space-y-6">
             <form onSubmit={handleCreate} className="glass-panel rounded-2xl p-5 border border-border space-y-4">
-              <h2 className="text-sm font-bold text-foreground">1. Link a repository or pull request</h2>
+              <h2 className="text-sm font-bold text-foreground">{en("1. Link a repository or pull request")}</h2>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <label className="sm:col-span-2 text-xs text-muted-foreground space-y-1">
-                  <span>GitHub repo or PR URL</span>
+                  <span>{en("GitHub repo or PR URL")}</span>
                   <input
                     required
                     value={repository}
@@ -226,7 +227,7 @@ export default function DefendRepoPage() {
                   />
                 </label>
                 <label className="text-xs text-muted-foreground space-y-1">
-                  <span>PR number (optional)</span>
+                  <span>{en("PR number (optional)")}</span>
                   <input
                     inputMode="numeric"
                     value={pullRequestNumber}
@@ -237,7 +238,7 @@ export default function DefendRepoPage() {
                 </label>
               </div>
               <label className="block text-xs text-muted-foreground space-y-1">
-                <span>Your GitHub username</span>
+                <span>{en("Your GitHub username")}</span>
                 <input
                   required
                   value={gitHubLogin}
@@ -246,14 +247,14 @@ export default function DefendRepoPage() {
                   className="w-full sm:max-w-xs px-3 py-2 rounded-xl border border-border bg-background text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
                 />
               </label>
-              <p className="text-[11px] text-muted-foreground">Only public repositories are supported.</p>
+              <p className="text-[11px] text-muted-foreground">{en("Only public repositories are supported.")}</p>
               <button
                 type="submit"
                 disabled={creating}
                 className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 disabled:opacity-60 text-white text-sm font-semibold"
               >
                 {creating && <Loader2 className="w-4 h-4 animate-spin" />}
-                Get verification token
+                {en("Get verification token")}
               </button>
             </form>
 
@@ -261,9 +262,9 @@ export default function DefendRepoPage() {
               <div className="glass-panel rounded-2xl p-5 border border-border space-y-4">
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <h2 className="text-sm font-bold text-foreground">
-                    2. Verify ownership
+                    {en("2. Verify ownership")}
                     {current.repository && (
-                      <span className="ml-2 font-mono font-normal text-muted-foreground">
+                      <span className="ms-2 font-mono font-normal text-muted-foreground">
                         {current.repository}
                         {current.pullRequestNumber ? ` #${current.pullRequestNumber}` : ""}
                       </span>
@@ -276,7 +277,7 @@ export default function DefendRepoPage() {
                   <>
                     {currentToken ? (
                       <div className="space-y-2">
-                        <p className="text-xs text-muted-foreground">Your one-time verification token:</p>
+                        <p className="text-xs text-muted-foreground">{en("Your one-time verification token:")}</p>
                         <div className="flex items-center gap-2">
                           <code className="flex-1 min-w-0 truncate px-3 py-2 rounded-xl bg-muted border border-border font-mono text-sm text-foreground">
                             {currentToken}
@@ -287,26 +288,26 @@ export default function DefendRepoPage() {
                             className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-border bg-card hover:bg-muted text-xs font-semibold text-foreground shrink-0"
                           >
                             {copied ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
-                            {copied ? "Copied" : "Copy"}
+                            {copied ? en("Copied") : en("Copy")}
                           </button>
                         </div>
                       </div>
                     ) : null}
                     <div className="text-xs text-muted-foreground space-y-1.5">
                       {instructions && <p>{instructions}</p>}
-                      <ol className="list-decimal pl-5 space-y-1">
+                      <ol className="list-decimal ps-5 space-y-1">
                         <li>
-                          Add the token to your GitHub profile bio (
+                          {en("Add the token to your GitHub profile bio (")}
                           <a href="https://github.com/settings/profile" target="_blank" rel="noreferrer" className="text-indigo-700 dark:text-indigo-400 hover:underline">
                             github.com/settings/profile
                           </a>
-                          ), <strong>or</strong> create a public gist whose description contains it (
+                          ), <strong>or</strong>{en(" create a public gist whose description contains it (")}
                           <a href="https://gist.github.com/" target="_blank" rel="noreferrer" className="text-indigo-700 dark:text-indigo-400 hover:underline">
                             gist.github.com
                           </a>
                           ).
                         </li>
-                        <li>Click Verify. You can remove the token from GitHub afterwards.</li>
+                        <li>{en("Click Verify. You can remove the token from GitHub afterwards.")}</li>
                       </ol>
                     </div>
                     <button
@@ -316,7 +317,7 @@ export default function DefendRepoPage() {
                       className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 disabled:opacity-60 text-white text-sm font-semibold"
                     >
                       {verifying ? <Loader2 className="w-4 h-4 animate-spin" /> : <ShieldCheck className="w-4 h-4" />}
-                      Verify
+                      {en("Verify")}
                     </button>
                   </>
                 )}
@@ -332,14 +333,14 @@ export default function DefendRepoPage() {
                     <div className="space-y-3">
                       {typeof current.authorCommitShare === "number" && (
                         <p className="text-xs text-muted-foreground">
-                          Commits authored by you:{" "}
+                          {en("Commits authored by you:")}{" "}
                           <span className="font-semibold text-foreground">{Math.round(current.authorCommitShare * 100)}%</span>
-                          {typeof current.authorCommitCount === "number" && <> ({current.authorCommitCount} commits sampled as yours)</>}
+                          {typeof current.authorCommitCount === "number" && <> ({current.authorCommitCount}{en(" commits sampled as yours)")}</>}
                         </p>
                       )}
                       {current.selectedFiles && current.selectedFiles.length > 0 && (
                         <div>
-                          <p className="text-xs text-muted-foreground mb-1.5">Files selected for your defense:</p>
+                          <p className="text-xs text-muted-foreground mb-1.5">{en("Files selected for your defense:")}</p>
                           <ul className="space-y-1">
                             {current.selectedFiles.map((f) => (
                               <li key={f.path} className="flex items-center justify-between gap-2 text-xs px-3 py-1.5 rounded-lg bg-muted/60 border border-border">
@@ -347,7 +348,7 @@ export default function DefendRepoPage() {
                                   <FileCode className="w-3.5 h-3.5 shrink-0 text-muted-foreground" />
                                   <span className="truncate">{f.path}</span>
                                 </span>
-                                <span className="text-muted-foreground shrink-0">+{f.authorAdditions} lines by you</span>
+                                <span className="text-muted-foreground shrink-0">+{f.authorAdditions}{en(" lines by you")}</span>
                               </li>
                             ))}
                           </ul>
@@ -360,9 +361,9 @@ export default function DefendRepoPage() {
 
             {canDefend && current && (
               <div className="space-y-2">
-                <h2 className="text-sm font-bold text-foreground">3. Defend it</h2>
+                <h2 className="text-sm font-bold text-foreground">{en("3. Defend it")}</h2>
                 {current.status === "Defended" && (
-                  <p className="text-xs text-muted-foreground">You&apos;ve already defended this work. You can start another session if you want.</p>
+                  <p className="text-xs text-muted-foreground">{en("You've already defended this work. You can start another session if you want.")}</p>
                 )}
                 <VapiInterviewRoom
                   key={current.id}
@@ -376,22 +377,22 @@ export default function DefendRepoPage() {
 
           <aside className="glass-panel rounded-2xl p-5 border border-border h-fit space-y-3">
             <div className="flex items-center justify-between">
-              <h2 className="text-sm font-bold text-foreground">Your linked work</h2>
+              <h2 className="text-sm font-bold text-foreground">{en("Your linked work")}</h2>
               <button
                 type="button"
                 onClick={() => void refreshHistory()}
                 className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted"
-                aria-label="Refresh"
+                aria-label={en("Refresh")}
               >
                 <RefreshCw className="w-3.5 h-3.5" />
               </button>
             </div>
             {historyLoading ? (
               <p className="text-xs text-muted-foreground flex items-center gap-1.5">
-                <Loader2 className="w-3.5 h-3.5 animate-spin" /> Loading...
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />{en(" Loading...")}
               </p>
             ) : history.length === 0 ? (
-              <p className="text-xs text-muted-foreground">Nothing linked yet.</p>
+              <p className="text-xs text-muted-foreground">{en("Nothing linked yet.")}</p>
             ) : (
               <ul className="space-y-2">
                 {history.map((item) => (
@@ -399,7 +400,7 @@ export default function DefendRepoPage() {
                     <button
                       type="button"
                       onClick={() => selectExisting(item)}
-                      className={`w-full text-left p-3 rounded-xl border transition-colors ${
+                      className={`w-full text-start p-3 rounded-xl border transition-colors ${
                         current?.id === item.id ? "border-indigo-500/50 bg-indigo-500/5" : "border-border hover:bg-muted/60"
                       }`}
                     >

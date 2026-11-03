@@ -62,7 +62,7 @@ function Setup() {
 
   if (access) return <AccessNotice problem={access} feature="school setup" />;
   if (!s) {
-    return <div className="mx-auto max-w-5xl p-6">{error ? <p className="text-sm text-red-700">{error}</p> : <Loader2 aria-label="Loading" className="h-5 w-5 animate-spin text-muted-foreground" />}</div>;
+    return <div className="mx-auto max-w-5xl p-6">{error ? <p className="text-sm text-red-700">{error}</p> : <Loader2 aria-label={en("Loading")} className="h-5 w-5 animate-spin text-muted-foreground" />}</div>;
   }
 
   const index = STEPS.findIndex((x) => x.key === step);
@@ -82,15 +82,15 @@ function Setup() {
   return (
     <div className="mx-auto max-w-5xl p-4 sm:p-6">
       <div className="mb-6">
-        <h1 className="text-2xl font-semibold tracking-tight">Set up {s.school.name}</h1>
-        <p className="mt-1 text-sm text-muted-foreground">Four short steps. Skip any of them and come back from the checklist on your dashboard.</p>
+        <h1 className="text-2xl font-semibold tracking-tight">{en("Set up ")}{s.school.name}</h1>
+        <p className="mt-1 text-sm text-muted-foreground">{en("Four short steps. Skip any of them and come back from the checklist on your dashboard.")}</p>
       </div>
 
       <div className="lg:grid lg:grid-cols-[230px_1fr] lg:gap-8">
         {/* Steps: a list on the side on wide screens, a bar on phones */}
-        <nav aria-label="Setup steps" className="mb-5 lg:mb-0">
+        <nav aria-label={en("Setup steps")} className="mb-5 lg:mb-0">
           <p className="mb-2 text-sm text-muted-foreground lg:hidden">
-            Step {index + 1} of {STEPS.length}: {STEPS[index].title}
+            {en("Step ")}{index + 1} of {STEPS.length}: {STEPS[index].title}
           </p>
           <div className="h-1.5 overflow-hidden rounded-full bg-muted lg:hidden">
             <div className="h-full rounded-full bg-cyan-600" style={{ width: `${((index + 1) / STEPS.length) * 100}%` }} />
@@ -102,14 +102,14 @@ function Setup() {
                   type="button"
                   onClick={() => go(x.key)}
                   aria-current={x.key === step ? "step" : undefined}
-                  className={`flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left ${x.key === step ? "bg-cyan-50 dark:bg-cyan-950/40" : "hover:bg-muted"}`}
+                  className={`flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-start ${x.key === step ? "bg-cyan-50 dark:bg-cyan-950/40" : "hover:bg-muted"}`}
                 >
                   <span
                     className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-semibold ${
                       done(x.key) ? "bg-emerald-600 text-white" : x.key === step ? "bg-cyan-700 text-white" : "border border-border text-muted-foreground"
                     }`}
                   >
-                    {done(x.key) ? <Check aria-label="Done" className="h-4 w-4" strokeWidth={3} /> : i + 1}
+                    {done(x.key) ? <Check aria-label={en("Done")} className="h-4 w-4" strokeWidth={3} /> : i + 1}
                   </span>
                   <span>
                     <span className="block text-sm font-medium">{en(x.title)}</span>
@@ -129,13 +129,13 @@ function Setup() {
           <div className="mt-8 flex flex-wrap items-center justify-between gap-3 border-t border-border pt-5">
             {index > 0 ? (
               <button type="button" onClick={() => go(STEPS[index - 1].key)} className="text-sm font-medium text-muted-foreground hover:text-foreground">
-                Back
+                {en("Back")}
               </button>
             ) : (
               <span />
             )}
             <button type="button" onClick={() => void next()} className={step === "school" ? "text-sm font-medium text-muted-foreground hover:text-foreground" : secondary}>
-              {index === STEPS.length - 1 ? "Finish and open the dashboard" : step === "school" ? "Skip for now" : "Next step"}
+              {index === STEPS.length - 1 ? en("Finish and open the dashboard") : step === "school" ? en("Skip for now") : en("Next step")}
             </button>
           </div>
         </section>
@@ -191,7 +191,7 @@ function SchoolStep({ s, setS, apiFetch, next }: StepProps) {
 
   const upload = async (picked: File | undefined) => {
     if (!picked) return;
-    if (picked.size > 1024 * 1024) return setError("The logo can be up to 1 MB.");
+    if (picked.size > 1024 * 1024) return setError(en("The logo can be up to 1 MB."));
     setBusy("logo");
     setError(null);
     const body = new FormData();
@@ -237,7 +237,7 @@ function SchoolStep({ s, setS, apiFetch, next }: StepProps) {
 
   return (
     <>
-      <Heading title="Your school" text={en("Your logo and colour go on your inquiry forms, the reports people receive, and your e-mails.")} />
+      <Heading title={en("Your school")} text={en("Your logo and colour go on your inquiry forms, the reports people receive, and your e-mails.")} />
 
       <fieldset>
         <legend className="text-sm font-medium">{en("What kind of organisation are you?")}</legend>
@@ -259,7 +259,7 @@ function SchoolStep({ s, setS, apiFetch, next }: StepProps) {
 
       <div className="mt-7 grid gap-6 md:grid-cols-[1fr_1fr]">
         <div>
-          <p className="text-sm font-medium">Logo</p>
+          <p className="text-sm font-medium">{en("Logo")}</p>
           <div className="mt-2 flex items-center gap-4">
             <div className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-border bg-background">
               {s.school.logoUrl ? (
@@ -273,14 +273,14 @@ function SchoolStep({ s, setS, apiFetch, next }: StepProps) {
               <input ref={file} type="file" accept="image/png,image/jpeg,image/webp" className="sr-only" id="logo-file" onChange={(e) => void upload(e.target.files?.[0])} />
               <label htmlFor="logo-file" className={`${secondary} cursor-pointer py-2 text-sm`}>
                 {busy === "logo" ? <Loader2 aria-hidden="true" className="h-4 w-4 animate-spin" /> : <ImageUp aria-hidden="true" className="h-4 w-4" />}
-                {s.school.logoUrl ? "Replace" : "Upload"}
+                {s.school.logoUrl ? en("Replace") : en("Upload")}
               </label>
               {s.school.logoUrl && (
-                <button type="button" onClick={() => void removeLogo()} disabled={busy != null} className="ml-2 inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-red-700">
-                  <Trash2 aria-hidden="true" className="h-4 w-4" /> Remove
+                <button type="button" onClick={() => void removeLogo()} disabled={busy != null} className="ms-2 inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-red-700">
+                  <Trash2 aria-hidden="true" className="h-4 w-4" />{en(" Remove")}
                 </button>
               )}
-              <p className="text-xs text-muted-foreground">PNG, JPEG or WebP, up to 1 MB. A wide logo on a clear background looks best.</p>
+              <p className="text-xs text-muted-foreground">{en("PNG, JPEG or WebP, up to 1 MB. A wide logo on a clear background looks best.")}</p>
             </div>
           </div>
         </div>
@@ -312,7 +312,7 @@ function SchoolStep({ s, setS, apiFetch, next }: StepProps) {
           <input id="accent" value={f.accent} onChange={(e) => setF({ ...f, accent: e.target.value.trim() })} placeholder="#0e7490" className={`${input} max-w-40 font-mono text-sm`} />
           {validAccent && (
             <p className="mt-3 inline-flex items-center gap-2 rounded-lg px-3 py-1.5 text-sm font-semibold text-white" style={{ background: f.accent }}>
-              Book a guidance session
+              {en("Book a guidance session")}
             </p>
           )}
         </div>
@@ -321,15 +321,15 @@ function SchoolStep({ s, setS, apiFetch, next }: StepProps) {
       <div className="mt-7 grid gap-4 md:grid-cols-2">
         <div>
           <label htmlFor="country" className="text-sm font-medium">
-            Country
+            {en("Country")}
           </label>
           {s.school.countryLocked ? (
             <p id="country" className="mt-1.5 rounded-xl bg-muted/60 px-3.5 py-2.5 text-[15px]">
-              {countryName(s.school.country)} <span className="text-xs text-muted-foreground">(set at sign-up: it decides your currency)</span>
+              {countryName(s.school.country)} <span className="text-xs text-muted-foreground">{en("(set at sign-up: it decides your currency)")}</span>
             </p>
           ) : (
             <select id="country" value={f.country} onChange={(e) => setF({ ...f, country: e.target.value })} className={input}>
-              <option value="">Choose your country</option>
+              <option value="">{en("Choose your country")}</option>
               {countries.map((c) => (
                 <option key={c.code} value={c.code}>
                   {c.name}
@@ -340,27 +340,27 @@ function SchoolStep({ s, setS, apiFetch, next }: StepProps) {
         </div>
         <div>
           <label htmlFor="website" className="text-sm font-medium">
-            Website
+            {en("Website")}
           </label>
           <input id="website" value={f.website} onChange={(e) => setF({ ...f, website: e.target.value })} placeholder="www.yourschool.edu" className={input} />
         </div>
         <div>
           <label htmlFor="contact" className="text-sm font-medium">
-            Contact e-mail for families and students
+            {en("Contact e-mail for families and students")}
           </label>
-          <input id="contact" type="email" value={f.contactEmail} onChange={(e) => setF({ ...f, contactEmail: e.target.value })} placeholder="admissions@yourschool.edu" className={input} />
+          <input id="contact" type="email" value={f.contactEmail} onChange={(e) => setF({ ...f, contactEmail: e.target.value })} placeholder={en("admissions@yourschool.edu")} className={input} />
         </div>
         <div>
           <label htmlFor="address" className="text-sm font-medium">
-            Postal address <span className="font-normal text-muted-foreground">(shown in e-mail footers)</span>
+            {en("Postal address ")}<span className="font-normal text-muted-foreground">{en("(shown in e-mail footers)")}</span>
           </label>
           <input id="address" value={f.address} onChange={(e) => setF({ ...f, address: e.target.value })} className={input} />
         </div>
       </div>
 
       <fieldset className="mt-7">
-        <legend className="text-sm font-medium">Spelling on your forms, reports and e-mails</legend>
-        <p className="mt-0.5 text-xs text-muted-foreground">Students and families see your school&apos;s English. Each person on your team can still choose their own.</p>
+        <legend className="text-sm font-medium">{en("Spelling on your forms, reports and e-mails")}</legend>
+        <p className="mt-0.5 text-xs text-muted-foreground">{en("Students and families see your school's English. Each person on your team can still choose their own.")}</p>
         <div className="mt-2 grid gap-2 sm:grid-cols-3">
           {([
             ["", `Automatic (${s.english.fromCountry === "US" ? "US" : "UK/Indian"}, from your country)`],
@@ -379,10 +379,10 @@ function SchoolStep({ s, setS, apiFetch, next }: StepProps) {
         {s.english.value === "US" && s.english.britishForms > 0 && (
           <div className="mt-3 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-amber-300 bg-amber-50 p-3.5 text-sm text-amber-950 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-100">
             <span>
-              {s.english.britishForms === 1 ? "1 of your forms still uses" : `${s.english.britishForms} of your forms still use`} UK spelling. Answers already received keep their wording.
+              {s.english.britishForms === 1 ? en("1 of your forms still uses") : `${s.english.britishForms} of your forms still use`}{en(" UK spelling. Answers already received keep their wording.")}
             </span>
             <button type="button" onClick={() => void convertForms()} disabled={busy != null} className={`${secondary} bg-background py-1.5 text-sm`}>
-              {busy === "forms" && <Loader2 aria-hidden="true" className="h-4 w-4 animate-spin" />} Switch them to US spelling
+              {busy === "forms" && <Loader2 aria-hidden="true" className="h-4 w-4 animate-spin" />}{en(" Switch them to US spelling")}
             </button>
           </div>
         )}
@@ -390,7 +390,7 @@ function SchoolStep({ s, setS, apiFetch, next }: StepProps) {
 
       <Problem text={error} />
       <button type="button" onClick={() => void save()} disabled={busy != null} className={`${primary} mt-6`}>
-        {busy === "save" && <Loader2 aria-hidden="true" className="h-4 w-4 animate-spin" />} Save and continue
+        {busy === "save" && <Loader2 aria-hidden="true" className="h-4 w-4 animate-spin" />}{en(" Save and continue")}
       </button>
     </>
   );
@@ -424,8 +424,8 @@ function FormStep({ s, setS, apiFetch }: StepProps) {
   return (
     <>
       <Heading
-        title="Your first inquiry form"
-        text="Families and students fill it in on your website. Each answer becomes a lead in your CRM, and each person gets a report with their results."
+        title={en("Your first inquiry form")}
+        text={en("Families and students fill it in on your website. Each answer becomes a lead in your CRM, and each person gets a report with their results.")}
       />
       {own && (
         <div className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-950 dark:border-emerald-900 dark:bg-emerald-950/40 dark:text-emerald-100">
@@ -434,12 +434,12 @@ function FormStep({ s, setS, apiFetch }: StepProps) {
             {made ? `"${made}" ${en("is published with your logo and colour.")}` : `"${own.name}" is published.`}
           </span>
           <Link href="/institute/guidance" className="font-semibold underline underline-offset-2">
-            Change its questions
+            {en("Change its questions")}
           </Link>
         </div>
       )}
       <fieldset>
-        <legend className="text-sm font-medium">{own ? "Or start another from a template" : "Templates for schools like yours"}</legend>
+        <legend className="text-sm font-medium">{own ? en("Or start another from a template") : en("Templates for schools like yours")}</legend>
         <div className="mt-2 grid gap-3 md:grid-cols-2">
           {s.suggested.map((t) => (
             <label
@@ -451,7 +451,7 @@ function FormStep({ s, setS, apiFetch }: StepProps) {
                 <span>
                   <span className="block font-medium">{t.name}</span>
                   <span className="block text-xs text-muted-foreground">
-                    For {t.audience}
+                    {en("For ")}{t.audience}
                     {t.country !== "any" && `, ${countryName(t.country)}`}
                   </span>
                   <span className="mt-1.5 block text-sm text-muted-foreground">{t.description}</span>
@@ -462,15 +462,15 @@ function FormStep({ s, setS, apiFetch }: StepProps) {
         </div>
       </fieldset>
       <p className="mt-3 text-sm text-muted-foreground">
-        More templates, and a blank form, are in{" "}
+        {en("More templates, and a blank form, are in")}{" "}
         <Link href="/institute/guidance" className="font-medium text-cyan-700 hover:underline dark:text-cyan-400">
-          Guidance forms
+          {en("Guidance forms")}
         </Link>
         .
       </p>
       <Problem text={error} />
       <button type="button" onClick={() => void create()} disabled={busy || !choice} className={`${primary} mt-6`}>
-        {busy && <Loader2 aria-hidden="true" className="h-4 w-4 animate-spin" />} {own ? "Create and publish this one" : "Create and publish my form"}
+        {busy && <Loader2 aria-hidden="true" className="h-4 w-4 animate-spin" />} {own ? en("Create and publish this one") : en("Create and publish my form")}
       </button>
     </>
   );
@@ -483,14 +483,14 @@ function TeamStep({ s, getToken }: StepProps & { getToken: () => Promise<string 
   return (
     <>
       <Heading
-        title="Your team"
+        title={en("Your team")}
         text={en("Counsellors work the inquiries and meetings; admins can change everything, including billing. Each person gets an e-mail to set up their sign-in.")}
       />
       <p className="mb-5 text-sm">
         {s.team.limit == null ? `${s.team.used} on your team.` : `${s.team.used} of ${s.team.limit} places on your ${s.plan?.name ?? ""} plan are used.`}{" "}
         {s.team.limit != null && s.team.used >= s.team.limit && (
           <Link href="/institute/billing" className="font-medium text-cyan-700 hover:underline dark:text-cyan-400">
-            Upgrade for more places
+            {en("Upgrade for more places")}
           </Link>
         )}
       </p>
@@ -521,17 +521,17 @@ function WebsiteStep({ s, apiFetch }: StepProps) {
   if (!form) {
     return (
       <>
-        <Heading title="Your website" text="Put your inquiry form on your website, or share its link." />
-        <p className="rounded-xl bg-muted/60 p-4 text-sm">Publish a form first (the step before this one). Its link and website code then appear here.</p>
+        <Heading title={en("Your website")} text={en("Put your inquiry form on your website, or share its link.")} />
+        <p className="rounded-xl bg-muted/60 p-4 text-sm">{en("Publish a form first (the step before this one). Its link and website code then appear here.")}</p>
       </>
     );
   }
   return (
     <>
-      <Heading title="Your website" text={`Put "${form.name}" on your website, or share its link in e-mails, messages and social posts.`} />
-      <p className="text-sm font-medium">The form&apos;s link</p>
+      <Heading title={en("Your website")} text={`Put "${form.name}" on your website, or share its link in e-mails, messages and social posts.`} />
+      <p className="text-sm font-medium">{en("The form's link")}</p>
       <div className="mt-1.5 flex flex-wrap gap-2">
-        <input readOnly value={form.link} aria-label="The form's link" className={`${input} mt-0 min-w-0 flex-1 font-mono text-sm`} onFocus={(e) => e.target.select()} />
+        <input readOnly value={form.link} aria-label={en("The form's link")} className={`${input} mt-0 min-w-0 flex-1 font-mono text-sm`} onFocus={(e) => e.target.select()} />
         <button
           type="button"
           onClick={async () => {
@@ -541,13 +541,13 @@ function WebsiteStep({ s, apiFetch }: StepProps) {
           }}
           className={secondary}
         >
-          {copied ? <Check aria-hidden="true" className="h-4 w-4" /> : <Copy aria-hidden="true" className="h-4 w-4" />} {copied ? "Copied" : "Copy"}
+          {copied ? <Check aria-hidden="true" className="h-4 w-4" /> : <Copy aria-hidden="true" className="h-4 w-4" />} {copied ? en("Copied") : en("Copy")}
         </button>
       </div>
 
       <div className="mt-7 rounded-xl border border-border p-4">
-        <p className="text-sm font-medium">Someone else runs your website?</p>
-        <p className="mt-0.5 text-sm text-muted-foreground">We&apos;ll e-mail them the code and the instructions.</p>
+        <p className="text-sm font-medium">{en("Someone else runs your website?")}</p>
+        <p className="mt-0.5 text-sm text-muted-foreground">{en("We'll e-mail them the code and the instructions.")}</p>
         <form
           className="mt-3 flex flex-col gap-2 sm:flex-row"
           onSubmit={(e) => {
@@ -555,9 +555,9 @@ function WebsiteStep({ s, apiFetch }: StepProps) {
             void send();
           }}
         >
-          <input type="email" required value={to} onChange={(e) => setTo(e.target.value)} placeholder="webmaster@yourschool.edu" aria-label="Their e-mail" className={`${input} mt-0 min-w-0 sm:flex-1`} />
+          <input type="email" required value={to} onChange={(e) => setTo(e.target.value)} placeholder={en("webmaster@yourschool.edu")} aria-label={en("Their e-mail")} className={`${input} mt-0 min-w-0 sm:flex-1`} />
           <button type="submit" disabled={busy} className={secondary}>
-            {busy ? <Loader2 aria-hidden="true" className="h-4 w-4 animate-spin" /> : <Mail aria-hidden="true" className="h-4 w-4" />} Send the code
+            {busy ? <Loader2 aria-hidden="true" className="h-4 w-4 animate-spin" /> : <Mail aria-hidden="true" className="h-4 w-4" />}{en(" Send the code")}
           </button>
         </form>
         {note && (
@@ -568,15 +568,15 @@ function WebsiteStep({ s, apiFetch }: StepProps) {
       </div>
 
       <div className="mt-7">
-        <p className="mb-2 text-sm font-medium">Or add it yourself</p>
+        <p className="mb-2 text-sm font-medium">{en("Or add it yourself")}</p>
         <EmbedBuilder instituteId={s.instituteId} formId={form.id} formName={form.name} publicEnabled={form.publicEnabled} />
       </div>
 
       {s.plan?.customDomain && (
         <p className="mt-6 text-sm text-muted-foreground">
-          Your plan includes your own address for the form, such as guidance.yourschool.edu. Set it up in{" "}
+          {en("Your plan includes your own address for the form, such as guidance.yourschool.edu. Set it up in")}{" "}
           <Link href="/institute/guidance" className="font-medium text-cyan-700 hover:underline dark:text-cyan-400">
-            Guidance forms
+            {en("Guidance forms")}
           </Link>
           .
         </p>

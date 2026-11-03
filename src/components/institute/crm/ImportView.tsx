@@ -189,31 +189,31 @@ export default function ImportView({ getToken, onImported }: { getToken: GetToke
     <div className="space-y-5">
       <section className="rounded-2xl border border-border bg-card p-5">
         <h2 className="flex items-center gap-2 text-base font-semibold">
-          <FileUp aria-hidden="true" className="h-4 w-4 text-cyan-700" /> Import leads
+          <FileUp aria-hidden="true" className="h-4 w-4 text-cyan-700" />{en(" Import leads")}
         </h2>
         <p className="mt-1 text-sm text-muted-foreground">
-          Bring your leads over from VirtualAdviser or another system, as a CSV file. You see what will happen before anything is saved, and nothing is sent to the people you import.
+          {en("Bring your leads over from VirtualAdviser or another system, as a CSV file. You see what will happen before anything is saved, and nothing is sent to the people you import.")}
         </p>
         <div className="mt-4 grid gap-3 text-sm md:grid-cols-2">
           <label className="block font-medium md:col-span-2">
-            CSV file
-            <input ref={fileInput} type="file" accept=".csv,text/csv" disabled={busy} onChange={(e) => choose(e.target.files?.[0] ?? null)} className={`${input} file:mr-3 file:rounded-md file:border-0 file:bg-muted file:px-3 file:py-1 file:text-sm`} />
-            <span className="mt-1 block text-xs font-normal text-muted-foreground">An Excel file? Open it in Excel and choose File → Save As → CSV (UTF-8). Up to 20,000 rows.</span>
+            {en("CSV file")}
+            <input ref={fileInput} type="file" accept=".csv,text/csv" disabled={busy} onChange={(e) => choose(e.target.files?.[0] ?? null)} className={`${input} file:me-3 file:rounded-md file:border-0 file:bg-muted file:px-3 file:py-1 file:text-sm`} />
+            <span className="mt-1 block text-xs font-normal text-muted-foreground">{en("An Excel file? Open it in Excel and choose File → Save As → CSV (UTF-8). Up to 20,000 rows.")}</span>
           </label>
           <label className="block font-medium">
-            Where the leads came from
+            {en("Where the leads came from")}
             <input className={input} value={source} maxLength={40} onChange={(e) => setSource(e.target.value)} onBlur={() => check()} />
-            <span className="mt-1 block text-xs font-normal text-muted-foreground">Their source in the CRM (unless the file has a source column) and a tag on each, so you can find them.</span>
+            <span className="mt-1 block text-xs font-normal text-muted-foreground">{en("Their source in the CRM (unless the file has a source column) and a tag on each, so you can find them.")}</span>
           </label>
           <label className="block font-medium">
-            Dates like 03/04/2026 mean
+            {en("Dates like 03/04/2026 mean")}
             <select className={input} value={dateOrder} onChange={(e) => setDateOrder(e.target.value as "mdy" | "dmy")}>
-              <option value="mdy">Month first: 4 March 2026</option>
-              <option value="dmy">Day first: 3 April 2026</option>
+              <option value="mdy">{en("Month first: 4 March 2026")}</option>
+              <option value="dmy">{en("Day first: 3 April 2026")}</option>
             </select>
           </label>
           <fieldset className="md:col-span-2">
-            <legend className="font-medium">Someone who is already in your CRM (same email or phone number)</legend>
+            <legend className="font-medium">{en("Someone who is already in your CRM (same email or phone number)")}</legend>
             <div className="mt-1 flex flex-wrap gap-4">
               {(
                 [
@@ -229,7 +229,7 @@ export default function ImportView({ getToken, onImported }: { getToken: GetToke
             </div>
           </fieldset>
         </div>
-        {busy && <p className="mt-3 text-sm text-muted-foreground" role="status">Working…</p>}
+        {busy && <p className="mt-3 text-sm text-muted-foreground" role="status">{en("Working…")}</p>}
         {message && (
           <p role={message.ok ? "status" : "alert"} className={`mt-3 rounded-lg px-3 py-2 text-sm ${message.ok ? "bg-emerald-500/10 text-emerald-800 dark:text-emerald-300" : "bg-red-500/10 text-red-800 dark:text-red-300"}`}>
             {message.text}
@@ -240,22 +240,22 @@ export default function ImportView({ getToken, onImported }: { getToken: GetToke
       {preview && mapping && (
         <>
           <section className="rounded-2xl border border-border bg-card p-5">
-            <h3 className="text-sm font-semibold">What each column is</h3>
-            <p className="mt-1 text-xs text-muted-foreground">Matched from the column names; change any that are wrong. Columns kept as answers show on the lead with what they shared.</p>
+            <h3 className="text-sm font-semibold">{en("What each column is")}</h3>
+            <p className="mt-1 text-xs text-muted-foreground">{en("Matched from the column names; change any that are wrong. Columns kept as answers show on the lead with what they shared.")}</p>
             <div className="mt-3 overflow-x-auto">
               <table className="w-full text-sm">
-                <thead className="text-left text-xs text-muted-foreground">
+                <thead className="text-start text-xs text-muted-foreground">
                   <tr>
-                    <th className="pb-2 pr-3 font-medium">Column in the file</th>
-                    <th className="pb-2 pr-3 font-medium">Examples</th>
-                    <th className="pb-2 font-medium">Import as</th>
+                    <th className="pb-2 pe-3 font-medium">{en("Column in the file")}</th>
+                    <th className="pb-2 pe-3 font-medium">{en("Examples")}</th>
+                    <th className="pb-2 font-medium">{en("Import as")}</th>
                   </tr>
                 </thead>
                 <tbody>
                   {preview.columns.map((c) => (
                     <tr key={c.index} className="border-t border-border align-top">
-                      <td className="py-2 pr-3 font-medium">{c.name}</td>
-                      <td className="max-w-xs py-2 pr-3 text-xs text-muted-foreground">{c.samples.length ? c.samples.join(" · ") : "(empty)"}</td>
+                      <td className="py-2 pe-3 font-medium">{c.name}</td>
+                      <td className="max-w-xs py-2 pe-3 text-xs text-muted-foreground">{c.samples.length ? c.samples.join(" · ") : en("(empty)")}</td>
                       <td className="py-2">
                         <select aria-label={`Import ${c.name} as`} className="rounded-lg border border-border bg-background px-2 py-1.5 text-sm" value={mapping[c.index]} disabled={busy} onChange={(e) => setField(c.index, e.target.value)}>
                           {preview.fields.map((f) => (
@@ -273,16 +273,16 @@ export default function ImportView({ getToken, onImported }: { getToken: GetToke
           </section>
 
           <section className="rounded-2xl border border-border bg-card p-5">
-            <h3 className="text-sm font-semibold">What will happen</h3>
+            <h3 className="text-sm font-semibold">{en("What will happen")}</h3>
             <dl className="mt-3 grid grid-cols-2 gap-3 text-sm lg:grid-cols-4">
-              <Count label="New leads" value={preview.create} />
-              <Count label={duplicates === "note" ? "Notes on people already in the CRM" : "Rows left out: already in the CRM"} value={preview.duplicates} hint={preview.repeatedInFile ? `${plural(preview.repeatedInFile, "row")} repeat someone earlier in the file` : undefined} />
-              <Count label="Rows that can't be used" value={preview.failed} warn={preview.failed > 0} />
-              <Count label="Marked do not contact" value={preview.optOut} hint="They asked not to be contacted" />
+              <Count label={en("New leads")} value={preview.create} />
+              <Count label={duplicates === "note" ? en("Notes on people already in the CRM") : en("Rows left out: already in the CRM")} value={preview.duplicates} hint={preview.repeatedInFile ? `${plural(preview.repeatedInFile, "row")} repeat someone earlier in the file` : undefined} />
+              <Count label={en("Rows that can't be used")} value={preview.failed} warn={preview.failed > 0} />
+              <Count label={en("Marked do not contact")} value={preview.optOut} hint={en("They asked not to be contacted")} />
             </dl>
             {preview.undated ? (
               <p className="mt-3 flex items-start gap-2 text-sm text-amber-900 dark:text-amber-200">
-                <AlertTriangle aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0" /> {plural(preview.undated, "date")} couldn&apos;t be read; those leads will be dated today.
+                <AlertTriangle aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0" /> {plural(preview.undated, "date")}{en(" couldn't be read; those leads will be dated today.")}
               </p>
             ) : null}
 
@@ -290,7 +290,7 @@ export default function ImportView({ getToken, onImported }: { getToken: GetToke
               <div className="mt-4 grid gap-4 md:grid-cols-2">
                 {preview.stages.length > 0 && (
                   <div>
-                    <h4 className="text-xs font-medium text-muted-foreground">Their statuses become</h4>
+                    <h4 className="text-xs font-medium text-muted-foreground">{en("Their statuses become")}</h4>
                     <ul className="mt-1 space-y-1 text-sm">
                       {preview.stages.map((s) => (
                         <li key={s.value} className="flex flex-wrap items-center gap-2">
@@ -306,47 +306,47 @@ export default function ImportView({ getToken, onImported }: { getToken: GetToke
                 )}
                 {preview.owners.length > 0 && (
                   <div>
-                    <h4 className="text-xs font-medium text-muted-foreground">Their owners become</h4>
+                    <h4 className="text-xs font-medium text-muted-foreground">{en("Their owners become")}</h4>
                     <ul className="mt-1 space-y-1 text-sm">
                       {preview.owners.map((o) => (
                         <li key={o.value} className="flex flex-wrap items-center gap-2">
                           <span>{o.value}</span>
                           <span aria-hidden="true" className="text-muted-foreground">→</span>
-                          {o.member ? <span className="font-medium">{o.member}</span> : <span className="text-amber-800 dark:text-amber-300">not on your team, so unassigned</span>}
+                          {o.member ? <span className="font-medium">{o.member}</span> : <span className="text-amber-800 dark:text-amber-300">{en("not on your team, so unassigned")}</span>}
                           <span className="text-xs text-muted-foreground">{plural(o.count, "lead")}</span>
                         </li>
                       ))}
                     </ul>
-                    {preview.owners.some((o) => !o.member) && <p className="mt-1 text-xs text-muted-foreground">Add them to your team in Settings first to keep their leads with them.</p>}
+                    {preview.owners.some((o) => !o.member) && <p className="mt-1 text-xs text-muted-foreground">{en("Add them to your team in Settings first to keep their leads with them.")}</p>}
                   </div>
                 )}
               </div>
             )}
 
-            <h4 className="mt-5 text-xs font-medium text-muted-foreground">The first rows</h4>
+            <h4 className="mt-5 text-xs font-medium text-muted-foreground">{en("The first rows")}</h4>
             <div className="mt-1 overflow-x-auto">
               <table className="w-full text-sm">
-                <thead className="text-left text-xs text-muted-foreground">
+                <thead className="text-start text-xs text-muted-foreground">
                   <tr>
-                    <th className="pb-1 pr-3 font-medium">Row</th>
-                    <th className="pb-1 pr-3 font-medium">Name</th>
-                    <th className="pb-1 pr-3 font-medium">Email / phone</th>
-                    <th className="pb-1 pr-3 font-medium">Stage</th>
-                    <th className="pb-1 pr-3 font-medium">Received</th>
-                    <th className="pb-1 font-medium">What happens</th>
+                    <th className="pb-1 pe-3 font-medium">{en("Row")}</th>
+                    <th className="pb-1 pe-3 font-medium">{en("Name")}</th>
+                    <th className="pb-1 pe-3 font-medium">{en("Email / phone")}</th>
+                    <th className="pb-1 pe-3 font-medium">{en("Stage")}</th>
+                    <th className="pb-1 pe-3 font-medium">{en("Received")}</th>
+                    <th className="pb-1 font-medium">{en("What happens")}</th>
                   </tr>
                 </thead>
                 <tbody>
                   {preview.sample.map((r) => (
                     <tr key={r.row} className="border-t border-border align-top">
-                      <td className="py-1.5 pr-3 tabular-nums text-muted-foreground">{r.row}</td>
-                      <td className="py-1.5 pr-3">{r.name ?? "—"}</td>
-                      <td className="break-all py-1.5 pr-3">{[r.email, r.phone].filter(Boolean).join(" · ") || "—"}</td>
-                      <td className="py-1.5 pr-3"><StageBadge stage={r.stage} /></td>
-                      <td className="py-1.5 pr-3">{r.received ? new Date(r.received).toLocaleDateString(undefined, { dateStyle: "medium" }) : r.receivedText ? <span className="text-amber-800 dark:text-amber-300">today (“{r.receivedText}” unreadable)</span> : "today"}</td>
+                      <td className="py-1.5 pe-3 tabular-nums text-muted-foreground">{r.row}</td>
+                      <td className="py-1.5 pe-3">{r.name ?? "—"}</td>
+                      <td className="break-all py-1.5 pe-3">{[r.email, r.phone].filter(Boolean).join(" · ") || "—"}</td>
+                      <td className="py-1.5 pe-3"><StageBadge stage={r.stage} /></td>
+                      <td className="py-1.5 pe-3">{r.received ? new Date(r.received).toLocaleDateString(undefined, { dateStyle: "medium" }) : r.receivedText ? <span className="text-amber-800 dark:text-amber-300">{en("today (“")}{r.receivedText}{en("” unreadable)")}</span> : "today"}</td>
                       <td className="py-1.5 text-xs">
-                        {r.problem ? <span className="text-red-700 dark:text-red-400">Can&apos;t be used: {r.problem}</span>
-                          : r.duplicate ? (duplicates === "note" ? "A note on their existing lead" : "Left out: already in your CRM")
+                        {r.problem ? <span className="text-red-700 dark:text-red-400">{en("Can't be used: ")}{r.problem}</span>
+                          : r.duplicate ? (duplicates === "note" ? en("A note on their existing lead") : en("Left out: already in your CRM"))
                           : `New lead${r.answers ? `, ${plural(r.answers, "answer")}` : ""}`}
                       </td>
                     </tr>
@@ -357,11 +357,11 @@ export default function ImportView({ getToken, onImported }: { getToken: GetToke
 
             {preview.problems.length > 0 && (
               <details className="mt-4 text-sm">
-                <summary className="cursor-pointer font-medium">Rows that can&apos;t be used ({preview.failed.toLocaleString()})</summary>
+                <summary className="cursor-pointer font-medium">{en("Rows that can't be used (")}{preview.failed.toLocaleString()})</summary>
                 <ul className="mt-2 space-y-0.5 text-xs text-muted-foreground">
                   {preview.problems.map((p) => (
                     <li key={p.row}>
-                      Row {p.row}: {p.message}
+                      {en("Row ")}{p.row}: {p.message}
                     </li>
                   ))}
                 </ul>
@@ -376,10 +376,10 @@ export default function ImportView({ getToken, onImported }: { getToken: GetToke
               </button>
               {preview.create + (duplicates === "note" ? preview.duplicates : 0) === 0 ? (
                 <span className="text-xs text-muted-foreground">
-                  {preview.duplicates > 0 ? "Everyone in this file is already in your CRM. Choose “Add the row to their lead as a note” to add their rows." : "None of the rows can be used."}
+                  {preview.duplicates > 0 ? en("Everyone in this file is already in your CRM. Choose “Add the row to their lead as a note” to add their rows.") : en("None of the rows can be used.")}
                 </span>
               ) : (
-                <span className="text-xs text-muted-foreground">from {preview.fileName} · tagged “{preview.source}” · you can undo it below</span>
+                <span className="text-xs text-muted-foreground">from {preview.fileName}{en(" · tagged “")}{preview.source}{en("” · you can undo it below")}</span>
               )}
             </div>
           </section>
@@ -388,10 +388,10 @@ export default function ImportView({ getToken, onImported }: { getToken: GetToke
 
       <section className="rounded-2xl border border-border bg-card p-5">
         <h3 className="flex items-center gap-2 text-sm font-semibold">
-          <History aria-hidden="true" className="h-4 w-4 text-muted-foreground" /> Past imports
+          <History aria-hidden="true" className="h-4 w-4 text-muted-foreground" />{en(" Past imports")}
         </h3>
         {batches.length === 0 ? (
-          <p className="mt-2 text-sm text-muted-foreground">No imports yet.</p>
+          <p className="mt-2 text-sm text-muted-foreground">{en("No imports yet.")}</p>
         ) : (
           <ul className="mt-2 divide-y divide-border text-sm">
             {batches.map((b) => (
@@ -408,14 +408,14 @@ export default function ImportView({ getToken, onImported }: { getToken: GetToke
                   </p>
                   {b.undoneAt && (
                     <p className="mt-0.5 flex items-center gap-1 text-xs text-muted-foreground">
-                      <CheckCircle2 aria-hidden="true" className="h-3 w-3" /> Undone {when(b.undoneAt)} by {b.undoneBy}
+                      <CheckCircle2 aria-hidden="true" className="h-3 w-3" />{en(" Undone ")}{when(b.undoneAt)} by {b.undoneBy}
                       {b.kept ? `; kept ${plural(b.kept, "lead")} your team had worked on` : ""}
                     </p>
                   )}
                 </div>
                 {!b.undoneAt && (
                   <button type="button" disabled={busy} onClick={() => undo(b)} className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-xs font-medium hover:bg-muted">
-                    <Undo2 aria-hidden="true" className="h-3.5 w-3.5" /> Undo
+                    <Undo2 aria-hidden="true" className="h-3.5 w-3.5" />{en(" Undo")}
                   </button>
                 )}
               </li>

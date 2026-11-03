@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useAppAuth as useAuth } from "@/lib/appAuth";
 import { authenticatedFetch } from "@/lib/apiClient";
 import { AlertCircle, CheckCircle2, ClipboardList, Filter, Loader2, Mic, RefreshCw } from "lucide-react";
+import { useEn } from "@/lib/english/EnglishProvider";
 
 interface QueueRow {
   submissionId: string;
@@ -43,6 +44,7 @@ function IntegrityBadge({ level }: { level: string | null | undefined }) {
 }
 
 export default function EvidenceQueuePage() {
+  const en = useEn();
   const router = useRouter();
   const { getToken } = useAuth();
   const [rows, setRows] = useState<QueueRow[]>([]);
@@ -99,12 +101,11 @@ export default function EvidenceQueuePage() {
         <div>
           <div className="flex items-center gap-2 text-xs font-semibold text-indigo-700 dark:text-indigo-400 uppercase tracking-wider">
             <ClipboardList className="w-4 h-4" />
-            Human review
+            {en("Human review")}
           </div>
-          <h1 className="text-2xl font-extrabold text-foreground mt-1">Evidence review queue</h1>
+          <h1 className="text-2xl font-extrabold text-foreground mt-1">{en("Evidence review queue")}</h1>
           <p className="text-xs text-muted-foreground mt-1 max-w-2xl">
-            Each submission has an evidence pack: tests, code changes, AI usage, integrity signals and the voice defense.
-            The platform does not advance or reject anyone; a reviewer records every decision with a rationale.
+            {en("Each submission has an evidence pack: tests, code changes, AI usage, integrity signals and the voice defense. The platform does not advance or reject anyone; a reviewer records every decision with a rationale.")}
           </p>
         </div>
         <button
@@ -112,40 +113,40 @@ export default function EvidenceQueuePage() {
           className="self-start md:self-auto py-2 px-3 rounded-xl bg-card hover:bg-muted border border-border text-xs font-medium text-muted-foreground flex items-center gap-1.5 transition-colors cursor-pointer"
         >
           <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} />
-          Refresh
+          {en("Refresh")}
         </button>
       </div>
 
       <div className="flex flex-wrap items-center gap-3">
         <Filter className="w-4 h-4 text-muted-foreground" />
         <label className="flex items-center gap-2 text-xs text-muted-foreground">
-          Sprint
+          {en("Sprint")}
           <select className={selectClass} value={sprintFilter} onChange={(e) => setSprintFilter(e.target.value)}>
-            <option value="all">All sprints</option>
+            <option value="all">{en("All sprints")}</option>
             {sprints.map((s) => (
               <option key={s} value={s}>{s}</option>
             ))}
           </select>
         </label>
         <label className="flex items-center gap-2 text-xs text-muted-foreground">
-          Integrity signals
+          {en("Integrity signals")}
           <select className={selectClass} value={riskFilter} onChange={(e) => setRiskFilter(e.target.value)}>
-            <option value="all">Any level</option>
-            <option value="Clear">Clear</option>
-            <option value="Review">Review</option>
-            <option value="HighRisk">High risk</option>
-            <option value="Unknown">Unknown</option>
+            <option value="all">{en("Any level")}</option>
+            <option value="Clear">{en("Clear")}</option>
+            <option value="Review">{en("Review")}</option>
+            <option value="HighRisk">{en("High risk")}</option>
+            <option value="Unknown">{en("Unknown")}</option>
           </select>
         </label>
         <label className="flex items-center gap-2 text-xs text-muted-foreground">
-          Decision
+          {en("Decision")}
           <select className={selectClass} value={decisionFilter} onChange={(e) => setDecisionFilter(e.target.value as typeof decisionFilter)}>
-            <option value="undecided">Awaiting decision</option>
-            <option value="decided">Decided</option>
-            <option value="all">All</option>
+            <option value="undecided">{en("Awaiting decision")}</option>
+            <option value="decided">{en("Decided")}</option>
+            <option value="all">{en("All")}</option>
           </select>
         </label>
-        <span className="text-xs text-muted-foreground ml-auto">
+        <span className="text-xs text-muted-foreground ms-auto">
           {filtered.length} of {rows.length} submissions
         </span>
       </div>
@@ -153,29 +154,29 @@ export default function EvidenceQueuePage() {
       <div className="glass-panel rounded-2xl border border-border overflow-hidden">
         {loading ? (
           <div className="p-10 flex items-center justify-center gap-2 text-sm text-muted-foreground">
-            <Loader2 className="w-4 h-4 animate-spin" /> Loading submissions...
+            <Loader2 className="w-4 h-4 animate-spin" />{en(" Loading submissions...")}
           </div>
         ) : error ? (
           <div className="p-8 flex flex-col items-center gap-3 text-sm text-rose-700 dark:text-rose-400">
             <div className="flex items-center gap-2"><AlertCircle className="w-4 h-4" /> {error}</div>
-            <button onClick={refresh} className="text-xs underline text-muted-foreground hover:text-foreground cursor-pointer">Try again</button>
+            <button onClick={refresh} className="text-xs underline text-muted-foreground hover:text-foreground cursor-pointer">{en("Try again")}</button>
           </div>
         ) : filtered.length === 0 ? (
           <div className="p-10 text-center text-sm text-muted-foreground">
-            {rows.length === 0 ? "No submissions yet." : "No submissions match these filters."}
+            {rows.length === 0 ? en("No submissions yet.") : en("No submissions match these filters.")}
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="text-left text-xs text-muted-foreground border-b border-border bg-muted/40">
-                  <th className="py-3 px-4 font-semibold">Candidate</th>
-                  <th className="py-3 px-4 font-semibold">Sprint</th>
-                  <th className="py-3 px-4 font-semibold">Submitted</th>
-                  <th className="py-3 px-4 font-semibold">Tests</th>
-                  <th className="py-3 px-4 font-semibold">Integrity signals</th>
-                  <th className="py-3 px-4 font-semibold">Defense</th>
-                  <th className="py-3 px-4 font-semibold">Latest decision</th>
+                <tr className="text-start text-xs text-muted-foreground border-b border-border bg-muted/40">
+                  <th className="py-3 px-4 font-semibold">{en("Candidate")}</th>
+                  <th className="py-3 px-4 font-semibold">{en("Sprint")}</th>
+                  <th className="py-3 px-4 font-semibold">{en("Submitted")}</th>
+                  <th className="py-3 px-4 font-semibold">{en("Tests")}</th>
+                  <th className="py-3 px-4 font-semibold">{en("Integrity signals")}</th>
+                  <th className="py-3 px-4 font-semibold">{en("Defense")}</th>
+                  <th className="py-3 px-4 font-semibold">{en("Latest decision")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -198,9 +199,9 @@ export default function EvidenceQueuePage() {
                     <td className="py-3 px-4"><IntegrityBadge level={r.integrityRiskLevel} /></td>
                     <td className="py-3 px-4">
                       {r.defenseCompleted ? (
-                        <span className="inline-flex items-center gap-1 text-xs text-emerald-700 dark:text-emerald-400"><Mic className="w-3.5 h-3.5" /> Completed</span>
+                        <span className="inline-flex items-center gap-1 text-xs text-emerald-700 dark:text-emerald-400"><Mic className="w-3.5 h-3.5" />{en(" Completed")}</span>
                       ) : (
-                        <span className="text-xs text-muted-foreground">Not yet</span>
+                        <span className="text-xs text-muted-foreground">{en("Not yet")}</span>
                       )}
                     </td>
                     <td className="py-3 px-4">
@@ -209,7 +210,7 @@ export default function EvidenceQueuePage() {
                           <CheckCircle2 className="w-3.5 h-3.5" /> {r.latestDecision}
                         </span>
                       ) : (
-                        <span className="text-xs text-muted-foreground">Awaiting review</span>
+                        <span className="text-xs text-muted-foreground">{en("Awaiting review")}</span>
                       )}
                     </td>
                   </tr>

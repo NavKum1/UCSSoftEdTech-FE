@@ -27,6 +27,7 @@ import {
   ShieldQuestion,
   XCircle,
 } from "lucide-react";
+import { useEn } from "@/lib/english/EnglishProvider";
 
 interface IntegritySignal {
   code: string;
@@ -192,8 +193,9 @@ function humanize(key: string) {
 
 // Renders any contributor section generically, so sections added by other features show up without page changes
 function GenericValue({ value, depth = 0 }: { value: unknown; depth?: number }) {
+  const en = useEn();
   if (value === null || value === undefined || value === "") return <span className="text-muted-foreground">—</span>;
-  if (typeof value === "boolean") return <span>{value ? "Yes" : "No"}</span>;
+  if (typeof value === "boolean") return <span>{value ? en("Yes") : en("No")}</span>;
   if (typeof value === "number") return <span>{value.toLocaleString()}</span>;
   if (typeof value === "string") {
     const isDate = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/.test(value);
@@ -201,7 +203,7 @@ function GenericValue({ value, depth = 0 }: { value: unknown; depth?: number }) 
   }
   if (depth > 3) return <pre className="text-[11px] font-mono whitespace-pre-wrap break-all">{JSON.stringify(value, null, 2)}</pre>;
   if (Array.isArray(value)) {
-    if (value.length === 0) return <span className="text-muted-foreground">None</span>;
+    if (value.length === 0) return <span className="text-muted-foreground">{en("None")}</span>;
     if (value.every((v) => v === null || typeof v !== "object")) return <span>{value.map((v) => String(v)).join(", ")}</span>;
     return (
       <ol className="space-y-2">
@@ -229,6 +231,7 @@ function GenericValue({ value, depth = 0 }: { value: unknown; depth?: number }) 
 }
 
 export default function EvidencePackPage() {
+  const en = useEn();
   const params = useParams<{ submissionId: string }>();
   const submissionId = params?.submissionId ?? "";
   const { getToken } = useAuth();
@@ -326,7 +329,7 @@ export default function EvidencePackPage() {
   if (loading && !pack) {
     return (
       <div className="p-16 flex items-center justify-center gap-2 text-sm text-muted-foreground">
-        <Loader2 className="w-4 h-4 animate-spin" /> Loading evidence pack...
+        <Loader2 className="w-4 h-4 animate-spin" />{en(" Loading evidence pack...")}
       </div>
     );
   }
@@ -335,11 +338,11 @@ export default function EvidencePackPage() {
     return (
       <div className="space-y-4">
         <Link href="/recruiter/evidence" className="text-xs text-muted-foreground hover:text-foreground inline-flex items-center gap-1">
-          <ArrowLeft className="w-3.5 h-3.5" /> Back to queue
+          <ArrowLeft className="w-3.5 h-3.5" />{en(" Back to queue")}
         </Link>
         <div className="glass-panel rounded-2xl p-8 border border-border flex flex-col items-center gap-3 text-sm text-rose-700 dark:text-rose-400">
           <div className="flex items-center gap-2"><AlertCircle className="w-4 h-4" /> {error ?? "Evidence pack unavailable."}</div>
-          <button onClick={reload} className="text-xs underline text-muted-foreground hover:text-foreground cursor-pointer">Try again</button>
+          <button onClick={reload} className="text-xs underline text-muted-foreground hover:text-foreground cursor-pointer">{en("Try again")}</button>
         </div>
       </div>
     );
@@ -361,38 +364,38 @@ export default function EvidencePackPage() {
 
       <div className="flex items-center justify-between gap-3 no-print">
         <Link href="/recruiter/evidence" className="text-xs text-muted-foreground hover:text-foreground inline-flex items-center gap-1">
-          <ArrowLeft className="w-3.5 h-3.5" /> Back to queue
+          <ArrowLeft className="w-3.5 h-3.5" />{en(" Back to queue")}
         </Link>
         <div className="flex items-center gap-2">
           <button
             onClick={reload}
             className="py-2 px-3 rounded-xl bg-card hover:bg-muted border border-border text-xs font-medium text-muted-foreground flex items-center gap-1.5 cursor-pointer"
           >
-            <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} /> Reload
+            <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} />{en(" Reload")}
           </button>
           <button
             onClick={handlePrint}
             className="py-2 px-3 rounded-xl bg-card hover:bg-muted border border-border text-xs font-semibold text-foreground flex items-center gap-1.5 cursor-pointer"
           >
-            <Printer className="w-3.5 h-3.5" /> Print / Save as PDF
+            <Printer className="w-3.5 h-3.5" />{en(" Print / Save as PDF")}
           </button>
         </div>
       </div>
 
       {/* Header */}
       <div className="pb-4 border-b border-border">
-        <div className="text-xs font-semibold text-indigo-700 dark:text-indigo-400 uppercase tracking-wider">Evidence pack</div>
+        <div className="text-xs font-semibold text-indigo-700 dark:text-indigo-400 uppercase tracking-wider">{en("Evidence pack")}</div>
         <h1 className="text-2xl font-extrabold text-foreground mt-1">{pack.candidate.name || "Unnamed candidate"}</h1>
         <p className="text-xs text-muted-foreground">{pack.candidate.email}</p>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-4">
-          <Stat label="Task" value={pack.task.title || "Untitled sprint"} />
-          <Stat label="Task type / language" value={`${pack.task.taskType ?? "—"} · ${pack.task.language ?? "—"}`} />
-          <Stat label="AI policy" value={AI_POLICY_LABELS[pack.task.aiPolicy ?? ""] ?? pack.task.aiPolicy ?? "—"} />
-          <Stat label="Submitted" value={fmtDate(pack.timing.submittedAt)} />
-          <Stat label="Attempt started" value={fmtDate(pack.timing.attemptStartedAt)} />
-          <Stat label="Elapsed" value={pack.timing.elapsedMinutes != null ? `${pack.timing.elapsedMinutes} min` : "—"} />
-          <Stat label="Active editing" value={pack.timing.activeEditingMinutes != null ? `${pack.timing.activeEditingMinutes} min` : "—"} />
-          <Stat label="Evidence hash" value={<span className="font-mono text-[11px] break-all">{pack.evidenceHash.slice(0, 16)}…</span>} />
+          <Stat label={en("Task")} value={pack.task.title || "Untitled sprint"} />
+          <Stat label={en("Task type / language")} value={`${pack.task.taskType ?? "—"} · ${pack.task.language ?? "—"}`} />
+          <Stat label={en("AI policy")} value={AI_POLICY_LABELS[pack.task.aiPolicy ?? ""] ?? pack.task.aiPolicy ?? "—"} />
+          <Stat label={en("Submitted")} value={fmtDate(pack.timing.submittedAt)} />
+          <Stat label={en("Attempt started")} value={fmtDate(pack.timing.attemptStartedAt)} />
+          <Stat label={en("Elapsed")} value={pack.timing.elapsedMinutes != null ? `${pack.timing.elapsedMinutes} min` : "—"} />
+          <Stat label={en("Active editing")} value={pack.timing.activeEditingMinutes != null ? `${pack.timing.activeEditingMinutes} min` : "—"} />
+          <Stat label={en("Evidence hash")} value={<span className="font-mono text-[11px] break-all">{pack.evidenceHash.slice(0, 16)}…</span>} />
         </div>
       </div>
 
@@ -403,8 +406,8 @@ export default function EvidencePackPage() {
           <p>{pack.disclaimer}</p>
           {pack.notIncluded.length > 0 && (
             <div className="text-xs text-muted-foreground">
-              <span className="font-semibold">Not included in this pack:</span>
-              <ul className="list-disc ml-5 mt-1 space-y-0.5">
+              <span className="font-semibold">{en("Not included in this pack:")}</span>
+              <ul className="list-disc ms-5 mt-1 space-y-0.5">
                 {pack.notIncluded.map((n) => (
                   <li key={n}>{n}</li>
                 ))}
@@ -419,7 +422,7 @@ export default function EvidencePackPage() {
         <div className="rounded-2xl border border-amber-500/30 bg-amber-500/5 p-4">
           <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
             <ShieldQuestion className="w-4 h-4 text-amber-600 dark:text-amber-400" />
-            Implementation vs. explanation
+            {en("Implementation vs. explanation")}
           </h2>
           <ul className="mt-2 space-y-1 text-sm text-foreground">
             {pack.consistencyNotes.map((n) => (
@@ -431,9 +434,9 @@ export default function EvidencePackPage() {
 
       {/* Tests */}
       <Section title={`Tests: ${tests.passed}/${tests.total} passed`} icon={<CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />}>
-        <p className="text-xs text-muted-foreground">Status: {tests.status}</p>
+        <p className="text-xs text-muted-foreground">{en("Status: ")}{tests.status}</p>
         {caseEntries.length === 0 ? (
-          <p className="text-xs text-muted-foreground">No per-test results recorded.</p>
+          <p className="text-xs text-muted-foreground">{en("No per-test results recorded.")}</p>
         ) : (
           <ul className="grid sm:grid-cols-2 gap-1.5">
             {caseEntries.map(([name, ok]) => (
@@ -451,14 +454,14 @@ export default function EvidencePackPage() {
         )}
         {pack.defects.length > 0 && (
           <div className="pt-2">
-            <h3 className="text-xs font-semibold text-foreground mb-1.5">Planted defects</h3>
+            <h3 className="text-xs font-semibold text-foreground mb-1.5">{en("Planted defects")}</h3>
             <ul className="space-y-1">
               {pack.defects.map((d) => (
                 <li key={d.id} className="flex items-center gap-2 text-xs">
                   {d.fixedDefect ? (
-                    <span className="px-2 py-0.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 font-semibold">Fixed</span>
+                    <span className="px-2 py-0.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 font-semibold">{en("Fixed")}</span>
                   ) : (
-                    <span className="px-2 py-0.5 rounded-full border border-rose-500/30 bg-rose-500/10 text-rose-700 dark:text-rose-400 font-semibold">Not fixed</span>
+                    <span className="px-2 py-0.5 rounded-full border border-rose-500/30 bg-rose-500/10 text-rose-700 dark:text-rose-400 font-semibold">{en("Not fixed")}</span>
                   )}
                   <span className="text-foreground">{d.title}</span>
                 </li>
@@ -469,9 +472,9 @@ export default function EvidencePackPage() {
       </Section>
 
       {/* Code changes */}
-      <Section title="Code changes" icon={<FileCode2 className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />} className="print-break">
+      <Section title={en("Code changes")} icon={<FileCode2 className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />} className="print-break">
         {pack.codeChanges.length === 0 ? (
-          <p className="text-xs text-muted-foreground">No files submitted.</p>
+          <p className="text-xs text-muted-foreground">{en("No files submitted.")}</p>
         ) : (
           <div className="space-y-2">
             {pack.codeChanges.map((c) => {
@@ -506,23 +509,23 @@ export default function EvidencePackPage() {
 
       {/* AI usage */}
       {aiUsage && (
-        <Section title="AI assistant usage" icon={<Bot className="w-4 h-4 text-purple-600 dark:text-purple-400" />} className="print-break">
+        <Section title={en("AI assistant usage")} icon={<Bot className="w-4 h-4 text-purple-600 dark:text-purple-400" />} className="print-break">
           <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-            <Stat label="Prompts" value={aiUsage.prompts} />
-            <Stat label="Characters inserted from assistant" value={aiUsage.charactersInsertedFromAssistant.toLocaleString()} />
-            <Stat label="Share of final code from assistant" value={pct(aiUsage.shareOfFinalCodeFromAssistant)} />
+            <Stat label={en("Prompts")} value={aiUsage.prompts} />
+            <Stat label={en("Characters inserted from assistant")} value={aiUsage.charactersInsertedFromAssistant.toLocaleString()} />
+            <Stat label={en("Share of final code from assistant")} value={pct(aiUsage.shareOfFinalCodeFromAssistant)} />
           </div>
           {aiUsage.conversation.length === 0 ? (
-            <p className="text-xs text-muted-foreground">The assistant was not used.</p>
+            <p className="text-xs text-muted-foreground">{en("The assistant was not used.")}</p>
           ) : (
             <ol className="space-y-3">
               {aiUsage.conversation.map((m, i) => (
                 <li key={i} className="rounded-xl border border-border p-3 space-y-2 text-xs">
                   <div className="flex items-center justify-between text-muted-foreground">
-                    <span>Prompt {i + 1} · {fmtDate(m.at)}</span>
-                    <span>{m.charactersUsed.toLocaleString()} characters used in code</span>
+                    <span>{en("Prompt ")}{i + 1} · {fmtDate(m.at)}</span>
+                    <span>{m.charactersUsed.toLocaleString()}{en(" characters used in code")}</span>
                   </div>
-                  <p className="text-foreground whitespace-pre-wrap"><span className="font-semibold">Candidate: </span>{m.prompt}</p>
+                  <p className="text-foreground whitespace-pre-wrap"><span className="font-semibold">{en("Candidate: ")}</span>{m.prompt}</p>
                   <pre className="whitespace-pre-wrap font-mono text-[11px] text-muted-foreground bg-muted/30 rounded-lg p-2 overflow-x-auto">{m.response}</pre>
                 </li>
               ))}
@@ -532,31 +535,31 @@ export default function EvidencePackPage() {
       )}
 
       {/* Integrity */}
-      <Section title="Integrity signals" icon={<ShieldQuestion className="w-4 h-4 text-amber-600 dark:text-amber-400" />}>
+      <Section title={en("Integrity signals")} icon={<ShieldQuestion className="w-4 h-4 text-amber-600 dark:text-amber-400" />}>
         <p className="text-xs text-muted-foreground">
-          These are patterns worth discussing with the candidate, not proof of misconduct. Many have innocent explanations.
+          {en("These are patterns worth discussing with the candidate, not proof of misconduct. Many have innocent explanations.")}
         </p>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
           <Stat
-            label="Signal level"
+            label={en("Signal level")}
             value={<span className={`inline-flex px-2 py-0.5 rounded-full text-[11px] font-semibold border ${risk.className}`}>{risk.label}</span>}
           />
-          <Stat label="Signal score" value={integrity.riskScore != null ? Math.round(integrity.riskScore) : "—"} />
+          <Stat label={en("Signal score")} value={integrity.riskScore != null ? Math.round(integrity.riskScore) : "—"} />
           <Stat
-            label="Editor replay matches submission"
+            label={en("Editor replay matches submission")}
             value={integrity.replayMatchesSubmission == null ? "No replay recorded" : integrity.replayMatchesSubmission ? "Yes" : "No"}
           />
-          <Stat label="Typed characters" value={integrity.typedCharacters?.toLocaleString() ?? "—"} />
-          <Stat label="Pasted from outside the editor" value={integrity.externallyPastedCharacters?.toLocaleString() ?? "—"} />
-          <Stat label="Times focus left the editor" value={integrity.focusLosses ?? "—"} />
+          <Stat label={en("Typed characters")} value={integrity.typedCharacters?.toLocaleString() ?? "—"} />
+          <Stat label={en("Pasted from outside the editor")} value={integrity.externallyPastedCharacters?.toLocaleString() ?? "—"} />
+          <Stat label={en("Times focus left the editor")} value={integrity.focusLosses ?? "—"} />
           <Stat
-            label="Highest similarity to another candidate"
+            label={en("Highest similarity to another candidate")}
             value={
               <span className="flex items-center gap-2">
                 {pct(integrity.maxSimilarityToAnotherCandidate)}
                 {integrity.mostSimilarSubmissionId && (
                   <Link href={`/recruiter/evidence/${integrity.mostSimilarSubmissionId}`} className="text-xs text-indigo-700 dark:text-indigo-400 underline no-print">
-                    View that submission
+                    {en("View that submission")}
                   </Link>
                 )}
               </span>
@@ -564,7 +567,7 @@ export default function EvidencePackPage() {
           />
         </div>
         {signals.length === 0 ? (
-          <p className="text-xs text-muted-foreground">No signals were raised.</p>
+          <p className="text-xs text-muted-foreground">{en("No signals were raised.")}</p>
         ) : (
           <ul className="space-y-2">
             {signals.map((s, i) => (
@@ -573,7 +576,7 @@ export default function EvidencePackPage() {
                 <div>
                   <p className="text-foreground">{s.detail}</p>
                   <p className="text-[11px] text-muted-foreground mt-0.5">
-                    <span className="font-mono">{s.code}</span> · weight {s.weight}
+                    <span className="font-mono">{s.code}</span>{en(" · weight ")}{s.weight}
                   </p>
                 </div>
               </li>
@@ -583,26 +586,26 @@ export default function EvidencePackPage() {
       </Section>
 
       {/* Defense */}
-      <Section title="Defense (voice or written)" icon={<Mic className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />} className="print-break">
+      <Section title={en("Defense (voice or written)")} icon={<Mic className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />} className="print-break">
         {!defense ? (
-          <p className="text-xs text-muted-foreground">No voice defense has been completed for this submission yet.</p>
+          <p className="text-xs text-muted-foreground">{en("No voice defense has been completed for this submission yet.")}</p>
         ) : (
           <div className="space-y-3">
             <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-              <Stat label="Technical score" value={defense.technicalScore != null ? `${Math.round(defense.technicalScore)}/100` : "Not scored"} />
-              <Stat label="Duration" value={defense.durationSeconds != null ? `${Math.round(defense.durationSeconds / 60)} min` : "—"} />
+              <Stat label={en("Technical score")} value={defense.technicalScore != null ? `${Math.round(defense.technicalScore)}/100` : "Not scored"} />
+              <Stat label={en("Duration")} value={defense.durationSeconds != null ? `${Math.round(defense.durationSeconds / 60)} min` : "—"} />
               <Stat
-                label="Missing skills"
+                label={en("Missing skills")}
                 value={defense.missingSkills && defense.missingSkills.length > 0 ? defense.missingSkills.join(", ") : "None noted"}
               />
             </div>
             {defense.recordingUrl && (
               <audio controls preload="none" src={defense.recordingUrl} className="w-full no-print">
-                Your browser does not support audio playback.
+                {en("Your browser does not support audio playback.")}
               </audio>
             )}
             {defense.questionsAndAnswers.length === 0 ? (
-              <p className="text-xs text-muted-foreground">No question and answer pairs could be extracted from the transcript.</p>
+              <p className="text-xs text-muted-foreground">{en("No question and answer pairs could be extracted from the transcript.")}</p>
             ) : (
               <ol className="space-y-2">
                 {defense.questionsAndAnswers.map((qa, i) => (
@@ -619,14 +622,14 @@ export default function EvidencePackPage() {
 
       {/* Approved accommodations (contributor section, not part of the evidence hash) */}
       {accommodationsSection && accommodationsSection.items?.length > 0 && (
-        <Section title="Approved accommodations" icon={<Accessibility className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />}>
+        <Section title={en("Approved accommodations")} icon={<Accessibility className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />}>
           {accommodationsSection.note && <p className="text-xs text-muted-foreground">{accommodationsSection.note}</p>}
           <ul className="space-y-2">
             {accommodationsSection.items.map((a, i) => (
               <li key={i} className="rounded-xl border border-border p-3 text-sm space-y-1">
                 <div className="flex flex-wrap items-center gap-2 text-xs">
                   <span className="font-bold text-foreground">{humanize(a.type)}</span>
-                  <span className="text-muted-foreground">{a.scope} · approved by {a.decidedBy ?? "reviewer"} on {fmtDate(a.decidedAt)}</span>
+                  <span className="text-muted-foreground">{a.scope}{en(" · approved by ")}{a.decidedBy ?? "reviewer"} on {fmtDate(a.decidedAt)}</span>
                 </div>
                 <p className="text-foreground whitespace-pre-wrap">{a.details}</p>
               </li>
@@ -637,14 +640,14 @@ export default function EvidencePackPage() {
 
       {/* Candidate appeals (contributor section, not part of the evidence hash) */}
       {appealsSection && appealsSection.items?.length > 0 && (
-        <Section title="Candidate appeals" icon={<Flag className="w-4 h-4 text-amber-600 dark:text-amber-400" />}>
+        <Section title={en("Candidate appeals")} icon={<Flag className="w-4 h-4 text-amber-600 dark:text-amber-400" />}>
           {appealsSection.note && <p className="text-xs text-muted-foreground">{appealsSection.note}</p>}
           <ul className="space-y-2">
             {appealsSection.items.map((a) => (
               <li key={a.id} className="rounded-xl border border-border p-3 text-sm space-y-1.5">
                 <div className="flex flex-wrap items-center gap-2 text-xs">
                   <span className={`px-2 py-0.5 rounded-full border font-semibold ${APPEAL_STATUS_STYLES[a.status] ?? APPEAL_STATUS_STYLES.Upheld}`}>
-                    {a.status === "Overturned" ? "Overturned (appeal succeeded)" : a.status}
+                    {a.status === "Overturned" ? en("Overturned (appeal succeeded)") : a.status}
                   </span>
                   <span className="font-semibold text-foreground">{humanize(a.category)}</span>
                   <span className="text-muted-foreground">{fmtDate(a.createdAt)}</span>
@@ -652,13 +655,13 @@ export default function EvidencePackPage() {
                 <p className="text-foreground whitespace-pre-wrap">{a.reason}</p>
                 {a.response && (
                   <p className="text-xs text-muted-foreground whitespace-pre-wrap">
-                    <span className="font-semibold text-foreground">Response by {a.resolverName ?? "reviewer"} ({fmtDate(a.resolvedAt)}): </span>
+                    <span className="font-semibold text-foreground">{en("Response by ")}{a.resolverName ?? "reviewer"} ({fmtDate(a.resolvedAt)}): </span>
                     {a.response}
                   </p>
                 )}
                 {a.status === "Open" && (
                   <Link href="/recruiter/appeals" className="text-xs text-indigo-700 dark:text-indigo-400 underline no-print">
-                    Resolve in the appeals queue
+                    {en("Resolve in the appeals queue")}
                   </Link>
                 )}
               </li>
@@ -682,9 +685,9 @@ export default function EvidencePackPage() {
       ))}
 
       {/* Decision history */}
-      <Section title="Decision history" icon={<Clock className="w-4 h-4 text-muted-foreground" />}>
+      <Section title={en("Decision history")} icon={<Clock className="w-4 h-4 text-muted-foreground" />}>
         {pack.decisions.length === 0 ? (
-          <p className="text-xs text-muted-foreground">No decisions recorded yet.</p>
+          <p className="text-xs text-muted-foreground">{en("No decisions recorded yet.")}</p>
         ) : (
           <ul className="space-y-2">
             {pack.decisions.map((d, i) => (
@@ -694,7 +697,7 @@ export default function EvidencePackPage() {
                   <span className="text-muted-foreground">by {d.reviewerName} · {fmtDate(d.createdAt)}</span>
                   {d.evidenceChangedSince && (
                     <span className="px-2 py-0.5 rounded-full border border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-400 font-semibold">
-                      Evidence has changed since this decision
+                      {en("Evidence has changed since this decision")}
                     </span>
                   )}
                 </div>
@@ -708,10 +711,10 @@ export default function EvidencePackPage() {
       {/* Decision panel */}
       <section className="glass-panel rounded-2xl p-5 border border-indigo-500/30 space-y-4 no-print">
         <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
-          <Gavel className="w-4 h-4 text-indigo-600 dark:text-indigo-400" /> Record your decision
+          <Gavel className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />{en(" Record your decision")}
         </h2>
         <fieldset className="grid sm:grid-cols-3 gap-2">
-          <legend className="sr-only">Decision</legend>
+          <legend className="sr-only">{en("Decision")}</legend>
           {DECISIONS.map((d) => (
             <label
               key={d.value}
@@ -729,18 +732,18 @@ export default function EvidencePackPage() {
         </fieldset>
         <div>
           <label htmlFor="rationale" className="text-xs font-semibold text-foreground">
-            Rationale (shared with your team and connected ATS)
+            {en("Rationale (shared with your team and connected ATS)")}
           </label>
           <textarea
             id="rationale"
             value={rationale}
             onChange={(e) => setRationale(e.target.value)}
             rows={4}
-            placeholder="What in the evidence supports this decision?"
+            placeholder={en("What in the evidence supports this decision?")}
             className="mt-1 w-full rounded-xl bg-card border border-border p-3 text-sm text-foreground placeholder:text-muted-foreground"
           />
           <div className={`text-[11px] mt-1 ${rationaleLength >= MIN_RATIONALE ? "text-muted-foreground" : "text-amber-700 dark:text-amber-400"}`}>
-            {rationaleLength}/{MIN_RATIONALE} characters minimum
+            {rationaleLength}/{MIN_RATIONALE}{en(" characters minimum")}
           </div>
         </div>
 
@@ -750,14 +753,14 @@ export default function EvidencePackPage() {
             <span>{submitError}</span>
             {evidenceStale && (
               <button onClick={reload} className="px-3 py-1 rounded-lg border border-rose-500/40 text-xs font-semibold hover:bg-rose-500/10 cursor-pointer">
-                Reload evidence
+                {en("Reload evidence")}
               </button>
             )}
           </div>
         )}
         {submitted && !submitError && (
           <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/5 p-3 text-sm text-emerald-700 dark:text-emerald-400 flex items-center gap-2">
-            <CheckCircle2 className="w-4 h-4" /> Decision recorded: {submitted}.
+            <CheckCircle2 className="w-4 h-4" />{en(" Decision recorded: ")}{submitted}.
           </div>
         )}
 
@@ -767,7 +770,7 @@ export default function EvidencePackPage() {
           className="py-2.5 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-semibold flex items-center gap-2 cursor-pointer"
         >
           {submitting && <Loader2 className="w-4 h-4 animate-spin" />}
-          Submit decision
+          {en("Submit decision")}
         </button>
       </section>
     </div>

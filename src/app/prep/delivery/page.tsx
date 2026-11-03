@@ -153,7 +153,7 @@ export default function DeliveryCoachingPage() {
   useEffect(() => () => stopAudio.current?.(), []);
 
   const setConsent = async (granted: boolean) => {
-    if (!granted && !window.confirm("Turn off speaking practice? Your saved answers and their measurements are deleted.")) return;
+    if (!granted && !window.confirm(en("Turn off speaking practice? Your saved answers and their measurements are deleted."))) return;
     setBusy(true);
     setError(null);
     try {
@@ -175,7 +175,7 @@ export default function DeliveryCoachingPage() {
   };
 
   const deleteAll = async () => {
-    if (!window.confirm("Delete all your saved answers and their measurements?")) return;
+    if (!window.confirm(en("Delete all your saved answers and their measurements?"))) return;
     setBusy(true);
     try {
       const res = await apiFetch("/api/delivery-coaching/samples", { method: "DELETE" });
@@ -185,7 +185,7 @@ export default function DeliveryCoachingPage() {
       setResult(null);
       await loadData();
     } catch {
-      setError("We couldn't delete your answers. Please try again.");
+      setError(en("We couldn't delete your answers. Please try again."));
     } finally {
       setBusy(false);
     }
@@ -197,7 +197,7 @@ export default function DeliveryCoachingPage() {
     setRecording(false);
     setLevel(0);
     if (m.firstSpeech == null || m.lastSpeech == null) {
-      setError("We didn't hear an answer. Check that the right microphone is selected and try again.");
+      setError(en("We didn't hear an answer. Check that the right microphone is selected and try again."));
       return;
     }
     // A silence still running at the end is the end of the answer, not a pause
@@ -265,7 +265,7 @@ export default function DeliveryCoachingPage() {
     try {
       stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true } });
     } catch {
-      setError("We couldn't use your microphone. Allow microphone access for this site and try again.");
+      setError(en("We couldn't use your microphone. Allow microphone access for this site and try again."));
       return;
     }
     const ctx = new AudioContext();
@@ -346,22 +346,22 @@ export default function DeliveryCoachingPage() {
     return (
       <main className="mx-auto max-w-md px-4 py-24 text-center">
         <AlertTriangle aria-hidden="true" className="mx-auto h-8 w-8 text-amber-600" />
-        <h1 className="mt-3 text-xl font-semibold">We couldn&apos;t load speaking practice</h1>
-        <p className="mt-2 text-sm text-muted-foreground">Please refresh the page to try again.</p>
+        <h1 className="mt-3 text-xl font-semibold">{en("We couldn't load speaking practice")}</h1>
+        <p className="mt-2 text-sm text-muted-foreground">{en("Please refresh the page to try again.")}</p>
       </main>
     );
   if (!decision)
     return (
-      <main className="mx-auto max-w-4xl px-4 py-10" aria-busy="true" aria-label="Loading speaking practice">
+      <main className="mx-auto max-w-4xl px-4 py-10" aria-busy="true" aria-label={en("Loading speaking practice")}>
         <div className={`${card} h-40 animate-pulse motion-reduce:animate-none`} />
       </main>
     );
 
   const header = (
     <header>
-      <h1 className="text-2xl font-semibold tracking-tight">Speaking practice</h1>
+      <h1 className="text-2xl font-semibold tracking-tight">{en("Speaking practice")}</h1>
       <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
-        Answer a practice question aloud and see your pace, filler words and pauses. {note}
+        {en("Answer a practice question aloud and see your pace, filler words and pauses. ")}{note}
       </p>
     </header>
   );
@@ -372,7 +372,7 @@ export default function DeliveryCoachingPage() {
         {header}
         <section className={`${card} p-6 text-center`}>
           <ShieldOff aria-hidden="true" className="mx-auto h-8 w-8 text-muted-foreground" />
-          <h2 className="mt-2 text-base font-semibold">Speaking practice isn&apos;t available</h2>
+          <h2 className="mt-2 text-base font-semibold">{en("Speaking practice isn't available")}</h2>
           <p className="mt-1 text-sm text-muted-foreground">{decision.reason || "It isn't offered in your region."}</p>
         </section>
       </main>
@@ -384,18 +384,17 @@ export default function DeliveryCoachingPage() {
         {header}
         <section className={`${card} space-y-4 p-6`}>
           <h2 className="flex items-center gap-2 text-base font-semibold">
-            <Lock aria-hidden="true" className="h-4 w-4 text-indigo-600" /> Turn on speaking practice?
+            <Lock aria-hidden="true" className="h-4 w-4 text-indigo-600" />{en(" Turn on speaking practice?")}
           </h2>
-          <ul className="list-disc space-y-1 pl-5 text-sm text-muted-foreground">
-            <li>We measure your pace (words a minute), filler words such as &ldquo;um&rdquo;, pauses, and how long you take to start.</li>
-            <li>We don&apos;t judge emotion, stress or confidence.</li>
-            <li>Your audio stays in your browser. Pauses are measured there from the microphone level.</li>
+          <ul className="list-disc space-y-1 ps-5 text-sm text-muted-foreground">
+            <li>{en("We measure your pace (words a minute), filler words such as “um”, pauses, and how long you take to start.")}</li>
+            <li>{en("We don't judge emotion, stress or confidence.")}</li>
+            <li>{en("Your audio stays in your browser. Pauses are measured there from the microphone level.")}</li>
             <li>
-              To count words, your browser&apos;s speech recognition turns your answer into text. In some browsers, such as Chrome, the browser
-              maker&apos;s speech service does this. We use the text only to count words and filler words, and we don&apos;t keep it.
+              {en("To count words, your browser's speech recognition turns your answer into text. In some browsers, such as Chrome, the browser maker's speech service does this. We use the text only to count words and filler words, and we don't keep it.")}
             </li>
-            <li>Your results are only for you. Recruiters and institutes never see them, and they&apos;re never used in any score.</li>
-            <li>We keep your measurements for 180 days. Turn this off at any time and they&apos;re deleted.</li>
+            <li>{en("Your results are only for you. Recruiters and institutes never see them, and they're never used in any score.")}</li>
+            <li>{en("We keep your measurements for 180 days. Turn this off at any time and they're deleted.")}</li>
           </ul>
           {error && <p className="text-sm text-red-700 dark:text-red-400">{error}</p>}
           <div className="flex flex-wrap gap-2">
@@ -405,10 +404,10 @@ export default function DeliveryCoachingPage() {
               disabled={busy}
               className="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-500 disabled:opacity-60"
             >
-              {busy && <Loader2 aria-hidden="true" className="h-4 w-4 animate-spin" />}Turn on speaking practice
+              {busy && <Loader2 aria-hidden="true" className="h-4 w-4 animate-spin" />}{en("Turn on speaking practice")}
             </button>
             <Link href="/dashboard" className="rounded-xl border border-border px-4 py-2 text-sm font-medium hover:bg-muted">
-              Not now
+              {en("Not now")}
             </Link>
           </div>
         </section>
@@ -424,7 +423,7 @@ export default function DeliveryCoachingPage() {
           {en("Practise an answer")}
         </h2>
         <label className="block text-sm">
-          <span className="font-medium">Question</span>
+          <span className="font-medium">{en("Question")}</span>
           <select
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}
@@ -439,7 +438,7 @@ export default function DeliveryCoachingPage() {
           </select>
         </label>
         <label className="block text-sm">
-          <span className="font-medium">Or your own question</span> <span className="text-muted-foreground">(optional)</span>
+          <span className="font-medium">{en("Or your own question")}</span> <span className="text-muted-foreground">{en("(optional)")}</span>
           <input
             value={ownPrompt}
             onChange={(e) => setOwnPrompt(e.target.value)}
@@ -452,13 +451,12 @@ export default function DeliveryCoachingPage() {
           <label className="flex items-start gap-2 text-sm">
             <input type="checkbox" checked={countWords} onChange={(e) => setCountWords(e.target.checked)} disabled={recording} className="mt-1" />
             <span>
-              Count words and filler words (uses your browser&apos;s speech recognition). Without it, only pauses and your start time are measured.
+              {en("Count words and filler words (uses your browser's speech recognition). Without it, only pauses and your start time are measured.")}
             </span>
           </label>
         ) : (
           <p className="text-sm text-muted-foreground">
-            Your browser has no speech recognition, so only pauses and your start time are measured. Chrome, Edge or Safari can also measure pace and
-            filler words.
+            {en("Your browser has no speech recognition, so only pauses and your start time are measured. Chrome, Edge or Safari can also measure pace and filler words.")}
           </p>
         )}
 
@@ -469,7 +467,7 @@ export default function DeliveryCoachingPage() {
               onClick={stop}
               className="inline-flex items-center gap-2 rounded-xl bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-500"
             >
-              <Square aria-hidden="true" className="h-4 w-4" /> Stop and see feedback
+              <Square aria-hidden="true" className="h-4 w-4" />{en(" Stop and see feedback")}
             </button>
           ) : (
             <button
@@ -478,7 +476,7 @@ export default function DeliveryCoachingPage() {
               disabled={busy}
               className="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-500 disabled:opacity-60"
             >
-              {busy ? <Loader2 aria-hidden="true" className="h-4 w-4 animate-spin" /> : <Mic aria-hidden="true" className="h-4 w-4" />} Start answering
+              {busy ? <Loader2 aria-hidden="true" className="h-4 w-4 animate-spin" /> : <Mic aria-hidden="true" className="h-4 w-4" />}{en(" Start answering")}
             </button>
           )}
           {recording && (
@@ -489,7 +487,7 @@ export default function DeliveryCoachingPage() {
               <span className="h-2 w-32 overflow-hidden rounded-full bg-muted" aria-hidden="true">
                 <span className="block h-full bg-emerald-500 transition-[width] duration-75" style={{ width: `${Math.round(level * 100)}%` }} />
               </span>
-              <span className="text-muted-foreground">Listening</span>
+              <span className="text-muted-foreground">{en("Listening")}</span>
             </div>
           )}
         </div>
@@ -499,7 +497,7 @@ export default function DeliveryCoachingPage() {
       {result && (
         <section className={`${card} p-5`} aria-labelledby="dc-result" aria-live="polite">
           <h2 id="dc-result" className="text-base font-semibold">
-            Your answer
+            {en("Your answer")}
           </h2>
           <dl className="mt-3 grid grid-cols-2 gap-3 text-center sm:grid-cols-4">
             {[
@@ -516,11 +514,11 @@ export default function DeliveryCoachingPage() {
           </dl>
           {Object.keys(result.fillerWords).length > 0 && (
             <p className="mt-3 text-sm text-muted-foreground">
-              Heard:{" "}
+              {en("Heard:")}{" "}
               {Object.entries(result.fillerWords)
                 .map(([w, n]) => `“${w}” ×${n}`)
                 .join(", ")}
-              . Browser speech recognition can leave some out, so the real count may be higher.
+              {en(". Browser speech recognition can leave some out, so the real count may be higher.")}
             </p>
           )}
           <ul className="mt-3 space-y-2 text-sm">
@@ -535,14 +533,14 @@ export default function DeliveryCoachingPage() {
 
       <section className={`${card} p-5`} aria-labelledby="dc-summary">
         <h2 id="dc-summary" className="text-base font-semibold">
-          Across your recent answers
+          {en("Across your recent answers")}
         </h2>
         {!summary || summary.samples === 0 ? (
-          <p className="mt-2 text-sm text-muted-foreground">No answers yet. Your averages appear here after your first one.</p>
+          <p className="mt-2 text-sm text-muted-foreground">{en("No answers yet. Your averages appear here after your first one.")}</p>
         ) : (
           <>
             <p className="mt-1 text-sm text-muted-foreground">
-              Your last {summary.recentSamples} of {summary.samples} answers.
+              {en("Your last ")}{summary.recentSamples} of {summary.samples} answers.
             </p>
             <dl className="mt-3 grid grid-cols-2 gap-3 text-center sm:grid-cols-4">
               {[
@@ -571,25 +569,25 @@ export default function DeliveryCoachingPage() {
       {history.length > 0 && (
         <section className={`${card} overflow-x-auto p-5`} aria-labelledby="dc-history">
           <h2 id="dc-history" className="text-base font-semibold">
-            Your answers
+            {en("Your answers")}
           </h2>
-          <table className="mt-3 w-full min-w-140 text-left text-sm">
+          <table className="mt-3 w-full min-w-140 text-start text-sm">
             <thead className="text-xs text-muted-foreground">
               <tr>
-                <th className="py-2 pr-3 font-medium">When</th>
-                <th className="py-2 pr-3 font-medium">Question</th>
-                <th className="py-2 pr-3 font-medium">Pace</th>
-                <th className="py-2 pr-3 font-medium">Filler words</th>
-                <th className="py-2 font-medium">Longest pause</th>
+                <th className="py-2 pe-3 font-medium">{en("When")}</th>
+                <th className="py-2 pe-3 font-medium">{en("Question")}</th>
+                <th className="py-2 pe-3 font-medium">{en("Pace")}</th>
+                <th className="py-2 pe-3 font-medium">{en("Filler words")}</th>
+                <th className="py-2 font-medium">{en("Longest pause")}</th>
               </tr>
             </thead>
             <tbody>
               {history.map((h) => (
                 <tr key={h.id} className="border-t border-border">
-                  <td className="py-2 pr-3 whitespace-nowrap">{new Date(h.recordedAt).toLocaleString()}</td>
-                  <td className="py-2 pr-3">{h.prompt}</td>
-                  <td className="py-2 pr-3 tabular-nums">{h.wordsPerMinute == null ? "—" : Math.round(h.wordsPerMinute)}</td>
-                  <td className="py-2 pr-3 tabular-nums">{h.fillerCount ?? "—"}</td>
+                  <td className="py-2 pe-3 whitespace-nowrap">{new Date(h.recordedAt).toLocaleString()}</td>
+                  <td className="py-2 pe-3">{h.prompt}</td>
+                  <td className="py-2 pe-3 tabular-nums">{h.wordsPerMinute == null ? "—" : Math.round(h.wordsPerMinute)}</td>
+                  <td className="py-2 pe-3 tabular-nums">{h.fillerCount ?? "—"}</td>
                   <td className="py-2 tabular-nums">{secs(h.longestPauseMs)}</td>
                 </tr>
               ))}
@@ -605,7 +603,7 @@ export default function DeliveryCoachingPage() {
           disabled={busy || recording || history.length === 0}
           className="inline-flex items-center gap-2 rounded-xl border border-border px-3 py-2 font-medium hover:bg-muted disabled:opacity-50"
         >
-          <Trash2 aria-hidden="true" className="h-4 w-4" /> Delete my answers
+          <Trash2 aria-hidden="true" className="h-4 w-4" />{en(" Delete my answers")}
         </button>
         <button
           type="button"
@@ -613,7 +611,7 @@ export default function DeliveryCoachingPage() {
           disabled={busy || recording}
           className="rounded-xl border border-border px-3 py-2 font-medium hover:bg-muted disabled:opacity-50"
         >
-          Turn off speaking practice
+          {en("Turn off speaking practice")}
         </button>
       </section>
     </main>

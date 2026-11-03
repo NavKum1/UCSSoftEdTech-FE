@@ -301,9 +301,10 @@ export function localInput(d: Date): string {
 }
 
 export function PriorityBadge() {
+  const en = useEn();
   return (
     <span className="inline-flex items-center whitespace-nowrap rounded-full border border-rose-500/30 bg-rose-500/10 px-1.5 py-0.5 text-[11px] font-medium text-rose-800 dark:text-rose-300">
-      High priority
+      {en("High priority")}
     </span>
   );
 }

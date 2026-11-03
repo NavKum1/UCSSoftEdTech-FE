@@ -8,8 +8,10 @@
 import React, { useEffect, useRef, useState } from "react";
 import { ShieldCheck } from "lucide-react";
 import { MFA_REQUIRED_EVENT } from "@/lib/apiClient";
+import { useEn } from "@/lib/english/EnglishProvider";
 
 export default function MfaRequiredNotice() {
+  const en = useEn();
   const [open, setOpen] = useState(false);
   const button = useRef<HTMLButtonElement>(null);
 
@@ -28,11 +30,10 @@ export default function MfaRequiredNotice() {
       <div role="alertdialog" aria-modal="true" aria-labelledby="mfa-title" aria-describedby="mfa-text" className="w-full max-w-md rounded-2xl border border-border bg-card p-6 shadow-2xl">
         <ShieldCheck aria-hidden="true" className="h-8 w-8 text-emerald-600" />
         <h2 id="mfa-title" className="mt-3 text-lg font-semibold">
-          Two-step sign-in is needed for your role
+          {en("Two-step sign-in is needed for your role")}
         </h2>
         <p id="mfa-text" className="mt-2 text-sm text-muted-foreground">
-          Staff accounts can see students&apos; information, so they sign in with a code from an authenticator app as well as their password. Sign in again,
-          and you&apos;ll be asked to set it up. It takes about a minute.
+          {en("Staff accounts can see students' information, so they sign in with a code from an authenticator app as well as their password. Sign in again, and you'll be asked to set it up. It takes about a minute.")}
         </p>
         <div className="mt-5 flex flex-wrap gap-2">
           {/* Full-page GET: the route ends the Keycloak session as well, then opens the sign-in page */}
@@ -42,11 +43,11 @@ export default function MfaRequiredNotice() {
               type="submit"
               className="inline-flex items-center rounded-lg bg-slate-800 px-4 py-2 text-sm font-medium text-white hover:bg-slate-900 dark:bg-slate-200 dark:text-slate-900"
             >
-              Sign in again
+              {en("Sign in again")}
             </button>
           </form>
           <button type="button" onClick={() => setOpen(false)} className="rounded-lg border border-border px-4 py-2 text-sm font-medium hover:bg-muted">
-            Not now
+            {en("Not now")}
           </button>
         </div>
       </div>

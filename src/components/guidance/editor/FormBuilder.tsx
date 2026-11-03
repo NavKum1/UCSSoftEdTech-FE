@@ -204,6 +204,7 @@ function normalise(d: FormDef): FormDef {
 }
 
 export default function FormBuilder({ formId, backHref }: { formId: string; backHref: string }) {
+  const en = useEn();
   const params = useSearchParams();
   const { apiFetch, ready, access } = useLegacyApi();
   const [view, setView] = useState<View | null>(null);
@@ -224,7 +225,7 @@ export default function FormBuilder({ formId, backHref }: { formId: string; back
 
   const load = useCallback(async () => {
     const res = await apiFetch(`/api/guidance-forms/${formId}`);
-    if (!res.ok) return setNotice({ ok: false, text: "This form couldn't be loaded." });
+    if (!res.ok) return setNotice({ ok: false, text: en("This form couldn't be loaded.") });
     const v = (await res.json()) as View;
     setView(v);
     setDef(normalise(v.draft ?? v.published));
@@ -242,7 +243,7 @@ export default function FormBuilder({ formId, backHref }: { formId: string; back
       setBank(body.bank);
       setTemplates(body.templates ?? []);
     }
-  }, [apiFetch, formId]);
+  }, [apiFetch, formId, en]);
   const loadRef = useLatestRef(load);
   useEffect(() => {
     if (ready) loadRef.current();
@@ -305,10 +306,10 @@ export default function FormBuilder({ formId, backHref }: { formId: string; back
   };
 
   const discard = async () => {
-    if (!window.confirm("Throw away your unpublished changes and go back to the published form?")) return;
+    if (!window.confirm(en("Throw away your unpublished changes and go back to the published form?"))) return;
     await apiFetch(`/api/guidance-forms/${formId}/discard-draft`, { method: "POST" });
     load();
-    setNotice({ ok: true, text: "Changes discarded." });
+    setNotice({ ok: true, text: en("Changes discarded.") });
   };
 
   const setPublic = async (on: boolean) => {
@@ -330,7 +331,7 @@ export default function FormBuilder({ formId, backHref }: { formId: string; back
   const fillTemplate = () => {
     if (!source || !def) return;
     const { def: next, filled } = fillFromTemplate(def, normalise(source.definition));
-    if (filled === 0) return setNotice({ ok: true, text: "Every report text already has your own words; nothing was changed." });
+    if (filled === 0) return setNotice({ ok: true, text: en("Every report text already has your own words; nothing was changed.") });
     change(next);
     setNotice({ ok: true, text: `Added ${filled} text${filled > 1 ? "s" : ""} from the ${source.name} template where yours were blank. Check them, then publish.` });
   };
@@ -345,14 +346,14 @@ export default function FormBuilder({ formId, backHref }: { formId: string; back
       {/* Header */}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex min-w-0 items-center gap-2">
-          <Link href={backHref} aria-label="All forms" className="rounded-lg p-1.5 hover:bg-muted">
+          <Link href={backHref} aria-label={en("All forms")} className="rounded-lg p-1.5 hover:bg-muted">
             <ArrowLeft aria-hidden="true" className="h-5 w-5" />
           </Link>
           <input
             value={name}
             readOnly={readOnly}
             maxLength={120}
-            aria-label="Form name"
+            aria-label={en("Form name")}
             onChange={(e) => {
               setName(e.target.value);
               editVersion.current++;
@@ -363,11 +364,11 @@ export default function FormBuilder({ formId, backHref }: { formId: string; back
         </div>
         <div className="flex flex-wrap items-center gap-2 text-xs">
           <span className="text-muted-foreground" role="status">
-            {status === "dirty" && unfinished ? "Finish the new question to save (its text, and options, slider ends, column names or the meeting's appointment)" : status === "dirty" && resultsUnfinished ? "Finish the results to save (name every outcome and band; one band starts at 0%)" : status === "saving" ? "Saving…" : status === "dirty" ? "Unsaved changes" : status === "error" ? "Not saved" : view.hasDraft ? "Draft saved, not published" : `Published · version ${view.version}`}
+            {status === "dirty" && unfinished ? en("Finish the new question to save (its text, and options, slider ends, column names or the meeting's appointment)") : status === "dirty" && resultsUnfinished ? en("Finish the results to save (name every outcome and band; one band starts at 0%)") : status === "saving" ? en("Saving…") : status === "dirty" ? en("Unsaved changes") : status === "error" ? en("Not saved") : view.hasDraft ? en("Draft saved, not published") : `Published · version ${view.version}`}
           </span>
           {canEdit && view.hasDraft && (
             <button type="button" onClick={discard} className={small}>
-              Discard changes
+              {en("Discard changes")}
             </button>
           )}
           {canEdit && (
@@ -377,7 +378,7 @@ export default function FormBuilder({ formId, backHref }: { formId: string; back
               disabled={!view.hasDraft && status === "saved"}
               className="rounded-lg bg-cyan-700 px-3.5 py-2 text-sm font-medium text-white hover:bg-cyan-800 disabled:opacity-50"
             >
-              Publish
+              {en("Publish")}
             </button>
           )}
         </div>
@@ -389,7 +390,7 @@ export default function FormBuilder({ formId, backHref }: { formId: string; back
         </p>
       )}
 
-      <div role="tablist" aria-label="Form" className="flex gap-5 overflow-x-auto border-b border-border text-sm">
+      <div role="tablist" aria-label={en("Form")} className="flex gap-5 overflow-x-auto border-b border-border text-sm">
         {TABS.map(([k, label]) => (
           <button
             key={k}
@@ -417,7 +418,7 @@ export default function FormBuilder({ formId, backHref }: { formId: string; back
           </div>
           {tab === "results" ? (
             <aside className="lg:sticky lg:top-24 lg:self-start">
-              <p className="mb-2 text-xs font-medium text-muted-foreground">Example of what people see after sending</p>
+              <p className="mb-2 text-xs font-medium text-muted-foreground">{en("Example of what people see after sending")}</p>
               <div
                 className="rounded-2xl border border-border bg-background p-4 text-sm shadow-sm"
                 style={{ "--gf-accent": def.settings.accent || "#4f46e5", "--gf-on": onAccent(def.settings.accent || "#4f46e5") } as React.CSSProperties}
@@ -426,8 +427,8 @@ export default function FormBuilder({ formId, backHref }: { formId: string; back
                   const r = def.results!;
                   const outcome = r.outcomeEnabled ? r.outcomes.find((o) => o.name.trim()) : undefined;
                   const band = r.matchEnabled ? [...r.bands].sort((a, b) => b.from - a.from)[0] : undefined;
-                  if (!outcome && !band) return <p className="text-muted-foreground">Switch on an outcome or a match score to see an example.</p>;
-                  if (!r.showToPerson) return <p className="text-muted-foreground">People see only your thank-you message; your team sees the results in the CRM.</p>;
+                  if (!outcome && !band) return <p className="text-muted-foreground">{en("Switch on an outcome or a match score to see an example.")}</p>;
+                  if (!r.showToPerson) return <p className="text-muted-foreground">{en("People see only your thank-you message; your team sees the results in the CRM.")}</p>;
                   const example = {
                     outcomeTitle: r.outcomeTitle,
                     outcome: outcome ?? null,
@@ -449,12 +450,12 @@ export default function FormBuilder({ formId, backHref }: { formId: string; back
           ) : (
           <aside className="lg:sticky lg:top-24 lg:self-start">
             <div className="mb-2 flex items-center justify-between">
-              <p className="text-xs font-medium text-muted-foreground">Live preview (nothing is sent)</p>
-              <div className="inline-flex rounded-lg border border-border p-0.5" role="group" aria-label="Preview size">
-                <button type="button" aria-pressed={device === "phone"} onClick={() => setDevice("phone")} className={`rounded-md p-1.5 ${device === "phone" ? "bg-muted" : ""}`} aria-label="Phone">
+              <p className="text-xs font-medium text-muted-foreground">{en("Live preview (nothing is sent)")}</p>
+              <div className="inline-flex rounded-lg border border-border p-0.5" role="group" aria-label={en("Preview size")}>
+                <button type="button" aria-pressed={device === "phone"} onClick={() => setDevice("phone")} className={`rounded-md p-1.5 ${device === "phone" ? "bg-muted" : ""}`} aria-label={en("Phone")}>
                   <Smartphone aria-hidden="true" className="h-4 w-4" />
                 </button>
-                <button type="button" aria-pressed={device === "desktop"} onClick={() => setDevice("desktop")} className={`rounded-md p-1.5 ${device === "desktop" ? "bg-muted" : ""}`} aria-label="Wide">
+                <button type="button" aria-pressed={device === "desktop"} onClick={() => setDevice("desktop")} className={`rounded-md p-1.5 ${device === "desktop" ? "bg-muted" : ""}`} aria-label={en("Wide")}>
                   <Monitor aria-hidden="true" className="h-4 w-4" />
                 </button>
               </div>
@@ -524,6 +525,7 @@ function QuestionsEditor({
   readOnly: boolean;
   isPlatform: boolean;
 }) {
+  const en = useEn();
   const [adding, setAdding] = useState<string | null>(null);
   const [bankFor, setBankFor] = useState<string | null>(null);
   const [drag, setDrag] = useState<string | null>(null);
@@ -605,15 +607,15 @@ function QuestionsEditor({
     if (def.sections.length === 1) return;
     const i = def.sections.findIndex((s) => s.id === id);
     const target = def.sections[i === 0 ? 1 : i - 1].id;
-    if (!window.confirm("Delete this step? Its questions move to the step before.")) return;
+    if (!window.confirm(en("Delete this step? Its questions move to the step before."))) return;
     onChange({ ...def, sections: def.sections.filter((s) => s.id !== id), questions: def.questions.map((q) => (q.sectionId === id ? { ...q, sectionId: target } : q)) });
   };
 
   return (
     <div className="space-y-4">
       <div className="rounded-xl border border-border bg-muted/30 p-3 text-xs text-muted-foreground">
-        {def.settings.askUnsure && <p>Always asked first: “What are you unsure about?” (turn off in Settings). </p>}
-        <p>Always asked last: name, email{def.settings.askPhone ? ", phone" : ""} and consent.</p>
+        {def.settings.askUnsure && <p>{en("Always asked first: “What are you unsure about?” (turn off in Settings). ")}</p>}
+        <p>{en("Always asked last: name, email")}{def.settings.askPhone ? en(", phone") : ""}{en(" and consent.")}</p>
       </div>
 
       {def.sections.map((s, si) => {
@@ -630,13 +632,13 @@ function QuestionsEditor({
             }}
           >
             <div className="flex flex-wrap items-start gap-2 border-b border-border p-3">
-              <span className="mt-2 rounded-full bg-cyan-600/10 px-2 py-0.5 text-[11px] font-medium text-cyan-800 dark:text-cyan-300">Step {si + 1}</span>
+              <span className="mt-2 rounded-full bg-cyan-600/10 px-2 py-0.5 text-[11px] font-medium text-cyan-800 dark:text-cyan-300">{en("Step ")}{si + 1}</span>
               <div className="min-w-0 flex-1 space-y-1">
                 <input
                   value={s.title}
                   readOnly={readOnly}
                   maxLength={160}
-                  aria-label="Step title"
+                  aria-label={en("Step title")}
                   onChange={(e) => updateS(s.id, { title: e.target.value })}
                   className="w-full rounded-lg border border-transparent bg-transparent px-2 py-1 font-semibold hover:border-border focus:border-cyan-600 focus:outline-none"
                 />
@@ -644,8 +646,8 @@ function QuestionsEditor({
                   value={s.description ?? ""}
                   readOnly={readOnly}
                   maxLength={1000}
-                  placeholder="Description (optional)"
-                  aria-label="Step description"
+                  placeholder={en("Description (optional)")}
+                  aria-label={en("Step description")}
                   onChange={(e) => updateS(s.id, { description: e.target.value })}
                   className="w-full rounded-lg border border-transparent bg-transparent px-2 py-1 text-xs text-muted-foreground hover:border-border focus:border-cyan-600 focus:outline-none"
                 />
@@ -654,13 +656,13 @@ function QuestionsEditor({
               </div>
               {!readOnly && (
                 <div className="flex gap-1">
-                  <button type="button" className={small} disabled={si === 0} onClick={() => moveSection(si, -1)} aria-label="Move step up">
+                  <button type="button" className={small} disabled={si === 0} onClick={() => moveSection(si, -1)} aria-label={en("Move step up")}>
                     <ArrowUp aria-hidden="true" className="h-3.5 w-3.5" />
                   </button>
-                  <button type="button" className={small} disabled={si === def.sections.length - 1} onClick={() => moveSection(si, 1)} aria-label="Move step down">
+                  <button type="button" className={small} disabled={si === def.sections.length - 1} onClick={() => moveSection(si, 1)} aria-label={en("Move step down")}>
                     <ArrowDown aria-hidden="true" className="h-3.5 w-3.5" />
                   </button>
-                  <button type="button" className={small} disabled={def.sections.length === 1} onClick={() => removeSection(s.id)} aria-label="Delete step">
+                  <button type="button" className={small} disabled={def.sections.length === 1} onClick={() => removeSection(s.id)} aria-label={en("Delete step")}>
                     <Trash2 aria-hidden="true" className="h-3.5 w-3.5" />
                   </button>
                 </div>
@@ -668,7 +670,7 @@ function QuestionsEditor({
             </div>
 
             <ul className="space-y-2 p-3">
-              {qs.length === 0 && <li className="rounded-xl border border-dashed border-border p-4 text-center text-xs text-muted-foreground">No questions in this step yet{drag ? "; drop one here" : ""}.</li>}
+              {qs.length === 0 && <li className="rounded-xl border border-dashed border-border p-4 text-center text-xs text-muted-foreground">{en("No questions in this step yet")}{drag ? en("; drop one here") : ""}.</li>}
               {qs.map((q) => {
                 const isOpen = open === q.id;
                 const before = ordered.slice(0, ordered.findIndex((x) => x.id === q.id));
@@ -688,11 +690,11 @@ function QuestionsEditor({
                   >
                     <div className="flex items-center gap-2 p-2.5">
                       {!readOnly && <GripVertical aria-hidden="true" className="h-4 w-4 shrink-0 cursor-grab text-muted-foreground" />}
-                      <button type="button" onClick={() => setOpen(isOpen ? null : q.id)} className="flex min-w-0 flex-1 items-center gap-2 text-left" aria-expanded={isOpen}>
+                      <button type="button" onClick={() => setOpen(isOpen ? null : q.id)} className="flex min-w-0 flex-1 items-center gap-2 text-start" aria-expanded={isOpen}>
                         {isOpen ? <ChevronDown aria-hidden="true" className="h-4 w-4 shrink-0" /> : <ChevronRight aria-hidden="true" className="h-4 w-4 shrink-0" />}
                         <span className="min-w-0 flex-1">
                           <span className="block truncate text-sm font-medium">
-                            {q.label || <span className="font-normal italic text-muted-foreground">New question (type it below)</span>}
+                            {q.label || <span className="font-normal italic text-muted-foreground">{en("New question (type it below)")}</span>}
                             {q.required && <span className="text-red-600"> *</span>}
                           </span>
                           <span className="flex flex-wrap items-center gap-1.5 text-[11px] text-muted-foreground">
@@ -700,17 +702,17 @@ function QuestionsEditor({
                             {q.options.filter((o) => o.trim()).length > 0 && ` · ${q.options.filter((o) => o.trim()).length} options`}
                             {q.showIf && (
                               <span className="inline-flex items-center gap-0.5 text-violet-700 dark:text-violet-300">
-                                <GitBranch aria-hidden="true" className="h-3 w-3" /> shown only sometimes
+                                <GitBranch aria-hidden="true" className="h-3 w-3" />{en(" shown only sometimes")}
                               </span>
                             )}
                             {(q.scores?.length ?? 0) > 0 && (
                               <span className="inline-flex items-center gap-0.5 text-emerald-700 dark:text-emerald-300">
-                                <Trophy aria-hidden="true" className="h-3 w-3" /> counts towards results
+                                <Trophy aria-hidden="true" className="h-3 w-3" />{en(" counts towards results")}
                               </span>
                             )}
                             {(q.rules?.length ?? 0) > 0 && (
                               <span className="inline-flex items-center gap-0.5 text-amber-800 dark:text-amber-300">
-                                <Tag aria-hidden="true" className="h-3 w-3" /> {q.rules!.length} CRM rule{q.rules!.length > 1 ? "s" : ""}
+                                <Tag aria-hidden="true" className="h-3 w-3" /> {q.rules!.length}{en(" CRM rule")}{q.rules!.length > 1 ? "s" : ""}
                               </span>
                             )}
                           </span>
@@ -718,16 +720,16 @@ function QuestionsEditor({
                       </button>
                       {!readOnly && (
                         <div className="flex shrink-0 gap-1">
-                          <button type="button" className={small} onClick={() => step(q.id, -1)} aria-label="Move up">
+                          <button type="button" className={small} onClick={() => step(q.id, -1)} aria-label={en("Move up")}>
                             <ArrowUp aria-hidden="true" className="h-3.5 w-3.5" />
                           </button>
-                          <button type="button" className={small} onClick={() => step(q.id, 1)} aria-label="Move down">
+                          <button type="button" className={small} onClick={() => step(q.id, 1)} aria-label={en("Move down")}>
                             <ArrowDown aria-hidden="true" className="h-3.5 w-3.5" />
                           </button>
-                          <button type="button" className={small} onClick={() => addQuestion(q.sectionId, q.kind, q)} aria-label="Duplicate">
+                          <button type="button" className={small} onClick={() => addQuestion(q.sectionId, q.kind, q)} aria-label={en("Duplicate")}>
                             <Copy aria-hidden="true" className="h-3.5 w-3.5" />
                           </button>
-                          <button type="button" className={`${small} hover:border-red-500/40 hover:bg-red-500/10 hover:text-red-700 dark:hover:text-red-400`} onClick={() => removeQ(q.id)} aria-label="Delete" title="Delete question">
+                          <button type="button" className={`${small} hover:border-red-500/40 hover:bg-red-500/10 hover:text-red-700 dark:hover:text-red-400`} onClick={() => removeQ(q.id)} aria-label={en("Delete")} title={en("Delete question")}>
                             <Trash2 aria-hidden="true" className="h-3.5 w-3.5" />
                           </button>
                         </div>
@@ -743,12 +745,12 @@ function QuestionsEditor({
               <div className="flex flex-wrap gap-2 px-3 pb-3">
                 <div className="relative">
                   <button type="button" onClick={() => setAdding(adding === s.id ? null : s.id)} className="inline-flex items-center gap-1 rounded-lg border border-dashed border-cyan-600/60 px-3 py-1.5 text-xs font-medium text-cyan-800 hover:bg-cyan-600/5 dark:text-cyan-300">
-                    <Plus aria-hidden="true" className="h-3.5 w-3.5" /> Add question
+                    <Plus aria-hidden="true" className="h-3.5 w-3.5" />{en(" Add question")}
                   </button>
                   {adding === s.id && (
-                    <div className="absolute left-0 top-full z-20 mt-1 grid w-[22rem] grid-cols-2 gap-1 rounded-xl border border-border bg-card p-2 shadow-lg">
+                    <div className="absolute start-0 top-full z-20 mt-1 grid w-[22rem] grid-cols-2 gap-1 rounded-xl border border-border bg-card p-2 shadow-lg">
                       {KINDS.map((k) => (
-                        <button key={k.kind} type="button" onClick={() => addQuestion(s.id, k.kind)} className="rounded-lg p-2 text-left text-xs hover:bg-muted">
+                        <button key={k.kind} type="button" onClick={() => addQuestion(s.id, k.kind)} className="rounded-lg p-2 text-start text-xs hover:bg-muted">
                           <span className="block font-medium">{k.label}</span>
                           <span className="text-muted-foreground">{k.hint}</span>
                         </button>
@@ -757,7 +759,7 @@ function QuestionsEditor({
                   )}
                 </div>
                 <button type="button" onClick={() => setBankFor(s.id)} className="inline-flex items-center gap-1 rounded-lg border border-border px-3 py-1.5 text-xs hover:bg-muted">
-                  <BookOpen aria-hidden="true" className="h-3.5 w-3.5" /> From the question bank
+                  <BookOpen aria-hidden="true" className="h-3.5 w-3.5" />{en(" From the question bank")}
                 </button>
               </div>
             )}
@@ -767,7 +769,7 @@ function QuestionsEditor({
 
       {!readOnly && (
         <button type="button" onClick={addSection} className="inline-flex items-center gap-1 rounded-lg border border-border px-3 py-2 text-sm hover:bg-muted">
-          <Plus aria-hidden="true" className="h-4 w-4" /> Add a step
+          <Plus aria-hidden="true" className="h-4 w-4" />{en(" Add a step")}
         </button>
       )}
 
@@ -777,19 +779,20 @@ function QuestionsEditor({
 }
 
 function ConditionEditor({ value, earlier, onChange, what, readOnly }: { value: Condition | null; earlier: Question[]; onChange: (c: Condition | null) => void; what: string; readOnly: boolean }) {
+  const en = useEn();
   const usable = earlier.filter((q) => !["info", "file", "consent", "slider"].includes(q.kind));
   const q = usable.find((x) => x.id === value?.questionId);
   const options = q ? (q.kind === "yesno" ? ["Yes", "No"] : q.options) : [];
   if (!value)
     return readOnly || usable.length === 0 ? null : (
       <button type="button" onClick={() => onChange({ questionId: usable[usable.length - 1].id, op: "answered" })} className="inline-flex items-center gap-1 text-xs text-violet-700 hover:underline dark:text-violet-300">
-        <GitBranch aria-hidden="true" className="h-3 w-3" /> Show {what} only for some answers
+        <GitBranch aria-hidden="true" className="h-3 w-3" />{en(" Show ")}{what}{en(" only for some answers")}
       </button>
     );
   return (
     <div className="flex flex-wrap items-center gap-1.5 rounded-lg bg-violet-500/5 p-2 text-xs">
       <GitBranch aria-hidden="true" className="h-3.5 w-3.5 text-violet-700 dark:text-violet-300" />
-      Show {what} only if
+      {en("Show ")}{what}{en(" only if")}
       <select disabled={readOnly} value={value.questionId} onChange={(e) => onChange({ questionId: e.target.value, op: "answered" })} className="max-w-48 rounded-md border border-border bg-background px-1.5 py-1">
         {usable.map((x) => (
           <option key={x.id} value={x.id}>
@@ -798,11 +801,11 @@ function ConditionEditor({ value, earlier, onChange, what, readOnly }: { value: 
         ))}
       </select>
       <select disabled={readOnly} value={value.op} onChange={(e) => onChange({ ...value, op: e.target.value as Condition["op"], value: e.target.value === "answered" ? null : (value.value ?? options[0] ?? "") })} className="rounded-md border border-border bg-background px-1.5 py-1">
-        <option value="answered">is answered</option>
+        <option value="answered">{en("is answered")}</option>
         {options.length > 0 && q?.kind !== "multi" && <option value="is">is</option>}
-        {options.length > 0 && q?.kind !== "multi" && <option value="isNot">is not</option>}
+        {options.length > 0 && q?.kind !== "multi" && <option value="isNot">{en("is not")}</option>}
         {q?.kind === "multi" && <option value="includes">includes</option>}
-        {options.length === 0 && q?.kind !== "list" && <option value="is">is exactly</option>}
+        {options.length === 0 && q?.kind !== "list" && <option value="is">{en("is exactly")}</option>}
       </select>
       {value.op !== "answered" &&
         (options.length > 0 ? (
@@ -817,7 +820,7 @@ function ConditionEditor({ value, earlier, onChange, what, readOnly }: { value: 
           <input disabled={readOnly} value={value.value ?? ""} onChange={(e) => onChange({ ...value, value: e.target.value })} className="w-32 rounded-md border border-border bg-background px-1.5 py-1" />
         ))}
       {!readOnly && (
-        <button type="button" onClick={() => onChange(null)} aria-label="Remove condition" className="rounded p-0.5 hover:bg-muted">
+        <button type="button" onClick={() => onChange(null)} aria-label={en("Remove condition")} className="rounded p-0.5 hover:bg-muted">
           <X aria-hidden="true" className="h-3.5 w-3.5" />
         </button>
       )}
@@ -842,6 +845,7 @@ function QuestionEditor({
   isPlatform: boolean;
   results: Results | null;
 }) {
+  const en = useEn();
   const hasOptions = WITH_OPTIONS.includes(q.kind);
   const named = q.options.filter((o) => o.trim());
   const ruleTargets = q.kind === "yesno" ? ["Yes", "No"] : hasOptions ? named : [];
@@ -859,20 +863,20 @@ function QuestionEditor({
       {/* The question, its type and whether it's required */}
       <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_13rem]">
         <label className="block text-xs font-medium text-muted-foreground">
-          {q.kind === "info" ? "Text to show" : "Question"}
+          {q.kind === "info" ? en("Text to show") : en("Question")}
           <textarea
             rows={2}
             autoFocus={!q.label}
             className={input}
             value={q.label}
             maxLength={300}
-            placeholder={q.kind === "info" ? "e.g. We reply within two working days." : "Type your question, e.g. Which area interests you most?"}
+            placeholder={q.kind === "info" ? en("e.g. We reply within two working days.") : en("Type your question, e.g. Which area interests you most?")}
             onChange={(e) => update({ label: e.target.value })}
           />
         </label>
         <div className="space-y-2.5">
           <label className="block text-xs font-medium text-muted-foreground">
-            Type
+            {en("Type")}
             <select
               className={input}
               value={q.kind}
@@ -900,11 +904,11 @@ function QuestionEditor({
           </label>
           {q.kind !== "info" && (
             <label className="flex cursor-pointer items-center justify-between gap-2 rounded-lg border border-border px-3 py-2 text-xs font-medium">
-              Required
+              {en("Required")}
               <span className="relative inline-flex">
                 <input type="checkbox" role="switch" className="peer sr-only" checked={q.required} onChange={(e) => update({ required: e.target.checked })} />
                 <span className="h-5 w-9 rounded-full bg-muted-foreground/30 transition-colors peer-checked:bg-cyan-700 peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-cyan-600" />
-                <span className="absolute left-0.5 top-0.5 h-4 w-4 rounded-full bg-white shadow transition-transform peer-checked:translate-x-4" />
+                <span className="absolute start-0.5 top-0.5 h-4 w-4 rounded-full bg-white shadow transition-transform peer-checked:translate-x-4" />
               </span>
             </label>
           )}
@@ -912,42 +916,42 @@ function QuestionEditor({
       </div>
 
       <label className="block text-xs font-medium text-muted-foreground">
-        Help text <span className="font-normal">(optional, shown under the question)</span>
-        <input className={input} value={q.help ?? ""} maxLength={500} placeholder="e.g. Pick the one closest to you; you can explain more later." onChange={(e) => update({ help: e.target.value })} />
+        {en("Help text ")}<span className="font-normal">{en("(optional, shown under the question)")}</span>
+        <input className={input} value={q.help ?? ""} maxLength={500} placeholder={en("e.g. Pick the one closest to you; you can explain more later.")} onChange={(e) => update({ help: e.target.value })} />
       </label>
 
       {["text", "longtext", "number", "email", "phone"].includes(q.kind) && (
         <label className="block text-xs font-medium text-muted-foreground">
-          Example answer in the box <span className="font-normal">(optional)</span>
-          <input className={input} value={q.placeholder ?? ""} maxLength={120} placeholder="e.g. 8 hours" onChange={(e) => update({ placeholder: e.target.value })} />
+          {en("Example answer in the box ")}<span className="font-normal">{en("(optional)")}</span>
+          <input className={input} value={q.placeholder ?? ""} maxLength={120} placeholder={en("e.g. 8 hours")} onChange={(e) => update({ placeholder: e.target.value })} />
         </label>
       )}
 
       {hasOptions && (
         <div>
-          <p className="text-xs font-medium text-muted-foreground">Options</p>
+          <p className="text-xs font-medium text-muted-foreground">{en("Options")}</p>
           <OptionsEditor options={q.options} onChange={(options) => update({ options })} />
           <div className="mt-2 flex flex-wrap items-center gap-x-5 gap-y-2 text-xs">
             <label className="flex items-center gap-2">
-              <input type="checkbox" checked={!!q.allowOther} onChange={(e) => update({ allowOther: e.target.checked })} /> Add “Other (please specify)”
+              <input type="checkbox" checked={!!q.allowOther} onChange={(e) => update({ allowOther: e.target.checked })} />{en(" Add “Other (please specify)”")}
             </label>
             {q.kind === "multi" && !limits && (
               <button type="button" onClick={() => setLimits(true)} className="text-cyan-700 hover:underline dark:text-cyan-400">
-                Limit how many they can pick
+                {en("Limit how many they can pick")}
               </button>
             )}
           </div>
           {q.kind === "multi" && limits && (
             <div className="mt-2 flex flex-wrap items-center gap-2 rounded-lg bg-muted/40 px-3 py-2 text-xs">
-              People pick at least
-              <input type="number" min={0} aria-label="At least" className="w-16 rounded-md border border-border bg-background px-2 py-1" value={q.min ?? ""} placeholder="—" onChange={(e) => update({ min: num(e.target.value) })} />
-              and at most
-              <input type="number" min={1} aria-label="At most" className="w-16 rounded-md border border-border bg-background px-2 py-1" value={q.max ?? ""} placeholder="—" onChange={(e) => update({ max: num(e.target.value) })} />
-              <span className="text-muted-foreground">(leave empty for no limit)</span>
+              {en("People pick at least")}
+              <input type="number" min={0} aria-label={en("At least")} className="w-16 rounded-md border border-border bg-background px-2 py-1" value={q.min ?? ""} placeholder="—" onChange={(e) => update({ min: num(e.target.value) })} />
+              {en("and at most")}
+              <input type="number" min={1} aria-label={en("At most")} className="w-16 rounded-md border border-border bg-background px-2 py-1" value={q.max ?? ""} placeholder="—" onChange={(e) => update({ max: num(e.target.value) })} />
+              <span className="text-muted-foreground">{en("(leave empty for no limit)")}</span>
               <button
                 type="button"
-                className="ml-auto rounded p-0.5 hover:bg-muted"
-                aria-label="Remove the limit"
+                className="ms-auto rounded p-0.5 hover:bg-muted"
+                aria-label={en("Remove the limit")}
                 onClick={() => {
                   update({ min: null, max: null });
                   setLimits(false);
@@ -962,22 +966,22 @@ function QuestionEditor({
 
       {q.kind === "number" && (
         <div className="flex flex-wrap items-center gap-2 text-xs">
-          Allowed from
-          <input type="number" aria-label="Lowest" className="w-24 rounded-md border border-border bg-background px-2 py-1" value={q.min ?? ""} placeholder="any" onChange={(e) => update({ min: num(e.target.value) })} />
+          {en("Allowed from")}
+          <input type="number" aria-label={en("Lowest")} className="w-24 rounded-md border border-border bg-background px-2 py-1" value={q.min ?? ""} placeholder="any" onChange={(e) => update({ min: num(e.target.value) })} />
           to
-          <input type="number" aria-label="Highest" className="w-24 rounded-md border border-border bg-background px-2 py-1" value={q.max ?? ""} placeholder="any" onChange={(e) => update({ max: num(e.target.value) })} />
+          <input type="number" aria-label={en("Highest")} className="w-24 rounded-md border border-border bg-background px-2 py-1" value={q.max ?? ""} placeholder="any" onChange={(e) => update({ max: num(e.target.value) })} />
         </div>
       )}
       {q.kind === "scale" && (
         <div className="space-y-2 text-xs">
           <div className="flex flex-wrap items-center gap-2">
-            Scale from
-            <select className="rounded-md border border-border bg-background px-2 py-1" value={q.min ?? 1} onChange={(e) => update({ min: Number(e.target.value) })} aria-label="From">
+            {en("Scale from")}
+            <select className="rounded-md border border-border bg-background px-2 py-1" value={q.min ?? 1} onChange={(e) => update({ min: Number(e.target.value) })} aria-label={en("From")}>
               <option value={0}>0</option>
               <option value={1}>1</option>
             </select>
             to
-            <select className="rounded-md border border-border bg-background px-2 py-1" value={q.max ?? 5} onChange={(e) => update({ max: Number(e.target.value) })} aria-label="To">
+            <select className="rounded-md border border-border bg-background px-2 py-1" value={q.max ?? 5} onChange={(e) => update({ max: Number(e.target.value) })} aria-label={en("To")}>
               {[3, 4, 5, 6, 7, 8, 9, 10].map((n) => (
                 <option key={n} value={n}>
                   {n}
@@ -987,12 +991,12 @@ function QuestionEditor({
           </div>
           <div className="grid gap-2 sm:grid-cols-2">
             <label className="font-medium text-muted-foreground">
-              Words under the lowest
-              <input className={input} value={q.minLabel ?? ""} maxLength={40} placeholder="e.g. Not at all" onChange={(e) => update({ minLabel: e.target.value })} />
+              {en("Words under the lowest")}
+              <input className={input} value={q.minLabel ?? ""} maxLength={40} placeholder={en("e.g. Not at all")} onChange={(e) => update({ minLabel: e.target.value })} />
             </label>
             <label className="font-medium text-muted-foreground">
-              Words under the highest
-              <input className={input} value={q.maxLabel ?? ""} maxLength={40} placeholder="e.g. Very sure" onChange={(e) => update({ maxLabel: e.target.value })} />
+              {en("Words under the highest")}
+              <input className={input} value={q.maxLabel ?? ""} maxLength={40} placeholder={en("e.g. Very sure")} onChange={(e) => update({ maxLabel: e.target.value })} />
             </label>
           </div>
         </div>
@@ -1001,24 +1005,24 @@ function QuestionEditor({
         <div className="space-y-2 text-xs">
           <div className="grid gap-2 sm:grid-cols-2">
             <label className="font-medium text-muted-foreground">
-              Left end
-              <input className={input} value={q.minLabel ?? ""} maxLength={40} placeholder="e.g. Support others" onChange={(e) => update({ minLabel: e.target.value })} />
+              {en("Left end")}
+              <input className={input} value={q.minLabel ?? ""} maxLength={40} placeholder={en("e.g. Support others")} onChange={(e) => update({ minLabel: e.target.value })} />
             </label>
             <label className="font-medium text-muted-foreground">
-              Right end
-              <input className={input} value={q.maxLabel ?? ""} maxLength={40} placeholder="e.g. Take charge" onChange={(e) => update({ maxLabel: e.target.value })} />
+              {en("Right end")}
+              <input className={input} value={q.maxLabel ?? ""} maxLength={40} placeholder={en("e.g. Take charge")} onChange={(e) => update({ maxLabel: e.target.value })} />
             </label>
           </div>
           <div className="flex flex-wrap items-center gap-2">
-            Positions
-            <select className="rounded-md border border-border bg-background px-2 py-1" value={q.max ?? 7} onChange={(e) => update({ min: 1, max: Number(e.target.value) })} aria-label="Positions">
+            {en("Positions")}
+            <select className="rounded-md border border-border bg-background px-2 py-1" value={q.max ?? 7} onChange={(e) => update({ min: 1, max: Number(e.target.value) })} aria-label={en("Positions")}>
               {[3, 5, 7, 9, 11].map((n) => (
                 <option key={n} value={n}>
                   {n}
                 </option>
               ))}
             </select>
-            <span className="text-muted-foreground">It starts in the middle; left there, the answer is the middle.</span>
+            <span className="text-muted-foreground">{en("It starts in the middle; left there, the answer is the middle.")}</span>
           </div>
         </div>
       )}
@@ -1026,15 +1030,15 @@ function QuestionEditor({
       {q.kind === "booking" && <MeetingEditor q={q} update={update} />}
       {q.kind === "file" && (
         <div className="flex items-center gap-2 text-xs">
-          People can attach up to
-          <select className="rounded-md border border-border bg-background px-2 py-1" value={q.max ?? 1} onChange={(e) => update({ max: Number(e.target.value) })} aria-label="Files allowed">
+          {en("People can attach up to")}
+          <select className="rounded-md border border-border bg-background px-2 py-1" value={q.max ?? 1} onChange={(e) => update({ max: Number(e.target.value) })} aria-label={en("Files allowed")}>
             {[1, 2, 3].map((n) => (
               <option key={n} value={n}>
                 {n}
               </option>
             ))}
           </select>
-          {(q.max ?? 1) === 1 ? "file" : "files"} (PDF, Word, JPG or PNG, 5 MB each)
+          {(q.max ?? 1) === 1 ? "file" : "files"}{en(" (PDF, Word, JPG or PNG, 5 MB each)")}
         </div>
       )}
 
@@ -1049,16 +1053,16 @@ function QuestionEditor({
 
       {!["info", "consent", "file"].includes(q.kind) && !isPlatform && (
         <label className="flex flex-wrap items-center gap-2 text-xs">
-          <span className="font-medium">Show the answer on the person&apos;s profile (People)</span>
+          <span className="font-medium">{en("Show the answer on the person's profile (People)")}</span>
           <select
             className="rounded-md border border-border bg-background px-2 py-1"
             value={q.profileCard ?? ""}
             onChange={(e) => update({ profileCard: (e.target.value || null) as Question["profileCard"] })}
           >
-            <option value="">No</option>
-            <option value="background">Background</option>
-            <option value="logistics">Logistics</option>
-            <option value="motivation">Motivation</option>
+            <option value="">{en("No")}</option>
+            <option value="background">{en("Background")}</option>
+            <option value="logistics">{en("Logistics")}</option>
+            <option value="motivation">{en("Motivation")}</option>
           </select>
         </label>
       )}
@@ -1066,25 +1070,25 @@ function QuestionEditor({
       {ruleTargets.length > 0 && !isPlatform && (
         <details className="rounded-lg border border-amber-500/30 bg-amber-500/5 p-2 text-xs" open={(q.rules?.length ?? 0) > 0}>
           <summary className="cursor-pointer font-medium">
-            <Tag aria-hidden="true" className="mr-1 inline h-3.5 w-3.5" /> CRM rules: what each answer does to the lead
+            <Tag aria-hidden="true" className="me-1 inline h-3.5 w-3.5" />{en(" CRM rules: what each answer does to the lead")}
           </summary>
           <table className="mt-2 w-full">
             <thead className="text-muted-foreground">
               <tr>
-                <th className="pb-1 text-left font-medium">If they pick</th>
-                <th className="pb-1 text-left font-medium">Add tag</th>
-                <th className="pb-1 text-left font-medium">Assign to</th>
-                <th className="pb-1 text-left font-medium">High priority</th>
+                <th className="pb-1 text-start font-medium">{en("If they pick")}</th>
+                <th className="pb-1 text-start font-medium">{en("Add tag")}</th>
+                <th className="pb-1 text-start font-medium">{en("Assign to")}</th>
+                <th className="pb-1 text-start font-medium">{en("High priority")}</th>
               </tr>
             </thead>
             <tbody>
               {ruleTargets.map((o) => (
                 <tr key={o} className="border-t border-amber-500/20">
-                  <td className="py-1 pr-2">{o}</td>
-                  <td className="py-1 pr-2">
+                  <td className="py-1 pe-2">{o}</td>
+                  <td className="py-1 pe-2">
                     <input className="w-full rounded-md border border-border bg-background px-1.5 py-1" maxLength={40} value={rule(o)?.tag ?? ""} onChange={(e) => setRule(o, { tag: e.target.value || null })} />
                   </td>
-                  <td className="py-1 pr-2">
+                  <td className="py-1 pe-2">
                     <select className="w-full rounded-md border border-border bg-background px-1.5 py-1" value={rule(o)?.ownerMemberId ?? ""} onChange={(e) => setRule(o, { ownerMemberId: e.target.value || null })}>
                       <option value="">—</option>
                       {team.map((m) => (
@@ -1101,8 +1105,8 @@ function QuestionEditor({
               ))}
             </tbody>
           </table>
-          {team.length === 0 && <p className="mt-1 text-muted-foreground">Add your team in the CRM&apos;s Settings to assign leads automatically.</p>}
-          <p className="mt-1 text-muted-foreground">Rules run when the inquiry arrives. An owner is set only if the lead has none.</p>
+          {team.length === 0 && <p className="mt-1 text-muted-foreground">{en("Add your team in the CRM's Settings to assign leads automatically.")}</p>}
+          <p className="mt-1 text-muted-foreground">{en("Rules run when the inquiry arrives. An owner is set only if the lead has none.")}</p>
         </details>
       )}
     </fieldset>
@@ -1114,6 +1118,7 @@ function QuestionEditor({
  * pasting several lines adds several options, rows move up and down.
  */
 function OptionsEditor({ options, onChange }: { options: string[]; onChange: (o: string[]) => void }) {
+  const en = useEn();
   const refs = useRef<(HTMLInputElement | null)[]>([]);
   const pending = useRef<number | null>(null);
   const setFocus = (i: number) => {
@@ -1147,7 +1152,7 @@ function OptionsEditor({ options, onChange }: { options: string[]; onChange: (o:
       <ol className="space-y-1.5">
         {options.map((o, i) => (
           <li key={i} className="group flex items-center gap-1.5">
-            <span className="w-5 shrink-0 text-right text-xs tabular-nums text-muted-foreground">{i + 1}.</span>
+            <span className="w-5 shrink-0 text-end text-xs tabular-nums text-muted-foreground">{i + 1}.</span>
             <input
               ref={(el) => {
                 refs.current[i] = el;
@@ -1197,7 +1202,7 @@ function OptionsEditor({ options, onChange }: { options: string[]; onChange: (o:
           </li>
         ))}
       </ol>
-      {dupes.size > 0 && <p className="pl-6 text-xs text-red-700 dark:text-red-400">Two options are the same.</p>}
+      {dupes.size > 0 && <p className="ps-6 text-xs text-red-700 dark:text-red-400">{en("Two options are the same.")}</p>}
       {options.length < 30 && (
         <button
           type="button"
@@ -1205,17 +1210,18 @@ function OptionsEditor({ options, onChange }: { options: string[]; onChange: (o:
             insert(options.length, [""]);
             setFocus(options.length);
           }}
-          className="ml-6 inline-flex items-center gap-1 text-xs font-medium text-cyan-700 hover:underline dark:text-cyan-400"
+          className="ms-6 inline-flex items-center gap-1 text-xs font-medium text-cyan-700 hover:underline dark:text-cyan-400"
         >
-          <Plus aria-hidden="true" className="h-3.5 w-3.5" /> Add option
+          <Plus aria-hidden="true" className="h-3.5 w-3.5" />{en(" Add option")}
         </button>
       )}
-      <p className="pl-6 text-[11px] text-muted-foreground">Tip: press Enter for the next option, or paste a list to add many at once.</p>
+      <p className="ps-6 text-[11px] text-muted-foreground">{en("Tip: press Enter for the next option, or paste a list to add many at once.")}</p>
     </div>
   );
 }
 
 function BankPicker({ bank, onPick, onClose }: { bank: { topic: string; questions: Question[] }[]; onPick: (q: Question) => void; onClose: () => void }) {
+  const en = useEn();
   const [q, setQ] = useState("");
   const t = q.trim().toLowerCase();
   return (
@@ -1223,10 +1229,10 @@ function BankPicker({ bank, onPick, onClose }: { bank: { topic: string; question
       <div role="dialog" aria-modal="true" aria-labelledby="bank-title" className="flex max-h-[85vh] w-full max-w-2xl flex-col rounded-2xl bg-card shadow-xl" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center gap-3 border-b border-border p-4">
           <h2 id="bank-title" className="text-base font-semibold">
-            Question bank
+            {en("Question bank")}
           </h2>
-          <input autoFocus value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search" className="ml-auto w-48 rounded-lg border border-border bg-background px-3 py-1.5 text-sm" />
-          <button type="button" onClick={onClose} aria-label="Close" className="rounded-lg p-1.5 hover:bg-muted">
+          <input autoFocus value={q} onChange={(e) => setQ(e.target.value)} placeholder={en("Search")} className="ms-auto w-48 rounded-lg border border-border bg-background px-3 py-1.5 text-sm" />
+          <button type="button" onClick={onClose} aria-label={en("Close")} className="rounded-lg p-1.5 hover:bg-muted">
             <X aria-hidden="true" className="h-5 w-5" />
           </button>
         </div>
@@ -1240,7 +1246,7 @@ function BankPicker({ bank, onPick, onClose }: { bank: { topic: string; question
                 <ul className="space-y-1.5">
                   {list.map((x) => (
                     <li key={x.label}>
-                      <button type="button" onClick={() => onPick(x)} className="flex w-full items-center justify-between gap-3 rounded-lg border border-border p-2.5 text-left text-sm hover:bg-muted">
+                      <button type="button" onClick={() => onPick(x)} className="flex w-full items-center justify-between gap-3 rounded-lg border border-border p-2.5 text-start text-sm hover:bg-muted">
                         <span>
                           {x.label}
                           {x.options.length > 0 && <span className="block truncate text-xs text-muted-foreground">{x.options.join(" · ")}</span>}
@@ -1272,35 +1278,35 @@ function SectionReportEditor({ s, readOnly, update }: { s: Section; readOnly: bo
       <summary className="cursor-pointer py-1 font-medium text-muted-foreground">{en("Report text and counsellor guide")}</summary>
       <fieldset disabled={readOnly} className="mt-1 space-y-2">
         <label className="block font-medium">
-          What the person reads at the top of this part of their report
+          {en("What the person reads at the top of this part of their report")}
           <textarea
             rows={2}
             maxLength={1500}
             className="mt-1 block w-full rounded-md border border-border bg-background px-2 py-1.5 font-normal"
             value={s.report ?? ""}
-            placeholder="e.g. Knowing where you are today helps you see where you want to go."
+            placeholder={en("e.g. Knowing where you are today helps you see where you want to go.")}
             onChange={(e) => update({ report: e.target.value })}
           />
         </label>
         <div className="space-y-1 rounded-lg border border-emerald-600/30 bg-emerald-600/5 p-2">
           <p className="font-medium">
-            {en("Counsellor guide ")}<span className="font-normal text-muted-foreground">(above this part&apos;s answers in the CRM&apos;s Insights summary; never shown to the person)</span>
+            {en("Counsellor guide ")}<span className="font-normal text-muted-foreground">{en("(above this part's answers in the CRM's Insights summary; never shown to the person)")}</span>
           </p>
           <input
             maxLength={120}
-            aria-label="Guide heading"
+            aria-label={en("Guide heading")}
             className="block w-full rounded-md border border-border bg-background px-2 py-1.5"
             value={s.guideTitle ?? ""}
-            placeholder="Heading, e.g. Current situation: why they want a change"
+            placeholder={en("Heading, e.g. Current situation: why they want a change")}
             onChange={(e) => update({ guideTitle: e.target.value })}
           />
           <textarea
             rows={3}
             maxLength={2000}
-            aria-label="Guide"
+            aria-label={en("Guide")}
             className="block w-full rounded-md border border-border bg-background px-2 py-1.5"
             value={s.guide ?? ""}
-            placeholder={"Start a line with \"- \" for a point, e.g.\n- If they're unhappy, ask what's behind it"}
+            placeholder={en("Start a line with \"- \" for a point, e.g.\n- If they're unhappy, ask what's behind it")}
             onChange={(e) => update({ guide: e.target.value })}
           />
         </div>
@@ -1356,12 +1362,12 @@ function ExplainEditor({ q, update }: { q: Question; update: (p: Partial<Questio
   return (
     <details className="rounded-lg border border-sky-600/30 bg-sky-600/5 p-2 text-xs" open={(q.explain?.length ?? 0) > 0}>
       <summary className="cursor-pointer font-medium">
-        <FileText aria-hidden="true" className="mr-1 inline h-3.5 w-3.5" /> What the person reads in their report
+        <FileText aria-hidden="true" className="me-1 inline h-3.5 w-3.5" />{en(" What the person reads in their report")}
       </summary>
-      <p className="mt-1 text-muted-foreground">Shown under their answer in their report, its PDF and the results email. Leave blank for just the answer.</p>
+      <p className="mt-1 text-muted-foreground">{en("Shown under their answer in their report, its PDF and the results email. Leave blank for just the answer.")}</p>
       <label className="mt-2 flex items-center gap-2">
         <input type="checkbox" checked={!!q.hideInReport} onChange={(e) => update({ hideInReport: e.target.checked })} />
-        Leave this question out of the report&apos;s parts <span className="text-muted-foreground">(it stays under &ldquo;All your answers&rdquo;)</span>
+        {en("Leave this question out of the report's parts ")}<span className="text-muted-foreground">{en("(it stays under “All your answers”)")}</span>
       </label>
       {!q.hideInReport && (
         <div className="mt-2 space-y-2">
@@ -1373,7 +1379,7 @@ function ExplainEditor({ q, update }: { q: Question; update: (p: Partial<Questio
                 maxLength={1500}
                 className="mt-1 block w-full rounded-md border border-border bg-background px-2 py-1.5"
                 value={text(when)}
-                placeholder={when === "answered" ? en("e.g. Each of these areas leads to recognised certifications.") : "e.g. You're doing something about it, and that's the hardest step."}
+                placeholder={when === "answered" ? en("e.g. Each of these areas leads to recognised certifications.") : en("e.g. You're doing something about it, and that's the hardest step.")}
                 onChange={(e) => setText(when, e.target.value)}
               />
             </label>
@@ -1403,9 +1409,9 @@ function TipsEditor({ q, update }: { q: Question; update: (p: Partial<Question>)
   return (
     <details className="rounded-lg border border-emerald-600/30 bg-emerald-600/5 p-2 text-xs" open={(q.tips?.length ?? 0) > 0}>
       <summary className="cursor-pointer font-medium">
-        <Lightbulb aria-hidden="true" className="mr-1 inline h-3.5 w-3.5" />{en(" Notes for counsellors beside this answer")}
+        <Lightbulb aria-hidden="true" className="me-1 inline h-3.5 w-3.5" />{en(" Notes for counsellors beside this answer")}
       </summary>
-      <p className="mt-1 text-muted-foreground">Shown in green beside the answer on the lead, to help your team talk with the person. Never shown to the person.</p>
+      <p className="mt-1 text-muted-foreground">{en("Shown in green beside the answer on the lead, to help your team talk with the person. Never shown to the person.")}</p>
       <div className="mt-2 space-y-2">
         {all.map(([when, label]) => (
           <label key={when} className="block">
@@ -1415,7 +1421,7 @@ function TipsEditor({ q, update }: { q: Question; update: (p: Partial<Question>)
               maxLength={600}
               className="mt-1 block w-full rounded-md border border-border bg-background px-2 py-1.5"
               value={tip(when)}
-              placeholder={when === "answered" ? "e.g. Ask what they meant and what matters most to them." : en("e.g. Explain the instalment plan and scholarships early.")}
+              placeholder={when === "answered" ? en("e.g. Ask what they meant and what matters most to them.") : en("e.g. Explain the instalment plan and scholarships early.")}
               onChange={(e) => setTip(when, e.target.value)}
             />
           </label>
@@ -1426,11 +1432,12 @@ function TipsEditor({ q, update }: { q: Question; update: (p: Partial<Question>)
 }
 
 function ColumnsEditor({ q, update }: { q: Question; update: (p: Partial<Question>) => void }) {
+  const en = useEn();
   const cols = q.columns ?? [];
   const set = (i: number, patch: Partial<ListColumn>) => update({ columns: cols.map((c, j) => (j === i ? { ...c, ...patch } : c)) });
   return (
     <div className="space-y-2 text-xs">
-      <p className="font-medium text-muted-foreground">Columns of each row</p>
+      <p className="font-medium text-muted-foreground">{en("Columns of each row")}</p>
       <ol className="space-y-2">
         {cols.map((c, i) => (
           <li key={c.id} className="space-y-2 rounded-lg border border-border p-2.5">
@@ -1441,16 +1448,16 @@ function ColumnsEditor({ q, update }: { q: Question; update: (p: Partial<Questio
               </button>
             </div>
             <label className="flex items-center gap-2">
-              <input type="checkbox" checked={c.options.length > 0} onChange={(e) => set(i, { options: e.target.checked ? ["", ""] : [] })} /> People pick from choices
+              <input type="checkbox" checked={c.options.length > 0} onChange={(e) => set(i, { options: e.target.checked ? ["", ""] : [] })} />{en(" People pick from choices")}
             </label>
             {c.options.length > 0 && (
               <label className="block font-medium text-muted-foreground">
-                Choices, one per line
+                {en("Choices, one per line")}
                 <textarea
                   rows={3}
                   className={input}
                   value={c.options.join("\n")}
-                  placeholder={"Parent\nFriend\nEmployer"}
+                  placeholder={en("Parent\nFriend\nEmployer")}
                   onChange={(e) => set(i, { options: e.target.value.split("\n").slice(0, 15) })}
                 />
               </label>
@@ -1461,12 +1468,12 @@ function ColumnsEditor({ q, update }: { q: Question; update: (p: Partial<Questio
       <div className="flex flex-wrap items-center gap-3">
         {cols.length < 4 && (
           <button type="button" className={small} onClick={() => update({ columns: [...cols, { id: newId(), label: "", options: [] }] })}>
-            <Plus aria-hidden="true" className="mr-1 inline h-3.5 w-3.5" /> Add a column
+            <Plus aria-hidden="true" className="me-1 inline h-3.5 w-3.5" />{en(" Add a column")}
           </button>
         )}
         <span className="flex items-center gap-2">
-          People can add up to
-          <select className="rounded-md border border-border bg-background px-2 py-1" value={q.max ?? 5} onChange={(e) => update({ max: Number(e.target.value) })} aria-label="Most rows">
+          {en("People can add up to")}
+          <select className="rounded-md border border-border bg-background px-2 py-1" value={q.max ?? 5} onChange={(e) => update({ max: Number(e.target.value) })} aria-label={en("Most rows")}>
             {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((n) => (
               <option key={n} value={n}>
                 {n}
@@ -1484,6 +1491,7 @@ const SCORABLE: Kind[] = ["choice", "multi", "dropdown", "yesno", "slider"];
 
 /** What each answer counts for in the results: outcomes it gives a point to, and match points */
 function ScoresEditor({ q, update, results }: { q: Question; update: (p: Partial<Question>) => void; results: Results }) {
+  const en = useEn();
   const targets: [string, string][] =
     q.kind === "slider"
       ? [
@@ -1507,18 +1515,18 @@ function ScoresEditor({ q, update, results }: { q: Question; update: (p: Partial
   return (
     <details className="rounded-lg border border-emerald-600/30 bg-emerald-500/5 p-2 text-xs" open={scores.length > 0}>
       <summary className="cursor-pointer font-medium">
-        <Trophy aria-hidden="true" className="mr-1 inline h-3.5 w-3.5" /> Counts towards results
+        <Trophy aria-hidden="true" className="me-1 inline h-3.5 w-3.5" />{en(" Counts towards results")}
       </summary>
-      {q.kind === "slider" && <p className="mt-1 text-muted-foreground">A slider counts by how far it is towards an end: all the way gives the full points, the middle gives none.</p>}
+      {q.kind === "slider" && <p className="mt-1 text-muted-foreground">{en("A slider counts by how far it is towards an end: all the way gives the full points, the middle gives none.")}</p>}
       {targets.length === 0 ? (
-        <p className="mt-2 text-muted-foreground">Add the options first.</p>
+        <p className="mt-2 text-muted-foreground">{en("Add the options first.")}</p>
       ) : (
         <table className="mt-2 w-full">
           <thead className="text-muted-foreground">
             <tr>
-              <th className="pb-1 text-left font-medium">If they pick</th>
-              {outcomes.length > 0 && <th className="pb-1 text-left font-medium">A point for</th>}
-              {results.matchEnabled && <th className="w-24 pb-1 text-left font-medium">Match points</th>}
+              <th className="pb-1 text-start font-medium">{en("If they pick")}</th>
+              {outcomes.length > 0 && <th className="pb-1 text-start font-medium">{en("A point for")}</th>}
+              {results.matchEnabled && <th className="w-24 pb-1 text-start font-medium">{en("Match points")}</th>}
             </tr>
           </thead>
           <tbody>
@@ -1526,9 +1534,9 @@ function ScoresEditor({ q, update, results }: { q: Question; update: (p: Partial
               const sc = score(when);
               return (
                 <tr key={when} className="border-t border-emerald-600/20 align-top">
-                  <td className="py-1.5 pr-2">{label}</td>
+                  <td className="py-1.5 pe-2">{label}</td>
                   {outcomes.length > 0 && (
-                    <td className="py-1.5 pr-2">
+                    <td className="py-1.5 pe-2">
                       <div className="flex flex-wrap gap-1">
                         {outcomes.map((o) => {
                           const on = !!sc?.outcomes.includes(o.id);
@@ -1597,18 +1605,17 @@ function ResultsEditor({ def, onChange, readOnly, onFill }: { def: FormDef; onCh
   return (
     <fieldset disabled={readOnly} className="space-y-5">
       <section className="space-y-2 rounded-2xl border border-border bg-card p-4 text-sm">
-        <h2 className="text-sm font-semibold">How results work</h2>
+        <h2 className="text-sm font-semibold">{en("How results work")}</h2>
         <p className="text-xs text-muted-foreground">
-          Switch on an outcome, a match score or both. Then, in the Questions tab, open a question with options, yes/no or a slider and set what each answer
-          counts for. Your team sees the result on the lead in your CRM, with your note on how to talk with them.
+          {en("Switch on an outcome, a match score or both. Then, in the Questions tab, open a question with options, yes/no or a slider and set what each answer counts for. Your team sees the result on the lead in your CRM, with your note on how to talk with them.")}
         </p>
         <p className="text-xs text-muted-foreground">
-          {scored.length === 0 ? "No question counts towards results yet." : `${scored.length} question${scored.length > 1 ? "s count" : " counts"} towards results.`}
+          {scored.length === 0 ? en("No question counts towards results yet.") : `${scored.length} question${scored.length > 1 ? "s count" : " counts"} towards results.`}
         </p>
         <Switch
           checked={r.showToPerson}
           onChange={(v) => set({ showToPerson: v })}
-          title="Show people their results after they send"
+          title={en("Show people their results after they send")}
           detail="Off: only your team sees them, in the CRM."
         />
       </section>
@@ -1617,14 +1624,14 @@ function ResultsEditor({ def, onChange, readOnly, onFill }: { def: FormDef; onCh
         <Switch
           checked={r.outcomeEnabled}
           onChange={(v) => set({ outcomeEnabled: v, outcomes: v ? (r.outcomes.length === 0 ? [{ id: newId(), name: "" }, { id: newId(), name: "" }] : r.outcomes) : r.outcomes.filter((o) => o.name.trim()) })}
-          title="Outcome"
+          title={en("Outcome")}
           detail="Each answer gives points to one or more outcomes; the one with the most points is the result (e.g. a work style, or the course that suits them best)."
         />
         {r.outcomeEnabled && (
-          <div className="space-y-3 border-l-2 border-border pl-4">
+          <div className="space-y-3 border-s-2 border-border ps-4">
             <label className="block text-xs font-medium text-muted-foreground">
-              Heading on the result
-              <input className={input} value={r.outcomeTitle ?? ""} maxLength={80} placeholder="e.g. Your work style" onChange={(e) => set({ outcomeTitle: e.target.value })} />
+              {en("Heading on the result")}
+              <input className={input} value={r.outcomeTitle ?? ""} maxLength={80} placeholder={en("e.g. Your work style")} onChange={(e) => set({ outcomeTitle: e.target.value })} />
             </label>
             <ol className="space-y-2">
               {r.outcomes.map((o, i) => (
@@ -1636,19 +1643,19 @@ function ResultsEditor({ def, onChange, readOnly, onFill }: { def: FormDef; onCh
                     </button>
                   </div>
                   <label className="block text-xs font-medium text-muted-foreground">
-                    What the person reads <span className="font-normal">({"{institute}"} is your name)</span>
+                    {en("What the person reads ")}<span className="font-normal">({"{institute}"}{en(" is your name)")}</span>
                     <textarea rows={2} className={input} value={o.summary ?? ""} maxLength={1500} onChange={(e) => setOutcome(i, { summary: e.target.value })} />
                   </label>
                   <label className="block text-xs font-medium text-muted-foreground">
-                    {en("Note for your counsellor ")}<span className="font-normal">(only in the CRM)</span>
-                    <textarea rows={2} className={input} value={o.coaching ?? ""} maxLength={1500} placeholder="e.g. Give facts and proof; don't rush them." onChange={(e) => setOutcome(i, { coaching: e.target.value })} />
+                    {en("Note for your counsellor ")}<span className="font-normal">{en("(only in the CRM)")}</span>
+                    <textarea rows={2} className={input} value={o.coaching ?? ""} maxLength={1500} placeholder={en("e.g. Give facts and proof; don't rush them.")} onChange={(e) => setOutcome(i, { coaching: e.target.value })} />
                   </label>
                 </li>
               ))}
             </ol>
             {r.outcomes.length < 12 && (
               <button type="button" className={small} onClick={() => set({ outcomes: [...r.outcomes, { id: newId(), name: "" }] })}>
-                <Plus aria-hidden="true" className="mr-1 inline h-3.5 w-3.5" /> Add an outcome
+                <Plus aria-hidden="true" className="me-1 inline h-3.5 w-3.5" />{en(" Add an outcome")}
               </button>
             )}
           </div>
@@ -1664,35 +1671,35 @@ function ResultsEditor({ def, onChange, readOnly, onFill }: { def: FormDef; onCh
               bands:
                 v && r.bands.length === 0
                   ? [
-                      { from: 0, label: "Let's talk" },
-                      { from: 50, label: "A good match" },
-                      { from: 80, label: "A great match" },
+                      { from: 0, label: en("Let's talk") },
+                      { from: 50, label: en("A good match") },
+                      { from: 80, label: en("A great match") },
                     ]
                   : v
                     ? r.bands
                     : r.bands.filter((b) => b.label.trim()),
             })
           }
-          title="Match score"
+          title={en("Match score")}
           detail="Answers earn match points; the score is the points earned out of the most possible, as a percentage (e.g. how well your school fits what they want). A skipped question earns no points."
         />
         {r.matchEnabled && (
-          <div className="space-y-3 border-l-2 border-border pl-4">
+          <div className="space-y-3 border-s-2 border-border ps-4">
             <label className="block text-xs font-medium text-muted-foreground">
-              Heading on the score
-              <input className={input} value={r.matchTitle ?? ""} maxLength={80} placeholder="e.g. School match" onChange={(e) => set({ matchTitle: e.target.value })} />
+              {en("Heading on the score")}
+              <input className={input} value={r.matchTitle ?? ""} maxLength={80} placeholder={en("e.g. School match")} onChange={(e) => set({ matchTitle: e.target.value })} />
             </label>
-            <p className="text-xs text-muted-foreground">Bands: the highest one the score reaches applies. One band starts at 0%, for the lowest scores.</p>
+            <p className="text-xs text-muted-foreground">{en("Bands: the highest one the score reaches applies. One band starts at 0%, for the lowest scores.")}</p>
             {r.bands.length > 0 && !r.bands.some((b) => b.from === 0) && (
               <p role="alert" className="rounded-lg bg-amber-500/10 p-2 text-xs text-amber-800 dark:text-amber-200">
-                No band starts at 0%, so low scores would have no words. Set one band to start at 0%.
+                {en("No band starts at 0%, so low scores would have no words. Set one band to start at 0%.")}
               </p>
             )}
             <ol className="space-y-2">
               {r.bands.map((b, i) => (
                 <li key={i} className="space-y-2 rounded-xl border border-border p-3">
                   <div className="flex flex-wrap items-center gap-2 text-xs">
-                    From
+                    {en("From")}
                     <input
                       type="number"
                       min={0}
@@ -1703,17 +1710,17 @@ function ResultsEditor({ def, onChange, readOnly, onFill }: { def: FormDef; onCh
                       onChange={(e) => setBand(i, { from: Math.max(0, Math.min(100, Math.round(Number(e.target.value) || 0))) })}
                     />
                     %
-                    <input className={`${input} mt-0 min-w-40 flex-1 font-medium`} value={b.label} maxLength={60} placeholder="e.g. A great match" aria-label={`Band ${i + 1} name`} onChange={(e) => setBand(i, { label: e.target.value })} />
+                    <input className={`${input} mt-0 min-w-40 flex-1 font-medium`} value={b.label} maxLength={60} placeholder={en("e.g. A great match")} aria-label={`Band ${i + 1} name`} onChange={(e) => setBand(i, { label: e.target.value })} />
                     <button type="button" className={small} disabled={r.bands.length === 1} onClick={() => set({ bands: r.bands.filter((_, j) => j !== i) })} aria-label={`Remove band ${i + 1}`}>
                       <Trash2 aria-hidden="true" className="h-3.5 w-3.5" />
                     </button>
                   </div>
                   <label className="block text-xs font-medium text-muted-foreground">
-                    What the person reads <span className="font-normal">({"{institute}"} is your name)</span>
+                    {en("What the person reads ")}<span className="font-normal">({"{institute}"}{en(" is your name)")}</span>
                     <textarea rows={2} className={input} value={b.message ?? ""} maxLength={1000} onChange={(e) => setBand(i, { message: e.target.value })} />
                   </label>
                   <label className="block text-xs font-medium text-muted-foreground">
-                    {en("Note for your counsellor ")}<span className="font-normal">(only in the CRM)</span>
+                    {en("Note for your counsellor ")}<span className="font-normal">{en("(only in the CRM)")}</span>
                     <textarea rows={2} className={input} value={b.coaching ?? ""} maxLength={1000} onChange={(e) => setBand(i, { coaching: e.target.value })} />
                   </label>
                 </li>
@@ -1721,7 +1728,7 @@ function ResultsEditor({ def, onChange, readOnly, onFill }: { def: FormDef; onCh
             </ol>
             {r.bands.length < 6 && (
               <button type="button" className={small} onClick={() => set({ bands: [...r.bands, { from: Math.min(100, (r.bands.at(-1)?.from ?? 0) + 10), label: "" }] })}>
-                <Plus aria-hidden="true" className="mr-1 inline h-3.5 w-3.5" /> Add a band
+                <Plus aria-hidden="true" className="me-1 inline h-3.5 w-3.5" />{en(" Add a band")}
               </button>
             )}
           </div>
@@ -1735,6 +1742,7 @@ function ResultsEditor({ def, onChange, readOnly, onFill }: { def: FormDef; onCh
 
 /** The person's report: heading, introduction, next steps for a score, sharing, and the outcomes as a grid */
 function ReportSettings({ r, set, onFill }: { r: Results; set: (p: Partial<Results>) => void; onFill?: () => void }) {
+  const en = useEn();
   const named = r.outcomes.filter((o) => o.name.trim());
   const grid = r.grid ?? null;
   const setGrid = (patch: Partial<NonNullable<Results["grid"]>>) => grid && set({ grid: { ...grid, ...patch } });
@@ -1743,32 +1751,31 @@ function ReportSettings({ r, set, onFill }: { r: Results; set: (p: Partial<Resul
     <section className="space-y-3 rounded-2xl border border-border bg-card p-4 text-sm">
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div>
-          <h2 className="text-sm font-semibold">The person&apos;s report</h2>
+          <h2 className="text-sm font-semibold">{en("The person's report")}</h2>
           <p className="mt-0.5 text-xs text-muted-foreground">
-            Their private report (linked on the thank-you page and in the results email): the score, your next steps, your introduction, then each step with their
-            answers and what you say about them (set on each step and question).
+            {en("Their private report (linked on the thank-you page and in the results email): the score, your next steps, your introduction, then each step with their answers and what you say about them (set on each step and question).")}
           </p>
         </div>
         {onFill && (
           <button type="button" className={small} onClick={onFill}>
-            Fill empty texts from the template
+            {en("Fill empty texts from the template")}
           </button>
         )}
       </div>
       <label className="block text-xs font-medium text-muted-foreground">
-        Report heading
-        <input className={input} value={r.reportTitle ?? ""} maxLength={120} placeholder="e.g. Your IT career training readiness report" onChange={(e) => set({ reportTitle: e.target.value })} />
+        {en("Report heading")}
+        <input className={input} value={r.reportTitle ?? ""} maxLength={120} placeholder={en("e.g. Your IT career training readiness report")} onChange={(e) => set({ reportTitle: e.target.value })} />
       </label>
       <label className="block text-xs font-medium text-muted-foreground">
-        Your introduction <span className="font-normal">({"{institute}"} is your name)</span>
-        <textarea rows={3} className={input} value={r.intro ?? ""} maxLength={2000} placeholder="What your school offers, and what this report is for." onChange={(e) => set({ intro: e.target.value })} />
+        {en("Your introduction ")}<span className="font-normal">({"{institute}"}{en(" is your name)")}</span>
+        <textarea rows={3} className={input} value={r.intro ?? ""} maxLength={2000} placeholder={en("What your school offers, and what this report is for.")} onChange={(e) => set({ intro: e.target.value })} />
       </label>
 
       <div className="space-y-2 rounded-xl border border-border p-3">
-        <p className="text-xs font-semibold">Next steps under the score</p>
+        <p className="text-xs font-semibold">{en("Next steps under the score")}</p>
         {r.matchEnabled && r.showToPerson ? (
           <label className="flex flex-wrap items-center gap-2 text-xs">
-            Show from a score of
+            {en("Show from a score of")}
             <input
               type="number"
               min={0}
@@ -1776,29 +1783,29 @@ function ReportSettings({ r, set, onFill }: { r: Results; set: (p: Partial<Resul
               className="w-16 rounded-md border border-border bg-background px-2 py-1"
               value={r.nextFrom ?? ""}
               placeholder="any"
-              aria-label="Show next steps from this score"
+              aria-label={en("Show next steps from this score")}
               onChange={(e) => set({ nextFrom: e.target.value === "" ? null : Math.max(0, Math.min(100, Math.round(Number(e.target.value) || 0))) })}
             />
-            % <span className="text-muted-foreground">(blank: everyone)</span>
+            % <span className="text-muted-foreground">{en("(blank: everyone)")}</span>
           </label>
         ) : (
-          <p className="text-xs text-muted-foreground">Shown to everyone (it can start from a score when the form shows people their match score).</p>
+          <p className="text-xs text-muted-foreground">{en("Shown to everyone (it can start from a score when the form shows people their match score).")}</p>
         )}
         <label className="block text-xs font-medium text-muted-foreground">
-          Heading
-          <input className={input} value={r.nextTitle ?? ""} maxLength={200} placeholder="e.g. Congratulations! You qualify for a free consultation" onChange={(e) => set({ nextTitle: e.target.value })} />
+          {en("Heading")}
+          <input className={input} value={r.nextTitle ?? ""} maxLength={200} placeholder={en("e.g. Congratulations! You qualify for a free consultation")} onChange={(e) => set({ nextTitle: e.target.value })} />
         </label>
         <label className="block text-xs font-medium text-muted-foreground">
-          Line under it
-          <input className={input} value={r.nextText ?? ""} maxLength={300} placeholder="e.g. Talk through your results with an admissions adviser." onChange={(e) => set({ nextText: e.target.value })} />
+          {en("Line under it")}
+          <input className={input} value={r.nextText ?? ""} maxLength={300} placeholder={en("e.g. Talk through your results with an admissions adviser.")} onChange={(e) => set({ nextText: e.target.value })} />
         </label>
         <div className="grid gap-2 sm:grid-cols-2">
           <label className="block text-xs font-medium text-muted-foreground">
-            Button
-            <input className={input} value={r.nextLabel ?? ""} maxLength={40} placeholder="e.g. Book my consultation" onChange={(e) => set({ nextLabel: e.target.value })} />
+            {en("Button")}
+            <input className={input} value={r.nextLabel ?? ""} maxLength={40} placeholder={en("e.g. Book my consultation")} onChange={(e) => set({ nextLabel: e.target.value })} />
           </label>
           <label className="block text-xs font-medium text-muted-foreground">
-            Button link <span className="font-normal">(https; no link, no button)</span>
+            {en("Button link ")}<span className="font-normal">{en("(https; no link, no button)")}</span>
             <input className={input} type="url" value={r.nextUrl ?? ""} maxLength={500} placeholder="https://" onChange={(e) => set({ nextUrl: e.target.value || null })} />
           </label>
         </div>
@@ -1807,7 +1814,7 @@ function ReportSettings({ r, set, onFill }: { r: Results; set: (p: Partial<Resul
       <Switch
         checked={!!r.share}
         onChange={(v) => set({ share: v })}
-        title="Share buttons"
+        title={en("Share buttons")}
         detail="People can share their score on Facebook, X or LinkedIn, or copy a link. The link is to this form, never to their report or answers."
       />
 
@@ -1818,11 +1825,11 @@ function ReportSettings({ r, set, onFill }: { r: Results; set: (p: Partial<Resul
             onChange={(v) =>
               set({ grid: v ? { top: "Focus on tasks", bottom: "Focus on people", left: "Asks", right: "Tells", cells: named.slice(0, 4).map((o) => o.id) } : null })
             }
-            title="Show the outcomes as a grid"
+            title={en("Show the outcomes as a grid")}
             detail="Four outcomes in a two-by-two grid with words at each end of the axes (e.g. social styles), theirs picked out."
           />
           {grid && (
-            <div className="grid gap-2 border-l-2 border-border pl-4 sm:grid-cols-2">
+            <div className="grid gap-2 border-s-2 border-border ps-4 sm:grid-cols-2">
               {CELLS.map((label, i) => (
                 <label key={label} className="block text-xs font-medium text-muted-foreground">
                   {label}
@@ -1878,27 +1885,27 @@ function SettingsEditor({
   return (
     <fieldset disabled={readOnly} className="space-y-5">
       <section className="space-y-3 rounded-2xl border border-border bg-card p-4">
-        <h2 className="text-sm font-semibold">Texts</h2>
+        <h2 className="text-sm font-semibold">{en("Texts")}</h2>
         <label className="block text-xs font-medium text-muted-foreground">
-          Heading
-          <input className={input} value={s.title ?? ""} maxLength={160} placeholder="Get career guidance from your institute" onChange={(e) => set({ title: e.target.value })} />
+          {en("Heading")}
+          <input className={input} value={s.title ?? ""} maxLength={160} placeholder={en("Get career guidance from your institute")} onChange={(e) => set({ title: e.target.value })} />
         </label>
         <label className="block text-xs font-medium text-muted-foreground">
-          Introduction
+          {en("Introduction")}
           <textarea rows={2} className={input} value={s.intro ?? ""} maxLength={1000} onChange={(e) => set({ intro: e.target.value })} />
         </label>
         <label className="block text-xs font-medium text-muted-foreground">
-          Thank-you message
-          <textarea rows={2} className={input} value={s.thankYou ?? ""} maxLength={1000} placeholder="Thank you. Your request was sent." onChange={(e) => set({ thankYou: e.target.value })} />
+          {en("Thank-you message")}
+          <textarea rows={2} className={input} value={s.thankYou ?? ""} maxLength={1000} placeholder={en("Thank you. Your request was sent.")} onChange={(e) => set({ thankYou: e.target.value })} />
         </label>
         <label className="block text-xs font-medium text-muted-foreground">
-          After sending, open this page instead (website forms; optional)
+          {en("After sending, open this page instead (website forms; optional)")}
           <input className={input} value={s.redirectUrl ?? ""} maxLength={500} placeholder="https://your-site.example/thank-you" onChange={(e) => set({ redirectUrl: e.target.value })} />
         </label>
       </section>
 
       <section className="space-y-3 rounded-2xl border border-border bg-card p-4">
-        <h2 className="text-sm font-semibold">Look</h2>
+        <h2 className="text-sm font-semibold">{en("Look")}</h2>
         <div className="flex flex-wrap items-end gap-4">
           <label className="block text-xs font-medium text-muted-foreground">
             {en("Colour")}
@@ -1908,11 +1915,11 @@ function SettingsEditor({
             </span>
           </label>
           <label className="block min-w-64 flex-1 text-xs font-medium text-muted-foreground">
-            Logo (https link to an image)
+            {en("Logo (https link to an image)")}
             <input className={input} value={s.logoUrl ?? ""} maxLength={500} placeholder="https://your-site.example/logo.png" onChange={(e) => set({ logoUrl: e.target.value })} />
           </label>
         </div>
-        <div role="radiogroup" aria-label="Layout" className="grid gap-2 sm:grid-cols-2">
+        <div role="radiogroup" aria-label={en("Layout")} className="grid gap-2 sm:grid-cols-2">
           {(
             [
               ["classic", "Classic", "A clean card that fits into your page."],
@@ -1927,7 +1934,7 @@ function SettingsEditor({
                 role="radio"
                 aria-checked={on}
                 onClick={() => set({ layout: value })}
-                className={`rounded-xl border p-3 text-left text-xs ${on ? "border-cyan-600 bg-cyan-600/5 ring-1 ring-cyan-600" : "border-border hover:bg-muted"}`}
+                className={`rounded-xl border p-3 text-start text-xs ${on ? "border-cyan-600 bg-cyan-600/5 ring-1 ring-cyan-600" : "border-border hover:bg-muted"}`}
               >
                 <span
                   aria-hidden="true"
@@ -1946,30 +1953,30 @@ function SettingsEditor({
           <label className="block text-xs font-medium text-muted-foreground">
             {en("Background photo (https link to an image; without one, your colour is used)")}
             <input className={input} value={s.backgroundUrl ?? ""} maxLength={500} placeholder="https://your-site.example/campus.jpg" onChange={(e) => set({ backgroundUrl: e.target.value })} />
-            <span className="mt-1 block font-normal">Use a photo you have the rights to, at least 1600 pixels wide. It&apos;s darkened so the titles stay readable.</span>
+            <span className="mt-1 block font-normal">{en("Use a photo you have the rights to, at least 1600 pixels wide. It's darkened so the titles stay readable.")}</span>
           </label>
         )}
       </section>
 
       <section className="space-y-2 rounded-2xl border border-border bg-card p-4 text-sm">
-        <h2 className="text-sm font-semibold">What else is asked</h2>
+        <h2 className="text-sm font-semibold">{en("What else is asked")}</h2>
         <label className="flex items-center gap-2">
-          <input type="checkbox" checked={s.askUnsure} onChange={(e) => set({ askUnsure: e.target.checked })} /> “What are you unsure about?” (first, required)
+          <input type="checkbox" checked={s.askUnsure} onChange={(e) => set({ askUnsure: e.target.checked })} />{en(" “What are you unsure about?” (first, required)")}
         </label>
         <label className="flex items-center gap-2">
-          <input type="checkbox" checked={s.askPhone} onChange={(e) => set({ askPhone: e.target.checked, phoneRequired: e.target.checked && s.phoneRequired })} /> Phone number
+          <input type="checkbox" checked={s.askPhone} onChange={(e) => set({ askPhone: e.target.checked, phoneRequired: e.target.checked && s.phoneRequired })} />{en(" Phone number")}
         </label>
         {s.askPhone && (
-          <label className="ml-6 flex items-center gap-2">
-            <input type="checkbox" checked={s.phoneRequired} onChange={(e) => set({ phoneRequired: e.target.checked })} /> Required
+          <label className="ms-6 flex items-center gap-2">
+            <input type="checkbox" checked={s.phoneRequired} onChange={(e) => set({ phoneRequired: e.target.checked })} />{en(" Required")}
           </label>
         )}
-        <p className="text-xs text-muted-foreground">Name, email and consent are always asked.</p>
+        <p className="text-xs text-muted-foreground">{en("Name, email and consent are always asked.")}</p>
       </section>
 
       <section className="space-y-2 rounded-2xl border border-border bg-card p-4 text-sm">
-        <h2 className="text-sm font-semibold">Languages</h2>
-        <p className="text-xs text-muted-foreground">People choose the language on the form. Translate your texts in the Translations tab (untranslated texts show in {languages.find((l) => l.code === def.languages[0])?.name ?? "the first language"}).</p>
+        <h2 className="text-sm font-semibold">{en("Languages")}</h2>
+        <p className="text-xs text-muted-foreground">{en("People choose the language on the form. Translate your texts in the Translations tab (untranslated texts show in ")}{languages.find((l) => l.code === def.languages[0])?.name ?? "the first language"}).</p>
         <div className="flex flex-wrap gap-2">
           {languages.map((l) => {
             const on = def.languages.includes(l.code);
@@ -1983,7 +1990,7 @@ function SettingsEditor({
                   onChange={(e) => onChange({ ...def, languages: e.target.checked ? [...def.languages, l.code] : def.languages.filter((x) => x !== l.code) })}
                 />
                 {l.name}
-                {first && <span className="text-muted-foreground">(written in)</span>}
+                {first && <span className="text-muted-foreground">{en("(written in)")}</span>}
               </label>
             );
           })}
@@ -1991,43 +1998,43 @@ function SettingsEditor({
       </section>
 
       <section className="space-y-2 rounded-2xl border border-border bg-card p-4 text-sm">
-        <h2 className="text-sm font-semibold">Who can fill it in</h2>
+        <h2 className="text-sm font-semibold">{en("Who can fill it in")}</h2>
         <label className="flex items-center gap-2">
-          <input type="checkbox" checked={publicEnabled} onChange={(e) => setPublic(e.target.checked)} /> Anyone with the link (your website, QR codes, social media)
+          <input type="checkbox" checked={publicEnabled} onChange={(e) => setPublic(e.target.checked)} />{en(" Anyone with the link (your website, QR codes, social media)")}
         </label>
         <p className="text-xs text-muted-foreground">
-          {isDefault ? "Signed-in Edulexa members always use this form when they ask you for guidance." : "Inside Edulexa, members use your default form; this one is for links and your website."}
+          {isDefault ? en("Signed-in Edulexa members always use this form when they ask you for guidance.") : en("Inside Edulexa, members use your default form; this one is for links and your website.")}
         </p>
       </section>
 
       <section className="space-y-3 rounded-2xl border border-border bg-card p-4 text-sm">
         <div>
-          <h2 className="text-sm font-semibold">People who don&apos;t finish</h2>
-          <p className="text-xs text-muted-foreground">For the public link and your website. Answers are always kept in the person&apos;s own browser, so they can pick up where they left off.</p>
+          <h2 className="text-sm font-semibold">{en("People who don't finish")}</h2>
+          <p className="text-xs text-muted-foreground">{en("For the public link and your website. Answers are always kept in the person's own browser, so they can pick up where they left off.")}</p>
         </div>
         <Switch
           checked={!!s.savePartial}
           onChange={(v) => set({ savePartial: v })}
-          title="Save answers as people go"
+          title={en("Save answers as people go")}
           detail="Once someone has given their email or phone and moves to the next step, what they've filled in reaches your CRM under Incomplete, even if they never press Send. If they finish later, it becomes a normal lead."
         />
         {s.savePartial && (
-          <div className="space-y-3 border-l-2 border-border pl-4">
+          <div className="space-y-3 border-s-2 border-border ps-4">
             <label className="block text-xs font-medium text-muted-foreground">
-              Start saving after
+              {en("Start saving after")}
               <select className={input} value={s.partialAfter ?? ""} onChange={(e) => set({ partialAfter: e.target.value || null })}>
-                <option value="">Their contact details (asked first, so you can follow up)</option>
+                <option value="">{en("Their contact details (asked first, so you can follow up)")}</option>
                 {def.questions
                   .filter((q) => q.kind !== "info")
                   .map((q) => (
                     <option key={q.id} value={q.id}>
-                      The step with “{q.label.length > 60 ? `${q.label.slice(0, 60)}…` : q.label}”
+                      {en("The step with “")}{q.label.length > 60 ? `${q.label.slice(0, 60)}…` : q.label}”
                     </option>
                   ))}
               </select>
             </label>
             <label className="block text-xs font-medium text-muted-foreground">
-              Message shown on the form
+              {en("Message shown on the form")}
               <input
                 className={input}
                 value={s.partialNotice ?? ""}
@@ -2035,10 +2042,10 @@ function SettingsEditor({
                 placeholder={DEFAULT_PARTIAL_NOTICE}
                 onChange={(e) => set({ partialNotice: e.target.value })}
               />
-              <span className="mt-1 block font-normal">{"{institute}"} becomes your institute&apos;s name. Translate it in the Translations tab.</span>
+              <span className="mt-1 block font-normal">{"{institute}"}{en(" becomes your institute's name. Translate it in the Translations tab.")}</span>
             </label>
             <label className="block text-xs font-medium text-muted-foreground">
-              Remove unfinished answers after
+              {en("Remove unfinished answers after")}
               <span className="mt-1 flex items-center gap-2">
                 <input
                   type="number"
@@ -2048,13 +2055,13 @@ function SettingsEditor({
                   value={s.partialRetentionDays ?? 30}
                   onChange={(e) => set({ partialRetentionDays: Math.round(Number(e.target.value) || 0) })}
                 />
-                <span className="font-normal">days (1 to 365). Leads your team has worked on are kept.</span>
+                <span className="font-normal">{en("days (1 to 365). Leads your team has worked on are kept.")}</span>
               </span>
             </label>
             <Switch
               checked={!!s.notifyOnPartial}
               onChange={(v) => set({ notifyOnPartial: v })}
-              title="Email my team when someone stops part way"
+              title={en("Email my team when someone stops part way")}
               detail="Your CRM admins (or the whole team if there are none) get an email with a link to the lead."
             />
           </div>
@@ -2063,30 +2070,29 @@ function SettingsEditor({
 
       <section className="space-y-3 rounded-2xl border border-border bg-card p-4 text-sm">
         <div>
-          <h2 className="text-sm font-semibold">Protection against bots and fake requests</h2>
-          <p className="text-xs text-muted-foreground">For the public link and your website. Members signed in to Edulexa are already verified.</p>
+          <h2 className="text-sm font-semibold">{en("Protection against bots and fake requests")}</h2>
+          <p className="text-xs text-muted-foreground">{en("For the public link and your website. Members signed in to Edulexa are already verified.")}</p>
         </div>
         <Switch
           checked={s.requireEmailConfirmation !== false}
           onChange={(v) => set({ requireEmailConfirmation: v })}
-          title="Confirm by email (recommended)"
+          title={en("Confirm by email (recommended)")}
           detail="Requests reach your CRM straight away, marked “Email not confirmed” until the person clicks the link in an email. Messages to them wait for it, so nothing goes to a mistyped or someone else's address."
         />
         <Switch
           checked={!!s.requirePhoneCheck}
           onChange={(v) => set({ requirePhoneCheck: v, askPhone: v || s.askPhone, phoneRequired: v || s.phoneRequired })}
-          title="Check the phone number by SMS code"
+          title={en("Check the phone number by SMS code")}
           detail={en("People enter a code we send to their phone. Needs your Pulse Relay connection (Career centre → Settings → Chat & SMS); each code is a normal SMS.")}
         />
         <div className="rounded-lg bg-muted/40 p-3 text-xs text-muted-foreground">
-          <p className="font-medium text-foreground">Always on</p>
-          <ul className="mt-1 list-disc space-y-0.5 pl-4">
-            <li>A hidden field bots fill in, and a check that the form wasn&apos;t sent within seconds of opening (timed by our server).</li>
-            <li>Limits on how often one visitor can send, and on files.</li>
-            <li>An invisible human check by Cloudflare, once Edulexa has it switched on.</li>
+          <p className="font-medium text-foreground">{en("Always on")}</p>
+          <ul className="mt-1 list-disc space-y-0.5 ps-4">
+            <li>{en("A hidden field bots fill in, and a check that the form wasn't sent within seconds of opening (timed by our server).")}</li>
+            <li>{en("Limits on how often one visitor can send, and on files.")}</li>
+            <li>{en("An invisible human check by Cloudflare, once Edulexa has it switched on.")}</li>
             <li>
-              A spam check (throwaway emails, links, random text, repeats): suspicious requests go to <span className="font-medium text-foreground">Possible spam</span> in your CRM,
-              never deleted.
+              {en("A spam check (throwaway emails, links, random text, repeats): suspicious requests go to ")}<span className="font-medium text-foreground">{en("Possible spam")}</span>{en(" in your CRM, never deleted.")}
             </li>
           </ul>
         </div>
@@ -2105,7 +2111,7 @@ function Switch({ checked, onChange, title, detail }: { checked: boolean; onChan
       <span className="relative mt-0.5 inline-flex shrink-0">
         <input type="checkbox" role="switch" className="peer sr-only" checked={checked} onChange={(e) => onChange(e.target.checked)} />
         <span className="h-5 w-9 rounded-full bg-muted-foreground/30 transition-colors peer-checked:bg-cyan-700 peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-cyan-600" />
-        <span className="absolute left-0.5 top-0.5 h-4 w-4 rounded-full bg-white shadow transition-transform peer-checked:translate-x-4" />
+        <span className="absolute start-0.5 top-0.5 h-4 w-4 rounded-full bg-white shadow transition-transform peer-checked:translate-x-4" />
       </span>
     </label>
   );

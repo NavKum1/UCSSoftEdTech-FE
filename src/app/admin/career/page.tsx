@@ -327,23 +327,23 @@ export default function CareerPlatformAdminPage() {
             <table className="w-full text-sm">
               <caption className="sr-only">Schools with the career suite</caption>
               <thead>
-                <tr className="border-b border-border text-left">
-                  <th scope="col" className="py-2 pr-3 font-medium">School</th>
-                  <th scope="col" className="py-2 pr-3 font-medium">Slug</th>
-                  <th scope="col" className="py-2 pr-3 font-medium">Domains</th>
-                  <th scope="col" className="py-2 pr-3 font-medium">Brand</th>
-                  <th scope="col" className="py-2 pr-3 font-medium">Partner</th>
+                <tr className="border-b border-border text-start">
+                  <th scope="col" className="py-2 pe-3 font-medium">School</th>
+                  <th scope="col" className="py-2 pe-3 font-medium">Slug</th>
+                  <th scope="col" className="py-2 pe-3 font-medium">Domains</th>
+                  <th scope="col" className="py-2 pe-3 font-medium">Brand</th>
+                  <th scope="col" className="py-2 pe-3 font-medium">Partner</th>
                   <th scope="col" className="py-2 font-medium"><span className="sr-only">Actions</span></th>
                 </tr>
               </thead>
               <tbody>
                 {filtered.map((s) => (
                   <tr key={s.instituteId} className="border-b border-border last:border-0">
-                    <td className="py-2 pr-3">{s.displayName}<div className="font-mono text-xs text-muted-foreground">{s.instituteId}</div></td>
-                    <td className="py-2 pr-3">{s.slug}</td>
-                    <td className="py-2 pr-3">{s.emailDomains || "—"}</td>
-                    <td className="py-2 pr-3">{brandKey(s.brandId)}</td>
-                    <td className="py-2 pr-3">{[s.partnerKey, s.partnerOrgId].filter(Boolean).join(" / ") || "—"}</td>
+                    <td className="py-2 pe-3">{s.displayName}<div className="font-mono text-xs text-muted-foreground">{s.instituteId}</div></td>
+                    <td className="py-2 pe-3">{s.slug}</td>
+                    <td className="py-2 pe-3">{s.emailDomains || "—"}</td>
+                    <td className="py-2 pe-3">{brandKey(s.brandId)}</td>
+                    <td className="py-2 pe-3">{[s.partnerKey, s.partnerOrgId].filter(Boolean).join(" / ") || "—"}</td>
                     <td className="py-2">
                       {brands.data && (
                         <SchoolRowEditor

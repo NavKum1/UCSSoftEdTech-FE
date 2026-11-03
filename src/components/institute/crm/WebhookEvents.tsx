@@ -9,6 +9,7 @@ import React, { useCallback, useEffect, useState } from "react";
 import { RotateCcw } from "lucide-react";
 import { useLatestRef } from "@/lib/legacyApi";
 import { crm, type GetToken } from "./api";
+import { useEn } from "@/lib/english/EnglishProvider";
 
 interface Settings {
   url: string | null;
@@ -36,6 +37,7 @@ const TONE: Record<string, string> = {
 const when = (iso: string | null) => (iso ? new Date(iso).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" }) : "");
 
 export default function WebhookEvents({ getToken, version }: { getToken: GetToken; version: number }) {
+  const en = useEn();
   const [settings, setSettings] = useState<Settings | null>(null);
   const [rows, setRows] = useState<Delivery[] | null>(null);
   const [status, setStatus] = useState("");
@@ -82,7 +84,7 @@ export default function WebhookEvents({ getToken, version }: { getToken: GetToke
   return (
     <div className="space-y-4">
       <div className="rounded-xl border border-border p-3 text-sm">
-        <p className="font-medium">Events to send</p>
+        <p className="font-medium">{en("Events to send")}</p>
         <ul className="mt-2 space-y-1.5 text-xs">
           {settings.available.map((e) => (
             <li key={e.name}>
@@ -94,24 +96,23 @@ export default function WebhookEvents({ getToken, version }: { getToken: GetToke
               </label>
             </li>
           ))}
-          <li className="pl-6 text-muted-foreground">
-            Always sent: <span className="font-mono">lead.candidate_opt_in</span> (a candidate agreed to be contacted about a course), <span className="font-mono">lead.withdrawn</span> (they
-            withdrew consent: stop contacting them and delete their data) and <span className="font-mono">lead.test</span> (the test button).
+          <li className="ps-6 text-muted-foreground">
+            {en("Always sent: ")}<span className="font-mono">lead.candidate_opt_in</span>{en(" (a candidate agreed to be contacted about a course), ")}<span className="font-mono">lead.withdrawn</span>{en(" (they withdrew consent: stop contacting them and delete their data) and ")}<span className="font-mono">lead.test</span>{en(" (the test button).")}
           </li>
         </ul>
         <p className="mt-2 text-xs text-muted-foreground">
-          Each event is <code>{"{ event, instituteId, at, data }"}</code>. If your system doesn&apos;t answer with a 2xx, it&apos;s tried again after 1, 5, 30, 120 and 720 minutes.
+          {en("Each event is ")}<code>{"{ event, instituteId, at, data }"}</code>{en(". If your system doesn't answer with a 2xx, it's tried again after 1, 5, 30, 120 and 720 minutes.")}
         </p>
       </div>
 
       <section>
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <h3 className="text-sm font-semibold">Deliveries</h3>
-          <select aria-label="Status" value={status} onChange={(e) => setStatus(e.target.value)} className="rounded-lg border border-border bg-background px-2 py-1 text-xs">
-            <option value="">All</option>
-            <option value="Delivered">Delivered</option>
-            <option value="Pending">Waiting to be tried again</option>
-            <option value="Failed">Failed</option>
+          <h3 className="text-sm font-semibold">{en("Deliveries")}</h3>
+          <select aria-label={en("Status")} value={status} onChange={(e) => setStatus(e.target.value)} className="rounded-lg border border-border bg-background px-2 py-1 text-xs">
+            <option value="">{en("All")}</option>
+            <option value="Delivered">{en("Delivered")}</option>
+            <option value="Pending">{en("Waiting to be tried again")}</option>
+            <option value="Failed">{en("Failed")}</option>
           </select>
         </div>
         {msg && (
@@ -120,22 +121,22 @@ export default function WebhookEvents({ getToken, version }: { getToken: GetToke
           </p>
         )}
         {!rows || rows.length === 0 ? (
-          <p className="mt-2 text-xs text-muted-foreground">{settings.url ? "Nothing sent yet." : "Save your system's address above first."}</p>
+          <p className="mt-2 text-xs text-muted-foreground">{settings.url ? en("Nothing sent yet.") : en("Save your system's address above first.")}</p>
         ) : (
           <ul className="mt-2 divide-y divide-border rounded-xl border border-border">
             {rows.map((d) => (
               <li key={d.id} className="px-3 py-2 text-xs">
                 <div className="flex flex-wrap items-center gap-2">
-                  <span className={`rounded-full px-2 py-0.5 font-medium ${TONE[d.status]}`}>{d.status === "Pending" ? "Will retry" : d.status}</span>
+                  <span className={`rounded-full px-2 py-0.5 font-medium ${TONE[d.status]}`}>{d.status === "Pending" ? en("Will retry") : d.status}</span>
                   <button type="button" onClick={() => setOpen(open === d.id ? null : d.id)} className="font-mono hover:underline" aria-expanded={open === d.id}>
                     {d.event}
                   </button>
                   <span className="text-muted-foreground">{when(d.deliveredAt ?? d.createdAt)}</span>
-                  {d.statusCode != null && <span className="text-muted-foreground">· answered {d.statusCode}</span>}
+                  {d.statusCode != null && <span className="text-muted-foreground">{en("· answered ")}{d.statusCode}</span>}
                   {d.attempts > 1 && <span className="text-muted-foreground">· {d.attempts} tries</span>}
                   {d.status !== "Delivered" && (
-                    <button type="button" onClick={() => retry(d.id)} className="ml-auto inline-flex items-center gap-1 rounded-lg border border-border px-2 py-1 hover:bg-muted">
-                      <RotateCcw aria-hidden="true" className="h-3 w-3" /> Send again
+                    <button type="button" onClick={() => retry(d.id)} className="ms-auto inline-flex items-center gap-1 rounded-lg border border-border px-2 py-1 hover:bg-muted">
+                      <RotateCcw aria-hidden="true" className="h-3 w-3" />{en(" Send again")}
                     </button>
                   )}
                 </div>

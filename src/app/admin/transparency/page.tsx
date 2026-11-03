@@ -195,22 +195,22 @@ export default function AdminTransparencyPage() {
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="text-left text-xs text-muted-foreground border-b border-border">
-                    <th className="py-2 pr-3 font-semibold">Period</th>
-                    <th className="py-2 pr-3 font-semibold">Status</th>
-                    <th className="py-2 pr-3 font-semibold">Generated</th>
-                    <th className="py-2 pr-3 font-semibold">Published</th>
+                  <tr className="text-start text-xs text-muted-foreground border-b border-border">
+                    <th className="py-2 pe-3 font-semibold">Period</th>
+                    <th className="py-2 pe-3 font-semibold">Status</th>
+                    <th className="py-2 pe-3 font-semibold">Generated</th>
+                    <th className="py-2 pe-3 font-semibold">Published</th>
                     <th className="py-2 font-semibold"><span className="sr-only">Actions</span></th>
                   </tr>
                 </thead>
                 <tbody>
                   {list.data.map((r) => (
                     <tr key={r.id} className={`border-b border-border last:border-0 ${r.id === selectedId ? "bg-indigo-500/5" : ""}`}>
-                      <td className="py-2 pr-3 text-foreground whitespace-nowrap">{formatPeriod(r.periodStart, r.periodEnd)}</td>
-                      <td className="py-2 pr-3"><StatusBadge status={r.status} /></td>
-                      <td className="py-2 pr-3 text-xs text-muted-foreground">{formatDate(r.generatedAt)} · {r.generatedBy}</td>
-                      <td className="py-2 pr-3 text-xs text-muted-foreground">{r.publishedAt ? `${formatDate(r.publishedAt)} · ${r.publishedBy ?? ""}` : "—"}</td>
-                      <td className="py-2 text-right">
+                      <td className="py-2 pe-3 text-foreground whitespace-nowrap">{formatPeriod(r.periodStart, r.periodEnd)}</td>
+                      <td className="py-2 pe-3"><StatusBadge status={r.status} /></td>
+                      <td className="py-2 pe-3 text-xs text-muted-foreground">{formatDate(r.generatedAt)} · {r.generatedBy}</td>
+                      <td className="py-2 pe-3 text-xs text-muted-foreground">{r.publishedAt ? `${formatDate(r.publishedAt)} · ${r.publishedBy ?? ""}` : "—"}</td>
+                      <td className="py-2 text-end">
                         <button
                           type="button"
                           onClick={() => {

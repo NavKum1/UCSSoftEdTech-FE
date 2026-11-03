@@ -168,7 +168,7 @@ export default function LeadDrawer({
         role="dialog"
         aria-modal="true"
         aria-labelledby="lead-title"
-        className="flex h-full w-full max-w-2xl flex-col border-l border-border bg-card shadow-xl"
+        className="flex h-full w-full max-w-2xl flex-col border-s border-border bg-card shadow-xl"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
@@ -183,18 +183,18 @@ export default function LeadDrawer({
                 {lead?.highPriority && <PriorityBadge />}
                 {lead?.doNotContact && (
                   <span className="inline-flex items-center gap-1 rounded-full border border-red-500/30 bg-red-500/10 px-2 py-0.5 text-[11px] font-medium text-red-800 dark:text-red-300">
-                    <Ban aria-hidden="true" className="h-3 w-3" /> Do not contact
+                    <Ban aria-hidden="true" className="h-3 w-3" />{en(" Do not contact")}
                   </span>
                 )}
               </div>
               {lead && (
                 <p className="mt-0.5 text-xs text-muted-foreground">
-                  {lead.requestType === "guidance" ? "Career guidance request" : (lead.course ?? "Course no longer listed")} · {lead.source ?? "Edulexa"} · received{" "}
+                  {lead.requestType === "guidance" ? en("Career guidance request") : (lead.course ?? "Course no longer listed")} · {lead.source ?? "Edulexa"}{en(" · received")}{" "}
                   {relative(lead.createdAt)}
                 </p>
               )}
             </div>
-            <button ref={closeRef} type="button" onClick={onClose} aria-label="Close" className="rounded-lg p-1.5 hover:bg-muted">
+            <button ref={closeRef} type="button" onClick={onClose} aria-label={en("Close")} className="rounded-lg p-1.5 hover:bg-muted">
               <X aria-hidden="true" className="h-5 w-5" />
             </button>
           </div>
@@ -202,36 +202,34 @@ export default function LeadDrawer({
           {lead && (
             <>
               <div className="mt-3 flex flex-wrap gap-x-5 gap-y-1 text-sm">
-                <Contact label="Email" value={lead.email} href={lead.email ? `mailto:${lead.email}` : undefined} />
-                <Contact label="Phone" value={lead.phone} href={lead.phone ? `tel:${lead.phone.replace(/\s/g, "")}` : undefined} />
+                <Contact label={en("Email")} value={lead.email} href={lead.email ? `mailto:${lead.email}` : undefined} />
+                <Contact label={en("Phone")} value={lead.phone} href={lead.phone ? `tel:${lead.phone.replace(/\s/g, "")}` : undefined} />
               </div>
               {lead.spam && (
                 <div className="mt-2 flex flex-wrap items-center justify-between gap-2 rounded-lg border border-zinc-500/30 bg-zinc-500/10 px-3 py-2 text-xs">
                   <span>
-                    <span className="font-medium">Possible spam.</span> {lead.spamReasons ? `Why: ${lead.spamReasons}.` : ""} It&apos;s kept out of your leads until you say it&apos;s real.
+                    <span className="font-medium">{en("Possible spam.")}</span> {lead.spamReasons ? `Why: ${lead.spamReasons}.` : ""}{en(" It's kept out of your leads until you say it's real.")}
                   </span>
                   <button type="button" disabled={busy} onClick={() => update({ spam: false }, "Moved to your leads.")} className="rounded-lg bg-cyan-700 px-3 py-1.5 font-medium text-white hover:bg-cyan-800">
-                    Not spam
+                    {en("Not spam")}
                   </button>
                 </div>
               )}
               {lead.unconfirmed && !lead.incomplete && (
                 <p className="mt-2 rounded-lg border border-sky-500/30 bg-sky-500/10 px-3 py-2 text-xs">
-                  <span className="font-medium">Email not confirmed.</span> They sent your form but haven&apos;t clicked the link in the confirmation email yet, so the
-                  address may not be theirs. The form&apos;s automatic messages to them wait until they do (the link works for 48 hours).
+                  <span className="font-medium">{en("Email not confirmed.")}</span>{en(" They sent your form but haven't clicked the link in the confirmation email yet, so the address may not be theirs. The form's automatic messages to them wait until they do (the link works for 48 hours).")}
                 </p>
               )}
               {lead.incomplete && (
                 <p className="mt-2 rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-xs">
-                  <span className="font-medium">Incomplete.</span> They started your website form and haven&apos;t sent it yet; below is what they&apos;d filled in so far.
-                  {lead.unconfirmed ? " Their email isn't confirmed yet." : ""} It stays out of your leads until they finish, and is removed after the form&apos;s set number of days
-                  unless someone on your team works on it.
+                  <span className="font-medium">{en("Incomplete.")}</span>{en(" They started your website form and haven't sent it yet; below is what they'd filled in so far.")}
+                  {lead.unconfirmed ? en(" Their email isn't confirmed yet.") : ""}{en(" It stays out of your leads until they finish, and is removed after the form's set number of days unless someone on your team works on it.")}
                 </p>
               )}
               {lead.duplicates.length > 0 && (
                 <p className="mt-2 flex items-center gap-1.5 text-xs text-amber-800 dark:text-amber-300">
                   <AlertTriangle aria-hidden="true" className="h-3.5 w-3.5" />
-                  This person sent {lead.duplicates.length} other {lead.duplicates.length === 1 ? "inquiry" : "inquiries"} with the same email. Check before contacting twice.
+                  {en("This person sent ")}{lead.duplicates.length} other {lead.duplicates.length === 1 ? "inquiry" : "inquiries"}{en(" with the same email. Check before contacting twice.")}
                 </p>
               )}
               {(() => {
@@ -239,19 +237,19 @@ export default function LeadDrawer({
                 const lastOut = lead.activities.find((a) => ["Email", "Sms", "WhatsApp", "Call", "Meeting"].includes(a.kind));
                 return lastIn && (!lastOut || new Date(lastIn.createdAt) > new Date(lastOut.createdAt)) ? (
                   <p className="mt-2 rounded-lg bg-cyan-600/10 px-3 py-2 text-xs font-medium text-cyan-900 dark:text-cyan-200">
-                    {lead.name?.split(" ")[0] || "They"} replied {relative(lastIn.createdAt)} and is waiting for your answer. Read it below.
+                    {lead.name?.split(" ")[0] || "They"} replied {relative(lastIn.createdAt)}{en(" and is waiting for your answer. Read it below.")}
                   </p>
                 ) : null;
               })()}
               {lead.stage === "New" && !lead.firstResponseAt && (
                 <p className="mt-2 rounded-lg bg-sky-500/10 px-3 py-2 text-xs text-sky-900 dark:text-sky-200">
-                  Not contacted yet. Call, email or message them; the lead moves to Contacted when you do.
+                  {en("Not contacted yet. Call, email or message them; the lead moves to Contacted when you do.")}
                 </p>
               )}
               <Meetings lead={lead} busy={busy} act={act} />
 
               {/* One-click actions */}
-              <div className="mt-3 flex flex-wrap gap-1.5" role="toolbar" aria-label="Actions">
+              <div className="mt-3 flex flex-wrap gap-1.5" role="toolbar" aria-label={en("Actions")}>
                 {ACTIONS.map(({ mode: m, label, icon: Icon }) => {
                   const blocked = lead.doNotContact && m !== "Note" && m !== "Call";
                   return (
@@ -264,7 +262,7 @@ export default function LeadDrawer({
                       }}
                       disabled={blocked}
                       aria-pressed={mode === m}
-                      title={blocked ? "They asked not to be contacted" : undefined}
+                      title={blocked ? en("They asked not to be contacted") : undefined}
                       className={`inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-xs font-medium transition-colors disabled:opacity-40 ${
                         mode === m ? "border-cyan-600 bg-cyan-600/10 text-cyan-800 dark:text-cyan-300" : "border-border hover:bg-muted"
                       }`}
@@ -324,7 +322,7 @@ export default function LeadDrawer({
                     setLead(updated);
                     setMode(null);
                     setReplySubject("");
-                    setNotice("Recorded on the timeline.");
+                    setNotice(en("Recorded on the timeline."));
                     onChanged();
                   }}
                 />
@@ -354,9 +352,9 @@ export default function LeadDrawer({
               )}
 
               {/* Pipeline */}
-              <section aria-label="Pipeline" className="space-y-3">
+              <section aria-label={en("Pipeline")} className="space-y-3">
                 <div>
-                  <p className="mb-1.5 text-xs font-medium text-muted-foreground">Stage</p>
+                  <p className="mb-1.5 text-xs font-medium text-muted-foreground">{en("Stage")}</p>
                   <div className="flex flex-wrap gap-1">
                     {STAGES.map((s) => (
                       <button
@@ -377,7 +375,7 @@ export default function LeadDrawer({
                       </button>
                     ))}
                   </div>
-                  {lead.stage === "Lost" && lead.lostReason && <p className="mt-1 text-xs text-muted-foreground">Lost: {lead.lostReason}</p>}
+                  {lead.stage === "Lost" && lead.lostReason && <p className="mt-1 text-xs text-muted-foreground">{en("Lost: ")}{lead.lostReason}</p>}
                   {losing && <LostForm busy={busy} onCancel={() => setLosing(false)} onSave={async (reason) => (await update({ stage: "Lost", lostReason: reason }, "Marked as lost.")) && setLosing(false)} />}
                 </div>
 
@@ -394,7 +392,7 @@ export default function LeadDrawer({
                     onTeamChanged={onChanged}
                   />
                   <div className="text-xs font-medium text-muted-foreground">
-                    Next follow-up
+                    {en("Next follow-up")}
                     <p className="mt-1 rounded-lg border border-border px-3 py-2 text-sm font-normal text-foreground">
                       {lead.nextFollowUpAt ? (
                         <>
@@ -405,7 +403,7 @@ export default function LeadDrawer({
                         </>
                       ) : (
                         <button type="button" className="text-cyan-700 underline-offset-2 hover:underline dark:text-cyan-400" onClick={() => setTab("followups")}>
-                          Schedule one
+                          {en("Schedule one")}
                         </button>
                       )}
                     </p>
@@ -415,29 +413,29 @@ export default function LeadDrawer({
                 <Tags tags={lead.tags} busy={busy} onChange={(tags) => update({ tags })} />
                 <label className="flex items-center gap-2 text-xs">
                   <input type="checkbox" checked={!!lead.highPriority} disabled={busy} onChange={(e) => update({ highPriority: e.target.checked }, e.target.checked ? "Marked high priority." : "No longer high priority.")} />
-                  <span className="font-medium">High priority</span>
-                  <span className="text-muted-foreground">(set by form rules too)</span>
+                  <span className="font-medium">{en("High priority")}</span>
+                  <span className="text-muted-foreground">{en("(set by form rules too)")}</span>
                 </label>
                 {!lead.spam && (
                   <button type="button" disabled={busy} onClick={() => update({ spam: true }, "Moved to Possible spam.")} className="text-xs text-muted-foreground underline-offset-2 hover:text-foreground hover:underline">
-                    This is spam
+                    {en("This is spam")}
                   </button>
                 )}
               </section>
 
               {(lead.scheduled?.length ?? 0) > 0 && (
-                <section aria-label="Scheduled emails" className="mt-5 space-y-1.5 rounded-xl border border-cyan-600/30 bg-cyan-600/5 p-3 text-sm">
-                  <p className="text-xs font-semibold">Scheduled to send</p>
+                <section aria-label={en("Scheduled emails")} className="mt-5 space-y-1.5 rounded-xl border border-cyan-600/30 bg-cyan-600/5 p-3 text-sm">
+                  <p className="text-xs font-semibold">{en("Scheduled to send")}</p>
                   {lead.scheduled!.map((x) => (
                     <div key={x.id} className="flex flex-wrap items-center justify-between gap-2">
                       <span className="min-w-0">
                         <span className="font-medium">{x.subject}</span>{" "}
                         <span className="text-xs text-muted-foreground">
-                          · {new Date(x.sendAt).toLocaleString([], { dateStyle: "medium", timeStyle: "short" })} · by {x.createdByName}
+                          · {new Date(x.sendAt).toLocaleString([], { dateStyle: "medium", timeStyle: "short" })}{en(" · by ")}{x.createdByName}
                         </span>
                       </span>
                       <button type="button" disabled={busy} onClick={() => act(`/leads/${leadId}/scheduled/${x.id}`, undefined, en("Scheduled email cancelled."), "DELETE")} className="rounded-lg border border-border bg-card px-2.5 py-1 text-xs hover:bg-muted">
-                        Cancel
+                        {en("Cancel")}
                       </button>
                     </div>
                   ))}
@@ -445,7 +443,7 @@ export default function LeadDrawer({
               )}
 
               {/* Tabs */}
-              <div role="tablist" aria-label="Lead details" className="mt-6 flex gap-4 border-b border-border text-sm">
+              <div role="tablist" aria-label={en("Lead details")} className="mt-6 flex gap-4 border-b border-border text-sm">
                 {(
                   [
                     ["timeline", `Communication (${lead.activities.filter((a) => !["Stage", "Assignment", "Task", "System"].includes(a.kind)).length})`],
@@ -488,8 +486,7 @@ export default function LeadDrawer({
               <label className="mt-8 flex items-start gap-2 border-t border-border pt-4 text-xs text-muted-foreground">
                 <input type="checkbox" className="mt-0.5" checked={lead.doNotContact} disabled={busy} onChange={(e) => update({ doNotContact: e.target.checked })} />
                 <span>
-                  <span className="font-medium text-foreground">Do not contact.</span> Blocks email, SMS and WhatsApp from Edulexa. Set automatically when the person
-                  uses the link in your emails.
+                  <span className="font-medium text-foreground">{en("Do not contact.")}</span>{en(" Blocks email, SMS and WhatsApp from Edulexa. Set automatically when the person uses the link in your emails.")}
                 </span>
               </label>
             </>
@@ -501,8 +498,9 @@ export default function LeadDrawer({
 }
 
 function Contact({ label, value, href }: { label: string; value: string | null; href?: string }) {
+  const en = useEn();
   const [copied, setCopied] = useState(false);
-  if (!value) return <span className="text-muted-foreground">No {label.toLowerCase()}</span>;
+  if (!value) return <span className="text-muted-foreground">{en("No ")}{label.toLowerCase()}</span>;
   return (
     <span className="inline-flex items-center gap-1.5">
       <a href={href} className="text-cyan-700 underline-offset-2 hover:underline dark:text-cyan-400">
@@ -550,6 +548,7 @@ function OwnerField({
   setError: (e: string | null) => void;
   onTeamChanged: () => void;
 }) {
+  const en = useEn();
   const [adding, setAdding] = useState(false);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -579,10 +578,10 @@ function OwnerField({
 
   return (
     <div className="text-xs font-medium text-muted-foreground">
-      <label htmlFor="lead-owner">Owner</label>
+      <label htmlFor="lead-owner">{en("Owner")}</label>
       <select id="lead-owner" className={`${input} mt-1`} value={lead.ownerMemberId ?? ""} disabled={busy || saving} onChange={(e) => pick(e.target.value)}>
-        <option value="">Unassigned</option>
-        {me && <option value={me.id}>Me ({me.name})</option>}
+        <option value="">{en("Unassigned")}</option>
+        {me && <option value={me.id}>{en("Me (")}{me.name})</option>}
         {team
           .filter((m) => m.id !== me?.id)
           .map((m) => (
@@ -590,11 +589,11 @@ function OwnerField({
               {m.name}
             </option>
           ))}
-        {isAdmin && !me && <option value="__me">+ Add me to the team and assign to me</option>}
-        {isAdmin && <option value="__new">+ Add someone to the team…</option>}
+        {isAdmin && !me && <option value="__me">{en("+ Add me to the team and assign to me")}</option>}
+        {isAdmin && <option value="__new">{en("+ Add someone to the team…")}</option>}
       </select>
-      {!isAdmin && team.length === 0 && <span className="mt-1 block font-normal">Your admin hasn&apos;t added the team yet, so leads can&apos;t be assigned.</span>}
-      {!isAdmin && team.length > 0 && !me && <span className="mt-1 block font-normal">You&apos;re not on the team list; ask your admin to add your sign-in email.</span>}
+      {!isAdmin && team.length === 0 && <span className="mt-1 block font-normal">{en("Your admin hasn't added the team yet, so leads can't be assigned.")}</span>}
+      {!isAdmin && team.length > 0 && !me && <span className="mt-1 block font-normal">{en("You're not on the team list; ask your admin to add your sign-in email.")}</span>}
       {adding && (
         <form
           className="mt-2 space-y-1.5 rounded-lg border border-border bg-muted/40 p-2 font-normal"
@@ -603,14 +602,14 @@ function OwnerField({
             addAndAssign("/team", { name, email, role: "Counsellor", active: true }); // not text: the role value
           }}
         >
-          <input className={input} placeholder="Name" aria-label="Name" value={name} onChange={(e) => setName(e.target.value)} required maxLength={200} />
-          <input className={input} type="email" placeholder="Email they sign in with" aria-label="Email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+          <input className={input} placeholder={en("Name")} aria-label={en("Name")} value={name} onChange={(e) => setName(e.target.value)} required maxLength={200} />
+          <input className={input} type="email" placeholder={en("Email they sign in with")} aria-label={en("Email")} value={email} onChange={(e) => setEmail(e.target.value)} required />
           <div className="flex gap-2">
             <button type="submit" className={primary} disabled={saving}>
-              Add and assign
+              {en("Add and assign")}
             </button>
             <button type="button" className={secondary} onClick={() => setAdding(false)}>
-              Cancel
+              {en("Cancel")}
             </button>
           </div>
         </form>
@@ -620,10 +619,11 @@ function OwnerField({
 }
 
 function LostForm({ busy, onCancel, onSave }: { busy: boolean; onCancel: () => void; onSave: (reason: string) => void }) {
+  const en = useEn();
   const [reason, setReason] = useState("");
   return (
     <div className="mt-2 rounded-xl border border-border bg-muted/40 p-3">
-      <p className="text-sm font-medium">Why was this lead lost?</p>
+      <p className="text-sm font-medium">{en("Why was this lead lost?")}</p>
       <div className="mt-2 flex flex-wrap gap-1.5">
         {LOST_REASONS.map((r) => (
           <button key={r} type="button" onClick={() => setReason(r)} aria-pressed={reason === r} className={`rounded-full border px-2.5 py-1 text-xs ${reason === r ? "border-cyan-700 bg-cyan-700 text-white" : "border-border bg-card hover:bg-muted"}`}>
@@ -631,13 +631,13 @@ function LostForm({ busy, onCancel, onSave }: { busy: boolean; onCancel: () => v
           </button>
         ))}
       </div>
-      <input className={`${input} mt-2`} placeholder="Or write the reason" value={reason} onChange={(e) => setReason(e.target.value)} maxLength={300} />
+      <input className={`${input} mt-2`} placeholder={en("Or write the reason")} value={reason} onChange={(e) => setReason(e.target.value)} maxLength={300} />
       <div className="mt-2 flex gap-2">
         <button type="button" className={primary} disabled={busy || !reason.trim()} onClick={() => onSave(reason.trim())}>
-          Mark as lost
+          {en("Mark as lost")}
         </button>
         <button type="button" className={secondary} onClick={onCancel}>
-          Cancel
+          {en("Cancel")}
         </button>
       </div>
     </div>
@@ -645,6 +645,7 @@ function LostForm({ busy, onCancel, onSave }: { busy: boolean; onCancel: () => v
 }
 
 function Tags({ tags, busy, onChange }: { tags: string[]; busy: boolean; onChange: (tags: string[]) => void }) {
+  const en = useEn();
   const [draft, setDraft] = useState("");
   const add = () => {
     const t = draft.trim();
@@ -653,7 +654,7 @@ function Tags({ tags, busy, onChange }: { tags: string[]; busy: boolean; onChang
   };
   return (
     <div>
-      <p className="mb-1.5 text-xs font-medium text-muted-foreground">Tags</p>
+      <p className="mb-1.5 text-xs font-medium text-muted-foreground">{en("Tags")}</p>
       <div className="flex flex-wrap items-center gap-1.5">
         {tags.map((t) => (
           <span key={t} className="inline-flex items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-xs">
@@ -674,8 +675,8 @@ function Tags({ tags, busy, onChange }: { tags: string[]; busy: boolean; onChang
           }}
           onBlur={() => draft.trim() && add()}
           maxLength={40}
-          placeholder="Add a tag, e.g. scholarship"
-          aria-label="Add a tag"
+          placeholder={en("Add a tag, e.g. scholarship")}
+          aria-label={en("Add a tag")}
           className="min-w-40 flex-1 rounded-lg border border-dashed border-border bg-transparent px-2 py-1 text-xs focus:border-cyan-600 focus:outline-none"
         />
       </div>
@@ -684,6 +685,7 @@ function Tags({ tags, busy, onChange }: { tags: string[]; busy: boolean; onChang
 }
 
 function DuePicker({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  const en = useEn();
   return (
     <div className="space-y-1.5">
       <div className="flex flex-wrap gap-1.5">
@@ -696,12 +698,13 @@ function DuePicker({ value, onChange }: { value: string; onChange: (v: string) =
           );
         })}
       </div>
-      <input type="datetime-local" className={input} value={value} onChange={(e) => onChange(e.target.value)} aria-label="Due time" />
+      <input type="datetime-local" className={input} value={value} onChange={(e) => onChange(e.target.value)} aria-label={en("Due time")} />
     </div>
   );
 }
 
 function FollowUps({ lead, team, busy, act }: { lead: LeadFull; team: Member[]; busy: boolean; act: (path: string, body: unknown, done?: string) => Promise<boolean> }) {
+  const en = useEn();
   const [title, setTitle] = useState("Call back");
   const [due, setDue] = useState(() => localInput(presets()[1].at));
   const [assignee, setAssignee] = useState(lead.ownerMemberId ?? "");
@@ -717,12 +720,12 @@ function FollowUps({ lead, team, busy, act }: { lead: LeadFull; team: Member[]; 
             setTitle("Call back");
         }}
       >
-        <p className="text-sm font-medium">Schedule a follow-up</p>
-        <input className={input} value={title} onChange={(e) => setTitle(e.target.value)} maxLength={300} aria-label="What needs doing" placeholder="What needs doing" required />
+        <p className="text-sm font-medium">{en("Schedule a follow-up")}</p>
+        <input className={input} value={title} onChange={(e) => setTitle(e.target.value)} maxLength={300} aria-label={en("What needs doing")} placeholder={en("What needs doing")} required />
         <DuePicker value={due} onChange={setDue} />
         <div className="flex flex-wrap items-center gap-2">
-          <select className={`${input} w-auto`} value={assignee} onChange={(e) => setAssignee(e.target.value)} aria-label="Who">
-            <option value="">{lead.owner ? `The lead's owner (${lead.owner})` : "Nobody yet"}</option>
+          <select className={`${input} w-auto`} value={assignee} onChange={(e) => setAssignee(e.target.value)} aria-label={en("Who")}>
+            <option value="">{lead.owner ? `The lead's owner (${lead.owner})` : en("Nobody yet")}</option>
             {team.map((m) => (
               <option key={m.id} value={m.id}>
                 {m.name}
@@ -730,13 +733,13 @@ function FollowUps({ lead, team, busy, act }: { lead: LeadFull; team: Member[]; 
             ))}
           </select>
           <button type="submit" className={primary} disabled={busy || !title.trim() || !due}>
-            <Plus aria-hidden="true" className="h-4 w-4" /> Schedule
+            <Plus aria-hidden="true" className="h-4 w-4" />{en(" Schedule")}
           </button>
         </div>
-        <p className="text-xs text-muted-foreground">The person it&apos;s for gets an email reminder when it&apos;s due.</p>
+        <p className="text-xs text-muted-foreground">{en("The person it's for gets an email reminder when it's due.")}</p>
       </form>
 
-      {open.length === 0 && done.length === 0 && <p className="text-sm text-muted-foreground">No follow-ups yet.</p>}
+      {open.length === 0 && done.length === 0 && <p className="text-sm text-muted-foreground">{en("No follow-ups yet.")}</p>}
       <ul className="space-y-2">
         {[...open, ...done].map((t) => {
           const late = !t.doneAt && new Date(t.dueAt) < new Date();
@@ -753,7 +756,7 @@ function FollowUps({ lead, team, busy, act }: { lead: LeadFull; team: Member[]; 
               <div className="min-w-0">
                 <p className={t.doneAt ? "text-muted-foreground line-through" : "font-medium"}>{t.title}</p>
                 <p className={`text-xs ${late ? "text-red-700 dark:text-red-400" : "text-muted-foreground"}`}>
-                  {late ? "Overdue · " : ""}
+                  {late ? en("Overdue · ") : ""}
                   {new Date(t.dueAt).toLocaleString([], { dateStyle: "medium", timeStyle: "short" })}
                   {t.assignee ? ` · ${t.assignee}` : ""}
                 </p>
@@ -856,15 +859,15 @@ function Composer({
       !lead.channels.sms &&
       (lead.phone ? (
         <>
-          SMS isn&apos;t connected for your institute.{" "}
+          {en("SMS isn't connected for your institute.")}{" "}
           {isAdmin ? (
             <a className="underline" href="/career-center/settings/chat-sms">
-              Connect Pulse Relay
+              {en("Connect Pulse Relay")}
             </a>
           ) : (
             "Ask your admin to connect Pulse Relay."
           )}{" "}
-          You can still use WhatsApp.
+          {en("You can still use WhatsApp.")}
         </>
       ) : (
         "This lead has no phone number."
@@ -878,7 +881,7 @@ function Composer({
       ) : (
         <>
           {mode === "Call" && (
-            <div className="flex flex-wrap gap-1.5" role="radiogroup" aria-label="How did the call go?">
+            <div className="flex flex-wrap gap-1.5" role="radiogroup" aria-label={en("How did the call go?")}>
               {Object.entries(CALL_OUTCOMES).map(([k, label]) => (
                 <button key={k} type="button" role="radio" aria-checked={outcome === k} onClick={() => setOutcome(k)} className={`rounded-full border px-2.5 py-1 text-xs ${outcome === k ? "border-cyan-700 bg-cyan-700 text-white" : "border-border bg-card hover:bg-muted"}`}>
                   {label}
@@ -890,8 +893,8 @@ function Composer({
           {mode === "Email" && (
             <>
               {templates.length > 0 && (
-                <select className={input} value={templateId} onChange={(e) => pickTemplate(e.target.value)} aria-label="Template">
-                  <option value="">Start from a template…</option>
+                <select className={input} value={templateId} onChange={(e) => pickTemplate(e.target.value)} aria-label={en("Template")}>
+                  <option value="">{en("Start from a template…")}</option>
                   {templates.map((t) => (
                     <option key={t.id} value={t.id}>
                       {t.name}
@@ -899,49 +902,49 @@ function Composer({
                   ))}
                 </select>
               )}
-              <input className={input} value={subject} onChange={(e) => setSubject(e.target.value)} placeholder="Subject" aria-label="Subject" maxLength={300} required />
+              <input className={input} value={subject} onChange={(e) => setSubject(e.target.value)} placeholder={en("Subject")} aria-label={en("Subject")} maxLength={300} required />
             </>
           )}
           <textarea
             className={`${input} min-h-28`}
             value={text}
             onChange={(e) => setText(e.target.value)}
-            aria-label="Message"
+            aria-label={en("Message")}
             required={mode === "Note" || mode === "Email" || mode === "Sms"}
             maxLength={mode === "Sms" ? 1000 : 10000}
             placeholder={
               mode === "Call"
-                ? "What did you talk about? (optional)"
+                ? en("What did you talk about? (optional)")
                 : mode === "Meeting"
-                  ? "Where, or the video link (optional)"
+                  ? en("Where, or the video link (optional)")
                   : mode === "Note"
-                    ? "Only your team sees notes"
+                    ? en("Only your team sees notes")
                     : `Hi ${first}, …`
             }
           />
           {mode === "Email" && (
             <p className="text-xs text-muted-foreground">
-              {"{name}"}, {"{course}"}, {"{institute}"} and {"{counsellor}"} are filled in for you.{" "}
-              {lead.channels.replyByEmail ? "Their reply lands on this timeline." : "Replies go to your institute's email."} Every email has a link to stop further contact.
+              {"{name}"}, {"{course}"}, {"{institute}"} and {"{counsellor}"}{en(" are filled in for you.")}{" "}
+              {lead.channels.replyByEmail ? en("Their reply lands on this timeline.") : en("Replies go to your institute's email.")}{en(" Every email has a link to stop further contact.")}
             </p>
           )}
           {mode === "Sms" && (
-            <input className={input} value={dlt} onChange={(e) => setDlt(e.target.value)} placeholder="DLT template id (needed for SMS in India)" aria-label="DLT template id" />
+            <input className={input} value={dlt} onChange={(e) => setDlt(e.target.value)} placeholder={en("DLT template id (needed for SMS in India)")} aria-label={en("DLT template id")} />
           )}
-          {mode === "WhatsApp" && <p className="text-xs text-muted-foreground">Opens WhatsApp with this message ready to send from your phone or WhatsApp Web.</p>}
+          {mode === "WhatsApp" && <p className="text-xs text-muted-foreground">{en("Opens WhatsApp with this message ready to send from your phone or WhatsApp Web.")}</p>}
           <div className="flex gap-2">
             <button type="submit" className={primary} disabled={busy || (mode === "Call" && !outcome)}>
-              {mode === "Note" ? "Save note" : mode === "Call" ? "Log call" : mode === "Meeting" ? "Book" : mode === "WhatsApp" ? "Open WhatsApp" : "Send"}
+              {mode === "Note" ? en("Save note") : mode === "Call" ? en("Log call") : mode === "Meeting" ? en("Book") : mode === "WhatsApp" ? en("Open WhatsApp") : en("Send")}
             </button>
             <button type="button" className={secondary} onClick={onCancel}>
-              Cancel
+              {en("Cancel")}
             </button>
           </div>
         </>
       )}
       {unavailable && (
         <button type="button" className={secondary} onClick={onCancel}>
-          Close
+          {en("Close")}
         </button>
       )}
     </form>

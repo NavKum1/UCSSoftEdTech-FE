@@ -59,7 +59,7 @@ export default function PortalShell({
               {icon}
             </span>
             <span className="truncate text-sm font-semibold tracking-tight">
-              Edulexa <span className="font-normal text-muted-foreground">· {name}</span>
+              {en("Edulexa ")}<span className="font-normal text-muted-foreground">· {name}</span>
             </span>
             {badge}
           </Link>
@@ -67,11 +67,11 @@ export default function PortalShell({
             <EnglishPicker className="hidden md:inline-flex" />
             <Link href="/" className="hidden items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground sm:inline-flex">
               <ArrowLeft aria-hidden="true" className="h-3.5 w-3.5" />
-              Main app
+              {en("Main app")}
             </Link>
             {dev ? (
               <span className="inline-flex items-center gap-2 text-xs">
-                <span className="rounded-full border border-amber-600/30 bg-amber-500/10 px-2 py-1 font-medium text-amber-800 dark:text-amber-300">Dev: {dev.label}</span>
+                <span className="rounded-full border border-amber-600/30 bg-amber-500/10 px-2 py-1 font-medium text-amber-800 dark:text-amber-300">{en("Dev: ")}{dev.label}</span>
                 <button
                   type="button"
                   onClick={() => {
@@ -80,7 +80,7 @@ export default function PortalShell({
                   }}
                   className="rounded-md border border-border px-2 py-1 font-medium hover:bg-muted"
                 >
-                  End
+                  {en("End")}
                 </button>
               </span>
             ) : (

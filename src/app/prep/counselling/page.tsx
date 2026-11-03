@@ -198,11 +198,11 @@ function CounsellingInner() {
         apiFetch("/api/quiz/counselling/results?take=20", {}, { quiet: true }),
       ]);
       if (st.status === 404) {
-        setProblem("This institute's quiz wasn't found. Check the link you were given.");
+        setProblem(en("This institute's quiz wasn't found. Check the link you were given."));
         return;
       }
       if (!st.ok) {
-        setProblem("We couldn't load the quiz. Please refresh the page to try again.");
+        setProblem(en("We couldn't load the quiz. Please refresh the page to try again."));
         return;
       }
       setStatus((await st.json()) as Status);
@@ -212,11 +212,11 @@ function CounsellingInner() {
         if (r.ok) setResult((await r.json()) as Result);
       }
     } catch {
-      setProblem("We couldn't reach the server. Please check your connection and refresh.");
+      setProblem(en("We couldn't reach the server. Please check your connection and refresh."));
     } finally {
       setLoaded(true);
     }
-  }, [apiFetch, scopeQuery, resultParam]);
+  }, [apiFetch, scopeQuery, resultParam, en]);
   const loadRef = useLatestRef(load);
   useEffect(() => {
     if (ready) void loadRef.current();
@@ -236,14 +236,14 @@ function CounsellingInner() {
         setResult(null);
         setAttempt(body.attempt as Attempt);
       } else if (res.status === 409) {
-        setProblem(`You took this quiz recently. You can take it again on ${formatDate(body?.retakeAvailableAt)}.`);
+        setProblem(en("You took this quiz recently. You can take it again on {date}.", { date: formatDate(body?.retakeAvailableAt) }));
       } else if (res.status === 429) {
-        setProblem("You've started the quiz many times in a short period. Please try again later.");
+        setProblem(en("You've started the quiz many times in a short period. Please try again later."));
       } else {
         setProblem(body?.error ?? "The quiz couldn't be started. Please try again.");
       }
     } catch {
-      setProblem("We couldn't reach the server. Please check your connection and try again.");
+      setProblem(en("We couldn't reach the server. Please check your connection and try again."));
     } finally {
       setBusy(false);
     }
@@ -291,7 +291,7 @@ function CounsellingInner() {
           <Compass aria-hidden="true" className="h-4 w-4" />
           {en("Career counselling")}
         </p>
-        <h1 className="mt-1 text-2xl font-semibold tracking-tight">{status?.scope ? `${status.scope.instituteName}: career quiz` : "Find the area of tech that suits you"}</h1>
+        <h1 className="mt-1 text-2xl font-semibold tracking-tight">{status?.scope ? `${status.scope.instituteName}: career quiz` : en("Find the area of tech that suits you")}</h1>
       </header>
 
       {loaded && !problem && <AdvisorRequest apiFetch={apiFetch} scope={status?.scope ?? null} hasQuizResult={history.length > 0 || !!result} track={result?.primaryTrack ?? history[0]?.primaryTrack ?? null} />}
@@ -312,7 +312,7 @@ function CounsellingInner() {
         <section aria-labelledby="cq-history" className={`${card} mt-8 p-5 sm:p-6`}>
           <h2 id="cq-history" className="flex items-center gap-2 text-base font-semibold">
             <History aria-hidden="true" className="h-4 w-4 text-muted-foreground" />
-            Your results
+            {en("Your results")}
           </h2>
           <ul className="mt-3 divide-y divide-border">
             {history.map((h) => (
@@ -320,14 +320,14 @@ function CounsellingInner() {
                 <button
                   type="button"
                   onClick={() => void openResult(h.evaluationId)}
-                  className="flex w-full items-center justify-between gap-3 py-3 text-left hover:text-indigo-700 dark:hover:text-indigo-300"
+                  className="flex w-full items-center justify-between gap-3 py-3 text-start hover:text-indigo-700 dark:hover:text-indigo-300"
                 >
                   <span>
                     <span className="block text-sm font-medium">{h.primaryTrack || "No clear area"}</span>
                     <span className="block text-xs text-muted-foreground">
                       {formatDate(h.evaluatedAt)}
                       {h.secondaryTrack && h.secondaryTrack !== h.primaryTrack ? ` · then ${h.secondaryTrack}` : ""}
-                      {h.legacy ? " · earlier version of the quiz" : ""}
+                      {h.legacy ? en(" · earlier version of the quiz") : ""}
                     </span>
                   </span>
                   <ChevronRight aria-hidden="true" className="h-4 w-4 shrink-0 text-muted-foreground" />
@@ -355,44 +355,44 @@ function Intro({ status, busy, onStart, onOpenLatest }: { status: Status; busy: 
         <ul className="mt-5 grid gap-3 text-sm sm:grid-cols-3">
           <li className="rounded-xl border border-border p-3">
             <Clock aria-hidden="true" className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
-            <span className="mt-1 block font-medium">About {minutes} minutes</span>
+            <span className="mt-1 block font-medium">{en("About ")}{minutes} minutes</span>
           </li>
           <li className="rounded-xl border border-border p-3">
             <Check aria-hidden="true" className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
-            <span className="mt-1 block font-medium">Your result is saved</span>
+            <span className="mt-1 block font-medium">{en("Your result is saved")}</span>
           </li>
           <li className="rounded-xl border border-border p-3">
             <History aria-hidden="true" className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
-            <span className="mt-1 block font-medium">{status.retakeAfterDays > 0 ? `Retake after ${status.retakeAfterDays} days` : "Retake any time"}</span>
+            <span className="mt-1 block font-medium">{status.retakeAfterDays > 0 ? `Retake after ${status.retakeAfterDays} days` : en("Retake any time")}</span>
           </li>
         </ul>
         <div className="mt-6 flex flex-wrap items-center gap-3">
           {status.openAttempt ? (
             <button type="button" className={primaryButton} disabled={busy} onClick={onStart}>
-              Continue where you left off <ArrowRight aria-hidden="true" className="h-4 w-4" />
+              {en("Continue where you left off ")}<ArrowRight aria-hidden="true" className="h-4 w-4" />
             </button>
           ) : status.canStart ? (
             <button type="button" className={primaryButton} disabled={busy || status.questionsPerAttempt === 0} onClick={onStart}>
-              {status.latest ? "Take the quiz again" : "Start the quiz"} <ArrowRight aria-hidden="true" className="h-4 w-4" />
+              {status.latest ? en("Take the quiz again") : en("Start the quiz")} <ArrowRight aria-hidden="true" className="h-4 w-4" />
             </button>
           ) : (
-            <p className="text-sm text-muted-foreground">You can take the quiz again on {formatDate(status.retakeAvailableAt)}.</p>
+            <p className="text-sm text-muted-foreground">{en("You can take the quiz again on ")}{formatDate(status.retakeAvailableAt)}.</p>
           )}
-          {status.questionsPerAttempt === 0 && <p className="text-sm text-muted-foreground">This quiz has no questions yet.</p>}
+          {status.questionsPerAttempt === 0 && <p className="text-sm text-muted-foreground">{en("This quiz has no questions yet.")}</p>}
         </div>
       </section>
       <aside className={`${card} p-6`}>
-        <h2 className="text-base font-semibold">Your latest result</h2>
+        <h2 className="text-base font-semibold">{en("Your latest result")}</h2>
         {status.latest ? (
           <>
             <p className="mt-3 text-lg font-semibold">{status.latest.primaryTrack || "No clear area"}</p>
             <p className="text-xs text-muted-foreground">{formatDate(status.latest.evaluatedAt)}</p>
             <button type="button" onClick={() => onOpenLatest(status.latest!.evaluationId)} className={`${secondaryButton} mt-4 w-full`}>
-              See the result
+              {en("See the result")}
             </button>
           </>
         ) : (
-          <p className="mt-2 text-sm text-muted-foreground">You haven&apos;t taken this quiz yet.</p>
+          <p className="mt-2 text-sm text-muted-foreground">{en("You haven't taken this quiz yet.")}</p>
         )}
       </aside>
     </div>
@@ -412,6 +412,7 @@ function QuizRunner({
   onDone: (r: Result) => void;
   onExit: () => void;
 }) {
+  const en = useEn();
   const [answers, setAnswers] = useState<Record<number, number>>(() => loadDraft(attempt.attemptId));
   const [step, setStep] = useState(() => {
     const draft = loadDraft(attempt.attemptId);
@@ -457,7 +458,7 @@ function QuizRunner({
       }
       setError(body?.error ?? "Your answers couldn't be submitted. Please try again.");
     } catch {
-      setError("We couldn't reach the server. Your answers are kept on this page; please try again.");
+      setError(en("We couldn't reach the server. Your answers are kept on this page; please try again."));
     } finally {
       setSubmitting(false);
     }
@@ -467,13 +468,13 @@ function QuizRunner({
     <main className="mx-auto max-w-2xl px-4 pb-16 pt-8 sm:px-6">
       <div className="mb-4 flex items-center justify-between gap-3 text-sm">
         <button type="button" onClick={onExit} className="inline-flex items-center gap-1 text-muted-foreground hover:text-foreground">
-          <ArrowLeft aria-hidden="true" className="h-4 w-4" /> Leave (your answers are kept)
+          <ArrowLeft aria-hidden="true" className="h-4 w-4" />{en(" Leave (your answers are kept)")}
         </button>
         <span className="text-muted-foreground" aria-live="polite">
-          Question {step + 1} of {total}
+          {en("Question ")}{step + 1} of {total}
         </span>
       </div>
-      <div className="mb-6 h-1.5 w-full overflow-hidden rounded-full bg-muted" role="progressbar" aria-label="Answered" aria-valuemin={0} aria-valuemax={total} aria-valuenow={answered}>
+      <div className="mb-6 h-1.5 w-full overflow-hidden rounded-full bg-muted" role="progressbar" aria-label={en("Answered")} aria-valuemin={0} aria-valuemax={total} aria-valuenow={answered}>
         <div className="h-full bg-indigo-600 transition-[width] motion-reduce:transition-none" style={{ width: `${(answered / total) * 100}%` }} />
       </div>
 
@@ -516,21 +517,21 @@ function QuizRunner({
 
         <div className="mt-6 flex items-center justify-between gap-3">
           <button type="button" className={secondaryButton} disabled={step === 0} onClick={() => setStep((s) => s - 1)}>
-            <ArrowLeft aria-hidden="true" className="h-4 w-4" /> Back
+            <ArrowLeft aria-hidden="true" className="h-4 w-4" />{en(" Back")}
           </button>
           {last ? (
             <button type="button" className={primaryButton} disabled={answered < total || submitting} onClick={() => void submit()}>
-              {submitting ? "Working out your result…" : "See my result"}
+              {submitting ? en("Working out your result…") : en("See my result")}
             </button>
           ) : (
             <button type="button" className={primaryButton} disabled={answers[question.id] === undefined} onClick={() => setStep((s) => s + 1)}>
-              Next <ArrowRight aria-hidden="true" className="h-4 w-4" />
+              {en("Next ")}<ArrowRight aria-hidden="true" className="h-4 w-4" />
             </button>
           )}
         </div>
         {last && answered < total && (
-          <p className="mt-3 text-right text-xs text-muted-foreground">
-            {total - answered} question{total - answered === 1 ? "" : "s"} still to answer. Use Back to find {total - answered === 1 ? "it" : "them"}.
+          <p className="mt-3 text-end text-xs text-muted-foreground">
+            {total - answered} question{total - answered === 1 ? "" : "s"}{en(" still to answer. Use Back to find ")}{total - answered === 1 ? "it" : "them"}.
           </p>
         )}
       </section>
@@ -555,14 +556,14 @@ function ResultView({
   if (result.legacy)
     return (
       <section className={`${card} p-6`}>
-        <p className="text-xs text-muted-foreground">{formatDate(result.evaluatedAt)} · earlier version of the quiz</p>
+        <p className="text-xs text-muted-foreground">{formatDate(result.evaluatedAt)}{en(" · earlier version of the quiz")}</p>
         <h2 className="mt-1 text-xl font-semibold">{result.primaryTrack}</h2>
-        {result.secondaryTrack && result.secondaryTrack !== result.primaryTrack && <p className="mt-1 text-sm text-muted-foreground">Then {result.secondaryTrack}</p>}
+        {result.secondaryTrack && result.secondaryTrack !== result.primaryTrack && <p className="mt-1 text-sm text-muted-foreground">{en("Then ")}{result.secondaryTrack}</p>}
         <p className="mt-4 text-sm text-muted-foreground">
-          This result came from an earlier version of the quiz, so only the areas are kept. Take the current quiz for a full explanation.
+          {en("This result came from an earlier version of the quiz, so only the areas are kept. Take the current quiz for a full explanation.")}
         </p>
         <button type="button" onClick={onClose} className={`${secondaryButton} mt-5`}>
-          Back
+          {en("Back")}
         </button>
       </section>
     );
@@ -582,18 +583,18 @@ function ResultView({
               {result.questionCount ? ` · ${result.questionCount} questions` : ""}
               {result.scope ? ` · ${result.scope.instituteName}` : ""}
             </p>
-            <h2 className="mt-1 text-2xl font-semibold tracking-tight">{none ? "No clear area yet" : result.primaryTrack}</h2>
+            <h2 className="mt-1 text-2xl font-semibold tracking-tight">{none ? en("No clear area yet") : result.primaryTrack}</h2>
             <p className="mt-1 text-sm text-muted-foreground">{clarityText(result)}</p>
           </div>
           <button type="button" onClick={onClose} className="text-sm font-medium text-muted-foreground hover:text-foreground">
-            Close
+            {en("Close")}
           </button>
         </div>
 
         {top.length > 0 && (
           <div className="mt-6">
-            <h3 className="text-sm font-semibold">How your answers split</h3>
-            <p className="text-xs text-muted-foreground">For each area: how often you picked it when it was one of the options.</p>
+            <h3 className="text-sm font-semibold">{en("How your answers split")}</h3>
+            <p className="text-xs text-muted-foreground">{en("For each area: how often you picked it when it was one of the options.")}</p>
             <ul className="mt-3 space-y-2.5">
               {top.map((t) => (
                 <li key={t.track}>
@@ -611,7 +612,7 @@ function ResultView({
             </ul>
           </div>
         )}
-        {result.retakeAvailableAt && <p className="mt-5 text-xs text-muted-foreground">You can take the quiz again on {formatDate(result.retakeAvailableAt)}.</p>}
+        {result.retakeAvailableAt && <p className="mt-5 text-xs text-muted-foreground">{en("You can take the quiz again on ")}{formatDate(result.retakeAvailableAt)}.</p>}
       </section>
 
       {!none && (
@@ -619,9 +620,9 @@ function ResultView({
           <section aria-labelledby="cq-why" className={`${card} p-6`}>
             <h3 id="cq-why" className="flex items-center gap-2 text-base font-semibold">
               <Lightbulb aria-hidden="true" className="h-4 w-4 text-amber-500" />
-              Why this result
+              {en("Why this result")}
             </h3>
-            <p className="mt-1 text-xs text-muted-foreground">Answers you gave that point to {result.primaryTrack}:</p>
+            <p className="mt-1 text-xs text-muted-foreground">{en("Answers you gave that point to ")}{result.primaryTrack}:</p>
             <ul className="mt-3 space-y-3">
               {primaryReasons.map((r, i) => (
                 <li key={i} className="text-sm">
@@ -632,7 +633,7 @@ function ResultView({
             </ul>
             {secondaryReasons.length > 0 && (
               <>
-                <p className="mt-5 text-xs text-muted-foreground">And towards {result.secondaryTrack}:</p>
+                <p className="mt-5 text-xs text-muted-foreground">{en("And towards ")}{result.secondaryTrack}:</p>
                 <ul className="mt-2 space-y-2">
                   {secondaryReasons.map((r, i) => (
                     <li key={i} className="text-sm">
@@ -647,12 +648,12 @@ function ResultView({
           {result.guide && (
             <section aria-labelledby="cq-guide" className={`${card} p-6`}>
               <h3 id="cq-guide" className="text-base font-semibold">
-                About {result.primaryTrack}
+                {en("About ")}{result.primaryTrack}
               </h3>
               <p className="mt-2 text-sm">{result.guide.summary}</p>
-              {result.guide.roles.length > 0 && <GuideList title="Roles people start in" items={result.guide.roles} />}
-              {result.guide.learnNext.length > 0 && <GuideList title="Good things to learn first" items={result.guide.learnNext} />}
-              {result.guide.languages.length > 0 && <p className="mt-4 text-xs text-muted-foreground">Common languages: {result.guide.languages.join(", ")}</p>}
+              {result.guide.roles.length > 0 && <GuideList title={en("Roles people start in")} items={result.guide.roles} />}
+              {result.guide.learnNext.length > 0 && <GuideList title={en("Good things to learn first")} items={result.guide.learnNext} />}
+              {result.guide.languages.length > 0 && <p className="mt-4 text-xs text-muted-foreground">{en("Common languages: ")}{result.guide.languages.join(", ")}</p>}
               {result.secondaryGuide && result.secondaryTrack !== result.primaryTrack && (
                 <p className="mt-4 border-t border-border pt-4 text-sm text-muted-foreground">
                   <span className="font-medium text-foreground">{result.secondaryTrack}: </span>
@@ -699,7 +700,7 @@ function GuideList({ title, items }: { title: string; items: string[] }) {
   return (
     <div className="mt-4">
       <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{title}</h4>
-      <ul className="mt-1.5 list-disc space-y-1 pl-5 text-sm">
+      <ul className="mt-1.5 list-disc space-y-1 ps-5 text-sm">
         {items.map((i) => (
           <li key={i}>{i}</li>
         ))}
@@ -729,7 +730,7 @@ function CoursesSection({
     return scope ? (
       <section className={`${card} p-6`}>
         <h3 className="flex items-center gap-2 text-base font-semibold">
-          <GraduationCap aria-hidden="true" className="h-4 w-4" /> Courses
+          <GraduationCap aria-hidden="true" className="h-4 w-4" />{en(" Courses")}
         </h3>
         <p className="mt-2 text-sm text-muted-foreground">{scope.instituteName}{en(" hasn't listed courses here yet. Ask your counsellor about courses in this area.")}</p>
       </section>
@@ -739,10 +740,10 @@ function CoursesSection({
     <section aria-labelledby="cq-courses" className="space-y-3">
       <div>
         <h3 id="cq-courses" className="flex items-center gap-2 text-base font-semibold">
-          <GraduationCap aria-hidden="true" className="h-4 w-4" /> Courses that fit
+          <GraduationCap aria-hidden="true" className="h-4 w-4" />{en(" Courses that fit")}
         </h3>
         <p className="text-xs text-muted-foreground">
-          Offered by the institutes named. Course details are as each institute describes them. Nothing is shared with an institute unless you send an inquiry.
+          {en("Offered by the institutes named. Course details are as each institute describes them. Nothing is shared with an institute unless you send an inquiry.")}
         </p>
       </div>
       <div className="grid gap-3 md:grid-cols-2">
@@ -752,15 +753,15 @@ function CoursesSection({
             <h4 className="mt-1 font-semibold">{c.courseName}</h4>
             {c.isBestFit && c.targetTrack === primaryTrack && (
               <span className="mt-1 inline-flex w-fit rounded-full bg-indigo-50 px-2 py-0.5 text-[11px] font-semibold text-indigo-700 dark:bg-indigo-500/10 dark:text-indigo-300">
-                Matches your result
+                {en("Matches your result")}
               </span>
             )}
             {c.description && <p className="mt-2 text-sm text-muted-foreground">{c.description}</p>}
             <dl className="mt-3 grid grid-cols-2 gap-x-4 gap-y-1 text-xs">
-              {c.credentialType && <Fact label="Qualification" value={c.credentialType} />}
-              {c.duration && <Fact label="Length" value={c.duration} />}
-              {c.intake && <Fact label="Intake" value={c.intake} />}
-              {c.accreditation && <Fact label="Accreditation (as stated)" value={c.accreditation} />}
+              {c.credentialType && <Fact label={en("Qualification")} value={c.credentialType} />}
+              {c.duration && <Fact label={en("Length")} value={c.duration} />}
+              {c.intake && <Fact label={en("Intake")} value={c.intake} />}
+              {c.accreditation && <Fact label={en("Accreditation (as stated)")} value={c.accreditation} />}
             </dl>
             <div className="mt-auto pt-4">
               {sent[c.courseId] ? (
@@ -769,7 +770,7 @@ function CoursesSection({
                 </p>
               ) : (
                 <button type="button" className={secondaryButton} onClick={() => setInquiring(c)}>
-                  <Send aria-hidden="true" className="h-4 w-4" /> Ask {c.instituteName} about it
+                  <Send aria-hidden="true" className="h-4 w-4" />{en(" Ask ")}{c.instituteName}{en(" about it")}
                 </button>
               )}
             </div>
@@ -814,6 +815,7 @@ function InquiryDialog({
   onClose: () => void;
   onSent: (message: string) => void;
 }) {
+  const en = useEn();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
@@ -871,10 +873,10 @@ function InquiryDialog({
       });
       const body = await res.json().catch(() => null);
       if (res.ok) onSent(body?.message ?? `Sent to ${course.instituteName}.`);
-      else if (res.status === 429) setError("You've sent several inquiries in a short time. Please try again later.");
+      else if (res.status === 429) setError(en("You've sent several inquiries in a short time. Please try again later."));
       else setError(body?.error ?? "The inquiry couldn't be sent. Please try again.");
     } catch {
-      setError("We couldn't reach the server. Please check your connection and try again.");
+      setError(en("We couldn't reach the server. Please check your connection and try again."));
     } finally {
       setSending(false);
     }
@@ -891,37 +893,36 @@ function InquiryDialog({
         onClick={(e) => e.stopPropagation()}
       >
         <h3 id="cq-inquiry" className="text-base font-semibold">
-          Ask {course.instituteName} about {course.courseName}
+          {en("Ask ")}{course.instituteName} about {course.courseName}
         </h3>
         <form onSubmit={send} className="mt-4 space-y-3">
           <label className="block text-sm">
-            <span className="font-medium">Name</span>
+            <span className="font-medium">{en("Name")}</span>
             <input required value={name} maxLength={200} onChange={(e) => setName(e.target.value)} className={input} autoComplete="name" />
           </label>
           <label className="block text-sm">
-            <span className="font-medium">Email</span>
+            <span className="font-medium">{en("Email")}</span>
             <input required type="email" value={email} maxLength={254} onChange={(e) => setEmail(e.target.value)} className={input} autoComplete="email" />
           </label>
           <label className="block text-sm">
-            <span className="font-medium">Phone (optional)</span>
+            <span className="font-medium">{en("Phone (optional)")}</span>
             <input type="tel" value={phone} maxLength={64} onChange={(e) => setPhone(e.target.value)} className={input} autoComplete="tel" />
           </label>
           <label className="block text-sm">
-            <span className="font-medium">Your question, or what you&apos;re unsure about (optional)</span>
+            <span className="font-medium">{en("Your question, or what you're unsure about (optional)")}</span>
             <textarea value={notes} maxLength={2000} rows={3} onChange={(e) => setNotes(e.target.value)} className={input} />
           </label>
           <label className="flex items-start gap-2 text-sm">
             <input type="checkbox" required checked={consent} onChange={(e) => setConsent(e.target.checked)} className="mt-0.5 h-4 w-4 accent-indigo-600" />
             <span>
-              Send my name, email{phone.trim() ? ", phone" : ""}, my question and my result&apos;s area ({primaryTrack}) to {course.instituteName}, so they can
-              contact me about this course.
+              {en("Send my name, email")}{phone.trim() ? en(", phone") : ""}{en(", my question and my result's area (")}{primaryTrack}{en(") to ")}{course.instituteName}{en(", so they can contact me about this course.")}
             </span>
           </label>
           <label className="flex items-start gap-2 text-sm">
             <input type="checkbox" checked={shareQuiz} onChange={(e) => setShareQuiz(e.target.checked)} className="mt-0.5 h-4 w-4 accent-indigo-600" />
             <span>
-              Also share my quiz answers and result with {course.instituteName}, so an advisor can see what I&apos;m unsure about and help me choose.
-              <span className="block text-xs text-muted-foreground">Optional. They see each question with the answer you picked, and your scores by area.</span>
+              {en("Also share my quiz answers and result with ")}{course.instituteName}{en(", so an advisor can see what I'm unsure about and help me choose.")}
+              <span className="block text-xs text-muted-foreground">{en("Optional. They see each question with the answer you picked, and your scores by area.")}</span>
             </span>
           </label>
           {error && (
@@ -931,10 +932,10 @@ function InquiryDialog({
           )}
           <div className="flex justify-end gap-2 pt-2">
             <button type="button" className={secondaryButton} onClick={onClose}>
-              Cancel
+              {en("Cancel")}
             </button>
             <button type="submit" className={primaryButton} disabled={!consent || sending}>
-              {sending ? "Sending…" : "Send inquiry"}
+              {sending ? en("Sending…") : en("Send inquiry")}
             </button>
           </div>
         </form>

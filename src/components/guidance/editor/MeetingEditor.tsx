@@ -58,7 +58,7 @@ export default function MeetingEditor({ q, update }: { q: Question; update: (p: 
   return (
     <div className="space-y-3 rounded-lg border border-cyan-600/30 bg-cyan-600/5 p-3 text-xs">
       <div>
-        <p className="font-medium">How the time is set</p>
+        <p className="font-medium">{en("How the time is set")}</p>
         <div className="mt-1.5 grid gap-2 sm:grid-cols-2">
           {(
             [
@@ -79,17 +79,17 @@ export default function MeetingEditor({ q, update }: { q: Question; update: (p: 
 
       {b.mode === "slots" && (
         <label className="block font-medium">
-          Appointment people book
+          {en("Appointment people book")}
           {options && options.types.length === 0 ? (
             <span className="mt-1 block rounded-lg bg-amber-500/10 p-2 font-normal text-amber-900 dark:text-amber-200" role="alert">
               {en("Set up an appointment type and your counsellors' weekly hours in Career centre → Appointments first. Until then, let people ask for a day.")}
             </span>
           ) : (
             <select className={field} value={b.typeId ?? ""} onChange={(e) => set({ typeId: e.target.value || null })}>
-              <option value="">Choose…</option>
+              <option value="">{en("Choose…")}</option>
               {(options?.types ?? []).map((t) => (
                 <option key={t.id} value={t.id}>
-                  {t.name} ({t.minutes} min, {t.counsellors === 1 ? en("1 counsellor") : en(`${t.counsellors} counsellors`)})
+                  {t.name} ({t.minutes}{en(" min, ")}{t.counsellors === 1 ? en("1 counsellor") : en(`${t.counsellors} counsellors`)})
                 </option>
               ))}
             </select>
@@ -101,7 +101,7 @@ export default function MeetingEditor({ q, update }: { q: Question; update: (p: 
       )}
 
       <div>
-        <p className="font-medium">Ways to meet</p>
+        <p className="font-medium">{en("Ways to meet")}</p>
         <div className="mt-1.5 flex flex-wrap gap-3">
           {offered.map((m) => {
             const on = b.modes.includes(m.mode);
@@ -125,12 +125,12 @@ export default function MeetingEditor({ q, update }: { q: Question; update: (p: 
       <div className="grid gap-3 sm:grid-cols-2">
         {b.mode === "request" && (
           <label className="block font-medium">
-            Days ahead they can choose
+            {en("Days ahead they can choose")}
             <input type="number" min={1} max={60} className={field} value={b.daysAhead} onChange={(e) => set({ daysAhead: Math.min(60, Math.max(1, Number(e.target.value) || 14)) })} />
           </label>
         )}
         <label className="block font-medium">
-          Time zone of the times
+          {en("Time zone of the times")}
           {b.mode === "slots" ? (
             <span className="mt-1 block font-normal text-muted-foreground">{options?.timeZone ?? b.timeZone}{en(" (your counsellors' hours are set in it)")}</span>
           ) : (
@@ -146,17 +146,17 @@ export default function MeetingEditor({ q, update }: { q: Question; update: (p: 
       </div>
 
       <div>
-        <p className="font-medium">Topics they can pick <span className="font-normal text-muted-foreground">(optional)</span></p>
+        <p className="font-medium">{en("Topics they can pick ")}<span className="font-normal text-muted-foreground">{en("(optional)")}</span></p>
         <textarea
           rows={Math.max(2, topics.length)}
           className={field}
-          placeholder={"One per line, e.g.\nCourse content\nFees and payment plans"}
+          placeholder={en("One per line, e.g.\nCourse content\nFees and payment plans")}
           value={topics.join("\n")}
           onChange={(e) => update({ options: e.target.value.split("\n").slice(0, 15) })}
         />
       </div>
       <p className="text-muted-foreground">
-        Meetings appear on the lead with a task for your team, and in Automatic messages you can send something when one is asked for.
+        {en("Meetings appear on the lead with a task for your team, and in Automatic messages you can send something when one is asked for.")}
       </p>
     </div>
   );

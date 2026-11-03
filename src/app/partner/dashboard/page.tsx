@@ -105,13 +105,13 @@ export default function PartnerDashboardPage() {
   if (failed)
     return (
       <main className="mx-auto max-w-md px-4 py-24 text-center">
-        <h1 className="text-xl font-semibold">We couldn&apos;t load your dashboard</h1>
-        <p className="mt-2 text-sm text-muted-foreground">Your account may not be linked to an institute yet. Please refresh, or ask Edulexa support.</p>
+        <h1 className="text-xl font-semibold">{en("We couldn't load your dashboard")}</h1>
+        <p className="mt-2 text-sm text-muted-foreground">{en("Your account may not be linked to an institute yet. Please refresh, or ask Edulexa support.")}</p>
       </main>
     );
   if (!data)
     return (
-      <main className="mx-auto max-w-6xl px-4 py-10" aria-busy="true" aria-label="Loading your dashboard">
+      <main className="mx-auto max-w-6xl px-4 py-10" aria-busy="true" aria-label={en("Loading your dashboard")}>
         <div className={`${card} h-40 animate-pulse motion-reduce:animate-none`} />
       </main>
     );
@@ -125,21 +125,21 @@ export default function PartnerDashboardPage() {
             <Building2 aria-hidden="true" className="h-5 w-5" />
           </span>
           <div>
-            <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Partner institute</p>
+            <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{en("Partner institute")}</p>
             <h1 className="text-xl font-semibold">{data.instituteName}</h1>
           </div>
         </div>
         <div className="flex gap-2">
           <Link href="/institute/counselling" className="rounded-xl border border-border px-3 py-2 text-sm font-medium hover:bg-muted">
-            Courses and quiz
+            {en("Courses and quiz")}
           </Link>
           <button type="button" onClick={() => void load()} className="inline-flex items-center gap-1.5 rounded-xl border border-border px-3 py-2 text-sm font-medium hover:bg-muted">
-            <RefreshCw aria-hidden="true" className="h-4 w-4" /> Refresh
+            <RefreshCw aria-hidden="true" className="h-4 w-4" />{en(" Refresh")}
           </button>
         </div>
       </header>
 
-      <section aria-label="Inquiries" className="grid gap-4 sm:grid-cols-4">
+      <section aria-label={en("Inquiries")} className="grid gap-4 sm:grid-cols-4">
         {[
           ["Inquiries", k.totalLeadsReceived],
           ["Waiting for contact", k.pendingLeads],
@@ -154,18 +154,18 @@ export default function PartnerDashboardPage() {
       </section>
       {k.totalLeadsReceived > 0 && (
         <p className="text-sm text-muted-foreground">
-          {k.conversionRatePercent}% of inquiries have enrolled so far (as you marked them below).
+          {k.conversionRatePercent}{en("% of inquiries have enrolled so far (as you marked them below).")}
         </p>
       )}
 
       <div className="grid gap-6 lg:grid-cols-3">
         <section aria-labelledby="pd-interest" className={`${card} p-5 lg:col-span-2`}>
           <h2 id="pd-interest" className="text-base font-semibold">
-            What members asked about
+            {en("What members asked about")}
           </h2>
           <p className="mt-1 text-xs text-muted-foreground">{en("The area of each member's counselling result, as sent with their inquiry.")}</p>
           {data.interestByArea.length === 0 ? (
-            <p className="mt-4 text-sm text-muted-foreground">No inquiries yet.</p>
+            <p className="mt-4 text-sm text-muted-foreground">{en("No inquiries yet.")}</p>
           ) : (
             <ul className="mt-4 space-y-2">
               {data.interestByArea.map((a) => (
@@ -182,24 +182,24 @@ export default function PartnerDashboardPage() {
 
         <section aria-labelledby="pd-webhook" className={`${card} p-5`}>
           <h2 id="pd-webhook" className="flex items-center gap-2 text-base font-semibold">
-            <Link2 aria-hidden="true" className="h-4 w-4" /> CRM webhook
+            <Link2 aria-hidden="true" className="h-4 w-4" />{en(" CRM webhook")}
           </h2>
-          <p className="mt-1 text-xs text-muted-foreground">Each new inquiry is also sent as JSON to this address, for your CRM.</p>
+          <p className="mt-1 text-xs text-muted-foreground">{en("Each new inquiry is also sent as JSON to this address, for your CRM.")}</p>
           <form onSubmit={saveWebhook} className="mt-3 space-y-3">
             <label className="block text-sm">
-              <span className="font-medium">Endpoint address</span>
+              <span className="font-medium">{en("Endpoint address")}</span>
               <input type="url" value={webhookUrl} onChange={(e) => setWebhookUrl(e.target.value)} placeholder="https://crm.example.edu/api/leads" className={input} />
             </label>
             <label className="block text-sm">
-              <span className="font-medium">API key header {data.apiKeyConfigured ? "(set; enter a new one to replace it)" : "(optional)"}</span>
+              <span className="font-medium">{en("API key header ")}{data.apiKeyConfigured ? en("(set; enter a new one to replace it)") : en("(optional)")}</span>
               <input type="password" value={apiKey} onChange={(e) => setApiKey(e.target.value)} autoComplete="off" className={input} />
             </label>
             <div className="flex gap-2">
               <button type="submit" className="flex-1 rounded-xl bg-indigo-600 px-3 py-2 text-sm font-semibold text-white hover:bg-indigo-500">
-                Save
+                {en("Save")}
               </button>
               <button type="button" onClick={() => void testWebhook()} disabled={!data.outboundWebhookUrl} className="inline-flex items-center gap-1 rounded-xl border border-border px-3 py-2 text-sm hover:bg-muted disabled:opacity-50">
-                <Send aria-hidden="true" className="h-4 w-4" /> Test
+                <Send aria-hidden="true" className="h-4 w-4" />{en(" Test")}
               </button>
             </div>
             {webhookStatus && (
@@ -214,21 +214,21 @@ export default function PartnerDashboardPage() {
       <section aria-labelledby="pd-leads" className={`${card} overflow-hidden`}>
         <div className="p-5">
           <h2 id="pd-leads" className="text-base font-semibold">
-            Inquiries
+            {en("Inquiries")}
           </h2>
-          <p className="mt-1 text-xs text-muted-foreground">Mark each inquiry as you follow it up. Members agreed to share these details with you.</p>
+          <p className="mt-1 text-xs text-muted-foreground">{en("Mark each inquiry as you follow it up. Members agreed to share these details with you.")}</p>
         </div>
         {data.recentLeads.length === 0 ? (
-          <p className="px-5 pb-5 text-sm text-muted-foreground">No inquiries yet. They appear here when members ask about your courses.</p>
+          <p className="px-5 pb-5 text-sm text-muted-foreground">{en("No inquiries yet. They appear here when members ask about your courses.")}</p>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
-              <thead className="border-y border-border text-left text-xs text-muted-foreground">
+              <thead className="border-y border-border text-start text-xs text-muted-foreground">
                 <tr>
-                  <th className="p-3 font-medium">Member</th>
-                  <th className="p-3 font-medium">Course</th>
-                  <th className="p-3 font-medium">Received</th>
-                  <th className="p-3 text-right font-medium">Status</th>
+                  <th className="p-3 font-medium">{en("Member")}</th>
+                  <th className="p-3 font-medium">{en("Course")}</th>
+                  <th className="p-3 font-medium">{en("Received")}</th>
+                  <th className="p-3 text-end font-medium">{en("Status")}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
@@ -244,7 +244,7 @@ export default function PartnerDashboardPage() {
                     </td>
                     <td className="p-3">{lead.courseName ?? "—"}</td>
                     <td className="p-3 text-muted-foreground">{new Date(lead.createdAt).toLocaleDateString()}</td>
-                    <td className="p-3 text-right">
+                    <td className="p-3 text-end">
                       <select
                         aria-label={`Status of the inquiry from ${lead.candidateName ?? "this member"}`}
                         value={lead.status}
@@ -252,9 +252,9 @@ export default function PartnerDashboardPage() {
                         onChange={(e) => void updateStatus(lead.leadId, e.target.value)}
                         className="rounded-lg border border-border bg-background px-2 py-1 text-sm"
                       >
-                        <option value="Pending">Waiting for contact</option>
-                        <option value="Contacted">Contacted</option>
-                        <option value="Enrolled">Enrolled</option>
+                        <option value="Pending">{en("Waiting for contact")}</option>
+                        <option value="Contacted">{en("Contacted")}</option>
+                        <option value="Enrolled">{en("Enrolled")}</option>
                       </select>
                     </td>
                   </tr>

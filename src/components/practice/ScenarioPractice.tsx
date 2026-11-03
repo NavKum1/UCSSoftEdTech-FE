@@ -9,6 +9,7 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { AlertTriangle, Check, RotateCcw, X } from "lucide-react";
 import { AccessNotice, useLatestRef, useLegacyApi } from "@/lib/legacyApi";
+import { useEn } from "@/lib/english/EnglishProvider";
 
 interface Dimension {
   key: string;
@@ -56,22 +57,23 @@ const card = "rounded-2xl border border-border bg-card shadow-[0_1px_2px_rgb(16_
 const button = "inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-500 disabled:opacity-60";
 
 function RevealedTurn({ r }: { r: Revealed }) {
+  const en = useEn();
   return (
     <div className="space-y-2 text-sm">
       <p className="flex items-start gap-2">
         {r.chosenStrongest ? (
-          <Check aria-label="Strongest response" className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" />
+          <Check aria-label={en("Strongest response")} className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" />
         ) : (
-          <X aria-label="Not the strongest response" className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />
+          <X aria-label={en("Not the strongest response")} className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />
         )}
         <span>
-          <span className="font-medium">You said:</span> {r.chosen.text}
+          <span className="font-medium">{en("You said:")}</span> {r.chosen.text}
           <span className="mt-1 block text-muted-foreground">{r.chosen.feedback}</span>
         </span>
       </p>
       {!r.chosenStrongest && (
         <p className="rounded-xl bg-muted/60 p-3">
-          <span className="font-medium">Strongest response:</span> {r.strongest.text}
+          <span className="font-medium">{en("Strongest response:")}</span> {r.strongest.text}
           <span className="mt-1 block text-muted-foreground">{r.strongest.feedback}</span>
         </p>
       )}
@@ -80,6 +82,7 @@ function RevealedTurn({ r }: { r: Revealed }) {
 }
 
 export default function ScenarioPractice({ track, title, intro }: { track: string; title: string; intro: string }) {
+  const en = useEn();
   const { apiFetch, ready, access } = useLegacyApi();
   const [catalogue, setCatalogue] = useState<Catalogue | null>(null);
   const [history, setHistory] = useState<HistoryRow[]>([]);
@@ -129,13 +132,13 @@ export default function ScenarioPractice({ track, title, intro }: { track: strin
     return (
       <main className="mx-auto max-w-md px-4 py-24 text-center">
         <AlertTriangle aria-hidden="true" className="mx-auto h-8 w-8 text-amber-600" />
-        <h1 className="mt-3 text-xl font-semibold">We couldn&apos;t load the scenarios</h1>
-        <p className="mt-2 text-sm text-muted-foreground">Please refresh the page to try again.</p>
+        <h1 className="mt-3 text-xl font-semibold">{en("We couldn't load the scenarios")}</h1>
+        <p className="mt-2 text-sm text-muted-foreground">{en("Please refresh the page to try again.")}</p>
       </main>
     );
   if (!catalogue)
     return (
-      <main className="mx-auto max-w-4xl px-4 py-10" aria-busy="true" aria-label="Loading scenarios">
+      <main className="mx-auto max-w-4xl px-4 py-10" aria-busy="true" aria-label={en("Loading scenarios")}>
         <div className={`${card} h-40 animate-pulse motion-reduce:animate-none`} />
       </main>
     );
@@ -145,7 +148,7 @@ export default function ScenarioPractice({ track, title, intro }: { track: strin
   return (
     <main className="mx-auto max-w-4xl space-y-6 px-4 pb-16 pt-8 sm:px-6">
       <header>
-        <p className="text-xs font-semibold uppercase tracking-wide text-indigo-700 dark:text-indigo-300">Practice scenario</p>
+        <p className="text-xs font-semibold uppercase tracking-wide text-indigo-700 dark:text-indigo-300">{en("Practice scenario")}</p>
         <h1 className="mt-1 text-2xl font-semibold tracking-tight">{title}</h1>
         <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
           {intro} {catalogue.note}
@@ -154,13 +157,13 @@ export default function ScenarioPractice({ track, title, intro }: { track: strin
       {error && <p className="text-sm text-red-700 dark:text-red-400">{error}</p>}
 
       {!attempt && (
-        <section className="grid gap-4 sm:grid-cols-2" aria-label="Scenarios">
+        <section className="grid gap-4 sm:grid-cols-2" aria-label={en("Scenarios")}>
           {catalogue.scenarios.map((s) => (
             <div key={s.code} className={`${card} flex flex-col p-5`}>
               <h2 className="text-base font-semibold">{s.title}</h2>
               <p className="mt-1 flex-1 text-sm text-muted-foreground">{s.context}</p>
               <button className={`${button} mt-4 self-start`} disabled={busy} onClick={() => void post(`/api/practice/scenarios/${s.code}/start`)}>
-                Start ({s.turns} turns)
+                {en("Start (")}{s.turns}{en(" turns)")}
               </button>
             </div>
           ))}
@@ -191,13 +194,13 @@ export default function ScenarioPractice({ track, title, intro }: { track: strin
                 <span className="font-medium">{attempt.current.speaker}:</span> {attempt.current.message}
               </legend>
               <p className="text-xs text-muted-foreground">
-                Turn {attempt.current.turn + 1} of {attempt.scenario.turns}. Choose your response.
+                {en("Turn ")}{attempt.current.turn + 1} of {attempt.scenario.turns}{en(". Choose your response.")}
               </p>
               <ul className="space-y-2">
                 {attempt.current.options.map((o) => (
                   <li key={o.key}>
                     <button
-                      className="w-full rounded-xl border border-border p-3 text-left text-sm hover:border-indigo-400 hover:bg-muted/40 disabled:opacity-60"
+                      className="w-full rounded-xl border border-border p-3 text-start text-sm hover:border-indigo-400 hover:bg-muted/40 disabled:opacity-60"
                       disabled={busy}
                       onClick={() => void post(`/api/practice/scenarios/attempts/${attempt.id}/answer`, { key: o.key })}
                     >
@@ -211,7 +214,7 @@ export default function ScenarioPractice({ track, title, intro }: { track: strin
 
           {attempt.result && (
             <div className="space-y-3 border-t border-border pt-4" aria-live="polite">
-              <h3 className="text-base font-semibold">Your result: {Math.round(attempt.result.overall)}%</h3>
+              <h3 className="text-base font-semibold">{en("Your result: ")}{Math.round(attempt.result.overall)}%</h3>
               <dl className="grid gap-3 sm:grid-cols-2">
                 {dims.map((d) => (
                   <div key={d.key} className="rounded-xl bg-muted/60 p-3">
@@ -224,10 +227,10 @@ export default function ScenarioPractice({ track, title, intro }: { track: strin
               </dl>
               <div className="flex flex-wrap gap-2">
                 <button className={button} disabled={busy} onClick={() => void post(`/api/practice/scenarios/${attempt.scenario.code}/start`)}>
-                  <RotateCcw aria-hidden="true" className="h-4 w-4" /> Try again
+                  <RotateCcw aria-hidden="true" className="h-4 w-4" />{en(" Try again")}
                 </button>
                 <button className="rounded-xl border border-border px-4 py-2 text-sm font-medium hover:bg-muted" onClick={() => setAttempt(null)}>
-                  Other scenarios
+                  {en("Other scenarios")}
                 </button>
               </div>
             </div>
@@ -238,7 +241,7 @@ export default function ScenarioPractice({ track, title, intro }: { track: strin
       {history.length > 0 && (
         <section className={`${card} p-5`} aria-labelledby="sc-history">
           <h2 id="sc-history" className="text-base font-semibold">
-            Your past attempts
+            {en("Your past attempts")}
           </h2>
           <ul className="mt-2 space-y-1 text-sm">
             {history.map((h) => (

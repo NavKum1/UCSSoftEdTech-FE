@@ -25,6 +25,7 @@ import {
 import { authenticatedFetch } from "@/lib/apiClient";
 import { formatDate, statusBadgeClass } from "@/lib/credentialVerification";
 import SignInRequired from "@/components/SignInRequired";
+import { useEn } from "@/lib/english/EnglishProvider";
 
 type GetToken = () => Promise<string | null>;
 
@@ -128,6 +129,7 @@ interface ExportableResponse {
 }
 
 function ClrDialog({ getToken, onClose, onDone }: { getToken: GetToken; onClose: () => void; onDone: () => void }) {
+  const en = useEn();
   const [items, setItems] = useState<ExportableResponse | null>(null);
   const [selected, setSelected] = useState<Record<string, boolean>>({});
   const [format, setFormat] = useState<"jwt" | "json">("jwt");
@@ -136,9 +138,9 @@ function ClrDialog({ getToken, onClose, onDone }: { getToken: GetToken; onClose:
 
   useEffect(() => {
     authenticatedFetch("/api/career/openbadges/mine", {}, getToken)
-      .then(async (res) => (res.ok ? setItems((await res.json()) as ExportableResponse) : setErr("We couldn't load your items. Please try again.")))
-      .catch(() => setErr("We couldn't reach the server. Please check your connection and try again."));
-  }, [getToken]);
+      .then(async (res) => (res.ok ? setItems((await res.json()) as ExportableResponse) : setErr(en("We couldn't load your items. Please try again."))))
+      .catch(() => setErr(en("We couldn't reach the server. Please check your connection and try again.")));
+  }, [getToken, en]);
 
   const chosen = Object.keys(selected).filter((k) => selected[k]);
   const download = async () => {
@@ -159,34 +161,34 @@ function ClrDialog({ getToken, onClose, onDone }: { getToken: GetToken; onClose:
   };
 
   return (
-    <Modal title="Download a learner record (CLR 2.0)" onClose={onClose}>
-      <p className="text-sm text-muted-foreground">Choose what to include. The file is signed so anyone you give it to can check it. Nothing is sent to anyone until you share the file yourself.</p>
+    <Modal title={en("Download a learner record (CLR 2.0)")} onClose={onClose}>
+      <p className="text-sm text-muted-foreground">{en("Choose what to include. The file is signed so anyone you give it to can check it. Nothing is sent to anyone until you share the file yourself.")}</p>
       {err && <p role="alert" className="text-xs text-red-700 dark:text-red-300">{err}</p>}
       {!items ? (
-        !err && <p className="text-sm text-muted-foreground flex items-center gap-2"><Loader2 className="w-4 h-4 animate-spin" /> Loading...</p>
+        !err && <p className="text-sm text-muted-foreground flex items-center gap-2"><Loader2 className="w-4 h-4 animate-spin" />{en(" Loading...")}</p>
       ) : (
         <fieldset className="space-y-2">
-          <legend className="text-xs font-semibold text-muted-foreground mb-1">Credentials and completed internships</legend>
+          <legend className="text-xs font-semibold text-muted-foreground mb-1">{en("Credentials and completed internships")}</legend>
           {items.credentials.map((c) => (
-            <Checkbox key={c.id} checked={!!selected[c.id]} disabled={!c.exportable} onChange={(v) => setSelected((s) => ({ ...s, [c.id]: v }))} label={c.title} hint={c.exportable ? `Assessment · ${c.status}` : "Revoked: can't be included"} />
+            <Checkbox key={c.id} checked={!!selected[c.id]} disabled={!c.exportable} onChange={(v) => setSelected((s) => ({ ...s, [c.id]: v }))} label={c.title} hint={c.exportable ? `Assessment · ${c.status}` : en("Revoked: can't be included")} />
           ))}
           {items.internships.map((x) => (
             <Checkbox key={x.id} checked={!!selected[x.id]} onChange={(v) => setSelected((s) => ({ ...s, [x.id]: v }))} label={x.title} hint={`Internship · completed ${formatDate(x.completedAt)}`} />
           ))}
-          {items.credentials.length + items.internships.length === 0 && <p className="text-sm text-muted-foreground">Nothing to export yet.</p>}
+          {items.credentials.length + items.internships.length === 0 && <p className="text-sm text-muted-foreground">{en("Nothing to export yet.")}</p>}
         </fieldset>
       )}
       <label className="block text-xs text-muted-foreground">
-        File format
+        {en("File format")}
         <select value={format} onChange={(e) => setFormat(e.target.value as "jwt" | "json")} className="mt-1 block w-full rounded-lg border border-border bg-background px-2 py-1.5 text-sm text-foreground">
-          <option value="jwt">VC-JWT (recommended)</option>
-          <option value="json">JSON-LD with embedded proof</option>
+          <option value="jwt">{en("VC-JWT (recommended)")}</option>
+          <option value="json">{en("JSON-LD with embedded proof")}</option>
         </select>
       </label>
       <div className="flex justify-end gap-2">
-        <button type="button" onClick={onClose} className="px-3 py-1.5 rounded-lg border border-border text-xs font-semibold">Cancel</button>
+        <button type="button" onClick={onClose} className="px-3 py-1.5 rounded-lg border border-border text-xs font-semibold">{en("Cancel")}</button>
         <button type="button" onClick={download} disabled={working || chosen.length === 0} className="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold disabled:opacity-50 flex items-center gap-1.5">
-          {working ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Download className="w-3.5 h-3.5" />} Download CLR
+          {working ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Download className="w-3.5 h-3.5" />}{en(" Download CLR")}
         </button>
       </div>
     </Modal>
@@ -194,6 +196,7 @@ function ClrDialog({ getToken, onClose, onDone }: { getToken: GetToken; onClose:
 }
 
 function CopyButton({ text, label }: { text: string; label: string }) {
+  const en = useEn();
   const [copied, setCopied] = useState(false);
   return (
     <button
@@ -206,18 +209,19 @@ function CopyButton({ text, label }: { text: string; label: string }) {
       }}
       className="px-3 py-1.5 rounded-lg border border-border text-xs font-semibold text-foreground hover:bg-muted flex items-center gap-1.5"
     >
-      {copied ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />} {copied ? "Copied" : label}
+      {copied ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />} {copied ? en("Copied") : label}
     </button>
   );
 }
 
 function Modal({ title, onClose, children }: { title: string; onClose: () => void; children: React.ReactNode }) {
+  const en = useEn();
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" role="dialog" aria-modal="true" aria-label={title}>
       <div className="w-full max-w-lg rounded-2xl border border-border bg-background p-6 shadow-xl space-y-4 max-h-[90vh] overflow-y-auto">
         <div className="flex items-start justify-between gap-3">
           <h2 className="text-lg font-bold text-foreground">{title}</h2>
-          <button type="button" onClick={onClose} aria-label="Close" className="text-muted-foreground hover:text-foreground">
+          <button type="button" onClick={onClose} aria-label={en("Close")} className="text-muted-foreground hover:text-foreground">
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -240,6 +244,7 @@ function Checkbox({ checked, onChange, label, hint, disabled }: { checked: boole
 }
 
 function ShareDialog({ credential, getToken, onClose, onCreated }: { credential: WalletCredential; getToken: GetToken; onClose: () => void; onCreated: (link: CreatedLink) => void }) {
+  const en = useEn();
   const [recipientLabel, setRecipientLabel] = useState("");
   const [includeCode, setIncludeCode] = useState(true);
   const [includeRecording, setIncludeRecording] = useState(false);
@@ -269,38 +274,38 @@ function ShareDialog({ credential, getToken, onClose, onCreated }: { credential:
   };
 
   return (
-    <Modal title="Share this credential" onClose={onClose}>
+    <Modal title={en("Share this credential")} onClose={onClose}>
       <p className="text-sm text-muted-foreground">
-        Anyone with the link can see the signed results and the evidence you tick below, until it expires or you revoke it.
+        {en("Anyone with the link can see the signed results and the evidence you tick below, until it expires or you revoke it.")}
       </p>
       <div className="space-y-1">
         <label htmlFor="recipient" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-          Who is it for? (only you see this label)
+          {en("Who is it for? (only you see this label)")}
         </label>
         <input
           id="recipient"
           value={recipientLabel}
           maxLength={120}
           onChange={(e) => setRecipientLabel(e.target.value)}
-          placeholder="e.g. Globex recruiting team"
+          placeholder={en("e.g. Globex recruiting team")}
           className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-indigo-500"
         />
       </div>
       <div className="space-y-2.5">
-        <Checkbox checked={includeCode} onChange={setIncludeCode} label="Submitted code" />
-        <Checkbox checked={includeRecording} onChange={setIncludeRecording} label="Voice defense recording" />
-        <Checkbox checked={includeTranscript} onChange={setIncludeTranscript} label="Voice defense transcript" />
+        <Checkbox checked={includeCode} onChange={setIncludeCode} label={en("Submitted code")} />
+        <Checkbox checked={includeRecording} onChange={setIncludeRecording} label={en("Voice defense recording")} />
+        <Checkbox checked={includeTranscript} onChange={setIncludeTranscript} label={en("Voice defense transcript")} />
         <Checkbox
           checked={includeHumanDecision}
           onChange={setIncludeHumanDecision}
           disabled={!credential.humanDecisionAvailable}
-          label='Include "advanced by a human reviewer"'
-          hint={credential.humanDecisionAvailable ? "A reviewer advanced this submission. Only the word \"Advanced\" is shared, not who or why." : "No reviewer has advanced this submission."}
+          label={en('Include "advanced by a human reviewer"')}
+          hint={credential.humanDecisionAvailable ? en("A reviewer advanced this submission. Only the word \"Advanced\" is shared, not who or why.") : en("No reviewer has advanced this submission.")}
         />
       </div>
       <div className="space-y-1">
         <label htmlFor="expiry" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-          Link expires after
+          {en("Link expires after")}
         </label>
         <select
           id="expiry"
@@ -310,7 +315,7 @@ function ShareDialog({ credential, getToken, onClose, onCreated }: { credential:
         >
           {[1, 7, 14, 30, 60, 90].map((d) => (
             <option key={d} value={d}>
-              {d === 1 ? "1 day" : `${d} days`}
+              {d === 1 ? en("1 day") : `${d} days`}
             </option>
           ))}
         </select>
@@ -318,10 +323,10 @@ function ShareDialog({ credential, getToken, onClose, onCreated }: { credential:
       {error && <p className="text-sm text-red-700 dark:text-red-300">{error}</p>}
       <div className="flex justify-end gap-2">
         <button type="button" onClick={onClose} className="px-4 py-2 rounded-xl border border-border text-sm font-semibold text-foreground">
-          Cancel
+          {en("Cancel")}
         </button>
         <button type="button" onClick={submit} disabled={working} className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white text-sm font-semibold flex items-center gap-2">
-          {working && <Loader2 className="w-4 h-4 animate-spin" />} Create link
+          {working && <Loader2 className="w-4 h-4 animate-spin" />}{en(" Create link")}
         </button>
       </div>
     </Modal>
@@ -329,6 +334,7 @@ function ShareDialog({ credential, getToken, onClose, onCreated }: { credential:
 }
 
 function InviteDialog({ credential, getToken, onClose, onUsed }: { credential: WalletCredential; getToken: GetToken; onClose: () => void; onUsed: (link: CreatedLink) => void }) {
+  const en = useEn();
   const [invites, setInvites] = useState<PendingInvite[] | null>(null);
   const [inviteId, setInviteId] = useState("");
   const [includeCode, setIncludeCode] = useState(true);
@@ -372,20 +378,18 @@ function InviteDialog({ credential, getToken, onClose, onUsed }: { credential: W
   };
 
   return (
-    <Modal title="Use for a job application" onClose={onClose}>
+    <Modal title={en("Use for a job application")} onClose={onClose}>
       <p className="text-sm text-muted-foreground">
-        If an employer invited you to an assessment through their hiring system, you can answer with this credential instead of re-testing. They
-        receive a link to the signed results and the evidence you choose. A person at the company still decides; they may ask you to take their own
-        assessment.
+        {en("If an employer invited you to an assessment through their hiring system, you can answer with this credential instead of re-testing. They receive a link to the signed results and the evidence you choose. A person at the company still decides; they may ask you to take their own assessment.")}
       </p>
       <div className="space-y-2">
-        <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Invitations sent to your email</p>
+        <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">{en("Invitations sent to your email")}</p>
         {invites === null ? (
           <p className="text-sm text-muted-foreground flex items-center gap-2">
-            <Loader2 className="w-4 h-4 animate-spin" /> Loading...
+            <Loader2 className="w-4 h-4 animate-spin" />{en(" Loading...")}
           </p>
         ) : invites.length === 0 ? (
-          <p className="text-sm text-muted-foreground">None found for the email on your account. You can paste an invitation id instead.</p>
+          <p className="text-sm text-muted-foreground">{en("None found for the email on your account. You can paste an invitation id instead.")}</p>
         ) : (
           <div className="space-y-1.5">
             {invites.map((inv) => (
@@ -394,7 +398,7 @@ function InviteDialog({ credential, getToken, onClose, onUsed }: { credential: W
                 <span>
                   <span className="font-semibold text-foreground">{inv.employer}</span>
                   <span className="block text-xs text-muted-foreground">
-                    {inv.sprintTitle} · invited {formatDate(inv.invitedAt)}
+                    {inv.sprintTitle}{en(" · invited ")}{formatDate(inv.invitedAt)}
                   </span>
                 </span>
               </label>
@@ -404,31 +408,31 @@ function InviteDialog({ credential, getToken, onClose, onUsed }: { credential: W
       </div>
       <div className="space-y-1">
         <label htmlFor="invite-id" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-          Invitation id
+          {en("Invitation id")}
         </label>
         <input
           id="invite-id"
           value={inviteId}
           onChange={(e) => setInviteId(e.target.value)}
-          placeholder="Paste the invitation id"
+          placeholder={en("Paste the invitation id")}
           className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm font-mono text-foreground focus:outline-none focus:ring-2 focus:ring-indigo-500"
         />
       </div>
       <div className="space-y-2.5">
-        <Checkbox checked={includeCode} onChange={setIncludeCode} label="Submitted code" />
-        <Checkbox checked={includeRecording} onChange={setIncludeRecording} label="Voice defense recording" />
-        <Checkbox checked={includeTranscript} onChange={setIncludeTranscript} label="Voice defense transcript" />
+        <Checkbox checked={includeCode} onChange={setIncludeCode} label={en("Submitted code")} />
+        <Checkbox checked={includeRecording} onChange={setIncludeRecording} label={en("Voice defense recording")} />
+        <Checkbox checked={includeTranscript} onChange={setIncludeTranscript} label={en("Voice defense transcript")} />
         <Checkbox
           checked={includeHumanDecision}
           onChange={setIncludeHumanDecision}
           disabled={!credential.humanDecisionAvailable}
-          label='Include "advanced by a human reviewer"'
+          label={en('Include "advanced by a human reviewer"')}
         />
       </div>
       {error && <p className="text-sm text-red-700 dark:text-red-300">{error}</p>}
       <div className="flex justify-end gap-2">
         <button type="button" onClick={onClose} className="px-4 py-2 rounded-xl border border-border text-sm font-semibold text-foreground">
-          Cancel
+          {en("Cancel")}
         </button>
         <button
           type="button"
@@ -436,7 +440,7 @@ function InviteDialog({ credential, getToken, onClose, onUsed }: { credential: W
           disabled={working || !inviteId.trim()}
           className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white text-sm font-semibold flex items-center gap-2"
         >
-          {working && <Loader2 className="w-4 h-4 animate-spin" />} Send credential
+          {working && <Loader2 className="w-4 h-4 animate-spin" />}{en(" Send credential")}
         </button>
       </div>
     </Modal>
@@ -444,6 +448,7 @@ function InviteDialog({ credential, getToken, onClose, onUsed }: { credential: W
 }
 
 function RevokeDialog({ credential, getToken, onClose, onRevoked }: { credential: WalletCredential; getToken: GetToken; onClose: () => void; onRevoked: () => void }) {
+  const en = useEn();
   const [confirmText, setConfirmText] = useState("");
   const [working, setWorking] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -463,14 +468,13 @@ function RevokeDialog({ credential, getToken, onClose, onRevoked }: { credential
   };
 
   return (
-    <Modal title="Revoke this credential?" onClose={onClose}>
+    <Modal title={en("Revoke this credential?")} onClose={onClose}>
       <p className="text-sm text-muted-foreground">
-        Revoking <span className="font-semibold text-foreground">{credential.task.title}</span> is permanent. All its share links stop working, and
-        anyone who checks a copy of the signed credential will see that it was revoked. You can&apos;t undo this.
+        {en("Revoking ")}<span className="font-semibold text-foreground">{credential.task.title}</span>{en(" is permanent. All its share links stop working, and anyone who checks a copy of the signed credential will see that it was revoked. You can't undo this.")}
       </p>
       <div className="space-y-1">
         <label htmlFor="confirm-revoke" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-          Type REVOKE to confirm
+          {en("Type REVOKE to confirm")}
         </label>
         <input
           id="confirm-revoke"
@@ -482,7 +486,7 @@ function RevokeDialog({ credential, getToken, onClose, onRevoked }: { credential
       {error && <p className="text-sm text-red-700 dark:text-red-300">{error}</p>}
       <div className="flex justify-end gap-2">
         <button type="button" onClick={onClose} className="px-4 py-2 rounded-xl border border-border text-sm font-semibold text-foreground">
-          Keep it
+          {en("Keep it")}
         </button>
         <button
           type="button"
@@ -490,7 +494,7 @@ function RevokeDialog({ credential, getToken, onClose, onRevoked }: { credential
           disabled={working || confirmText.trim().toUpperCase() !== "REVOKE"}
           className="px-4 py-2 rounded-xl bg-red-600 hover:bg-red-700 disabled:opacity-50 text-white text-sm font-semibold flex items-center gap-2"
         >
-          {working && <Loader2 className="w-4 h-4 animate-spin" />} Revoke credential
+          {working && <Loader2 className="w-4 h-4 animate-spin" />}{en(" Revoke credential")}
         </button>
       </div>
     </Modal>
@@ -498,6 +502,7 @@ function RevokeDialog({ credential, getToken, onClose, onRevoked }: { credential
 }
 
 function ShareLinksPanel({ credential, getToken, reloadKey }: { credential: WalletCredential; getToken: GetToken; reloadKey: number }) {
+  const en = useEn();
   const [shares, setShares] = useState<ShareLink[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [views, setViews] = useState<Record<string, ShareView[] | "loading">>({});
@@ -525,7 +530,7 @@ function ShareLinksPanel({ credential, getToken, reloadKey }: { credential: Wall
   const revoke = async (shareId: string) => {
     const res = await authenticatedFetch(`/api/credentials/shares/${shareId}`, { method: "DELETE" }, getToken).catch(() => null);
     if (!res || !res.ok) {
-      setError("Could not revoke the link.");
+      setError(en("Could not revoke the link."));
       return;
     }
     setShares((prev) => prev?.map((s) => (s.shareId === shareId ? { ...s, status: "Revoked", revokedAt: new Date().toISOString() } : s)) ?? null);
@@ -550,10 +555,10 @@ function ShareLinksPanel({ credential, getToken, reloadKey }: { credential: Wall
   if (shares === null)
     return (
       <p className="text-xs text-muted-foreground flex items-center gap-2">
-        <Loader2 className="w-3.5 h-3.5 animate-spin" /> Loading share links...
+        <Loader2 className="w-3.5 h-3.5 animate-spin" />{en(" Loading share links...")}
       </p>
     );
-  if (shares.length === 0) return <p className="text-xs text-muted-foreground">You haven&apos;t shared this credential yet.</p>;
+  if (shares.length === 0) return <p className="text-xs text-muted-foreground">{en("You haven't shared this credential yet.")}</p>;
 
   return (
     <div className="space-y-2">
@@ -569,7 +574,7 @@ function ShareLinksPanel({ credential, getToken, reloadKey }: { credential: Wall
                   {s.recipientLabel || "Unlabelled link"}
                 </p>
                 <p className="text-muted-foreground">
-                  Results{scope ? ` + ${scope}` : " only"} · created {formatDate(s.createdAt)} · {s.status === "Active" ? `expires ${formatDate(s.expiresAt)}` : s.status.toLowerCase()}
+                  {en("Results")}{scope ? ` + ${scope}` : " only"}{en(" · created ")}{formatDate(s.createdAt)} · {s.status === "Active" ? `expires ${formatDate(s.expiresAt)}` : s.status.toLowerCase()}
                 </p>
               </div>
               <div className="flex items-center gap-2">
@@ -578,22 +583,22 @@ function ShareLinksPanel({ credential, getToken, reloadKey }: { credential: Wall
                 </button>
                 {s.status === "Active" && (
                   <button type="button" onClick={() => revoke(s.shareId)} className="px-2.5 py-1 rounded-lg border border-red-500/40 text-red-700 dark:text-red-300 hover:bg-red-50 dark:hover:bg-red-500/10 flex items-center gap-1">
-                    <Trash2 className="w-3.5 h-3.5" /> Revoke
+                    <Trash2 className="w-3.5 h-3.5" />{en(" Revoke")}
                   </button>
                 )}
               </div>
             </div>
-            {v === "loading" && <p className="text-muted-foreground">Loading views...</p>}
+            {v === "loading" && <p className="text-muted-foreground">{en("Loading views...")}</p>}
             {Array.isArray(v) &&
               (v.length === 0 ? (
-                <p className="text-muted-foreground">No views yet.</p>
+                <p className="text-muted-foreground">{en("No views yet.")}</p>
               ) : (
-                <table className="w-full text-left">
+                <table className="w-full text-start">
                   <thead className="text-muted-foreground">
                     <tr>
-                      <th className="font-semibold py-1">When</th>
-                      <th className="font-semibold py-1">Browser</th>
-                      <th className="font-semibold py-1">Visitor (hashed)</th>
+                      <th className="font-semibold py-1">{en("When")}</th>
+                      <th className="font-semibold py-1">{en("Browser")}</th>
+                      <th className="font-semibold py-1">{en("Visitor (hashed)")}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -629,6 +634,7 @@ function CredentialCard({
   onDialog: (d: Dialog) => void;
   onError: (msg: string) => void;
 }) {
+  const en = useEn();
   const [showShares, setShowShares] = useState(false);
   const [jwsCopied, setJwsCopied] = useState(false);
   const [includeDecisionInJws, setIncludeDecisionInJws] = useState(false);
@@ -662,7 +668,7 @@ function CredentialCard({
         <div className="min-w-0">
           <h3 className="text-base font-bold text-foreground">{credential.task.title}</h3>
           <p className="text-xs text-muted-foreground">
-            {[credential.task.taskType, credential.task.language].filter(Boolean).join(" · ") || "Voice defense"} · issued {formatDate(credential.issuedAt)} ·{" "}
+            {[credential.task.taskType, credential.task.language].filter(Boolean).join(" · ") || "Voice defense"}{en(" · issued ")}{formatDate(credential.issuedAt)} ·{" "}
             {credential.status === "Revoked" ? `revoked ${formatDate(credential.revokedAt)}` : `valid until ${formatDate(credential.validUntil)}`}
           </p>
         </div>
@@ -671,73 +677,73 @@ function CredentialCard({
 
       <div className="flex flex-wrap gap-x-6 gap-y-1 text-sm">
         <span>
-          <span className="text-muted-foreground">Tests </span>
+          <span className="text-muted-foreground">{en("Tests ")}</span>
           <span className="font-semibold">{scores.testsTotal ? `${scores.testsPassed ?? 0}/${scores.testsTotal}` : "—"}</span>
         </span>
         <span>
-          <span className="text-muted-foreground">Defense </span>
+          <span className="text-muted-foreground">{en("Defense ")}</span>
           <span className="font-semibold">{Math.round(scores.defenseScore)}/100</span>
         </span>
         {scores.defectsTotal !== undefined && (
           <span>
-            <span className="text-muted-foreground">Defects fixed </span>
+            <span className="text-muted-foreground">{en("Defects fixed ")}</span>
             <span className="font-semibold">
               {scores.defectsFixed ?? 0}/{scores.defectsTotal}
             </span>
           </span>
         )}
         <span>
-          <span className="text-muted-foreground">Integrity </span>
+          <span className="text-muted-foreground">{en("Integrity ")}</span>
           <span className="font-semibold">{credential.integrity}</span>
         </span>
       </div>
 
       {credential.status === "Under review" && (
         <p className="text-xs text-amber-800 dark:text-amber-200">
-          A reviewer hasn&apos;t looked at this submission&apos;s integrity signals yet. You can share it, and viewers will see &quot;Under review&quot;.
+          {en("A reviewer hasn't looked at this submission's integrity signals yet. You can share it, and viewers will see \"Under review\".")}
         </p>
       )}
 
       {active && (
         <div className="flex flex-wrap items-center gap-2">
           <button type="button" onClick={() => onDialog({ kind: "share", credential })} className="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold flex items-center gap-1.5">
-            <Share2 className="w-3.5 h-3.5" /> Share
+            <Share2 className="w-3.5 h-3.5" />{en(" Share")}
           </button>
           {credential.status === "Valid" && (
             <button type="button" onClick={() => onDialog({ kind: "invite", credential })} className="px-3 py-1.5 rounded-lg border border-border text-xs font-semibold text-foreground hover:bg-muted flex items-center gap-1.5">
-              <Briefcase className="w-3.5 h-3.5" /> Use for a job application
+              <Briefcase className="w-3.5 h-3.5" />{en(" Use for a job application")}
             </button>
           )}
           <button
             type="button"
             onClick={copyJws}
             disabled={!signingAvailable}
-            title={signingAvailable ? "Copy the signed credential for offline verification" : "Signing is not configured on this server"}
+            title={signingAvailable ? en("Copy the signed credential for offline verification") : en("Signing is not configured on this server")}
             className="px-3 py-1.5 rounded-lg border border-border text-xs font-semibold text-foreground hover:bg-muted disabled:opacity-50 flex items-center gap-1.5"
           >
-            {jwsCopied ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <KeyRound className="w-3.5 h-3.5" />} {jwsCopied ? "Copied" : "Copy JWS"}
+            {jwsCopied ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <KeyRound className="w-3.5 h-3.5" />} {jwsCopied ? en("Copied") : en("Copy JWS")}
           </button>
           <button
             type="button"
             onClick={downloadBadge}
             disabled={!signingAvailable}
-            title="Download as an Open Badges 3.0 credential (VC-JWT)"
+            title={en("Download as an Open Badges 3.0 credential (VC-JWT)")}
             className="px-3 py-1.5 rounded-lg border border-border text-xs font-semibold text-foreground hover:bg-muted disabled:opacity-50 flex items-center gap-1.5"
           >
-            <Download className="w-3.5 h-3.5" /> Download Open Badge
+            <Download className="w-3.5 h-3.5" />{en(" Download Open Badge")}
           </button>
           {credential.humanDecisionAvailable && (
             <label className="text-xs text-muted-foreground flex items-center gap-1.5 cursor-pointer">
               <input type="checkbox" className="accent-indigo-600" checked={includeDecisionInJws} onChange={(e) => setIncludeDecisionInJws(e.target.checked)} />
-              include reviewer &quot;Advanced&quot; in JWS
+              {en("include reviewer \"Advanced\" in JWS")}
             </label>
           )}
           <button
             type="button"
             onClick={() => onDialog({ kind: "revoke", credential })}
-            className="ml-auto px-3 py-1.5 rounded-lg border border-red-500/40 text-red-700 dark:text-red-300 hover:bg-red-50 dark:hover:bg-red-500/10 text-xs font-semibold flex items-center gap-1.5"
+            className="ms-auto px-3 py-1.5 rounded-lg border border-red-500/40 text-red-700 dark:text-red-300 hover:bg-red-50 dark:hover:bg-red-500/10 text-xs font-semibold flex items-center gap-1.5"
           >
-            <ShieldOff className="w-3.5 h-3.5" /> Revoke
+            <ShieldOff className="w-3.5 h-3.5" />{en(" Revoke")}
           </button>
         </div>
       )}
@@ -745,7 +751,7 @@ function CredentialCard({
       <div className="border-t border-border pt-3">
         <button type="button" onClick={() => setShowShares((v) => !v)} className="text-xs font-semibold text-muted-foreground hover:text-foreground flex items-center gap-1">
           {showShares ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
-          Share links ({credential.activeShareCount} active)
+          {en("Share links (")}{credential.activeShareCount}{en(" active)")}
         </button>
         {showShares && (
           <div className="mt-3">
@@ -758,6 +764,7 @@ function CredentialCard({
 }
 
 export default function CredentialWalletPage() {
+  const en = useEn();
   const { getToken, isLoaded, isSignedIn } = useAuth();
   const [wallet, setWallet] = useState<WalletResponse | null>(null);
   const [loading, setLoading] = useState(true);
@@ -767,7 +774,7 @@ export default function CredentialWalletPage() {
   const [reloadKey, setReloadKey] = useState(0);
 
   const apply = useCallback((result: WalletResponse | string) => {
-    if (typeof result === "string") setError(`We couldn't load your credentials: ${result}`);
+    if (typeof result === "string") setError(en("We couldn't load your credentials: {problem}", { problem: String(result) }));
     else {
       setWallet(result);
       setError(null);
@@ -793,7 +800,7 @@ export default function CredentialWalletPage() {
 
   if (isLoaded && !isSignedIn) {
     return (
-      <SignInRequired title="Your credentials" message="Sign in to see and share the credentials you earned by defending your code." />
+      <SignInRequired title={en("Your credentials")} message="Sign in to see and share the credentials you earned by defending your code." />
     );
   }
 
@@ -808,11 +815,10 @@ export default function CredentialWalletPage() {
         <div>
           <h1 className="text-2xl font-black tracking-tight text-foreground flex items-center gap-2">
             <Award className="w-6 h-6 text-indigo-700 dark:text-indigo-400" />
-            Your credentials
+            {en("Your credentials")}
           </h1>
           <p className="text-sm text-muted-foreground mt-1">
-            Each passing defense gives you a credential signed by Edulexa. Share it with employers so they can check your results without asking you to
-            re-test. You decide what evidence each link shows, and you can withdraw it at any time.
+            {en("Each passing defense gives you a credential signed by Edulexa. Share it with employers so they can check your results without asking you to re-test. You decide what evidence each link shows, and you can withdraw it at any time.")}
           </p>
         </div>
 
@@ -821,7 +827,7 @@ export default function CredentialWalletPage() {
             <span className="flex items-center gap-2">
               <CheckCircle2 className="w-4 h-4 shrink-0" /> {notice}
             </span>
-            <button type="button" onClick={() => setNotice(null)} aria-label="Dismiss">
+            <button type="button" onClick={() => setNotice(null)} aria-label={en("Dismiss")}>
               <X className="w-3.5 h-3.5" />
             </button>
           </div>
@@ -831,27 +837,27 @@ export default function CredentialWalletPage() {
             <span className="flex items-center gap-2">
               <AlertTriangle className="w-4 h-4 shrink-0" /> {error}
             </span>
-            <button type="button" onClick={() => setError(null)} aria-label="Dismiss">
+            <button type="button" onClick={() => setError(null)} aria-label={en("Dismiss")}>
               <X className="w-3.5 h-3.5" />
             </button>
           </div>
         )}
         {wallet && !wallet.signingAvailable && (
           <div className="p-3 rounded-xl border border-amber-400/50 bg-amber-50 dark:bg-amber-500/10 text-xs text-amber-900 dark:text-amber-100 flex items-center gap-2">
-            <AlertTriangle className="w-4 h-4 shrink-0" /> Credential signing is not configured on this server yet, so links can&apos;t be verified right now.
+            <AlertTriangle className="w-4 h-4 shrink-0" />{en(" Credential signing is not configured on this server yet, so links can't be verified right now.")}
           </div>
         )}
 
         {loading ? (
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Loader2 className="w-4 h-4 animate-spin" /> Loading your credentials...
+            <Loader2 className="w-4 h-4 animate-spin" />{en(" Loading your credentials...")}
           </div>
         ) : !wallet || wallet.credentials.length === 0 ? (
           !error && (
             <div className="glass-panel rounded-2xl p-6 border border-border text-sm text-muted-foreground">
-              No credentials yet. Complete a coding sprint and pass its voice defense to earn one.{" "}
+              {en("No credentials yet. Complete a coding sprint and pass its voice defense to earn one.")}{" "}
               <Link href="/dashboard" className="underline text-foreground">
-                Find a sprint
+                {en("Find a sprint")}
               </Link>
             </div>
           )
@@ -874,10 +880,10 @@ export default function CredentialWalletPage() {
               disabled={!wallet.signingAvailable}
               className="px-3 py-1.5 rounded-lg border border-border text-xs font-semibold text-foreground hover:bg-muted disabled:opacity-50 flex items-center gap-1.5"
             >
-              <Download className="w-3.5 h-3.5" /> Download CLR
+              <Download className="w-3.5 h-3.5" />{en(" Download CLR")}
             </button>
             <p className="text-xs text-muted-foreground">
-              Credentials are valid for {wallet.validityMonths} months from issue. Employers can check any copied JWS at{" "}
+              {en("Credentials are valid for ")}{wallet.validityMonths}{en(" months from issue. Employers can check any copied JWS at")}{" "}
               <Link href="/verify" className="underline">
                 /verify
               </Link>
@@ -896,7 +902,7 @@ export default function CredentialWalletPage() {
           onClose={() => setDialog(null)}
           onRevoked={() => {
             setDialog(null);
-            setNotice("Credential revoked. Its share links no longer work.");
+            setNotice(en("Credential revoked. Its share links no longer work."));
             void reload();
           }}
         />
@@ -907,21 +913,21 @@ export default function CredentialWalletPage() {
           onClose={() => setDialog(null)}
           onDone={() => {
             setDialog(null);
-            setNotice("Learner record downloaded.");
+            setNotice(en("Learner record downloaded."));
           }}
         />
       )}
       {dialog?.kind === "created" && (
-        <Modal title={dialog.link.employer ? `Sent to ${dialog.link.employer}` : "Your share link"} onClose={() => setDialog(null)}>
+        <Modal title={dialog.link.employer ? `Sent to ${dialog.link.employer}` : en("Your share link")} onClose={() => setDialog(null)}>
           <p className="text-sm text-muted-foreground">
             {dialog.link.employer
-              ? "The employer's hiring system now has a link to your credential. You can also copy it here."
-              : "Copy this link now. For your security we only show it once; you can always create another."}
+              ? en("The employer's hiring system now has a link to your credential. You can also copy it here.")
+              : en("Copy this link now. For your security we only show it once; you can always create another.")}
           </p>
           <div className="rounded-xl border border-border bg-muted/40 p-3 font-mono text-xs break-all text-foreground">{dialog.link.url}</div>
           <div className="flex items-center justify-between gap-2">
-            <span className="text-xs text-muted-foreground">Expires {formatDate(dialog.link.expiresAt)}</span>
-            <CopyButton text={dialog.link.url} label="Copy link" />
+            <span className="text-xs text-muted-foreground">{en("Expires ")}{formatDate(dialog.link.expiresAt)}</span>
+            <CopyButton text={dialog.link.url} label={en("Copy link")} />
           </div>
         </Modal>
       )}

@@ -146,7 +146,7 @@ export default function DailyCodeReviewPage() {
         setStatus((s) => (s && body.countsForPoints ? { ...s, completed: true, score: body.score, points: body.points } : s));
       } else setError(body?.error ?? "Your review couldn't be submitted. Please try again.");
     } catch {
-      setError("We couldn't reach the server. Please try again.");
+      setError(en("We couldn't reach the server. Please try again."));
     } finally {
       setBusy(false);
     }
@@ -156,13 +156,13 @@ export default function DailyCodeReviewPage() {
   if (loadFailed)
     return (
       <main className="mx-auto max-w-md px-4 py-24 text-center">
-        <h1 className="text-xl font-semibold">No code review is available right now</h1>
-        <p className="mt-2 text-sm text-muted-foreground">Please try again later.</p>
+        <h1 className="text-xl font-semibold">{en("No code review is available right now")}</h1>
+        <p className="mt-2 text-sm text-muted-foreground">{en("Please try again later.")}</p>
       </main>
     );
   if (!review || !status)
     return (
-      <main className="mx-auto max-w-6xl px-4 py-10" aria-busy="true" aria-label="Loading the code review">
+      <main className="mx-auto max-w-6xl px-4 py-10" aria-busy="true" aria-label={en("Loading the code review")}>
         <div className={`${card} h-64 animate-pulse motion-reduce:animate-none`} />
       </main>
     );
@@ -179,14 +179,14 @@ export default function DailyCodeReviewPage() {
   return (
     <main className="mx-auto max-w-6xl px-4 pb-16 pt-8 sm:px-6">
       <Link href="/daily" className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
-        <ArrowLeft aria-hidden="true" className="h-4 w-4" /> Daily practice
+        <ArrowLeft aria-hidden="true" className="h-4 w-4" />{en(" Daily practice")}
       </Link>
       <header className="mt-3 flex flex-wrap items-start justify-between gap-4">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Today&apos;s code review · {review.language}</p>
+          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{en("Today's code review · ")}{review.language}</p>
           <h1 className="mt-1 text-xl font-semibold">{review.title}</h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            {review.repository} · opened by {review.author} (a practice scenario)
+            {review.repository}{en(" · opened by ")}{review.author}{en(" (a practice scenario)")}
           </p>
         </div>
         {attempt && (
@@ -198,27 +198,27 @@ export default function DailyCodeReviewPage() {
 
       {status.completed && !result && (
         <p className="mt-4 rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-sm">
-          You completed this review and earned {status.points ?? 0}{en(" points. You can practise it again; repeats don't earn points.")}
+          {en("You completed this review and earned ")}{status.points ?? 0}{en(" points. You can practise it again; repeats don't earn points.")}
         </p>
       )}
 
       {!attempt && !result ? (
         <section className={`${card} mt-6 p-6`}>
-          <h2 className="text-base font-semibold">How it works</h2>
-          <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-muted-foreground">
-            <li>Find the line with the defect (within one line counts): 50 points.</li>
-            <li>Make the right call on the pull request: 30 points. Name the kind of defect: 20 points.</li>
-            <li>Line and call right within 3 minutes: 20 bonus points. The time is measured from when you open it.</li>
+          <h2 className="text-base font-semibold">{en("How it works")}</h2>
+          <ul className="mt-2 list-disc space-y-1 ps-5 text-sm text-muted-foreground">
+            <li>{en("Find the line with the defect (within one line counts): 50 points.")}</li>
+            <li>{en("Make the right call on the pull request: 30 points. Name the kind of defect: 20 points.")}</li>
+            <li>{en("Line and call right within 3 minutes: 20 bonus points. The time is measured from when you open it.")}</li>
           </ul>
           <button type="button" className={`${primary} mt-5`} disabled={busy} onClick={() => void start()}>
-            {status.completed ? en("Practise again") : "Open the pull request"}
+            {status.completed ? en("Practise again") : en("Open the pull request")}
           </button>
         </section>
       ) : (
         <div className="mt-6 grid gap-6 lg:grid-cols-3">
-          <section aria-label="Diff" className={`${card} overflow-hidden lg:col-span-2`}>
+          <section aria-label={en("Diff")} className={`${card} overflow-hidden lg:col-span-2`}>
             <p className="border-b border-border px-4 py-2 text-xs text-muted-foreground">
-              {result ? "The defect is highlighted in red." : "Select the line with the defect."}
+              {result ? en("The defect is highlighted in red.") : en("Select the line with the defect.")}
             </p>
             <div className="overflow-x-auto">
               <ol className="min-w-max font-mono text-xs leading-6">
@@ -231,9 +231,9 @@ export default function DailyCodeReviewPage() {
                         disabled={!!result}
                         aria-pressed={line === n}
                         onClick={() => setLine(n)}
-                        className="flex w-full gap-3 px-3 text-left hover:bg-muted/60 disabled:cursor-default"
+                        className="flex w-full gap-3 px-3 text-start hover:bg-muted/60 disabled:cursor-default"
                       >
-                        <span className="w-8 shrink-0 select-none text-right text-muted-foreground">{n}</span>
+                        <span className="w-8 shrink-0 select-none text-end text-muted-foreground">{n}</span>
                         <span className="whitespace-pre">{text || " "}</span>
                       </button>
                     </li>
@@ -252,9 +252,9 @@ export default function DailyCodeReviewPage() {
                   void submit();
                 }}
               >
-                <p className="text-sm">{line ? `Line ${line} flagged.` : "No line flagged yet."}</p>
+                <p className="text-sm">{line ? `Line ${line} flagged.` : en("No line flagged yet.")}</p>
                 <label className="block text-sm">
-                  <span className="font-medium">Kind of defect</span>
+                  <span className="font-medium">{en("Kind of defect")}</span>
                   <select
                     required
                     value={category}
@@ -262,7 +262,7 @@ export default function DailyCodeReviewPage() {
                     className="mt-1 block w-full rounded-xl border border-border bg-background px-3 py-2 text-sm"
                   >
                     <option value="" disabled>
-                      Choose…
+                      {en("Choose…")}
                     </option>
                     {review.categories.map((c) => (
                       <option key={c} value={c}>
@@ -272,7 +272,7 @@ export default function DailyCodeReviewPage() {
                   </select>
                 </label>
                 <fieldset>
-                  <legend className="text-sm font-medium">Your decision</legend>
+                  <legend className="text-sm font-medium">{en("Your decision")}</legend>
                   <div className="mt-1 space-y-1.5">
                     {DECISIONS.map((d) => (
                       <label key={d.value} className="flex items-center gap-2 text-sm">
@@ -283,7 +283,7 @@ export default function DailyCodeReviewPage() {
                   </div>
                 </fieldset>
                 <label className="block text-sm">
-                  <span className="font-medium">Comment (optional)</span>
+                  <span className="font-medium">{en("Comment (optional)")}</span>
                   <textarea value={comment} onChange={(e) => setComment(e.target.value)} rows={3} maxLength={2000} className="mt-1 block w-full rounded-xl border border-border bg-background px-3 py-2 text-sm" />
                 </label>
                 {error && (
@@ -292,7 +292,7 @@ export default function DailyCodeReviewPage() {
                   </p>
                 )}
                 <button type="submit" className={`${primary} w-full`} disabled={busy || line == null || !category || !decision}>
-                  {busy ? "Submitting…" : "Submit review"}
+                  {busy ? en("Submitting…") : en("Submit review")}
                 </button>
               </form>
             ) : (
@@ -306,9 +306,10 @@ export default function DailyCodeReviewPage() {
 }
 
 function Mark({ ok, children }: { ok: boolean; children: React.ReactNode }) {
+  const en = useEn();
   return (
     <li className="flex items-start gap-2 text-sm">
-      {ok ? <CheckCircle2 aria-label="Right" className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" /> : <XCircle aria-label="Not right" className="mt-0.5 h-4 w-4 shrink-0 text-red-600" />}
+      {ok ? <CheckCircle2 aria-label={en("Right")} className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" /> : <XCircle aria-label={en("Not right")} className="mt-0.5 h-4 w-4 shrink-0 text-red-600" />}
       <span>{children}</span>
     </li>
   );
@@ -321,23 +322,23 @@ function ReviewResultPanel({ result, onAgain, busy }: { result: Result; onAgain:
       <div>
         <p className="text-3xl font-semibold tabular-nums">{result.score} / 100</p>
         <p className="text-sm text-muted-foreground">
-          {result.countsForPoints ? `${result.points} points${result.speedBonus ? `, including a ${result.speedBonus}-point speed bonus` : ""}.` : "Practice: no points for a repeat."} Time:{" "}
+          {result.countsForPoints ? `${result.points} points${result.speedBonus ? `, including a ${result.speedBonus}-point speed bonus` : ""}.` : en("Practice: no points for a repeat.")}{en(" Time:")}{" "}
           {Math.floor(result.timeSeconds / 60)}m {result.timeSeconds % 60}s.
         </p>
       </div>
       <p className="text-sm">{result.feedback}</p>
       <ul className="space-y-1.5">
-        <Mark ok={result.lineCorrect}>Defect on line {result.defectLine}</Mark>
-        <Mark ok={result.decisionCorrect}>Right call: {decisionLabel(result.correctDecision)}</Mark>
-        <Mark ok={result.categoryCorrect}>Kind: {CATEGORY_LABELS[result.defectCategory] ?? result.defectCategory}</Mark>
+        <Mark ok={result.lineCorrect}>{en("Defect on line ")}{result.defectLine}</Mark>
+        <Mark ok={result.decisionCorrect}>{en("Right call: ")}{decisionLabel(result.correctDecision)}</Mark>
+        <Mark ok={result.categoryCorrect}>{en("Kind: ")}{CATEGORY_LABELS[result.defectCategory] ?? result.defectCategory}</Mark>
       </ul>
       <div>
-        <h3 className="text-sm font-semibold">Why</h3>
+        <h3 className="text-sm font-semibold">{en("Why")}</h3>
         <p className="mt-1 text-sm text-muted-foreground">{result.explanation}</p>
       </div>
       {result.suggestedRemediation && (
         <div>
-          <h3 className="text-sm font-semibold">The fix</h3>
+          <h3 className="text-sm font-semibold">{en("The fix")}</h3>
           <pre className="mt-1 overflow-x-auto rounded-lg bg-muted p-3 text-xs">{result.suggestedRemediation}</pre>
         </div>
       )}

@@ -19,6 +19,7 @@ import {
   Send,
   XCircle,
 } from "lucide-react";
+import { useEn } from "@/lib/english/EnglishProvider";
 
 interface Provider {
   id: string;
@@ -135,6 +136,7 @@ function CopyField({ label, value }: { label: string; value: string }) {
 }
 
 function ConnectionLogs({ connectionId, getToken }: { connectionId: string; getToken: () => Promise<string | null> }) {
+  const en = useEn();
   const [logs, setLogs] = useState<DispatchLog[] | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -153,34 +155,34 @@ function ConnectionLogs({ connectionId, getToken }: { connectionId: string; getT
   }, [connectionId, getToken]);
 
   if (error) return <p className="text-xs text-rose-700 dark:text-rose-400">{error}</p>;
-  if (!logs) return <p className="text-xs text-muted-foreground flex items-center gap-1"><Loader2 className="w-3 h-3 animate-spin" /> Loading logs...</p>;
-  if (logs.length === 0) return <p className="text-xs text-muted-foreground">No deliveries yet.</p>;
+  if (!logs) return <p className="text-xs text-muted-foreground flex items-center gap-1"><Loader2 className="w-3 h-3 animate-spin" />{en(" Loading logs...")}</p>;
+  if (logs.length === 0) return <p className="text-xs text-muted-foreground">{en("No deliveries yet.")}</p>;
 
   return (
     <div className="overflow-x-auto">
       <table className="w-full text-xs">
         <thead>
-          <tr className="text-left text-muted-foreground border-b border-border">
-            <th className="py-1.5 pr-3 font-semibold">Time</th>
-            <th className="py-1.5 pr-3 font-semibold">Result</th>
-            <th className="py-1.5 pr-3 font-semibold">HTTP</th>
-            <th className="py-1.5 pr-3 font-semibold">Submission</th>
-            <th className="py-1.5 font-semibold">Error</th>
+          <tr className="text-start text-muted-foreground border-b border-border">
+            <th className="py-1.5 pe-3 font-semibold">{en("Time")}</th>
+            <th className="py-1.5 pe-3 font-semibold">{en("Result")}</th>
+            <th className="py-1.5 pe-3 font-semibold">{en("HTTP")}</th>
+            <th className="py-1.5 pe-3 font-semibold">{en("Submission")}</th>
+            <th className="py-1.5 font-semibold">{en("Error")}</th>
           </tr>
         </thead>
         <tbody>
           {logs.map((l) => (
             <tr key={l.id} className="border-b border-border last:border-0">
-              <td className="py-1.5 pr-3 text-muted-foreground whitespace-nowrap">{new Date(l.createdAt).toLocaleString()}</td>
-              <td className="py-1.5 pr-3">
+              <td className="py-1.5 pe-3 text-muted-foreground whitespace-nowrap">{new Date(l.createdAt).toLocaleString()}</td>
+              <td className="py-1.5 pe-3">
                 {l.success ? (
-                  <span className="inline-flex items-center gap-1 text-emerald-700 dark:text-emerald-400"><CheckCircle2 className="w-3 h-3" /> Delivered</span>
+                  <span className="inline-flex items-center gap-1 text-emerald-700 dark:text-emerald-400"><CheckCircle2 className="w-3 h-3" />{en(" Delivered")}</span>
                 ) : (
-                  <span className="inline-flex items-center gap-1 text-rose-700 dark:text-rose-400"><XCircle className="w-3 h-3" /> Failed</span>
+                  <span className="inline-flex items-center gap-1 text-rose-700 dark:text-rose-400"><XCircle className="w-3 h-3" />{en(" Failed")}</span>
                 )}
               </td>
-              <td className="py-1.5 pr-3 text-foreground">{l.httpStatus ?? "—"}</td>
-              <td className="py-1.5 pr-3 font-mono text-muted-foreground">{l.submissionId.slice(0, 8)}</td>
+              <td className="py-1.5 pe-3 text-foreground">{l.httpStatus ?? "—"}</td>
+              <td className="py-1.5 pe-3 font-mono text-muted-foreground">{l.submissionId.slice(0, 8)}</td>
               <td className="py-1.5 text-muted-foreground break-all">{l.error ?? ""}</td>
             </tr>
           ))}
@@ -191,6 +193,7 @@ function ConnectionLogs({ connectionId, getToken }: { connectionId: string; getT
 }
 
 export default function IntegrationsPage() {
+  const en = useEn();
   const { getToken } = useAuth();
 
   const [providers, setProviders] = useState<Provider[]>([]);
@@ -302,7 +305,7 @@ export default function IntegrationsPage() {
       }));
       setOpenLogs((o) => (id in o ? { ...o, [id]: o[id] + 1 } : o));
     } catch {
-      setRowMessage((m) => ({ ...m, [id]: { ok: false, text: "We couldn't reach the server while sending the test. Please check your connection and try again." } }));
+      setRowMessage((m) => ({ ...m, [id]: { ok: false, text: en("We couldn't reach the server while sending the test. Please check your connection and try again.") } }));
     } finally {
       setBusy(null);
     }
@@ -320,7 +323,7 @@ export default function IntegrationsPage() {
       }
       setConnections((list) => list.map((x) => (x.id === c.id ? { ...x, isActive: false } : x)));
     } catch {
-      setRowMessage((m) => ({ ...m, [c.id]: { ok: false, text: "We couldn't reach the server while disabling. Please check your connection and try again." } }));
+      setRowMessage((m) => ({ ...m, [c.id]: { ok: false, text: en("We couldn't reach the server while disabling. Please check your connection and try again.") } }));
     } finally {
       setBusy(null);
     }
@@ -343,19 +346,18 @@ export default function IntegrationsPage() {
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 pb-4 border-b border-border">
         <div>
           <div className="flex items-center gap-2 text-xs font-semibold text-indigo-700 dark:text-indigo-400 uppercase tracking-wider">
-            <Plug className="w-4 h-4" /> Integrations
+            <Plug className="w-4 h-4" />{en(" Integrations")}
           </div>
-          <h1 className="text-2xl font-extrabold text-foreground mt-1">ATS connections</h1>
+          <h1 className="text-2xl font-extrabold text-foreground mt-1">{en("ATS connections")}</h1>
           <p className="text-xs text-muted-foreground mt-1 max-w-2xl">
-            Invite candidates from your applicant tracking system and receive results back. Results include the
-            reviewer&apos;s decision (if any) and a link to the evidence pack, never an automatic verdict.
+            {en("Invite candidates from your applicant tracking system and receive results back. Results include the reviewer's decision (if any) and a link to the evidence pack, never an automatic verdict.")}
           </p>
         </div>
         <button
           onClick={refresh}
           className="self-start md:self-auto py-2 px-3 rounded-xl bg-card hover:bg-muted border border-border text-xs font-medium text-muted-foreground flex items-center gap-1.5 cursor-pointer"
         >
-          <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} /> Refresh
+          <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} />{en(" Refresh")}
         </button>
       </div>
 
@@ -364,24 +366,23 @@ export default function IntegrationsPage() {
           <div className="flex items-start gap-3">
             <AlertTriangle className="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
             <div>
-              <h2 className="text-sm font-bold text-foreground">&quot;{created.displayName}&quot; ({created.provider}) created</h2>
+              <h2 className="text-sm font-bold text-foreground">{en("\"")}{created.displayName}{en("\" (")}{created.provider}{en(") created")}</h2>
               <p className="text-xs text-foreground mt-1">
-                Copy these values now and store them securely. They will not be shown again; to get new ones, disable this
-                connection and create another.
+                {en("Copy these values now and store them securely. They will not be shown again; to get new ones, disable this connection and create another.")}
               </p>
             </div>
           </div>
-          <CopyField label="Inbound API key" value={created.inboundApiKey} />
-          <CopyField label="Webhook signing secret" value={created.signingSecret} />
+          <CopyField label={en("Inbound API key")} value={created.inboundApiKey} />
+          <CopyField label={en("Webhook signing secret")} value={created.signingSecret} />
           <div>
-            <div className="text-[11px] font-semibold text-muted-foreground">Setup</div>
+            <div className="text-[11px] font-semibold text-muted-foreground">{en("Setup")}</div>
             <p className="mt-1 text-xs text-foreground wrap-break-word">{created.setup}</p>
           </div>
           <button
             onClick={() => setCreated(null)}
             className="py-2 px-3 rounded-xl bg-card hover:bg-muted border border-border text-xs font-semibold text-foreground cursor-pointer"
           >
-            I have saved these values
+            {en("I have saved these values")}
           </button>
         </div>
       )}
@@ -389,10 +390,10 @@ export default function IntegrationsPage() {
       <div className="grid lg:grid-cols-5 gap-6">
         {/* Connections */}
         <section className="lg:col-span-3 space-y-3">
-          <h2 className="text-sm font-bold text-foreground flex items-center gap-2"><Link2 className="w-4 h-4" /> Your connections</h2>
+          <h2 className="text-sm font-bold text-foreground flex items-center gap-2"><Link2 className="w-4 h-4" />{en(" Your connections")}</h2>
           {loading && connections.length === 0 ? (
             <div className="glass-panel rounded-2xl border border-border p-8 flex items-center justify-center gap-2 text-sm text-muted-foreground">
-              <Loader2 className="w-4 h-4 animate-spin" /> Loading connections...
+              <Loader2 className="w-4 h-4 animate-spin" />{en(" Loading connections...")}
             </div>
           ) : error ? (
             <div className="glass-panel rounded-2xl border border-border p-6 text-sm text-rose-700 dark:text-rose-400 flex items-center gap-2">
@@ -400,7 +401,7 @@ export default function IntegrationsPage() {
             </div>
           ) : connections.length === 0 ? (
             <div className="glass-panel rounded-2xl border border-border p-8 text-center text-sm text-muted-foreground">
-              No connections yet. Create one to start inviting candidates from your ATS.
+              {en("No connections yet. Create one to start inviting candidates from your ATS.")}
             </div>
           ) : (
             connections.map((c) => (
@@ -411,15 +412,15 @@ export default function IntegrationsPage() {
                       <span className="text-sm font-bold text-foreground">{c.displayName}</span>
                       <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold border border-border bg-muted text-muted-foreground">{c.provider}</span>
                       {c.isActive ? (
-                        <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold border border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400">Active</span>
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold border border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400">{en("Active")}</span>
                       ) : (
-                        <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold border border-border bg-muted text-muted-foreground">Disabled</span>
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold border border-border bg-muted text-muted-foreground">{en("Disabled")}</span>
                       )}
                     </div>
                     <p className="text-[11px] text-muted-foreground mt-1 break-all">
-                      Created {new Date(c.createdAt).toLocaleDateString()}
+                      {en("Created ")}{new Date(c.createdAt).toLocaleDateString()}
                       {c.webhookUrl ? ` · ${c.webhookUrl}` : ""}
-                      {c.hasProviderApiKey ? " · provider API key stored" : ""}
+                      {c.hasProviderApiKey ? en(" · provider API key stored") : ""}
                     </p>
                   </div>
                   <div className="flex flex-wrap items-center gap-2">
@@ -428,14 +429,14 @@ export default function IntegrationsPage() {
                       disabled={!c.isActive || busy !== null}
                       className="py-1.5 px-2.5 rounded-lg border border-border bg-card hover:bg-muted text-xs font-medium text-foreground flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                     >
-                      {busy === `test-${c.id}` ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Send className="w-3.5 h-3.5" />} Send test
+                      {busy === `test-${c.id}` ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Send className="w-3.5 h-3.5" />}{en(" Send test")}
                     </button>
                     <button
                       onClick={() => toggleLogs(c.id)}
                       aria-expanded={c.id in openLogs}
                       className="py-1.5 px-2.5 rounded-lg border border-border bg-card hover:bg-muted text-xs font-medium text-foreground flex items-center gap-1 cursor-pointer"
                     >
-                      <ScrollText className="w-3.5 h-3.5" /> {c.id in openLogs ? "Hide logs" : "Logs"}
+                      <ScrollText className="w-3.5 h-3.5" /> {c.id in openLogs ? en("Hide logs") : en("Logs")}
                     </button>
                     {c.isActive && (
                       <button
@@ -443,7 +444,7 @@ export default function IntegrationsPage() {
                         disabled={busy !== null}
                         className="py-1.5 px-2.5 rounded-lg border border-rose-500/30 bg-card hover:bg-rose-500/10 text-xs font-medium text-rose-700 dark:text-rose-400 flex items-center gap-1 disabled:opacity-50 cursor-pointer"
                       >
-                        {busy === `disable-${c.id}` ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Power className="w-3.5 h-3.5" />} Disable
+                        {busy === `disable-${c.id}` ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Power className="w-3.5 h-3.5" />}{en(" Disable")}
                       </button>
                     )}
                   </div>
@@ -466,9 +467,9 @@ export default function IntegrationsPage() {
         {/* Create form */}
         <section className="lg:col-span-2">
           <form onSubmit={createConnection} className="glass-panel rounded-2xl border border-border p-5 space-y-4">
-            <h2 className="text-sm font-bold text-foreground flex items-center gap-2"><Plus className="w-4 h-4" /> New connection</h2>
+            <h2 className="text-sm font-bold text-foreground flex items-center gap-2"><Plus className="w-4 h-4" />{en(" New connection")}</h2>
             <label className="block text-xs font-semibold text-foreground">
-              Provider
+              {en("Provider")}
               <select value={provider} onChange={(e) => setProvider(e.target.value)} className={inputClass}>
                 {providerOptions.map((p) => (
                   <option key={p.id} value={p.id}>{p.id}</option>
@@ -477,12 +478,12 @@ export default function IntegrationsPage() {
               {selectedMode && <span className="block mt-1 font-normal text-[11px] text-muted-foreground">{selectedMode}</span>}
             </label>
             <label className="block text-xs font-semibold text-foreground">
-              Display name
-              <input value={displayName} onChange={(e) => setDisplayName(e.target.value)} placeholder="e.g. Engineering hiring" className={inputClass} required />
+              {en("Display name")}
+              <input value={displayName} onChange={(e) => setDisplayName(e.target.value)} placeholder={en("e.g. Engineering hiring")} className={inputClass} required />
             </label>
             {needsWebhook && (
               <label className="block text-xs font-semibold text-foreground">
-                Webhook URL (HTTPS; HTTP only for localhost)
+                {en("Webhook URL (HTTPS; HTTP only for localhost)")}
                 <input
                   type="url"
                   value={webhookUrl}
@@ -496,12 +497,12 @@ export default function IntegrationsPage() {
             {isLever && (
               <>
                 <label className="block text-xs font-semibold text-foreground">
-                  Lever API key
+                  {en("Lever API key")}
                   <input type="password" value={providerApiKey} onChange={(e) => setProviderApiKey(e.target.value)} autoComplete="off" className={inputClass} required />
                 </label>
                 <label className="block text-xs font-semibold text-foreground">
-                  Perform as (Lever user id)
-                  <input value={leverPerformAs} onChange={(e) => setLeverPerformAs(e.target.value)} placeholder="Lever user who authors the notes" className={inputClass} />
+                  {en("Perform as (Lever user id)")}
+                  <input value={leverPerformAs} onChange={(e) => setLeverPerformAs(e.target.value)} placeholder={en("Lever user who authors the notes")} className={inputClass} />
                 </label>
               </>
             )}
@@ -513,7 +514,7 @@ export default function IntegrationsPage() {
               disabled={!canCreate || creating}
               className="w-full py-2.5 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-semibold flex items-center justify-center gap-2 cursor-pointer"
             >
-              {creating && <Loader2 className="w-4 h-4 animate-spin" />} Create connection
+              {creating && <Loader2 className="w-4 h-4 animate-spin" />}{en(" Create connection")}
             </button>
           </form>
         </section>
@@ -521,12 +522,9 @@ export default function IntegrationsPage() {
 
       {/* Verification guide */}
       <section className="glass-panel rounded-2xl border border-border p-5 space-y-3">
-        <h2 className="text-sm font-bold text-foreground">How to verify our webhooks</h2>
+        <h2 className="text-sm font-bold text-foreground">{en("How to verify our webhooks")}</h2>
         <p className="text-xs text-muted-foreground">
-          Every webhook (<code className="font-mono">assessment.completed</code>, <code className="font-mono">assessment.reviewed</code>) carries
-          a header <code className="font-mono">X-Edulexa-Signature: t=&lt;unix seconds&gt;,v1=&lt;hex&gt;</code>, where v1 is
-          HMAC-SHA256 of <code className="font-mono">{"`${t}.${rawBody}`"}</code> keyed with your signing secret. Compare with a
-          constant-time check and reject timestamps older than five minutes.
+          {en("Every webhook (")}<code className="font-mono">assessment.completed</code>, <code className="font-mono">assessment.reviewed</code>{en(") carries a header ")}<code className="font-mono">{en("X-Edulexa-Signature: t=<unix seconds>,v1=<hex>")}</code>{en(", where v1 is HMAC-SHA256 of ")}<code className="font-mono">{"`${t}.${rawBody}`"}</code>{en(" keyed with your signing secret. Compare with a constant-time check and reject timestamps older than five minutes.")}
         </p>
         <pre className="text-xs font-mono rounded-xl border border-border bg-muted/30 p-4 overflow-x-auto text-foreground">{VERIFY_SNIPPET}</pre>
       </section>

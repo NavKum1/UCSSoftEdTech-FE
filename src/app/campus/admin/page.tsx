@@ -215,6 +215,7 @@ function Spinner({ text }: { text: string }) {
 }
 
 export default function CampusAdminPage() {
+  const en = useEn();
   const { getToken } = useAuth();
   const [version, setVersion] = useState(0);
   const [cohorts, setCohorts] = useState<Loaded<Cohort[]> | null>(null);
@@ -265,38 +266,37 @@ export default function CampusAdminPage() {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-6">
       <div className="pb-4 border-b border-border">
         <div className="flex items-center gap-2 text-xs font-semibold text-indigo-700 dark:text-indigo-400 uppercase tracking-wider">
-          <GraduationCap className="w-4 h-4" /> Placement cell
+          <GraduationCap className="w-4 h-4" />{en(" Placement cell")}
         </div>
-        <h1 className="text-xl sm:text-2xl font-extrabold text-foreground mt-1">Campus cohorts and readiness</h1>
+        <h1 className="text-xl sm:text-2xl font-extrabold text-foreground mt-1">{en("Campus cohorts and readiness")}</h1>
         <p className="text-xs text-muted-foreground mt-1 max-w-2xl">
-          Import students, assign coding sprints with a voice defense, follow completion, and export readiness and NBA outcome evidence.
-          Results support your planning; they do not decide who may sit for a placement drive.
+          {en("Import students, assign coding sprints with a voice defense, follow completion, and export readiness and NBA outcome evidence. Results support your planning; they do not decide who may sit for a placement drive.")}
         </p>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-[280px_minmax(0,1fr)]">
         <aside className="space-y-4">
           <div className="glass-panel rounded-2xl border border-border p-4 space-y-2">
-            <h2 className="text-sm font-bold text-foreground flex items-center gap-2"><Users className="w-4 h-4" /> Cohorts</h2>
+            <h2 className="text-sm font-bold text-foreground flex items-center gap-2"><Users className="w-4 h-4" />{en(" Cohorts")}</h2>
             {!cohorts || cohorts.key !== key ? (
-              <Spinner text="Loading..." />
+              <Spinner text={en("Loading...")} />
             ) : cohorts.error ? (
               <Message ok={false} text={cohorts.error} />
             ) : list.length === 0 ? (
-              <p className="text-xs text-muted-foreground">No cohorts yet. Create one below.</p>
+              <p className="text-xs text-muted-foreground">{en("No cohorts yet. Create one below.")}</p>
             ) : (
               <ul className="space-y-1.5">
                 {list.map((c) => (
                   <li key={c.id}>
                     <button
                       onClick={() => setSelectedId(c.id)}
-                      className={`w-full text-left rounded-xl border px-3 py-2 cursor-pointer ${
+                      className={`w-full text-start rounded-xl border px-3 py-2 cursor-pointer ${
                         c.id === activeId ? "border-indigo-500/50 bg-indigo-500/10" : "border-border bg-card/60 hover:bg-muted"
                       }`}
                     >
                       <span className="block text-sm font-semibold text-foreground truncate">{c.name}</span>
                       <span className="block text-[11px] text-muted-foreground">
-                        {[c.program, c.graduationYear].filter(Boolean).join(" · ")} · {c.memberCount} students · {c.assignmentCount} sprints
+                        {[c.program, c.graduationYear].filter(Boolean).join(" · ")} · {c.memberCount}{en(" students · ")}{c.assignmentCount} sprints
                       </span>
                     </button>
                   </li>
@@ -306,12 +306,12 @@ export default function CampusAdminPage() {
           </div>
 
           <form onSubmit={createCohort} className="glass-panel rounded-2xl border border-border p-4 space-y-2">
-            <h2 className="text-sm font-bold text-foreground flex items-center gap-2"><Plus className="w-4 h-4" /> New cohort</h2>
-            <input className={inputClass} value={name} onChange={(e) => setName(e.target.value)} placeholder="Name, e.g. CSE 2027 batch" required maxLength={120} />
-            <input className={inputClass} value={program} onChange={(e) => setProgram(e.target.value)} placeholder="Program, e.g. B.Tech CSE" maxLength={120} />
-            <input className={inputClass} value={year} onChange={(e) => setYear(e.target.value)} type="number" min={2000} max={2100} placeholder="Graduation year" required />
+            <h2 className="text-sm font-bold text-foreground flex items-center gap-2"><Plus className="w-4 h-4" />{en(" New cohort")}</h2>
+            <input className={inputClass} value={name} onChange={(e) => setName(e.target.value)} placeholder={en("Name, e.g. CSE 2027 batch")} required maxLength={120} />
+            <input className={inputClass} value={program} onChange={(e) => setProgram(e.target.value)} placeholder={en("Program, e.g. B.Tech CSE")} maxLength={120} />
+            <input className={inputClass} value={year} onChange={(e) => setYear(e.target.value)} type="number" min={2000} max={2100} placeholder={en("Graduation year")} required />
             <button type="submit" disabled={creating || !name.trim()} className={`${buttonClass} w-full`}>
-              {creating && <Loader2 className="w-4 h-4 animate-spin" />} Create cohort
+              {creating && <Loader2 className="w-4 h-4 animate-spin" />}{en(" Create cohort")}
             </button>
             {createMessage && <Message {...createMessage} />}
           </form>
@@ -331,7 +331,7 @@ export default function CampusAdminPage() {
             />
           ) : (
             cohorts?.data && (
-              <div className="glass-panel rounded-2xl border border-border p-6 text-sm text-muted-foreground">Create a cohort to get started.</div>
+              <div className="glass-panel rounded-2xl border border-border p-6 text-sm text-muted-foreground">{en("Create a cohort to get started.")}</div>
             )
           )}
         </section>
@@ -343,6 +343,7 @@ export default function CampusAdminPage() {
 type Tab = "members" | "assign" | "dashboard" | "outcomes";
 
 function CohortPanel({ cohortId, getToken, onChanged, onDeleted }: { cohortId: string; getToken: GetToken; onChanged: () => void; onDeleted: () => void }) {
+  const en = useEn();
   const [version, setVersion] = useState(0);
   const [detail, setDetail] = useState<Loaded<CohortDetail> | null>(null);
   const [tab, setTab] = useState<Tab>("members");
@@ -374,15 +375,15 @@ function CohortPanel({ cohortId, getToken, onChanged, onDeleted }: { cohortId: s
     }
   };
 
-  if (!detail) return <div className="glass-panel rounded-2xl border border-border p-6"><Spinner text="Loading cohort..." /></div>;
+  if (!detail) return <div className="glass-panel rounded-2xl border border-border p-6"><Spinner text={en("Loading cohort...")} /></div>;
   if (detail.error) return <div className="glass-panel rounded-2xl border border-border p-6"><Message ok={false} text={detail.error} /></div>;
   const d = detail.data!;
 
   const tabs: { id: Tab; label: string }[] = [
     { id: "members", label: `Students (${d.memberCount})` },
     { id: "assign", label: `Sprints (${d.assignments.length})` },
-    { id: "dashboard", label: "Dashboard" },
-    { id: "outcomes", label: "NBA outcomes" },
+    { id: "dashboard", label: en("Dashboard") },
+    { id: "outcomes", label: en("NBA outcomes") },
   ];
 
   return (
@@ -396,7 +397,7 @@ function CohortPanel({ cohortId, getToken, onChanged, onDeleted }: { cohortId: s
           </p>
         </div>
         <button onClick={deleteCohort} className={`${secondaryButtonClass} text-rose-700 dark:text-rose-400`}>
-          <Trash2 className="w-3.5 h-3.5" /> Delete cohort
+          <Trash2 className="w-3.5 h-3.5" />{en(" Delete cohort")}
         </button>
       </div>
       {deleteError && <Message ok={false} text={deleteError} />}
@@ -428,6 +429,7 @@ function CohortPanel({ cohortId, getToken, onChanged, onDeleted }: { cohortId: s
 const PAGE_SIZE = 50;
 
 function MembersTab({ cohortId, getToken, onChanged }: { cohortId: string; getToken: GetToken; onChanged: () => void }) {
+  const en = useEn();
   const [csv, setCsv] = useState("");
   const [fileName, setFileName] = useState<string | null>(null);
   const [importing, setImporting] = useState(false);
@@ -510,14 +512,13 @@ function MembersTab({ cohortId, getToken, onChanged }: { cohortId: string; getTo
   return (
     <div className="space-y-5">
       <div className="rounded-xl border border-border bg-card/60 p-4 space-y-3">
-        <h3 className="text-sm font-bold text-foreground flex items-center gap-2"><Upload className="w-4 h-4" /> Import students from CSV</h3>
+        <h3 className="text-sm font-bold text-foreground flex items-center gap-2"><Upload className="w-4 h-4" />{en(" Import students from CSV")}</h3>
         <p className="text-xs text-muted-foreground">
-          Header row: <code className="font-mono">name,email,roll_number,branch</code>. Other columns are ignored. Up to 5,000 rows per file; existing students
-          (same email) are updated.
+          {en("Header row: ")}<code className="font-mono">{en("name,email,roll_number,branch")}</code>{en(". Other columns are ignored. Up to 5,000 rows per file; existing students (same email) are updated.")}
         </p>
         <div className="flex flex-col sm:flex-row sm:items-center gap-2">
           <label className={`${secondaryButtonClass} w-full sm:w-auto`}>
-            <Upload className="w-3.5 h-3.5" /> Choose file
+            <Upload className="w-3.5 h-3.5" />{en(" Choose file")}
             <input type="file" accept=".csv,text/csv" onChange={onFile} className="sr-only" />
           </label>
           {fileName && <span className="text-xs text-muted-foreground truncate">{fileName}</span>}
@@ -529,11 +530,11 @@ function MembersTab({ cohortId, getToken, onChanged }: { cohortId: string; getTo
             setFileName(null);
           }}
           rows={5}
-          placeholder={"name,email,roll_number,branch\nPriya Sharma,priya@college.edu,21CS001,CSE"}
+          placeholder={en("name,email,roll_number,branch\nPriya Sharma,priya@college.edu,21CS001,CSE")}
           className={`${inputClass} font-mono text-xs`}
         />
         <button onClick={runImport} disabled={importing || !csv.trim()} className={buttonClass}>
-          {importing && <Loader2 className="w-4 h-4 animate-spin" />} Import
+          {importing && <Loader2 className="w-4 h-4 animate-spin" />}{en(" Import")}
         </button>
         {importError && <Message ok={false} text={importError} />}
         {importResult && (
@@ -546,9 +547,9 @@ function MembersTab({ cohortId, getToken, onChanged }: { cohortId: string; getTo
               <div className="max-h-48 overflow-auto rounded-lg border border-border">
                 <table className="w-full text-xs">
                   <thead className="sticky top-0 bg-card">
-                    <tr className="text-left text-muted-foreground border-b border-border">
-                      <th className="py-1.5 px-2 font-semibold">Line</th>
-                      <th className="py-1.5 px-2 font-semibold">Problem</th>
+                    <tr className="text-start text-muted-foreground border-b border-border">
+                      <th className="py-1.5 px-2 font-semibold">{en("Line")}</th>
+                      <th className="py-1.5 px-2 font-semibold">{en("Problem")}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -575,42 +576,42 @@ function MembersTab({ cohortId, getToken, onChanged }: { cohortId: string; getTo
             setQuery(search.trim());
           }}
         >
-          <input className={inputClass} value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search name, email, roll number or branch" />
-          <button type="submit" className={secondaryButtonClass}>Search</button>
+          <input className={inputClass} value={search} onChange={(e) => setSearch(e.target.value)} placeholder={en("Search name, email, roll number or branch")} />
+          <button type="submit" className={secondaryButtonClass}>{en("Search")}</button>
         </form>
         {rowError && <Message ok={false} text={rowError} />}
         {!members || members.key !== key ? (
-          <Spinner text="Loading students..." />
+          <Spinner text={en("Loading students...")} />
         ) : members.error ? (
           <Message ok={false} text={members.error} />
         ) : members.data!.members.length === 0 ? (
-          <p className="text-xs text-muted-foreground">{query ? "No students match that search." : "No students yet. Import a CSV above."}</p>
+          <p className="text-xs text-muted-foreground">{query ? en("No students match that search.") : en("No students yet. Import a CSV above.")}</p>
         ) : (
           <>
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="text-left text-xs text-muted-foreground border-b border-border">
-                    <th className="py-2 pr-3 font-semibold">Roll no.</th>
-                    <th className="py-2 pr-3 font-semibold">Name</th>
-                    <th className="py-2 pr-3 font-semibold hidden sm:table-cell">Email</th>
-                    <th className="py-2 pr-3 font-semibold">Branch</th>
-                    <th className="py-2 pr-3 font-semibold hidden md:table-cell">Signed in</th>
-                    <th className="py-2 font-semibold"><span className="sr-only">Actions</span></th>
+                  <tr className="text-start text-xs text-muted-foreground border-b border-border">
+                    <th className="py-2 pe-3 font-semibold">{en("Roll no.")}</th>
+                    <th className="py-2 pe-3 font-semibold">{en("Name")}</th>
+                    <th className="py-2 pe-3 font-semibold hidden sm:table-cell">{en("Email")}</th>
+                    <th className="py-2 pe-3 font-semibold">{en("Branch")}</th>
+                    <th className="py-2 pe-3 font-semibold hidden md:table-cell">{en("Signed in")}</th>
+                    <th className="py-2 font-semibold"><span className="sr-only">{en("Actions")}</span></th>
                   </tr>
                 </thead>
                 <tbody>
                   {members.data!.members.map((m) => (
                     <tr key={m.id} className="border-b border-border last:border-0">
-                      <td className="py-2 pr-3 font-mono text-xs text-foreground">{m.rollNumber || "—"}</td>
-                      <td className="py-2 pr-3 text-foreground">
+                      <td className="py-2 pe-3 font-mono text-xs text-foreground">{m.rollNumber || "—"}</td>
+                      <td className="py-2 pe-3 text-foreground">
                         {m.name}
                         <span className="block sm:hidden text-[11px] text-muted-foreground break-all">{m.email}</span>
                       </td>
-                      <td className="py-2 pr-3 text-xs text-muted-foreground hidden sm:table-cell break-all">{m.email}</td>
-                      <td className="py-2 pr-3 text-xs text-foreground">{m.branch || "—"}</td>
-                      <td className="py-2 pr-3 text-xs text-muted-foreground hidden md:table-cell">{m.linked ? "Yes" : "Not yet"}</td>
-                      <td className="py-2 text-right">
+                      <td className="py-2 pe-3 text-xs text-muted-foreground hidden sm:table-cell break-all">{m.email}</td>
+                      <td className="py-2 pe-3 text-xs text-foreground">{m.branch || "—"}</td>
+                      <td className="py-2 pe-3 text-xs text-muted-foreground hidden md:table-cell">{m.linked ? en("Yes") : en("Not yet")}</td>
+                      <td className="py-2 text-end">
                         <button onClick={() => removeMember(m)} className="p-1.5 rounded-lg text-muted-foreground hover:text-rose-600 cursor-pointer" aria-label={`Remove ${m.name}`}>
                           <Trash2 className="w-4 h-4" />
                         </button>
@@ -623,9 +624,9 @@ function MembersTab({ cohortId, getToken, onChanged }: { cohortId: string; getTo
             <div className="flex items-center justify-between text-xs text-muted-foreground">
               <span>{total} student{total === 1 ? "" : "s"}</span>
               <div className="flex items-center gap-2">
-                <button className={secondaryButtonClass} disabled={page === 0} onClick={() => setPage((p) => p - 1)}>Previous</button>
+                <button className={secondaryButtonClass} disabled={page === 0} onClick={() => setPage((p) => p - 1)}>{en("Previous")}</button>
                 <span>{page + 1} / {pages}</span>
-                <button className={secondaryButtonClass} disabled={page + 1 >= pages} onClick={() => setPage((p) => p + 1)}>Next</button>
+                <button className={secondaryButtonClass} disabled={page + 1 >= pages} onClick={() => setPage((p) => p + 1)}>{en("Next")}</button>
               </div>
             </div>
           </>
@@ -676,7 +677,7 @@ function AssignTab({ cohortId, assignments, getToken, onChanged }: { cohortId: s
   const assign = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!guidPattern.test(chosen)) {
-      setMessage({ ok: false, text: "Pick a sprint or paste a valid sprint id." });
+      setMessage({ ok: false, text: en("Pick a sprint or paste a valid sprint id.") });
       return;
     }
     setSaving(true);
@@ -726,12 +727,12 @@ function AssignTab({ cohortId, assignments, getToken, onChanged }: { cohortId: s
   return (
     <div className="space-y-5">
       <form onSubmit={assign} className="rounded-xl border border-border bg-card/60 p-4 space-y-3">
-        <h3 className="text-sm font-bold text-foreground flex items-center gap-2"><Send className="w-4 h-4" /> Assign a sprint</h3>
+        <h3 className="text-sm font-bold text-foreground flex items-center gap-2"><Send className="w-4 h-4" />{en(" Assign a sprint")}</h3>
         <div className="grid gap-3 sm:grid-cols-2">
           <label className="block text-xs font-semibold text-foreground">
-            Public sprint
+            {en("Public sprint")}
             <select className={`${inputClass} mt-1`} value={sprintId} onChange={(e) => setSprintId(e.target.value)} disabled={!sprints}>
-              <option value="">{sprints ? "Choose a sprint" : "Loading..."}</option>
+              <option value="">{sprints ? en("Choose a sprint") : en("Loading...")}</option>
               {(sprints ?? []).map((s) => (
                 <option key={s.sprintId} value={s.sprintId}>
                   {s.title}
@@ -741,7 +742,7 @@ function AssignTab({ cohortId, assignments, getToken, onChanged }: { cohortId: s
             </select>
           </label>
           <label className="block text-xs font-semibold text-foreground">
-            Or a private sprint id
+            {en("Or a private sprint id")}
             <input className={`${inputClass} mt-1 font-mono text-xs`} value={manualId} onChange={(e) => setManualId(e.target.value)} placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" />
           </label>
           {manualId.trim() && (
@@ -751,30 +752,30 @@ function AssignTab({ cohortId, assignments, getToken, onChanged }: { cohortId: s
             </label>
           )}
           <label className="block text-xs font-semibold text-foreground">
-            Opens
+            {en("Opens")}
             <input type="datetime-local" className={`${inputClass} mt-1`} value={opensAt} onChange={(e) => setOpensAt(e.target.value)} required />
           </label>
           <label className="block text-xs font-semibold text-foreground">
-            Due
+            {en("Due")}
             <input type="datetime-local" className={`${inputClass} mt-1`} value={dueAt} onChange={(e) => setDueAt(e.target.value)} required />
           </label>
         </div>
         <label className="flex items-center gap-2 text-xs font-semibold text-foreground">
-          <input type="checkbox" checked={sendInvites} onChange={(e) => setSendInvites(e.target.checked)} /> Email every student the link and due date
+          <input type="checkbox" checked={sendInvites} onChange={(e) => setSendInvites(e.target.checked)} />{en(" Email every student the link and due date")}
         </label>
         <p className="text-[11px] text-muted-foreground">
-          Only work students start after you assign the sprint counts on the dashboard. Assigning the same sprint again updates its dates.
+          {en("Only work students start after you assign the sprint counts on the dashboard. Assigning the same sprint again updates its dates.")}
         </p>
         <button type="submit" disabled={saving || !chosen} className={buttonClass}>
-          {saving && <Loader2 className="w-4 h-4 animate-spin" />} {saving && sendInvites ? "Assigning and emailing..." : "Assign"}
+          {saving && <Loader2 className="w-4 h-4 animate-spin" />} {saving && sendInvites ? en("Assigning and emailing...") : en("Assign")}
         </button>
         {message && <Message {...message} />}
       </form>
 
       <div className="space-y-2">
-        <h3 className="text-sm font-bold text-foreground">Assigned sprints</h3>
+        <h3 className="text-sm font-bold text-foreground">{en("Assigned sprints")}</h3>
         {assignments.length === 0 ? (
-          <p className="text-xs text-muted-foreground">Nothing assigned yet.</p>
+          <p className="text-xs text-muted-foreground">{en("Nothing assigned yet.")}</p>
         ) : (
           <ul className="space-y-2">
             {assignments.map((a) => (
@@ -783,7 +784,7 @@ function AssignTab({ cohortId, assignments, getToken, onChanged }: { cohortId: s
                   <p className="text-sm font-semibold text-foreground break-words">
                     {a.sprintTitle} {a.isPrivate && <span className="text-[10px] px-1.5 py-0.5 rounded border border-border text-muted-foreground align-middle">private</span>}
                   </p>
-                  <p className="text-[11px] text-muted-foreground">Opens {formatDate(a.opensAt)} · Due {formatDate(a.dueAt)}</p>
+                  <p className="text-[11px] text-muted-foreground">{en("Opens ")}{formatDate(a.opensAt)}{en(" · Due ")}{formatDate(a.dueAt)}</p>
                 </div>
                 <button onClick={() => remove(a)} className="p-1.5 rounded-lg text-muted-foreground hover:text-rose-600 cursor-pointer" aria-label={`Remove ${a.sprintTitle}`}>
                   <Trash2 className="w-4 h-4" />
@@ -798,9 +799,10 @@ function AssignTab({ cohortId, assignments, getToken, onChanged }: { cohortId: s
 }
 
 function SprintPicker({ assignments, value, onChange }: { assignments: AssignmentRow[]; value: string; onChange: (v: string) => void }) {
+  const en = useEn();
   return (
     <label className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 text-xs text-muted-foreground">
-      Sprint
+      {en("Sprint")}
       <select className="px-3 py-2 rounded-xl bg-card border border-border text-xs text-foreground max-w-full" value={value} onChange={(e) => onChange(e.target.value)}>
         {assignments.map((a) => (
           <option key={a.sprintId} value={a.sprintId}>{a.sprintTitle}</option>
@@ -826,9 +828,9 @@ function FunnelBars({ funnel }: { funnel: Funnel }) {
           <div key={label} className="grid grid-cols-[72px_1fr_64px] items-center gap-2 text-xs" title={`${label}: ${value} of ${funnel.invited} (${pct}%)`}>
             <span className="text-muted-foreground">{label}</span>
             <div className="h-3 rounded bg-muted overflow-hidden">
-              <div className="h-full rounded-r bg-indigo-500 dark:bg-indigo-400" style={{ width: `${pct}%` }} />
+              <div className="h-full rounded-e bg-indigo-500 dark:bg-indigo-400" style={{ width: `${pct}%` }} />
             </div>
-            <span className="text-right text-foreground font-semibold tabular-nums">
+            <span className="text-end text-foreground font-semibold tabular-nums">
               {value} <span className="text-muted-foreground font-normal">{pct}%</span>
             </span>
           </div>
@@ -839,17 +841,18 @@ function FunnelBars({ funnel }: { funnel: Funnel }) {
 }
 
 function Histogram({ title, dist, suffix }: { title: string; dist: Distribution; suffix: string }) {
+  const en = useEn();
   const max = Math.max(1, ...dist.buckets.map((b) => b.count));
   return (
     <div className="rounded-xl border border-border bg-card/60 p-3 space-y-2">
       <div className="flex items-baseline justify-between gap-2">
         <h4 className="text-xs font-bold text-foreground">{title}</h4>
         <span className="text-[11px] text-muted-foreground">
-          n {dist.n} · mean {fmt(dist.mean, suffix)} · median {fmt(dist.median, suffix)}
+          n {dist.n}{en(" · mean ")}{fmt(dist.mean, suffix)}{en(" · median ")}{fmt(dist.median, suffix)}
         </span>
       </div>
       {dist.n === 0 ? (
-        <p className="text-xs text-muted-foreground py-4 text-center">No results yet.</p>
+        <p className="text-xs text-muted-foreground py-4 text-center">{en("No results yet.")}</p>
       ) : (
         <div className="flex items-end gap-1.5 h-24" role="img" aria-label={`${title}: ${dist.buckets.map((b) => `${b.label} ${b.count}`).join(", ")}`}>
           {dist.buckets.map((b) => (
@@ -894,7 +897,7 @@ function DashboardTab({ cohortId, assignments, getToken }: { cohortId: string; a
     [dashboard, band]
   );
 
-  if (assignments.length === 0) return <p className="text-sm text-muted-foreground">Assign a sprint to see the dashboard.</p>;
+  if (assignments.length === 0) return <p className="text-sm text-muted-foreground">{en("Assign a sprint to see the dashboard.")}</p>;
 
   const download = () => {
     setDownloadError(null);
@@ -911,29 +914,29 @@ function DashboardTab({ cohortId, assignments, getToken }: { cohortId: string; a
     <div className="space-y-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <SprintPicker assignments={assignments} value={sprintId} onChange={(v) => { setSprintId(v); setPage(0); }} />
-        <button onClick={download} className={secondaryButtonClass}><Download className="w-3.5 h-3.5" /> Download CSV</button>
+        <button onClick={download} className={secondaryButtonClass}><Download className="w-3.5 h-3.5" />{en(" Download CSV")}</button>
       </div>
       {downloadError && <Message ok={false} text={downloadError} />}
 
       {!dashboard || dashboard.key !== key ? (
-        <Spinner text="Loading dashboard..." />
+        <Spinner text={en("Loading dashboard...")} />
       ) : dashboard.error ? (
         <Message ok={false} text={dashboard.error} />
       ) : d ? (
         <>
           <div className="grid gap-4 md:grid-cols-2">
             <div className="rounded-xl border border-border bg-card/60 p-3 space-y-3">
-              <h4 className="text-xs font-bold text-foreground flex items-center gap-1.5"><BarChart3 className="w-3.5 h-3.5" /> Completion</h4>
+              <h4 className="text-xs font-bold text-foreground flex items-center gap-1.5"><BarChart3 className="w-3.5 h-3.5" />{en(" Completion")}</h4>
               <FunnelBars funnel={d.funnel} />
             </div>
             <div className="rounded-xl border border-border bg-card/60 p-3 space-y-3">
-              <h4 className="text-xs font-bold text-foreground">Readiness</h4>
+              <h4 className="text-xs font-bold text-foreground">{en("Readiness")}</h4>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                 {BANDS.map((b) => (
                   <button
                     key={b}
                     onClick={() => { setBand(band === b ? "" : b); setPage(0); }}
-                    className={`rounded-lg border px-2 py-1.5 text-left cursor-pointer ${BAND_CLASS[b]} ${band === b ? "ring-2 ring-indigo-500" : ""}`}
+                    className={`rounded-lg border px-2 py-1.5 text-start cursor-pointer ${BAND_CLASS[b]} ${band === b ? "ring-2 ring-indigo-500" : ""}`}
                     title={`Show only ${b}`}
                   >
                     <span className="block text-lg font-bold tabular-nums">{d.readiness.counts[b] ?? 0}</span>
@@ -942,7 +945,7 @@ function DashboardTab({ cohortId, assignments, getToken }: { cohortId: string; a
                 ))}
               </div>
               <div>
-                <h5 className="text-[11px] font-semibold text-muted-foreground mb-1">Integrity review (submissions)</h5>
+                <h5 className="text-[11px] font-semibold text-muted-foreground mb-1">{en("Integrity review (submissions)")}</h5>
                 <div className="flex flex-wrap gap-2 text-[11px]">
                   {[["Clear", "Clear"], ["Review", "Review"], ["HighRisk", "High risk"], ["Unknown", en("Not analysed")]].map(([k, label]) => (
                     <span key={k} className="px-2 py-1 rounded-lg border border-border bg-card text-foreground">
@@ -955,39 +958,39 @@ function DashboardTab({ cohortId, assignments, getToken }: { cohortId: string; a
           </div>
 
           <div className="grid gap-4 md:grid-cols-2">
-            <Histogram title="Tests passed (%)" dist={d.distributions.overall.tests} suffix="%" />
-            <Histogram title="Defense score" dist={d.distributions.overall.defense} suffix="" />
+            <Histogram title={en("Tests passed (%)")} dist={d.distributions.overall.tests} suffix="%" />
+            <Histogram title={en("Defense score")} dist={d.distributions.overall.defense} suffix="" />
           </div>
 
           <div className="space-y-2">
-            <h4 className="text-xs font-bold text-foreground">By branch</h4>
+            <h4 className="text-xs font-bold text-foreground">{en("By branch")}</h4>
             <div className="overflow-x-auto">
               <table className="w-full text-xs">
                 <thead>
-                  <tr className="text-left text-muted-foreground border-b border-border">
-                    <th className="py-2 pr-3 font-semibold">Branch</th>
-                    <th className="py-2 pr-3 font-semibold text-right">Students</th>
-                    <th className="py-2 pr-3 font-semibold text-right">Submitted</th>
-                    <th className="py-2 pr-3 font-semibold text-right">Defended</th>
-                    <th className="py-2 pr-3 font-semibold text-right">Median tests %</th>
-                    <th className="py-2 pr-3 font-semibold text-right">Median defense</th>
-                    <th className="py-2 pr-3 font-semibold text-right">Ready</th>
-                    <th className="py-2 pr-3 font-semibold text-right">Nearly</th>
-                    <th className="py-2 font-semibold text-right">Needs practice</th>
+                  <tr className="text-start text-muted-foreground border-b border-border">
+                    <th className="py-2 pe-3 font-semibold">{en("Branch")}</th>
+                    <th className="py-2 pe-3 font-semibold text-end">{en("Students")}</th>
+                    <th className="py-2 pe-3 font-semibold text-end">{en("Submitted")}</th>
+                    <th className="py-2 pe-3 font-semibold text-end">{en("Defended")}</th>
+                    <th className="py-2 pe-3 font-semibold text-end">{en("Median tests %")}</th>
+                    <th className="py-2 pe-3 font-semibold text-end">{en("Median defense")}</th>
+                    <th className="py-2 pe-3 font-semibold text-end">{en("Ready")}</th>
+                    <th className="py-2 pe-3 font-semibold text-end">{en("Nearly")}</th>
+                    <th className="py-2 font-semibold text-end">{en("Needs practice")}</th>
                   </tr>
                 </thead>
                 <tbody>
                   {d.distributions.byBranch.map((b) => (
                     <tr key={b.branch} className="border-b border-border last:border-0 text-foreground tabular-nums">
-                      <td className="py-2 pr-3 font-semibold">{b.branch}</td>
-                      <td className="py-2 pr-3 text-right">{b.members}</td>
-                      <td className="py-2 pr-3 text-right">{b.funnel.submitted}</td>
-                      <td className="py-2 pr-3 text-right">{b.funnel.defended}</td>
-                      <td className="py-2 pr-3 text-right">{fmt(b.tests.median)}</td>
-                      <td className="py-2 pr-3 text-right">{fmt(b.defense.median)}</td>
-                      <td className="py-2 pr-3 text-right">{b.readiness["Ready"] ?? 0}</td>
-                      <td className="py-2 pr-3 text-right">{b.readiness["Nearly ready"] ?? 0}</td>
-                      <td className="py-2 text-right">{b.readiness["Needs practice"] ?? 0}</td>
+                      <td className="py-2 pe-3 font-semibold">{b.branch}</td>
+                      <td className="py-2 pe-3 text-end">{b.members}</td>
+                      <td className="py-2 pe-3 text-end">{b.funnel.submitted}</td>
+                      <td className="py-2 pe-3 text-end">{b.funnel.defended}</td>
+                      <td className="py-2 pe-3 text-end">{fmt(b.tests.median)}</td>
+                      <td className="py-2 pe-3 text-end">{fmt(b.defense.median)}</td>
+                      <td className="py-2 pe-3 text-end">{b.readiness["Ready"] ?? 0}</td>
+                      <td className="py-2 pe-3 text-end">{b.readiness["Nearly ready"] ?? 0}</td>
+                      <td className="py-2 text-end">{b.readiness["Needs practice"] ?? 0}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -997,41 +1000,41 @@ function DashboardTab({ cohortId, assignments, getToken }: { cohortId: string; a
 
           <div className="space-y-2">
             <div className="flex flex-wrap items-center justify-between gap-2">
-              <h4 className="text-xs font-bold text-foreground">Students {band && `· ${band}`}</h4>
-              {band && <button className={secondaryButtonClass} onClick={() => setBand("")}>Show all</button>}
+              <h4 className="text-xs font-bold text-foreground">{en("Students ")}{band && `· ${band}`}</h4>
+              {band && <button className={secondaryButtonClass} onClick={() => setBand("")}>{en("Show all")}</button>}
             </div>
             <div className="overflow-x-auto">
               <table className="w-full text-xs">
                 <thead>
-                  <tr className="text-left text-muted-foreground border-b border-border">
-                    <th className="py-2 pr-3 font-semibold">Roll no.</th>
-                    <th className="py-2 pr-3 font-semibold">Name</th>
-                    <th className="py-2 pr-3 font-semibold hidden sm:table-cell">Branch</th>
-                    <th className="py-2 pr-3 font-semibold hidden md:table-cell">Status</th>
-                    <th className="py-2 pr-3 font-semibold text-right">Tests %</th>
-                    <th className="py-2 pr-3 font-semibold text-right">Defense</th>
-                    <th className="py-2 pr-3 font-semibold text-right hidden sm:table-cell">Combined</th>
-                    <th className="py-2 pr-3 font-semibold">Readiness</th>
-                    <th className="py-2 font-semibold hidden md:table-cell">Language</th>
+                  <tr className="text-start text-muted-foreground border-b border-border">
+                    <th className="py-2 pe-3 font-semibold">{en("Roll no.")}</th>
+                    <th className="py-2 pe-3 font-semibold">{en("Name")}</th>
+                    <th className="py-2 pe-3 font-semibold hidden sm:table-cell">{en("Branch")}</th>
+                    <th className="py-2 pe-3 font-semibold hidden md:table-cell">{en("Status")}</th>
+                    <th className="py-2 pe-3 font-semibold text-end">{en("Tests %")}</th>
+                    <th className="py-2 pe-3 font-semibold text-end">{en("Defense")}</th>
+                    <th className="py-2 pe-3 font-semibold text-end hidden sm:table-cell">{en("Combined")}</th>
+                    <th className="py-2 pe-3 font-semibold">{en("Readiness")}</th>
+                    <th className="py-2 font-semibold hidden md:table-cell">{en("Language")}</th>
                   </tr>
                 </thead>
                 <tbody>
                   {shown.map((s) => (
                     <tr key={s.memberId} className="border-b border-border last:border-0 text-foreground">
-                      <td className="py-2 pr-3 font-mono">{s.rollNumber || "—"}</td>
-                      <td className="py-2 pr-3">{s.name}</td>
-                      <td className="py-2 pr-3 hidden sm:table-cell">{s.branch}</td>
-                      <td className="py-2 pr-3 hidden md:table-cell text-muted-foreground">
+                      <td className="py-2 pe-3 font-mono">{s.rollNumber || "—"}</td>
+                      <td className="py-2 pe-3">{s.name}</td>
+                      <td className="py-2 pe-3 hidden sm:table-cell">{s.branch}</td>
+                      <td className="py-2 pe-3 hidden md:table-cell text-muted-foreground">
                         {STATUS_LABEL[s.status] ?? s.status}
-                        {s.late && " (late)"}
+                        {s.late && en(" (late)")}
                       </td>
-                      <td className="py-2 pr-3 text-right tabular-nums">{fmt(s.testsPercent)}</td>
-                      <td className="py-2 pr-3 text-right tabular-nums">{fmt(s.defenseScore)}</td>
-                      <td className="py-2 pr-3 text-right tabular-nums hidden sm:table-cell" title={s.defenseMissing ? "Defense not completed; counted as 0" : undefined}>
+                      <td className="py-2 pe-3 text-end tabular-nums">{fmt(s.testsPercent)}</td>
+                      <td className="py-2 pe-3 text-end tabular-nums">{fmt(s.defenseScore)}</td>
+                      <td className="py-2 pe-3 text-end tabular-nums hidden sm:table-cell" title={s.defenseMissing ? en("Defense not completed; counted as 0") : undefined}>
                         {fmt(s.combined)}
                         {s.defenseMissing && "*"}
                       </td>
-                      <td className="py-2 pr-3">
+                      <td className="py-2 pe-3">
                         <span className={`inline-block px-2 py-0.5 rounded-full border text-[11px] font-semibold whitespace-nowrap ${BAND_CLASS[s.readiness] ?? ""}`}>{s.readiness}</span>
                       </td>
                       <td className="py-2 hidden md:table-cell text-muted-foreground">{s.languageLabel ?? "—"}</td>
@@ -1042,9 +1045,9 @@ function DashboardTab({ cohortId, assignments, getToken }: { cohortId: string; a
             </div>
             {students.length > PAGE_SIZE && (
               <div className="flex items-center justify-end gap-2 text-xs text-muted-foreground">
-                <button className={secondaryButtonClass} disabled={page === 0} onClick={() => setPage((p) => p - 1)}>Previous</button>
+                <button className={secondaryButtonClass} disabled={page === 0} onClick={() => setPage((p) => p - 1)}>{en("Previous")}</button>
                 <span>{page + 1} / {pages}</span>
-                <button className={secondaryButtonClass} disabled={page + 1 >= pages} onClick={() => setPage((p) => p + 1)}>Next</button>
+                <button className={secondaryButtonClass} disabled={page + 1 >= pages} onClick={() => setPage((p) => p + 1)}>{en("Next")}</button>
               </div>
             )}
           </div>
@@ -1053,7 +1056,7 @@ function DashboardTab({ cohortId, assignments, getToken }: { cohortId: string; a
             {d.notes.map((n) => (
               <li key={n} className="flex gap-1.5"><Info className="w-3.5 h-3.5 shrink-0 mt-0.5" /> {n}</li>
             ))}
-            <li className="flex gap-1.5"><Info className="w-3.5 h-3.5 shrink-0 mt-0.5" /> * Combined score with the defense not yet completed.</li>
+            <li className="flex gap-1.5"><Info className="w-3.5 h-3.5 shrink-0 mt-0.5" />{en(" * Combined score with the defense not yet completed.")}</li>
           </ul>
         </>
       ) : null}
@@ -1153,12 +1156,12 @@ function OutcomesTab({ cohortId, assignments, getToken }: { cohortId: string; as
       <SprintPicker assignments={assignments} value={sprintId} onChange={setSprintId} />
 
       <div className="rounded-xl border border-border bg-card/60 p-4 space-y-3">
-        <h3 className="text-sm font-bold text-foreground">Outcome mapping for this sprint</h3>
+        <h3 className="text-sm font-bold text-foreground">{en("Outcome mapping for this sprint")}</h3>
         <p className="text-[11px] text-muted-foreground">
           {en("Choose which programme outcomes this sprint provides evidence for and which measure to use: tests (code correctness), defense (explaining the work) or combined. Weight is carried into the export for your own CO-PO calculation (for example correlation level 1–3).")}
         </p>
         {!mappings || mappings.key !== mappingKey ? (
-          <Spinner text="Loading mapping..." />
+          <Spinner text={en("Loading mapping...")} />
         ) : mappings.error ? (
           <Message ok={false} text={mappings.error} />
         ) : (
@@ -1167,7 +1170,7 @@ function OutcomesTab({ cohortId, assignments, getToken }: { cohortId: string; as
             <div className="space-y-2">
               {rows.map((r) => (
                 <div key={r.rowId} className="grid grid-cols-[1fr_auto] sm:grid-cols-[minmax(0,1fr)_140px_90px_auto] gap-2 items-center">
-                  <select className={inputClass} value={r.outcomeCode} onChange={(e) => update(r.rowId, { outcomeCode: e.target.value })} aria-label="Outcome">
+                  <select className={inputClass} value={r.outcomeCode} onChange={(e) => update(r.rowId, { outcomeCode: e.target.value })} aria-label={en("Outcome")}>
                     {[...PO_CODES, ...PSO_CODES].map((c) => (
                       <option key={c} value={c} disabled={c !== r.outcomeCode && usedCodes.has(c)}>
                         {c} {titles[c] ? `· ${titles[c]}` : c.startsWith("PSO") ? en("· Programme-specific") : ""}
@@ -1177,10 +1180,10 @@ function OutcomesTab({ cohortId, assignments, getToken }: { cohortId: string; as
                   <button onClick={() => setRows((rs) => rs.filter((x) => x.rowId !== r.rowId))} className="sm:order-last p-1.5 rounded-lg text-muted-foreground hover:text-rose-600 cursor-pointer" aria-label={`Remove ${r.outcomeCode}`}>
                     <Trash2 className="w-4 h-4" />
                   </button>
-                  <select className={inputClass} value={r.measure} onChange={(e) => update(r.rowId, { measure: e.target.value })} aria-label="Measure">
-                    <option value="tests">Tests</option>
-                    <option value="defense">Defense</option>
-                    <option value="combined">Combined</option>
+                  <select className={inputClass} value={r.measure} onChange={(e) => update(r.rowId, { measure: e.target.value })} aria-label={en("Measure")}>
+                    <option value="tests">{en("Tests")}</option>
+                    <option value="defense">{en("Defense")}</option>
+                    <option value="combined">{en("Combined")}</option>
                   </select>
                   <input
                     className={inputClass}
@@ -1190,7 +1193,7 @@ function OutcomesTab({ cohortId, assignments, getToken }: { cohortId: string; as
                     step={0.1}
                     value={r.weight}
                     onChange={(e) => update(r.rowId, { weight: Number(e.target.value) })}
-                    aria-label="Weight"
+                    aria-label={en("Weight")}
                   />
                 </div>
               ))}
@@ -1201,12 +1204,12 @@ function OutcomesTab({ cohortId, assignments, getToken }: { cohortId: string; as
                 disabled={!nextFree}
                 onClick={() => nextFree && setRows((rs) => [...rs, { rowId: nextRowId++, outcomeCode: nextFree, measure: "tests", weight: 1 }])}
               >
-                <Plus className="w-3.5 h-3.5" /> Add outcome
+                <Plus className="w-3.5 h-3.5" />{en(" Add outcome")}
               </button>
               <button className={buttonClass} disabled={saving} onClick={() => save(false)}>
-                {saving && <Loader2 className="w-4 h-4 animate-spin" />} Save mapping
+                {saving && <Loader2 className="w-4 h-4 animate-spin" />}{en(" Save mapping")}
               </button>
-              <button className={secondaryButtonClass} disabled={saving} onClick={() => save(true)}>Restore defaults</button>
+              <button className={secondaryButtonClass} disabled={saving} onClick={() => save(true)}>{en("Restore defaults")}</button>
             </div>
             {saveMessage && <Message {...saveMessage} />}
           </>
@@ -1215,7 +1218,7 @@ function OutcomesTab({ cohortId, assignments, getToken }: { cohortId: string; as
 
       <div className="space-y-3">
         <div className="flex flex-wrap items-end justify-between gap-3">
-          <h3 className="text-sm font-bold text-foreground flex items-center gap-2"><Target className="w-4 h-4" /> Attainment</h3>
+          <h3 className="text-sm font-bold text-foreground flex items-center gap-2"><Target className="w-4 h-4" />{en(" Attainment")}</h3>
           <div className="flex flex-wrap items-end gap-2">
             <form
               className="flex items-end gap-2"
@@ -1226,17 +1229,17 @@ function OutcomesTab({ cohortId, assignments, getToken }: { cohortId: string; as
               }}
             >
               <label className="text-xs text-muted-foreground">
-                Target score
+                {en("Target score")}
                 <input className="mt-1 w-20 rounded-xl bg-card border border-border px-3 py-2 text-xs text-foreground block" type="number" min={0} max={100} value={targetInput} onChange={(e) => setTargetInput(e.target.value)} />
               </label>
-              <button type="submit" className={secondaryButtonClass}>Apply</button>
+              <button type="submit" className={secondaryButtonClass}>{en("Apply")}</button>
             </form>
-            <button onClick={download} className={secondaryButtonClass}><Download className="w-3.5 h-3.5" /> Download CSV</button>
+            <button onClick={download} className={secondaryButtonClass}><Download className="w-3.5 h-3.5" />{en(" Download CSV")}</button>
           </div>
         </div>
         {downloadError && <Message ok={false} text={downloadError} />}
         {!attainment || attainment.key !== attainmentKey ? (
-          <Spinner text="Calculating..." />
+          <Spinner text={en("Calculating...")} />
         ) : attainment.error ? (
           <Message ok={false} text={attainment.error} />
         ) : a ? (
@@ -1244,36 +1247,36 @@ function OutcomesTab({ cohortId, assignments, getToken }: { cohortId: string; as
             <div className="overflow-x-auto">
               <table className="w-full text-xs">
                 <thead>
-                  <tr className="text-left text-muted-foreground border-b border-border">
-                    <th className="py-2 pr-3 font-semibold">Outcome</th>
-                    <th className="py-2 pr-3 font-semibold">Measure</th>
-                    <th className="py-2 pr-3 font-semibold text-right">Weight</th>
-                    <th className="py-2 pr-3 font-semibold text-right">Assessed</th>
-                    <th className="py-2 pr-3 font-semibold text-right">≥ {a.target}</th>
-                    <th className="py-2 pr-3 font-semibold text-right">% of students</th>
-                    <th className="py-2 font-semibold text-right">Level</th>
+                  <tr className="text-start text-muted-foreground border-b border-border">
+                    <th className="py-2 pe-3 font-semibold">{en("Outcome")}</th>
+                    <th className="py-2 pe-3 font-semibold">{en("Measure")}</th>
+                    <th className="py-2 pe-3 font-semibold text-end">{en("Weight")}</th>
+                    <th className="py-2 pe-3 font-semibold text-end">{en("Assessed")}</th>
+                    <th className="py-2 pe-3 font-semibold text-end">≥ {a.target}</th>
+                    <th className="py-2 pe-3 font-semibold text-end">{en("% of students")}</th>
+                    <th className="py-2 font-semibold text-end">{en("Level")}</th>
                   </tr>
                 </thead>
                 <tbody>
                   {a.outcomes.map((o) => (
                     <tr key={o.outcomeCode} className="border-b border-border last:border-0 text-foreground tabular-nums">
-                      <td className="py-2 pr-3">
+                      <td className="py-2 pe-3">
                         <span className="font-semibold">{o.outcomeCode}</span> <span className="text-muted-foreground">{o.title}</span>
                       </td>
-                      <td className="py-2 pr-3 capitalize">{o.measure}</td>
-                      <td className="py-2 pr-3 text-right">{o.weight}</td>
-                      <td className="py-2 pr-3 text-right">{o.assessed}</td>
-                      <td className="py-2 pr-3 text-right">{o.atOrAboveTarget}</td>
-                      <td className="py-2 pr-3 text-right">{fmt(o.percentAtOrAboveTarget, "%")}</td>
-                      <td className="py-2 text-right font-bold">{o.attainmentLevel ?? "—"}</td>
+                      <td className="py-2 pe-3 capitalize">{o.measure}</td>
+                      <td className="py-2 pe-3 text-end">{o.weight}</td>
+                      <td className="py-2 pe-3 text-end">{o.assessed}</td>
+                      <td className="py-2 pe-3 text-end">{o.atOrAboveTarget}</td>
+                      <td className="py-2 pe-3 text-end">{fmt(o.percentAtOrAboveTarget, "%")}</td>
+                      <td className="py-2 text-end font-bold">{o.attainmentLevel ?? "—"}</td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             </div>
             <p className="text-[11px] text-muted-foreground">
-              Level 3 if at least {a.thresholds.level3}% of assessed students reach the target, 2 if at least {a.thresholds.level2}%, 1 if at least {a.thresholds.level1}%, otherwise 0.
-              {a.usingDefaultMappings && " Using the default mapping."}
+              {en("Level 3 if at least ")}{a.thresholds.level3}{en("% of assessed students reach the target, 2 if at least ")}{a.thresholds.level2}{en("%, 1 if at least ")}{a.thresholds.level1}{en("%, otherwise 0.")}
+              {a.usingDefaultMappings && en(" Using the default mapping.")}
             </p>
             <p className="text-[11px] text-muted-foreground flex gap-1.5 rounded-lg border border-border bg-card/60 p-2">
               <Info className="w-3.5 h-3.5 shrink-0 mt-0.5" /> {a.note}

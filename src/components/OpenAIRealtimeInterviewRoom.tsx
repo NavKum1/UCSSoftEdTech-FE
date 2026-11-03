@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Mic, MicOff, PhoneCall, PhoneOff, Sparkles, AlertTriangle, Volume2, ArrowRight, Info } from "lucide-react";
 import { useAppAuth as useAuth } from "@/lib/appAuth";
 import { authenticatedFetch } from "@/lib/apiClient";
+import { useEn } from "@/lib/english/EnglishProvider";
 
 interface OpenAIRealtimeInterviewRoomProps {
   userId?: string;
@@ -48,6 +49,7 @@ export default function OpenAIRealtimeInterviewRoom({
   jobDescription,
   personaCode,
 }: OpenAIRealtimeInterviewRoomProps) {
+  const en = useEn();
   const { getToken } = useAuth();
 
   const [callStatus, setCallStatus] = useState<"idle" | "connecting" | "active" | "ended">("idle");
@@ -314,8 +316,8 @@ export default function OpenAIRealtimeInterviewRoom({
             <Sparkles className="w-5 h-5" />
           </div>
           <div>
-            <h2 className="text-lg font-semibold text-foreground">AI Voice Interview Practice</h2>
-            <p className="text-xs text-muted-foreground">Practice — not graded, no credential</p>
+            <h2 className="text-lg font-semibold text-foreground">{en("AI Voice Interview Practice")}</h2>
+            <p className="text-xs text-muted-foreground">{en("Practice — not graded, no credential")}</p>
           </div>
         </div>
 
@@ -330,7 +332,7 @@ export default function OpenAIRealtimeInterviewRoom({
                   : "bg-muted text-muted-foreground border-border"
           }`}
         >
-          <span className={`w-2 h-2 rounded-full mr-2 ${callStatus === "active" ? "bg-emerald-400 animate-ping" : "bg-slate-500"}`}></span>
+          <span className={`w-2 h-2 rounded-full me-2 ${callStatus === "active" ? "bg-emerald-400 animate-ping" : "bg-slate-500"}`}></span>
           {callStatus.toUpperCase()}
         </span>
       </div>
@@ -338,17 +340,16 @@ export default function OpenAIRealtimeInterviewRoom({
       <div className="mt-4 p-3 rounded-xl border border-border bg-muted/50 text-xs text-muted-foreground flex items-start gap-2">
         <Info className="w-4 h-4 shrink-0 mt-0.5 text-indigo-700 dark:text-indigo-400" />
         <span>
-          Practice — not graded, no credential. Feedback here is for your own preparation and is never shared with employers.
-          Starting a session reserves up to one session’s maximum length from your voice balance.
+          {en("Practice — not graded, no credential. Feedback here is for your own preparation and is never shared with employers. Starting a session reserves up to one session’s maximum length from your voice balance.")}
         </span>
       </div>
 
       <div className="my-6 grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="md:col-span-1 glass-card rounded-xl p-5 flex flex-col justify-between border border-border">
           <div>
-            <h3 className="text-sm font-semibold text-muted-foreground mb-2">Microphone</h3>
+            <h3 className="text-sm font-semibold text-muted-foreground mb-2">{en("Microphone")}</h3>
             <p className="text-xs text-muted-foreground mb-4">
-              Status: <span className="font-semibold text-indigo-700 dark:text-indigo-400">{micPermission}</span>
+              {en("Status: ")}<span className="font-semibold text-indigo-700 dark:text-indigo-400">{micPermission}</span>
             </p>
 
             <div className="h-24 bg-card/90 rounded-xl border border-border flex flex-col items-center justify-center space-y-2 px-4">
@@ -365,11 +366,11 @@ export default function OpenAIRealtimeInterviewRoom({
                   </div>
                   <div className="flex items-center space-x-1 text-[11px] text-emerald-700 dark:text-emerald-400">
                     <Volume2 className="w-3.5 h-3.5" />
-                    <span>Mic Input: {volumeLevel}%</span>
+                    <span>{en("Mic Input: ")}{volumeLevel}%</span>
                   </div>
                 </>
               ) : (
-                <span className="text-xs text-muted-foreground">Microphone idle</span>
+                <span className="text-xs text-muted-foreground">{en("Microphone idle")}</span>
               )}
             </div>
           </div>
@@ -382,7 +383,7 @@ export default function OpenAIRealtimeInterviewRoom({
                 className="w-full py-3 px-4 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 disabled:opacity-60 text-white font-medium rounded-xl shadow-lg shadow-indigo-500/25 flex items-center justify-center space-x-2 transition-all duration-200 cursor-pointer"
               >
                 <PhoneCall className="w-4 h-4" />
-                <span>{isLoading ? "Please wait..." : "Start Practice Interview"}</span>
+                <span>{isLoading ? en("Please wait...") : en("Start Practice Interview")}</span>
               </button>
             ) : (
               <div className="flex space-x-2">
@@ -395,7 +396,7 @@ export default function OpenAIRealtimeInterviewRoom({
                   }`}
                 >
                   {isMuted ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
-                  <span>{isMuted ? "Muted" : "Mute Mic"}</span>
+                  <span>{isMuted ? en("Muted") : en("Mute Mic")}</span>
                 </button>
                 <button
                   onClick={handleEndPractice}
@@ -403,7 +404,7 @@ export default function OpenAIRealtimeInterviewRoom({
                   className="flex-1 py-3 px-3 bg-red-600/90 hover:bg-red-500 text-white rounded-xl text-xs font-medium flex items-center justify-center space-x-1.5 cursor-pointer transition-colors"
                 >
                   <PhoneOff className="w-4 h-4" />
-                  <span>End Practice</span>
+                  <span>{en("End Practice")}</span>
                 </button>
               </div>
             )}
@@ -412,14 +413,14 @@ export default function OpenAIRealtimeInterviewRoom({
 
         <div className="md:col-span-2 glass-card rounded-xl p-5 flex flex-col border border-border min-h-[220px]">
           <div className="flex items-center justify-between mb-3">
-            <h3 className="text-sm font-semibold text-muted-foreground">Live Transcript</h3>
+            <h3 className="text-sm font-semibold text-muted-foreground">{en("Live Transcript")}</h3>
             <span className="text-xs text-muted-foreground">{transcripts.length} messages</span>
           </div>
 
           <div className="flex-1 bg-background/80 rounded-xl p-4 border border-border overflow-y-auto max-h-[200px] space-y-3">
             {transcripts.length === 0 ? (
               <div className="h-full flex items-center justify-center text-xs text-muted-foreground italic">
-                The transcript appears here once the practice session starts.
+                {en("The transcript appears here once the practice session starts.")}
               </div>
             ) : (
               transcripts.map((t, idx) => (
@@ -428,8 +429,8 @@ export default function OpenAIRealtimeInterviewRoom({
                   <div
                     className={`max-w-[85%] rounded-xl px-3 py-2 text-xs ${
                       t.role === "Candidate"
-                        ? "bg-indigo-600 text-white rounded-tr-none"
-                        : "bg-muted text-foreground border border-border rounded-tl-none"
+                        ? "bg-indigo-600 text-white rounded-se-none"
+                        : "bg-muted text-foreground border border-border rounded-ss-none"
                     }`}
                   >
                     {t.text}
@@ -449,7 +450,7 @@ export default function OpenAIRealtimeInterviewRoom({
               <p className="font-semibold">{upgradePrompt.message}</p>
               {upgradePrompt.usageResetsAt && (
                 <p className="mt-0.5 text-amber-800/80 dark:text-amber-200/80">
-                  Your monthly minutes reset on {new Date(upgradePrompt.usageResetsAt).toLocaleDateString()}.
+                  {en("Your monthly minutes reset on ")}{new Date(upgradePrompt.usageResetsAt).toLocaleDateString()}.
                 </p>
               )}
             </div>
@@ -458,7 +459,7 @@ export default function OpenAIRealtimeInterviewRoom({
             href="/pricing"
             className="inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold shrink-0"
           >
-            See plans &amp; top-ups
+            {en("See plans & top-ups")}
             <ArrowRight className="w-3.5 h-3.5" />
           </Link>
         </div>
@@ -475,11 +476,11 @@ export default function OpenAIRealtimeInterviewRoom({
         <div className="mt-6 p-5 bg-card border border-border rounded-xl space-y-4">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
-              <h4 className="text-sm font-semibold text-foreground">Practice Feedback</h4>
-              <p className="text-[11px] text-muted-foreground">Not graded · no credential · not shared</p>
+              <h4 className="text-sm font-semibold text-foreground">{en("Practice Feedback")}</h4>
+              <p className="text-[11px] text-muted-foreground">{en("Not graded · no credential · not shared")}</p>
             </div>
             <div className="text-sm font-bold text-indigo-700 dark:text-indigo-400 bg-indigo-500/10 px-3 py-1 rounded-lg border border-indigo-500/20">
-              Practice score: {Math.round(feedback.overallScore)}%
+              {en("Practice score: ")}{Math.round(feedback.overallScore)}%
             </div>
           </div>
 
@@ -501,8 +502,8 @@ export default function OpenAIRealtimeInterviewRoom({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
             {feedback.strengths && feedback.strengths.length > 0 && (
               <div>
-                <p className="font-semibold text-emerald-700 dark:text-emerald-400 mb-1">Strengths</p>
-                <ul className="list-disc pl-4 space-y-1 text-muted-foreground">
+                <p className="font-semibold text-emerald-700 dark:text-emerald-400 mb-1">{en("Strengths")}</p>
+                <ul className="list-disc ps-4 space-y-1 text-muted-foreground">
                   {feedback.strengths.map((s, i) => (
                     <li key={i}>{s}</li>
                   ))}
@@ -511,8 +512,8 @@ export default function OpenAIRealtimeInterviewRoom({
             )}
             {feedback.improvements && feedback.improvements.length > 0 && (
               <div>
-                <p className="font-semibold text-amber-700 dark:text-amber-400 mb-1">To improve</p>
-                <ul className="list-disc pl-4 space-y-1 text-muted-foreground">
+                <p className="font-semibold text-amber-700 dark:text-amber-400 mb-1">{en("To improve")}</p>
+                <ul className="list-disc ps-4 space-y-1 text-muted-foreground">
                   {feedback.improvements.map((s, i) => (
                     <li key={i}>{s}</li>
                   ))}

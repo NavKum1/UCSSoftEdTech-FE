@@ -11,6 +11,7 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { ChevronDown, ChevronRight, Mail, MessageSquare, Plus, Send, Trash2, Users } from "lucide-react";
 import { newId, type Automation, type FormDef } from "@/components/guidance/form/model";
+import { useEn } from "@/lib/english/EnglishProvider";
 
 const field = "mt-1 block w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:border-cyan-600 focus:outline-none focus:ring-2 focus:ring-cyan-600/20";
 
@@ -73,6 +74,7 @@ function waitText(m: number): string {
 type Member = { id: string; name: string };
 
 export default function AutomationsTab({ def, onChange, readOnly, instituteId, team }: { def: FormDef; onChange: (d: FormDef) => void; readOnly: boolean; instituteId: string; team: Member[] }) {
+  const en = useEn();
   const list = def.automations ?? [];
   const [open, setOpen] = useState<string | null>(null);
   const set = (next: Automation[]) => onChange({ ...def, automations: next });
@@ -87,17 +89,17 @@ export default function AutomationsTab({ def, onChange, readOnly, instituteId, t
   return (
     <fieldset disabled={readOnly} className="max-w-3xl space-y-4">
       <div className="rounded-2xl border border-border bg-card p-4 text-sm">
-        <p className="font-medium">Messages this form sends by itself</p>
+        <p className="font-medium">{en("Messages this form sends by itself")}</p>
         <p className="mt-1 text-muted-foreground">
-          They go to people who sent (or started) this form, and to your team. Nobody who asked not to be contacted gets one, nor a lead in Possible spam. When the form asks people to confirm their email, messages to them wait until they do. Changes take effect when you publish.{" "}
+          {en("They go to people who sent (or started) this form, and to your team. Nobody who asked not to be contacted gets one, nor a lead in Possible spam. When the form asks people to confirm their email, messages to them wait until they do. Changes take effect when you publish.")}{" "}
           <Link href={`/institute/guidance?view=notifications${instituteId ? `&instituteId=${instituteId}` : ""}`} className="text-cyan-700 underline-offset-2 hover:underline dark:text-cyan-400">
-            See every message sent in Notifications
+            {en("See every message sent in Notifications")}
           </Link>
           .
         </p>
       </div>
 
-      {list.length === 0 && <p className="text-sm text-muted-foreground">No automatic messages yet. Start from an example, or add one.</p>}
+      {list.length === 0 && <p className="text-sm text-muted-foreground">{en("No automatic messages yet. Start from an example, or add one.")}</p>}
 
       <ul className="space-y-2">
         {list.map((a) => {
@@ -112,7 +114,7 @@ export default function AutomationsTab({ def, onChange, readOnly, instituteId, t
           return (
             <li key={a.id} className={`rounded-2xl border bg-card ${a.active ? "border-border" : "border-dashed border-border opacity-80"}`}>
               <div className="flex items-center gap-3 p-3">
-                <button type="button" onClick={() => setOpen(expanded ? null : a.id)} aria-expanded={expanded} className="flex min-w-0 flex-1 items-center gap-3 text-left">
+                <button type="button" onClick={() => setOpen(expanded ? null : a.id)} aria-expanded={expanded} className="flex min-w-0 flex-1 items-center gap-3 text-start">
                   {expanded ? <ChevronDown aria-hidden="true" className="h-4 w-4 shrink-0" /> : <ChevronRight aria-hidden="true" className="h-4 w-4 shrink-0" />}
                   <Icon aria-hidden="true" className="h-4 w-4 shrink-0 text-cyan-700 dark:text-cyan-400" />
                   <span className="min-w-0">
@@ -124,9 +126,9 @@ export default function AutomationsTab({ def, onChange, readOnly, instituteId, t
                   </span>
                 </button>
                 <label className="flex shrink-0 items-center gap-1.5 text-xs">
-                  <input type="checkbox" checked={a.active} onChange={(e) => update(a.id, { active: e.target.checked })} /> On
+                  <input type="checkbox" checked={a.active} onChange={(e) => update(a.id, { active: e.target.checked })} />{en(" On")}
                 </label>
-                <button type="button" aria-label={`Remove ${a.name || "this message"}`} onClick={() => window.confirm("Remove this automatic message?") && set(list.filter((x) => x.id !== a.id))} className="rounded p-1 text-muted-foreground hover:bg-muted hover:text-foreground">
+                <button type="button" aria-label={`Remove ${a.name || "this message"}`} onClick={() => window.confirm(en("Remove this automatic message?")) && set(list.filter((x) => x.id !== a.id))} className="rounded p-1 text-muted-foreground hover:bg-muted hover:text-foreground">
                   <Trash2 aria-hidden="true" className="h-4 w-4" />
                 </button>
               </div>
@@ -147,10 +149,10 @@ export default function AutomationsTab({ def, onChange, readOnly, instituteId, t
             );
           })}
           <details className="relative">
-            <summary className="cursor-pointer list-none rounded-lg border border-dashed border-border px-3 py-2 text-xs font-medium hover:bg-muted">Start from an example</summary>
+            <summary className="cursor-pointer list-none rounded-lg border border-dashed border-border px-3 py-2 text-xs font-medium hover:bg-muted">{en("Start from an example")}</summary>
             <div className="absolute z-10 mt-1 w-72 rounded-xl border border-border bg-popover p-1 shadow-lg">
               {EXAMPLES.map((x) => (
-                <button key={x.label} type="button" onClick={() => add(x.make())} className="block w-full rounded-lg px-3 py-2 text-left text-xs hover:bg-muted">
+                <button key={x.label} type="button" onClick={() => add(x.make())} className="block w-full rounded-lg px-3 py-2 text-start text-xs hover:bg-muted">
                   {x.label}
                 </button>
               ))}
@@ -163,6 +165,7 @@ export default function AutomationsTab({ def, onChange, readOnly, instituteId, t
 }
 
 function AutomationEditor({ a, update, outcomes, match, team }: { a: Automation; update: (p: Partial<Automation>) => void; outcomes: { id: string; name: string }[]; match: boolean; team: Member[] }) {
+  const en = useEn();
   const unit = a.delayMinutes > 0 && a.delayMinutes % 1440 === 0 ? 1440 : a.delayMinutes > 0 && a.delayMinutes % 60 === 0 ? 60 : 1;
   const email = a.channel === "email" || a.channel === "team";
   const fill = (t: string | null | undefined) => (t ?? "").replace(/\{(\w+)\}/g, (m, k: string) => FIELDS.find((f) => f[0] === k)?.[1] ?? m);
@@ -171,11 +174,11 @@ function AutomationEditor({ a, update, outcomes, match, team }: { a: Automation;
     <div className="space-y-3 border-t border-border p-4 text-xs">
       <div className="grid gap-3 sm:grid-cols-2">
         <label className="block font-medium">
-          Name (for you)
-          <input className={field} maxLength={80} value={a.name} onChange={(e) => update({ name: e.target.value })} placeholder="e.g. Your results" />
+          {en("Name (for you)")}
+          <input className={field} maxLength={80} value={a.name} onChange={(e) => update({ name: e.target.value })} placeholder={en("e.g. Your results")} />
         </label>
         <label className="block font-medium">
-          Send
+          {en("Send")}
           <select className={field} value={a.channel} onChange={(e) => update({ channel: e.target.value as Automation["channel"], subject: e.target.value === "email" || e.target.value === "team" ? (a.subject ?? "") : null })}>
             {(Object.keys(CHANNELS) as Automation["channel"][]).map((c) => (
               <option key={c} value={c}>
@@ -185,7 +188,7 @@ function AutomationEditor({ a, update, outcomes, match, team }: { a: Automation;
           </select>
         </label>
         <label className="block font-medium">
-          When
+          {en("When")}
           <select
             className={field}
             value={a.trigger}
@@ -202,23 +205,23 @@ function AutomationEditor({ a, update, outcomes, match, team }: { a: Automation;
           </select>
         </label>
         <div className="block font-medium">
-          Wait
+          {en("Wait")}
           <div className="mt-1 flex gap-2">
             <input
               type="number"
               min={0}
-              aria-label="How long to wait"
+              aria-label={en("How long to wait")}
               className="w-24 rounded-lg border border-border bg-background px-3 py-2 text-sm"
               value={a.delayMinutes / unit}
               onChange={(e) => update({ delayMinutes: Math.min(43200, Math.max(0, Math.round((Number(e.target.value) || 0) * unit))) })}
             />
-            <select aria-label="Unit" className="rounded-lg border border-border bg-background px-2 py-2 text-sm" value={unit} onChange={(e) => update({ delayMinutes: Math.min(43200, (a.delayMinutes / unit) * Number(e.target.value)) })}>
+            <select aria-label={en("Unit")} className="rounded-lg border border-border bg-background px-2 py-2 text-sm" value={unit} onChange={(e) => update({ delayMinutes: Math.min(43200, (a.delayMinutes / unit) * Number(e.target.value)) })}>
               <option value={1}>minutes</option>
               <option value={60}>hours</option>
               <option value={1440}>days</option>
             </select>
           </div>
-          {a.trigger === "stopped" && <span className="mt-1 block font-normal text-muted-foreground">At least 30 minutes, so people still filling it in aren&apos;t interrupted. Skipped if they finish first.</span>}
+          {a.trigger === "stopped" && <span className="mt-1 block font-normal text-muted-foreground">{en("At least 30 minutes, so people still filling it in aren't interrupted. Skipped if they finish first.")}</span>}
         </div>
       </div>
 
@@ -226,33 +229,33 @@ function AutomationEditor({ a, update, outcomes, match, team }: { a: Automation;
 
       {email && (
         <label className="block font-medium">
-          Subject
+          {en("Subject")}
           <input className={field} maxLength={200} value={a.subject ?? ""} onChange={(e) => update({ subject: e.target.value })} />
         </label>
       )}
       {a.channel !== "whatsapp" ? (
         <label className="block font-medium">
-          {a.channel === "sms" ? "Text" : "Message"}
+          {a.channel === "sms" ? en("Text") : en("Message")}
           <textarea rows={a.channel === "sms" ? 3 : 7} maxLength={a.channel === "sms" ? 640 : 5000} className={field} value={a.body ?? ""} onChange={(e) => update({ body: e.target.value })} />
         </label>
       ) : (
         <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_8rem]">
           <label className="block font-medium">
-            Approved template name in Pulse Relay
-            <input className={field} maxLength={120} value={a.templateName ?? ""} onChange={(e) => update({ templateName: e.target.value })} placeholder="e.g. quiz_results" />
+            {en("Approved template name in Pulse Relay")}
+            <input className={field} maxLength={120} value={a.templateName ?? ""} onChange={(e) => update({ templateName: e.target.value })} placeholder={en("e.g. quiz_results")} />
           </label>
           <label className="block font-medium">
-            Language
+            {en("Language")}
             <input className={field} maxLength={10} value={a.templateLanguage ?? "en"} onChange={(e) => update({ templateLanguage: e.target.value })} />
           </label>
           <label className="block font-medium sm:col-span-2">
-            Its variables, in order (one per line)
-            <textarea rows={3} className={field} value={(a.variables ?? []).join("\n")} onChange={(e) => update({ variables: e.target.value.split("\n").slice(0, 10) })} placeholder={"{first_name}\n{report_link}"} />
+            {en("Its variables, in order (one per line)")}
+            <textarea rows={3} className={field} value={(a.variables ?? []).join("\n")} onChange={(e) => update({ variables: e.target.value.split("\n").slice(0, 10) })} placeholder={en("{first_name}\n{report_link}")} />
           </label>
         </div>
       )}
       <div className="flex flex-wrap items-center gap-1.5">
-        <span className="text-muted-foreground">Add a field:</span>
+        <span className="text-muted-foreground">{en("Add a field:")}</span>
         {FIELDS.filter(([k]) => a.channel === "team" || k !== "lead_link").map(([k]) => (
           <button key={k} type="button" onClick={() => (a.channel === "whatsapp" ? update({ variables: [...(a.variables ?? []), `{${k}}`] }) : insert(k))} className="rounded-full border border-border px-2 py-0.5 font-mono hover:bg-muted">
             {`{${k}}`}
@@ -261,18 +264,18 @@ function AutomationEditor({ a, update, outcomes, match, team }: { a: Automation;
       </div>
       {a.channel === "sms" && (
         <label className="block font-medium">
-          DLT template id <span className="font-normal text-muted-foreground">(India: the registered template this text matches)</span>
+          {en("DLT template id ")}<span className="font-normal text-muted-foreground">{en("(India: the registered template this text matches)")}</span>
           <input className={field} maxLength={40} value={a.dltTemplateId ?? ""} onChange={(e) => update({ dltTemplateId: e.target.value })} />
         </label>
       )}
 
       <div className="space-y-2 rounded-lg bg-muted/40 p-3">
-        <p className="font-medium">Only when</p>
+        <p className="font-medium">{en("Only when")}</p>
         {outcomes.length > 0 && (
           <label className="flex flex-wrap items-center gap-2">
-            The result is
+            {en("The result is")}
             <select className="rounded-md border border-border bg-background px-2 py-1" value={a.outcome ?? ""} onChange={(e) => update({ outcome: e.target.value || null })}>
-              <option value="">any outcome</option>
+              <option value="">{en("any outcome")}</option>
               {outcomes.map((o) => (
                 <option key={o.id} value={o.id}>
                   {o.name}
@@ -283,36 +286,35 @@ function AutomationEditor({ a, update, outcomes, match, team }: { a: Automation;
         )}
         {match && (
           <div className="flex flex-wrap items-center gap-2">
-            The match score is from
-            <input type="number" min={0} max={100} aria-label="Lowest match" className="w-16 rounded-md border border-border bg-background px-2 py-1" value={a.matchFrom ?? ""} placeholder="0" onChange={(e) => update({ matchFrom: e.target.value === "" ? null : Number(e.target.value) })} />
-            % to
-            <input type="number" min={0} max={100} aria-label="Highest match" className="w-16 rounded-md border border-border bg-background px-2 py-1" value={a.matchTo ?? ""} placeholder="100" onChange={(e) => update({ matchTo: e.target.value === "" ? null : Number(e.target.value) })} />%
+            {en("The match score is from")}
+            <input type="number" min={0} max={100} aria-label={en("Lowest match")} className="w-16 rounded-md border border-border bg-background px-2 py-1" value={a.matchFrom ?? ""} placeholder="0" onChange={(e) => update({ matchFrom: e.target.value === "" ? null : Number(e.target.value) })} />
+            {en("% to")}
+            <input type="number" min={0} max={100} aria-label={en("Highest match")} className="w-16 rounded-md border border-border bg-background px-2 py-1" value={a.matchTo ?? ""} placeholder="100" onChange={(e) => update({ matchTo: e.target.value === "" ? null : Number(e.target.value) })} />%
           </div>
         )}
         {a.channel === "email" && (
           <>
             <label className="flex items-center gap-2">
-              <input type="checkbox" checked={!!a.scoreCard} onChange={(e) => update({ scoreCard: e.target.checked })} /> Show their score card above the message (your logo, the score,
-              next steps and a button to their report)
+              <input type="checkbox" checked={!!a.scoreCard} onChange={(e) => update({ scoreCard: e.target.checked })} />{en(" Show their score card above the message (your logo, the score, next steps and a button to their report)")}
             </label>
             <label className="flex items-center gap-2">
-              <input type="checkbox" checked={!!a.attachReport} onChange={(e) => update({ attachReport: e.target.checked })} /> Attach their report as a PDF
+              <input type="checkbox" checked={!!a.attachReport} onChange={(e) => update({ attachReport: e.target.checked })} />{en(" Attach their report as a PDF")}
             </label>
           </>
         )}
         <label className="flex items-center gap-2">
-          <input type="checkbox" checked={!!a.unlessReportOpened} onChange={(e) => update({ unlessReportOpened: e.target.checked })} /> Not if they&apos;ve opened their results by then
+          <input type="checkbox" checked={!!a.unlessReportOpened} onChange={(e) => update({ unlessReportOpened: e.target.checked })} />{en(" Not if they've opened their results by then")}
         </label>
         {a.trigger !== "booking" && (
           <label className="flex items-center gap-2">
-            <input type="checkbox" checked={!!a.unlessMeeting} onChange={(e) => update({ unlessMeeting: e.target.checked })} /> Not if they&apos;ve asked for a meeting by then
+            <input type="checkbox" checked={!!a.unlessMeeting} onChange={(e) => update({ unlessMeeting: e.target.checked })} />{en(" Not if they've asked for a meeting by then")}
           </label>
         )}
       </div>
 
       {a.channel !== "whatsapp" && (a.body ?? "").trim() && (
         <div>
-          <p className="font-medium text-muted-foreground">How it reads (example)</p>
+          <p className="font-medium text-muted-foreground">{en("How it reads (example)")}</p>
           <div className="mt-1 whitespace-pre-wrap rounded-lg border border-border bg-background p-3 text-sm">
             {email && <p className="mb-2 font-semibold">{fill(a.subject)}</p>}
             {fill(a.body)}
@@ -325,22 +327,23 @@ function AutomationEditor({ a, update, outcomes, match, team }: { a: Automation;
 
 /** Who an email to the team goes to: the lead's owner, chosen team members and other addresses (any mix) */
 function Recipients({ a, update, team }: { a: Automation; update: (p: Partial<Automation>) => void; team: Member[] }) {
+  const en = useEn();
   const members = a.members ?? [];
   const emails = a.emails ?? [];
   const toOwner = a.toOwner !== false;
   const nobody = !toOwner && members.length === 0 && !emails.some((e) => e.trim());
   return (
     <div className="space-y-2.5 rounded-lg bg-muted/40 p-3">
-      <p className="font-medium">Send to</p>
+      <p className="font-medium">{en("Send to")}</p>
       <label className="flex items-start gap-2">
         <input type="checkbox" className="mt-0.5" checked={toOwner} onChange={(e) => update({ toOwner: e.target.checked })} />
         <span>
-          The lead&apos;s owner <span className="text-muted-foreground">(your CRM admins when nobody owns it yet)</span>
+          {en("The lead's owner ")}<span className="text-muted-foreground">{en("(your CRM admins when nobody owns it yet)")}</span>
         </span>
       </label>
       {team.length > 0 ? (
         <div>
-          <p className="text-muted-foreground">Also these team members</p>
+          <p className="text-muted-foreground">{en("Also these team members")}</p>
           <div className="mt-1 flex flex-wrap gap-x-4 gap-y-1.5">
             {team.map((m) => (
               <label key={m.id} className="flex items-center gap-1.5">
@@ -351,13 +354,13 @@ function Recipients({ a, update, team }: { a: Automation; update: (p: Partial<Au
           </div>
         </div>
       ) : (
-        <p className="text-muted-foreground">Add your team in the CRM&apos;s Settings to choose people here.</p>
+        <p className="text-muted-foreground">{en("Add your team in the CRM's Settings to choose people here.")}</p>
       )}
       <label className="block font-medium">
-        Other email addresses <span className="font-normal text-muted-foreground">(one per line, up to 10, e.g. your admissions inbox)</span>
-        <textarea rows={2} className={field} value={emails.join("\n")} onChange={(e) => update({ emails: e.target.value.split("\n").slice(0, 10) })} placeholder="admissions@yourschool.edu" />
+        {en("Other email addresses ")}<span className="font-normal text-muted-foreground">{en("(one per line, up to 10, e.g. your admissions inbox)")}</span>
+        <textarea rows={2} className={field} value={emails.join("\n")} onChange={(e) => update({ emails: e.target.value.split("\n").slice(0, 10) })} placeholder={en("admissions@yourschool.edu")} />
       </label>
-      {nobody && <p role="alert" className="text-amber-700 dark:text-amber-400">Choose who it goes to.</p>}
+      {nobody && <p role="alert" className="text-amber-700 dark:text-amber-400">{en("Choose who it goes to.")}</p>}
     </div>
   );
 }

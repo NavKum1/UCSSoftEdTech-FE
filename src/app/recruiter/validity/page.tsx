@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import { useAppAuth as useAuth } from "@/lib/appAuth";
 import { authenticatedFetch } from "@/lib/apiClient";
 import { AlertCircle, AlertTriangle, CheckCircle2, Download, Info, Loader2, Scale, TrendingUp, UserCheck } from "lucide-react";
+import { useEn } from "@/lib/english/EnglishProvider";
 
 interface ValidityResult {
   predictor: string;
@@ -100,6 +101,7 @@ function downloadBiasCsv(audit: BiasAudit) {
 }
 
 export default function ValidityPage() {
+  const en = useEn();
   const { getToken } = useAuth();
 
   const [sprints, setSprints] = useState<SprintOption[]>([]);
@@ -198,7 +200,7 @@ export default function ValidityPage() {
       setRetained("");
       setReportVersion((v) => v + 1);
     } catch {
-      setOutcomeMessage({ ok: false, text: "We couldn't reach the server while recording the outcome. Please check your connection and try again." });
+      setOutcomeMessage({ ok: false, text: en("We couldn't reach the server while recording the outcome. Please check your connection and try again.") });
     } finally {
       setSavingOutcome(false);
     }
@@ -208,7 +210,7 @@ export default function ValidityPage() {
   const selectClass = "px-3 py-2 rounded-xl bg-card border border-border text-xs text-foreground";
   const sprintSelect = (value: string, onChange: (v: string) => void) => (
     <select className={selectClass} value={value} onChange={(e) => onChange(e.target.value)}>
-      <option value="">All sprints</option>
+      <option value="">{en("All sprints")}</option>
       {sprints.map((s) => (
         <option key={s.sprintId} value={s.sprintId}>{s.title}</option>
       ))}
@@ -221,12 +223,11 @@ export default function ValidityPage() {
     <div className="space-y-8">
       <div className="pb-4 border-b border-border">
         <div className="flex items-center gap-2 text-xs font-semibold text-indigo-700 dark:text-indigo-400 uppercase tracking-wider">
-          <Scale className="w-4 h-4" /> Validity &amp; fairness
+          <Scale className="w-4 h-4" />{en(" Validity & fairness")}
         </div>
-        <h1 className="text-2xl font-extrabold text-foreground mt-1">Predictive validity and bias audit data</h1>
+        <h1 className="text-2xl font-extrabold text-foreground mt-1">{en("Predictive validity and bias audit data")}</h1>
         <p className="text-xs text-muted-foreground mt-1 max-w-2xl">
-          Check whether assessment scores track on-the-job outcomes, and whether selection or scoring rates differ across
-          self-identified groups. Demographic data is voluntary and only reported in aggregate.
+          {en("Check whether assessment scores track on-the-job outcomes, and whether selection or scoring rates differ across self-identified groups. Demographic data is voluntary and only reported in aggregate.")}
         </p>
       </div>
 
@@ -234,10 +235,10 @@ export default function ValidityPage() {
       <section className="space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
-            <TrendingUp className="w-5 h-5 text-indigo-600 dark:text-indigo-400" /> Predictive validity
+            <TrendingUp className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />{en(" Predictive validity")}
           </h2>
           <label className="flex items-center gap-2 text-xs text-muted-foreground">
-            Sprint {sprintSelect(reportSprint, setReportSprint)}
+            {en("Sprint ")}{sprintSelect(reportSprint, setReportSprint)}
           </label>
         </div>
 
@@ -245,35 +246,35 @@ export default function ValidityPage() {
           <div className="lg:col-span-2 glass-panel rounded-2xl border border-border p-5 space-y-3">
             {reportLoading ? (
               <div className="py-8 flex items-center justify-center gap-2 text-sm text-muted-foreground">
-                <Loader2 className="w-4 h-4 animate-spin" /> Loading report...
+                <Loader2 className="w-4 h-4 animate-spin" />{en(" Loading report...")}
               </div>
             ) : report?.error ? (
               <p className="text-sm text-rose-700 dark:text-rose-400 flex items-center gap-2"><AlertCircle className="w-4 h-4" /> {report.error}</p>
             ) : report?.data ? (
               <>
                 <p className="text-xs text-muted-foreground">
-                  {report.data.hiresWithOutcomes} hire{report.data.hiresWithOutcomes === 1 ? "" : "s"} with recorded outcomes.
+                  {report.data.hiresWithOutcomes} hire{report.data.hiresWithOutcomes === 1 ? "" : "s"}{en(" with recorded outcomes.")}
                 </p>
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm">
                     <thead>
-                      <tr className="text-left text-xs text-muted-foreground border-b border-border">
-                        <th className="py-2 pr-3 font-semibold">Predictor → outcome</th>
-                        <th className="py-2 pr-3 font-semibold">n</th>
-                        <th className="py-2 pr-3 font-semibold">Correlation (r)</th>
-                        <th className="py-2 pr-3 font-semibold">95% CI</th>
-                        <th className="py-2 font-semibold">Interpretation</th>
+                      <tr className="text-start text-xs text-muted-foreground border-b border-border">
+                        <th className="py-2 pe-3 font-semibold">{en("Predictor → outcome")}</th>
+                        <th className="py-2 pe-3 font-semibold">n</th>
+                        <th className="py-2 pe-3 font-semibold">{en("Correlation (r)")}</th>
+                        <th className="py-2 pe-3 font-semibold">{en("95% CI")}</th>
+                        <th className="py-2 font-semibold">{en("Interpretation")}</th>
                       </tr>
                     </thead>
                     <tbody>
                       {report.data.results.map((r) => (
                         <tr key={`${r.predictor}-${r.outcome}`} className="border-b border-border last:border-0 align-top">
-                          <td className="py-2 pr-3 text-foreground">
+                          <td className="py-2 pe-3 text-foreground">
                             {r.predictor} <span className="text-muted-foreground">→</span> {r.outcome}
                           </td>
-                          <td className="py-2 pr-3 text-foreground">{r.n}</td>
-                          <td className="py-2 pr-3 text-foreground font-mono">{r.correlation == null ? "—" : r.correlation.toFixed(2)}</td>
-                          <td className="py-2 pr-3 text-muted-foreground font-mono whitespace-nowrap">
+                          <td className="py-2 pe-3 text-foreground">{r.n}</td>
+                          <td className="py-2 pe-3 text-foreground font-mono">{r.correlation == null ? "—" : r.correlation.toFixed(2)}</td>
+                          <td className="py-2 pe-3 text-muted-foreground font-mono whitespace-nowrap">
                             {r.confidenceInterval95 ? `[${r.confidenceInterval95[0].toFixed(2)}, ${r.confidenceInterval95[1].toFixed(2)}]` : "—"}
                           </td>
                           <td className="py-2 text-xs text-muted-foreground">{r.interpretation}</td>
@@ -288,32 +289,32 @@ export default function ValidityPage() {
           </div>
 
           <form onSubmit={recordOutcome} className="glass-panel rounded-2xl border border-border p-5 space-y-3">
-            <h3 className="text-sm font-bold text-foreground flex items-center gap-2"><UserCheck className="w-4 h-4" /> Record a hiring outcome</h3>
-            <p className="text-[11px] text-muted-foreground">Linked to the candidate&apos;s most recent submission.</p>
+            <h3 className="text-sm font-bold text-foreground flex items-center gap-2"><UserCheck className="w-4 h-4" />{en(" Record a hiring outcome")}</h3>
+            <p className="text-[11px] text-muted-foreground">{en("Linked to the candidate's most recent submission.")}</p>
             <label className="block text-xs font-semibold text-foreground">
-              Candidate email
-              <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required placeholder="candidate@example.com" className={inputClass} />
+              {en("Candidate email")}
+              <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required placeholder={en("candidate@example.com")} className={inputClass} />
             </label>
             <label className="flex items-center gap-2 text-xs font-semibold text-foreground">
-              <input type="checkbox" checked={hired} onChange={(e) => setHired(e.target.checked)} /> Hired
+              <input type="checkbox" checked={hired} onChange={(e) => setHired(e.target.checked)} />{en(" Hired")}
             </label>
             {hired && (
               <>
                 <label className="block text-xs font-semibold text-foreground">
-                  Manager performance rating
+                  {en("Manager performance rating")}
                   <select value={rating} onChange={(e) => setRating(e.target.value)} className={inputClass}>
-                    <option value="">Not yet available</option>
+                    <option value="">{en("Not yet available")}</option>
                     {[1, 2, 3, 4, 5].map((n) => (
-                      <option key={n} value={n}>{n}{n === 1 ? " (lowest)" : n === 5 ? " (highest)" : ""}</option>
+                      <option key={n} value={n}>{n}{n === 1 ? en(" (lowest)") : n === 5 ? en(" (highest)") : ""}</option>
                     ))}
                   </select>
                 </label>
                 <label className="block text-xs font-semibold text-foreground">
-                  Retained after 90 days
+                  {en("Retained after 90 days")}
                   <select value={retained} onChange={(e) => setRetained(e.target.value)} className={inputClass}>
-                    <option value="">Not yet known</option>
-                    <option value="yes">Yes</option>
-                    <option value="no">No</option>
+                    <option value="">{en("Not yet known")}</option>
+                    <option value="yes">{en("Yes")}</option>
+                    <option value="no">{en("No")}</option>
                   </select>
                 </label>
               </>
@@ -328,7 +329,7 @@ export default function ValidityPage() {
               disabled={savingOutcome || !email.trim()}
               className="w-full py-2.5 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-semibold flex items-center justify-center gap-2 cursor-pointer"
             >
-              {savingOutcome && <Loader2 className="w-4 h-4 animate-spin" />} Save outcome
+              {savingOutcome && <Loader2 className="w-4 h-4 animate-spin" />}{en(" Save outcome")}
             </button>
           </form>
         </div>
@@ -338,22 +339,22 @@ export default function ValidityPage() {
       <section className="space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
-            <Scale className="w-5 h-5 text-indigo-600 dark:text-indigo-400" /> Bias audit data
+            <Scale className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />{en(" Bias audit data")}
           </h2>
           <div className="flex flex-wrap items-center gap-3">
-            <label className="flex items-center gap-2 text-xs text-muted-foreground">Sprint {sprintSelect(auditSprint, setAuditSprint)}</label>
+            <label className="flex items-center gap-2 text-xs text-muted-foreground">{en("Sprint ")}{sprintSelect(auditSprint, setAuditSprint)}</label>
             <label className="flex items-center gap-2 text-xs text-muted-foreground">
-              From <input type="date" value={auditFrom} onChange={(e) => setAuditFrom(e.target.value)} className={selectClass} />
+              {en("From ")}<input type="date" value={auditFrom} onChange={(e) => setAuditFrom(e.target.value)} className={selectClass} />
             </label>
             <label className="flex items-center gap-2 text-xs text-muted-foreground">
-              To <input type="date" value={auditTo} onChange={(e) => setAuditTo(e.target.value)} className={selectClass} />
+              {en("To ")}<input type="date" value={auditTo} onChange={(e) => setAuditTo(e.target.value)} className={selectClass} />
             </label>
             <button
               onClick={() => auditData && downloadBiasCsv(auditData)}
               disabled={!auditData || auditLoading}
               className="py-2 px-3 rounded-xl bg-card hover:bg-muted border border-border text-xs font-semibold text-foreground flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
             >
-              <Download className="w-3.5 h-3.5" /> Download CSV
+              <Download className="w-3.5 h-3.5" />{en(" Download CSV")}
             </button>
           </div>
         </div>
@@ -367,7 +368,7 @@ export default function ValidityPage() {
 
         {auditLoading ? (
           <div className="glass-panel rounded-2xl border border-border py-8 flex items-center justify-center gap-2 text-sm text-muted-foreground">
-            <Loader2 className="w-4 h-4 animate-spin" /> Loading bias audit data...
+            <Loader2 className="w-4 h-4 animate-spin" />{en(" Loading bias audit data...")}
           </div>
         ) : audit?.error ? (
           <div className="glass-panel rounded-2xl border border-border p-6 text-sm text-rose-700 dark:text-rose-400 flex items-center gap-2">
@@ -377,15 +378,15 @@ export default function ValidityPage() {
           <>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <div className="rounded-xl bg-muted/40 border border-border px-3 py-2">
-                <div className="text-[11px] text-muted-foreground">Candidates in scope</div>
+                <div className="text-[11px] text-muted-foreground">{en("Candidates in scope")}</div>
                 <div className="text-lg font-bold text-foreground">{auditData.candidatesInScope}</div>
               </div>
               <div className="rounded-xl bg-muted/40 border border-border px-3 py-2">
-                <div className="text-[11px] text-muted-foreground">Self-identified (voluntary)</div>
+                <div className="text-[11px] text-muted-foreground">{en("Self-identified (voluntary)")}</div>
                 <div className="text-lg font-bold text-foreground">{auditData.selfIdentified}</div>
               </div>
               <div className="rounded-xl bg-muted/40 border border-border px-3 py-2">
-                <div className="text-[11px] text-muted-foreground">Median defense score</div>
+                <div className="text-[11px] text-muted-foreground">{en("Median defense score")}</div>
                 <div className="text-lg font-bold text-foreground">{auditData.medianDefenseScore == null ? "—" : Math.round(auditData.medianDefenseScore)}</div>
               </div>
             </div>
@@ -395,21 +396,21 @@ export default function ValidityPage() {
                 <div key={c.category} className="glass-panel rounded-2xl border border-border p-4 space-y-2">
                   <div className="flex items-baseline justify-between gap-2">
                     <h3 className="text-sm font-bold text-foreground">{c.category}</h3>
-                    <span className="text-[11px] text-muted-foreground">{c.undisclosed} not disclosed</span>
+                    <span className="text-[11px] text-muted-foreground">{c.undisclosed}{en(" not disclosed")}</span>
                   </div>
                   {c.groups.length === 0 ? (
-                    <p className="text-xs text-muted-foreground">No self-identification data in this category.</p>
+                    <p className="text-xs text-muted-foreground">{en("No self-identification data in this category.")}</p>
                   ) : (
                     <div className="overflow-x-auto">
                       <table className="w-full text-xs">
                         <thead>
-                          <tr className="text-left text-muted-foreground border-b border-border">
-                            <th className="py-1.5 pr-2 font-semibold">Group</th>
-                            <th className="py-1.5 pr-2 font-semibold">n</th>
-                            <th className="py-1.5 pr-2 font-semibold">Selection rate</th>
-                            <th className="py-1.5 pr-2 font-semibold">Impact ratio</th>
-                            <th className="py-1.5 pr-2 font-semibold">Scoring rate</th>
-                            <th className="py-1.5 font-semibold">Impact ratio</th>
+                          <tr className="text-start text-muted-foreground border-b border-border">
+                            <th className="py-1.5 pe-2 font-semibold">{en("Group")}</th>
+                            <th className="py-1.5 pe-2 font-semibold">n</th>
+                            <th className="py-1.5 pe-2 font-semibold">{en("Selection rate")}</th>
+                            <th className="py-1.5 pe-2 font-semibold">{en("Impact ratio")}</th>
+                            <th className="py-1.5 pe-2 font-semibold">{en("Scoring rate")}</th>
+                            <th className="py-1.5 font-semibold">{en("Impact ratio")}</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -418,24 +419,24 @@ export default function ValidityPage() {
                               key={g.group}
                               className={`border-b border-border last:border-0 ${g.belowFourFifths ? "bg-rose-500/10" : ""}`}
                             >
-                              <td className="py-1.5 pr-2 text-foreground">
+                              <td className="py-1.5 pe-2 text-foreground">
                                 {g.group}
                                 {g.belowFourFifths && (
-                                  <span className="ml-1.5 inline-flex items-center gap-0.5 text-[10px] font-semibold text-rose-700 dark:text-rose-400">
-                                    <AlertTriangle className="w-3 h-3" /> below 0.80
+                                  <span className="ms-1.5 inline-flex items-center gap-0.5 text-[10px] font-semibold text-rose-700 dark:text-rose-400">
+                                    <AlertTriangle className="w-3 h-3" />{en(" below 0.80")}
                                   </span>
                                 )}
                               </td>
                               {g.suppressed ? (
-                                <td colSpan={5} className="py-1.5 text-muted-foreground italic">Suppressed (fewer than 5 candidates)</td>
+                                <td colSpan={5} className="py-1.5 text-muted-foreground italic">{en("Suppressed (fewer than 5 candidates)")}</td>
                               ) : (
                                 <>
-                                  <td className="py-1.5 pr-2 text-foreground">{g.candidates ?? "—"}</td>
-                                  <td className="py-1.5 pr-2 text-foreground">{rate(g.selectionRate)}</td>
-                                  <td className={`py-1.5 pr-2 font-mono ${g.selectionImpactRatio != null && g.selectionImpactRatio < 0.8 ? "text-rose-700 dark:text-rose-400 font-bold" : "text-foreground"}`}>
+                                  <td className="py-1.5 pe-2 text-foreground">{g.candidates ?? "—"}</td>
+                                  <td className="py-1.5 pe-2 text-foreground">{rate(g.selectionRate)}</td>
+                                  <td className={`py-1.5 pe-2 font-mono ${g.selectionImpactRatio != null && g.selectionImpactRatio < 0.8 ? "text-rose-700 dark:text-rose-400 font-bold" : "text-foreground"}`}>
                                     {ratio(g.selectionImpactRatio)}
                                   </td>
-                                  <td className="py-1.5 pr-2 text-foreground">{rate(g.scoringRate)}</td>
+                                  <td className="py-1.5 pe-2 text-foreground">{rate(g.scoringRate)}</td>
                                   <td className={`py-1.5 font-mono ${g.scoringImpactRatio != null && g.scoringImpactRatio < 0.8 ? "text-rose-700 dark:text-rose-400 font-bold" : "text-foreground"}`}>
                                     {ratio(g.scoringImpactRatio)}
                                   </td>
@@ -452,12 +453,12 @@ export default function ValidityPage() {
             </div>
 
             <div className="glass-panel rounded-2xl border border-border p-4">
-              <h3 className="text-sm font-bold text-foreground mb-2">Definitions</h3>
+              <h3 className="text-sm font-bold text-foreground mb-2">{en("Definitions")}</h3>
               <dl className="grid sm:grid-cols-2 gap-3 text-xs">
-                <div><dt className="font-semibold text-foreground">Selection rate</dt><dd className="text-muted-foreground">{auditData.definitions.selectionRate}</dd></div>
-                <div><dt className="font-semibold text-foreground">Scoring rate</dt><dd className="text-muted-foreground">{auditData.definitions.scoringRate}</dd></div>
-                <div><dt className="font-semibold text-foreground">Impact ratio</dt><dd className="text-muted-foreground">{auditData.definitions.impactRatio}</dd></div>
-                <div><dt className="font-semibold text-foreground">Suppression</dt><dd className="text-muted-foreground">{auditData.definitions.suppression}</dd></div>
+                <div><dt className="font-semibold text-foreground">{en("Selection rate")}</dt><dd className="text-muted-foreground">{auditData.definitions.selectionRate}</dd></div>
+                <div><dt className="font-semibold text-foreground">{en("Scoring rate")}</dt><dd className="text-muted-foreground">{auditData.definitions.scoringRate}</dd></div>
+                <div><dt className="font-semibold text-foreground">{en("Impact ratio")}</dt><dd className="text-muted-foreground">{auditData.definitions.impactRatio}</dd></div>
+                <div><dt className="font-semibold text-foreground">{en("Suppression")}</dt><dd className="text-muted-foreground">{auditData.definitions.suppression}</dd></div>
               </dl>
             </div>
           </>

@@ -313,23 +313,23 @@ export default function PlatformSettingsPage() {
             <p className="mt-1 text-sm text-muted-foreground">None so far.</p>
           ) : (
             <div className="mt-2 overflow-x-auto">
-              <table className="w-full text-left text-sm">
+              <table className="w-full text-start text-sm">
                 <thead className="text-xs text-muted-foreground">
                   <tr>
-                    <th className="py-2 pr-3 font-medium">When</th>
-                    <th className="py-2 pr-3 font-medium">What happened</th>
-                    <th className="py-2 pr-3 font-medium">Where</th>
-                    <th className="py-2 pr-3 font-medium">File</th>
+                    <th className="py-2 pe-3 font-medium">When</th>
+                    <th className="py-2 pe-3 font-medium">What happened</th>
+                    <th className="py-2 pe-3 font-medium">Where</th>
+                    <th className="py-2 pe-3 font-medium">File</th>
                     <th className="py-2 font-medium">Found</th>
                   </tr>
                 </thead>
                 <tbody>
                   {uploads.records.map((r, i) => (
                     <tr key={i} className="border-t border-border align-top">
-                      <td className="py-2 pr-3 whitespace-nowrap">{when(r.at)}</td>
-                      <td className="py-2 pr-3">{r.action === "Refused" ? "Refused at upload" : "Removed from storage"}</td>
-                      <td className="py-2 pr-3">{en(SOURCE_NAMES[r.source] ?? r.source)}</td>
-                      <td className="py-2 pr-3 break-all">{r.fileName || "—"}</td>
+                      <td className="py-2 pe-3 whitespace-nowrap">{when(r.at)}</td>
+                      <td className="py-2 pe-3">{r.action === "Refused" ? "Refused at upload" : "Removed from storage"}</td>
+                      <td className="py-2 pe-3">{en(SOURCE_NAMES[r.source] ?? r.source)}</td>
+                      <td className="py-2 pe-3 break-all">{r.fileName || "—"}</td>
                       <td className="py-2 break-all">{r.signature}</td>
                     </tr>
                   ))}

@@ -11,6 +11,7 @@ import { Briefcase, Clock, CheckCircle2, XCircle } from "lucide-react";
 import { useAppAuth as useAuth } from "@/lib/appAuth";
 import { authenticatedFetch } from "@/lib/apiClient";
 import { useLatestRef } from "@/lib/legacyApi";
+import { useEn } from "@/lib/english/EnglishProvider";
 
 type Request = {
   id: string;
@@ -24,6 +25,7 @@ type Request = {
 const input = "w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:border-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-600/20";
 
 export default function RecruiterAccessPage() {
+  const en = useEn();
   const { getToken, isLoaded, isSignedIn, roles } = useAuth();
   const [state, setState] = useState<{ hasRole: boolean; granted: boolean; request: Request | null } | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -75,66 +77,66 @@ export default function RecruiterAccessPage() {
           <Briefcase aria-hidden="true" className="h-5 w-5" />
         </span>
         <div>
-          <h1 className="text-2xl font-semibold">Recruiter access</h1>
-          <p className="text-sm text-muted-foreground">For employers who want to review candidates and their verified work.</p>
+          <h1 className="text-2xl font-semibold">{en("Recruiter access")}</h1>
+          <p className="text-sm text-muted-foreground">{en("For employers who want to review candidates and their verified work.")}</p>
         </div>
       </div>
 
       {!isSignedIn ? (
         <div className="space-y-3 rounded-2xl border border-border p-5 text-sm">
-          <p>First create a free Edulexa account (or sign in), then come back to this page to ask for recruiter access.</p>
+          <p>{en("First create a free Edulexa account (or sign in), then come back to this page to ask for recruiter access.")}</p>
           <Link href="/login?redirect_url=%2Faccess%2Frecruiter" className="inline-flex rounded-lg bg-indigo-600 px-4 py-2 font-medium text-white hover:bg-indigo-700">
-            Sign in or create an account
+            {en("Sign in or create an account")}
           </Link>
         </div>
       ) : state === null && !error ? (
-        <p className="text-sm text-muted-foreground">Loading…</p>
+        <p className="text-sm text-muted-foreground">{en("Loading…")}</p>
       ) : state?.hasRole || roles.includes("Recruiter") ? (
-        <Status icon={CheckCircle2} tone="emerald" title="You have recruiter access">
+        <Status icon={CheckCircle2} tone="emerald" title={en("You have recruiter access")}>
           <Link href="/recruiter/dashboard" className="font-medium text-indigo-700 underline dark:text-indigo-300">
-            Open the recruiter portal
+            {en("Open the recruiter portal")}
           </Link>
         </Status>
       ) : state?.request?.status === "pending" ? (
-        <Status icon={Clock} tone="amber" title="Your request is waiting for a decision">
-          We&apos;ll e-mail you when it&apos;s decided. Request for {state.request.company}, sent {new Date(state.request.createdAt).toLocaleDateString()}.
+        <Status icon={Clock} tone="amber" title={en("Your request is waiting for a decision")}>
+          {en("We'll e-mail you when it's decided. Request for ")}{state.request.company}{en(", sent ")}{new Date(state.request.createdAt).toLocaleDateString()}.
         </Status>
       ) : state?.request?.status === "approved" && state.granted ? (
-        <Status icon={CheckCircle2} tone="emerald" title="Your request was approved">
-          Sign out and sign in again to start using the recruiter portal.
+        <Status icon={CheckCircle2} tone="emerald" title={en("Your request was approved")}>
+          {en("Sign out and sign in again to start using the recruiter portal.")}
         </Status>
       ) : (
         <>
           {state?.request?.status === "approved" && !state.granted && (
-            <Status icon={XCircle} tone="amber" title="Your recruiter access was removed">
-              If you still need it, send a new request.
+            <Status icon={XCircle} tone="amber" title={en("Your recruiter access was removed")}>
+              {en("If you still need it, send a new request.")}
             </Status>
           )}
           {state?.request?.status === "rejected" && (
-            <Status icon={XCircle} tone="red" title="Your last request wasn't approved">
+            <Status icon={XCircle} tone="red" title={en("Your last request wasn't approved")}>
               {state.request.decisionNote ?? "You can send a new request with more detail about your company."}
             </Status>
           )}
-          <form onSubmit={submit} className="space-y-4 rounded-2xl border border-border bg-card p-5" aria-label="Ask for recruiter access">
+          <form onSubmit={submit} className="space-y-4 rounded-2xl border border-border bg-card p-5" aria-label={en("Ask for recruiter access")}>
             <label className="block text-sm">
-              <span className="mb-1 block font-medium">Company</span>
+              <span className="mb-1 block font-medium">{en("Company")}</span>
               <input required minLength={2} maxLength={200} className={input} value={form.company} onChange={(e) => setForm({ ...form, company: e.target.value })} />
             </label>
             <label className="block text-sm">
-              <span className="mb-1 block font-medium">Company website</span>
+              <span className="mb-1 block font-medium">{en("Company website")}</span>
               <input type="url" maxLength={300} placeholder="https://" className={input} value={form.website} onChange={(e) => setForm({ ...form, website: e.target.value })} />
             </label>
             <label className="block text-sm">
-              <span className="mb-1 block font-medium">Your job title</span>
+              <span className="mb-1 block font-medium">{en("Your job title")}</span>
               <input maxLength={120} className={input} value={form.jobTitle} onChange={(e) => setForm({ ...form, jobTitle: e.target.value })} />
             </label>
             <label className="block text-sm">
-              <span className="mb-1 block font-medium">What are you hiring for? (optional)</span>
+              <span className="mb-1 block font-medium">{en("What are you hiring for? (optional)")}</span>
               <textarea rows={3} maxLength={1000} className={input} value={form.message} onChange={(e) => setForm({ ...form, message: e.target.value })} />
             </label>
-            <p className="text-xs text-muted-foreground">Requests from a company e-mail address are approved faster. We check every request before giving access to candidate data.</p>
+            <p className="text-xs text-muted-foreground">{en("Requests from a company e-mail address are approved faster. We check every request before giving access to candidate data.")}</p>
             <button type="submit" disabled={busy} className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50">
-              {busy ? "Sending…" : "Send request"}
+              {busy ? en("Sending…") : en("Send request")}
             </button>
           </form>
         </>

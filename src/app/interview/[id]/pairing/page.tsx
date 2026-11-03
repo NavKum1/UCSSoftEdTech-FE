@@ -11,6 +11,7 @@ import Link from "next/link";
 import * as signalR from "@microsoft/signalr";
 import { getApiBaseUrl } from "@/lib/apiClient";
 import { AccessNotice, useLegacyApi } from "@/lib/legacyApi";
+import { useEn } from "@/lib/english/EnglishProvider";
 
 interface Participant {
   connectionId: string;
@@ -21,6 +22,7 @@ interface Participant {
 }
 
 export default function InterviewPairingStudioPage({ params }: { params: Promise<{ id: string }> }) {
+  const en = useEn();
   const { apiFetch, ready, access, getToken } = useLegacyApi();
   const resolvedParams = use(params);
   const sessionId = resolvedParams.id;
@@ -338,14 +340,14 @@ export default function InterviewPairingStudioPage({ params }: { params: Promise
             </div>
             <div>
               <h1 className="text-sm font-bold text-foreground flex items-center gap-2">
-                Live Pairing Studio
+                {en("Live Pairing Studio")}
                 <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 border border-emerald-500/30 flex items-center gap-1">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
-                  Live Sync
+                  {en("Live Sync")}
                 </span>
               </h1>
               <div className="text-xs text-muted-foreground flex items-center gap-1 font-mono">
-                <span>Room:</span>
+                <span>{en("Room:")}</span>
                 <span className="text-foreground">{sessionId.substring(0, 12)}...</span>
                 <button onClick={copySessionId} className="hover:text-indigo-700 dark:text-indigo-400 p-0.5">
                   {copied ? <Check className="w-3 h-3 text-emerald-700 dark:text-emerald-400" /> : <Copy className="w-3 h-3" />}
@@ -360,12 +362,12 @@ export default function InterviewPairingStudioPage({ params }: { params: Promise
           {isTakeoverActive ? (
             <div className="flex items-center gap-2 px-4 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-700 dark:text-amber-400 text-xs font-semibold animate-pulse">
               <VolumeX className="w-4 h-4 text-amber-700 dark:text-amber-400" />
-              <span>Human Takeover Active • AI Examiner Muted</span>
+              <span>{en("Human Takeover Active • AI Examiner Muted")}</span>
             </div>
           ) : (
             <div className="flex items-center gap-2 px-4 py-1.5 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-700 dark:text-cyan-400 text-xs font-semibold">
               <Volume2 className="w-4 h-4 text-cyan-700 dark:text-cyan-400" />
-              <span>AI Voice Examiner Active</span>
+              <span>{en("AI Voice Examiner Active")}</span>
             </div>
           )}
         </div>
@@ -398,7 +400,7 @@ export default function InterviewPairingStudioPage({ params }: { params: Promise
             }`}
           >
             <ShieldAlert className="w-3.5 h-3.5" />
-            {isTakeoverActive ? "Yield to AI" : "Take Over"}
+            {isTakeoverActive ? en("Yield to AI") : en("Take Over")}
           </button>
         </div>
       </header>
@@ -415,7 +417,7 @@ export default function InterviewPairingStudioPage({ params }: { params: Promise
             }`}
           >
             <Code2 className="w-3.5 h-3.5" />
-            Collaborative Code
+            {en("Collaborative Code")}
           </button>
           <button
             onClick={() => setActiveTab("whiteboard")}
@@ -426,7 +428,7 @@ export default function InterviewPairingStudioPage({ params }: { params: Promise
             }`}
           >
             <Layers className="w-3.5 h-3.5" />
-            System Architecture Whiteboard
+            {en("System Architecture Whiteboard")}
           </button>
         </div>
 
@@ -437,7 +439,7 @@ export default function InterviewPairingStudioPage({ params }: { params: Promise
               className="flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs text-muted-foreground hover:text-rose-400 hover:bg-rose-500/10 border border-border transition"
             >
               <Eraser className="w-3.5 h-3.5" />
-              Clear
+              {en("Clear")}
             </button>
             <button
               onClick={handleSaveWhiteboard}
@@ -445,7 +447,7 @@ export default function InterviewPairingStudioPage({ params }: { params: Promise
               className="flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs bg-indigo-600 hover:bg-indigo-500 text-white font-medium transition shadow-md shadow-indigo-600/20"
             >
               {savingWhiteboard ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
-              {saveSuccess ? "Saved!" : "Save Diagram"}
+              {saveSuccess ? en("Saved!") : en("Save Diagram")}
             </button>
           </div>
         )}
@@ -461,11 +463,11 @@ export default function InterviewPairingStudioPage({ params }: { params: Promise
                 <span className="w-2.5 h-2.5 rounded-full bg-rose-500" />
                 <span className="w-2.5 h-2.5 rounded-full bg-amber-500" />
                 <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
-                <span className="ml-2 font-mono text-muted-foreground">DistributedStreamEngine.ts</span>
+                <span className="ms-2 font-mono text-muted-foreground">{en("DistributedStreamEngine.ts")}</span>
               </div>
               <div className="flex items-center gap-2 text-[11px] font-mono text-muted-foreground">
                 <MousePointer2 className="w-3 h-3 text-amber-700 dark:text-amber-400" />
-                <span>Interviewer Viewing Line 12</span>
+                <span>{en("Interviewer Viewing Line 12")}</span>
               </div>
             </div>
 
@@ -493,7 +495,7 @@ export default function InterviewPairingStudioPage({ params }: { params: Promise
                   className={`p-2 rounded-xl text-xs transition ${
                     tool === "pen" ? "bg-indigo-600 text-white" : "text-muted-foreground hover:bg-muted"
                   }`}
-                  title="Freehand Pen"
+                  title={en("Freehand Pen")}
                 >
                   <PenTool className="w-4 h-4" />
                 </button>
@@ -502,7 +504,7 @@ export default function InterviewPairingStudioPage({ params }: { params: Promise
                   className={`p-2 rounded-xl text-xs transition ${
                     tool === "box" ? "bg-indigo-600 text-white" : "text-muted-foreground hover:bg-muted"
                   }`}
-                  title="Microservice Box"
+                  title={en("Microservice Box")}
                 >
                   <Square className="w-4 h-4" />
                 </button>
@@ -511,7 +513,7 @@ export default function InterviewPairingStudioPage({ params }: { params: Promise
                   className={`p-2 rounded-xl text-xs transition ${
                     tool === "database" ? "bg-indigo-600 text-white" : "text-muted-foreground hover:bg-muted"
                   }`}
-                  title="Database Cylinder"
+                  title={en("Database Cylinder")}
                 >
                   <Database className="w-4 h-4" />
                 </button>
@@ -520,7 +522,7 @@ export default function InterviewPairingStudioPage({ params }: { params: Promise
                   className={`p-2 rounded-xl text-xs transition ${
                     tool === "cloud" ? "bg-indigo-600 text-white" : "text-muted-foreground hover:bg-muted"
                   }`}
-                  title="API Gateway / Cloud"
+                  title={en("API Gateway / Cloud")}
                 >
                   <Cloud className="w-4 h-4" />
                 </button>
@@ -529,7 +531,7 @@ export default function InterviewPairingStudioPage({ params }: { params: Promise
                   className={`p-2 rounded-xl text-xs transition ${
                     tool === "eraser" ? "bg-indigo-600 text-white" : "text-muted-foreground hover:bg-muted"
                   }`}
-                  title="Eraser"
+                  title={en("Eraser")}
                 >
                   <Eraser className="w-4 h-4" />
                 </button>
@@ -570,15 +572,15 @@ export default function InterviewPairingStudioPage({ params }: { params: Promise
       {/* Footer Info */}
       <footer className="h-8 bg-background border-t border-slate-900 px-6 flex items-center justify-between text-[11px] text-muted-foreground font-mono">
         <div className="flex items-center gap-3">
-          <span>SignalR WebSocket: Connected</span>
+          <span>{en("SignalR WebSocket: Connected")}</span>
           <span>•</span>
-          <span>Latency: 18ms</span>
+          <span>{en("Latency: 18ms")}</span>
         </div>
         <div>
           {isTakeoverActive ? (
-            <span className="text-amber-700 dark:text-amber-400 font-semibold">Live Voice Takeover: {takeoverName || "Interviewer"}</span>
+            <span className="text-amber-700 dark:text-amber-400 font-semibold">{en("Live Voice Takeover: ")}{takeoverName || "Interviewer"}</span>
           ) : (
-            <span className="text-cyan-700 dark:text-cyan-400">AI Voice Assistant: Synthesizing questions</span>
+            <span className="text-cyan-700 dark:text-cyan-400">{en("AI Voice Assistant: Synthesizing questions")}</span>
           )}
         </div>
       </footer>

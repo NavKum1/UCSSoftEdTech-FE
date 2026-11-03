@@ -10,6 +10,7 @@ import React, { Suspense, useCallback, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { AccessNotice, useLatestRef, useLegacyApi } from "@/lib/legacyApi";
 import { Messages, ReplyBox, RequestDetails, STATUS_LABEL, type GuidanceRequestView } from "@/components/guidance/Conversation";
+import { useEn } from "@/lib/english/EnglishProvider";
 
 interface Row {
   id: string;
@@ -46,6 +47,7 @@ export default function AdvisorDeskPage() {
 }
 
 function AdvisorDesk() {
+  const en = useEn();
   const { apiFetch, ready, access } = useLegacyApi();
   const params = useSearchParams();
   const [filter, setFilter] = useState("Open");
@@ -106,12 +108,12 @@ function AdvisorDesk() {
       <section aria-labelledby="desk-list" className="space-y-3">
         <div className="flex items-center justify-between gap-2">
           <h1 id="desk-list" className="text-lg font-semibold">
-            Guidance requests
+            {en("Guidance requests")}
           </h1>
-          <select value={filter} onChange={(e) => setFilter(e.target.value)} className={select} aria-label="Show">
+          <select value={filter} onChange={(e) => setFilter(e.target.value)} className={select} aria-label={en("Show")}>
             {FILTERS.map((f) => (
               <option key={f} value={f}>
-                {f ? STATUS_LABEL[f] : "All"}
+                {f ? STATUS_LABEL[f] : en("All")}
               </option>
             ))}
           </select>
@@ -119,7 +121,7 @@ function AdvisorDesk() {
         {!rows ? (
           <div className="h-40 animate-pulse rounded-2xl bg-muted motion-reduce:animate-none" aria-busy="true" />
         ) : rows.length === 0 ? (
-          <p className="text-sm text-muted-foreground">Nothing here.</p>
+          <p className="text-sm text-muted-foreground">{en("Nothing here.")}</p>
         ) : (
           <ul className="space-y-2">
             {rows.map((r) => (
@@ -128,7 +130,7 @@ function AdvisorDesk() {
                   type="button"
                   onClick={() => setOpen(r.id)}
                   aria-current={open === r.id ? "true" : undefined}
-                  className={`w-full rounded-xl border p-3 text-left text-sm ${open === r.id ? "border-indigo-500 bg-indigo-500/5" : "border-border hover:bg-muted/50"}`}
+                  className={`w-full rounded-xl border p-3 text-start text-sm ${open === r.id ? "border-indigo-500 bg-indigo-500/5" : "border-border hover:bg-muted/50"}`}
                 >
                   <span className="flex justify-between gap-2">
                     <span className="font-medium">{r.name}</span>
@@ -138,7 +140,7 @@ function AdvisorDesk() {
                   <span className="mt-1 block text-xs text-muted-foreground">
                     {STATUS_LABEL[r.status] ?? r.status}
                     {r.mentor ? ` · ${r.mentor}` : ""}
-                    {r.quizShared ? " · quiz shared" : ""}
+                    {r.quizShared ? en(" · quiz shared") : ""}
                   </span>
                 </button>
               </li>
@@ -147,9 +149,9 @@ function AdvisorDesk() {
         )}
       </section>
 
-      <section aria-label="Request" className="space-y-4">
+      <section aria-label={en("Request")} className="space-y-4">
         {!item ? (
-          <p className="text-sm text-muted-foreground">Choose a request.</p>
+          <p className="text-sm text-muted-foreground">{en("Choose a request.")}</p>
         ) : (
           <>
             <div className={card}>
@@ -167,7 +169,7 @@ function AdvisorDesk() {
                   onClick={() => void act("status", { status: item.status === "Resolved" ? "Open" : "Resolved" })}
                   className="rounded-lg border border-border px-3 py-1.5 text-sm hover:bg-muted"
                 >
-                  {item.status === "Resolved" ? "Reopen" : "Mark resolved"}
+                  {item.status === "Resolved" ? en("Reopen") : en("Mark resolved")}
                 </button>
               </div>
               <div className="mt-3">
@@ -179,11 +181,11 @@ function AdvisorDesk() {
 
             <div className="grid gap-4 md:grid-cols-2">
               <div className={card}>
-                <h3 className="text-sm font-semibold">Hand to a community mentor</h3>
-                <p className="text-xs text-muted-foreground">When you&apos;re stretched: they reply in Edulexa or by email.</p>
+                <h3 className="text-sm font-semibold">{en("Hand to a community mentor")}</h3>
+                <p className="text-xs text-muted-foreground">{en("When you're stretched: they reply in Edulexa or by email.")}</p>
                 <div className="mt-2 flex flex-wrap gap-2">
-                  <select value={mentorPick} onChange={(e) => setMentorPick(e.target.value)} className={select} aria-label="Mentor">
-                    <option value="">{mentors.length ? "Choose a mentor" : "No mentors yet"}</option>
+                  <select value={mentorPick} onChange={(e) => setMentorPick(e.target.value)} className={select} aria-label={en("Mentor")}>
+                    <option value="">{mentors.length ? en("Choose a mentor") : en("No mentors yet")}</option>
                     {mentors.map((m) => (
                       <option key={m.id} value={m.id}>
                         {m.name}
@@ -192,28 +194,28 @@ function AdvisorDesk() {
                     ))}
                   </select>
                   <button type="button" disabled={!mentorPick} onClick={() => void act("mentor", { mentorProfileId: mentorPick })} className="rounded-lg border border-border px-3 py-1.5 text-sm hover:bg-muted disabled:opacity-50">
-                    Hand over
+                    {en("Hand over")}
                   </button>
                   {item.mentor && (
                     <button type="button" onClick={() => void act("mentor", { mentorProfileId: null })} className="rounded-lg px-3 py-1.5 text-sm hover:bg-muted">
-                      Take back
+                      {en("Take back")}
                     </button>
                   )}
                 </div>
               </div>
               <div className={card}>
-                <h3 className="text-sm font-semibold">Suggest an institute</h3>
-                <p className="text-xs text-muted-foreground">The person decides. Nothing is sent unless they approve.</p>
+                <h3 className="text-sm font-semibold">{en("Suggest an institute")}</h3>
+                <p className="text-xs text-muted-foreground">{en("The person decides. Nothing is sent unless they approve.")}</p>
                 <div className="mt-2 space-y-2">
-                  <select value={institutePick} onChange={(e) => setInstitutePick(e.target.value)} className={`${select} w-full`} aria-label="Institute">
-                    <option value="">Choose an institute</option>
+                  <select value={institutePick} onChange={(e) => setInstitutePick(e.target.value)} className={`${select} w-full`} aria-label={en("Institute")}>
+                    <option value="">{en("Choose an institute")}</option>
                     {institutes.map((i) => (
                       <option key={i.id} value={i.id}>
                         {i.name}
                       </option>
                     ))}
                   </select>
-                  <input value={note} maxLength={1000} onChange={(e) => setNote(e.target.value)} placeholder="Why this institute (optional)" className={`${select} w-full`} />
+                  <input value={note} maxLength={1000} onChange={(e) => setNote(e.target.value)} placeholder={en("Why this institute (optional)")} className={`${select} w-full`} />
                   <button
                     type="button"
                     disabled={!institutePick || item.sentToInstitute}
@@ -222,7 +224,7 @@ function AdvisorDesk() {
                     }}
                     className="rounded-lg border border-border px-3 py-1.5 text-sm hover:bg-muted disabled:opacity-50"
                   >
-                    Suggest
+                    {en("Suggest")}
                   </button>
                 </div>
               </div>
@@ -231,7 +233,7 @@ function AdvisorDesk() {
             <div className={`${card} space-y-4`}>
               <Messages messages={item.messages} />
               <ReplyBox allowInternal onSend={(body, internal) => act("messages", { body, internal })} />
-              {!item.replyByEmail && <p className="text-xs text-muted-foreground">Reply-by-email isn&apos;t set up, so people reply in Edulexa.</p>}
+              {!item.replyByEmail && <p className="text-xs text-muted-foreground">{en("Reply-by-email isn't set up, so people reply in Edulexa.")}</p>}
             </div>
           </>
         )}

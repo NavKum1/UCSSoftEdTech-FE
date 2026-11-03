@@ -71,18 +71,18 @@ export default function InsightsView({ getToken }: { getToken: GetToken }) {
       </div>
       {error && <p role="alert" className="rounded-lg bg-red-500/10 px-3 py-2 text-sm text-red-800 dark:text-red-300">{error}</p>}
       {!data && !error && <div className="h-64 animate-pulse rounded-2xl bg-muted motion-reduce:animate-none" aria-busy="true" />}
-      {data && data.total === 0 && <p className="rounded-2xl border border-dashed border-border p-8 text-center text-sm text-muted-foreground">No leads in this period yet.</p>}
+      {data && data.total === 0 && <p className="rounded-2xl border border-dashed border-border p-8 text-center text-sm text-muted-foreground">{en("No leads in this period yet.")}</p>}
       {data && data.total > 0 && (
         <>
           <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-            <Tile label="Leads received" value={data.total.toLocaleString()} />
-            <Tile label="Enrolled" value={data.enrolled.toLocaleString()} sub={`${data.conversion}% of leads`} />
-            <Tile label="Typical time to first contact" value={hours(data.medianFirstResponseHours)} sub="median, received to first call, email or message" />
-            <Tile label="Not contacted yet" value={data.unanswered.toLocaleString()} sub="new leads with no response" warn={data.unanswered > 0} />
+            <Tile label={en("Leads received")} value={data.total.toLocaleString()} />
+            <Tile label={en("Enrolled")} value={data.enrolled.toLocaleString()} sub={`${data.conversion}% of leads`} />
+            <Tile label={en("Typical time to first contact")} value={hours(data.medianFirstResponseHours)} sub="median, received to first call, email or message" />
+            <Tile label={en("Not contacted yet")} value={data.unanswered.toLocaleString()} sub="new leads with no response" warn={data.unanswered > 0} />
           </div>
 
           <div className="grid gap-4 lg:grid-cols-2">
-            <Card title="Funnel" note="How many leads reached each stage (or went further).">
+            <Card title={en("Funnel")} note="How many leads reached each stage (or went further).">
               <ul className="space-y-2.5">
                 {data.funnel.map((f, i) => {
                   const pct = data.total ? (100 * f.reached) / data.total : 0;
@@ -107,15 +107,15 @@ export default function InsightsView({ getToken }: { getToken: GetToken }) {
                 })}
               </ul>
             </Card>
-            <Card title="Leads per week" note="The last 12 weeks.">
+            <Card title={en("Leads per week")} note="The last 12 weeks.">
               <Weekly weeks={data.weekly} />
             </Card>
           </div>
 
           <div className="grid gap-4 lg:grid-cols-3">
-            <Breakdown title="By source" rows={data.bySource} />
-            <Breakdown title="By course" rows={data.byCourse} />
-            <Breakdown title="By owner" rows={data.byOwner} />
+            <Breakdown title={en("By source")} rows={data.bySource} />
+            <Breakdown title={en("By course")} rows={data.byCourse} />
+            <Breakdown title={en("By owner")} rows={data.byOwner} />
           </div>
 
           {data.lostReasons.length > 0 && (
@@ -157,6 +157,7 @@ function Card({ title, note, children }: { title: string; note?: string; childre
 }
 
 function Weekly({ weeks }: { weeks: { week: string; leads: number }[] }) {
+  const en = useEn();
   const max = Math.max(1, ...weeks.map((w) => w.leads));
   return (
     <div>
@@ -170,29 +171,30 @@ function Weekly({ weeks }: { weeks: { week: string; leads: number }[] }) {
       </div>
       <div className="mt-1 flex justify-between text-[10px] text-muted-foreground">
         <span>{new Date(weeks[0]?.week).toLocaleDateString([], { day: "numeric", month: "short" })}</span>
-        <span>this week</span>
+        <span>{en("this week")}</span>
       </div>
     </div>
   );
 }
 
 function Breakdown({ title, rows }: { title: string; rows: Group[] }) {
+  const en = useEn();
   return (
     <Card title={title}>
       <table className="w-full text-sm">
         <thead className="text-xs text-muted-foreground">
           <tr>
-            <th className="pb-1.5 text-left font-medium"> </th>
-            <th className="pb-1.5 text-right font-medium">Leads</th>
-            <th className="pb-1.5 text-right font-medium">Enrolled</th>
+            <th className="pb-1.5 text-start font-medium"> </th>
+            <th className="pb-1.5 text-end font-medium">{en("Leads")}</th>
+            <th className="pb-1.5 text-end font-medium">{en("Enrolled")}</th>
           </tr>
         </thead>
         <tbody>
           {rows.slice(0, 8).map((r) => (
             <tr key={r.key} className="border-t border-border">
               <td className="max-w-40 truncate py-1.5" title={r.key}>{r.key}</td>
-              <td className="py-1.5 text-right tabular-nums">{r.leads}</td>
-              <td className="py-1.5 text-right tabular-nums">
+              <td className="py-1.5 text-end tabular-nums">{r.leads}</td>
+              <td className="py-1.5 text-end tabular-nums">
                 {r.enrolled} <span className="text-xs text-muted-foreground">({r.conversion}%)</span>
               </td>
             </tr>

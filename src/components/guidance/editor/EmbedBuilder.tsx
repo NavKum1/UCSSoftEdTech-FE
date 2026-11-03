@@ -63,17 +63,17 @@ export default function EmbedBuilder({ instituteId, formId, formName, publicEnab
       <div className="space-y-4 text-sm">
         {!publicEnabled && (
           <p className="rounded-lg bg-amber-500/10 px-3 py-2 text-amber-900 dark:text-amber-200">
-            The public link is off, so the form won&apos;t show on your site yet. Turn it on when you&apos;re ready; the code stays the same.
+            {en("The public link is off, so the form won't show on your site yet. Turn it on when you're ready; the code stays the same.")}
           </p>
         )}
-        <Row label="How it appears">
+        <Row label={en("How it appears")}>
           {opt("On the page", "inline", mode, setMode)}
           {opt("A button that opens it", "button", mode, setMode)}
           {opt("Floating button (corner)", "floating", mode, setMode)}
         </Row>
         {mode !== "inline" && (
           <label className="block text-xs font-medium text-muted-foreground">
-            Button text
+            {en("Button text")}
             <input value={buttonText} maxLength={40} onChange={(e) => setButtonText(e.target.value)} className="mt-1 block w-full max-w-xs rounded-lg border border-border bg-background px-3 py-2 text-sm" />
           </label>
         )}
@@ -82,15 +82,15 @@ export default function EmbedBuilder({ instituteId, formId, formName, publicEnab
           {opt("Dark", "dark", theme, setTheme)}
           {opt("Follow the visitor", "auto", theme, setTheme)}
         </Row>
-        <Row label="Corners">
+        <Row label={en("Corners")}>
           {opt("Rounded", "rounded", corners, setCorners)}
           {opt("Square", "square", corners, setCorners)}
         </Row>
-        <Row label="Font">
+        <Row label={en("Font")}>
           {opt("Your website's font", "inherit", font, setFont)}
           {opt("Standard", "system", font, setFont)}
         </Row>
-        <Row label="Heading">
+        <Row label={en("Heading")}>
           {opt("Show", "show", heading, setHeading)}
           {opt("Hide (your page has its own)", "hide", heading, setHeading)}
         </Row>
@@ -103,13 +103,13 @@ export default function EmbedBuilder({ instituteId, formId, formName, publicEnab
             </span>
           </label>
           <label className="block text-xs font-medium text-muted-foreground">
-            Campaign (optional)
-            <input value={campaign} maxLength={60} onChange={(e) => setCampaign(e.target.value)} placeholder="e.g. website-home" className="mt-1 block w-44 rounded-lg border border-border bg-background px-3 py-2 text-sm" />
+            {en("Campaign (optional)")}
+            <input value={campaign} maxLength={60} onChange={(e) => setCampaign(e.target.value)} placeholder={en("e.g. website-home")} className="mt-1 block w-44 rounded-lg border border-border bg-background px-3 py-2 text-sm" />
           </label>
         </div>
 
         <div>
-          <p className="text-xs font-medium text-muted-foreground">Paste this where the form{mode === "floating" ? " button" : ""} should appear on your website</p>
+          <p className="text-xs font-medium text-muted-foreground">{en("Paste this where the form")}{mode === "floating" ? " button" : ""}{en(" should appear on your website")}</p>
           <textarea readOnly rows={4} value={snippet} onFocus={(e) => e.target.select()} className="mt-1 w-full rounded-lg border border-border bg-muted/40 px-3 py-2 font-mono text-xs" />
           <button
             type="button"
@@ -121,32 +121,32 @@ export default function EmbedBuilder({ instituteId, formId, formName, publicEnab
             }
             className="mt-1 inline-flex items-center gap-1 rounded-lg bg-cyan-700 px-3 py-1.5 text-xs font-medium text-white hover:bg-cyan-800"
           >
-            {copied ? <Check aria-hidden="true" className="h-3.5 w-3.5" /> : <Copy aria-hidden="true" className="h-3.5 w-3.5" />} {copied ? "Copied" : "Copy code"}
+            {copied ? <Check aria-hidden="true" className="h-3.5 w-3.5" /> : <Copy aria-hidden="true" className="h-3.5 w-3.5" />} {copied ? en("Copied") : en("Copy code")}
           </button>
         </div>
-        <ul className="list-disc space-y-1 pl-5 text-xs text-muted-foreground">
-          <li>The form fits its height on its own; no scrollbar inside it.</li>
-          <li>Each inquiry records the page it came from and your page&apos;s UTM tags (Insights and the CRM show them).</li>
-          <li>Works on any site builder that accepts HTML (WordPress “Custom HTML”, Wix “Embed code”, Webflow “Embed”).</li>
-          <li>Prefer a plain link? Use the link above, or the QR code.</li>
+        <ul className="list-disc space-y-1 ps-5 text-xs text-muted-foreground">
+          <li>{en("The form fits its height on its own; no scrollbar inside it.")}</li>
+          <li>{en("Each inquiry records the page it came from and your page's UTM tags (Insights and the CRM show them).")}</li>
+          <li>{en("Works on any site builder that accepts HTML (WordPress “Custom HTML”, Wix “Embed code”, Webflow “Embed”).")}</li>
+          <li>{en("Prefer a plain link? Use the link above, or the QR code.")}</li>
         </ul>
       </div>
 
       <div>
-        <p className="mb-2 text-xs font-medium text-muted-foreground">Preview of “{formName}”</p>
+        <p className="mb-2 text-xs font-medium text-muted-foreground">{en("Preview of “")}{formName}”</p>
         <div className={`rounded-2xl border border-border p-4 ${theme === "dark" ? "bg-slate-900" : "bg-white"}`}>
           {mode === "inline" ? (
             publicEnabled ? (
-              <iframe key={previewSrc} src={previewSrc} title="Preview" className="h-[560px] w-full rounded-lg border-0" />
+              <iframe key={previewSrc} src={previewSrc} title={en("Preview")} className="h-[560px] w-full rounded-lg border-0" />
             ) : (
-              <p className="py-16 text-center text-sm text-slate-500">The preview appears once the public link is on.</p>
+              <p className="py-16 text-center text-sm text-slate-500">{en("The preview appears once the public link is on.")}</p>
             )
           ) : (
             <div className="relative h-40">
-              <p className="text-sm text-slate-500">Your page…</p>
+              <p className="text-sm text-slate-500">{en("Your page…")}</p>
               <button
                 type="button"
-                className={`${mode === "floating" ? "absolute bottom-2 right-2" : "mt-3"} px-4 py-2.5 text-sm font-semibold text-white shadow`}
+                className={`${mode === "floating" ? "absolute bottom-2 end-2" : "mt-3"} px-4 py-2.5 text-sm font-semibold text-white shadow`}
                 style={{ background: validAccent || "#4f46e5", borderRadius: corners === "square" ? 4 : 999 }}
               >
                 {buttonText || "Get career guidance"}

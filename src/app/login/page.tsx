@@ -15,6 +15,7 @@ import AuthLayout from "@/components/auth/AuthLayout";
 import DevShortcuts, { DEMO_LOGIN_ENABLED } from "@/components/auth/DevShortcuts";
 import { brandName, useAuthBrand, type AuthBrandState } from "@/components/auth/authBrand";
 import { CAN_SIGN_UP } from "@/components/SignInRequired";
+import { useEn } from "@/lib/english/EnglishProvider";
 
 // useSearchParams needs a Suspense boundary for static prerendering
 export default function LoginPage() {
@@ -82,6 +83,7 @@ interface KeycloakSignInProps {
 // identity provider by Keycloak (identity-first login, email-domain discovery), so nothing is asked here first.
 function KeycloakSignIn({ redirectUrl, signUp, loginHint, authError, brand }: KeycloakSignInProps) {
   // The flow's own failure (Auth.js refused to start it); authError is one Auth.js reported on the way back
+  const en = useEn();
   const [failure, setFailure] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   // Don't bounce straight back to Keycloak after an error, or when the visitor pressed Back to leave it
@@ -110,7 +112,7 @@ function KeycloakSignIn({ redirectUrl, signUp, loginHint, authError, brand }: Ke
       <main className="flex min-h-dvh items-center justify-center bg-background px-4" aria-busy="true">
         <p role="status" className="flex items-center gap-2.5 text-sm text-muted-foreground">
           <Loader2 aria-hidden="true" className="h-4 w-4 animate-spin motion-reduce:animate-none" />
-          {signUp ? "Opening sign-up…" : "Taking you to sign-in…"}
+          {signUp ? en("Opening sign-up…") : en("Taking you to sign-in…")}
         </p>
       </main>
     );
@@ -121,10 +123,10 @@ function KeycloakSignIn({ redirectUrl, signUp, loginHint, authError, brand }: Ke
     <AuthLayout state={brand}>
       <div className="mb-7 space-y-1.5">
         <h1 className="text-[1.75rem] font-semibold leading-tight tracking-tight text-foreground">
-          {signUp ? "Create your account" : "Welcome back"}
+          {signUp ? en("Create your account") : en("Welcome back")}
         </h1>
         <p className="text-sm text-muted-foreground">
-          {signUp ? "Create your account, then come back here." : "Sign in to continue."}
+          {signUp ? en("Create your account, then come back here.") : en("Sign in to continue.")}
         </p>
       </div>
 
@@ -148,25 +150,25 @@ function KeycloakSignIn({ redirectUrl, signUp, loginHint, authError, brand }: Ke
           ) : (
             <Lock aria-hidden="true" className="h-4 w-4" />
           )}
-          {busy ? "Redirecting…" : signUp ? "Create account" : "Sign in"}
+          {busy ? en("Redirecting…") : signUp ? en("Create account") : en("Sign in")}
         </button>
         {(signUp || CAN_SIGN_UP) && (
           <p className="text-center text-sm text-muted-foreground">
-            {signUp ? "Already have an account? " : "New here? "}
+            {signUp ? en("Already have an account? ") : en("New here? ")}
             <button
               type="button"
               onClick={() => void go(!signUp)}
               className="rounded-md font-medium text-[var(--auth-link)] underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--auth-ring)]"
             >
-              {signUp ? "Sign in" : "Create an account"}
+              {signUp ? en("Sign in") : en("Create an account")}
             </button>
           </p>
         )}
         <p className="flex items-start justify-center gap-1.5 border-t border-[var(--auth-card-border)] pt-4 text-center text-xs text-muted-foreground">
           <ShieldCheck aria-hidden="true" className="mt-px h-3.5 w-3.5 shrink-0" />
           {platform
-            ? "One account for Edulexa, Hire, Documents and AttendSpot. Your university or work login works here too."
-            : "Your university or work login works here."}
+            ? en("One account for Edulexa, Hire, Documents and AttendSpot. Your university or work login works here too.")
+            : en("Your university or work login works here.")}
         </p>
       </div>
 
