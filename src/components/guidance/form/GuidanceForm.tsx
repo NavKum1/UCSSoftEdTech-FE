@@ -785,7 +785,7 @@ export default function GuidanceForm({
                 {errors.__email && <span className="mt-1.5 block text-sm text-red-700 dark:text-red-400">{errors.__email}</span>}
               </label>
               {checksPhone ? (
-                <PhoneCheck key={round} apiBase={apiBase!} formId={fill.formId} phone={phone} setPhone={setPhone} onVerified={setPhoneCheckId} label={t("phone")} />
+                <PhoneCheck key={round} apiBase={apiBase!} formId={fill.formId} phone={phone} setPhone={setPhone} onVerified={setPhoneCheckId} label={t("phone")} country={fill.country} />
               ) : s.askPhone && (
                 <label className="block sm:col-span-2">
                   <span className="text-base font-semibold">{t("phone")}</span> {!s.phoneRequired && <span className="text-muted-foreground">({t("optional")})</span>}

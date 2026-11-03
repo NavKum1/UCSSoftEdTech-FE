@@ -74,7 +74,7 @@ const STATUS_CLASS: Record<Assignment["status"], string> = {
 };
 
 function formatDate(iso: string) {
-  return new Date(iso).toLocaleString("en-IN", { day: "numeric", month: "short", year: "numeric", hour: "numeric", minute: "2-digit" });
+  return new Date(iso).toLocaleString(undefined, { day: "numeric", month: "short", year: "numeric", hour: "numeric", minute: "2-digit" });
 }
 
 async function runConnectionCheck(): Promise<ConnectionResult> {

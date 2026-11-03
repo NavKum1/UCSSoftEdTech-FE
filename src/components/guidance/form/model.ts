@@ -278,6 +278,8 @@ export interface Fillable {
   turnstileSiteKey?: string | null;
   /** The school's English (US or GB spelling) */
   english?: "US" | "GB";
+  /** The school's country (ISO code): the phone example follows it */
+  country?: string | null;
 }
 
 /** An answer as the form holds it */
@@ -601,6 +603,15 @@ export function computeResult(def: FormDef, answers: Answers): FormResult | null
     result.match = { percent, label: band.label, message: band.message };
   }
   return result.outcome || result.match ? result : null;
+}
+
+/** This browser's time zone (a new meeting question's, when none is set), else UTC */
+export function localTimeZone(): string {
+  try {
+    return Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
+  } catch {
+    return "UTC";
+  }
 }
 
 export function newId() {

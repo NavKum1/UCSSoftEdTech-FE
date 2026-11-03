@@ -9,7 +9,7 @@
 import React, { useEffect, useState } from "react";
 import { CalendarCheck, ChevronLeft, ChevronRight } from "lucide-react";
 import { getApiBaseUrl } from "@/lib/apiClient";
-import type { Answer, Fillable, Question } from "./model";
+import { localTimeZone, type Answer, type Fillable, type Question } from "./model";
 import type { MeetingTold } from "./GuidanceForm";
 import { useEn } from "@/lib/english/EnglishProvider";
 
@@ -79,7 +79,7 @@ export function MeetingField({
   id: string;
 }) {
   const en = useEn();
-  const cfg = q.booking ?? { mode: "request", modes: ["Phone"], daysAhead: 14, timeZone: "Asia/Kolkata" };
+  const cfg = q.booking ?? { mode: "request", modes: ["Phone"], daysAhead: 14, timeZone: localTimeZone() };
   const b = a?.booking ?? {};
   const set = (patch: Partial<NonNullable<Answer["booking"]>>) => onChange({ booking: { ...b, ...patch } });
   const topics = b.topics ?? [];

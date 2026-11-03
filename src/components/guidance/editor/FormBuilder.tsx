@@ -39,6 +39,7 @@ import {
   KIND_LABEL,
   KINDS,
   newId,
+  localTimeZone,
   nextFor,
   onAccent,
   trResult,
@@ -497,13 +498,7 @@ function kindDefaults(kind: Kind): Partial<Question> {
 
 /** A new "Book a meeting" question: people ask for a day, by phone or video, in this browser's time zone */
 function newBooking(): NonNullable<Question["booking"]> {
-  let timeZone = "Asia/Kolkata";
-  try {
-    timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone || timeZone;
-  } catch {
-    // keep the default
-  }
-  return { mode: "request", modes: ["Phone", "Video"], daysAhead: 14, timeZone };
+  return { mode: "request", modes: ["Phone", "Video"], daysAhead: 14, timeZone: localTimeZone() };
 }
 
 function QuestionsEditor({

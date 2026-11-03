@@ -18,6 +18,7 @@ import { AccessNotice, useLatestRef, useLegacyApi } from "@/lib/legacyApi";
 import GuidanceForm from "@/components/guidance/form/GuidanceForm";
 import type { FormDef } from "@/components/guidance/form/model";
 import { useEn } from "@/lib/english/EnglishProvider";
+import { useSchoolCountry } from "@/components/institute/SchoolEnglish";
 
 interface FormRow {
   id: string;
@@ -464,6 +465,7 @@ function NewForm({
 
 function ProfileCard({ apiFetch, q, ready }: { apiFetch: (p: string, i?: RequestInit) => Promise<Response>; q: string; ready: boolean }) {
   const en = useEn();
+  const india = useSchoolCountry() === "IN";
   const [p, setP] = useState<Profile>({ city: null, modes: [], feesRange: null, about: null });
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
   useEffect(() => {
@@ -488,7 +490,7 @@ function ProfileCard({ apiFetch, q, ready }: { apiFetch: (p: string, i?: Request
         </label>
         <label className="text-sm">
           {en("Fees range")}
-          <input className={input} value={p.feesRange ?? ""} maxLength={200} placeholder={en("e.g. ₹40,000 to ₹80,000")} onChange={(e) => setP({ ...p, feesRange: e.target.value })} />
+          <input className={input} value={p.feesRange ?? ""} maxLength={200} placeholder={india ? en("e.g. ₹40,000 to ₹80,000") : en("e.g. $4,000 to $8,000")} onChange={(e) => setP({ ...p, feesRange: e.target.value })} />
         </label>
         <fieldset className="text-sm sm:col-span-2">
           <legend>{en("How you teach")}</legend>

@@ -117,8 +117,9 @@ interface GeoContextType {
   convertFromInr: (inrAmount: number) => number;
 }
 
+// The US unless the visitor's time zone says otherwise (owner decision 4 Nov 2026: Edulexa is a US product)
 function detectInitialRegion(): Region {
-  if (typeof window === "undefined") return "IN";
+  if (typeof window === "undefined") return "US";
   try {
     const saved = localStorage.getItem("edulexa_geo_region") as Region | null;
     if (saved && REGIONS[saved]) return saved;
@@ -153,24 +154,24 @@ function detectInitialRegion(): Region {
   } catch {
     // ignore
   }
-  return "IN";
+  return "US";
 }
 
 const GeoContext = createContext<GeoContextType>({
-  region: "IN",
-  config: REGIONS.IN,
+  region: "US",
+  config: REGIONS.US,
   setRegion: () => {},
-  formatCurrency: (amt) => `₹${amt.toLocaleString("en-IN")}`,
-  convertFromInr: (amt) => amt,
+  formatCurrency: (amt) => `${amt.toLocaleString("en-US")}`,
+  convertFromInr: (amt) => Math.round(amt * REGIONS.US.rateMultiplier),
 });
 
 export function GeoProvider({ children }: { children: React.ReactNode }) {
-  const [region, setRegionState] = useState<Region>("IN");
+  const [region, setRegionState] = useState<Region>("US");
 
   useEffect(() => {
     // 1. Sync on mount
     const detected = detectInitialRegion();
-    // The server can't see localStorage or the time zone, so it renders "IN" and the client corrects it after
+    // The server can't see localStorage or the time zone, so it renders "US" and the client corrects it after
     // hydration. A lazy useState initializer would mismatch hydration on every region-priced page.
     // eslint-disable-next-line react-hooks/set-state-in-effect -- one-time post-hydration sync, see above
     setRegionState(detected);

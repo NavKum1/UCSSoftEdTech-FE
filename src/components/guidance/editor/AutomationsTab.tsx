@@ -12,6 +12,7 @@ import Link from "next/link";
 import { ChevronDown, ChevronRight, Mail, MessageSquare, Plus, Send, Trash2, Users } from "lucide-react";
 import { newId, type Automation, type FormDef } from "@/components/guidance/form/model";
 import { useEn } from "@/lib/english/EnglishProvider";
+import { useSchoolCountry } from "@/components/institute/SchoolEnglish";
 
 const field = "mt-1 block w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:border-cyan-600 focus:outline-none focus:ring-2 focus:ring-cyan-600/20";
 
@@ -36,7 +37,7 @@ const FIELDS: [string, string][] = [
   ["match_label", "A great match"],
   ["report_link", "https://…/report?token=…"],
   ["form_link", "https://…/embed/guidance/…"],
-  ["meeting", "Tuesday 4 November 2026, 10:00 AM (Asia/Kolkata)"],
+  ["meeting", "Tuesday, November 4, 2026, 10:00 AM (America/New_York)"],
   ["lead_link", "https://…/institute/dashboard?lead=…"],
 ];
 
@@ -166,6 +167,8 @@ export default function AutomationsTab({ def, onChange, readOnly, instituteId, t
 
 function AutomationEditor({ a, update, outcomes, match, team }: { a: Automation; update: (p: Partial<Automation>) => void; outcomes: { id: string; name: string }[]; match: boolean; team: Member[] }) {
   const en = useEn();
+  // India's DLT id: for a school in India (or one already filled in)
+  const dltNeeded = useSchoolCountry() === "IN" || !!a.dltTemplateId;
   const unit = a.delayMinutes > 0 && a.delayMinutes % 1440 === 0 ? 1440 : a.delayMinutes > 0 && a.delayMinutes % 60 === 0 ? 60 : 1;
   const email = a.channel === "email" || a.channel === "team";
   const fill = (t: string | null | undefined) => (t ?? "").replace(/\{(\w+)\}/g, (m, k: string) => FIELDS.find((f) => f[0] === k)?.[1] ?? m);
@@ -262,7 +265,7 @@ function AutomationEditor({ a, update, outcomes, match, team }: { a: Automation;
           </button>
         ))}
       </div>
-      {a.channel === "sms" && (
+      {a.channel === "sms" && dltNeeded && (
         <label className="block font-medium">
           {en("DLT template id ")}<span className="font-normal text-muted-foreground">{en("(India: the registered template this text matches)")}</span>
           <input className={field} maxLength={40} value={a.dltTemplateId ?? ""} onChange={(e) => update({ dltTemplateId: e.target.value })} />

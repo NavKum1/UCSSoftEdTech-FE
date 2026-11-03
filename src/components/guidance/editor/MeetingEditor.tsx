@@ -8,7 +8,7 @@
 
 import React, { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { useLegacyApi } from "@/lib/legacyApi";
-import { MEETING_MODES, type MeetingMode, type Question } from "@/components/guidance/form/model";
+import { MEETING_MODES, localTimeZone, type MeetingMode, type Question } from "@/components/guidance/form/model";
 import { useEn } from "@/lib/english/EnglishProvider";
 
 /** The institute whose form is being edited (for its appointment types) */
@@ -25,7 +25,7 @@ function zones(): string[] {
   try {
     return (Intl as unknown as { supportedValuesOf: (k: string) => string[] }).supportedValuesOf("timeZone");
   } catch {
-    return ["Asia/Kolkata", "Asia/Dubai", "Asia/Singapore", "Europe/London", "America/New_York", "America/Chicago", "America/Los_Angeles", "UTC"];
+    return ["America/New_York", "America/Chicago", "America/Denver", "America/Los_Angeles", "Europe/London", "Asia/Dubai", "Asia/Kolkata", "Asia/Singapore", "UTC"];
   }
 }
 
@@ -34,7 +34,7 @@ export default function MeetingEditor({ q, update }: { q: Question; update: (p: 
   const institute = useContext(EditingInstitute);
   const { apiFetch, ready } = useLegacyApi();
   const [options, setOptions] = useState<BookingOptions | null>(null);
-  const b = q.booking ?? { mode: "request", modes: ["Phone", "Video"], daysAhead: 14, timeZone: "Asia/Kolkata" };
+  const b = q.booking ?? { mode: "request", modes: ["Phone", "Video"], daysAhead: 14, timeZone: localTimeZone() };
   const set = (patch: Partial<NonNullable<Question["booking"]>>) => update({ booking: { ...b, ...patch } });
   const allZones = useMemo(() => zones(), []);
 

@@ -118,7 +118,7 @@ export default function PrivacySettingsPage() {
             {en("Privacy and your data")}
           </h1>
           <p className="text-sm text-muted-foreground mt-1">
-            {en("Download a copy of your data, or delete it. These are your rights under data-protection laws such as the GDPR and India's DPDP Act.")}
+            {en("Download a copy of your data, or delete it. These are your rights under data-protection laws such as the CCPA in California, the GDPR in Europe and India's DPDP Act.")}
           </p>
         </div>
 

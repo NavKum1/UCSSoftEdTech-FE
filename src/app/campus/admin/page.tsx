@@ -641,7 +641,7 @@ function toLocalInput(d: Date) {
 }
 
 function formatDate(iso: string) {
-  return new Date(iso).toLocaleString("en-IN", { day: "numeric", month: "short", year: "numeric", hour: "numeric", minute: "2-digit" });
+  return new Date(iso).toLocaleString(undefined, { day: "numeric", month: "short", year: "numeric", hour: "numeric", minute: "2-digit" });
 }
 
 function AssignTab({ cohortId, assignments, getToken, onChanged }: { cohortId: string; assignments: AssignmentRow[]; getToken: GetToken; onChanged: () => void }) {

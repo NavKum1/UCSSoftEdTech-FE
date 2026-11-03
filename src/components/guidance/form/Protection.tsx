@@ -11,6 +11,12 @@ import { CheckCircle2 } from "lucide-react";
 const field = "block w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus:outline-2 focus:outline-[var(--gf-accent)]";
 
 /** Phone number with "Send code" and the code box; reports the check id once the code is right. */
+/** A phone number in the school's country's format, as an example (US format unless the country has its own here) */
+export function phoneExample(country: string | null | undefined): string {
+  const examples: Record<string, string> = { IN: "+91 98765 43210", GB: "+44 7700 900123", AE: "+971 50 123 4567" };
+  return examples[(country ?? "").toUpperCase()] ?? "+1 555 123 4567";
+}
+
 export function PhoneCheck({
   apiBase,
   formId,
@@ -18,6 +24,7 @@ export function PhoneCheck({
   setPhone,
   onVerified,
   label,
+  country,
 }: {
   /** e.g. https://api…/api/public/guidance/{instituteId} */
   apiBase: string;
@@ -26,6 +33,8 @@ export function PhoneCheck({
   setPhone: (p: string) => void;
   onVerified: (checkId: string | null) => void;
   label: string;
+  /** The school's country, for the phone example */
+  country?: string | null;
 }) {
   const [checkId, setCheckId] = useState<string | null>(null);
   const [code, setCode] = useState("");
@@ -80,7 +89,7 @@ export function PhoneCheck({
             value={phone}
             maxLength={64}
             autoComplete="tel"
-            placeholder="+91 98765 43210"
+            placeholder={phoneExample(country)}
             disabled={verified}
             onChange={(e) => {
               setPhone(e.target.value);

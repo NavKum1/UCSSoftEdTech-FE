@@ -44,6 +44,7 @@ import {
   type Template,
 } from "./api";
 import { useEn } from "@/lib/english/EnglishProvider";
+import { useSchoolCountry } from "@/components/institute/SchoolEnglish";
 
 type Mode = "Call" | "Email" | "Sms" | "WhatsApp" | "Note" | "Meeting";
 
@@ -803,6 +804,8 @@ function Composer({
   const [outcome, setOutcome] = useState("");
   const [at, setAt] = useState(() => localInput(presets()[1].at));
   const [dlt, setDlt] = useState("");
+  // India's DLT id: only for an SMS to an Indian number, or from a school in India
+  const dltNeeded = useSchoolCountry() === "IN" || /^\s*(\+|00)91/.test(lead.phone ?? "");
   const first = (lead.name ?? "").split(" ")[0] || "there";
 
   const submit = async (e: React.FormEvent) => {
@@ -925,7 +928,7 @@ function Composer({
               {en("{name}, {course}, {institute} and {counsellor} are filled in for you. {value} Every email has a link to stop further contact.", { value: lead.channels.replyByEmail ? en("Their reply lands on this timeline.") : en("Replies go to your institute's email.") })}
             </p>
           )}
-          {mode === "Sms" && (
+          {mode === "Sms" && dltNeeded && (
             <input className={input} value={dlt} onChange={(e) => setDlt(e.target.value)} placeholder={en("DLT template id (needed for SMS in India)")} aria-label={en("DLT template id")} />
           )}
           {mode === "WhatsApp" && <p className="text-xs text-muted-foreground">{en("Opens WhatsApp with this message ready to send from your phone or WhatsApp Web.")}</p>}
