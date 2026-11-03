@@ -145,7 +145,7 @@ export default function RecruiterAccommodationsPage() {
               filter === f ? "bg-indigo-600 text-white" : "text-muted-foreground hover:text-foreground hover:bg-muted"
             }`}
           >
-            {f}
+            {en(f)}
           </button>
         ))}
       </div>
@@ -161,7 +161,7 @@ export default function RecruiterAccommodationsPage() {
       ) : rows.length === 0 ? (
         <div className="glass-panel rounded-2xl p-10 border border-border text-center space-y-2">
           <Inbox className="w-8 h-8 mx-auto text-muted-foreground" />
-          <p className="text-sm text-muted-foreground">{en("No ")}{filter === "All" ? "" : filter.toLowerCase() + " "}requests.</p>
+          <p className="text-sm text-muted-foreground">{en("No {value}requests.", { value: filter === "All" ? "" : filter.toLowerCase() + " " })}</p>
         </div>
       ) : (
         <ul className="space-y-3">
@@ -171,7 +171,7 @@ export default function RecruiterAccommodationsPage() {
                 <span className={`inline-flex px-2 py-0.5 rounded-full text-[11px] font-semibold border ${STATUS_STYLES[r.status] ?? ""}`}>{r.status.replace(/([a-z])([A-Z])/g, "$1 $2")}</span>
                 <span className="font-semibold text-foreground">{r.candidateName}</span>
                 <span className="text-xs text-muted-foreground">
-                  {accommodationLabel(r.type)} · {r.sprintTitle ?? r.scope}{en(" · requested ")}{fmtDate(r.createdAt)}
+                  {en("{type} · {value} · requested {date}", { type: accommodationLabel(r.type), value: r.sprintTitle ?? r.scope, date: fmtDate(r.createdAt) })}
                 </span>
               </div>
               <p className="text-sm text-foreground whitespace-pre-wrap">{r.details}</p>

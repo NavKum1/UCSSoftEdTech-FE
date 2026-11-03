@@ -865,7 +865,7 @@ export default function SuperAdminDashboard() {
             {editResult ? (
               <div className="space-y-3 text-sm">
                 <p>
-                  &quot;{editResult.from}&quot; is now &quot;{editResult.to}{en("\" everywhere Edulexa shows the institute's name: the CRM, forms, reports, e-mails and the career centre.")}
+                  {en("\"{from}\" is now \"{to}\" everywhere Edulexa shows the institute's name: the CRM, forms, reports, e-mails and the career centre.", { from: editResult.from, to: editResult.to })}
                 </p>
                 <p>The old name is still written in text the institute wrote itself. Change it there:</p>
                 <ul className="list-disc space-y-1 ps-5">

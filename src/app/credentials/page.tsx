@@ -398,7 +398,7 @@ function InviteDialog({ credential, getToken, onClose, onUsed }: { credential: W
                 <span>
                   <span className="font-semibold text-foreground">{inv.employer}</span>
                   <span className="block text-xs text-muted-foreground">
-                    {inv.sprintTitle}{en(" · invited ")}{formatDate(inv.invitedAt)}
+                    {en("{sprintTitle} · invited {date}", { sprintTitle: inv.sprintTitle, date: formatDate(inv.invitedAt) })}
                   </span>
                 </span>
               </label>
@@ -574,7 +574,7 @@ function ShareLinksPanel({ credential, getToken, reloadKey }: { credential: Wall
                   {s.recipientLabel || "Unlabelled link"}
                 </p>
                 <p className="text-muted-foreground">
-                  {en("Results")}{scope ? ` + ${scope}` : " only"}{en(" · created ")}{formatDate(s.createdAt)} · {s.status === "Active" ? `expires ${formatDate(s.expiresAt)}` : s.status.toLowerCase()}
+                  {en("Results{value} · created {date} · {value2}", { value: scope ? ` + ${scope}` : en(" only"), date: formatDate(s.createdAt), value2: s.status === "Active" ? `expires ${formatDate(s.expiresAt)}` : s.status.toLowerCase() })}
                 </p>
               </div>
               <div className="flex items-center gap-2">
@@ -668,8 +668,7 @@ function CredentialCard({
         <div className="min-w-0">
           <h3 className="text-base font-bold text-foreground">{credential.task.title}</h3>
           <p className="text-xs text-muted-foreground">
-            {[credential.task.taskType, credential.task.language].filter(Boolean).join(" · ") || "Voice defense"}{en(" · issued ")}{formatDate(credential.issuedAt)} ·{" "}
-            {credential.status === "Revoked" ? `revoked ${formatDate(credential.revokedAt)}` : `valid until ${formatDate(credential.validUntil)}`}
+            {en("{value} · issued {date} · {value2}", { value: [credential.task.taskType, credential.task.language].filter(Boolean).join(" · ") || en("Voice defense"), date: formatDate(credential.issuedAt), value2: credential.status === "Revoked" ? `revoked ${formatDate(credential.revokedAt)}` : `valid until ${formatDate(credential.validUntil)}` })}
           </p>
         </div>
         <span className={`px-2.5 py-0.5 rounded-md text-[11px] font-bold uppercase tracking-wider border ${statusBadgeClass(credential.status)}`}>{String(credential.status ?? "").replace(/([a-z])([A-Z])/g, (_m, a: string, b: string) => `${a} ${b.toLowerCase()}`)}</span>
@@ -883,7 +882,7 @@ export default function CredentialWalletPage() {
               <Download className="w-3.5 h-3.5" />{en(" Download CLR")}
             </button>
             <p className="text-xs text-muted-foreground">
-              {en("Credentials are valid for ")}{wallet.validityMonths}{en(" months from issue. Employers can check any copied JWS at")}{" "}
+              {en("Credentials are valid for {validityMonths} months from issue. Employers can check any copied JWS at", { validityMonths: wallet.validityMonths })}{" "}
               <Link href="/verify" className="underline">
                 /verify
               </Link>
@@ -926,7 +925,7 @@ export default function CredentialWalletPage() {
           </p>
           <div className="rounded-xl border border-border bg-muted/40 p-3 font-mono text-xs break-all text-foreground">{dialog.link.url}</div>
           <div className="flex items-center justify-between gap-2">
-            <span className="text-xs text-muted-foreground">{en("Expires ")}{formatDate(dialog.link.expiresAt)}</span>
+            <span className="text-xs text-muted-foreground">{en("Expires {date}", { date: formatDate(dialog.link.expiresAt) })}</span>
             <CopyButton text={dialog.link.url} label={en("Copy link")} />
           </div>
         </Modal>

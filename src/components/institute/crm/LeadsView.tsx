@@ -217,7 +217,7 @@ export default function LeadsView({
               title={q.key === "overdue" ? en("Leads with a follow-up whose due time has passed and isn't ticked off") : q.key === "incomplete" ? en("People who started a website form and gave their contact details but haven't sent it yet") : undefined}
               className={`rounded-full border px-3 py-1.5 text-xs font-medium ${on ? "border-cyan-700 bg-cyan-700 text-white" : "border-border bg-card hover:bg-muted"}`}
             >
-              {q.label}
+              {en(q.label)}
               {count ? <span className="ms-1 tabular-nums opacity-80">{count}</span> : null}
             </button>
           );
@@ -420,7 +420,7 @@ export default function LeadsView({
                   </td>
                   <td className="px-3 py-2.5 whitespace-nowrap">
                     {l.awaitingReply ? (
-                      <span className="rounded-full bg-cyan-600/10 px-2 py-0.5 text-xs font-medium text-cyan-800 dark:text-cyan-300">{en("Replied ")}{relative(l.lastReplyAt)}</span>
+                      <span className="rounded-full bg-cyan-600/10 px-2 py-0.5 text-xs font-medium text-cyan-800 dark:text-cyan-300">{en("Replied {lastReplyAt}", { lastReplyAt: relative(l.lastReplyAt) })}</span>
                     ) : l.lastContactAt ? (
                       <span className="text-muted-foreground">{relative(l.lastContactAt)}</span>
                     ) : l.stage !== "New" ? (
@@ -440,8 +440,7 @@ export default function LeadsView({
           {data && data.total > 0 && (
             <div className="flex flex-wrap items-center justify-between gap-2 border-t border-border px-3 py-2.5 text-xs text-muted-foreground">
               <span>
-                {en("Showing ")}{leads.length.toLocaleString()} of {data.total.toLocaleString()}
-                {data.total !== (data.totalAll ?? data.total) ? ` matching (${(data.totalAll ?? data.total).toLocaleString()} in all)` : ""}
+                {en("Showing {number} of {number2}{value}", { number: leads.length.toLocaleString(), number2: data.total.toLocaleString(), value: data.total !== (data.totalAll ?? data.total) ? ` matching (${(data.totalAll ?? data.total).toLocaleString()} in all)` : "" })}
               </span>
               {data.hasMore && (
                 <button type="button" onClick={loadMore} disabled={loadingMore} className="rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-foreground hover:bg-muted disabled:opacity-50">

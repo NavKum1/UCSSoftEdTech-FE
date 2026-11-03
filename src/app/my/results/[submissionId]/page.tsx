@@ -283,7 +283,7 @@ export default function SubmissionReportPage() {
         <div className="pb-4 border-b border-border">
           <div className="text-xs font-semibold text-indigo-700 dark:text-indigo-400 uppercase tracking-wider">{en("Your report")}</div>
           <h1 className="text-2xl font-extrabold text-foreground mt-1">{report.sprint.title}</h1>
-          <p className="text-xs text-muted-foreground">{en("Submitted ")}{fmtDate(report.submittedAt)}</p>
+          <p className="text-xs text-muted-foreground">{en("Submitted {date}", { date: fmtDate(report.submittedAt) })}</p>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-4">
             <Stat label={en("Tests passed")} value={`${tests.passed}/${tests.total}`} />
             <Stat
@@ -358,7 +358,7 @@ export default function SubmissionReportPage() {
                 </ol>
               </div>
               <p className="text-[11px] text-muted-foreground">
-                {en("Generated ")}{fmtDate(feedback.generatedAt)}{en(" from your tests, the automated code review and your defense. It is developmental feedback, not the employer's decision.")}
+                {en("Generated {date} from your tests, the automated code review and your defense. It is developmental feedback, not the employer's decision.", { date: fmtDate(feedback.generatedAt) })}
               </p>
             </div>
           )}
@@ -367,7 +367,7 @@ export default function SubmissionReportPage() {
         {/* Tests */}
         <Section title={`Tests: ${tests.passed}/${tests.total} passed`} icon={<CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />}>
           {tests.cases.length === 0 ? (
-            <p className="text-xs text-muted-foreground">{en("No per-test results were recorded (status: ")}{tests.status.replace(/([a-z])([A-Z])/g, "$1 $2").toLowerCase()}).</p>
+            <p className="text-xs text-muted-foreground">{en("No per-test results were recorded (status: {value}).", { value: tests.status.replace(/([a-z])([A-Z])/g, "$1 $2").toLowerCase() })}</p>
           ) : (
             <ul className="grid sm:grid-cols-2 gap-1.5">
               {tests.cases.map((c) => (
@@ -518,7 +518,7 @@ export default function SubmissionReportPage() {
                   <p className="text-foreground whitespace-pre-wrap text-xs">{a.reason}</p>
                   {a.response && (
                     <div className="rounded-lg bg-muted/40 border border-border p-2 text-xs">
-                      <span className="font-semibold text-foreground">{en("Response")}{a.resolverName ? ` from ${a.resolverName}` : ""}: </span>
+                      <span className="font-semibold text-foreground">{en("Response{value}:", { value: a.resolverName ? ` from ${a.resolverName}` : "" })}{" "}</span>
                       <span className="text-foreground whitespace-pre-wrap">{a.response}</span>
                     </div>
                   )}
@@ -545,9 +545,9 @@ export default function SubmissionReportPage() {
                   >
                     <span className="flex items-center gap-2 font-semibold text-foreground">
                       <input type="radio" name="category" value={c.value} checked={category === c.value} onChange={() => setCategory(c.value)} />
-                      {c.label}
+                      {en(c.label)}
                     </span>
-                    <span className="block text-xs text-muted-foreground mt-1">{c.hint}</span>
+                    <span className="block text-xs text-muted-foreground mt-1">{en(c.hint)}</span>
                   </label>
                 ))}
               </fieldset>
@@ -564,7 +564,7 @@ export default function SubmissionReportPage() {
                   aria-describedby="appeal-counter"
                 />
                 <div id="appeal-counter" className={`text-[11px] mt-1 ${reasonValid ? "text-muted-foreground" : "text-amber-700 dark:text-amber-400"}`}>
-                  {reasonLength}/{APPEAL_MAX}{en(" characters (")}{APPEAL_MIN}{en(" minimum)")}
+                  {en("{reasonLength}/{aPPEAL_MAX} characters ({aPPEAL_MIN} minimum)", { reasonLength, aPPEAL_MAX: APPEAL_MAX, aPPEAL_MIN: APPEAL_MIN })}
                 </div>
               </div>
               <button
@@ -599,7 +599,7 @@ export default function SubmissionReportPage() {
                     <span className="text-muted-foreground">{a.sprintId ? en("This sprint") : en("All assessments")} · {fmtDate(a.createdAt)}</span>
                   </div>
                   <p className="text-foreground whitespace-pre-wrap">{a.details}</p>
-                  {a.decisionNote && <p className="text-muted-foreground">{en("Reviewer note: ")}{a.decisionNote}</p>}
+                  {a.decisionNote && <p className="text-muted-foreground">{en("Reviewer note: {decisionNote}", { decisionNote: a.decisionNote })}</p>}
                 </li>
               ))}
             </ul>
@@ -614,7 +614,7 @@ export default function SubmissionReportPage() {
                   className="w-full px-3 py-2 rounded-xl border border-border bg-background text-sm text-foreground"
                 >
                   {ACCOMMODATION_TYPES.map((t) => (
-                    <option key={t.value} value={t.value}>{t.label}</option>
+                    <option key={t.value} value={t.value}>{en(t.label)}</option>
                   ))}
                 </select>
               </label>

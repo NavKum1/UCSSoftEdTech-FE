@@ -578,7 +578,7 @@ export default function InterviewPairingStudioPage({ params }: { params: Promise
         </div>
         <div>
           {isTakeoverActive ? (
-            <span className="text-amber-700 dark:text-amber-400 font-semibold">{en("Live Voice Takeover: ")}{takeoverName || "Interviewer"}</span>
+            <span className="text-amber-700 dark:text-amber-400 font-semibold">{en("Live Voice Takeover: {value}", { value: takeoverName || en("Interviewer") })}</span>
           ) : (
             <span className="text-cyan-700 dark:text-cyan-400">{en("AI Voice Assistant: Synthesizing questions")}</span>
           )}

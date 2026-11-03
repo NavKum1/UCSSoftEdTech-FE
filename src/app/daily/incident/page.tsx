@@ -219,7 +219,7 @@ function IncidentDrill() {
             <select value={track} onChange={(e) => setTrack(e.target.value)} className={select}>
               {TRACKS.map((t) => (
                 <option key={t.id} value={t.id}>
-                  {t.label}
+                  {en(t.label)}
                 </option>
               ))}
             </select>
@@ -228,7 +228,7 @@ function IncidentDrill() {
             <span className="font-medium">{en("Difficulty")}</span>
             <select value={tier} onChange={(e) => setTier(e.target.value)} className={select}>
               {TIERS.map((t) => (
-                <option key={t}>{t}</option>
+                <option key={t}>{en(t)}</option>
               ))}
             </select>
           </label>
@@ -266,7 +266,7 @@ function IncidentDrill() {
 
           {status.completed && !result && (
             <p className="mt-4 rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-sm">
-              {en("You completed this drill and earned ")}{status.points ?? 0}{en(" points. You can practise it again; repeats don't earn points.")}
+              {en("You completed this drill and earned {value} points. You can practise it again; repeats don't earn points.", { value: status.points ?? 0 })}
             </p>
           )}
 
@@ -369,9 +369,7 @@ function IncidentResultView({ result, onAgain, busy }: { result: Result; onAgain
       <section className={`${card} p-6`}>
         <p className="text-3xl font-semibold tabular-nums">{result.score} / 100</p>
         <p className="text-sm text-muted-foreground">
-          {result.countsForPoints ? `${result.points} points${result.speedBonus ? `, including a ${result.speedBonus}-point speed bonus` : ""}.` : en("Practice: no points for a repeat.")}{en(" Time:")}{" "}
-          {Math.floor(result.timeSeconds / 60)}m {result.timeSeconds % 60}s.
-        </p>
+          {en("{value} Time: {value2}m {value3}s.", { value: result.countsForPoints ? `${result.points} points${result.speedBonus ? `, including a ${result.speedBonus}-point speed bonus` : ""}.` : en("Practice: no points for a repeat."), value2: Math.floor(result.timeSeconds / 60), value3: result.timeSeconds % 60 })}</p>
         <p className="mt-3 text-sm">{result.feedback}</p>
         <button type="button" className="mt-4 text-sm font-semibold text-amber-700 hover:underline disabled:opacity-50 dark:text-amber-400" disabled={busy} onClick={onAgain}>
           {en("Practise again (no points)")}
@@ -406,7 +404,7 @@ function IncidentResultView({ result, onAgain, busy }: { result: Result; onAgain
                     {a.label}
                     {a.chosen && <span className="ms-1 text-xs font-normal text-muted-foreground">{en("(your answer)")}</span>}
                   </span>
-                  <span className="mt-0.5 block text-xs text-muted-foreground">{en("Risk: ")}{a.risk}</span>
+                  <span className="mt-0.5 block text-xs text-muted-foreground">{en("Risk: {risk}", { risk: a.risk })}</span>
                 </span>
               </li>
             ))}
@@ -497,7 +495,7 @@ function GenerateDrill({
             <select value={track} onChange={(e) => setTrack(e.target.value)} className={select}>
               {TRACKS.map((t) => (
                 <option key={t.id} value={t.id}>
-                  {t.label}
+                  {en(t.label)}
                 </option>
               ))}
             </select>
@@ -506,7 +504,7 @@ function GenerateDrill({
             <span className="font-medium">{en("Difficulty")}</span>
             <select value={tier} onChange={(e) => setTier(e.target.value)} className={select}>
               {TIERS.map((t) => (
-                <option key={t}>{t}</option>
+                <option key={t}>{en(t)}</option>
               ))}
             </select>
           </label>

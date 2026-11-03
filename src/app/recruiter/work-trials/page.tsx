@@ -172,9 +172,10 @@ async function errorMessage(res: Response, fallback: string) {
 }
 
 function StatusBadge({ status }: { status: string }) {
+  const en = useEn();
   return (
     <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold border ${STATUS_STYLES[status] ?? STATUS_STYLES.Fetched}`}>
-      {STATUS_LABELS[status] ?? status}
+      {en(STATUS_LABELS[status] ?? status)}
     </span>
   );
 }
@@ -463,7 +464,7 @@ function NewTrialWizard({
             {en("AI policy for candidates")}
             <select value={aiPolicy} onChange={(e) => setAiPolicy(e.target.value as AiPolicy)} className={inputClass}>
               {(Object.keys(AI_POLICY_LABELS) as AiPolicy[]).map((p) => (
-                <option key={p} value={p}>{AI_POLICY_LABELS[p]}</option>
+                <option key={p} value={p}>{en(AI_POLICY_LABELS[p])}</option>
               ))}
             </select>
           </label>
@@ -513,18 +514,18 @@ function ValidationPanel({ validation }: { validation: Validation }) {
       {validation.sandboxUnavailable ? (
         <div className="rounded-xl border border-amber-500/40 bg-amber-500/5 p-3 text-xs text-foreground flex items-start gap-2">
           <AlertTriangle className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0" />
-          <span>{en("Sandbox unavailable at ")}{new Date(validation.ranAt).toLocaleString()}{en(": the tests could not be run, so nothing was validated. Try again once the code sandbox is running.")}</span>
+          <span>{en("Sandbox unavailable at {number}: the tests could not be run, so nothing was validated. Try again once the code sandbox is running.", { number: new Date(validation.ranAt).toLocaleString() })}</span>
         </div>
       ) : validation.passed ? (
         <div className="rounded-xl border border-emerald-500/40 bg-emerald-500/5 p-3 text-xs text-foreground flex items-start gap-2">
           <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
           <span>
-            {en("Validated ")}{new Date(validation.ranAt).toLocaleString()}{validation.runtime ? ` on ${validation.runtime}` : ""}{en(": all tests pass on the original module, each defect's tests fail on the seeded module, and the control tests still pass.")}
+            {en("Validated {number}{value}: all tests pass on the original module, each defect's tests fail on the seeded module, and the control tests still pass.", { number: new Date(validation.ranAt).toLocaleString(), value: validation.runtime ? ` on ${validation.runtime}` : "" })}
           </span>
         </div>
       ) : (
         <div className="rounded-xl border border-rose-500/40 bg-rose-500/5 p-3 text-xs text-foreground space-y-1">
-          <div className="flex items-center gap-2 font-semibold"><XCircle className="w-4 h-4 text-rose-600 dark:text-rose-400" />{en(" Validation failed (")}{new Date(validation.ranAt).toLocaleString()})</div>
+          <div className="flex items-center gap-2 font-semibold"><XCircle className="w-4 h-4 text-rose-600 dark:text-rose-400" />{" "}{en("Validation failed ({number})", { number: new Date(validation.ranAt).toLocaleString() })}</div>
           <ul className="list-disc ps-6 space-y-0.5">
             {validation.problems.map((p, i) => <li key={i}>{p}</li>)}
           </ul>
@@ -571,13 +572,13 @@ function ValidationPanel({ validation }: { validation: Validation }) {
 
       {validation.original && (
         <details className="text-xs">
-          <summary className="cursor-pointer font-semibold text-foreground">{en("Output: original module (")}{validation.original.passed}/{validation.original.total}{en(" passed, exit ")}{validation.original.exitCode})</summary>
+          <summary className="cursor-pointer font-semibold text-foreground">{en("Output: original module ({passed}/{total} passed, exit {exitCode})", { passed: validation.original.passed, total: validation.original.total, exitCode: validation.original.exitCode })}</summary>
           <div className="mt-2"><CodeBlock code={validation.original.output} maxHeight="max-h-72" /></div>
         </details>
       )}
       {validation.seeded && (
         <details className="text-xs">
-          <summary className="cursor-pointer font-semibold text-foreground">{en("Output: seeded module (")}{validation.seeded.passed}/{validation.seeded.total}{en(" passed, exit ")}{validation.seeded.exitCode})</summary>
+          <summary className="cursor-pointer font-semibold text-foreground">{en("Output: seeded module ({passed}/{total} passed, exit {exitCode})", { passed: validation.seeded.passed, total: validation.seeded.total, exitCode: validation.seeded.exitCode })}</summary>
           <div className="mt-2"><CodeBlock code={validation.seeded.output} maxHeight="max-h-72" /></div>
         </details>
       )}
@@ -714,8 +715,7 @@ function TrialReview({
             )}
           </div>
           <p className="text-xs text-muted-foreground mt-1">
-            {trial.roleTitle} · {trial.language}{en(" · AI ")}{trial.aiPolicy.toLowerCase()}
-            {trial.status !== "Published" ? ` · draft deleted ${new Date(trial.expiresAt).toLocaleDateString()} unless published` : ""}
+            {en("{roleTitle} · {language} · AI {value}{value2}", { roleTitle: trial.roleTitle, language: trial.language, value: trial.aiPolicy.toLowerCase(), value2: trial.status !== "Published" ? ` · draft deleted ${new Date(trial.expiresAt).toLocaleDateString()} unless published` : "" })}
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
@@ -777,8 +777,7 @@ function TrialReview({
         <div className="rounded-2xl border border-purple-500/40 bg-purple-500/5 p-5 space-y-3">
           <h2 className="text-sm font-bold text-foreground flex items-center gap-2"><ClipboardCheck className="w-4 h-4" />{en(" Published as a private sprint")}</h2>
           <p className="text-xs text-muted-foreground">
-            {en("Share the link (or the invite code) with candidates. Submissions appear in Evidence packs, where a person reviews them and decides.")}
-            {trial.forcePublishReason ? ` Published without a passing validation: "${trial.forcePublishReason}"` : ""}
+            {en("Share the link (or the invite code) with candidates. Submissions appear in Evidence packs, where a person reviews them and decides.{value}", { value: trial.forcePublishReason ? ` Published without a passing validation: "${trial.forcePublishReason}"` : "" })}
           </p>
           <CopyField label={en("Invite code")} value={trial.inviteCode} />
           <CopyField label={en("Candidate link")} value={candidateUrl} />
@@ -814,7 +813,7 @@ function TrialReview({
           )}
           {trial.sourceFiles.length > 0 && (
             <details className="text-xs">
-              <summary className="cursor-pointer font-semibold text-foreground">{trial.sourceFiles.length}{en(" sanitized source file(s) stored")}</summary>
+              <summary className="cursor-pointer font-semibold text-foreground">{en("{length} sanitized source file(s) stored", { length: trial.sourceFiles.length })}</summary>
               <ul className="mt-2 space-y-0.5">
                 {trial.sourceFiles.map((f) => (
                   <li key={f.name} className="flex justify-between gap-2"><span className="font-mono text-foreground break-all">{f.name}</span><span className="text-muted-foreground shrink-0">{f.lines} lines</span></li>
@@ -838,7 +837,7 @@ function TrialReview({
               </div>
               {trial.module.rationale && <p className="text-xs text-foreground">{trial.module.rationale}</p>}
               {trial.generationNotes && <p className="text-xs text-muted-foreground"><span className="font-semibold">{en("Changes made to run in a bare runtime:")}</span> {trial.generationNotes}</p>}
-              {trial.generationModel && <p className="text-[11px] text-muted-foreground">{en("Generated by ")}{trial.generationModel === "dev-stub" ? en("the development stub (no AI model configured)") : trial.generationModel}{en(". AI output: review it before publishing.")}</p>}
+              {trial.generationModel && <p className="text-[11px] text-muted-foreground">{en("Generated by {value}. AI output: review it before publishing.", { value: trial.generationModel === "dev-stub" ? en("the development stub (no AI model configured)") : trial.generationModel })}</p>}
             </>
           )}
         </Section>
@@ -895,7 +894,7 @@ function TrialReview({
           <CodeBlock code={activeFile.content} />
           {activeOriginal && (
             <details className="text-xs">
-              <summary className="cursor-pointer font-semibold text-foreground">{en("Original (correct) version of ")}{activeFile.name}</summary>
+              <summary className="cursor-pointer font-semibold text-foreground">{en("Original (correct) version of {name}", { name: activeFile.name })}</summary>
               <div className="mt-2"><CodeBlock code={activeOriginal.content} /></div>
             </details>
           )}
@@ -937,7 +936,7 @@ function TrialReview({
             {en("AI policy")}
             <select value={aiPolicy} onChange={(e) => setAiPolicy(e.target.value as AiPolicy)} disabled={!editable} className={inputClass}>
               {(Object.keys(AI_POLICY_LABELS) as AiPolicy[]).map((p) => (
-                <option key={p} value={p}>{AI_POLICY_LABELS[p]}</option>
+                <option key={p} value={p}>{en(AI_POLICY_LABELS[p])}</option>
               ))}
             </select>
           </label>
@@ -1143,7 +1142,7 @@ export default function WorkTrialsPage() {
                     <StatusBadge status={r.status} />
                   </div>
                   <p className="text-[11px] text-muted-foreground mt-1">
-                    {r.roleTitle} · {r.language}{en(" · AI ")}{r.aiPolicy.toLowerCase()}{en(" · updated ")}{new Date(r.updatedAt).toLocaleString()}
+                    {en("{roleTitle} · {language} · AI {value} · updated {number}", { roleTitle: r.roleTitle, language: r.language, value: r.aiPolicy.toLowerCase(), number: new Date(r.updatedAt).toLocaleString() })}
                   </p>
                   <p className="text-[11px] text-muted-foreground mt-0.5 break-words">{r.sourceSummary}</p>
                 </div>

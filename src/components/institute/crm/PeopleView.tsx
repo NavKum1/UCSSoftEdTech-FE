@@ -149,7 +149,7 @@ export default function PeopleView({ getToken, openLead }: { getToken: GetToken;
                   <td className="px-3 py-2">{p.incomplete ? <span className="text-xs text-amber-800 dark:text-amber-300">{en("Incomplete")}</span> : <StageBadge stage={p.stage} />}</td>
                   <td className="px-3 py-2 text-xs">
                     {p.outcome && <span className="block font-medium">{p.outcome}</span>}
-                    {p.match != null && <span className="text-muted-foreground">{p.match}{en("% match")}</span>}
+                    {p.match != null && <span className="text-muted-foreground">{en("{match}% match", { match: p.match })}</span>}
                     {!p.outcome && p.match == null && <span className="text-muted-foreground">—</span>}
                   </td>
                   <td className="px-3 py-2 text-xs">
@@ -223,7 +223,7 @@ function PersonPanel({ leadId, getToken, onClose, openLead }: { leadId: string; 
                 )}
                 {p.phone && <span>{p.phone}</span>}
                 <StageBadge stage={p.stage} />
-                <span className="text-xs">{en("First seen ")}{new Date(p.firstSeen).toLocaleDateString(undefined, { dateStyle: "medium" })}</span>
+                <span className="text-xs">{en("First seen {date}", { date: new Date(p.firstSeen).toLocaleDateString(undefined, { dateStyle: "medium" }) })}</span>
               </p>
             )}
           </div>
@@ -245,7 +245,7 @@ function PersonPanel({ leadId, getToken, onClose, openLead }: { leadId: string; 
             <div className="grid gap-3 md:grid-cols-3">
               {p.cards.map((c) => (
                 <section key={c.card} className="rounded-2xl border border-border bg-card p-4">
-                  <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{CARD[c.card] ?? c.card}</h3>
+                  <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{en(CARD[c.card] ?? c.card)}</h3>
                   {c.answers.length === 0 ? (
                     <p className="mt-2 text-xs text-muted-foreground">{en("Nothing yet. Tag questions for this card in the form builder.")}</p>
                   ) : (

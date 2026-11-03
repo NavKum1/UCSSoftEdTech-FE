@@ -201,7 +201,7 @@ export default function PersonaSelectorPage() {
               <Sparkles className="w-4 h-4 text-indigo-700 dark:text-indigo-400" />
               {en("1. Select Interviewer Persona & Scrutiny Style")}
             </h2>
-            <span className="text-xs text-muted-foreground">{personas.length}{en(" Available Profiles")}</span>
+            <span className="text-xs text-muted-foreground">{en("{length} Available Profiles", { length: personas.length })}</span>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -274,10 +274,10 @@ export default function PersonaSelectorPage() {
                   }`}
                 >
                   <div className="flex items-center justify-between">
-                    <span className="font-semibold text-xs text-foreground">{d.label}</span>
-                    <span className="text-[10px] text-muted-foreground font-mono">{d.region}</span>
+                    <span className="font-semibold text-xs text-foreground">{en(d.label)}</span>
+                    <span className="text-[10px] text-muted-foreground font-mono">{en(d.region)}</span>
                   </div>
-                  <p className="text-[11px] text-muted-foreground leading-relaxed">{d.desc}</p>
+                  <p className="text-[11px] text-muted-foreground leading-relaxed">{en(d.desc)}</p>
                 </div>
               );
             })}

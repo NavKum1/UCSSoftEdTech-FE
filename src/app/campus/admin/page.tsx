@@ -171,7 +171,7 @@ const secondaryButtonClass =
 async function apiJson<T>(path: string, getToken: GetToken, init: RequestInit = {}): Promise<T> {
   const res = await authenticatedFetch(path, init, getToken);
   const body = res.status === 204 ? null : await res.json().catch(() => null);
-  if (res.status === 401) throw new Error("Please sign in with your placement cell account.");
+  if (res.status === 401) throw new Error("Please sign in with your placement office account.");
   if (!res.ok) throw new Error(body?.error || (res.status === 403 ? "You need institute admin access." : "Something went wrong on our side. Please try again."));
   return body as T;
 }
@@ -266,7 +266,7 @@ export default function CampusAdminPage() {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-6">
       <div className="pb-4 border-b border-border">
         <div className="flex items-center gap-2 text-xs font-semibold text-indigo-700 dark:text-indigo-400 uppercase tracking-wider">
-          <GraduationCap className="w-4 h-4" />{en(" Placement cell")}
+          <GraduationCap className="w-4 h-4" />{en(" Placement office")}
         </div>
         <h1 className="text-xl sm:text-2xl font-extrabold text-foreground mt-1">{en("Campus cohorts and readiness")}</h1>
         <p className="text-xs text-muted-foreground mt-1 max-w-2xl">
@@ -296,8 +296,7 @@ export default function CampusAdminPage() {
                     >
                       <span className="block text-sm font-semibold text-foreground truncate">{c.name}</span>
                       <span className="block text-[11px] text-muted-foreground">
-                        {[c.program, c.graduationYear].filter(Boolean).join(" · ")} · {c.memberCount}{en(" students · ")}{c.assignmentCount} sprints
-                      </span>
+                        {en("{value} · {memberCount} students · {assignmentCount} sprints", { value: [c.program, c.graduationYear].filter(Boolean).join(" · "), memberCount: c.memberCount, assignmentCount: c.assignmentCount })}</span>
                     </button>
                   </li>
                 ))}
@@ -413,7 +412,7 @@ function CohortPanel({ cohortId, getToken, onChanged, onDeleted }: { cohortId: s
               tab === t.id ? "border-indigo-600 text-indigo-700 dark:text-indigo-300" : "border-transparent text-muted-foreground hover:text-foreground"
             }`}
           >
-            {t.label}
+            {en(t.label)}
           </button>
         ))}
       </div>
@@ -784,7 +783,7 @@ function AssignTab({ cohortId, assignments, getToken, onChanged }: { cohortId: s
                   <p className="text-sm font-semibold text-foreground break-words">
                     {a.sprintTitle} {a.isPrivate && <span className="text-[10px] px-1.5 py-0.5 rounded border border-border text-muted-foreground align-middle">private</span>}
                   </p>
-                  <p className="text-[11px] text-muted-foreground">{en("Opens ")}{formatDate(a.opensAt)}{en(" · Due ")}{formatDate(a.dueAt)}</p>
+                  <p className="text-[11px] text-muted-foreground">{en("Opens {date} · Due {date2}", { date: formatDate(a.opensAt), date2: formatDate(a.dueAt) })}</p>
                 </div>
                 <button onClick={() => remove(a)} className="p-1.5 rounded-lg text-muted-foreground hover:text-rose-600 cursor-pointer" aria-label={`Remove ${a.sprintTitle}`}>
                   <Trash2 className="w-4 h-4" />
@@ -813,6 +812,7 @@ function SprintPicker({ assignments, value, onChange }: { assignments: Assignmen
 }
 
 function FunnelBars({ funnel }: { funnel: Funnel }) {
+  const en = useEn();
   const steps: [string, number][] = [
     ["Invited", funnel.invited],
     ["Started", funnel.started],
@@ -826,7 +826,7 @@ function FunnelBars({ funnel }: { funnel: Funnel }) {
         const pct = Math.round((100 * value) / max);
         return (
           <div key={label} className="grid grid-cols-[72px_1fr_64px] items-center gap-2 text-xs" title={`${label}: ${value} of ${funnel.invited} (${pct}%)`}>
-            <span className="text-muted-foreground">{label}</span>
+            <span className="text-muted-foreground">{en(label)}</span>
             <div className="h-3 rounded bg-muted overflow-hidden">
               <div className="h-full rounded-e bg-indigo-500 dark:bg-indigo-400" style={{ width: `${pct}%` }} />
             </div>
@@ -848,7 +848,7 @@ function Histogram({ title, dist, suffix }: { title: string; dist: Distribution;
       <div className="flex items-baseline justify-between gap-2">
         <h4 className="text-xs font-bold text-foreground">{title}</h4>
         <span className="text-[11px] text-muted-foreground">
-          n {dist.n}{en(" · mean ")}{fmt(dist.mean, suffix)}{en(" · median ")}{fmt(dist.median, suffix)}
+          {en("n {n} · mean {mean} · median {median}", { n: dist.n, mean: fmt(dist.mean, suffix), median: fmt(dist.median, suffix) })}
         </span>
       </div>
       {dist.n === 0 ? (
@@ -940,7 +940,7 @@ function DashboardTab({ cohortId, assignments, getToken }: { cohortId: string; a
                     title={`Show only ${b}`}
                   >
                     <span className="block text-lg font-bold tabular-nums">{d.readiness.counts[b] ?? 0}</span>
-                    <span className="block text-[11px] font-semibold">{b}</span>
+                    <span className="block text-[11px] font-semibold">{en(b)}</span>
                   </button>
                 ))}
               </div>
@@ -949,7 +949,7 @@ function DashboardTab({ cohortId, assignments, getToken }: { cohortId: string; a
                 <div className="flex flex-wrap gap-2 text-[11px]">
                   {[["Clear", "Clear"], ["Review", "Review"], ["HighRisk", "High risk"], ["Unknown", en("Not analysed")]].map(([k, label]) => (
                     <span key={k} className="px-2 py-1 rounded-lg border border-border bg-card text-foreground">
-                      {label}: <strong className="tabular-nums">{d.integrityReview[k] ?? 0}</strong>
+                      {en(label)}: <strong className="tabular-nums">{d.integrityReview[k] ?? 0}</strong>
                     </span>
                   ))}
                 </div>
@@ -1000,7 +1000,7 @@ function DashboardTab({ cohortId, assignments, getToken }: { cohortId: string; a
 
           <div className="space-y-2">
             <div className="flex flex-wrap items-center justify-between gap-2">
-              <h4 className="text-xs font-bold text-foreground">{en("Students ")}{band && `· ${band}`}</h4>
+              <h4 className="text-xs font-bold text-foreground">{en("Students {value}", { value: band && `· ${band}` })}</h4>
               {band && <button className={secondaryButtonClass} onClick={() => setBand("")}>{en("Show all")}</button>}
             </div>
             <div className="overflow-x-auto">
@@ -1025,7 +1025,7 @@ function DashboardTab({ cohortId, assignments, getToken }: { cohortId: string; a
                       <td className="py-2 pe-3">{s.name}</td>
                       <td className="py-2 pe-3 hidden sm:table-cell">{s.branch}</td>
                       <td className="py-2 pe-3 hidden md:table-cell text-muted-foreground">
-                        {STATUS_LABEL[s.status] ?? s.status}
+                        {en(STATUS_LABEL[s.status] ?? s.status)}
                         {s.late && en(" (late)")}
                       </td>
                       <td className="py-2 pe-3 text-end tabular-nums">{fmt(s.testsPercent)}</td>

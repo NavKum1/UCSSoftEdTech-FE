@@ -400,7 +400,7 @@ export default function FormBuilder({ formId, backHref }: { formId: string; back
             onClick={() => setTab(k)}
             className={`-mb-px whitespace-nowrap border-b-2 pb-2.5 ${tab === k ? "border-cyan-600 font-medium text-foreground" : "border-transparent text-muted-foreground hover:text-foreground"}`}
           >
-            {label}
+            {en(label)}
           </button>
         ))}
       </div>
@@ -615,7 +615,7 @@ function QuestionsEditor({
     <div className="space-y-4">
       <div className="rounded-xl border border-border bg-muted/30 p-3 text-xs text-muted-foreground">
         {def.settings.askUnsure && <p>{en("Always asked first: “What are you unsure about?” (turn off in Settings). ")}</p>}
-        <p>{en("Always asked last: name, email")}{def.settings.askPhone ? en(", phone") : ""}{en(" and consent.")}</p>
+        <p>{en("Always asked last: name, email{value} and consent.", { value: def.settings.askPhone ? en(", phone") : "" })}</p>
       </div>
 
       {def.sections.map((s, si) => {
@@ -632,7 +632,7 @@ function QuestionsEditor({
             }}
           >
             <div className="flex flex-wrap items-start gap-2 border-b border-border p-3">
-              <span className="mt-2 rounded-full bg-cyan-600/10 px-2 py-0.5 text-[11px] font-medium text-cyan-800 dark:text-cyan-300">{en("Step ")}{si + 1}</span>
+              <span className="mt-2 rounded-full bg-cyan-600/10 px-2 py-0.5 text-[11px] font-medium text-cyan-800 dark:text-cyan-300">{en("Step {value}", { value: si + 1 })}</span>
               <div className="min-w-0 flex-1 space-y-1">
                 <input
                   value={s.title}
@@ -670,7 +670,7 @@ function QuestionsEditor({
             </div>
 
             <ul className="space-y-2 p-3">
-              {qs.length === 0 && <li className="rounded-xl border border-dashed border-border p-4 text-center text-xs text-muted-foreground">{en("No questions in this step yet")}{drag ? en("; drop one here") : ""}.</li>}
+              {qs.length === 0 && <li className="rounded-xl border border-dashed border-border p-4 text-center text-xs text-muted-foreground">{en("No questions in this step yet{value}.", { value: drag ? en("; drop one here") : "" })}</li>}
               {qs.map((q) => {
                 const isOpen = open === q.id;
                 const before = ordered.slice(0, ordered.findIndex((x) => x.id === q.id));
@@ -712,7 +712,7 @@ function QuestionsEditor({
                             )}
                             {(q.rules?.length ?? 0) > 0 && (
                               <span className="inline-flex items-center gap-0.5 text-amber-800 dark:text-amber-300">
-                                <Tag aria-hidden="true" className="h-3 w-3" /> {q.rules!.length}{en(" CRM rule")}{q.rules!.length > 1 ? "s" : ""}
+                                <Tag aria-hidden="true" className="h-3 w-3" /> {" "}{en("{length} CRM rule{value}", { length: q.rules!.length, value: q.rules!.length > 1 ? "s" : "" })}
                               </span>
                             )}
                           </span>
@@ -786,13 +786,13 @@ function ConditionEditor({ value, earlier, onChange, what, readOnly }: { value: 
   if (!value)
     return readOnly || usable.length === 0 ? null : (
       <button type="button" onClick={() => onChange({ questionId: usable[usable.length - 1].id, op: "answered" })} className="inline-flex items-center gap-1 text-xs text-violet-700 hover:underline dark:text-violet-300">
-        <GitBranch aria-hidden="true" className="h-3 w-3" />{en(" Show ")}{what}{en(" only for some answers")}
+        <GitBranch aria-hidden="true" className="h-3 w-3" />{" "}{en("Show {what} only for some answers", { what })}
       </button>
     );
   return (
     <div className="flex flex-wrap items-center gap-1.5 rounded-lg bg-violet-500/5 p-2 text-xs">
       <GitBranch aria-hidden="true" className="h-3.5 w-3.5 text-violet-700 dark:text-violet-300" />
-      {en("Show ")}{what}{en(" only if")}
+      {en("Show {what} only if", { what })}
       <select disabled={readOnly} value={value.questionId} onChange={(e) => onChange({ questionId: e.target.value, op: "answered" })} className="max-w-48 rounded-md border border-border bg-background px-1.5 py-1">
         {usable.map((x) => (
           <option key={x.id} value={x.id}>
@@ -1038,7 +1038,7 @@ function QuestionEditor({
               </option>
             ))}
           </select>
-          {(q.max ?? 1) === 1 ? "file" : "files"}{en(" (PDF, Word, JPG or PNG, 5 MB each)")}
+          {en("{value} (PDF, Word, JPG or PNG, 5 MB each)", { value: (q.max ?? 1) === 1 ? "file" : "files" })}
         </div>
       )}
 
@@ -1373,7 +1373,7 @@ function ExplainEditor({ q, update }: { q: Question; update: (p: Partial<Questio
         <div className="mt-2 space-y-2">
           {all.map(([when, label]) => (
             <label key={when} className="block">
-              <span className="font-medium">{label}</span>
+              <span className="font-medium">{en(label)}</span>
               <textarea
                 rows={text(when) ? 2 : 1}
                 maxLength={1500}
@@ -1415,7 +1415,7 @@ function TipsEditor({ q, update }: { q: Question; update: (p: Partial<Question>)
       <div className="mt-2 space-y-2">
         {all.map(([when, label]) => (
           <label key={when} className="block">
-            <span className="font-medium">{label}</span>
+            <span className="font-medium">{en(label)}</span>
             <textarea
               rows={tip(when) ? 2 : 1}
               maxLength={600}
@@ -1832,7 +1832,7 @@ function ReportSettings({ r, set, onFill }: { r: Results; set: (p: Partial<Resul
             <div className="grid gap-2 border-s-2 border-border ps-4 sm:grid-cols-2">
               {CELLS.map((label, i) => (
                 <label key={label} className="block text-xs font-medium text-muted-foreground">
-                  {label}
+                  {en(label)}
                   <select
                     className={input}
                     value={grid.cells[i] ?? ""}
@@ -1976,7 +1976,7 @@ function SettingsEditor({
 
       <section className="space-y-2 rounded-2xl border border-border bg-card p-4 text-sm">
         <h2 className="text-sm font-semibold">{en("Languages")}</h2>
-        <p className="text-xs text-muted-foreground">{en("People choose the language on the form. Translate your texts in the Translations tab (untranslated texts show in ")}{languages.find((l) => l.code === def.languages[0])?.name ?? "the first language"}).</p>
+        <p className="text-xs text-muted-foreground">{en("People choose the language on the form. Translate your texts in the Translations tab (untranslated texts show in {value}).", { value: languages.find((l) => l.code === def.languages[0])?.name ?? en("the first language") })}</p>
         <div className="flex flex-wrap gap-2">
           {languages.map((l) => {
             const on = def.languages.includes(l.code);
@@ -2028,8 +2028,7 @@ function SettingsEditor({
                   .filter((q) => q.kind !== "info")
                   .map((q) => (
                     <option key={q.id} value={q.id}>
-                      {en("The step with “")}{q.label.length > 60 ? `${q.label.slice(0, 60)}…` : q.label}”
-                    </option>
+                      {en("The step with “{value}”", { value: q.label.length > 60 ? `${q.label.slice(0, 60)}…` : q.label })}</option>
                   ))}
               </select>
             </label>

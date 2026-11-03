@@ -42,7 +42,7 @@ export interface SetupState {
   hidden: boolean;
   wizardDone: boolean;
   /** The school's English: US or GB spelling for its forms, reports and e-mails (chosen, or from its country) */
-  english: { value: "US" | "GB"; chosen: "US" | "GB" | null; fromCountry: "US" | "GB"; britishForms: number };
+  english: { value: "US" | "GB"; chosen: "US" | "GB" | null; britishForms: number };
 }
 
 /** What each item asks for, and where it's done (the wizard's step, or Billing) */
@@ -90,10 +90,10 @@ export function SetupChecklist() {
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h2 id="setup-checklist" className="text-base font-semibold">
-            {en("Finish setting up ")}{s.school.name}
+            {en("Finish setting up {name}", { name: s.school.name })}
           </h2>
           <p className="mt-0.5 text-sm text-muted-foreground">
-            {done} of {needed.length}{en(" done. Each step ticks itself when it's done.")}
+            {en("{done} of {length} done. Each step ticks itself when it's done.", { done, length: needed.length })}
           </p>
         </div>
         <button type="button" onClick={() => void hide()} className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-sm text-muted-foreground hover:bg-muted">

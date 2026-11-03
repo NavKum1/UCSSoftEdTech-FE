@@ -239,7 +239,7 @@ export default function ReferralsPage() {
                             className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-border bg-card hover:bg-muted text-xs font-semibold text-foreground"
                           >
                             <Share2 className="w-3.5 h-3.5" />
-                            {en("Share my details with ")}{rec.instituteName}
+                            {en("Share my details with {instituteName}", { instituteName: rec.instituteName })}
                           </button>
                         )}
                       </div>
@@ -262,7 +262,7 @@ export default function ReferralsPage() {
                       <div className="min-w-0">
                         <p className="text-sm font-semibold text-foreground">{r.courseName}</p>
                         <p className="text-xs text-muted-foreground">
-                          {r.instituteName}{en(" · shared ")}{new Date(r.candidateConsentedAt ?? r.createdAt).toLocaleDateString()}{en(" · status:")}{" "}
+                          {en("{instituteName} · shared {date} · status:", { instituteName: r.instituteName, date: new Date(r.candidateConsentedAt ?? r.createdAt).toLocaleDateString() })}{" "}
                           <span className="font-medium text-foreground">{r.status.replace(/([a-z])([A-Z])/g, "$1 $2")}</span>
                         </p>
                       </div>
@@ -320,10 +320,10 @@ export default function ReferralsPage() {
           <div className="w-full max-w-md rounded-2xl bg-white dark:bg-slate-900 border border-border shadow-2xl p-6 space-y-4">
             {confirm.kind === "opt-in" ? (
               <>
-                <h3 className="text-base font-bold text-foreground">{en("Share your details with ")}{confirm.rec.instituteName}?</h3>
+                <h3 className="text-base font-bold text-foreground">{en("Share your details with {instituteName}?", { instituteName: confirm.rec.instituteName })}</h3>
                 <div className="text-sm text-muted-foreground space-y-2">
                   <p>
-                    {confirm.rec.instituteName}{en(" will receive the following so they can contact you about “")}{confirm.rec.courseName}{en("”:")}
+                    {en("{instituteName} will receive the following so they can contact you about “{courseName}”:", { instituteName: confirm.rec.instituteName, courseName: confirm.rec.courseName })}
                   </p>
                   <ul className="list-disc ps-5 space-y-1">
                     <li>{en("Your name")}</li>
@@ -340,9 +340,9 @@ export default function ReferralsPage() {
               </>
             ) : (
               <>
-                <h3 className="text-base font-bold text-foreground">{en("Withdraw from ")}{confirm.referral.instituteName}?</h3>
+                <h3 className="text-base font-bold text-foreground">{en("Withdraw from {instituteName}?", { instituteName: confirm.referral.instituteName })}</h3>
                 <p className="text-sm text-muted-foreground">
-                  {en("We'll tell ")}{confirm.referral.instituteName}{en(" to stop contacting you about “")}{confirm.referral.courseName}{en("” and to delete the details you shared.")}
+                  {en("We'll tell {instituteName} to stop contacting you about “{courseName}” and to delete the details you shared.", { instituteName: confirm.referral.instituteName, courseName: confirm.referral.courseName })}
                 </p>
               </>
             )}

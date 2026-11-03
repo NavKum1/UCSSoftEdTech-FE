@@ -41,6 +41,9 @@ for (const file of files("src").filter((f) => !SKIP.some((r) => r.test(f)))) {
       if (ts.isStringLiteral(node)) {
         const line = src.getLineAndCharacterOfPosition(node.getStart()).line;
         if ((/en\(\) where shown/.test(lines[line] ?? "") || /en\(\) where shown/.test(lines[line - 1] ?? "")) && visible(node.text)) texts.add(node.text);
+        // Items of a list (["Leads", ...], [["leads", "Leads"], ...]) shown through en(); not lists of classes, keys or values
+        else if (ts.isArrayLiteralExpression(node.parent) && visible(node.text) && !/^(bg|text|border|rounded|flex|grid|px|py|p|m|h|w|ring|shadow)-/.test(node.text.trim()) && !/not text/.test(lines[line] ?? "") && !/not text/.test(lines[line - 1] ?? ""))
+          texts.add(node.text);
       }
     }
     ts.forEachChild(node, visit);

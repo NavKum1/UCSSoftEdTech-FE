@@ -1,10 +1,11 @@
 /**
- * Drafts translations of the app's texts (plan item A2) with Google Gemini (the provider Edulexa already uses for its
- * copilot): messages/app/en.json (flat, run scripts/extract-text.ts first) and messages/career/en.json (nested) into
+ * Drafts translations of the app's texts (plan item A2) with OpenAI or Google Gemini (the providers Edulexa already
+ * uses for its copilot): messages/app/en.json (flat, run scripts/extract-text.ts first) and messages/career/en.json (nested) into
  * Spanish, Hindi and Arabic. Only texts a language file doesn't have yet are sent, so it's cheap to run again after new
  * text is added. Drafts stay off for people until a native speaker has reviewed them (lib/i18n/languages).
  *
- * Needs GEMINI_API_KEY (Google AI Studio); usage is billed to that project. TRANSLATE_MODEL changes the model.
+ * Needs OPENAI_API_KEY (used first) or GEMINI_API_KEY (Google AI Studio; Gemini Pro needs billing on); usage is billed
+ * to that account. TRANSLATE_MODEL changes the model (default gpt-6-luna, OpenAI's cheapest current tier, or gemini-pro-latest).
  * Run: npx tsx scripts/translate.ts [es|hi|ar ...] [--app|--career] [--limit=N]
  */
 import fs from "node:fs";
@@ -12,7 +13,7 @@ import fs from "node:fs";
 type Nested = { [key: string]: string | Nested };
 const LANGUAGES = {
   es: "Spanish: neutral Latin American Spanish that reads naturally in Spain too; address the reader as \"tú\"",
-  hi: "Hindi in Devanagari: everyday modern Hindi as used in Indian apps; keep common English technical words people use as they are (e.g. email, CRM, login, dashboard), written in Latin letters",
+  hi: "Hindi in Devanagari: everyday modern Hindi as used in good Indian apps. Translate ordinary words into Hindi (inquiry → पूछताछ, inactive → निष्क्रिय, staff → स्टाफ़, note → नोट, review → समीक्षा). Keep in Latin letters only true technical terms and names Indians use in English: email, login, password, dashboard, CRM, API, PDF, AI, ID",
   ar: "Arabic: Modern Standard Arabic, clear and friendly; Western digits (0-9)",
 } as const;
 type Lang = keyof typeof LANGUAGES;
@@ -24,8 +25,10 @@ const only = args.includes("--app") ? "app" : args.includes("--career") ? "caree
 const limit = Number(args.find((a) => a.startsWith("--limit="))?.slice(8) ?? Infinity);
 const BATCH = 80;
 const PARALLEL = 4;
-const MODEL = process.env.TRANSLATE_MODEL || "gemini-pro-latest";
-const KEY = process.env.GEMINI_API_KEY;
+const OPENAI_KEY = process.env.OPENAI_API_KEY;
+const GEMINI_KEY = process.env.GEMINI_API_KEY;
+const PROVIDER = OPENAI_KEY ? "openai" : "gemini";
+const MODEL = process.env.TRANSLATE_MODEL || (PROVIDER === "openai" ? "gpt-6-luna" : "gemini-pro-latest");
 
 const SYSTEM = `You translate the user interface of Edulexa, a web app for schools, colleges and career services (admissions CRM, guidance forms and reports, career centre, interview practice). The readers are students, parents and school staff.
 
@@ -49,7 +52,8 @@ const SCHEMA = {
 };
 
 /** The names in braces a translation must keep: {name}, and ICU arguments ({count, plural, ...}) */
-const tokens = (s: string) => [...s.matchAll(/\{\s*([A-Za-z_][\w]*)/g)].map((m) => m[1]).sort();
+// Only {name} and the argument of {count, plural, ...}: the words inside a branch are text to translate
+const tokens = (s: string) => [...new Set([...s.matchAll(/\{\s*([A-Za-z_]\w*)\s*[,}]/g)].map((m) => m[1]))].sort();
 const tags = (s: string) => [...s.matchAll(/<\/?([a-zA-Z][\w-]*)>/g)].map((m) => m[0]).sort();
 const keeps = (en: string, out: string) => JSON.stringify(tokens(en)) === JSON.stringify(tokens(out)) && JSON.stringify(tags(en)) === JSON.stringify(tags(out));
 /** The English's leading and trailing whitespace, on the translation */
@@ -58,7 +62,59 @@ const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 class Fatal extends Error {}
 
+/** One request, with waiting and retrying while the provider is busy or rate-limited (up to ~4 minutes) */
+async function withRetries(call: () => Promise<Response>, read: (r: Response) => Promise<string>): Promise<string> {
+  for (let attempt = 0; ; attempt++) {
+    const res = await call().catch((e: unknown) => ({ ok: false, status: 0, text: async () => String(e) }) as unknown as Response);
+    if (res.ok) return read(res);
+    const detail = (await res.text()).slice(0, 300);
+    if (res.status === 400 || res.status === 401 || res.status === 403 || res.status === 404) throw new Fatal(`${PROVIDER} answered ${res.status}: ${detail}`);
+    if (attempt >= 7) throw new Error(`${PROVIDER} answered ${res.status} after ${attempt + 1} tries: ${detail}`);
+    await sleep(Math.min(60_000, 2_000 * 2 ** attempt));
+  }
+}
+
+const OPENAI_SCHEMA = {
+  type: "object",
+  properties: {
+    items: {
+      type: "array",
+      items: { type: "object", properties: { id: { type: "integer" }, text: { type: "string" } }, required: ["id", "text"], additionalProperties: false },
+    },
+  },
+  required: ["items"],
+  additionalProperties: false,
+};
+
+async function openai(prompt: string): Promise<string> {
+  return withRetries(
+    () =>
+      fetch("https://api.openai.com/v1/chat/completions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${OPENAI_KEY}` },
+        body: JSON.stringify({
+          model: MODEL,
+          messages: [
+            { role: "system", content: SYSTEM },
+            { role: "user", content: prompt },
+          ],
+          response_format: { type: "json_schema", json_schema: { name: "translations", schema: OPENAI_SCHEMA, strict: true } },
+          ...(/^(gpt-5|o[0-9])/.test(MODEL) ? { reasoning_effort: "low" } : {}),
+        }),
+      }),
+    async (res) => {
+      const body = (await res.json()) as { choices?: { finish_reason?: string; message?: { content?: string; refusal?: string } }[] };
+      const c = body.choices?.[0];
+      if (!c?.message) throw new Error("no answer");
+      if (c.message.refusal) throw new Error(`refused: ${c.message.refusal.slice(0, 100)}`);
+      if (c.finish_reason && c.finish_reason !== "stop") throw new Error(`stopped: ${c.finish_reason}`);
+      return c.message.content ?? "";
+    },
+  );
+}
+
 async function gemini(prompt: string): Promise<string> {
+  const KEY = GEMINI_KEY;
   for (let attempt = 0; ; attempt++) {
     const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent`, {
       method: "POST",
@@ -86,7 +142,7 @@ async function gemini(prompt: string): Promise<string> {
 
 async function translateBatch(lang: Lang, texts: string[]): Promise<(string | null)[]> {
   const list = texts.map((text, id) => ({ id, text }));
-  const answer = await gemini(`Translate into ${LANGUAGES[lang]}.\n\n${JSON.stringify(list, null, 1)}`);
+  const answer = await (PROVIDER === "openai" ? openai : gemini)(`Translate into ${LANGUAGES[lang]}.\n\n${JSON.stringify(list, null, 1)}`);
   const parsed = JSON.parse(answer) as { items?: { id: number; text: string }[] };
   const out: (string | null)[] = texts.map(() => null);
   for (const item of parsed.items ?? []) {
@@ -137,7 +193,8 @@ function setPath(o: Nested, dotted: string, value: string) {
 const read = <T>(file: string, empty: T): T => (fs.existsSync(file) ? (JSON.parse(fs.readFileSync(file, "utf8")) as T) : empty);
 
 async function main() {
-  if (!KEY) throw new Fatal("Set GEMINI_API_KEY (a Google AI Studio key) first.");
+  if (!OPENAI_KEY && !GEMINI_KEY) throw new Fatal("Set OPENAI_API_KEY or GEMINI_API_KEY first.");
+  console.log(`Translating with ${PROVIDER} (${MODEL})`);
   for (const lang of langs) {
     if (only !== "career") {
       const source = Object.keys(read<Record<string, string>>("messages/app/en.json", {}));

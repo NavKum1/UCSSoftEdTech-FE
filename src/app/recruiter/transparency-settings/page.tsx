@@ -86,9 +86,7 @@ export default function TransparencySettingsPage() {
             <div>
               <h2 id="participation-label" className="text-sm font-bold text-foreground">{en("Include our hire-outcome data")}</h2>
               <p className="text-xs text-muted-foreground mt-0.5">
-                {data.outcomesRecorded} outcome{data.outcomesRecorded === 1 ? "" : "s"}{en(" recorded by your organisation")}
-                {data.updatedAt ? ` · last changed ${formatDate(data.updatedAt)}` : ""}.
-              </p>
+                {en("{outcomesRecorded} outcome{value} recorded by your organisation{value2}.", { outcomesRecorded: data.outcomesRecorded, value: data.outcomesRecorded === 1 ? "" : "s", value2: data.updatedAt ? ` · last changed ${formatDate(data.updatedAt)}` : "" })}</p>
             </div>
             <button
               type="button"

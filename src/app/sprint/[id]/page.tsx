@@ -596,7 +596,7 @@ function WorkspaceHeader({
             className="text-xs px-2.5 py-1 rounded-lg bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 border border-indigo-500/30 font-semibold font-mono tracking-wide"
             title={`Sprint Identifier: ${sprintId}`}
           >
-            {en("ID: ")}{formatChallengeId(sprintId)}
+            {en("ID: {amount}", { amount: formatChallengeId(sprintId) })}
           </span>
         </div>
       </div>
@@ -1196,7 +1196,7 @@ function GradedWorkspace({ sprintId }: { sprintId: string }) {
                         : "bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/30"
                     }`}
                   >
-                    {en("Tests passed: ")}{testSummary.passed} / {testSummary.total}
+                    {en("Tests passed: {passed} / {total}", { passed: testSummary.passed, total: testSummary.total })}
                   </span>
                 )}
               </div>
@@ -1418,7 +1418,7 @@ function PracticeWorkspace({ sprintId }: { sprintId: string }) {
                 <h3 className="text-sm font-semibold text-foreground">{t("codeEditor")}</h3>
               </div>
               <span className="text-[10px] px-2.5 py-0.5 rounded bg-indigo-500/10 text-indigo-600 dark:text-indigo-300 font-semibold border border-indigo-500/20">
-                {en("Language: ")}{language}
+                {en("Language: {language}", { language })}
               </span>
             </div>
 

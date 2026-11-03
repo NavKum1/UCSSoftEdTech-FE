@@ -67,9 +67,9 @@ export default function EmbedBuilder({ instituteId, formId, formName, publicEnab
           </p>
         )}
         <Row label={en("How it appears")}>
-          {opt("On the page", "inline", mode, setMode)}
-          {opt("A button that opens it", "button", mode, setMode)}
-          {opt("Floating button (corner)", "floating", mode, setMode)}
+          {opt(en("On the page"), "inline", mode, setMode)}
+          {opt(en("A button that opens it"), "button", mode, setMode)}
+          {opt(en("Floating button (corner)"), "floating", mode, setMode)}
         </Row>
         {mode !== "inline" && (
           <label className="block text-xs font-medium text-muted-foreground">
@@ -78,21 +78,21 @@ export default function EmbedBuilder({ instituteId, formId, formName, publicEnab
           </label>
         )}
         <Row label={en("Colours")}>
-          {opt("Light", "light", theme, setTheme)}
-          {opt("Dark", "dark", theme, setTheme)}
-          {opt("Follow the visitor", "auto", theme, setTheme)}
+          {opt(en("Light"), "light", theme, setTheme)}
+          {opt(en("Dark"), "dark", theme, setTheme)}
+          {opt(en("Follow the visitor"), "auto", theme, setTheme)}
         </Row>
         <Row label={en("Corners")}>
-          {opt("Rounded", "rounded", corners, setCorners)}
-          {opt("Square", "square", corners, setCorners)}
+          {opt(en("Rounded"), "rounded", corners, setCorners)}
+          {opt(en("Square"), "square", corners, setCorners)}
         </Row>
         <Row label={en("Font")}>
-          {opt("Your website's font", "inherit", font, setFont)}
-          {opt("Standard", "system", font, setFont)}
+          {opt(en("Your website's font"), "inherit", font, setFont)}
+          {opt(en("Standard"), "system", font, setFont)}
         </Row>
         <Row label={en("Heading")}>
-          {opt("Show", "show", heading, setHeading)}
-          {opt("Hide (your page has its own)", "hide", heading, setHeading)}
+          {opt(en("Show"), "show", heading, setHeading)}
+          {opt(en("Hide (your page has its own)"), "hide", heading, setHeading)}
         </Row>
         <div className="flex flex-wrap gap-4">
           <label className="block text-xs font-medium text-muted-foreground">
@@ -109,7 +109,7 @@ export default function EmbedBuilder({ instituteId, formId, formName, publicEnab
         </div>
 
         <div>
-          <p className="text-xs font-medium text-muted-foreground">{en("Paste this where the form")}{mode === "floating" ? " button" : ""}{en(" should appear on your website")}</p>
+          <p className="text-xs font-medium text-muted-foreground">{en("Paste this where the form{value} should appear on your website", { value: mode === "floating" ? en(" button") : "" })}</p>
           <textarea readOnly rows={4} value={snippet} onFocus={(e) => e.target.select()} className="mt-1 w-full rounded-lg border border-border bg-muted/40 px-3 py-2 font-mono text-xs" />
           <button
             type="button"
@@ -133,7 +133,7 @@ export default function EmbedBuilder({ instituteId, formId, formName, publicEnab
       </div>
 
       <div>
-        <p className="mb-2 text-xs font-medium text-muted-foreground">{en("Preview of “")}{formName}”</p>
+        <p className="mb-2 text-xs font-medium text-muted-foreground">{en("Preview of “{formName}”", { formName })}</p>
         <div className={`rounded-2xl border border-border p-4 ${theme === "dark" ? "bg-slate-900" : "bg-white"}`}>
           {mode === "inline" ? (
             publicEnabled ? (

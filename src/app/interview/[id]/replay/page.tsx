@@ -241,10 +241,10 @@ export default function AudioReplayStudioPage() {
             <div>
               <div className="flex items-center space-x-2 text-xs font-mono text-cyan-700 dark:text-cyan-400 uppercase tracking-wider">
                 <Cpu className="w-4 h-4" />
-                <span>{en("WebRTC Session: ")}{sessionId || "AI-REVIEW-LIVE"}</span>
+                <span>{en("WebRTC Session: {value}", { value: sessionId || en("AI-REVIEW-LIVE") })}</span>
               </div>
               <h1 className="text-2xl md:text-3xl font-black text-foreground mt-1">
-                {en("Candidate Defense: ")}{replay?.candidateName}
+                {en("Candidate Defense: {candidateName}", { candidateName: replay?.candidateName })}
               </h1>
               <p className="text-xs text-muted-foreground mt-1 max-w-2xl leading-relaxed">
                 {replay?.jobDescription}
@@ -319,7 +319,7 @@ export default function AudioReplayStudioPage() {
 
               <div className="flex items-center space-x-2 text-xs text-muted-foreground">
                 <Clock className="w-3.5 h-3.5 text-cyan-700 dark:text-cyan-400" />
-                <span>{en("Session Duration: ")}{replay?.durationFormatted}</span>
+                <span>{en("Session Duration: {durationFormatted}", { durationFormatted: replay?.durationFormatted })}</span>
               </div>
             </div>
 
@@ -330,7 +330,7 @@ export default function AudioReplayStudioPage() {
                 {en("Edulexa LSB Steganography & Anti-Piracy Watermark Encoded")}
               </span>
               <span>
-                {en("Target: ")}{replay?.candidateEmail || "alex.morgan@example.com"}{en(" • Timestamp: ")}{liveUtcTimestamp}
+                {en("Target: {value} • Timestamp: {liveUtcTimestamp}", { value: replay?.candidateEmail || en("alex.morgan@example.com"), liveUtcTimestamp })}
               </span>
             </div>
           </div>
@@ -455,7 +455,7 @@ export default function AudioReplayStudioPage() {
           >
             {Array.from({ length: 4 }).map((_, cIdx) => (
               <span key={cIdx} className="px-10">
-                {replay?.candidateEmail || "alex.morgan@example.com"}{en(" • REPLAY-SESSION:")}{sessionId.slice(0, 8)} • {liveUtcTimestamp}{en(" • EDULEXA-LSB-DRM")}
+                {en("{value} • REPLAY-SESSION:{value2} • {liveUtcTimestamp} • EDULEXA-LSB-DRM", { value: replay?.candidateEmail || en("alex.morgan@example.com"), value2: sessionId.slice(0, 8), liveUtcTimestamp })}
               </span>
             ))}
           </div>

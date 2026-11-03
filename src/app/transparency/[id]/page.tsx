@@ -45,15 +45,14 @@ export default function TransparencyArchiveReportPage() {
           <AlertTriangle className="w-5 h-5 text-rose-600 dark:text-rose-400 shrink-0 mt-0.5" />
           <div>
             <p className="font-semibold">
-              {en("The report for ")}{formatPeriod(current.data.periodStart, current.data.periodEnd)}{en(" was withdrawn on ")}{formatDate(current.data.withdrawnAt)}.
-            </p>
-            {current.data.withdrawalReason && <p className="text-muted-foreground mt-1">{en("Reason: ")}{current.data.withdrawalReason}</p>}
+              {en("The report for {amount} was withdrawn on {date}.", { amount: formatPeriod(current.data.periodStart, current.data.periodEnd), date: formatDate(current.data.withdrawnAt) })}</p>
+            {current.data.withdrawalReason && <p className="text-muted-foreground mt-1">{en("Reason: {withdrawalReason}", { withdrawalReason: current.data.withdrawalReason })}</p>}
             <p className="text-muted-foreground mt-1">{en("Its figures are no longer shown. A corrected report, if issued, appears in the archive.")}</p>
           </div>
         </div>
       ) : current.kind === "error" ? (
         <div className="glass-panel rounded-2xl border border-border p-6 text-sm text-rose-700 dark:text-rose-400 flex items-center gap-2">
-          <AlertCircle className="w-4 h-4" />{en(" Could not load the report. ")}{current.message}
+          <AlertCircle className="w-4 h-4" />{" "}{en("Could not load the report. {message}", { message: current.message })}
         </div>
       ) : (
         <div className="glass-panel rounded-2xl border border-border p-6 text-sm text-muted-foreground">{en("This report does not exist or has not been published.")}</div>

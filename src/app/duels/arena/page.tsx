@@ -224,7 +224,7 @@ export default function DuelArenaPage() {
       <header>
         <h1 className="text-2xl font-semibold tracking-tight">{en("System design duels")}</h1>
         <p className="mt-1 max-w-3xl text-sm text-muted-foreground">
-          {en("Build a design for a practice scenario before the time runs out, then see how it scores against a practice bot. ")}{catalogue.note}
+          {en("Build a design for a practice scenario before the time runs out, then see how it scores against a practice bot. {note}", { note: catalogue.note })}
         </p>
       </header>
 
@@ -251,7 +251,7 @@ export default function DuelArenaPage() {
               <select className={`${input} mt-1 w-full py-2`} value={bot} onChange={(e) => setBot(e.target.value)}>
                 {catalogue.bots.map((b) => (
                   <option key={b.level} value={b.level}>
-                    {b.name}{en(": rating ")}{b.rating}{en(", scores ")}{b.score}
+                    {en("{name}: rating {rating}, scores {score}", { name: b.name, rating: b.rating, score: b.score })}
                   </option>
                 ))}
               </select>
@@ -260,12 +260,12 @@ export default function DuelArenaPage() {
           {sc && (
             <div className="text-sm">
               <p>{sc.problem}</p>
-              <p className="mt-1 text-muted-foreground">{en("Goals: ")}{sc.targets}</p>
+              <p className="mt-1 text-muted-foreground">{en("Goals: {targets}", { targets: sc.targets })}</p>
             </div>
           )}
           <p className="text-xs text-muted-foreground">{catalogue.scoring}</p>
           <button className={button} disabled={busy || !scenario} onClick={() => void start()}>
-            {en("Start (")}{Math.round((sc?.durationSeconds ?? 300) / 60)}{en(" minutes)")}
+            {en("Start ({value} minutes)", { value: Math.round((sc?.durationSeconds ?? 300) / 60) })}
           </button>
         </section>
       ) : null}
@@ -282,8 +282,8 @@ export default function DuelArenaPage() {
           </div>
           <div className="space-y-1 text-sm">
             <p>{match.scenario.problem}</p>
-            <p className="font-medium text-amber-800 dark:text-amber-300">{en("Chaos event: ")}{match.scenario.chaosEvent}</p>
-            <p className="text-muted-foreground">{en("It needs at least: ")}{match.scenario.required.map((t) => label[t] ?? t).join(", ")}.</p>
+            <p className="font-medium text-amber-800 dark:text-amber-300">{en("Chaos event: {chaosEvent}", { chaosEvent: match.scenario.chaosEvent })}</p>
+            <p className="text-muted-foreground">{en("It needs at least: {value}.", { value: match.scenario.required.map((t) => label[t] ?? t).join(", ") })}</p>
           </div>
 
           <div className="grid gap-5 lg:grid-cols-3">
@@ -308,7 +308,7 @@ export default function DuelArenaPage() {
             </div>
 
             <div>
-              <h3 className="text-sm font-semibold">{en("Your design (")}{nodes.length})</h3>
+              <h3 className="text-sm font-semibold">{en("Your design ({length})", { length: nodes.length })}</h3>
               {nodes.length === 0 ? (
                 <p className="mt-2 text-sm text-muted-foreground">{en("Add components from the list.")}</p>
               ) : (
@@ -360,7 +360,7 @@ export default function DuelArenaPage() {
             </div>
 
             <div>
-              <h3 className="text-sm font-semibold">{en("Connections (")}{edges.length})</h3>
+              <h3 className="text-sm font-semibold">{en("Connections ({length})", { length: edges.length })}</h3>
               <div className="mt-2 flex flex-wrap items-center gap-2 text-sm">
                 <select className={input} value={from} onChange={(e) => setFrom(e.target.value)} aria-label={en("From")}>
                   <option value="">{en("From…")}</option>
@@ -428,7 +428,7 @@ export default function DuelArenaPage() {
             ))}
           </dl>
           <p className="text-sm">
-            {en("Rating: ")}{result.rating.before} → <span className="font-semibold">{result.rating.after}</span> ({result.rating.delta >= 0 ? "+" : ""}
+            {en("Rating: {before} →", { before: result.rating.before })}{" "}<span className="font-semibold">{result.rating.after}</span> ({result.rating.delta >= 0 ? "+" : ""}
             {result.rating.delta}){result.rating.provisional ? en(", provisional") : ""}
           </p>
           {Object.entries(AREA).map(([area, title]) => {
@@ -498,8 +498,7 @@ export default function DuelArenaPage() {
             </table>
           )}
           <p className="mt-3 text-xs text-muted-foreground">
-            {en("Practice bots (fixed): ")}{board.bots.map((b) => `${b.name}, rating ${b.rating}, scores ${b.score}`).join("; ")}.
-          </p>
+            {en("Practice bots (fixed): {value}.", { value: board.bots.map((b) => `${b.name}, rating ${b.rating}, scores ${b.score}`).join("; ") })}</p>
         </section>
       )}
     </main>

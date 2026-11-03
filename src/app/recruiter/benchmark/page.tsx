@@ -185,9 +185,7 @@ function ChallengeResults() {
                 </>
               ) : (
                 <p className="mt-1 text-sm text-muted-foreground">
-                  {en("Shown once at least ")}{benchmark.minCohort}{en(" others have taken this challenge (")}{benchmark.cohortSize}{en(" so far")}
-                  {benchmark.cohortMedianPercent != null ? `, median ${benchmark.cohortMedianPercent}%` : ""}).
-                </p>
+                  {en("Shown once at least {minCohort} others have taken this challenge ({cohortSize} so far{value}).", { minCohort: benchmark.minCohort, cohortSize: benchmark.cohortSize, value: benchmark.cohortMedianPercent != null ? `, median ${benchmark.cohortMedianPercent}%` : "" })}</p>
               )}
             </div>
             <div className="rounded-xl border border-border p-4">

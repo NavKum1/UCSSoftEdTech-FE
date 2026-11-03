@@ -62,7 +62,7 @@ function Setup() {
 
   if (access) return <AccessNotice problem={access} feature="school setup" />;
   if (!s) {
-    return <div className="mx-auto max-w-5xl p-6">{error ? <p className="text-sm text-red-700">{error}</p> : <Loader2 aria-label={en("Loading")} className="h-5 w-5 animate-spin text-muted-foreground" />}</div>;
+    return <div className="mx-auto max-w-7xl p-6">{error ? <p className="text-sm text-red-700">{error}</p> : <Loader2 aria-label={en("Loading")} className="h-5 w-5 animate-spin text-muted-foreground" />}</div>;
   }
 
   const index = STEPS.findIndex((x) => x.key === step);
@@ -80,9 +80,9 @@ function Setup() {
   const props = { s, setS, apiFetch, next };
 
   return (
-    <div className="mx-auto max-w-5xl p-4 sm:p-6">
+    <div className="mx-auto max-w-7xl p-4 sm:p-6">
       <div className="mb-6">
-        <h1 className="text-2xl font-semibold tracking-tight">{en("Set up ")}{s.school.name}</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">{en("Set up {name}", { name: s.school.name })}</h1>
         <p className="mt-1 text-sm text-muted-foreground">{en("Four short steps. Skip any of them and come back from the checklist on your dashboard.")}</p>
       </div>
 
@@ -90,7 +90,7 @@ function Setup() {
         {/* Steps: a list on the side on wide screens, a bar on phones */}
         <nav aria-label={en("Setup steps")} className="mb-5 lg:mb-0">
           <p className="mb-2 text-sm text-muted-foreground lg:hidden">
-            {en("Step ")}{index + 1} of {STEPS.length}: {STEPS[index].title}
+            {en("Step {value} of {length}: {title}", { value: index + 1, length: STEPS.length, title: STEPS[index].title })}
           </p>
           <div className="h-1.5 overflow-hidden rounded-full bg-muted lg:hidden">
             <div className="h-full rounded-full bg-cyan-600" style={{ width: `${((index + 1) / STEPS.length) * 100}%` }} />
@@ -181,7 +181,7 @@ function SchoolStep({ s, setS, apiFetch, next }: StepProps) {
     contactEmail: s.school.contactEmail ?? "",
     address: s.school.address ?? "",
     accent: s.school.accent ?? "",
-    english: s.english.chosen ?? "",
+    english: s.english.value as "" | "US" | "GB",
   });
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -361,11 +361,10 @@ function SchoolStep({ s, setS, apiFetch, next }: StepProps) {
       <fieldset className="mt-7">
         <legend className="text-sm font-medium">{en("Spelling on your forms, reports and e-mails")}</legend>
         <p className="mt-0.5 text-xs text-muted-foreground">{en("Students and families see your school's English. Each person on your team can still choose their own.")}</p>
-        <div className="mt-2 grid gap-2 sm:grid-cols-3">
+        <div className="mt-2 grid gap-2 sm:grid-cols-2">
           {([
-            ["", `Automatic (${s.english.fromCountry === "US" ? "US" : "UK/Indian"}, from your country)`],
             ["US", "US English (color, center, program)"],
-            ["GB", "UK/Indian English (colour, centre, programme)"], // not text: the British spellings are the example
+            ["GB", "British English (colour, centre, programme)"], // not text: the British spellings are the example
           ] as const).map(([v, label]) => (
             <label
               key={v}
@@ -379,7 +378,7 @@ function SchoolStep({ s, setS, apiFetch, next }: StepProps) {
         {s.english.value === "US" && s.english.britishForms > 0 && (
           <div className="mt-3 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-amber-300 bg-amber-50 p-3.5 text-sm text-amber-950 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-100">
             <span>
-              {s.english.britishForms === 1 ? en("1 of your forms still uses") : `${s.english.britishForms} of your forms still use`}{en(" UK spelling. Answers already received keep their wording.")}
+              {en("{value} UK spelling. Answers already received keep their wording.", { value: s.english.britishForms === 1 ? en("1 of your forms still uses") : `${s.english.britishForms} of your forms still use` })}
             </span>
             <button type="button" onClick={() => void convertForms()} disabled={busy != null} className={`${secondary} bg-background py-1.5 text-sm`}>
               {busy === "forms" && <Loader2 aria-hidden="true" className="h-4 w-4 animate-spin" />}{en(" Switch them to US spelling")}
@@ -528,7 +527,7 @@ function WebsiteStep({ s, apiFetch }: StepProps) {
   }
   return (
     <>
-      <Heading title={en("Your website")} text={`Put "${form.name}" on your website, or share its link in e-mails, messages and social posts.`} />
+      <Heading title={en("Your website")} text={en("Put \"{name}\" on your website, or share its link in e-mails, messages and social posts.", { name: form.name })} />
       <p className="text-sm font-medium">{en("The form's link")}</p>
       <div className="mt-1.5 flex flex-wrap gap-2">
         <input readOnly value={form.link} aria-label={en("The form's link")} className={`${input} mt-0 min-w-0 flex-1 font-mono text-sm`} onFocus={(e) => e.target.select()} />
@@ -581,7 +580,11 @@ function WebsiteStep({ s, apiFetch }: StepProps) {
           .
         </p>
       )}
-      <p className="mt-4 text-sm text-muted-foreground">{s.inquiries > 0 ? `${s.inquiries} ${s.inquiries === 1 ? "inquiry has" : "inquiries have"} come in so far.` : en(CHECK_TEXT.website.text)}</p>
+      <p className="mt-4 text-sm text-muted-foreground">{s.inquiries === 1
+          ? en("1 inquiry has come in so far.")
+          : s.inquiries > 1
+            ? en("{n} inquiries have come in so far.", { n: s.inquiries })
+            : en(CHECK_TEXT.website.text)}</p>
     </>
   );
 }

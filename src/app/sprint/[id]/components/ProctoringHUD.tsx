@@ -317,8 +317,7 @@ export default function ProctoringHUD({
           <div className="flex items-center justify-between pb-2 mb-2 border-b border-border text-muted-foreground">
             <span className="flex items-center gap-1.5 font-medium">
               <History className="w-3.5 h-3.5 text-indigo-700 dark:text-indigo-400" />
-              {en("Session Activity History (")}{incidents.length})
-            </span>
+              {en("Session Activity History ({length})", { length: incidents.length })}</span>
             <span className="text-[10px] text-muted-foreground">
               {en("Real-time activity log")}
             </span>
@@ -375,7 +374,7 @@ export default function ProctoringHUD({
           >
             {Array.from({ length: 4 }).map((_, cIdx) => (
               <span key={cIdx} className="px-8">
-                {candidateEmail}{en(" • Session ID: ")}{sessionId.slice(0, 8)} • {liveTimestamp}{en(" • Verified Session")}
+                {en("{candidateEmail} • Session ID: {value} • {liveTimestamp} • Verified Session", { candidateEmail, value: sessionId.slice(0, 8), liveTimestamp })}
               </span>
             ))}
           </div>

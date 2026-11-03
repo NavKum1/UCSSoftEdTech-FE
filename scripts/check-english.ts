@@ -1,8 +1,8 @@
 /**
- * Checks the British/Indian to US spelling (src/lib/english): known sentences come out right, and web addresses, e-mail
+ * Checks the British to US spelling (src/lib/english): known sentences come out right, and web addresses, e-mail
  * addresses and words that aren't in the list are left alone. Run: npx tsx scripts/check-english.ts
  */
-import { toAmerican, englishFromLocale, englishForCountry } from "../src/lib/english";
+import { toAmerican } from "../src/lib/english";
 
 const cases: [string, string][] = [
   ["Choose a colour for your counselling centre.", "Choose a color for your counseling center."],
@@ -27,8 +27,5 @@ for (const [gb, us] of cases) {
     console.log(`FAIL ${JSON.stringify(gb)}\n  got  ${JSON.stringify(got)}\n  want ${JSON.stringify(us)}`);
   }
 }
-const locale: [string, string | null][] = [["en-US", "US"], ["en-IN", "GB"], ["en-GB", "GB"], ["en", null], ["es-MX", null], ["en_CA", "US"]];
-for (const [tag, want] of locale) if (englishFromLocale(tag) !== want) { failed++; console.log(`FAIL locale ${tag}`); }
-if (englishForCountry("BR") !== "US" || englishForCountry("IN") !== "GB" || englishForCountry(null) !== "GB") { failed++; console.log("FAIL country"); }
-console.log(failed ? `${failed} failed` : `all ${cases.length + locale.length + 1} passed`);
+console.log(failed ? `${failed} failed` : `all ${cases.length} passed`);
 process.exit(failed ? 1 : 0);

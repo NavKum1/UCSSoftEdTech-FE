@@ -65,7 +65,7 @@ export default function InsightsView({ getToken }: { getToken: GetToken }) {
       <div className="flex flex-wrap gap-1.5">
         {RANGES.map(([label, d]) => (
           <button key={label} type="button" aria-pressed={days === d} onClick={() => setDays(d)} className={`rounded-full border px-3 py-1.5 text-xs font-medium ${days === d ? "border-cyan-700 bg-cyan-700 text-white" : "border-border bg-card hover:bg-muted"}`}>
-            {label}
+            {en(label)}
           </button>
         ))}
       </div>

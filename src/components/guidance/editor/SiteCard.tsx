@@ -79,7 +79,7 @@ export default function SiteCard({ instituteId, forms, canEdit }: { instituteId?
       <p className="mt-1 text-sm text-muted-foreground">{en("Share a simple address that opens your form, on Edulexa's domain or your own.")}</p>
       {chosen && !chosen.publicEnabled && (
         <p className="mt-2 rounded-lg bg-amber-500/10 px-3 py-2 text-xs text-amber-900 dark:text-amber-200" role="alert">
-          “{chosen.name}{en("” isn't public yet, so the address won't open it. Turn its public link on in Share.")}
+          {en("“{name}” isn't public yet, so the address won't open it. Turn its public link on in Share.", { name: chosen.name })}
         </p>
       )}
       {msg && (

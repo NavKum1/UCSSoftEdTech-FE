@@ -385,16 +385,14 @@ public class HighThroughputBuffer<T>
                   activeTab === "chat" ? "bg-indigo-600 text-white" : "text-muted-foreground hover:text-foreground"
                 }`}
               >
-                {en("Coach Assistant (")}{interactions.length})
-              </button>
+                {en("Coach Assistant ({length})", { length: interactions.length })}</button>
               <button
                 onClick={() => setActiveTab("smells")}
                 className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition ${
                   activeTab === "smells" ? "bg-indigo-600 text-white" : "text-muted-foreground hover:text-foreground"
                 }`}
               >
-                {en("Code Review (")}{codeSmells.length})
-              </button>
+                {en("Code Review ({length})", { length: codeSmells.length })}</button>
               {activeDiff && (
                 <button
                   onClick={() => setActiveTab("diff")}
@@ -407,7 +405,7 @@ public class HighThroughputBuffer<T>
               )}
             </div>
             <div className="text-[11px] font-mono text-muted-foreground">
-              {en("Questions: ")}{session?.totalInteractions || 0}
+              {en("Questions: {value}", { value: session?.totalInteractions || 0 })}
             </div>
           </div>
 
@@ -518,7 +516,7 @@ public class HighThroughputBuffer<T>
                       </div>
                       {smell.lineNumber && (
                         <div className="text-[10px] text-muted-foreground font-mono">
-                          {en("Line #")}{smell.lineNumber}
+                          {en("Line #{lineNumber}", { lineNumber: smell.lineNumber })}
                         </div>
                       )}
                     </div>

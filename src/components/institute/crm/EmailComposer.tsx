@@ -303,7 +303,7 @@ export default function EmailComposer({
           { label: en("Link"), icon: Link2, on: editor?.isActive("link"), run: setLink },
           { label: en("Clear formatting"), icon: RemoveFormatting, on: false, run: () => editor?.chain().focus().unsetAllMarks().clearNodes().run() },
         ].map(({ label, icon: Icon, on, run }) => (
-          <button key={label} type="button" title={label} aria-label={label} aria-pressed={!!on} disabled={preview || !editor} onMouseDown={(e) => e.preventDefault()} onClick={run} className={`${tool} ${on ? active : ""}`}>
+          <button key={label} type="button" title={en(label)} aria-label={en(label)} aria-pressed={!!on} disabled={preview || !editor} onMouseDown={(e) => e.preventDefault()} onClick={run} className={`${tool} ${on ? active : ""}`}>
             <Icon aria-hidden="true" className="h-4 w-4" />
           </button>
         ))}
@@ -316,7 +316,7 @@ export default function EmailComposer({
             <div className="absolute start-0 top-full z-30 mt-1 w-56 rounded-xl border border-border bg-card p-1 shadow-lg">
               {FIELDS.map(([f, label]) => (
                 <button key={f} type="button" onMouseDown={(e) => e.preventDefault()} onClick={() => insertField(f)} className="flex w-full items-center justify-between rounded-lg px-2.5 py-1.5 text-start text-sm hover:bg-muted">
-                  {label} <code className="text-xs text-muted-foreground">{f}</code>
+                  {en(label)} <code className="text-xs text-muted-foreground">{en(f)}</code>
                 </button>
               ))}
               <p className="px-2.5 pb-1 pt-1.5 text-[11px] text-muted-foreground">{en("Filled in for each person when it's sent. Works in the subject too.")}</p>
@@ -341,11 +341,11 @@ export default function EmailComposer({
       {/* Body or preview */}
       {preview ? (
         <div className="space-y-2 bg-muted/30 px-4 py-3 text-sm">
-          <p className="text-xs text-muted-foreground">{en("What ")}{first}{en(" will receive")}</p>
+          <p className="text-xs text-muted-foreground">{en("What {first} will receive", { first })}</p>
           <p className="font-semibold">{filled.subject || "(no subject)"}</p>
           <div className="email-body rounded-lg border border-border bg-background px-4 py-3" dangerouslySetInnerHTML={{ __html: filled.html || "<p></p>" }} />
           <p className="text-xs text-muted-foreground">
-            {lead.instituteName ?? "Your institute"}{en(" · Don't contact me again (link added automatically)")}
+            {en("{value} · Don't contact me again (link added automatically)", { value: lead.instituteName ?? en("Your institute") })}
           </p>
         </div>
       ) : (
@@ -356,13 +356,13 @@ export default function EmailComposer({
         <ul className="flex flex-wrap gap-1.5 border-t border-border px-4 py-2">
           {files.map((f) => (
             <li key={f.id} className="inline-flex items-center gap-1 rounded-lg border border-border bg-muted/40 px-2 py-1 text-xs">
-              <Paperclip aria-hidden="true" className="h-3 w-3" /> {f.name} <span className="text-muted-foreground">({Math.ceil(f.size / 1024)}{en(" KB)")}</span>
+              <Paperclip aria-hidden="true" className="h-3 w-3" /> {f.name} <span className="text-muted-foreground">{en("({value} KB)", { value: Math.ceil(f.size / 1024) })}</span>
               <button type="button" aria-label={`Remove ${f.name}`} onClick={() => setFiles((x) => x.filter((y) => y.id !== f.id))} className="rounded p-0.5 hover:bg-muted">
                 <X aria-hidden="true" className="h-3 w-3" />
               </button>
             </li>
           ))}
-          <li className="self-center text-[11px] text-muted-foreground">{(totalSize / 1024 / 1024).toFixed(1)}{en(" of 10 MB")}</li>
+          <li className="self-center text-[11px] text-muted-foreground">{en("{number} of 10 MB", { number: (totalSize / 1024 / 1024).toFixed(1) })}</li>
         </ul>
       )}
 
@@ -399,7 +399,7 @@ export default function EmailComposer({
                 </button>
                 {LATER.map(([label, d]) => (
                   <button key={label} type="button" onClick={() => { setSendAt(d.toISOString()); setLaterOpen(false); }} className="flex w-full justify-between rounded-lg px-2.5 py-1.5 text-start text-sm hover:bg-muted">
-                    {label} <span className="text-xs text-muted-foreground">{d.toLocaleDateString([], { weekday: "short", day: "numeric", month: "short" })}</span>
+                    {en(label)} <span className="text-xs text-muted-foreground">{d.toLocaleDateString([], { weekday: "short", day: "numeric", month: "short" })}</span>
                   </button>
                 ))}
                 <div className="border-t border-border p-2">
@@ -448,8 +448,7 @@ export default function EmailComposer({
             {en("Cancel")}
           </button>
           <p className="w-full text-xs text-muted-foreground">
-            {sendAt ? `It goes out ${fmt(new Date(sendAt))} (your time); you can cancel it until then. ` : ""}
-            {lead.channels.replyByEmail ? en("Their reply comes back to this timeline. ") : ""}{en("A link to stop further contact is added at the bottom.")}
+            {en("{value}{value2}A link to stop further contact is added at the bottom.", { value: sendAt ? `It goes out ${fmt(new Date(sendAt))} (your time); you can cancel it until then. ` : "", value2: lead.channels.replyByEmail ? en("Their reply comes back to this timeline. ") : "" })}
           </p>
         </div>
       )}

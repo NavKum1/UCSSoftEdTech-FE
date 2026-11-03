@@ -393,7 +393,7 @@ export default function StudentInterviewReplayPage() {
                 onClick={cycleSpeed}
                 className="px-3 py-1.5 rounded-xl bg-muted hover:bg-slate-700 text-foreground text-xs font-semibold font-mono border border-border transition-all cursor-pointer"
               >
-                {playbackSpeed}{en("x Speed")}
+                {en("{playbackSpeed}x Speed", { playbackSpeed })}
               </button>
             </div>
           </div>

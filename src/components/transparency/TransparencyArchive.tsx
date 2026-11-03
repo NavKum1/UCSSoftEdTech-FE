@@ -26,9 +26,9 @@ export function TransparencyArchive({ entries, currentId }: { entries: ArchiveEn
                 {e.status === "Withdrawn" && (
                   <span className="ms-2 text-[11px] font-semibold px-2 py-0.5 rounded-full bg-rose-500/10 text-rose-700 dark:text-rose-400 border border-rose-500/30">{en("Withdrawn")}</span>
                 )}
-                {e.status === "Withdrawn" && e.withdrawalReason && <p className="text-xs text-muted-foreground mt-0.5">{en("Reason: ")}{e.withdrawalReason}</p>}
+                {e.status === "Withdrawn" && e.withdrawalReason && <p className="text-xs text-muted-foreground mt-0.5">{en("Reason: {withdrawalReason}", { withdrawalReason: e.withdrawalReason })}</p>}
               </div>
-              <span className="text-xs text-muted-foreground">{en("Published ")}{formatDate(e.publishedAt)} · v{e.methodologyVersion}</span>
+              <span className="text-xs text-muted-foreground">{en("Published {date} · v{methodologyVersion}", { date: formatDate(e.publishedAt), methodologyVersion: e.methodologyVersion })}</span>
             </li>
           ))}
         </ul>

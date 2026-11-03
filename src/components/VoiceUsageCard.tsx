@@ -161,7 +161,7 @@ export default function VoiceUsageCard() {
                     {usage.remainingMinutes}
                   </span>{" "}
                   {en("min remaining · ")}{usage.usedMinutes} of {usage.allocatedMinutes}{en(" monthly min used")}
-                  {usage.bonusMinutes > 0 && <> · {usage.bonusMinutes}{en(" top-up min (never expire)")}</>}
+                  {usage.bonusMinutes > 0 && <> {" "}{en("· {bonusMinutes} top-up min (never expire)", { bonusMinutes: usage.bonusMinutes })}</>}
                 </p>
                 <div className="h-1.5 w-full max-w-sm rounded-full bg-muted overflow-hidden">
                   <div
@@ -172,10 +172,10 @@ export default function VoiceUsageCard() {
                 <p className="text-[11px] text-muted-foreground flex flex-wrap items-center gap-x-3 gap-y-1">
                   {usage.usageResetsAt && (
                     <span className="flex items-center gap-1">
-                      <Clock className="w-3 h-3" />{en(" Monthly minutes reset ")}{new Date(usage.usageResetsAt).toLocaleDateString()}
+                      <Clock className="w-3 h-3" />{" "}{en("Monthly minutes reset {date}", { date: new Date(usage.usageResetsAt).toLocaleDateString() })}
                     </span>
                   )}
-                  {sessionCap ? <span>{en("Max ")}{sessionCap}{en(" min per session")}</span> : null}
+                  {sessionCap ? <span>{en("Max {sessionCap} min per session", { sessionCap })}</span> : null}
                 </p>
                 {usage.isQuotaExhausted && (
                   <p className="text-[11px] font-semibold text-red-600 dark:text-red-400 flex items-center gap-1">

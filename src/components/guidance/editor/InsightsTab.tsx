@@ -90,7 +90,7 @@ export default function InsightsTab({ formId, apiFetch, instituteId }: { formId:
       <div className="flex flex-wrap items-center gap-1.5">
         {RANGES.map((d) => (
           <button key={d} type="button" aria-pressed={days === d} onClick={() => setDays(d)} className={`rounded-full border px-3 py-1.5 text-xs font-medium ${days === d ? "border-cyan-700 bg-cyan-700 text-white" : "border-border bg-card hover:bg-muted"}`}>
-            {en("Last ")}{d === 365 ? en("12 months") : `${d} days`}
+            {en("Last {value}", { value: d === 365 ? en("12 months") : `${d} days` })}
           </button>
         ))}
         <button type="button" onClick={download} className="ms-auto inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-xs font-medium hover:bg-muted">
@@ -170,7 +170,7 @@ export default function InsightsTab({ formId, apiFetch, instituteId }: { formId:
                 <span>
                   <span className="font-medium">{s.name ?? (s.requestId ? en("Ask Edulexa request") : en("Inquiry"))}</span>{" "}
                   <span className="text-xs text-muted-foreground">
-                    {new Date(s.createdAt).toLocaleString([], { dateStyle: "medium", timeStyle: "short" })}{en(" · version ")}{s.formVersion} · {s.campaign ?? (s.channel === "app" ? en("inside Edulexa") : "website")}
+                    {en("{number} · version {formVersion} · {value}", { number: new Date(s.createdAt).toLocaleString([], { dateStyle: "medium", timeStyle: "short" }), formVersion: s.formVersion, value: s.campaign ?? (s.channel === "app" ? en("inside Edulexa") : "website") })}
                   </span>
                 </span>
                 {s.leadId && instituteId !== PLATFORM && (

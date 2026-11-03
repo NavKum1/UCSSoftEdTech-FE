@@ -198,7 +198,7 @@ export default function SessionIntegrityPage() {
             <ul className="mt-3 flex flex-wrap gap-2 text-xs">
               {Object.entries(open.incidentBreakdown).map(([k, n]) => (
                 <li key={k} className="rounded-full border border-border px-2.5 py-1">
-                  {EVENT_LABEL[k] ?? k}: {n}
+                  {en(EVENT_LABEL[k] ?? k)}: {n}
                 </li>
               ))}
             </ul>
@@ -207,7 +207,7 @@ export default function SessionIntegrityPage() {
             {open.chronologicalLedger.map((e) => (
               <li key={e.id} className="flex flex-wrap items-baseline justify-between gap-2 px-3 py-2">
                 <span>
-                  {EVENT_LABEL[e.eventType] ?? e.eventType} <span className="text-xs text-muted-foreground">({e.severity})</span>
+                  {en(EVENT_LABEL[e.eventType] ?? e.eventType)} <span className="text-xs text-muted-foreground">({e.severity})</span>
                 </span>
                 <span className="text-xs text-muted-foreground tabular-nums">{new Date(e.timestamp).toLocaleTimeString()}</span>
               </li>

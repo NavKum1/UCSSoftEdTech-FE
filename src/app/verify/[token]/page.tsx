@@ -211,7 +211,7 @@ export default function VerifyTokenPage() {
 
         {data.status === "Expired" && (
           <div className="p-3 rounded-xl border border-slate-400/40 bg-slate-50 dark:bg-slate-500/10 text-sm text-foreground flex gap-2">
-            <Info className="w-4 h-4 shrink-0 mt-0.5" />{en(" This credential passed its validity date on ")}{formatDate(claims.exp)}{en(". The results below are historical.")}
+            <Info className="w-4 h-4 shrink-0 mt-0.5" />{" "}{en("This credential passed its validity date on {date}. The results below are historical.", { date: formatDate(claims.exp) })}
           </div>
         )}
         {data.status === "Under review" && (
@@ -236,13 +236,12 @@ export default function VerifyTokenPage() {
             ) : (
               <>
                 <KeyRound className="w-5 h-5 text-muted-foreground" />
-                <span>{en("Signature verified by the Edulexa server (ES256, key id ")}{data.issuerKeyId})</span>
+                <span>{en("Signature verified by the Edulexa server (ES256, key id {issuerKeyId})", { issuerKeyId: data.issuerKeyId })}</span>
               </>
             )}
           </div>
           <p className="text-xs text-muted-foreground">
-            {check.detail}{en(" Issuer: ")}<span className="font-mono">{claims.iss}</span>{en(". Checked ")}{formatDate(data.verifiedAt)}.
-          </p>
+            {en("{detail} Issuer:", { detail: check.detail })}{" "}<span className="font-mono">{claims.iss}</span>{en(". Checked {date}.", { date: formatDate(data.verifiedAt) })}</p>
           {claims.evidenceHash && (
             <p className="text-xs text-muted-foreground break-all">
               {en("Evidence hash: ")}<span className="font-mono">{claims.evidenceHash}</span>
@@ -297,7 +296,7 @@ export default function VerifyTokenPage() {
           </div>
           <div className="flex items-center gap-1.5">
             <Calendar className="w-4 h-4 text-muted-foreground" />
-            {en("Issued ")}{formatDate(claims.iat)}{en(" · valid until ")}{formatDate(claims.exp)}
+            {en("Issued {date} · valid until {date2}", { date: formatDate(claims.iat), date2: formatDate(claims.exp) })}
           </div>
           {evidence.included.humanDecision && (
             <div className="sm:col-span-2 flex items-center gap-1.5">
@@ -374,8 +373,7 @@ export default function VerifyTokenPage() {
         </section>
 
         <p className="text-xs text-muted-foreground">
-          {en("This link was shared ")}{data.share.recipientLabel ? `with ${data.share.recipientLabel} ` : ""}{en("and stops working on")}{" "}
-          {formatDate(data.share.expiresAt)}{en(". The holder can see when it was viewed, the browser type and a one-way hash of the network address (never the address itself).")}{" "}
+          {en("This link was shared {value}and stops working on {date}. The holder can see when it was viewed, the browser type and a one-way hash of the network address (never the address itself).", { value: data.share.recipientLabel ? `with ${data.share.recipientLabel} ` : "", date: formatDate(data.share.expiresAt) })}{" "}
           <Link href="/verify" className="underline">
             {en("Verify a credential JWS")}
           </Link>

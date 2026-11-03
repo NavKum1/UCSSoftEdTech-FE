@@ -141,7 +141,7 @@ function SettingsForm({ settings, jobTypes, busy, onSave }: { settings: Settings
           {jobTypes.map((t) => (
             <label key={t} className="flex items-center gap-1 text-sm">
               <input type="checkbox" checked={types.includes(t)} onChange={(e) => setTypes(e.target.checked ? [...types, t] : types.filter((x) => x !== t))} />
-              {JOB_TYPE[t] ?? t}
+              {en(JOB_TYPE[t] ?? t)}
             </label>
           ))}
         </div>
@@ -227,7 +227,7 @@ function RuleForm({ college, jobTypes, docs, busy, onCreate }: { college: string
           {jobTypes.map((t) => (
             <label key={t} className="flex items-center gap-1 text-sm">
               <input type="checkbox" checked={types.includes(t)} onChange={(e) => setTypes(e.target.checked ? [...types, t] : types.filter((x) => x !== t))} />
-              {JOB_TYPE[t] ?? t}
+              {en(JOB_TYPE[t] ?? t)}
             </label>
           ))}
         </div>
@@ -237,7 +237,7 @@ function RuleForm({ college, jobTypes, docs, busy, onCreate }: { college: string
       </Field>
       <label className="flex items-start gap-2 text-sm">
         <input type="checkbox" className="mt-1" checked={consent} onChange={(e) => setConsent(e.target.checked)} />
-        <span>{en("I agree: ")}{consentText}</span>
+        <span>{en("I agree: {consentText}", { consentText })}</span>
       </label>
       <Button type="submit" busy={busy} disabled={!consent}>
         {en("Create rule")}
@@ -293,7 +293,7 @@ function SuggestionCard({ s, docs, busy, onApprove, onDismiss }: {
           </Field>
           <label className="flex items-start gap-2 text-sm">
             <input type="checkbox" className="mt-1" checked={consent} onChange={(e) => setConsent(e.target.checked)} />
-            <span>{en("Share my details")}{resume ? en(" and résumé") : ""} with {s.companyName}{en(" for this drive.")}</span>
+            <span>{en("Share my details{value} with {companyName} for this drive.", { value: resume ? en(" and résumé") : "", companyName: s.companyName })}</span>
           </label>
           <div className="flex flex-wrap gap-2">
             <Button busy={busy} disabled={!consent} onClick={() => onApprove(s.id, { note, consent, documents: resume ? [{ fileId: resume, kind: "Resume" }] : [] })}>
@@ -411,8 +411,7 @@ export default function CareerAgentPage() {
                     <div>
                       <span className="font-medium">{r.name}</span> <Badge tone={r.active ? "good" : "neutral"}>{r.active ? en("On") : en("Paused")}</Badge>
                       <p className="text-xs text-muted-foreground">
-                        {[r.keywords.join(", "), r.jobTypes.map((t) => JOB_TYPE[t] ?? t).join(", "), r.locations.join(" or ")].filter(Boolean).join(" · ")}{en(" · at most")}{" "}
-                        {r.maxPerWeek}{en(" a week")}
+                        {en("{value} · at most {maxPerWeek} a week", { value: [r.keywords.join(", "), r.jobTypes.map((t) => JOB_TYPE[t] ?? t).join(", "), r.locations.join(" or ")].filter(Boolean).join(" · "), maxPerWeek: r.maxPerWeek })}
                       </p>
                     </div>
                     <div className="flex gap-2">

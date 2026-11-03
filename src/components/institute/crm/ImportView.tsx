@@ -282,7 +282,7 @@ export default function ImportView({ getToken, onImported }: { getToken: GetToke
             </dl>
             {preview.undated ? (
               <p className="mt-3 flex items-start gap-2 text-sm text-amber-900 dark:text-amber-200">
-                <AlertTriangle aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0" /> {plural(preview.undated, "date")}{en(" couldn't be read; those leads will be dated today.")}
+                <AlertTriangle aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0" /> {" "}{en("{undated} couldn't be read; those leads will be dated today.", { undated: plural(preview.undated, "date") })}
               </p>
             ) : null}
 
@@ -343,9 +343,9 @@ export default function ImportView({ getToken, onImported }: { getToken: GetToke
                       <td className="py-1.5 pe-3">{r.name ?? "—"}</td>
                       <td className="break-all py-1.5 pe-3">{[r.email, r.phone].filter(Boolean).join(" · ") || "—"}</td>
                       <td className="py-1.5 pe-3"><StageBadge stage={r.stage} /></td>
-                      <td className="py-1.5 pe-3">{r.received ? new Date(r.received).toLocaleDateString(undefined, { dateStyle: "medium" }) : r.receivedText ? <span className="text-amber-800 dark:text-amber-300">{en("today (“")}{r.receivedText}{en("” unreadable)")}</span> : "today"}</td>
+                      <td className="py-1.5 pe-3">{r.received ? new Date(r.received).toLocaleDateString(undefined, { dateStyle: "medium" }) : r.receivedText ? <span className="text-amber-800 dark:text-amber-300">{en("today (“{receivedText}” unreadable)", { receivedText: r.receivedText })}</span> : "today"}</td>
                       <td className="py-1.5 text-xs">
-                        {r.problem ? <span className="text-red-700 dark:text-red-400">{en("Can't be used: ")}{r.problem}</span>
+                        {r.problem ? <span className="text-red-700 dark:text-red-400">{en("Can't be used: {problem}", { problem: r.problem })}</span>
                           : r.duplicate ? (duplicates === "note" ? en("A note on their existing lead") : en("Left out: already in your CRM"))
                           : `New lead${r.answers ? `, ${plural(r.answers, "answer")}` : ""}`}
                       </td>
@@ -357,11 +357,11 @@ export default function ImportView({ getToken, onImported }: { getToken: GetToke
 
             {preview.problems.length > 0 && (
               <details className="mt-4 text-sm">
-                <summary className="cursor-pointer font-medium">{en("Rows that can't be used (")}{preview.failed.toLocaleString()})</summary>
+                <summary className="cursor-pointer font-medium">{en("Rows that can't be used ({number})", { number: preview.failed.toLocaleString() })}</summary>
                 <ul className="mt-2 space-y-0.5 text-xs text-muted-foreground">
                   {preview.problems.map((p) => (
                     <li key={p.row}>
-                      {en("Row ")}{p.row}: {p.message}
+                      {en("Row {row}: {message}", { row: p.row, message: p.message })}
                     </li>
                   ))}
                 </ul>
@@ -379,7 +379,7 @@ export default function ImportView({ getToken, onImported }: { getToken: GetToke
                   {preview.duplicates > 0 ? en("Everyone in this file is already in your CRM. Choose “Add the row to their lead as a note” to add their rows.") : en("None of the rows can be used.")}
                 </span>
               ) : (
-                <span className="text-xs text-muted-foreground">from {preview.fileName}{en(" · tagged “")}{preview.source}{en("” · you can undo it below")}</span>
+                <span className="text-xs text-muted-foreground">{en("from {fileName} · tagged “{source}” · you can undo it below", { fileName: preview.fileName, source: preview.source })}</span>
               )}
             </div>
           </section>

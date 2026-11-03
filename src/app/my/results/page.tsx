@@ -97,12 +97,12 @@ export default function MyResultsPage() {
                 >
                   <div className="min-w-0 space-y-1.5">
                     <div className="font-semibold text-foreground truncate">{r.sprintTitle}</div>
-                    <div className="text-xs text-muted-foreground">{en("Submitted ")}{fmtDate(r.submittedAt)}</div>
+                    <div className="text-xs text-muted-foreground">{en("Submitted {date}", { date: fmtDate(r.submittedAt) })}</div>
                     <div className="flex flex-wrap gap-1.5">
                       <Badge tone={r.totalTests > 0 && r.passedTests === r.totalTests ? "good" : "muted"}>
-                        {en("Tests ")}{r.passedTests}/{r.totalTests}
+                        {en("Tests {passedTests}/{totalTests}", { passedTests: r.passedTests, totalTests: r.totalTests })}
                       </Badge>
-                      <Badge tone={r.defenseStatus === "Completed" ? "good" : "muted"}>{en("Defense: ")}{r.defenseStatus}</Badge>
+                      <Badge tone={r.defenseStatus === "Completed" ? "good" : "muted"}>{en("Defense: {defenseStatus}", { defenseStatus: r.defenseStatus })}</Badge>
                       <Badge tone={r.reviewStatus === "Reviewed" ? "info" : "warn"}>{r.reviewStatus}</Badge>
                       {r.outcome && <Badge tone={r.outcome === "Advanced" ? "good" : "muted"}>{r.outcome}</Badge>}
                       {r.hasOpenAppeal && <Badge tone="warn">{en("Appeal open")}</Badge>}

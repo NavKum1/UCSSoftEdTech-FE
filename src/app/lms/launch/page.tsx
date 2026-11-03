@@ -77,7 +77,7 @@ export default function LmsLaunchPage() {
                   <BookOpen aria-hidden="true" className="h-3.5 w-3.5" />{en(" Course")}
                 </p>
                 {launch.course && <p className="mt-1 font-semibold">{launch.course}</p>}
-                {launch.assignment && <p className="mt-0.5 text-sm text-muted-foreground">{en("Activity: ")}{launch.assignment}</p>}
+                {launch.assignment && <p className="mt-0.5 text-sm text-muted-foreground">{en("Activity: {assignment}", { assignment: launch.assignment })}</p>}
               </div>
             )}
             <p className="mt-4 text-sm text-muted-foreground">

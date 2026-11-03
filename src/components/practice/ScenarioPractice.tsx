@@ -163,7 +163,7 @@ export default function ScenarioPractice({ track, title, intro }: { track: strin
               <h2 className="text-base font-semibold">{s.title}</h2>
               <p className="mt-1 flex-1 text-sm text-muted-foreground">{s.context}</p>
               <button className={`${button} mt-4 self-start`} disabled={busy} onClick={() => void post(`/api/practice/scenarios/${s.code}/start`)}>
-                {en("Start (")}{s.turns}{en(" turns)")}
+                {en("Start ({turns} turns)", { turns: s.turns })}
               </button>
             </div>
           ))}
@@ -194,7 +194,7 @@ export default function ScenarioPractice({ track, title, intro }: { track: strin
                 <span className="font-medium">{attempt.current.speaker}:</span> {attempt.current.message}
               </legend>
               <p className="text-xs text-muted-foreground">
-                {en("Turn ")}{attempt.current.turn + 1} of {attempt.scenario.turns}{en(". Choose your response.")}
+                {en("Turn {value} of {turns}. Choose your response.", { value: attempt.current.turn + 1, turns: attempt.scenario.turns })}
               </p>
               <ul className="space-y-2">
                 {attempt.current.options.map((o) => (
@@ -214,7 +214,7 @@ export default function ScenarioPractice({ track, title, intro }: { track: strin
 
           {attempt.result && (
             <div className="space-y-3 border-t border-border pt-4" aria-live="polite">
-              <h3 className="text-base font-semibold">{en("Your result: ")}{Math.round(attempt.result.overall)}%</h3>
+              <h3 className="text-base font-semibold">{en("Your result: {overall}%", { overall: Math.round(attempt.result.overall) })}</h3>
               <dl className="grid gap-3 sm:grid-cols-2">
                 {dims.map((d) => (
                   <div key={d.key} className="rounded-xl bg-muted/60 p-3">

@@ -33,7 +33,7 @@ export default function TransparencyPage() {
         <TransparencyReportView report={latest.data.report} meta={latest.data} />
       ) : latest.kind === "error" ? (
         <div className="glass-panel rounded-2xl border border-border p-6 text-sm text-rose-700 dark:text-rose-400 flex items-center gap-2">
-          <AlertCircle className="w-4 h-4" />{en(" Could not load the report. ")}{latest.message}
+          <AlertCircle className="w-4 h-4" />{" "}{en("Could not load the report. {message}", { message: latest.message })}
         </div>
       ) : (
         <div className="glass-panel rounded-2xl border border-border p-6 text-sm text-muted-foreground">
@@ -43,7 +43,7 @@ export default function TransparencyPage() {
 
       {archive?.kind === "ok" && <TransparencyArchive entries={archive.data} />}
       {archive?.kind === "error" && (
-        <p className="text-sm text-rose-700 dark:text-rose-400 flex items-center gap-2"><AlertCircle className="w-4 h-4" />{en(" Could not load the archive. ")}{archive.message}</p>
+        <p className="text-sm text-rose-700 dark:text-rose-400 flex items-center gap-2"><AlertCircle className="w-4 h-4" />{" "}{en("Could not load the archive. {message}", { message: archive.message })}</p>
       )}
     </div>
   );

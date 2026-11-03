@@ -36,7 +36,7 @@ export default function AnswerFiles({ files }: { files: AnswerFile[] | null | un
     <span className="mt-1 flex flex-wrap gap-1.5">
       {files.map((f) => (
         <button key={f.id} type="button" onClick={() => open(f)} className="inline-flex items-center gap-1 rounded-lg border border-border px-2 py-1 text-xs font-normal hover:bg-muted">
-          <Paperclip aria-hidden="true" className="h-3.5 w-3.5" /> {f.name} <span className="text-muted-foreground">({Math.ceil(f.size / 1024)}{en(" KB)")}</span>
+          <Paperclip aria-hidden="true" className="h-3.5 w-3.5" /> {f.name} <span className="text-muted-foreground">{en("({value} KB)", { value: Math.ceil(f.size / 1024) })}</span>
         </button>
       ))}
       {error && <span className="text-xs text-red-700 dark:text-red-400">{error}</span>}

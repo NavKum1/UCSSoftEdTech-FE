@@ -153,7 +153,7 @@ export default function AutomationsTab({ def, onChange, readOnly, instituteId, t
             <div className="absolute z-10 mt-1 w-72 rounded-xl border border-border bg-popover p-1 shadow-lg">
               {EXAMPLES.map((x) => (
                 <button key={x.label} type="button" onClick={() => add(x.make())} className="block w-full rounded-lg px-3 py-2 text-start text-xs hover:bg-muted">
-                  {x.label}
+                  {en(x.label)}
                 </button>
               ))}
             </div>
@@ -199,7 +199,7 @@ function AutomationEditor({ a, update, outcomes, match, team }: { a: Automation;
           >
             {(Object.keys(TRIGGERS) as Automation["trigger"][]).map((t) => (
               <option key={t} value={t}>
-                {TRIGGERS[t]}
+                {en(TRIGGERS[t])}
               </option>
             ))}
           </select>

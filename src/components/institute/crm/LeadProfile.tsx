@@ -36,7 +36,7 @@ function FormResultCard({ r, name, from }: { r: FormResultView; name: string; fr
     <section className="space-y-3">
       {from?.otherInquiry && (
         <p className="text-xs text-muted-foreground">
-          {en("From their other inquiry")}{from.form ? ` (${from.form})` : ""}{en(", sent ")}<time dateTime={from.at}>{new Date(from.at).toLocaleDateString(undefined, { dateStyle: "medium" })}</time>.
+          {en("From their other inquiry{value}, sent", { value: from.form ? ` (${from.form})` : "" })}{" "}<time dateTime={from.at}>{new Date(from.at).toLocaleDateString(undefined, { dateStyle: "medium" })}</time>.
         </p>
       )}
       {r.outcome && (
@@ -108,7 +108,7 @@ function Visits({ visits }: { visits: FormVisit[] }) {
                     : v.status === "inProgress"
                       ? en("Filling it in now")
                       : en("Stopped part way")}
-                {(v.status === "inProgress" || v.status === "stopped") && v.step ? <>{en(", last answer in “")}{v.step}”</> : null} after {took(v.seconds)} ·{" "}
+                {(v.status === "inProgress" || v.status === "stopped") && v.step ? <>{en(", last answer in “{step}”", { step: v.step })}</> : null} after {took(v.seconds)} ·{" "}
                 <time dateTime={v.startedAt}>{new Date(v.startedAt).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" })}</time>
                 {v.campaign ? ` · ${v.campaign}` : ""}
                 {v.otherInquiry ? en(" · another inquiry") : ""}
@@ -175,8 +175,7 @@ function Visitor({ v }: { v: VisitorInfo }) {
             <dd className={`flex items-start gap-1 ${flagged ? "text-red-800 dark:text-red-300" : "text-emerald-800 dark:text-emerald-300"}`}>
               {flagged ? <ShieldAlert aria-hidden="true" className="h-3.5 w-3.5 shrink-0" /> : <ShieldCheck aria-hidden="true" className="h-3.5 w-3.5 shrink-0" />}
               <span>
-                {flagged ? en("Flagged") : en("Passed")}{en(" (score ")}{v.spamScore}; {v.spamThreshold}{en(" or more is flagged)")}
-                {v.spamReasons ? `: ${v.spamReasons}` : ""}
+                {en("{value} (score {spamScore}; {spamThreshold} or more is flagged){value2}", { value: flagged ? en("Flagged") : en("Passed"), spamScore: v.spamScore, spamThreshold: v.spamThreshold, value2: v.spamReasons ? `: ${v.spamReasons}` : "" })}
               </span>
             </dd>
           </>
@@ -377,7 +376,7 @@ export default function LeadProfile({ lead }: { lead: LeadFull }) {
         <>
           <section>
             <h3 className="font-semibold">{en("Counselling quiz result")}</h3>
-            <p className="mt-1 text-xs text-muted-foreground">{en("Taken ")}{new Date(q.takenAt).toLocaleDateString()}{en(". Shared by the person with this inquiry.")}</p>
+            <p className="mt-1 text-xs text-muted-foreground">{en("Taken {date}. Shared by the person with this inquiry.", { date: new Date(q.takenAt).toLocaleDateString() })}</p>
             <p className="mt-2">
               {en("Suggested area: ")}<span className="font-medium">{q.primaryTrack}</span>
               {q.secondaryTrack && (
@@ -386,7 +385,7 @@ export default function LeadProfile({ lead }: { lead: LeadFull }) {
                 </>
               )}
             </p>
-            <p className="mt-1 text-muted-foreground">{CONFIDENCE[q.matchConfidence] ?? q.matchConfidence}</p>
+            <p className="mt-1 text-muted-foreground">{en(CONFIDENCE[q.matchConfidence] ?? q.matchConfidence)}</p>
             <ul className="mt-3 space-y-1.5">
               {q.ranking.map((r) => (
                 <li key={r.track}>
@@ -420,7 +419,7 @@ export default function LeadProfile({ lead }: { lead: LeadFull }) {
           )}
 
           <details>
-            <summary className="cursor-pointer font-semibold">{en("All their answers (")}{q.answers.length})</summary>
+            <summary className="cursor-pointer font-semibold">{en("All their answers ({length})", { length: q.answers.length })}</summary>
             <ol className="mt-2 list-decimal space-y-2 ps-5">
               {q.answers.map((a, i) => (
                 <li key={i}>

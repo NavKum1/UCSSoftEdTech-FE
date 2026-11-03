@@ -164,7 +164,7 @@ function InstituteCards({ apiFetch, track, onClose, onChoose }: { apiFetch: ApiF
   return (
     <Modal title={en("Talk to a specific institute")} onClose={onClose} wide>
       <p className="mt-1 text-sm text-muted-foreground">
-        {track ? `Institutes with courses in ${track} come first. ` : ""}{en("Only details each institute has given are shown.")}
+        {en("{value}Only details each institute has given are shown.", { value: track ? `Institutes with courses in ${track} come first. ` : "" })}
       </p>
       {!cards ? (
         <div className="mt-4 h-40 animate-pulse rounded-xl bg-muted motion-reduce:animate-none" aria-busy="true" />
@@ -183,7 +183,7 @@ function InstituteCards({ apiFetch, track, onClose, onChoose }: { apiFetch: ApiF
                   </span>
                 )}
                 {c.modes.length > 0 && <span>{c.modes.join(", ")}</span>}
-                {c.feesRange && <span>{en("Fees: ")}{c.feesRange}</span>}
+                {c.feesRange && <span>{en("Fees: {feesRange}", { feesRange: c.feesRange })}</span>}
               </p>
               {c.about && <p className="mt-2 text-sm text-muted-foreground">{c.about}</p>}
               <ul className="mt-2 space-y-1 text-sm">
@@ -199,7 +199,7 @@ function InstituteCards({ apiFetch, track, onClose, onChoose }: { apiFetch: ApiF
                 onClick={() => onChoose(c.instituteId, c.name)}
                 className="mt-3 self-start rounded-lg border border-indigo-600 px-3 py-1.5 text-sm font-semibold text-indigo-700 hover:bg-indigo-50 dark:text-indigo-300 dark:hover:bg-indigo-500/10"
               >
-                {en("Ask ")}{c.name}
+                {en("Ask {name}", { name: c.name })}
               </button>
             </li>
           ))}

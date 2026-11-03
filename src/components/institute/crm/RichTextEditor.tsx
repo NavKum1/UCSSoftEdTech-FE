@@ -60,7 +60,7 @@ export default function RichTextEditor({ value, onChange, placeholder }: { value
         <span className="mx-1 h-5 w-px bg-border" aria-hidden="true" />
         {FIELDS.map(([f, label]) => (
           <button key={f} type="button" onMouseDown={(e) => e.preventDefault()} onClick={() => editor?.chain().focus().insertContent(f).run()} className="rounded-md px-1.5 py-1 text-xs text-cyan-800 hover:bg-cyan-600/10 dark:text-cyan-300" title={`Insert ${label.toLowerCase()}`}>
-            + {label}
+            + {en(label)}
           </button>
         ))}
       </div>

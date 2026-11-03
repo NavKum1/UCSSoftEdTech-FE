@@ -145,8 +145,7 @@ export function RequestDetails({ r, files = false }: { r: GuidanceRequestView; /
       {r.quiz && (
         <details className="rounded-xl bg-muted/50 p-3">
           <summary className="cursor-pointer font-medium">
-            {en("Shared quiz: ")}{r.quiz.primaryTrack}
-            {r.quiz.secondaryTrack ? `, then ${r.quiz.secondaryTrack}` : ""} ({r.quiz.matchConfidence}{en(" match)")}
+            {en("Shared quiz: {primaryTrack}{value} ({matchConfidence} match)", { primaryTrack: r.quiz.primaryTrack, value: r.quiz.secondaryTrack ? `, then ${r.quiz.secondaryTrack}` : "", matchConfidence: r.quiz.matchConfidence })}
           </summary>
           <ul className="mt-2 text-xs">
             {r.quiz.ranking.map((x) => (

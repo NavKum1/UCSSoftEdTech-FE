@@ -1,6 +1,6 @@
 /**
- * Two Englishes (owner decision 2 Nov 2026): US spelling for the Americas, British/Indian spelling everywhere else.
- * The app's text is written in British/Indian English; toAmerican() gives the US spelling from the shared word list
+ * Two Englishes: US spelling for everyone (owner decision 4 Nov 2026: Edulexa is a US product), British spelling where a
+ * school or reader chooses it. The app's text is written in British English; toAmerican() gives the US spelling from the shared word list
  * (spelling.json, the same file as the API's Resources/english-spelling.json). Only the app's own text goes through it,
  * never what people typed (names, answers, a school's own wording).
  */
@@ -8,18 +8,8 @@ import spelling from "./spelling.json";
 
 export type English = "US" | "GB";
 
-/** Countries of the Americas (the API's SchoolPlans.Americas): US spelling by default */
-export const AMERICAS = new Set(
-  "US CA MX GT BZ SV HN NI CR PA CU DO HT JM BS BB TT AG DM GD KN LC VC PR VI VG AI KY BM TC MS AW CW SX BQ GP MQ BL MF PM GL CO VE GY SR GF EC PE BO BR PY UY AR CL FK".split(" "),
-);
-
-export const englishForCountry = (country: string | null | undefined): English => (country && AMERICAS.has(country.toUpperCase()) ? "US" : "GB");
-
-/** The English of a language tag with a region (en-US, en-IN); null without one (plain "en") or for other languages */
-export function englishFromLocale(tag: string | null | undefined): English | null {
-  const m = /^en[-_]([a-z]{2})\b/i.exec(tag ?? "");
-  return m ? englishForCountry(m[1]) : null;
-}
+/** The English for anyone who hasn't chosen one */
+export const DEFAULT_ENGLISH: English = "US";
 
 const MAP = new Map<string, string>();
 for (const s of spelling.stems) for (const e of s.endings) MAP.set(s.gb + e, s.us + e);
@@ -39,7 +29,7 @@ function sameCase(from: string, to: string) {
 
 const convert = (part: string) => part.replace(PATTERN, (m) => sameCase(m, MAP.get(m.toLowerCase().replace(/\s+/g, " ")) ?? m));
 
-/** The US spelling of a British/Indian English text */
+/** The US spelling of a British English text */
 export function toAmerican(text: string): string {
   if (!text) return text;
   let out = "";

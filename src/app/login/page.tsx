@@ -89,12 +89,14 @@ function KeycloakSignIn({ redirectUrl, signUp, loginHint, authError, brand }: Ke
   // Don't bounce straight back to Keycloak after an error, or when the visitor pressed Back to leave it
   const cameBack = useSyncExternalStore(noSubscribe, cameBackWithBackButton, () => false);
   const started = useRef(false);
+  // Local development stays on this page, so the developer shortcuts can be used with or without Keycloak running
+  const autoStart = !DEMO_LOGIN_ENABLED;
 
   useEffect(() => {
-    if (started.current || authError || cameBackWithBackButton()) return;
+    if (!autoStart || started.current || authError || cameBackWithBackButton()) return;
     started.current = true;
     void keycloakSignIn(redirectUrl, { loginHint, signUp }).then((code) => code && setFailure(code));
-  }, [authError, loginHint, redirectUrl, signUp]);
+  }, [authError, autoStart, loginHint, redirectUrl, signUp]);
 
   const go = async (asSignUp: boolean) => {
     setFailure(null);
@@ -107,7 +109,7 @@ function KeycloakSignIn({ redirectUrl, signUp, loginHint, authError, brand }: Ke
   };
 
   const error = failure ?? authError;
-  if (!error && !cameBack) {
+  if (autoStart && !error && !cameBack) {
     return (
       <main className="flex min-h-dvh items-center justify-center bg-background px-4" aria-busy="true">
         <p role="status" className="flex items-center gap-2.5 text-sm text-muted-foreground">
@@ -134,7 +136,9 @@ function KeycloakSignIn({ redirectUrl, signUp, loginHint, authError, brand }: Ke
         {error && (
           <p role="alert" className="flex items-start gap-2 rounded-xl border border-red-200 bg-red-50 px-3.5 py-3 text-sm text-red-800 dark:border-red-900/60 dark:bg-red-950/40 dark:text-red-200">
             <AlertCircle aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0" />
-            {AUTH_ERRORS[error] ?? "We couldn't sign you in. Please try again."}
+            {DEMO_LOGIN_ENABLED && error === "Configuration"
+              ? "Keycloak isn't running here. Use a developer shortcut below, or start it with .\\scripts\\dev.ps1 -Keycloak." // not text: local development only
+              : en(AUTH_ERRORS[error] ?? "We couldn't sign you in. Please try again.")}
           </p>
         )}
         <button

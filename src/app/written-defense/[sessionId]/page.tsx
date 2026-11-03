@@ -140,7 +140,7 @@ export default function WrittenDefensePage() {
 
         <div className="glass-panel rounded-2xl p-4 border border-border text-xs text-muted-foreground space-y-1">
           <p>
-            {en("The interviewer asks up to ")}{state.maxQuestions}{en(" questions about your own code, one at a time. Answer in your own words; spelling and grammar are not judged. You can finish after any answer.")}
+            {en("The interviewer asks up to {maxQuestions} questions about your own code, one at a time. Answer in your own words; spelling and grammar are not judged. You can finish after any answer.", { maxQuestions: state.maxQuestions })}
           </p>
           <p>{en("Your answers are scored the same way as a voice defense and shown to the reviewer as questions and answers.")}</p>
           {state.simulated && (
@@ -180,7 +180,7 @@ export default function WrittenDefensePage() {
             {state.result ? (
               <div className="text-sm text-foreground space-y-1">
                 <p>{en("Technical score: ")}<span className="font-semibold">{Math.round(state.result.technicalScore)}/100</span></p>
-                {state.result.missingSkills.length > 0 && <p>{en("Skills to work on: ")}{state.result.missingSkills.join(", ")}</p>}
+                {state.result.missingSkills.length > 0 && <p>{en("Skills to work on: {value}", { value: state.result.missingSkills.join(", ") })}</p>}
               </div>
             ) : (
               <p className="text-sm text-muted-foreground">
@@ -196,8 +196,7 @@ export default function WrittenDefensePage() {
             {state.awaitingAnswer && (
               <form onSubmit={sendAnswer} className="glass-panel rounded-2xl p-4 border border-border space-y-2">
                 <label htmlFor="answer" className="text-xs font-semibold text-foreground">
-                  {en("Your answer (question ")}{state.answered + 1}{en(" of up to ")}{state.maxQuestions})
-                </label>
+                  {en("Your answer (question {value} of up to {maxQuestions})", { value: state.answered + 1, maxQuestions: state.maxQuestions })}</label>
                 <textarea
                   id="answer"
                   value={answer}

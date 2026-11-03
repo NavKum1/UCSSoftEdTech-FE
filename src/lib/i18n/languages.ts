@@ -1,5 +1,5 @@
 /**
- * The app's languages (plan item A2, 3 Nov 2026). English is the source (US or British/Indian spelling, lib/english);
+ * The app's languages (plan item A2, 3 Nov 2026). English is the source (US or British spelling, lib/english);
  * the others are drafted and stay off until a native speaker has reviewed them (owner decision). A language is live
  * when it's in NEXT_PUBLIC_LANGUAGES (e.g. "es,hi"); reviewers see one before that with ?preview-language=hi, when it's
  * in NEXT_PUBLIC_PREVIEW_LANGUAGES. No React here: the server layout and the client both use it.

@@ -183,10 +183,10 @@ export default function DailyCodeReviewPage() {
       </Link>
       <header className="mt-3 flex flex-wrap items-start justify-between gap-4">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{en("Today's code review · ")}{review.language}</p>
+          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{en("Today's code review · {language}", { language: review.language })}</p>
           <h1 className="mt-1 text-xl font-semibold">{review.title}</h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            {review.repository}{en(" · opened by ")}{review.author}{en(" (a practice scenario)")}
+            {en("{repository} · opened by {author} (a practice scenario)", { repository: review.repository, author: review.author })}
           </p>
         </div>
         {attempt && (
@@ -198,7 +198,7 @@ export default function DailyCodeReviewPage() {
 
       {status.completed && !result && (
         <p className="mt-4 rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-sm">
-          {en("You completed this review and earned ")}{status.points ?? 0}{en(" points. You can practise it again; repeats don't earn points.")}
+          {en("You completed this review and earned {value} points. You can practise it again; repeats don't earn points.", { value: status.points ?? 0 })}
         </p>
       )}
 
@@ -266,7 +266,7 @@ export default function DailyCodeReviewPage() {
                     </option>
                     {review.categories.map((c) => (
                       <option key={c} value={c}>
-                        {CATEGORY_LABELS[c] ?? c}
+                        {en(CATEGORY_LABELS[c] ?? c)}
                       </option>
                     ))}
                   </select>
@@ -277,7 +277,7 @@ export default function DailyCodeReviewPage() {
                     {DECISIONS.map((d) => (
                       <label key={d.value} className="flex items-center gap-2 text-sm">
                         <input type="radio" name="decision" required value={d.value} checked={decision === d.value} onChange={() => setDecision(d.value)} className="accent-indigo-600" />
-                        {d.label}
+                        {en(d.label)}
                       </label>
                     ))}
                   </div>
@@ -322,15 +322,13 @@ function ReviewResultPanel({ result, onAgain, busy }: { result: Result; onAgain:
       <div>
         <p className="text-3xl font-semibold tabular-nums">{result.score} / 100</p>
         <p className="text-sm text-muted-foreground">
-          {result.countsForPoints ? `${result.points} points${result.speedBonus ? `, including a ${result.speedBonus}-point speed bonus` : ""}.` : en("Practice: no points for a repeat.")}{en(" Time:")}{" "}
-          {Math.floor(result.timeSeconds / 60)}m {result.timeSeconds % 60}s.
-        </p>
+          {en("{value} Time: {value2}m {value3}s.", { value: result.countsForPoints ? `${result.points} points${result.speedBonus ? `, including a ${result.speedBonus}-point speed bonus` : ""}.` : en("Practice: no points for a repeat."), value2: Math.floor(result.timeSeconds / 60), value3: result.timeSeconds % 60 })}</p>
       </div>
       <p className="text-sm">{result.feedback}</p>
       <ul className="space-y-1.5">
-        <Mark ok={result.lineCorrect}>{en("Defect on line ")}{result.defectLine}</Mark>
-        <Mark ok={result.decisionCorrect}>{en("Right call: ")}{decisionLabel(result.correctDecision)}</Mark>
-        <Mark ok={result.categoryCorrect}>{en("Kind: ")}{CATEGORY_LABELS[result.defectCategory] ?? result.defectCategory}</Mark>
+        <Mark ok={result.lineCorrect}>{en("Defect on line {defectLine}", { defectLine: result.defectLine })}</Mark>
+        <Mark ok={result.decisionCorrect}>{en("Right call: {correctDecision}", { correctDecision: decisionLabel(result.correctDecision) })}</Mark>
+        <Mark ok={result.categoryCorrect}>{en("Kind: {value}", { value: CATEGORY_LABELS[result.defectCategory] ?? result.defectCategory })}</Mark>
       </ul>
       <div>
         <h3 className="text-sm font-semibold">{en("Why")}</h3>

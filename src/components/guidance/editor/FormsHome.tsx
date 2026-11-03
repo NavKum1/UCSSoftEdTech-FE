@@ -191,7 +191,7 @@ export default function FormsHome({
                   <div className="mt-1 flex flex-wrap gap-1.5 text-[11px]">
                     {f.isDefault && <Badge tone="cyan">{en("Used for “Ask an advisor”")}</Badge>}
                     <Badge tone={f.publicEnabled ? "emerald" : "zinc"}>{f.publicEnabled ? en("Public link on") : en("Public link off")}</Badge>
-                    <Badge tone="zinc">{en("Version ")}{f.version}</Badge>
+                    <Badge tone="zinc">{en("Version {version}", { version: f.version })}</Badge>
                     {f.hasDraft && <Badge tone="amber">{en("Unpublished changes")}</Badge>}
                   </div>
                 </div>
@@ -258,7 +258,7 @@ export default function FormsHome({
           <div role="dialog" aria-modal="true" aria-labelledby="embed-title" className="my-8 w-full max-w-5xl rounded-2xl bg-card p-5 shadow-xl" onClick={(e) => e.stopPropagation()}>
             <div className="mb-4 flex items-center justify-between gap-3">
               <h2 id="embed-title" className="text-base font-semibold">
-                {en("Put “")}{embedFor.name}{en("” on your website")}
+                {en("Put “{name}” on your website", { name: embedFor.name })}
               </h2>
               <div className="flex items-center gap-2">
                 {canEdit && !embedFor.publicEnabled && (
@@ -392,7 +392,7 @@ function NewForm({
                     <option value="all">{en("Any country")}</option>
                     {countries.map((c) => (
                       <option key={c} value={c}>
-                        {COUNTRY_NAMES[c] ?? c}
+                        {en(COUNTRY_NAMES[c] ?? c)}
                       </option>
                     ))}
                   </select>
@@ -405,7 +405,7 @@ function NewForm({
               return (
                 <section key={g} aria-labelledby={`tpl-group-${g}`} className="space-y-2 pt-1">
                   <h3 id={`tpl-group-${g}`} className="text-xs font-semibold">
-                    {GROUP_NAMES[g] ?? g}
+                    {en(GROUP_NAMES[g] ?? g)}
                   </h3>
                   {inGroup.map((t) => (
                     <button
@@ -418,14 +418,14 @@ function NewForm({
                       <span className="flex items-start justify-between gap-2">
                         <span className="font-medium">{t.name}</span>
                         {t.country !== "any" && (
-                          <span className="shrink-0 rounded-full border border-border px-2 py-0.5 text-[11px] text-muted-foreground">{COUNTRY_NAMES[t.country] ?? t.country}</span>
+                          <span className="shrink-0 rounded-full border border-border px-2 py-0.5 text-[11px] text-muted-foreground">{en(COUNTRY_NAMES[t.country] ?? t.country)}</span>
                         )}
                       </span>
-                      <span className="block text-xs text-muted-foreground">{en("For: ")}{t.audience}</span>
+                      <span className="block text-xs text-muted-foreground">{en("For: {audience}", { audience: t.audience })}</span>
                       <span className="mt-1 block text-xs text-muted-foreground">{t.description}</span>
                       {reportOf(t.definition) && <span className="mt-1 block text-xs font-medium text-cyan-800 dark:text-cyan-300">{reportOf(t.definition)}</span>}
                       <span className="mt-1 block text-xs text-muted-foreground">
-                        {t.definition.questions.length}{en(" questions · ")}{t.definition.sections.length} {t.definition.sections.length === 1 ? "step" : "steps"}
+                        {en("{length} questions · {length2} {value}", { length: t.definition.questions.length, length2: t.definition.sections.length, value: t.definition.sections.length === 1 ? "step" : "steps" })}
                       </span>
                     </button>
                   ))}
@@ -496,7 +496,7 @@ function ProfileCard({ apiFetch, q, ready }: { apiFetch: (p: string, i?: Request
             {MODES.map((m) => (
               <label key={m} className="flex items-center gap-1.5">
                 <input type="checkbox" checked={p.modes.includes(m)} onChange={(e) => setP({ ...p, modes: e.target.checked ? [...p.modes, m] : p.modes.filter((x) => x !== m) })} />
-                {m}
+                {en(m)}
               </label>
             ))}
           </div>

@@ -234,7 +234,7 @@ export default function VerifyJwsPage() {
                 )}
               </div>
               {result.revoked && <p className="text-sm text-red-700 dark:text-red-300">{en("The holder has revoked this credential. Don't rely on it.")}</p>}
-              {result.expired && !result.revoked && <p className="text-sm text-muted-foreground">{en("This credential passed its validity date on ")}{formatDate(claims.exp)}.</p>}
+              {result.expired && !result.revoked && <p className="text-sm text-muted-foreground">{en("This credential passed its validity date on {date}.", { date: formatDate(claims.exp) })}</p>}
             </div>
 
             <div className="glass-panel rounded-2xl p-5 border border-border grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">

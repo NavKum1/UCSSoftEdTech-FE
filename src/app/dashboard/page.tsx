@@ -25,19 +25,11 @@ import {
   Sparkles,
   Timer,
 } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { AccessNotice, useLegacyApi } from "@/lib/legacyApi";
 import { useAppAuth } from "@/lib/appAuth";
+import { useRoleHome } from "@/lib/roleHome";
 import { useEn } from "@/lib/english/EnglishProvider";
-
-/** What a staff member's work is, from their roles; null for learners */
-function staffRole(roles: string[]): { label: string; href: string; action: string } | null {
-  const has = (r: string) => roles.some((x) => x.toLowerCase() === r.toLowerCase());
-  if (has("SuperAdmin")) return { label: "Platform administrator", href: "/admin", action: "Open the admin console" };
-  if (has("InstituteAdmin")) return { label: "Institute admin", href: "/institute/dashboard", action: "Open the institute dashboard" };
-  // en() where shown
-  if (has("Counselor")) return { label: "Counsellor", href: "/institute/dashboard", action: "Open the institute dashboard" };
-  return null;
-}
 
 interface Skill {
   skillCategory: string;
@@ -110,6 +102,7 @@ function timeZone(): string | undefined {
 
 function greeting(): string {
   const h = new Date().getHours();
+  // en() where shown
   return h < 12 ? "Good morning" : h < 17 ? "Good afternoon" : "Good evening";
 }
 
@@ -133,13 +126,20 @@ export default function DashboardPage() {
   const en = useEn();
   const { apiFetch, ready, access } = useLegacyApi();
   const { roles } = useAppAuth();
-  const staff = staffRole(roles);
+  const router = useRouter();
+  // Staff work in their own area: this page is the member's (students and candidates)
+  const { home, resolved } = useRoleHome(roles, apiFetch, ready);
+  const member = resolved && !home;
   const [data, setData] = useState<Overview | null>(null);
   const [failed, setFailed] = useState<number | null>(null);
   const [attempt, setAttempt] = useState(0);
 
   useEffect(() => {
-    if (!ready) return;
+    if (home) router.replace(home);
+  }, [home, router]);
+
+  useEffect(() => {
+    if (!ready || !member) return;
     let cancelled = false;
     (async () => {
       setFailed(null);
@@ -156,7 +156,7 @@ export default function DashboardPage() {
     return () => {
       cancelled = true;
     };
-  }, [ready, apiFetch, attempt]);
+  }, [ready, member, apiFetch, attempt]);
 
   if (access) return <AccessNotice problem={access} feature="Your dashboard" />;
 
@@ -165,7 +165,7 @@ export default function DashboardPage() {
       <main className="mx-auto flex min-h-[70vh] max-w-md flex-col items-center justify-center gap-4 px-4 text-center">
         <h1 className="text-xl font-semibold">{en("We couldn't load your dashboard")}</h1>
         <p className="text-sm text-muted-foreground">
-          {failed === 0 ? en("The connection to Edulexa failed.") : en("Something went wrong on our side.")}{en(" Your work is saved; please try again.")}
+          {en("{value} Your work is saved; please try again.", { value: failed === 0 ? en("The connection to Edulexa failed.") : en("Something went wrong on our side.") })}
         </p>
         <button
           type="button"
@@ -178,7 +178,7 @@ export default function DashboardPage() {
     );
   }
 
-  if (!data) return <DashboardSkeleton />;
+  if (!member || !data) return <DashboardSkeleton />;
 
   const firstName = (data.profile.name || "").split(/\s+/)[0];
   const totalResults = data.totals.challenges + data.totals.exams + data.totals.interviews + data.totals.incidents + data.totals.codeReviews;
@@ -190,12 +190,11 @@ export default function DashboardPage() {
       <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div className="space-y-1.5">
           <p className="text-sm font-medium text-muted-foreground">
-            {[data.profile.organization?.name, staff?.label].filter(Boolean).join(" · ") || "Individual member"}
-            {data.profile.targetRole ? ` · Aiming for ${data.profile.targetRole}` : ""}
+            {data.profile.organization?.name || en("Individual member")}
+            {data.profile.targetRole ? en(" · Aiming for {role}", { role: data.profile.targetRole }) : ""}
           </p>
           <h1 className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
-            {greeting()}
-            {firstName ? `, ${firstName}` : ""}
+            {firstName ? en("{greeting}, {name}", { greeting: en(greeting()), name: firstName }) : en(greeting())}
           </h1>
           <p className="text-sm text-muted-foreground">
             {isNew
@@ -206,15 +205,6 @@ export default function DashboardPage() {
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
-          {staff && (
-            <Link
-              href={staff.href}
-              className="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-indigo-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-            >
-              {en(staff.action)}
-              <ArrowRight aria-hidden="true" className="h-4 w-4" />
-            </Link>
-          )}
           <Link
             href="/passport"
             className="inline-flex items-center gap-2 rounded-xl border border-border bg-card px-4 py-2.5 text-sm font-semibold text-foreground hover:bg-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
@@ -400,8 +390,7 @@ export default function DashboardPage() {
                     >
                       <span className="block truncate text-sm font-medium text-foreground">{c.title}</span>
                       <span className="mt-0.5 block text-xs text-muted-foreground">
-                        {Math.round(c.score)}{en("% · issued ")}{new Date(c.issuedAt).toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" })}
-                        {c.underReview ? en(" · under review") : ""}
+                        {en("{score}% · issued {date}{value}", { score: Math.round(c.score), date: new Date(c.issuedAt).toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" }), value: c.underReview ? en(" · under review") : "" })}
                       </span>
                     </Link>
                   </li>
@@ -419,7 +408,7 @@ export default function DashboardPage() {
             {data.counselling ? (
               <div className="mt-3 space-y-1">
                 <p className="text-sm font-semibold text-foreground">{data.counselling.primaryTrack}</p>
-                {data.counselling.secondaryTrack && <p className="text-xs text-muted-foreground">{en("Also a good fit: ")}{data.counselling.secondaryTrack}</p>}
+                {data.counselling.secondaryTrack && <p className="text-xs text-muted-foreground">{en("Also a good fit: {secondaryTrack}", { secondaryTrack: data.counselling.secondaryTrack })}</p>}
                 <Link href="/prep/counselling" className="inline-flex items-center gap-1 pt-2 text-xs font-semibold text-indigo-700 hover:underline dark:text-indigo-300">
                   {en("See your results ")}<ArrowRight aria-hidden="true" className="h-3.5 w-3.5" />
                 </Link>
@@ -457,7 +446,7 @@ export default function DashboardPage() {
                     className="flex items-center gap-2 rounded-xl border border-border p-3 text-sm font-medium text-foreground hover:bg-muted/50 focus-visible:outline-2 focus-visible:outline-indigo-600"
                   >
                     <p.icon aria-hidden="true" className="h-4 w-4 text-muted-foreground" />
-                    <span className="flex-1">{p.label}</span>
+                    <span className="flex-1">{en(p.label)}</span>
                     <span className="text-xs tabular-nums text-muted-foreground" aria-label={`${p.n} done`}>
                       {p.n}
                     </span>

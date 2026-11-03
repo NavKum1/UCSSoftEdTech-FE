@@ -76,9 +76,9 @@ function Done() {
         {ready ? (
           <>
             <CheckCircle2 aria-hidden="true" className="mx-auto h-12 w-12 text-emerald-600" />
-            <h1 className="mt-5 text-2xl font-semibold tracking-tight">{status.schoolName}{en(" is ready")}</h1>
+            <h1 className="mt-5 text-2xl font-semibold tracking-tight">{en("{schoolName} is ready", { schoolName: status.schoolName })}</h1>
             <p className="mt-3 text-slate-600 dark:text-slate-400">
-              {en("Your 30-day free trial of the ")}{status.plan}{en(" plan has started. We've e-mailed you the details.")}
+              {en("Your 30-day free trial of the {plan} plan has started. We've e-mailed you the details.", { plan: status.plan })}
             </p>
             <p className="mt-4 flex items-start gap-2 rounded-xl bg-slate-50 p-4 text-start text-sm text-slate-600 dark:bg-slate-800/60 dark:text-slate-300">
               <ShieldCheck aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0 text-indigo-600" />

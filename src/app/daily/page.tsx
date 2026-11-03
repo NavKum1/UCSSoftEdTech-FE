@@ -119,11 +119,10 @@ export default function DailyPracticePage() {
             {streak.current} <span className="text-base font-normal text-muted-foreground">day{streak.current === 1 ? "" : "s"}</span>
           </p>
           <p className="mt-1 text-xs text-muted-foreground">
-            {streak.practisedToday ? en("Practised today.") : streak.current > 0 ? en("Practise today to keep it going.") : en("Practise today to start one.")}{en(" Best: ")}{streak.longest}.
-          </p>
+            {en("{value} Best: {longest}.", { value: streak.practisedToday ? en("Practised today.") : streak.current > 0 ? en("Practise today to keep it going.") : en("Practise today to start one."), longest: streak.longest })}</p>
           <p className="mt-3 flex items-center gap-1.5 text-xs text-muted-foreground" title={`Earn a freeze for every ${streak.daysPerFreeze} days in a row; it covers one missed day.`}>
             <Snowflake aria-hidden="true" className="h-3.5 w-3.5 text-sky-500" />
-            {streak.freezesAvailable} of {streak.maxFreezes}{en(" streak freezes. Earn one every ")}{streak.daysPerFreeze}{en(" days in a row; it covers a missed day.")}
+            {en("{freezesAvailable} of {maxFreezes} streak freezes. Earn one every {daysPerFreeze} days in a row; it covers a missed day.", { freezesAvailable: streak.freezesAvailable, maxFreezes: streak.maxFreezes, daysPerFreeze: streak.daysPerFreeze })}
           </p>
         </div>
         <div className={`${card} p-5`}>
@@ -134,9 +133,7 @@ export default function DailyPracticePage() {
             {week.points} <span className="text-base font-normal text-muted-foreground">points</span>
           </p>
           <p className="mt-1 text-xs text-muted-foreground">
-            {week.rank ? `Rank ${week.rank} of ${week.rankedMembers}.` : en("No points yet this week.")}{en(" Resets")}{" "}
-            {weekEnds.toLocaleDateString(undefined, { weekday: "long", day: "numeric", month: "short" })}.
-          </p>
+            {en("{value} Resets {date}.", { value: week.rank ? `Rank ${week.rank} of ${week.rankedMembers}.` : en("No points yet this week."), date: weekEnds.toLocaleDateString(undefined, { weekday: "long", day: "numeric", month: "short" }) })}</p>
         </div>
         <div className={`${card} p-5`}>
           <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
@@ -224,7 +221,7 @@ export default function DailyPracticePage() {
               <li className="flex items-center justify-between gap-3 py-2.5 font-semibold">
                 <span className="flex items-center gap-3">
                   <span className="w-6 text-end tabular-nums text-muted-foreground">{board.you.rank}</span>
-                  {en("You")}{summary.leaderboardVisible ? "" : en(" (hidden from others)")}
+                  {en("You{value}", { value: summary.leaderboardVisible ? "" : en(" (hidden from others)") })}
                 </span>
                 <span className="tabular-nums">{board.you.points} pts</span>
               </li>

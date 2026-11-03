@@ -2,22 +2,21 @@
 
 /**
  * The app's own text in the reader's language: en("Choose a colour") gives the text in their language (looked up by its
- * English wording in messages/app/<language>.json, plan item A2), or in their English (US or British/Indian spelling)
+ * English wording in messages/app/<language>.json, plan item A2), or in their English (US or British spelling)
  * when they read English or a text isn't translated yet. Values go in braces: en("{n} meetings", { n: 3 }).
  *
  * The language comes from the server (root layout: the reader's choice, else their school's suggestion). The English:
  * 1. their own choice (the language picker; a cookie, so every page and the API answer in it);
  * 2. on a school's public pages (its forms and reports), the school's English, set with <EnglishScope>;
  * 3. for school staff, their school's English (remembered from their last visit to the school's pages);
- * 4. where they are: their time zone (America/... reads US English), else their browser's English with a region;
- * 5. British/Indian English, as the text is written.
- * The server renders British/Indian English unless the reader chose US English; the browser switches after loading.
+ * 4. US English (owner decision 4 Nov 2026: Edulexa is a US product).
+ * The server renders US English; a reader or school with British English switches after loading.
  */
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useSyncExternalStore } from "react";
 import { useRouter } from "next/navigation";
-import { inEnglish, type English } from "./index";
+import { DEFAULT_ENGLISH, inEnglish, type English } from "./index";
 import { CHOICE_COOKIE, EVENT, SCHOOL_KEY, browserEnglish, readChoice } from "./browser";
-import { LANGUAGE_COOKIE, PREVIEW_COOKIE, PREVIEW_LANGUAGES, type AppLanguage } from "@/lib/i18n/languages";
+import { LANGUAGE_COOKIE, LIVE_LANGUAGES, PREVIEW_COOKIE, PREVIEW_LANGUAGES, type AppLanguage } from "@/lib/i18n/languages";
 
 const subscribe = (fn: () => void) => {
   window.addEventListener(EVENT, fn);
@@ -53,9 +52,9 @@ function translator(language: AppLanguage, english: English, messages: Record<st
 
 const Ctx = createContext<TextContext>({
   language: "en",
-  english: "GB",
+  english: DEFAULT_ENGLISH,
   choice: null,
-  en: (t, v) => fill(t, v),
+  en: (t, v) => fill(inEnglish(DEFAULT_ENGLISH, t), v),
   choose: () => undefined,
   chooseLanguage: () => undefined,
 });
@@ -74,7 +73,7 @@ export function EnglishProvider({
   messages?: Record<string, string> | null;
 }) {
   const router = useRouter();
-  const english = useSyncExternalStore(subscribe, browserEnglish, () => "GB" as English);
+  const english = useSyncExternalStore(subscribe, browserEnglish, () => DEFAULT_ENGLISH);
   const choice = useSyncExternalStore(subscribe, readChoice, () => null);
   const choose = useCallback((e: English | null) => {
     writeCookie(CHOICE_COOKIE, e);
@@ -82,6 +81,8 @@ export function EnglishProvider({
   }, []);
   const chooseLanguage = useCallback(
     (next: AppLanguage | null) => {
+      // A language that isn't live yet is a reviewer's preview, for this browser only
+      writeCookie(PREVIEW_COOKIE, next && !LIVE_LANGUAGES.includes(next) && PREVIEW_LANGUAGES.includes(next) ? next : null);
       writeCookie(LANGUAGE_COOKIE, next);
       router.refresh();
     },

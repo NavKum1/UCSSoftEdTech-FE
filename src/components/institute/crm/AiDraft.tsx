@@ -99,7 +99,7 @@ export default function AiDraft({
           {en("Language")}
           <select value={language} onChange={(e) => setLanguage(e.target.value)} className={select}>
             {LANGUAGES.map((l) => (
-              <option key={l}>{l}</option>
+              <option key={l}>{en(l)}</option>
             ))}
           </select>
         </label>

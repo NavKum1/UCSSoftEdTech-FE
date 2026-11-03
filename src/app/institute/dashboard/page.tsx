@@ -183,7 +183,7 @@ function Crm() {
             onClick={() => setTab(k)}
             className={`shrink-0 whitespace-nowrap border-b-2 pb-2.5 ${tab === k ? "border-cyan-600 font-medium text-foreground" : "border-transparent text-muted-foreground hover:text-foreground"}`}
           >
-            {label}
+            {en(label)}
             {k === "followups" && overdue > 0 && <span className="ms-1.5 rounded-full bg-red-600 px-1.5 text-[11px] font-medium text-white">{overdue}</span>}
           </button>
         ))}

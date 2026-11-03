@@ -59,7 +59,7 @@ export default function MyGuidancePage() {
           <section key={r.id} className="space-y-4 rounded-2xl border border-border bg-card p-5">
             <div className="flex flex-wrap items-start justify-between gap-2">
               <p className="whitespace-pre-wrap text-sm font-medium">{r.question}</p>
-              <span className="rounded-full bg-muted px-2.5 py-0.5 text-xs">{STATUS_LABEL[r.status] ?? r.status}</span>
+              <span className="rounded-full bg-muted px-2.5 py-0.5 text-xs">{en(STATUS_LABEL[r.status] ?? r.status)}</span>
             </div>
             <Messages messages={r.messages} />
             {r.status === "InstituteSuggested" && r.suggestedInstitute && (

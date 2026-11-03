@@ -361,7 +361,7 @@ export default function DeliveryCoachingPage() {
     <header>
       <h1 className="text-2xl font-semibold tracking-tight">{en("Speaking practice")}</h1>
       <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
-        {en("Answer a practice question aloud and see your pace, filler words and pauses. ")}{note}
+        {en("Answer a practice question aloud and see your pace, filler words and pauses. {note}", { note })}
       </p>
     </header>
   );
@@ -507,24 +507,22 @@ export default function DeliveryCoachingPage() {
               ["Time to start", secs(result.responseDelayMs)],
             ].map(([label, value]) => (
               <div key={label} className="rounded-xl bg-muted/60 p-3">
-                <dt className="text-xs text-muted-foreground">{label}</dt>
-                <dd className="mt-1 text-sm font-semibold">{value}</dd>
+                <dt className="text-xs text-muted-foreground">{en(label)}</dt>
+                <dd className="mt-1 text-sm font-semibold">{en(value)}</dd>
               </div>
             ))}
           </dl>
           {Object.keys(result.fillerWords).length > 0 && (
             <p className="mt-3 text-sm text-muted-foreground">
-              {en("Heard:")}{" "}
-              {Object.entries(result.fillerWords)
+              {en("Heard: {value}. Browser speech recognition can leave some out, so the real count may be higher.", { value: Object.entries(result.fillerWords)
                 .map(([w, n]) => `“${w}” ×${n}`)
-                .join(", ")}
-              {en(". Browser speech recognition can leave some out, so the real count may be higher.")}
+                .join(", ") })}
             </p>
           )}
           <ul className="mt-3 space-y-2 text-sm">
             {result.tips.map((t) => (
               <li key={t.area}>
-                <span className="font-medium">{AREA[t.area] ?? t.area}:</span> {t.text}
+                <span className="font-medium">{en(AREA[t.area] ?? t.area)}:</span> {t.text}
               </li>
             ))}
           </ul>
@@ -540,8 +538,7 @@ export default function DeliveryCoachingPage() {
         ) : (
           <>
             <p className="mt-1 text-sm text-muted-foreground">
-              {en("Your last ")}{summary.recentSamples} of {summary.samples} answers.
-            </p>
+              {en("Your last {recentSamples} of {samples} answers.", { recentSamples: summary.recentSamples, samples: summary.samples })}</p>
             <dl className="mt-3 grid grid-cols-2 gap-3 text-center sm:grid-cols-4">
               {[
                 ["Average pace", summary.averageWordsPerMinute == null ? "Not measured" : `${Math.round(summary.averageWordsPerMinute)} words/min`],
@@ -550,15 +547,15 @@ export default function DeliveryCoachingPage() {
                 ["Time to start (average)", `${summary.averageResponseDelaySeconds} s`],
               ].map(([label, value]) => (
                 <div key={label} className="rounded-xl bg-muted/60 p-3">
-                  <dt className="text-xs text-muted-foreground">{label}</dt>
-                  <dd className="mt-1 text-sm font-semibold">{value}</dd>
+                  <dt className="text-xs text-muted-foreground">{en(label)}</dt>
+                  <dd className="mt-1 text-sm font-semibold">{en(value)}</dd>
                 </div>
               ))}
             </dl>
             <ul className="mt-3 space-y-2 text-sm">
               {summary.tips.map((t) => (
                 <li key={t.area}>
-                  <span className="font-medium">{AREA[t.area] ?? t.area}:</span> {t.text}
+                  <span className="font-medium">{en(AREA[t.area] ?? t.area)}:</span> {t.text}
                 </li>
               ))}
             </ul>

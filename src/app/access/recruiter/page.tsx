@@ -99,8 +99,7 @@ export default function RecruiterAccessPage() {
         </Status>
       ) : state?.request?.status === "pending" ? (
         <Status icon={Clock} tone="amber" title={en("Your request is waiting for a decision")}>
-          {en("We'll e-mail you when it's decided. Request for ")}{state.request.company}{en(", sent ")}{new Date(state.request.createdAt).toLocaleDateString()}.
-        </Status>
+          {en("We'll e-mail you when it's decided. Request for {company}, sent {date}.", { company: state.request.company, date: new Date(state.request.createdAt).toLocaleDateString() })}</Status>
       ) : state?.request?.status === "approved" && state.granted ? (
         <Status icon={CheckCircle2} tone="emerald" title={en("Your request was approved")}>
           {en("Sign out and sign in again to start using the recruiter portal.")}

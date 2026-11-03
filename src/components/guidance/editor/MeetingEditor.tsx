@@ -89,8 +89,7 @@ export default function MeetingEditor({ q, update }: { q: Question; update: (p: 
               <option value="">{en("Choose…")}</option>
               {(options?.types ?? []).map((t) => (
                 <option key={t.id} value={t.id}>
-                  {t.name} ({t.minutes}{en(" min, ")}{t.counsellors === 1 ? en("1 counsellor") : en(`${t.counsellors} counsellors`)})
-                </option>
+                  {en("{name} ({minutes} min, {value})", { name: t.name, minutes: t.minutes, value: t.counsellors === 1 ? en("1 counsellor") : en(`${t.counsellors} counsellors`) })}</option>
               ))}
             </select>
           )}
@@ -132,7 +131,7 @@ export default function MeetingEditor({ q, update }: { q: Question; update: (p: 
         <label className="block font-medium">
           {en("Time zone of the times")}
           {b.mode === "slots" ? (
-            <span className="mt-1 block font-normal text-muted-foreground">{options?.timeZone ?? b.timeZone}{en(" (your counsellors' hours are set in it)")}</span>
+            <span className="mt-1 block font-normal text-muted-foreground">{en("{value} (your counsellors' hours are set in it)", { value: options?.timeZone ?? b.timeZone })}</span>
           ) : (
             <select className={field} value={b.timeZone} onChange={(e) => set({ timeZone: e.target.value })}>
               {(allZones.includes(b.timeZone) ? allZones : [b.timeZone, ...allZones]).map((z) => (

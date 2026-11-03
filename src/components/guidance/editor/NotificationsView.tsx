@@ -155,7 +155,7 @@ export default function NotificationsView({ instituteId, forms, canEdit }: { ins
         <div className="h-40 animate-pulse rounded-2xl bg-muted motion-reduce:animate-none" aria-busy="true" />
       ) : rows.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-border p-8 text-center text-sm text-muted-foreground">
-          {en("No messages ")}{status ? en("with this status ") : ""}{en("yet. Set up automatic messages on a form's ")}<span className="font-medium">{en("Automatic messages")}</span> tab.
+          {en("No messages {value}yet. Set up automatic messages on a form's", { value: status ? en("with this status ") : "" })}{" "}<span className="font-medium">{en("Automatic messages")}</span> tab.
         </div>
       ) : (
         <div className="overflow-x-auto rounded-2xl border border-border bg-card">
@@ -211,7 +211,7 @@ export default function NotificationsView({ instituteId, forms, canEdit }: { ins
             <div className="flex items-start justify-between gap-3">
               <div>
                 <p className="text-xs text-muted-foreground">
-                  {CHANNEL[open.channel]} · {open.form}
+                  {en(CHANNEL[open.channel])} · {open.form}
                 </p>
                 <h2 className="text-lg font-semibold">{open.automation}</h2>
               </div>

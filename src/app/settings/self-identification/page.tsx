@@ -174,14 +174,14 @@ export default function SelfIdentificationPage() {
             <li>{en("Every question has a “Prefer not to say” option, and you can delete your answers at any time.")}</li>
           </ul>
           {savedAt && (
-            <p className="text-xs">{en("Last saved ")}{new Date(savedAt).toLocaleDateString()}{en(". Saving again replaces your previous answers.")}</p>
+            <p className="text-xs">{en("Last saved {date}. Saving again replaces your previous answers.", { date: new Date(savedAt).toLocaleDateString() })}</p>
           )}
         </div>
 
         <form onSubmit={handleSave} className="glass-panel rounded-2xl p-5 border border-border space-y-4">
           {FIELDS.map((field) => (
             <label key={field.key} className="block space-y-1">
-              <span className="text-xs font-semibold text-foreground">{field.label}</span>
+              <span className="text-xs font-semibold text-foreground">{en(field.label)}</span>
               <select
                 value={values[field.key]}
                 onChange={(e) => setValues((prev) => ({ ...prev, [field.key]: e.target.value }))}

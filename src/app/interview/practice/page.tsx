@@ -743,7 +743,7 @@ export default function MultiStreamInterviewPracticePage() {
               <div className="flex items-center justify-between relative z-10">
                 <div>
                   <span className="px-2.5 py-1 rounded-md bg-primary/10 text-primary text-[10px] font-bold uppercase tracking-wider">
-                    {en("Live Session • ")}{selectedStream}
+                    {en("Live Session • {selectedStream}", { selectedStream })}
                   </span>
                   <h2 className="text-lg font-bold text-foreground mt-1">
                     {jobTitle}
@@ -865,7 +865,7 @@ export default function MultiStreamInterviewPracticePage() {
                     <span>{en("Live Speech-to-Text Transcript Stream")}</span>
                   </span>
                   <span className="px-2 py-0.5 rounded-full text-[10px] font-mono bg-primary/10 text-primary border border-primary/30">
-                    {transcripts.length}{en(" Turns")}
+                    {en("{length} Turns", { length: transcripts.length })}
                   </span>
                 </div>
 
@@ -877,7 +877,7 @@ export default function MultiStreamInterviewPracticePage() {
                     }`}
                     title={en("Toggle auto-scrolling as words arrive")}
                   >
-                    {en("Auto-scroll: ")}{autoScroll ? en("ON") : en("OFF")}
+                    {en("Auto-scroll: {value}", { value: autoScroll ? en("ON") : en("OFF") })}
                   </button>
 
                   {transcripts.length > 0 && (
@@ -917,7 +917,7 @@ export default function MultiStreamInterviewPracticePage() {
                         {isAi ? (
                           <>
                             <Bot className="w-3 h-3 text-indigo-500" />
-                            <span className="font-bold text-indigo-600 dark:text-indigo-400">{en("AI Interviewer (")}{selectedVoice})</span>
+                            <span className="font-bold text-indigo-600 dark:text-indigo-400">{en("AI Interviewer ({selectedVoice})", { selectedVoice })}</span>
                           </>
                         ) : (
                           <>
@@ -961,7 +961,7 @@ export default function MultiStreamInterviewPracticePage() {
                   <div className="flex flex-col space-y-1 items-end">
                     <div className="flex items-center space-x-1.5 text-[10px] text-emerald-500 px-1 font-bold">
                       <Mic className="w-3 h-3 animate-pulse" />
-                      <span>{en("Transcribing ")}{candidateName}...</span>
+                      <span>{en("Transcribing {candidateName}...", { candidateName })}</span>
                     </div>
                     <div className="max-w-[85%] rounded-2xl rounded-se-sm p-3.5 bg-emerald-500/10 border border-emerald-500/40 text-foreground shadow-sm italic">
                       <span>{currentCandidateInterim}</span>
@@ -1021,26 +1021,26 @@ export default function MultiStreamInterviewPracticePage() {
                 ) : completedReport.overallScore >= 85 ? (
                   <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-500/15 border border-purple-500/40 text-purple-400 text-xs font-semibold">
                     <Sparkles className="w-3.5 h-3.5" />
-                    <span>{en("Exceptional • Staff & Principal Bar (")}{completedReport.overallScore}%)</span>
+                    <span>{en("Exceptional • Staff & Principal Bar ({overallScore}%)", { overallScore: completedReport.overallScore })}</span>
                   </div>
                 ) : completedReport.overallScore >= 70 ? (
                   <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/40 text-emerald-400 text-xs font-semibold">
                     <CheckCircle2 className="w-3.5 h-3.5" />
-                    <span>{en("Qualified • Meets Enterprise Hiring Bar (")}{completedReport.overallScore}%)</span>
+                    <span>{en("Qualified • Meets Enterprise Hiring Bar ({overallScore}%)", { overallScore: completedReport.overallScore })}</span>
                   </div>
                 ) : completedReport.overallScore >= 50 ? (
                   <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/15 border border-amber-500/40 text-amber-400 text-xs font-semibold">
                     <AlertTriangle className="w-3.5 h-3.5" />
-                    <span>{en("Developing • Substantive Gaps Identified (")}{completedReport.overallScore}%)</span>
+                    <span>{en("Developing • Substantive Gaps Identified ({overallScore}%)", { overallScore: completedReport.overallScore })}</span>
                   </div>
                 ) : (
                   <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-rose-500/15 border border-rose-500/40 text-rose-400 text-xs font-semibold">
                     <AlertTriangle className="w-3.5 h-3.5" />
-                    <span>{en("Inadequate • Below Minimum Hiring Bar (")}{completedReport.overallScore}%)</span>
+                    <span>{en("Inadequate • Below Minimum Hiring Bar ({overallScore}%)", { overallScore: completedReport.overallScore })}</span>
                   </div>
                 )}
                 <h2 className="text-2xl font-bold text-foreground">
-                  {en("Performance Scorecard: ")}{completedReport.jobTitle}
+                  {en("Performance Scorecard: {jobTitle}", { jobTitle: completedReport.jobTitle })}
                 </h2>
                 <p className="text-xs text-muted-foreground">
                   {en("Stream: ")}{completedReport.stream}{en(" • Duration: ")}{completedReport.durationMinutes}{en(" min • Candidate Turns: ")}{completedReport.candidateTurns}
@@ -1143,7 +1143,7 @@ export default function MultiStreamInterviewPracticePage() {
                   <div className="flex items-center space-x-2">
                     <MessageSquare className="w-4 h-4 text-indigo-500" />
                     <h3 className="text-xs font-bold text-foreground">{en("Verified Speech-to-Text Conversation Transcript")}</h3>
-                    <span className="text-[10px] font-mono text-muted-foreground">({completedReport.transcripts.length}{en(" exchanges)")}</span>
+                    <span className="text-[10px] font-mono text-muted-foreground">{en("({length} exchanges)", { length: completedReport.transcripts.length })}</span>
                   </div>
 
                   <div className="flex items-center space-x-2">
@@ -1227,10 +1227,10 @@ export default function MultiStreamInterviewPracticePage() {
                       }`}
                     >
                       <p className="font-bold text-sm text-foreground mb-1">
-                        {stream.label}
+                        {en(stream.label)}
                       </p>
                       <p className="text-xs leading-relaxed text-muted-foreground">
-                        {stream.desc}
+                        {en(stream.desc)}
                       </p>
                     </button>
                   ))}
@@ -1261,17 +1261,17 @@ export default function MultiStreamInterviewPracticePage() {
                     >
                       <div className="flex items-center justify-between mb-1.5">
                         <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-full border ${persona.tagColor}`}>
-                          {persona.companyTag}
+                          {en(persona.companyTag)}
                         </span>
                         <span className="text-[10px] font-mono text-muted-foreground">
-                          {persona.scrutiny}
+                          {en(persona.scrutiny)}
                         </span>
                       </div>
                       <p className="font-bold text-sm text-foreground mb-1">
-                        {persona.name}
+                        {en(persona.name)}
                       </p>
                       <p className="text-xs leading-relaxed text-muted-foreground">
-                        {persona.description}
+                        {en(persona.description)}
                       </p>
                     </button>
                   ))}
@@ -1339,7 +1339,7 @@ export default function MultiStreamInterviewPracticePage() {
                     >
                       {VOICES.map((v) => (
                         <option key={v.id} value={v.id}>
-                          {v.label}
+                          {en(v.label)}
                         </option>
                       ))}
                     </select>
@@ -1374,15 +1374,15 @@ export default function MultiStreamInterviewPracticePage() {
                   >
                     <div className="flex items-center justify-between">
                       <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded bg-muted text-muted-foreground group-hover:text-primary transition-colors">
-                        {preset.company}
+                        {en(preset.company)}
                       </span>
                       <ChevronRight className="w-3.5 h-3.5 text-muted-foreground group-hover:text-primary transition-colors" />
                     </div>
                     <p className="text-xs font-bold text-foreground">
-                      {preset.title}
+                      {en(preset.title)}
                     </p>
                     <p className="text-[11px] text-muted-foreground line-clamp-2 leading-relaxed">
-                      {preset.description}
+                      {en(preset.description)}
                     </p>
                   </button>
                 ))}

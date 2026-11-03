@@ -374,7 +374,7 @@ export default function AgentSupervisorPanel({ attemptId, getFiles, applyFile, o
             <div key={p.proposalId} className="space-y-2">
               <div className="ms-8 p-2.5 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-xs text-foreground whitespace-pre-wrap">
                 <span className="text-[10px] font-semibold text-indigo-700 dark:text-indigo-300 block mb-0.5">
-                  {en("Request ")}{p.requestNumber}
+                  {en("Request {requestNumber}", { requestNumber: p.requestNumber })}
                 </span>
                 {p.instruction}
               </div>
@@ -499,7 +499,7 @@ export default function AgentSupervisorPanel({ attemptId, getFiles, applyFile, o
           </button>
         </div>
         <p className="text-[10px] text-muted-foreground">
-          {proposalsLeft} of {limits.maxProposals}{en(" agent requests left · ")}{runsLeft} of {limits.maxTestRuns}{en(" test runs left")}
+          {en("{proposalsLeft} of {maxProposals} agent requests left · {runsLeft} of {maxTestRuns} test runs left", { proposalsLeft, maxProposals: limits.maxProposals, runsLeft, maxTestRuns: limits.maxTestRuns })}
         </p>
       </div>
 

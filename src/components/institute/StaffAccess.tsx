@@ -213,7 +213,7 @@ export default function StaffAccess({ getToken, instituteId, compact = false }: 
               <label key={r} className={`cursor-pointer rounded-lg border px-3 py-2 text-sm ${form.role === r ? "border-cyan-600 bg-cyan-600/5" : "border-border"}`}>
                 <input type="radio" name="role" value={r} checked={form.role === r} onChange={() => setForm({ ...form, role: r })} className="sr-only" />
                 <span className="block font-medium">{en(ROLE_LABEL[r] ?? r)}</span>
-                <span className="block text-xs text-muted-foreground">{ROLE_HELP[r]}</span>
+                <span className="block text-xs text-muted-foreground">{en(ROLE_HELP[r])}</span>
               </label>
             ))}
           </div>
@@ -300,13 +300,12 @@ export default function StaffAccess({ getToken, instituteId, compact = false }: 
             <ol className="divide-y divide-border text-sm">
               {audit.map((a) => (
                 <li key={a.id} className="px-4 py-2.5">
-                  <span className="font-medium">{ACTION_LABEL[a.action] ?? a.action}</span>
+                  <span className="font-medium">{en(ACTION_LABEL[a.action] ?? a.action)}</span>
                   {": "}
                   {a.targetEmail}
                   {a.role ? ` (${en(ROLE_LABEL[a.role] ?? a.role)})` : ""}
                   <span className="block text-xs text-muted-foreground">
-                    {when(a.createdAt)}{en(" · by ")}{a.actorName}
-                    {a.detail ? ` · ${a.detail}` : ""}
+                    {en("{createdAt} · by {actorName}{value}", { createdAt: when(a.createdAt), actorName: a.actorName, value: a.detail ? ` · ${a.detail}` : "" })}
                   </span>
                 </li>
               ))}

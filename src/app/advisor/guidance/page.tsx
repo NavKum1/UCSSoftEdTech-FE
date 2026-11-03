@@ -138,7 +138,7 @@ function AdvisorDesk() {
                   </span>
                   <span className="mt-0.5 block line-clamp-2 text-muted-foreground">{r.question}</span>
                   <span className="mt-1 block text-xs text-muted-foreground">
-                    {STATUS_LABEL[r.status] ?? r.status}
+                    {en(STATUS_LABEL[r.status] ?? r.status)}
                     {r.mentor ? ` · ${r.mentor}` : ""}
                     {r.quizShared ? en(" · quiz shared") : ""}
                   </span>
@@ -160,7 +160,7 @@ function AdvisorDesk() {
                   <h2 className="font-semibold">{item.name}</h2>
                   <p className="text-xs text-muted-foreground">
                     {item.email}
-                    {item.phone ? ` · ${item.phone}` : ""} · {STATUS_LABEL[item.status] ?? item.status}
+                    {item.phone ? ` · ${item.phone}` : ""} · {en(STATUS_LABEL[item.status] ?? item.status)}
                     {item.mentor ? ` · with ${item.mentor}` : ""}
                   </p>
                 </div>

@@ -366,7 +366,7 @@ export default function OpenAIRealtimeInterviewRoom({
                   </div>
                   <div className="flex items-center space-x-1 text-[11px] text-emerald-700 dark:text-emerald-400">
                     <Volume2 className="w-3.5 h-3.5" />
-                    <span>{en("Mic Input: ")}{volumeLevel}%</span>
+                    <span>{en("Mic Input: {volumeLevel}%", { volumeLevel })}</span>
                   </div>
                 </>
               ) : (
@@ -450,8 +450,7 @@ export default function OpenAIRealtimeInterviewRoom({
               <p className="font-semibold">{upgradePrompt.message}</p>
               {upgradePrompt.usageResetsAt && (
                 <p className="mt-0.5 text-amber-800/80 dark:text-amber-200/80">
-                  {en("Your monthly minutes reset on ")}{new Date(upgradePrompt.usageResetsAt).toLocaleDateString()}.
-                </p>
+                  {en("Your monthly minutes reset on {date}.", { date: new Date(upgradePrompt.usageResetsAt).toLocaleDateString() })}</p>
               )}
             </div>
           </div>
@@ -480,8 +479,7 @@ export default function OpenAIRealtimeInterviewRoom({
               <p className="text-[11px] text-muted-foreground">{en("Not graded · no credential · not shared")}</p>
             </div>
             <div className="text-sm font-bold text-indigo-700 dark:text-indigo-400 bg-indigo-500/10 px-3 py-1 rounded-lg border border-indigo-500/20">
-              {en("Practice score: ")}{Math.round(feedback.overallScore)}%
-            </div>
+              {en("Practice score: {overallScore}%", { overallScore: Math.round(feedback.overallScore) })}</div>
           </div>
 
           {feedback.disqualificationReason && (

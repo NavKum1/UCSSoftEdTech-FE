@@ -366,7 +366,7 @@ export default function IntegrationsPage() {
           <div className="flex items-start gap-3">
             <AlertTriangle className="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
             <div>
-              <h2 className="text-sm font-bold text-foreground">{en("\"")}{created.displayName}{en("\" (")}{created.provider}{en(") created")}</h2>
+              <h2 className="text-sm font-bold text-foreground">{en("\"{displayName}\" ({provider}) created", { displayName: created.displayName, provider: created.provider })}</h2>
               <p className="text-xs text-foreground mt-1">
                 {en("Copy these values now and store them securely. They will not be shown again; to get new ones, disable this connection and create another.")}
               </p>
@@ -418,9 +418,7 @@ export default function IntegrationsPage() {
                       )}
                     </div>
                     <p className="text-[11px] text-muted-foreground mt-1 break-all">
-                      {en("Created ")}{new Date(c.createdAt).toLocaleDateString()}
-                      {c.webhookUrl ? ` · ${c.webhookUrl}` : ""}
-                      {c.hasProviderApiKey ? en(" · provider API key stored") : ""}
+                      {en("Created {date}{value}{value2}", { date: new Date(c.createdAt).toLocaleDateString(), value: c.webhookUrl ? ` · ${c.webhookUrl}` : "", value2: c.hasProviderApiKey ? en(" · provider API key stored") : "" })}
                     </p>
                   </div>
                   <div className="flex flex-wrap items-center gap-2">

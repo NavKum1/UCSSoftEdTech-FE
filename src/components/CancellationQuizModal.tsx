@@ -105,7 +105,7 @@ export function CancellationQuizModal({
             </div>
             <div>
               <h3 className="text-lg font-bold text-foreground">
-                {en("Cancel ")}{sessionType}{en(" Session")}
+                {en("Cancel {sessionType} Session", { sessionType })}
               </h3>
               <p className="text-xs text-muted-foreground">
                 {en("Help us improve by sharing your cancellation reason")}
@@ -189,7 +189,7 @@ export function CancellationQuizModal({
                       onChange={() => setSelectedReason(reason)}
                       className="accent-primary w-3.5 h-3.5"
                     />
-                    <span>{reason}</span>
+                    <span>{en(reason)}</span>
                   </label>
                 ))}
               </div>

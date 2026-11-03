@@ -146,8 +146,8 @@ function BrandPanel({ state }: { state: AuthBrandState }) {
                     <Icon className="h-4 w-4 text-indigo-100" />
                   </span>
                   <span>
-                    <span className="block text-sm font-semibold text-white">{title}</span>
-                    <span className="block text-sm leading-relaxed text-indigo-100/80">{text}</span>
+                    <span className="block text-sm font-semibold text-white">{en(title)}</span>
+                    <span className="block text-sm leading-relaxed text-indigo-100/80">{en(text)}</span>
                   </span>
                 </li>
               ))}
@@ -157,7 +157,7 @@ function BrandPanel({ state }: { state: AuthBrandState }) {
 
         {state.kind === "white-label" && (
           <div className="auth-rise max-w-md space-y-3">
-            <p className="text-balance text-4xl font-semibold leading-[1.1] tracking-tight">{en("Welcome to ")}{state.brand.displayName}</p>
+            <p className="text-balance text-4xl font-semibold leading-[1.1] tracking-tight">{en("Welcome to {displayName}", { displayName: state.brand.displayName })}</p>
             <p className="text-base leading-relaxed text-white/85">{en("Sign in to continue to your account.")}</p>
           </div>
         )}

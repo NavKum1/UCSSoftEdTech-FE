@@ -64,7 +64,7 @@ export default function DevShortcuts() {
               )}
               <span>
                 {label}
-                <span className="sr-only">{en(" portal (")}{hint})</span>
+                <span className="sr-only">{" "}{en("portal ({hint})", { hint })}</span>
               </span>
               <ArrowUpRight aria-hidden="true" className="h-3 w-3 shrink-0 text-muted-foreground transition-colors group-hover:text-foreground" />
             </button>

@@ -62,7 +62,7 @@ export default function PassportView({ data, publicView }: { data: PassportData;
         </span>
         <div className="min-w-0 flex-1">
           <h1 className="truncate text-2xl font-semibold tracking-tight text-foreground">{data.fullName || "Name not set"}</h1>
-          {data.targetRole && <p className="mt-0.5 text-sm text-muted-foreground">{en("Aiming for ")}{data.targetRole}</p>}
+          {data.targetRole && <p className="mt-0.5 text-sm text-muted-foreground">{en("Aiming for {targetRole}", { targetRole: data.targetRole })}</p>}
           <p className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
             <span className="inline-flex items-center gap-1">
               <BadgeCheck aria-hidden="true" className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
@@ -71,7 +71,7 @@ export default function PassportView({ data, publicView }: { data: PassportData;
             <span>
               {verifiedCount} verified {verifiedCount === 1 ? en("skill area") : en("skill areas")} of {data.badges.length}
             </span>
-            <span>{en("Updated ")}{date(data.updatedAt)}</span>
+            <span>{en("Updated {date}", { date: date(data.updatedAt) })}</span>
           </p>
         </div>
       </section>
@@ -108,7 +108,7 @@ export default function PassportView({ data, publicView }: { data: PassportData;
                         )}
                       </p>
                       <p className="mt-0.5 text-xs text-muted-foreground">
-                        {k.label} · {s.results} {s.results === 1 ? "result" : "results"}{en(" · last ")}{date(s.lastActivityAt)}
+                        {en("{label} · {results} {value} · last {date}", { label: k.label, results: s.results, value: s.results === 1 ? "result" : "results", date: date(s.lastActivityAt) })}
                       </p>
                     </div>
                     {s.bestScore === null ? (
@@ -139,8 +139,7 @@ export default function PassportView({ data, publicView }: { data: PassportData;
                   <Link href={c.verificationUrl} className="block rounded-xl border border-border p-3 hover:bg-muted/50 focus-visible:outline-2 focus-visible:outline-indigo-600">
                     <span className="block text-sm font-medium text-foreground">{c.title}</span>
                     <span className="mt-0.5 block text-xs text-muted-foreground">
-                      {Math.round(c.score)}{en("% · issued ")}{date(c.issuedAt)}
-                      {c.underReview ? en(" · under review") : ""}
+                      {en("{score}% · issued {date}{value}", { score: Math.round(c.score), date: date(c.issuedAt), value: c.underReview ? en(" · under review") : "" })}
                     </span>
                     <span className="mt-1.5 inline-flex items-center gap-1 text-xs font-semibold text-indigo-700 dark:text-indigo-300">{en("Verify")}</span>
                   </Link>

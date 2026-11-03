@@ -159,14 +159,14 @@ export default function InstituteBillingPage() {
                 {usd(sub.pricePerMonthCents ?? 0)}{en(" a month, billed ")}{sub.billingCycle?.toLowerCase()} · {(sub.status ?? "").replace(/([a-z])([A-Z])/g, "$1 $2")}
               </p>
             </div>
-            {sub.currentPeriodEnd && <p className="text-sm text-muted-foreground">{en("Current period ends ")}{new Date(sub.currentPeriodEnd).toLocaleDateString()}</p>}
+            {sub.currentPeriodEnd && <p className="text-sm text-muted-foreground">{en("Current period ends {date}", { date: new Date(sub.currentPeriodEnd).toLocaleDateString() })}</p>}
           </div>
           <ul className="mt-5 grid gap-4 sm:grid-cols-2">
             {meters.map(([label, q, text]) =>
               q ? (
                 <li key={label}>
                   <div className="flex justify-between text-sm">
-                    <span>{label}</span>
+                    <span>{en(label)}</span>
                     <span className="tabular-nums text-muted-foreground">{text(q)}</span>
                   </div>
                   <div className="mt-1 h-2 overflow-hidden rounded-full bg-muted">
@@ -189,7 +189,7 @@ export default function InstituteBillingPage() {
               <select value={tier} onChange={(e) => setTier(e.target.value)} className="mt-1 block rounded-xl border border-border bg-background px-3 py-2 text-sm">
                 {PLANS.map((p) => (
                   <option key={p.id} value={p.id}>
-                    {p.label} (${p.price}{en(" a month, ")}{p.seats}{en(" seats)")}
+                    {en("{label} (${price} a month, {seats} seats)", { label: p.label, price: p.price, seats: p.seats })}
                   </option>
                 ))}
               </select>

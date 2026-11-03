@@ -132,7 +132,7 @@ export default function WebhookEvents({ getToken, version }: { getToken: GetToke
                     {d.event}
                   </button>
                   <span className="text-muted-foreground">{when(d.deliveredAt ?? d.createdAt)}</span>
-                  {d.statusCode != null && <span className="text-muted-foreground">{en("· answered ")}{d.statusCode}</span>}
+                  {d.statusCode != null && <span className="text-muted-foreground">{en("· answered {statusCode}", { statusCode: d.statusCode })}</span>}
                   {d.attempts > 1 && <span className="text-muted-foreground">· {d.attempts} tries</span>}
                   {d.status !== "Delivered" && (
                     <button type="button" onClick={() => retry(d.id)} className="ms-auto inline-flex items-center gap-1 rounded-lg border border-border px-2 py-1 hover:bg-muted">

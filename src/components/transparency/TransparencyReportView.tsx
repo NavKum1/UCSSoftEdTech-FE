@@ -132,7 +132,7 @@ export default function TransparencyReportView({ report, meta, draft = false }: 
           <p className="text-xs font-semibold text-indigo-700 dark:text-indigo-400 uppercase tracking-wider">{en("Reporting period")}</p>
           <h2 className="text-2xl font-extrabold text-foreground">{formatPeriod(report.periodStart, report.periodEnd)}</h2>
           <p className="text-xs text-muted-foreground mt-1">
-            {meta.publishedAt ? `Published ${formatDate(meta.publishedAt)}` : `Generated ${formatDate(report.generatedAt)}`}{en(" · Methodology v")}{report.methodologyVersion}{en(" · All dates UTC")}
+            {en("{value} · Methodology v{methodologyVersion} · All dates UTC", { value: meta.publishedAt ? `Published ${formatDate(meta.publishedAt)}` : `Generated ${formatDate(report.generatedAt)}`, methodologyVersion: report.methodologyVersion })}
           </p>
         </div>
         <button
@@ -173,7 +173,7 @@ export default function TransparencyReportView({ report, meta, draft = false }: 
         ].map((t) => (
           <div key={t.title} className="overflow-x-auto">
             <table className="w-full text-sm">
-              <caption className="text-start text-xs font-semibold text-muted-foreground pb-1">{t.title}</caption>
+              <caption className="text-start text-xs font-semibold text-muted-foreground pb-1">{en(t.title)}</caption>
               <thead>
                 <tr className="text-start text-xs text-muted-foreground border-b border-border">
                   <th scope="col" className="py-2 pe-3 font-semibold">{en("Category")}</th>
@@ -205,7 +205,7 @@ export default function TransparencyReportView({ report, meta, draft = false }: 
 
       <Section id="tr-integrity" icon={<ShieldCheck className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />} title={en("Integrity signals and human oversight")}>
         <p className="text-sm text-muted-foreground">
-          {en("Integrity signals are prompts for a reviewer to look closer, not verdicts. ")}{integrity.analysedSubmissions} of {integrity.submissions}{en(" submissions had an integrity analysis.")}
+          {en("Integrity signals are prompts for a reviewer to look closer, not verdicts. {analysedSubmissions} of {submissions} submissions had an integrity analysis.", { analysedSubmissions: integrity.analysedSubmissions, submissions: integrity.submissions })}
         </p>
         <div className="grid lg:grid-cols-2 gap-6">
           <div>
@@ -329,11 +329,11 @@ export default function TransparencyReportView({ report, meta, draft = false }: 
               <div className="flex flex-wrap items-baseline justify-between gap-2">
                 <h3 className="text-sm font-bold text-foreground">{c.category}</h3>
                 <span className="text-[11px] text-muted-foreground">
-                  {en("Disclosed by ")}{pct(c.disclosureShare)} · {c.notReported}{en(" not reported")}{c.suppressedGroups > 0 ? ` (incl. ${c.suppressedGroups} suppressed group${c.suppressedGroups === 1 ? "" : "s"})` : ""}
+                  {en("Disclosed by {disclosureShare} · {notReported} not reported{value}", { disclosureShare: pct(c.disclosureShare), notReported: c.notReported, value: c.suppressedGroups > 0 ? ` (incl. ${c.suppressedGroups} suppressed group${c.suppressedGroups === 1 ? "" : "s"})` : "" })}
                 </span>
               </div>
               {c.groups.length === 0 ? (
-                <Insufficient>{en("No group reached ")}{fairness.minimumGroupSize}{en(" candidates, so nothing is shown.")}</Insufficient>
+                <Insufficient>{en("No group reached {minimumGroupSize} candidates, so nothing is shown.", { minimumGroupSize: fairness.minimumGroupSize })}</Insufficient>
               ) : (
                 <div className="overflow-x-auto">
                   <table className="w-full text-xs">
@@ -354,14 +354,14 @@ export default function TransparencyReportView({ report, meta, draft = false }: 
                           <th scope="row" className="py-1.5 pe-2 text-start font-normal text-foreground">{g.group}</th>
                           <td className="py-1.5 pe-2 text-end tabular-nums">{g.candidates}</td>
                           <td className="py-1.5 pe-2 text-end tabular-nums" title={`${g.decided} with a decision`}>
-                            {g.selectionRate == null ? <span className="text-muted-foreground">{en("too few (")}{g.decided})</span> : pct(g.selectionRate)}
+                            {g.selectionRate == null ? <span className="text-muted-foreground">{en("too few ({decided})", { decided: g.decided })}</span> : pct(g.selectionRate)}
                           </td>
                           <td className={`py-1.5 pe-2 text-end tabular-nums ${g.selectionBelowFourFifths ? "text-rose-700 dark:text-rose-400 font-semibold" : ""}`}>
                             {g.selectionImpactRatio == null ? "—" : g.selectionImpactRatio.toFixed(2)}
                             {g.selectionBelowFourFifths && <span className="block text-[10px]">{en("below 4/5")}</span>}
                           </td>
                           <td className="py-1.5 pe-2 text-end tabular-nums" title={`${g.scored} with a defense score`}>
-                            {g.scoringRate == null ? <span className="text-muted-foreground">{en("too few (")}{g.scored})</span> : pct(g.scoringRate)}
+                            {g.scoringRate == null ? <span className="text-muted-foreground">{en("too few ({scored})", { scored: g.scored })}</span> : pct(g.scoringRate)}
                           </td>
                           <td className={`py-1.5 text-end tabular-nums ${g.scoringBelowFourFifths ? "text-rose-700 dark:text-rose-400 font-semibold" : ""}`}>
                             {g.scoringImpactRatio == null ? "—" : g.scoringImpactRatio.toFixed(2)}

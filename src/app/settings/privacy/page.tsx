@@ -161,7 +161,7 @@ export default function PrivacySettingsPage() {
                   .map(([k, n]) => (
                     <li key={k}>{k}: {n}</li>
                   ))}
-                {result.referralProvidersNotified > 0 && <li>{en("Course providers notified: ")}{result.referralProvidersNotified}</li>}
+                {result.referralProvidersNotified > 0 && <li>{en("Course providers notified: {referralProvidersNotified}", { referralProvidersNotified: result.referralProvidersNotified })}</li>}
               </ul>
               <p className="text-xs text-foreground">{result.keptDeidentified.description}</p>
               <div className="text-xs text-muted-foreground">

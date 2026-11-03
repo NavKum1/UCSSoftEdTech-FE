@@ -191,7 +191,7 @@ export default function CareerPathPage() {
               ))}
             </dl>
             <p className="mt-3 text-xs text-muted-foreground">
-              {en("Source: ")}{path.compensation.source}{en(", as of ")}{new Date(path.compensation.asOf).toLocaleDateString()}. {path.compensation.licence}
+              {en("Source: {source}, as of {date}. {licence}", { source: path.compensation.source, date: new Date(path.compensation.asOf).toLocaleDateString(), licence: path.compensation.licence })}
             </p>
           </>
         ) : (

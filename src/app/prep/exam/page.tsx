@@ -456,7 +456,7 @@ export default function WrittenExamPrepPage() {
       <div className="space-y-0.5">
         <p className="font-semibold">{attemptNotice.message}</p>
         {attemptNotice.nextAttemptAt && (
-          <p className="text-muted-foreground">{en("Next attempt available from ")}{formatDateTime(attemptNotice.nextAttemptAt)}.</p>
+          <p className="text-muted-foreground">{en("Next attempt available from {date}.", { date: formatDateTime(attemptNotice.nextAttemptAt) })}</p>
         )}
       </div>
       <button
@@ -621,7 +621,7 @@ export default function WrittenExamPrepPage() {
                   {evaluation.examTitle}
                 </h1>
                 <p className="text-xs text-muted-foreground">
-                  {en("Submitted at ")}{new Date(evaluation.submittedAt).toLocaleTimeString()}
+                  {en("Submitted at {date}", { date: new Date(evaluation.submittedAt).toLocaleTimeString() })}
                 </p>
               </div>
 
@@ -671,7 +671,7 @@ export default function WrittenExamPrepPage() {
                 {evaluation.percentileRank == null ? (
                   <p className="text-sm text-muted-foreground mt-1">{en("Shown once 20 people have taken this exam")}</p>
                 ) : (
-                  <p className="text-xl font-bold text-primary mt-0.5">{en("Better than ")}{evaluation.percentileRank}%</p>
+                  <p className="text-xl font-bold text-primary mt-0.5">{en("Better than {percentileRank}%", { percentileRank: evaluation.percentileRank })}</p>
                 )}
               </div>
               <div className="p-3 rounded-xl bg-muted/40 border border-border/60">
@@ -702,7 +702,7 @@ export default function WrittenExamPrepPage() {
                         {en("Official Certification Earned")}
                       </span>
                       <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-[10px] font-bold">
-                        {evaluation.percentage}{en("% Passed")}
+                        {en("{percentage}% Passed", { percentage: evaluation.percentage })}
                       </span>
                     </div>
                     <h3 className="text-sm font-bold text-foreground mt-0.5">
@@ -736,12 +736,11 @@ export default function WrittenExamPrepPage() {
             ) : (
               <div className="p-4 rounded-xl border border-border bg-muted/20 text-xs text-muted-foreground flex items-center justify-between">
                 <span>
-                  {en("Passing score is ")}{evaluation.passingPercentage}%.{" "}
-                  {!isCredentialExam
+                  {en("Passing score is {passingPercentage}%. {value}", { passingPercentage: evaluation.passingPercentage, value: !isCredentialExam
                     ? en("Retake the practice exam when you are ready.")
                     : retakeBlocked
                       ? en("You can't retake this exam right now (see below).")
-                      : en("Retake the exam to unlock your official verified credential badge.")}
+                      : en("Retake the exam to unlock your official verified credential badge.") })}
                 </span>
                 {!retakeBlocked && (
                   <button
@@ -760,7 +759,7 @@ export default function WrittenExamPrepPage() {
                 <Clock className="w-3.5 h-3.5 text-primary" aria-hidden="true" />
                 {evaluationAttempts && <span className="font-semibold text-foreground">{evaluationAttempts}</span>}
                 {inCooldown(evaluation.nextAttemptAt) && evaluation.attemptsRemaining !== 0 && (
-                  <span>{en("Next attempt available from ")}{formatDateTime(evaluation.nextAttemptAt as string)}.</span>
+                  <span>{en("Next attempt available from {date}.", { date: formatDateTime(evaluation.nextAttemptAt as string) })}</span>
                 )}
               </div>
             )}
@@ -934,11 +933,11 @@ export default function WrittenExamPrepPage() {
             <div className="flex items-center gap-2 text-xs text-muted-foreground">
               <span>{activeExam.stream}</span>
               <span>•</span>
-              <span>{en("Question ")}{currentQuestionIndex + 1} of {activeExam.questions.length}</span>
+              <span>{en("Question {value} of {length}", { value: currentQuestionIndex + 1, length: activeExam.questions.length })}</span>
               {activeExam.attemptNumber && activeExam.maxAttempts ? (
                 <>
                   <span>•</span>
-                  <span>{en("Attempt ")}{activeExam.attemptNumber} of {activeExam.maxAttempts}</span>
+                  <span>{en("Attempt {attemptNumber} of {maxAttempts}", { attemptNumber: activeExam.attemptNumber, maxAttempts: activeExam.maxAttempts })}</span>
                 </>
               ) : null}
             </div>
@@ -983,7 +982,7 @@ export default function WrittenExamPrepPage() {
                 {currentQ.topic}
               </span>
               <span className="text-xs text-muted-foreground">
-                {en("Answered ")}{answeredCount} of {activeExam.questions.length}
+                {en("Answered {answeredCount} of {length}", { answeredCount, length: activeExam.questions.length })}
               </span>
             </div>
 
@@ -1140,7 +1139,7 @@ export default function WrittenExamPrepPage() {
             }`}
           >
             <BookOpen className="w-3.5 h-3.5 text-primary" />
-            <span>{en("Available Exams (")}{catalog.length})</span>
+            <span>{en("Available Exams ({length})", { length: catalog.length })}</span>
           </button>
           <button
             onClick={() => {
@@ -1154,7 +1153,7 @@ export default function WrittenExamPrepPage() {
             }`}
           >
             <History className="w-3.5 h-3.5 text-primary" />
-            <span>{en("My Attempt History & Credentials (")}{examHistory.length})</span>
+            <span>{en("My Attempt History & Credentials ({length})", { length: examHistory.length })}</span>
           </button>
         </div>
 
@@ -1176,7 +1175,7 @@ export default function WrittenExamPrepPage() {
                         : "border border-border/80 bg-card/60 text-muted-foreground hover:text-foreground hover:bg-card"
                     }`}
                   >
-                    {stream}
+                    {en(stream)}
                   </button>
                 ))}
               </div>
@@ -1271,14 +1270,14 @@ export default function WrittenExamPrepPage() {
                         </div>
                         <div className="flex items-center gap-1.5">
                           <FileText className="w-3.5 h-3.5 text-primary" />
-                          <span>{exam.totalQuestions}{en(" Questions")}</span>
+                          <span>{en("{totalQuestions} Questions", { totalQuestions: exam.totalQuestions })}</span>
                         </div>
                       </div>
 
                       {(attemptsLine || cooling) && (
                         <div className="text-[11px] text-muted-foreground space-y-0.5">
                           {attemptsLine && <p className="font-semibold text-foreground">{attemptsLine}</p>}
-                          {cooling && !exhausted && <p>{en("Next attempt available from ")}{formatDateTime(exam.nextAttemptAt as string)}.</p>}
+                          {cooling && !exhausted && <p>{en("Next attempt available from {date}.", { date: formatDateTime(exam.nextAttemptAt as string) })}</p>}
                         </div>
                       )}
 
@@ -1333,7 +1332,7 @@ export default function WrittenExamPrepPage() {
                 <p className="text-2xl font-black text-emerald-500 mt-1">
                   {historyStats.passRatePercentage}%
                 </p>
-                <span className="text-[10px] text-muted-foreground">{historyStats.passedCount}{en(" exams certified")}</span>
+                <span className="text-[10px] text-muted-foreground">{en("{passedCount} exams certified", { passedCount: historyStats.passedCount })}</span>
               </div>
 
               <div className="p-4 rounded-2xl border border-border bg-card/60 shadow-sm">
@@ -1414,9 +1413,9 @@ export default function WrittenExamPrepPage() {
                       <div className="flex items-center gap-3 text-xs text-muted-foreground">
                         <span>{en("Score: ")}<strong className={att.passed ? "text-emerald-500" : "text-rose-500"}>{att.percentage}%</strong></span>
                         <span>•</span>
-                        <span>{en("Questions: ")}{att.correctAnswers}/{att.totalQuestions}</span>
+                        <span>{en("Questions: {correctAnswers}/{totalQuestions}", { correctAnswers: att.correctAnswers, totalQuestions: att.totalQuestions })}</span>
                         <span>•</span>
-                        {att.percentileRank != null && <span>{en("Better than ")}{att.percentileRank}{en("% of test takers")}</span>}
+                        {att.percentileRank != null && <span>{en("Better than {percentileRank}% of test takers", { percentileRank: att.percentileRank })}</span>}
                       </div>
                       )}
                     </div>
@@ -1513,7 +1512,7 @@ export default function WrittenExamPrepPage() {
                       onClick={() => setAiTopic(preset)}
                       className="px-2 py-0.5 rounded-md border border-border/70 bg-muted/40 text-[10px] text-muted-foreground hover:text-foreground hover:bg-muted"
                     >
-                      {preset}
+                      {en(preset)}
                     </button>
                   ))}
                 </div>
@@ -1571,7 +1570,7 @@ export default function WrittenExamPrepPage() {
                           : "border-border bg-muted/20 text-muted-foreground hover:bg-muted/40"
                       }`}
                     >
-                      {num}{en(" Questions")}
+                      {en("{num} Questions", { num })}
                     </button>
                   ))}
                 </div>
@@ -1769,7 +1768,7 @@ export default function WrittenExamPrepPage() {
                 </div>
                 <div>
                   <span className="text-muted-foreground text-[10px] uppercase font-semibold">{en("Verified Score")}</span>
-                  <p className="font-bold text-emerald-500 text-sm mt-0.5">{claimedCredential.percentage}{en("% (Gold Mastery)")}</p>
+                  <p className="font-bold text-emerald-500 text-sm mt-0.5">{en("{percentage}% (Gold Mastery)", { percentage: claimedCredential.percentage })}</p>
                 </div>
                 <div>
                   <span className="text-muted-foreground text-[10px] uppercase font-semibold">{en("Certificate Number")}</span>

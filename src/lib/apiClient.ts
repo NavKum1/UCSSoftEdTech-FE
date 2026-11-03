@@ -139,7 +139,7 @@ export async function authenticatedFetch(
     if (locale) headers.set("Accept-Language", locale);
   }
 
-  // The API's own messages in the reader's English (US or British/Indian spelling)
+  // The API's own messages in the reader's English (US or British spelling)
   if (typeof window !== "undefined" && !headers.has("X-English")) headers.set("X-English", browserEnglish());
 
   // The bearer token, if signed in

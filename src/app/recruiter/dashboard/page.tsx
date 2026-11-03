@@ -545,10 +545,10 @@ export default function RecruiterDashboardPage() {
               <Icon className="w-5 h-5 text-indigo-600 dark:text-indigo-400 shrink-0 mt-0.5" />
               <div className="min-w-0">
                 <div className="text-sm font-bold text-foreground flex items-center gap-1">
-                  {title}
+                  {en(title)}
                   <ArrowRight className="w-3.5 h-3.5 text-muted-foreground" />
                 </div>
-                <p className="text-xs text-muted-foreground mt-0.5">{text}</p>
+                <p className="text-xs text-muted-foreground mt-0.5">{en(text)}</p>
               </div>
             </Link>
           ))}
@@ -620,7 +620,7 @@ export default function RecruiterDashboardPage() {
             }`}
           >
             <Layers className="w-3.5 h-3.5" />
-            <span>{en("3-Stage Assessment Pipeline (")}{bundles.length})</span>
+            <span>{en("3-Stage Assessment Pipeline ({length})", { length: bundles.length })}</span>
           </button>
 
           <button
@@ -632,7 +632,7 @@ export default function RecruiterDashboardPage() {
             }`}
           >
             <Code2 className="w-3.5 h-3.5" />
-            <span>{en("Sprint Submissions & Integrity Signals (")}{candidates.length})</span>
+            <span>{en("Sprint Submissions & Integrity Signals ({length})", { length: candidates.length })}</span>
           </button>
         </div>
 
@@ -699,8 +699,7 @@ export default function RecruiterDashboardPage() {
             {reissued && (
               <div className="mb-3 p-3 rounded-xl bg-card border border-border space-y-2">
                 <label htmlFor="reissued-link" className="text-[11px] font-semibold text-muted-foreground block">
-                  {en("New candidate link")}{reissued.expiresAt ? ` (expires ${formatLinkDate(reissued.expiresAt)})` : ""}:
-                </label>
+                  {en("New candidate link{value}:", { value: reissued.expiresAt ? ` (expires ${formatLinkDate(reissued.expiresAt)})` : "" })}</label>
                 <div className="flex items-center space-x-2">
                   <input
                     id="reissued-link"
@@ -800,7 +799,7 @@ export default function RecruiterDashboardPage() {
                             {/* Review Status */}
                             <td className="py-3.5 px-4">
                               <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold border flex items-center space-x-1 w-fit ${REVIEW_STATUS_STYLES[status]}`}>
-                                <span>{REVIEW_STATUS_LABELS[status]}</span>
+                                <span>{en(REVIEW_STATUS_LABELS[status])}</span>
                               </span>
                             </td>
 
@@ -989,8 +988,7 @@ export default function RecruiterDashboardPage() {
 
                 <div className="p-4 rounded-xl bg-card border border-border space-y-2">
                   <div className="text-[11px] font-semibold text-muted-foreground">
-                    {en("Direct Candidate Invite Link")}{bundleCreatedData.expiresAt ? ` (expires ${formatLinkDate(bundleCreatedData.expiresAt)})` : ""}:
-                  </div>
+                    {en("Direct Candidate Invite Link{value}:", { value: bundleCreatedData.expiresAt ? ` (expires ${formatLinkDate(bundleCreatedData.expiresAt)})` : "" })}</div>
                   <p className="text-[11px] text-amber-700 dark:text-amber-400">{en("Copy it now: for security the full link is shown only once. You can send a new link from the list later.")}</p>
                   <div className="flex items-center space-x-2">
                     <input
@@ -1387,8 +1385,7 @@ export default function RecruiterDashboardPage() {
                             ? "bg-amber-500 text-black"
                             : "bg-rose-500 text-white"
                         }`}>
-                          {en("CLAIM CREDIBILITY: ")}{scrutinyResult.credibilityScore}%
-                        </span>
+                          {en("CLAIM CREDIBILITY: {credibilityScore}%", { credibilityScore: scrutinyResult.credibilityScore })}</span>
                         <span className="text-xs font-bold text-foreground font-mono">
                           {scrutinyResult.candidateName} • {scrutinyResult.targetRole}
                         </span>
@@ -1420,7 +1417,7 @@ export default function RecruiterDashboardPage() {
                             <span>{en("Flagged Claims & Metric Scrutiny")}</span>
                           </h4>
                           <span className="text-[10px] font-mono text-rose-600 dark:text-rose-400 font-bold">
-                            {scrutinyResult.flaggedClaims?.length ?? 0}{en(" Suspect Points")}
+                            {en("{value} Suspect Points", { value: scrutinyResult.flaggedClaims?.length ?? 0 })}
                           </span>
                         </div>
 
@@ -1432,7 +1429,7 @@ export default function RecruiterDashboardPage() {
                                 <span className={`px-2 py-0.5 rounded text-[9px] font-black uppercase ${
                                   item.severity === "HIGH" ? "bg-rose-500 text-white" : "bg-amber-500 text-black"
                                 }`}>
-                                  {item.severity}{en(" SEVERITY")}
+                                  {en("{severity} SEVERITY", { severity: item.severity })}
                                 </span>
                               </div>
                               <p className="text-[11px] text-muted-foreground leading-relaxed">
@@ -1582,7 +1579,7 @@ export default function RecruiterDashboardPage() {
                 <div>
                   <div className="flex items-center space-x-2">
                     <h3 className="text-base font-bold text-foreground">
-                      {selectedBundleForAudit.candidateName}{en(" — Assessment Details")}
+                      {en("{candidateName} — Assessment Details", { candidateName: selectedBundleForAudit.candidateName })}
                     </h3>
                     <span className="text-[10px] font-mono px-2 py-0.5 rounded-md bg-muted text-muted-foreground border border-border">
                       {selectedBundleForAudit.linkHint}
@@ -1608,11 +1605,11 @@ export default function RecruiterDashboardPage() {
               <div className="rounded-2xl p-5 border border-indigo-500/30 bg-indigo-500/5 space-y-2">
                 <div className="flex flex-wrap items-center gap-2">
                   <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold border ${REVIEW_STATUS_STYLES[reviewStatus(selectedBundleForAudit)]}`}>
-                    {REVIEW_STATUS_LABELS[reviewStatus(selectedBundleForAudit)]}
+                    {en(REVIEW_STATUS_LABELS[reviewStatus(selectedBundleForAudit)])}
                   </span>
                   {selectedBundleForAudit.aiVerdict && (
                     <span className="text-xs text-muted-foreground">
-                      {en("Integrity signals: ")}{selectedBundleForAudit.aiVerdict.antiCheatVerdict === "FLAGGED_SUSPICIOUS" ? en("raised; review the transcript and discuss with the candidate") : en("none raised")}
+                      {en("Integrity signals: {value}", { value: selectedBundleForAudit.aiVerdict.antiCheatVerdict === "FLAGGED_SUSPICIOUS" ? en("raised; review the transcript and discuss with the candidate") : en("none raised") })}
                     </span>
                   )}
                 </div>
@@ -1636,7 +1633,7 @@ export default function RecruiterDashboardPage() {
                   <div className="text-xl font-black font-mono text-indigo-600 dark:text-indigo-400 mt-1">
                     {selectedBundleForAudit.stage2Score ?? "--"}%
                   </div>
-                  <span className="text-[10px] text-muted-foreground truncate block mt-0.5">{selectedBundleForAudit.requiredLanguage.toUpperCase()}{en(" Sandbox")}</span>
+                  <span className="text-[10px] text-muted-foreground truncate block mt-0.5">{en("{value} Sandbox", { value: selectedBundleForAudit.requiredLanguage.toUpperCase() })}</span>
                 </div>
 
                 <div className="p-3.5 rounded-2xl bg-card border border-border">
@@ -1727,7 +1724,7 @@ export default function RecruiterDashboardPage() {
                       </h4>
                     </div>
                     <span className="text-[10px] font-mono text-muted-foreground">
-                      {selectedBundleForAudit.aiVerdict.transcriptLog.length}{en(" Spoken Turns Recorded")}
+                      {en("{length} Spoken Turns Recorded", { length: selectedBundleForAudit.aiVerdict.transcriptLog.length })}
                     </span>
                   </div>
 
@@ -1753,7 +1750,7 @@ export default function RecruiterDashboardPage() {
                               ) : (
                                 <>
                                   <Mic className="w-3 h-3 text-indigo-400" />
-                                  <span>{en("CANDIDATE (")}{selectedBundleForAudit.candidateName})</span>
+                                  <span>{en("CANDIDATE ({candidateName})", { candidateName: selectedBundleForAudit.candidateName })}</span>
                                 </>
                               )}
                             </span>
@@ -1777,7 +1774,7 @@ export default function RecruiterDashboardPage() {
                 </div>
                 <p className="text-xs text-muted-foreground">
                   {en("Current status:")}{" "}
-                  <span className="font-bold text-foreground">{REVIEW_STATUS_LABELS[reviewStatus(selectedBundleForAudit)]}</span>{en(". Record Advance, Hold or Decline with a rationale from the evidence review queue.")}
+                  <span className="font-bold text-foreground">{en(REVIEW_STATUS_LABELS[reviewStatus(selectedBundleForAudit)])}</span>{en(". Record Advance, Hold or Decline with a rationale from the evidence review queue.")}
                 </p>
 
                 <div className="flex flex-wrap items-center gap-2 pt-1">

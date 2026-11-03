@@ -65,7 +65,7 @@ export default function Meetings({ lead, busy, act }: { lead: LeadFull; busy: bo
                   {m.location && <span>{m.location}</span>}
                   {m.kind === "slot" && booked && <span>{en("Booked by them")}</span>}
                 </p>
-                {m.topics.length > 0 && <p className="mt-0.5 text-xs">{en("To talk about: ")}{m.topics.join(", ")}</p>}
+                {m.topics.length > 0 && <p className="mt-0.5 text-xs">{en("To talk about: {value}", { value: m.topics.join(", ") })}</p>}
                 {m.note && <p className="mt-1 text-xs text-amber-900 dark:text-amber-200">{m.note}</p>}
               </div>
               <div className="flex shrink-0 gap-1.5">

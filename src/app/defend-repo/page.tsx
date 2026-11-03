@@ -65,9 +65,10 @@ const STATUS_LABELS: Record<RepoDefenseStatus, string> = {
 };
 
 function StatusBadge({ status }: { status: RepoDefenseStatus }) {
+  const en = useEn();
   return (
     <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border ${STATUS_STYLES[status] ?? ""}`}>
-      {STATUS_LABELS[status] ?? status}
+      {en(STATUS_LABELS[status] ?? status)}
     </span>
   );
 }
@@ -335,7 +336,7 @@ export default function DefendRepoPage() {
                         <p className="text-xs text-muted-foreground">
                           {en("Commits authored by you:")}{" "}
                           <span className="font-semibold text-foreground">{Math.round(current.authorCommitShare * 100)}%</span>
-                          {typeof current.authorCommitCount === "number" && <> ({current.authorCommitCount}{en(" commits sampled as yours)")}</>}
+                          {typeof current.authorCommitCount === "number" && <> {" "}{en("({authorCommitCount} commits sampled as yours)", { authorCommitCount: current.authorCommitCount })}</>}
                         </p>
                       )}
                       {current.selectedFiles && current.selectedFiles.length > 0 && (
@@ -348,7 +349,7 @@ export default function DefendRepoPage() {
                                   <FileCode className="w-3.5 h-3.5 shrink-0 text-muted-foreground" />
                                   <span className="truncate">{f.path}</span>
                                 </span>
-                                <span className="text-muted-foreground shrink-0">+{f.authorAdditions}{en(" lines by you")}</span>
+                                <span className="text-muted-foreground shrink-0">{en("+{authorAdditions} lines by you", { authorAdditions: f.authorAdditions })}</span>
                               </li>
                             ))}
                           </ul>

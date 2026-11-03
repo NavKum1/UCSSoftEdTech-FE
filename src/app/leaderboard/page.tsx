@@ -131,7 +131,7 @@ export default function LeaderboardPage() {
             onClick={() => setTab(t.key)}
             className={`-mb-px border-b-2 px-3 py-2 text-sm ${tab === t.key ? "border-indigo-600 font-semibold" : "border-transparent text-muted-foreground hover:text-foreground"}`}
           >
-            {t.label}
+            {en(t.label)}
           </button>
         ))}
       </div>
@@ -146,10 +146,9 @@ export default function LeaderboardPage() {
       {tab !== "challenges" && practice && practice.period === tab && (
         <section className="mt-6">
           <p className="mb-3 text-xs text-muted-foreground">
-            {tab === "week" && practice.endsAt
+            {en("{value} Your first try at each drill counts.", { value: tab === "week" && practice.endsAt
               ? `Points from daily drills since Monday. Resets ${new Date(practice.endsAt).toLocaleString(undefined, { weekday: "long", hour: "numeric", minute: "2-digit" })}.`
-              : en("Points from daily drills since they started.")}{" "}
-            {en("Your first try at each drill counts. ")}<Link href="/daily" className="font-medium text-indigo-700 hover:underline dark:text-indigo-300">{en("Today's drills")}</Link>
+              : en("Points from daily drills since they started.") })}{" "}<Link href="/daily" className="font-medium text-indigo-700 hover:underline dark:text-indigo-300">{en("Today's drills")}</Link>
           </p>
           <Table
             empty="Nobody has earned points in this period yet."

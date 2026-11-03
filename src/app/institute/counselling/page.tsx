@@ -188,7 +188,7 @@ export default function InstituteCounsellingPage() {
             onClick={() => setTab(t.key)}
             className={`-mb-px border-b-2 px-3 py-2 text-sm ${activeTab === t.key ? "border-cyan-600 font-semibold" : "border-transparent text-muted-foreground hover:text-foreground"}`}
           >
-            {t.label}
+            {en(t.label)}
           </button>
         ))}
       </div>
@@ -272,9 +272,7 @@ function QuestionsTab({ scope, apiFetch, canEdit }: { scope: string | null; apiF
     <section className="space-y-4">
       <div className={`${card} flex flex-wrap items-center justify-between gap-3 p-4`}>
         <p className="text-sm text-muted-foreground">
-          {active}{en(" active question")}{active === 1 ? "" : "s"}{en("; each member answers ")}{Math.min(meta?.questionsPerAttempt ?? 15, active)}{en(" drawn at random.")}
-          {scope && meta && !meta.ownBank ? en(" This institute uses the platform question pool until you save your own.") : ""}
-          {" "}{en("Members never see the areas or weights; give every area the same number of options and weights so none is favoured.")}
+          {en("{active} active question{value}; each member answers {value2} drawn at random.{value3} Members never see the areas or weights; give every area the same number of options and weights so none is favoured.", { active, value: active === 1 ? "" : "s", value2: Math.min(meta?.questionsPerAttempt ?? 15, active), value3: scope && meta && !meta.ownBank ? en(" This institute uses the platform question pool until you save your own.") : "" })}
         </p>
         {canEdit && (
           <div className="flex gap-2">
@@ -451,8 +449,7 @@ function CoursesTab({ scope, apiFetch, canEdit, isSuper }: { scope: string; apiF
     <section className="space-y-4">
       <div className={`${card} flex flex-wrap items-center justify-between gap-3 p-4`}>
         <p className="text-sm text-muted-foreground">
-          {en("Active courses are suggested to this institute's members with their quiz results, best match first.")}
-          {listed ? en(" They are also suggested to members of the platform quiz.") : en(" They are not suggested to members of other institutes.")}
+          {en("Active courses are suggested to this institute's members with their quiz results, best match first.{value}", { value: listed ? en(" They are also suggested to members of the platform quiz.") : en(" They are not suggested to members of other institutes.") })}
         </p>
         <div className="flex items-center gap-3">
           {isSuper && (
@@ -475,7 +472,7 @@ function CoursesTab({ scope, apiFetch, canEdit, isSuper }: { scope: string; apiF
       )}
       {editing && <CourseForm course={editing} onCancel={() => setEditing(null)} onSave={(c) => void save(c)} />}
       {courses.length === 0 ? (
-        <p className={`${card} p-6 text-sm text-muted-foreground`}>{en("No courses yet.")}{canEdit ? en(" Add the courses you want members to see.") : ""}</p>
+        <p className={`${card} p-6 text-sm text-muted-foreground`}>{en("No courses yet.{value}", { value: canEdit ? en(" Add the courses you want members to see.") : "" })}</p>
       ) : (
         <div className={`${card} overflow-x-auto`}>
           <table className="w-full text-sm">

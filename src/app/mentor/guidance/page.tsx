@@ -55,7 +55,7 @@ export default function MentorGuidancePage() {
           <section key={r.id} className="space-y-4 rounded-2xl border border-border bg-card p-5">
             <div className="flex flex-wrap items-start justify-between gap-2">
               <h2 className="font-semibold">{r.name}</h2>
-              <span className="rounded-full bg-muted px-2.5 py-0.5 text-xs">{STATUS_LABEL[r.status] ?? r.status}</span>
+              <span className="rounded-full bg-muted px-2.5 py-0.5 text-xs">{en(STATUS_LABEL[r.status] ?? r.status)}</span>
             </div>
             <RequestDetails r={r} />
             <Messages messages={r.messages} />

@@ -196,7 +196,7 @@ function TemplateSettings({ getToken, templates, reload }: { getToken: GetToken;
           <span className="text-muted-foreground">{en("Start from:")}</span>
           {STARTERS.map((s) => (
             <button key={s.name} type="button" className={secondary} onClick={() => setForm(s)}>
-              {s.name}
+              {en(s.name)}
             </button>
           ))}
         </div>

@@ -248,7 +248,7 @@ function Wizard() {
                   >
                     {done ? <Check aria-hidden="true" className="h-4 w-4" strokeWidth={3} /> : n}
                   </span>
-                  <span className={now ? "font-medium text-white" : done ? "text-indigo-100" : "text-indigo-100/60"}>{label}</span>
+                  <span className={now ? "font-medium text-white" : done ? "text-indigo-100" : "text-indigo-100/60"}>{en(label)}</span>
                 </li>
               );
             })}
@@ -257,7 +257,7 @@ function Wizard() {
             {["30 days free on any plan", "Nothing is charged today", "Cancel any time from Billing"].map((t) => (
               <li key={t} className="flex items-center gap-2.5">
                 <Check aria-hidden="true" className="h-4 w-4 text-emerald-300" strokeWidth={3} />
-                {t}
+                {en(t)}
               </li>
             ))}
           </ul>
@@ -271,7 +271,7 @@ function Wizard() {
             {en("Edulexa")}
           </Link>
           <p className="mt-4 text-sm text-slate-500 dark:text-slate-400">
-            {en("Step ")}{step}{en(" of 5: ")}{STEPS[step - 1]}
+            {en("Step {step} of 5: {value}", { step, value: en(STEPS[step - 1]) })}
           </p>
           <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-slate-200 dark:bg-slate-800">
             <div className="h-full rounded-full bg-indigo-600 transition-all" style={{ width: `${(step / 5) * 100}%` }} />
@@ -345,7 +345,7 @@ function Wizard() {
             <h2 id="s2" className="text-2xl font-semibold tracking-tight sm:text-3xl">
               {en("Choose a plan")}
             </h2>
-            <p className="mt-2 text-slate-600 dark:text-slate-400">{en("Every plan starts with ")}{plans.trialDays}{en(" days free. You can change it any time.")}</p>
+            <p className="mt-2 text-slate-600 dark:text-slate-400">{en("Every plan starts with {trialDays} days free. You can change it any time.", { trialDays: plans.trialDays })}</p>
             <div role="radiogroup" aria-label={en("Billing period")} className="mt-6 inline-flex rounded-xl border border-slate-200 bg-white p-1 dark:border-slate-800 dark:bg-slate-900">
               {(["month", "year"] as const).map((i) => (
                 <button
@@ -393,7 +393,7 @@ function Wizard() {
             <p className="mt-4 text-sm text-slate-500 dark:text-slate-400">{en("Universities and districts: contact us for an annual licence.")}</p>
             <div className="mt-8">
               <button type="button" className={primary} onClick={() => go(isSignedIn ? 4 : 3)}>
-                {en("Continue with ")}{plan?.name ?? "this plan"}
+                {en("Continue with {value}", { value: plan?.name ?? en("this plan") })}
               </button>
             </div>
           </section>
@@ -455,7 +455,7 @@ function Wizard() {
                     <option value="">{en("Choose")}</option>
                     {SIZES.map(([v, l]) => (
                       <option key={v} value={v}>
-                        {l}
+                        {en(l)}
                       </option>
                     ))}
                   </select>
@@ -525,8 +525,7 @@ function Wizard() {
               </dl>
               <p className="mt-5 flex gap-2.5 rounded-xl bg-slate-50 p-4 text-sm text-slate-600 dark:bg-slate-800/60 dark:text-slate-300">
                 <Sparkles aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0 text-indigo-600" />
-                {en("Your ")}{plans.trialDays}{en("-day trial starts now. We'll remind you 7 days before it ends. If you keep the plan, the first payment of ")}{price(plan)}{en(" is taken on day")}{" "}
-                {plans.trialDays + 1}{en("; cancel before then and you won't be charged.")}
+                {en("Your {trialDays}-day trial starts now. We'll remind you 7 days before it ends. If you keep the plan, the first payment of {amount} is taken on day {value}; cancel before then and you won't be charged.", { trialDays: plans.trialDays, amount: price(plan), value: plans.trialDays + 1 })}
               </p>
             </div>
             <button type="button" className={`${primary} mt-8 w-full sm:w-auto`} disabled={busy} onClick={start}>
@@ -534,7 +533,7 @@ function Wizard() {
               {plans.provider === "razorpay" ? en("Add card or UPI and start") : en("Add a card and start")}
             </button>
             <p className="mt-3 text-sm text-slate-500 dark:text-slate-400">
-              {en("Payment details are handled by ")}{plans.provider === "razorpay" ? en("Razorpay") : en("Stripe")}{en("; Edulexa never sees your card number.")}
+              {en("Payment details are handled by {value}; Edulexa never sees your card number.", { value: plans.provider === "razorpay" ? en("Razorpay") : en("Stripe") })}
             </p>
           </section>
         )}

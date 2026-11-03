@@ -434,7 +434,7 @@ export default function EvidencePackPage() {
 
       {/* Tests */}
       <Section title={`Tests: ${tests.passed}/${tests.total} passed`} icon={<CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />}>
-        <p className="text-xs text-muted-foreground">{en("Status: ")}{tests.status}</p>
+        <p className="text-xs text-muted-foreground">{en("Status: {status}", { status: tests.status })}</p>
         {caseEntries.length === 0 ? (
           <p className="text-xs text-muted-foreground">{en("No per-test results recorded.")}</p>
         ) : (
@@ -522,8 +522,8 @@ export default function EvidencePackPage() {
               {aiUsage.conversation.map((m, i) => (
                 <li key={i} className="rounded-xl border border-border p-3 space-y-2 text-xs">
                   <div className="flex items-center justify-between text-muted-foreground">
-                    <span>{en("Prompt ")}{i + 1} · {fmtDate(m.at)}</span>
-                    <span>{m.charactersUsed.toLocaleString()}{en(" characters used in code")}</span>
+                    <span>{en("Prompt {value} · {date}", { value: i + 1, date: fmtDate(m.at) })}</span>
+                    <span>{en("{number} characters used in code", { number: m.charactersUsed.toLocaleString() })}</span>
                   </div>
                   <p className="text-foreground whitespace-pre-wrap"><span className="font-semibold">{en("Candidate: ")}</span>{m.prompt}</p>
                   <pre className="whitespace-pre-wrap font-mono text-[11px] text-muted-foreground bg-muted/30 rounded-lg p-2 overflow-x-auto">{m.response}</pre>
@@ -576,7 +576,7 @@ export default function EvidencePackPage() {
                 <div>
                   <p className="text-foreground">{s.detail}</p>
                   <p className="text-[11px] text-muted-foreground mt-0.5">
-                    <span className="font-mono">{s.code}</span>{en(" · weight ")}{s.weight}
+                    <span className="font-mono">{s.code}</span>{" "}{en("· weight {weight}", { weight: s.weight })}
                   </p>
                 </div>
               </li>
@@ -629,7 +629,7 @@ export default function EvidencePackPage() {
               <li key={i} className="rounded-xl border border-border p-3 text-sm space-y-1">
                 <div className="flex flex-wrap items-center gap-2 text-xs">
                   <span className="font-bold text-foreground">{humanize(a.type)}</span>
-                  <span className="text-muted-foreground">{a.scope}{en(" · approved by ")}{a.decidedBy ?? "reviewer"} on {fmtDate(a.decidedAt)}</span>
+                  <span className="text-muted-foreground">{en("{scope} · approved by {value} on {date}", { scope: a.scope, value: a.decidedBy ?? "reviewer", date: fmtDate(a.decidedAt) })}</span>
                 </div>
                 <p className="text-foreground whitespace-pre-wrap">{a.details}</p>
               </li>
@@ -655,7 +655,7 @@ export default function EvidencePackPage() {
                 <p className="text-foreground whitespace-pre-wrap">{a.reason}</p>
                 {a.response && (
                   <p className="text-xs text-muted-foreground whitespace-pre-wrap">
-                    <span className="font-semibold text-foreground">{en("Response by ")}{a.resolverName ?? "reviewer"} ({fmtDate(a.resolvedAt)}): </span>
+                    <span className="font-semibold text-foreground">{en("Response by {value} ({date}):", { value: a.resolverName ?? "reviewer", date: fmtDate(a.resolvedAt) })}{" "}</span>
                     {a.response}
                   </p>
                 )}
@@ -724,9 +724,9 @@ export default function EvidencePackPage() {
             >
               <span className="flex items-center gap-2 font-semibold text-foreground">
                 <input type="radio" name="decision" value={d.value} checked={decision === d.value} onChange={() => setDecision(d.value)} />
-                {d.value}
+                {en(d.value)}
               </span>
-              <span className="block text-xs text-muted-foreground mt-1">{d.hint}</span>
+              <span className="block text-xs text-muted-foreground mt-1">{en(d.hint)}</span>
             </label>
           ))}
         </fieldset>
@@ -743,7 +743,7 @@ export default function EvidencePackPage() {
             className="mt-1 w-full rounded-xl bg-card border border-border p-3 text-sm text-foreground placeholder:text-muted-foreground"
           />
           <div className={`text-[11px] mt-1 ${rationaleLength >= MIN_RATIONALE ? "text-muted-foreground" : "text-amber-700 dark:text-amber-400"}`}>
-            {rationaleLength}/{MIN_RATIONALE}{en(" characters minimum")}
+            {en("{rationaleLength}/{mIN_RATIONALE} characters minimum", { rationaleLength, mIN_RATIONALE: MIN_RATIONALE })}
           </div>
         </div>
 
@@ -760,8 +760,7 @@ export default function EvidencePackPage() {
         )}
         {submitted && !submitError && (
           <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/5 p-3 text-sm text-emerald-700 dark:text-emerald-400 flex items-center gap-2">
-            <CheckCircle2 className="w-4 h-4" />{en(" Decision recorded: ")}{submitted}.
-          </div>
+            <CheckCircle2 className="w-4 h-4" />{" "}{en("Decision recorded: {submitted}.", { submitted })}</div>
         )}
 
         <button

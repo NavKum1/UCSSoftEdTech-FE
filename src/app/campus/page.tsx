@@ -227,7 +227,7 @@ export default function CampusStudentPage() {
           <GraduationCap className="w-4 h-4" />{en(" Campus placements")}
         </div>
         <h1 className="text-xl sm:text-2xl font-extrabold text-foreground mt-1">{en("My placement assessments")}</h1>
-        {data?.email && <p className="text-xs text-muted-foreground mt-1">{en("Signed in as ")}{data.email}</p>}
+        {data?.email && <p className="text-xs text-muted-foreground mt-1">{en("Signed in as {email}", { email: data.email })}</p>}
       </div>
 
       {/* Assignments */}
@@ -239,7 +239,7 @@ export default function CampusStudentPage() {
           <SignInRequired
             variant="inline"
             title={en("Sign in to see your assignments")}
-            message="Your placement cell assigns assessments to your account. Sign in with the email address they added for you."
+            message="Your placement office assigns assessments to your account. Sign in with the email address they added for you."
           />
         ) : loadError ? (
           <p className="text-sm text-rose-700 dark:text-rose-400 flex items-center gap-2"><AlertCircle className="w-4 h-4 shrink-0" /> {loadError}</p>
@@ -247,7 +247,7 @@ export default function CampusStudentPage() {
           <p className="text-sm text-muted-foreground flex items-center gap-2"><Loader2 className="w-4 h-4 animate-spin" />{en(" Loading...")}</p>
         ) : assignments.length === 0 ? (
           <p className="text-sm text-muted-foreground">
-            {data.message || "No assessments have been assigned to you yet."}{en(" If you expected one, ask your placement cell to check the email address they added for you.")}
+            {en("{value} If you expected one, ask your placement office to check the email address they added for you.", { value: data.message || en("No assessments have been assigned to you yet.") })}
           </p>
         ) : (
           <ul className="space-y-3">
@@ -262,17 +262,17 @@ export default function CampusStudentPage() {
                       {a.requiredLanguage ? ` · ${a.requiredLanguage}` : ""}
                     </p>
                   </div>
-                  <span className={`text-xs font-semibold px-2.5 py-1 rounded-full border ${STATUS_CLASS[a.status]}`}>{STATUS_LABEL[a.status]}</span>
+                  <span className={`text-xs font-semibold px-2.5 py-1 rounded-full border ${STATUS_CLASS[a.status]}`}>{en(STATUS_LABEL[a.status])}</span>
                 </div>
                 <p className="text-xs text-muted-foreground mt-2">
-                  {en("Opens ")}{formatDate(a.opensAt)} · <span className={a.isOverdue ? "text-rose-700 dark:text-rose-400 font-semibold" : ""}>{en("Due ")}{formatDate(a.dueAt)}</span>
+                  {en("Opens {date} ·", { date: formatDate(a.opensAt) })}{" "}<span className={a.isOverdue ? "text-rose-700 dark:text-rose-400 font-semibold" : ""}>{en("Due {date}", { date: formatDate(a.dueAt) })}</span>
                   {a.isOverdue && en(" (past due)")}
                 </p>
                 {(a.testsPercent != null || a.defenseScore != null) && (
                   <p className="text-xs text-foreground mt-1">
-                    {a.testsPercent != null && <>{en("Tests passed: ")}{Math.round(a.testsPercent)}%</>}
+                    {a.testsPercent != null && <>{en("Tests passed: {testsPercent}%", { testsPercent: Math.round(a.testsPercent) })}</>}
                     {a.testsPercent != null && a.defenseScore != null && " · "}
-                    {a.defenseScore != null && <>{en("Defense score: ")}{Math.round(a.defenseScore)}</>}
+                    {a.defenseScore != null && <>{en("Defense score: {defenseScore}", { defenseScore: Math.round(a.defenseScore) })}</>}
                   </p>
                 )}
                 {a.status !== "defended" && (
@@ -323,7 +323,7 @@ export default function CampusStudentPage() {
         </div>
         )}
         {data && !data.inCohort && (
-          <p className="text-[11px] text-muted-foreground">{en("You can save a preference once your placement cell adds you to a cohort.")}</p>
+          <p className="text-[11px] text-muted-foreground">{en("You can save a preference once your placement office adds you to a cohort.")}</p>
         )}
         {saveMessage && (
           <p className={`text-xs flex items-center gap-1.5 ${saveMessage.ok ? "text-emerald-700 dark:text-emerald-400" : "text-rose-700 dark:text-rose-400"}`}>
@@ -373,10 +373,10 @@ export default function CampusStudentPage() {
           <li>
             <strong>{en("Defend.")}</strong> <Mic className="inline w-3.5 h-3.5" />{en(" You then have a short voice conversation with an AI interviewer about the code you wrote: why you made your choices and what you would change. It is audio only. You need a microphone and a quiet place.")}
           </li>
-          <li><strong>{en("Results.")}</strong>{en(" You see your tests and defense scores here. Your placement cell sees your scores and a readiness band (Ready, Nearly ready, Needs practice) to plan practice and support.")}</li>
+          <li><strong>{en("Results.")}</strong>{en(" You see your tests and defense scores here. Your placement office sees your scores and a readiness band (Ready, Nearly ready, Needs practice) to plan practice and support.")}</li>
         </ol>
         <p className="text-xs text-muted-foreground">
-          {en("Only work you start after your placement cell assigns a sprint is shared with them. Integrity checks (for example, large pastes) flag work for a person to review; they never fail you automatically. Speak in the language you chose; mixing in English technical words is normal and fine.")}
+          {en("Only work you start after your placement office assigns a sprint is shared with them. Integrity checks (for example, large pastes) flag work for a person to review; they never fail you automatically. Speak in the language you chose; mixing in English technical words is normal and fine.")}
         </p>
       </section>
     </div>

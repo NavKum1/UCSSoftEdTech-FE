@@ -140,7 +140,7 @@ export default function ResumeMatcherPrepPage() {
                           : "bg-background/60 border-border text-muted-foreground hover:text-foreground hover:border-border"
                       }`}
                     >
-                      <div className="truncate pe-2">{preset.title}</div>
+                      <div className="truncate pe-2">{en(preset.title)}</div>
                       <ChevronRight className="w-3.5 h-3.5 shrink-0 opacity-60" />
                     </button>
                   ))}
@@ -251,7 +251,7 @@ export default function ResumeMatcherPrepPage() {
                   <div>
                     <div className="text-xs font-semibold text-emerald-700 dark:text-emerald-400 flex items-center gap-1.5 mb-2">
                       <CheckCircle2 className="w-3.5 h-3.5" />
-                      <span>{en("Verified Resume Competencies (")}{analysisResult.matchedSkills.length})</span>
+                      <span>{en("Verified Resume Competencies ({length})", { length: analysisResult.matchedSkills.length })}</span>
                     </div>
                     <div className="flex flex-wrap gap-1.5">
                       {analysisResult.matchedSkills.map((s: string, idx: number) => (
@@ -266,7 +266,7 @@ export default function ResumeMatcherPrepPage() {
                   <div>
                     <div className="text-xs font-semibold text-amber-700 dark:text-amber-400 flex items-center gap-1.5 mb-2">
                       <Target className="w-3.5 h-3.5" />
-                      <span>{en("Target Gap Skills to Defend (")}{analysisResult.missingSkills.length})</span>
+                      <span>{en("Target Gap Skills to Defend ({length})", { length: analysisResult.missingSkills.length })}</span>
                     </div>
                     <div className="flex flex-wrap gap-1.5">
                       {analysisResult.missingSkills.map((s: string, idx: number) => (
@@ -303,7 +303,7 @@ export default function ResumeMatcherPrepPage() {
                         {en("Synthesized Micro-Internship")}
                       </span>
                       <span className="text-xs font-mono text-muted-foreground uppercase">
-                        {en("Language: ")}{analysisResult.generatedSprint.requiredLanguage}
+                        {en("Language: {requiredLanguage}", { requiredLanguage: analysisResult.generatedSprint.requiredLanguage })}
                       </span>
                     </div>
 

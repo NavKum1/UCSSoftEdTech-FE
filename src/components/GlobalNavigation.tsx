@@ -75,7 +75,7 @@ const GROUPS: { title: string; items: NavItem[] }[] = [
 
 const HIRING: NavItem[] = [
   { name: "Recruiter portal", href: "/recruiter/dashboard", desc: "Candidates, evidence packs and work trials" },
-  { name: "Placement cell", href: "/campus/admin", desc: "Campus placement for colleges" },
+  { name: "Placement office", href: "/campus/admin", desc: "Campus placement for colleges" },
 ];
 
 const ADMINISTRATION: NavItem[] = [
@@ -173,7 +173,7 @@ export default function GlobalNavigation() {
 
   const account = dev ? (
     <span className="inline-flex items-center gap-2 text-xs">
-      <span className="rounded-full border border-amber-600/30 bg-amber-500/10 px-2 py-1 font-medium text-amber-800 dark:text-amber-300">{en("Dev: ")}{dev.label}</span>
+      <span className="rounded-full border border-amber-600/30 bg-amber-500/10 px-2 py-1 font-medium text-amber-800 dark:text-amber-300">{en("Dev: {label}", { label: dev.label })}</span>
       <button
         type="button"
         onClick={() => {
@@ -225,7 +225,7 @@ export default function GlobalNavigation() {
                 title={`${minutes} voice minutes left`}
                 className="hidden items-center gap-1 rounded-full border border-border px-2.5 py-1 text-xs text-muted-foreground hover:text-foreground md:inline-flex"
               >
-                <Mic aria-hidden="true" className="h-3.5 w-3.5" /> {minutes}{en(" min left")}
+                <Mic aria-hidden="true" className="h-3.5 w-3.5" /> {" "}{en("{minutes} min left", { minutes })}
               </Link>
             )}
             <ProductRegionSwitcher />
@@ -278,7 +278,7 @@ export default function GlobalNavigation() {
                 <div id="more-menu" className="absolute start-0 top-full z-100 mt-1 grid w-[min(92vw,720px)] gap-4 rounded-xl border border-border bg-card p-4 shadow-xl sm:grid-cols-3">
                   {groups.map((g) => (
                     <div key={g.title}>
-                      <p className="px-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">{g.title}</p>
+                      <p className="px-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">{en(g.title)}</p>
                       <ul className="mt-1 space-y-0.5">
                         {g.items.map((i) => (
                           <li key={i.href}>
@@ -319,7 +319,7 @@ export default function GlobalNavigation() {
             </ul>
             {groups.map((g) => (
               <div key={g.title} className="border-t border-border pt-3">
-                <p className="px-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">{g.title}</p>
+                <p className="px-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">{en(g.title)}</p>
                 <ul className="mt-1">
                   {g.items.map((i) => (
                     <li key={i.href}>

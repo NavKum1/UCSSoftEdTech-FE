@@ -234,11 +234,10 @@ export default function ChallengeSynthesizerPage() {
             <div className="bg-card border border-border rounded-xl p-5 shadow-lg">
               <div className="flex items-center justify-between pb-3 border-b border-border">
                 <span className="text-xs uppercase font-bold tracking-wider text-indigo-700 dark:text-indigo-400">
-                  {activeChallenge.difficultyRating}{en(" Engineering Challenge")}
+                  {en("{difficultyRating} Engineering Challenge", { difficultyRating: activeChallenge.difficultyRating })}
                 </span>
                 <span className="text-[11px] font-mono text-muted-foreground bg-background px-2 py-0.5 rounded border border-border">
-                  {en("Entropy: ")}{activeChallenge.antiCheatEntropyHash.slice(0, 16)}...
-                </span>
+                  {en("Entropy: {value}...", { value: activeChallenge.antiCheatEntropyHash.slice(0, 16) })}</span>
               </div>
 
               <h2 className="text-lg font-bold text-foreground mt-3">{activeChallenge.title}</h2>
@@ -248,10 +247,10 @@ export default function ChallengeSynthesizerPage() {
 
               <div className="mt-4 flex flex-wrap items-center gap-2">
                 <span className="px-2.5 py-1 text-xs font-semibold bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20 rounded">
-                  {en("Targeted Weakness: ")}{activeChallenge.targetedWeakness}
+                  {en("Targeted Weakness: {targetedWeakness}", { targetedWeakness: activeChallenge.targetedWeakness })}
                 </span>
                 <span className="px-2.5 py-1 text-xs font-semibold bg-blue-500/10 text-blue-700 dark:text-blue-400 border border-blue-500/20 rounded">
-                  {en("Language: ")}{activeChallenge.language.toUpperCase()}
+                  {en("Language: {value}", { value: activeChallenge.language.toUpperCase() })}
                 </span>
               </div>
             </div>
@@ -272,8 +271,7 @@ export default function ChallengeSynthesizerPage() {
             <div className="bg-card border border-border rounded-xl p-5 shadow-lg flex flex-col h-[520px]">
               <div className="flex items-center justify-between pb-3 border-b border-border mb-3">
                 <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                  {en("Candidate Implementation (")}{activeChallenge.language})
-                </span>
+                  {en("Candidate Implementation ({language})", { language: activeChallenge.language })}</span>
                 <button
                   onClick={handleEvaluate}
                   disabled={evaluating}
@@ -314,7 +312,7 @@ export default function ChallengeSynthesizerPage() {
                     </span>
                   </div>
                   <span className="text-xs text-muted-foreground font-mono">
-                    {evaluation.testsPassed} / {evaluation.totalTests}{en(" Passed (")}{evaluation.performanceMs}{en("ms)")}
+                    {en("{testsPassed} / {totalTests} Passed ({performanceMs}ms)", { testsPassed: evaluation.testsPassed, totalTests: evaluation.totalTests, performanceMs: evaluation.performanceMs })}
                   </span>
                 </div>
 

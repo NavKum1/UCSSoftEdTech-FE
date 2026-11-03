@@ -11,7 +11,8 @@ import React from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
-import { AppUserButton } from "@/lib/appAuth";
+import { AppUserButton, useAppAuth } from "@/lib/appAuth";
+import { platformHome } from "@/lib/roleHome";
 import { endDevSession, useDevSession } from "@/lib/devSession";
 import EnglishPicker from "@/components/EnglishPicker";
 import { useEn } from "@/lib/english/EnglishProvider";
@@ -47,6 +48,9 @@ export default function PortalShell({
   const pathname = usePathname();
   const router = useRouter();
   const dev = useDevSession();
+  // "Main app" opens the member dashboard, which sends staff back to their own area: not shown in that area
+  const { roles } = useAppAuth();
+  const ownArea = platformHome(roles) === home || (home === "/institute/dashboard" && roles.some((r) => r.toLowerCase() === "counselor"));
   // The most specific section that matches the current page
   const current = [...sections].sort((a, b) => b.href.length - a.href.length).find((s) => pathname === s.href || pathname?.startsWith(s.href + "/"));
 
@@ -65,13 +69,15 @@ export default function PortalShell({
           </Link>
           <div className="flex shrink-0 items-center gap-3">
             <EnglishPicker className="hidden md:inline-flex" />
-            <Link href="/" className="hidden items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground sm:inline-flex">
-              <ArrowLeft aria-hidden="true" className="h-3.5 w-3.5" />
-              {en("Main app")}
-            </Link>
+            {!ownArea && (
+              <Link href="/" className="hidden items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground sm:inline-flex">
+                <ArrowLeft aria-hidden="true" className="h-3.5 w-3.5" />
+                {en("Main app")}
+              </Link>
+            )}
             {dev ? (
               <span className="inline-flex items-center gap-2 text-xs">
-                <span className="rounded-full border border-amber-600/30 bg-amber-500/10 px-2 py-1 font-medium text-amber-800 dark:text-amber-300">{en("Dev: ")}{dev.label}</span>
+                <span className="rounded-full border border-amber-600/30 bg-amber-500/10 px-2 py-1 font-medium text-amber-800 dark:text-amber-300">{en("Dev: {label}", { label: dev.label })}</span>
                 <button
                   type="button"
                   onClick={() => {

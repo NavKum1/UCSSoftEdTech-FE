@@ -189,8 +189,7 @@ export default function LeadDrawer({
               </div>
               {lead && (
                 <p className="mt-0.5 text-xs text-muted-foreground">
-                  {lead.requestType === "guidance" ? en("Career guidance request") : (lead.course ?? "Course no longer listed")} · {lead.source ?? "Edulexa"}{en(" · received")}{" "}
-                  {relative(lead.createdAt)}
+                  {en("{value} · {value2} · received {createdAt}", { value: lead.requestType === "guidance" ? en("Career guidance request") : (lead.course ?? en("Course no longer listed")), value2: lead.source ?? en("Edulexa"), createdAt: relative(lead.createdAt) })}
                 </p>
               )}
             </div>
@@ -208,7 +207,7 @@ export default function LeadDrawer({
               {lead.spam && (
                 <div className="mt-2 flex flex-wrap items-center justify-between gap-2 rounded-lg border border-zinc-500/30 bg-zinc-500/10 px-3 py-2 text-xs">
                   <span>
-                    <span className="font-medium">{en("Possible spam.")}</span> {lead.spamReasons ? `Why: ${lead.spamReasons}.` : ""}{en(" It's kept out of your leads until you say it's real.")}
+                    <span className="font-medium">{en("Possible spam.")}</span> {" "}{en("{value} It's kept out of your leads until you say it's real.", { value: lead.spamReasons ? `Why: ${lead.spamReasons}.` : "" })}
                   </span>
                   <button type="button" disabled={busy} onClick={() => update({ spam: false }, "Moved to your leads.")} className="rounded-lg bg-cyan-700 px-3 py-1.5 font-medium text-white hover:bg-cyan-800">
                     {en("Not spam")}
@@ -222,14 +221,13 @@ export default function LeadDrawer({
               )}
               {lead.incomplete && (
                 <p className="mt-2 rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-xs">
-                  <span className="font-medium">{en("Incomplete.")}</span>{en(" They started your website form and haven't sent it yet; below is what they'd filled in so far.")}
-                  {lead.unconfirmed ? en(" Their email isn't confirmed yet.") : ""}{en(" It stays out of your leads until they finish, and is removed after the form's set number of days unless someone on your team works on it.")}
+                  <span className="font-medium">{en("Incomplete.")}</span>{" "}{en("They started your website form and haven't sent it yet; below is what they'd filled in so far.{value} It stays out of your leads until they finish, and is removed after the form's set number of days unless someone on your team works on it.", { value: lead.unconfirmed ? en(" Their email isn't confirmed yet.") : "" })}
                 </p>
               )}
               {lead.duplicates.length > 0 && (
                 <p className="mt-2 flex items-center gap-1.5 text-xs text-amber-800 dark:text-amber-300">
                   <AlertTriangle aria-hidden="true" className="h-3.5 w-3.5" />
-                  {en("This person sent ")}{lead.duplicates.length} other {lead.duplicates.length === 1 ? "inquiry" : "inquiries"}{en(" with the same email. Check before contacting twice.")}
+                  {en("This person sent {length} other {value} with the same email. Check before contacting twice.", { length: lead.duplicates.length, value: lead.duplicates.length === 1 ? "inquiry" : "inquiries" })}
                 </p>
               )}
               {(() => {
@@ -237,7 +235,7 @@ export default function LeadDrawer({
                 const lastOut = lead.activities.find((a) => ["Email", "Sms", "WhatsApp", "Call", "Meeting"].includes(a.kind));
                 return lastIn && (!lastOut || new Date(lastIn.createdAt) > new Date(lastOut.createdAt)) ? (
                   <p className="mt-2 rounded-lg bg-cyan-600/10 px-3 py-2 text-xs font-medium text-cyan-900 dark:text-cyan-200">
-                    {lead.name?.split(" ")[0] || "They"} replied {relative(lastIn.createdAt)}{en(" and is waiting for your answer. Read it below.")}
+                    {en("{value} replied {createdAt} and is waiting for your answer. Read it below.", { value: lead.name?.split(" ")[0] || en("They"), createdAt: relative(lastIn.createdAt) })}
                   </p>
                 ) : null;
               })()}
@@ -268,7 +266,7 @@ export default function LeadDrawer({
                       }`}
                     >
                       <Icon aria-hidden="true" className="h-3.5 w-3.5" />
-                      {label}
+                      {en(label)}
                     </button>
                   );
                 })}
@@ -375,7 +373,7 @@ export default function LeadDrawer({
                       </button>
                     ))}
                   </div>
-                  {lead.stage === "Lost" && lead.lostReason && <p className="mt-1 text-xs text-muted-foreground">{en("Lost: ")}{lead.lostReason}</p>}
+                  {lead.stage === "Lost" && lead.lostReason && <p className="mt-1 text-xs text-muted-foreground">{en("Lost: {lostReason}", { lostReason: lead.lostReason })}</p>}
                   {losing && <LostForm busy={busy} onCancel={() => setLosing(false)} onSave={async (reason) => (await update({ stage: "Lost", lostReason: reason }, "Marked as lost.")) && setLosing(false)} />}
                 </div>
 
@@ -431,7 +429,7 @@ export default function LeadDrawer({
                       <span className="min-w-0">
                         <span className="font-medium">{x.subject}</span>{" "}
                         <span className="text-xs text-muted-foreground">
-                          · {new Date(x.sendAt).toLocaleString([], { dateStyle: "medium", timeStyle: "short" })}{en(" · by ")}{x.createdByName}
+                          {en("· {number} · by {createdByName}", { number: new Date(x.sendAt).toLocaleString([], { dateStyle: "medium", timeStyle: "short" }), createdByName: x.createdByName })}
                         </span>
                       </span>
                       <button type="button" disabled={busy} onClick={() => act(`/leads/${leadId}/scheduled/${x.id}`, undefined, en("Scheduled email cancelled."), "DELETE")} className="rounded-lg border border-border bg-card px-2.5 py-1 text-xs hover:bg-muted">
@@ -500,7 +498,7 @@ export default function LeadDrawer({
 function Contact({ label, value, href }: { label: string; value: string | null; href?: string }) {
   const en = useEn();
   const [copied, setCopied] = useState(false);
-  if (!value) return <span className="text-muted-foreground">{en("No ")}{label.toLowerCase()}</span>;
+  if (!value) return <span className="text-muted-foreground">{en("No {value}", { value: label.toLowerCase() })}</span>;
   return (
     <span className="inline-flex items-center gap-1.5">
       <a href={href} className="text-cyan-700 underline-offset-2 hover:underline dark:text-cyan-400">
@@ -581,7 +579,7 @@ function OwnerField({
       <label htmlFor="lead-owner">{en("Owner")}</label>
       <select id="lead-owner" className={`${input} mt-1`} value={lead.ownerMemberId ?? ""} disabled={busy || saving} onChange={(e) => pick(e.target.value)}>
         <option value="">{en("Unassigned")}</option>
-        {me && <option value={me.id}>{en("Me (")}{me.name})</option>}
+        {me && <option value={me.id}>{en("Me ({name})", { name: me.name })}</option>}
         {team
           .filter((m) => m.id !== me?.id)
           .map((m) => (
@@ -627,7 +625,7 @@ function LostForm({ busy, onCancel, onSave }: { busy: boolean; onCancel: () => v
       <div className="mt-2 flex flex-wrap gap-1.5">
         {LOST_REASONS.map((r) => (
           <button key={r} type="button" onClick={() => setReason(r)} aria-pressed={reason === r} className={`rounded-full border px-2.5 py-1 text-xs ${reason === r ? "border-cyan-700 bg-cyan-700 text-white" : "border-border bg-card hover:bg-muted"}`}>
-            {r}
+            {en(r)}
           </button>
         ))}
       </div>
@@ -924,8 +922,7 @@ function Composer({
           />
           {mode === "Email" && (
             <p className="text-xs text-muted-foreground">
-              {"{name}"}, {"{course}"}, {"{institute}"} and {"{counsellor}"}{en(" are filled in for you.")}{" "}
-              {lead.channels.replyByEmail ? en("Their reply lands on this timeline.") : en("Replies go to your institute's email.")}{en(" Every email has a link to stop further contact.")}
+              {en("{name}, {course}, {institute} and {counsellor} are filled in for you. {value} Every email has a link to stop further contact.", { value: lead.channels.replyByEmail ? en("Their reply lands on this timeline.") : en("Replies go to your institute's email.") })}
             </p>
           )}
           {mode === "Sms" && (

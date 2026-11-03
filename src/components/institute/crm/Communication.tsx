@@ -152,7 +152,7 @@ export default function Communication({
         </h3>
         {pinned.length === 0 ? (
           <p className="mt-1 text-xs text-muted-foreground">
-            {en("Pin what every counsellor should know before talking to ")}{personName}{en(" (budget, preferred time, what they decided). Use the pin on any note, call or message.")}
+            {en("Pin what every counsellor should know before talking to {personName} (budget, preferred time, what they decided). Use the pin on any note, call or message.", { personName })}
           </p>
         ) : (
           <ul className="mt-1.5 space-y-1.5 text-sm">
@@ -180,7 +180,7 @@ export default function Communication({
           const n = items.filter(f.match).length;
           return (
             <button key={f.key} type="button" aria-pressed={filter === f.key} onClick={() => setFilter(f.key)} className={`rounded-full border px-2.5 py-1 text-xs ${filter === f.key ? "border-cyan-700 bg-cyan-700 text-white" : "border-border hover:bg-muted"}`}>
-              {f.label} <span className="tabular-nums opacity-75">{n}</span>
+              {en(f.label)} <span className="tabular-nums opacity-75">{n}</span>
             </button>
           );
         })}
@@ -191,7 +191,7 @@ export default function Communication({
         </label>
       </div>
 
-      {items.length === 0 && <p className="text-sm text-muted-foreground">{en("No communication yet. Use the buttons above to call, email or message ")}{personName}{en("; everything is kept here.")}</p>}
+      {items.length === 0 && <p className="text-sm text-muted-foreground">{en("No communication yet. Use the buttons above to call, email or message {personName}; everything is kept here.", { personName })}</p>}
       {items.length > 0 && shown.length === 0 && <p className="text-sm text-muted-foreground">{en("Nothing matches.")}</p>}
 
       {groups.map(([d, list]) => (
@@ -317,7 +317,7 @@ function CrmFiles({ files }: { files: { id: string; name: string; size: number }
     <div className="mt-2 flex flex-wrap gap-1.5">
       {files.map((f) => (
         <button key={f.id} type="button" onClick={() => open(f)} className="inline-flex items-center gap-1 rounded-lg border border-border bg-background px-2 py-1 text-xs hover:bg-muted">
-          <Paperclip aria-hidden="true" className="h-3 w-3" /> {f.name} <span className="text-muted-foreground">({Math.ceil(f.size / 1024)}{en(" KB)")}</span>
+          <Paperclip aria-hidden="true" className="h-3 w-3" /> {f.name} <span className="text-muted-foreground">{en("({value} KB)", { value: Math.ceil(f.size / 1024) })}</span>
         </button>
       ))}
     </div>
@@ -333,7 +333,7 @@ function Item({ a, personName, busy, onPin, onReply }: { a: Activity; personName
   if (CHANGES.includes(a.kind)) {
     return (
       <div className="pt-2 text-sm">
-        <span className="font-medium">{CHANGE_LABEL[a.kind] ?? a.kind}</span>{" "}
+        <span className="font-medium">{en(CHANGE_LABEL[a.kind] ?? a.kind)}</span>{" "}
         {a.kind === "Stage" ? <StageChange body={a.body} /> : <span className="text-muted-foreground">· {a.body}</span>}
         <span className="block text-xs text-muted-foreground">by {a.actorName}</span>
       </div>
@@ -394,7 +394,7 @@ function Item({ a, personName, busy, onPin, onReply }: { a: Activity; personName
               : en("Not opened yet")}
           </p>
         )}
-        {failed && <p className="mt-1 text-xs font-medium text-red-700 dark:text-red-400">{en("Not delivered")}{typeof meta.error === "string" ? ` (${meta.error})` : ""}{en(". Try again or use another channel.")}</p>}
+        {failed && <p className="mt-1 text-xs font-medium text-red-700 dark:text-red-400">{en("Not delivered{value}. Try again or use another channel.", { value: typeof meta.error === "string" ? ` (${meta.error})` : "" })}</p>}
       </div>
     );
   }
@@ -406,7 +406,7 @@ function Item({ a, personName, busy, onPin, onReply }: { a: Activity; personName
         {head(a.actorName, "called")}
         <p className="mt-1.5">
           <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${outcome === "Reached" ? "bg-emerald-500/10 text-emerald-800 dark:text-emerald-300" : "bg-muted text-muted-foreground"}`}>
-            {CALL_OUTCOMES[outcome] ?? outcome}
+            {en(CALL_OUTCOMES[outcome] ?? outcome)}
           </span>
         </p>
         {a.body && (

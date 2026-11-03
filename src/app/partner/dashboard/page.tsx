@@ -154,7 +154,7 @@ export default function PartnerDashboardPage() {
       </section>
       {k.totalLeadsReceived > 0 && (
         <p className="text-sm text-muted-foreground">
-          {k.conversionRatePercent}{en("% of inquiries have enrolled so far (as you marked them below).")}
+          {en("{conversionRatePercent}% of inquiries have enrolled so far (as you marked them below).", { conversionRatePercent: k.conversionRatePercent })}
         </p>
       )}
 
@@ -191,7 +191,7 @@ export default function PartnerDashboardPage() {
               <input type="url" value={webhookUrl} onChange={(e) => setWebhookUrl(e.target.value)} placeholder="https://crm.example.edu/api/leads" className={input} />
             </label>
             <label className="block text-sm">
-              <span className="font-medium">{en("API key header ")}{data.apiKeyConfigured ? en("(set; enter a new one to replace it)") : en("(optional)")}</span>
+              <span className="font-medium">{en("API key header {value}", { value: data.apiKeyConfigured ? en("(set; enter a new one to replace it)") : en("(optional)") })}</span>
               <input type="password" value={apiKey} onChange={(e) => setApiKey(e.target.value)} autoComplete="off" className={input} />
             </label>
             <div className="flex gap-2">

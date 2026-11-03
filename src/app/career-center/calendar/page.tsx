@@ -4,6 +4,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { useApi } from "@/lib/appAuth";
 import { useCareerShell } from "@/components/career/CareerShell";
 import { Badge, Button, Card, ErrorBanner, Loading, PageHeader, SuccessBanner, formatDate, useLoad, useCareerT } from "@/components/career/ui";
+import { useEn } from "@/lib/english/EnglishProvider";
 
 interface Connection {
   id: string;
@@ -30,6 +31,7 @@ interface Status {
 const PROVIDER_LABELS = { Microsoft: "Microsoft 365 / Outlook", Google: "Google Calendar" } as const;
 
 export default function CalendarPage() {
+  const en = useEn();
   const t = useCareerT("careerCenterCalendar");
   const api = useApi();
   const { schoolId } = useCareerShell();
@@ -134,7 +136,7 @@ export default function CalendarPage() {
           {c ? (
             <div className="space-y-3 text-sm" role="status" aria-live="polite">
               <p className="flex flex-wrap items-center gap-2">
-                <span className="font-medium">{PROVIDER_LABELS[c.provider]}</span>
+                <span className="font-medium">{en(PROVIDER_LABELS[c.provider])}</span>
                 {c.accountEmail && <span className="text-muted-foreground">{c.accountEmail}</span>}
                 <Badge tone={c.status === "Connected" ? "good" : "bad"}>{c.status === "Connected" ? t("connected") : t("needsReconnecting")}</Badge>
               </p>

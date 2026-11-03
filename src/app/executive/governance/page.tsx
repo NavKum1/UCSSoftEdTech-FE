@@ -240,7 +240,7 @@ export default function MultiCampusGovernancePage() {
               {(rollup?.totalStudentsEnrolled || 0).toLocaleString()}
             </div>
             <div className="text-[11px] text-muted-foreground mt-1">
-              {(rollup?.totalFacultyMembers || 0).toLocaleString()}{en(" Faculty Members")}
+              {en("{number} Faculty Members", { number: (rollup?.totalFacultyMembers || 0).toLocaleString() })}
             </div>
           </div>
 
@@ -258,7 +258,7 @@ export default function MultiCampusGovernancePage() {
               {(rollup?.totalGradeCertifications || 0) + (rollup?.totalAccreditationClearances || 0)}
             </div>
             <div className="text-[11px] text-muted-foreground mt-1">
-              {rollup?.totalProctoringOverrides || 0}{en(" Proctoring Overrides")}
+              {en("{value} Proctoring Overrides", { value: rollup?.totalProctoringOverrides || 0 })}
             </div>
           </div>
         </div>
@@ -272,7 +272,7 @@ export default function MultiCampusGovernancePage() {
                 {en("Institutional Campuses")}
               </h2>
               <span className="text-xs px-2 py-0.5 rounded bg-muted text-muted-foreground font-mono">
-                {rollup?.campuses?.length || 0}{en(" Registered")}
+                {en("{value} Registered", { value: rollup?.campuses?.length || 0 })}
               </span>
             </div>
 
@@ -297,13 +297,13 @@ export default function MultiCampusGovernancePage() {
                     </div>
 
                     <div className="mt-2 text-xs text-muted-foreground flex items-center justify-between">
-                      <span>{en("Dean: ")}{c.deanEmail}</span>
+                      <span>{en("Dean: {deanEmail}", { deanEmail: c.deanEmail })}</span>
                       <span className="font-mono text-emerald-700 dark:text-emerald-400 font-bold">{c.complianceScore}%</span>
                     </div>
 
                     <div className="mt-2 text-[11px] text-muted-foreground flex items-center justify-between font-mono">
-                      <span>{en("Students: ")}{c.studentCount.toLocaleString()}</span>
-                      <span>{en("Tier: ")}{c.accreditationTier}</span>
+                      <span>{en("Students: {number}", { number: c.studentCount.toLocaleString() })}</span>
+                      <span>{en("Tier: {accreditationTier}", { accreditationTier: c.accreditationTier })}</span>
                     </div>
                   </div>
                 );
@@ -356,14 +356,14 @@ export default function MultiCampusGovernancePage() {
                 <div className="flex items-center space-x-2">
                   <span className="text-base">{verification.isTamperFree ? "✅" : "❌"}</span>
                   <div>
-                    <span className="font-bold">{en("STATUS: ")}{verification.status}</span>
+                    <span className="font-bold">{en("STATUS: {status}", { status: verification.status })}</span>
                     <span className="ms-2 text-muted-foreground">
-                      ({verification.totalBlocksVerified}{en(" blocks verified across chain)")}
+                      {en("({totalBlocksVerified} blocks verified across chain)", { totalBlocksVerified: verification.totalBlocksVerified })}
                     </span>
                   </div>
                 </div>
                 <div className="text-[10px] text-muted-foreground">
-                  {en("Verified: ")}{new Date(verification.verifiedAt).toLocaleTimeString()}
+                  {en("Verified: {date}", { date: new Date(verification.verifiedAt).toLocaleTimeString() })}
                 </div>
               </div>
             )}

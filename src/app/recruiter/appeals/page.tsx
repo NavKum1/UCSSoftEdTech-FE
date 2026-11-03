@@ -133,7 +133,7 @@ export default function RecruiterAppealsPage() {
               filter === f ? "bg-indigo-600 text-white" : "text-muted-foreground hover:text-foreground hover:bg-muted"
             }`}
           >
-            {f}
+            {en(f)}
           </button>
         ))}
       </div>
@@ -158,7 +158,7 @@ export default function RecruiterAppealsPage() {
       ) : rows.length === 0 ? (
         <div className="glass-panel rounded-2xl p-10 border border-border text-center space-y-2">
           <Inbox className="w-8 h-8 mx-auto text-muted-foreground" />
-          <p className="text-sm text-muted-foreground">{en("No ")}{filter === "All" ? "" : filter.toLowerCase() + " "}appeals.</p>
+          <p className="text-sm text-muted-foreground">{en("No {value}appeals.", { value: filter === "All" ? "" : filter.toLowerCase() + " " })}</p>
         </div>
       ) : (
         <ul className="space-y-3">
@@ -190,13 +190,12 @@ export default function RecruiterAppealsPage() {
               </div>
               <p className="text-sm text-foreground whitespace-pre-wrap">{a.reason}</p>
               <p className="text-xs text-muted-foreground">
-                {en("Latest decision:")}{" "}
-                {a.latestDecision ? `${a.latestDecision.decision} by ${a.latestDecision.reviewerName} on ${fmtDate(a.latestDecision.createdAt)}` : en("none yet")}
+                {en("Latest decision: {value}", { value: a.latestDecision ? `${a.latestDecision.decision} by ${a.latestDecision.reviewerName} on ${fmtDate(a.latestDecision.createdAt)}` : en("none yet") })}
               </p>
               {a.cannotResolveReason && <p className="text-xs text-amber-700 dark:text-amber-400">{a.cannotResolveReason}</p>}
               {a.response && (
                 <div className="rounded-lg bg-muted/40 border border-border p-2 text-xs">
-                  <span className="font-semibold text-foreground">{en("Response by ")}{a.resolverName ?? "reviewer"} ({fmtDate(a.resolvedAt)}): </span>
+                  <span className="font-semibold text-foreground">{en("Response by {value} ({date}):", { value: a.resolverName ?? "reviewer", date: fmtDate(a.resolvedAt) })}{" "}</span>
                   <span className="text-foreground whitespace-pre-wrap">{a.response}</span>
                 </div>
               )}
@@ -209,7 +208,7 @@ export default function RecruiterAppealsPage() {
         <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="resolve-title">
           <form onSubmit={resolve} className="glass-panel bg-card rounded-2xl p-5 border border-border w-full max-w-lg space-y-4">
             <div className="flex items-center justify-between">
-              <h2 id="resolve-title" className="text-base font-bold text-foreground">{en("Resolve appeal: ")}{resolving.candidateName}</h2>
+              <h2 id="resolve-title" className="text-base font-bold text-foreground">{en("Resolve appeal: {candidateName}", { candidateName: resolving.candidateName })}</h2>
               <button type="button" onClick={() => setResolving(null)} aria-label={en("Close")} className="text-muted-foreground hover:text-foreground cursor-pointer">
                 <X className="w-4 h-4" />
               </button>
@@ -227,9 +226,9 @@ export default function RecruiterAppealsPage() {
                 >
                   <span className="flex items-center gap-2 font-semibold text-foreground">
                     <input type="radio" name="outcome" checked={outcome === o.value} onChange={() => setOutcome(o.value)} />
-                    {o.label}
+                    {en(o.label)}
                   </span>
-                  <span className="block text-xs text-muted-foreground mt-1">{o.hint}</span>
+                  <span className="block text-xs text-muted-foreground mt-1">{en(o.hint)}</span>
                 </label>
               ))}
             </fieldset>
@@ -244,7 +243,7 @@ export default function RecruiterAppealsPage() {
                 className="mt-1 w-full rounded-xl bg-background border border-border p-3 text-sm text-foreground"
               />
               <div className={`text-[11px] mt-1 ${responseLength >= MIN_RESPONSE ? "text-muted-foreground" : "text-amber-700 dark:text-amber-400"}`}>
-                {responseLength}/{MIN_RESPONSE}{en(" characters minimum")}
+                {en("{responseLength}/{mIN_RESPONSE} characters minimum", { responseLength, mIN_RESPONSE: MIN_RESPONSE })}
               </div>
             </div>
             {resolveError && (

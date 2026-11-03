@@ -86,8 +86,7 @@ export default function PricingPage() {
             {en("Voice defenses are billed by the minute of conversation. Every plan includes a monthly allowance, and you can add top-up minutes at any time.")}
           </p>
           <p className="inline-flex items-center gap-1.5 text-xs font-medium text-muted-foreground bg-muted/60 border border-border rounded-full px-3 py-1">
-            <Clock className="w-3.5 h-3.5" />{en(" Each voice session is capped at ")}{plans.maxSessionMinutes} minutes
-          </p>
+            <Clock className="w-3.5 h-3.5" />{" "}{en("Each voice session is capped at {maxSessionMinutes} minutes", { maxSessionMinutes: plans.maxSessionMinutes })}</p>
         </div>
 
         {error && (
@@ -122,11 +121,11 @@ export default function PricingPage() {
                 <ul className="space-y-2 text-sm text-muted-foreground flex-1">
                   <li className="flex items-start gap-2">
                     <Check className="w-4 h-4 mt-0.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
-                    {plan.monthlyVoiceMinutes}{en(" voice-defense minutes per month")}
+                    {en("{monthlyVoiceMinutes} voice-defense minutes per month", { monthlyVoiceMinutes: plan.monthlyVoiceMinutes })}
                   </li>
                   <li className="flex items-start gap-2">
                     <Check className="w-4 h-4 mt-0.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
-                    {en("Up to ")}{plans.maxSessionMinutes}{en(" minutes per session")}
+                    {en("Up to {maxSessionMinutes} minutes per session", { maxSessionMinutes: plans.maxSessionMinutes })}
                   </li>
                   <li className="flex items-start gap-2">
                     <Check className="w-4 h-4 mt-0.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
@@ -183,7 +182,7 @@ export default function PricingPage() {
           <div className="space-y-1">
             <h2 className="text-base font-bold text-foreground flex items-center gap-2">
               <PlusCircle className="w-4 h-4 text-indigo-700 dark:text-indigo-400" />
-              {en("Top-up: ")}{plans.topUp.minutes}{en(" minutes for ")}{formatPrice(plans.topUp.priceCents, plans.currency)}
+              {en("Top-up: {minutes} minutes for {amount}", { minutes: plans.topUp.minutes, amount: formatPrice(plans.topUp.priceCents, plans.currency) })}
             </h2>
             <p className="text-xs text-muted-foreground">
               {en("One-time purchase, available on any plan.")}
@@ -210,7 +209,7 @@ export default function PricingPage() {
         {usage && (
           <p className="text-center text-xs text-muted-foreground">
             {en("You have ")}{usage.remainingMinutes}{en(" minutes remaining")}
-            {usage.usageResetsAt && <>{en(" · monthly minutes reset ")}{new Date(usage.usageResetsAt).toLocaleDateString()}</>}.
+            {usage.usageResetsAt && <>{" "}{en("· monthly minutes reset {date}", { date: new Date(usage.usageResetsAt).toLocaleDateString() })}</>}.
           </p>
         )}
       </div>

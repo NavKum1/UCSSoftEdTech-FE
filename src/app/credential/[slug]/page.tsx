@@ -200,7 +200,7 @@ export default function CredentialBadgePage() {
         <div className="pt-4 border-t border-border flex items-center justify-between text-xs text-muted-foreground">
           <div className="flex items-center space-x-1.5">
             <Calendar className="w-4 h-4 text-muted-foreground" />
-            <span>{en("Issued: ")}{issued ? issued.toLocaleDateString(undefined, { year: "numeric", month: "long", day: "numeric", timeZone: "UTC" }) : "—"}</span>
+            <span>{en("Issued: {value}", { value: issued ? issued.toLocaleDateString(undefined, { year: "numeric", month: "long", day: "numeric", timeZone: "UTC" }) : "—" })}</span>
           </div>
 
           <button

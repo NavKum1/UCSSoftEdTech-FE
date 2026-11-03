@@ -491,9 +491,9 @@ export default function VapiInterviewRoom({
           {(remainingMinutes !== null || sessionCapSeconds !== null) && (
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium border border-border bg-muted text-muted-foreground">
               <Clock className="w-3.5 h-3.5" />
-              {remainingMinutes !== null && <span>{remainingMinutes}{en(" min left")}</span>}
+              {remainingMinutes !== null && <span>{en("{remainingMinutes} min left", { remainingMinutes })}</span>}
               {remainingMinutes !== null && sessionCapSeconds !== null && <span>·</span>}
-              {sessionCapSeconds !== null && <span>{Math.floor(sessionCapSeconds / 60)}{en(" min max this session")}</span>}
+              {sessionCapSeconds !== null && <span>{en("{value} min max this session", { value: Math.floor(sessionCapSeconds / 60) })}</span>}
             </span>
           )}
           <span
@@ -644,8 +644,7 @@ export default function VapiInterviewRoom({
               <p className="font-semibold">{upgradePrompt.message}</p>
               {upgradePrompt.usageResetsAt && (
                 <p className="mt-0.5 text-amber-800/80 dark:text-amber-200/80">
-                  {en("Your monthly minutes reset on ")}{new Date(upgradePrompt.usageResetsAt).toLocaleDateString()}.
-                </p>
+                  {en("Your monthly minutes reset on {date}.", { date: new Date(upgradePrompt.usageResetsAt).toLocaleDateString() })}</p>
               )}
             </div>
           </div>
@@ -673,13 +672,11 @@ export default function VapiInterviewRoom({
             <div className="flex flex-wrap gap-2">
               {typeof result.technicalScore === "number" && (
                 <span className="text-sm font-bold text-indigo-700 dark:text-indigo-400 bg-indigo-500/10 px-3 py-1 rounded-lg border border-indigo-500/20">
-                  {en("Technical: ")}{Math.round(result.technicalScore)}%
-                </span>
+                  {en("Technical: {technicalScore}%", { technicalScore: Math.round(result.technicalScore) })}</span>
               )}
               {typeof result.communicationScore === "number" && (
                 <span className="text-sm font-bold text-purple-700 dark:text-purple-400 bg-purple-500/10 px-3 py-1 rounded-lg border border-purple-500/20">
-                  {en("Communication: ")}{Math.round(result.communicationScore)}%
-                </span>
+                  {en("Communication: {communicationScore}%", { communicationScore: Math.round(result.communicationScore) })}</span>
               )}
             </div>
           </div>

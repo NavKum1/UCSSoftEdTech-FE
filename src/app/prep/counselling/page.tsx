@@ -350,12 +350,12 @@ function Intro({ status, busy, onStart, onOpenLatest }: { status: Status; busy: 
     <div className="grid gap-6 lg:grid-cols-3">
       <section className={`${card} p-6 lg:col-span-2`}>
         <p className="text-sm text-muted-foreground">
-          {status.questionsPerAttempt}{en(" short questions about what you enjoy and how you like to work. There are no right or wrong answers, and no experience is needed. Your result shows which area of tech your answers point to, the answers that led there, and how to start practising it.")}
+          {en("{questionsPerAttempt} short questions about what you enjoy and how you like to work. There are no right or wrong answers, and no experience is needed. Your result shows which area of tech your answers point to, the answers that led there, and how to start practising it.", { questionsPerAttempt: status.questionsPerAttempt })}
         </p>
         <ul className="mt-5 grid gap-3 text-sm sm:grid-cols-3">
           <li className="rounded-xl border border-border p-3">
             <Clock aria-hidden="true" className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
-            <span className="mt-1 block font-medium">{en("About ")}{minutes} minutes</span>
+            <span className="mt-1 block font-medium">{en("About {minutes} minutes", { minutes })}</span>
           </li>
           <li className="rounded-xl border border-border p-3">
             <Check aria-hidden="true" className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
@@ -376,7 +376,7 @@ function Intro({ status, busy, onStart, onOpenLatest }: { status: Status; busy: 
               {status.latest ? en("Take the quiz again") : en("Start the quiz")} <ArrowRight aria-hidden="true" className="h-4 w-4" />
             </button>
           ) : (
-            <p className="text-sm text-muted-foreground">{en("You can take the quiz again on ")}{formatDate(status.retakeAvailableAt)}.</p>
+            <p className="text-sm text-muted-foreground">{en("You can take the quiz again on {date}.", { date: formatDate(status.retakeAvailableAt) })}</p>
           )}
           {status.questionsPerAttempt === 0 && <p className="text-sm text-muted-foreground">{en("This quiz has no questions yet.")}</p>}
         </div>
@@ -471,7 +471,7 @@ function QuizRunner({
           <ArrowLeft aria-hidden="true" className="h-4 w-4" />{en(" Leave (your answers are kept)")}
         </button>
         <span className="text-muted-foreground" aria-live="polite">
-          {en("Question ")}{step + 1} of {total}
+          {en("Question {value} of {total}", { value: step + 1, total })}
         </span>
       </div>
       <div className="mb-6 h-1.5 w-full overflow-hidden rounded-full bg-muted" role="progressbar" aria-label={en("Answered")} aria-valuemin={0} aria-valuemax={total} aria-valuenow={answered}>
@@ -531,8 +531,7 @@ function QuizRunner({
         </div>
         {last && answered < total && (
           <p className="mt-3 text-end text-xs text-muted-foreground">
-            {total - answered} question{total - answered === 1 ? "" : "s"}{en(" still to answer. Use Back to find ")}{total - answered === 1 ? "it" : "them"}.
-          </p>
+            {en("{value} question{value2} still to answer. Use Back to find {value3}.", { value: total - answered, value2: total - answered === 1 ? "" : "s", value3: total - answered === 1 ? "it" : "them" })}</p>
         )}
       </section>
     </main>
@@ -556,9 +555,9 @@ function ResultView({
   if (result.legacy)
     return (
       <section className={`${card} p-6`}>
-        <p className="text-xs text-muted-foreground">{formatDate(result.evaluatedAt)}{en(" · earlier version of the quiz")}</p>
+        <p className="text-xs text-muted-foreground">{en("{date} · earlier version of the quiz", { date: formatDate(result.evaluatedAt) })}</p>
         <h2 className="mt-1 text-xl font-semibold">{result.primaryTrack}</h2>
-        {result.secondaryTrack && result.secondaryTrack !== result.primaryTrack && <p className="mt-1 text-sm text-muted-foreground">{en("Then ")}{result.secondaryTrack}</p>}
+        {result.secondaryTrack && result.secondaryTrack !== result.primaryTrack && <p className="mt-1 text-sm text-muted-foreground">{en("Then {secondaryTrack}", { secondaryTrack: result.secondaryTrack })}</p>}
         <p className="mt-4 text-sm text-muted-foreground">
           {en("This result came from an earlier version of the quiz, so only the areas are kept. Take the current quiz for a full explanation.")}
         </p>
@@ -612,7 +611,7 @@ function ResultView({
             </ul>
           </div>
         )}
-        {result.retakeAvailableAt && <p className="mt-5 text-xs text-muted-foreground">{en("You can take the quiz again on ")}{formatDate(result.retakeAvailableAt)}.</p>}
+        {result.retakeAvailableAt && <p className="mt-5 text-xs text-muted-foreground">{en("You can take the quiz again on {date}.", { date: formatDate(result.retakeAvailableAt) })}</p>}
       </section>
 
       {!none && (
@@ -622,7 +621,7 @@ function ResultView({
               <Lightbulb aria-hidden="true" className="h-4 w-4 text-amber-500" />
               {en("Why this result")}
             </h3>
-            <p className="mt-1 text-xs text-muted-foreground">{en("Answers you gave that point to ")}{result.primaryTrack}:</p>
+            <p className="mt-1 text-xs text-muted-foreground">{en("Answers you gave that point to {primaryTrack}:", { primaryTrack: result.primaryTrack })}</p>
             <ul className="mt-3 space-y-3">
               {primaryReasons.map((r, i) => (
                 <li key={i} className="text-sm">
@@ -633,7 +632,7 @@ function ResultView({
             </ul>
             {secondaryReasons.length > 0 && (
               <>
-                <p className="mt-5 text-xs text-muted-foreground">{en("And towards ")}{result.secondaryTrack}:</p>
+                <p className="mt-5 text-xs text-muted-foreground">{en("And towards {secondaryTrack}:", { secondaryTrack: result.secondaryTrack })}</p>
                 <ul className="mt-2 space-y-2">
                   {secondaryReasons.map((r, i) => (
                     <li key={i} className="text-sm">
@@ -648,12 +647,12 @@ function ResultView({
           {result.guide && (
             <section aria-labelledby="cq-guide" className={`${card} p-6`}>
               <h3 id="cq-guide" className="text-base font-semibold">
-                {en("About ")}{result.primaryTrack}
+                {en("About {primaryTrack}", { primaryTrack: result.primaryTrack })}
               </h3>
               <p className="mt-2 text-sm">{result.guide.summary}</p>
               {result.guide.roles.length > 0 && <GuideList title={en("Roles people start in")} items={result.guide.roles} />}
               {result.guide.learnNext.length > 0 && <GuideList title={en("Good things to learn first")} items={result.guide.learnNext} />}
-              {result.guide.languages.length > 0 && <p className="mt-4 text-xs text-muted-foreground">{en("Common languages: ")}{result.guide.languages.join(", ")}</p>}
+              {result.guide.languages.length > 0 && <p className="mt-4 text-xs text-muted-foreground">{en("Common languages: {value}", { value: result.guide.languages.join(", ") })}</p>}
               {result.secondaryGuide && result.secondaryTrack !== result.primaryTrack && (
                 <p className="mt-4 border-t border-border pt-4 text-sm text-muted-foreground">
                   <span className="font-medium text-foreground">{result.secondaryTrack}: </span>
@@ -732,7 +731,7 @@ function CoursesSection({
         <h3 className="flex items-center gap-2 text-base font-semibold">
           <GraduationCap aria-hidden="true" className="h-4 w-4" />{en(" Courses")}
         </h3>
-        <p className="mt-2 text-sm text-muted-foreground">{scope.instituteName}{en(" hasn't listed courses here yet. Ask your counsellor about courses in this area.")}</p>
+        <p className="mt-2 text-sm text-muted-foreground">{en("{instituteName} hasn't listed courses here yet. Ask your counsellor about courses in this area.", { instituteName: scope.instituteName })}</p>
       </section>
     ) : null;
 
@@ -770,7 +769,7 @@ function CoursesSection({
                 </p>
               ) : (
                 <button type="button" className={secondaryButton} onClick={() => setInquiring(c)}>
-                  <Send aria-hidden="true" className="h-4 w-4" />{en(" Ask ")}{c.instituteName}{en(" about it")}
+                  <Send aria-hidden="true" className="h-4 w-4" />{" "}{en("Ask {instituteName} about it", { instituteName: c.instituteName })}
                 </button>
               )}
             </div>
@@ -893,7 +892,7 @@ function InquiryDialog({
         onClick={(e) => e.stopPropagation()}
       >
         <h3 id="cq-inquiry" className="text-base font-semibold">
-          {en("Ask ")}{course.instituteName} about {course.courseName}
+          {en("Ask {instituteName} about {courseName}", { instituteName: course.instituteName, courseName: course.courseName })}
         </h3>
         <form onSubmit={send} className="mt-4 space-y-3">
           <label className="block text-sm">
@@ -915,13 +914,13 @@ function InquiryDialog({
           <label className="flex items-start gap-2 text-sm">
             <input type="checkbox" required checked={consent} onChange={(e) => setConsent(e.target.checked)} className="mt-0.5 h-4 w-4 accent-indigo-600" />
             <span>
-              {en("Send my name, email")}{phone.trim() ? en(", phone") : ""}{en(", my question and my result's area (")}{primaryTrack}{en(") to ")}{course.instituteName}{en(", so they can contact me about this course.")}
+              {en("Send my name, email{value}, my question and my result's area ({primaryTrack}) to {instituteName}, so they can contact me about this course.", { value: phone.trim() ? en(", phone") : "", primaryTrack, instituteName: course.instituteName })}
             </span>
           </label>
           <label className="flex items-start gap-2 text-sm">
             <input type="checkbox" checked={shareQuiz} onChange={(e) => setShareQuiz(e.target.checked)} className="mt-0.5 h-4 w-4 accent-indigo-600" />
             <span>
-              {en("Also share my quiz answers and result with ")}{course.instituteName}{en(", so an advisor can see what I'm unsure about and help me choose.")}
+              {en("Also share my quiz answers and result with {instituteName}, so an advisor can see what I'm unsure about and help me choose.", { instituteName: course.instituteName })}
               <span className="block text-xs text-muted-foreground">{en("Optional. They see each question with the answer you picked, and your scores by area.")}</span>
             </span>
           </label>

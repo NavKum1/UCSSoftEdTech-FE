@@ -117,12 +117,11 @@ export default function StatisticsView({ instituteId }: { instituteId?: string }
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <p className="text-sm text-muted-foreground">{en("All your forms, last ")}{stats.days}{en(" days. Possible spam is left out")}{t.possibleSpam ? ` (${t.possibleSpam})` : ""}.</p>
+        <p className="text-sm text-muted-foreground">{en("All your forms, last {days} days. Possible spam is left out{value}.", { days: stats.days, value: t.possibleSpam ? ` (${t.possibleSpam})` : "" })}</p>
         <select aria-label={en("Period")} value={days} onChange={(e) => setDays(Number(e.target.value))} className="rounded-lg border border-border bg-background px-2 py-1.5 text-sm">
           {[7, 30, 90, 365].map((d) => (
             <option key={d} value={d}>
-              {en("Last ")}{d} days
-            </option>
+              {en("Last {d} days", { d })}</option>
           ))}
         </select>
       </div>
@@ -202,7 +201,7 @@ export default function StatisticsView({ instituteId }: { instituteId?: string }
                 )}
                 {f.match && (
                   <div>
-                    <p className="mb-1.5 text-xs font-medium text-muted-foreground">{en("Match scores")}{f.averageMatch != null ? ` · average ${f.averageMatch}%` : ""}</p>
+                    <p className="mb-1.5 text-xs font-medium text-muted-foreground">{en("Match scores{value}", { value: f.averageMatch != null ? ` · average ${f.averageMatch}%` : "" })}</p>
                     <Bars label={`Match scores of ${f.form}`} rows={f.match.map((m) => ({ name: `${m.from}–${m.to}%`, count: m.count }))} />
                   </div>
                 )}

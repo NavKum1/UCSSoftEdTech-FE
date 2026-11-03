@@ -230,7 +230,7 @@ export default function MultiLanguageTranslationStudioPage() {
               className="px-3.5 py-1.5 rounded-xl bg-muted hover:bg-slate-700 text-foreground border border-border text-xs font-medium flex items-center space-x-1.5 transition-colors cursor-pointer"
             >
               <Download className="w-3.5 h-3.5 text-cyan-700 dark:text-cyan-400" />
-              <span>{en("Download Subtitles (")}{selectedLanguage.toUpperCase()})</span>
+              <span>{en("Download Subtitles ({value})", { value: selectedLanguage.toUpperCase() })}</span>
             </button>
           </div>
         </div>
@@ -263,12 +263,12 @@ export default function MultiLanguageTranslationStudioPage() {
                       : "bg-background/40 border-border hover:border-border hover:bg-card/60"
                   }`}
                 >
-                  <span className="text-xl">{lang.flag}</span>
+                  <span className="text-xl">{en(lang.flag)}</span>
                   <span className={`text-[11px] font-bold ${isActive ? "text-cyan-600 dark:text-cyan-300" : "text-muted-foreground"}`}>
                     {lang.code.toUpperCase()}
                   </span>
                   <span className="text-[9px] text-muted-foreground truncate w-full text-center">
-                    {lang.native}
+                    {en(lang.native)}
                   </span>
                 </button>
               );
@@ -323,7 +323,7 @@ export default function MultiLanguageTranslationStudioPage() {
                 }`}
               >
                 <Radio className="w-3.5 h-3.5" />
-                <span>{en("Neural Dubbed Track (")}{selectedLanguage.toUpperCase()})</span>
+                <span>{en("Neural Dubbed Track ({value})", { value: selectedLanguage.toUpperCase() })}</span>
               </button>
             </div>
           </div>
@@ -352,7 +352,7 @@ export default function MultiLanguageTranslationStudioPage() {
               <span>{en("Synchronized Bilingual Subtitle Timeline")}</span>
             </h3>
             <span className="text-xs text-muted-foreground">
-              {segments.length}{en(" dialogue segments recorded")}
+              {en("{length} dialogue segments recorded", { length: segments.length })}
             </span>
           </div>
 
@@ -393,23 +393,21 @@ export default function MultiLanguageTranslationStudioPage() {
                       </div>
 
                       <span className="text-[10px] uppercase font-bold text-muted-foreground">
-                        {en("Segment #")}{seg.sequenceNumber}
+                        {en("Segment #{sequenceNumber}", { sequenceNumber: seg.sequenceNumber })}
                       </span>
                     </div>
 
                     {/* Original Spoken Text */}
                     <div className="text-xs text-muted-foreground leading-relaxed ps-2 border-s-2 border-border">
                       <span className="text-[10px] uppercase font-semibold text-muted-foreground block mb-0.5">
-                        {en("Spoken Original (")}{seg.originalLanguage.toUpperCase()}):
-                      </span>
+                        {en("Spoken Original ({value}):", { value: seg.originalLanguage.toUpperCase() })}</span>
                       {seg.originalText}
                     </div>
 
                     {/* Translated Text in Active Target Language */}
                     <div className="text-sm font-medium text-cyan-200 leading-relaxed ps-2 border-s-2 border-cyan-500">
                       <span className="text-[10px] uppercase font-semibold text-cyan-700 dark:text-cyan-400 block mb-0.5">
-                        {en("Subtitles / Dubbing (")}{selectedLanguage.toUpperCase()}):
-                      </span>
+                        {en("Subtitles / Dubbing ({value}):", { value: selectedLanguage.toUpperCase() })}</span>
                       {getTranslatedText(seg)}
                     </div>
                   </div>
@@ -444,7 +442,7 @@ export default function MultiLanguageTranslationStudioPage() {
                         : "bg-muted text-muted-foreground border-border"
                     }`}
                   >
-                    {spk}
+                    {en(spk)}
                   </button>
                 ))}
               </div>

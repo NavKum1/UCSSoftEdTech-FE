@@ -271,7 +271,7 @@ export default function EdulexaConsolePage() {
             onClick={() => setTab(key)}
             className={`inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-medium ${tab === key ? "bg-indigo-600 text-white" : "border border-border hover:bg-muted"}`}
           >
-            <Icon aria-hidden="true" className="h-4 w-4" /> {label}
+            <Icon aria-hidden="true" className="h-4 w-4" /> {en(label)}
           </button>
         ))}
       </div>
@@ -364,7 +364,7 @@ function CallsTab({ settings, metrics, calls, consents, optOuts, audit, busy, se
             {settings.providerConnected ? (
               <span className="text-emerald-700 dark:text-emerald-400">connected</span>
             ) : (
-              <span className="text-amber-700 dark:text-amber-400">{en("not connected (missing: ")}{settings.providerMissing.join(", ")})</span>
+              <span className="text-amber-700 dark:text-amber-400">{en("not connected (missing: {value})", { value: settings.providerMissing.join(", ") })}</span>
             )}
           </p>
           <div className="mt-2 overflow-x-auto">
@@ -410,7 +410,7 @@ function CallsTab({ settings, metrics, calls, consents, optOuts, audit, busy, se
             <input className={input} value={consent.name} onChange={(e) => setConsent({ ...consent, name: e.target.value })} />
           </Field>
           <Field label={en("Phone (international format)")}>
-            <input className={input} value={consent.phone} placeholder="+91 98765 43210" onChange={(e) => setConsent({ ...consent, phone: e.target.value })} />
+            <input className={input} value={consent.phone} placeholder="+1 555 123 4567" onChange={(e) => setConsent({ ...consent, phone: e.target.value })} />
           </Field>
           <Field label={en("Their time zone")} hint={en("IANA name, e.g. Asia/Kolkata. Needed for numbers in countries with several time zones.")}>
             <input className={input} value={consent.timeZone} onChange={(e) => setConsent({ ...consent, timeZone: e.target.value })} />
@@ -438,7 +438,7 @@ function CallsTab({ settings, metrics, calls, consents, optOuts, audit, busy, se
             <input className={input} value={request.name} onChange={(e) => setRequest({ ...request, name: e.target.value })} />
           </Field>
           <Field label={en("Phone")}>
-            <input className={input} value={request.phone} placeholder="+91 98765 43210" onChange={(e) => setRequest({ ...request, phone: e.target.value })} />
+            <input className={input} value={request.phone} placeholder="+1 555 123 4567" onChange={(e) => setRequest({ ...request, phone: e.target.value })} />
           </Field>
           <Field label={en("What the call is about")} hint={en("e.g. the course they asked about. The call says this.")}>
             <input className={input} value={request.topic} maxLength={200} onChange={(e) => setRequest({ ...request, topic: e.target.value })} />
@@ -455,7 +455,7 @@ function CallsTab({ settings, metrics, calls, consents, optOuts, audit, busy, se
           </button>
           <div className="border-t border-border pt-3">
             <Field label={en("Opt a number out")} hint={en("Stops all calls to it at once and withdraws its consent.")}>
-              <input className={input} value={optOut} placeholder="+91 98765 43210" onChange={(e) => setOptOut(e.target.value)} />
+              <input className={input} value={optOut} placeholder="+1 555 123 4567" onChange={(e) => setOptOut(e.target.value)} />
             </Field>
             <button
               className={`${ghost} mt-2`}
@@ -499,8 +499,8 @@ function CallsTab({ settings, metrics, calls, consents, optOuts, audit, busy, se
                   <td className="py-2 pe-3">{c.topic}</td>
                   <td className={`py-2 pe-3 font-medium ${STATUS[c.status] ?? ""}`}>{String(c.status ?? "").replace(/([a-z])([A-Z])/g, (_m, a: string, b: string) => `${a} ${b.toLowerCase()}`)}</td>
                   <td className="py-2 pe-3 text-xs">
-                    {c.status === "Scheduled" && <span className="block">{en("For ")}{when(c.scheduledFor)}</span>}
-                    {c.placedAt && <span className="block">{en("Placed ")}{when(c.placedAt)}</span>}
+                    {c.status === "Scheduled" && <span className="block">{en("For {scheduledFor}", { scheduledFor: when(c.scheduledFor) })}</span>}
+                    {c.placedAt && <span className="block">{en("Placed {placedAt}", { placedAt: when(c.placedAt) })}</span>}
                     {c.durationSeconds != null && <span className="block">{c.durationSeconds} s</span>}
                     {c.reason}
                   </td>
@@ -628,8 +628,8 @@ function ContentTab({ metrics, assets, busy, send }: { metrics: Metrics; assets:
           {signed && (
             <div className="rounded-xl bg-muted/60 p-3 text-xs">
               <p className="break-all font-mono">{signed.signedUrl}</p>
-              <p className="mt-1">{en("Watermark: ")}{signed.watermarkStamp}</p>
-              <p>{en("Expires ")}{when(signed.expiresAt)}</p>
+              <p className="mt-1">{en("Watermark: {watermarkStamp}", { watermarkStamp: signed.watermarkStamp })}</p>
+              <p>{en("Expires {expiresAt}", { expiresAt: when(signed.expiresAt) })}</p>
             </div>
           )}
         </section>
@@ -812,12 +812,12 @@ function PaymentsTab({ metrics, payouts, busy, send, apiFetch, setNotice }: {
               <ul className="mt-2 space-y-1">
                 {statement.quarters.map((q) => (
                   <li key={q.quarter}>
-                    {q.quarter}{en(": paid ")}{inr(q.grossAmount)}{en(", TDS ")}{inr(q.tdsDeducted)}
+                    {en("{quarter}: paid {grossAmount}, TDS {tdsDeducted}", { quarter: q.quarter, grossAmount: inr(q.grossAmount), tdsDeducted: inr(q.tdsDeducted) })}
                   </li>
                 ))}
               </ul>
               <p className="mt-2">
-                {en("Total: paid ")}{inr(statement.totalGrossAmount)}{en(", TDS ")}{inr(statement.totalTdsDeducted)}
+                {en("Total: paid {totalGrossAmount}, TDS {totalTdsDeducted}", { totalGrossAmount: inr(statement.totalGrossAmount), totalTdsDeducted: inr(statement.totalTdsDeducted) })}
               </p>
               <p className="mt-2 text-xs text-muted-foreground">{statement.note}</p>
             </div>

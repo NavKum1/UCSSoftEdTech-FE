@@ -253,7 +253,7 @@ export default function ValidityPage() {
             ) : report?.data ? (
               <>
                 <p className="text-xs text-muted-foreground">
-                  {report.data.hiresWithOutcomes} hire{report.data.hiresWithOutcomes === 1 ? "" : "s"}{en(" with recorded outcomes.")}
+                  {en("{hiresWithOutcomes} hire{value} with recorded outcomes.", { hiresWithOutcomes: report.data.hiresWithOutcomes, value: report.data.hiresWithOutcomes === 1 ? "" : "s" })}
                 </p>
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm">
@@ -396,7 +396,7 @@ export default function ValidityPage() {
                 <div key={c.category} className="glass-panel rounded-2xl border border-border p-4 space-y-2">
                   <div className="flex items-baseline justify-between gap-2">
                     <h3 className="text-sm font-bold text-foreground">{c.category}</h3>
-                    <span className="text-[11px] text-muted-foreground">{c.undisclosed}{en(" not disclosed")}</span>
+                    <span className="text-[11px] text-muted-foreground">{en("{undisclosed} not disclosed", { undisclosed: c.undisclosed })}</span>
                   </div>
                   {c.groups.length === 0 ? (
                     <p className="text-xs text-muted-foreground">{en("No self-identification data in this category.")}</p>
