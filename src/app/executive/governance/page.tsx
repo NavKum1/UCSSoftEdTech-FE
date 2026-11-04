@@ -178,9 +178,9 @@ export default function MultiCampusGovernancePage() {
   if (access) return <AccessNotice problem={access} feature="Multi-campus governance" />;
 
   return (
-    <div className="min-h-screen bg-background text-foreground flex flex-col font-sans">
+    <div className="text-foreground flex flex-col font-sans">
       {/* Top Header */}
-      <header className="border-b border-border bg-card/80 backdrop-blur-md px-6 py-4 flex items-center justify-between sticky top-16 z-20">
+      <header className="rounded-2xl border border-border bg-card/80 backdrop-blur-md px-6 py-4 flex items-center justify-between sticky top-16 z-20">
         <div className="flex items-center space-x-4">
           <Link
             href="/partner/dashboard"
@@ -223,7 +223,7 @@ export default function MultiCampusGovernancePage() {
       </header>
 
       {/* Main Content */}
-      <div className="flex-1 p-6 space-y-6 max-w-7xl mx-auto w-full">
+      <div className="flex-1 pt-6 space-y-6 w-full">
         {/* KPI Summary Cards */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <div className="p-4 rounded-2xl bg-card/60 border border-border/80 shadow-sm">

@@ -203,24 +203,24 @@ export default function DuelArenaPage() {
   if (access) return <AccessNotice problem={access} feature="System design duels" />;
   if (failed)
     return (
-      <main className="mx-auto max-w-md px-4 py-24 text-center">
+      <div className="mx-auto max-w-md py-16 text-center">
         <AlertTriangle aria-hidden="true" className="mx-auto h-8 w-8 text-amber-600" />
         <h1 className="mt-3 text-xl font-semibold">{en("We couldn't load duels")}</h1>
         <p className="mt-2 text-sm text-muted-foreground">{en("Please refresh the page to try again.")}</p>
-      </main>
+      </div>
     );
   if (!catalogue)
     return (
-      <main className="mx-auto max-w-6xl px-4 py-10" aria-busy="true" aria-label={en("Loading duels")}>
+      <div aria-busy="true" aria-label={en("Loading duels")}>
         <div className={`${card} h-40 animate-pulse motion-reduce:animate-none`} />
-      </main>
+      </div>
     );
 
   const remaining = match ? Math.max(0, Math.floor((new Date(match.deadline).getTime() - now) / 1000)) : 0;
   const sc = match?.scenario ?? catalogue.scenarios.find((s) => s.code === scenario);
 
   return (
-    <main className="mx-auto max-w-6xl space-y-6 px-4 pb-16 pt-8 sm:px-6">
+    <div className="space-y-6">
       <header>
         <h1 className="text-2xl font-semibold tracking-tight">{en("System design duels")}</h1>
         <p className="mt-1 max-w-3xl text-sm text-muted-foreground">
@@ -501,6 +501,6 @@ export default function DuelArenaPage() {
             {en("Practice bots (fixed): {value}.", { value: board.bots.map((b) => `${b.name}, rating ${b.rating}, scores ${b.score}`).join("; ") })}</p>
         </section>
       )}
-    </main>
+    </div>
   );
 }

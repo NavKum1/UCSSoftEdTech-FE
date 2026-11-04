@@ -101,7 +101,7 @@ export default function WrittenDefensePage() {
 
   if (loadError) {
     return (
-      <div className="max-w-3xl mx-auto px-6 py-10 space-y-4">
+      <div className="space-y-4">
         <Link href="/my/results" className="text-xs text-muted-foreground hover:text-foreground inline-flex items-center gap-1">
           <ArrowLeft className="w-3.5 h-3.5" />{en(" My results")}
         </Link>
@@ -114,7 +114,7 @@ export default function WrittenDefensePage() {
 
   if (!state) {
     return (
-      <div className="p-16 flex items-center justify-center gap-2 text-sm text-muted-foreground">
+      <div className="py-16 flex items-center justify-center gap-2 text-sm text-muted-foreground">
         <Loader2 className="w-4 h-4 animate-spin" />{en(" Loading your written defense...")}
       </div>
     );
@@ -124,8 +124,8 @@ export default function WrittenDefensePage() {
   const allAnswered = state.answered >= state.maxQuestions;
 
   return (
-    <div className="min-h-screen bg-background text-foreground pb-20">
-      <div className="max-w-3xl mx-auto px-6 py-10 space-y-5">
+    <div className="text-foreground">
+      <div className="space-y-5">
         <Link href={backHref} className="text-xs text-muted-foreground hover:text-foreground inline-flex items-center gap-1">
           <ArrowLeft className="w-3.5 h-3.5" />{en(" Back to your report")}
         </Link>

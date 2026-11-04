@@ -149,8 +149,8 @@ export default function ReferralsPage() {
   const pastReferrals = mine.filter((m) => m.status === "Withdrawn");
 
   return (
-    <div className="min-h-screen bg-background text-foreground pb-20">
-      <div className="max-w-5xl mx-auto px-6 py-10 space-y-8">
+    <div className="text-foreground">
+      <div className="space-y-8">
         <div>
           <h1 className="text-2xl font-black tracking-tight text-foreground flex items-center gap-2">
             <BookOpen className="w-6 h-6 text-indigo-700 dark:text-indigo-400" />

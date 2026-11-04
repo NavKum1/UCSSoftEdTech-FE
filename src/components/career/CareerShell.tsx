@@ -11,6 +11,7 @@ import { useCareerFormat, useCareerI18n, useCareerT } from "@/components/career/
 import { useCareerNavLabels } from "@/components/career/i18n/nav";
 import LanguagePicker from "@/components/career/i18n/LanguagePicker";
 import { accessibleBrandColor, brandCssVars } from "@/components/career/brandColor";
+import { FRAME, PAGE_Y } from "@/components/layout/Frame";
 import { useDataSaver } from "@/components/career/mobile/dataSaver";
 
 export interface CareerBrand {
@@ -186,7 +187,7 @@ export default function CareerShell({ persona, children }: { persona: CareerPers
           {t("skipToContent")}
         </a>
         <header className="sticky top-0 z-40 border-b border-border bg-card/80 backdrop-blur">
-          <div className="mx-auto flex h-14 max-w-7xl items-center gap-3 px-4">
+          <div className={`${FRAME} flex h-14 items-center gap-3`}>
             <button
               ref={menuButtonRef}
               type="button"
@@ -245,7 +246,7 @@ export default function CareerShell({ persona, children }: { persona: CareerPers
           </div>
         </header>
 
-        <div className="mx-auto flex max-w-7xl gap-6 px-4">
+        <div className={`${FRAME} flex gap-6`}>
           <nav id="career-nav" aria-label={t("navigation", { persona: nav.title })} className={`${menuOpen ? "block" : "hidden"} fixed inset-x-0 top-14 z-30 border-b border-border bg-card p-3 md:static md:block md:w-56 md:shrink-0 md:border-0 md:bg-transparent md:p-0 md:pt-6`}>
             <ul className="space-y-1">
               {items.map((item) => (
@@ -264,12 +265,12 @@ export default function CareerShell({ persona, children }: { persona: CareerPers
               ))}
             </ul>
           </nav>
-          <main id="career-main" tabIndex={-1} className="min-w-0 flex-1 py-6 focus:outline-none">
+          <main id="career-main" tabIndex={-1} className={`min-w-0 flex-1 ${PAGE_Y} focus:outline-none`}>
             {children}
           </main>
         </div>
 
-        <footer className="mx-auto max-w-7xl px-4 py-6 text-xs text-muted-foreground">
+        <footer className={`${FRAME} py-6 text-xs text-muted-foreground`}>
           <div className="flex flex-wrap gap-4 border-t border-border pt-4">
             <span>{t("copyright", { year: String(new Date().getFullYear()), brand: b.displayName })}</span>
             {b.privacyUrl && <a className="hover:underline" href={b.privacyUrl}>{t("privacy")}</a>}

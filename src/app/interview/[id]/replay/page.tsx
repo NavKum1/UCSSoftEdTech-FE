@@ -156,7 +156,7 @@ export default function AudioReplayStudioPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background text-foreground flex items-center justify-center font-sans">
+      <div className="flex min-h-[50vh] items-center justify-center font-sans text-foreground">
         <div className="flex items-center space-x-3 text-indigo-700 dark:text-indigo-400">
           <Sparkles className="w-6 h-6 animate-spin" />
           <span className="text-base font-semibold">{en("Loading Audio Replay Studio...")}</span>
@@ -167,8 +167,8 @@ export default function AudioReplayStudioPage() {
 
   if (fetchError || !replay) {
     return (
-      <div className="min-h-screen bg-background text-foreground flex flex-col items-center justify-center font-sans p-6">
-        <div className="max-w-md w-full p-8 rounded-3xl bg-card/60 border border-border text-center space-y-4">
+      <div className="flex min-h-[50vh] flex-col items-center justify-center font-sans text-foreground">
+        <div className="mx-auto max-w-md w-full p-8 rounded-3xl bg-card/60 border border-border text-center space-y-4">
           <div className="w-12 h-12 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-700 dark:text-amber-400 flex items-center justify-center mx-auto">
             <AlertTriangle className="w-6 h-6" />
           </div>
@@ -192,7 +192,7 @@ export default function AudioReplayStudioPage() {
   const technicalScore = typeof rawScore === "number" && rawScore >= 0 ? Math.round(rawScore) : null;
 
   return (
-    <div className="min-h-screen bg-background text-foreground font-sans p-6 md:p-12 relative overflow-hidden">
+    <div className="text-foreground font-sans relative overflow-hidden">
       {/* Background Ambience Glow */}
       <div className="absolute top-1/4 start-1/3 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-gradient-to-tr from-indigo-600/20 to-cyan-500/20 blur-3xl rounded-full pointer-events-none" />
 
@@ -204,7 +204,7 @@ export default function AudioReplayStudioPage() {
         onEnded={() => setIsPlaying(false)}
       />
 
-      <div className="max-w-6xl mx-auto space-y-8 relative z-10">
+      <div className="space-y-8 relative z-10">
         {/* Navigation & Header */}
         <div className="flex items-center justify-between">
           <button

@@ -243,8 +243,8 @@ public class HighThroughputBuffer<T>
 
   if (!sprintId) {
     return (
-      <div className="min-h-screen bg-background text-foreground flex flex-col items-center justify-center p-6 text-center">
-        <div className="max-w-md p-8 rounded-2xl border border-border bg-card/60 space-y-4">
+      <div className="flex min-h-[50vh] flex-col items-center justify-center text-center text-foreground">
+        <div className="mx-auto max-w-md p-8 rounded-2xl border border-border bg-card/60 space-y-4">
           <div className="w-12 h-12 rounded-xl bg-indigo-500/10 text-indigo-700 dark:text-indigo-400 flex items-center justify-center mx-auto text-2xl">
             🤖
           </div>
@@ -264,7 +264,7 @@ public class HighThroughputBuffer<T>
   }
 
   return (
-    <div className="min-h-screen bg-background text-foreground flex flex-col font-sans">
+    <div className="flex min-h-[70vh] flex-col font-sans text-foreground">
       {/* Top Navbar */}
       <header className="border-b border-border bg-card/80 backdrop-blur-md px-6 py-4 flex items-center justify-between sticky top-16 z-20">
         <div className="flex items-center space-x-4">

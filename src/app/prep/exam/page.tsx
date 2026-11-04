@@ -607,8 +607,8 @@ export default function WrittenExamPrepPage() {
     const retakeBlocked = evaluation.attemptsRemaining === 0 || inCooldown(evaluation.nextAttemptAt);
     const evaluationAttempts = attemptsText(evaluation.maxAttempts, evaluation.attemptsRemaining);
     return (
-      <div className="min-h-screen bg-background text-foreground p-4 md:p-8 font-sans">
-        <div className="max-w-4xl mx-auto space-y-6">
+      <div className="text-foreground font-sans">
+        <div className="space-y-6">
           {/* Header Card */}
           <div className="p-6 md:p-8 rounded-2xl border border-border bg-card shadow-sm space-y-6">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -923,7 +923,7 @@ export default function WrittenExamPrepPage() {
     );
 
     return (
-      <div className="min-h-screen bg-background text-foreground flex flex-col font-sans">
+      <div className="flex flex-col font-sans text-foreground">
         {/* Top Sticky Test Bar */}
         <header className="sticky top-16 z-20 border-b border-border bg-card/80 backdrop-blur-md px-6 py-3.5 flex items-center justify-between">
           <div>
@@ -975,7 +975,7 @@ export default function WrittenExamPrepPage() {
         </div>
 
         {/* Question Body */}
-        <main className="flex-1 max-w-4xl w-full mx-auto p-4 md:p-8 space-y-6">
+        <div className="flex-1 w-full pt-6 space-y-6">
           <div className="p-6 md:p-8 rounded-2xl border border-border bg-card shadow-sm space-y-6">
             <div className="flex items-center justify-between">
               <span className="text-xs font-semibold px-2.5 py-1 rounded-md bg-primary/10 text-primary uppercase">
@@ -1084,7 +1084,7 @@ export default function WrittenExamPrepPage() {
               )}
             </div>
           </div>
-        </main>
+        </div>
       </div>
     );
   }
@@ -1093,8 +1093,8 @@ export default function WrittenExamPrepPage() {
   // VIEW 3: EXAM CATALOG & PRACTICE DASHBOARD
   // ----------------------------------------------------
   return (
-    <div className="min-h-screen bg-background text-foreground p-4 md:p-10 font-sans">
-      <div className="max-w-6xl mx-auto space-y-8">
+    <div className="text-foreground font-sans">
+      <div className="space-y-8">
         {/* Header Section */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
           <div className="space-y-2">

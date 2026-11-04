@@ -86,7 +86,7 @@ export function SetupChecklist() {
   };
 
   return (
-    <section aria-labelledby="setup-checklist" className="mx-auto mb-5 max-w-7xl rounded-2xl border border-border bg-card p-5 shadow-sm">
+    <section aria-labelledby="setup-checklist" className="mb-5 rounded-2xl border border-border bg-card p-5 shadow-sm">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h2 id="setup-checklist" className="text-base font-semibold">

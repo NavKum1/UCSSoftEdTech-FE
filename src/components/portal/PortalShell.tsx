@@ -15,6 +15,7 @@ import { AppUserButton, useAppAuth } from "@/lib/appAuth";
 import { platformHome } from "@/lib/roleHome";
 import { endDevSession, useDevSession } from "@/lib/devSession";
 import EnglishPicker from "@/components/EnglishPicker";
+import { FRAME, PAGE_Y } from "@/components/layout/Frame";
 import { useEn } from "@/lib/english/EnglishProvider";
 
 export interface PortalSection {
@@ -57,7 +58,7 @@ export default function PortalShell({
   return (
     <div className="flex min-h-screen flex-col bg-background text-foreground">
       <header className="sticky top-0 z-50 border-b border-border bg-card/90 backdrop-blur-md">
-        <div className="mx-auto flex h-14 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6">
+        <div className={`${FRAME} flex h-14 items-center justify-between gap-4`}>
           <Link href={home} className="flex min-w-0 items-center gap-2.5">
             <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-white ${accent}`}>
               {icon}
@@ -95,7 +96,7 @@ export default function PortalShell({
           </div>
         </div>
         {sections.length > 1 && (
-          <nav aria-label={`${name} sections`} className="mx-auto max-w-7xl px-2 sm:px-4">
+          <nav aria-label={`${name} sections`} className={`${FRAME} !px-1 sm:!px-3`}>
             <ul className="-mb-px flex gap-1 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
               {sections.map((s) => {
                 const active = s === current;
@@ -117,7 +118,7 @@ export default function PortalShell({
           </nav>
         )}
       </header>
-      <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-8 sm:px-6">{children}</main>
+      <main className={`${FRAME} ${PAGE_Y} flex-1`}>{children}</main>
       {footer}
     </div>
   );

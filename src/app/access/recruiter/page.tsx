@@ -71,7 +71,7 @@ export default function RecruiterAccessPage() {
   if (!isLoaded) return null;
 
   return (
-    <main className="mx-auto max-w-xl space-y-6 px-4 py-10">
+    <div className="space-y-6">
       <div className="flex items-center gap-3">
         <span className="rounded-xl bg-indigo-600 p-2 text-white">
           <Briefcase aria-hidden="true" className="h-5 w-5" />
@@ -116,7 +116,7 @@ export default function RecruiterAccessPage() {
               {state.request.decisionNote ?? "You can send a new request with more detail about your company."}
             </Status>
           )}
-          <form onSubmit={submit} className="space-y-4 rounded-2xl border border-border bg-card p-5" aria-label={en("Ask for recruiter access")}>
+          <form onSubmit={submit} className="grid gap-4 rounded-2xl border border-border bg-card p-5 sm:grid-cols-2" aria-label={en("Ask for recruiter access")}>
             <label className="block text-sm">
               <span className="mb-1 block font-medium">{en("Company")}</span>
               <input required minLength={2} maxLength={200} className={input} value={form.company} onChange={(e) => setForm({ ...form, company: e.target.value })} />
@@ -129,12 +129,12 @@ export default function RecruiterAccessPage() {
               <span className="mb-1 block font-medium">{en("Your job title")}</span>
               <input maxLength={120} className={input} value={form.jobTitle} onChange={(e) => setForm({ ...form, jobTitle: e.target.value })} />
             </label>
-            <label className="block text-sm">
+            <label className="block text-sm sm:col-span-2">
               <span className="mb-1 block font-medium">{en("What are you hiring for? (optional)")}</span>
               <textarea rows={3} maxLength={1000} className={input} value={form.message} onChange={(e) => setForm({ ...form, message: e.target.value })} />
             </label>
-            <p className="text-xs text-muted-foreground">{en("Requests from a company e-mail address are approved faster. We check every request before giving access to candidate data.")}</p>
-            <button type="submit" disabled={busy} className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50">
+            <p className="text-xs text-muted-foreground sm:col-span-2">{en("Requests from a company e-mail address are approved faster. We check every request before giving access to candidate data.")}</p>
+            <button type="submit" disabled={busy} className="justify-self-start rounded-lg bg-indigo-600 sm:col-span-2 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50">
               {busy ? en("Sending…") : en("Send request")}
             </button>
           </form>
@@ -146,7 +146,7 @@ export default function RecruiterAccessPage() {
           {error}
         </p>
       )}
-    </main>
+    </div>
   );
 }
 

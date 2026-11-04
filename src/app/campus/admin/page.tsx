@@ -263,7 +263,7 @@ export default function CampusAdminPage() {
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-6">
+    <div className="space-y-6">
       <div className="pb-4 border-b border-border">
         <div className="flex items-center gap-2 text-xs font-semibold text-indigo-700 dark:text-indigo-400 uppercase tracking-wider">
           <GraduationCap className="w-4 h-4" />{en(" Placement office")}

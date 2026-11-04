@@ -113,7 +113,7 @@ export default function PlatformSettingsPage() {
         : "Paste the API key from your email provider";
 
   return (
-    <div className="mx-auto max-w-4xl space-y-6 p-4 sm:p-6">
+    <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-semibold">Email and uploads</h1>
         <p className="mt-1 text-sm text-muted-foreground">How this region sends email, and the virus check on files people upload.</p>

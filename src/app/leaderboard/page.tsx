@@ -105,7 +105,7 @@ export default function LeaderboardPage() {
   ];
 
   return (
-    <main className="mx-auto max-w-4xl px-4 pb-16 pt-8 sm:px-6">
+    <div>
       <header className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <h1 className="flex items-center gap-2 text-2xl font-semibold tracking-tight">
@@ -177,7 +177,7 @@ export default function LeaderboardPage() {
           />
         </section>
       )}
-    </main>
+    </div>
   );
 }
 

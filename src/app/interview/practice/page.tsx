@@ -681,8 +681,8 @@ export default function MultiStreamInterviewPracticePage() {
   if (access) return <AccessNotice problem={access} feature="Interview practice" />;
 
   return (
-    <div className="min-h-screen bg-background text-foreground p-4 md:p-10 font-sans">
-      <div className="max-w-7xl mx-auto space-y-8">
+    <div className="text-foreground font-sans">
+      <div className="space-y-8">
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
           <div className="space-y-2">

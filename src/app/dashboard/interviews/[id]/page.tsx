@@ -212,7 +212,7 @@ export default function StudentInterviewReplayPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background text-foreground flex items-center justify-center font-sans">
+      <div className="flex min-h-[50vh] items-center justify-center font-sans text-foreground">
         <div className="flex flex-col items-center gap-3">
           <div className="w-10 h-10 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin" />
           <p className="text-sm text-muted-foreground font-mono">{en("Loading Interview Recording & Feedback...")}</p>
@@ -223,8 +223,8 @@ export default function StudentInterviewReplayPage() {
 
   if (fetchError || !sessionData) {
     return (
-      <div className="min-h-screen bg-background text-foreground flex flex-col items-center justify-center font-sans p-6">
-        <div className="max-w-md w-full p-8 rounded-3xl bg-card/60 border border-border text-center space-y-4">
+      <div className="flex min-h-[50vh] flex-col items-center justify-center font-sans text-foreground">
+        <div className="mx-auto max-w-md w-full p-8 rounded-3xl bg-card/60 border border-border text-center space-y-4">
           <div className="w-12 h-12 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-700 dark:text-amber-400 flex items-center justify-center mx-auto">
             <AlertTriangle className="w-6 h-6" />
           </div>
@@ -247,7 +247,7 @@ export default function StudentInterviewReplayPage() {
   const displayedDialogues = filterFlaggedOnly ? dialogues.filter((d) => d.isFlagged) : dialogues;
 
   return (
-    <div className="min-h-screen bg-background text-foreground flex flex-col font-sans pb-16">
+    <div className="flex flex-col font-sans text-foreground">
       {/* Hidden Audio Tag */}
       <audio
         ref={audioRef}
@@ -263,7 +263,7 @@ export default function StudentInterviewReplayPage() {
 
       {/* Navbar */}
       <header className="border-b border-border bg-card/80 backdrop-blur-md sticky top-16 z-20">
-        <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+        <div className="h-16 px-4 flex items-center justify-between">
           <div className="flex items-center space-x-3 cursor-pointer" onClick={() => router.push("/")}>
             <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-600 to-purple-600 flex items-center justify-center font-bold text-white shadow-lg shadow-indigo-500/20">
               {en("BD")}
@@ -299,7 +299,7 @@ export default function StudentInterviewReplayPage() {
       </header>
 
       {/* Main Container */}
-      <main className="max-w-6xl mx-auto px-6 pt-8 flex-1 w-full space-y-8">
+      <div className="pt-8 flex-1 w-full space-y-8">
         {/* Top Header & Evaluation KPI Bar */}
         <div className="glass-panel rounded-3xl p-6 border border-border flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="space-y-1">
@@ -465,7 +465,7 @@ export default function StudentInterviewReplayPage() {
             ))}
           </div>
         </div>
-      </main>
+      </div>
     </div>
   );
 }

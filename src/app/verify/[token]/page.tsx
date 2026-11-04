@@ -156,7 +156,7 @@ export default function VerifyTokenPage() {
 
   if (state.kind === "loading") {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center text-sm text-muted-foreground gap-2">
+      <div className="min-h-[60vh] flex items-center justify-center text-sm text-muted-foreground gap-2">
         <Loader2 className="w-4 h-4 animate-spin" />{en(" Verifying credential...")}
       </div>
     );
@@ -164,8 +164,8 @@ export default function VerifyTokenPage() {
 
   if (state.kind === "not-found" || state.kind === "error") {
     return (
-      <div className="min-h-screen bg-background">
-        <div className="max-w-xl mx-auto px-6 py-20 text-center space-y-4">
+      <div>
+        <div className="max-w-md mx-auto py-16 text-center space-y-4">
           <ShieldAlert className="w-10 h-10 mx-auto text-amber-600 dark:text-amber-400" />
           <h1 className="text-xl font-bold text-foreground">
             {state.kind === "not-found" ? en("This link isn't valid") : en("Verification unavailable")}
@@ -194,8 +194,8 @@ export default function VerifyTokenPage() {
         : "text-foreground";
 
   return (
-    <div className="min-h-screen bg-background text-foreground pb-20">
-      <div className="max-w-4xl mx-auto px-6 py-10 space-y-6">
+    <div className="text-foreground">
+      <div className="space-y-6">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
             <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">{en("Edulexa credential")}</p>

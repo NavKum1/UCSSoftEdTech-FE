@@ -426,19 +426,19 @@ export default function CandidateAssessmentBundlePage() {
   if (linkProblem) {
     const text = LINK_PROBLEM_TEXT[linkProblem];
     return (
-      <main className="min-h-[70vh] flex items-center justify-center p-6 bg-background text-foreground">
+      <div className="min-h-[60vh] flex items-center justify-center text-foreground">
         <div className="max-w-md w-full rounded-2xl border border-border bg-card p-8 text-center shadow-sm" data-assessment-problem={linkProblem}>
           <AlertTriangle className="w-8 h-8 mx-auto mb-3 text-amber-500" aria-hidden="true" />
           <h1 className="text-xl font-bold mb-2">{text.title}</h1>
           <p className="text-sm text-muted-foreground">{text.body}</p>
         </div>
-      </main>
+      </div>
     );
   }
 
   if (loading || !bundle) {
     return (
-      <div className="min-h-screen bg-background text-foreground flex items-center justify-center font-sans">
+      <div className="min-h-[60vh] text-foreground flex items-center justify-center font-sans">
         <div className="flex flex-col items-center gap-3">
           <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin" />
           <p className="text-xs text-muted-foreground font-mono">{en("Initializing 3-Stage Assessment Sandbox...")}</p>
@@ -455,10 +455,10 @@ export default function CandidateAssessmentBundlePage() {
   ];
 
   return (
-    <div className="min-h-screen bg-background text-foreground font-sans flex flex-col">
+    <div className="text-foreground font-sans flex flex-col">
       {/* Top Corporate Assessment Header */}
-      <header className="border-b border-border bg-card/80 backdrop-blur-md px-6 py-4 sticky top-0 z-30 shadow-sm">
-        <div className="max-w-6xl mx-auto flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <header className="rounded-2xl border border-border bg-card/80 backdrop-blur-md px-6 py-4 sticky top-0 z-30 shadow-sm">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-center gap-3.5">
             <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 via-purple-600 to-amber-500 p-0.5 shadow-md">
               <div className="w-full h-full bg-card rounded-[10px] flex items-center justify-center font-black text-foreground text-sm">
@@ -498,8 +498,8 @@ export default function CandidateAssessmentBundlePage() {
       </header>
 
       {/* Progress Stepper Bar */}
-      <section className="border-b border-border/80 bg-muted/20 py-4 px-6">
-        <div className="max-w-4xl mx-auto">
+      <section className="py-4">
+        <div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             {stages.map((st) => {
               const isPast = activeStage > st.num;
@@ -539,7 +539,7 @@ export default function CandidateAssessmentBundlePage() {
       </section>
 
       {/* Dynamic Assessment Stage Container */}
-      <main className="flex-1 max-w-4xl w-full mx-auto p-4 md:p-8 space-y-6">
+      <div className="flex-1 w-full space-y-6">
         {stageError && (
           <div role="alert" className="p-3 rounded-xl border border-rose-500/30 bg-rose-500/10 text-rose-700 dark:text-rose-300 text-xs font-semibold">
             {stageError}
@@ -951,7 +951,7 @@ export default function CandidateAssessmentBundlePage() {
             </p>
           </div>
         )}
-      </main>
+      </div>
     </div>
   );
 }

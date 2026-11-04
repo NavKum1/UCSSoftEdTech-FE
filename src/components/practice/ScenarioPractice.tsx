@@ -130,23 +130,23 @@ export default function ScenarioPractice({ track, title, intro }: { track: strin
   if (access) return <AccessNotice problem={access} feature={title} />;
   if (failed)
     return (
-      <main className="mx-auto max-w-md px-4 py-24 text-center">
+      <div className="mx-auto max-w-md py-16 text-center">
         <AlertTriangle aria-hidden="true" className="mx-auto h-8 w-8 text-amber-600" />
         <h1 className="mt-3 text-xl font-semibold">{en("We couldn't load the scenarios")}</h1>
         <p className="mt-2 text-sm text-muted-foreground">{en("Please refresh the page to try again.")}</p>
-      </main>
+      </div>
     );
   if (!catalogue)
     return (
-      <main className="mx-auto max-w-4xl px-4 py-10" aria-busy="true" aria-label={en("Loading scenarios")}>
+      <div aria-busy="true" aria-label={en("Loading scenarios")}>
         <div className={`${card} h-40 animate-pulse motion-reduce:animate-none`} />
-      </main>
+      </div>
     );
 
   const dims = catalogue.tracks.find((t) => t.key === track)?.dimensions ?? [];
 
   return (
-    <main className="mx-auto max-w-4xl space-y-6 px-4 pb-16 pt-8 sm:px-6">
+    <div className="space-y-6">
       <header>
         <p className="text-xs font-semibold uppercase tracking-wide text-indigo-700 dark:text-indigo-300">{en("Practice scenario")}</p>
         <h1 className="mt-1 text-2xl font-semibold tracking-tight">{title}</h1>
@@ -255,6 +255,6 @@ export default function ScenarioPractice({ track, title, intro }: { track: strin
           </ul>
         </section>
       )}
-    </main>
+    </div>
   );
 }

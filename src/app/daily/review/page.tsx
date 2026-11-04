@@ -155,16 +155,16 @@ export default function DailyCodeReviewPage() {
   if (access) return <AccessNotice problem={access} feature="The daily code review" />;
   if (loadFailed)
     return (
-      <main className="mx-auto max-w-md px-4 py-24 text-center">
+      <div className="mx-auto max-w-md py-16 text-center">
         <h1 className="text-xl font-semibold">{en("No code review is available right now")}</h1>
         <p className="mt-2 text-sm text-muted-foreground">{en("Please try again later.")}</p>
-      </main>
+      </div>
     );
   if (!review || !status)
     return (
-      <main className="mx-auto max-w-6xl px-4 py-10" aria-busy="true" aria-label={en("Loading the code review")}>
+      <div aria-busy="true" aria-label={en("Loading the code review")}>
         <div className={`${card} h-64 animate-pulse motion-reduce:animate-none`} />
-      </main>
+      </div>
     );
 
   const elapsed = attempt ? Math.max(0, Math.floor((now - new Date(attempt.startedAt).getTime()) / 1000)) : 0;
@@ -177,7 +177,7 @@ export default function DailyCodeReviewPage() {
   };
 
   return (
-    <main className="mx-auto max-w-6xl px-4 pb-16 pt-8 sm:px-6">
+    <div>
       <Link href="/daily" className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
         <ArrowLeft aria-hidden="true" className="h-4 w-4" />{en(" Daily practice")}
       </Link>
@@ -301,7 +301,7 @@ export default function DailyCodeReviewPage() {
           </aside>
         </div>
       )}
-    </main>
+    </div>
   );
 }
 

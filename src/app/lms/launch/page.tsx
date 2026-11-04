@@ -52,7 +52,7 @@ export default function LmsLaunchPage() {
   const faculty = launch?.role === "Faculty";
 
   return (
-    <main className="mx-auto flex min-h-[70vh] max-w-lg flex-col justify-center px-4 py-12">
+    <div className="mx-auto flex min-h-[60vh] max-w-lg flex-col justify-center">
       <div className="rounded-2xl border border-border bg-card p-6 sm:p-8">
         <p className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-indigo-700 dark:text-indigo-300">
           <GraduationCap aria-hidden="true" className="h-4 w-4" />{en(" From your course")}
@@ -96,6 +96,6 @@ export default function LmsLaunchPage() {
           </>
         )}
       </div>
-    </main>
+    </div>
   );
 }

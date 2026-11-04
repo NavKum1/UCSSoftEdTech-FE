@@ -85,16 +85,16 @@ export default function DailyPracticePage() {
   if (access) return <AccessNotice problem={access} feature="Daily practice" />;
   if (failed)
     return (
-      <main className="mx-auto max-w-md px-4 py-24 text-center">
+      <div className="mx-auto max-w-md py-16 text-center">
         <h1 className="text-xl font-semibold">{en("We couldn't load your daily practice")}</h1>
         <p className="mt-2 text-sm text-muted-foreground">{en("Please refresh the page to try again.")}</p>
-      </main>
+      </div>
     );
   if (!summary)
     return (
-      <main className="mx-auto max-w-6xl px-4 py-10" aria-busy="true" aria-label={en("Loading daily practice")}>
+      <div aria-busy="true" aria-label={en("Loading daily practice")}>
         <div className={`${card} h-40 animate-pulse motion-reduce:animate-none`} />
-      </main>
+      </div>
     );
 
   const { streak, week } = summary;
@@ -102,7 +102,7 @@ export default function DailyPracticePage() {
   const weekEnds = new Date(week.endsAt);
 
   return (
-    <main className="mx-auto max-w-6xl px-4 pb-16 pt-8 sm:px-6">
+    <div>
       <header className="mb-6">
         <h1 className="text-2xl font-semibold tracking-tight">{en("Daily practice")}</h1>
         <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
@@ -229,7 +229,7 @@ export default function DailyPracticePage() {
           </ol>
         )}
       </section>
-    </main>
+    </div>
   );
 }
 

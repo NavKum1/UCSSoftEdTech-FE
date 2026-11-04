@@ -57,10 +57,10 @@ export default function HomePage() {
   }, [isLoaded, isSignedIn, router]);
 
   if (!isLoaded || isSignedIn)
-    return <main className="mx-auto max-w-5xl px-4 py-24" aria-busy="true" aria-label={en("Loading")} />;
+    return <div className="py-16" aria-busy="true" aria-label={en("Loading")} />;
 
   return (
-    <main className="mx-auto max-w-5xl px-4 pb-20 pt-16 sm:px-6">
+    <div className="pt-8">
       <section className="max-w-2xl">
         <p className="text-sm font-semibold uppercase tracking-wider text-indigo-700 dark:text-indigo-300">{en("Edulexa")}</p>
         <h1 className="mt-2 text-4xl font-semibold tracking-tight sm:text-5xl">{en("Show what you can build, and explain how it works.")}</h1>
@@ -107,6 +107,6 @@ export default function HomePage() {
           <p className="mt-1 text-sm text-muted-foreground">{en("See whether the free student plan is offered where you are.")}</p>
         </Link>
       </section>
-    </main>
+    </div>
   );
 }

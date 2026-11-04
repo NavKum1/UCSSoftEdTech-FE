@@ -40,7 +40,7 @@ export default function PublicPassportPage({ params }: { params: Promise<{ token
   }, [token]);
 
   return (
-    <main className="mx-auto max-w-5xl px-4 pb-16 pt-10 sm:px-6">
+    <div>
       <p className="mb-6 flex items-center gap-2 text-xs font-medium text-muted-foreground">
         <ShieldCheck aria-hidden="true" className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
         {en("Skill passport shared by its owner. Results are graded by Edulexa; each credential can be verified on its own page.")}
@@ -62,6 +62,6 @@ export default function PublicPassportPage({ params }: { params: Promise<{ token
         </div>
       )}
       {state === "ready" && data && <PassportView data={data} publicView />}
-    </main>
+    </div>
   );
 }

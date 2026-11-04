@@ -66,22 +66,22 @@ export default function CareerPathPage() {
   if (access) return <AccessNotice problem={access} feature="Your career path" />;
   if (failed)
     return (
-      <main className="mx-auto max-w-md px-4 py-24 text-center">
+      <div className="mx-auto max-w-md py-16 text-center">
         <h1 className="text-xl font-semibold">{en("We couldn't load your career path")}</h1>
         <p className="mt-2 text-sm text-muted-foreground">{en("Please refresh the page to try again.")}</p>
-      </main>
+      </div>
     );
   if (!path)
     return (
-      <main className="mx-auto max-w-5xl px-4 py-10" aria-busy="true" aria-label={en("Loading your career path")}>
+      <div aria-busy="true" aria-label={en("Loading your career path")}>
         <div className={`${card} h-40 animate-pulse motion-reduce:animate-none`} />
-      </main>
+      </div>
     );
 
   const money = (n: number | null) => (n == null ? "—" : new Intl.NumberFormat(undefined, { style: "currency", currency: path.compensation!.currency, maximumFractionDigits: 0 }).format(n));
 
   return (
-    <main className="mx-auto max-w-5xl space-y-6 px-4 pb-16 pt-8 sm:px-6">
+    <div className="space-y-6">
       <header>
         <h1 className="text-2xl font-semibold tracking-tight">{en("Your career path")}</h1>
         <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
@@ -198,6 +198,6 @@ export default function CareerPathPage() {
           <p className="mt-2 text-sm text-muted-foreground">{path.compensationNote}</p>
         )}
       </section>
-    </main>
+    </div>
   );
 }

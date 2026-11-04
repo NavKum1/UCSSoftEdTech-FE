@@ -575,7 +575,7 @@ function WorkspaceHeader({
           {en("No internet connection. Your edits stay in this tab and sync when you reconnect.")}
         </div>
       )}
-      <div className="max-w-7xl mx-auto px-6 h-14 flex items-center justify-between">
+      <div className="px-4 h-14 flex items-center justify-between">
         <div className="flex items-center space-x-3 min-w-0">
           <Link
             href="/dashboard"
@@ -606,9 +606,9 @@ function WorkspaceHeader({
 
 function CenteredCard({ children }: { children: React.ReactNode }) {
   return (
-    <main className="max-w-xl mx-auto px-6 pt-16 w-full">
+    <div className="mx-auto w-full max-w-lg pt-8">
       <div className="glass-panel rounded-2xl p-8 border border-border text-center space-y-4">{children}</div>
-    </main>
+    </div>
   );
 }
 
@@ -925,7 +925,7 @@ function GradedWorkspace({ sprintId }: { sprintId: string }) {
 
   if (!isLoaded || (isSignedIn && starting)) {
     return (
-      <div className="flex flex-col font-sans pb-16">
+      <div className="flex flex-col font-sans">
         {header}
         <CenteredCard>
           <Loader2 className="w-8 h-8 text-indigo-700 dark:text-indigo-400 mx-auto animate-spin" />
@@ -938,7 +938,7 @@ function GradedWorkspace({ sprintId }: { sprintId: string }) {
   if (!isSignedIn) {
     const back = `/sprint/${sprintId}${inviteCode ? `?invite=${encodeURIComponent(inviteCode)}` : ""}`;
     return (
-      <div className="flex flex-col font-sans pb-16">
+      <div className="flex flex-col font-sans">
         {header}
         <SignInRequired
           title={en("Sign in to start this sprint")}
@@ -951,7 +951,7 @@ function GradedWorkspace({ sprintId }: { sprintId: string }) {
 
   if (!attempt || startIssue) {
     return (
-      <div className="flex flex-col font-sans pb-16">
+      <div className="flex flex-col font-sans">
         {header}
         <CenteredCard>
           {startIssue?.kind === "invite" ? (
@@ -1030,10 +1030,10 @@ function GradedWorkspace({ sprintId }: { sprintId: string }) {
   const showDefense = pipelineState === "voice_interview" || pipelineState === "passed" || pipelineState === "not_passed";
 
   return (
-    <div className="flex flex-col font-sans pb-16">
+    <div className="flex flex-col font-sans">
       {header}
 
-      <main className="max-w-7xl mx-auto px-6 pt-8 flex-1 w-full space-y-6">
+      <div className="pt-8 flex-1 w-full space-y-6">
         {/* Session notice */}
         <div className="glass-panel rounded-2xl p-4 border border-border flex flex-col md:flex-row md:items-center justify-between gap-3">
           <div className="space-y-1.5">
@@ -1270,7 +1270,7 @@ function GradedWorkspace({ sprintId }: { sprintId: string }) {
             )}
           </div>
         </div>
-      </main>
+      </div>
     </div>
   );
 }
@@ -1363,7 +1363,7 @@ function PracticeWorkspace({ sprintId }: { sprintId: string }) {
   };
 
   return (
-    <div className="flex flex-col font-sans pb-16">
+    <div className="flex flex-col font-sans">
       <WorkspaceHeader
         title={humanizeSlug(sprintId)}
         sprintId={sprintId}
@@ -1402,7 +1402,7 @@ function PracticeWorkspace({ sprintId }: { sprintId: string }) {
         }
       />
 
-      <main className="max-w-7xl mx-auto px-6 pt-8 flex-1 w-full space-y-6">
+      <div className="pt-8 flex-1 w-full space-y-6">
         <div className="glass-panel rounded-2xl p-4 border border-border flex items-start gap-2 text-[11px] text-muted-foreground">
           <Sparkles className="w-3.5 h-3.5 mt-0.5 shrink-0 text-indigo-700 dark:text-indigo-400" />
           <span>
@@ -1519,7 +1519,7 @@ function PracticeWorkspace({ sprintId }: { sprintId: string }) {
             </div>
           </div>
         </div>
-      </main>
+      </div>
     </div>
   );
 }

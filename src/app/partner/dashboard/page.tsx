@@ -104,21 +104,21 @@ export default function PartnerDashboardPage() {
   if (access) return <AccessNotice problem={access} feature="The partner dashboard" />;
   if (failed)
     return (
-      <main className="mx-auto max-w-md px-4 py-24 text-center">
+      <div className="mx-auto max-w-md py-16 text-center">
         <h1 className="text-xl font-semibold">{en("We couldn't load your dashboard")}</h1>
         <p className="mt-2 text-sm text-muted-foreground">{en("Your account may not be linked to an institute yet. Please refresh, or ask Edulexa support.")}</p>
-      </main>
+      </div>
     );
   if (!data)
     return (
-      <main className="mx-auto max-w-6xl px-4 py-10" aria-busy="true" aria-label={en("Loading your dashboard")}>
+      <div aria-busy="true" aria-label={en("Loading your dashboard")}>
         <div className={`${card} h-40 animate-pulse motion-reduce:animate-none`} />
-      </main>
+      </div>
     );
 
   const k = data.kpis;
   return (
-    <main className="mx-auto max-w-6xl space-y-6 px-4 pb-16 pt-8 sm:px-6">
+    <div className="space-y-6">
       <header className="flex flex-wrap items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-indigo-600/10 text-indigo-700 dark:text-indigo-300">
@@ -264,6 +264,6 @@ export default function PartnerDashboardPage() {
           </div>
         )}
       </section>
-    </main>
+    </div>
   );
 }

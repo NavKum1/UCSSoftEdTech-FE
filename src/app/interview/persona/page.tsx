@@ -162,8 +162,8 @@ export default function PersonaSelectorPage() {
   if (access) return <AccessNotice problem={access} feature="The interviewer persona studio" />;
 
   return (
-    <div className="min-h-screen bg-background text-foreground p-6 sm:p-10">
-      <div className="max-w-7xl mx-auto space-y-8">
+    <div className="text-foreground">
+      <div className="space-y-8">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-6 border-b border-border">
           <div>

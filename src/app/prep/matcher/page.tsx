@@ -99,11 +99,11 @@ export default function ResumeMatcherPrepPage() {
   if (access) return <AccessNotice problem={access} feature="The resume matcher" />;
 
   return (
-    <div className="min-h-screen bg-background text-foreground p-6 md:p-12 font-sans relative overflow-hidden">
+    <div className="text-foreground font-sans relative overflow-hidden">
       {/* Background Radial Glow */}
       <div className="absolute top-1/4 start-1/2 -translate-x-1/2 w-[700px] h-[700px] bg-indigo-600/10 blur-[150px] rounded-full pointer-events-none" />
 
-      <div className="max-w-7xl mx-auto space-y-8 relative z-10">
+      <div className="space-y-8 relative z-10">
         {/* Header */}
         <div className="space-y-3">
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-700 dark:text-indigo-400 text-xs font-semibold">

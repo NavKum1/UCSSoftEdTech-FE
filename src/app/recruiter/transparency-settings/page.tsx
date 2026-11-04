@@ -57,13 +57,13 @@ export default function TransparencySettingsPage() {
   const data = state?.data;
 
   return (
-    <div className="space-y-6 max-w-3xl">
+    <div className="space-y-6">
       <div className="pb-4 border-b border-border">
         <div className="flex items-center gap-2 text-xs font-semibold text-indigo-700 dark:text-indigo-400 uppercase tracking-wider">
           <FileBarChart className="w-4 h-4" />{en(" Transparency")}
         </div>
         <h1 className="text-2xl font-extrabold text-foreground mt-1">{en("Contribute to the public transparency report")}</h1>
-        <p className="text-xs text-muted-foreground mt-1">
+        <p className="text-xs text-muted-foreground mt-1 max-w-3xl">
           {en("The public")}{" "}
           <Link href="/transparency" className="text-indigo-700 dark:text-indigo-400 hover:underline inline-flex items-center gap-0.5">
             {en("transparency report ")}<ExternalLink className="w-3 h-3" />
@@ -102,7 +102,7 @@ export default function TransparencySettingsPage() {
               <span className={`inline-block h-5 w-5 rounded-full bg-white shadow transition-transform ${data.includeOutcomeData ? "translate-x-5" : "translate-x-0.5"}`} />
             </button>
           </div>
-          <p className="text-sm text-muted-foreground">{data.explanation}</p>
+          <p className="text-sm text-muted-foreground max-w-3xl">{data.explanation}</p>
           <p className="text-xs text-muted-foreground">
             {en("Outcomes are recorded on the ")}<Link href="/recruiter/validity" className="text-indigo-700 dark:text-indigo-400 hover:underline">{en("validity & fairness")}</Link> page.
           </p>

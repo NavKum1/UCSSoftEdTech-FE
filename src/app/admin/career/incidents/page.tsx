@@ -103,7 +103,7 @@ export default function IncidentsPage() {
   };
 
   return (
-    <div className="mx-auto max-w-5xl px-4 py-6">
+    <div>
       <PageHeader title="Privacy incidents" description="Record a personal-data breach, see who is affected and draft the notices. Nothing is sent from here: follow the breach runbook." />
       <ErrorBanner error={err ?? list.error} />
       <SuccessBanner message={msg} />

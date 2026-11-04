@@ -68,12 +68,12 @@ export default function FreeTierFrame({ children }: { children: React.ReactNode 
   const t = useCareerT("freeTier");
   const brand = useFreeBrand();
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="text-foreground">
       <a href="#free-main" className="sr-only focus:not-sr-only focus:absolute focus:start-2 focus:top-2 focus:z-50 focus:rounded focus:bg-card focus:px-3 focus:py-2">
         {t("skip")}
       </a>
       <header className="border-b border-border">
-        <div className="mx-auto flex max-w-4xl items-center justify-between gap-4 px-4 py-3">
+        <div className="flex items-center justify-between gap-4 py-3">
           <Link href="/free" className="flex items-center gap-2 font-semibold">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             {brand?.logoUrl && <img src={brand.logoUrl} alt="" className="h-7 w-auto" />}
@@ -89,9 +89,9 @@ export default function FreeTierFrame({ children }: { children: React.ReactNode 
           </nav>
         </div>
       </header>
-      <main id="free-main" className="mx-auto max-w-4xl space-y-6 px-4 py-8">
+      <div id="free-main" className="space-y-6 pt-6">
         {children}
-      </main>
+      </div>
     </div>
   );
 }

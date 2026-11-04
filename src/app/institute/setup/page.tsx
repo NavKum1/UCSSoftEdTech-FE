@@ -62,7 +62,7 @@ function Setup() {
 
   if (access) return <AccessNotice problem={access} feature="school setup" />;
   if (!s) {
-    return <div className="mx-auto max-w-7xl p-6">{error ? <p className="text-sm text-red-700">{error}</p> : <Loader2 aria-label={en("Loading")} className="h-5 w-5 animate-spin text-muted-foreground" />}</div>;
+    return <div>{error ? <p className="text-sm text-red-700">{error}</p> : <Loader2 aria-label={en("Loading")} className="h-5 w-5 animate-spin text-muted-foreground" />}</div>;
   }
 
   const index = STEPS.findIndex((x) => x.key === step);
@@ -80,7 +80,7 @@ function Setup() {
   const props = { s, setS, apiFetch, next };
 
   return (
-    <div className="mx-auto max-w-7xl p-4 sm:p-6">
+    <div>
       <div className="mb-6">
         <h1 className="text-2xl font-semibold tracking-tight">{en("Set up {name}", { name: s.school.name })}</h1>
         <p className="mt-1 text-sm text-muted-foreground">{en("Four short steps. Skip any of them and come back from the checklist on your dashboard.")}</p>

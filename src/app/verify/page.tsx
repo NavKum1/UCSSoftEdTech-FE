@@ -125,8 +125,8 @@ export default function VerifyJwsPage() {
   const claims = result?.valid ? result.claims : null;
 
   return (
-    <div className="min-h-screen bg-background text-foreground pb-20">
-      <div className="max-w-3xl mx-auto px-6 py-10 space-y-6">
+    <div className="text-foreground">
+      <div className="space-y-6">
         <div>
           <h1 className="text-2xl font-black tracking-tight text-foreground flex items-center gap-2">
             <ShieldCheck className="w-6 h-6 text-indigo-700 dark:text-indigo-400" />

@@ -233,17 +233,17 @@ export default function EdulexaConsolePage() {
   if (access) return <AccessNotice problem={access} feature="the Edulexa console" />;
   if (failed)
     return (
-      <main className="mx-auto max-w-md px-4 py-24 text-center">
+      <div className="mx-auto max-w-md py-16 text-center">
         <AlertTriangle aria-hidden="true" className="mx-auto h-8 w-8 text-amber-600" />
         <h1 className="mt-3 text-xl font-semibold">{en("We couldn't load the console")}</h1>
         <p className="mt-2 text-sm text-muted-foreground">{en("Please refresh the page to try again.")}</p>
-      </main>
+      </div>
     );
   if (!metrics)
     return (
-      <main className="mx-auto max-w-6xl px-4 py-10" aria-busy="true" aria-label={en("Loading the console")}>
+      <div aria-busy="true" aria-label={en("Loading the console")}>
         <div className={`${card} h-40 animate-pulse motion-reduce:animate-none`} />
-      </main>
+      </div>
     );
 
   const tabs: [Tab, string, React.ElementType][] = [
@@ -254,7 +254,7 @@ export default function EdulexaConsolePage() {
   ];
 
   return (
-    <main className="mx-auto max-w-6xl space-y-6 px-4 pb-16 pt-8 sm:px-6">
+    <div className="space-y-6">
       <header>
         <h1 className="text-2xl font-semibold tracking-tight">{en("Edulexa console")}</h1>
         <p className="mt-1 max-w-3xl text-sm text-muted-foreground">
@@ -289,7 +289,7 @@ export default function EdulexaConsolePage() {
       {tab === "content" && <ContentTab metrics={metrics} assets={assets} busy={busy} send={send} />}
       {tab === "payments" && <PaymentsTab metrics={metrics} payouts={payouts} busy={busy} send={send} apiFetch={apiFetch} setNotice={setNotice} />}
       {tab === "integration" && <IntegrationTab tenantId={metrics.tenantId} busy={busy} send={send} />}
-    </main>
+    </div>
   );
 }
 

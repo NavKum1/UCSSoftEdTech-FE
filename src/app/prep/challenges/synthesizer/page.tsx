@@ -111,9 +111,9 @@ export default function ChallengeSynthesizerPage() {
   if (access) return <AccessNotice problem={access} feature="The challenge synthesizer" />;
 
   return (
-    <div className="min-h-screen bg-background text-foreground p-6 font-sans">
+    <div className="text-foreground font-sans">
       {/* Top Header */}
-      <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-start md:items-center justify-between pb-6 border-b border-border gap-4">
+      <div className="flex flex-col md:flex-row items-start md:items-center justify-between pb-6 border-b border-border gap-4">
         <div>
           <div className="flex items-center gap-3">
             <span className="px-2.5 py-1 text-xs font-semibold uppercase tracking-wider bg-indigo-500/10 text-indigo-700 dark:text-indigo-400 border border-indigo-500/20 rounded">
@@ -149,7 +149,7 @@ export default function ChallengeSynthesizerPage() {
       </div>
 
       {message && (
-        <div className="max-w-7xl mx-auto mt-4 p-3.5 bg-indigo-950/40 border border-indigo-700/50 rounded-lg text-indigo-200 text-sm flex items-center justify-between">
+        <div className="mt-4 p-3.5 bg-indigo-950/40 border border-indigo-700/50 rounded-lg text-indigo-200 text-sm flex items-center justify-between">
           <span>{message}</span>
           <button onClick={() => setMessage(null)} className="text-xs text-indigo-700 dark:text-indigo-400 hover:underline">
             {en("Dismiss")}
@@ -158,7 +158,7 @@ export default function ChallengeSynthesizerPage() {
       )}
 
       {/* Synthesis Config Bar */}
-      <div className="max-w-7xl mx-auto mt-6 bg-card border border-border rounded-xl p-4 shadow-lg flex flex-wrap items-center justify-between gap-4">
+      <div className="mt-6 bg-card border border-border rounded-xl p-4 shadow-lg flex flex-wrap items-center justify-between gap-4">
         <div className="flex flex-wrap items-center gap-4 text-xs">
           <div>
             <label className="text-muted-foreground block mb-1">{en("Base Archetype")}</label>
@@ -227,7 +227,7 @@ export default function ChallengeSynthesizerPage() {
 
       {/* Main Studio Viewport */}
       {activeChallenge && (
-        <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
           {/* Left Column: Mission Narrative & Synthesized Test Harness */}
           <div className="space-y-6">
             {/* Story Card */}

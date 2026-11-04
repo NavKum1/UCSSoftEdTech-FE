@@ -344,17 +344,17 @@ export default function DeliveryCoachingPage() {
   if (access) return <AccessNotice problem={access} feature="Speaking practice" />;
   if (failed)
     return (
-      <main className="mx-auto max-w-md px-4 py-24 text-center">
+      <div className="mx-auto max-w-md py-16 text-center">
         <AlertTriangle aria-hidden="true" className="mx-auto h-8 w-8 text-amber-600" />
         <h1 className="mt-3 text-xl font-semibold">{en("We couldn't load speaking practice")}</h1>
         <p className="mt-2 text-sm text-muted-foreground">{en("Please refresh the page to try again.")}</p>
-      </main>
+      </div>
     );
   if (!decision)
     return (
-      <main className="mx-auto max-w-4xl px-4 py-10" aria-busy="true" aria-label={en("Loading speaking practice")}>
+      <div aria-busy="true" aria-label={en("Loading speaking practice")}>
         <div className={`${card} h-40 animate-pulse motion-reduce:animate-none`} />
-      </main>
+      </div>
     );
 
   const header = (
@@ -368,19 +368,19 @@ export default function DeliveryCoachingPage() {
 
   if (!decision.enabled)
     return (
-      <main className="mx-auto max-w-4xl space-y-6 px-4 pb-16 pt-8 sm:px-6">
+      <div className="space-y-6">
         {header}
         <section className={`${card} p-6 text-center`}>
           <ShieldOff aria-hidden="true" className="mx-auto h-8 w-8 text-muted-foreground" />
           <h2 className="mt-2 text-base font-semibold">{en("Speaking practice isn't available")}</h2>
           <p className="mt-1 text-sm text-muted-foreground">{decision.reason || "It isn't offered in your region."}</p>
         </section>
-      </main>
+      </div>
     );
 
   if (!decision.usable)
     return (
-      <main className="mx-auto max-w-4xl space-y-6 px-4 pb-16 pt-8 sm:px-6">
+      <div className="space-y-6">
         {header}
         <section className={`${card} space-y-4 p-6`}>
           <h2 className="flex items-center gap-2 text-base font-semibold">
@@ -411,11 +411,11 @@ export default function DeliveryCoachingPage() {
             </Link>
           </div>
         </section>
-      </main>
+      </div>
     );
 
   return (
-    <main className="mx-auto max-w-4xl space-y-6 px-4 pb-16 pt-8 sm:px-6">
+    <div className="space-y-6">
       {header}
 
       <section className={`${card} space-y-4 p-5`} aria-labelledby="dc-practice">
@@ -611,6 +611,6 @@ export default function DeliveryCoachingPage() {
           {en("Turn off speaking practice")}
         </button>
       </section>
-    </main>
+    </div>
   );
 }

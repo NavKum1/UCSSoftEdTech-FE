@@ -117,7 +117,7 @@ export default function ProctoringVideoReviewPage({ params }: { params: Promise<
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background text-foreground flex items-center justify-center">
+      <div className="text-foreground flex items-center justify-center py-24">
         <div className="flex flex-col items-center gap-4">
           <div className="w-12 h-12 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
           <p className="text-muted-foreground font-mono text-sm">Loading Assessment Video Recording...</p>
@@ -128,7 +128,7 @@ export default function ProctoringVideoReviewPage({ params }: { params: Promise<
 
   if (fetchError || !playerData) {
     return (
-      <div className="min-h-screen bg-background text-foreground flex items-center justify-center font-sans p-6">
+      <div className="text-foreground flex items-center justify-center font-sans py-12">
         <div className="max-w-md w-full p-8 rounded-2xl bg-card border border-border text-center space-y-4">
           <div className="w-12 h-12 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 flex items-center justify-center mx-auto text-lg font-bold">
             !
@@ -152,9 +152,9 @@ export default function ProctoringVideoReviewPage({ params }: { params: Promise<
   const progressPercent = (currentTime / duration) * 100;
 
   return (
-    <div className="min-h-screen bg-background text-foreground flex flex-col font-sans">
+    <div className="text-foreground flex flex-col gap-6 font-sans">
       {/* Top Header */}
-      <header className="border-b border-border bg-card/80 backdrop-blur px-6 py-4 flex items-center justify-between sticky top-0 z-50">
+      <header className="border-b border-border pb-4 flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-3">
           <Link
             href="/partner/dashboard"
@@ -194,7 +194,7 @@ export default function ProctoringVideoReviewPage({ params }: { params: Promise<
       </header>
 
       {/* Main Review Workspace */}
-      <main className="flex-1 p-6 grid grid-cols-1 lg:grid-cols-12 gap-6 max-w-7xl mx-auto w-full">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Left Column: Dual Video Stream & Synchronized Scrubber (8 Cols) */}
         <div className="lg:col-span-8 flex flex-col gap-4">
           {/* Track Switcher */}
@@ -466,7 +466,7 @@ export default function ProctoringVideoReviewPage({ params }: { params: Promise<
             </div>
           )}
         </div>
-      </main>
+      </div>
     </div>
   );
 }

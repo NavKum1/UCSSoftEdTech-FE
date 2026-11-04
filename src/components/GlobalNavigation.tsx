@@ -19,6 +19,7 @@ import { ProductRegionSwitcher } from "@/context/GeoContext";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import EnglishPicker from "@/components/EnglishPicker";
 import { useEn } from "@/lib/english/EnglishProvider";
+import { FRAME } from "@/components/layout/Frame";
 import { authenticatedFetch } from "@/lib/apiClient";
 
 interface NavItem {
@@ -211,7 +212,7 @@ export default function GlobalNavigation() {
         {en("Skip to content")}
       </a>
       <header className="sticky top-0 z-50 border-b border-border bg-card/90 backdrop-blur-md">
-        <div className="mx-auto flex h-14 max-w-7xl items-center justify-between gap-3 px-4 sm:px-6">
+        <div className={`${FRAME} flex h-14 items-center justify-between gap-3`}>
           <Link href="/dashboard" className="flex items-center gap-2.5">
             <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-600 text-white">
               <Shield aria-hidden="true" className="h-4 w-4" />
@@ -228,9 +229,12 @@ export default function GlobalNavigation() {
                 <Mic aria-hidden="true" className="h-3.5 w-3.5" /> {" "}{en("{minutes} min left", { minutes })}
               </Link>
             )}
-            <ProductRegionSwitcher />
-            <EnglishPicker className="hidden sm:inline-flex" />
-            <ThemeToggle />
+            {/* On phones these move into the menu, so the header fits the screen */}
+            <div className="hidden items-center gap-2 sm:flex">
+              <ProductRegionSwitcher />
+              <EnglishPicker />
+              <ThemeToggle />
+            </div>
             <div className="ps-1">{account}</div>
             <button
               ref={mobileButtonRef}
@@ -246,7 +250,7 @@ export default function GlobalNavigation() {
           </div>
         </div>
 
-        <nav aria-label={en("Main")} className="mx-auto hidden max-w-7xl px-2 sm:px-4 lg:block">
+        <nav aria-label={en("Main")} className={`${FRAME} hidden !px-1 sm:!px-3 lg:block`}>
           <ul className="-mb-px flex items-center gap-1">
             {TABS.map((t) => (
               <li key={t.href}>
@@ -304,6 +308,11 @@ export default function GlobalNavigation() {
 
         {mobileOpen && (
           <nav id="mobile-navigation" aria-label={en("Main (mobile)")} className="max-h-[75vh] space-y-4 overflow-y-auto border-t border-border px-4 py-4 lg:hidden">
+            <div className="flex flex-wrap items-center gap-2 sm:hidden">
+              <ProductRegionSwitcher />
+              <EnglishPicker />
+              <ThemeToggle />
+            </div>
             <ul className="grid grid-cols-2 gap-1">
               {TABS.map((t) => (
                 <li key={t.href}>

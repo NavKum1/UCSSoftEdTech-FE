@@ -328,7 +328,7 @@ export default function EvidencePackPage() {
 
   if (loading && !pack) {
     return (
-      <div className="p-16 flex items-center justify-center gap-2 text-sm text-muted-foreground">
+      <div className="py-16 flex items-center justify-center gap-2 text-sm text-muted-foreground">
         <Loader2 className="w-4 h-4 animate-spin" />{en(" Loading evidence pack...")}
       </div>
     );

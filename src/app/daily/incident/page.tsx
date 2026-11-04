@@ -201,7 +201,7 @@ function IncidentDrill() {
   const fromLink = !!(params.get("accessCode") || params.get("id"));
 
   return (
-    <main className="mx-auto max-w-6xl px-4 pb-16 pt-8 sm:px-6">
+    <div>
       <Link href="/daily" className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
         <ArrowLeft aria-hidden="true" className="h-4 w-4" />{en(" Daily practice")}
       </Link>
@@ -358,7 +358,7 @@ function IncidentDrill() {
       ) : null}
 
       {!attempt && <GenerateDrill apiFetch={apiFetch} onGenerated={(body, message) => { show(body); setNotice(message); }} />}
-    </main>
+    </div>
   );
 }
 

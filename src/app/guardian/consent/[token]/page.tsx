@@ -77,7 +77,7 @@ export default function GuardianConsentPage() {
   };
 
   return (
-    <div className="mx-auto max-w-2xl px-4 py-8">
+    <div>
       <header className="mb-6">
         <p className="text-sm text-muted-foreground">{brand}</p>
         <h1 className="text-2xl font-semibold">{t("parentOrGuardianConsent")}</h1>
@@ -89,7 +89,7 @@ export default function GuardianConsentPage() {
       ) : view ? (
         <Card>
           <form onSubmit={submit} className="space-y-4 text-sm">
-            <p>
+            <p className="max-w-3xl">
               {t("dearGuardianNameSchoolAsksFor", { guardianName: view.guardianName, school: view.school ?? t("theSchool"), studentFirstName: view.studentFirstName ?? t("yourChild"), minorAge: view.minorAge, law: view.law, noticeVersion: view.noticeVersion })}
               {view.noticeUrl ? (
                 <>
@@ -98,7 +98,7 @@ export default function GuardianConsentPage() {
               ) : null}
               {t("thisLinkWorksUntilExpiresAt", { expiresAt: formatDate(view.expiresAt) })}
             </p>
-            <fieldset className="space-y-3">
+            <fieldset className="grid gap-3 sm:grid-cols-2">
               <legend className="font-medium">{t("whatMayTheSchoolDo")}</legend>
               {view.purposes.map((p) => (
                 <label key={p.key} className="flex items-start gap-3">
@@ -110,7 +110,7 @@ export default function GuardianConsentPage() {
                 </label>
               ))}
             </fieldset>
-            <Field label={t("yourFullNameYourSignature")}>{(p) => <input {...p} value={name} onChange={(e) => setName(e.target.value)} required autoComplete="name" />}</Field>
+            <div className="grid gap-4 sm:grid-cols-2"><Field label={t("yourFullNameYourSignature")}>{(p) => <input {...p} value={name} onChange={(e) => setName(e.target.value)} required autoComplete="name" />}</Field></div>
             <label className="flex items-start gap-3">
               <input type="checkbox" className="mt-1" checked={confirm} onChange={(e) => setConfirm(e.target.checked)} required />
               <span>{t("iAmThisStudentsParent")}</span>

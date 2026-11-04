@@ -151,8 +151,8 @@ export default function SelfIdentificationPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background text-foreground pb-20">
-      <div className="max-w-2xl mx-auto px-6 py-10 space-y-6">
+    <div className="text-foreground">
+      <div className="space-y-6">
         <div>
           <h1 className="text-2xl font-black tracking-tight text-foreground flex items-center gap-2">
             <Scale className="w-6 h-6 text-indigo-700 dark:text-indigo-400" />
@@ -179,6 +179,7 @@ export default function SelfIdentificationPage() {
         </div>
 
         <form onSubmit={handleSave} className="glass-panel rounded-2xl p-5 border border-border space-y-4">
+          <div className="grid gap-4 sm:grid-cols-2">
           {FIELDS.map((field) => (
             <label key={field.key} className="block space-y-1">
               <span className="text-xs font-semibold text-foreground">{en(field.label)}</span>
@@ -195,6 +196,7 @@ export default function SelfIdentificationPage() {
               </select>
             </label>
           ))}
+          </div>
 
           {message && (
             <p

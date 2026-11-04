@@ -114,16 +114,16 @@ export default function InstituteBillingPage() {
   if (access) return <AccessNotice problem={access} feature="Billing" />;
   if (failed)
     return (
-      <main className="mx-auto max-w-md px-4 py-24 text-center">
+      <div className="mx-auto max-w-md py-16 text-center">
         <h1 className="text-xl font-semibold">{en("We couldn't load billing")}</h1>
         <p className="mt-2 text-sm text-muted-foreground">{en("Please refresh the page to try again.")}</p>
-      </main>
+      </div>
     );
   if (!sub)
     return (
-      <main className="mx-auto max-w-5xl px-4 py-10" aria-busy="true" aria-label={en("Loading billing")}>
+      <div aria-busy="true" aria-label={en("Loading billing")}>
         <div className={`${card} h-40 animate-pulse motion-reduce:animate-none`} />
-      </main>
+      </div>
     );
 
   const meters: [string, Quota | undefined, (q: Quota) => string][] = [
@@ -134,7 +134,7 @@ export default function InstituteBillingPage() {
   ];
 
   return (
-    <main className="mx-auto max-w-5xl space-y-6 px-4 pb-16 pt-8 sm:px-6">
+    <div className="space-y-6">
       <header className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-xl font-semibold">{en("Plan and billing")}</h1>
         <Link href="/partner/dashboard" className="text-sm font-medium text-indigo-700 hover:underline dark:text-indigo-300">
@@ -283,6 +283,6 @@ export default function InstituteBillingPage() {
           </table>
         </section>
       )}
-    </main>
+    </div>
   );
 }

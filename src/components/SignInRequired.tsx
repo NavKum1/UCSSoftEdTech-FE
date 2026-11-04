@@ -104,7 +104,7 @@ export default function SignInRequired({
     <section
       aria-labelledby={headingId}
       data-access-notice={problem}
-      className={`${inline ? "py-4" : "max-w-xl mx-auto px-6 py-16"} w-full text-center ${className}`}
+      className={`${inline ? "py-4" : "max-w-lg mx-auto py-16"} w-full text-center ${className}`}
     >
       <div
         aria-hidden="true"

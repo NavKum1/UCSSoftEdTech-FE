@@ -162,7 +162,7 @@ export default function DashboardPage() {
 
   if (failed !== null && !data) {
     return (
-      <main className="mx-auto flex min-h-[70vh] max-w-md flex-col items-center justify-center gap-4 px-4 text-center">
+      <div className="mx-auto flex min-h-[60vh] max-w-md flex-col items-center justify-center gap-4 text-center">
         <h1 className="text-xl font-semibold">{en("We couldn't load your dashboard")}</h1>
         <p className="text-sm text-muted-foreground">
           {en("{value} Your work is saved; please try again.", { value: failed === 0 ? en("The connection to Edulexa failed.") : en("Something went wrong on our side.") })}
@@ -174,7 +174,7 @@ export default function DashboardPage() {
         >
           {en("Try again")}
         </button>
-      </main>
+      </div>
     );
   }
 
@@ -185,7 +185,7 @@ export default function DashboardPage() {
   const isNew = totalResults === 0;
 
   return (
-    <main className="mx-auto max-w-7xl px-4 pb-16 pt-8 sm:px-6 lg:px-8">
+    <div>
       {/* Header */}
       <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div className="space-y-1.5">
@@ -457,7 +457,7 @@ export default function DashboardPage() {
           </section>
         </aside>
       </div>
-    </main>
+    </div>
   );
 }
 
@@ -545,7 +545,7 @@ function EmptyState({ text }: { text: string }) {
 function DashboardSkeleton() {
   const en = useEn();
   return (
-    <main className="mx-auto max-w-7xl px-4 pb-16 pt-8 sm:px-6 lg:px-8" aria-busy="true" aria-label={en("Loading your dashboard")}>
+    <div aria-busy="true" aria-label={en("Loading your dashboard")}>
       <div className="h-4 w-40 animate-pulse rounded bg-muted motion-reduce:animate-none" />
       <div className="mt-3 h-8 w-72 animate-pulse rounded bg-muted motion-reduce:animate-none" />
       <div className="mt-8 grid grid-cols-2 gap-3 lg:grid-cols-4">
@@ -557,6 +557,6 @@ function DashboardSkeleton() {
         <div className={`${card} h-72 animate-pulse lg:col-span-2 motion-reduce:animate-none`} />
         <div className={`${card} h-72 animate-pulse motion-reduce:animate-none`} />
       </div>
-    </main>
+    </div>
   );
 }

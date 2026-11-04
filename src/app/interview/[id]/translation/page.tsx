@@ -193,10 +193,10 @@ export default function MultiLanguageTranslationStudioPage() {
   if (access) return <AccessNotice problem={access} feature="The translation studio" />;
 
   return (
-    <div className="min-h-screen bg-background text-foreground flex flex-col font-sans pb-16">
+    <div className="flex flex-col font-sans text-foreground">
       {/* Header */}
       <header className="border-b border-border bg-card/80 backdrop-blur-md sticky top-16 z-20">
-        <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+        <div className="px-4 h-16 flex items-center justify-between">
           <div className="flex items-center space-x-3">
             <button
               onClick={() => router.back()}
@@ -237,7 +237,7 @@ export default function MultiLanguageTranslationStudioPage() {
       </header>
 
       {/* Main Content Layout */}
-      <main className="max-w-7xl mx-auto px-6 py-8 flex-1 w-full space-y-8">
+      <div className="pt-8 flex-1 w-full space-y-8">
         {/* Language Selection Ribbon */}
         <div className="p-4 rounded-2xl bg-card/60 border border-border space-y-3">
           <div className="flex items-center justify-between">
@@ -467,7 +467,7 @@ export default function MultiLanguageTranslationStudioPage() {
             </div>
           </form>
         </div>
-      </main>
+      </div>
     </div>
   );
 }

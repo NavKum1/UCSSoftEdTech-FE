@@ -458,8 +458,8 @@ export default function RecruiterDashboardPage() {
   if (access) return <AccessNotice problem={access} feature="The recruiter dashboard" />;
 
   return (
-    <div className="min-h-screen bg-background text-foreground font-sans p-6 md:p-10">
-      <div className="max-w-7xl mx-auto space-y-8">
+    <div className="text-foreground font-sans">
+      <div className="space-y-8">
         {/* Header Navigation */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-border">
           <div className="flex items-center space-x-3">

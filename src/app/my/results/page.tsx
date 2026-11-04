@@ -49,8 +49,8 @@ export default function MyResultsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background text-foreground pb-20">
-      <div className="max-w-4xl mx-auto px-6 py-10 space-y-6">
+    <div className="text-foreground">
+      <div className="space-y-6">
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
             <h1 className="text-2xl font-black tracking-tight text-foreground flex items-center gap-2">

@@ -108,14 +108,14 @@ export default function SchoolBillingPage() {
 
   if (!s) {
     return (
-      <div className="mx-auto max-w-4xl p-6">
+      <div>
         {error ? <p className="text-sm text-red-700">{error}</p> : <Loader2 aria-label={en("Loading")} className="h-5 w-5 animate-spin text-slate-400" />}
       </div>
     );
   }
   if (s.managed) {
     return (
-      <div className="mx-auto max-w-4xl space-y-3 p-6">
+      <div className="space-y-3">
         <h1 className="text-2xl font-semibold">{en("Billing")}</h1>
         <p className="text-slate-600 dark:text-slate-400">{en("Your school's contract is managed by Edulexa's team. Contact us about invoices or changes.")}</p>
       </div>
@@ -129,7 +129,7 @@ export default function SchoolBillingPage() {
   const card = "rounded-2xl border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-900";
 
   return (
-    <div className="mx-auto max-w-4xl space-y-6 p-4 sm:p-6">
+    <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-semibold tracking-tight">{en("Billing")}</h1>
         <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">{en("Your plan, what it includes and how you pay.")}</p>

@@ -98,7 +98,7 @@ export function SchoolPlanBanner() {
   }[tone];
   const Icon = tone === "info" ? Info : AlertTriangle;
   return (
-    <div role={tone === "info" ? "status" : "alert"} className={`mx-auto mb-4 flex max-w-7xl flex-wrap items-start justify-between gap-3 rounded-2xl border p-4 text-sm ${styles}`}>
+    <div role={tone === "info" ? "status" : "alert"} className={`mb-4 flex flex-wrap items-start justify-between gap-3 rounded-2xl border p-4 text-sm ${styles}`}>
       <span className="flex items-start gap-2">
         <Icon aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0" />
         {text}

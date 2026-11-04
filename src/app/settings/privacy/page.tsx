@@ -110,8 +110,8 @@ export default function PrivacySettingsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background text-foreground pb-20">
-      <div className="max-w-2xl mx-auto px-6 py-10 space-y-6">
+    <div className="text-foreground">
+      <div className="space-y-6">
         <div>
           <h1 className="text-2xl font-black tracking-tight text-foreground flex items-center gap-2">
             <Lock className="w-6 h-6 text-indigo-700 dark:text-indigo-400" />
@@ -179,7 +179,7 @@ export default function PrivacySettingsPage() {
             </div>
           ) : (
             <>
-              <div className="grid gap-3 text-xs">
+              <div className="grid gap-3 text-xs md:grid-cols-3">
                 <div>
                   <p className="font-semibold text-foreground">{en("Deleted")}</p>
                   <ul className="list-disc ms-5 mt-1 space-y-0.5 text-muted-foreground">
@@ -211,15 +211,16 @@ export default function PrivacySettingsPage() {
               </div>
 
               <form onSubmit={erase} className="space-y-2">
-                <label htmlFor="confirm" className="text-xs font-semibold text-foreground">
+                <label htmlFor="confirm" className="block text-xs font-semibold text-foreground">
                   {en("Type ")}<span className="font-mono">{CONFIRM}</span>{en(" to confirm")}
                 </label>
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
                 <input
                   id="confirm"
                   value={confirm}
                   onChange={(e) => setConfirm(e.target.value)}
                   autoComplete="off"
-                  className="w-full px-3 py-2 rounded-xl border border-border bg-background text-sm text-foreground font-mono"
+                  className="w-full sm:max-w-md px-3 py-2 rounded-xl border border-border bg-background text-sm text-foreground font-mono"
                 />
                 <button
                   type="submit"
@@ -229,6 +230,7 @@ export default function PrivacySettingsPage() {
                   {deleting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
                   {en("Delete my data")}
                 </button>
+                </div>
                 {deleteError && <p className="text-xs text-rose-700 dark:text-rose-400">{deleteError}</p>}
               </form>
             </>

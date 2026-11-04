@@ -69,7 +69,7 @@ export default function PricingPage() {
 
   if (!plans) {
     return (
-      <div className="max-w-xl mx-auto px-6 py-16 text-center space-y-3">
+      <div className="max-w-md mx-auto py-16 text-center space-y-3">
         <AlertTriangle className="w-8 h-8 mx-auto text-amber-600 dark:text-amber-400" />
         <h1 className="text-xl font-bold text-foreground">{en("Pricing is unavailable")}</h1>
         <p className="text-sm text-muted-foreground">{en("We couldn't load the plan catalogue. Please try again shortly.")}</p>
@@ -78,11 +78,11 @@ export default function PricingPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background text-foreground pb-20">
-      <div className="max-w-5xl mx-auto px-6 py-12 space-y-10">
-        <div className="text-center space-y-2">
+    <div className="text-foreground">
+      <div className="space-y-10">
+        <div className="space-y-2">
           <h1 className="text-3xl font-black tracking-tight text-foreground">{en("Plans & voice minutes")}</h1>
-          <p className="text-sm text-muted-foreground max-w-2xl mx-auto">
+          <p className="text-sm text-muted-foreground max-w-2xl">
             {en("Voice defenses are billed by the minute of conversation. Every plan includes a monthly allowance, and you can add top-up minutes at any time.")}
           </p>
           <p className="inline-flex items-center gap-1.5 text-xs font-medium text-muted-foreground bg-muted/60 border border-border rounded-full px-3 py-1">

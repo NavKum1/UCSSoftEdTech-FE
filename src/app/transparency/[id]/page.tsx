@@ -28,7 +28,7 @@ export default function TransparencyArchiveReportPage() {
   const current = result?.id === id ? result.value : null;
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+    <div className="space-y-6">
       <Link href="/transparency" className="text-xs font-semibold text-muted-foreground hover:text-foreground inline-flex items-center gap-1.5">
         <ArrowLeft className="w-3.5 h-3.5" />{en(" Latest report")}
       </Link>

@@ -110,7 +110,7 @@ export default function PlatformSchoolsPage() {
   const shown = (rows ?? []).filter((s) => !q || [s.name, s.slug, s.ownerEmail, s.country].some((v) => v?.toLowerCase().includes(q)));
 
   return (
-    <div className="mx-auto max-w-6xl space-y-5 p-4 sm:p-6">
+    <div className="space-y-5">
       <div>
         <h1 className="text-2xl font-semibold tracking-tight">Schools</h1>
         <p className="mt-1 text-sm text-muted-foreground">Schools that signed up themselves, their plan and how they pay. Schools on a contract aren&apos;t listed.</p>

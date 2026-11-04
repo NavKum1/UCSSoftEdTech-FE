@@ -324,7 +324,7 @@ export default function InterviewPairingStudioPage({ params }: { params: Promise
   if (access) return <AccessNotice problem={access} feature="The pairing studio" />;
 
   return (
-    <div className="min-h-screen bg-background text-foreground flex flex-col font-sans">
+    <div className="flex min-h-[70vh] flex-col font-sans text-foreground">
       {/* Top Bar */}
       <header className="h-16 border-b border-border bg-card/80 px-6 flex items-center justify-between backdrop-blur-md sticky top-16 z-20">
         <div className="flex items-center space-x-4">
@@ -454,7 +454,7 @@ export default function InterviewPairingStudioPage({ params }: { params: Promise
       </div>
 
       {/* Main Workspace Body */}
-      <main className="flex-1 p-4 flex flex-col">
+      <div className="flex-1 py-4 flex flex-col">
         {activeTab === "code" ? (
           /* Real-Time Code Pairing Editor */
           <div className="flex-1 bg-card border border-border rounded-2xl overflow-hidden flex flex-col shadow-2xl relative">
@@ -567,7 +567,7 @@ export default function InterviewPairingStudioPage({ params }: { params: Promise
             </div>
           </div>
         )}
-      </main>
+      </div>
 
       {/* Footer Info */}
       <footer className="h-8 bg-background border-t border-slate-900 px-6 flex items-center justify-between text-[11px] text-muted-foreground font-mono">

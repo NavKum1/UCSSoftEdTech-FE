@@ -158,9 +158,9 @@ export default function CounsellingPage() {
 
 function Loading({ label }: { label: string }) {
   return (
-    <main className="mx-auto max-w-3xl px-4 py-10" aria-busy="true" aria-label={label}>
+    <div aria-busy="true" aria-label={label}>
       <div className={`${card} h-48 animate-pulse motion-reduce:animate-none`} />
-    </main>
+    </div>
   );
 }
 
@@ -285,7 +285,7 @@ function CounsellingInner() {
     );
 
   return (
-    <main className="mx-auto max-w-5xl px-4 pb-16 pt-8 sm:px-6">
+    <div>
       <header className="mb-6">
         <p className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-indigo-700 dark:text-indigo-300">
           <Compass aria-hidden="true" className="h-4 w-4" />
@@ -337,7 +337,7 @@ function CounsellingInner() {
           </ul>
         </section>
       )}
-    </main>
+    </div>
   );
 }
 
@@ -465,7 +465,7 @@ function QuizRunner({
   };
 
   return (
-    <main className="mx-auto max-w-2xl px-4 pb-16 pt-8 sm:px-6">
+    <div>
       <div className="mb-4 flex items-center justify-between gap-3 text-sm">
         <button type="button" onClick={onExit} className="inline-flex items-center gap-1 text-muted-foreground hover:text-foreground">
           <ArrowLeft aria-hidden="true" className="h-4 w-4" />{en(" Leave (your answers are kept)")}
@@ -482,7 +482,7 @@ function QuizRunner({
         <fieldset>
           <legend className="text-lg font-semibold leading-snug">{question.title}</legend>
           {question.subtitle && <p className="mt-1 text-sm text-muted-foreground">{question.subtitle}</p>}
-          <div className="mt-5 space-y-2.5">
+          <div className="mt-5 grid gap-2.5 sm:grid-cols-2">
             {question.options.map((o) => {
               const selected = answers[question.id] === o.index;
               return (
@@ -534,7 +534,7 @@ function QuizRunner({
             {en("{value} question{value2} still to answer. Use Back to find {value3}.", { value: total - answered, value2: total - answered === 1 ? "" : "s", value3: total - answered === 1 ? "it" : "them" })}</p>
         )}
       </section>
-    </main>
+    </div>
   );
 }
 

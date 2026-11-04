@@ -86,7 +86,7 @@ export default function MentorsPage() {
   if (access) return <AccessNotice problem={access} feature="Mentoring" />;
 
   return (
-    <main className="mx-auto max-w-4xl px-4 pb-16 pt-8 sm:px-6">
+    <div>
       <header>
         <p className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-indigo-700 dark:text-indigo-300">
           <HeartHandshake aria-hidden="true" className="h-4 w-4" />{en(" Mentoring")}
@@ -174,6 +174,6 @@ export default function MentorsPage() {
           )}
         </>
       )}
-    </main>
+    </div>
   );
 }

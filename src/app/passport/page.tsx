@@ -76,23 +76,23 @@ export default function SkillPassportPage() {
   if (access) return <AccessNotice problem={access} feature="Your skill passport" />;
   if (failed && !passport)
     return (
-      <main className="mx-auto max-w-md px-4 py-24 text-center">
+      <div className="mx-auto max-w-md py-16 text-center">
         <h1 className="text-xl font-semibold">{en("We couldn't load your passport")}</h1>
         <p className="mt-2 text-sm text-muted-foreground">{en("Please refresh the page to try again.")}</p>
-      </main>
+      </div>
     );
   if (!passport)
     return (
-      <main className="mx-auto max-w-6xl px-4 py-10" aria-busy="true" aria-label={en("Loading your passport")}>
+      <div aria-busy="true" aria-label={en("Loading your passport")}>
         <div className={`${card} h-40 animate-pulse motion-reduce:animate-none`} />
-      </main>
+      </div>
     );
 
   const shareUrl = passport.publicShareToken && typeof window !== "undefined" ? `${window.location.origin}/passport/public/${passport.publicShareToken}` : null;
   const dirty = name.trim() !== passport.fullName || role.trim() !== passport.targetRole;
 
   return (
-    <main className="mx-auto max-w-6xl px-4 pb-16 pt-8 sm:px-6">
+    <div>
       <div className="mb-6">
         <h1 className="sr-only">{en("Skill passport")}</h1>
         <p className="text-sm text-muted-foreground">
@@ -202,6 +202,6 @@ export default function SkillPassportPage() {
           </p>
         </aside>
       </div>
-    </main>
+    </div>
   );
 }

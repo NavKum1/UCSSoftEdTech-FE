@@ -221,7 +221,7 @@ export default function CampusStudentPage() {
   const assignments = data?.assignments ?? [];
 
   return (
-    <div className="max-w-3xl mx-auto px-4 py-6 sm:py-8 space-y-6">
+    <div className="space-y-6">
       <div>
         <div className="flex items-center gap-2 text-xs font-semibold text-indigo-700 dark:text-indigo-400 uppercase tracking-wider">
           <GraduationCap className="w-4 h-4" />{en(" Campus placements")}
