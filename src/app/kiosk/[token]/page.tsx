@@ -151,9 +151,9 @@ export default function KioskPage() {
             {tr("loading")}
           </p>
         ) : result ? (
-          <section role="status" aria-live="assertive" className="rounded-2xl border border-border bg-card p-8 text-center">
+          <section role="status" aria-live="assertive" className="rounded-xl border border-border bg-card p-8 text-center shadow-sm">
             <h1 className="text-2xl font-semibold">{tr("youreCheckedIn")}</h1>
-            <p className="mt-6 text-sm uppercase tracking-wide text-muted-foreground">{tr("yourNumber")}</p>
+            <p className="mt-6 text-sm text-muted-foreground">{tr("yourNumber")}</p>
             <p className={`text-7xl font-bold ${BRAND_TEXT_CLASS}`}>
               {result.queueNumber}
             </p>
@@ -171,12 +171,12 @@ export default function KioskPage() {
             </button>
           </section>
         ) : info.sessions.length === 0 ? (
-          <section className="rounded-2xl border border-border bg-card p-8 text-center">
+          <section className="rounded-xl border border-border bg-card p-8 text-center shadow-sm">
             <h1 className="text-2xl font-semibold">{tr("dropInAdvisingIsClosed")}</h1>
             <p className="mt-2 text-muted-foreground">{tr("pleaseCheckBackLaterOr")}</p>
           </section>
         ) : (
-          <form onSubmit={submit} className="space-y-6 rounded-2xl border border-border bg-card p-6 sm:p-8">
+          <form onSubmit={submit} className="space-y-6 rounded-xl border border-border bg-card p-6 shadow-sm sm:p-8">
             <h1 className="text-2xl font-semibold">{tr("checkInForDropIn")}</h1>
             {info.sessions.length > 1 ? (
               <fieldset>

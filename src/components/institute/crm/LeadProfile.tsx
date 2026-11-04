@@ -94,7 +94,7 @@ function Visits({ visits }: { visits: FormVisit[] }) {
             ) : v.status === "awaitingConfirmation" ? (
               <MailQuestion aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />
             ) : v.status === "inProgress" ? (
-              <Clock aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0 text-cyan-600" />
+              <Clock aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0 text-indigo-600" />
             ) : (
               <CircleSlash aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
             )}
@@ -396,7 +396,7 @@ export default function LeadProfile({ lead }: { lead: LeadFull }) {
                     </span>
                   </div>
                   <div className="mt-0.5 h-1.5 rounded-full bg-muted" aria-hidden="true">
-                    <div className="h-full rounded-full bg-cyan-600" style={{ width: `${Math.min(100, r.percent)}%` }} />
+                    <div className="h-full rounded-full bg-indigo-600" style={{ width: `${Math.min(100, r.percent)}%` }} />
                   </div>
                 </li>
               ))}

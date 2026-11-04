@@ -4,11 +4,12 @@ import React, { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useAppAuth as useAuth } from "@/lib/appAuth";
-import { AlertCircle, ArrowLeft, Bot, CheckCircle2, Loader2, PenLine, Send, User } from "lucide-react";
+import { AlertCircle, ArrowLeft, Bot, CheckCircle2, Send, User } from "lucide-react";
 import { authenticatedFetch } from "@/lib/apiClient";
 import { WrittenDefenseState, errorMessage } from "@/lib/candidateExperience";
 import SignInRequired from "@/components/SignInRequired";
 import { useEn } from "@/lib/english/EnglishProvider";
+import { Button, buttonClass, ErrorBanner, Loading, PageHeader } from "@/components/career/ui";
 
 const MAX_ANSWER = 4000;
 
@@ -105,19 +106,13 @@ export default function WrittenDefensePage() {
         <Link href="/my/results" className="text-xs text-muted-foreground hover:text-foreground inline-flex items-center gap-1">
           <ArrowLeft className="w-3.5 h-3.5" />{en(" My results")}
         </Link>
-        <div className="glass-panel rounded-2xl p-8 border border-border text-sm text-rose-700 dark:text-rose-400 flex items-center gap-2">
-          <AlertCircle className="w-4 h-4" /> {loadError}
-        </div>
+        <ErrorBanner error={loadError} />
       </div>
     );
   }
 
   if (!state) {
-    return (
-      <div className="py-16 flex items-center justify-center gap-2 text-sm text-muted-foreground">
-        <Loader2 className="w-4 h-4 animate-spin" />{en(" Loading your written defense...")}
-      </div>
-    );
+    return <Loading label={en("Loading your written defense...")} />;
   }
 
   const backHref = state.submissionId ? `/my/results/${state.submissionId}` : "/my/results";
@@ -130,15 +125,9 @@ export default function WrittenDefensePage() {
           <ArrowLeft className="w-3.5 h-3.5" />{en(" Back to your report")}
         </Link>
 
-        <div>
-          <h1 className="text-2xl font-black tracking-tight text-foreground flex items-center gap-2">
-            <PenLine className="w-6 h-6 text-indigo-700 dark:text-indigo-400" />
-            {en("Written defense")}
-          </h1>
-          <p className="text-sm text-muted-foreground mt-1">{state.sprintTitle ?? "Your submission"}</p>
-        </div>
+        <PageHeader title={en("Written defense")} description={state.sprintTitle ?? "Your submission"} />
 
-        <div className="glass-panel rounded-2xl p-4 border border-border text-xs text-muted-foreground space-y-1">
+        <div className="space-y-1 rounded-xl border border-border bg-card p-4 text-sm text-muted-foreground shadow-sm">
           <p>
             {en("The interviewer asks up to {maxQuestions} questions about your own code, one at a time. Answer in your own words; spelling and grammar are not judged. You can finish after any answer.", { maxQuestions: state.maxQuestions })}
           </p>
@@ -161,7 +150,7 @@ export default function WrittenDefensePage() {
               </div>
               <div
                 className={`rounded-2xl px-4 py-3 text-sm max-w-[85%] whitespace-pre-wrap ${
-                  t.role === "candidate" ? "bg-indigo-500/10 border border-indigo-500/30 text-foreground" : "glass-panel border border-border text-foreground"
+                  t.role === "candidate" ? "bg-muted text-foreground" : "border border-border bg-card text-foreground shadow-sm"
                 }`}
               >
                 <span className="sr-only">{t.role === "candidate" ? en("You: ") : en("Interviewer: ")}</span>
@@ -173,8 +162,8 @@ export default function WrittenDefensePage() {
         </div>
 
         {state.finished ? (
-          <section className="glass-panel rounded-2xl p-5 border border-emerald-500/30 space-y-2">
-            <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
+          <section className="space-y-2 rounded-xl border border-border bg-card p-5 shadow-sm">
+            <h2 className="flex items-center gap-2 text-base font-semibold text-foreground">
               <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />{en(" Defense submitted")}
             </h2>
             {state.result ? (
@@ -187,15 +176,15 @@ export default function WrittenDefensePage() {
                 {en("Your answers were saved but could not be scored automatically. A person will review them.")}
               </p>
             )}
-            <Link href={backHref} className="inline-block text-xs text-indigo-700 dark:text-indigo-400 underline">
+            <Link href={backHref} className={`${buttonClass("secondary")} mt-2`}>
               {en("See your full report and feedback")}
             </Link>
           </section>
         ) : (
           <div className="space-y-3">
             {state.awaitingAnswer && (
-              <form onSubmit={sendAnswer} className="glass-panel rounded-2xl p-4 border border-border space-y-2">
-                <label htmlFor="answer" className="text-xs font-semibold text-foreground">
+              <form onSubmit={sendAnswer} className="space-y-2 rounded-xl border border-border bg-card p-4 shadow-sm">
+                <label htmlFor="answer" className="text-sm font-medium text-foreground">
                   {en("Your answer (question {value} of up to {maxQuestions})", { value: state.answered + 1, maxQuestions: state.maxQuestions })}</label>
                 <textarea
                   id="answer"
@@ -207,30 +196,19 @@ export default function WrittenDefensePage() {
                   placeholder={en("Explain your reasoning, refer to specific functions or lines...")}
                 />
                 <div className="flex flex-wrap items-center justify-between gap-2">
-                  <span className="text-[11px] text-muted-foreground">{answer.trim().length}/{MAX_ANSWER} characters</span>
-                  <button
-                    type="submit"
-                    disabled={busy !== null || answer.trim().length === 0}
-                    className="py-2 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-semibold inline-flex items-center gap-2 cursor-pointer"
-                  >
-                    {busy === "answer" ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+                  <span className="text-xs text-muted-foreground">{answer.trim().length}/{MAX_ANSWER} characters</span>
+                  <Button type="submit" busy={busy === "answer"} disabled={busy !== null || answer.trim().length === 0}>
+                    {busy !== "answer" && <Send className="h-4 w-4" aria-hidden />}
                     {en("Send answer")}
-                  </button>
+                  </Button>
                 </div>
               </form>
             )}
             {allAnswered && <p className="text-sm text-foreground">{en("You have answered every question. Finish to get your result.")}</p>}
             {state.canFinish && (
-              <button
-                onClick={finish}
-                disabled={busy !== null}
-                className={`py-2 px-4 rounded-xl text-sm font-semibold inline-flex items-center gap-2 cursor-pointer disabled:opacity-50 ${
-                  allAnswered ? "bg-emerald-600 hover:bg-emerald-500 text-white" : "bg-card hover:bg-muted border border-border text-foreground"
-                }`}
-              >
-                {busy === "finish" && <Loader2 className="w-4 h-4 animate-spin" />}
+              <Button variant={allAnswered ? "primary" : "secondary"} onClick={finish} busy={busy === "finish"} disabled={busy !== null}>
                 {en("Finish and get my result")}
-              </button>
+              </Button>
             )}
           </div>
         )}

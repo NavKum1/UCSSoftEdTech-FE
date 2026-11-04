@@ -300,7 +300,7 @@ export default function CareerOutcomesPage() {
         title={tr("outcomes")}
         description={tr("whereYourGraduatesWentWhere")}
       />
-      <div role="tablist" aria-label={tr("outcomes")} className="mb-4 flex flex-wrap gap-1 border-b border-border">
+      <div role="tablist" aria-label={tr("outcomes")} className="mb-4 flex gap-1 overflow-x-auto border-b border-border">
         {TABS.map(([key, label]) => (
           <button
             key={key}
@@ -310,8 +310,7 @@ export default function CareerOutcomesPage() {
             aria-selected={tab === key}
             aria-controls="outcomes-panel"
             onClick={() => setTab(key)}
-            className={`-mb-px border-b-2 px-3 py-2 text-sm ${tab === key ? "font-semibold" : "border-transparent text-muted-foreground hover:text-foreground"}`}
-            style={tab === key ? { borderColor: "var(--brand, #4f46e5)" } : undefined}
+            className={`-mb-px inline-flex shrink-0 items-center gap-2 whitespace-nowrap border-b-2 px-3 py-2.5 text-sm transition-colors focus-visible:outline-2 ${tab === key ? "border-[var(--brand,#0e7490)] font-medium text-foreground" : "border-transparent text-muted-foreground hover:border-border hover:text-foreground"}`}
           >
             {label}
           </button>

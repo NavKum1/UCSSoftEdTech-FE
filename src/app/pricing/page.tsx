@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { useAppAuth as useAuth } from "@/lib/appAuth";
-import { Check, Zap, PlusCircle, Loader2, AlertTriangle, Clock, CreditCard } from "lucide-react";
+import { Check, Zap, PlusCircle, AlertTriangle, Clock, CreditCard } from "lucide-react";
 import { authenticatedFetch } from "@/lib/apiClient";
 import {
   type BillingAction,
@@ -15,6 +15,7 @@ import {
 } from "@/components/VoiceUsageCard";
 import { signInHref } from "@/components/SignInRequired";
 import { useEn } from "@/lib/english/EnglishProvider";
+import { Button, Loading, PageHeader, brandFill, buttonClass } from "@/components/career/ui";
 
 export default function PricingPage() {
   const en = useEn();
@@ -61,9 +62,7 @@ export default function PricingPage() {
 
   if (loading) {
     return (
-      <div className="min-h-[60vh] flex items-center justify-center text-sm text-muted-foreground gap-2">
-        <Loader2 className="w-4 h-4 animate-spin" />{en(" Loading plans...")}
-      </div>
+      <Loading label={en("Loading plans…")} />
     );
   }
 
@@ -71,7 +70,7 @@ export default function PricingPage() {
     return (
       <div className="max-w-md mx-auto py-16 text-center space-y-3">
         <AlertTriangle className="w-8 h-8 mx-auto text-amber-600 dark:text-amber-400" />
-        <h1 className="text-xl font-bold text-foreground">{en("Pricing is unavailable")}</h1>
+        <h1 className="text-xl font-semibold text-foreground">{en("Pricing is unavailable")}</h1>
         <p className="text-sm text-muted-foreground">{en("We couldn't load the plan catalogue. Please try again shortly.")}</p>
       </div>
     );
@@ -80,17 +79,17 @@ export default function PricingPage() {
   return (
     <div className="text-foreground">
       <div className="space-y-10">
-        <div className="space-y-2">
-          <h1 className="text-3xl font-black tracking-tight text-foreground">{en("Plans & voice minutes")}</h1>
-          <p className="text-sm text-muted-foreground max-w-2xl">
-            {en("Voice defenses are billed by the minute of conversation. Every plan includes a monthly allowance, and you can add top-up minutes at any time.")}
-          </p>
-          <p className="inline-flex items-center gap-1.5 text-xs font-medium text-muted-foreground bg-muted/60 border border-border rounded-full px-3 py-1">
+        <div>
+          <PageHeader
+            title={en("Plans and voice minutes")}
+            description={en("Voice defenses are billed by the minute of conversation. Every plan includes a monthly allowance, and you can add top-up minutes at any time.")}
+          />
+          <p className="-mt-3 inline-flex items-center gap-1.5 text-xs font-medium text-muted-foreground bg-muted/60 border border-border rounded-full px-3 py-1">
             <Clock className="w-3.5 h-3.5" />{" "}{en("Each voice session is capped at {maxSessionMinutes} minutes", { maxSessionMinutes: plans.maxSessionMinutes })}</p>
         </div>
 
         {error && (
-          <div className="p-3 rounded-xl border border-red-500/30 bg-red-50 dark:bg-red-500/10 text-xs text-red-700 dark:text-red-300 flex items-center gap-2">
+          <div className="p-3 rounded-lg border border-red-500/30 bg-red-50 dark:bg-red-500/10 text-xs text-red-700 dark:text-red-300 flex items-center gap-2">
             <AlertTriangle className="w-4 h-4" /> {error}
           </div>
         )}
@@ -102,20 +101,18 @@ export default function PricingPage() {
             return (
               <div
                 key={plan.id}
-                className={`glass-panel rounded-2xl p-6 border flex flex-col gap-5 ${
-                  isPro ? "border-indigo-500/50 shadow-lg shadow-indigo-500/10" : "border-border"
-                }`}
+                className={`rounded-xl border bg-card p-6 shadow-sm flex flex-col gap-5 ${isPro ? "border-indigo-500/50" : "border-border"}`}
               >
                 <div className="flex items-center justify-between">
-                  <h2 className="text-lg font-bold text-foreground">{plan.id}</h2>
+                  <h2 className="text-lg font-semibold text-foreground">{plan.id}</h2>
                   {isCurrent && (
-                    <span className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/30">
+                    <span className="px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/30">
                       {en("Current plan")}
                     </span>
                   )}
                 </div>
                 <div>
-                  <span className="text-4xl font-black text-foreground">{formatPrice(plan.priceCents, plans.currency)}</span>
+                  <span className="text-3xl font-semibold tracking-tight text-foreground">{formatPrice(plan.priceCents, plans.currency)}</span>
                   <span className="text-sm text-muted-foreground"> / {plan.interval ?? "month"}</span>
                 </div>
                 <ul className="space-y-2 text-sm text-muted-foreground flex-1">
@@ -143,33 +140,24 @@ export default function PricingPage() {
                   !isSignedIn ? (
                     <Link
                       href={signInHref("/pricing")}
-                      className="w-full text-center py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-semibold"
+                      className={`${buttonClass("primary")} w-full`}
+                      style={brandFill}
                     >
                       {en("Sign in to upgrade")}
                     </Link>
                   ) : isCurrent ? (
-                    <button
-                      type="button"
-                      onClick={() => runAction("portal")}
-                      disabled={busy !== null}
-                      className="w-full inline-flex items-center justify-center gap-2 py-2.5 rounded-xl border border-border bg-card hover:bg-muted disabled:opacity-60 text-foreground text-sm font-semibold"
-                    >
-                      {busy === "portal" ? <Loader2 className="w-4 h-4 animate-spin" /> : <CreditCard className="w-4 h-4" />}
+                    <Button type="button" variant="secondary" className="w-full" onClick={() => runAction("portal")} disabled={busy !== null} busy={busy === "portal"}>
+                      {busy !== "portal" && <CreditCard className="w-4 h-4" />}
                       {en("Manage billing")}
-                    </button>
+                    </Button>
                   ) : (
-                    <button
-                      type="button"
-                      onClick={() => runAction("checkout")}
-                      disabled={busy !== null}
-                      className="w-full inline-flex items-center justify-center gap-2 py-2.5 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 disabled:opacity-60 text-white text-sm font-semibold shadow-md"
-                    >
-                      {busy === "checkout" ? <Loader2 className="w-4 h-4 animate-spin" /> : <Zap className="w-4 h-4" />}
+                    <Button type="button" className="w-full" onClick={() => runAction("checkout")} disabled={busy !== null} busy={busy === "checkout"}>
+                      {busy !== "checkout" && <Zap className="w-4 h-4" />}
                       {en("Upgrade to ")}{plan.id}
-                    </button>
+                    </Button>
                   )
                 ) : (
-                  <div className="w-full text-center py-2.5 rounded-xl border border-border text-sm text-muted-foreground">
+                  <div className="w-full text-center py-2 rounded-lg border border-border text-sm text-muted-foreground">
                     {isCurrent ? en("Your current plan") : en("Included with every account")}
                   </div>
                 )}
@@ -178,9 +166,9 @@ export default function PricingPage() {
           })}
         </div>
 
-        <div className="glass-panel rounded-2xl p-6 border border-border flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="rounded-xl border border-border bg-card p-6 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="space-y-1">
-            <h2 className="text-base font-bold text-foreground flex items-center gap-2">
+            <h2 className="text-base font-semibold text-foreground flex items-center gap-2">
               <PlusCircle className="w-4 h-4 text-indigo-700 dark:text-indigo-400" />
               {en("Top-up: {minutes} minutes for {amount}", { minutes: plans.topUp.minutes, amount: formatPrice(plans.topUp.priceCents, plans.currency) })}
             </h2>
@@ -190,17 +178,12 @@ export default function PricingPage() {
             </p>
           </div>
           {isSignedIn ? (
-            <button
-              type="button"
-              onClick={() => runAction("topup")}
-              disabled={busy !== null}
-              className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl border border-border bg-card hover:bg-muted disabled:opacity-60 text-foreground text-sm font-semibold shrink-0"
-            >
-              {busy === "topup" ? <Loader2 className="w-4 h-4 animate-spin" /> : <PlusCircle className="w-4 h-4" />}
-              {en("Buy ")}{plans.topUp.minutes} minutes
-            </button>
+            <Button type="button" variant="secondary" className="shrink-0" onClick={() => runAction("topup")} disabled={busy !== null} busy={busy === "topup"}>
+              {busy !== "topup" && <PlusCircle className="w-4 h-4" />}
+              {en("Buy {minutes} minutes", { minutes: plans.topUp.minutes })}
+            </Button>
           ) : (
-            <Link href={signInHref("/pricing")} className="px-5 py-2.5 rounded-xl border border-border text-sm font-semibold text-foreground hover:bg-muted text-center">
+            <Link href={signInHref("/pricing")} className={`${buttonClass("secondary")} shrink-0`}>
               {en("Sign in to buy")}
             </Link>
           )}

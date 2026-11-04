@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Inter, JetBrains_Mono } from "next/font/google";
 import { AppAuthProvider } from "@/lib/appAuth";
 import GlobalNavigation from "@/components/GlobalNavigation";
 import AppMain from "@/components/AppMain";
@@ -11,15 +11,16 @@ import { requestLanguage } from "@/lib/i18n/server";
 import { directionOf } from "@/lib/i18n/languages";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+// The brand's type, the same as edulexa.com: Inter, and JetBrains Mono for code
+const brandSans = Inter({
+  variable: "--font-brand-sans",
   subsets: ["latin"],
   // Not preloaded on every page, so data saver (G10) can skip the download
   preload: false,
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const brandMono = JetBrains_Mono({
+  variable: "--font-brand-mono",
   subsets: ["latin"],
   preload: false,
 });
@@ -37,7 +38,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     <html
       lang={language}
       dir={directionOf(language)}
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${brandSans.variable} ${brandMono.variable} h-full antialiased`}
       suppressHydrationWarning
     >
       <body 

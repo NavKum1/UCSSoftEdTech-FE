@@ -303,7 +303,7 @@ export function localInput(d: Date): string {
 export function PriorityBadge() {
   const en = useEn();
   return (
-    <span className="inline-flex items-center whitespace-nowrap rounded-full border border-rose-500/30 bg-rose-500/10 px-1.5 py-0.5 text-[11px] font-medium text-rose-800 dark:text-rose-300">
+    <span className="inline-flex items-center whitespace-nowrap rounded-full border border-rose-500/30 bg-rose-500/10 px-1.5 py-0.5 text-xs font-medium text-rose-800 dark:text-rose-300">
       {en("High priority")}
     </span>
   );
@@ -312,7 +312,7 @@ export function PriorityBadge() {
 export function StageBadge({ stage }: { stage: string }) {
   const en = useEn();
   return (
-    <span className={`inline-flex items-center whitespace-nowrap rounded-full border px-2 py-0.5 text-[11px] font-medium ${STAGE_TONE[stage] ?? STAGE_TONE.Lost}`}>
+    <span className={`inline-flex items-center whitespace-nowrap rounded-full border px-2 py-0.5 text-xs font-medium ${STAGE_TONE[stage] ?? STAGE_TONE.Lost}`}>
       {en(STAGE_LABEL[stage] ?? stage)}
     </span>
   );

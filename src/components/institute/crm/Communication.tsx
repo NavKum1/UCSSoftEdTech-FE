@@ -66,12 +66,12 @@ const time = (iso: string) => new Date(iso).toLocaleTimeString([], { hour: "2-di
 const shortDate = (iso: string) => new Date(iso).toLocaleDateString([], { day: "numeric", month: "short" });
 
 const MARKER: Record<string, { icon: React.ElementType; tone: string }> = {
-  EmailReply: { icon: Mail, tone: "bg-cyan-600 text-white" },
+  EmailReply: { icon: Mail, tone: "bg-indigo-600 text-white" },
   Email: { icon: Mail, tone: "bg-slate-600 text-white" },
   Sms: { icon: MessageSquare, tone: "bg-slate-600 text-white" },
   WhatsApp: { icon: MessageCircle, tone: "bg-emerald-600 text-white" },
   Call: { icon: Phone, tone: "bg-indigo-600 text-white" },
-  Meeting: { icon: CalendarClock, tone: "bg-violet-600 text-white" },
+  Meeting: { icon: CalendarClock, tone: "bg-indigo-600 text-white" },
   Note: { icon: NotebookPen, tone: "bg-amber-500 text-white" },
   Stage: { icon: ArrowRightLeft, tone: "bg-card text-muted-foreground border border-border" },
   Assignment: { icon: UserRound, tone: "bg-card text-muted-foreground border border-border" },
@@ -179,7 +179,7 @@ export default function Communication({
         {FILTERS.map((f) => {
           const n = items.filter(f.match).length;
           return (
-            <button key={f.key} type="button" aria-pressed={filter === f.key} onClick={() => setFilter(f.key)} className={`rounded-full border px-2.5 py-1 text-xs ${filter === f.key ? "border-cyan-700 bg-cyan-700 text-white" : "border-border hover:bg-muted"}`}>
+            <button key={f.key} type="button" aria-pressed={filter === f.key} onClick={() => setFilter(f.key)} className={`rounded-full border px-2.5 py-1 text-xs ${filter === f.key ? "border-indigo-700 bg-indigo-700 text-white" : "border-border hover:bg-muted"}`}>
               {en(f.label)} <span className="tabular-nums opacity-75">{n}</span>
             </button>
           );
@@ -187,7 +187,7 @@ export default function Communication({
         <label className="relative ms-auto min-w-40 flex-1 sm:flex-none">
           <span className="sr-only">{en("Search the history")}</span>
           <Search aria-hidden="true" className="pointer-events-none absolute start-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
-          <input value={q} onChange={(e) => setQ(e.target.value)} placeholder={en("Search the history")} className="w-full rounded-lg border border-border bg-background py-1.5 ps-8 pe-2 text-xs focus:border-cyan-600 focus:outline-none" />
+          <input value={q} onChange={(e) => setQ(e.target.value)} placeholder={en("Search the history")} className="w-full rounded-lg border border-border bg-background py-1.5 ps-8 pe-2 text-xs focus:border-indigo-600 focus:outline-none" />
         </label>
       </div>
 
@@ -196,7 +196,7 @@ export default function Communication({
 
       {groups.map(([d, list]) => (
         <section key={d} aria-label={d}>
-          <h3 className="sticky top-0 z-1 mb-2 bg-card py-1 text-center text-[11px] font-medium uppercase tracking-wide text-muted-foreground">{d}</h3>
+          <h3 className="sticky top-0 z-1 mb-2 bg-card py-1 text-center text-xs font-medium text-muted-foreground">{d}</h3>
           <ol>
             {list.map((a, i) => (
               <li key={a.id} className="grid grid-cols-[4.75rem_1.5rem_1fr] gap-x-2">
@@ -242,7 +242,7 @@ function Body({ text }: { text: string }) {
     <>
       <p className={`whitespace-pre-wrap ${long && !open ? "line-clamp-6" : ""}`}>{text}</p>
       {long && (
-        <button type="button" onClick={() => setOpen(!open)} className="mt-1 text-xs font-medium text-cyan-700 hover:underline dark:text-cyan-400">
+        <button type="button" onClick={() => setOpen(!open)} className="mt-1 text-xs font-medium text-indigo-700 hover:underline dark:text-indigo-400">
           {open ? en("Show less") : en("Show the full message")}
         </button>
       )}
@@ -291,7 +291,7 @@ function FormattedEmail({ html }: { html: string }) {
     <>
       <div className={`email-body ${long && !open ? "max-h-40 overflow-hidden [mask-image:linear-gradient(to_bottom,black_70%,transparent)]" : ""}`} dangerouslySetInnerHTML={{ __html: html }} />
       {long && (
-        <button type="button" onClick={() => setOpen(!open)} className="mt-1 text-xs font-medium text-cyan-700 hover:underline dark:text-cyan-400">
+        <button type="button" onClick={() => setOpen(!open)} className="mt-1 text-xs font-medium text-indigo-700 hover:underline dark:text-indigo-400">
           {open ? en("Show less") : en("Show the full message")}
         </button>
       )}
@@ -351,7 +351,7 @@ function Item({ a, personName, busy, onPin, onReply }: { a: Activity; personName
 
   if (a.kind === "EmailReply") {
     return (
-      <div className="rounded-xl border border-cyan-600/40 bg-cyan-600/5 p-3 text-sm">
+      <div className="rounded-xl border border-indigo-600/40 bg-indigo-600/5 p-3 text-sm">
         {head(personName, "replied by email")}
         <div className="mt-1.5">
           <Body text={a.body} />
@@ -420,7 +420,7 @@ function Item({ a, personName, busy, onPin, onReply }: { a: Activity; personName
 
   if (a.kind === "Meeting") {
     return (
-      <div className="rounded-xl border border-violet-500/30 bg-violet-500/5 p-3 text-sm">
+      <div className="rounded-xl border border-border bg-card p-3 text-sm shadow-sm">
         {head(a.actorName, "booked a meeting for")}
         <p className="mt-1.5 font-medium">{typeof meta.at === "string" ? new Date(meta.at).toLocaleString([], { dateStyle: "full", timeStyle: "short" }) : ""}</p>
         {a.body && <Body text={a.body} />}

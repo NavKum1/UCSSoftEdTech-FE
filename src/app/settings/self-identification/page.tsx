@@ -2,10 +2,11 @@
 
 import React, { useEffect, useState } from "react";
 import { useAppAuth as useAuth } from "@/lib/appAuth";
-import { Scale, Loader2, CheckCircle2, AlertTriangle, Trash2, Lock } from "lucide-react";
+import { CheckCircle2, AlertTriangle, Trash2, Lock } from "lucide-react";
 import { authenticatedFetch } from "@/lib/apiClient";
 import SignInRequired from "@/components/SignInRequired";
 import { useEn } from "@/lib/english/EnglishProvider";
+import { Button, PageHeader } from "@/components/career/ui";
 
 const PREFER_NOT = "Prefer not to say";
 
@@ -153,17 +154,11 @@ export default function SelfIdentificationPage() {
   return (
     <div className="text-foreground">
       <div className="space-y-6">
-        <div>
-          <h1 className="text-2xl font-black tracking-tight text-foreground flex items-center gap-2">
-            <Scale className="w-6 h-6 text-indigo-700 dark:text-indigo-400" />
-            {en("Voluntary self-identification")}
-          </h1>
-          <p className="text-sm text-muted-foreground mt-1">{en("Help us check that our assessments treat every group fairly.")}</p>
-        </div>
+        <PageHeader title={en("Voluntary self-identification")} description={en("Help us check that our assessments treat every group fairly.")} />
 
-        <div className="glass-panel rounded-2xl p-5 border border-border space-y-2 text-sm text-muted-foreground">
+        <div className="rounded-xl border border-border bg-card p-5 shadow-sm space-y-2 text-sm text-muted-foreground">
           <p className="flex items-start gap-2 text-foreground font-semibold">
-            <Lock className="w-4 h-4 mt-0.5 shrink-0 text-emerald-600 dark:text-emerald-400" />
+            <Lock className="w-4 h-4 mt-0.5 shrink-0 text-muted-foreground" />
             {en("Completely optional, and it never affects your results.")}
           </p>
           <ul className="list-disc ps-5 space-y-1">
@@ -178,15 +173,15 @@ export default function SelfIdentificationPage() {
           )}
         </div>
 
-        <form onSubmit={handleSave} className="glass-panel rounded-2xl p-5 border border-border space-y-4">
+        <form onSubmit={handleSave} className="rounded-xl border border-border bg-card p-5 shadow-sm space-y-4">
           <div className="grid gap-4 sm:grid-cols-2">
           {FIELDS.map((field) => (
             <label key={field.key} className="block space-y-1">
-              <span className="text-xs font-semibold text-foreground">{en(field.label)}</span>
+              <span className="text-sm font-medium text-foreground">{en(field.label)}</span>
               <select
                 value={values[field.key]}
                 onChange={(e) => setValues((prev) => ({ ...prev, [field.key]: e.target.value }))}
-                className="w-full px-3 py-2 rounded-xl border border-border bg-background text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
+                className="w-full px-3 py-2 rounded-lg border border-border bg-card shadow-sm text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
               >
                 {(field.options.includes(values[field.key]) ? field.options : [values[field.key], ...field.options]).map((opt) => (
                   <option key={opt} value={opt}>
@@ -210,23 +205,13 @@ export default function SelfIdentificationPage() {
           )}
 
           <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
-            <button
-              type="submit"
-              disabled={saving || deleting || !loaded}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 disabled:opacity-60 text-white text-sm font-semibold"
-            >
-              {saving && <Loader2 className="w-4 h-4 animate-spin" />}
+            <Button type="submit" busy={saving} disabled={deleting || !loaded}>
               {en("Save answers")}
-            </button>
-            <button
-              type="button"
-              onClick={handleDelete}
-              disabled={saving || deleting || !loaded}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-red-500/30 text-red-700 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 disabled:opacity-60 text-sm font-semibold"
-            >
-              {deleting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
+            </Button>
+            <Button type="button" variant="secondary" onClick={handleDelete} busy={deleting} disabled={saving || !loaded} className="text-red-700 dark:text-red-400">
+              {!deleting && <Trash2 className="w-4 h-4" />}
               {en("Delete my answers")}
-            </button>
+            </Button>
           </div>
         </form>
       </div>

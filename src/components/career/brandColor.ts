@@ -65,7 +65,9 @@ export function brandTextColors(brand: string | null | undefined): { light: stri
 /** CSS variables for a brand-aware subtree: --brand (safe behind white text) and the brand text colors. */
 export function brandCssVars(brand: string | null | undefined): Record<string, string> {
   const text = brandTextColors(brand);
-  return { "--brand": accessibleBrandColor(brand), "--brand-text-light": text.light, "--brand-text-dark": text.dark };
+  // The school's color is darkened until white text passes AA on it, so text on it is always white (also in dark mode,
+  // where Edulexa's own bright cyan takes dark text)
+  return { "--brand": accessibleBrandColor(brand), "--brand-foreground": "#ffffff", "--brand-text-light": text.light, "--brand-text-dark": text.dark };
 }
 
 /** Text in the brand color with enough contrast in light and dark mode (needs brandCssVars on a parent). */

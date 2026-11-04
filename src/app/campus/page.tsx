@@ -10,7 +10,6 @@ import {
   ArrowRight,
   CalendarClock,
   CheckCircle2,
-  GraduationCap,
   Info,
   Languages,
   Loader2,
@@ -18,6 +17,7 @@ import {
   Wifi,
 } from "lucide-react";
 import { useEn } from "@/lib/english/EnglishProvider";
+import { Button, PageHeader, brandFill, buttonClass } from "@/components/career/ui";
 
 interface Assignment {
   assignmentId: string;
@@ -222,17 +222,14 @@ export default function CampusStudentPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <div className="flex items-center gap-2 text-xs font-semibold text-indigo-700 dark:text-indigo-400 uppercase tracking-wider">
-          <GraduationCap className="w-4 h-4" />{en(" Campus placements")}
-        </div>
-        <h1 className="text-xl sm:text-2xl font-extrabold text-foreground mt-1">{en("My placement assessments")}</h1>
-        {data?.email && <p className="text-xs text-muted-foreground mt-1">{en("Signed in as {email}", { email: data.email })}</p>}
-      </div>
+      <PageHeader
+        title={en("My placement assessments")}
+        description={data?.email ? en("Assessments your placement office assigned to you. Signed in as {email}.", { email: data.email }) : en("Assessments your placement office assigned to you.")}
+      />
 
       {/* Assignments */}
-      <section className="glass-panel rounded-2xl border border-border p-4 sm:p-5 space-y-3">
-        <h2 className="text-base font-bold text-foreground flex items-center gap-2">
+      <section className="rounded-xl border border-border bg-card p-4 shadow-sm sm:p-5 space-y-3">
+        <h2 className="text-base font-semibold text-foreground flex items-center gap-2">
           <CalendarClock className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />{en(" Assignments")}
         </h2>
         {signedOut ? (
@@ -252,7 +249,7 @@ export default function CampusStudentPage() {
         ) : (
           <ul className="space-y-3">
             {assignments.map((a) => (
-              <li key={a.assignmentId} className="rounded-xl border border-border bg-card/60 p-3 sm:p-4">
+              <li key={a.assignmentId} className="rounded-lg border border-border p-3 sm:p-4">
                 <div className="flex flex-wrap items-start justify-between gap-2">
                   <div className="min-w-0">
                     <p className="font-semibold text-foreground break-words">{a.sprintTitle}</p>
@@ -262,7 +259,7 @@ export default function CampusStudentPage() {
                       {a.requiredLanguage ? ` · ${a.requiredLanguage}` : ""}
                     </p>
                   </div>
-                  <span className={`text-xs font-semibold px-2.5 py-1 rounded-full border ${STATUS_CLASS[a.status]}`}>{en(STATUS_LABEL[a.status])}</span>
+                  <span className={`text-xs font-medium px-2.5 py-1 rounded-full border ${STATUS_CLASS[a.status]}`}>{en(STATUS_LABEL[a.status])}</span>
                 </div>
                 <p className="text-xs text-muted-foreground mt-2">
                   {en("Opens {date} ·", { date: formatDate(a.opensAt) })}{" "}<span className={a.isOverdue ? "text-rose-700 dark:text-rose-400 font-semibold" : ""}>{en("Due {date}", { date: formatDate(a.dueAt) })}</span>
@@ -278,7 +275,8 @@ export default function CampusStudentPage() {
                 {a.status !== "defended" && (
                   <Link
                     href={a.link}
-                    className="mt-3 inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-semibold"
+                    className={`${buttonClass("primary")} mt-3`}
+                    style={brandFill}
                   >
                     {a.status === "not-started" ? en("Start") : a.status === "submitted" ? en("Open assignment") : en("Continue")}
                     <ArrowRight className="w-4 h-4" />
@@ -291,8 +289,8 @@ export default function CampusStudentPage() {
       </section>
 
       {/* Language */}
-      <section className="glass-panel rounded-2xl border border-border p-4 sm:p-5 space-y-3">
-        <h2 className="text-base font-bold text-foreground flex items-center gap-2">
+      <section className="rounded-xl border border-border bg-card p-4 shadow-sm sm:p-5 space-y-3">
+        <h2 className="text-base font-semibold text-foreground flex items-center gap-2">
           <Languages className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />{en(" Defense language")}
         </h2>
         <p className="text-xs text-muted-foreground">
@@ -305,7 +303,7 @@ export default function CampusStudentPage() {
           <select
             value={language}
             onChange={(e) => setLanguage(e.target.value)}
-            className="flex-1 px-3 py-2.5 rounded-xl bg-card border border-border text-sm text-foreground"
+            className="flex-1 h-9 px-3 rounded-lg bg-card border border-border text-sm text-foreground shadow-sm"
             aria-label={en("Preferred defense language")}
           >
             {languages.length === 0 && <option value="">{en("Loading languages...")}</option>}
@@ -313,17 +311,13 @@ export default function CampusStudentPage() {
               <option key={l.key} value={l.key}>{l.label}</option>
             ))}
           </select>
-          <button
-            onClick={savePreference}
-            disabled={saving || !language || !data?.inCohort}
-            className="px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-semibold flex items-center justify-center gap-2 cursor-pointer"
-          >
-            {saving && <Loader2 className="w-4 h-4 animate-spin" />}{en(" Save")}
-          </button>
+          <Button type="button" onClick={savePreference} disabled={!language || !data?.inCohort} busy={saving}>
+            {en("Save")}
+          </Button>
         </div>
         )}
         {data && !data.inCohort && (
-          <p className="text-[11px] text-muted-foreground">{en("You can save a preference once your placement office adds you to a cohort.")}</p>
+          <p className="text-xs text-muted-foreground">{en("You can save a preference once your placement office adds you to a cohort.")}</p>
         )}
         {saveMessage && (
           <p className={`text-xs flex items-center gap-1.5 ${saveMessage.ok ? "text-emerald-700 dark:text-emerald-400" : "text-rose-700 dark:text-rose-400"}`}>
@@ -333,26 +327,22 @@ export default function CampusStudentPage() {
       </section>
 
       {/* Connection check */}
-      <section className="glass-panel rounded-2xl border border-border p-4 sm:p-5 space-y-3">
-        <h2 className="text-base font-bold text-foreground flex items-center gap-2">
+      <section className="rounded-xl border border-border bg-card p-4 shadow-sm sm:p-5 space-y-3">
+        <h2 className="text-base font-semibold text-foreground flex items-center gap-2">
           <Wifi className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />{en(" Check my connection")}
         </h2>
         <p className="text-xs text-muted-foreground">
           {en("A quick, rough check from this browser: 5 small requests to our server and a small download. It uses very little data.")}
         </p>
-        <button
-          onClick={checkConnection}
-          disabled={checking}
-          className="w-full sm:w-auto px-4 py-2.5 rounded-xl border border-border bg-card hover:bg-muted text-sm font-semibold text-foreground flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60"
-        >
-          {checking ? <Loader2 className="w-4 h-4 animate-spin" /> : <Wifi className="w-4 h-4" />}
-          {checking ? en("Checking...") : en("Check my connection")}
-        </button>
+        <Button type="button" variant="secondary" className="w-full sm:w-auto" onClick={checkConnection} busy={checking}>
+          {!checking && <Wifi className="w-4 h-4" />}
+          {checking ? en("Checking…") : en("Check my connection")}
+        </Button>
         {connection && (
-          <div className={`rounded-xl border p-3 text-sm space-y-1 ${ADVICE[connection.verdict].className}`}>
+          <div className={`rounded-lg border p-3 text-sm space-y-1 ${ADVICE[connection.verdict].className}`}>
             <p className="font-semibold">{ADVICE[connection.verdict].title}</p>
             <p className="text-xs">{ADVICE[connection.verdict].text}</p>
-            <p className="text-[11px] opacity-80">
+            <p className="text-xs opacity-80">
               {en("Response time: ")}{connection.medianRtt != null ? en("{ms} ms (median)", { ms: Math.round(connection.medianRtt) }) : en("no response")}
               {connection.jitter != null && ` · variation ${Math.round(connection.jitter)} ms`}
               {` · download: ${connection.kbps != null ? (connection.kbps >= 1000 ? `${(connection.kbps / 1000).toFixed(1)} Mbit/s` : `${Math.round(connection.kbps)} kbit/s`) : "not measured"}`}
@@ -363,8 +353,8 @@ export default function CampusStudentPage() {
       </section>
 
       {/* How it works */}
-      <section className="glass-panel rounded-2xl border border-border p-4 sm:p-5 space-y-3">
-        <h2 className="text-base font-bold text-foreground flex items-center gap-2">
+      <section className="rounded-xl border border-border bg-card p-4 shadow-sm sm:p-5 space-y-3">
+        <h2 className="text-base font-semibold text-foreground flex items-center gap-2">
           <Info className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />{en(" How the assessment works")}
         </h2>
         <ol className="list-decimal ps-5 space-y-2 text-sm text-foreground">

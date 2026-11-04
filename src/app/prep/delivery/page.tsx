@@ -15,6 +15,7 @@ import Link from "next/link";
 import { AlertTriangle, Loader2, Lock, Mic, ShieldOff, Square, Trash2 } from "lucide-react";
 import { AccessNotice, useLatestRef, useLegacyApi } from "@/lib/legacyApi";
 import { useEn } from "@/lib/english/EnglishProvider";
+import { PageHeader, buttonClass } from "@/components/career/ui";
 
 interface Decision {
   enabled: boolean;
@@ -77,7 +78,7 @@ function recognitionCtor(): RecognitionCtor | null {
 
 const PAUSE_MS = 1500; // a silence this long after the first speech counts as a pause
 const MAX_SECONDS = 180;
-const card = "rounded-2xl border border-border bg-card shadow-[0_1px_2px_rgb(16_24_40/0.04)]";
+const card = "rounded-xl border border-border bg-card shadow-sm";
 const AREA: Record<string, string> = { pace: "Pace", fillers: "Filler words", pauses: "Pauses", start: "Getting started" };
 
 /** What the microphone measured, kept in a ref while recording. */
@@ -358,12 +359,7 @@ export default function DeliveryCoachingPage() {
     );
 
   const header = (
-    <header>
-      <h1 className="text-2xl font-semibold tracking-tight">{en("Speaking practice")}</h1>
-      <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
-        {en("Answer a practice question aloud and see your pace, filler words and pauses. {note}", { note })}
-      </p>
-    </header>
+    <PageHeader title={en("Speaking practice")} description={en("Answer a practice question aloud and see your pace, filler words and pauses. {note}", { note })} />
   );
 
   if (!decision.enabled)
@@ -402,11 +398,11 @@ export default function DeliveryCoachingPage() {
               type="button"
               onClick={() => void setConsent(true)}
               disabled={busy}
-              className="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-500 disabled:opacity-60"
+              className={`${buttonClass("primary")} bg-[var(--brand,#0e7490)]`}
             >
               {busy && <Loader2 aria-hidden="true" className="h-4 w-4 animate-spin" />}{en("Turn on speaking practice")}
             </button>
-            <Link href="/dashboard" className="rounded-xl border border-border px-4 py-2 text-sm font-medium hover:bg-muted">
+            <Link href="/dashboard" className={buttonClass("secondary")}>
               {en("Not now")}
             </Link>
           </div>
@@ -465,7 +461,7 @@ export default function DeliveryCoachingPage() {
             <button
               type="button"
               onClick={stop}
-              className="inline-flex items-center gap-2 rounded-xl bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-500"
+              className={buttonClass("danger")}
             >
               <Square aria-hidden="true" className="h-4 w-4" />{en(" Stop and see feedback")}
             </button>
@@ -474,7 +470,7 @@ export default function DeliveryCoachingPage() {
               type="button"
               onClick={() => void start()}
               disabled={busy}
-              className="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-500 disabled:opacity-60"
+              className={`${buttonClass("primary")} bg-[var(--brand,#0e7490)]`}
             >
               {busy ? <Loader2 aria-hidden="true" className="h-4 w-4 animate-spin" /> : <Mic aria-hidden="true" className="h-4 w-4" />}{en(" Start answering")}
             </button>
@@ -506,7 +502,7 @@ export default function DeliveryCoachingPage() {
               ["Pauses", `${result.pauseCount} (longest ${secs(result.longestPauseMs)})`],
               ["Time to start", secs(result.responseDelayMs)],
             ].map(([label, value]) => (
-              <div key={label} className="rounded-xl bg-muted/60 p-3">
+              <div key={label} className="rounded-lg bg-muted/60 p-3">
                 <dt className="text-xs text-muted-foreground">{en(label)}</dt>
                 <dd className="mt-1 text-sm font-semibold">{en(value)}</dd>
               </div>
@@ -546,7 +542,7 @@ export default function DeliveryCoachingPage() {
                 ["Longest pause (average)", `${summary.averageLongestPauseSeconds} s`],
                 ["Time to start (average)", `${summary.averageResponseDelaySeconds} s`],
               ].map(([label, value]) => (
-                <div key={label} className="rounded-xl bg-muted/60 p-3">
+                <div key={label} className="rounded-lg bg-muted/60 p-3">
                   <dt className="text-xs text-muted-foreground">{en(label)}</dt>
                   <dd className="mt-1 text-sm font-semibold">{en(value)}</dd>
                 </div>
@@ -598,7 +594,7 @@ export default function DeliveryCoachingPage() {
           type="button"
           onClick={() => void deleteAll()}
           disabled={busy || recording || history.length === 0}
-          className="inline-flex items-center gap-2 rounded-xl border border-border px-3 py-2 font-medium hover:bg-muted disabled:opacity-50"
+          className={buttonClass("secondary")}
         >
           <Trash2 aria-hidden="true" className="h-4 w-4" />{en(" Delete my answers")}
         </button>
@@ -606,7 +602,7 @@ export default function DeliveryCoachingPage() {
           type="button"
           onClick={() => void setConsent(false)}
           disabled={busy || recording}
-          className="rounded-xl border border-border px-3 py-2 font-medium hover:bg-muted disabled:opacity-50"
+          className={buttonClass("secondary")}
         >
           {en("Turn off speaking practice")}
         </button>

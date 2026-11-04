@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useApi } from "@/lib/appAuth";
 import { careerNav } from "@/lib/careerNav";
 import { useCareerShell } from "@/components/career/CareerShell";
-import { Card, ErrorBanner, Loading, PageHeader, useLoad, useCareerFormat, useCareerT } from "@/components/career/ui";
+import { Card, ErrorBanner, Loading, PageHeader, useLoad, useCareerFormat, useCareerT, StatTile } from "@/components/career/ui";
 import { useCareerNavLabels } from "@/components/career/i18n/nav";
 import { ROLES } from "@/components/career/coreLabels";
 
@@ -46,9 +46,8 @@ export default function CareerCenterHome() {
             <h2 id="cc-people" className="mb-3 text-base font-semibold">{t("people")}</h2>
             <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
               {ROLES.map((r) => (
-                <li key={r} className="rounded-xl border border-border bg-card p-4">
-                  <p className="text-2xl font-semibold tabular-nums">{fmt.number(data.counts[r] ?? 0)}</p>
-                  <p className="text-sm text-muted-foreground">{roleLabel(r)}</p>
+                <li key={r}>
+                  <StatTile label={roleLabel(r)} value={fmt.number(data.counts[r] ?? 0)} />
                 </li>
               ))}
             </ul>

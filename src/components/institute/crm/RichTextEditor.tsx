@@ -38,13 +38,13 @@ export default function RichTextEditor({ value, onChange, placeholder }: { value
   }, [value, editor]);
 
   const tool = (label: string, Icon: React.ElementType, on: boolean | undefined, run: () => void) => (
-    <button key={label} type="button" title={label} aria-label={label} aria-pressed={!!on} onMouseDown={(e) => e.preventDefault()} onClick={run} className={`rounded-md p-1.5 hover:bg-muted ${on ? "bg-cyan-600/15 text-cyan-800 dark:text-cyan-300" : "text-muted-foreground"}`}>
+    <button key={label} type="button" title={label} aria-label={label} aria-pressed={!!on} onMouseDown={(e) => e.preventDefault()} onClick={run} className={`rounded-md p-1.5 hover:bg-muted ${on ? "bg-indigo-600/15 text-indigo-800 dark:text-indigo-300" : "text-muted-foreground"}`}>
       <Icon aria-hidden="true" className="h-4 w-4" />
     </button>
   );
 
   return (
-    <div className="mt-1 overflow-hidden rounded-lg border border-border bg-background focus-within:border-cyan-600">
+    <div className="mt-1 overflow-hidden rounded-lg border border-border bg-background focus-within:border-indigo-600">
       <div className="flex flex-wrap items-center gap-0.5 border-b border-border px-1.5 py-1" role="toolbar" aria-label={en("Formatting")}>
         {tool("Bold", Bold, editor?.isActive("bold"), () => editor?.chain().focus().toggleBold().run())}
         {tool("Italic", Italic, editor?.isActive("italic"), () => editor?.chain().focus().toggleItalic().run())}
@@ -59,7 +59,7 @@ export default function RichTextEditor({ value, onChange, placeholder }: { value
         })}
         <span className="mx-1 h-5 w-px bg-border" aria-hidden="true" />
         {FIELDS.map(([f, label]) => (
-          <button key={f} type="button" onMouseDown={(e) => e.preventDefault()} onClick={() => editor?.chain().focus().insertContent(f).run()} className="rounded-md px-1.5 py-1 text-xs text-cyan-800 hover:bg-cyan-600/10 dark:text-cyan-300" title={`Insert ${label.toLowerCase()}`}>
+          <button key={f} type="button" onMouseDown={(e) => e.preventDefault()} onClick={() => editor?.chain().focus().insertContent(f).run()} className="rounded-md px-1.5 py-1 text-xs text-indigo-800 hover:bg-indigo-600/10 dark:text-indigo-300" title={`Insert ${label.toLowerCase()}`}>
             + {en(label)}
           </button>
         ))}

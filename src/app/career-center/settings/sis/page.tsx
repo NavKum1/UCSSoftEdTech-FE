@@ -3,7 +3,7 @@
 import React, { useRef, useState } from "react";
 import { useApi } from "@/lib/appAuth";
 import { useCareerShell } from "@/components/career/CareerShell";
-import { Badge, Button, Card, EmptyState, ErrorBanner, Field, Loading, PageHeader, SuccessBanner, formatDate, useLoad, ScrollArea, useCareerT, useCareerLabels } from "@/components/career/ui";
+import { Badge, Button, Card, EmptyState, ErrorBanner, Field, Loading, PageHeader, SuccessBanner, formatDate, useLoad, ScrollArea, useCareerT, useCareerLabels, StatTile } from "@/components/career/ui";
 
 interface SisSettings {
   baseUrl?: string | null;
@@ -365,7 +365,7 @@ function RunSummary({ run }: { run: Run }) {
         {run.status === "Failed" ? (
           <p className="text-sm">{run.message}</p>
         ) : (
-          <dl className="grid grid-cols-2 gap-3 text-sm md:grid-cols-4">
+          <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
             {[
               [t("countInFeed"), c.inFeed],
               [t("countAdded"), c.created],
@@ -376,12 +376,9 @@ function RunSummary({ run }: { run: Run }) {
               [t("countReactivated"), c.reactivated],
               [t("countSkipped"), c.skipped],
             ].map(([label, n]) => (
-              <div key={label as string} className="rounded-md border border-border p-2">
-                <dt className="text-xs text-muted-foreground">{label}</dt>
-                <dd className="text-lg font-semibold">{(n as number) ?? 0}</dd>
-              </div>
+              <StatTile key={label as string} label={label as string} value={(n as number) ?? 0} />
             ))}
-          </dl>
+          </div>
         )}
         {run.issues.length > 0 && (
           <ul className="mt-3 max-h-60 list-disc space-y-1 overflow-auto ps-5 text-sm">

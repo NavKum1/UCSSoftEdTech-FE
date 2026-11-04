@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { useApi } from "@/lib/appAuth";
 import { useCareerShell } from "@/components/career/CareerShell";
-import { Badge, Button, Card, EmptyState, ErrorBanner, Field, Loading, PageHeader, SuccessBanner, formatDate, useLoad, ScrollArea, useCareerT } from "@/components/career/ui";
+import { Badge, Button, Card, EmptyState, ErrorBanner, Field, Loading, PageHeader, SuccessBanner, formatDate, useLoad, ScrollArea, useCareerT, buttonClass } from "@/components/career/ui";
 import type { TriageSettings } from "@/components/career/triage/shared";
 
 interface AiLogRow {
@@ -66,7 +66,7 @@ export default function TriageSettingsPage() {
         title={t("signalCopilotSettings")}
         description={t("thresholdsForThisSchoolsCaseload")}
         actions={
-          <Link className="rounded-md border border-border px-3 py-2 text-sm hover:bg-muted" href="/career-center/caseload">
+          <Link className={buttonClass("secondary")} href="/career-center/caseload">
             {t("backToCaseload")}
           </Link>
         }

@@ -3,21 +3,9 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { AccessNotice, useLegacyApi, useLatestRef } from "@/lib/legacyApi";
-import {
-  Globe2,
-  Play,
-  Pause,
-  Languages,
-  Download,
-  Sparkles,
-  Bot,
-  User,
-  ArrowLeft,
-  Send,
-  Radio,
-  Headphones,
-} from "lucide-react";
+import { ArrowLeft, Bot, Download, Send, User } from "lucide-react";
 import { useEn } from "@/lib/english/EnglishProvider";
+import { Button, Card, EmptyState, Loading, PageHeader } from "@/components/career/ui";
 
 interface TranscriptSegment {
   id: string;
@@ -55,12 +43,9 @@ export default function MultiLanguageTranslationStudioPage() {
   const [segments, setSegments] = useState<TranscriptSegment[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [fetchError, setFetchError] = useState<string | null>(null);
-  const [audioTrackMode, setAudioTrackMode] = useState<"original" | "dubbed">("dubbed");
-  
-  // Audio playback state
-  const [isPlaying, setIsPlaying] = useState<boolean>(false);
+
+  // The segment the reader last clicked (highlighted in the transcript)
   const [currentTime, setCurrentTime] = useState<number>(0);
-  const [playbackSpeed, setPlaybackSpeed] = useState<number>(1.0);
 
   // Live dialogue simulator state
   const [inputSpeaker, setInputSpeaker] = useState<string>("Candidate");
@@ -102,23 +87,6 @@ export default function MultiLanguageTranslationStudioPage() {
     if (!ready) return;
     fetchTranscriptRef.current();
   }, [sessionId, ready, fetchTranscriptRef]);
-
-  // Audio timer ticker simulation
-  useEffect(() => {
-    let interval: NodeJS.Timeout;
-    if (isPlaying) {
-      interval = setInterval(() => {
-        setCurrentTime((prev) => {
-          if (prev >= 20.0) {
-            setIsPlaying(false);
-            return 0.0;
-          }
-          return prev + 0.25 * playbackSpeed;
-        });
-      }, 250);
-    }
-    return () => clearInterval(interval);
-  }, [isPlaying, playbackSpeed]);
 
   const handleIngestSegment = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -193,173 +161,65 @@ export default function MultiLanguageTranslationStudioPage() {
   if (access) return <AccessNotice problem={access} feature="The translation studio" />;
 
   return (
-    <div className="flex flex-col font-sans text-foreground">
-      {/* Header */}
-      <header className="border-b border-border bg-card/80 backdrop-blur-md sticky top-16 z-20">
-        <div className="px-4 h-16 flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <button
-              onClick={() => router.back()}
-              className="p-2 rounded-xl bg-muted hover:bg-slate-700 text-muted-foreground transition-colors cursor-pointer"
-            >
-              <ArrowLeft className="w-4 h-4" />
-            </button>
-            <div className="flex items-center space-x-2.5">
-              <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-cyan-600 to-blue-600 flex items-center justify-center font-bold text-white shadow-lg shadow-cyan-500/20">
-                <Globe2 className="w-5 h-5 text-white" />
-              </div>
-              <div>
-                <div className="flex items-center space-x-2">
-                  <span className="font-bold text-base text-foreground tracking-wide">
-                    {en("MULTI-LANGUAGE SUBTITLES & AUDIO TRANSLATION")}
-                  </span>
-                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-600 dark:text-cyan-300 font-semibold border border-cyan-500/40">
-                    {en("Live Subtitles")}
-                  </span>
-                </div>
-                <p className="text-[11px] text-muted-foreground">
-                  {en("Real-time multilingual subtitles, bilingual transcript review, and voice translation.")}
-                </p>
-              </div>
-            </div>
-          </div>
+    <div className="text-foreground">
+      <PageHeader
+        title={en("Interview translation")}
+        description={en("Read this interview's transcript in another language and download subtitles.")}
+        actions={
+          <>
+            <Button variant="ghost" onClick={() => router.back()}>
+              <ArrowLeft className="h-4 w-4" />
+              {en("Back")}
+            </Button>
+            <Button variant="secondary" onClick={handleDownloadWebVtt}>
+              <Download className="h-4 w-4" />
+              <span>{en("Download subtitles ({value})", { value: selectedLanguage.toUpperCase() })}</span>
+            </Button>
+          </>
+        }
+      />
 
-          <div className="flex items-center space-x-3">
-            <button
-              onClick={handleDownloadWebVtt}
-              className="px-3.5 py-1.5 rounded-xl bg-muted hover:bg-slate-700 text-foreground border border-border text-xs font-medium flex items-center space-x-1.5 transition-colors cursor-pointer"
-            >
-              <Download className="w-3.5 h-3.5 text-cyan-700 dark:text-cyan-400" />
-              <span>{en("Download Subtitles ({value})", { value: selectedLanguage.toUpperCase() })}</span>
-            </button>
-          </div>
-        </div>
-      </header>
-
-      {/* Main Content Layout */}
-      <div className="pt-8 flex-1 w-full space-y-8">
+      <div className="space-y-8">
         {/* Language Selection Ribbon */}
-        <div className="p-4 rounded-2xl bg-card/60 border border-border space-y-3">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-muted-foreground flex items-center space-x-2">
-              <Languages className="w-4 h-4 text-cyan-700 dark:text-cyan-400" />
-              <span>{en("Select Subtitle & Audio Language")}</span>
+        <Card
+          title={en("Subtitle language")}
+          actions={
+            <span className="text-sm text-muted-foreground">
+              {en("Showing: ")}
+              <strong className="font-medium text-foreground">{SUPPORTED_LANGUAGES.find((l) => l.code === selectedLanguage)?.label}</strong>
             </span>
-            <span className="text-xs text-muted-foreground">
-              {en("Active: ")}<strong className="text-cyan-700 dark:text-cyan-400">{SUPPORTED_LANGUAGES.find(l => l.code === selectedLanguage)?.label}</strong>
-            </span>
-          </div>
-
-          <div className="grid grid-cols-2 sm:grid-cols-5 md:grid-cols-10 gap-2">
+          }
+        >
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-5 md:grid-cols-10">
             {SUPPORTED_LANGUAGES.map((lang) => {
               const isActive = selectedLanguage === lang.code;
               return (
                 <button
                   key={lang.code}
                   onClick={() => setSelectedLanguage(lang.code)}
-                  className={`p-2.5 rounded-xl border flex flex-col items-center space-y-1 transition-all cursor-pointer ${
-                    isActive
-                      ? "bg-cyan-950/40 border-cyan-500/70 shadow-md shadow-cyan-900/30"
-                      : "bg-background/40 border-border hover:border-border hover:bg-card/60"
+                  className={`flex cursor-pointer flex-col items-center gap-0.5 rounded-lg border p-2.5 transition-colors ${
+                    isActive ? "border-indigo-500 bg-card ring-1 ring-indigo-500" : "border-border bg-card hover:bg-muted"
                   }`}
                 >
-                  <span className="text-xl">{en(lang.flag)}</span>
-                  <span className={`text-[11px] font-bold ${isActive ? "text-cyan-600 dark:text-cyan-300" : "text-muted-foreground"}`}>
-                    {lang.code.toUpperCase()}
-                  </span>
-                  <span className="text-[9px] text-muted-foreground truncate w-full text-center">
-                    {en(lang.native)}
-                  </span>
+                  <span className={`text-sm font-medium ${isActive ? "text-foreground" : "text-muted-foreground"}`}>{en(lang.label)}</span>
+                  <span className="w-full truncate text-center text-xs text-muted-foreground">{en(lang.native)}</span>
                 </button>
               );
             })}
           </div>
-        </div>
-
-        {/* Audio Player & Dual-Track Controller */}
-        <div className="p-6 rounded-2xl bg-gradient-to-r from-slate-900 via-cyan-950/20 to-slate-900 border border-cyan-900/30 shadow-2xl space-y-5">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div className="flex items-center space-x-4">
-              <button
-                onClick={() => setIsPlaying(!isPlaying)}
-                className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 flex items-center justify-center text-white shadow-lg shadow-cyan-500/30 transition-all cursor-pointer"
-              >
-                {isPlaying ? <Pause className="w-5 h-5 fill-current" /> : <Play className="w-5 h-5 fill-current ms-0.5" />}
-              </button>
-
-              <div>
-                <div className="flex items-center space-x-2">
-                  <h3 className="text-base font-bold text-foreground">{en("Interview Audio Channel")}</h3>
-                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-600 dark:text-cyan-300 font-semibold border border-cyan-500/30">
-                    {audioTrackMode === "dubbed" ? en("Simulated Neural Dubbing") : en("Original Dialect")}
-                  </span>
-                </div>
-                <div className="text-xs text-muted-foreground mt-0.5 font-mono">
-                  {formatSeconds(currentTime)} / 00:20.0 (Scrubbing position)
-                </div>
-              </div>
-            </div>
-
-            {/* Dual-Track Audio Selector */}
-            <div className="flex items-center space-x-2 bg-background p-1.5 rounded-xl border border-border">
-              <button
-                onClick={() => setAudioTrackMode("original")}
-                className={`px-3 py-1.5 rounded-lg text-xs font-medium flex items-center space-x-1.5 transition-all cursor-pointer ${
-                  audioTrackMode === "original"
-                    ? "bg-muted text-white font-semibold"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                <Headphones className="w-3.5 h-3.5" />
-                <span>{en("Original Audio")}</span>
-              </button>
-
-              <button
-                onClick={() => setAudioTrackMode("dubbed")}
-                className={`px-3 py-1.5 rounded-lg text-xs font-medium flex items-center space-x-1.5 transition-all cursor-pointer ${
-                  audioTrackMode === "dubbed"
-                    ? "bg-cyan-600 text-white font-semibold shadow-md shadow-cyan-600/30"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                <Radio className="w-3.5 h-3.5" />
-                <span>{en("Neural Dubbed Track ({value})", { value: selectedLanguage.toUpperCase() })}</span>
-              </button>
-            </div>
-          </div>
-
-          {/* Timeline Scrubber Bar */}
-          <div className="space-y-1.5">
-            <div className="h-2.5 w-full rounded-full bg-background overflow-hidden relative cursor-pointer">
-              <div
-                style={{ width: `${(currentTime / 20.0) * 100}%` }}
-                className="h-full bg-gradient-to-r from-cyan-500 to-blue-500 rounded-full transition-all duration-200"
-              />
-            </div>
-            <div className="flex justify-between text-[11px] text-muted-foreground font-mono">
-              <span>00:00.0</span>
-              <span>{en("Timeline synchronized with WebVTT captions")}</span>
-              <span>00:20.0</span>
-            </div>
-          </div>
-        </div>
+        </Card>
 
         {/* Synchronized Bilingual Subtitle Transcript */}
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <h3 className="text-base font-semibold text-foreground flex items-center space-x-2">
-              <Languages className="w-4 h-4 text-cyan-700 dark:text-cyan-400" />
-              <span>{en("Synchronized Bilingual Subtitle Timeline")}</span>
-            </h3>
-            <span className="text-xs text-muted-foreground">
-              {en("{length} dialogue segments recorded", { length: segments.length })}
-            </span>
+            <h2 className="text-base font-semibold text-foreground">{en("Transcript")}</h2>
+            <span className="text-sm text-muted-foreground">{en("{length} segments", { length: segments.length })}</span>
           </div>
 
-          {segments.length === 0 ? (
-            <div className="p-8 text-center rounded-2xl bg-card/60 border border-border text-muted-foreground text-xs">
-              {fetchError || "No translated dialogue segments recorded for this session yet."}
-            </div>
+          {loading ? (
+            <Loading />
+          ) : segments.length === 0 ? (
+            <EmptyState title={fetchError || en("No translated transcript for this interview yet.")} />
           ) : (
             <div className="space-y-3">
               {segments.map((seg) => {
@@ -370,44 +230,36 @@ export default function MultiLanguageTranslationStudioPage() {
                   <div
                     key={seg.id || seg.sequenceNumber}
                     onClick={() => setCurrentTime(seg.startTimeSeconds)}
-                    className={`p-4 rounded-xl border transition-all cursor-pointer space-y-2 ${
-                      isCurrent
-                        ? "bg-cyan-950/30 border-cyan-500/60 shadow-lg shadow-cyan-900/20"
-                        : "bg-card/40 border-border hover:border-border hover:bg-card/60"
+                    className={`cursor-pointer space-y-2 rounded-xl border bg-card p-4 shadow-sm transition-colors ${
+                      isCurrent ? "border-indigo-500 ring-1 ring-indigo-500" : "border-border hover:bg-muted/50"
                     }`}
                   >
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-2">
-                        <span className={`p-1.5 rounded-lg text-xs font-bold flex items-center space-x-1 ${
-                          isAi 
-                            ? "bg-purple-500/20 text-purple-600 dark:text-purple-300 border border-purple-500/30"
-                            : "bg-emerald-500/20 text-emerald-600 dark:text-emerald-300 border border-emerald-500/30"
-                        }`}>
-                          {isAi ? <Bot className="w-3.5 h-3.5 me-1" /> : <User className="w-3.5 h-3.5 me-1" />}
-                          <span>{isAi ? en("AI Technical Interviewer") : en("Candidate")}</span>
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-2">
+                        <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-foreground">
+                          {isAi ? <Bot className="h-3.5 w-3.5" /> : <User className="h-3.5 w-3.5" />}
+                          <span>{isAi ? en("AI interviewer") : en("Candidate")}</span>
                         </span>
-
-                        <span className="text-[11px] font-mono text-muted-foreground">
-                          [{formatSeconds(seg.startTimeSeconds)} - {formatSeconds(seg.endTimeSeconds)}]
+                        <span className="font-mono text-xs text-muted-foreground">
+                          {formatSeconds(seg.startTimeSeconds)} – {formatSeconds(seg.endTimeSeconds)}
                         </span>
                       </div>
-
-                      <span className="text-[10px] uppercase font-bold text-muted-foreground">
-                        {en("Segment #{sequenceNumber}", { sequenceNumber: seg.sequenceNumber })}
-                      </span>
+                      <span className="text-xs text-muted-foreground">{en("Segment {sequenceNumber}", { sequenceNumber: seg.sequenceNumber })}</span>
                     </div>
 
                     {/* Original Spoken Text */}
-                    <div className="text-xs text-muted-foreground leading-relaxed ps-2 border-s-2 border-border">
-                      <span className="text-[10px] uppercase font-semibold text-muted-foreground block mb-0.5">
-                        {en("Spoken Original ({value}):", { value: seg.originalLanguage.toUpperCase() })}</span>
+                    <div className="border-s-2 border-border ps-2 text-sm leading-relaxed text-muted-foreground">
+                      <span className="mb-0.5 block text-xs font-medium text-muted-foreground">
+                        {en("Original ({value})", { value: seg.originalLanguage.toUpperCase() })}
+                      </span>
                       {seg.originalText}
                     </div>
 
                     {/* Translated Text in Active Target Language */}
-                    <div className="text-sm font-medium text-cyan-200 leading-relaxed ps-2 border-s-2 border-cyan-500">
-                      <span className="text-[10px] uppercase font-semibold text-cyan-700 dark:text-cyan-400 block mb-0.5">
-                        {en("Subtitles / Dubbing ({value}):", { value: selectedLanguage.toUpperCase() })}</span>
+                    <div className="border-s-2 border-indigo-500 ps-2 text-sm font-medium leading-relaxed text-foreground">
+                      <span className="mb-0.5 block text-xs font-medium text-indigo-700 dark:text-indigo-400">
+                        {en("Translation ({value})", { value: selectedLanguage.toUpperCase() })}
+                      </span>
                       {getTranslatedText(seg)}
                     </div>
                   </div>
@@ -418,55 +270,39 @@ export default function MultiLanguageTranslationStudioPage() {
         </div>
 
         {/* Real-time Dialogue Injection Simulator */}
-        <div className="p-6 rounded-2xl bg-card/50 border border-border space-y-4">
-          <div className="flex items-center space-x-2">
-            <Sparkles className="w-4 h-4 text-cyan-700 dark:text-cyan-400" />
-            <h3 className="text-base font-bold text-foreground">{en("Live Conversation & Subtitle Preview")}</h3>
-          </div>
-          <p className="text-xs text-muted-foreground">
-            {en("Enter a question or response to see real-time translation and captions across supported languages.")}
+        <Card title={en("Translate a new line")}>
+          <p className="mb-4 text-sm text-muted-foreground">
+            {en("Add a question or answer to this transcript and see it translated into the supported languages.")}
           </p>
 
           <form onSubmit={handleIngestSegment} className="space-y-3">
-            <div className="flex items-center space-x-3">
-              <label className="text-xs text-muted-foreground font-medium">{en("Speaker:")}</label>
-              <div className="flex items-center space-x-2">
+            <div className="flex flex-wrap items-center gap-3">
+              <span className="text-sm font-medium text-muted-foreground">{en("Speaker")}</span>
+              <div className="flex items-center gap-2">
                 {["Candidate", "AiInterviewer", "Mentor"].map((spk) => (
-                  <button
-                    key={spk}
-                    type="button"
-                    onClick={() => setInputSpeaker(spk)}
-                    className={`px-3 py-1 rounded-lg text-xs font-medium cursor-pointer border ${
-                      inputSpeaker === spk
-                        ? "bg-cyan-600 text-white border-cyan-500"
-                        : "bg-muted text-muted-foreground border-border"
-                    }`}
-                  >
-                    {en(spk)}
-                  </button>
+                  <Button key={spk} type="button" variant={inputSpeaker === spk ? "primary" : "secondary"} onClick={() => setInputSpeaker(spk)}>
+                    {spk === "AiInterviewer" ? en("AI interviewer") : en(spk)}
+                  </Button>
                 ))}
               </div>
             </div>
 
-            <div className="flex items-center space-x-3">
+            <div className="flex items-center gap-3">
               <input
                 type="text"
                 value={inputText}
                 onChange={(e) => setInputText(e.target.value)}
-                placeholder={en("Enter technical interview speech to translate (e.g. 'I designed an async memory buffer queue...')")}
-                className="flex-1 rounded-xl bg-background border border-border px-4 py-2.5 text-xs text-foreground focus:outline-none focus:border-cyan-500"
+                placeholder={en("Type what was said")}
+                aria-label={en("Line to translate")}
+                className="flex-1 rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground shadow-sm placeholder:text-muted-foreground focus:border-indigo-500 focus:outline-none"
               />
-              <button
-                type="submit"
-                disabled={isSubmitting || !inputText.trim()}
-                className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white text-xs font-semibold shadow-lg shadow-cyan-600/30 flex items-center space-x-1.5 cursor-pointer disabled:opacity-50"
-              >
-                <Send className="w-3.5 h-3.5" />
-                <span>{isSubmitting ? en("Translating...") : en("Translate")}</span>
-              </button>
+              <Button type="submit" busy={isSubmitting} disabled={!inputText.trim()}>
+                {!isSubmitting && <Send className="h-4 w-4" />}
+                <span>{isSubmitting ? en("Translating…") : en("Translate")}</span>
+              </Button>
             </div>
           </form>
-        </div>
+        </Card>
       </div>
     </div>
   );

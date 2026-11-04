@@ -89,7 +89,7 @@ export function DeadlinesTable({ deadlines, actions }: { deadlines: OptDeadline[
     <ScrollArea>
       <table className="w-full text-sm">
         <caption className="sr-only">{t("reportingAndEvaluationDeadlines")}</caption>
-        <thead className="text-start text-xs uppercase text-muted-foreground [&_th]:text-start">
+        <thead className="text-start text-xs text-muted-foreground [&_th]:text-start">
           <tr>
             <th scope="col" className="py-2 pe-3">{t("what")}</th>
             <th scope="col" className="py-2 pe-3">{t("due")}</th>
@@ -119,7 +119,7 @@ export function AuthorizationsTable({ items, actions }: { items: OptAuthorizatio
     <ScrollArea>
       <table className="w-full text-sm">
         <caption className="sr-only">{t("oPTAuthorizationPeriods")}</caption>
-        <thead className="text-start text-xs uppercase text-muted-foreground [&_th]:text-start">
+        <thead className="text-start text-xs text-muted-foreground [&_th]:text-start">
           <tr>
             <th scope="col" className="py-2 pe-3">{t("type")}</th>
             <th scope="col" className="py-2 pe-3">{t("eADStart")}</th>
@@ -162,7 +162,7 @@ export function EmploymentsTable({ items, hasStem, actions }: { items: OptEmploy
     <ScrollArea>
       <table className="w-full text-sm">
         <caption className="sr-only">{t("employmentDuringOPT")}</caption>
-        <thead className="text-start text-xs uppercase text-muted-foreground [&_th]:text-start">
+        <thead className="text-start text-xs text-muted-foreground [&_th]:text-start">
           <tr>
             <th scope="col" className="py-2 pe-3">{t("employer")}</th>
             <th scope="col" className="py-2 pe-3">{t("dates")}</th>

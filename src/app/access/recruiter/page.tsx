@@ -7,11 +7,12 @@
 
 import React, { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
-import { Briefcase, Clock, CheckCircle2, XCircle } from "lucide-react";
+import { Clock, CheckCircle2, XCircle } from "lucide-react";
 import { useAppAuth as useAuth } from "@/lib/appAuth";
 import { authenticatedFetch } from "@/lib/apiClient";
 import { useLatestRef } from "@/lib/legacyApi";
 import { useEn } from "@/lib/english/EnglishProvider";
+import { Button, PageHeader, brandFill, buttonClass } from "@/components/career/ui";
 
 type Request = {
   id: string;
@@ -72,20 +73,12 @@ export default function RecruiterAccessPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-3">
-        <span className="rounded-xl bg-indigo-600 p-2 text-white">
-          <Briefcase aria-hidden="true" className="h-5 w-5" />
-        </span>
-        <div>
-          <h1 className="text-2xl font-semibold">{en("Recruiter access")}</h1>
-          <p className="text-sm text-muted-foreground">{en("For employers who want to review candidates and their verified work.")}</p>
-        </div>
-      </div>
+      <PageHeader title={en("Recruiter access")} description={en("For employers who want to review candidates and their verified work.")} />
 
       {!isSignedIn ? (
-        <div className="space-y-3 rounded-2xl border border-border p-5 text-sm">
+        <div className="space-y-3 rounded-xl border border-border bg-card p-5 text-sm shadow-sm">
           <p>{en("First create a free Edulexa account (or sign in), then come back to this page to ask for recruiter access.")}</p>
-          <Link href="/login?redirect_url=%2Faccess%2Frecruiter" className="inline-flex rounded-lg bg-indigo-600 px-4 py-2 font-medium text-white hover:bg-indigo-700">
+          <Link href="/login?redirect_url=%2Faccess%2Frecruiter" className={buttonClass("primary")} style={brandFill}>
             {en("Sign in or create an account")}
           </Link>
         </div>
@@ -116,7 +109,7 @@ export default function RecruiterAccessPage() {
               {state.request.decisionNote ?? "You can send a new request with more detail about your company."}
             </Status>
           )}
-          <form onSubmit={submit} className="grid gap-4 rounded-2xl border border-border bg-card p-5 sm:grid-cols-2" aria-label={en("Ask for recruiter access")}>
+          <form onSubmit={submit} className="grid gap-4 rounded-xl border border-border bg-card p-5 shadow-sm sm:grid-cols-2" aria-label={en("Ask for recruiter access")}>
             <label className="block text-sm">
               <span className="mb-1 block font-medium">{en("Company")}</span>
               <input required minLength={2} maxLength={200} className={input} value={form.company} onChange={(e) => setForm({ ...form, company: e.target.value })} />
@@ -134,9 +127,9 @@ export default function RecruiterAccessPage() {
               <textarea rows={3} maxLength={1000} className={input} value={form.message} onChange={(e) => setForm({ ...form, message: e.target.value })} />
             </label>
             <p className="text-xs text-muted-foreground sm:col-span-2">{en("Requests from a company e-mail address are approved faster. We check every request before giving access to candidate data.")}</p>
-            <button type="submit" disabled={busy} className="justify-self-start rounded-lg bg-indigo-600 sm:col-span-2 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50">
+            <Button type="submit" busy={busy} className="justify-self-start sm:col-span-2">
               {busy ? en("Sending…") : en("Send request")}
-            </button>
+            </Button>
           </form>
         </>
       )}
@@ -153,7 +146,7 @@ export default function RecruiterAccessPage() {
 function Status({ icon: Icon, tone, title, children }: { icon: React.ElementType; tone: "emerald" | "amber" | "red"; title: string; children: React.ReactNode }) {
   const colors = { emerald: "border-emerald-500/30 bg-emerald-500/5", amber: "border-amber-500/30 bg-amber-500/5", red: "border-red-500/30 bg-red-500/5" }[tone];
   return (
-    <div className={`flex gap-3 rounded-2xl border p-4 text-sm ${colors}`} role="status">
+    <div className={`flex gap-3 rounded-lg border p-4 text-sm ${colors}`} role="status">
       <Icon aria-hidden="true" className="mt-0.5 h-5 w-5 shrink-0" />
       <div>
         <p className="font-medium">{title}</p>

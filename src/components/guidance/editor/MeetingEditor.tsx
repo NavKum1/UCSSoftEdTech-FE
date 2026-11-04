@@ -19,7 +19,7 @@ interface BookingOptions {
   types: { id: string; name: string; minutes: number; modes: string[]; counsellors: number }[];
 }
 
-const field = "mt-1 block w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:border-cyan-600 focus:outline-none focus:ring-2 focus:ring-cyan-600/20";
+const field = "mt-1 block w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:border-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-600/20";
 
 function zones(): string[] {
   try {
@@ -56,7 +56,7 @@ export default function MeetingEditor({ q, update }: { q: Question; update: (p: 
   const topics = q.options;
 
   return (
-    <div className="space-y-3 rounded-lg border border-cyan-600/30 bg-cyan-600/5 p-3 text-xs">
+    <div className="space-y-3 rounded-lg border border-border bg-muted/40 p-3 text-xs">
       <div>
         <p className="font-medium">{en("How the time is set")}</p>
         <div className="mt-1.5 grid gap-2 sm:grid-cols-2">
@@ -66,7 +66,7 @@ export default function MeetingEditor({ q, update }: { q: Question; update: (p: 
               ["slots", "They pick a free time", en("They pick from your counsellors' free hours (Career centre → Appointments); it's booked straight away.")],
             ] as const
           ).map(([mode, title, detail]) => (
-            <label key={mode} className={`flex cursor-pointer gap-2 rounded-lg border p-2.5 ${b.mode === mode ? "border-cyan-600 bg-background" : "border-border"}`}>
+            <label key={mode} className={`flex cursor-pointer gap-2 rounded-lg border p-2.5 ${b.mode === mode ? "border-indigo-600 bg-background" : "border-border"}`}>
               <input type="radio" name={`mode-${q.id}`} className="mt-0.5" checked={b.mode === mode} onChange={() => set({ mode, typeId: mode === "slots" ? (b.typeId ?? options?.types[0]?.id ?? null) : null })} />
               <span>
                 <span className="block font-medium">{title}</span>

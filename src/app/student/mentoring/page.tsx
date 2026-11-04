@@ -59,7 +59,7 @@ export default function StudentMentoringPage() {
         description={tr("connectWithAlumniAndProfessionals")}
       />
       <ErrorBanner error={options.error ?? mine.error} />
-      <div role="tablist" aria-label={tr("mentoringSections")} className="mb-6 flex gap-2 border-b border-border">
+      <div role="tablist" aria-label={tr("mentoringSections")} className="mb-6 flex gap-1 overflow-x-auto border-b border-border">
         {(
           [
             ["find", tr("tabFind")],
@@ -74,7 +74,7 @@ export default function StudentMentoringPage() {
             aria-selected={tab === key}
             aria-controls={`panel-${key}`}
             onClick={() => setTab(key)}
-            className={`-mb-px border-b-2 px-3 py-2 text-sm font-medium focus-visible:outline-2 ${tab === key ? "border-[var(--brand,#4f46e5)]" : "border-transparent text-muted-foreground"}`}
+            className={`-mb-px inline-flex shrink-0 items-center gap-2 whitespace-nowrap border-b-2 px-3 py-2.5 text-sm transition-colors focus-visible:outline-2 ${tab === key ? "border-[var(--brand,#0e7490)] font-medium text-foreground" : "border-transparent text-muted-foreground hover:border-border hover:text-foreground"}`}
           >
             {label}
           </button>
@@ -108,7 +108,7 @@ export default function StudentMentoringPage() {
                       type="button"
                       onClick={() => setOpenId(r.id)}
                       aria-current={openId === r.id ? "true" : undefined}
-                      className={`w-full rounded-lg border p-3 text-start text-sm focus-visible:outline-2 ${openId === r.id ? "border-[var(--brand,#4f46e5)]" : "border-border"}`}
+                      className={`w-full rounded-lg border p-3 text-start text-sm focus-visible:outline-2 ${openId === r.id ? "border-[var(--brand,#0e7490)]" : "border-border"}`}
                     >
                       <span className="flex items-center justify-between gap-2">
                         <span className="font-medium">{r.mentorName}</span>

@@ -1,7 +1,6 @@
 "use client";
 
 import React from "react";
-import { Building2 } from "lucide-react";
 import PortalShell from "@/components/portal/PortalShell";
 import { SchoolPlanBanner } from "@/components/institute/SchoolPlan";
 import { SetupChecklist } from "@/components/institute/SetupChecklist";
@@ -24,7 +23,7 @@ export default function InstituteLayout({ children }: { children: React.ReactNod
   const sections = admin ? SECTIONS : SECTIONS.slice(0, 1);
   return (
     <SchoolEnglishScope>
-    <PortalShell name="Institute" icon={<Building2 aria-hidden="true" className="h-4 w-4" />} accent="bg-cyan-600" home="/institute/dashboard" sections={sections}>
+    <PortalShell name="Institute" home="/institute/dashboard" sections={sections}>
       <SchoolPlanBanner />
       <SetupChecklist />
       {children}

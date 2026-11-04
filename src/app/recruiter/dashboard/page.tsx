@@ -2,14 +2,12 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import { Badge, Button, Card, EmptyState, ErrorBanner, Field, Loading, Modal, PageHeader, ScrollArea, StatTile, Tabs, brandFill, buttonClass } from "@/components/career/ui";
 import { AccessNotice, useLatestRef, useLegacyApi } from "@/lib/legacyApi";
-import { 
-  Briefcase, Users, ShieldAlert, ShieldCheck, Plus, 
-  ExternalLink, Search, RefreshCw, KeyRound, Copy, Check,
-  AlertTriangle, Sparkles, Filter, Code2, Award, Mic,
-  FileText, CheckCircle2, Clock, Send, Layers, ArrowRight,
-  Brain, CheckCheck, X,
-  MessageSquare, HelpCircle, FileSearch, Target, Flame
+import {
+  ShieldAlert, ShieldCheck, Plus, ExternalLink, RefreshCw, Copy, Check,
+  AlertTriangle, Sparkles, Filter, Code2, Award, Mic, CheckCircle2, Clock,
+  Layers, ArrowRight, Brain, CheckCheck, X, MessageSquare, FileSearch, Target,
 } from "lucide-react";
 import { useEn } from "@/lib/english/EnglishProvider";
 
@@ -140,13 +138,41 @@ const REVIEW_STATUS_LABELS: Record<ReviewStatus, string> = {
   IN_PROGRESS: "In progress",
 };
 
-const REVIEW_STATUS_STYLES: Record<ReviewStatus, string> = {
-  AWAITING: "bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 border-indigo-500/30",
-  ADVANCED: "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30",
-  HOLD: "bg-amber-500/15 text-amber-700 dark:text-amber-400 border-amber-500/30",
-  DECLINED: "bg-muted text-muted-foreground border-border",
-  IN_PROGRESS: "bg-muted text-muted-foreground border-border",
+const REVIEW_STATUS_TONES: Record<ReviewStatus, "neutral" | "good" | "warn" | "bad" | "info"> = {
+  AWAITING: "info",
+  ADVANCED: "good",
+  HOLD: "warn",
+  DECLINED: "neutral",
+  IN_PROGRESS: "neutral",
 };
+
+const inputCls =
+  "w-full rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground shadow-sm placeholder:text-muted-foreground focus-visible:outline-2 focus-visible:outline-offset-1";
+
+function modalPanel(width: string) {
+  return `max-h-[90vh] w-full ${width} space-y-4 overflow-y-auto rounded-xl border border-border bg-card p-6 shadow-xl`;
+}
+
+function CloseButton({ onClick, label }: { onClick: () => void; label: string }) {
+  return (
+    <button type="button" onClick={onClick} aria-label={label} className="shrink-0 rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground">
+      <X aria-hidden="true" className="h-4 w-4" />
+    </button>
+  );
+}
+
+function sentenceCase(value: string) {
+  return value ? value.charAt(0).toUpperCase() + value.slice(1).toLowerCase() : value;
+}
+
+function linkStatusClass(bundle: AssessmentBundle) {
+  return bundle.linkStatus === "revoked" || bundle.linkStatus === "expired" ? "font-medium text-amber-700 dark:text-amber-400" : "text-muted-foreground";
+}
+
+/** Written / coding / voice scores, e.g. "W 80% · C --% · V 72%" */
+function stageScores(bundle: AssessmentBundle) {
+  return `W ${bundle.stage1Score ?? "--"}% · C ${bundle.stage2Score ?? "--"}% · V ${bundle.stage3Score ?? "--"}%`;
+}
 
 const GUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -173,6 +199,7 @@ export default function RecruiterDashboardPage() {
   const en = useEn();
   const { apiFetch, ready, access } = useLegacyApi();
   const [data, setData] = useState<CorporateCandidatesResponse | null>(null);
+  const [candidatesError, setCandidatesError] = useState<string | null>(null);
   const [bundles, setBundles] = useState<AssessmentBundle[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [loadingBundles, setLoadingBundles] = useState<boolean>(true);
@@ -187,7 +214,7 @@ export default function RecruiterDashboardPage() {
   const [newTitle, setNewTitle] = useState("");
   const [newDescription, setNewDescription] = useState("");
   const [newLanguage, setNewLanguage] = useState("python");
-  const [newCompany, setNewCompany] = useState("Uber");
+  const [newCompany, setNewCompany] = useState("");
   const [newInviteCode, setNewInviteCode] = useState("");
   const [createStatus, setCreateStatus] = useState<string | null>(null);
 
@@ -195,11 +222,11 @@ export default function RecruiterDashboardPage() {
   const [showBundleModal, setShowBundleModal] = useState<boolean>(false);
   const [bundleCandidateName, setBundleCandidateName] = useState("");
   const [bundleCandidateEmail, setBundleCandidateEmail] = useState("");
-  const [bundleTargetRole, setBundleTargetRole] = useState("Senior Distributed Systems Engineer");
-  const [bundleCompany, setBundleCompany] = useState("Uber");
+  const [bundleTargetRole, setBundleTargetRole] = useState("");
+  const [bundleCompany, setBundleCompany] = useState("");
   const [bundleExamId, setBundleExamId] = useState("swe-core-systems");
   const [bundleLanguage, setBundleLanguage] = useState("typescript");
-  const [bundleDefenseTopic, setBundleDefenseTopic] = useState("Architectural pushback: Defend your partition rebalancing latency vs consistency model.");
+  const [bundleDefenseTopic, setBundleDefenseTopic] = useState("");
   const [bundleStatus, setBundleStatus] = useState<string | null>(null);
   const [bundleCreatedData, setBundleCreatedData] = useState<CreatedBundle | null>(null);
 
@@ -207,9 +234,9 @@ export default function RecruiterDashboardPage() {
   const [showScrutinyModal, setShowScrutinyModal] = useState<boolean>(false);
   const [scrutinyResumeText, setScrutinyResumeText] = useState<string>("");
   const [scrutinyCandidateName, setScrutinyCandidateName] = useState<string>("");
-  const [scrutinyTargetRole, setScrutinyTargetRole] = useState<string>("Staff Distributed Systems Engineer");
-  const [scrutinyTargetCompany, setScrutinyTargetCompany] = useState<string>("Uber");
-  const [scrutinyYearsExp, setScrutinyYearsExp] = useState<number>(6);
+  const [scrutinyTargetRole, setScrutinyTargetRole] = useState<string>("");
+  const [scrutinyTargetCompany, setScrutinyTargetCompany] = useState<string>("");
+  const [scrutinyYearsExp, setScrutinyYearsExp] = useState<number>(0);
   const [scrutinyResult, setScrutinyResult] = useState<ScrutinyResultData | null>(null);
   const [scrutinyLoading, setScrutinyLoading] = useState<boolean>(false);
 
@@ -225,13 +252,18 @@ export default function RecruiterDashboardPage() {
   const fetchCandidates = async () => {
     setLoading(true);
     try {
-      const res = await apiFetch(`/api/recruiter/candidates?companyId=Uber`);
+      // The server lists the signed-in recruiter's own company; it never trusts a company named by the page
+      const res = await apiFetch(`/api/recruiter/candidates`);
       if (res.ok) {
-        const json = await res.json();
-        setData(json);
+        setData(await res.json());
+        setCandidatesError(null);
+      } else {
+        const body = await res.json().catch(() => null);
+        setCandidatesError(body?.error || en("We couldn't load your candidates. Please try again."));
       }
     } catch (e) {
       console.error("[RECRUITER DASHBOARD ERROR]:", e);
+      setCandidatesError(en("We couldn't load your candidates. Please try again."));
     } finally {
       setLoading(false);
     }
@@ -264,7 +296,7 @@ export default function RecruiterDashboardPage() {
 
   const handleCreateChallenge = async (e: React.FormEvent) => {
     e.preventDefault();
-    setCreateStatus("Creating private challenge...");
+    setCreateStatus(en("Creating the challenge…"));
     try {
       const res = await apiFetch(`/api/recruiter/sprint/create`, {
         method: "POST",
@@ -280,7 +312,7 @@ export default function RecruiterDashboardPage() {
 
       if (res.ok) {
         const created = await res.json();
-        setCreateStatus(`Created! Invite Code: ${created.inviteCode}`);
+        setCreateStatus(en("Created. Invite code: {code}", { code: created.inviteCode }));
         setTimeout(() => {
           setShowCreateModal(false);
           setCreateStatus(null);
@@ -299,7 +331,7 @@ export default function RecruiterDashboardPage() {
 
   const handleCreateBundle = async (e: React.FormEvent) => {
     e.preventDefault();
-    setBundleStatus("Generating 3-Stage Assessment Bundle...");
+    setBundleStatus(en("Creating the assessment…"));
     try {
       const res = await apiFetch(`/api/recruiter/assessments/bundle/create`, {
         method: "POST",
@@ -414,121 +446,145 @@ export default function RecruiterDashboardPage() {
     setTimeout(() => setCopiedToken(null), 2500);
   };
 
-  const candidates: CorporateCandidate[] = data?.candidates || [
-    {
-      submissionId: "sub-demo-1",
-      candidateName: "Sarah Chen",
-      candidateEmail: "sarah.chen@example.com",
-      sprintTitle: "Uber Rideshare Geohash Routing Engine Challenge",
-      status: "Completed",
-      antiCheat: {
-        verificationFlagged: false,
-        suspectedAi: false,
-        suspectedPasting: false,
-        flagReason: null,
-      },
-      evaluation: {
-        finalScore: 92.0,
-        publicUrlSlug: "cred-sarah-chen-9921",
-      },
-    },
-    {
-      submissionId: "sub-demo-2",
-      candidateName: "Devon Miller",
-      candidateEmail: "devon.m@example.com",
-      sprintTitle: "Uber Rideshare Geohash Routing Engine Challenge",
-      status: "Completed",
-      antiCheat: {
-        verificationFlagged: true,
-        suspectedAi: true,
-        suspectedPasting: true,
-        flagReason: "Generative AI conversational watermark and rapid paste velocity detected.",
-      },
-      evaluation: {
-        finalScore: 84.5,
-        publicUrlSlug: "cred-devon-miller-4412",
-      },
-    },
-  ];
+  const candidates: CorporateCandidate[] = data?.candidates ?? [];
 
   const totalApplicants = data?.totalApplicants ?? candidates.length;
   const flaggedCount = data?.flaggedCount ?? candidates.filter((c) => c.antiCheat.verificationFlagged).length;
   const cleanCount = totalApplicants - flaggedCount;
+
+  const visibleBundles = bundles.filter((bundle) => decisionFilter === "ALL" || reviewStatus(bundle) === decisionFilter);
+
+  const bundleActions = (bundle: AssessmentBundle, isCompleted: boolean, align: "justify-start" | "justify-end") => (
+    <div className={`flex flex-wrap items-center gap-2 ${align}`}>
+      {isCompleted && (
+        <Link href="/recruiter/evidence" className={buttonClass("secondary")} title={en("Review this candidate's evidence and record a decision")}>
+          <FileSearch aria-hidden="true" className="h-4 w-4" />
+          {en("Review")}
+        </Link>
+      )}
+      {bundle.aiVerdict && (
+        <Button variant="ghost" onClick={() => setSelectedBundleForAudit(bundle)} title={en("Stage scores and interview transcript")}>
+          {en("Details")}
+        </Button>
+      )}
+      {(bundle.linkStatus === "active" || bundle.linkStatus === "expired") && (
+        <Button
+          variant="ghost"
+          onClick={() => handleReissueLink(bundle)}
+          disabled={linkBusyId === bundle.id}
+          title={en("Send a new link (the previous one stops working)")}
+        >
+          <RefreshCw aria-hidden="true" className="h-4 w-4 text-muted-foreground" />
+          {en("New link")}
+        </Button>
+      )}
+      {bundle.linkStatus === "active" && (
+        <Button
+          variant="ghost"
+          onClick={() => handleRevokeLink(bundle)}
+          disabled={linkBusyId === bundle.id}
+          title={en("Withdraw this candidate's link")}
+          className="text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950/40"
+        >
+          <X aria-hidden="true" className="h-4 w-4" />
+          {en("Revoke")}
+        </Button>
+      )}
+    </div>
+  );
+
+  const integrityBadge = (cand: CorporateCandidate) =>
+    cand.antiCheat?.verificationFlagged ? (
+      <Badge tone="warn">
+        <AlertTriangle aria-hidden="true" className="me-1 h-3.5 w-3.5" />
+        {en("Signals to review")}
+      </Badge>
+    ) : (
+      <Badge tone="good">
+        <ShieldCheck aria-hidden="true" className="me-1 h-3.5 w-3.5" />
+        {en("No signals raised")}
+      </Badge>
+    );
+
+  const candidateLinks = (cand: CorporateCandidate, only?: "evidence" | "credential") => (
+    <>
+      {only !== "credential" && (
+        <Link href={evidenceHref(cand.submissionId)} className="inline-flex items-center gap-1 font-medium text-indigo-700 hover:underline dark:text-indigo-400">
+          <FileSearch aria-hidden="true" className="h-3.5 w-3.5" />
+          {evidenceHref(cand.submissionId) === "/recruiter/evidence" ? en("Review") : en("Evidence pack")}
+        </Link>
+      )}
+      {only !== "evidence" &&
+        (cand.evaluation?.publicUrlSlug ? (
+          <a
+            href={`/credential/${cand.evaluation.publicUrlSlug}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1 font-medium text-indigo-700 hover:underline dark:text-indigo-400"
+          >
+            {en("View credential")}
+            <ExternalLink aria-hidden="true" className="h-3.5 w-3.5" />
+          </a>
+        ) : (
+          <span className="text-muted-foreground">{en("No credential")}</span>
+        ))}
+    </>
+  );
 
   if (access) return <AccessNotice problem={access} feature="The recruiter dashboard" />;
 
   return (
     <div className="text-foreground font-sans">
       <div className="space-y-8">
-        {/* Header Navigation */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-border">
-          <div className="flex items-center space-x-3">
-            <div className="w-12 h-12 rounded-2xl bg-indigo-600/20 border border-indigo-500/30 flex items-center justify-center text-indigo-700 dark:text-indigo-400">
-              <Briefcase className="w-6 h-6" />
-            </div>
-            <div>
-              <div className="flex items-center space-x-2">
-                <span className="text-xs font-semibold text-indigo-700 dark:text-indigo-400 uppercase tracking-wider">{en("Corporate Recruiter Portal")}</span>
-                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-500/10 text-indigo-700 dark:text-indigo-400 border border-indigo-500/30">
-                  {en("UBER HIRING PIPELINE")}
-                </span>
-              </div>
-              <h1 className="text-2xl font-extrabold text-foreground mt-0.5">
-                {en("Technical Hiring Command & Assessment Suites")}
-              </h1>
-            </div>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-3">
-            <button
-              onClick={() => {
-                setScrutinyResult(null);
-                setScrutinyResumeText("Alex Rivera, Senior Distributed Systems Engineer\n- Architected Kafka event streaming microservices handling 150k msg/sec at Uber Freight.\n- Optimized PostgreSQL query execution and connection pooling, reducing P99 latency by 45%.\n- Designed Redis cache-aside tier with cluster replication for high-throughput dispatch engine.\n- Deployed containerized microservices with Kubernetes, Docker, and Terraform on AWS.");
-                setScrutinyCandidateName("Alex Rivera");
-                setScrutinyTargetRole("Staff Distributed Systems Engineer");
-                setScrutinyTargetCompany("Uber");
-                setScrutinyYearsExp(7);
-                setShowScrutinyModal(true);
-              }}
-              className="py-2.5 px-4 rounded-xl bg-gradient-to-r from-amber-600 via-rose-600 to-indigo-600 hover:from-amber-500 hover:to-indigo-500 text-xs font-bold text-white flex items-center space-x-2 transition-all shadow-lg shadow-rose-600/25 cursor-pointer"
-            >
-              <FileSearch className="w-4 h-4 text-amber-200" />
-              <span>{en("AI Resume Scrutiny & Auto-Tailor")}</span>
-            </button>
-
-            <button
-              onClick={() => {
-                setBundleCreatedData(null);
-                setBundleCandidateName("");
-                setBundleCandidateEmail("");
-                setShowBundleModal(true);
-              }}
-              className="py-2.5 px-4 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-xs font-bold text-white flex items-center space-x-2 transition-all shadow-lg shadow-indigo-600/25 cursor-pointer"
-            >
-              <Sparkles className="w-4 h-4 text-amber-300" />
-              <span>{en("Generate 3-Stage Assessment")}</span>
-            </button>
-
-            <button
-              onClick={() => setShowCreateModal(true)}
-              className="py-2.5 px-4 rounded-xl bg-card hover:bg-muted border border-border text-xs font-bold text-foreground flex items-center space-x-2 transition-colors cursor-pointer"
-            >
-              <Plus className="w-4 h-4 text-indigo-600" />
-              <span>{en("New Challenge")}</span>
-            </button>
-
-            <button
-              onClick={() => {
-                fetchCandidates();
-                fetchBundles();
-              }}
-              className="py-2.5 px-3 rounded-xl bg-card hover:bg-muted border border-border text-xs font-medium text-muted-foreground flex items-center space-x-1.5 transition-colors cursor-pointer"
-            >
-              <RefreshCw className={`w-3.5 h-3.5 ${loading || loadingBundles ? "animate-spin" : ""}`} />
-              <span>{en("Refresh")}</span>
-            </button>
-          </div>
-        </div>
+        <PageHeader
+          title={en("Candidates")}
+          description={en("Assessments you've sent, the evidence they produced, and the decisions waiting for you. Nobody is advanced or declined automatically.")}
+          actions={
+            <>
+              <Button
+                variant="ghost"
+                onClick={() => {
+                  fetchCandidates();
+                  fetchBundles();
+                }}
+                busy={loading || loadingBundles}
+              >
+                {!(loading || loadingBundles) && <RefreshCw aria-hidden="true" className="h-4 w-4" />}
+                {en("Refresh")}
+              </Button>
+              <Button
+                variant="secondary"
+                onClick={() => {
+                  setScrutinyResult(null);
+                  setScrutinyResumeText("");
+                  setScrutinyCandidateName("");
+                  setScrutinyTargetRole("");
+                  setScrutinyTargetCompany("");
+                  setScrutinyYearsExp(0);
+                  setShowScrutinyModal(true);
+                }}
+              >
+                <FileSearch aria-hidden="true" className="h-4 w-4" />
+                {en("Review a résumé")}
+              </Button>
+              <Button variant="secondary" onClick={() => setShowCreateModal(true)}>
+                <Plus aria-hidden="true" className="h-4 w-4" />
+                {en("New challenge")}
+              </Button>
+              <Button
+                onClick={() => {
+                  setBundleCreatedData(null);
+                  setBundleCandidateName("");
+                  setBundleCandidateEmail("");
+                  setShowBundleModal(true);
+                }}
+              >
+                <Sparkles aria-hidden="true" className="h-4 w-4" />
+                {en("Send an assessment")}
+              </Button>
+            </>
+          }
+        />
 
         {/* Human review, integrations and validity */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -540,11 +596,11 @@ export default function RecruiterDashboardPage() {
             <Link
               key={href}
               href={href}
-              className="glass-panel rounded-2xl p-4 border border-border hover:border-indigo-500/40 transition-colors flex items-start gap-3"
+              className="flex items-start gap-3 rounded-xl border border-border bg-card p-4 shadow-sm transition-colors hover:border-[var(--brand)]"
             >
               <Icon className="w-5 h-5 text-indigo-600 dark:text-indigo-400 shrink-0 mt-0.5" />
               <div className="min-w-0">
-                <div className="text-sm font-bold text-foreground flex items-center gap-1">
+                <div className="flex items-center gap-1 text-sm font-semibold text-foreground">
                   {en(title)}
                   <ArrowRight className="w-3.5 h-3.5 text-muted-foreground" />
                 </div>
@@ -554,1243 +610,945 @@ export default function RecruiterDashboardPage() {
           ))}
         </div>
 
-        {/* Live KPI Stat Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-          <div className="glass-card rounded-2xl p-5 border border-indigo-500/20 bg-indigo-500/5">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-indigo-600 dark:text-indigo-400">{en("Awaiting review")}</span>
-              <FileSearch className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
-            </div>
-            <div className="text-3xl font-extrabold text-indigo-600 dark:text-indigo-400 mt-2">
-              {bundles.filter(b => reviewStatus(b) === "AWAITING").length}
-            </div>
-            <span className="text-[11px] text-indigo-600/80 dark:text-indigo-400/80 mt-1 block">
-              {en("All stages complete; a recruiter decides on the evidence")}
-            </span>
-          </div>
-
-          <div className="glass-card rounded-2xl p-5 border border-emerald-500/20 bg-emerald-500/5">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400">{en("Advanced")}</span>
-              <Award className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-            </div>
-            <div className="text-3xl font-extrabold text-emerald-600 dark:text-emerald-400 mt-2">
-              {bundles.filter(b => reviewStatus(b) === "ADVANCED").length}
-            </div>
-            <span className="text-[11px] text-emerald-600/80 dark:text-emerald-400/80 mt-1 block">
-              {en("Advanced by a recruiter")}
-            </span>
-          </div>
-
-          <div className="glass-card rounded-2xl p-5 border border-border bg-muted/30">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-muted-foreground">{en("On hold / declined")}</span>
-              <Clock className="w-4 h-4 text-muted-foreground" />
-            </div>
-            <div className="text-3xl font-extrabold text-foreground mt-2">
-              {bundles.filter(b => reviewStatus(b) === "HOLD").length} / {bundles.filter(b => reviewStatus(b) === "DECLINED").length}
-            </div>
-            <span className="text-[11px] text-muted-foreground mt-1 block">
-              {en("Decided by a recruiter")}
-            </span>
-          </div>
-
-          <div className="glass-card rounded-2xl p-5 border border-purple-500/20 bg-purple-500/5">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-purple-600 dark:text-purple-400">{en("In progress")}</span>
-              <Layers className="w-4 h-4 text-purple-600 dark:text-purple-400" />
-            </div>
-            <div className="text-3xl font-extrabold text-purple-600 dark:text-purple-400 mt-2">
-              {bundles.filter(b => reviewStatus(b) === "IN_PROGRESS").length}
-            </div>
-            <span className="text-[11px] text-purple-600/80 dark:text-purple-400/80 mt-1 block">
-              {en("Candidate still completing the assessment stages")}
-            </span>
-          </div>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <StatTile icon={<FileSearch />} label={en("Awaiting review")} value={bundles.filter((b) => reviewStatus(b) === "AWAITING").length} hint={en("All stages done; you decide on the evidence")} />
+          <StatTile icon={<Award />} label={en("Advanced")} value={bundles.filter((b) => reviewStatus(b) === "ADVANCED").length} hint={en("Advanced by a recruiter")} />
+          <StatTile
+            icon={<Clock />}
+            label={en("On hold / declined")}
+            value={`${bundles.filter((b) => reviewStatus(b) === "HOLD").length} / ${bundles.filter((b) => reviewStatus(b) === "DECLINED").length}`}
+            hint={en("Decided by a recruiter")}
+          />
+          <StatTile icon={<Layers />} label={en("In progress")} value={bundles.filter((b) => reviewStatus(b) === "IN_PROGRESS").length} hint={en("Still completing the assessment")} />
         </div>
 
-        {/* Tab Navigation Switcher */}
-        <div className="flex items-center space-x-2 border-b border-border pb-3">
-          <button
-            onClick={() => setActiveTab("bundles")}
-            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center space-x-2 cursor-pointer ${
-              activeTab === "bundles"
-                ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/30"
-                : "bg-card text-muted-foreground hover:text-foreground border border-border"
-            }`}
-          >
-            <Layers className="w-3.5 h-3.5" />
-            <span>{en("3-Stage Assessment Pipeline ({length})", { length: bundles.length })}</span>
-          </button>
+        <Tabs
+          label={en("Candidate lists")}
+          value={activeTab}
+          onChange={setActiveTab}
+          items={[
+            { id: "bundles", label: en("Assessments"), count: bundles.length, icon: <Layers /> },
+            { id: "challenges", label: en("Coding challenge submissions"), count: candidates.length, icon: <Code2 /> },
+          ]}
+        />
 
-          <button
-            onClick={() => setActiveTab("challenges")}
-            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center space-x-2 cursor-pointer ${
-              activeTab === "challenges"
-                ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/30"
-                : "bg-card text-muted-foreground hover:text-foreground border border-border"
-            }`}
-          >
-            <Code2 className="w-3.5 h-3.5" />
-            <span>{en("Sprint Submissions & Integrity Signals ({length})", { length: candidates.length })}</span>
-          </button>
-        </div>
-
-        {/* Tab 1: 3-Stage Assessment Bundles */}
+        {/* Tab 1: assessments (written exam, coding sprint, voice defense) */}
         {activeTab === "bundles" && (
-          <div className="glass-panel rounded-2xl p-6 border border-border space-y-4">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-              <div>
-                <h2 className="text-base font-bold text-foreground flex items-center space-x-2">
-                  <span>{en("Assessment Pipeline")}</span>
-                  <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/30">
-                    {en("Human decision required")}
-                  </span>
-                </h2>
-                <p className="text-xs text-muted-foreground mt-0.5">
-                  {en("Candidates complete a written exam, a coding sprint and a voice defense. Scores are evidence for a recruiter; nobody is advanced or declined automatically.")}
-                </p>
-              </div>
-
-              <button
+          <Card
+            title={en("Assessment pipeline")}
+            actions={
+              <Button
+                variant="secondary"
                 onClick={() => {
                   setBundleCreatedData(null);
                   setShowBundleModal(true);
                 }}
-                className="py-2 px-3 rounded-xl bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-700 dark:text-indigo-400 border border-indigo-500/30 text-xs font-bold flex items-center space-x-1.5 cursor-pointer self-start sm:self-auto"
               >
-                <Plus className="w-3.5 h-3.5" />
-                <span>{en("Invite New Candidate")}</span>
-              </button>
-            </div>
+                <Plus aria-hidden="true" className="h-4 w-4" />
+                {en("Invite a candidate")}
+              </Button>
+            }
+            className="min-w-0 space-y-4"
+          >
+            <p className="-mt-2 text-sm text-muted-foreground">
+              {en("Candidates complete a written exam, a coding sprint and a voice defense. Scores are evidence for a recruiter; nobody is advanced or declined automatically.")}
+            </p>
 
-            {/* Filter Pills Bar */}
-            <div className="flex flex-wrap items-center gap-2 pt-1 pb-1">
-              <span className="text-[11px] font-semibold text-muted-foreground me-1 flex items-center space-x-1">
-                <Filter className="w-3 h-3" />
-                <span>{en("Filter By Review Status:")}</span>
+            {/* Review status filter */}
+            <div role="group" aria-label={en("Filter by review status")} className="flex flex-wrap items-center gap-2">
+              <span className="me-1 inline-flex items-center gap-1 text-xs font-medium text-muted-foreground">
+                <Filter aria-hidden="true" className="h-3.5 w-3.5" />
+                {en("Review status")}
               </span>
               {([
-                { id: "ALL", label: `All Candidates (${bundles.length})` },
+                { id: "ALL", label: en("All ({count})", { count: bundles.length }) },
                 ...(["AWAITING", "ADVANCED", "HOLD", "DECLINED", "IN_PROGRESS"] as const).map((s) => ({
                   id: s,
-                  label: `${REVIEW_STATUS_LABELS[s]} (${bundles.filter(b => reviewStatus(b) === s).length})`,
+                  label: `${en(REVIEW_STATUS_LABELS[s])} (${bundles.filter((b) => reviewStatus(b) === s).length})`,
                 })),
-              ] as { id: "ALL" | ReviewStatus; label: string }[]).map((pill) => (
-                <button
-                  key={pill.id}
-                  onClick={() => setDecisionFilter(pill.id)}
-                  className={`px-3 py-1 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
-                    decisionFilter === pill.id
-                      ? "bg-indigo-600 text-white shadow-sm"
-                      : "bg-card text-muted-foreground hover:text-foreground border border-border"
-                  }`}
-                >
-                  {pill.label}
-                </button>
-              ))}
+              ] as { id: "ALL" | ReviewStatus; label: string }[]).map((pill) => {
+                const on = decisionFilter === pill.id;
+                return (
+                  <button
+                    key={pill.id}
+                    type="button"
+                    aria-pressed={on}
+                    onClick={() => setDecisionFilter(pill.id)}
+                    style={on ? brandFill : undefined}
+                    className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
+                      on ? "text-[var(--brand-foreground,#fff)]" : "border border-border bg-card text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    {pill.label}
+                  </button>
+                );
+              })}
             </div>
 
             {linkMessage && (
-              <div role="status" aria-live="polite" className="mb-3 p-3 rounded-xl bg-muted/50 border border-border text-xs text-foreground">
+              <div role="status" aria-live="polite" className="rounded-lg border border-border bg-muted/50 p-3 text-sm text-foreground">
                 {linkMessage}
               </div>
             )}
             {reissued && (
-              <div className="mb-3 p-3 rounded-xl bg-card border border-border space-y-2">
-                <label htmlFor="reissued-link" className="text-[11px] font-semibold text-muted-foreground block">
+              <div className="space-y-2 rounded-lg border border-border bg-card p-3">
+                <label htmlFor="reissued-link" className="block text-sm font-medium text-foreground">
                   {en("New candidate link{value}:", { value: reissued.expiresAt ? ` (expires ${formatLinkDate(reissued.expiresAt)})` : "" })}</label>
-                <div className="flex items-center space-x-2">
+                <div className="flex flex-wrap items-center gap-2 sm:flex-nowrap">
                   <input
                     id="reissued-link"
                     type="text"
                     readOnly
                     value={typeof window !== "undefined" ? `${window.location.origin}/assessment/${reissued.token}` : `/assessment/${reissued.token}`}
-                    className="w-full bg-muted/60 border border-border rounded-lg px-3 py-2 text-xs font-mono text-foreground focus:outline-none"
+                    className={`${inputCls} min-w-0 font-mono`}
                   />
-                  <button
-                    onClick={() => handleCopyBundleUrl(reissued.token)}
-                    className="px-3 py-2 rounded-lg bg-indigo-600 text-white text-xs font-bold flex items-center space-x-1 cursor-pointer shrink-0"
-                  >
-                    {copiedToken === reissued.token ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
-                    <span>{copiedToken === reissued.token ? en("Copied") : en("Copy")}</span>
-                  </button>
-                  <button
-                    onClick={() => setReissued(null)}
-                    className="px-3 py-2 rounded-lg bg-card border border-border text-xs font-medium text-foreground cursor-pointer shrink-0"
-                  >
+                  <Button onClick={() => handleCopyBundleUrl(reissued.token)}>
+                    {copiedToken === reissued.token ? <Check aria-hidden="true" className="h-4 w-4" /> : <Copy aria-hidden="true" className="h-4 w-4" />}
+                    {copiedToken === reissued.token ? en("Copied") : en("Copy")}
+                  </Button>
+                  <Button variant="secondary" onClick={() => setReissued(null)}>
                     {en("Done")}
-                  </button>
+                  </Button>
                 </div>
               </div>
             )}
-            <div className="overflow-x-auto">
-              <table className="w-full text-start text-xs text-muted-foreground">
-                <thead className="bg-card/80 text-muted-foreground uppercase text-[10px] font-semibold border-b border-border">
-                  <tr>
-                    <th className="py-3 px-4">{en("Candidate & Role")}</th>
-                    <th className="py-3 px-4">{en("Diagnostics (1 / 2 / 3)")}</th>
-                    <th className="py-3 px-4">{en("Stage Progress")}</th>
-                    <th className="py-3 px-4">{en("Review Status")}</th>
-                    <th className="py-3 px-4">{en("Composite")}</th>
-                    <th className="py-3 px-4 text-end">{en("Actions")}</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border/60">
-                  {bundles.filter(bundle => decisionFilter === "ALL" || reviewStatus(bundle) === decisionFilter).length === 0 ? (
-                    <tr>
-                      <td colSpan={6} className="py-8 text-center text-muted-foreground">
-                        {en("No candidates match the selected review status.")}
-                      </td>
-                    </tr>
-                  ) : (
-                    bundles
-                      .filter(bundle => decisionFilter === "ALL" || reviewStatus(bundle) === decisionFilter)
-                      .map((bundle) => {
+
+            {loadingBundles && bundles.length === 0 ? (
+              <Loading />
+            ) : bundles.length === 0 ? (
+              <EmptyState title={en("No assessments yet")}>
+                {en("Send an assessment to a candidate and their progress shows up here.")}
+              </EmptyState>
+            ) : visibleBundles.length === 0 ? (
+              <p className="py-8 text-center text-sm text-muted-foreground">{en("No candidates match the selected review status.")}</p>
+            ) : (
+              <>
+                {/* Phones: one card per candidate */}
+                <ul className="space-y-3 md:hidden">
+                  {visibleBundles.map((bundle) => {
+                    const isCompleted = bundle.overallStatus === "Completed";
+                    const status = reviewStatus(bundle);
+                    return (
+                      <li key={bundle.id} className="space-y-3 rounded-lg border border-border p-4">
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="min-w-0">
+                            <p className="truncate font-medium text-foreground">{bundle.candidateName}</p>
+                            <p className="truncate text-xs text-muted-foreground">{bundle.candidateEmail}</p>
+                            <p className="mt-0.5 text-xs text-muted-foreground">
+                              {bundle.targetRole} • {bundle.companyName}
+                            </p>
+                          </div>
+                          <Badge tone={REVIEW_STATUS_TONES[status]}>{en(REVIEW_STATUS_LABELS[status])}</Badge>
+                        </div>
+                        <dl className="grid grid-cols-2 gap-x-3 gap-y-2 text-xs">
+                          <div>
+                            <dt className="text-muted-foreground">{en("Stage scores")}</dt>
+                            <dd className="mt-0.5 tabular-nums text-foreground">{stageScores(bundle)}</dd>
+                          </div>
+                          <div>
+                            <dt className="text-muted-foreground">{en("Composite")}</dt>
+                            <dd className="mt-0.5 tabular-nums text-foreground">
+                              {isCompleted ? (bundle.compositeScore == null ? en("Needs scoring") : `${bundle.compositeScore}%`) : "--"}
+                            </dd>
+                          </div>
+                          <div className="col-span-2">
+                            <dt className="text-muted-foreground">{en("Progress")}</dt>
+                            <dd className="mt-0.5 text-foreground">
+                              {isCompleted ? en("All stages complete") : en("Stage {stage} of 3", { stage: bundle.currentStage })}
+                              <span className={`block ${linkStatusClass(bundle)}`}>{linkStatusText(bundle)}</span>
+                            </dd>
+                          </div>
+                        </dl>
+                        {bundleActions(bundle, isCompleted, "justify-start")}
+                      </li>
+                    );
+                  })}
+                </ul>
+
+                {/* Wider screens: table */}
+                <ScrollArea className="hidden overflow-x-auto md:block">
+                  <table className="w-full text-start text-sm">
+                    <caption className="sr-only">{en("Assessment pipeline")}</caption>
+                    <thead className="border-b border-border text-xs font-medium text-muted-foreground">
+                      <tr>
+                        <th scope="col" className="px-3 py-2.5 text-start font-medium">{en("Candidate and role")}</th>
+                        <th scope="col" className="px-3 py-2.5 text-start font-medium">{en("Stage scores")}</th>
+                        <th scope="col" className="px-3 py-2.5 text-start font-medium">{en("Progress")}</th>
+                        <th scope="col" className="px-3 py-2.5 text-start font-medium">{en("Review status")}</th>
+                        <th scope="col" className="px-3 py-2.5 text-start font-medium">{en("Composite")}</th>
+                        <th scope="col" className="px-3 py-2.5 text-end font-medium">{en("Actions")}</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-border">
+                      {visibleBundles.map((bundle) => {
                         const isCompleted = bundle.overallStatus === "Completed";
                         const status = reviewStatus(bundle);
-
                         return (
-                          <tr key={bundle.id} className="hover:bg-card/40 transition-colors">
-                            <td className="py-3.5 px-4">
-                              <div className="font-semibold text-foreground">{bundle.candidateName}</div>
-                              <div className="font-mono text-[11px] text-muted-foreground">{bundle.candidateEmail}</div>
-                              <div className="text-[10px] text-indigo-600 dark:text-indigo-400 mt-0.5 font-medium">
+                          <tr key={bundle.id} className="align-top transition-colors hover:bg-muted/40">
+                            <td className="px-3 py-3">
+                              <div className="font-medium text-foreground">{bundle.candidateName}</div>
+                              <div className="text-xs text-muted-foreground">{bundle.candidateEmail}</div>
+                              <div className="mt-0.5 text-xs text-muted-foreground">
                                 {bundle.targetRole} • {bundle.companyName}
                               </div>
                             </td>
-
-                            {/* Stage Diagnostics */}
-                            <td className="py-3.5 px-4">
-                              <div className="flex items-center space-x-2 text-[11px] font-mono">
-                                <span title={en("Written Exam")} className={bundle.stage1Score ? "text-emerald-600 dark:text-emerald-400 font-bold" : "text-muted-foreground"}>
-                                  W: {bundle.stage1Score ?? "--"}%
-                                </span>
-                                <span className="text-border">|</span>
-                                <span title={en("Coding Sprint")} className={bundle.stage2Score ? "text-indigo-600 dark:text-indigo-400 font-bold" : "text-muted-foreground"}>
-                                  C: {bundle.stage2Score ?? "--"}%
-                                </span>
-                                <span className="text-border">|</span>
-                                <span title={en("AI Voice Defense")} className={bundle.stage3Score ? "text-purple-600 dark:text-purple-400 font-bold" : "text-muted-foreground"}>
-                                  V: {bundle.stage3Score ?? "--"}%
-                                </span>
-                              </div>
-                              <div className="text-[10px] text-muted-foreground mt-0.5 truncate max-w-[140px]" title={bundle.examTitle}>
+                            <td className="px-3 py-3">
+                              <div className="whitespace-nowrap text-xs tabular-nums text-foreground">{stageScores(bundle)}</div>
+                              <div className="mt-0.5 max-w-[160px] truncate text-xs text-muted-foreground" title={bundle.examTitle}>
                                 {bundle.examTitle}
                               </div>
                             </td>
-
-                            {/* Stage Progress */}
-                            <td className="py-3.5 px-4">
-                              <span className="px-2.5 py-1 rounded-lg text-[10px] font-semibold bg-muted text-muted-foreground border border-border flex items-center space-x-1.5 w-fit">
-                                {isCompleted ? <CheckCircle2 className="w-3 h-3" /> : <Clock className="w-3 h-3" />}
-                                <span>{isCompleted ? en("All stages complete") : `Stage ${bundle.currentStage}/3`}</span>
+                            <td className="px-3 py-3">
+                              <span className="inline-flex items-center gap-1.5 whitespace-nowrap text-xs text-foreground">
+                                {isCompleted ? <CheckCircle2 aria-hidden="true" className="h-3.5 w-3.5 text-muted-foreground" /> : <Clock aria-hidden="true" className="h-3.5 w-3.5 text-muted-foreground" />}
+                                {isCompleted ? en("All stages complete") : en("Stage {stage} of 3", { stage: bundle.currentStage })}
                               </span>
-                              <div
-                                className={`text-[10px] mt-1 ${bundle.linkStatus === "revoked" || bundle.linkStatus === "expired" ? "text-amber-700 dark:text-amber-400 font-semibold" : "text-muted-foreground"}`}
-                              >
-                                {linkStatusText(bundle)}
-                              </div>
-                              <div className="font-mono text-[9px] text-muted-foreground truncate max-w-[160px]" title={en("Link reference (the full link is shown only when it is created)")}>
+                              <div className={`mt-1 text-xs ${linkStatusClass(bundle)}`}>{linkStatusText(bundle)}</div>
+                              <div className="max-w-[160px] truncate font-mono text-xs text-muted-foreground" title={en("Link reference (the full link is shown only when it is created)")}>
                                 {bundle.linkHint}
                               </div>
                             </td>
-
-                            {/* Review Status */}
-                            <td className="py-3.5 px-4">
-                              <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold border flex items-center space-x-1 w-fit ${REVIEW_STATUS_STYLES[status]}`}>
-                                <span>{en(REVIEW_STATUS_LABELS[status])}</span>
-                              </span>
+                            <td className="px-3 py-3">
+                              <Badge tone={REVIEW_STATUS_TONES[status]}>{en(REVIEW_STATUS_LABELS[status])}</Badge>
                             </td>
-
-                            {/* Composite */}
-                            <td className="py-3.5 px-4">
+                            <td className="px-3 py-3">
                               {isCompleted ? (
                                 <div>
-                                  <span className="px-2 py-0.5 rounded-md text-[11px] font-extrabold border bg-muted/40 text-foreground border-border">
+                                  <span className="font-medium tabular-nums text-foreground">
                                     {bundle.compositeScore == null ? en("Needs scoring") : `${bundle.compositeScore}%`}
                                   </span>
                                   {bundle.certificateNumber && (
-                                    <div className="font-mono text-[9px] text-muted-foreground mt-1 truncate max-w-[95px]" title={bundle.certificateNumber}>
+                                    <div className="mt-1 max-w-[110px] truncate font-mono text-xs text-muted-foreground" title={bundle.certificateNumber}>
                                       {bundle.certificateNumber}
                                     </div>
                                   )}
                                 </div>
                               ) : (
-                                <span className="text-[10px] text-muted-foreground">--</span>
+                                <span className="text-xs text-muted-foreground">--</span>
                               )}
                             </td>
-
-                            {/* Actions */}
-                            <td className="py-3.5 px-4 text-end">
-                              <div className="flex items-center justify-end space-x-2">
-                                {isCompleted && (
-                                  <Link
-                                    href="/recruiter/evidence"
-                                    className="px-2.5 py-1.5 rounded-lg bg-indigo-600/15 hover:bg-indigo-600/25 text-indigo-700 dark:text-indigo-400 border border-indigo-500/30 text-[11px] font-bold flex items-center space-x-1 cursor-pointer transition-colors shadow-xs"
-                                    title={en("Review this candidate's evidence and record a decision")}
-                                  >
-                                    <FileSearch className="w-3.5 h-3.5" />
-                                    <span>{en("Review")}</span>
-                                  </Link>
-                                )}
-                                {bundle.aiVerdict && (
-                                  <button
-                                    onClick={() => setSelectedBundleForAudit(bundle)}
-                                    className="px-2.5 py-1.5 rounded-lg bg-card hover:bg-muted border border-border text-[11px] font-medium text-foreground flex items-center space-x-1 cursor-pointer transition-colors"
-                                    title={en("Stage scores and interview transcript")}
-                                  >
-                                    <span>{en("Details")}</span>
-                                  </button>
-                                )}
-
-                                {(bundle.linkStatus === "active" || bundle.linkStatus === "expired") && (
-                                  <button
-                                    onClick={() => handleReissueLink(bundle)}
-                                    disabled={linkBusyId === bundle.id}
-                                    title={en("Send a new link (the previous one stops working)")}
-                                    className="px-2.5 py-1.5 rounded-lg bg-card hover:bg-muted border border-border text-[11px] font-medium text-foreground flex items-center space-x-1 cursor-pointer transition-colors disabled:opacity-50"
-                                  >
-                                    <RefreshCw className="w-3 h-3 text-muted-foreground" aria-hidden="true" />
-                                    <span>{en("New link")}</span>
-                                  </button>
-                                )}
-                                {bundle.linkStatus === "active" && (
-                                  <button
-                                    onClick={() => handleRevokeLink(bundle)}
-                                    disabled={linkBusyId === bundle.id}
-                                    title={en("Withdraw this candidate's link")}
-                                    className="px-2.5 py-1.5 rounded-lg bg-card hover:bg-red-500/10 border border-red-500/30 text-[11px] font-medium text-red-700 dark:text-red-400 flex items-center space-x-1 cursor-pointer transition-colors disabled:opacity-50"
-                                  >
-                                    <X className="w-3 h-3" aria-hidden="true" />
-                                    <span>{en("Revoke")}</span>
-                                  </button>
-                                )}
-                              </div>
-                            </td>
+                            <td className="px-3 py-3">{bundleActions(bundle, isCompleted, "justify-end")}</td>
                           </tr>
                         );
-                      })
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </div>
+                      })}
+                    </tbody>
+                  </table>
+                </ScrollArea>
+              </>
+            )}
+          </Card>
         )}
 
         {/* Tab 2: Sprint submissions and integrity signals */}
         {activeTab === "challenges" && (
-          <div className="glass-panel rounded-2xl p-6 border border-border space-y-4">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-              <div>
-                <h2 className="text-base font-bold text-foreground">{en("Corporate Applicant Pipeline")}</h2>
-                <p className="text-xs text-muted-foreground">{en("Sprint scores, project work and integrity signals. Signals are prompts for a conversation, not proof; open the evidence pack to review and decide.")}</p>
-              </div>
-            </div>
+          <Card title={en("Coding challenge submissions")} className="min-w-0 space-y-4">
+            <p className="-mt-2 text-sm text-muted-foreground">
+              {en("Sprint scores, project work and integrity signals. Signals are prompts for a conversation, not proof; open the evidence pack to review and decide.")}
+            </p>
 
-            <div className="overflow-x-auto">
-              <table className="w-full text-start text-xs text-muted-foreground">
-                <thead className="bg-card/80 text-muted-foreground uppercase text-[10px] font-semibold border-b border-border">
-                  <tr>
-                    <th className="py-3 px-4">{en("Candidate")}</th>
-                    <th className="py-3 px-4">{en("Corporate Challenge")}</th>
-                    <th className="py-3 px-4">{en("Defense Score")}</th>
-                    <th className="py-3 px-4">{en("Integrity Signals")}</th>
-                    <th className="py-3 px-4">{en("Evidence")}</th>
-                    <th className="py-3 px-4 text-end">{en("Verifiable Badge")}</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border/60">
+            <ErrorBanner error={candidatesError} onRetry={fetchCandidates} />
+            {loading && candidates.length === 0 ? (
+              <Loading />
+            ) : candidatesError ? null : candidates.length === 0 ? (
+              <EmptyState title={en("No submissions yet")}>
+                {en("Create a coding challenge and share its invite code. Submissions show up here.")}
+              </EmptyState>
+            ) : (
+              <>
+                {/* Phones: one card per submission */}
+                <ul className="space-y-3 md:hidden">
                   {candidates.map((cand, idx: number) => (
-                    <tr key={idx} className="hover:bg-card/40 transition-colors">
-                      <td className="py-3.5 px-4">
-                        <div className="font-semibold text-foreground">{cand.candidateName}</div>
-                        <div className="font-mono text-[11px] text-muted-foreground">{cand.candidateEmail}</div>
-                      </td>
-                      <td className="py-3.5 px-4 text-muted-foreground max-w-xs truncate">
-                        {cand.sprintTitle}
-                      </td>
-                      <td className="py-3.5 px-4 font-bold text-indigo-700 dark:text-indigo-400">
-                        {cand.evaluation?.finalScore ? `${cand.evaluation.finalScore}%` : en("Pending")}
-                      </td>
-                      <td className="py-3.5 px-4">
-                        {cand.antiCheat?.verificationFlagged ? (
-                          <div className="inline-flex items-center space-x-1.5 px-2.5 py-1 rounded-lg text-[11px] font-bold bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/30">
-                            <AlertTriangle className="w-3.5 h-3.5" />
-                            <span>{en("Signals to review")}</span>
-                          </div>
-                        ) : (
-                          <div className="inline-flex items-center space-x-1.5 px-2.5 py-1 rounded-lg text-[11px] font-bold bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/30">
-                            <ShieldCheck className="w-3.5 h-3.5" />
-                            <span>{en("No signals raised")}</span>
-                          </div>
-                        )}
-                      </td>
-                      <td className="py-3.5 px-4">
-                        <Link
-                          href={evidenceHref(cand.submissionId)}
-                          className="inline-flex items-center space-x-1 text-indigo-700 dark:text-indigo-400 hover:underline font-medium"
-                        >
-                          <FileSearch className="w-3 h-3" />
-                          <span>{evidenceHref(cand.submissionId) === "/recruiter/evidence" ? en("Review") : en("Evidence pack")}</span>
-                        </Link>
-                      </td>
-                      <td className="py-3.5 px-4 text-end">
-                        {cand.evaluation?.publicUrlSlug ? (
-                          <a
-                            href={`/credential/${cand.evaluation.publicUrlSlug}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center space-x-1 text-indigo-700 dark:text-indigo-400 hover:text-indigo-600 dark:text-indigo-300 font-medium"
-                          >
-                            <span>{en("View Seal")}</span>
-                            <ExternalLink className="w-3 h-3" />
-                          </a>
-                        ) : (
-                          <span className="text-muted-foreground">{en("No Credential")}</span>
-                        )}
-                      </td>
-                    </tr>
+                    <li key={idx} className="space-y-2 rounded-lg border border-border p-4">
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0">
+                          <p className="truncate font-medium text-foreground">{cand.candidateName}</p>
+                          <p className="truncate text-xs text-muted-foreground">{cand.candidateEmail}</p>
+                        </div>
+                        <span className="shrink-0 text-sm font-medium tabular-nums text-foreground">
+                          {cand.evaluation?.finalScore ? `${cand.evaluation.finalScore}%` : en("Pending")}
+                        </span>
+                      </div>
+                      <p className="text-xs text-muted-foreground">{cand.sprintTitle}</p>
+                      {integrityBadge(cand)}
+                      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 pt-1 text-sm">{candidateLinks(cand)}</div>
+                    </li>
                   ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
+                </ul>
+
+                {/* Wider screens: table */}
+                <ScrollArea className="hidden overflow-x-auto md:block">
+                  <table className="w-full text-start text-sm">
+                    <caption className="sr-only">{en("Coding challenge submissions")}</caption>
+                    <thead className="border-b border-border text-xs font-medium text-muted-foreground">
+                      <tr>
+                        <th scope="col" className="px-3 py-2.5 text-start font-medium">{en("Candidate")}</th>
+                        <th scope="col" className="px-3 py-2.5 text-start font-medium">{en("Challenge")}</th>
+                        <th scope="col" className="px-3 py-2.5 text-start font-medium">{en("Defense score")}</th>
+                        <th scope="col" className="px-3 py-2.5 text-start font-medium">{en("Integrity signals")}</th>
+                        <th scope="col" className="px-3 py-2.5 text-start font-medium">{en("Evidence")}</th>
+                        <th scope="col" className="px-3 py-2.5 text-end font-medium">{en("Credential")}</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-border">
+                      {candidates.map((cand, idx: number) => (
+                        <tr key={idx} className="transition-colors hover:bg-muted/40">
+                          <td className="px-3 py-3">
+                            <div className="font-medium text-foreground">{cand.candidateName}</div>
+                            <div className="text-xs text-muted-foreground">{cand.candidateEmail}</div>
+                          </td>
+                          <td className="max-w-xs truncate px-3 py-3 text-muted-foreground">{cand.sprintTitle}</td>
+                          <td className="px-3 py-3 font-medium tabular-nums text-foreground">
+                            {cand.evaluation?.finalScore ? `${cand.evaluation.finalScore}%` : en("Pending")}
+                          </td>
+                          <td className="px-3 py-3">{integrityBadge(cand)}</td>
+                          <td className="px-3 py-3">{candidateLinks(cand, "evidence")}</td>
+                          <td className="px-3 py-3 text-end">{candidateLinks(cand, "credential")}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </ScrollArea>
+              </>
+            )}
+          </Card>
         )}
       </div>
 
-      {/* Modal 1: Generate 3-Stage Assessment Bundle */}
+      {/* Send an assessment (written exam, coding sprint, voice defense) */}
       {showBundleModal && (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="glass-panel rounded-3xl p-6 max-w-lg w-full border border-indigo-500/30 space-y-4 shadow-2xl max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between pb-3 border-b border-border">
-              <h3 className="text-base font-bold text-foreground flex items-center space-x-2">
-                <Sparkles className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
-                <span>{en("Generate 3-Stage Assessment Bundle")}</span>
-              </h3>
-              <button
-                onClick={() => setShowBundleModal(false)}
-                className="text-muted-foreground hover:text-foreground text-xs cursor-pointer"
-              >
-                ✕
-              </button>
+        <Modal labelledBy="bundle-modal-title" onClose={() => setShowBundleModal(false)}>
+          <div className={modalPanel("max-w-lg")}>
+            <div className="flex items-center justify-between gap-3 border-b border-border pb-3">
+              <h2 id="bundle-modal-title" className="text-base font-semibold text-foreground">
+                {en("Send an assessment")}
+              </h2>
+              <CloseButton onClick={() => setShowBundleModal(false)} label={en("Close")} />
             </div>
 
             {bundleCreatedData ? (
-              <div className="space-y-4 py-2">
-                <div className="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-center space-y-2">
-                  <CheckCircle2 className="w-8 h-8 text-emerald-500 mx-auto" />
-                  <h4 className="font-extrabold text-foreground text-sm">{en("3-Stage Assessment Bundle Created!")}</h4>
-                  <p className="text-xs text-muted-foreground">
-                    {en("Candidate ")}<strong className="text-foreground">{bundleCreatedData.candidateName}</strong>{en(" is ready to be invited.")}
+              <div className="space-y-4">
+                <div role="status" className="space-y-1 rounded-lg border border-emerald-300 bg-emerald-50 p-4 text-center dark:border-emerald-900 dark:bg-emerald-950/40">
+                  <CheckCircle2 aria-hidden="true" className="mx-auto h-6 w-6 text-emerald-600 dark:text-emerald-400" />
+                  <p className="text-sm font-semibold text-foreground">{en("Assessment created")}</p>
+                  <p className="text-sm text-muted-foreground">
+                    {en("Candidate ")}<strong className="font-medium text-foreground">{bundleCreatedData.candidateName}</strong>{en(" is ready to be invited.")}
                   </p>
                 </div>
 
-                <div className="p-4 rounded-xl bg-card border border-border space-y-2">
-                  <div className="text-[11px] font-semibold text-muted-foreground">
-                    {en("Direct Candidate Invite Link{value}:", { value: bundleCreatedData.expiresAt ? ` (expires ${formatLinkDate(bundleCreatedData.expiresAt)})` : "" })}</div>
-                  <p className="text-[11px] text-amber-700 dark:text-amber-400">{en("Copy it now: for security the full link is shown only once. You can send a new link from the list later.")}</p>
-                  <div className="flex items-center space-x-2">
+                <div className="space-y-2">
+                  <label htmlFor="bundle-created-link" className="block text-sm font-medium text-foreground">
+                    {en("Candidate link{value}:", { value: bundleCreatedData.expiresAt ? ` (expires ${formatLinkDate(bundleCreatedData.expiresAt)})` : "" })}</label>
+                  <p className="text-xs text-amber-700 dark:text-amber-400">{en("Copy it now: for security the full link is shown only once. You can send a new link from the list later.")}</p>
+                  <div className="flex items-center gap-2">
                     <input
+                      id="bundle-created-link"
                       type="text"
                       readOnly
                       value={typeof window !== "undefined" ? `${window.location.origin}/assessment/${bundleCreatedData.token}` : `/assessment/${bundleCreatedData.token}`}
-                      className="w-full bg-muted/60 border border-border rounded-lg px-3 py-2 text-xs font-mono text-foreground focus:outline-none"
+                      className={`${inputCls} min-w-0 font-mono`}
                     />
-                    <button
-                      onClick={() => handleCopyBundleUrl(bundleCreatedData.token)}
-                      className="px-3 py-2 rounded-lg bg-indigo-600 text-white text-xs font-bold flex items-center space-x-1 cursor-pointer shrink-0"
-                    >
-                      {copiedToken === bundleCreatedData.token ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
-                      <span>{copiedToken === bundleCreatedData.token ? en("Copied") : en("Copy")}</span>
-                    </button>
+                    <Button onClick={() => handleCopyBundleUrl(bundleCreatedData.token)} className="shrink-0">
+                      {copiedToken === bundleCreatedData.token ? <Check aria-hidden="true" className="h-4 w-4" /> : <Copy aria-hidden="true" className="h-4 w-4" />}
+                      {copiedToken === bundleCreatedData.token ? en("Copied") : en("Copy")}
+                    </Button>
                   </div>
                 </div>
 
-                <div className="flex items-center space-x-3 pt-2">
+                <div className="flex flex-wrap items-center justify-end gap-2 pt-2">
                   <a
                     href={`/assessment/${bundleCreatedData.token}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex-1 py-2.5 px-3 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-bold text-xs text-center flex items-center justify-center space-x-1.5 cursor-pointer shadow-lg shadow-indigo-600/25"
+                    className={buttonClass("secondary")}
                   >
-                    <span>{en("Test Candidate Flow")}</span>
-                    <ArrowRight className="w-3.5 h-3.5" />
+                    {en("Preview as the candidate")}
+                    <ExternalLink aria-hidden="true" className="h-4 w-4" />
                   </a>
-                  <button
+                  <Button
+                    variant="secondary"
                     onClick={() => {
                       setShowBundleModal(false);
                       setBundleCreatedData(null);
                     }}
-                    className="py-2.5 px-4 rounded-xl bg-card hover:bg-muted text-muted-foreground font-medium text-xs border border-border cursor-pointer"
                   >
                     {en("Done")}
-                  </button>
+                  </Button>
                 </div>
               </div>
             ) : (
-              <form onSubmit={handleCreateBundle} className="space-y-3">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div>
-                    <label className="text-[11px] font-semibold text-muted-foreground block mb-1">{en("Candidate Full Name")}</label>
-                    <input
-                      type="text"
-                      value={bundleCandidateName}
-                      onChange={(e) => setBundleCandidateName(e.target.value)}
-                      placeholder={en("e.g. Jordan Lee")}
+              <form onSubmit={handleCreateBundle} className="space-y-4">
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  <Field label={en("Candidate name")}>
+                    {(p) => (
+                      <input
+                        {...p}
+                        type="text"
+                        value={bundleCandidateName}
+                        onChange={(e) => setBundleCandidateName(e.target.value)}
+                        placeholder={en("e.g. Jordan Lee")}
+                        required
+                      />
+                    )}
+                  </Field>
+                  <Field label={en("Candidate email")}>
+                    {(p) => (
+                      <input
+                        {...p}
+                        type="email"
+                        value={bundleCandidateEmail}
+                        onChange={(e) => setBundleCandidateEmail(e.target.value)}
+                        placeholder={en("e.g. jordan@example.com")}
+                        required
+                      />
+                    )}
+                  </Field>
+                </div>
+
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  <Field label={en("Role")}>
+                    {(p) => (
+                      <input
+                        {...p}
+                        type="text"
+                        value={bundleTargetRole}
+                        onChange={(e) => setBundleTargetRole(e.target.value)}
+                        placeholder={en("e.g. Senior backend engineer")}
+                        required
+                      />
+                    )}
+                  </Field>
+                  <Field label={en("Company or team")}>
+                    {(p) => (
+                      <input
+                        {...p}
+                        type="text"
+                        value={bundleCompany}
+                        onChange={(e) => setBundleCompany(e.target.value)}
+                        placeholder={en("e.g. Platform team")}
+                        required
+                      />
+                    )}
+                  </Field>
+                </div>
+
+                <Field label={en("Stage 1: written exam")}>
+                  {(p) => (
+                    <select {...p} value={bundleExamId} onChange={(e) => setBundleExamId(e.target.value)}>
+                      <option value="swe-core-systems">{en("Software engineering and distributed systems (20 min)")}</option>
+                      <option value="quantitative-aptitude-logic">{en("Quantitative aptitude and logical reasoning")}</option>
+                      <option value="product-management-foundations">{en("Product management foundations")}</option>
+                    </select>
+                  )}
+                </Field>
+
+                <Field label={en("Stage 2: coding language")}>
+                  {(p) => (
+                    <select {...p} value={bundleLanguage} onChange={(e) => setBundleLanguage(e.target.value)}>
+                      <option value="typescript">{en("TypeScript")}</option>
+                      <option value="javascript">{en("JavaScript")}</option>
+                      <option value="python">{en("Python")}</option>
+                    </select>
+                  )}
+                </Field>
+
+                <Field label={en("Stage 3: voice defense topic")} hint={en("What the candidate will be asked to explain and defend out loud.")}>
+                  {(p) => (
+                    <textarea
+                      {...p}
+                      value={bundleDefenseTopic}
+                      onChange={(e) => setBundleDefenseTopic(e.target.value)}
+                      placeholder={en("e.g. Walk through the trade-offs in your caching design")}
+                      rows={2}
                       required
-                      className="w-full bg-card border border-border rounded-xl px-3 py-2 text-xs text-foreground focus:outline-none focus:border-indigo-500"
                     />
-                  </div>
-
-                  <div>
-                    <label className="text-[11px] font-semibold text-muted-foreground block mb-1">{en("Candidate Email")}</label>
-                    <input
-                      type="email"
-                      value={bundleCandidateEmail}
-                      onChange={(e) => setBundleCandidateEmail(e.target.value)}
-                      placeholder={en("e.g. jordan@example.com")}
-                      required
-                      className="w-full bg-card border border-border rounded-xl px-3 py-2 text-xs text-foreground focus:outline-none focus:border-indigo-500"
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div>
-                    <label className="text-[11px] font-semibold text-muted-foreground block mb-1">{en("Target Role Title")}</label>
-                    <input
-                      type="text"
-                      value={bundleTargetRole}
-                      onChange={(e) => setBundleTargetRole(e.target.value)}
-                      placeholder={en("e.g. Senior Distributed Systems Engineer")}
-                      required
-                      className="w-full bg-card border border-border rounded-xl px-3 py-2 text-xs text-foreground focus:outline-none focus:border-indigo-500"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="text-[11px] font-semibold text-muted-foreground block mb-1">{en("Company / Team")}</label>
-                    <input
-                      type="text"
-                      value={bundleCompany}
-                      onChange={(e) => setBundleCompany(e.target.value)}
-                      placeholder={en("e.g. Uber")}
-                      required
-                      className="w-full bg-card border border-border rounded-xl px-3 py-2 text-xs text-foreground focus:outline-none focus:border-indigo-500"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="text-[11px] font-semibold text-muted-foreground block mb-1">{en("Stage 1: Diagnostic Written Exam")}</label>
-                  <select
-                    value={bundleExamId}
-                    onChange={(e) => setBundleExamId(e.target.value)}
-                    className="w-full bg-card border border-border rounded-xl px-3 py-2 text-xs text-foreground focus:outline-none focus:border-indigo-500"
-                  >
-                    <option value="swe-core-systems">{en("Software Engineering & Distributed Systems Diagnostic (20 min)")}</option>
-                    <option value="quantitative-aptitude-logic">{en("Quantitative Aptitude & Logical Reasoning")}</option>
-                    <option value="product-management-foundations">{en("Product Management Foundations")}</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="text-[11px] font-semibold text-muted-foreground block mb-1">{en("Stage 2: Code Sprint Language")}</label>
-                  <select
-                    value={bundleLanguage}
-                    onChange={(e) => setBundleLanguage(e.target.value)}
-                    className="w-full bg-card border border-border rounded-xl px-3 py-2 text-xs text-foreground focus:outline-none focus:border-indigo-500"
-                  >
-                    <option value="typescript">{en("TypeScript")}</option>
-                    <option value="javascript">{en("JavaScript")}</option>
-                    <option value="python">{en("Python")}</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="text-[11px] font-semibold text-muted-foreground block mb-1">{en("Stage 3: AI Voice Defense Topic")}</label>
-                  <textarea
-                    value={bundleDefenseTopic}
-                    onChange={(e) => setBundleDefenseTopic(e.target.value)}
-                    rows={2}
-                    required
-                    className="w-full bg-card border border-border rounded-xl px-3 py-2 text-xs text-foreground focus:outline-none focus:border-indigo-500"
-                  />
-                </div>
+                  )}
+                </Field>
 
                 {bundleStatus && (
-                  <div className="text-[11px] font-mono text-indigo-700 dark:text-indigo-400 bg-indigo-500/10 p-2.5 rounded-xl border border-indigo-500/30">
+                  <div role="status" className="rounded-lg border border-border bg-muted/50 p-3 text-sm text-foreground">
                     {bundleStatus}
                   </div>
                 )}
 
-                <div className="flex items-center space-x-2 pt-2">
-                  <button
-                    type="button"
-                    onClick={() => setShowBundleModal(false)}
-                    className="flex-1 py-2 px-3 rounded-xl bg-card hover:bg-muted text-muted-foreground font-medium text-xs border border-border cursor-pointer"
-                  >
+                <div className="flex flex-wrap items-center justify-end gap-2 pt-2">
+                  <Button type="button" variant="secondary" onClick={() => setShowBundleModal(false)}>
                     {en("Cancel")}
-                  </button>
-                  <button
-                    type="submit"
-                    className="flex-1 py-2 px-3 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-bold text-xs cursor-pointer shadow-lg shadow-indigo-600/25"
-                  >
-                    {en("Generate & Get Link")}
-                  </button>
+                  </Button>
+                  <Button type="submit">{en("Create and get link")}</Button>
                 </div>
               </form>
             )}
           </div>
-        </div>
+        </Modal>
       )}
 
-      {/* Modal 2: Create Corporate Challenge Modal */}
+      {/* New coding challenge */}
       {showCreateModal && (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="glass-panel rounded-3xl p-6 max-w-md w-full border border-indigo-500/30 space-y-4 shadow-2xl">
-            <div className="flex items-center justify-between pb-3 border-b border-border">
-              <h3 className="text-base font-bold text-foreground flex items-center space-x-2">
-                <Code2 className="w-4 h-4 text-indigo-700 dark:text-indigo-400" />
-                <span>{en("Create Corporate Challenge")}</span>
-              </h3>
-              <button
-                onClick={() => setShowCreateModal(false)}
-                className="text-muted-foreground hover:text-foreground text-xs cursor-pointer"
-              >
-                ✕
-              </button>
+        <Modal labelledBy="challenge-modal-title" onClose={() => setShowCreateModal(false)}>
+          <div className={modalPanel("max-w-md")}>
+            <div className="flex items-center justify-between gap-3 border-b border-border pb-3">
+              <h2 id="challenge-modal-title" className="text-base font-semibold text-foreground">
+                {en("New coding challenge")}
+              </h2>
+              <CloseButton onClick={() => setShowCreateModal(false)} label={en("Close")} />
             </div>
 
-            <form onSubmit={handleCreateChallenge} className="space-y-3">
-              <div>
-                <label className="text-[11px] font-semibold text-muted-foreground block mb-1">{en("Company / Team Name")}</label>
-                <input
-                  type="text"
-                  value={newCompany}
-                  onChange={(e) => setNewCompany(e.target.value)}
-                  placeholder={en("e.g. Uber")}
-                  required
-                  className="w-full bg-card border border-border rounded-xl px-3 py-2 text-xs text-foreground focus:outline-none focus:border-indigo-500"
-                />
-              </div>
+            <form onSubmit={handleCreateChallenge} className="space-y-4">
+              <Field label={en("Company or team")}>
+                {(p) => (
+                  <input
+                    {...p}
+                    type="text"
+                    value={newCompany}
+                    onChange={(e) => setNewCompany(e.target.value)}
+                    placeholder={en("e.g. Platform team")}
+                    required
+                  />
+                )}
+              </Field>
 
-              <div>
-                <label className="text-[11px] font-semibold text-muted-foreground block mb-1">{en("Challenge Title")}</label>
-                <input
-                  type="text"
-                  value={newTitle}
-                  onChange={(e) => setNewTitle(e.target.value)}
-                  placeholder={en("e.g. Real-Time Geospatial Driver Dispatcher")}
-                  required
-                  className="w-full bg-card border border-border rounded-xl px-3 py-2 text-xs text-foreground focus:outline-none focus:border-indigo-500"
-                />
-              </div>
+              <Field label={en("Challenge title")}>
+                {(p) => (
+                  <input
+                    {...p}
+                    type="text"
+                    value={newTitle}
+                    onChange={(e) => setNewTitle(e.target.value)}
+                    placeholder={en("e.g. Real-time order dispatcher")}
+                    required
+                  />
+                )}
+              </Field>
 
-              <div>
-                <label className="text-[11px] font-semibold text-muted-foreground block mb-1">{en("Language")}</label>
-                <select
-                  value={newLanguage}
-                  onChange={(e) => setNewLanguage(e.target.value)}
-                  className="w-full bg-card border border-border rounded-xl px-3 py-2 text-xs text-foreground focus:outline-none focus:border-indigo-500"
-                >
-                  <option value="python">{en("Python")}</option>
-                  <option value="csharp">{en("C# (.NET)")}</option>
-                  <option value="typescript">{en("TypeScript")}</option>
-                </select>
-              </div>
+              <Field label={en("Language")}>
+                {(p) => (
+                  <select {...p} value={newLanguage} onChange={(e) => setNewLanguage(e.target.value)}>
+                    <option value="python">{en("Python")}</option>
+                    <option value="csharp">{en("C# (.NET)")}</option>
+                    <option value="typescript">{en("TypeScript")}</option>
+                  </select>
+                )}
+              </Field>
 
-              <div>
-                <label className="text-[11px] font-semibold text-muted-foreground block mb-1">{en("Technical Problem Description")}</label>
-                <textarea
-                  value={newDescription}
-                  onChange={(e) => setNewDescription(e.target.value)}
-                  placeholder={en("Describe technical constraints, architecture expectations, and defense criteria...")}
-                  rows={3}
-                  required
-                  className="w-full bg-card border border-border rounded-xl px-3 py-2 text-xs text-foreground focus:outline-none focus:border-indigo-500"
-                />
-              </div>
+              <Field label={en("Problem description")}>
+                {(p) => (
+                  <textarea
+                    {...p}
+                    value={newDescription}
+                    onChange={(e) => setNewDescription(e.target.value)}
+                    placeholder={en("Describe the constraints, what a good design looks like, and what the candidate should be ready to defend.")}
+                    rows={3}
+                    required
+                  />
+                )}
+              </Field>
 
-              <div>
-                <label className="text-[11px] font-semibold text-muted-foreground block mb-1">{en("Custom Invite Code (Optional)")}</label>
-                <input
-                  type="text"
-                  value={newInviteCode}
-                  onChange={(e) => setNewInviteCode(e.target.value)}
-                  placeholder={en("e.g. UBER-GEO-2026 (Auto-generated if blank)")}
-                  className="w-full bg-card border border-border rounded-xl px-3 py-2 text-xs text-foreground focus:outline-none focus:border-indigo-500 font-mono"
-                />
-              </div>
+              <Field label={en("Invite code (optional)")} hint={en("Leave blank and we'll create one.")}>
+                {(p) => (
+                  <input
+                    {...p}
+                    className={`${p.className} font-mono`}
+                    type="text"
+                    value={newInviteCode}
+                    onChange={(e) => setNewInviteCode(e.target.value)}
+                    placeholder={en("e.g. BACKEND-2026")}
+                  />
+                )}
+              </Field>
 
               {createStatus && (
-                <div className="text-[11px] font-mono text-indigo-700 dark:text-indigo-400 bg-indigo-500/10 p-2.5 rounded-xl border border-indigo-500/30">
+                <div role="status" className="rounded-lg border border-border bg-muted/50 p-3 text-sm text-foreground">
                   {createStatus}
                 </div>
               )}
 
-              <div className="flex items-center space-x-2 pt-2">
-                <button
-                  type="button"
-                  onClick={() => setShowCreateModal(false)}
-                  className="flex-1 py-2 px-3 rounded-xl bg-card hover:bg-muted text-muted-foreground font-medium text-xs border border-border cursor-pointer"
-                >
+              <div className="flex flex-wrap items-center justify-end gap-2 pt-2">
+                <Button type="button" variant="secondary" onClick={() => setShowCreateModal(false)}>
                   {en("Cancel")}
-                </button>
-                <button
-                  type="submit"
-                  className="flex-1 py-2 px-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs cursor-pointer shadow-lg shadow-indigo-600/25"
-                >
-                  {en("Create & Launch")}
-                </button>
+                </Button>
+                <Button type="submit">{en("Create challenge")}</Button>
               </div>
             </form>
           </div>
-        </div>
+        </Modal>
       )}
 
-      {/* Modal 3: AI Resume Scrutiny & Auto-Tailor */}
+      {/* Review a résumé: claim check and a tailored assessment */}
       {showScrutinyModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4 animate-in fade-in">
-          <div className="bg-card border border-border rounded-3xl w-full max-w-4xl max-h-[92vh] flex flex-col shadow-2xl relative overflow-hidden">
-            {/* Modal Header */}
-            <div className="flex items-center justify-between border-b border-border p-5 bg-card/90 backdrop-blur-sm sticky top-0 z-10">
-              <div className="flex items-center space-x-3">
-                <div className="p-2.5 rounded-2xl bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/30">
-                  <FileSearch className="w-5 h-5" />
-                </div>
-                <div>
-                  <div className="flex items-center space-x-2">
-                    <h3 className="text-base font-bold text-foreground">{en("AI Resume Scrutiny & Precision Tailor")}</h3>
-                    <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30">
-                      {en("GPT-4o Deep Claim Verification")}
-                    </span>
-                  </div>
-                  <p className="text-xs text-muted-foreground">
-                    {en("Exposes inflated claims, detects buzzword fluff, and auto-generates custom 3-stage assessments")}
-                  </p>
-                </div>
+        <Modal labelledBy="scrutiny-modal-title" onClose={() => setShowScrutinyModal(false)}>
+          <div className="flex max-h-[92vh] w-full max-w-4xl flex-col overflow-hidden rounded-xl border border-border bg-card shadow-xl">
+            <div className="flex items-start justify-between gap-3 border-b border-border p-5">
+              <div className="min-w-0">
+                <h2 id="scrutiny-modal-title" className="text-base font-semibold text-foreground">{en("Review a résumé")}</h2>
+                <p className="mt-0.5 text-sm text-muted-foreground">
+                  {en("Checks résumé claims for inflated numbers and buzzwords, and drafts a tailored three-stage assessment. Treat the result as questions for the interview, not a verdict.")}
+                </p>
               </div>
-              <button
-                onClick={() => setShowScrutinyModal(false)}
-                className="text-muted-foreground hover:text-foreground text-sm font-bold cursor-pointer p-1.5 rounded-xl hover:bg-muted"
-              >
-                ✕
-              </button>
+              <CloseButton onClick={() => setShowScrutinyModal(false)} label={en("Close")} />
             </div>
 
-            {/* Modal Content */}
-            <div className="overflow-y-auto p-6 space-y-6 flex-1">
-              {/* Input Form */}
-              <form onSubmit={handleRunDeepScrutiny} className="p-5 rounded-2xl bg-muted/30 border border-border space-y-4">
-                <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
-                  <div>
-                    <label className="text-[11px] font-semibold text-muted-foreground block mb-1">{en("Candidate Name")}</label>
-                    <input
-                      type="text"
-                      value={scrutinyCandidateName}
-                      onChange={(e) => setScrutinyCandidateName(e.target.value)}
-                      placeholder={en("e.g. Alex Rivera")}
-                      className="w-full bg-card border border-border rounded-xl px-3 py-2 text-xs text-foreground focus:outline-none focus:border-amber-500"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-[11px] font-semibold text-muted-foreground block mb-1">{en("Target Role")}</label>
-                    <input
-                      type="text"
-                      value={scrutinyTargetRole}
-                      onChange={(e) => setScrutinyTargetRole(e.target.value)}
-                      placeholder={en("e.g. Staff Distributed Systems Engineer")}
-                      className="w-full bg-card border border-border rounded-xl px-3 py-2 text-xs text-foreground focus:outline-none focus:border-amber-500"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-[11px] font-semibold text-muted-foreground block mb-1">{en("Target Company")}</label>
-                    <input
-                      type="text"
-                      value={scrutinyTargetCompany}
-                      onChange={(e) => setScrutinyTargetCompany(e.target.value)}
-                      placeholder={en("e.g. Uber")}
-                      className="w-full bg-card border border-border rounded-xl px-3 py-2 text-xs text-foreground focus:outline-none focus:border-amber-500"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-[11px] font-semibold text-muted-foreground block mb-1">{en("Years of Exp")}</label>
-                    <input
-                      type="number"
-                      value={scrutinyYearsExp}
-                      onChange={(e) => setScrutinyYearsExp(Number(e.target.value))}
-                      className="w-full bg-card border border-border rounded-xl px-3 py-2 text-xs text-foreground focus:outline-none focus:border-amber-500"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <div className="flex items-center justify-between mb-1">
-                    <label className="text-[11px] font-semibold text-muted-foreground">{en("Raw Resume Text or Bullet Points")}</label>
-                    <span className="text-[10px] text-muted-foreground font-mono">{scrutinyResumeText.length} chars</span>
-                  </div>
-                  <textarea
-                    rows={4}
-                    value={scrutinyResumeText}
-                    onChange={(e) => setScrutinyResumeText(e.target.value)}
-                    placeholder={en("Paste candidate resume, experience highlights, or CV bullets...")}
-                    className="w-full bg-card border border-border rounded-xl p-3 text-xs text-foreground font-mono leading-relaxed focus:outline-none focus:border-amber-500"
-                    required
-                  />
-                </div>
-
-                <div className="flex items-center justify-between pt-1">
-                  <span className="text-[11px] text-muted-foreground italic">
-                    {en("AI will cross-examine metric feasibility against industry baselines.")}
-                  </span>
-                  <button
-                    type="submit"
-                    disabled={scrutinyLoading}
-                    className="py-2.5 px-5 rounded-xl bg-gradient-to-r from-amber-600 via-rose-600 to-indigo-600 hover:from-amber-500 hover:to-indigo-500 text-white font-bold text-xs cursor-pointer shadow-lg shadow-rose-600/25 flex items-center space-x-2 disabled:opacity-50"
-                  >
-                    {scrutinyLoading ? (
-                      <>
-                        <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                        <span>{en("Auditing Claims & Synthesizing Assessment...")}</span>
-                      </>
-                    ) : (
-                      <>
-                        <Sparkles className="w-3.5 h-3.5 text-amber-200" />
-                        <span>{en("Execute Deep Scrutiny & Auto-Tailor")}</span>
-                      </>
+            <div className="flex-1 space-y-6 overflow-y-auto p-5">
+              <form onSubmit={handleRunDeepScrutiny} className="space-y-4">
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                  <Field label={en("Candidate name")}>
+                    {(p) => (
+                      <input {...p} type="text" value={scrutinyCandidateName} onChange={(e) => setScrutinyCandidateName(e.target.value)} placeholder={en("e.g. Alex Rivera")} />
                     )}
-                  </button>
+                  </Field>
+                  <Field label={en("Target role")}>
+                    {(p) => (
+                      <input {...p} type="text" value={scrutinyTargetRole} onChange={(e) => setScrutinyTargetRole(e.target.value)} placeholder={en("e.g. Staff backend engineer")} />
+                    )}
+                  </Field>
+                  <Field label={en("Target company")}>
+                    {(p) => (
+                      <input {...p} type="text" value={scrutinyTargetCompany} onChange={(e) => setScrutinyTargetCompany(e.target.value)} placeholder={en("e.g. Your company")} />
+                    )}
+                  </Field>
+                  <Field label={en("Years of experience")}>
+                    {(p) => (
+                      <input {...p} type="number" min={0} value={scrutinyYearsExp} onChange={(e) => setScrutinyYearsExp(Number(e.target.value))} />
+                    )}
+                  </Field>
+                </div>
+
+                <Field label={en("Résumé text")} hint={en("{count} characters", { count: scrutinyResumeText.length })}>
+                  {(p) => (
+                    <textarea
+                      {...p}
+                      rows={5}
+                      value={scrutinyResumeText}
+                      onChange={(e) => setScrutinyResumeText(e.target.value)}
+                      placeholder={en("Paste the résumé, experience highlights, or CV bullets")}
+                      required
+                    />
+                  )}
+                </Field>
+
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <span className="text-xs text-muted-foreground">
+                    {en("The AI checks whether claimed numbers are plausible for the role and level.")}
+                  </span>
+                  <Button type="submit" busy={scrutinyLoading}>
+                    {scrutinyLoading ? en("Reviewing…") : en("Review résumé")}
+                  </Button>
                 </div>
               </form>
 
-              {/* Scrutiny Results Display */}
               {scrutinyResult && (
-                <div className="space-y-6 animate-in fade-in">
-                  {/* Top Score Banner */}
-                  <div className={`p-5 rounded-2xl border flex flex-col sm:flex-row sm:items-center justify-between gap-4 ${
-                    scrutinyResult.credibilityScore >= 75
-                      ? "bg-emerald-500/10 border-emerald-500/30"
-                      : scrutinyResult.credibilityScore >= 55
-                      ? "bg-amber-500/10 border-amber-500/30"
-                      : "bg-rose-500/10 border-rose-500/30"
-                  }`}>
-                    <div className="space-y-1">
-                      <div className="flex items-center space-x-2">
-                        <span className={`px-2.5 py-1 rounded-xl text-xs font-black uppercase tracking-wider ${
-                          scrutinyResult.credibilityScore >= 75
-                            ? "bg-emerald-500 text-black"
-                            : scrutinyResult.credibilityScore >= 55
-                            ? "bg-amber-500 text-black"
-                            : "bg-rose-500 text-white"
-                        }`}>
-                          {en("CLAIM CREDIBILITY: {credibilityScore}%", { credibilityScore: scrutinyResult.credibilityScore })}</span>
-                        <span className="text-xs font-bold text-foreground font-mono">
-                          {scrutinyResult.candidateName} • {scrutinyResult.targetRole}
-                        </span>
-                      </div>
-                      <p className="text-xs text-muted-foreground leading-relaxed">
-                        {scrutinyResult.summary}
+                <div className="space-y-6">
+                  {/* Overall credibility */}
+                  <div
+                    className={`flex flex-col justify-between gap-4 rounded-lg border p-4 sm:flex-row sm:items-center ${
+                      scrutinyResult.credibilityScore >= 75
+                        ? "border-emerald-300 bg-emerald-50 dark:border-emerald-900 dark:bg-emerald-950/40"
+                        : scrutinyResult.credibilityScore >= 55
+                        ? "border-amber-300 bg-amber-50 dark:border-amber-900 dark:bg-amber-950/40"
+                        : "border-red-300 bg-red-50 dark:border-red-900 dark:bg-red-950/40"
+                    }`}
+                  >
+                    <div className="min-w-0 space-y-1">
+                      <p className="text-sm font-semibold text-foreground">
+                        {scrutinyResult.candidateName} • {scrutinyResult.targetRole}
                       </p>
+                      <p className="text-sm text-muted-foreground">{scrutinyResult.summary}</p>
                     </div>
-
-                    <div className="text-end shrink-0">
-                      <div className="text-[10px] uppercase font-bold text-muted-foreground">{en("Scrutiny Verdict")}</div>
-                      <div className={`text-2xl font-black font-mono ${
-                        scrutinyResult.credibilityScore >= 75 ? "text-emerald-500" : scrutinyResult.credibilityScore >= 55 ? "text-amber-500" : "text-rose-500"
-                      }`}>
-                        {scrutinyResult.credibilityScore >= 75 ? en("AUTHENTIC") : scrutinyResult.credibilityScore >= 55 ? en("QUESTIONABLE") : en("HIGH DEFICIT")}
-                      </div>
-                      <span className="text-[10px] text-muted-foreground font-mono">{en("Bayesian Benchmark")}</span>
+                    <div className="shrink-0 sm:text-end">
+                      <p className="text-xs text-muted-foreground">{en("Claim credibility")}</p>
+                      <p className="text-2xl font-semibold tabular-nums text-foreground">{scrutinyResult.credibilityScore}%</p>
+                      <p
+                        className={`text-sm font-medium ${
+                          scrutinyResult.credibilityScore >= 75
+                            ? "text-emerald-700 dark:text-emerald-400"
+                            : scrutinyResult.credibilityScore >= 55
+                            ? "text-amber-700 dark:text-amber-400"
+                            : "text-red-700 dark:text-red-400"
+                        }`}
+                      >
+                        {scrutinyResult.credibilityScore >= 75 ? en("Mostly credible") : scrutinyResult.credibilityScore >= 55 ? en("Some questions") : en("Many unsupported claims")}
+                      </p>
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    {/* Left Column: Flagged Claims & Deficiencies */}
+                  <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+                    {/* Flagged claims, buzzwords and gaps */}
                     <div className="space-y-4">
-                      {/* Flagged Claims */}
-                      <div className="p-5 rounded-2xl bg-card border border-border space-y-3">
-                        <div className="flex items-center justify-between">
-                          <h4 className="text-xs font-bold uppercase tracking-wider text-foreground flex items-center space-x-2">
-                            <ShieldAlert className="w-4 h-4 text-rose-500" />
-                            <span>{en("Flagged Claims & Metric Scrutiny")}</span>
-                          </h4>
-                          <span className="text-[10px] font-mono text-rose-600 dark:text-rose-400 font-bold">
-                            {en("{value} Suspect Points", { value: scrutinyResult.flaggedClaims?.length ?? 0 })}
+                      <section className="space-y-3 rounded-lg border border-border p-4">
+                        <div className="flex items-center justify-between gap-2">
+                          <h3 className="flex items-center gap-2 text-sm font-semibold text-foreground">
+                            <ShieldAlert aria-hidden="true" className="h-4 w-4 text-muted-foreground" />
+                            {en("Flagged claims")}
+                          </h3>
+                          <span className="text-xs text-muted-foreground">
+                            {en("{value} flagged", { value: scrutinyResult.flaggedClaims?.length ?? 0 })}
                           </span>
                         </div>
-
                         <div className="space-y-3">
                           {scrutinyResult.flaggedClaims?.map((item: ScrutinyFlaggedClaim, idx: number) => (
-                            <div key={idx} className="p-3.5 rounded-xl bg-muted/40 border border-border space-y-2">
-                              <div className="flex items-center justify-between">
-                                <span className="text-xs font-semibold text-foreground">{en("“")}{item.claim}{en("”")}</span>
-                                <span className={`px-2 py-0.5 rounded text-[9px] font-black uppercase ${
-                                  item.severity === "HIGH" ? "bg-rose-500 text-white" : "bg-amber-500 text-black"
-                                }`}>
-                                  {en("{severity} SEVERITY", { severity: item.severity })}
-                                </span>
+                            <div key={idx} className="space-y-2 rounded-lg bg-muted/40 p-3">
+                              <div className="flex items-start justify-between gap-2">
+                                <span className="text-sm font-medium text-foreground">{en("“")}{item.claim}{en("”")}</span>
+                                <Badge tone={item.severity === "HIGH" ? "bad" : "warn"}>
+                                  {en("{severity} severity", { severity: sentenceCase(item.severity) })}
+                                </Badge>
                               </div>
-                              <p className="text-[11px] text-muted-foreground leading-relaxed">
-                                <strong className="text-foreground">{en("Critique:")}</strong> {item.critique}
+                              <p className="text-sm text-muted-foreground">
+                                <span className="font-medium text-foreground">{en("Why:")}</span> {item.critique}
                               </p>
-                              <div className="p-2 rounded-lg bg-indigo-500/10 border border-indigo-500/20 text-[11px] text-indigo-700 dark:text-indigo-300">
-                                <strong className="block text-[10px] uppercase font-bold text-indigo-600 dark:text-indigo-400">{en("Interrogation Probe:")}</strong>
+                              <div className="rounded-md border border-border bg-card p-2.5 text-sm text-foreground">
+                                <span className="block text-xs font-medium text-muted-foreground">{en("Question to ask")}</span>
                                 {en("“")}{item.interrogationQuestion}{en("”")}
                               </div>
                             </div>
                           ))}
                         </div>
-                      </div>
+                      </section>
 
-                      {/* Buzzwords & Deficiencies */}
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <div className="p-4 rounded-2xl bg-card border border-border space-y-2">
-                          <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground block">
-                            {en("Inflated Buzzwords")}
-                          </span>
+                      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                        <section className="space-y-2 rounded-lg border border-border p-4">
+                          <h3 className="text-xs font-medium text-muted-foreground">{en("Buzzwords")}</h3>
                           <div className="flex flex-wrap gap-1.5">
                             {scrutinyResult.buzzwordInflation?.map((bw: string, i: number) => (
-                              <span key={i} className="px-2 py-0.5 rounded-full text-[10px] font-mono bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20">
-                                {bw}
-                              </span>
+                              <Badge key={i} tone="bad">{bw}</Badge>
                             ))}
                           </div>
-                        </div>
-
-                        <div className="p-4 rounded-2xl bg-card border border-border space-y-2">
-                          <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground block">
-                            {en("Identified Gaps")}
-                          </span>
+                        </section>
+                        <section className="space-y-2 rounded-lg border border-border p-4">
+                          <h3 className="text-xs font-medium text-muted-foreground">{en("Gaps")}</h3>
                           <div className="flex flex-wrap gap-1.5">
                             {scrutinyResult.technicalDeficiencies?.map((def: string, i: number) => (
-                              <span key={i} className="px-2 py-0.5 rounded-full text-[10px] font-mono bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/20">
-                                {def}
-                              </span>
+                              <Badge key={i} tone="warn">{def}</Badge>
                             ))}
                           </div>
-                        </div>
+                        </section>
                       </div>
                     </div>
 
-                    {/* Right Column: Tailored Assessment Suite & Live Link */}
-                    <div className="space-y-4">
-                      <div className="p-5 rounded-2xl bg-card border border-indigo-500/30 space-y-4">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center space-x-2">
-                            <Sparkles className="w-4 h-4 text-indigo-500" />
-                            <h4 className="text-xs font-bold uppercase tracking-wider text-foreground">
-                              {en("Auto-Tailored 3-Stage Assessment Blueprint")}
-                            </h4>
-                          </div>
-                          <span className="px-2 py-0.5 rounded-full text-[10px] font-mono bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 border border-indigo-500/30 font-bold">
-                            {scrutinyResult.generatedAssessmentToken}
-                          </span>
-                        </div>
-
-                        {/* Stage 1 Focus */}
-                        <div className="p-3.5 rounded-xl bg-muted/40 border border-border space-y-1">
-                          <span className="text-[10px] font-bold uppercase text-emerald-600 dark:text-emerald-400 block font-mono">
-                            {en("Stage 1: Written Diagnostic Focus")}
-                          </span>
-                          <p className="text-xs text-foreground leading-relaxed">
-                            {scrutinyResult.tailoredWrittenFocus}
-                          </p>
-                        </div>
-
-                        {/* Stage 2 Focus */}
-                        <div className="p-3.5 rounded-xl bg-muted/40 border border-border space-y-1">
-                          <span className="text-[10px] font-bold uppercase text-blue-600 dark:text-blue-400 block font-mono">
-                            {en("Stage 2: Tailored Coding Sprint Challenge")}
-                          </span>
-                          <p className="text-xs text-foreground leading-relaxed font-mono">
-                            {scrutinyResult.tailoredCodingPrompt}
-                          </p>
-                        </div>
-
-                        {/* Stage 3 Voice Defense Questions */}
-                        <div className="p-3.5 rounded-xl bg-muted/40 border border-border space-y-2">
-                          <span className="text-[10px] font-bold uppercase text-purple-600 dark:text-purple-400 block font-mono">
-                            {en("Stage 3: AI Voice Defense Targeted Questions")}
-                          </span>
-                          <ul className="space-y-1.5 text-xs text-muted-foreground list-disc list-inside">
-                            {scrutinyResult.tailoredVoiceDefenseQuestions?.map((q: string, i: number) => (
-                              <li key={i} className="text-foreground">
-                                <span className="text-purple-600 dark:text-purple-400 font-bold">Q{i + 1}:</span>{en(" “")}{q}{en("”")}
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
-
-                        {/* Direct Candidate Link Box */}
-                        <div className="p-4 rounded-xl bg-indigo-500/10 border border-indigo-500/30 space-y-2">
-                          <span className="text-[11px] font-bold text-foreground block">
-                            {en("Direct Candidate Invite URL (Instant Live Token):")}
-                          </span>
-                          <div className="flex items-center space-x-2">
-                            <input
-                              type="text"
-                              readOnly
-                              value={typeof window !== "undefined" ? `${window.location.origin}/assessment/${scrutinyResult.generatedAssessmentToken}` : `/assessment/${scrutinyResult.generatedAssessmentToken}`}
-                              className="w-full bg-card border border-border rounded-lg px-3 py-2 text-xs font-mono text-foreground focus:outline-none"
-                            />
-                            <button
-                              onClick={() => handleCopyBundleUrl(scrutinyResult.generatedAssessmentToken)}
-                              className="px-3 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold flex items-center space-x-1 cursor-pointer shrink-0"
-                            >
-                              {copiedToken === scrutinyResult.generatedAssessmentToken ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
-                              <span>{copiedToken === scrutinyResult.generatedAssessmentToken ? en("Copied") : en("Copy Link")}</span>
-                            </button>
-                          </div>
-
-                          <div className="flex items-center space-x-2 pt-2">
-                            <a
-                              href={`/assessment/${scrutinyResult.generatedAssessmentToken}`}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="flex-1 py-2.5 px-3 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-bold text-xs text-center flex items-center justify-center space-x-1.5 cursor-pointer shadow-lg shadow-indigo-600/25"
-                            >
-                              <span>{en("Open Candidate Assessment Portal")}</span>
-                              <ExternalLink className="w-3.5 h-3.5" />
-                            </a>
-                          </div>
-                        </div>
+                    {/* Tailored assessment and its link */}
+                    <section className="space-y-4 rounded-lg border border-border p-4">
+                      <div className="flex flex-wrap items-center justify-between gap-2">
+                        <h3 className="text-sm font-semibold text-foreground">{en("Tailored assessment")}</h3>
+                        <span className="max-w-full truncate rounded-md bg-muted px-2 py-0.5 font-mono text-xs text-muted-foreground">
+                          {scrutinyResult.generatedAssessmentToken}
+                        </span>
                       </div>
-                    </div>
+
+                      <div className="space-y-1">
+                        <h4 className="text-xs font-medium text-muted-foreground">{en("Stage 1: written exam focus")}</h4>
+                        <p className="text-sm text-foreground">{scrutinyResult.tailoredWrittenFocus}</p>
+                      </div>
+
+                      <div className="space-y-1">
+                        <h4 className="text-xs font-medium text-muted-foreground">{en("Stage 2: coding challenge")}</h4>
+                        <p className="text-sm text-foreground">{scrutinyResult.tailoredCodingPrompt}</p>
+                      </div>
+
+                      <div className="space-y-1">
+                        <h4 className="text-xs font-medium text-muted-foreground">{en("Stage 3: voice defense questions")}</h4>
+                        <ol className="list-decimal space-y-1.5 ps-5 text-sm text-foreground">
+                          {scrutinyResult.tailoredVoiceDefenseQuestions?.map((q: string, i: number) => (
+                            <li key={i}>{q}</li>
+                          ))}
+                        </ol>
+                      </div>
+
+                      <div className="space-y-2 border-t border-border pt-4">
+                        <label htmlFor="scrutiny-link" className="block text-sm font-medium text-foreground">
+                          {en("Candidate link")}
+                        </label>
+                        <div className="flex items-center gap-2">
+                          <input
+                            id="scrutiny-link"
+                            type="text"
+                            readOnly
+                            value={typeof window !== "undefined" ? `${window.location.origin}/assessment/${scrutinyResult.generatedAssessmentToken}` : `/assessment/${scrutinyResult.generatedAssessmentToken}`}
+                            className={`${inputCls} min-w-0 font-mono`}
+                          />
+                          <Button onClick={() => handleCopyBundleUrl(scrutinyResult.generatedAssessmentToken)} className="shrink-0">
+                            {copiedToken === scrutinyResult.generatedAssessmentToken ? <Check aria-hidden="true" className="h-4 w-4" /> : <Copy aria-hidden="true" className="h-4 w-4" />}
+                            {copiedToken === scrutinyResult.generatedAssessmentToken ? en("Copied") : en("Copy link")}
+                          </Button>
+                        </div>
+                        <a
+                          href={`/assessment/${scrutinyResult.generatedAssessmentToken}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className={buttonClass("secondary")}
+                        >
+                          {en("Open the assessment")}
+                          <ExternalLink aria-hidden="true" className="h-4 w-4" />
+                        </a>
+                      </div>
+                    </section>
                   </div>
                 </div>
               )}
             </div>
           </div>
-        </div>
+        </Modal>
       )}
 
       {/* Assessment details modal (reference only; decisions are made on the evidence pack) */}
       {selectedBundleForAudit && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4 animate-in fade-in">
-          <div className="bg-card border border-border rounded-3xl w-full max-w-4xl max-h-[92vh] flex flex-col shadow-2xl relative overflow-hidden">
-            {/* Modal Header */}
-            <div className="flex items-center justify-between border-b border-border p-5 bg-card/90 backdrop-blur-sm sticky top-0 z-10">
-              <div className="flex items-center space-x-3">
-                <div className="p-2.5 rounded-2xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/30">
-                  <Brain className="w-5 h-5" />
+        <Modal labelledBy="audit-modal-title" onClose={() => setSelectedBundleForAudit(null)}>
+          <div className="flex max-h-[92vh] w-full max-w-4xl flex-col overflow-hidden rounded-xl border border-border bg-card shadow-xl">
+            <div className="flex items-start justify-between gap-3 border-b border-border p-5">
+              <div className="min-w-0">
+                <div className="flex flex-wrap items-center gap-2">
+                  <h2 id="audit-modal-title" className="text-base font-semibold text-foreground">
+                    {en("{candidateName}: assessment details", { candidateName: selectedBundleForAudit.candidateName })}
+                  </h2>
+                  <span className="rounded-md bg-muted px-2 py-0.5 font-mono text-xs text-muted-foreground">
+                    {selectedBundleForAudit.linkHint}
+                  </span>
                 </div>
-                <div>
-                  <div className="flex items-center space-x-2">
-                    <h3 className="text-base font-bold text-foreground">
-                      {en("{candidateName} — Assessment Details", { candidateName: selectedBundleForAudit.candidateName })}
-                    </h3>
-                    <span className="text-[10px] font-mono px-2 py-0.5 rounded-md bg-muted text-muted-foreground border border-border">
-                      {selectedBundleForAudit.linkHint}
-                    </span>
-                  </div>
-                  <p className="text-[11px] text-muted-foreground mt-0.5">
-                    {selectedBundleForAudit.targetRole} • {selectedBundleForAudit.companyName}
-                  </p>
-                </div>
+                <p className="mt-0.5 text-sm text-muted-foreground">
+                  {selectedBundleForAudit.targetRole} • {selectedBundleForAudit.companyName}
+                </p>
               </div>
-
-              <button
-                onClick={() => setSelectedBundleForAudit(null)}
-                className="text-muted-foreground hover:text-foreground p-1.5 rounded-xl hover:bg-muted cursor-pointer transition-colors"
-              >
-                <X className="w-5 h-5" />
-              </button>
+              <CloseButton onClick={() => setSelectedBundleForAudit(null)} label={en("Close")} />
             </div>
 
-            {/* Modal Scrollable Content */}
-            <div className="overflow-y-auto p-6 space-y-6">
-              {/* 1. Status and reminder that a human decides */}
-              <div className="rounded-2xl p-5 border border-indigo-500/30 bg-indigo-500/5 space-y-2">
+            <div className="space-y-6 overflow-y-auto p-5">
+              {/* Status and reminder that a human decides */}
+              <div className="space-y-2 rounded-lg border border-border bg-muted/40 p-4">
                 <div className="flex flex-wrap items-center gap-2">
-                  <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold border ${REVIEW_STATUS_STYLES[reviewStatus(selectedBundleForAudit)]}`}>
+                  <Badge tone={REVIEW_STATUS_TONES[reviewStatus(selectedBundleForAudit)]}>
                     {en(REVIEW_STATUS_LABELS[reviewStatus(selectedBundleForAudit)])}
-                  </span>
+                  </Badge>
                   {selectedBundleForAudit.aiVerdict && (
-                    <span className="text-xs text-muted-foreground">
+                    <span className="text-sm text-muted-foreground">
                       {en("Integrity signals: {value}", { value: selectedBundleForAudit.aiVerdict.antiCheatVerdict === "FLAGGED_SUSPICIOUS" ? en("raised; review the transcript and discuss with the candidate") : en("none raised") })}
                     </span>
                   )}
                 </div>
-                <p className="text-xs text-muted-foreground">
+                <p className="text-sm text-muted-foreground">
                   {en("Scores and the AI-generated summary below are reference material. The platform does not advance or decline candidates; a recruiter records every decision, with a rationale, on the evidence pack.")}
                 </p>
               </div>
 
-              {/* 2. 4-Stage Diagnostics KPI Grid */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                <div className="p-3.5 rounded-2xl bg-card border border-border">
-                  <span className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider block">{en("Stage 1: Written")}</span>
-                  <div className="text-xl font-black font-mono text-emerald-600 dark:text-emerald-400 mt-1">
-                    {selectedBundleForAudit.stage1Score ?? "--"}%
-                  </div>
-                  <span className="text-[10px] text-muted-foreground truncate block mt-0.5">{en("Theory & Architecture")}</span>
-                </div>
-
-                <div className="p-3.5 rounded-2xl bg-card border border-border">
-                  <span className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider block">{en("Stage 2: Code Sprint")}</span>
-                  <div className="text-xl font-black font-mono text-indigo-600 dark:text-indigo-400 mt-1">
-                    {selectedBundleForAudit.stage2Score ?? "--"}%
-                  </div>
-                  <span className="text-[10px] text-muted-foreground truncate block mt-0.5">{en("{value} Sandbox", { value: selectedBundleForAudit.requiredLanguage.toUpperCase() })}</span>
-                </div>
-
-                <div className="p-3.5 rounded-2xl bg-card border border-border">
-                  <span className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider block">{en("Stage 3: Voice Defense")}</span>
-                  <div className="text-xl font-black font-mono text-purple-600 dark:text-purple-400 mt-1">
-                    {selectedBundleForAudit.stage3Score ?? "--"}%
-                  </div>
-                  <span className="text-[10px] text-muted-foreground truncate block mt-0.5">{en("Live Scrutiny HUD")}</span>
-                </div>
-
-                <div className="p-3.5 rounded-2xl bg-card border border-border">
-                  <span className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider block">{en("Composite Score")}</span>
-                  <div className="text-xl font-black font-mono text-foreground mt-1">
-                    {selectedBundleForAudit.compositeScore == null ? en("Needs scoring") : `${selectedBundleForAudit.compositeScore}%`}
-                  </div>
-                  <span className="text-[10px] text-muted-foreground truncate block mt-0.5">{en("Sealed & Cryptographic")}</span>
-                </div>
+              {/* Stage scores */}
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                <StatTile label={en("Stage 1: written")} value={`${selectedBundleForAudit.stage1Score ?? "--"}%`} hint={en("Theory and architecture")} />
+                <StatTile
+                  label={en("Stage 2: coding")}
+                  value={`${selectedBundleForAudit.stage2Score ?? "--"}%`}
+                  hint={en("Language: {value}", { value: selectedBundleForAudit.requiredLanguage })}
+                />
+                <StatTile label={en("Stage 3: voice defense")} value={`${selectedBundleForAudit.stage3Score ?? "--"}%`} hint={en("Spoken interview")} />
+                <StatTile
+                  label={en("Composite score")}
+                  value={selectedBundleForAudit.compositeScore == null ? en("Needs scoring") : `${selectedBundleForAudit.compositeScore}%`}
+                />
               </div>
 
-              {/* 3. AI Executive Summary */}
+              {/* AI summary */}
               {selectedBundleForAudit.aiVerdict && (
-                <div className="p-5 rounded-2xl bg-card border border-border space-y-2">
-                  <div className="flex items-center space-x-2">
-                    <Sparkles className="w-4 h-4 text-indigo-500" />
-                    <h4 className="text-xs font-bold uppercase tracking-wider text-foreground">
-                      {en("AI-Generated Interview Summary (Reference Only)")}
-                    </h4>
-                  </div>
-                  <p className="text-xs text-foreground/90 leading-relaxed">
-                    {selectedBundleForAudit.aiVerdict.executiveSummary}
-                  </p>
-                </div>
+                <section className="space-y-2 rounded-lg border border-border p-4">
+                  <h3 className="text-sm font-semibold text-foreground">{en("AI-generated interview summary (reference only)")}</h3>
+                  <p className="text-sm text-foreground/90">{selectedBundleForAudit.aiVerdict.executiveSummary}</p>
+                </section>
               )}
 
-              {/* 4. Strengths & Deficiencies Columns */}
+              {/* Strengths and gaps */}
               {selectedBundleForAudit.aiVerdict && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {/* Strengths */}
-                  <div className="p-4 rounded-2xl bg-emerald-500/5 border border-emerald-500/20 space-y-2.5">
-                    <div className="flex items-center space-x-1.5 text-xs font-bold text-emerald-600 dark:text-emerald-400">
-                      <CheckCheck className="w-4 h-4" />
-                      <span>{en("Demonstrated Technical Strengths")}</span>
-                    </div>
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  <section className="space-y-2.5 rounded-lg border border-emerald-200 bg-emerald-50/60 p-4 dark:border-emerald-900 dark:bg-emerald-950/30">
+                    <h3 className="flex items-center gap-1.5 text-sm font-semibold text-emerald-800 dark:text-emerald-300">
+                      <CheckCheck aria-hidden="true" className="h-4 w-4" />
+                      {en("Strengths shown")}
+                    </h3>
                     {selectedBundleForAudit.aiVerdict.keyStrengths.length > 0 ? (
-                      <ul className="space-y-1.5">
+                      <ul className="list-disc space-y-1.5 ps-5 text-sm text-foreground">
                         {selectedBundleForAudit.aiVerdict.keyStrengths.map((str, idx) => (
-                          <li key={idx} className="text-xs text-foreground flex items-start space-x-2">
-                            <span className="text-emerald-500 font-bold">•</span>
-                            <span>{str}</span>
-                          </li>
+                          <li key={idx}>{str}</li>
                         ))}
                       </ul>
                     ) : (
-                      <p className="text-xs text-muted-foreground italic">{en("No distinctive strengths recorded.")}</p>
+                      <p className="text-sm text-muted-foreground">{en("No distinctive strengths recorded.")}</p>
                     )}
-                  </div>
+                  </section>
 
-                  {/* Deficiencies */}
-                  <div className="p-4 rounded-2xl bg-rose-500/5 border border-rose-500/20 space-y-2.5">
-                    <div className="flex items-center space-x-1.5 text-xs font-bold text-rose-600 dark:text-rose-400">
-                      <AlertTriangle className="w-4 h-4" />
-                      <span>{en("Gaps Noted in the Interview")}</span>
-                    </div>
+                  <section className="space-y-2.5 rounded-lg border border-red-200 bg-red-50/60 p-4 dark:border-red-900 dark:bg-red-950/30">
+                    <h3 className="flex items-center gap-1.5 text-sm font-semibold text-red-800 dark:text-red-300">
+                      <AlertTriangle aria-hidden="true" className="h-4 w-4" />
+                      {en("Gaps noted in the interview")}
+                    </h3>
                     {selectedBundleForAudit.aiVerdict.fatalDeficiencies.length > 0 ? (
-                      <ul className="space-y-1.5">
+                      <ul className="list-disc space-y-1.5 ps-5 text-sm text-foreground">
                         {selectedBundleForAudit.aiVerdict.fatalDeficiencies.map((def, idx) => (
-                          <li key={idx} className="text-xs text-foreground flex items-start space-x-2">
-                            <span className="text-rose-500 font-bold">•</span>
-                            <span>{def}</span>
-                          </li>
+                          <li key={idx}>{def}</li>
                         ))}
                       </ul>
                     ) : (
-                      <p className="text-xs text-muted-foreground italic">{en("No gaps noted.")}</p>
+                      <p className="text-sm text-muted-foreground">{en("No gaps noted.")}</p>
                     )}
-                  </div>
+                  </section>
                 </div>
               )}
 
-              {/* 5. Voice defense transcript */}
+              {/* Voice defense transcript */}
               {selectedBundleForAudit.aiVerdict?.transcriptLog && selectedBundleForAudit.aiVerdict.transcriptLog.length > 0 && (
-                <div className="p-5 rounded-2xl bg-card border border-border space-y-3">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-2">
-                      <MessageSquare className="w-4 h-4 text-purple-500" />
-                      <h4 className="text-xs font-bold uppercase tracking-wider text-foreground">
-                        {en("Voice Defense Transcript")}
-                      </h4>
-                    </div>
-                    <span className="text-[10px] font-mono text-muted-foreground">
-                      {en("{length} Spoken Turns Recorded", { length: selectedBundleForAudit.aiVerdict.transcriptLog.length })}
+                <section className="space-y-3 rounded-lg border border-border p-4">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <h3 className="flex items-center gap-2 text-sm font-semibold text-foreground">
+                      <MessageSquare aria-hidden="true" className="h-4 w-4 text-muted-foreground" />
+                      {en("Voice defense transcript")}
+                    </h3>
+                    <span className="text-xs text-muted-foreground">
+                      {en("{length} turns", { length: selectedBundleForAudit.aiVerdict.transcriptLog.length })}
                     </span>
                   </div>
 
-                  <div className="space-y-3 max-h-60 overflow-y-auto pe-1">
+                  <div className="max-h-60 space-y-3 overflow-y-auto pe-1">
                     {selectedBundleForAudit.aiVerdict.transcriptLog.map((entry, idx) => {
                       const isInterviewer = entry.role === "interviewer";
                       return (
                         <div
                           key={idx}
-                          className={`p-3 rounded-2xl text-xs space-y-1 border ${
-                            isInterviewer
-                              ? "bg-muted/40 border-border text-foreground me-6"
-                              : "bg-indigo-600/10 border-indigo-500/30 text-foreground ms-6"
+                          className={`space-y-1 rounded-lg border p-3 text-sm text-foreground ${
+                            isInterviewer ? "me-6 border-border bg-muted/50" : "ms-6 border-border bg-card"
                           }`}
                         >
-                          <div className="flex items-center justify-between text-[10px] text-muted-foreground font-mono">
-                            <span className="font-bold uppercase flex items-center space-x-1">
+                          <div className="flex items-center justify-between gap-2 text-xs text-muted-foreground">
+                            <span className="inline-flex items-center gap-1 font-medium">
                               {isInterviewer ? (
                                 <>
-                                  <Brain className="w-3 h-3 text-purple-400" />
-                                  <span>{en("AI INTERVIEWER")}</span>
+                                  <Brain aria-hidden="true" className="h-3.5 w-3.5" />
+                                  {en("AI interviewer")}
                                 </>
                               ) : (
                                 <>
-                                  <Mic className="w-3 h-3 text-indigo-400" />
-                                  <span>{en("CANDIDATE ({candidateName})", { candidateName: selectedBundleForAudit.candidateName })}</span>
+                                  <Mic aria-hidden="true" className="h-3.5 w-3.5" />
+                                  {en("Candidate ({candidateName})", { candidateName: selectedBundleForAudit.candidateName })}
                                 </>
                               )}
                             </span>
-                            <span>{entry.timestamp}</span>
+                            <span className="tabular-nums">{entry.timestamp}</span>
                           </div>
-                          <p className="leading-relaxed">{entry.text}</p>
+                          <p>{entry.text}</p>
                         </div>
                       );
                     })}
                   </div>
-                </div>
+                </section>
               )}
 
-              {/* 6. Next step: human review on the evidence pack */}
-              <div className="p-5 rounded-2xl bg-card border border-indigo-500/30 space-y-3">
-                <div className="flex items-center space-x-2">
-                  <Briefcase className="w-4 h-4 text-indigo-500" />
-                  <h4 className="text-xs font-bold uppercase tracking-wider text-foreground">
-                    {en("Review & Decision")}
-                  </h4>
-                </div>
-                <p className="text-xs text-muted-foreground">
+              {/* Next step: human review on the evidence pack */}
+              <section className="space-y-3 rounded-lg border border-border p-4">
+                <h3 className="text-sm font-semibold text-foreground">{en("Review and decision")}</h3>
+                <p className="text-sm text-muted-foreground">
                   {en("Current status:")}{" "}
-                  <span className="font-bold text-foreground">{en(REVIEW_STATUS_LABELS[reviewStatus(selectedBundleForAudit)])}</span>{en(". Record Advance, Hold or Decline with a rationale from the evidence review queue.")}
+                  <span className="font-medium text-foreground">{en(REVIEW_STATUS_LABELS[reviewStatus(selectedBundleForAudit)])}</span>{en(". Record Advance, Hold or Decline with a rationale from the evidence review queue.")}
                 </p>
-
-                <div className="flex flex-wrap items-center gap-2 pt-1">
-                  <Link
-                    href="/recruiter/evidence"
-                    className="py-2.5 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs cursor-pointer flex items-center space-x-2"
-                  >
-                    <FileSearch className="w-3.5 h-3.5" />
-                    <span>{en("Review")}</span>
-                  </Link>
-
-                </div>
-              </div>
+                <Link href="/recruiter/evidence" className={buttonClass("primary")} style={brandFill}>
+                  <FileSearch aria-hidden="true" className="h-4 w-4" />
+                  {en("Review")}
+                </Link>
+              </section>
             </div>
           </div>
-        </div>
+        </Modal>
       )}
     </div>
   );

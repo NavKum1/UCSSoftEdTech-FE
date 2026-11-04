@@ -4,7 +4,7 @@ import React, { Suspense, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useApi } from "@/lib/appAuth";
 import { useCareerShell } from "@/components/career/CareerShell";
-import { Badge, Button, Card, EmptyState, ErrorBanner, Field, Loading, PageHeader, SuccessBanner, formatDate, useLoad, ScrollArea, useCareerT, useCareerLabels } from "@/components/career/ui";
+import { Badge, Button, Card, EmptyState, ErrorBanner, Field, Loading, PageHeader, SuccessBanner, formatDate, useLoad, ScrollArea, useCareerT, useCareerLabels, StatTile } from "@/components/career/ui";
 import {
   AnchoredText,
   CommentList,
@@ -107,7 +107,7 @@ function DocumentReviewStaff() {
   return (
     <div>
       <PageHeader title={tr("documentReview")} description={tr("studentsResumesCoverLettersAnd")} />
-      <div role="tablist" aria-label={tr("documentReviewSections")} className="mb-4 flex gap-1 border-b border-border">
+      <div role="tablist" aria-label={tr("documentReviewSections")} className="mb-4 flex gap-1 overflow-x-auto border-b border-border">
         {tabs.map((t) => (
           <button
             key={t.key}
@@ -117,7 +117,7 @@ function DocumentReviewStaff() {
             aria-selected={tab === t.key}
             aria-controls={`panel-${t.key}`}
             onClick={() => setTab(t.key)}
-            className={`-mb-px border-b-2 px-3 py-2 text-sm font-medium focus-visible:outline-2 ${tab === t.key ? "border-[var(--brand,#4f46e5)]" : "border-transparent text-muted-foreground"}`}
+            className={`-mb-px inline-flex shrink-0 items-center gap-2 whitespace-nowrap border-b-2 px-3 py-2.5 text-sm transition-colors focus-visible:outline-2 ${tab === t.key ? "border-[var(--brand,#0e7490)] font-medium text-foreground" : "border-transparent text-muted-foreground hover:border-border hover:text-foreground"}`}
           >
             {t.label}
           </button>
@@ -713,12 +713,7 @@ function MetricsPanel() {
       setError(e instanceof TypeError ? "We couldn't reach the server. Please check your connection and try again." : (e as Error).message);
     }
   };
-  const stat = (label: string, value: React.ReactNode) => (
-    <div className="rounded-lg border border-border p-3">
-      <dt className="text-xs text-muted-foreground">{label}</dt>
-      <dd className="text-xl font-semibold">{value}</dd>
-    </div>
-  );
+  const stat = (label: string, value: React.ReactNode) => <StatTile label={label} value={value} />;
   return (
     <div className="space-y-4">
       <Card>
@@ -736,14 +731,14 @@ function MetricsPanel() {
         <Loading />
       ) : m ? (
         <>
-          <dl className="grid gap-3 sm:grid-cols-3 lg:grid-cols-6" aria-live="polite">
+          <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-6" aria-live="polite">
             {stat(tr("submitted"), m.submitted)}
             {stat(tr("returned"), m.returned)}
             {stat(tr("medianTurnaround"), m.medianTurnaroundHours == null ? "—" : waiting(m.medianTurnaroundHours))}
             {stat(tr("onTime"), m.onTimePercent == null ? "—" : `${m.onTimePercent}%`)}
             {stat(tr("openNowUnassigned"), `${m.open} (${m.unassigned})`)}
             {stat(tr("overdueNow"), m.overdue)}
-          </dl>
+          </div>
           <Card title={tr("byReviewer")}>
             {m.reviewers.length === 0 ? (
               <EmptyState title={tr("noReviewsInThisPeriod")} />

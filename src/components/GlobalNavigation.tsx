@@ -10,7 +10,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { ChevronDown, LogIn, Menu, Mic, Shield, X } from "lucide-react";
+import { ChevronDown, LogIn, Menu, Mic, X } from "lucide-react";
 import { AppUserButton, useAppAuth } from "@/lib/appAuth";
 import { endDevSession, useDevSession } from "@/lib/devSession";
 import { CAN_SIGN_UP, signInHref, signUpHref, useReturnPath } from "@/components/SignInRequired";
@@ -20,6 +20,7 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import EnglishPicker from "@/components/EnglishPicker";
 import { useEn } from "@/lib/english/EnglishProvider";
 import { FRAME } from "@/components/layout/Frame";
+import BrandMark from "@/components/brand/BrandMark";
 import { authenticatedFetch } from "@/lib/apiClient";
 
 interface NavItem {
@@ -214,10 +215,7 @@ export default function GlobalNavigation() {
       <header className="sticky top-0 z-50 border-b border-border bg-card/90 backdrop-blur-md">
         <div className={`${FRAME} flex h-14 items-center justify-between gap-3`}>
           <Link href="/dashboard" className="flex items-center gap-2.5">
-            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-600 text-white">
-              <Shield aria-hidden="true" className="h-4 w-4" />
-            </span>
-            <span className="text-sm font-semibold tracking-tight">{en("Edulexa")}</span>
+            <BrandMark />
           </Link>
           <div className="flex items-center gap-2">
             {isSignedIn && minutes !== null && (
@@ -258,7 +256,7 @@ export default function GlobalNavigation() {
                   href={t.href}
                   aria-current={active(pathname, t.href) ? "page" : undefined}
                   className={`block whitespace-nowrap border-b-2 px-3 py-2.5 text-sm transition-colors ${
-                    active(pathname, t.href) ? "border-indigo-600 font-medium text-foreground" : "border-transparent text-muted-foreground hover:border-border hover:text-foreground"
+                    active(pathname, t.href) ? "border-[var(--brand)] font-medium text-foreground" : "border-transparent text-muted-foreground hover:border-border hover:text-foreground"
                   }`}
                 >
                   {en(t.name)}
@@ -273,7 +271,7 @@ export default function GlobalNavigation() {
                 aria-controls="more-menu"
                 onClick={() => setMoreOpen(!moreOpen)}
                 className={`flex items-center gap-1 whitespace-nowrap border-b-2 px-3 py-2.5 text-sm transition-colors ${
-                  moreActive ? "border-indigo-600 font-medium text-foreground" : "border-transparent text-muted-foreground hover:text-foreground"
+                  moreActive ? "border-[var(--brand)] font-medium text-foreground" : "border-transparent text-muted-foreground hover:text-foreground"
                 }`}
               >
                 {en("More ")}<ChevronDown aria-hidden="true" className={`h-3.5 w-3.5 transition-transform ${moreOpen ? "rotate-180" : ""}`} />

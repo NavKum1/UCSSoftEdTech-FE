@@ -3,7 +3,8 @@
 import React, { useEffect, useState } from "react";
 import { useAppAuth as useAuth } from "@/lib/appAuth";
 import { authenticatedFetch } from "@/lib/apiClient";
-import { AlertCircle, AlertTriangle, CheckCircle2, Download, Info, Loader2, Scale, TrendingUp, UserCheck } from "lucide-react";
+import { AlertCircle, AlertTriangle, CheckCircle2, Download, Info, Loader2 } from "lucide-react";
+import { Button, PageHeader, ScrollArea, StatTile } from "@/components/career/ui";
 import { useEn } from "@/lib/english/EnglishProvider";
 
 interface ValidityResult {
@@ -206,8 +207,8 @@ export default function ValidityPage() {
     }
   };
 
-  const inputClass = "mt-1 w-full rounded-xl bg-card border border-border px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground";
-  const selectClass = "px-3 py-2 rounded-xl bg-card border border-border text-xs text-foreground";
+  const inputClass = "mt-1 w-full rounded-lg bg-card border border-border px-3 py-2 text-sm font-normal text-foreground shadow-sm placeholder:text-muted-foreground";
+  const selectClass = "px-3 py-2 rounded-lg bg-card border border-border text-sm text-foreground shadow-sm";
   const sprintSelect = (value: string, onChange: (v: string) => void) => (
     <select className={selectClass} value={value} onChange={(e) => onChange(e.target.value)}>
       <option value="">{en("All sprints")}</option>
@@ -221,49 +222,42 @@ export default function ValidityPage() {
 
   return (
     <div className="space-y-8">
-      <div className="pb-4 border-b border-border">
-        <div className="flex items-center gap-2 text-xs font-semibold text-indigo-700 dark:text-indigo-400 uppercase tracking-wider">
-          <Scale className="w-4 h-4" />{en(" Validity & fairness")}
-        </div>
-        <h1 className="text-2xl font-extrabold text-foreground mt-1">{en("Predictive validity and bias audit data")}</h1>
-        <p className="text-xs text-muted-foreground mt-1 max-w-2xl">
-          {en("Check whether assessment scores track on-the-job outcomes, and whether selection or scoring rates differ across self-identified groups. Demographic data is voluntary and only reported in aggregate.")}
-        </p>
-      </div>
+      <PageHeader
+        title={en("Predictive validity and bias audit data")}
+        description={en("Check whether assessment scores track on-the-job outcomes, and whether selection or scoring rates differ across self-identified groups. Demographic data is voluntary and only reported in aggregate.")}
+      />
 
       {/* Predictive validity */}
       <section className="space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
-            <TrendingUp className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />{en(" Predictive validity")}
-          </h2>
-          <label className="flex items-center gap-2 text-xs text-muted-foreground">
+          <h2 className="text-lg font-semibold text-foreground">{en("Predictive validity")}</h2>
+          <label className="flex items-center gap-2 text-sm text-muted-foreground">
             {en("Sprint ")}{sprintSelect(reportSprint, setReportSprint)}
           </label>
         </div>
 
-        <div className="grid lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2 glass-panel rounded-2xl border border-border p-5 space-y-3">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="min-w-0 lg:col-span-2 rounded-xl border border-border bg-card shadow-sm p-5 space-y-3">
             {reportLoading ? (
               <div className="py-8 flex items-center justify-center gap-2 text-sm text-muted-foreground">
-                <Loader2 className="w-4 h-4 animate-spin" />{en(" Loading report...")}
+                <Loader2 className="w-4 h-4 animate-spin" aria-hidden />{en("Loading report...")}
               </div>
             ) : report?.error ? (
-              <p className="text-sm text-rose-700 dark:text-rose-400 flex items-center gap-2"><AlertCircle className="w-4 h-4" /> {report.error}</p>
+              <p role="alert" className="text-sm text-red-700 dark:text-red-400 flex items-center gap-2"><AlertCircle className="w-4 h-4 shrink-0" aria-hidden /> {report.error}</p>
             ) : report?.data ? (
               <>
-                <p className="text-xs text-muted-foreground">
+                <p className="text-sm text-muted-foreground">
                   {en("{hiresWithOutcomes} hire{value} with recorded outcomes.", { hiresWithOutcomes: report.data.hiresWithOutcomes, value: report.data.hiresWithOutcomes === 1 ? "" : "s" })}
                 </p>
-                <div className="overflow-x-auto">
+                <ScrollArea>
                   <table className="w-full text-sm">
                     <thead>
                       <tr className="text-start text-xs text-muted-foreground border-b border-border">
-                        <th className="py-2 pe-3 font-semibold">{en("Predictor → outcome")}</th>
-                        <th className="py-2 pe-3 font-semibold">n</th>
-                        <th className="py-2 pe-3 font-semibold">{en("Correlation (r)")}</th>
-                        <th className="py-2 pe-3 font-semibold">{en("95% CI")}</th>
-                        <th className="py-2 font-semibold">{en("Interpretation")}</th>
+                        <th className="py-2 pe-3 text-start font-medium">{en("Predictor → outcome")}</th>
+                        <th className="py-2 pe-3 text-start font-medium">n</th>
+                        <th className="py-2 pe-3 text-start font-medium">{en("Correlation (r)")}</th>
+                        <th className="py-2 pe-3 text-start font-medium">{en("95% CI")}</th>
+                        <th className="py-2 text-start font-medium">{en("Interpretation")}</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -273,8 +267,8 @@ export default function ValidityPage() {
                             {r.predictor} <span className="text-muted-foreground">→</span> {r.outcome}
                           </td>
                           <td className="py-2 pe-3 text-foreground">{r.n}</td>
-                          <td className="py-2 pe-3 text-foreground font-mono">{r.correlation == null ? "—" : r.correlation.toFixed(2)}</td>
-                          <td className="py-2 pe-3 text-muted-foreground font-mono whitespace-nowrap">
+                          <td className="py-2 pe-3 text-foreground tabular-nums">{r.correlation == null ? "—" : r.correlation.toFixed(2)}</td>
+                          <td className="py-2 pe-3 text-muted-foreground tabular-nums whitespace-nowrap">
                             {r.confidenceInterval95 ? `[${r.confidenceInterval95[0].toFixed(2)}, ${r.confidenceInterval95[1].toFixed(2)}]` : "—"}
                           </td>
                           <td className="py-2 text-xs text-muted-foreground">{r.interpretation}</td>
@@ -282,25 +276,25 @@ export default function ValidityPage() {
                       ))}
                     </tbody>
                   </table>
-                </div>
-                <p className="text-[11px] text-muted-foreground flex gap-1.5"><Info className="w-3.5 h-3.5 shrink-0 mt-0.5" /> {report.data.method}</p>
+                </ScrollArea>
+                <p className="text-xs text-muted-foreground flex gap-1.5"><Info className="w-3.5 h-3.5 shrink-0 mt-0.5" aria-hidden /> {report.data.method}</p>
               </>
             ) : null}
           </div>
 
-          <form onSubmit={recordOutcome} className="glass-panel rounded-2xl border border-border p-5 space-y-3">
-            <h3 className="text-sm font-bold text-foreground flex items-center gap-2"><UserCheck className="w-4 h-4" />{en(" Record a hiring outcome")}</h3>
-            <p className="text-[11px] text-muted-foreground">{en("Linked to the candidate's most recent submission.")}</p>
-            <label className="block text-xs font-semibold text-foreground">
+          <form onSubmit={recordOutcome} className="min-w-0 rounded-xl border border-border bg-card shadow-sm p-5 space-y-3">
+            <h3 className="text-base font-semibold text-foreground">{en("Record a hiring outcome")}</h3>
+            <p className="text-sm text-muted-foreground">{en("Linked to the candidate's most recent submission.")}</p>
+            <label className="block text-sm font-medium text-foreground">
               {en("Candidate email")}
               <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required placeholder={en("candidate@example.com")} className={inputClass} />
             </label>
-            <label className="flex items-center gap-2 text-xs font-semibold text-foreground">
-              <input type="checkbox" checked={hired} onChange={(e) => setHired(e.target.checked)} />{en(" Hired")}
+            <label className="flex items-center gap-2 text-sm font-medium text-foreground">
+              <input type="checkbox" checked={hired} onChange={(e) => setHired(e.target.checked)} />{en("Hired")}
             </label>
             {hired && (
               <>
-                <label className="block text-xs font-semibold text-foreground">
+                <label className="block text-sm font-medium text-foreground">
                   {en("Manager performance rating")}
                   <select value={rating} onChange={(e) => setRating(e.target.value)} className={inputClass}>
                     <option value="">{en("Not yet available")}</option>
@@ -309,7 +303,7 @@ export default function ValidityPage() {
                     ))}
                   </select>
                 </label>
-                <label className="block text-xs font-semibold text-foreground">
+                <label className="block text-sm font-medium text-foreground">
                   {en("Retained after 90 days")}
                   <select value={retained} onChange={(e) => setRetained(e.target.value)} className={inputClass}>
                     <option value="">{en("Not yet known")}</option>
@@ -320,17 +314,13 @@ export default function ValidityPage() {
               </>
             )}
             {outcomeMessage && (
-              <p className={`text-xs flex items-center gap-1.5 ${outcomeMessage.ok ? "text-emerald-700 dark:text-emerald-400" : "text-rose-700 dark:text-rose-400"}`}>
-                {outcomeMessage.ok ? <CheckCircle2 className="w-3.5 h-3.5" /> : <AlertCircle className="w-3.5 h-3.5" />} {outcomeMessage.text}
+              <p role="status" className={`text-sm flex items-center gap-1.5 ${outcomeMessage.ok ? "text-emerald-700 dark:text-emerald-400" : "text-red-700 dark:text-red-400"}`}>
+                {outcomeMessage.ok ? <CheckCircle2 className="w-4 h-4 shrink-0" aria-hidden /> : <AlertCircle className="w-4 h-4 shrink-0" aria-hidden />} {outcomeMessage.text}
               </p>
             )}
-            <button
-              type="submit"
-              disabled={savingOutcome || !email.trim()}
-              className="w-full py-2.5 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-semibold flex items-center justify-center gap-2 cursor-pointer"
-            >
-              {savingOutcome && <Loader2 className="w-4 h-4 animate-spin" />}{en(" Save outcome")}
-            </button>
+            <Button type="submit" busy={savingOutcome} disabled={!email.trim()} className="w-full">
+              {en("Save outcome")}
+            </Button>
           </form>
         </div>
       </section>
@@ -338,92 +328,77 @@ export default function ValidityPage() {
       {/* Bias audit */}
       <section className="space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
-            <Scale className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />{en(" Bias audit data")}
-          </h2>
+          <h2 className="text-lg font-semibold text-foreground">{en("Bias audit data")}</h2>
           <div className="flex flex-wrap items-center gap-3">
-            <label className="flex items-center gap-2 text-xs text-muted-foreground">{en("Sprint ")}{sprintSelect(auditSprint, setAuditSprint)}</label>
-            <label className="flex items-center gap-2 text-xs text-muted-foreground">
+            <label className="flex items-center gap-2 text-sm text-muted-foreground">{en("Sprint ")}{sprintSelect(auditSprint, setAuditSprint)}</label>
+            <label className="flex items-center gap-2 text-sm text-muted-foreground">
               {en("From ")}<input type="date" value={auditFrom} onChange={(e) => setAuditFrom(e.target.value)} className={selectClass} />
             </label>
-            <label className="flex items-center gap-2 text-xs text-muted-foreground">
+            <label className="flex items-center gap-2 text-sm text-muted-foreground">
               {en("To ")}<input type="date" value={auditTo} onChange={(e) => setAuditTo(e.target.value)} className={selectClass} />
             </label>
-            <button
-              onClick={() => auditData && downloadBiasCsv(auditData)}
-              disabled={!auditData || auditLoading}
-              className="py-2 px-3 rounded-xl bg-card hover:bg-muted border border-border text-xs font-semibold text-foreground flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
-            >
-              <Download className="w-3.5 h-3.5" />{en(" Download CSV")}
-            </button>
+            <Button variant="secondary" onClick={() => auditData && downloadBiasCsv(auditData)} disabled={!auditData || auditLoading}>
+              <Download className="w-4 h-4" aria-hidden />{en("Download CSV")}
+            </Button>
           </div>
         </div>
 
         {auditData && (
-          <div className="rounded-2xl border border-amber-500/30 bg-amber-500/5 p-4 text-sm text-foreground flex gap-3">
-            <AlertTriangle className="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+          <div className="rounded-xl border border-amber-300 bg-amber-50 dark:border-amber-900 dark:bg-amber-950/30 p-4 text-sm text-foreground flex gap-3">
+            <AlertTriangle className="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" aria-hidden />
             <p>{auditData.notice}</p>
           </div>
         )}
 
         {auditLoading ? (
-          <div className="glass-panel rounded-2xl border border-border py-8 flex items-center justify-center gap-2 text-sm text-muted-foreground">
-            <Loader2 className="w-4 h-4 animate-spin" />{en(" Loading bias audit data...")}
+          <div className="rounded-xl border border-border bg-card shadow-sm py-8 flex items-center justify-center gap-2 text-sm text-muted-foreground">
+            <Loader2 className="w-4 h-4 animate-spin" aria-hidden />{en("Loading bias audit data...")}
           </div>
         ) : audit?.error ? (
-          <div className="glass-panel rounded-2xl border border-border p-6 text-sm text-rose-700 dark:text-rose-400 flex items-center gap-2">
-            <AlertCircle className="w-4 h-4" /> {audit.error}
+          <div role="alert" className="rounded-xl border border-red-300 bg-red-50 dark:border-red-900 dark:bg-red-950/40 p-4 text-sm text-red-800 dark:text-red-300 flex items-center gap-2">
+            <AlertCircle className="w-4 h-4 shrink-0" aria-hidden /> {audit.error}
           </div>
         ) : auditData ? (
           <>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              <div className="rounded-xl bg-muted/40 border border-border px-3 py-2">
-                <div className="text-[11px] text-muted-foreground">{en("Candidates in scope")}</div>
-                <div className="text-lg font-bold text-foreground">{auditData.candidatesInScope}</div>
-              </div>
-              <div className="rounded-xl bg-muted/40 border border-border px-3 py-2">
-                <div className="text-[11px] text-muted-foreground">{en("Self-identified (voluntary)")}</div>
-                <div className="text-lg font-bold text-foreground">{auditData.selfIdentified}</div>
-              </div>
-              <div className="rounded-xl bg-muted/40 border border-border px-3 py-2">
-                <div className="text-[11px] text-muted-foreground">{en("Median defense score")}</div>
-                <div className="text-lg font-bold text-foreground">{auditData.medianDefenseScore == null ? "—" : Math.round(auditData.medianDefenseScore)}</div>
-              </div>
+              <StatTile label={en("Candidates in scope")} value={auditData.candidatesInScope} />
+              <StatTile label={en("Self-identified (voluntary)")} value={auditData.selfIdentified} />
+              <StatTile label={en("Median defense score")} value={auditData.medianDefenseScore == null ? "—" : Math.round(auditData.medianDefenseScore)} />
             </div>
 
-            <div className="grid lg:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
               {auditData.categories.map((c) => (
-                <div key={c.category} className="glass-panel rounded-2xl border border-border p-4 space-y-2">
+                <div key={c.category} className="min-w-0 rounded-xl border border-border bg-card shadow-sm p-4 space-y-2">
                   <div className="flex items-baseline justify-between gap-2">
-                    <h3 className="text-sm font-bold text-foreground">{c.category}</h3>
-                    <span className="text-[11px] text-muted-foreground">{en("{undisclosed} not disclosed", { undisclosed: c.undisclosed })}</span>
+                    <h3 className="text-base font-semibold text-foreground">{c.category}</h3>
+                    <span className="text-xs text-muted-foreground">{en("{undisclosed} not disclosed", { undisclosed: c.undisclosed })}</span>
                   </div>
                   {c.groups.length === 0 ? (
                     <p className="text-xs text-muted-foreground">{en("No self-identification data in this category.")}</p>
                   ) : (
-                    <div className="overflow-x-auto">
+                    <ScrollArea>
                       <table className="w-full text-xs">
                         <thead>
                           <tr className="text-start text-muted-foreground border-b border-border">
-                            <th className="py-1.5 pe-2 font-semibold">{en("Group")}</th>
-                            <th className="py-1.5 pe-2 font-semibold">n</th>
-                            <th className="py-1.5 pe-2 font-semibold">{en("Selection rate")}</th>
-                            <th className="py-1.5 pe-2 font-semibold">{en("Impact ratio")}</th>
-                            <th className="py-1.5 pe-2 font-semibold">{en("Scoring rate")}</th>
-                            <th className="py-1.5 font-semibold">{en("Impact ratio")}</th>
+                            <th className="py-1.5 pe-2 text-start font-medium">{en("Group")}</th>
+                            <th className="py-1.5 pe-2 text-start font-medium">n</th>
+                            <th className="py-1.5 pe-2 text-start font-medium">{en("Selection rate")}</th>
+                            <th className="py-1.5 pe-2 text-start font-medium">{en("Impact ratio")}</th>
+                            <th className="py-1.5 pe-2 text-start font-medium">{en("Scoring rate")}</th>
+                            <th className="py-1.5 text-start font-medium">{en("Impact ratio")}</th>
                           </tr>
                         </thead>
                         <tbody>
                           {c.groups.map((g) => (
                             <tr
                               key={g.group}
-                              className={`border-b border-border last:border-0 ${g.belowFourFifths ? "bg-rose-500/10" : ""}`}
+                              className={`border-b border-border last:border-0 ${g.belowFourFifths ? "bg-red-50 dark:bg-red-950/30" : ""}`}
                             >
                               <td className="py-1.5 pe-2 text-foreground">
                                 {g.group}
                                 {g.belowFourFifths && (
-                                  <span className="ms-1.5 inline-flex items-center gap-0.5 text-[10px] font-semibold text-rose-700 dark:text-rose-400">
-                                    <AlertTriangle className="w-3 h-3" />{en(" below 0.80")}
+                                  <span className="ms-1.5 inline-flex items-center gap-0.5 text-xs font-medium text-red-700 dark:text-red-400">
+                                    <AlertTriangle className="w-3 h-3" aria-hidden />{en("below 0.80")}
                                   </span>
                                 )}
                               </td>
@@ -433,11 +408,11 @@ export default function ValidityPage() {
                                 <>
                                   <td className="py-1.5 pe-2 text-foreground">{g.candidates ?? "—"}</td>
                                   <td className="py-1.5 pe-2 text-foreground">{rate(g.selectionRate)}</td>
-                                  <td className={`py-1.5 pe-2 font-mono ${g.selectionImpactRatio != null && g.selectionImpactRatio < 0.8 ? "text-rose-700 dark:text-rose-400 font-bold" : "text-foreground"}`}>
+                                  <td className={`py-1.5 pe-2 tabular-nums ${g.selectionImpactRatio != null && g.selectionImpactRatio < 0.8 ? "text-red-700 dark:text-red-400 font-semibold" : "text-foreground"}`}>
                                     {ratio(g.selectionImpactRatio)}
                                   </td>
                                   <td className="py-1.5 pe-2 text-foreground">{rate(g.scoringRate)}</td>
-                                  <td className={`py-1.5 font-mono ${g.scoringImpactRatio != null && g.scoringImpactRatio < 0.8 ? "text-rose-700 dark:text-rose-400 font-bold" : "text-foreground"}`}>
+                                  <td className={`py-1.5 tabular-nums ${g.scoringImpactRatio != null && g.scoringImpactRatio < 0.8 ? "text-red-700 dark:text-red-400 font-semibold" : "text-foreground"}`}>
                                     {ratio(g.scoringImpactRatio)}
                                   </td>
                                 </>
@@ -446,19 +421,19 @@ export default function ValidityPage() {
                           ))}
                         </tbody>
                       </table>
-                    </div>
+                    </ScrollArea>
                   )}
                 </div>
               ))}
             </div>
 
-            <div className="glass-panel rounded-2xl border border-border p-4">
-              <h3 className="text-sm font-bold text-foreground mb-2">{en("Definitions")}</h3>
-              <dl className="grid sm:grid-cols-2 gap-3 text-xs">
-                <div><dt className="font-semibold text-foreground">{en("Selection rate")}</dt><dd className="text-muted-foreground">{auditData.definitions.selectionRate}</dd></div>
-                <div><dt className="font-semibold text-foreground">{en("Scoring rate")}</dt><dd className="text-muted-foreground">{auditData.definitions.scoringRate}</dd></div>
-                <div><dt className="font-semibold text-foreground">{en("Impact ratio")}</dt><dd className="text-muted-foreground">{auditData.definitions.impactRatio}</dd></div>
-                <div><dt className="font-semibold text-foreground">{en("Suppression")}</dt><dd className="text-muted-foreground">{auditData.definitions.suppression}</dd></div>
+            <div className="rounded-xl border border-border bg-card shadow-sm p-4">
+              <h3 className="text-base font-semibold text-foreground mb-2">{en("Definitions")}</h3>
+              <dl className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+                <div><dt className="font-medium text-foreground">{en("Selection rate")}</dt><dd className="text-muted-foreground">{auditData.definitions.selectionRate}</dd></div>
+                <div><dt className="font-medium text-foreground">{en("Scoring rate")}</dt><dd className="text-muted-foreground">{auditData.definitions.scoringRate}</dd></div>
+                <div><dt className="font-medium text-foreground">{en("Impact ratio")}</dt><dd className="text-muted-foreground">{auditData.definitions.impactRatio}</dd></div>
+                <div><dt className="font-medium text-foreground">{en("Suppression")}</dt><dd className="text-muted-foreground">{auditData.definitions.suppression}</dd></div>
               </dl>
             </div>
           </>

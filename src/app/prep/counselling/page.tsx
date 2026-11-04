@@ -13,9 +13,10 @@ import AdvisorRequest from "@/components/counselling/AdvisorRequest";
 import React, { Suspense, useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { ArrowLeft, ArrowRight, Check, ChevronRight, Clock, Compass, GraduationCap, History, Lightbulb, Send } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, ChevronRight, Clock, GraduationCap, History, Lightbulb, Send } from "lucide-react";
 import { AccessNotice, useLatestRef, useLegacyApi } from "@/lib/legacyApi";
 import { useEn } from "@/lib/english/EnglishProvider";
+import { Badge, PageHeader, buttonClass } from "@/components/career/ui";
 
 // ------------------------------------------------------------------ API types
 
@@ -97,11 +98,9 @@ interface ResultSummary extends LatestSummary {
 
 // ------------------------------------------------------------------ helpers
 
-const card = "rounded-2xl border border-border bg-card shadow-[0_1px_2px_rgb(16_24_40/0.04)]";
-const primaryButton =
-  "inline-flex items-center justify-center gap-2 rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-indigo-500 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600";
-const secondaryButton =
-  "inline-flex items-center justify-center gap-2 rounded-xl border border-border px-4 py-2.5 text-sm font-semibold hover:bg-muted disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600";
+const card = "rounded-xl border border-border bg-card shadow-sm";
+const primaryButton = `${buttonClass("primary")} bg-[var(--brand,#0e7490)]`;
+const secondaryButton = buttonClass("secondary");
 
 const formatDate = (iso: string | null | undefined) =>
   iso ? new Date(iso).toLocaleDateString(undefined, { day: "numeric", month: "long", year: "numeric" }) : "";
@@ -286,18 +285,15 @@ function CounsellingInner() {
 
   return (
     <div>
-      <header className="mb-6">
-        <p className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-indigo-700 dark:text-indigo-300">
-          <Compass aria-hidden="true" className="h-4 w-4" />
-          {en("Career counselling")}
-        </p>
-        <h1 className="mt-1 text-2xl font-semibold tracking-tight">{status?.scope ? `${status.scope.instituteName}: career quiz` : en("Find the area of tech that suits you")}</h1>
-      </header>
+      <PageHeader
+        title={status?.scope ? `${status.scope.instituteName}: career quiz` : en("Find the area of tech that suits you")}
+        description={en("A short quiz that matches your interests and strengths to a career track and the skills it needs.")}
+      />
 
       {loaded && !problem && <AdvisorRequest apiFetch={apiFetch} scope={status?.scope ?? null} hasQuizResult={history.length > 0 || !!result} track={result?.primaryTrack ?? history[0]?.primaryTrack ?? null} />}
 
       {problem && (
-        <p role="alert" className="mb-6 rounded-xl border border-amber-500/40 bg-amber-500/10 px-4 py-3 text-sm">
+        <p role="alert" className="mb-6 rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-200">
           {problem}
         </p>
       )}
@@ -353,15 +349,15 @@ function Intro({ status, busy, onStart, onOpenLatest }: { status: Status; busy: 
           {en("{questionsPerAttempt} short questions about what you enjoy and how you like to work. There are no right or wrong answers, and no experience is needed. Your result shows which area of tech your answers point to, the answers that led there, and how to start practising it.", { questionsPerAttempt: status.questionsPerAttempt })}
         </p>
         <ul className="mt-5 grid gap-3 text-sm sm:grid-cols-3">
-          <li className="rounded-xl border border-border p-3">
+          <li className="rounded-lg border border-border p-3">
             <Clock aria-hidden="true" className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
             <span className="mt-1 block font-medium">{en("About {minutes} minutes", { minutes })}</span>
           </li>
-          <li className="rounded-xl border border-border p-3">
+          <li className="rounded-lg border border-border p-3">
             <Check aria-hidden="true" className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
             <span className="mt-1 block font-medium">{en("Your result is saved")}</span>
           </li>
-          <li className="rounded-xl border border-border p-3">
+          <li className="rounded-lg border border-border p-3">
             <History aria-hidden="true" className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
             <span className="mt-1 block font-medium">{status.retakeAfterDays > 0 ? `Retake after ${status.retakeAfterDays} days` : en("Retake any time")}</span>
           </li>
@@ -488,7 +484,7 @@ function QuizRunner({
               return (
                 <label
                   key={o.index}
-                  className={`flex cursor-pointer items-start gap-3 rounded-xl border p-3.5 text-sm transition-colors motion-reduce:transition-none ${
+                  className={`flex cursor-pointer items-start gap-3 rounded-lg border p-3.5 text-sm transition-colors motion-reduce:transition-none ${
                     selected ? "border-indigo-600 bg-indigo-50 dark:bg-indigo-500/10" : "border-border hover:bg-muted/60"
                   }`}
                 >
@@ -698,7 +694,7 @@ function ResultView({
 function GuideList({ title, items }: { title: string; items: string[] }) {
   return (
     <div className="mt-4">
-      <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{title}</h4>
+      <h4 className="text-sm font-semibold text-muted-foreground">{title}</h4>
       <ul className="mt-1.5 list-disc space-y-1 ps-5 text-sm">
         {items.map((i) => (
           <li key={i}>{i}</li>
@@ -751,8 +747,8 @@ function CoursesSection({
             <p className="text-xs font-medium text-muted-foreground">{c.instituteName}</p>
             <h4 className="mt-1 font-semibold">{c.courseName}</h4>
             {c.isBestFit && c.targetTrack === primaryTrack && (
-              <span className="mt-1 inline-flex w-fit rounded-full bg-indigo-50 px-2 py-0.5 text-[11px] font-semibold text-indigo-700 dark:bg-indigo-500/10 dark:text-indigo-300">
-                {en("Matches your result")}
+              <span className="mt-1 w-fit">
+                <Badge tone="info">{en("Matches your result")}</Badge>
               </span>
             )}
             {c.description && <p className="mt-2 text-sm text-muted-foreground">{c.description}</p>}
@@ -881,14 +877,14 @@ function InquiryDialog({
     }
   };
 
-  const input = "mt-1 block w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus:outline-2 focus:outline-indigo-600";
+  const input = "mt-1 block w-full rounded-lg border border-border bg-card shadow-sm px-3 py-2 text-sm focus:outline-2 focus:outline-indigo-600";
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 p-4 sm:items-center" role="presentation" onClick={onClose}>
       <div
         role="dialog"
         aria-modal="true"
         aria-labelledby="cq-inquiry"
-        className="w-full max-w-md rounded-2xl border border-border bg-card p-6 shadow-xl"
+        className="w-full max-w-md rounded-xl border border-border bg-card p-6 shadow-xl"
         onClick={(e) => e.stopPropagation()}
       >
         <h3 id="cq-inquiry" className="text-base font-semibold">

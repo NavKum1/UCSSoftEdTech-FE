@@ -45,18 +45,18 @@ export default function PublicPassportPage({ params }: { params: Promise<{ token
         <ShieldCheck aria-hidden="true" className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
         {en("Skill passport shared by its owner. Results are graded by Edulexa; each credential can be verified on its own page.")}
       </p>
-      {state === "loading" && <div className="h-40 animate-pulse rounded-2xl border border-border bg-card motion-reduce:animate-none" aria-busy="true" />}
+      {state === "loading" && <div className="h-40 animate-pulse rounded-xl border border-border bg-card motion-reduce:animate-none" aria-busy="true" />}
       {state === "missing" && (
-        <div className="rounded-2xl border border-border bg-card p-8 text-center">
+        <div className="rounded-xl border border-border bg-card p-8 text-center shadow-sm">
           <h1 className="text-xl font-semibold">{en("This passport isn't available")}</h1>
           <p className="mt-2 text-sm text-muted-foreground">{en("The link may be wrong, or its owner has stopped sharing it or created a new link.")}</p>
-          <Link href="/" className="mt-4 inline-block text-sm font-semibold text-indigo-700 hover:underline dark:text-indigo-300">
+          <Link href="/" className="mt-4 inline-block text-sm font-medium text-indigo-700 hover:underline dark:text-indigo-300">
             {en("Go to Edulexa")}
           </Link>
         </div>
       )}
       {state === "error" && (
-        <div className="rounded-2xl border border-border bg-card p-8 text-center">
+        <div className="rounded-xl border border-border bg-card p-8 text-center shadow-sm">
           <h1 className="text-xl font-semibold">{en("We couldn't load this passport")}</h1>
           <p className="mt-2 text-sm text-muted-foreground">{en("Please try again in a moment.")}</p>
         </div>

@@ -14,7 +14,7 @@ import { newId, type Automation, type FormDef } from "@/components/guidance/form
 import { useEn } from "@/lib/english/EnglishProvider";
 import { useSchoolCountry, useSchoolReplies } from "@/components/institute/SchoolEnglish";
 
-const field = "mt-1 block w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:border-cyan-600 focus:outline-none focus:ring-2 focus:ring-cyan-600/20";
+const field = "mt-1 block w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:border-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-600/20";
 
 const TRIGGERS: Record<Automation["trigger"], string> = {
   sent: "When the form is sent",
@@ -89,11 +89,11 @@ export default function AutomationsTab({ def, onChange, readOnly, instituteId, t
 
   return (
     <fieldset disabled={readOnly} className="max-w-3xl space-y-4">
-      <div className="rounded-2xl border border-border bg-card p-4 text-sm">
+      <div className="rounded-xl border border-border bg-card shadow-sm p-4 text-sm">
         <p className="font-medium">{en("Messages this form sends by itself")}</p>
         <p className="mt-1 text-muted-foreground">
           {en("They go to people who sent (or started) this form, and to your team. Nobody who asked not to be contacted gets one, nor a lead in Possible spam. When the form asks people to confirm their email, messages to them wait until they do. Changes take effect when you publish.")}{" "}
-          <Link href={`/institute/guidance?view=notifications${instituteId ? `&instituteId=${instituteId}` : ""}`} className="text-cyan-700 underline-offset-2 hover:underline dark:text-cyan-400">
+          <Link href={`/institute/guidance?view=notifications${instituteId ? `&instituteId=${instituteId}` : ""}`} className="text-indigo-700 underline-offset-2 hover:underline dark:text-indigo-400">
             {en("See every message sent in Notifications")}
           </Link>
           .
@@ -113,11 +113,11 @@ export default function AutomationsTab({ def, onChange, readOnly, instituteId, t
             a.unlessMeeting ? "unless they asked for a meeting" : null,
           ].filter(Boolean);
           return (
-            <li key={a.id} className={`rounded-2xl border bg-card ${a.active ? "border-border" : "border-dashed border-border opacity-80"}`}>
+            <li key={a.id} className={`rounded-xl border bg-card ${a.active ? "border-border" : "border-dashed border-border opacity-80"}`}>
               <div className="flex items-center gap-3 p-3">
                 <button type="button" onClick={() => setOpen(expanded ? null : a.id)} aria-expanded={expanded} className="flex min-w-0 flex-1 items-center gap-3 text-start">
                   {expanded ? <ChevronDown aria-hidden="true" className="h-4 w-4 shrink-0" /> : <ChevronRight aria-hidden="true" className="h-4 w-4 shrink-0" />}
-                  <Icon aria-hidden="true" className="h-4 w-4 shrink-0 text-cyan-700 dark:text-cyan-400" />
+                  <Icon aria-hidden="true" className="h-4 w-4 shrink-0 text-indigo-700 dark:text-indigo-400" />
                   <span className="min-w-0">
                     <span className="block truncate text-sm font-medium">{a.name || "(no name yet)"}</span>
                     <span className="block truncate text-xs text-muted-foreground">
@@ -244,14 +244,14 @@ function AutomationEditor({ a, update, outcomes, match, team }: { a: Automation;
           ) : replies.address ? (
             <>
               {en("Replies go to {address}.", { address: replies.address })}{" "}
-              <Link href="/institute/setup?step=school" className="text-cyan-700 underline-offset-2 hover:underline dark:text-cyan-400">
+              <Link href="/institute/setup?step=school" className="text-indigo-700 underline-offset-2 hover:underline dark:text-indigo-400">
                 {en("Change")}
               </Link>
             </>
           ) : (
             <>
               {en("Replies have nowhere to go yet.")}{" "}
-              <Link href="/institute/setup?step=school" className="text-cyan-700 underline-offset-2 hover:underline dark:text-cyan-400">
+              <Link href="/institute/setup?step=school" className="text-indigo-700 underline-offset-2 hover:underline dark:text-indigo-400">
                 {en("Add your e-mail for families")}
               </Link>
             </>

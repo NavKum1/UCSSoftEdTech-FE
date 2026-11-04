@@ -16,6 +16,7 @@ import { platformHome } from "@/lib/roleHome";
 import { endDevSession, useDevSession } from "@/lib/devSession";
 import EnglishPicker from "@/components/EnglishPicker";
 import { FRAME, PAGE_Y } from "@/components/layout/Frame";
+import BrandMark from "@/components/brand/BrandMark";
 import { useEn } from "@/lib/english/EnglishProvider";
 
 export interface PortalSection {
@@ -25,8 +26,6 @@ export interface PortalSection {
 
 export default function PortalShell({
   name,
-  icon,
-  accent,
   home,
   sections,
   badge,
@@ -35,10 +34,6 @@ export default function PortalShell({
 }: {
   /** The portal's name, e.g. "Recruiter" */
   name: string;
-  /** The portal icon, e.g. <Briefcase /> (an element, so server layouts can pass it) */
-  icon: React.ReactNode;
-  /** Tailwind classes for the icon tile, e.g. "bg-indigo-600" */
-  accent: string;
   home: string;
   sections: PortalSection[];
   badge?: React.ReactNode;
@@ -60,12 +55,7 @@ export default function PortalShell({
       <header className="sticky top-0 z-50 border-b border-border bg-card/90 backdrop-blur-md">
         <div className={`${FRAME} flex h-14 items-center justify-between gap-4`}>
           <Link href={home} className="flex min-w-0 items-center gap-2.5">
-            <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-white ${accent}`}>
-              {icon}
-            </span>
-            <span className="truncate text-sm font-semibold tracking-tight">
-              {en("Edulexa ")}<span className="font-normal text-muted-foreground">· {name}</span>
-            </span>
+            <BrandMark area={en(name)} />
             {badge}
           </Link>
           <div className="flex shrink-0 items-center gap-3">
@@ -78,7 +68,7 @@ export default function PortalShell({
             )}
             {dev ? (
               <span className="inline-flex items-center gap-2 text-xs">
-                <span className="rounded-full border border-amber-600/30 bg-amber-500/10 px-2 py-1 font-medium text-amber-800 dark:text-amber-300">{en("Dev: {label}", { label: dev.label })}</span>
+                <span className="hidden rounded-full border border-amber-600/30 bg-amber-500/10 px-2 py-1 font-medium text-amber-800 sm:inline dark:text-amber-300">{en("Dev: {label}", { label: dev.label })}</span>
                 <button
                   type="button"
                   onClick={() => {
@@ -106,7 +96,7 @@ export default function PortalShell({
                       href={s.href}
                       aria-current={active ? "page" : undefined}
                       className={`block whitespace-nowrap border-b-2 px-3 py-2.5 text-sm transition-colors ${
-                        active ? "border-indigo-600 font-medium text-foreground" : "border-transparent text-muted-foreground hover:border-border hover:text-foreground"
+                        active ? "border-[var(--brand)] font-medium text-foreground" : "border-transparent text-muted-foreground hover:border-border hover:text-foreground"
                       }`}
                     >
                       {en(s.label)}

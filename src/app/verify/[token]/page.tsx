@@ -29,6 +29,7 @@ import {
   verifyJwsInBrowser,
 } from "@/lib/credentialVerification";
 import { useEn } from "@/lib/english/EnglishProvider";
+import { PageHeader, StatTile, brandFill, buttonClass } from "@/components/career/ui";
 
 interface CodeFile {
   name: string;
@@ -167,7 +168,7 @@ export default function VerifyTokenPage() {
       <div>
         <div className="max-w-md mx-auto py-16 text-center space-y-4">
           <ShieldAlert className="w-10 h-10 mx-auto text-amber-600 dark:text-amber-400" />
-          <h1 className="text-xl font-bold text-foreground">
+          <h1 className="text-xl font-semibold text-foreground">
             {state.kind === "not-found" ? en("This link isn't valid") : en("Verification unavailable")}
           </h1>
           <p className="text-sm text-muted-foreground">
@@ -175,7 +176,7 @@ export default function VerifyTokenPage() {
               ? en("It may have expired, or the holder may have withdrawn it. Ask them for a new link, or paste their credential JWS into the verifier.")
               : state.message}
           </p>
-          <Link href="/verify" className="inline-block px-4 py-2 rounded-xl bg-indigo-600 text-white text-sm font-semibold">
+          <Link href="/verify" className={buttonClass("primary")} style={brandFill}>
             {en("Open the JWS verifier")}
           </Link>
         </div>
@@ -196,21 +197,20 @@ export default function VerifyTokenPage() {
   return (
     <div className="text-foreground">
       <div className="space-y-6">
-        <div className="flex flex-wrap items-start justify-between gap-4">
-          <div>
-            <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">{en("Edulexa credential")}</p>
-            <h1 className="text-2xl font-black tracking-tight text-foreground mt-1">{claims.task.title}</h1>
-            <p className="text-sm text-muted-foreground mt-1 flex items-center gap-1.5">
-              <User className="w-4 h-4" />{en(" Held by ")}<span className="font-semibold text-foreground">{claims.name}</span>
-            </p>
-          </div>
-          <span className={`px-3 py-1 rounded-lg text-xs font-bold uppercase tracking-wider border ${statusBadgeClass(data.status)}`}>
-            {data.status}
-          </span>
-        </div>
+        <PageHeader
+          title={claims.task.title}
+          description={
+            <span className="flex items-center gap-1.5">
+              <User className="w-4 h-4" aria-hidden />
+              {en("Edulexa credential held by ")}
+              <span className="font-medium text-foreground">{claims.name}</span>
+            </span>
+          }
+          actions={<span className={`px-2.5 py-1 rounded-full text-xs font-medium border ${statusBadgeClass(data.status)}`}>{data.status}</span>}
+        />
 
         {data.status === "Expired" && (
-          <div className="p-3 rounded-xl border border-slate-400/40 bg-slate-50 dark:bg-slate-500/10 text-sm text-foreground flex gap-2">
+          <div className="p-3 rounded-lg border border-border bg-muted/50 text-sm text-foreground flex gap-2">
             <Info className="w-4 h-4 shrink-0 mt-0.5" />{" "}{en("This credential passed its validity date on {date}. The results below are historical.", { date: formatDate(claims.exp) })}
           </div>
         )}
@@ -221,7 +221,7 @@ export default function VerifyTokenPage() {
         )}
 
         {/* Signature */}
-        <div className="glass-panel rounded-2xl p-5 border border-border space-y-2">
+        <div className="rounded-xl border border-border bg-card p-5 shadow-sm space-y-2">
           <div className="flex items-center gap-2 text-sm font-semibold">
             {check.state === "verified" ? (
               <>
@@ -251,31 +251,15 @@ export default function VerifyTokenPage() {
 
         {/* Results */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          <div className="glass-panel rounded-2xl p-4 border border-border">
-            <p className="text-[11px] uppercase tracking-wider text-muted-foreground font-bold">{en("Tests passed")}</p>
-            <p className="text-xl font-black mt-1">
-              {results.testsTotal ? `${results.testsPassed ?? 0}/${results.testsTotal}` : "—"}
-            </p>
-          </div>
-          <div className="glass-panel rounded-2xl p-4 border border-border">
-            <p className="text-[11px] uppercase tracking-wider text-muted-foreground font-bold">{en("Voice defense")}</p>
-            <p className="text-xl font-black mt-1">{Math.round(results.defenseScore)}/100</p>
-          </div>
+          <StatTile label={en("Tests passed")} value={results.testsTotal ? `${results.testsPassed ?? 0}/${results.testsTotal}` : "—"} />
+          <StatTile label={en("Voice defense")} value={`${Math.round(results.defenseScore)}/100`} />
           {results.defectsTotal !== undefined && (
-            <div className="glass-panel rounded-2xl p-4 border border-border">
-              <p className="text-[11px] uppercase tracking-wider text-muted-foreground font-bold">{en("Planted defects fixed")}</p>
-              <p className="text-xl font-black mt-1">
-                {results.defectsFixed ?? 0}/{results.defectsTotal}
-              </p>
-            </div>
+            <StatTile label={en("Planted defects fixed")} value={`${results.defectsFixed ?? 0}/${results.defectsTotal}`} />
           )}
-          <div className="glass-panel rounded-2xl p-4 border border-border">
-            <p className="text-[11px] uppercase tracking-wider text-muted-foreground font-bold">{en("Integrity")}</p>
-            <p className={`text-sm font-bold mt-2 ${integrityTone}`}>{claims.integrity}</p>
-          </div>
+          <StatTile label={en("Integrity")} value={<span className={`text-base ${integrityTone}`}>{claims.integrity}</span>} />
         </div>
 
-        <div className="glass-panel rounded-2xl p-5 border border-border grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+        <div className="rounded-xl border border-border bg-card p-5 shadow-sm grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
           <div>
             <span className="text-muted-foreground">{en("Task type: ")}</span>
             {claims.task.taskType ?? "—"}
@@ -310,23 +294,23 @@ export default function VerifyTokenPage() {
 
         {/* Evidence */}
         <section className="space-y-4">
-          <h2 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">{en("Evidence shared by the holder")}</h2>
+          <h2 className="text-sm font-semibold text-muted-foreground">{en("Evidence shared by the holder")}</h2>
           {!evidence.included.code && !evidence.included.recording && !evidence.included.transcript && (
-            <div className="glass-panel rounded-2xl p-5 border border-border text-sm text-muted-foreground">
+            <div className="rounded-xl border border-border bg-card p-5 shadow-sm text-sm text-muted-foreground">
               {en("The holder shared the signed results only, without code, recording or transcript.")}
             </div>
           )}
           {evidence.included.code && (
-            <div className="glass-panel rounded-2xl p-5 border border-border space-y-3">
-              <h3 className="text-sm font-bold flex items-center gap-2">
+            <div className="rounded-xl border border-border bg-card p-5 shadow-sm space-y-3">
+              <h3 className="text-sm font-semibold flex items-center gap-2">
                 <FileCode2 className="w-4 h-4" />{en(" Submitted code")}
               </h3>
               {evidence.codeFiles ? <CodeViewer files={evidence.codeFiles} /> : <p className="text-sm text-muted-foreground">{en("No code is attached to this credential.")}</p>}
             </div>
           )}
           {evidence.included.recording && (
-            <div className="glass-panel rounded-2xl p-5 border border-border space-y-3">
-              <h3 className="text-sm font-bold flex items-center gap-2">
+            <div className="rounded-xl border border-border bg-card p-5 shadow-sm space-y-3">
+              <h3 className="text-sm font-semibold flex items-center gap-2">
                 <Mic className="w-4 h-4" />{en(" Defense recording")}
               </h3>
               {evidence.recordingUrl ? (
@@ -339,8 +323,8 @@ export default function VerifyTokenPage() {
             </div>
           )}
           {evidence.included.transcript && (
-            <div className="glass-panel rounded-2xl p-5 border border-border space-y-3">
-              <h3 className="text-sm font-bold flex items-center gap-2">
+            <div className="rounded-xl border border-border bg-card p-5 shadow-sm space-y-3">
+              <h3 className="text-sm font-semibold flex items-center gap-2">
                 <ScrollText className="w-4 h-4" />{en(" Defense transcript")}
               </h3>
               {evidence.transcript ? <TranscriptView transcript={evidence.transcript} /> : <p className="text-sm text-muted-foreground">{en("No transcript is available.")}</p>}
@@ -349,9 +333,9 @@ export default function VerifyTokenPage() {
         </section>
 
         {/* What this does and doesn't prove */}
-        <section className="glass-panel rounded-2xl p-5 border border-border grid grid-cols-1 md:grid-cols-2 gap-5">
+        <section className="rounded-xl border border-border bg-card p-5 shadow-sm grid grid-cols-1 md:grid-cols-2 gap-5">
           <div>
-            <h3 className="text-sm font-bold flex items-center gap-2 mb-2">
+            <h3 className="text-sm font-semibold flex items-center gap-2 mb-2">
               <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />{en(" What this shows")}
             </h3>
             <ul className="space-y-1.5 text-xs text-muted-foreground list-disc ps-4">
@@ -361,7 +345,7 @@ export default function VerifyTokenPage() {
             </ul>
           </div>
           <div>
-            <h3 className="text-sm font-bold flex items-center gap-2 mb-2">
+            <h3 className="text-sm font-semibold flex items-center gap-2 mb-2">
               <AlertTriangle className="w-4 h-4 text-amber-600 dark:text-amber-400" />{en(" What it doesn't show")}
             </h3>
             <ul className="space-y-1.5 text-xs text-muted-foreground list-disc ps-4">

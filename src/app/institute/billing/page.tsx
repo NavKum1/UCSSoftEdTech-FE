@@ -10,6 +10,7 @@ import { Check, CreditCard, Loader2 } from "lucide-react";
 import { AccessNotice, useLatestRef, useLegacyApi } from "@/lib/legacyApi";
 import { REASONS, day, money, type PlanOption, type SchoolPlanState } from "@/components/institute/SchoolPlan";
 import { openRazorpayCheckout } from "@/lib/razorpayCheckout";
+import { Button, PageHeader } from "@/components/career/ui";
 import { useEn } from "@/lib/english/EnglishProvider";
 
 const STATUS: Record<string, { label: string; tone: string }> = {
@@ -109,16 +110,13 @@ export default function SchoolBillingPage() {
   if (!s) {
     return (
       <div>
-        {error ? <p className="text-sm text-red-700">{error}</p> : <Loader2 aria-label={en("Loading")} className="h-5 w-5 animate-spin text-slate-400" />}
+        {error ? <p className="text-sm text-red-700">{error}</p> : <Loader2 aria-label={en("Loading")} className="h-5 w-5 animate-spin text-muted-foreground" />}
       </div>
     );
   }
   if (s.managed) {
     return (
-      <div className="space-y-3">
-        <h1 className="text-2xl font-semibold">{en("Billing")}</h1>
-        <p className="text-slate-600 dark:text-slate-400">{en("Your school's contract is managed by Edulexa's team. Contact us about invoices or changes.")}</p>
-      </div>
+      <PageHeader title={en("Billing")} description={en("Your school's contract is managed by Edulexa's team. Contact us about invoices or changes.")} />
     );
   }
 
@@ -126,14 +124,11 @@ export default function SchoolBillingPage() {
   const chosen = interval ?? s.interval;
   const badge = STATUS[s.status] ?? STATUS.Active;
   const current = s.plans.find((p) => p.key === s.plan);
-  const card = "rounded-2xl border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-900";
+  const card = "rounded-xl border border-border bg-card p-5 shadow-sm sm:p-6";
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight">{en("Billing")}</h1>
-        <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">{en("Your plan, what it includes and how you pay.")}</p>
-      </div>
+      <PageHeader title={en("Billing")} description={en("Your plan, what it includes and how you pay.")} />
 
       <section aria-labelledby="plan-now" className={card}>
         <div className="flex flex-wrap items-start justify-between gap-3">
@@ -142,14 +137,14 @@ export default function SchoolBillingPage() {
               {current?.name ?? s.plan} plan
             </h2>
             {current && (
-              <p className="text-sm text-slate-600 dark:text-slate-400">
+              <p className="text-sm text-muted-foreground">
                 {money(s.interval === "year" ? current.yearMinor : current.monthMinor, s.currency)} {s.interval === "year" ? en("a year") : en("a month")}
               </p>
             )}
           </div>
-          <span className={`rounded-full border px-3 py-1 text-xs font-semibold ${badge.tone}`}>{badge.label}</span>
+          <span className={`rounded-full border px-2.5 py-0.5 text-xs font-medium ${badge.tone}`}>{en(badge.label)}</span>
         </div>
-        <p className="mt-4 text-[15px]">
+        <p className="mt-4 text-sm leading-6">
           {s.status === "Trialing" &&
             (s.cancelAtPeriodEnd
               ? en(`Your free trial ends on ${day(s.trialEndsAt)}. You cancelled, so nothing will be charged and your school becomes read-only then.`)
@@ -162,58 +157,57 @@ export default function SchoolBillingPage() {
           {s.status === "ReadOnly" &&
             en(`Your school is read-only because ${REASONS[s.readOnlyReason ?? ""] ?? "its plan isn't paid"}. You can see and export everything until ${day(s.deleteAfter)}, when its data is deleted. Choose a plan below to carry on.`)}
         </p>
-        <dl className="mt-5 grid gap-4 border-t border-slate-100 pt-5 text-sm dark:border-slate-800 sm:grid-cols-2">
+        <dl className="mt-5 grid gap-4 border-t border-border pt-5 text-sm sm:grid-cols-2">
           <div>
-            <dt className="text-slate-500">{en("Team members")}</dt>
+            <dt className="text-muted-foreground">{en("Team members")}</dt>
             <dd className="mt-0.5 font-medium">
               {s.team.used} {s.team.limit == null ? en("(unlimited)") : `of ${s.team.limit}`}
             </dd>
           </div>
           <div>
-            <dt className="text-slate-500">{en("AI voice minutes this month")}</dt>
+            <dt className="text-muted-foreground">{en("AI voice minutes this month")}</dt>
             <dd className="mt-0.5 font-medium">{s.voice.limit > 0 ? `${s.voice.used} of ${s.voice.limit}` : en("Not in this plan")}</dd>
           </div>
         </dl>
         <div className="mt-6 flex flex-wrap gap-2">
           {s.portal && (
-            <button
+            <Button
               type="button"
+              variant="secondary"
               disabled={busy != null}
               onClick={async () => {
                 const b = await act("portal", "/api/school-billing/portal");
                 if (b?.url) window.location.assign(b.url);
               }}
-              className="inline-flex items-center gap-1.5 rounded-xl border border-slate-300 px-4 py-2 text-sm font-medium hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-800"
             >
               <CreditCard aria-hidden="true" className="h-4 w-4" />{en(" Card and invoices")}
-            </button>
+            </Button>
           )}
           {running && !s.cancelAtPeriodEnd && (
-            <button
+            <Button
               type="button"
+              variant="secondary"
               disabled={busy != null}
               onClick={async () => {
                 if (!window.confirm(en("Cancel your plan? Your school stays open until the end of the trial or the paid period, then becomes read-only."))) return;
                 const b = await act("cancel", "/api/school-billing/cancel");
                 if (b) setS(b);
               }}
-              className="rounded-xl border border-slate-300 px-4 py-2 text-sm font-medium hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-800"
             >
               {en("Cancel plan")}
-            </button>
+            </Button>
           )}
           {s.canResume && (
-            <button
+            <Button
               type="button"
               disabled={busy != null}
               onClick={async () => {
                 const b = await act("resume", "/api/school-billing/resume");
                 if (b) setS(b);
               }}
-              className="rounded-xl bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700"
             >
               {en("Keep my plan")}
-            </button>
+            </Button>
           )}
         </div>
       </section>
@@ -223,7 +217,7 @@ export default function SchoolBillingPage() {
           <h2 id="plans" className="text-lg font-semibold">
             {s.status === "ReadOnly" || s.status === "PastDue" ? en("Choose a plan to carry on") : en("Change plan")}
           </h2>
-          <div role="radiogroup" aria-label={en("Billing period")} className="inline-flex rounded-xl border border-slate-200 bg-white p-1 dark:border-slate-800 dark:bg-slate-900">
+          <div role="radiogroup" aria-label={en("Billing period")} className="inline-flex rounded-lg border border-border bg-card p-1 shadow-sm">
             {(["month", "year"] as const).map((i) => (
               <button
                 key={i}
@@ -231,7 +225,7 @@ export default function SchoolBillingPage() {
                 role="radio"
                 aria-checked={chosen === i}
                 onClick={() => setIntervalChoice(i)}
-                className={`rounded-lg px-3 py-1.5 text-sm font-medium ${chosen === i ? "bg-indigo-600 text-white" : "text-slate-600 dark:text-slate-400"}`}
+                className={`rounded-md px-3 py-1.5 text-sm font-medium ${chosen === i ? "bg-muted text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
               >
                 {i === "month" ? en("Monthly") : en("Yearly: 2 months free")}
               </button>
@@ -246,7 +240,7 @@ export default function SchoolBillingPage() {
                 <h3 className="font-semibold">{p.name}</h3>
                 <p className="mt-1 text-2xl font-semibold tracking-tight">
                   {money(chosen === "year" ? p.yearMinor : p.monthMinor, s.currency)}
-                  <span className="text-sm font-normal text-slate-500"> {chosen === "year" ? en("a year") : en("a month")}</span>
+                  <span className="text-sm font-normal text-muted-foreground"> {chosen === "year" ? en("a year") : en("a month")}</span>
                 </p>
                 <ul className="mt-3 flex-1 space-y-1.5 text-sm">
                   {p.includes.map((x) => (
@@ -257,25 +251,15 @@ export default function SchoolBillingPage() {
                   ))}
                 </ul>
                 {s.status === "ReadOnly" || s.status === "PastDue" ? (
-                  <button
-                    type="button"
-                    disabled={busy != null}
-                    onClick={() => void renew(p, chosen)}
-                    className="mt-5 inline-flex items-center justify-center gap-2 rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-indigo-700 disabled:opacity-60"
-                  >
-                    {busy === "renew" + p.key + chosen && <Loader2 aria-hidden="true" className="h-4 w-4 animate-spin" />}{en(" Pay and reopen")}
-                  </button>
+                  <Button type="button" className="mt-5" disabled={busy != null} busy={busy === "renew" + p.key + chosen} onClick={() => void renew(p, chosen)}>
+                    {en("Pay and reopen")}
+                  </Button>
                 ) : isCurrent ? (
                   <p className="mt-5 text-center text-sm font-medium text-indigo-700 dark:text-indigo-300">{en("Your plan")}</p>
                 ) : (
-                  <button
-                    type="button"
-                    disabled={busy != null || !running}
-                    onClick={() => void changePlan(p, chosen)}
-                    className="mt-5 inline-flex items-center justify-center gap-2 rounded-xl border border-slate-300 px-4 py-2.5 text-sm font-semibold hover:bg-slate-50 disabled:opacity-60 dark:border-slate-700 dark:hover:bg-slate-800"
-                  >
-                    {busy === p.key + chosen && <Loader2 aria-hidden="true" className="h-4 w-4 animate-spin" />}{en(" Switch to ")}{p.name}
-                  </button>
+                  <Button type="button" variant="secondary" className="mt-5" disabled={busy != null || !running} busy={busy === p.key + chosen} onClick={() => void changePlan(p, chosen)}>
+                    {en("Switch to ")}{p.name}
+                  </Button>
                 )}
               </div>
             );
@@ -289,7 +273,7 @@ export default function SchoolBillingPage() {
         </p>
       )}
       {error && (
-        <p role="alert" className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-800 dark:border-red-900 dark:bg-red-950/40 dark:text-red-200">
+        <p role="alert" className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-800 dark:border-red-900 dark:bg-red-950/40 dark:text-red-200">
           {error}
         </p>
       )}

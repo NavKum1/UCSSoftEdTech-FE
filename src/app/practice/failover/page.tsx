@@ -5,7 +5,7 @@ export default function FailoverPracticePage() {
   return (
     <ScenarioPractice
       track="failover"
-      title="Incident command: failover"
+      title="Failover incident practice"
       intro="Lead the response when one region of a service starts failing: traffic, data, and keeping customers informed."
     />
   );

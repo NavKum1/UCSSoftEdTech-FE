@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { useApi } from "@/lib/appAuth";
-import { Badge, Button, Card, EmptyState, ErrorBanner, Loading, Modal, PageHeader, SuccessBanner, formatDate, useLoad, useCareerT, useCareerLabels } from "@/components/career/ui";
+import { Badge, Button, Card, EmptyState, ErrorBanner, Loading, Modal, PageHeader, SuccessBanner, formatDate, useLoad, useCareerT, useCareerLabels, brandFill, buttonClass } from "@/components/career/ui";
 
 interface Challenge {
   id: string;
@@ -137,7 +137,7 @@ export default function StudentChallengesPage() {
                       {!p.consentActive && <p className="text-muted-foreground">{t("youStoppedSharingSoThe")}</p>}
                       <div className="flex flex-wrap gap-2">
                         {p.attemptUrl && (
-                          <Link href={p.attemptUrl} className="inline-flex items-center rounded-md px-3 py-2 text-sm font-medium text-white" style={{ background: "var(--brand, #4f46e5)" }}>
+                          <Link href={p.attemptUrl} className={buttonClass("primary")} style={brandFill}>
                             {p.submissions ? t("tryAgain") : t("startTheChallenge")}
                           </Link>
                         )}

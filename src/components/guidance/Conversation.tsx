@@ -113,7 +113,7 @@ export function ReplyBox({ onSend, allowInternal, placeholder }: { onSend: (body
         ) : (
           <span />
         )}
-        <button type="submit" disabled={busy || !body.trim()} className="rounded-xl bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-500 disabled:opacity-60">
+        <button type="submit" disabled={busy || !body.trim()} className="rounded-lg bg-indigo-700 px-3.5 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-800 disabled:opacity-60">
           {busy ? en("Sending…") : internal ? en("Add note") : en("Send")}
         </button>
       </div>

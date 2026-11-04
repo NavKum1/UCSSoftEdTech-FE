@@ -36,7 +36,7 @@ export default function PlatformSetupBanner() {
 
   if (problems.length === 0) return null;
   return (
-    <div role="alert" className="flex flex-wrap items-start justify-between gap-3 rounded-2xl border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-900 dark:text-red-200">
+    <div role="alert" className="flex flex-wrap items-start justify-between gap-3 rounded-lg border border-red-300 bg-red-50 p-3 text-sm text-red-800 dark:border-red-900 dark:bg-red-950/40 dark:text-red-300">
       <div className="flex items-start gap-2">
         <AlertTriangle aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0" />
         <ul className="space-y-1">

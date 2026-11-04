@@ -2,7 +2,7 @@
 
 import React, { useCallback, useState } from "react";
 import { useApi } from "@/lib/appAuth";
-import { Button, Card, ErrorBanner, Field, Loading, PageHeader, SuccessBanner, useLoad, useCareerT, useCareerLabels } from "@/components/career/ui";
+import { Button, Card, ErrorBanner, Field, Loading, PageHeader, SuccessBanner, useLoad, useCareerT, useCareerLabels, StatTile } from "@/components/career/ui";
 import { ReportTableView, formatCell, type Cell, type ReportTable } from "@/components/career/reports/ReportTableView";
 
 type Section = "engagement" | "service" | "employers" | "equity";
@@ -153,15 +153,14 @@ export default function ReportsPage() {
         }
       />
 
-      <nav aria-label={tr("reportSections")} className="flex flex-wrap gap-2">
+      <nav aria-label={tr("reportSections")} className="flex gap-1 overflow-x-auto border-b border-border">
         {o.sections.map((s) => (
           <button
             key={s}
             type="button"
             aria-current={sec === s ? "page" : undefined}
             onClick={() => setSection(s)}
-            className={`rounded-full border px-3 py-1.5 text-sm focus-visible:outline-2 focus-visible:outline-offset-2 ${sec === s ? "border-transparent font-semibold text-white" : "border-border hover:bg-muted"}`}
-            style={sec === s ? { background: "var(--brand, #4f46e5)" } : undefined}
+            className={`-mb-px inline-flex shrink-0 items-center whitespace-nowrap border-b-2 px-3 py-2.5 text-sm transition-colors focus-visible:outline-2 ${sec === s ? "border-[var(--brand,#0e7490)] font-medium text-foreground" : "border-transparent text-muted-foreground hover:border-border hover:text-foreground"}`}
           >
             {SECTION_LABELS[s]}
           </button>
@@ -260,15 +259,11 @@ export default function ReportsPage() {
               {tr("fromToToTimeZone", { from: report.range.from, to: report.range.to, timeZone: report.range.timeZone })}
             </p>
           </div>
-          <dl className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-5">
+          <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-5">
             {report.metrics.map((m) => (
-              <div key={m.key} className="rounded-xl border border-border bg-card p-3">
-                <dt className="text-xs text-muted-foreground">{m.label}</dt>
-                <dd className="mt-1 text-2xl font-semibold tabular-nums">{formatCell(m.value)}</dd>
-                {m.hint && <dd className="mt-1 text-xs text-muted-foreground">{m.hint}</dd>}
-              </div>
+              <StatTile key={m.key} label={m.label} value={formatCell(m.value)} hint={m.hint || undefined} />
             ))}
-          </dl>
+          </div>
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
             {report.tables.map((t) => (
               <ReportTableView

@@ -10,6 +10,7 @@ import Link from "next/link";
 import { AccessNotice, useLatestRef, useLegacyApi } from "@/lib/legacyApi";
 import { Messages, ReplyBox, STATUS_LABEL, type GuidanceRequestView } from "@/components/guidance/Conversation";
 import { useEn } from "@/lib/english/EnglishProvider";
+import { Badge, Button, buttonClass, ErrorBanner, PageHeader } from "@/components/career/ui";
 
 export default function MyGuidancePage() {
   const en = useEn();
@@ -40,40 +41,40 @@ export default function MyGuidancePage() {
   if (access) return <AccessNotice problem={access} feature="your guidance requests" />;
   return (
     <div className="space-y-6">
-      <header>
-        <h1 className="text-2xl font-semibold tracking-tight">{en("My guidance requests")}</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          {en("Your questions to Edulexa and the replies. You can also reply to our emails.")}{" "}
-          <Link href="/prep/counselling" className="font-medium text-indigo-700 hover:underline dark:text-indigo-300">
+      <PageHeader
+        title={en("My guidance requests")}
+        description={en("Your questions to Edulexa and the replies. You can also reply to our emails.")}
+        actions={
+          <Link href="/prep/counselling" className={buttonClass("secondary")}>
             {en("Ask something new")}
           </Link>
-        </p>
-      </header>
-      {error && <p className="text-sm text-red-700 dark:text-red-400">{error}</p>}
+        }
+      />
+      <ErrorBanner error={error} />
       {!items ? (
-        <div className="h-40 animate-pulse rounded-2xl bg-muted motion-reduce:animate-none" aria-busy="true" />
+        <div className="h-40 animate-pulse rounded-xl bg-muted motion-reduce:animate-none" aria-busy="true" />
       ) : items.length === 0 ? (
         <p className="text-sm text-muted-foreground">{en("You haven't asked anything yet.")}</p>
       ) : (
         items.map((r) => (
-          <section key={r.id} className="space-y-4 rounded-2xl border border-border bg-card p-5">
+          <section key={r.id} className="space-y-4 rounded-xl border border-border bg-card p-5 shadow-sm">
             <div className="flex flex-wrap items-start justify-between gap-2">
               <p className="whitespace-pre-wrap text-sm font-medium">{r.question}</p>
-              <span className="rounded-full bg-muted px-2.5 py-0.5 text-xs">{en(STATUS_LABEL[r.status] ?? r.status)}</span>
+              <Badge>{en(STATUS_LABEL[r.status] ?? r.status)}</Badge>
             </div>
             <Messages messages={r.messages} />
             {r.status === "InstituteSuggested" && r.suggestedInstitute && (
-              <div className="rounded-xl border border-indigo-500/40 bg-indigo-500/5 p-4 text-sm">
+              <div className="rounded-lg border border-border bg-muted/40 p-4 text-sm">
                 <p>
                   {en("We suggest talking to ")}<span className="font-semibold">{r.suggestedInstitute}</span>{en(". Send them your request so they can contact you? Nothing goes to them unless you agree.")}
                 </p>
                 <div className="mt-3 flex gap-2">
-                  <button type="button" onClick={() => void post(`/api/guidance/requests/${r.id}/suggestion`, { approve: true })} className="rounded-xl bg-indigo-600 px-4 py-2 font-semibold text-white hover:bg-indigo-500">
+                  <Button type="button" onClick={() => void post(`/api/guidance/requests/${r.id}/suggestion`, { approve: true })}>
                     {en("Yes, send it")}
-                  </button>
-                  <button type="button" onClick={() => void post(`/api/guidance/requests/${r.id}/suggestion`, { approve: false })} className="rounded-xl border border-border px-4 py-2 font-medium hover:bg-muted">
+                  </Button>
+                  <Button type="button" variant="secondary" onClick={() => void post(`/api/guidance/requests/${r.id}/suggestion`, { approve: false })}>
                     {en("No, thanks")}
-                  </button>
+                  </Button>
                 </div>
               </div>
             )}

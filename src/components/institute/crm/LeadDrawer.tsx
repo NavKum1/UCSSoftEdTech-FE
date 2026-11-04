@@ -43,6 +43,7 @@ import {
   type Member,
   type Template,
 } from "./api";
+import { Tabs } from "@/components/career/ui";
 import { useEn } from "@/lib/english/EnglishProvider";
 import { useSchoolCountry } from "@/components/institute/SchoolEnglish";
 
@@ -57,8 +58,8 @@ const ACTIONS: { mode: Mode; label: string; icon: React.ElementType }[] = [
   { mode: "Note", label: "Note", icon: NotebookPen },
 ];
 
-const input = "w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:border-cyan-600 focus:outline-none focus:ring-2 focus:ring-cyan-600/20";
-const primary = "inline-flex items-center gap-1.5 rounded-lg bg-cyan-700 px-3.5 py-2 text-sm font-medium text-white hover:bg-cyan-800 disabled:opacity-50";
+const input = "w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:border-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-600/20";
+const primary = "inline-flex items-center gap-1.5 rounded-lg bg-indigo-700 px-3.5 py-2 text-sm font-medium text-white hover:bg-indigo-800 disabled:opacity-50";
 const secondary = "inline-flex items-center gap-1.5 rounded-lg border border-border bg-card px-3 py-2 text-sm hover:bg-muted disabled:opacity-50";
 
 /** Quick due times for follow-ups */
@@ -183,7 +184,7 @@ export default function LeadDrawer({
                 {lead && <StageBadge stage={lead.stage} />}
                 {lead?.highPriority && <PriorityBadge />}
                 {lead?.doNotContact && (
-                  <span className="inline-flex items-center gap-1 rounded-full border border-red-500/30 bg-red-500/10 px-2 py-0.5 text-[11px] font-medium text-red-800 dark:text-red-300">
+                  <span className="inline-flex items-center gap-1 rounded-full border border-red-500/30 bg-red-500/10 px-2 py-0.5 text-xs font-medium text-red-800 dark:text-red-300">
                     <Ban aria-hidden="true" className="h-3 w-3" />{en(" Do not contact")}
                   </span>
                 )}
@@ -210,7 +211,7 @@ export default function LeadDrawer({
                   <span>
                     <span className="font-medium">{en("Possible spam.")}</span> {" "}{en("{value} It's kept out of your leads until you say it's real.", { value: lead.spamReasons ? `Why: ${lead.spamReasons}.` : "" })}
                   </span>
-                  <button type="button" disabled={busy} onClick={() => update({ spam: false }, "Moved to your leads.")} className="rounded-lg bg-cyan-700 px-3 py-1.5 font-medium text-white hover:bg-cyan-800">
+                  <button type="button" disabled={busy} onClick={() => update({ spam: false }, "Moved to your leads.")} className="rounded-lg bg-indigo-700 px-3 py-1.5 font-medium text-white hover:bg-indigo-800">
                     {en("Not spam")}
                   </button>
                 </div>
@@ -235,7 +236,7 @@ export default function LeadDrawer({
                 const lastIn = lead.activities.find((a) => a.kind === "EmailReply");
                 const lastOut = lead.activities.find((a) => ["Email", "Sms", "WhatsApp", "Call", "Meeting"].includes(a.kind));
                 return lastIn && (!lastOut || new Date(lastIn.createdAt) > new Date(lastOut.createdAt)) ? (
-                  <p className="mt-2 rounded-lg bg-cyan-600/10 px-3 py-2 text-xs font-medium text-cyan-900 dark:text-cyan-200">
+                  <p className="mt-2 rounded-lg bg-indigo-600/10 px-3 py-2 text-xs font-medium text-indigo-900 dark:text-indigo-200">
                     {en("{value} replied {createdAt} and is waiting for your answer. Read it below.", { value: lead.name?.split(" ")[0] || en("They"), createdAt: relative(lastIn.createdAt) })}
                   </p>
                 ) : null;
@@ -263,7 +264,7 @@ export default function LeadDrawer({
                       aria-pressed={mode === m}
                       title={blocked ? en("They asked not to be contacted") : undefined}
                       className={`inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-xs font-medium transition-colors disabled:opacity-40 ${
-                        mode === m ? "border-cyan-600 bg-cyan-600/10 text-cyan-800 dark:text-cyan-300" : "border-border hover:bg-muted"
+                        mode === m ? "border-indigo-600 bg-indigo-600/10 text-indigo-800 dark:text-indigo-300" : "border-border hover:bg-muted"
                       }`}
                     >
                       <Icon aria-hidden="true" className="h-3.5 w-3.5" />
@@ -401,7 +402,7 @@ export default function LeadDrawer({
                           </span>
                         </>
                       ) : (
-                        <button type="button" className="text-cyan-700 underline-offset-2 hover:underline dark:text-cyan-400" onClick={() => setTab("followups")}>
+                        <button type="button" className="text-indigo-700 underline-offset-2 hover:underline dark:text-indigo-400" onClick={() => setTab("followups")}>
                           {en("Schedule one")}
                         </button>
                       )}
@@ -423,7 +424,7 @@ export default function LeadDrawer({
               </section>
 
               {(lead.scheduled?.length ?? 0) > 0 && (
-                <section aria-label={en("Scheduled emails")} className="mt-5 space-y-1.5 rounded-xl border border-cyan-600/30 bg-cyan-600/5 p-3 text-sm">
+                <section aria-label={en("Scheduled emails")} className="mt-5 space-y-1.5 rounded-xl border border-border bg-muted/40 p-3 text-sm">
                   <p className="text-xs font-semibold">{en("Scheduled to send")}</p>
                   {lead.scheduled!.map((x) => (
                     <div key={x.id} className="flex flex-wrap items-center justify-between gap-2">
@@ -442,25 +443,17 @@ export default function LeadDrawer({
               )}
 
               {/* Tabs */}
-              <div role="tablist" aria-label={en("Lead details")} className="mt-6 flex gap-4 border-b border-border text-sm">
-                {(
-                  [
-                    ["timeline", `Communication (${lead.activities.filter((a) => !["Stage", "Assignment", "Task", "System"].includes(a.kind)).length})`],
-                    ["followups", `Follow-ups (${lead.tasks.filter((t) => !t.doneAt).length})`],
-                    ["shared", "What they shared"],
-                  ] as const
-                ).map(([k, label]) => (
-                  <button
-                    key={k}
-                    role="tab"
-                    type="button"
-                    aria-selected={tab === k}
-                    onClick={() => setTab(k)}
-                    className={`-mb-px border-b-2 pb-2 ${tab === k ? "border-cyan-600 font-medium text-foreground" : "border-transparent text-muted-foreground hover:text-foreground"}`}
-                  >
-                    {label}
-                  </button>
-                ))}
+              <div className="mt-6">
+                <Tabs<"timeline" | "followups" | "shared">
+                  label={en("Lead details")}
+                  value={tab}
+                  onChange={setTab}
+                  items={[
+                    { id: "timeline", label: en("Communication"), count: lead.activities.filter((a) => !["Stage", "Assignment", "Task", "System"].includes(a.kind)).length },
+                    { id: "followups", label: en("Follow-ups"), count: lead.tasks.filter((t) => !t.doneAt).length },
+                    { id: "shared", label: en("What they shared") },
+                  ]}
+                />
               </div>
 
               <div className="pt-4">
@@ -502,7 +495,7 @@ function Contact({ label, value, href }: { label: string; value: string | null; 
   if (!value) return <span className="text-muted-foreground">{en("No {value}", { value: label.toLowerCase() })}</span>;
   return (
     <span className="inline-flex items-center gap-1.5">
-      <a href={href} className="text-cyan-700 underline-offset-2 hover:underline dark:text-cyan-400">
+      <a href={href} className="text-indigo-700 underline-offset-2 hover:underline dark:text-indigo-400">
         {value}
       </a>
       <button
@@ -625,7 +618,7 @@ function LostForm({ busy, onCancel, onSave }: { busy: boolean; onCancel: () => v
       <p className="text-sm font-medium">{en("Why was this lead lost?")}</p>
       <div className="mt-2 flex flex-wrap gap-1.5">
         {LOST_REASONS.map((r) => (
-          <button key={r} type="button" onClick={() => setReason(r)} aria-pressed={reason === r} className={`rounded-full border px-2.5 py-1 text-xs ${reason === r ? "border-cyan-700 bg-cyan-700 text-white" : "border-border bg-card hover:bg-muted"}`}>
+          <button key={r} type="button" onClick={() => setReason(r)} aria-pressed={reason === r} className={`rounded-full border px-2.5 py-1 text-xs ${reason === r ? "border-indigo-700 bg-indigo-700 text-white" : "border-border bg-card hover:bg-muted"}`}>
             {en(r)}
           </button>
         ))}
@@ -676,7 +669,7 @@ function Tags({ tags, busy, onChange }: { tags: string[]; busy: boolean; onChang
           maxLength={40}
           placeholder={en("Add a tag, e.g. scholarship")}
           aria-label={en("Add a tag")}
-          className="min-w-40 flex-1 rounded-lg border border-dashed border-border bg-transparent px-2 py-1 text-xs focus:border-cyan-600 focus:outline-none"
+          className="min-w-40 flex-1 rounded-lg border border-dashed border-border bg-transparent px-2 py-1 text-xs focus:border-indigo-600 focus:outline-none"
         />
       </div>
     </div>
@@ -691,7 +684,7 @@ function DuePicker({ value, onChange }: { value: string; onChange: (v: string) =
         {presets().map((p) => {
           const v = localInput(p.at);
           return (
-            <button key={p.label} type="button" onClick={() => onChange(v)} aria-pressed={value === v} className={`rounded-full border px-2.5 py-1 text-xs ${value === v ? "border-cyan-700 bg-cyan-700 text-white" : "border-border hover:bg-muted"}`}>
+            <button key={p.label} type="button" onClick={() => onChange(v)} aria-pressed={value === v} className={`rounded-full border px-2.5 py-1 text-xs ${value === v ? "border-indigo-700 bg-indigo-700 text-white" : "border-border hover:bg-muted"}`}>
               {p.label}
             </button>
           );
@@ -875,7 +868,7 @@ function Composer({
       )));
 
   return (
-    <form onSubmit={submit} className="mb-6 space-y-2.5 rounded-xl border border-cyan-600/40 bg-cyan-600/5 p-4">
+    <form onSubmit={submit} className="mb-6 space-y-2.5 rounded-xl border border-border bg-card p-4 shadow-sm">
       <p className="text-sm font-semibold">{title[mode]}</p>
       {unavailable ? (
         <p className="text-sm text-muted-foreground">{unavailable}</p>
@@ -884,7 +877,7 @@ function Composer({
           {mode === "Call" && (
             <div className="flex flex-wrap gap-1.5" role="radiogroup" aria-label={en("How did the call go?")}>
               {Object.entries(CALL_OUTCOMES).map(([k, label]) => (
-                <button key={k} type="button" role="radio" aria-checked={outcome === k} onClick={() => setOutcome(k)} className={`rounded-full border px-2.5 py-1 text-xs ${outcome === k ? "border-cyan-700 bg-cyan-700 text-white" : "border-border bg-card hover:bg-muted"}`}>
+                <button key={k} type="button" role="radio" aria-checked={outcome === k} onClick={() => setOutcome(k)} className={`rounded-full border px-2.5 py-1 text-xs ${outcome === k ? "border-indigo-700 bg-indigo-700 text-white" : "border-border bg-card hover:bg-muted"}`}>
                   {label}
                 </button>
               ))}

@@ -236,7 +236,7 @@ export function Tabs<T extends string>({ label, tabs, value, onChange }: { label
     }
   };
   return (
-    <div role="tablist" aria-label={label} className="mb-4 flex flex-wrap gap-1 border-b border-border">
+    <div role="tablist" aria-label={label} className="mb-4 flex gap-1 overflow-x-auto border-b border-border">
       {tabs.map((t, i) => (
         <button
           key={t.key}
@@ -251,7 +251,7 @@ export function Tabs<T extends string>({ label, tabs, value, onChange }: { label
           tabIndex={value === t.key ? 0 : -1}
           onKeyDown={(e) => onKey(e, i)}
           onClick={() => onChange(t.key)}
-          className={`-mb-px border-b-2 px-3 py-2 text-sm font-medium focus-visible:outline-2 ${value === t.key ? "border-[var(--brand,#4f46e5)]" : "border-transparent text-muted-foreground hover:text-foreground"}`}
+          className={`-mb-px inline-flex shrink-0 items-center gap-2 whitespace-nowrap border-b-2 px-3 py-2.5 text-sm transition-colors focus-visible:outline-2 ${value === t.key ? "border-[var(--brand,#0e7490)] font-medium text-foreground" : "border-transparent text-muted-foreground hover:border-border hover:text-foreground"}`}
         >
           {t.label}
         </button>
@@ -346,7 +346,7 @@ export function SlotPicker({
                 type="button"
                 aria-pressed={activeDay === d}
                 onClick={() => setDay(d)}
-                className={`rounded-md border px-3 py-2 text-sm focus-visible:outline-2 ${activeDay === d ? "border-[var(--brand,#4f46e5)] font-semibold ring-1 ring-[var(--brand,#4f46e5)]" : "border-border hover:bg-muted"}`}
+                className={`rounded-md border px-3 py-2 text-sm focus-visible:outline-2 ${activeDay === d ? "border-[var(--brand,#0e7490)] font-semibold ring-1 ring-[var(--brand,#0e7490)]" : "border-border hover:bg-muted"}`}
               >
                 {label(d)} <span className="text-xs text-muted-foreground">({byDay.get(d)!.length})</span>
               </button>
@@ -367,7 +367,7 @@ export function SlotPicker({
                       onClick={() => onChange(selected ? null : s)}
                       title={names.length ? names.join(", ") : undefined}
                       className={`rounded-md border px-2 py-2 text-sm focus-visible:outline-2 ${selected ? "border-transparent text-white" : "border-border hover:bg-muted"}`}
-                      style={selected ? { background: "var(--brand, #4f46e5)" } : undefined}
+                      style={selected ? { background: "var(--brand,#0e7490)" } : undefined}
                     >
                       {time(s)}
                       {selected && <span className="sr-only">{" "}{tr("selected")}</span>}

@@ -12,6 +12,7 @@ import Link from "next/link";
 import { ArrowRight, BadgeCheck, Compass, Target, Wallet } from "lucide-react";
 import { AccessNotice, useLatestRef, useLegacyApi } from "@/lib/legacyApi";
 import { useEn } from "@/lib/english/EnglishProvider";
+import { PageHeader } from "@/components/career/ui";
 
 interface Skill {
   skillCategory: string;
@@ -41,7 +42,7 @@ interface Path {
   compensationNote: string | null;
 }
 
-const card = "rounded-2xl border border-border bg-card shadow-[0_1px_2px_rgb(16_24_40/0.04)]";
+const card = "rounded-xl border border-border bg-card shadow-sm";
 
 export default function CareerPathPage() {
   const en = useEn();
@@ -82,12 +83,10 @@ export default function CareerPathPage() {
 
   return (
     <div className="space-y-6">
-      <header>
-        <h1 className="text-2xl font-semibold tracking-tight">{en("Your career path")}</h1>
-        <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
-          {en("Where you are, from your graded results, and what to do next. We don't predict promotions or salaries; salary data is shown only from a named, licensed source.")}
-        </p>
-      </header>
+      <PageHeader
+        title={en("Your career path")}
+        description={en("Where you are, from your graded results, and what to do next. We don't predict promotions or salaries; salary data is shown only from a named, licensed source.")}
+      />
 
       <div className="grid gap-4 md:grid-cols-2">
         <section className={`${card} p-5`}>
@@ -184,7 +183,7 @@ export default function CareerPathPage() {
                 ["Median", path.compensation.median],
                 ["75th percentile", path.compensation.p75],
               ].map(([label, v]) => (
-                <div key={label as string} className="rounded-xl bg-muted/60 p-3">
+                <div key={label as string} className="rounded-lg bg-muted/60 p-3">
                   <dt className="text-xs text-muted-foreground">{label}</dt>
                   <dd className="mt-1 font-semibold tabular-nums">{money(v as number | null)}</dd>
                 </div>

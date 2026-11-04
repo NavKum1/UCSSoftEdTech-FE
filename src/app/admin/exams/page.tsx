@@ -102,7 +102,7 @@ export default function ExamAdminListPage() {
             <table className="w-full text-sm">
               <caption className="sr-only">Credentials waiting for a review</caption>
               <thead>
-                <tr className="border-b border-border text-start [&_th]:py-2 [&_th]:pe-3 [&_th]:text-start">
+                <tr className="border-b border-border text-xs text-muted-foreground [&_th]:py-2 [&_th]:pe-3 [&_th]:text-start [&_th]:font-medium">
                   <th scope="col">Certificate</th>
                   <th scope="col">Exam</th>
                   <th scope="col">Student</th>
@@ -158,7 +158,7 @@ export default function ExamAdminListPage() {
             <table className="w-full text-sm">
               <caption className="sr-only">Exams you manage</caption>
               <thead>
-                <tr className="border-b border-border [&_th]:py-2 [&_th]:pe-3 [&_th]:text-start">
+                <tr className="border-b border-border text-xs text-muted-foreground [&_th]:py-2 [&_th]:pe-3 [&_th]:text-start [&_th]:font-medium">
                   <th scope="col">Exam</th>
                   <th scope="col">Kind</th>
                   <th scope="col">Attempts allowed</th>

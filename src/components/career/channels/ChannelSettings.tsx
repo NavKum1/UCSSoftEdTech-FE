@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { useApi } from "@/lib/appAuth";
-import { Badge, Button, Card, ErrorBanner, Field, Loading, PageHeader, SuccessBanner, formatDate, useCareerT, useLoad } from "@/components/career/ui";
+import { Badge, Button, Card, ErrorBanner, Field, Loading, PageHeader, SuccessBanner, formatDate, useCareerT, useLoad, ScrollArea } from "@/components/career/ui";
 import { DriveMessageDefaults } from "@/components/career/channels/DriveMessageDefaults";
 import { useEn } from "@/lib/english/EnglishProvider";
 
@@ -454,7 +454,7 @@ export default function ChannelSettings() {
           {log && (log.length === 0 ? (
             <p className="text-sm text-muted-foreground">{t("logEmpty")}</p>
           ) : (
-            <div className="overflow-x-auto">
+            <ScrollArea>
               <table className="w-full text-sm">
                 <thead className="text-start text-xs text-muted-foreground">
                   <tr>
@@ -479,7 +479,7 @@ export default function ChannelSettings() {
                   ))}
                 </tbody>
               </table>
-            </div>
+            </ScrollArea>
           ))}
         </Card>
       )}

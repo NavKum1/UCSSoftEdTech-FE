@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { useApi } from "@/lib/appAuth";
 import { useCareerShell } from "@/components/career/CareerShell";
-import { EmptyState, ErrorBanner, Field, Loading, PageHeader, formatDate, useLoad, useCareerT } from "@/components/career/ui";
+import { EmptyState, ErrorBanner, Field, Loading, PageHeader, formatDate, useLoad, useCareerT, ScrollArea } from "@/components/career/ui";
 import { StatusBadge, useExperienceStatusLabels, type ExperienceSummary } from "@/components/career/experiences/shared";
 
 export default function FacultyExperiencesPage() {
@@ -44,40 +44,42 @@ export default function FacultyExperiencesPage() {
       ) : (
         <>
           {!status && <p className="mb-3 text-sm" role="status">{t("countNeedYourActionApprove", { count: needsMe.length })}</p>}
-          <table className="w-full text-start text-sm [&_th]:text-start">
-            <caption className="sr-only">{t("internships")}</caption>
-            <thead>
-              <tr className="border-b border-border">
-                <th scope="col" className="py-2">{t("student")}</th>
-                <th scope="col">{t("organizationAndRole")}</th>
-                <th scope="col">{t("dates")}</th>
-                <th scope="col">{t("status")}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((x) => (
-                <tr key={x.id} className="border-b border-border/60 align-top">
-                  <td className="py-2">
-                    <Link href={`/faculty/experiences/${x.id}`} className="underline">
-                      {x.studentName}
-                    </Link>
-                    <span className="block text-xs text-muted-foreground">{x.program?.code}</span>
-                  </td>
-                  <td>
-                    {x.employerName}
-                    <span className="block text-xs">{x.roleTitle}</span>
-                  </td>
-                  <td>
-                    {t("startDateToEndDate", { startDate: formatDate(x.startDate), endDate: formatDate(x.endDate) })}
-                  </td>
-                  <td>
-                    <StatusBadge status={x.status} />
-                    {x.status === "Submitted" && <span className="block text-xs">{x.facultyApproved ? t("youApprovedCareerCenterNext") : t("waitingForFaculty")}</span>}
-                  </td>
+          <ScrollArea>
+            <table className="w-full text-start text-sm [&_th]:text-start">
+              <caption className="sr-only">{t("internships")}</caption>
+              <thead>
+                <tr className="border-b border-border">
+                  <th scope="col" className="py-2">{t("student")}</th>
+                  <th scope="col">{t("organizationAndRole")}</th>
+                  <th scope="col">{t("dates")}</th>
+                  <th scope="col">{t("status")}</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {rows.map((x) => (
+                  <tr key={x.id} className="border-b border-border/60 align-top">
+                    <td className="py-2">
+                      <Link href={`/faculty/experiences/${x.id}`} className="underline">
+                        {x.studentName}
+                      </Link>
+                      <span className="block text-xs text-muted-foreground">{x.program?.code}</span>
+                    </td>
+                    <td>
+                      {x.employerName}
+                      <span className="block text-xs">{x.roleTitle}</span>
+                    </td>
+                    <td>
+                      {t("startDateToEndDate", { startDate: formatDate(x.startDate), endDate: formatDate(x.endDate) })}
+                    </td>
+                    <td>
+                      <StatusBadge status={x.status} />
+                      {x.status === "Submitted" && <span className="block text-xs">{x.facultyApproved ? t("youApprovedCareerCenterNext") : t("waitingForFaculty")}</span>}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </ScrollArea>
         </>
       )}
     </div>

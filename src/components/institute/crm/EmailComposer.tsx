@@ -54,7 +54,7 @@ const htmlToText = (html: string) => {
 };
 
 const tool = "rounded-md p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground disabled:opacity-40";
-const active = "bg-cyan-600/15 text-cyan-800 dark:text-cyan-300";
+const active = "bg-indigo-600/15 text-indigo-800 dark:text-indigo-300";
 
 export default function EmailComposer({
   lead,
@@ -252,7 +252,7 @@ export default function EmailComposer({
   };
 
   return (
-    <div className="mb-6 overflow-hidden rounded-xl border border-cyan-600/40 bg-card">
+    <div className="mb-6 overflow-hidden rounded-xl border border-border bg-card shadow-sm">
       {/* To, template */}
       <div className="flex flex-wrap items-center gap-x-4 gap-y-2 border-b border-border px-4 py-2.5 text-sm">
         <span className="min-w-0 truncate">
@@ -319,11 +319,11 @@ export default function EmailComposer({
                   {en(label)} <code className="text-xs text-muted-foreground">{en(f)}</code>
                 </button>
               ))}
-              <p className="px-2.5 pb-1 pt-1.5 text-[11px] text-muted-foreground">{en("Filled in for each person when it's sent. Works in the subject too.")}</p>
+              <p className="px-2.5 pb-1 pt-1.5 text-xs text-muted-foreground">{en("Filled in for each person when it's sent. Works in the subject too.")}</p>
             </div>
           )}
         </div>
-        <button type="button" disabled={preview} onClick={() => setAi(!ai)} aria-pressed={ai} className={`${tool} ms-auto inline-flex items-center gap-1 text-xs font-medium text-violet-700 dark:text-violet-300 ${ai ? "bg-violet-500/10" : ""}`}>
+        <button type="button" disabled={preview} onClick={() => setAi(!ai)} aria-pressed={ai} className={`${tool} ms-auto inline-flex items-center gap-1 text-xs font-medium text-indigo-700 dark:text-indigo-300 ${ai ? "bg-indigo-500/10" : ""}`}>
           <Sparkles aria-hidden="true" className="h-4 w-4" />{en(" Draft with AI")}
         </button>
         <label className={`${tool} inline-flex cursor-pointer items-center gap-1 text-xs font-medium`} title={en("Attach files")}>
@@ -362,7 +362,7 @@ export default function EmailComposer({
               </button>
             </li>
           ))}
-          <li className="self-center text-[11px] text-muted-foreground">{en("{number} of 10 MB", { number: (totalSize / 1024 / 1024).toFixed(1) })}</li>
+          <li className="self-center text-xs text-muted-foreground">{en("{number} of 10 MB", { number: (totalSize / 1024 / 1024).toFixed(1) })}</li>
         </ul>
       )}
 
@@ -375,7 +375,7 @@ export default function EmailComposer({
       {external === "opened" ? (
         <div className="flex flex-wrap items-center gap-2 border-t border-border bg-amber-500/5 px-4 py-3 text-sm">
           <span>{en("Sent it from your mail app?")}</span>
-          <button type="button" onClick={recordExternal} className="rounded-lg bg-cyan-700 px-3 py-1.5 font-medium text-white hover:bg-cyan-800">
+          <button type="button" onClick={recordExternal} className="rounded-lg bg-indigo-700 px-3 py-1.5 font-medium text-white hover:bg-indigo-800">
             {en("Yes, record it on the timeline")}
           </button>
           <button type="button" onClick={() => setExternal(null)} className="rounded-lg border border-border px-3 py-1.5 hover:bg-muted">
@@ -386,10 +386,10 @@ export default function EmailComposer({
       ) : (
         <div className="flex flex-wrap items-center gap-2 border-t border-border px-4 py-3">
           <div className="relative inline-flex">
-            <button type="button" onClick={doSend} disabled={busy || uploading} className="inline-flex items-center gap-1.5 rounded-s-lg bg-cyan-700 px-4 py-2 text-sm font-medium text-white hover:bg-cyan-800 disabled:opacity-50">
+            <button type="button" onClick={doSend} disabled={busy || uploading} className="inline-flex items-center gap-1.5 rounded-s-lg bg-indigo-700 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-800 disabled:opacity-50">
               {sendAt ? <Clock aria-hidden="true" className="h-4 w-4" /> : <Send aria-hidden="true" className="h-4 w-4" />} {sendAt ? `Send ${fmt(new Date(sendAt))}` : en("Send now")}
             </button>
-            <button type="button" aria-label={en("Send later")} aria-expanded={laterOpen} onClick={() => setLaterOpen(!laterOpen)} className="rounded-e-lg border-s border-cyan-900/30 bg-cyan-700 px-2 text-white hover:bg-cyan-800">
+            <button type="button" aria-label={en("Send later")} aria-expanded={laterOpen} onClick={() => setLaterOpen(!laterOpen)} className="rounded-e-lg border-s border-indigo-900/30 bg-indigo-700 px-2 text-white hover:bg-indigo-800">
               <ChevronDown aria-hidden="true" className="h-4 w-4" />
             </button>
             {laterOpen && (
@@ -411,7 +411,7 @@ export default function EmailComposer({
                     type="button"
                     disabled={!pickTime || new Date(pickTime) <= new Date()}
                     onClick={() => { setSendAt(new Date(pickTime).toISOString()); setLaterOpen(false); }}
-                    className="mt-1.5 w-full rounded-md bg-cyan-700 px-2 py-1 text-xs font-medium text-white disabled:opacity-40"
+                    className="mt-1.5 w-full rounded-md bg-indigo-700 px-2 py-1 text-xs font-medium text-white disabled:opacity-40"
                   >
                     {en("Schedule")}
                   </button>

@@ -10,6 +10,7 @@ import React, { useCallback, useEffect, useState } from "react";
 import { AlertTriangle, Check, RotateCcw, X } from "lucide-react";
 import { AccessNotice, useLatestRef, useLegacyApi } from "@/lib/legacyApi";
 import { useEn } from "@/lib/english/EnglishProvider";
+import { Button, ErrorBanner, PageHeader } from "@/components/career/ui";
 
 interface Dimension {
   key: string;
@@ -53,8 +54,7 @@ interface HistoryRow {
   completedAt: string;
 }
 
-const card = "rounded-2xl border border-border bg-card shadow-[0_1px_2px_rgb(16_24_40/0.04)]";
-const button = "inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-500 disabled:opacity-60";
+const card = "rounded-xl border border-border bg-card shadow-sm";
 
 function RevealedTurn({ r }: { r: Revealed }) {
   const en = useEn();
@@ -147,14 +147,15 @@ export default function ScenarioPractice({ track, title, intro }: { track: strin
 
   return (
     <div className="space-y-6">
-      <header>
-        <p className="text-xs font-semibold uppercase tracking-wide text-indigo-700 dark:text-indigo-300">{en("Practice scenario")}</p>
-        <h1 className="mt-1 text-2xl font-semibold tracking-tight">{title}</h1>
-        <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
-          {intro} {catalogue.note}
-        </p>
-      </header>
-      {error && <p className="text-sm text-red-700 dark:text-red-400">{error}</p>}
+      <PageHeader
+        title={title}
+        description={
+          <>
+            {intro} {catalogue.note}
+          </>
+        }
+      />
+      <ErrorBanner error={error} />
 
       {!attempt && (
         <section className="grid gap-4 sm:grid-cols-2" aria-label={en("Scenarios")}>
@@ -162,9 +163,9 @@ export default function ScenarioPractice({ track, title, intro }: { track: strin
             <div key={s.code} className={`${card} flex flex-col p-5`}>
               <h2 className="text-base font-semibold">{s.title}</h2>
               <p className="mt-1 flex-1 text-sm text-muted-foreground">{s.context}</p>
-              <button className={`${button} mt-4 self-start`} disabled={busy} onClick={() => void post(`/api/practice/scenarios/${s.code}/start`)}>
+              <Button variant="secondary" className="mt-4 self-start" disabled={busy} onClick={() => void post(`/api/practice/scenarios/${s.code}/start`)}>
                 {en("Start ({turns} turns)", { turns: s.turns })}
-              </button>
+              </Button>
             </div>
           ))}
         </section>
@@ -200,7 +201,7 @@ export default function ScenarioPractice({ track, title, intro }: { track: strin
                 {attempt.current.options.map((o) => (
                   <li key={o.key}>
                     <button
-                      className="w-full rounded-xl border border-border p-3 text-start text-sm hover:border-indigo-400 hover:bg-muted/40 disabled:opacity-60"
+                      className="w-full rounded-lg border border-border p-3 text-start text-sm hover:border-indigo-400 hover:bg-muted/40 disabled:opacity-60"
                       disabled={busy}
                       onClick={() => void post(`/api/practice/scenarios/attempts/${attempt.id}/answer`, { key: o.key })}
                     >
@@ -226,12 +227,12 @@ export default function ScenarioPractice({ track, title, intro }: { track: strin
                 ))}
               </dl>
               <div className="flex flex-wrap gap-2">
-                <button className={button} disabled={busy} onClick={() => void post(`/api/practice/scenarios/${attempt.scenario.code}/start`)}>
+                <Button disabled={busy} onClick={() => void post(`/api/practice/scenarios/${attempt.scenario.code}/start`)}>
                   <RotateCcw aria-hidden="true" className="h-4 w-4" />{en(" Try again")}
-                </button>
-                <button className="rounded-xl border border-border px-4 py-2 text-sm font-medium hover:bg-muted" onClick={() => setAttempt(null)}>
+                </Button>
+                <Button variant="secondary" onClick={() => setAttempt(null)}>
                   {en("Other scenarios")}
-                </button>
+                </Button>
               </div>
             </div>
           )}

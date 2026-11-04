@@ -10,6 +10,7 @@
 
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
+import { brandFill, buttonClass } from "@/components/career/ui";
 import { ArrowRight, BookOpen, GraduationCap } from "lucide-react";
 import { setSelectedSchool } from "@/lib/appAuth";
 import { clearPartnerSession, savePartnerSession } from "@/lib/partnerSession";
@@ -53,8 +54,8 @@ export default function LmsLaunchPage() {
 
   return (
     <div className="mx-auto flex min-h-[60vh] max-w-lg flex-col justify-center">
-      <div className="rounded-2xl border border-border bg-card p-6 sm:p-8">
-        <p className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-indigo-700 dark:text-indigo-300">
+      <div className="rounded-xl border border-border bg-card p-6 shadow-sm sm:p-8">
+        <p className="inline-flex items-center gap-2 text-sm text-muted-foreground">
           <GraduationCap aria-hidden="true" className="h-4 w-4" />{en(" From your course")}
         </p>
         {error ? (
@@ -72,7 +73,7 @@ export default function LmsLaunchPage() {
           <>
             <h1 className="mt-2 text-xl font-semibold">{en("Welcome to Edulexa")}</h1>
             {(launch.course || launch.assignment) && (
-              <div className="mt-4 rounded-xl border border-border bg-muted/40 p-4">
+              <div className="mt-4 rounded-lg border border-border bg-muted/40 p-4">
                 <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
                   <BookOpen aria-hidden="true" className="h-3.5 w-3.5" />{en(" Course")}
                 </p>
@@ -89,7 +90,8 @@ export default function LmsLaunchPage() {
             </p>
             <Link
               href={faculty ? "/institute/dashboard" : "/dashboard"}
-              className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-indigo-600 px-4 py-3 text-sm font-semibold text-white hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+              className={`${buttonClass("primary")} mt-6 w-full`}
+              style={brandFill}
             >
               {faculty ? en("Open the institute portal") : en("Continue")} <ArrowRight aria-hidden="true" className="h-4 w-4" />
             </Link>

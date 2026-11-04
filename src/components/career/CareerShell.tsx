@@ -34,6 +34,8 @@ export interface CareerMembershipInfo {
   role: string;
   status: string;
   ferpaHold: boolean;
+  // The school's country (ISO code such as "US" or "IN")
+  country?: string | null;
 }
 
 export interface CareerMe {
@@ -50,10 +52,12 @@ interface CareerShellState {
   me: CareerMe | null;
   meError: string | null;
   schoolId: string | null;
+  // The chosen school's country; null until known
+  schoolCountry: string | null;
   reloadMe: () => void;
 }
 
-const CareerShellContext = createContext<CareerShellState>({ brand: null, me: null, meError: null, schoolId: null, reloadMe: () => {} });
+const CareerShellContext = createContext<CareerShellState>({ brand: null, me: null, meError: null, schoolId: null, schoolCountry: null, reloadMe: () => {} });
 
 export function useCareerShell() {
   return useContext(CareerShellContext);
@@ -142,7 +146,11 @@ export default function CareerShell({ persona, children }: { persona: CareerPers
   const brandSolid = accessibleBrandColor(b.primaryColor);
   // The Edulexa community (members without a school) offers mentoring only
   const inCommunity = schoolId === COMMUNITY_INSTITUTE_ID;
-  const items = careerNav[persona].filter((i) => i.ready && (!inCommunity || i.module === "C10"));
+  const schoolCountry = me?.memberships.find((m) => m.instituteId === schoolId)?.country ?? null;
+  // Country-specific pages (India's accreditation reports, US WIOA...) show only to schools in those countries
+  const items = careerNav[persona].filter(
+    (i) => i.ready && (!inCommunity || i.module === "C10") && (!i.countries || (schoolCountry !== null && i.countries.includes(schoolCountry))),
+  );
   const schools = (me?.memberships ?? [])
     .filter((m) => STAFF_ROLES[persona].includes(m.role))
     .filter((m, i, all) => all.findIndex((x) => x.instituteId === m.instituteId) === i);
@@ -181,7 +189,7 @@ export default function CareerShell({ persona, children }: { persona: CareerPers
   }, [menuOpen]);
 
   return (
-    <CareerShellContext.Provider value={{ brand: b, me, meError, schoolId, reloadMe }}>
+    <CareerShellContext.Provider value={{ brand: b, me, meError, schoolId, schoolCountry, reloadMe }}>
       <div className="min-h-screen bg-background text-foreground" lang={locale} dir={dir} style={brandCssVars(b.primaryColor) as React.CSSProperties}>
         <a href="#career-main" className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:start-2 focus:z-50 focus:rounded-md focus:bg-card focus:px-3 focus:py-2">
           {t("skipToContent")}

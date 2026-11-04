@@ -3,7 +3,7 @@
 import React, { Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useApi } from "@/lib/appAuth";
-import { Badge, Button, Card, EmptyState, ErrorBanner, Field, Loading, PageHeader, SuccessBanner, formatDate, useLoad, useCareerT } from "@/components/career/ui";
+import { Badge, Button, Card, EmptyState, ErrorBanner, Field, Loading, PageHeader, SuccessBanner, Tabs, formatDate, useLoad, useCareerT } from "@/components/career/ui";
 import { ThreadList, ThreadView, type ThreadRow } from "@/components/career/messaging/shared";
 import CampaignsPanel from "@/components/career/messaging/CampaignsPanel";
 
@@ -25,19 +25,8 @@ function CareerCenterMessages() {
   return (
     <div>
       <PageHeader title={tr("messagesCampaigns")} description={tr("theSharedCareerCenterInbox")} />
-      <div role="tablist" aria-label={tr("messagesSections")} className="mb-6 flex gap-1 border-b border-border">
-        {tabs.map(([key, label]) => (
-          <button
-            key={key}
-            role="tab"
-            type="button"
-            aria-selected={tab === key}
-            onClick={() => setTab(key)}
-            className={`-mb-px border-b-2 px-4 py-2 text-sm font-medium focus-visible:outline-2 ${tab === key ? "border-[var(--brand,#4f46e5)]" : "border-transparent text-muted-foreground"}`}
-          >
-            {label}
-          </button>
-        ))}
+      <div className="mb-6">
+        <Tabs label={tr("messagesSections")} items={tabs.map(([id, label]) => ({ id, label }))} value={tab} onChange={setTab} />
       </div>
       <div role="tabpanel">{tab === "campaigns" ? <CampaignsPanel /> : tab === "reports" ? <Reports /> : <Inbox />}</div>
     </div>

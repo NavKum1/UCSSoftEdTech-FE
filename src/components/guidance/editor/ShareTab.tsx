@@ -33,7 +33,7 @@ export default function ShareTab({
 
   return (
     <div className="space-y-6">
-      <section className={`flex flex-wrap items-center justify-between gap-3 rounded-2xl border p-4 text-sm ${view.publicEnabled ? "border-emerald-500/30 bg-emerald-500/5" : "border-amber-500/30 bg-amber-500/5"}`}>
+      <section className={`flex flex-wrap items-center justify-between gap-3 rounded-xl border p-4 text-sm ${view.publicEnabled ? "border-emerald-500/30 bg-emerald-500/5" : "border-amber-500/30 bg-amber-500/5"}`}>
         <div>
           <p className="font-medium">{view.publicEnabled ? en("The public link is on") : en("The public link is off")}</p>
           <p className="text-xs text-muted-foreground">
@@ -46,7 +46,7 @@ export default function ShareTab({
           <button
             type="button"
             onClick={() => setPublic(!view.publicEnabled)}
-            className={`rounded-lg px-3.5 py-2 text-sm font-medium ${view.publicEnabled ? "border border-border hover:bg-muted" : "bg-cyan-700 text-white hover:bg-cyan-800"}`}
+            className={`rounded-lg px-3.5 py-2 text-sm font-medium ${view.publicEnabled ? "border border-border hover:bg-muted" : "bg-indigo-700 text-white hover:bg-indigo-800"}`}
           >
             {view.publicEnabled ? en("Turn off") : en("Turn on the public link")}
           </button>
@@ -54,7 +54,7 @@ export default function ShareTab({
       </section>
       {view.hasDraft && <p className="rounded-lg bg-amber-500/10 px-3 py-2 text-sm text-amber-900 dark:text-amber-200">{en("You have unpublished changes. People see the published version until you publish.")}</p>}
 
-      <section className="grid gap-5 rounded-2xl border border-border bg-card p-5 lg:grid-cols-[1fr_14rem]">
+      <section className="grid gap-5 rounded-xl border border-border bg-card shadow-sm p-5 lg:grid-cols-[1fr_14rem]">
         <div className="space-y-3">
           <h2 className="text-base font-semibold">{en("Link and QR code")}</h2>
           <div>
@@ -104,7 +104,7 @@ export default function ShareTab({
         </div>
       </section>
 
-      <section className="rounded-2xl border border-border bg-card p-5">
+      <section className="rounded-xl border border-border bg-card shadow-sm p-5">
         <h2 className="mb-3 text-base font-semibold">{en("Put it on your website")}</h2>
         <EmbedBuilder instituteId={view.instituteId} formId={view.id} formName={view.name} publicEnabled={view.publicEnabled} />
       </section>

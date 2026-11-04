@@ -11,6 +11,7 @@ import Link from "next/link";
 import { ArrowRight, CheckCircle2, Flame, GitPullRequest, Snowflake, Swords, Terminal, Trophy } from "lucide-react";
 import { AccessNotice, useLatestRef, useLegacyApi } from "@/lib/legacyApi";
 import { useEn } from "@/lib/english/EnglishProvider";
+import { PageHeader, StatTile } from "@/components/career/ui";
 
 interface Summary {
   streak: {
@@ -39,7 +40,7 @@ interface Board {
   rankedMembers: number;
 }
 
-const card = "rounded-2xl border border-border bg-card shadow-[0_1px_2px_rgb(16_24_40/0.04)]";
+const card = "rounded-xl border border-border bg-card shadow-sm";
 
 export default function DailyPracticePage() {
   const en = useEn();
@@ -103,43 +104,47 @@ export default function DailyPracticePage() {
 
   return (
     <div>
-      <header className="mb-6">
-        <h1 className="text-2xl font-semibold tracking-tight">{en("Daily practice")}</h1>
-        <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
-          {en("Two short drills a day: diagnose a production incident and review a pull request. Your first try at each drill earns points; the answers are shown once you submit.")}
-        </p>
-      </header>
+      <PageHeader
+        title={en("Daily practice")}
+        description={en("Two short drills a day: diagnose a production incident and review a pull request. Your first try at each drill earns points; the answers are shown once you submit.")}
+      />
 
       <section aria-label={en("Your progress")} className="grid gap-4 sm:grid-cols-3">
-        <div className={`${card} p-5`}>
-          <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            <Flame aria-hidden="true" className="h-4 w-4 text-orange-500" />{en(" Streak")}
+        <StatTile
+          icon={<Flame />}
+          label={en("Streak")}
+          value={
+            <>
+              {streak.current} <span className="text-base font-normal text-muted-foreground">day{streak.current === 1 ? "" : "s"}</span>
+            </>
+          }
+          hint={
+            <>
+              {en("{value} Best: {longest}.", { value: streak.practisedToday ? en("Practised today.") : streak.current > 0 ? en("Practise today to keep it going.") : en("Practise today to start one."), longest: streak.longest })}
+              <span className="mt-2 flex items-center gap-1.5" title={`Earn a freeze for every ${streak.daysPerFreeze} days in a row; it covers one missed day.`}>
+                <Snowflake aria-hidden="true" className="h-3.5 w-3.5 shrink-0" />
+                {en("{freezesAvailable} of {maxFreezes} streak freezes. Earn one every {daysPerFreeze} days in a row; it covers a missed day.", { freezesAvailable: streak.freezesAvailable, maxFreezes: streak.maxFreezes, daysPerFreeze: streak.daysPerFreeze })}
+              </span>
+            </>
+          }
+        />
+        <StatTile
+          icon={<Trophy />}
+          label={en("This week")}
+          value={
+            <>
+              {week.points} <span className="text-base font-normal text-muted-foreground">points</span>
+            </>
+          }
+          hint={en("{value} Resets {date}.", { value: week.rank ? `Rank ${week.rank} of ${week.rankedMembers}.` : en("No points yet this week."), date: weekEnds.toLocaleDateString(undefined, { weekday: "long", day: "numeric", month: "short" }) })}
+        />
+        {/* Same look as StatTile; a div because the 14-day strip is a list */}
+        <div className="rounded-xl border border-border bg-card p-4 shadow-sm">
+          <p className="flex items-center gap-1.5 text-sm text-muted-foreground">
+            <CheckCircle2 aria-hidden="true" className="h-4 w-4" />
+            {en("All time")}
           </p>
-          <p className="mt-2 text-3xl font-semibold tabular-nums">
-            {streak.current} <span className="text-base font-normal text-muted-foreground">day{streak.current === 1 ? "" : "s"}</span>
-          </p>
-          <p className="mt-1 text-xs text-muted-foreground">
-            {en("{value} Best: {longest}.", { value: streak.practisedToday ? en("Practised today.") : streak.current > 0 ? en("Practise today to keep it going.") : en("Practise today to start one."), longest: streak.longest })}</p>
-          <p className="mt-3 flex items-center gap-1.5 text-xs text-muted-foreground" title={`Earn a freeze for every ${streak.daysPerFreeze} days in a row; it covers one missed day.`}>
-            <Snowflake aria-hidden="true" className="h-3.5 w-3.5 text-sky-500" />
-            {en("{freezesAvailable} of {maxFreezes} streak freezes. Earn one every {daysPerFreeze} days in a row; it covers a missed day.", { freezesAvailable: streak.freezesAvailable, maxFreezes: streak.maxFreezes, daysPerFreeze: streak.daysPerFreeze })}
-          </p>
-        </div>
-        <div className={`${card} p-5`}>
-          <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            <Trophy aria-hidden="true" className="h-4 w-4 text-amber-500" />{en(" This week")}
-          </p>
-          <p className="mt-2 text-3xl font-semibold tabular-nums">
-            {week.points} <span className="text-base font-normal text-muted-foreground">points</span>
-          </p>
-          <p className="mt-1 text-xs text-muted-foreground">
-            {en("{value} Resets {date}.", { value: week.rank ? `Rank ${week.rank} of ${week.rankedMembers}.` : en("No points yet this week."), date: weekEnds.toLocaleDateString(undefined, { weekday: "long", day: "numeric", month: "short" }) })}</p>
-        </div>
-        <div className={`${card} p-5`}>
-          <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            <CheckCircle2 aria-hidden="true" className="h-4 w-4 text-emerald-500" />{en(" All time")}
-          </p>
-          <p className="mt-2 text-3xl font-semibold tabular-nums">
+          <p className="mt-2 text-2xl font-semibold tabular-nums tracking-tight">
             {summary.totalPoints} <span className="text-base font-normal text-muted-foreground">points</span>
           </p>
           <ol aria-label={en("The last 14 days")} className="mt-3 flex gap-1">
@@ -184,10 +189,10 @@ export default function DailyPracticePage() {
           <Link href="/duels/arena" className={`${card} group flex flex-col p-5 hover:border-indigo-400`}>
             <span className="flex items-center gap-2 text-indigo-700 dark:text-indigo-300">
               <Swords aria-hidden="true" className="h-5 w-5" />
-              <span className="text-xs font-semibold uppercase tracking-wider">{en("System design duel")}</span>
+              <span className="text-sm font-medium">{en("System design duel")}</span>
             </span>
             <span className="mt-3 text-sm text-muted-foreground">{en("Practise a system design problem against an AI opponent. Duels don't count towards points.")}</span>
-            <span className="mt-auto inline-flex items-center gap-1 pt-4 text-sm font-semibold">
+            <span className="mt-auto inline-flex items-center gap-1 pt-4 text-sm font-medium text-indigo-700 dark:text-indigo-300">
               {en("Open ")}<ArrowRight aria-hidden="true" className="h-4 w-4 transition-transform group-hover:translate-x-0.5 motion-reduce:transition-none" />
             </span>
           </Link>
@@ -199,7 +204,7 @@ export default function DailyPracticePage() {
           <h2 id="dp-board" className="text-base font-semibold">
             {en("This week's leaderboard")}
           </h2>
-          <Link href="/leaderboard" className="text-sm font-semibold text-indigo-700 hover:underline dark:text-indigo-300">
+          <Link href="/leaderboard" className="text-sm font-medium text-indigo-700 hover:underline dark:text-indigo-300">
             {en("Full leaderboard")}
           </Link>
         </div>
@@ -254,9 +259,9 @@ function DrillCard({
   return (
     <Link href={href} className={`${card} group flex flex-col p-5 hover:border-indigo-400`}>
       <span className="flex items-center justify-between gap-2">
-        <span className="flex items-center gap-2 text-amber-700 dark:text-amber-400">
+        <span className="flex items-center gap-2 text-indigo-700 dark:text-indigo-300">
           {icon}
-          <span className="text-xs font-semibold uppercase tracking-wider">{label}</span>
+          <span className="text-sm font-medium">{label}</span>
         </span>
         {status?.completed && (
           <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-semibold text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400">
@@ -267,7 +272,7 @@ function DrillCard({
       {title && <span className="mt-3 font-semibold leading-snug">{title}</span>}
       {meta && <span className="mt-1 text-xs text-muted-foreground">{meta}</span>}
       <span className="mt-2 text-sm text-muted-foreground">{description}</span>
-      <span className="mt-auto inline-flex items-center gap-1 pt-4 text-sm font-semibold">
+      <span className="mt-auto inline-flex items-center gap-1 pt-4 text-sm font-medium text-indigo-700 dark:text-indigo-300">
         {status?.completed ? en("Practise again (no points)") : status?.openAttemptId ? en("Continue") : en("Start")}
         <ArrowRight aria-hidden="true" className="h-4 w-4 transition-transform group-hover:translate-x-0.5 motion-reduce:transition-none" />
       </span>

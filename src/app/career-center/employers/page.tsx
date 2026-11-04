@@ -66,7 +66,7 @@ export default function CareerCenterEmployersPage() {
       <ErrorBanner error={err ?? list.error} onRetry={list.error ? list.reload : undefined} />
       <SuccessBanner message={msg} />
 
-      <div role="tablist" aria-label={tr("requestStatus")} className="mb-4 flex flex-wrap gap-1 border-b border-border">
+      <div role="tablist" aria-label={tr("requestStatus")} className="mb-4 flex gap-1 overflow-x-auto border-b border-border">
         {TABS.map((t) => (
           <button
             key={t}
@@ -75,8 +75,7 @@ export default function CareerCenterEmployersPage() {
             aria-selected={tab === t}
             aria-controls="employer-panel"
             onClick={() => setTab(t)}
-            className={`-mb-px border-b-2 px-3 py-2 text-sm ${tab === t ? "font-semibold" : "border-transparent text-muted-foreground hover:text-foreground"}`}
-            style={tab === t ? { borderColor: "var(--brand, #4f46e5)" } : undefined}
+            className={`-mb-px inline-flex shrink-0 items-center gap-2 whitespace-nowrap border-b-2 px-3 py-2.5 text-sm transition-colors focus-visible:outline-2 ${tab === t ? "border-[var(--brand,#0e7490)] font-medium text-foreground" : "border-transparent text-muted-foreground hover:border-border hover:text-foreground"}`}
           >
             {STATUS[t]}
           </button>

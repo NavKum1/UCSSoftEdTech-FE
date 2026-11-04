@@ -162,7 +162,7 @@ export function ImportDialog({ examId, onClose, onImported }: { examId: string; 
                 <table className="w-full text-sm">
                   <caption className="sr-only">Questions in the file</caption>
                   <thead>
-                    <tr className="border-b border-border [&_th]:py-2 [&_th]:pe-3 [&_th]:text-start">
+                    <tr className="border-b border-border text-xs text-muted-foreground [&_th]:py-2 [&_th]:pe-3 [&_th]:text-start [&_th]:font-medium">
                       <th scope="col">Row</th>
                       <th scope="col">Question</th>
                       <th scope="col">Correct answer</th>

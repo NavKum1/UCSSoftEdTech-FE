@@ -9,7 +9,7 @@ import {
   MicOff,
   PhoneCall,
   PhoneOff,
-  Sparkles,
+  Info,
   AlertTriangle,
   Volume2,
   Clock,
@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import { authenticatedFetch } from "@/lib/apiClient";
 import { useEn } from "@/lib/english/EnglishProvider";
+import { Badge, Button, brandFill, buttonClass } from "@/components/career/ui";
 
 export interface DefenseRecommendation {
   courseId: string;
@@ -475,15 +476,12 @@ export default function VapiInterviewRoom({
     (result.technicalScore ?? 100) <= RECOMMENDATION_SCORE_THRESHOLD;
 
   return (
-    <div className="glass-panel rounded-2xl p-6 border border-border relative overflow-hidden">
+    <div className="relative overflow-hidden rounded-xl border border-border bg-card p-6 shadow-sm">
       <div className="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-border">
         <div className="flex items-center space-x-3">
-          <div className="p-2.5 bg-indigo-500/10 rounded-xl border border-indigo-500/20 text-indigo-700 dark:text-indigo-400">
-            <Sparkles className="w-5 h-5" />
-          </div>
           <div>
-            <h2 className="text-lg font-semibold text-foreground">{en("AI Voice Defense")}</h2>
-            <p className="text-xs text-muted-foreground">{en("Graded by the server from the recorded call")}</p>
+            <h2 className="text-base font-semibold text-foreground">{en("AI voice defense")}</h2>
+            <p className="text-sm text-muted-foreground">{en("Graded by the server from the recorded call")}</p>
           </div>
         </div>
 
@@ -496,44 +494,33 @@ export default function VapiInterviewRoom({
               {sessionCapSeconds !== null && <span>{en("{value} min max this session", { value: Math.floor(sessionCapSeconds / 60) })}</span>}
             </span>
           )}
-          <span
-            className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border ${
-              callStatus === "active"
-                ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/30"
-                : callStatus === "connecting" || callStatus === "finishing"
-                  ? "bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/30"
-                  : callStatus === "ended"
-                    ? "bg-purple-500/10 text-purple-700 dark:text-purple-400 border-purple-500/30"
-                    : "bg-muted text-muted-foreground border-border"
-            }`}
-          >
-            <span className={`w-2 h-2 rounded-full me-2 ${callStatus === "active" ? "bg-emerald-400 animate-ping" : "bg-slate-500"}`}></span>
-            {callStatus.toUpperCase()}
-          </span>
+          <Badge tone={callStatus === "active" ? "good" : callStatus === "connecting" || callStatus === "finishing" ? "warn" : "neutral"}>
+            {callStatus.charAt(0).toUpperCase() + callStatus.slice(1)}
+          </Badge>
         </div>
       </div>
 
       <div className="my-6 grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="md:col-span-1 glass-card rounded-xl p-5 flex flex-col justify-between border border-border">
+        <div className="md:col-span-1 rounded-xl p-5 flex flex-col justify-between border border-border bg-card">
           <div>
-            <h3 className="text-sm font-semibold text-muted-foreground mb-2">{en("Microphone")}</h3>
+            <h3 className="text-sm font-semibold text-foreground mb-2">{en("Microphone")}</h3>
             <p className="text-xs text-muted-foreground mb-4">
-              {en("Status: ")}<span className="font-semibold text-indigo-700 dark:text-indigo-400">{micPermission}</span>
+              {en("Status: ")}<span className="font-medium text-foreground">{micPermission}</span>
             </p>
 
-            <div className="h-24 bg-card/90 rounded-xl border border-border flex flex-col items-center justify-center space-y-2 px-4">
+            <div className="h-24 bg-muted/40 rounded-lg border border-border flex flex-col items-center justify-center space-y-2 px-4">
               {callStatus === "active" ? (
                 <>
                   <div className="flex items-center space-x-1.5 h-10">
                     {[35, 75, 45, 90, 60, 85, 40, 95, 70, 50].map((h, i) => (
                       <div
                         key={i}
-                        className="w-1.5 bg-gradient-to-t from-indigo-500 to-purple-400 rounded-full wave-bar"
+                        className="w-1.5 bg-indigo-500 rounded-full wave-bar"
                         style={{ animationDelay: `${i * 0.1}s`, height: `${Math.max(15, (h * (volumeLevel || 50)) / 100)}%` }}
                       ></div>
                     ))}
                   </div>
-                  <div className="flex items-center space-x-1 text-[11px] text-emerald-700 dark:text-emerald-400">
+                  <div className="flex items-center space-x-1 text-xs text-emerald-700 dark:text-emerald-400">
                     <Volume2 className="w-3.5 h-3.5" />
                     <span>
                       {formatClock(elapsedSeconds)}
@@ -549,7 +536,7 @@ export default function VapiInterviewRoom({
 
           <div className="mt-6 space-y-3">
             {languages.length > 1 && (
-              <label className="block text-xs font-semibold text-muted-foreground">
+              <label className="block text-sm font-medium text-foreground">
                 {en("Conversation language")}
                 <select
                   value={selectedLanguage}
@@ -558,7 +545,7 @@ export default function VapiInterviewRoom({
                     setSelectedLanguage(e.target.value);
                   }}
                   disabled={inCall || callStatus === "finishing" || isLoading}
-                  className="mt-1 w-full px-3 py-2 rounded-xl bg-card border border-border text-xs text-foreground disabled:opacity-60"
+                  className="mt-1 w-full px-3 py-2 rounded-lg bg-card border border-border text-xs text-foreground disabled:opacity-60"
                 >
                   {languages.map((l) => (
                     <option key={l.key} value={l.key}>{l.label}</option>
@@ -567,51 +554,49 @@ export default function VapiInterviewRoom({
               </label>
             )}
             {!inCall && callStatus !== "finishing" ? (
-              <button
+              <Button
                 onClick={handleStartInterview}
                 disabled={isLoading}
-                className="w-full py-3 px-4 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 disabled:opacity-60 text-white font-medium rounded-xl shadow-lg shadow-indigo-500/25 flex items-center justify-center space-x-2 transition-all duration-200 cursor-pointer"
+                className="h-10 w-full"
               >
                 {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <PhoneCall className="w-4 h-4" />}
-                <span>{isLoading ? en("Starting...") : callStatus === "ended" ? en("Start Another Defense") : en("Start Defense")}</span>
-              </button>
+                <span>{isLoading ? en("Starting...") : callStatus === "ended" ? en("Start another defense") : en("Start defense")}</span>
+              </Button>
             ) : callStatus === "finishing" ? (
-              <div className="w-full py-3 px-4 rounded-xl border border-border bg-muted text-muted-foreground text-xs font-medium flex items-center justify-center gap-2">
+              <div className="w-full py-3 px-4 rounded-lg border border-border bg-muted text-muted-foreground text-xs font-medium flex items-center justify-center gap-2">
                 <Loader2 className="w-4 h-4 animate-spin" />
                 <span>{en("Evaluating...")}</span>
               </div>
             ) : (
               <div className="flex space-x-2">
-                <button
+                <Button
+                  variant="secondary"
                   onClick={toggleMute}
-                  className={`flex-1 py-3 px-3 rounded-xl border text-xs font-medium flex items-center justify-center space-x-1.5 cursor-pointer ${
-                    isMuted
-                      ? "bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/30"
-                      : "bg-muted text-muted-foreground border-border hover:bg-muted/70"
-                  }`}
+                  className={`h-10 flex-1 ${isMuted ? "ring-1 ring-amber-500" : ""}`}
                 >
                   {isMuted ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
-                  <span>{isMuted ? en("Muted") : en("Mute Mic")}</span>
-                </button>
-                <button
+                  <span>{isMuted ? en("Muted") : en("Mute")}</span>
+                </Button>
+                <Button
+                  variant="danger"
                   onClick={handleEndCall}
-                  className="flex-1 py-3 px-3 bg-red-600/90 hover:bg-red-500 text-white rounded-xl text-xs font-medium flex items-center justify-center space-x-1.5 cursor-pointer transition-colors"
+                  className="h-10 flex-1"
                 >
                   <PhoneOff className="w-4 h-4" />
-                  <span>{en("End Call")}</span>
-                </button>
+                  <span>{en("End call")}</span>
+                </Button>
               </div>
             )}
           </div>
         </div>
 
-        <div className="md:col-span-2 glass-card rounded-xl p-5 flex flex-col border border-border min-h-[220px]">
+        <div className="md:col-span-2 rounded-xl p-5 flex flex-col border border-border bg-card min-h-[220px]">
           <div className="flex items-center justify-between mb-3">
-            <h3 className="text-sm font-semibold text-muted-foreground">{en("Live Transcript")}</h3>
+            <h3 className="text-sm font-semibold text-foreground">{en("Live transcript")}</h3>
             <span className="text-xs text-muted-foreground">{transcripts.length} messages</span>
           </div>
 
-          <div className="flex-1 bg-background/80 rounded-xl p-4 border border-border overflow-y-auto max-h-[200px] space-y-3">
+          <div className="flex-1 bg-background rounded-lg p-4 border border-border overflow-y-auto max-h-[200px] space-y-3">
             {transcripts.length === 0 ? (
               <div className="h-full flex items-center justify-center text-xs text-muted-foreground italic">
                 {en("The transcript appears here once the call starts.")}
@@ -619,7 +604,7 @@ export default function VapiInterviewRoom({
             ) : (
               transcripts.map((t, idx) => (
                 <div key={idx} className={`flex flex-col ${t.role === "Candidate" ? "items-end" : "items-start"}`}>
-                  <span className="text-[10px] text-muted-foreground mb-0.5 font-medium">{t.role}</span>
+                  <span className="text-xs text-muted-foreground mb-0.5 font-medium">{t.role}</span>
                   <div
                     className={`max-w-[85%] rounded-xl px-3 py-2 text-xs ${
                       t.role === "Candidate"
@@ -650,17 +635,18 @@ export default function VapiInterviewRoom({
           </div>
           <Link
             href="/pricing"
-            className="inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold shrink-0"
+            className={`${buttonClass("primary")} shrink-0`}
+            style={brandFill}
           >
-            {en("See plans & top-ups")}
+            {en("See plans and top-ups")}
             <ArrowRight className="w-3.5 h-3.5" />
           </Link>
         </div>
       )}
 
       {statusMessage && (
-        <div className="mt-4 p-3 bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-200 dark:border-indigo-500/30 rounded-xl text-xs text-indigo-800 dark:text-indigo-300 flex items-center space-x-2">
-          <Sparkles className="w-4 h-4 text-indigo-700 dark:text-indigo-400 shrink-0" />
+        <div role="status" className="mt-4 p-3 bg-muted/50 border border-border rounded-lg text-sm text-foreground flex items-center space-x-2">
+          <Info className="w-4 h-4 text-indigo-700 dark:text-indigo-400 shrink-0" />
           <span>{statusMessage}</span>
         </div>
       )}
@@ -668,14 +654,14 @@ export default function VapiInterviewRoom({
       {result?.status === "evaluated" && (
         <div className="mt-6 p-5 bg-card border border-border rounded-xl space-y-4">
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <h4 className="text-sm font-semibold text-foreground">{en("Defense Evaluation")}</h4>
+            <h4 className="text-sm font-semibold text-foreground">{en("Defense evaluation")}</h4>
             <div className="flex flex-wrap gap-2">
               {typeof result.technicalScore === "number" && (
-                <span className="text-sm font-bold text-indigo-700 dark:text-indigo-400 bg-indigo-500/10 px-3 py-1 rounded-lg border border-indigo-500/20">
+                <span className="text-sm font-semibold tabular-nums text-foreground bg-muted px-3 py-1 rounded-lg border border-border">
                   {en("Technical: {technicalScore}%", { technicalScore: Math.round(result.technicalScore) })}</span>
               )}
               {typeof result.communicationScore === "number" && (
-                <span className="text-sm font-bold text-purple-700 dark:text-purple-400 bg-purple-500/10 px-3 py-1 rounded-lg border border-purple-500/20">
+                <span className="text-sm font-semibold tabular-nums text-foreground bg-muted px-3 py-1 rounded-lg border border-border">
                   {en("Communication: {communicationScore}%", { communicationScore: Math.round(result.communicationScore) })}</span>
               )}
             </div>
@@ -688,7 +674,7 @@ export default function VapiInterviewRoom({
                 {result.missingSkills.map((skill) => (
                   <span
                     key={skill}
-                    className="px-3 py-1 rounded-lg text-xs font-semibold bg-amber-500/10 text-amber-800 dark:text-amber-300 border border-amber-500/30"
+                    className="rounded-full px-2 py-0.5 text-xs font-medium bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300"
                   >
                     {skill}
                   </span>

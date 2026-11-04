@@ -9,6 +9,7 @@
 import React, { useState } from "react";
 import { Sparkles, X } from "lucide-react";
 import { crm, type GetToken } from "./api";
+import { brandFill, buttonClass } from "@/components/career/ui";
 import { useEn } from "@/lib/english/EnglishProvider";
 
 const PURPOSES: [string, string][] = [
@@ -65,10 +66,10 @@ export default function AiDraft({
 
   const select = "mt-1 block w-full rounded-lg border border-border bg-background px-2.5 py-1.5 text-sm";
   return (
-    <div className="space-y-3 border-b border-border bg-violet-500/5 px-4 py-3 text-sm">
+    <div className="space-y-3 border-b border-border bg-muted/40 px-4 py-3 text-sm">
       <div className="flex items-start justify-between gap-2">
         <p className="flex items-center gap-1.5 font-medium">
-          <Sparkles aria-hidden="true" className="h-4 w-4 text-violet-600" />{en(" Draft with AI")}
+          <Sparkles aria-hidden="true" className="h-4 w-4 text-indigo-600" />{en(" Draft with AI")}
         </p>
         <button type="button" onClick={onClose} aria-label={en("Close")} className="rounded p-1 hover:bg-muted">
           <X aria-hidden="true" className="h-4 w-4" />
@@ -111,13 +112,13 @@ export default function AiDraft({
           maxLength={500}
           value={instructions}
           onChange={(e) => setInstructions(e.target.value)}
-          placeholder={en("e.g. Mention the weekend batch starting 5 January and the 10% early fee discount")}
+          placeholder={en("e.g. Mention the weekend class starting January 5 and the 10% early enrollment discount")}
           className={select}
         />
       </label>
       {error && <p className="text-red-700 dark:text-red-400" role="alert">{error}</p>}
       <div className="flex flex-wrap items-center gap-3">
-        <button type="button" onClick={write} disabled={busy} className="inline-flex items-center gap-1.5 rounded-lg bg-violet-700 px-3.5 py-1.5 font-medium text-white hover:bg-violet-800 disabled:opacity-50">
+        <button type="button" onClick={write} disabled={busy} className={buttonClass("primary")} style={brandFill}>
           <Sparkles aria-hidden="true" className="h-4 w-4" /> {busy ? en("Writing…") : en("Write a draft")}
         </button>
         <p className="text-xs text-muted-foreground">

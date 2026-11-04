@@ -3,11 +3,12 @@
 import React, { useState } from "react";
 import { useAppAuth as useAuth } from "@/lib/appAuth";
 import { endDevSession, getDevSession } from "@/lib/devSession";
-import { AlertTriangle, CheckCircle2, Download, Loader2, Lock, Trash2 } from "lucide-react";
+import { AlertTriangle, CheckCircle2, Download, Trash2 } from "lucide-react";
 import { authenticatedFetch } from "@/lib/apiClient";
 import { errorMessage } from "@/lib/candidateExperience";
 import SignInRequired from "@/components/SignInRequired";
 import { useEn } from "@/lib/english/EnglishProvider";
+import { Button, PageHeader } from "@/components/career/ui";
 
 const CONFIRM = "DELETE MY DATA";
 
@@ -112,37 +113,28 @@ export default function PrivacySettingsPage() {
   return (
     <div className="text-foreground">
       <div className="space-y-6">
-        <div>
-          <h1 className="text-2xl font-black tracking-tight text-foreground flex items-center gap-2">
-            <Lock className="w-6 h-6 text-indigo-700 dark:text-indigo-400" />
-            {en("Privacy and your data")}
-          </h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            {en("Download a copy of your data, or delete it. These are your rights under data-protection laws such as the CCPA in California, the GDPR in Europe and India's DPDP Act.")}
-          </p>
-        </div>
+        <PageHeader
+          title={en("Privacy and your data")}
+          description={en("Download a copy of your data, or delete it. These are your rights under data-protection laws such as the CCPA in California, the GDPR in Europe and India's DPDP Act.")}
+        />
 
-        <section className="glass-panel rounded-2xl p-5 border border-border space-y-3">
-          <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
-            <Download className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />{en(" Export your data")}
+        <section className="rounded-xl border border-border bg-card p-5 shadow-sm space-y-3">
+          <h2 className="text-base font-semibold text-foreground flex items-center gap-2">
+            <Download className="w-4 h-4 text-muted-foreground" />{en(" Export your data")}
           </h2>
-          <p className="text-xs text-muted-foreground">
+          <p className="text-sm text-muted-foreground">
             {en("A JSON file with your profile, assessment attempts and editor activity, AI-assistant conversations, submissions, interviews and transcripts, evaluations, credentials, referrals, repository defenses, self-identification answers, appeals, accommodations and speaking-practice measurements. Integrity-analysis details and reviewers' internal rationale are not included in the self-service export; the file explains why and how to request them.")}
           </p>
-          <button
-            onClick={downloadExport}
-            disabled={exporting}
-            className="py-2 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white text-sm font-semibold inline-flex items-center gap-2 cursor-pointer"
-          >
-            {exporting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
+          <Button onClick={downloadExport} busy={exporting}>
+            {!exporting && <Download className="w-4 h-4" />}
             {en("Download my data (JSON)")}
-          </button>
+          </Button>
           {exportError && <p className="text-xs text-rose-700 dark:text-rose-400">{exportError}</p>}
         </section>
 
-        <section className="glass-panel rounded-2xl p-5 border border-rose-500/30 space-y-4">
-          <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
-            <Trash2 className="w-4 h-4 text-rose-600 dark:text-rose-400" />{en(" Delete my data")}
+        <section className="rounded-xl border border-border bg-card p-5 shadow-sm space-y-4">
+          <h2 className="text-base font-semibold text-foreground flex items-center gap-2">
+            <Trash2 className="w-4 h-4 text-red-600 dark:text-red-400" />{en(" Delete my data")}
           </h2>
 
           {result ? (
@@ -170,12 +162,9 @@ export default function PrivacySettingsPage() {
                   {result.notDeleted.map((n) => <li key={n}>{n}</li>)}
                 </ul>
               </div>
-              <button
-                onClick={signOut}
-                className="py-2 px-4 rounded-xl bg-card hover:bg-muted border border-border text-sm font-semibold text-foreground cursor-pointer"
-              >
+              <Button variant="secondary" onClick={signOut}>
                 {en("Sign out")}
-              </button>
+              </Button>
             </div>
           ) : (
             <>
@@ -203,7 +192,7 @@ export default function PrivacySettingsPage() {
                 </div>
               </div>
 
-              <div className="rounded-xl border border-amber-500/30 bg-amber-500/5 p-3 text-xs text-foreground flex gap-2">
+              <div className="rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900 flex gap-2 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-200">
                 <AlertTriangle className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0" />
                 <span>
                   {en("This cannot be undone. Download your data first if you want a copy. Your sign-in account with our identity provider is separate: delete it from your account settings too, otherwise signing in again reconnects to the anonymised record.")}
@@ -211,7 +200,7 @@ export default function PrivacySettingsPage() {
               </div>
 
               <form onSubmit={erase} className="space-y-2">
-                <label htmlFor="confirm" className="block text-xs font-semibold text-foreground">
+                <label htmlFor="confirm" className="block text-sm font-medium text-foreground">
                   {en("Type ")}<span className="font-mono">{CONFIRM}</span>{en(" to confirm")}
                 </label>
                 <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
@@ -220,16 +209,12 @@ export default function PrivacySettingsPage() {
                   value={confirm}
                   onChange={(e) => setConfirm(e.target.value)}
                   autoComplete="off"
-                  className="w-full sm:max-w-md px-3 py-2 rounded-xl border border-border bg-background text-sm text-foreground font-mono"
+                  className="w-full sm:max-w-md px-3 py-2 rounded-lg border border-border bg-card shadow-sm text-sm text-foreground font-mono"
                 />
-                <button
-                  type="submit"
-                  disabled={deleting || confirm !== CONFIRM}
-                  className="py-2 px-4 rounded-xl bg-rose-600 hover:bg-rose-500 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-semibold inline-flex items-center gap-2 cursor-pointer"
-                >
-                  {deleting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
+                <Button type="submit" variant="danger" busy={deleting} disabled={confirm !== CONFIRM}>
+                  {!deleting && <Trash2 className="w-4 h-4" />}
                   {en("Delete my data")}
-                </button>
+                </Button>
                 </div>
                 {deleteError && <p className="text-xs text-rose-700 dark:text-rose-400">{deleteError}</p>}
               </form>

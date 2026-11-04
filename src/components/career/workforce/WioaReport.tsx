@@ -5,7 +5,7 @@
 import React, { useState } from "react";
 import { useApi } from "@/lib/appAuth";
 import { useCareerShell } from "@/components/career/CareerShell";
-import { Badge, Button, Card, ErrorBanner, Field, Loading, SuccessBanner, useCareerFormat, useCareerT, useLoad } from "@/components/career/ui";
+import { Badge, Button, Card, ErrorBanner, Field, Loading, SuccessBanner, useCareerFormat, useCareerT, useLoad, StatTile } from "@/components/career/ui";
 import { ReportTableView, type ReportTable } from "@/components/career/reports/ReportTableView";
 import { VerifyNotice } from "@/components/career/international/WorkRights";
 import { FactList, SourceList, checkboxClass, useDateOnly, useDownload, useIsCareerAdmin, type Fact, type Source } from "./shared";
@@ -185,16 +185,22 @@ export function WioaReportPanel({ defs }: { defs: WioaDefinitions }) {
             </p>
             <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
               {r.indicators.map((i) => (
-                <li key={i.key} className="rounded-xl border border-border bg-card p-4">
-                  <p className="text-sm font-medium">{def(i.key)?.name ?? i.key}</p>
-                  <p className="mt-1 text-2xl font-semibold">{value(i)}</p>
-                  <p className="text-xs text-muted-foreground">{detailLine(i)}</p>
-                  {(i.pending ?? 0) > 0 && <p className="mt-1 text-xs text-muted-foreground">{t("pendingCount", { count: i.pending ?? 0 })}</p>}
-                  {i.key === "retention" && (
-                    <p className="mt-1">
-                      <Badge tone="info">{t("informational")}</Badge>
-                    </p>
-                  )}
+                <li key={i.key}>
+                  <StatTile
+                    label={def(i.key)?.name ?? i.key}
+                    value={value(i)}
+                    hint={
+                      <>
+                        {detailLine(i)}
+                        {(i.pending ?? 0) > 0 && <span className="mt-1 block">{t("pendingCount", { count: i.pending ?? 0 })}</span>}
+                        {i.key === "retention" && (
+                          <span className="mt-1 block">
+                            <Badge tone="info">{t("informational")}</Badge>
+                          </span>
+                        )}
+                      </>
+                    }
+                  />
                 </li>
               ))}
             </ul>

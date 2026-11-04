@@ -8,6 +8,7 @@
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { Download } from "lucide-react";
+import { StatTile } from "@/components/career/ui";
 import { useEn } from "@/lib/english/EnglishProvider";
 
 interface Insights {
@@ -81,7 +82,7 @@ export default function InsightsTab({ formId, apiFetch, instituteId }: { formId:
   };
 
   if (error) return <p className="text-sm text-red-700 dark:text-red-400">{error}</p>;
-  if (!data) return <div className="h-48 animate-pulse rounded-2xl bg-muted motion-reduce:animate-none" aria-busy="true" />;
+  if (!data) return <div className="h-48 animate-pulse rounded-xl bg-muted motion-reduce:animate-none" aria-busy="true" />;
   const maxStop = Math.max(1, ...data.dropOff.map((d) => d.stopped));
   const maxDay = Math.max(1, ...data.daily.map((d) => d.count));
 
@@ -89,7 +90,7 @@ export default function InsightsTab({ formId, apiFetch, instituteId }: { formId:
     <div className="space-y-5">
       <div className="flex flex-wrap items-center gap-1.5">
         {RANGES.map((d) => (
-          <button key={d} type="button" aria-pressed={days === d} onClick={() => setDays(d)} className={`rounded-full border px-3 py-1.5 text-xs font-medium ${days === d ? "border-cyan-700 bg-cyan-700 text-white" : "border-border bg-card hover:bg-muted"}`}>
+          <button key={d} type="button" aria-pressed={days === d} onClick={() => setDays(d)} className={`rounded-full border px-3 py-1.5 text-xs font-medium ${days === d ? "border-indigo-700 bg-indigo-700 text-white" : "border-border bg-card hover:bg-muted"}`}>
             {en("Last {value}", { value: d === 365 ? en("12 months") : `${d} days` })}
           </button>
         ))}
@@ -144,7 +145,7 @@ export default function InsightsTab({ formId, apiFetch, instituteId }: { formId:
           ) : (
             <div className="flex h-32 items-end gap-0.5" role="img" aria-label={`Sent per day: ${data.daily.map((d) => `${d.day} ${d.count}`).join(", ")}`}>
               {data.daily.map((d) => (
-                <div key={d.day} className="flex-1 rounded-t bg-cyan-600" title={`${d.day}: ${d.count}`} style={{ height: `${(100 * d.count) / maxDay}%`, minHeight: 2 }} />
+                <div key={d.day} className="flex-1 rounded-t bg-indigo-600" title={`${d.day}: ${d.count}`} style={{ height: `${(100 * d.count) / maxDay}%`, minHeight: 2 }} />
               ))}
             </div>
           )}
@@ -193,19 +194,13 @@ export default function InsightsTab({ formId, apiFetch, instituteId }: { formId:
 }
 
 function Tile({ label, value, sub }: { label: string; value: number | string; sub?: string }) {
-  return (
-    <div className="rounded-2xl border border-border bg-card p-4">
-      <p className="text-xs text-muted-foreground">{label}</p>
-      <p className="mt-1 text-2xl font-semibold tabular-nums">{typeof value === "number" ? value.toLocaleString() : value}</p>
-      {sub && <p className="text-xs text-muted-foreground">{sub}</p>}
-    </div>
-  );
+  return <StatTile label={label} value={typeof value === "number" ? value.toLocaleString() : value} hint={sub} />;
 }
 
 function Card({ title, note, children }: { title: string; note?: string; children: React.ReactNode }) {
   return (
-    <section className="rounded-2xl border border-border bg-card p-5">
-      <h3 className="text-sm font-semibold">{title}</h3>
+    <section className="rounded-xl border border-border bg-card p-5 shadow-sm">
+      <h3 className="text-base font-semibold">{title}</h3>
       {note && <p className="mt-0.5 text-xs text-muted-foreground">{note}</p>}
       <div className="mt-3">{children}</div>
     </section>

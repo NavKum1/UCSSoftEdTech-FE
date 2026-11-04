@@ -52,7 +52,7 @@ export default function TasksView({ getToken, openLead, version }: { getToken: G
             ["all", "Everyone's"],
           ] as const
         ).map(([k, label]) => (
-          <button key={k} type="button" aria-pressed={scope === k} onClick={() => setScope(k)} className={`rounded-full border px-3 py-1.5 text-xs font-medium ${scope === k ? "border-cyan-700 bg-cyan-700 text-white" : "border-border bg-card hover:bg-muted"}`}>
+          <button key={k} type="button" aria-pressed={scope === k} onClick={() => setScope(k)} className={`rounded-full border px-3 py-1.5 text-xs font-medium ${scope === k ? "border-indigo-700 bg-indigo-700 text-white" : "border-border bg-card hover:bg-muted"}`}>
             {label}
           </button>
         ))}
@@ -62,9 +62,9 @@ export default function TasksView({ getToken, openLead, version }: { getToken: G
           {error}
         </p>
       )}
-      {!tasks && !error && <div className="h-40 animate-pulse rounded-2xl bg-muted motion-reduce:animate-none" aria-busy="true" />}
+      {!tasks && !error && <div className="h-40 animate-pulse rounded-xl bg-muted motion-reduce:animate-none" aria-busy="true" />}
       {tasks && tasks.length === 0 && (
-        <div className="rounded-2xl border border-dashed border-border p-8 text-center text-sm text-muted-foreground">
+        <div className="rounded-xl border border-dashed border-border p-8 text-center text-sm text-muted-foreground">
           {scope === "mine" ? en("No follow-ups for you. Schedule one from a lead's Follow-ups tab.") : en("Nothing here.")}
         </div>
       )}
@@ -75,7 +75,7 @@ export default function TasksView({ getToken, openLead, version }: { getToken: G
             <h3 className={`mb-2 text-sm font-semibold ${label === "Overdue" ? "text-red-700 dark:text-red-400" : ""}`}>
               {label} <span className="font-normal text-muted-foreground">({items.length})</span>
             </h3>
-            <ul className="divide-y divide-border rounded-2xl border border-border bg-card">
+            <ul className="divide-y divide-border rounded-xl border border-border bg-card shadow-sm">
               {items.map((t) => (
                 <li key={t.id} className="flex items-center gap-3 px-4 py-3 text-sm">
                   <input type="checkbox" aria-label={`Done: ${t.title}`} onChange={() => done(t.id)} />
@@ -96,7 +96,7 @@ export default function TasksView({ getToken, openLead, version }: { getToken: G
                     </p>
                     <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
                       {t.phone && (
-                        <a href={`tel:${t.phone}`} className="text-cyan-700 hover:underline dark:text-cyan-400">
+                        <a href={`tel:${t.phone}`} className="text-indigo-700 hover:underline dark:text-indigo-400">
                           {t.phone}
                         </a>
                       )}

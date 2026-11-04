@@ -1,14 +1,11 @@
 "use client";
 
 import React, { useState } from "react";
-import { 
-  FileText, Sparkles, CheckCircle2,
-  AlertCircle, ArrowRight, Zap, Target,
-  RefreshCw, ChevronRight
-} from "lucide-react";
+import { ArrowRight, CheckCircle2, Target } from "lucide-react";
 import Link from "next/link";
 import { AccessNotice, useLegacyApi } from "@/lib/legacyApi";
 import { useEn } from "@/lib/english/EnglishProvider";
+import { Badge, Button, Card, EmptyState, ErrorBanner, PageHeader, brandFill, buttonClass } from "@/components/career/ui";
 
 /** Resume-to-role analysis result (fields this page shows). */
 interface ResumeMatchResult {
@@ -24,45 +21,20 @@ interface ResumeMatchResult {
   } | null;
 }
 
-interface TargetRolePreset {
-  title: string;
-  description: string;
-}
-
-const PRESET_ROLES: TargetRolePreset[] = [
-  {
-    title: "Staff Distributed Systems Engineer - Uber",
-    description: "Architecting global real-time ride dispatching pipelines. Required skills: Distributed Systems, Go, Kafka, Raft Consensus, gRPC, Low-Latency concurrency."
-  },
-  {
-    title: "Cloud Native Platform Architect - Netflix",
-    description: "Designing multi-region auto-scaling microservices. Required skills: Kubernetes, Docker, Terraform, AWS, eBPF, Prometheus, CI/CD."
-  },
-  {
-    title: "High-Frequency Algorithmic Engineer - Citadel",
-    description: "Developing sub-millisecond execution order engines. Required skills: Low-Latency, C++, Rust, Concurrency, Memory Management, Database Sharding."
-  }
-];
+const inputClass =
+  "w-full rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground shadow-sm placeholder:text-muted-foreground focus:outline-none focus:border-indigo-500 transition";
 
 export default function ResumeMatcherPrepPage() {
   const en = useEn();
   const { apiFetch, access } = useLegacyApi();
-  const [resumeText, setResumeText] = useState(
-    "Senior Full-Stack Engineer with 5+ years building backend systems using Python, TypeScript, Docker, PostgreSQL, Microservices, and Redis. Experienced in REST APIs and CI/CD pipelines."
-  );
-  const [selectedPreset, setSelectedPreset] = useState<TargetRolePreset>(PRESET_ROLES[0]);
-  const [targetTitle, setTargetTitle] = useState(PRESET_ROLES[0].title);
-  const [targetDescription, setTargetDescription] = useState(PRESET_ROLES[0].description);
-  
+  // Starts empty: the member pastes their own resume and the role they're aiming for
+  const [resumeText, setResumeText] = useState("");
+  const [targetTitle, setTargetTitle] = useState("");
+  const [targetDescription, setTargetDescription] = useState("");
+
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisResult, setAnalysisResult] = useState<ResumeMatchResult | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
-
-  const handleSelectPreset = (preset: TargetRolePreset) => {
-    setSelectedPreset(preset);
-    setTargetTitle(preset.title);
-    setTargetDescription(preset.description);
-  };
 
   const handleAnalyze = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -99,248 +71,147 @@ export default function ResumeMatcherPrepPage() {
   if (access) return <AccessNotice problem={access} feature="The resume matcher" />;
 
   return (
-    <div className="text-foreground font-sans relative overflow-hidden">
-      {/* Background Radial Glow */}
-      <div className="absolute top-1/4 start-1/2 -translate-x-1/2 w-[700px] h-[700px] bg-indigo-600/10 blur-[150px] rounded-full pointer-events-none" />
+    <div className="text-foreground">
+      <PageHeader
+        title={en("Resume match")}
+        description={en("Compare your resume with a job description to see which skills match, which are missing, and a practice task that closes the gap.")}
+      />
 
-      <div className="space-y-8 relative z-10">
-        {/* Header */}
-        <div className="space-y-3">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-700 dark:text-indigo-400 text-xs font-semibold">
-            <Sparkles className="w-4 h-4" />
-            <span>{en("Phase 17: Predictive Interview Prep & Skill Gap Engine")}</span>
-          </div>
-          <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-foreground">
-            {en("AI Resume Tailoring & Prep Matcher")}
-          </h1>
-          <p className="text-sm text-muted-foreground max-w-2xl">
-            {en("Vectorize candidate competencies against target job descriptions to calculate match readiness and synthesize personalized gap-closing micro-internship sprints.")}
-          </p>
-        </div>
+      <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-2">
+        <Card>
+          <form onSubmit={handleAnalyze} className="space-y-4">
+            <div>
+              <label htmlFor="targetTitle" className="mb-1.5 block text-sm font-medium text-foreground">
+                {en("Job title")}
+              </label>
+              <input
+                id="targetTitle"
+                type="text"
+                value={targetTitle}
+                onChange={(e) => setTargetTitle(e.target.value)}
+                required
+                placeholder={en("e.g. Backend engineer")}
+                className={inputClass}
+              />
+            </div>
 
-        {/* Main 2-Column Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-          {/* Left Column: Input Form (5 cols) */}
-          <div className="lg:col-span-6 bg-card/80 border border-border rounded-3xl p-6 sm:p-8 backdrop-blur-xl shadow-2xl space-y-6">
-            <form onSubmit={handleAnalyze} className="space-y-5">
-              {/* Target Role Presets */}
-              <div>
-                <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
-                  {en("Target Hiring Benchmark Presets")}
-                </label>
-                <div className="grid grid-cols-1 gap-2">
-                  {PRESET_ROLES.map((preset, idx) => (
-                    <button
-                      key={idx}
-                      type="button"
-                      onClick={() => handleSelectPreset(preset)}
-                      className={`text-start p-3 rounded-xl border text-xs transition flex items-center justify-between ${
-                        targetTitle === preset.title
-                          ? "bg-indigo-600/20 border-indigo-500 text-white font-medium"
-                          : "bg-background/60 border-border text-muted-foreground hover:text-foreground hover:border-border"
-                      }`}
-                    >
-                      <div className="truncate pe-2">{en(preset.title)}</div>
-                      <ChevronRight className="w-3.5 h-3.5 shrink-0 opacity-60" />
-                    </button>
-                  ))}
+            <div>
+              <label htmlFor="targetDescription" className="mb-1.5 block text-sm font-medium text-foreground">
+                {en("Job description")}
+              </label>
+              <textarea
+                id="targetDescription"
+                rows={4}
+                value={targetDescription}
+                onChange={(e) => setTargetDescription(e.target.value)}
+                required
+                placeholder={en("Paste the job description, including the skills it asks for")}
+                className={`${inputClass} resize-y`}
+              />
+            </div>
+
+            <div>
+              <label htmlFor="resumeText" className="mb-1.5 flex items-center justify-between text-sm font-medium text-foreground">
+                <span>{en("Your resume")}</span>
+                <span className="text-xs font-normal text-muted-foreground">{en("Plain text or Markdown")}</span>
+              </label>
+              <textarea
+                id="resumeText"
+                rows={8}
+                value={resumeText}
+                onChange={(e) => setResumeText(e.target.value)}
+                required
+                placeholder={en("Paste your resume")}
+                className={`${inputClass} resize-y leading-relaxed`}
+              />
+            </div>
+
+            <Button type="submit" busy={isAnalyzing} className="w-full">
+              {isAnalyzing ? en("Analyzing your resume…") : en("Compare with the job")}
+            </Button>
+          </form>
+
+          {errorMsg && (
+            <div className="mt-4">
+              <ErrorBanner error={errorMsg} />
+            </div>
+          )}
+        </Card>
+
+        <div className="space-y-6">
+          {analysisResult ? (
+            <Card>
+              <div className="flex items-center justify-between gap-4 border-b border-border pb-4">
+                <div className="min-w-0">
+                  <p className="text-sm text-muted-foreground">{en("Match with this role")}</p>
+                  <p className="mt-0.5 truncate text-sm font-semibold text-foreground">{targetTitle}</p>
                 </div>
+                <p className="text-3xl font-semibold tabular-nums tracking-tight text-foreground">{analysisResult.matchScore}%</p>
               </div>
 
-              {/* Target Job Title & Description */}
-              <div className="space-y-3">
+              <div className="mt-5 space-y-4">
                 <div>
-                  <label htmlFor="targetTitle" className="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">
-                    {en("Target Job Title")}
-                  </label>
-                  <input
-                    id="targetTitle"
-                    type="text"
-                    value={targetTitle}
-                    onChange={(e) => setTargetTitle(e.target.value)}
-                    required
-                    className="w-full bg-background border border-border rounded-xl px-4 py-2.5 text-xs text-foreground focus:outline-none focus:border-indigo-500 transition"
-                  />
+                  <p className="mb-2 flex items-center gap-1.5 text-sm font-medium text-emerald-700 dark:text-emerald-400">
+                    <CheckCircle2 className="h-4 w-4" />
+                    <span>{en("Skills you have ({length})", { length: analysisResult.matchedSkills.length })}</span>
+                  </p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {analysisResult.matchedSkills.map((s: string, idx: number) => (
+                      <Badge key={idx} tone="good">
+                        {s}
+                      </Badge>
+                    ))}
+                  </div>
                 </div>
 
                 <div>
-                  <label htmlFor="targetDescription" className="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">
-                    {en("Job Description & Required Stack")}
-                  </label>
-                  <textarea
-                    id="targetDescription"
-                    rows={3}
-                    value={targetDescription}
-                    onChange={(e) => setTargetDescription(e.target.value)}
-                    required
-                    className="w-full bg-background border border-border rounded-xl p-3 text-xs text-foreground font-mono resize-none focus:outline-none focus:border-indigo-500 transition"
-                  />
+                  <p className="mb-2 flex items-center gap-1.5 text-sm font-medium text-amber-700 dark:text-amber-400">
+                    <Target className="h-4 w-4" />
+                    <span>{en("Skills to build ({length})", { length: analysisResult.missingSkills.length })}</span>
+                  </p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {analysisResult.missingSkills.map((s: string, idx: number) => (
+                      <Badge key={idx} tone="warn">
+                        {s}
+                      </Badge>
+                    ))}
+                  </div>
                 </div>
               </div>
 
-              {/* Resume Text Area */}
-              <div>
-                <label htmlFor="resumeText" className="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5 flex items-center justify-between">
-                  <span>{en("Candidate Resume Profile")}</span>
-                  <span className="text-muted-foreground font-normal">{en("Parsed Plaintext / Markdown")}</span>
-                </label>
-                <textarea
-                  id="resumeText"
-                  rows={5}
-                  value={resumeText}
-                  onChange={(e) => setResumeText(e.target.value)}
-                  required
-                  placeholder={en("Paste candidate technical resume...")}
-                  className="w-full bg-background border border-border rounded-xl p-3 text-xs text-foreground font-mono resize-none focus:outline-none focus:border-indigo-500 transition leading-relaxed"
-                />
-              </div>
-
-              {/* Submit CTA */}
-              <button
-                type="submit"
-                disabled={isAnalyzing}
-                className="w-full flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-500 active:bg-indigo-700 disabled:opacity-50 text-white font-medium py-3.5 px-6 rounded-xl transition duration-200 shadow-xl shadow-indigo-600/25 text-sm"
-              >
-                {isAnalyzing ? (
-                  <>
-                    <RefreshCw className="w-4 h-4 animate-spin" />
-                    {en("Extracting Competencies & Synthesizing Prep...")}
-                  </>
-                ) : (
-                  <>
-                    <Sparkles className="w-4 h-4" />
-                    {en("Synthesize Gap-Closing Micro-Internship")}
-                  </>
-                )}
-              </button>
-            </form>
-
-            {errorMsg && (
-              <div className="p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs flex items-center gap-2">
-                <AlertCircle className="w-4 h-4 shrink-0" />
-                <span>{errorMsg}</span>
-              </div>
-            )}
-          </div>
-
-          {/* Right Column: Predictive Match Results (6 cols) */}
-          <div className="lg:col-span-6 space-y-6">
-            {analysisResult ? (
-              <div className="bg-card/90 border border-border rounded-3xl p-6 sm:p-8 backdrop-blur-xl shadow-2xl space-y-6 animate-in fade-in duration-300">
-                {/* Score Header */}
-                <div className="flex items-center justify-between border-b border-border/80 pb-5">
-                  <div>
-                    <div className="text-xs uppercase font-semibold text-muted-foreground tracking-wider">
-                      {en("Role Match Readiness")}
-                    </div>
-                    <div className="text-sm font-bold text-foreground mt-0.5">
-                      {targetTitle}
-                    </div>
-                  </div>
-                  <div className="text-end">
-                    <div className="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-indigo-400">
-                      {analysisResult.matchScore}%
-                    </div>
-                    <div className="text-[10px] text-muted-foreground font-mono">{en("Competency Match")}</div>
-                  </div>
-                </div>
-
-                {/* Skill Matrix Overlap */}
-                <div className="space-y-4">
-                  {/* Verified Skills */}
-                  <div>
-                    <div className="text-xs font-semibold text-emerald-700 dark:text-emerald-400 flex items-center gap-1.5 mb-2">
-                      <CheckCircle2 className="w-3.5 h-3.5" />
-                      <span>{en("Verified Resume Competencies ({length})", { length: analysisResult.matchedSkills.length })}</span>
-                    </div>
-                    <div className="flex flex-wrap gap-1.5">
-                      {analysisResult.matchedSkills.map((s: string, idx: number) => (
-                        <span key={idx} className="px-2.5 py-1 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-300 text-xs font-mono">
-                          {s}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Missing Gap Skills */}
-                  <div>
-                    <div className="text-xs font-semibold text-amber-700 dark:text-amber-400 flex items-center gap-1.5 mb-2">
-                      <Target className="w-3.5 h-3.5" />
-                      <span>{en("Target Gap Skills to Defend ({length})", { length: analysisResult.missingSkills.length })}</span>
-                    </div>
-                    <div className="flex flex-wrap gap-1.5">
-                      {analysisResult.missingSkills.map((s: string, idx: number) => (
-                        <span key={idx} className="px-2.5 py-1 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-300 text-xs font-mono flex items-center gap-1">
-                          <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
-                          {s}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Actionable Recommendations */}
-                <div className="p-4 rounded-2xl bg-background/70 border border-border space-y-2">
-                  <div className="text-[11px] font-mono text-indigo-700 dark:text-indigo-400 font-semibold uppercase tracking-wider flex items-center gap-1.5">
-                    <Zap className="w-3.5 h-3.5" />
-                    <span>{en("Personalized Architectural Roadmap")}</span>
-                  </div>
-                  <ul className="space-y-1.5 text-xs text-muted-foreground">
+              {analysisResult.recommendations.length > 0 && (
+                <div className="mt-5 space-y-2 rounded-lg border border-border p-4">
+                  <h2 className="text-sm font-semibold text-foreground">{en("Recommendations")}</h2>
+                  <ul className="list-disc space-y-1.5 ps-5 text-sm text-muted-foreground">
                     {analysisResult.recommendations.map((rec: string, idx: number) => (
-                      <li key={idx} className="flex items-start gap-2">
-                        <span className="text-indigo-700 dark:text-indigo-400 mt-0.5">•</span>
-                        <span>{rec}</span>
-                      </li>
+                      <li key={idx}>{rec}</li>
                     ))}
                   </ul>
                 </div>
+              )}
 
-                {/* Synthesized Tailored Sprint Card */}
-                {analysisResult.generatedSprint && (
-                  <div className="p-5 rounded-2xl bg-indigo-950/30 border border-indigo-500/40 space-y-4">
-                    <div className="flex items-center justify-between">
-                      <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-indigo-500/20 text-indigo-600 dark:text-indigo-300 uppercase font-semibold">
-                        {en("Synthesized Micro-Internship")}
-                      </span>
-                      <span className="text-xs font-mono text-muted-foreground uppercase">
-                        {en("Language: {requiredLanguage}", { requiredLanguage: analysisResult.generatedSprint.requiredLanguage })}
-                      </span>
-                    </div>
-
-                    <div>
-                      <div className="text-sm font-bold text-foreground">
-                        {analysisResult.generatedSprint.title}
-                      </div>
-                      <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
-                        {analysisResult.generatedSprint.description}
-                      </p>
-                    </div>
-
-                    <Link
-                      href={`/sprint/${analysisResult.generatedSprint.id}`}
-                      className="w-full flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white font-medium py-3 px-4 rounded-xl transition text-xs shadow-lg shadow-emerald-600/20"
-                    >
-                      <span>{en("Launch Tailored Sprint Workspace")}</span>
-                      <ArrowRight className="w-3.5 h-3.5" />
-                    </Link>
+              {analysisResult.generatedSprint && (
+                <div className="mt-5 space-y-3 rounded-lg border border-border p-4">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <h2 className="text-sm font-semibold text-foreground">{en("Practice task for this role")}</h2>
+                    <Badge>{en("Language: {requiredLanguage}", { requiredLanguage: analysisResult.generatedSprint.requiredLanguage })}</Badge>
                   </div>
-                )}
-              </div>
-            ) : (
-              /* Idle Empty State */
-              <div className="bg-card/40 border border-dashed border-border rounded-3xl p-12 text-center flex flex-col items-center justify-center space-y-4">
-                <div className="p-4 rounded-2xl bg-background text-muted-foreground border border-border/80">
-                  <FileText className="w-8 h-8" />
+                  <div>
+                    <p className="text-sm font-medium text-foreground">{analysisResult.generatedSprint.title}</p>
+                    <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">{analysisResult.generatedSprint.description}</p>
+                  </div>
+                  <Link href={`/sprint/${analysisResult.generatedSprint.id}`} className={`${buttonClass("primary")} w-full`} style={brandFill}>
+                    {en("Start the practice task")}
+                    <ArrowRight className="h-4 w-4" />
+                  </Link>
                 </div>
-                <div className="space-y-1">
-                  <h3 className="text-sm font-bold text-muted-foreground">{en("No Active Analysis")}</h3>
-                  <p className="text-xs text-muted-foreground max-w-sm">
-                    {en("Select a target job benchmark and click \"Synthesize Gap-Closing Micro-Internship\" to vectorize competencies.")}
-                  </p>
-                </div>
-              </div>
-            )}
-          </div>
+              )}
+            </Card>
+          ) : (
+            <EmptyState title={en("No comparison yet")}>
+              {en("Add a job and your resume, then select \"Compare with the job\".")}
+            </EmptyState>
+          )}
         </div>
       </div>
     </div>

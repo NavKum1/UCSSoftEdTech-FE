@@ -2,7 +2,8 @@
 
 import React, { useEffect, useState } from "react";
 import { useAppAuth as useAuth } from "@/lib/appAuth";
-import { Accessibility, AlertCircle, Inbox, Loader2, RefreshCw } from "lucide-react";
+import { RefreshCw } from "lucide-react";
+import { Button, EmptyState, ErrorBanner, Loading, PageHeader, Tabs } from "@/components/career/ui";
 import { authenticatedFetch } from "@/lib/apiClient";
 import { STATUS_STYLES, accommodationLabel, errorMessage, fmtDate } from "@/lib/candidateExperience";
 import { useEn } from "@/lib/english/EnglishProvider";
@@ -55,31 +56,23 @@ function DecisionForm({ row, onDone, getToken }: { row: ReviewAccommodation; onD
   return (
     <div className="space-y-2">
       <label className="block">
-        <span className="text-xs font-semibold text-foreground">{en("Note to the candidate (required to decline, at least 20 characters)")}</span>
+        <span className="text-sm font-medium text-foreground">{en("Note to the candidate (required to decline, at least 20 characters)")}</span>
         <textarea
           value={note}
           onChange={(e) => setNote(e.target.value)}
           rows={2}
           maxLength={2000}
-          className="mt-1 w-full rounded-xl bg-card border border-border p-2 text-sm text-foreground"
+          className="mt-1 w-full rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground shadow-sm focus-visible:outline-2 focus-visible:outline-offset-1"
         />
       </label>
       <div className="flex flex-wrap items-center gap-2">
-        <button
-          onClick={() => decide("Approved")}
-          disabled={busy !== null}
-          className="py-1.5 px-3 rounded-lg bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white text-xs font-semibold inline-flex items-center gap-1.5 cursor-pointer"
-        >
-          {busy === "Approved" && <Loader2 className="w-3.5 h-3.5 animate-spin" />}{en(" Approve")}
-        </button>
-        <button
-          onClick={() => decide("Declined")}
-          disabled={busy !== null || note.trim().length < 20}
-          className="py-1.5 px-3 rounded-lg bg-card hover:bg-muted border border-border disabled:opacity-50 disabled:cursor-not-allowed text-foreground text-xs font-semibold inline-flex items-center gap-1.5 cursor-pointer"
-        >
-          {busy === "Declined" && <Loader2 className="w-3.5 h-3.5 animate-spin" />}{en(" Decline")}
-        </button>
-        {error && <span className="text-xs text-rose-700 dark:text-rose-400">{error}</span>}
+        <Button onClick={() => decide("Approved")} disabled={busy !== null} busy={busy === "Approved"}>
+          {en("Approve")}
+        </Button>
+        <Button variant="secondary" onClick={() => decide("Declined")} disabled={busy !== null || note.trim().length < 20} busy={busy === "Declined"}>
+          {en("Decline")}
+        </Button>
+        {error && <span role="alert" className="text-sm text-red-700 dark:text-red-400">{error}</span>}
       </div>
     </div>
   );
@@ -114,61 +107,39 @@ export default function RecruiterAccommodationsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-extrabold text-foreground flex items-center gap-2">
-            <Accessibility className="w-6 h-6 text-indigo-600 dark:text-indigo-400" />{en(" Accommodation requests")}
-          </h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            {en("Approved accommodations appear in the candidate's evidence packs so reviewers interpret timing and defense format fairly. An approved written-defense accommodation lets the candidate defend their code in writing instead of by voice.")}
-          </p>
-        </div>
-        <button
-          onClick={() => setReloadKey((k) => k + 1)}
-          className="py-2 px-3 rounded-xl bg-card hover:bg-muted border border-border text-xs font-medium text-muted-foreground flex items-center gap-1.5 cursor-pointer"
-        >
-          <RefreshCw className="w-3.5 h-3.5" />{en(" Refresh")}
-        </button>
-      </div>
+      <PageHeader
+        title={en("Accommodation requests")}
+        description={en("Approved accommodations appear in the candidate's evidence packs so reviewers interpret timing and defense format fairly. An approved written-defense accommodation lets the candidate defend their code in writing instead of by voice.")}
+        actions={
+          <Button variant="secondary" onClick={() => setReloadKey((k) => k + 1)}>
+            <RefreshCw aria-hidden="true" className="h-4 w-4" />
+            {en("Refresh")}
+          </Button>
+        }
+      />
 
-      <div className="flex flex-wrap gap-1 bg-card/80 p-1 rounded-xl border border-border w-fit" role="tablist">
-        {FILTERS.map((f) => (
-          <button
-            key={f}
-            role="tab"
-            aria-selected={filter === f}
-            onClick={() => {
-              setRows(null);
-              setFilter(f);
-            }}
-            className={`px-3 py-1.5 rounded-lg text-xs font-medium cursor-pointer ${
-              filter === f ? "bg-indigo-600 text-white" : "text-muted-foreground hover:text-foreground hover:bg-muted"
-            }`}
-          >
-            {en(f)}
-          </button>
-        ))}
-      </div>
+      <Tabs
+        label={en("Request status")}
+        value={filter}
+        onChange={(f) => {
+          setRows(null);
+          setFilter(f);
+        }}
+        items={FILTERS.map((f) => ({ id: f, label: en(f) }))}
+      />
 
       {error ? (
-        <div className="glass-panel rounded-2xl p-6 border border-border text-sm text-rose-700 dark:text-rose-400 flex items-center gap-2">
-          <AlertCircle className="w-4 h-4" /> {error}
-        </div>
+        <ErrorBanner error={error} onRetry={() => setReloadKey((k) => k + 1)} />
       ) : rows === null ? (
-        <div className="p-12 flex items-center justify-center gap-2 text-sm text-muted-foreground">
-          <Loader2 className="w-4 h-4 animate-spin" />{en(" Loading requests...")}
-        </div>
+        <Loading label={en("Loading requests…")} />
       ) : rows.length === 0 ? (
-        <div className="glass-panel rounded-2xl p-10 border border-border text-center space-y-2">
-          <Inbox className="w-8 h-8 mx-auto text-muted-foreground" />
-          <p className="text-sm text-muted-foreground">{en("No {value}requests.", { value: filter === "All" ? "" : filter.toLowerCase() + " " })}</p>
-        </div>
+        <EmptyState title={en("No {value}requests.", { value: filter === "All" ? "" : filter.toLowerCase() + " " })} />
       ) : (
         <ul className="space-y-3">
           {rows.map((r) => (
-            <li key={r.id} className="glass-panel rounded-2xl p-4 border border-border space-y-2">
+            <li key={r.id} className="space-y-3 rounded-xl border border-border bg-card p-5 shadow-sm">
               <div className="flex flex-wrap items-center gap-2 text-sm">
-                <span className={`inline-flex px-2 py-0.5 rounded-full text-[11px] font-semibold border ${STATUS_STYLES[r.status] ?? ""}`}>{r.status.replace(/([a-z])([A-Z])/g, "$1 $2")}</span>
+                <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium border ${STATUS_STYLES[r.status] ?? ""}`}>{r.status.replace(/([a-z])([A-Z])/g, "$1 $2")}</span>
                 <span className="font-semibold text-foreground">{r.candidateName}</span>
                 <span className="text-xs text-muted-foreground">
                   {en("{type} · {value} · requested {date}", { type: accommodationLabel(r.type), value: r.sprintTitle ?? r.scope, date: fmtDate(r.createdAt) })}

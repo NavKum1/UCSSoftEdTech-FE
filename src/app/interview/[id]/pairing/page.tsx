@@ -1,17 +1,13 @@
 "use client";
 
 import React, { useState, useEffect, useRef, use } from "react";
-import { 
-  Code2, PenTool, Eraser, Square,
-  Database, Cloud, Save, Radio, ShieldAlert,
-  Volume2, VolumeX, Check, Copy, ArrowLeft,
-  RefreshCw, Layers, MousePointer2
-} from "lucide-react";
+import { ArrowLeft, Check, Cloud, Code2, Copy, Database, Eraser, Layers, PenTool, Save, ShieldAlert, Square, Volume2, VolumeX } from "lucide-react";
 import Link from "next/link";
 import * as signalR from "@microsoft/signalr";
 import { getApiBaseUrl } from "@/lib/apiClient";
 import { AccessNotice, useLegacyApi } from "@/lib/legacyApi";
 import { useEn } from "@/lib/english/EnglishProvider";
+import { Badge, Button, PageHeader, Tabs, buttonClass } from "@/components/career/ui";
 
 interface Participant {
   connectionId: string;
@@ -323,152 +319,103 @@ export default function InterviewPairingStudioPage({ params }: { params: Promise
 
   if (access) return <AccessNotice problem={access} feature="The pairing studio" />;
 
+  const toolButton = (id: typeof tool, label: string, icon: React.ReactNode) => (
+    <button
+      onClick={() => setTool(id)}
+      className={`rounded-lg p-2 transition-colors ${tool === id ? "bg-muted text-foreground ring-1 ring-indigo-500" : "text-muted-foreground hover:bg-muted"}`}
+      title={label}
+      aria-label={label}
+    >
+      {icon}
+    </button>
+  );
+
   return (
-    <div className="flex min-h-[70vh] flex-col font-sans text-foreground">
-      {/* Top Bar */}
-      <header className="h-16 border-b border-border bg-card/80 px-6 flex items-center justify-between backdrop-blur-md sticky top-16 z-20">
-        <div className="flex items-center space-x-4">
-          <Link
-            href="/recruiter/dashboard"
-            className="p-2 rounded-xl hover:bg-muted text-muted-foreground hover:text-foreground transition"
-          >
-            <ArrowLeft className="w-5 h-5" />
-          </Link>
-          <div className="flex items-center space-x-2.5">
-            <div className="p-2 rounded-xl bg-indigo-500/10 text-indigo-700 dark:text-indigo-400 border border-indigo-500/20">
-              <Radio className="w-5 h-5" />
+    <div className="flex min-h-[70vh] flex-col text-foreground">
+      <PageHeader
+        title={en("Live pairing")}
+        description={
+          <span className="inline-flex flex-wrap items-center gap-1.5">
+            <span>{en("Room")}</span>
+            <span className="font-mono text-foreground">{sessionId.substring(0, 12)}…</span>
+            <button onClick={copySessionId} className="rounded p-0.5 hover:text-foreground" aria-label={en("Copy room ID")}>
+              {copied ? <Check className="h-3.5 w-3.5 text-emerald-700 dark:text-emerald-400" /> : <Copy className="h-3.5 w-3.5" />}
+            </button>
+          </span>
+        }
+        actions={
+          <>
+            <Link href="/recruiter/dashboard" className={buttonClass("ghost")}>
+              <ArrowLeft className="h-4 w-4" />
+              {en("Back")}
+            </Link>
+            {isTakeoverActive ? (
+              <Badge tone="warn">
+                <VolumeX className="me-1 h-3.5 w-3.5" />
+                {en("You're speaking; AI interviewer muted")}
+              </Badge>
+            ) : (
+              <Badge tone="neutral">
+                <Volume2 className="me-1 h-3.5 w-3.5" />
+                {en("AI interviewer speaking")}
+              </Badge>
+            )}
+            {/* Participant Avatars */}
+            <div className="flex items-center -space-x-2">
+              {participants.map((p, idx) => (
+                <div
+                  key={idx}
+                  title={`${p.userName} (${p.role})`}
+                  style={{ borderColor: p.color }}
+                  className="flex h-8 w-8 items-center justify-center rounded-full border-2 bg-muted text-xs font-semibold"
+                >
+                  {p.userName.charAt(0)}
+                </div>
+              ))}
             </div>
-            <div>
-              <h1 className="text-sm font-bold text-foreground flex items-center gap-2">
-                {en("Live Pairing Studio")}
-                <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 border border-emerald-500/30 flex items-center gap-1">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
-                  {en("Live Sync")}
-                </span>
-              </h1>
-              <div className="text-xs text-muted-foreground flex items-center gap-1 font-mono">
-                <span>{en("Room:")}</span>
-                <span className="text-foreground">{sessionId.substring(0, 12)}...</span>
-                <button onClick={copySessionId} className="hover:text-indigo-700 dark:text-indigo-400 p-0.5">
-                  {copied ? <Check className="w-3 h-3 text-emerald-700 dark:text-emerald-400" /> : <Copy className="w-3 h-3" />}
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Center: Live Takeover Status Badge */}
-        <div className="hidden md:flex items-center">
-          {isTakeoverActive ? (
-            <div className="flex items-center gap-2 px-4 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-700 dark:text-amber-400 text-xs font-semibold animate-pulse">
-              <VolumeX className="w-4 h-4 text-amber-700 dark:text-amber-400" />
-              <span>{en("Human Takeover Active • AI Examiner Muted")}</span>
-            </div>
-          ) : (
-            <div className="flex items-center gap-2 px-4 py-1.5 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-700 dark:text-cyan-400 text-xs font-semibold">
-              <Volume2 className="w-4 h-4 text-cyan-700 dark:text-cyan-400" />
-              <span>{en("AI Voice Examiner Active")}</span>
-            </div>
-          )}
-        </div>
-
-        {/* Right: Active Participants & Takeover Button */}
-        <div className="flex items-center space-x-3">
-          {/* Participant Avatars */}
-          <div className="flex items-center -space-x-2">
-            {participants.map((p, idx) => (
-              <div
-                key={idx}
-                title={`${p.userName} (${p.role})`}
-                style={{ borderColor: p.color }}
-                className="w-8 h-8 rounded-full bg-muted border-2 flex items-center justify-center text-xs font-bold shadow-md cursor-pointer hover:scale-110 transition"
-              >
-                {p.userName.charAt(0)}
-              </div>
-            ))}
-          </div>
-
-          <div className="h-6 w-[1px] bg-muted" />
-
-          {/* Takeover Toggle Button */}
-          <button
-            onClick={handleToggleTakeover}
-            className={`flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-semibold transition shadow-lg ${
-              isTakeoverActive
-                ? "bg-rose-600 hover:bg-rose-500 text-white shadow-rose-600/20"
-                : "bg-amber-600 hover:bg-amber-500 text-white shadow-amber-600/20"
-            }`}
-          >
-            <ShieldAlert className="w-3.5 h-3.5" />
-            {isTakeoverActive ? en("Yield to AI") : en("Take Over")}
-          </button>
-        </div>
-      </header>
+            <Button variant={isTakeoverActive ? "secondary" : "primary"} onClick={handleToggleTakeover}>
+              <ShieldAlert className="h-4 w-4" />
+              {isTakeoverActive ? en("Hand back to AI") : en("Take over")}
+            </Button>
+          </>
+        }
+      />
 
       {/* Mode Navigation Tabs */}
-      <div className="bg-card/50 border-b border-border px-6 py-2 flex items-center justify-between">
-        <div className="flex items-center space-x-2">
-          <button
-            onClick={() => setActiveTab("code")}
-            className={`flex items-center gap-2 px-4 py-1.5 rounded-xl text-xs font-medium transition ${
-              activeTab === "code"
-                ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/20"
-                : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
-            }`}
-          >
-            <Code2 className="w-3.5 h-3.5" />
-            {en("Collaborative Code")}
-          </button>
-          <button
-            onClick={() => setActiveTab("whiteboard")}
-            className={`flex items-center gap-2 px-4 py-1.5 rounded-xl text-xs font-medium transition ${
-              activeTab === "whiteboard"
-                ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/20"
-                : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
-            }`}
-          >
-            <Layers className="w-3.5 h-3.5" />
-            {en("System Architecture Whiteboard")}
-          </button>
+      <div className="flex flex-wrap items-end justify-between gap-2">
+        <div className="flex-1">
+          <Tabs
+            label={en("Workspace")}
+            value={activeTab}
+            onChange={setActiveTab}
+            items={[
+              { id: "code", label: en("Code"), icon: <Code2 /> },
+              { id: "whiteboard", label: en("Whiteboard"), icon: <Layers /> },
+            ]}
+          />
         </div>
 
         {activeTab === "whiteboard" && (
-          <div className="flex items-center space-x-2">
-            <button
-              onClick={handleClearCanvas}
-              className="flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs text-muted-foreground hover:text-rose-400 hover:bg-rose-500/10 border border-border transition"
-            >
-              <Eraser className="w-3.5 h-3.5" />
+          <div className="flex items-center gap-2 pb-2">
+            <Button variant="secondary" onClick={handleClearCanvas}>
+              <Eraser className="h-4 w-4" />
               {en("Clear")}
-            </button>
-            <button
-              onClick={handleSaveWhiteboard}
-              disabled={savingWhiteboard}
-              className="flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs bg-indigo-600 hover:bg-indigo-500 text-white font-medium transition shadow-md shadow-indigo-600/20"
-            >
-              {savingWhiteboard ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
-              {saveSuccess ? en("Saved!") : en("Save Diagram")}
-            </button>
+            </Button>
+            <Button onClick={handleSaveWhiteboard} busy={savingWhiteboard}>
+              {!savingWhiteboard && <Save className="h-4 w-4" />}
+              {saveSuccess ? en("Saved") : en("Save diagram")}
+            </Button>
           </div>
         )}
       </div>
 
       {/* Main Workspace Body */}
-      <div className="flex-1 py-4 flex flex-col">
+      <div className="flex flex-1 flex-col py-4">
         {activeTab === "code" ? (
           /* Real-Time Code Pairing Editor */
-          <div className="flex-1 bg-card border border-border rounded-2xl overflow-hidden flex flex-col shadow-2xl relative">
-            <div className="h-9 bg-background/80 border-b border-border px-4 flex items-center justify-between text-xs text-muted-foreground">
-              <div className="flex items-center gap-2">
-                <span className="w-2.5 h-2.5 rounded-full bg-rose-500" />
-                <span className="w-2.5 h-2.5 rounded-full bg-amber-500" />
-                <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
-                <span className="ms-2 font-mono text-muted-foreground">{en("DistributedStreamEngine.ts")}</span>
-              </div>
-              <div className="flex items-center gap-2 text-[11px] font-mono text-muted-foreground">
-                <MousePointer2 className="w-3 h-3 text-amber-700 dark:text-amber-400" />
-                <span>{en("Interviewer Viewing Line 12")}</span>
-              </div>
+          <div className="relative flex flex-1 flex-col overflow-hidden rounded-xl border border-border bg-card shadow-sm">
+            <div className="flex h-9 items-center border-b border-border bg-muted/40 px-4 text-xs text-muted-foreground">
+              <span>{en("Shared editor: changes sync to everyone in the room")}</span>
             </div>
 
             <textarea
@@ -480,80 +427,39 @@ export default function InterviewPairingStudioPage({ params }: { params: Promise
                 }
               }}
               spellCheck={false}
-              className="flex-1 w-full bg-background p-6 font-mono text-sm text-foreground resize-none focus:outline-none leading-relaxed selection:bg-indigo-500/30"
+              className="w-full flex-1 resize-none bg-background p-6 font-mono text-sm leading-relaxed text-foreground selection:bg-indigo-500/30 focus:outline-none"
               placeholder="// Type code here to sync live with interviewer..."
             />
           </div>
         ) : (
           /* Interactive Whiteboard Canvas */
-          <div className="flex-1 bg-card border border-border rounded-2xl overflow-hidden flex flex-col shadow-2xl relative">
+          <div className="relative flex flex-1 flex-col overflow-hidden rounded-xl border border-border bg-card shadow-sm">
             {/* Whiteboard Toolbar */}
-            <div className="h-12 bg-background/90 border-b border-border px-4 flex items-center justify-between">
-              <div className="flex items-center space-x-2">
-                <button
-                  onClick={() => setTool("pen")}
-                  className={`p-2 rounded-xl text-xs transition ${
-                    tool === "pen" ? "bg-indigo-600 text-white" : "text-muted-foreground hover:bg-muted"
-                  }`}
-                  title={en("Freehand Pen")}
-                >
-                  <PenTool className="w-4 h-4" />
-                </button>
-                <button
-                  onClick={() => setTool("box")}
-                  className={`p-2 rounded-xl text-xs transition ${
-                    tool === "box" ? "bg-indigo-600 text-white" : "text-muted-foreground hover:bg-muted"
-                  }`}
-                  title={en("Microservice Box")}
-                >
-                  <Square className="w-4 h-4" />
-                </button>
-                <button
-                  onClick={() => setTool("database")}
-                  className={`p-2 rounded-xl text-xs transition ${
-                    tool === "database" ? "bg-indigo-600 text-white" : "text-muted-foreground hover:bg-muted"
-                  }`}
-                  title={en("Database Cylinder")}
-                >
-                  <Database className="w-4 h-4" />
-                </button>
-                <button
-                  onClick={() => setTool("cloud")}
-                  className={`p-2 rounded-xl text-xs transition ${
-                    tool === "cloud" ? "bg-indigo-600 text-white" : "text-muted-foreground hover:bg-muted"
-                  }`}
-                  title={en("API Gateway / Cloud")}
-                >
-                  <Cloud className="w-4 h-4" />
-                </button>
-                <button
-                  onClick={() => setTool("eraser")}
-                  className={`p-2 rounded-xl text-xs transition ${
-                    tool === "eraser" ? "bg-indigo-600 text-white" : "text-muted-foreground hover:bg-muted"
-                  }`}
-                  title={en("Eraser")}
-                >
-                  <Eraser className="w-4 h-4" />
-                </button>
+            <div className="flex h-12 items-center justify-between border-b border-border bg-card px-4">
+              <div className="flex items-center gap-1">
+                {toolButton("pen", en("Pen"), <PenTool className="h-4 w-4" />)}
+                {toolButton("box", en("Service box"), <Square className="h-4 w-4" />)}
+                {toolButton("database", en("Database"), <Database className="h-4 w-4" />)}
+                {toolButton("cloud", en("API gateway or cloud"), <Cloud className="h-4 w-4" />)}
+                {toolButton("eraser", en("Eraser"), <Eraser className="h-4 w-4" />)}
               </div>
 
               {/* Color Palette */}
-              <div className="flex items-center space-x-1.5">
+              <div className="flex items-center gap-1.5">
                 {["#38bdf8", "#10b981", "#f59e0b", "#ef4444", "#a855f7", "#ffffff"].map((c) => (
                   <button
                     key={c}
                     onClick={() => setStrokeColor(c)}
                     style={{ backgroundColor: c }}
-                    className={`w-5 h-5 rounded-full transition ${
-                      strokeColor === c ? "ring-2 ring-white scale-110" : "opacity-75 hover:opacity-100"
-                    }`}
+                    aria-label={en("Color {value}", { value: c })}
+                    className={`h-5 w-5 rounded-full border border-border transition ${strokeColor === c ? "ring-2 ring-indigo-500 ring-offset-1" : "opacity-75 hover:opacity-100"}`}
                   />
                 ))}
               </div>
             </div>
 
             {/* Canvas Viewport */}
-            <div className="flex-1 bg-[#020617] relative cursor-crosshair overflow-hidden flex items-center justify-center">
+            <div className="relative flex flex-1 cursor-crosshair items-center justify-center overflow-hidden bg-[#020617]">
               <canvas
                 ref={canvasRef}
                 width={1200}
@@ -562,7 +468,7 @@ export default function InterviewPairingStudioPage({ params }: { params: Promise
                 onMouseMove={draw}
                 onMouseUp={stopDrawing}
                 onMouseLeave={stopDrawing}
-                className="w-full h-full"
+                className="h-full w-full"
               />
             </div>
           </div>
@@ -570,19 +476,12 @@ export default function InterviewPairingStudioPage({ params }: { params: Promise
       </div>
 
       {/* Footer Info */}
-      <footer className="h-8 bg-background border-t border-slate-900 px-6 flex items-center justify-between text-[11px] text-muted-foreground font-mono">
-        <div className="flex items-center gap-3">
-          <span>{en("SignalR WebSocket: Connected")}</span>
-          <span>•</span>
-          <span>{en("Latency: 18ms")}</span>
-        </div>
-        <div>
-          {isTakeoverActive ? (
-            <span className="text-amber-700 dark:text-amber-400 font-semibold">{en("Live Voice Takeover: {value}", { value: takeoverName || en("Interviewer") })}</span>
-          ) : (
-            <span className="text-cyan-700 dark:text-cyan-400">{en("AI Voice Assistant: Synthesizing questions")}</span>
-          )}
-        </div>
+      <footer className="flex h-8 items-center justify-end border-t border-border text-xs text-muted-foreground">
+        {isTakeoverActive ? (
+          <span className="font-medium text-amber-700 dark:text-amber-400">{en("Speaking: {value}", { value: takeoverName || en("Interviewer") })}</span>
+        ) : (
+          <span>{en("The AI interviewer is asking the questions")}</span>
+        )}
       </footer>
     </div>
   );

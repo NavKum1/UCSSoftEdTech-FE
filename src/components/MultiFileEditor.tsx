@@ -218,9 +218,9 @@ export default function MultiFileEditor({
   const showTabs = ordered.length > 1;
 
   return (
-    <div className="border border-border rounded-xl overflow-hidden bg-background">
+    <div className="border border-border rounded-lg overflow-hidden bg-background">
       {(showTabs || starterForActive) && (
-        <div className="flex items-center justify-between border-b border-border bg-card/80">
+        <div className="flex items-center justify-between border-b border-border bg-card">
           <div className="flex items-center overflow-x-auto" role="tablist" aria-label={en("Project files")}>
             {ordered.map((f) => (
               <button
@@ -228,16 +228,16 @@ export default function MultiFileEditor({
                 role="tab"
                 aria-selected={f.name === activeFile}
                 onClick={() => switchFile(f.name)}
-                className={`flex items-center gap-1.5 px-3 py-2 text-[11px] font-mono whitespace-nowrap border-e border-border transition-colors cursor-pointer ${
+                className={`flex items-center gap-1.5 px-3 py-2 text-xs font-mono whitespace-nowrap border-e border-border transition-colors cursor-pointer ${
                   f.name === activeFile
-                    ? "bg-background text-foreground font-semibold"
+                    ? "bg-background text-foreground font-medium"
                     : "text-muted-foreground hover:text-foreground hover:bg-muted"
                 }`}
               >
                 <FileCode2 className="w-3.5 h-3.5" />
                 {f.name}
                 {entryFile === f.name && showTabs && (
-                  <span className="text-[9px] uppercase tracking-wider text-indigo-600 dark:text-indigo-400">entry</span>
+                  <span className="rounded-full bg-muted px-1.5 font-sans text-xs text-muted-foreground">entry</span>
                 )}
               </button>
             ))}
@@ -246,7 +246,7 @@ export default function MultiFileEditor({
             <button
               onClick={resetActiveFile}
               title={`Reset ${activeFile} to the starter code`}
-              className="flex items-center gap-1 px-3 py-2 text-[11px] text-muted-foreground hover:text-foreground transition-colors cursor-pointer shrink-0"
+              className="flex items-center gap-1 px-3 py-2 text-xs text-muted-foreground hover:text-foreground transition-colors cursor-pointer shrink-0"
             >
               <RotateCcw className="w-3.5 h-3.5" />
               {en("Reset file")}
@@ -262,7 +262,7 @@ export default function MultiFileEditor({
         options={{
           minimap: { enabled: false },
           fontSize: 13,
-          fontFamily: "var(--font-geist-mono), monospace",
+          fontFamily: "var(--font-brand-mono), monospace",
           padding: { top: 16 },
           automaticLayout: true,
           readOnly,

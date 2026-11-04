@@ -1,11 +1,12 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { AlertCircle, Loader2 } from "lucide-react";
+import { AlertCircle } from "lucide-react";
 import TransparencyReportView from "@/components/transparency/TransparencyReportView";
 import { TransparencyArchive, TransparencyIntro } from "@/components/transparency/TransparencyArchive";
 import { fetchPublic, type ArchiveEntry, type PublicFetchResult, type PublishedReport } from "@/lib/transparency";
 import { useEn } from "@/lib/english/EnglishProvider";
+import { EmptyState, Loading } from "@/components/career/ui";
 
 export default function TransparencyPage() {
   const en = useEn();
@@ -26,24 +27,24 @@ export default function TransparencyPage() {
       <TransparencyIntro />
 
       {latest == null ? (
-        <div className="glass-panel rounded-2xl border border-border py-10 flex items-center justify-center gap-2 text-sm text-muted-foreground">
-          <Loader2 className="w-4 h-4 animate-spin" />{en(" Loading the latest report...")}
-        </div>
+        <Loading label={en("Loading the latest report...")} />
       ) : latest.kind === "ok" && latest.data.report ? (
         <TransparencyReportView report={latest.data.report} meta={latest.data} />
       ) : latest.kind === "error" ? (
-        <div className="glass-panel rounded-2xl border border-border p-6 text-sm text-rose-700 dark:text-rose-400 flex items-center gap-2">
-          <AlertCircle className="w-4 h-4" />{" "}{en("Could not load the report. {message}", { message: latest.message })}
+        <div role="alert" className="flex items-center gap-2 rounded-lg border border-red-300 bg-red-50 p-4 text-sm text-red-800 dark:border-red-900 dark:bg-red-950/40 dark:text-red-300">
+          <AlertCircle className="h-4 w-4 shrink-0" aria-hidden /> {en("Could not load the report. {message}", { message: latest.message })}
         </div>
       ) : (
-        <div className="glass-panel rounded-2xl border border-border p-6 text-sm text-muted-foreground">
+        <EmptyState title={en("No report published yet")}>
           {en("No transparency report has been published yet. The first one will appear here once it has been reviewed.")}
-        </div>
+        </EmptyState>
       )}
 
       {archive?.kind === "ok" && <TransparencyArchive entries={archive.data} />}
       {archive?.kind === "error" && (
-        <p className="text-sm text-rose-700 dark:text-rose-400 flex items-center gap-2"><AlertCircle className="w-4 h-4" />{" "}{en("Could not load the archive. {message}", { message: archive.message })}</p>
+        <p className="flex items-center gap-2 text-sm text-red-700 dark:text-red-400">
+          <AlertCircle className="h-4 w-4" aria-hidden /> {en("Could not load the archive. {message}", { message: archive.message })}
+        </p>
       )}
     </div>
   );

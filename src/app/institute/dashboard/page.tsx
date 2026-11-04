@@ -22,13 +22,14 @@ import PeopleView from "@/components/institute/crm/PeopleView";
 import SettingsView from "@/components/institute/crm/SettingsView";
 import ImportView from "@/components/institute/crm/ImportView";
 import StaffAccess from "@/components/institute/StaffAccess";
+import { Button, PageHeader, Tabs } from "@/components/career/ui";
 import { useEn } from "@/lib/english/EnglishProvider";
 
 type Tab = "leads" | "people" | "followups" | "insights" | "settings" | "staff" | "import";
 
 export default function InstituteCrmPage() {
   return (
-    <Suspense fallback={<div className="h-64 animate-pulse rounded-2xl bg-muted motion-reduce:animate-none" aria-busy="true" />}>
+    <Suspense fallback={<div className="h-64 animate-pulse rounded-xl bg-muted motion-reduce:animate-none" aria-busy="true" />}>
       <Crm />
     </Suspense>
   );
@@ -138,16 +139,16 @@ function Crm() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">{en("Admissions")}</h1>
-          <p className="mt-0.5 text-sm text-muted-foreground">
+      <PageHeader
+        title={en("Admissions")}
+        description={
+          <>
             {profile?.name ? `${profile.name} · ` : ""}
             {data ? `${(data.totalAll ?? data.total ?? 0).toLocaleString()} ${(data.totalAll ?? data.total) === 1 ? "lead" : "leads"}` : en("Your leads from Edulexa and your website")}
             {data?.me ? ` · signed in as ${data.me.name}` : ""}
-          </p>
-        </div>
-      </div>
+          </>
+        }
+      />
 
       {/* Today */}
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-5">
@@ -163,31 +164,22 @@ function Crm() {
       </div>
 
       {isAdmin && team.length === 0 && profile && (
-        <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-cyan-600/30 bg-cyan-600/5 p-4 text-sm">
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-card p-4 text-sm shadow-sm">
           <p>
             <span className="font-medium">{en("Set up your team")}</span>{en(" to assign leads and send follow-up reminders. Add your email templates while you're there.")}
           </p>
-          <button type="button" onClick={() => setTab("settings")} className="rounded-lg bg-cyan-700 px-3.5 py-2 font-medium text-white hover:bg-cyan-800">
+          <Button type="button" onClick={() => setTab("settings")}>
             {en("Add your team")}
-          </button>
+          </Button>
         </div>
       )}
 
-      <div role="tablist" aria-label={en("CRM")} className="flex gap-5 overflow-x-auto text-sm shadow-[inset_0_-1px_0_var(--color-border)] [scrollbar-width:none]">
-        {TABS.map(([k, label]) => (
-          <button
-            key={k}
-            role="tab"
-            type="button"
-            aria-selected={tab === k}
-            onClick={() => setTab(k)}
-            className={`shrink-0 whitespace-nowrap border-b-2 pb-2.5 ${tab === k ? "border-cyan-600 font-medium text-foreground" : "border-transparent text-muted-foreground hover:text-foreground"}`}
-          >
-            {en(label)}
-            {k === "followups" && overdue > 0 && <span className="ms-1.5 rounded-full bg-red-600 px-1.5 text-[11px] font-medium text-white">{overdue}</span>}
-          </button>
-        ))}
-      </div>
+      <Tabs<Tab>
+        label={en("CRM")}
+        value={tab}
+        onChange={setTab}
+        items={TABS.map(([k, label]) => ({ id: k, label: en(label), count: k === "followups" && overdue > 0 ? overdue : undefined }))}
+      />
 
       {tab === "leads" && (
         <LeadsView getToken={getToken} team={team} data={data} filters={filters} setFilters={setFilters} loading={loading} error={error} openLead={openLead} reload={refresh} loadMore={loadMore} loadingMore={loadingMore} />
@@ -209,15 +201,15 @@ function Crm() {
 
 function Today({ icon: Icon, label, value, tone, onClick }: { icon: React.ElementType; label: string; value: number; tone?: "sky" | "red" | "amber"; onClick: () => void }) {
   const en = useEn();
-  const color = tone === "red" ? "text-red-700 dark:text-red-400" : tone === "amber" ? "text-amber-700 dark:text-amber-400" : tone === "sky" ? "text-sky-700 dark:text-sky-400" : "";
+  const color = tone === "red" ? "text-red-700 dark:text-red-400" : tone === "amber" ? "text-amber-700 dark:text-amber-400" : tone === "sky" ? "text-indigo-700 dark:text-indigo-400" : "text-foreground";
   return (
-    <button type="button" onClick={onClick} className="group rounded-2xl border border-border bg-card p-4 text-start transition-colors hover:border-cyan-600/50">
-      <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
-        <Icon aria-hidden="true" className="h-3.5 w-3.5" />
+    <button type="button" onClick={onClick} className="group rounded-xl border border-border bg-card p-4 text-start shadow-sm transition-colors hover:border-[var(--brand,#0e7490)] focus-visible:outline-2 focus-visible:outline-offset-2">
+      <span className="flex items-center gap-1.5 text-sm text-muted-foreground">
+        <Icon aria-hidden="true" className="h-4 w-4" />
         {label}
       </span>
-      <span className={`mt-1 block text-2xl font-semibold tabular-nums ${color}`}>{value}</span>
-      <span className="text-xs text-cyan-700 opacity-0 transition-opacity group-hover:opacity-100 dark:text-cyan-400">{en("View")}</span>
+      <span className={`mt-2 block text-2xl font-semibold tabular-nums tracking-tight ${color}`}>{value}</span>
+      <span className="text-xs text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100">{en("View")}</span>
     </button>
   );
 }

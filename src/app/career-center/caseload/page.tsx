@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { useApi } from "@/lib/appAuth";
 import { useCareerShell } from "@/components/career/CareerShell";
-import { Badge, Button, Card, EmptyState, ErrorBanner, Field, Loading, PageHeader, SuccessBanner, formatDate, useLoad, useCareerT } from "@/components/career/ui";
+import { Badge, Button, Card, EmptyState, ErrorBanner, Field, Loading, PageHeader, SuccessBanner, formatDate, useLoad, useCareerT, buttonClass } from "@/components/career/ui";
 import { SeverityBadge, type Counselor, type Signal, type TriageSettings, useIsTriageAdmin, useSeverityLabels } from "@/components/career/triage/shared";
 
 interface CaseloadRow {
@@ -106,10 +106,10 @@ export default function CaseloadPage() {
         actions={
           isAdmin ? (
             <div className="flex gap-2">
-              <Link className="rounded-md border border-border px-3 py-2 text-sm hover:bg-muted" href="/career-center/caseload/rules">
+              <Link className={buttonClass("secondary")} href="/career-center/caseload/rules">
                 {tr("caseloadRules")}
               </Link>
-              <Link className="rounded-md border border-border px-3 py-2 text-sm hover:bg-muted" href="/career-center/caseload/settings">
+              <Link className={buttonClass("secondary")} href="/career-center/caseload/settings">
                 {tr("signalCopilotSettings")}
               </Link>
             </div>

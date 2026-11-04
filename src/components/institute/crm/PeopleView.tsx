@@ -107,7 +107,7 @@ export default function PeopleView({ getToken, openLead }: { getToken: GetToken;
           <Search aria-hidden="true" className="absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <input value={q} onChange={(e) => setQ(e.target.value)} placeholder={en("Search by name, email, phone or what they asked about")} className="w-full rounded-lg border border-border bg-background py-2 ps-9 pe-3 text-sm" />
         </label>
-        <button type="submit" className="rounded-lg bg-cyan-700 px-3.5 py-2 text-sm font-medium text-white hover:bg-cyan-800">
+        <button type="submit" className="rounded-lg bg-indigo-700 px-3.5 py-2 text-sm font-medium text-white hover:bg-indigo-800">
           {en("Search")}
         </button>
         <span className="text-xs text-muted-foreground">{total.toLocaleString()} {total === 1 ? "person" : "people"}</span>
@@ -121,11 +121,11 @@ export default function PeopleView({ getToken, openLead }: { getToken: GetToken;
       )}
 
       {!rows ? (
-        <div className="h-40 animate-pulse rounded-2xl bg-muted motion-reduce:animate-none" aria-busy="true" />
+        <div className="h-40 animate-pulse rounded-xl bg-muted motion-reduce:animate-none" aria-busy="true" />
       ) : rows.length === 0 ? (
-        <p className="rounded-2xl border border-dashed border-border p-8 text-center text-sm text-muted-foreground">{search ? en("Nobody matches that search.") : en("No people yet.")}</p>
+        <p className="rounded-xl border border-dashed border-border p-8 text-center text-sm text-muted-foreground">{search ? en("Nobody matches that search.") : en("No people yet.")}</p>
       ) : (
-        <div className="overflow-x-auto rounded-2xl border border-border bg-card">
+        <div className="overflow-x-auto rounded-xl border border-border bg-card shadow-sm">
           <table className="w-full text-sm">
             <thead className="text-start text-xs text-muted-foreground">
               <tr>
@@ -237,15 +237,15 @@ function PersonPanel({ leadId, getToken, onClose, openLead }: { leadId: string; 
             {error}
           </p>
         )}
-        {!p && !error && <div className="mt-6 h-64 animate-pulse rounded-2xl bg-muted motion-reduce:animate-none" aria-busy="true" />}
+        {!p && !error && <div className="mt-6 h-64 animate-pulse rounded-xl bg-muted motion-reduce:animate-none" aria-busy="true" />}
 
         {p && (
           <div className="mt-5 space-y-6 text-sm">
             {/* Cards from the forms' tagged answers */}
             <div className="grid gap-3 md:grid-cols-3">
               {p.cards.map((c) => (
-                <section key={c.card} className="rounded-2xl border border-border bg-card p-4">
-                  <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{en(CARD[c.card] ?? c.card)}</h3>
+                <section key={c.card} className="rounded-xl border border-border bg-card shadow-sm p-4">
+                  <h3 className="text-xs font-medium text-muted-foreground">{en(CARD[c.card] ?? c.card)}</h3>
                   {c.answers.length === 0 ? (
                     <p className="mt-2 text-xs text-muted-foreground">{en("Nothing yet. Tag questions for this card in the form builder.")}</p>
                   ) : (
@@ -291,7 +291,7 @@ function PersonPanel({ leadId, getToken, onClose, openLead }: { leadId: string; 
                                 {x.status === "completed" ? (
                                   <CheckCircle2 aria-hidden="true" className="h-3.5 w-3.5 text-emerald-600" />
                                 ) : x.status === "inProgress" ? (
-                                  <Clock aria-hidden="true" className="h-3.5 w-3.5 text-cyan-600" />
+                                  <Clock aria-hidden="true" className="h-3.5 w-3.5 text-indigo-600" />
                                 ) : (
                                   <CircleSlash aria-hidden="true" className="h-3.5 w-3.5 text-muted-foreground" />
                                 )}

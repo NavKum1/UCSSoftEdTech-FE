@@ -149,7 +149,7 @@ function BookFlow({ onBooked }: { onBooked: (a: Appointment) => void }) {
           <legend className="sr-only">{tr("appointmentType")}</legend>
           <div className="grid gap-3 sm:grid-cols-2">
             {types.data.types.map((t) => (
-              <label key={t.id} className={`flex cursor-pointer gap-3 rounded-lg border p-3 focus-within:ring-2 ${typeId === t.id ? "border-[var(--brand,#4f46e5)] ring-1 ring-[var(--brand,#4f46e5)]" : "border-border"}`}>
+              <label key={t.id} className={`flex cursor-pointer gap-3 rounded-lg border p-3 focus-within:ring-2 ${typeId === t.id ? "border-[var(--brand,#0e7490)] ring-1 ring-[var(--brand,#0e7490)]" : "border-border"}`}>
                 <input type="radio" name="type" value={t.id} checked={typeId === t.id} onChange={() => chooseType(t.id)} className="mt-1" />
                 <span>
                   <span className="block font-medium">{t.name}</span>

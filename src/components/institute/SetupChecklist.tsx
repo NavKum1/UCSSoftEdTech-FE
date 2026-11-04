@@ -86,7 +86,7 @@ export function SetupChecklist() {
   };
 
   return (
-    <section aria-labelledby="setup-checklist" className="mb-5 rounded-2xl border border-border bg-card p-5 shadow-sm">
+    <section aria-labelledby="setup-checklist" className="mb-5 rounded-xl border border-border bg-card p-5 shadow-sm">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h2 id="setup-checklist" className="text-base font-semibold">
@@ -101,7 +101,7 @@ export function SetupChecklist() {
         </button>
       </div>
       <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-muted" role="progressbar" aria-label={en("Setup")} aria-valuemin={0} aria-valuemax={needed.length} aria-valuenow={done}>
-        <div className="h-full rounded-full bg-cyan-600 transition-[width] motion-reduce:transition-none" style={{ width: `${(done / needed.length) * 100}%` }} />
+        <div className="h-full rounded-full bg-indigo-600 transition-[width] motion-reduce:transition-none" style={{ width: `${(done / needed.length) * 100}%` }} />
       </div>
       <ul className="mt-4 grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
         {s.checklist.map((c) => {
@@ -118,7 +118,7 @@ export function SetupChecklist() {
                 {!c.done && (
                   <>
                     <p className="mt-0.5 text-xs text-muted-foreground">{en(t.text)}</p>
-                    <Link href={t.href} className="mt-1.5 inline-block text-sm font-semibold text-cyan-700 hover:underline dark:text-cyan-400">
+                    <Link href={t.href} className="mt-1.5 inline-block text-sm font-semibold text-indigo-700 hover:underline dark:text-indigo-400">
                       {en(t.action)}
                     </Link>
                   </>

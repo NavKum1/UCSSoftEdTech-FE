@@ -11,6 +11,7 @@ import React, { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { AccessNotice, useLatestRef, useLegacyApi } from "@/lib/legacyApi";
 import { useEn } from "@/lib/english/EnglishProvider";
+import { Button, EmptyState, Loading, PageHeader, ScrollArea, buttonClass } from "@/components/career/ui";
 
 interface Quota {
   monthlyQuota?: number;
@@ -54,7 +55,7 @@ const PLANS = [
 ];
 const usd = (cents: number) => `$${(cents / 100).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 const planLabel = (id?: string) => PLANS.find((p) => p.id === id)?.label ?? id ?? "";
-const card = "rounded-2xl border border-border bg-card shadow-[0_1px_2px_rgb(16_24_40/0.04)]";
+const card = "rounded-xl border border-border bg-card shadow-sm";
 
 export default function InstituteBillingPage() {
   const en = useEn();
@@ -114,15 +115,16 @@ export default function InstituteBillingPage() {
   if (access) return <AccessNotice problem={access} feature="Billing" />;
   if (failed)
     return (
-      <div className="mx-auto max-w-md py-16 text-center">
-        <h1 className="text-xl font-semibold">{en("We couldn't load billing")}</h1>
-        <p className="mt-2 text-sm text-muted-foreground">{en("Please refresh the page to try again.")}</p>
+      <div>
+        <PageHeader title={en("Plan and billing")} />
+        <EmptyState title={en("We couldn't load billing")}>{en("Please refresh the page to try again.")}</EmptyState>
       </div>
     );
   if (!sub)
     return (
-      <div aria-busy="true" aria-label={en("Loading billing")}>
-        <div className={`${card} h-40 animate-pulse motion-reduce:animate-none`} />
+      <div aria-busy="true">
+        <PageHeader title={en("Plan and billing")} />
+        <Loading label={en("Loading billing")} />
       </div>
     );
 
@@ -135,12 +137,15 @@ export default function InstituteBillingPage() {
 
   return (
     <div className="space-y-6">
-      <header className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-xl font-semibold">{en("Plan and billing")}</h1>
-        <Link href="/partner/dashboard" className="text-sm font-medium text-indigo-700 hover:underline dark:text-indigo-300">
-          {en("Back to the dashboard")}
-        </Link>
-      </header>
+      <PageHeader
+        title={en("Plan and billing")}
+        description={en("Your enterprise plan, what you have used this period, and your usage statements.")}
+        actions={
+          <Link href="/partner/dashboard" className={buttonClass("secondary")}>
+            {en("Back to the dashboard")}
+          </Link>
+        }
+      />
 
       {!sub.hasSubscription ? (
         <section className={`${card} p-6`}>
@@ -186,7 +191,7 @@ export default function InstituteBillingPage() {
           <div className="mt-3 flex flex-wrap items-end gap-3">
             <label className="text-sm">
               <span className="font-medium">{en("Plan")}</span>
-              <select value={tier} onChange={(e) => setTier(e.target.value)} className="mt-1 block rounded-xl border border-border bg-background px-3 py-2 text-sm">
+              <select value={tier} onChange={(e) => setTier(e.target.value)} className="mt-1 block max-w-full rounded-lg border border-border bg-card px-3 py-2 text-sm shadow-sm">
                 {PLANS.map((p) => (
                   <option key={p.id} value={p.id}>
                     {en("{label} (${price} a month, {seats} seats)", { label: p.label, price: p.price, seats: p.seats })}
@@ -196,18 +201,18 @@ export default function InstituteBillingPage() {
             </label>
             <label className="text-sm">
               <span className="font-medium">{en("Billing")}</span>
-              <select value={cycle} onChange={(e) => setCycle(e.target.value)} className="mt-1 block rounded-xl border border-border bg-background px-3 py-2 text-sm">
+              <select value={cycle} onChange={(e) => setCycle(e.target.value)} className="mt-1 block rounded-lg border border-border bg-card px-3 py-2 text-sm shadow-sm">
                 <option value="Monthly">{en("Monthly")}</option>
                 <option value="Annual">{en("Annual")}</option>
               </select>
             </label>
-            <button type="button" onClick={() => void setPlan()} className="rounded-xl bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-500">
+            <Button type="button" onClick={() => void setPlan()}>
               {en("Save plan")}
-            </button>
+            </Button>
             {sub.hasSubscription && (
-              <button type="button" onClick={() => void makeStatement()} className="rounded-xl border border-border px-4 py-2 text-sm font-semibold hover:bg-muted">
+              <Button type="button" variant="secondary" onClick={() => void makeStatement()}>
                 {en("Create this month's statement")}
-              </button>
+              </Button>
             )}
           </div>
         </section>
@@ -226,15 +231,18 @@ export default function InstituteBillingPage() {
           <p className="mt-1 text-xs text-muted-foreground">{en("Usage statements in US dollars. They are not tax invoices; tax is handled when a payment is arranged.")}</p>
         </div>
         {statements.length === 0 ? (
-          <p className="px-5 pb-5 text-sm text-muted-foreground">{en("No statements yet.")}</p>
+          <div className="px-5 pb-5">
+            <EmptyState title={en("No statements yet.")} />
+          </div>
         ) : (
+          <ScrollArea label={en("Statements")}>
           <table className="w-full text-sm">
             <thead className="border-y border-border text-start text-xs text-muted-foreground">
               <tr>
-                <th className="p-3 font-medium">{en("Statement")}</th>
-                <th className="p-3 font-medium">{en("Period")}</th>
+                <th className="p-3 text-start font-medium">{en("Statement")}</th>
+                <th className="p-3 text-start font-medium">{en("Period")}</th>
                 <th className="p-3 text-end font-medium">{en("Amount")}</th>
-                <th className="p-3 font-medium">{en("Status")}</th>
+                <th className="p-3 text-start font-medium">{en("Status")}</th>
                 <th className="p-3" />
               </tr>
             </thead>
@@ -246,14 +254,15 @@ export default function InstituteBillingPage() {
                   <td className="p-3 text-end tabular-nums">{usd(st.totalCents)}</td>
                   <td className="p-3">{st.status === "Draft" ? en("Draft, unpaid") : st.status.replace(/([a-z])([A-Z])/g, "$1 $2")}</td>
                   <td className="p-3 text-end">
-                    <button type="button" onClick={() => void openStatement(st.invoiceId)} className="text-sm font-semibold text-indigo-700 hover:underline dark:text-indigo-300">
+                    <Button type="button" variant="ghost" onClick={() => void openStatement(st.invoiceId)}>
                       {en("View")}
-                    </button>
+                    </Button>
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
+          </ScrollArea>
         )}
       </section>
 
@@ -263,9 +272,9 @@ export default function InstituteBillingPage() {
             <h2 id="bl-detail" className="text-base font-semibold">
               {open.invoiceNumber} · {open.billingPeriod}
             </h2>
-            <button type="button" onClick={() => setOpen(null)} className="text-sm text-muted-foreground hover:text-foreground">
+            <Button type="button" variant="secondary" onClick={() => setOpen(null)}>
               {en("Close")}
-            </button>
+            </Button>
           </div>
           <table className="mt-3 w-full text-sm">
             <tbody className="divide-y divide-border">

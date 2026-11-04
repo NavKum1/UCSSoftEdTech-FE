@@ -15,7 +15,6 @@ import {
   Flag,
   Gavel,
   Lightbulb,
-  Loader2,
   Mic,
   PenLine,
   ShieldCheck,
@@ -37,11 +36,12 @@ import {
 } from "@/lib/candidateExperience";
 import SignInRequired from "@/components/SignInRequired";
 import { useEn } from "@/lib/english/EnglishProvider";
+import { Button, ErrorBanner, Loading, PageHeader, StatTile } from "@/components/career/ui";
 
 function Section({ title, icon, children }: { title: string; icon: React.ReactNode; children: React.ReactNode }) {
   return (
-    <section className="glass-panel rounded-2xl p-5 border border-border space-y-3">
-      <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
+    <section className="space-y-3 rounded-xl border border-border bg-card p-5 shadow-sm">
+      <h2 className="flex items-center gap-2 text-base font-semibold text-foreground [&>svg]:text-muted-foreground">
         {icon}
         {title}
       </h2>
@@ -53,7 +53,7 @@ function Section({ title, icon, children }: { title: string; icon: React.ReactNo
 function Stat({ label, value }: { label: string; value: React.ReactNode }) {
   return (
     <div className="rounded-xl bg-muted/40 border border-border px-3 py-2">
-      <div className="text-[11px] text-muted-foreground">{label}</div>
+      <div className="text-xs text-muted-foreground">{label}</div>
       <div className="text-sm font-semibold text-foreground mt-0.5">{value}</div>
     </div>
   );
@@ -61,7 +61,7 @@ function Stat({ label, value }: { label: string; value: React.ReactNode }) {
 
 function StatusPill({ status }: { status: string }) {
   return (
-    <span className={`inline-flex px-2 py-0.5 rounded-full text-[11px] font-semibold border ${STATUS_STYLES[status] ?? "bg-muted text-muted-foreground border-border"}`}>
+    <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-semibold border ${STATUS_STYLES[status] ?? "bg-muted text-muted-foreground border-border"}`}>
       {statusLabel(status)}
     </span>
   );
@@ -253,20 +253,13 @@ export default function SubmissionReportPage() {
         <Link href="/my/results" className="text-xs text-muted-foreground hover:text-foreground inline-flex items-center gap-1">
           <ArrowLeft className="w-3.5 h-3.5" />{en(" My results")}
         </Link>
-        <div className="glass-panel rounded-2xl p-8 border border-border flex flex-col items-center gap-3 text-sm text-rose-700 dark:text-rose-400">
-          <div className="flex items-center gap-2"><AlertCircle className="w-4 h-4" /> {error}</div>
-          <button onClick={reload} className="text-xs underline text-muted-foreground hover:text-foreground cursor-pointer">{en("Try again")}</button>
-        </div>
+        <ErrorBanner error={error} onRetry={reload} />
       </div>
     );
   }
 
   if (!report) {
-    return (
-      <div className="py-16 flex items-center justify-center gap-2 text-sm text-muted-foreground">
-        <Loader2 className="w-4 h-4 animate-spin" />{en(" Loading your report...")}
-      </div>
-    );
+    return <Loading label={en("Loading your report...")} />;
   }
 
   const { tests, defense, feedback, review, writtenDefense } = report;
@@ -280,29 +273,27 @@ export default function SubmissionReportPage() {
         </Link>
 
         {/* Header */}
-        <div className="pb-4 border-b border-border">
-          <div className="text-xs font-semibold text-indigo-700 dark:text-indigo-400 uppercase tracking-wider">{en("Your report")}</div>
-          <h1 className="text-2xl font-extrabold text-foreground mt-1">{report.sprint.title}</h1>
-          <p className="text-xs text-muted-foreground">{en("Submitted {date}", { date: fmtDate(report.submittedAt) })}</p>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-4">
-            <Stat label={en("Tests passed")} value={`${tests.passed}/${tests.total}`} />
-            <Stat
+        <div>
+          <PageHeader title={report.sprint.title} description={en("Submitted {date}", { date: fmtDate(report.submittedAt) })} />
+          <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+            <StatTile label={en("Tests passed")} value={`${tests.passed}/${tests.total}`} />
+            <StatTile
               label={en("Defense score")}
               value={defense?.technicalScore != null ? `${Math.round(defense.technicalScore)}/100` : defense ? defense.status : "Not defended yet"}
             />
-            <Stat label={en("Review")} value={review.status.replace(/([a-z])([A-Z])/g, "$1 $2")} />
-            <Stat label={en("Integrity")} value={report.integrity} />
+            <StatTile label={en("Review")} value={review.status.replace(/([a-z])([A-Z])/g, "$1 $2")} />
+            <StatTile label={en("Integrity")} value={report.integrity} />
           </div>
         </div>
 
         {/* Review status */}
-        <Section title={en("Review status")} icon={<Gavel className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />}>
+        <Section title={en("Review status")} icon={<Gavel className="w-4 h-4" aria-hidden />}>
           <div className="flex flex-wrap items-center gap-2 text-sm">
             <span className="font-semibold text-foreground">{review.status.replace(/([a-z])([A-Z])/g, "$1 $2")}</span>
             {review.reviewedAt && <span className="text-xs text-muted-foreground">on {fmtDate(review.reviewedAt)}</span>}
             {review.outcome && (
               <span
-                className={`inline-flex px-2 py-0.5 rounded-full text-[11px] font-semibold border ${
+                className={`inline-flex px-2 py-0.5 rounded-full text-xs font-semibold border ${
                   review.outcome === "Advanced"
                     ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/30"
                     : "bg-muted text-muted-foreground border-border"
@@ -322,13 +313,13 @@ export default function SubmissionReportPage() {
         </Section>
 
         {/* Feedback */}
-        <Section title={en("Personalised feedback")} icon={<Lightbulb className="w-4 h-4 text-amber-600 dark:text-amber-400" />}>
+        <Section title={en("Personalised feedback")} icon={<Lightbulb className="w-4 h-4" aria-hidden />}>
           {!feedback ? (
             <p className="text-xs text-muted-foreground">{en("Personalised feedback is not available right now.")}</p>
           ) : (
             <div className="space-y-3 text-sm">
               {feedback.simulated && (
-                <p className="text-[11px] px-2 py-1 rounded-lg border border-amber-500/30 bg-amber-500/5 text-amber-700 dark:text-amber-400 inline-block">
+                <p className="text-xs px-2 py-1 rounded-lg border border-amber-500/30 bg-amber-500/5 text-amber-700 dark:text-amber-400 inline-block">
                   {en("Development stub: generated without an AI model")}
                 </p>
               )}
@@ -357,7 +348,7 @@ export default function SubmissionReportPage() {
                   {feedback.nextSteps.map((s, i) => <li key={i}>{s}</li>)}
                 </ol>
               </div>
-              <p className="text-[11px] text-muted-foreground">
+              <p className="text-xs text-muted-foreground">
                 {en("Generated {date} from your tests, the automated code review and your defense. It is developmental feedback, not the employer's decision.", { date: fmtDate(feedback.generatedAt) })}
               </p>
             </div>
@@ -365,7 +356,7 @@ export default function SubmissionReportPage() {
         </Section>
 
         {/* Tests */}
-        <Section title={`Tests: ${tests.passed}/${tests.total} passed`} icon={<CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />}>
+        <Section title={`Tests: ${tests.passed}/${tests.total} passed`} icon={<CheckCircle2 className="w-4 h-4" aria-hidden />}>
           {tests.cases.length === 0 ? (
             <p className="text-xs text-muted-foreground">{en("No per-test results were recorded (status: {value}).", { value: tests.status.replace(/([a-z])([A-Z])/g, "$1 $2").toLowerCase() })}</p>
           ) : (
@@ -407,7 +398,7 @@ export default function SubmissionReportPage() {
         </Section>
 
         {/* Code changes */}
-        <Section title={en("Your changes compared with the starter code")} icon={<FileCode2 className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />}>
+        <Section title={en("Your changes compared with the starter code")} icon={<FileCode2 className="w-4 h-4" aria-hidden />}>
           {report.codeChanges.length === 0 ? (
             <p className="text-xs text-muted-foreground">{en("No files recorded.")}</p>
           ) : (
@@ -443,7 +434,7 @@ export default function SubmissionReportPage() {
         </Section>
 
         {/* Defense */}
-        <Section title={en("Your defense")} icon={<Mic className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />}>
+        <Section title={en("Your defense")} icon={<Mic className="w-4 h-4" aria-hidden />}>
           {!defense ? (
             <p className="text-xs text-muted-foreground">{en("You have not completed a defense of this submission yet.")}</p>
           ) : (
@@ -469,7 +460,7 @@ export default function SubmissionReportPage() {
               ) : (
                 <ol className="space-y-2">
                   {defense.questionsAndAnswers.map((qa, i) => (
-                    <li key={i} className="rounded-xl border border-border p-3 text-sm space-y-1">
+                    <li key={i} className="space-y-1 rounded-lg border border-border p-3 text-sm">
                       <p className="text-muted-foreground"><span className="font-semibold text-foreground">Q: </span>{qa.question}</p>
                       <p className="text-foreground"><span className="font-semibold">A: </span>{qa.answer}</p>
                     </li>
@@ -485,14 +476,9 @@ export default function SubmissionReportPage() {
             </h3>
             <p className="text-xs text-muted-foreground">{writtenDefense.reason}</p>
             {writtenDefense.eligible && (
-              <button
-                onClick={startWrittenDefense}
-                disabled={wdBusy}
-                className="py-2 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white text-sm font-semibold inline-flex items-center gap-2 cursor-pointer"
-              >
-                {wdBusy && <Loader2 className="w-4 h-4 animate-spin" />}
+              <Button onClick={startWrittenDefense} busy={wdBusy}>
                 {writtenDefense.activeSessionId ? en("Continue written defense") : writtenDefense.alreadyDefended ? en("Start another written defense") : en("Start written defense")}
-              </button>
+              </Button>
             )}
             {wdError && (
               <p className="text-xs text-rose-700 dark:text-rose-400 flex items-center gap-1.5"><AlertCircle className="w-3.5 h-3.5" /> {wdError}</p>
@@ -501,7 +487,7 @@ export default function SubmissionReportPage() {
         </Section>
 
         {/* Appeals */}
-        <Section title={en("Appeal")} icon={<Flag className="w-4 h-4 text-amber-600 dark:text-amber-400" />}>
+        <Section title={en("Appeal")} icon={<Flag className="w-4 h-4" aria-hidden />}>
           <p className="text-xs text-muted-foreground">
             {en("If something went wrong or you think the assessment was unfair, tell us. A reviewer who did not make the original decision handles appeals, and you will receive their written response by email.")}
           </p>
@@ -509,7 +495,7 @@ export default function SubmissionReportPage() {
           {report.appeals.length > 0 && (
             <ul className="space-y-2">
               {report.appeals.map((a) => (
-                <li key={a.id} className="rounded-xl border border-border p-3 text-sm space-y-1.5">
+                <li key={a.id} className="space-y-1.5 rounded-lg border border-border p-3 text-sm">
                   <div className="flex flex-wrap items-center gap-2 text-xs">
                     <StatusPill status={a.status} />
                     <span className="font-semibold text-foreground">{categoryLabel(a.category)}</span>
@@ -563,18 +549,13 @@ export default function SubmissionReportPage() {
                   className="mt-1 w-full rounded-xl bg-card border border-border p-3 text-sm text-foreground placeholder:text-muted-foreground"
                   aria-describedby="appeal-counter"
                 />
-                <div id="appeal-counter" className={`text-[11px] mt-1 ${reasonValid ? "text-muted-foreground" : "text-amber-700 dark:text-amber-400"}`}>
+                <div id="appeal-counter" className={`text-xs mt-1 ${reasonValid ? "text-muted-foreground" : "text-amber-700 dark:text-amber-400"}`}>
                   {en("{reasonLength}/{aPPEAL_MAX} characters ({aPPEAL_MIN} minimum)", { reasonLength, aPPEAL_MAX: APPEAL_MAX, aPPEAL_MIN: APPEAL_MIN })}
                 </div>
               </div>
-              <button
-                type="submit"
-                disabled={appealBusy || !category || !reasonValid}
-                className="py-2 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-semibold inline-flex items-center gap-2 cursor-pointer"
-              >
-                {appealBusy && <Loader2 className="w-4 h-4 animate-spin" />}
+              <Button type="submit" busy={appealBusy} disabled={!category || !reasonValid}>
                 {en("Submit appeal")}
-              </button>
+              </Button>
             </form>
           ) : (
             openAppeal && <p className="text-xs text-muted-foreground">{en("You have an open appeal for this submission. You can withdraw it above.")}</p>
@@ -585,14 +566,14 @@ export default function SubmissionReportPage() {
         </Section>
 
         {/* Accommodations */}
-        <Section title={en("Accommodations")} icon={<Accessibility className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />}>
+        <Section title={en("Accommodations")} icon={<Accessibility className="w-4 h-4" aria-hidden />}>
           <p className="text-xs text-muted-foreground">
             {en("Request extra time, a written defense instead of voice, screen-reader support or anything else you need. Reviewers see approved accommodations alongside your submission so they can interpret timing fairly.")}
           </p>
           {report.accommodations.length > 0 && (
             <ul className="space-y-2">
               {report.accommodations.map((a) => (
-                <li key={a.id} className="rounded-xl border border-border p-3 text-xs space-y-1">
+                <li key={a.id} className="space-y-1 rounded-lg border border-border p-3 text-xs">
                   <div className="flex flex-wrap items-center gap-2">
                     <StatusPill status={a.status} />
                     <span className="font-semibold text-foreground">{accommodationLabel(a.type)}</span>
@@ -634,14 +615,9 @@ export default function SubmissionReportPage() {
                 className="w-full rounded-xl bg-card border border-border p-3 text-sm text-foreground placeholder:text-muted-foreground"
               />
             </label>
-            <button
-              type="submit"
-              disabled={accBusy || accDetails.trim().length < 10}
-              className="py-2 px-4 rounded-xl bg-card hover:bg-muted border border-border disabled:opacity-50 text-sm font-semibold text-foreground inline-flex items-center gap-2 cursor-pointer"
-            >
-              {accBusy && <Loader2 className="w-4 h-4 animate-spin" />}
+            <Button type="submit" variant="secondary" busy={accBusy} disabled={accDetails.trim().length < 10}>
               {en("Send request")}
-            </button>
+            </Button>
             {accMsg && (
               <p className={`text-xs ${accMsg.kind === "ok" ? "text-emerald-700 dark:text-emerald-400" : "text-rose-700 dark:text-rose-400"}`}>{accMsg.text}</p>
             )}

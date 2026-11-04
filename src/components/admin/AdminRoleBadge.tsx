@@ -4,7 +4,7 @@ import { useAppAuth } from "@/lib/appAuth";
 
 /**
  * The role badge in the /admin top bar. Since H12, institute admins and exam creators reach /admin/exams too, so the
- * "SUPER ADMIN" badge is shown only to a SuperAdmin; anyone else sees their own platform role (their
+ * "Super admin" badge is shown only to a SuperAdmin; anyone else sees their own platform role (their
  * Keycloak realm roles), or nothing when they have none. Nothing is shown until auth has loaded, so the badge never
  * flashes the wrong role. Display only: the API decides what each user may do.
  */
@@ -15,7 +15,8 @@ function label(role: string): string {
     .replace(/([a-z])([A-Z])/g, "$1 $2")
     .replace(/[_-]+/g, " ")
     .trim()
-    .toUpperCase();
+    .toLowerCase()
+    .replace(/^./, (c) => c.toUpperCase());
 }
 
 export function AdminRoleBadge() {
@@ -28,19 +29,15 @@ export function AdminRoleBadge() {
   const role = [...roles].sort((a, b) => rank(a) - rank(b))[0];
   if (role.toLowerCase() === "superadmin") {
     return (
-      <span
-        data-admin-role="SuperAdmin"
-        className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-rose-500/20 text-rose-800 dark:text-rose-300 border border-rose-500/30 flex items-center space-x-1"
-      >
-        <span className="w-1.5 h-1.5 rounded-full bg-rose-400 animate-ping inline-block me-1" aria-hidden></span>
-        SUPER ADMIN
+      <span data-admin-role="SuperAdmin" className="inline-flex items-center rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-foreground">
+        Super admin
       </span>
     );
   }
   return (
     <span
       data-admin-role={role}
-      className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-indigo-500/15 text-indigo-800 dark:text-indigo-300 border border-indigo-500/30"
+      className="inline-flex items-center rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-foreground"
     >
       {label(role)}
     </span>

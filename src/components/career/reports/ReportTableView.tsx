@@ -72,7 +72,7 @@ export function ReportTableView({ table, onExport, exporting }: { table: ReportT
                   <span className="truncate text-muted-foreground">{r[0]}</span>
                   <span className="flex items-center gap-2">
                     {v != null && v > 0 && (
-                      <span aria-hidden className="h-3 rounded-e" style={{ width: `${Math.max(1, (v / max) * 85)}%`, background: "var(--brand, #4f46e5)" }} />
+                      <span aria-hidden className="h-3 rounded-e" style={{ width: `${Math.max(1, (v / max) * 85)}%`, background: "var(--brand,#0e7490)" }} />
                     )}
                     <span className="tabular-nums font-medium">{fmt(r[col])}</span>
                   </span>

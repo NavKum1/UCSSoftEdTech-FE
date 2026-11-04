@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { useApi } from "@/lib/appAuth";
 import { useCareerShell } from "@/components/career/CareerShell";
-import { Button, Card, EmptyState, ErrorBanner, Field, Loading, PageHeader, SuccessBanner, useLoad, useCareerT } from "@/components/career/ui";
+import { Button, Card, EmptyState, ErrorBanner, Field, Loading, PageHeader, SuccessBanner, useLoad, useCareerT, ScrollArea, buttonClass } from "@/components/career/ui";
 import type { Counselor } from "@/components/career/triage/shared";
 
 interface Rule {
@@ -74,7 +74,7 @@ export default function CaseloadRulesPage() {
         title={t("caseloadRules")}
         description={t("assignStudentsToCounselorsBy")}
         actions={
-          <Link className="rounded-md border border-border px-3 py-2 text-sm hover:bg-muted" href="/career-center/caseload">
+          <Link className={buttonClass("secondary")} href="/career-center/caseload">
             {t("backToCaseload")}
           </Link>
         }
@@ -88,36 +88,38 @@ export default function CaseloadRulesPage() {
         ) : !rules.data || rules.data.length === 0 ? (
           <EmptyState title={t("noRulesYet")}>{t("everyStudentIsInThe")}</EmptyState>
         ) : (
-          <table className="w-full text-sm">
-            <caption className="sr-only">{t("caseloadRulesInTheOrder")}</caption>
-            <thead>
-              <tr className="text-start text-muted-foreground [&_th]:text-start">
-                <th scope="col" className="py-2">{t("priority")}</th>
-                <th scope="col">{t("rule")}</th>
-                <th scope="col">{t("counselor")}</th>
-                <th scope="col"><span className="sr-only">{t("actions")}</span></th>
-              </tr>
-            </thead>
-            <tbody>
-              {rules.data.map((r) => (
-                <tr key={r.id} className="border-t border-border">
-                  <td className="py-2">{r.priority}</td>
-                  <td>{describe(r)}</td>
-                  <td>{r.counselorName}</td>
-                  <td className="text-end">
-                    <Button
-                      variant="ghost"
-                      busy={busy === r.id}
-                      aria-label={t("deleteRuleR", { r: describe(r) })}
-                      onClick={() => run(r.id, () => api(`/api/career/triage/rules/${r.id}`, { method: "DELETE" }), t("ruleDeleted")).then((ok) => ok && (rules.reload(), students.reload()))}
-                    >
-                      {t("delete")}
-                    </Button>
-                  </td>
+          <ScrollArea>
+            <table className="w-full text-sm">
+              <caption className="sr-only">{t("caseloadRulesInTheOrder")}</caption>
+              <thead>
+                <tr className="text-start text-muted-foreground [&_th]:text-start">
+                  <th scope="col" className="py-2">{t("priority")}</th>
+                  <th scope="col">{t("rule")}</th>
+                  <th scope="col">{t("counselor")}</th>
+                  <th scope="col"><span className="sr-only">{t("actions")}</span></th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {rules.data.map((r) => (
+                  <tr key={r.id} className="border-t border-border">
+                    <td className="py-2">{r.priority}</td>
+                    <td>{describe(r)}</td>
+                    <td>{r.counselorName}</td>
+                    <td className="text-end">
+                      <Button
+                        variant="ghost"
+                        busy={busy === r.id}
+                        aria-label={t("deleteRuleR", { r: describe(r) })}
+                        onClick={() => run(r.id, () => api(`/api/career/triage/rules/${r.id}`, { method: "DELETE" }), t("ruleDeleted")).then((ok) => ok && (rules.reload(), students.reload()))}
+                      >
+                        {t("delete")}
+                      </Button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </ScrollArea>
         )}
         <form
           className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-6"
@@ -226,33 +228,35 @@ export default function CaseloadRulesPage() {
           {students.loading && !students.data ? (
             <Loading />
           ) : (
-            <table className="mt-3 w-full text-sm">
-              <caption className="sr-only">{t("studentsAndTheirCounselor")}</caption>
-              <thead>
-                <tr className="text-start text-muted-foreground [&_th]:text-start">
-                  <th scope="col" className="py-2">
-                    <span className="sr-only">{t("select")}</span>
-                  </th>
-                  <th scope="col">{t("student")}</th>
-                  <th scope="col">{t("major")}</th>
-                  <th scope="col">{t("counselor")}</th>
-                </tr>
-              </thead>
-              <tbody>
-                {(students.data?.students || []).map((s) => (
-                  <tr key={s.userId} className="border-t border-border">
-                    <td className="py-2">
-                      <input type="checkbox" aria-label={t("selectName", { name: s.name })} checked={picked.has(s.userId)} onChange={() => toggle(s.userId)} />
-                    </td>
-                    <td>{s.name}</td>
-                    <td>{s.majors.join(", ") || "—"}</td>
-                    <td>
-                      {s.counselorName || t("unassigned")} <span className="text-xs text-muted-foreground">({s.assignmentSource})</span>
-                    </td>
+            <ScrollArea>
+              <table className="mt-3 w-full text-sm">
+                <caption className="sr-only">{t("studentsAndTheirCounselor")}</caption>
+                <thead>
+                  <tr className="text-start text-muted-foreground [&_th]:text-start">
+                    <th scope="col" className="py-2">
+                      <span className="sr-only">{t("select")}</span>
+                    </th>
+                    <th scope="col">{t("student")}</th>
+                    <th scope="col">{t("major")}</th>
+                    <th scope="col">{t("counselor")}</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {(students.data?.students || []).map((s) => (
+                    <tr key={s.userId} className="border-t border-border">
+                      <td className="py-2">
+                        <input type="checkbox" aria-label={t("selectName", { name: s.name })} checked={picked.has(s.userId)} onChange={() => toggle(s.userId)} />
+                      </td>
+                      <td>{s.name}</td>
+                      <td>{s.majors.join(", ") || "—"}</td>
+                      <td>
+                        {s.counselorName || t("unassigned")} <span className="text-xs text-muted-foreground">({s.assignmentSource})</span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </ScrollArea>
           )}
         </Card>
       </div>

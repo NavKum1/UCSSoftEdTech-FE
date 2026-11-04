@@ -4,7 +4,8 @@ import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { useAppAuth as useAuth } from "@/lib/appAuth";
 import { authenticatedFetch } from "@/lib/apiClient";
-import { AlertCircle, CheckCircle2, ExternalLink, Eye, FileBarChart, Loader2, Send, Undo2 } from "lucide-react";
+import { AlertCircle, CheckCircle2, ExternalLink, Eye, Loader2, Send, Undo2 } from "lucide-react";
+import { Badge, Button, Card, EmptyState, Loading, PageHeader, ScrollArea, buttonClass } from "@/components/career/ui";
 import TransparencyReportView from "@/components/transparency/TransparencyReportView";
 import { formatDate, formatPeriod, type AdminReport } from "@/lib/transparency";
 
@@ -32,14 +33,10 @@ function previousMonth() {
   return { start: start.toISOString().slice(0, 10), end: end.toISOString().slice(0, 10) };
 }
 
-const STATUS_STYLES: Record<string, string> = {
-  Draft: "bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/30",
-  Published: "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/30",
-  Withdrawn: "bg-rose-500/10 text-rose-700 dark:text-rose-400 border-rose-500/30",
-};
+const STATUS_TONES: Record<string, "warn" | "good" | "bad"> = { Draft: "warn", Published: "good", Withdrawn: "bad" };
 
 function StatusBadge({ status }: { status: string }) {
-  return <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-full border ${STATUS_STYLES[status] ?? "border-border"}`}>{status}</span>;
+  return <Badge tone={STATUS_TONES[status] ?? "neutral"}>{status}</Badge>;
 }
 
 export default function AdminTransparencyPage() {
@@ -139,146 +136,129 @@ export default function AdminTransparencyPage() {
   const listLoading = list?.key !== listKey;
   const detailLoading = selectedId != null && detail?.key !== detailKey;
   const selected = detail?.key === detailKey ? detail.data : null;
-  const inputClass = "mt-1 w-full rounded-xl bg-card border border-border px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground";
+  const inputClass = "mt-1 w-full rounded-lg border border-border bg-card px-3 py-2 text-sm font-normal text-foreground shadow-sm placeholder:text-muted-foreground";
 
   return (
-    <div className="space-y-8">
-      <div className="pb-4 border-b border-border flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <div className="flex items-center gap-2 text-xs font-semibold text-indigo-700 dark:text-indigo-400 uppercase tracking-wider">
-            <FileBarChart className="w-4 h-4" /> Transparency
-          </div>
-          <h1 className="text-2xl font-extrabold text-foreground mt-1">Transparency reports</h1>
-          <p className="text-xs text-muted-foreground mt-1 max-w-2xl">
-            Generate a platform-wide report for a period, review the frozen draft, then publish it. Published reports can be withdrawn with a public reason but never edited.
-          </p>
-        </div>
-        <Link href="/transparency" className="text-xs font-semibold text-indigo-700 dark:text-indigo-400 hover:underline inline-flex items-center gap-1">
-          Public page <ExternalLink className="w-3.5 h-3.5" />
-        </Link>
-      </div>
+    <div className="space-y-6">
+      <PageHeader
+        title="Transparency reports"
+        description="Generate a platform-wide report for a period, review the frozen draft, then publish it. Published reports can be withdrawn with a public reason but never edited."
+        actions={
+          <Link href="/transparency" className={buttonClass("secondary")}>
+            Public page <ExternalLink className="h-4 w-4" aria-hidden />
+          </Link>
+        }
+      />
 
-      <div className="grid lg:grid-cols-3 gap-6">
-        <form onSubmit={generate} className="glass-panel rounded-2xl border border-border p-5 space-y-3">
-          <h2 className="text-sm font-bold text-foreground">Generate a draft</h2>
-          <label className="block text-xs font-semibold text-foreground">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+        <form onSubmit={generate} className="space-y-3 rounded-xl border border-border bg-card p-5 shadow-sm">
+          <h2 className="text-base font-semibold text-foreground">Generate a draft</h2>
+          <label className="block text-sm font-medium text-foreground">
             Period start (UTC)
             <input type="date" required value={periodStart} onChange={(e) => setPeriodStart(e.target.value)} className={inputClass} />
           </label>
-          <label className="block text-xs font-semibold text-foreground">
+          <label className="block text-sm font-medium text-foreground">
             Period end (UTC, inclusive)
             <input type="date" required value={periodEnd} onChange={(e) => setPeriodEnd(e.target.value)} className={inputClass} />
           </label>
-          <button
-            type="submit"
-            disabled={generating || !periodStart || !periodEnd}
-            className="w-full py-2.5 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-semibold flex items-center justify-center gap-2 cursor-pointer"
-          >
-            {generating && <Loader2 className="w-4 h-4 animate-spin" />} Generate draft
-          </button>
+          <Button type="submit" busy={generating} disabled={!periodStart || !periodEnd} className="w-full">
+            Generate draft
+          </Button>
           {message && (
-            <p className={`text-xs flex items-start gap-1.5 ${message.ok ? "text-emerald-700 dark:text-emerald-400" : "text-rose-700 dark:text-rose-400"}`}>
-              {message.ok ? <CheckCircle2 className="w-3.5 h-3.5 shrink-0 mt-0.5" /> : <AlertCircle className="w-3.5 h-3.5 shrink-0 mt-0.5" />} {message.text}
+            <p role={message.ok ? "status" : "alert"} className={`flex items-start gap-1.5 text-sm ${message.ok ? "text-emerald-700 dark:text-emerald-400" : "text-red-700 dark:text-red-400"}`}>
+              {message.ok ? <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0" aria-hidden /> : <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />} {message.text}
             </p>
           )}
         </form>
 
-        <div className="lg:col-span-2 glass-panel rounded-2xl border border-border p-5 space-y-3">
-          <h2 className="text-sm font-bold text-foreground">All reports</h2>
+        <Card title="All reports" className="lg:col-span-2">
           {listLoading ? (
-            <div className="py-6 flex items-center justify-center gap-2 text-sm text-muted-foreground"><Loader2 className="w-4 h-4 animate-spin" /> Loading...</div>
+            <Loading />
           ) : list?.error ? (
-            <p className="text-sm text-rose-700 dark:text-rose-400 flex items-center gap-2"><AlertCircle className="w-4 h-4" /> {list.error}</p>
+            <p className="flex items-center gap-2 text-sm text-red-700 dark:text-red-400"><AlertCircle className="h-4 w-4" aria-hidden /> {list.error}</p>
           ) : !list?.data?.length ? (
-            <p className="text-sm text-muted-foreground">No reports yet. Generate a draft to get started.</p>
+            <EmptyState title="No reports yet">Generate a draft to get started.</EmptyState>
           ) : (
-            <div className="overflow-x-auto">
+            <ScrollArea label="All reports">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="text-start text-xs text-muted-foreground border-b border-border">
-                    <th className="py-2 pe-3 font-semibold">Period</th>
-                    <th className="py-2 pe-3 font-semibold">Status</th>
-                    <th className="py-2 pe-3 font-semibold">Generated</th>
-                    <th className="py-2 pe-3 font-semibold">Published</th>
-                    <th className="py-2 font-semibold"><span className="sr-only">Actions</span></th>
+                  <tr className="border-b border-border text-start text-xs text-muted-foreground">
+                    <th className="py-2 pe-3 text-start font-medium">Period</th>
+                    <th className="py-2 pe-3 text-start font-medium">Status</th>
+                    <th className="py-2 pe-3 text-start font-medium">Generated</th>
+                    <th className="py-2 pe-3 text-start font-medium">Published</th>
+                    <th className="py-2 font-medium"><span className="sr-only">Actions</span></th>
                   </tr>
                 </thead>
                 <tbody>
                   {list.data.map((r) => (
-                    <tr key={r.id} className={`border-b border-border last:border-0 ${r.id === selectedId ? "bg-indigo-500/5" : ""}`}>
-                      <td className="py-2 pe-3 text-foreground whitespace-nowrap">{formatPeriod(r.periodStart, r.periodEnd)}</td>
+                    <tr key={r.id} className={`border-b border-border last:border-0 ${r.id === selectedId ? "bg-muted/60" : ""}`}>
+                      <td className="whitespace-nowrap py-2 pe-3 text-foreground">{formatPeriod(r.periodStart, r.periodEnd)}</td>
                       <td className="py-2 pe-3"><StatusBadge status={r.status} /></td>
                       <td className="py-2 pe-3 text-xs text-muted-foreground">{formatDate(r.generatedAt)} · {r.generatedBy}</td>
                       <td className="py-2 pe-3 text-xs text-muted-foreground">{r.publishedAt ? `${formatDate(r.publishedAt)} · ${r.publishedBy ?? ""}` : "—"}</td>
                       <td className="py-2 text-end">
-                        <button
+                        <Button
                           type="button"
+                          variant="secondary"
                           onClick={() => {
                             setSelectedId(r.id);
                             setNotes("");
                             setMessage(null);
                           }}
-                          className="py-1.5 px-2.5 rounded-lg bg-card hover:bg-muted border border-border text-xs font-semibold text-foreground inline-flex items-center gap-1 cursor-pointer"
                         >
-                          <Eye className="w-3.5 h-3.5" /> Preview
-                        </button>
+                          <Eye className="h-4 w-4" aria-hidden /> Preview
+                        </Button>
                       </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
-            </div>
+            </ScrollArea>
           )}
-        </div>
+        </Card>
       </div>
 
       {selectedId && (
         <div className="space-y-4">
           {detailLoading ? (
-            <div className="glass-panel rounded-2xl border border-border py-10 flex items-center justify-center gap-2 text-sm text-muted-foreground">
-              <Loader2 className="w-4 h-4 animate-spin" /> Loading report...
-            </div>
+            <Loading label="Loading report..." />
           ) : detail?.error ? (
-            <p className="text-sm text-rose-700 dark:text-rose-400 flex items-center gap-2"><AlertCircle className="w-4 h-4" /> {detail.error}</p>
+            <p className="flex items-center gap-2 text-sm text-red-700 dark:text-red-400"><AlertCircle className="h-4 w-4" aria-hidden /> {detail.error}</p>
           ) : selected ? (
             <>
-              <div className="glass-panel rounded-2xl border border-border p-5 space-y-3">
+              <div className="space-y-3 rounded-xl border border-border bg-card p-5 shadow-sm">
                 <div className="flex flex-wrap items-center gap-2">
-                  <h2 className="text-sm font-bold text-foreground">{formatPeriod(selected.periodStart, selected.periodEnd)}</h2>
+                  <h2 className="text-base font-semibold text-foreground">{formatPeriod(selected.periodStart, selected.periodEnd)}</h2>
                   <StatusBadge status={selected.status} />
                 </div>
-                {selected.notes && <p className="text-xs text-muted-foreground">Release notes: {selected.notes}</p>}
+                {selected.notes && <p className="text-sm text-muted-foreground">Release notes: {selected.notes}</p>}
                 {selected.status === "Withdrawn" && (
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-sm text-muted-foreground">
                     Withdrawn {formatDate(selected.withdrawnAt)} by {selected.withdrawnBy ?? "unknown"}
                     {selected.withdrawalReason ? `: ${selected.withdrawalReason}` : ""}
                   </p>
                 )}
                 {selected.status !== "Withdrawn" && (
                   <>
-                    <label className="block text-xs font-semibold text-foreground">
+                    <label className="block text-sm font-medium text-foreground">
                       {selected.status === "Draft" ? "Notes (shown publicly as release notes when publishing; optional reason when withdrawing)" : "Public reason for withdrawal (required, at least 10 characters)"}
                       <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={3} maxLength={2000} className={inputClass} />
                     </label>
                     <div className="flex flex-wrap gap-2">
                       {selected.status === "Draft" && (
-                        <button
-                          type="button"
-                          onClick={() => act("publish")}
-                          disabled={busy != null}
-                          className="py-2 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white text-sm font-semibold inline-flex items-center gap-2 cursor-pointer"
-                        >
-                          {busy === "publish" ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />} Publish
-                        </button>
+                        <Button type="button" onClick={() => act("publish")} disabled={busy != null}>
+                          {busy === "publish" ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : <Send className="h-4 w-4" aria-hidden />} Publish
+                        </Button>
                       )}
-                      <button
+                      <Button
                         type="button"
+                        variant="secondary"
                         onClick={() => act("withdraw")}
                         disabled={busy != null || (selected.status === "Published" && notes.trim().length < 10)}
-                        className="py-2 px-4 rounded-xl bg-card hover:bg-muted border border-border disabled:opacity-50 text-sm font-semibold text-foreground inline-flex items-center gap-2 cursor-pointer"
                       >
-                        {busy === "withdraw" ? <Loader2 className="w-4 h-4 animate-spin" /> : <Undo2 className="w-4 h-4" />} {selected.status === "Draft" ? "Discard draft" : "Withdraw"}
-                      </button>
+                        {busy === "withdraw" ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : <Undo2 className="h-4 w-4" aria-hidden />} {selected.status === "Draft" ? "Discard draft" : "Withdraw"}
+                      </Button>
                     </div>
                   </>
                 )}
@@ -286,7 +266,7 @@ export default function AdminTransparencyPage() {
               {selected.report ? (
                 <TransparencyReportView report={selected.report} meta={selected} draft={selected.status !== "Published"} />
               ) : (
-                <p className="text-sm text-rose-700 dark:text-rose-400">We couldn&apos;t open this report. Please try again or create it again.</p>
+                <p className="text-sm text-red-700 dark:text-red-400">We couldn&apos;t open this report. Please try again or create it again.</p>
               )}
             </>
           ) : null}

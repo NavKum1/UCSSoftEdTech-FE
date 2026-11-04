@@ -40,7 +40,7 @@ const KIND: Record<string, { label: string; icon: React.ComponentType<{ classNam
 };
 
 const date = (iso: string) => new Date(iso).toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" });
-const card = "rounded-2xl border border-border bg-card shadow-[0_1px_2px_rgb(16_24_40/0.04)]";
+const card = "rounded-xl border border-border bg-card shadow-sm";
 
 export default function PassportView({ data, publicView }: { data: PassportData; publicView: boolean }) {
   const en = useEn();
@@ -51,17 +51,19 @@ export default function PassportView({ data, publicView }: { data: PassportData;
     .map((n) => n[0]?.toUpperCase())
     .join("");
   const verifiedCount = data.badges.filter((b) => b.verified).length;
+  // The shared page has no other heading; on the member's own page the page title is the h1
+  const NameHeading = publicView ? "h1" : "h2";
   return (
     <div className="space-y-6">
       <section className={`${card} flex flex-col gap-5 p-6 sm:flex-row sm:items-center sm:p-8`}>
         <span
           aria-hidden="true"
-          className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-linear-to-br from-indigo-600 to-violet-600 text-xl font-semibold text-white shadow-[0_8px_24px_-8px_rgb(79_70_229/0.6)]"
+          className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-indigo-600 text-lg font-semibold text-white"
         >
           {initials || "?"}
         </span>
         <div className="min-w-0 flex-1">
-          <h1 className="truncate text-2xl font-semibold tracking-tight text-foreground">{data.fullName || "Name not set"}</h1>
+          <NameHeading className="truncate text-xl font-semibold tracking-tight text-foreground">{data.fullName || en("Name not set")}</NameHeading>
           {data.targetRole && <p className="mt-0.5 text-sm text-muted-foreground">{en("Aiming for {targetRole}", { targetRole: data.targetRole })}</p>}
           <p className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
             <span className="inline-flex items-center gap-1">
@@ -101,7 +103,7 @@ export default function PassportView({ data, publicView }: { data: PassportData;
                       <p className="flex items-center gap-2 truncate text-sm font-medium text-foreground">
                         {s.skillCategory}
                         {s.verified && (
-                          <span className="inline-flex items-center gap-1 rounded-full bg-emerald-600/10 px-2 py-0.5 text-[11px] font-semibold text-emerald-700 dark:text-emerald-400">
+                          <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-medium text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300">
                             <BadgeCheck aria-hidden="true" className="h-3 w-3" />
                             {en("Verified")}
                           </span>
@@ -136,12 +138,12 @@ export default function PassportView({ data, publicView }: { data: PassportData;
             <ul className="mt-3 space-y-2">
               {data.credentials.map((c) => (
                 <li key={c.verificationUrl}>
-                  <Link href={c.verificationUrl} className="block rounded-xl border border-border p-3 hover:bg-muted/50 focus-visible:outline-2 focus-visible:outline-indigo-600">
+                  <Link href={c.verificationUrl} className="block rounded-lg border border-border p-3 hover:bg-muted/50 focus-visible:outline-2 focus-visible:outline-indigo-600">
                     <span className="block text-sm font-medium text-foreground">{c.title}</span>
                     <span className="mt-0.5 block text-xs text-muted-foreground">
                       {en("{score}% · issued {date}{value}", { score: Math.round(c.score), date: date(c.issuedAt), value: c.underReview ? en(" · under review") : "" })}
                     </span>
-                    <span className="mt-1.5 inline-flex items-center gap-1 text-xs font-semibold text-indigo-700 dark:text-indigo-300">{en("Verify")}</span>
+                    <span className="mt-1.5 inline-flex items-center gap-1 text-xs font-medium text-indigo-700 dark:text-indigo-300">{en("Verify")}</span>
                   </Link>
                 </li>
               ))}

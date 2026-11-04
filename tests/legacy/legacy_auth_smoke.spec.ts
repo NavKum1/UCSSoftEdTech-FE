@@ -62,7 +62,7 @@ const PAGES: LegacyPage[] = [
   // Platform / partner admin pages
   { path: "/admin/system", persona: "superadmin", calls: ["/api/system/queue/status"] },
   { path: "/admin/resilience", persona: "superadmin", calls: ["/api/resilience/regions"] },
-  { path: "/executive/governance", persona: "superadmin", calls: ["/api/governance/system-rollup/"] },
+  { path: "/executive/governance", persona: "superadmin", calls: ["/api/governance/system-rollup"] },
   { path: "/edulexa/dashboard", persona: "superadmin", calls: ["/v1/dashboard/metrics"] },
   { path: "/partner/billing", persona: "superadmin", calls: ["/api/billing/enterprise/subscription"] },
   { path: "/partner/dashboard", persona: "superadmin", calls: ["/api/partner/dashboard"] },

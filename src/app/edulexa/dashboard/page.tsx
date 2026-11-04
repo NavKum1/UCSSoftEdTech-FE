@@ -7,7 +7,9 @@
  *   check of the number's country, happens only in calling hours in the person's time zone, opens by saying who is
  *   calling, that it is recorded and how to opt out; opt-outs stop calls at once; every decision is in the audit trail.
  * - Protected content: signed, watermarked links and leak lookup.
- * - Mentor payments: TDS at the payee's rate, an NEFT batch file, and a TDS statement (not a Form 16A, which comes from TRACES).
+ * - Mentor payments, by the school's country: in India TDS at the payee's rate, an NEFT batch file and a TDS statement (not a
+ *   Form 16A, which comes from TRACES); elsewhere the school's currency, an optional tax ID, the bank's routing code, withholding
+ *   only when the school must, a payment batch file and a payee statement by calendar quarter.
  * - Integration: the pixel snippet (consent-based) and a signed webhook test.
  * (This page used to show invented call recoveries, discounts, payees, a made-up Form 16A and fixed platform claims.)
  */
@@ -17,6 +19,7 @@ import { AlertTriangle, CheckCircle2, Copy, Download, PhoneCall, Search, Shield,
 import { AccessNotice, useLatestRef, useLegacyApi } from "@/lib/legacyApi";
 import { getApiBaseUrl } from "@/lib/apiClient";
 import { useEn } from "@/lib/english/EnglishProvider";
+import { EmptyState, Loading, PageHeader, StatTile, Tabs, brandFill, buttonClass } from "@/components/career/ui";
 
 interface Metrics {
   tenantId: string;
@@ -32,6 +35,8 @@ interface Metrics {
   totalMentorPayoutsGross: number;
   totalTdsWithheld: number;
   pendingMentorPayoutsCount: number;
+  country: string;
+  currency: string;
 }
 interface Country {
   code: string;
@@ -109,6 +114,7 @@ interface Payout {
   payoutStatus: string;
   paymentBatchReference: string | null;
   createdAt: string;
+  currency: string;
 }
 interface TdsStatement {
   payeeName: string;
@@ -117,14 +123,17 @@ interface TdsStatement {
   totalTdsDeducted: number;
   quarters: { quarter: string; grossAmount: number; tdsDeducted: number }[];
   note: string;
+  currency: string;
 }
 
 type Tab = "calls" | "content" | "payments" | "integration";
-const card = "rounded-2xl border border-border bg-card shadow-[0_1px_2px_rgb(16_24_40/0.04)]";
-const input = "mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm";
-const button = "inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-500 disabled:opacity-60";
-const ghost = "inline-flex items-center gap-2 rounded-xl border border-border px-3 py-2 text-sm font-medium hover:bg-muted disabled:opacity-60";
-const inr = (n: number) => new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 2 }).format(n);
+const card = "rounded-xl border border-border bg-card shadow-sm";
+const input = "mt-1 w-full rounded-lg border border-border bg-card px-3 py-2 text-sm shadow-sm";
+const button = buttonClass("primary");
+const ghost = buttonClass("secondary");
+// Amounts in the payment currency (Indian digit grouping for rupees)
+const money = (n: number, currency: string) =>
+  new Intl.NumberFormat(currency === "INR" ? "en-IN" : "en-US", { style: "currency", currency, maximumFractionDigits: 2 }).format(n);
 const when = (s: string | null) => (s ? new Date(s).toLocaleString() : "—");
 const STATUS: Record<string, string> = {
   Placed: "text-emerald-700 dark:text-emerald-400",
@@ -146,12 +155,7 @@ function Field({ label, children, hint }: { label: string; children: React.React
 }
 
 function Stat({ label, value }: { label: string; value: React.ReactNode }) {
-  return (
-    <div className={`${card} p-4`}>
-      <dt className="text-xs text-muted-foreground">{label}</dt>
-      <dd className="mt-1 text-xl font-semibold tabular-nums">{value}</dd>
-    </div>
-  );
+  return <StatTile label={label} value={value} />;
 }
 
 export default function EdulexaConsolePage() {
@@ -233,48 +237,33 @@ export default function EdulexaConsolePage() {
   if (access) return <AccessNotice problem={access} feature="the Edulexa console" />;
   if (failed)
     return (
-      <div className="mx-auto max-w-md py-16 text-center">
-        <AlertTriangle aria-hidden="true" className="mx-auto h-8 w-8 text-amber-600" />
-        <h1 className="mt-3 text-xl font-semibold">{en("We couldn't load the console")}</h1>
-        <p className="mt-2 text-sm text-muted-foreground">{en("Please refresh the page to try again.")}</p>
+      <div>
+        <PageHeader title={en("Edulexa console")} />
+        <EmptyState title={en("We couldn't load the console")}>{en("Please refresh the page to try again.")}</EmptyState>
       </div>
     );
   if (!metrics)
     return (
-      <div aria-busy="true" aria-label={en("Loading the console")}>
-        <div className={`${card} h-40 animate-pulse motion-reduce:animate-none`} />
+      <div aria-busy="true">
+        <Loading label={en("Loading the console")} />
       </div>
     );
 
-  const tabs: [Tab, string, React.ElementType][] = [
-    ["calls", "Follow-up calls", PhoneCall],
-    ["content", "Protected content", Shield],
-    ["payments", "Mentor payments", Wallet],
-    ["integration", "Integration", Webhook],
+  const tabs: { id: Tab; label: string; icon: React.ReactNode }[] = [
+    { id: "calls", label: en("Follow-up calls"), icon: <PhoneCall /> },
+    { id: "content", label: en("Protected content"), icon: <Shield /> },
+    { id: "payments", label: en("Mentor payments"), icon: <Wallet /> },
+    { id: "integration", label: en("Integration"), icon: <Webhook /> },
   ];
 
   return (
     <div className="space-y-6">
-      <header>
-        <h1 className="text-2xl font-semibold tracking-tight">{en("Edulexa console")}</h1>
-        <p className="mt-1 max-w-3xl text-sm text-muted-foreground">
-          {en("Follow-up calls, protected content, mentor payments and integration for your organisation. Every number here is a count of your own records.")}
-        </p>
-      </header>
+      <PageHeader
+        title={en("Edulexa console")}
+        description={en("Follow-up calls, protected content, mentor payments and integration for your organization. Every number here is a count of your own records.")}
+      />
 
-      <div role="tablist" aria-label={en("Console sections")} className="flex flex-wrap gap-2">
-        {tabs.map(([key, label, Icon]) => (
-          <button
-            key={key}
-            role="tab"
-            aria-selected={tab === key}
-            onClick={() => setTab(key)}
-            className={`inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-medium ${tab === key ? "bg-indigo-600 text-white" : "border border-border hover:bg-muted"}`}
-          >
-            <Icon aria-hidden="true" className="h-4 w-4" /> {en(label)}
-          </button>
-        ))}
-      </div>
+      <Tabs items={tabs} value={tab} onChange={setTab} label={en("Console sections")} />
 
       {notice && (
         <p role="status" className={`flex items-start gap-2 text-sm ${notice.ok ? "text-emerald-700 dark:text-emerald-400" : "text-red-700 dark:text-red-400"}`}>
@@ -320,14 +309,14 @@ function CallsTab({ settings, metrics, calls, consents, optOuts, audit, busy, se
 
   return (
     <div className="space-y-6">
-      <dl className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
         <Stat label={en("Requested")} value={metrics.followUpCallsRequested} />
         <Stat label={en("Placed")} value={metrics.followUpCallsPlaced} />
         <Stat label={en("Blocked by a check")} value={metrics.followUpCallsBlocked} />
         <Stat label={en("Scheduled")} value={metrics.followUpCallsScheduled} />
         <Stat label={en("Active consents")} value={metrics.activeConsents} />
         <Stat label={en("Opted out")} value={metrics.optOuts} />
-      </dl>
+      </div>
 
       <section className={`${card} space-y-4 p-5`} aria-labelledby="vc-settings">
         <h2 id="vc-settings" className="text-base font-semibold">
@@ -351,10 +340,10 @@ function CallsTab({ settings, metrics, calls, consents, optOuts, audit, busy, se
             <input className={input} type="time" value={form.windowEnd} onChange={(e) => setForm({ ...form, windowEnd: e.target.value })} />
           </Field>
         </div>
-        <button className={button} disabled={busy} onClick={() => void send("/v1/voice/settings", "PUT", form, "Settings saved.")}>
+        <button className={button} style={brandFill} disabled={busy} onClick={() => void send("/v1/voice/settings", "PUT", form, "Settings saved.")}>
           {en("Save settings")}
         </button>
-        <div className="rounded-xl bg-muted/60 p-3 text-sm">
+        <div className="rounded-lg bg-muted/60 p-3 text-sm">
           <p className="font-medium">{en("Every call opens with:")}</p>
           <p className="mt-1 italic">{en("“")}{settings.disclosure}{en("”")}</p>
         </div>
@@ -419,7 +408,7 @@ function CallsTab({ settings, metrics, calls, consents, optOuts, audit, busy, se
             <textarea className={input} rows={3} value={consent.consentText} maxLength={1000} onChange={(e) => setConsent({ ...consent, consentText: e.target.value })} />
           </Field>
           <button
-            className={button}
+            className={button} style={brandFill}
             disabled={busy}
             onClick={async () => {
               if (await send("/v1/voice/consents", "POST", consent, "Consent recorded.")) setConsent({ name: "", phone: "", email: "", timeZone: browserZone, consentText: "" });
@@ -444,7 +433,7 @@ function CallsTab({ settings, metrics, calls, consents, optOuts, audit, busy, se
             <input className={input} value={request.topic} maxLength={200} onChange={(e) => setRequest({ ...request, topic: e.target.value })} />
           </Field>
           <button
-            className={button}
+            className={button} style={brandFill}
             disabled={busy}
             onClick={async () => {
               const call = await send<Call>("/v1/voice/calls", "POST", request, "Call requested.");
@@ -593,11 +582,11 @@ function ContentTab({ metrics, assets, busy, send }: { metrics: Metrics; assets:
 
   return (
     <div className="space-y-6">
-      <dl className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
         <Stat label={en("Protected assets")} value={metrics.protectedAssetsCount} />
         <Stat label={en("Signed links issued")} value={metrics.signedSessionsCount} />
         <Stat label={en("Links still valid")} value={metrics.activeSignedSessionsCount} />
-      </dl>
+      </div>
       <div className="grid gap-6 lg:grid-cols-2">
         <section className={`${card} space-y-3 p-5`} aria-labelledby="pc-sign">
           <h2 id="pc-sign" className="text-base font-semibold">
@@ -619,14 +608,14 @@ function ContentTab({ metrics, assets, busy, send }: { metrics: Metrics; assets:
             </select>
           </Field>
           <button
-            className={button}
+            className={button} style={brandFill}
             disabled={busy}
             onClick={async () => setSigned(await send<{ signedUrl: string; watermarkStamp: string; expiresAt: string }>("/v1/assets/sign", "POST", asset, "Link signed."))}
           >
             {en("Sign a link")}
           </button>
           {signed && (
-            <div className="rounded-xl bg-muted/60 p-3 text-xs">
+            <div className="rounded-lg bg-muted/60 p-3 text-xs">
               <p className="break-all font-mono">{signed.signedUrl}</p>
               <p className="mt-1">{en("Watermark: {watermarkStamp}", { watermarkStamp: signed.watermarkStamp })}</p>
               <p>{en("Expires {expiresAt}", { expiresAt: when(signed.expiresAt) })}</p>
@@ -642,7 +631,7 @@ function ContentTab({ metrics, assets, busy, send }: { metrics: Metrics; assets:
             <input className={input} value={leak} onChange={(e) => setLeak(e.target.value)} />
           </Field>
           <button
-            className={button}
+            className={button} style={brandFill}
             disabled={busy || leak.trim().length < 4}
             onClick={async () => setMatch(await send("/v1/assets/leak-attribution", "POST", { leakSnippetOrFingerprint: leak }, "Lookup done."))}
           >
@@ -650,7 +639,7 @@ function ContentTab({ metrics, assets, busy, send }: { metrics: Metrics; assets:
           </button>
           {match &&
             (match.attributionFound ? (
-              <div className="rounded-xl bg-muted/60 p-3 text-sm">
+              <div className="rounded-lg bg-muted/60 p-3 text-sm">
                 <p>
                   {en("Matched a viewing session of ")}<span className="font-medium">{match.assetTitle}</span> by {match.leakerEmail || "an unknown viewer"} on{" "}
                   {when(match.sessionTimestamp)}{en(" (matched on ")}{match.matchedOn}).
@@ -704,37 +693,41 @@ function PaymentsTab({ metrics, payouts, busy, send, apiFetch, setNotice }: {
   setNotice: (n: { ok: boolean; text: string } | null) => void;
 }) {
   const en = useEn();
-  const empty = { mentorName: "", mentorEmail: "", mentorPan: "", bankName: "", bankAccountNumber: "", bankIfscCode: "", contractType: "PerSession", totalSessionsOrHours: "", ratePerUnit: "", tdsRatePercent: "" };
+  // The school's country decides the rules: India keeps PAN, IFSC, TDS and NEFT; elsewhere a tax id, routing code and optional withholding
+  const india = metrics.country === "IN";
+  const cur = metrics.currency || "USD";
+  const empty = { mentorName: "", mentorEmail: "", payeeTaxId: "", bankName: "", bankAccountNumber: "", bankRoutingCode: "", contractType: "PerSession", totalSessionsOrHours: "", ratePerUnit: "", withholdingRatePercent: "" };
   const [p, setP] = useState(empty);
-  const [pan, setPan] = useState("");
+  const [taxId, setTaxId] = useState("");
   const [statement, setStatement] = useState<TdsStatement | null>(null);
+  const withheld = india ? en("TDS") : en("Withheld");
 
-  const exportNeft = async () => {
-    const res = await apiFetch("/v1/payouts/export-neft", { method: "POST" });
+  const exportBatch = async () => {
+    const res = await apiFetch("/v1/payouts/export", { method: "POST" });
     if (!res.ok) return setNotice({ ok: false, text: en("We couldn't create the export. Please try again.") });
     const url = URL.createObjectURL(await res.blob());
     const a = document.createElement("a");
     a.href = url;
-    a.download = `neft-batch-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.download = `${india ? "neft-batch" : "payment-batch"}-${new Date().toISOString().slice(0, 10)}.csv`;
     a.click();
     URL.revokeObjectURL(url);
-    setNotice({ ok: true, text: en("NEFT batch file downloaded; the payments in it are marked exported.") });
+    setNotice({ ok: true, text: india ? en("NEFT batch file downloaded; the payments in it are marked exported.") : en("Payment batch file downloaded; the payments in it are marked exported.") });
   };
 
   const lookup = async () => {
     setStatement(null);
-    const res = await apiFetch(`/v1/payouts/tds-statement?pan=${encodeURIComponent(pan.trim())}`);
+    const res = await apiFetch(`/v1/payouts/statement?taxId=${encodeURIComponent(taxId.trim())}`);
     if (res.ok) setStatement((await res.json()) as TdsStatement);
-    else setNotice({ ok: false, text: res.status === 404 ? "No recorded payments for that PAN." : "We couldn't look that up. Please try again." });
+    else setNotice({ ok: false, text: res.status === 404 ? en("No recorded payments for that tax id.") : en("We couldn't look that up. Please try again.") });
   };
 
   return (
     <div className="space-y-6">
-      <dl className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-        <Stat label={en("Recorded (gross)")} value={inr(metrics.totalMentorPayoutsGross)} />
-        <Stat label={en("TDS withheld")} value={inr(metrics.totalTdsWithheld)} />
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+        <Stat label={en("Recorded (gross)")} value={money(metrics.totalMentorPayoutsGross, cur)} />
+        <Stat label={india ? en("TDS withheld") : en("Tax withheld")} value={money(metrics.totalTdsWithheld, cur)} />
         <Stat label={en("Waiting for export")} value={metrics.pendingMentorPayoutsCount} />
-      </dl>
+      </div>
       <div className="grid gap-6 lg:grid-cols-2">
         <section className={`${card} space-y-3 p-5`} aria-labelledby="mp-record">
           <h2 id="mp-record" className="text-base font-semibold">
@@ -747,17 +740,23 @@ function PaymentsTab({ metrics, payouts, busy, send, apiFetch, setNotice }: {
             <Field label={en("Email (optional)")}>
               <input className={input} value={p.mentorEmail} onChange={(e) => setP({ ...p, mentorEmail: e.target.value })} />
             </Field>
-            <Field label={en("PAN")}>
-              <input className={input} value={p.mentorPan} maxLength={10} onChange={(e) => setP({ ...p, mentorPan: e.target.value.toUpperCase() })} />
+            <Field
+              label={india ? en("PAN") : en("Tax ID (optional)")}
+              hint={india ? undefined : en("For example an EIN or SSN in the US. Leave it blank if you don't report payments to this payee.")}
+            >
+              <input className={input} value={p.payeeTaxId} maxLength={india ? 10 : 24} onChange={(e) => setP({ ...p, payeeTaxId: e.target.value.toUpperCase() })} />
             </Field>
             <Field label={en("Bank (optional)")}>
               <input className={input} value={p.bankName} onChange={(e) => setP({ ...p, bankName: e.target.value })} />
             </Field>
-            <Field label={en("Account number")}>
-              <input className={input} value={p.bankAccountNumber} inputMode="numeric" onChange={(e) => setP({ ...p, bankAccountNumber: e.target.value })} />
+            <Field label={india ? en("Account number") : en("Account number or IBAN")}>
+              <input className={input} value={p.bankAccountNumber} inputMode={india ? "numeric" : undefined} onChange={(e) => setP({ ...p, bankAccountNumber: e.target.value })} />
             </Field>
-            <Field label={en("IFSC")}>
-              <input className={input} value={p.bankIfscCode} maxLength={11} onChange={(e) => setP({ ...p, bankIfscCode: e.target.value.toUpperCase() })} />
+            <Field
+              label={india ? en("IFSC") : en("Routing code")}
+              hint={india ? undefined : en("The routing number in the US, the sort code in the UK, or the bank's BIC (SWIFT code).")}
+            >
+              <input className={input} value={p.bankRoutingCode} maxLength={india ? 11 : 14} onChange={(e) => setP({ ...p, bankRoutingCode: e.target.value.toUpperCase() })} />
             </Field>
             <Field label={en("Paid per")}>
               <select className={input} value={p.contractType} onChange={(e) => setP({ ...p, contractType: e.target.value })}>
@@ -768,22 +767,27 @@ function PaymentsTab({ metrics, payouts, busy, send, apiFetch, setNotice }: {
             <Field label={p.contractType === "Hourly" ? en("Hours") : en("Sessions")}>
               <input className={input} type="number" min="0" step="0.5" value={p.totalSessionsOrHours} onChange={(e) => setP({ ...p, totalSessionsOrHours: e.target.value })} />
             </Field>
-            <Field label={en("Rate (INR)")}>
+            <Field label={en("Rate ({currency})", { currency: cur })}>
               <input className={input} type="number" min="0" value={p.ratePerUnit} onChange={(e) => setP({ ...p, ratePerUnit: e.target.value })} />
             </Field>
-            <Field label={en("TDS rate (%)")} hint={en("The rate that applies to this payee, e.g. 10 under section 194J for professional fees.")}>
-              <input className={input} type="number" min="0" max="40" step="0.1" value={p.tdsRatePercent} onChange={(e) => setP({ ...p, tdsRatePercent: e.target.value })} />
+            <Field
+              label={india ? en("TDS rate (%)") : en("Withholding (%), optional")}
+              hint={india
+                ? en("The rate that applies to this payee, e.g. 10 under section 194J for professional fees.")
+                : en("Leave blank unless you must withhold tax from this payee, such as US backup withholding when there is no tax ID.")}
+            >
+              <input className={input} type="number" min="0" max={india ? 40 : 50} step="0.1" value={p.withholdingRatePercent} onChange={(e) => setP({ ...p, withholdingRatePercent: e.target.value })} />
             </Field>
           </div>
           <button
-            className={button}
+            className={button} style={brandFill}
             disabled={busy}
             onClick={async () => {
               const body = {
                 ...p,
                 totalSessionsOrHours: Number(p.totalSessionsOrHours) || 0,
                 ratePerUnit: Number(p.ratePerUnit) || 0,
-                tdsRatePercent: p.tdsRatePercent === "" ? null : Number(p.tdsRatePercent),
+                withholdingRatePercent: p.withholdingRatePercent === "" ? null : Number(p.withholdingRatePercent),
               };
               if (await send("/v1/payouts", "POST", body, "Payment recorded.")) setP(empty);
             }}
@@ -793,31 +797,33 @@ function PaymentsTab({ metrics, payouts, busy, send, apiFetch, setNotice }: {
         </section>
         <section className={`${card} space-y-3 p-5`} aria-labelledby="mp-tds">
           <h2 id="mp-tds" className="text-base font-semibold">
-            {en("TDS statement")}
+            {india ? en("TDS statement") : en("Payee statement")}
           </h2>
           <p className="text-sm text-muted-foreground">
-            {en("From the payments recorded here, by quarter. It isn't a Form 16A: download that from TRACES after filing the quarterly TDS return.")}
+            {india
+              ? en("From the payments recorded here, by quarter. It isn't a Form 16A: download that from TRACES after filing the quarterly TDS return.")
+              : en("A payee's payments by quarter, from the records here, to help with year-end forms such as the US Form 1099-NEC.")}
           </p>
-          <Field label={en("Payee PAN")}>
-            <input className={input} value={pan} maxLength={10} onChange={(e) => setPan(e.target.value.toUpperCase())} />
+          <Field label={india ? en("Payee PAN") : en("Payee tax ID")}>
+            <input className={input} value={taxId} maxLength={india ? 10 : 24} onChange={(e) => setTaxId(e.target.value.toUpperCase())} />
           </Field>
-          <button className={button} disabled={pan.trim().length !== 10} onClick={() => void lookup()}>
+          <button className={button} style={brandFill} disabled={india ? taxId.trim().length !== 10 : taxId.trim().length < 4} onClick={() => void lookup()}>
             {en("Show statement")}
           </button>
           {statement && (
-            <div className="rounded-xl bg-muted/60 p-3 text-sm">
+            <div className="rounded-lg bg-muted/60 p-3 text-sm">
               <p className="font-medium">
                 {statement.payeeName} ({statement.payeePanMasked})
               </p>
               <ul className="mt-2 space-y-1">
                 {statement.quarters.map((q) => (
                   <li key={q.quarter}>
-                    {en("{quarter}: paid {grossAmount}, TDS {tdsDeducted}", { quarter: q.quarter, grossAmount: inr(q.grossAmount), tdsDeducted: inr(q.tdsDeducted) })}
+                    {en("{quarter}: paid {grossAmount}, {withheld} {tdsDeducted}", { quarter: q.quarter, grossAmount: money(q.grossAmount, statement.currency || cur), withheld, tdsDeducted: money(q.tdsDeducted, statement.currency || cur) })}
                   </li>
                 ))}
               </ul>
               <p className="mt-2">
-                {en("Total: paid {totalGrossAmount}, TDS {totalTdsDeducted}", { totalGrossAmount: inr(statement.totalGrossAmount), totalTdsDeducted: inr(statement.totalTdsDeducted) })}
+                {en("Total: paid {totalGrossAmount}, {withheld} {totalTdsDeducted}", { totalGrossAmount: money(statement.totalGrossAmount, statement.currency || cur), withheld, totalTdsDeducted: money(statement.totalTdsDeducted, statement.currency || cur) })}
               </p>
               <p className="mt-2 text-xs text-muted-foreground">{statement.note}</p>
             </div>
@@ -829,8 +835,9 @@ function PaymentsTab({ metrics, payouts, busy, send, apiFetch, setNotice }: {
           <h2 id="mp-list" className="text-base font-semibold">
             {en("Payments")}
           </h2>
-          <button className={ghost} disabled={busy || metrics.pendingMentorPayoutsCount === 0} onClick={() => void exportNeft()}>
-            <Download aria-hidden="true" className="h-4 w-4" />{en(" Export NEFT batch file")}
+          <button className={ghost} disabled={busy || metrics.pendingMentorPayoutsCount === 0} onClick={() => void exportBatch()}>
+            <Download aria-hidden="true" className="h-4 w-4" />
+            {india ? en("Export NEFT batch file") : en("Export payment batch file")}
           </button>
         </div>
         {payouts.length === 0 ? (
@@ -843,7 +850,7 @@ function PaymentsTab({ metrics, payouts, busy, send, apiFetch, setNotice }: {
                 <th className="py-2 pe-3 font-medium">{en("Payee")}</th>
                 <th className="py-2 pe-3 font-medium">{en("Work")}</th>
                 <th className="py-2 pe-3 font-medium">{en("Gross")}</th>
-                <th className="py-2 pe-3 font-medium">{en("TDS")}</th>
+                <th className="py-2 pe-3 font-medium">{withheld}</th>
                 <th className="py-2 pe-3 font-medium">{en("Net")}</th>
                 <th className="py-2 font-medium">{en("Status")}</th>
               </tr>
@@ -854,13 +861,13 @@ function PaymentsTab({ metrics, payouts, busy, send, apiFetch, setNotice }: {
                   <td className="py-2 pe-3 whitespace-nowrap">{new Date(x.createdAt).toLocaleDateString()}</td>
                   <td className="py-2 pe-3">{x.mentorName}</td>
                   <td className="py-2 pe-3">
-                    {x.totalSessionsOrHours} {x.contractType === "Hourly" ? "h" : "sessions"} × {inr(x.ratePerUnit)}
+                    {x.totalSessionsOrHours} {x.contractType === "Hourly" ? en("h") : en("sessions")} × {money(x.ratePerUnit, x.currency || cur)}
                   </td>
-                  <td className="py-2 pe-3 tabular-nums">{inr(x.grossAmount)}</td>
+                  <td className="py-2 pe-3 tabular-nums">{money(x.grossAmount, x.currency || cur)}</td>
                   <td className="py-2 pe-3 tabular-nums">
-                    {inr(x.tdsAmount)} <span className="text-xs text-muted-foreground">({x.tdsRatePercent}%)</span>
+                    {money(x.tdsAmount, x.currency || cur)} <span className="text-xs text-muted-foreground">({x.tdsRatePercent}%)</span>
                   </td>
-                  <td className="py-2 pe-3 tabular-nums">{inr(x.netAmount)}</td>
+                  <td className="py-2 pe-3 tabular-nums">{money(x.netAmount, x.currency || cur)}</td>
                   <td className="py-2">
                     {x.payoutStatus}
                     {x.paymentBatchReference && <span className="block text-xs text-muted-foreground">{x.paymentBatchReference}</span>}
@@ -901,9 +908,9 @@ function IntegrationTab({ tenantId, busy, send }: { tenantId: string; busy: bool
           {en("Checkout pixel")}
         </h2>
         <p className="text-sm text-muted-foreground">
-          {en("Add it to your checkout page. It sends only what your code passes to it; a follow-up call is requested only when the person ticked a box agreeing to be called, and the call still goes through every check. Your organisation needs an active API key for the pixel to work.")}
+          {en("Add it to your checkout page. It sends only what your code passes to it; a follow-up call is requested only when the person ticked a box agreeing to be called, and the call still goes through every check. Your organization needs an active API key for the pixel to work.")}
         </p>
-        <pre className="overflow-x-auto rounded-xl bg-muted/60 p-3 text-xs">
+        <pre className="overflow-x-auto rounded-lg bg-muted/60 p-3 text-xs">
           <code>{snippet}</code>
         </pre>
         <button
@@ -923,7 +930,7 @@ function IntegrationTab({ tenantId, busy, send }: { tenantId: string; busy: bool
           {en("Sends a signed test event (header X-Edulexa-Signature: t=timestamp,v1=HMAC-SHA256 of “timestamp.body” with your API key) to your webhook URL.")}
         </p>
         <button
-          className={button}
+          className={button} style={brandFill}
           disabled={busy}
           onClick={async () => setResult(await send("/v1/webhooks/test-dispatch", "POST", { eventType: "test.ping", payload: { test: true } }, "Test sent."))}
         >

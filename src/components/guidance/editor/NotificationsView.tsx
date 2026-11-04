@@ -122,7 +122,7 @@ export default function NotificationsView({ instituteId, forms, canEdit }: { ins
         {STATUSES.map(([k, label]) => {
           const n = k ? (counts[k] ?? 0) : total;
           return (
-            <button key={k} type="button" aria-pressed={status === k} onClick={() => setStatus(k)} className={`rounded-full border px-3 py-1.5 text-xs font-medium ${status === k ? "border-cyan-700 bg-cyan-700 text-white" : "border-border bg-card hover:bg-muted"}`}>
+            <button key={k} type="button" aria-pressed={status === k} onClick={() => setStatus(k)} className={`rounded-full border px-3 py-1.5 text-xs font-medium ${status === k ? "border-indigo-700 bg-indigo-700 text-white" : "border-border bg-card hover:bg-muted"}`}>
               {en(label)} <span className="tabular-nums opacity-75">{n}</span>
             </button>
           );
@@ -152,13 +152,13 @@ export default function NotificationsView({ instituteId, forms, canEdit }: { ins
       )}
 
       {!rows ? (
-        <div className="h-40 animate-pulse rounded-2xl bg-muted motion-reduce:animate-none" aria-busy="true" />
+        <div className="h-40 animate-pulse rounded-xl bg-muted motion-reduce:animate-none" aria-busy="true" />
       ) : rows.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-border p-8 text-center text-sm text-muted-foreground">
+        <div className="rounded-xl border border-dashed border-border p-8 text-center text-sm text-muted-foreground">
           {en("No messages {value}yet. Set up automatic messages on a form's", { value: status ? en("with this status ") : "" })}{" "}<span className="font-medium">{en("Automatic messages")}</span> tab.
         </div>
       ) : (
-        <div className="overflow-x-auto rounded-2xl border border-border bg-card">
+        <div className="overflow-x-auto rounded-xl border border-border bg-card shadow-sm">
           <table className="w-full text-sm">
             <thead className="text-start text-xs text-muted-foreground">
               <tr>
@@ -188,8 +188,8 @@ export default function NotificationsView({ instituteId, forms, canEdit }: { ins
                       <span className="block truncate text-xs text-muted-foreground">{r.form}</span>
                     </td>
                     <td className="px-3 py-2">
-                      <span className={`inline-flex rounded-full px-2 py-0.5 text-[11px] font-medium ${TONE[r.status] ?? TONE.Skipped}`}>{r.status}</span>
-                      {r.openedAt && <span className="ms-1 text-[11px] text-emerald-700 dark:text-emerald-400">{en("Opened")}</span>}
+                      <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${TONE[r.status] ?? TONE.Skipped}`}>{r.status}</span>
+                      {r.openedAt && <span className="ms-1 text-xs text-emerald-700 dark:text-emerald-400">{en("Opened")}</span>}
                       {(r.status === "Failed" || r.status === "Skipped") && r.error && <span className="mt-0.5 block max-w-64 truncate text-xs text-muted-foreground">{r.error}</span>}
                     </td>
                   </tr>
@@ -222,12 +222,12 @@ export default function NotificationsView({ instituteId, forms, canEdit }: { ins
             <dl className="mt-4 grid grid-cols-[7rem_minmax(0,1fr)] gap-x-3 gap-y-2 text-sm">
               <dt className="text-muted-foreground">{en("Status")}</dt>
               <dd>
-                <span className={`inline-flex rounded-full px-2 py-0.5 text-[11px] font-medium ${TONE[open.status] ?? TONE.Skipped}`}>{open.status}</span>
+                <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${TONE[open.status] ?? TONE.Skipped}`}>{open.status}</span>
                 {open.error && <span className="mt-1 block text-xs">{open.error}</span>}
               </dd>
               <dt className="text-muted-foreground">{en("Lead")}</dt>
               <dd>
-                <Link href={`/institute/dashboard?lead=${open.leadId}`} className="text-cyan-700 hover:underline dark:text-cyan-400">
+                <Link href={`/institute/dashboard?lead=${open.leadId}`} className="text-indigo-700 hover:underline dark:text-indigo-400">
                   {open.lead ?? "Open the lead"}
                 </Link>
               </dd>
@@ -264,7 +264,7 @@ export default function NotificationsView({ instituteId, forms, canEdit }: { ins
             {canEdit && (
               <div className="mt-4 flex gap-2">
                 {["Failed", "Skipped", "Cancelled"].includes(open.status) && (
-                  <button type="button" onClick={() => act(open.id, "retry")} className="inline-flex items-center gap-1.5 rounded-lg bg-cyan-700 px-3 py-2 text-sm font-medium text-white hover:bg-cyan-800">
+                  <button type="button" onClick={() => act(open.id, "retry")} className="inline-flex items-center gap-1.5 rounded-lg bg-indigo-700 px-3 py-2 text-sm font-medium text-white hover:bg-indigo-800">
                     <RotateCcw aria-hidden="true" className="h-4 w-4" />{en(" Send again")}
                   </button>
                 )}

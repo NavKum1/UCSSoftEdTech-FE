@@ -10,7 +10,6 @@ import {
   Mic,
   Award,
   ArrowRight,
-  Sparkles,
   Terminal,
   Play,
   AlertTriangle,
@@ -21,6 +20,7 @@ import {
 import Link from "next/link";
 import { getApiBaseUrl } from "@/lib/apiClient";
 import { useEn } from "@/lib/english/EnglishProvider";
+import { Badge, Button, ErrorBanner, Loading, StatTile } from "@/components/career/ui";
 
 /**
  * H7b: the candidate assessment link is public. The candidate needs no account; the bundle token in the URL is the
@@ -427,9 +427,9 @@ export default function CandidateAssessmentBundlePage() {
     const text = LINK_PROBLEM_TEXT[linkProblem];
     return (
       <div className="min-h-[60vh] flex items-center justify-center text-foreground">
-        <div className="max-w-md w-full rounded-2xl border border-border bg-card p-8 text-center shadow-sm" data-assessment-problem={linkProblem}>
+        <div className="max-w-md w-full rounded-xl border border-border bg-card p-8 text-center shadow-sm" data-assessment-problem={linkProblem}>
           <AlertTriangle className="w-8 h-8 mx-auto mb-3 text-amber-500" aria-hidden="true" />
-          <h1 className="text-xl font-bold mb-2">{text.title}</h1>
+          <h1 className="text-xl font-semibold mb-2">{text.title}</h1>
           <p className="text-sm text-muted-foreground">{text.body}</p>
         </div>
       </div>
@@ -438,129 +438,108 @@ export default function CandidateAssessmentBundlePage() {
 
   if (loading || !bundle) {
     return (
-      <div className="min-h-[60vh] text-foreground flex items-center justify-center font-sans">
-        <div className="flex flex-col items-center gap-3">
-          <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin" />
-          <p className="text-xs text-muted-foreground font-mono">{en("Initializing 3-Stage Assessment Sandbox...")}</p>
-        </div>
+      <div className="min-h-[60vh] text-foreground flex items-center justify-center">
+        <Loading label={en("Loading your assessment...")} />
       </div>
     );
   }
 
   const stages = [
-    { num: 1, title: en("Written Diagnostic"), icon: FileText, desc: "System Design & Algorithms" },
-    { num: 2, title: en("Production Sprint"), icon: Code2, desc: "Hands-on Implementation" },
-    { num: 3, title: en("AI Voice Defense"), icon: Mic, desc: "Architectural Cross-Exam" },
-    { num: 4, title: en("Certified Scorecard"), icon: Award, desc: "Cryptographic Seal" },
+    { num: 1, title: en("Written exam"), icon: FileText, desc: "Multiple-choice questions" },
+    { num: 2, title: en("Coding task"), icon: Code2, desc: "Write and test your code" },
+    { num: 3, title: en("Voice defense"), icon: Mic, desc: "Explain your code out loud" },
+    { num: 4, title: en("Results"), icon: Award, desc: "Scores and credential" },
   ];
 
   return (
-    <div className="text-foreground font-sans flex flex-col">
-      {/* Top Corporate Assessment Header */}
-      <header className="rounded-2xl border border-border bg-card/80 backdrop-blur-md px-6 py-4 sticky top-0 z-30 shadow-sm">
+    <div className="text-foreground flex flex-col">
+      {/* Assessment header */}
+      <header className="rounded-xl border border-border bg-card px-5 py-4 sticky top-0 z-30 shadow-sm">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-center gap-3.5">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 via-purple-600 to-amber-500 p-0.5 shadow-md">
-              <div className="w-full h-full bg-card rounded-[10px] flex items-center justify-center font-black text-foreground text-sm">
-                {bundle.companyName.slice(0, 2).toUpperCase()}
-              </div>
+            <div className="w-10 h-10 shrink-0 rounded-lg border border-border bg-muted flex items-center justify-center font-semibold text-foreground text-sm" aria-hidden="true">
+              {bundle.companyName.slice(0, 2).toUpperCase()}
             </div>
             <div>
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-bold text-foreground">{en("{companyName} Hiring Pipeline", { companyName: bundle.companyName })}</span>
-                <span className="px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-[10px] font-bold">
-                  {en("Verified Assessment Bundle")}
-                </span>
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="text-sm text-muted-foreground">{en("{companyName} hiring assessment", { companyName: bundle.companyName })}</span>
+                <Badge tone="good">{en("Verified assessment")}</Badge>
               </div>
-              <h1 className="text-sm sm:text-base font-bold text-foreground">
+              <h1 className="text-base sm:text-lg font-semibold text-foreground">
                 {bundle.targetRole}
               </h1>
               {bundle.expiresAt && bundle.currentStage < 4 && (
-                <p className="text-[11px] text-muted-foreground">
+                <p className="text-xs text-muted-foreground">
                   {en("This link works until {number}.", { number: new Date(bundle.expiresAt).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" }) })}</p>
               )}
             </div>
           </div>
 
-          <div className="flex items-center gap-3 text-xs text-muted-foreground font-mono">
+          <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
             {draftSavedAt && (
-              <span className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20 text-[10px] font-semibold">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                {en("Draft Saved ({draftSavedAt})", { draftSavedAt })}</span>
+              <Badge tone="good">{en("Draft saved ({draftSavedAt})", { draftSavedAt })}</Badge>
             )}
-            <span>{en("Candidate: ")}<strong className="text-foreground">{bundle.candidateName}</strong></span>
-            <span>•</span>
-            <span className="px-2.5 py-1 rounded-md bg-muted text-foreground font-semibold">
+            <span>{en("Candidate: ")}<strong className="font-medium text-foreground">{bundle.candidateName}</strong></span>
+            <span aria-hidden="true">•</span>
+            <span className="px-2 py-1 rounded-md bg-muted font-mono text-foreground">
               {bundle.token}
             </span>
           </div>
         </div>
       </header>
 
-      {/* Progress Stepper Bar */}
+      {/* Progress steps */}
       <section className="py-4">
-        <div>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            {stages.map((st) => {
-              const isPast = activeStage > st.num;
-              const isCurrent = activeStage === st.num;
+        <ol className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          {stages.map((st) => {
+            const isPast = activeStage > st.num;
+            const isCurrent = activeStage === st.num;
 
-              return (
+            return (
+              <li
+                key={st.num}
+                aria-current={isCurrent ? "step" : undefined}
+                className={`p-3 rounded-xl border bg-card transition-colors flex items-center gap-3 ${
+                  isCurrent ? "border-indigo-500 ring-1 ring-indigo-500 shadow-sm text-foreground" : isPast ? "border-border text-foreground" : "border-border text-muted-foreground"
+                }`}
+              >
                 <div
-                  key={st.num}
-                  className={`p-3 rounded-2xl border transition-all flex items-center gap-3 ${
-                    isPast
-                      ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
-                      : isCurrent
-                      ? "border-primary bg-primary/10 text-foreground ring-1 ring-primary shadow-sm"
-                      : "border-border/60 bg-card/40 text-muted-foreground opacity-60"
+                  className={`w-8 h-8 rounded-full flex items-center justify-center font-semibold text-xs shrink-0 ${
+                    isPast ? "bg-emerald-600 text-white" : isCurrent ? "text-[var(--brand-foreground,#fff)]" : "bg-muted text-muted-foreground"
                   }`}
+                  style={isCurrent ? { background: "var(--brand, #0e7490)" } : undefined}
                 >
-                  <div
-                    className={`w-8 h-8 rounded-xl flex items-center justify-center font-bold text-xs shrink-0 ${
-                      isPast
-                        ? "bg-emerald-500 text-white"
-                        : isCurrent
-                        ? "bg-primary text-primary-foreground"
-                        : "bg-muted text-muted-foreground"
-                    }`}
-                  >
-                    {isPast ? <Check className="w-4 h-4 stroke-[3]" /> : st.num}
-                  </div>
-                  <div className="min-w-0">
-                    <div className="text-xs font-bold truncate leading-tight">{en(st.title)}</div>
-                    <div className="text-[10px] text-muted-foreground truncate">{en(st.desc)}</div>
-                  </div>
+                  {isPast ? <Check className="w-4 h-4" /> : st.num}
                 </div>
-              );
-            })}
-          </div>
-        </div>
+                <div className="min-w-0">
+                  <div className="text-sm font-medium truncate leading-tight">{en(st.title)}</div>
+                  <div className="text-xs text-muted-foreground truncate">{en(st.desc)}</div>
+                </div>
+              </li>
+            );
+          })}
+        </ol>
       </section>
 
-      {/* Dynamic Assessment Stage Container */}
+      {/* Current stage */}
       <div className="flex-1 w-full space-y-6">
-        {stageError && (
-          <div role="alert" className="p-3 rounded-xl border border-rose-500/30 bg-rose-500/10 text-rose-700 dark:text-rose-300 text-xs font-semibold">
-            {stageError}
-          </div>
-        )}
+        <ErrorBanner error={stageError} />
         {/* ==================================================== */}
-        {/* STAGE 1: TIMED WRITTEN EXAM DIAGNOSTIC               */}
+        {/* STAGE 1: TIMED WRITTEN EXAM                          */}
         {/* ==================================================== */}
         {activeStage === 1 && (
-          <div className="p-6 md:p-8 rounded-3xl border border-border bg-card shadow-sm space-y-6 animate-in fade-in duration-200">
-            <div className="flex items-center justify-between border-b border-border pb-4">
+          <div className="p-5 md:p-6 rounded-xl border border-border bg-card shadow-sm space-y-6 animate-in fade-in duration-200">
+            <div className="flex items-center justify-between gap-4 border-b border-border pb-4">
               <div>
-                <span className="text-[10px] font-bold text-primary uppercase tracking-wider">
-                  {en("Stage 1 of 3: Written Diagnostic")}
-                </span>
-                <h2 className="text-xl font-bold text-foreground mt-0.5">
+                <p className="text-sm text-muted-foreground">
+                  {en("Stage 1 of 3: Written exam")}
+                </p>
+                <h2 className="text-xl font-semibold text-foreground mt-0.5">
                   {bundle.examTitle}
                 </h2>
               </div>
-              <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl border border-border bg-muted/40 font-mono text-xs font-bold">
-                <Clock className="w-3.5 h-3.5 text-primary" />
+              <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-border bg-muted/40 font-mono text-sm font-semibold tabular-nums">
+                <Clock className="w-4 h-4 text-muted-foreground" aria-hidden="true" />
                 <span>
                   {Math.floor(examTimeLeft / 60)}:{(examTimeLeft % 60).toString().padStart(2, "0")}
                 </span>
@@ -569,11 +548,9 @@ export default function CandidateAssessmentBundlePage() {
 
             {examQuestions.length > 0 ? (
               <div className="space-y-6">
-                <div className="flex items-center justify-between text-xs text-muted-foreground">
+                <div className="flex items-center justify-between text-sm text-muted-foreground">
                   <span>{en("Question {value} of {length}", { value: examCurrentQIndex + 1, length: examQuestions.length })}</span>
-                  <span className="px-2 py-0.5 rounded-md bg-primary/10 text-primary text-[10px] font-bold uppercase">
-                    {examQuestions[examCurrentQIndex].topic}
-                  </span>
+                  <Badge>{examQuestions[examCurrentQIndex].topic}</Badge>
                 </div>
 
                 <h3 className="text-base sm:text-lg font-semibold text-foreground leading-relaxed">
@@ -581,7 +558,7 @@ export default function CandidateAssessmentBundlePage() {
                 </h3>
 
                 {examQuestions[examCurrentQIndex].codeSnippet && (
-                  <pre className="p-4 rounded-xl bg-neutral-950 text-neutral-100 font-mono text-xs overflow-x-auto border border-neutral-800">
+                  <pre className="p-4 rounded-lg bg-neutral-950 text-neutral-100 font-mono text-xs overflow-x-auto border border-neutral-800">
                     <code>{examQuestions[examCurrentQIndex].codeSnippet}</code>
                   </pre>
                 )}
@@ -597,94 +574,79 @@ export default function CandidateAssessmentBundlePage() {
                           setExamAnswers(next);
                           saveDraft(candidateCode, next);
                         }}
-                        className={`w-full text-start p-4 rounded-xl border text-sm transition-all flex items-center justify-between ${
+                        className={`w-full text-start p-4 rounded-lg border text-sm transition-colors flex items-center justify-between ${
                           isSelected
-                            ? "border-primary bg-primary/10 text-foreground font-semibold ring-1 ring-primary"
-                            : "border-border/80 bg-muted/20 text-muted-foreground hover:bg-muted/40 hover:text-foreground"
+                            ? "border-indigo-500 bg-indigo-50 text-foreground font-medium ring-1 ring-indigo-500 dark:bg-indigo-950/30"
+                            : "border-border bg-card text-foreground hover:bg-muted"
                         }`}
                       >
                         <span>{opt}</span>
-                        {isSelected && <Check className="w-4 h-4 text-primary" />}
+                        {isSelected && <Check className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />}
                       </button>
                     );
                   })}
                 </div>
 
                 <div className="flex items-center justify-between pt-4 border-t border-border">
-                  <button
+                  <Button
+                    variant="secondary"
                     disabled={examCurrentQIndex === 0}
                     onClick={() => setExamCurrentQIndex((prev) => Math.max(0, prev - 1))}
-                    className="px-4 py-2 rounded-xl border border-border text-xs font-semibold disabled:opacity-40"
                   >
                     {en("Previous")}
-                  </button>
+                  </Button>
 
                   {examCurrentQIndex < examQuestions.length - 1 ? (
-                    <button
-                      onClick={() => setExamCurrentQIndex((prev) => prev + 1)}
-                      className="px-4 py-2 rounded-xl bg-primary text-primary-foreground text-xs font-semibold hover:opacity-95"
-                    >
-                      {en("Next Question")}
-                    </button>
+                    <Button onClick={() => setExamCurrentQIndex((prev) => prev + 1)}>
+                      {en("Next question")}
+                    </Button>
                   ) : (
-                    <button
-                      onClick={handleSubmitStage1}
-                      disabled={submittingStage}
-                      className="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold flex items-center gap-2 shadow-md transition-colors"
-                    >
-                      <span>{submittingStage ? en("Grading...") : en("Submit Stage 1 & Advance to Coding")}</span>
-                      <ArrowRight className="w-3.5 h-3.5" />
-                    </button>
+                    <Button onClick={handleSubmitStage1} disabled={submittingStage}>
+                      <span>{submittingStage ? en("Grading...") : en("Submit and continue to the coding task")}</span>
+                      <ArrowRight className="w-4 h-4" aria-hidden="true" />
+                    </Button>
                   )}
                 </div>
               </div>
             ) : (
-              <div className="text-center py-12 text-xs text-muted-foreground">
-                {en("Loading exam questions...")}
-              </div>
+              <Loading label={en("Loading exam questions...")} />
             )}
           </div>
         )}
 
         {/* ==================================================== */}
-        {/* STAGE 2: PRODUCTION CODING SPRINT KATA               */}
+        {/* STAGE 2: CODING TASK                                 */}
         {/* ==================================================== */}
         {activeStage === 2 && (
-          <div className="p-6 md:p-8 rounded-3xl border border-border bg-card shadow-sm space-y-6 animate-in fade-in duration-200">
-            <div className="flex items-center justify-between border-b border-border pb-4">
+          <div className="p-5 md:p-6 rounded-xl border border-border bg-card shadow-sm space-y-6 animate-in fade-in duration-200">
+            <div className="flex items-center justify-between gap-4 border-b border-border pb-4">
               <div>
-                <span className="text-[10px] font-bold text-indigo-500 uppercase tracking-wider">
-                  {en("Stage 2 of 3: Production Code Sprint")}
-                </span>
-                <h2 className="text-xl font-bold text-foreground mt-0.5">
+                <p className="text-sm text-muted-foreground">
+                  {en("Stage 2 of 3: Coding task")}
+                </p>
+                <h2 className="text-xl font-semibold text-foreground mt-0.5">
                   {bundle.sprintTitle}
                 </h2>
               </div>
-              <span className="px-2.5 py-1 rounded-md bg-muted text-xs font-mono font-semibold uppercase text-foreground">
-                {bundle.requiredLanguage}
-              </span>
+              <Badge>{bundle.requiredLanguage}</Badge>
             </div>
 
-            <div className="p-4 rounded-2xl bg-muted/30 border border-border text-xs leading-relaxed space-y-2">
-              <span className="font-bold text-foreground block">{en("Problem Statement:")}</span>
+            <div className="p-4 rounded-lg bg-muted/40 border border-border text-sm leading-relaxed space-y-1.5">
+              <h3 className="font-semibold text-foreground">{en("Problem statement")}</h3>
               <p className="text-muted-foreground">{bundle.problemStatement}</p>
             </div>
 
-            {/* Code Editor Mock */}
+            {/* Code editor */}
             <div className="space-y-2">
               <div className="flex items-center justify-between text-xs text-muted-foreground">
                 <span className="font-mono flex items-center gap-1.5">
-                  <Terminal className="w-3.5 h-3.5 text-primary" />
+                  <Terminal className="w-3.5 h-3.5" aria-hidden="true" />
                   <span>solution.{bundle.requiredLanguage === "typescript" ? "ts" : "py"}</span>
                 </span>
-                <button
-                  onClick={handleRunTests}
-                  disabled={runningTests}
-                  className="px-3 py-1.5 rounded-xl border border-border bg-card hover:bg-muted text-xs font-semibold flex items-center gap-1.5 transition-colors"
-                >
-                  <Play className="w-3 h-3 text-emerald-500" />
-                  <span>{runningTests ? en("Running Tests...") : en("Run Test Suite")}</span>
-                </button>
+                <Button variant="secondary" onClick={handleRunTests} busy={runningTests}>
+                  {!runningTests && <Play className="w-4 h-4" aria-hidden="true" />}
+                  <span>{runningTests ? en("Running tests...") : en("Run tests")}</span>
+                </Button>
               </div>
 
               <textarea
@@ -694,20 +656,20 @@ export default function CandidateAssessmentBundlePage() {
                   setCandidateCode(e.target.value);
                   saveDraft(e.target.value, examAnswers);
                 }}
-                className="w-full p-4 rounded-2xl bg-neutral-950 text-neutral-100 font-mono text-xs border border-neutral-800 focus:outline-none focus:ring-1 focus:ring-primary leading-relaxed shadow-inner"
+                className="w-full p-4 rounded-lg bg-neutral-950 text-neutral-100 font-mono text-xs border border-neutral-800 focus:outline-none focus:ring-1 focus:ring-indigo-500 leading-relaxed"
               />
             </div>
 
-            {/* Live Compiler Console Output */}
+            {/* Output from the test run */}
             {executionConsole && (
-              <div className="p-4 rounded-2xl bg-neutral-950 border border-neutral-800 text-xs font-mono space-y-2 animate-in fade-in duration-150 shadow-inner">
+              <div className="p-4 rounded-lg bg-neutral-950 border border-neutral-800 text-xs font-mono space-y-2 animate-in fade-in duration-150">
                 <div className="flex items-center justify-between border-b border-neutral-800 pb-2">
-                  <span className="flex items-center gap-1.5 text-neutral-400 text-[11px]">
-                    <Terminal className="w-3.5 h-3.5 text-emerald-400" />
-                    <span>{en("Sandbox Compiler stdout ({version})", { version: executionConsole.version })}</span>
+                  <span className="flex items-center gap-1.5 text-neutral-400 text-xs">
+                    <Terminal className="w-3.5 h-3.5" aria-hidden="true" />
+                    <span>{en("Output ({version})", { version: executionConsole.version })}</span>
                   </span>
-                  <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${executionConsole.success ? "bg-emerald-950/60 text-emerald-400 border border-emerald-800/50" : "bg-rose-950/60 text-rose-400 border border-rose-800/50"}`}>
-                    {en("{durationMs}ms • {value}", { durationMs: executionConsole.durationMs, value: executionConsole.success ? en("Exit Code 0") : en("Failed") })}
+                  <span className={`px-2 py-0.5 rounded text-xs font-medium ${executionConsole.success ? "bg-emerald-950/60 text-emerald-400 border border-emerald-800/50" : "bg-rose-950/60 text-rose-400 border border-rose-800/50"}`}>
+                    {en("{durationMs}ms • {value}", { durationMs: executionConsole.durationMs, value: executionConsole.success ? en("Exit code 0") : en("Failed") })}
                   </span>
                 </div>
                 <pre className="text-neutral-200 text-xs overflow-x-auto whitespace-pre-wrap leading-relaxed py-1 max-h-48">
@@ -721,15 +683,15 @@ export default function CandidateAssessmentBundlePage() {
               </div>
             )}
 
-            {/* Unit Test Results */}
+            {/* Test results */}
             {testResults && (
-              <div className="p-4 rounded-2xl bg-background/80 border border-border space-y-2.5 animate-in fade-in duration-150">
-                <span className="text-xs font-bold text-foreground block">{en("Automated Test Execution Results:")}</span>
+              <div className="p-4 rounded-lg border border-border space-y-2.5 animate-in fade-in duration-150">
+                <h3 className="text-sm font-semibold text-foreground">{en("Test results")}</h3>
                 <div className="space-y-2">
                   {testResults.map((tr, idx) => (
                     <div
                       key={idx}
-                      className="flex items-center justify-between p-2 rounded-xl bg-card border border-border text-xs font-mono"
+                      className="flex items-center justify-between p-2 rounded-lg bg-card border border-border text-xs font-mono"
                     >
                       <div className="flex items-center gap-2">
                         {tr.passed ? (
@@ -739,132 +701,103 @@ export default function CandidateAssessmentBundlePage() {
                         )}
                         <span className="text-foreground">{tr.name}</span>
                       </div>
-                      <span className="text-[10px] text-muted-foreground">{tr.durationMs}ms</span>
+                      <span className="text-xs text-muted-foreground">{tr.durationMs}ms</span>
                     </div>
                   ))}
                 </div>
               </div>
             )}
 
-            <div className="flex items-center justify-between pt-4 border-t border-border">
+            <div className="flex flex-wrap items-center justify-between gap-3 pt-4 border-t border-border">
               <span className="text-xs text-muted-foreground">
                 {en("Your last test run sets the sprint score.")}
                 {typeof bundle.codeRunsRemaining === "number" && ` ${bundle.codeRunsRemaining} test runs left.`}
               </span>
-              <button
-                onClick={handleSubmitStage2}
-                disabled={submittingStage}
-                className="px-5 py-2.5 rounded-xl bg-primary text-primary-foreground font-bold text-xs hover:opacity-95 shadow-md flex items-center gap-2 transition-opacity"
-              >
-                <span>{submittingStage ? en("Submitting...") : en("Submit Sprint & Advance to Voice Defense")}</span>
-                <ArrowRight className="w-3.5 h-3.5" />
-              </button>
+              <Button onClick={handleSubmitStage2} disabled={submittingStage}>
+                <span>{submittingStage ? en("Submitting...") : en("Submit and continue to the voice defense")}</span>
+                <ArrowRight className="w-4 h-4" aria-hidden="true" />
+              </Button>
             </div>
           </div>
         )}
 
         {/* ==================================================== */}
-        {/* STAGE 3: LIVE AI VOICE DEFENSE                       */}
+        {/* STAGE 3: VOICE DEFENSE                               */}
         {/* ==================================================== */}
         {activeStage === 3 && (
-          <div className="p-6 md:p-8 rounded-3xl border border-border bg-card shadow-sm space-y-6 animate-in fade-in duration-200">
-            <div className="flex items-center justify-between border-b border-border pb-4">
+          <div className="p-5 md:p-6 rounded-xl border border-border bg-card shadow-sm space-y-6 animate-in fade-in duration-200">
+            <div className="flex items-center justify-between gap-4 border-b border-border pb-4">
               <div>
-                <span className="text-[10px] font-bold text-purple-500 uppercase tracking-wider">
-                  {en("Stage 3 of 3: AI Voice Defense")}
-                </span>
-                <h2 className="text-xl font-bold text-foreground mt-0.5">
-                  {en("Architectural Cross-Examination")}
+                <p className="text-sm text-muted-foreground">
+                  {en("Stage 3 of 3: Voice defense")}
+                </p>
+                <h2 className="text-xl font-semibold text-foreground mt-0.5">
+                  {en("Explain your code")}
                 </h2>
               </div>
-              <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl border border-border bg-muted/40 font-mono text-xs font-bold">
-                <Mic className="w-3.5 h-3.5 text-purple-500 animate-pulse" />
+              <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-border bg-muted/40 font-mono text-sm font-semibold tabular-nums">
+                <Mic className="w-4 h-4 text-muted-foreground" aria-hidden="true" />
                 <span>{Math.floor(defenseSeconds / 60)}:{(defenseSeconds % 60).toString().padStart(2, "0")}</span>
               </div>
             </div>
 
-            <div className="p-5 rounded-2xl bg-purple-500/5 border border-purple-500/20 space-y-3">
-              <div className="flex items-center gap-2 text-xs font-bold text-purple-600 dark:text-purple-400">
-                <Sparkles className="w-4 h-4" />
-                <span>{en("Examiner Challenge Topic:")}</span>
-              </div>
-              <p className="text-sm font-semibold text-foreground leading-relaxed">
+            <div className="p-4 rounded-lg bg-muted/40 border border-border space-y-2">
+              <h3 className="text-sm font-semibold text-foreground">{en("Topic to discuss")}</h3>
+              <p className="text-sm font-medium text-foreground leading-relaxed">
                 {en("“")}{bundle.defenseTopic}{en("”")}
               </p>
+              <p className="text-sm text-muted-foreground">
+                {en("An AI interviewer asks about the code you wrote in stage 2. Speak naturally, explain your trade-offs and how your code handles failures.")}
+              </p>
+            </div>
+
+            {/* Microphone */}
+            <div className="p-6 rounded-lg border border-border text-center space-y-3">
+              <p className="flex items-center justify-center gap-2 text-sm font-medium text-foreground" aria-live="polite">
+                <span className={`h-2.5 w-2.5 rounded-full ${defenseActive ? "bg-red-600" : "bg-muted-foreground/40"}`} aria-hidden="true" />
+                {defenseActive ? en("Microphone on") : en("Microphone off")}
+              </p>
+              <div className="flex items-center justify-center">
+                <Button variant={defenseActive ? "secondary" : "primary"} onClick={() => setDefenseActive(!defenseActive)}>
+                  <Mic className="w-4 h-4" aria-hidden="true" />
+                  <span>{defenseActive ? en("Pause microphone") : en("Start speaking")}</span>
+                </Button>
+              </div>
               <p className="text-xs text-muted-foreground">
-                {en("The AI Hiring Committee cross-examines the code you wrote in Stage 2. Speak naturally, articulate trade-offs, and defend your failure recovery mechanisms.")}
-              </p>
-            </div>
-
-            {/* Voice HUD Waveform Display */}
-            <div className="p-8 rounded-2xl bg-neutral-950 border border-neutral-800 text-center space-y-4">
-              <div className="flex items-center justify-center gap-1.5 h-16">
-                {[40, 75, 90, 60, 85, 95, 70, 50, 80, 65, 90, 75].map((h, i) => (
-                  <div
-                    key={i}
-                    className={`w-1.5 rounded-full transition-all duration-300 ${
-                      defenseActive ? "bg-purple-500 animate-pulse" : "bg-neutral-800"
-                    }`}
-                    style={{ height: defenseActive ? `${h}%` : "20%" }}
-                  />
-                ))}
-              </div>
-
-              <div className="flex items-center justify-center gap-3">
-                <button
-                  onClick={() => setDefenseActive(!defenseActive)}
-                  className={`px-6 py-2.5 rounded-2xl text-xs font-bold shadow-lg transition-all flex items-center gap-2 ${
-                    defenseActive
-                      ? "bg-rose-600 hover:bg-rose-700 text-white"
-                      : "bg-purple-600 hover:bg-purple-700 text-white"
-                  }`}
-                >
-                  <Mic className="w-4 h-4" />
-                  <span>{defenseActive ? en("Pause Audio Stream") : en("Connect & Defend Approach")}</span>
-                </button>
-              </div>
-
-              <p className="text-[11px] text-neutral-400">
                 {defenseActive
-                  ? en("AI Examiner listening... Voice stream authenticated with 24-bit prosody analysis.")
-                  : en("Click to activate WebRTC mic and begin voice defense with the AI Senior Architect.")}
+                  ? en("Listening. What you say appears below as text.")
+                  : en("Turn on your microphone and explain your approach out loud.")}
               </p>
             </div>
 
-            {/* Live Spoken Recognition Stream */}
+            {/* What the browser heard */}
             {spokenTranscript && (
-              <div className="p-3.5 rounded-2xl bg-purple-500/10 border border-purple-500/20 space-y-1 animate-in fade-in">
-                <span className="text-[10px] uppercase font-bold text-purple-600 dark:text-purple-400 flex items-center gap-1.5">
-                  <Mic className="w-3 h-3 animate-pulse" />{en(" Live Spoken Voice Recognition Stream:")}
-                </span>
-                <p className="text-xs font-mono text-foreground italic">{en("“")}{spokenTranscript}{en("”")}</p>
+              <div className="p-4 rounded-lg bg-muted/40 border border-border space-y-1 animate-in fade-in">
+                <h3 className="text-sm font-semibold text-foreground">{en("What we heard")}</h3>
+                <p className="text-sm text-foreground italic">{en("“")}{spokenTranscript}{en("”")}</p>
               </div>
             )}
 
-            {/* Candidate Architectural Defense Notes */}
+            {/* Written notes */}
             <div className="space-y-2">
-              <label className="text-xs font-semibold text-foreground flex items-center justify-between">
-                <span>{en("Architectural Defense Notes & Trade-Off Summary")}</span>
-                <span className="text-[10px] text-muted-foreground font-normal">{en("Optional written defense to accompany verbal statements")}</span>
+              <label htmlFor="defense-notes" className="text-sm font-medium text-foreground flex flex-wrap items-center justify-between gap-2">
+                <span>{en("Written notes (optional)")}</span>
+                <span className="text-xs text-muted-foreground font-normal">{en("Anything you want to add in writing to what you said")}</span>
               </label>
               <textarea
+                id="defense-notes"
                 value={candidateDefenseNotes}
                 onChange={(e) => setCandidateDefenseNotes(e.target.value)}
-                placeholder={en("Defend consistent hashing ring mechanics, virtual node distribution, leader lease fencing, and why your implementation guarantees linearizability...")}
-                className="w-full h-24 p-3 rounded-xl bg-muted/40 border border-border text-xs font-mono focus:outline-none focus:ring-1 focus:ring-purple-500 resize-none text-foreground"
+                placeholder={en("Explain your approach, the trade-offs you made and the edge cases you handled...")}
+                className="w-full h-24 p-3 rounded-lg bg-card border border-border text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 resize-none text-foreground placeholder:text-muted-foreground"
               />
             </div>
 
-            <div className="flex items-center justify-between pt-4 border-t border-border">
+            <div className="flex flex-wrap items-center justify-between gap-3 pt-4 border-t border-border">
               <span className="text-xs text-muted-foreground">{en("Graded on how well you explain your solution, trade-offs and edge cases. Accent, grammar and language never count.")}</span>
-              <button
-                onClick={handleSubmitStage3}
-                disabled={submittingStage}
-                className="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-md flex items-center gap-2 transition-colors"
-              >
+              <Button onClick={handleSubmitStage3} disabled={submittingStage}>
                 <span>{submittingStage ? en("Finalizing...") : en("Finish the assessment")}</span>
-                <Award className="w-4 h-4" />
-              </button>
+              </Button>
             </div>
           </div>
         )}
@@ -873,10 +806,10 @@ export default function CandidateAssessmentBundlePage() {
         {/* STAGE 4: COMPLETION (only real results are shown)   */}
         {/* ==================================================== */}
         {activeStage === 4 && (
-          <div className="p-6 md:p-8 rounded-3xl border border-border bg-card shadow-sm space-y-6">
+          <div className="p-5 md:p-6 rounded-xl border border-border bg-card shadow-sm space-y-6">
             <div className="text-center space-y-2 pt-2">
-              <div className="w-14 h-14 mx-auto rounded-2xl bg-emerald-600/10 text-emerald-700 dark:text-emerald-400 flex items-center justify-center">
-                <CheckCircle2 aria-hidden="true" className="w-8 h-8" />
+              <div className="w-12 h-12 mx-auto rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400 flex items-center justify-center">
+                <CheckCircle2 aria-hidden="true" className="w-7 h-7" />
               </div>
               <h2 className="text-2xl font-semibold text-foreground tracking-tight">{en("Assessment complete")}</h2>
               <p className="text-sm text-muted-foreground max-w-lg mx-auto">
@@ -890,20 +823,17 @@ export default function CandidateAssessmentBundlePage() {
                 { label: en("Stage 2: Coding task"), score: bundle.stage2Score },
                 { label: en("Stage 3: Defense"), score: bundle.stage3Score },
               ].map((st) => (
-                <div key={st.label} className="p-4 rounded-2xl bg-muted/30 border border-border text-center">
-                  <span className="text-[11px] uppercase font-semibold text-muted-foreground">{en(st.label)}</span>
-                  {st.score == null ? (
-                    <p className="mt-2 text-sm font-medium text-muted-foreground">{en("Being reviewed")}</p>
-                  ) : (
-                    <p className="text-2xl font-semibold text-foreground mt-1 tabular-nums">{Math.round(st.score * 10) / 10}%</p>
-                  )}
-                </div>
+                <StatTile
+                  key={st.label}
+                  label={st.label}
+                  value={st.score == null ? <span className="text-base font-medium text-muted-foreground">{en("Being reviewed")}</span> : `${Math.round(st.score * 10) / 10}%`}
+                />
               ))}
             </div>
 
-            <div className="p-5 rounded-2xl border border-border flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="p-5 rounded-lg border border-border flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider block">{en("Overall score")}</span>
+                <span className="text-sm text-muted-foreground block">{en("Overall score")}</span>
                 {bundle.compositeScore == null ? (
                   <p className="mt-1 text-sm text-muted-foreground">{en("Calculated once every stage has been scored.")}</p>
                 ) : (
@@ -924,9 +854,9 @@ export default function CandidateAssessmentBundlePage() {
             </div>
 
             {bundle.certificateNumber && bundle.verificationSignatureSha256 && (
-              <div className="p-3.5 rounded-xl bg-background/80 border border-border space-y-1">
-                <div className="flex items-center justify-between text-[11px]">
-                  <span className="font-semibold text-muted-foreground flex items-center gap-1">
+              <div className="p-3.5 rounded-lg border border-border space-y-1">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="font-medium text-muted-foreground flex items-center gap-1">
                     <ShieldCheck aria-hidden="true" className="w-3.5 h-3.5 text-emerald-600" />
                     <span>{en("Credential seal (SHA-256)")}</span>
                   </span>
@@ -936,13 +866,13 @@ export default function CandidateAssessmentBundlePage() {
                       setCopiedSignature(true);
                       setTimeout(() => setCopiedSignature(false), 2000);
                     }}
-                    className="text-primary hover:underline font-semibold flex items-center gap-1"
+                    className="text-indigo-700 dark:text-indigo-300 hover:underline font-medium flex items-center gap-1"
                   >
                     {copiedSignature ? <Check aria-hidden="true" className="w-3 h-3 text-emerald-500" /> : <Copy aria-hidden="true" className="w-3 h-3" />}
                     <span>{copiedSignature ? en("Copied") : en("Copy")}</span>
                   </button>
                 </div>
-                <p className="font-mono text-[11px] text-muted-foreground break-all leading-tight">{bundle.verificationSignatureSha256}</p>
+                <p className="font-mono text-xs text-muted-foreground break-all leading-tight">{bundle.verificationSignatureSha256}</p>
               </div>
             )}
 

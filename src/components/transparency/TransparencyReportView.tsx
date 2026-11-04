@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { downloadJson, formatDate, formatPeriod, pct, type ShareRow, type TransparencyReport } from "@/lib/transparency";
 import { useEn } from "@/lib/english/EnglishProvider";
+import { Button, StatTile } from "@/components/career/ui";
 
 interface Meta {
   id: string;
@@ -44,8 +45,8 @@ function hours(v: number | null) {
 
 function Section({ icon, title, children, id }: { icon: React.ReactNode; title: string; children: React.ReactNode; id: string }) {
   return (
-    <section aria-labelledby={id} className="glass-panel rounded-2xl border border-border p-5 sm:p-6 space-y-4">
-      <h2 id={id} className="text-lg font-bold text-foreground flex items-center gap-2">
+    <section aria-labelledby={id} className="space-y-4 rounded-xl border border-border bg-card p-5 shadow-sm">
+      <h2 id={id} className="flex items-center gap-2 text-base font-semibold text-foreground">
         {icon} {title}
       </h2>
       {children}
@@ -54,13 +55,7 @@ function Section({ icon, title, children, id }: { icon: React.ReactNode; title: 
 }
 
 function Stat({ title, value, hint }: { title: string; value: React.ReactNode; hint?: string }) {
-  return (
-    <div className="rounded-xl bg-muted/40 border border-border px-3 py-2.5">
-      <div className="text-[11px] text-muted-foreground">{title}</div>
-      <div className="text-xl font-bold text-foreground">{value}</div>
-      {hint && <div className="text-[11px] text-muted-foreground mt-0.5">{hint}</div>}
-    </div>
-  );
+  return <StatTile label={title} value={value} hint={hint} />;
 }
 
 function Bar({ share }: { share: number | null }) {
@@ -81,10 +76,10 @@ function ShareTable({ rows, keyHeader, caption, formatKey = label }: { rows: Sha
         <caption className="sr-only">{caption}</caption>
         <thead>
           <tr className="text-start text-xs text-muted-foreground border-b border-border">
-            <th scope="col" className="py-2 pe-3 font-semibold">{keyHeader}</th>
-            <th scope="col" className="py-2 pe-3 font-semibold text-end">{en("Count")}</th>
-            <th scope="col" className="py-2 pe-3 font-semibold text-end">{en("Share")}</th>
-            <th scope="col" className="py-2 font-semibold w-1/3"><span className="sr-only">{en("Bar")}</span></th>
+            <th scope="col" className="py-2 pe-3 font-medium">{keyHeader}</th>
+            <th scope="col" className="py-2 pe-3 font-medium text-end">{en("Count")}</th>
+            <th scope="col" className="py-2 pe-3 font-medium text-end">{en("Share")}</th>
+            <th scope="col" className="py-2 font-medium w-1/3"><span className="sr-only">{en("Bar")}</span></th>
           </tr>
         </thead>
         <tbody>
@@ -92,7 +87,7 @@ function ShareTable({ rows, keyHeader, caption, formatKey = label }: { rows: Sha
             <tr key={r.key} className="border-b border-border last:border-0 align-top">
               <th scope="row" className="py-2 pe-3 text-start font-normal text-foreground">
                 <span className={/^[A-Z_]+$/.test(r.key) ? "font-mono text-xs" : ""}>{formatKey(r.key)}</span>
-                {r.description && <div className="text-[11px] text-muted-foreground">{r.description}</div>}
+                {r.description && <div className="text-xs text-muted-foreground">{r.description}</div>}
               </th>
               <td className="py-2 pe-3 text-end text-foreground tabular-nums">{r.count}</td>
               <td className="py-2 pe-3 text-end text-foreground tabular-nums">{pct(r.share)}</td>
@@ -121,7 +116,7 @@ export default function TransparencyReportView({ report, meta, draft = false }: 
   return (
     <div className="space-y-6">
       {draft && (
-        <div className="rounded-2xl border border-amber-500/40 bg-amber-500/10 p-4 text-sm text-foreground flex gap-3">
+        <div role="status" className="flex gap-3 rounded-lg border border-amber-300 bg-amber-50 p-4 text-sm text-foreground dark:border-amber-900 dark:bg-amber-950/40">
           <AlertTriangle className="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
           <p>{en("Preview of a ")}<strong>{meta.status.toLowerCase()}</strong>{en(" report. It is not public unless it is published.")}</p>
         </div>
@@ -129,29 +124,30 @@ export default function TransparencyReportView({ report, meta, draft = false }: 
 
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <p className="text-xs font-semibold text-indigo-700 dark:text-indigo-400 uppercase tracking-wider">{en("Reporting period")}</p>
-          <h2 className="text-2xl font-extrabold text-foreground">{formatPeriod(report.periodStart, report.periodEnd)}</h2>
+          <p className="text-sm text-muted-foreground">{en("Reporting period")}</p>
+          <h2 className="text-xl font-semibold text-foreground">{formatPeriod(report.periodStart, report.periodEnd)}</h2>
           <p className="text-xs text-muted-foreground mt-1">
             {en("{value} · Methodology v{methodologyVersion} · All dates UTC", { value: meta.publishedAt ? `Published ${formatDate(meta.publishedAt)}` : `Generated ${formatDate(report.generatedAt)}`, methodologyVersion: report.methodologyVersion })}
           </p>
         </div>
-        <button
+        <Button
           type="button"
+          variant="secondary"
           onClick={() => downloadJson(`transparency-report-${report.periodStart}-to-${report.periodEnd}.json`, { id: meta.id, status: meta.status, publishedAt: meta.publishedAt, notes: meta.notes, report })}
-          className="py-2 px-3 rounded-xl bg-card hover:bg-muted border border-border text-xs font-semibold text-foreground flex items-center gap-1.5 cursor-pointer"
         >
-          <Download className="w-3.5 h-3.5" />{en(" Download JSON")}
-        </button>
+          <Download className="h-4 w-4" aria-hidden />
+          {en("Download JSON")}
+        </Button>
       </div>
 
       {meta.notes && (
-        <div className="rounded-xl border border-border bg-muted/30 p-3 text-sm text-foreground">
+        <div className="rounded-lg border border-border bg-card p-3 text-sm text-foreground">
           <span className="font-semibold">{en("Release notes: ")}</span>
           {meta.notes}
         </div>
       )}
 
-      <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
         <Stat title={en("Candidates assessed")} value={headline.candidatesAssessed} />
         <Stat title={en("Submissions")} value={headline.submissions} />
         <Stat title={en("Voice defenses completed")} value={headline.defensesCompleted} />
@@ -161,7 +157,7 @@ export default function TransparencyReportView({ report, meta, draft = false }: 
       </div>
 
       <Section id="tr-volume" icon={<Users className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />} title={en("Volume")}>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
           <Stat title={en("Timed attempts started")} value={volume.attemptsStarted} />
           <Stat title={en("Completion rate")} value={pct(volume.completionRate)} hint={`${volume.attemptsSubmitted} submitted`} />
           <Stat title={en("Submissions defended")} value={pct(volume.defenseRate)} hint={`${volume.submissionsDefended} of ${volume.submissions}`} />
@@ -173,14 +169,14 @@ export default function TransparencyReportView({ report, meta, draft = false }: 
         ].map((t) => (
           <div key={t.title} className="overflow-x-auto">
             <table className="w-full text-sm">
-              <caption className="text-start text-xs font-semibold text-muted-foreground pb-1">{en(t.title)}</caption>
+              <caption className="pb-1 text-start text-xs font-medium text-muted-foreground">{en(t.title)}</caption>
               <thead>
                 <tr className="text-start text-xs text-muted-foreground border-b border-border">
-                  <th scope="col" className="py-2 pe-3 font-semibold">{en("Category")}</th>
-                  <th scope="col" className="py-2 pe-3 font-semibold text-end">{en("Attempts started")}</th>
-                  <th scope="col" className="py-2 pe-3 font-semibold text-end">{en("Attempts submitted")}</th>
-                  <th scope="col" className="py-2 pe-3 font-semibold text-end">{en("Submissions")}</th>
-                  <th scope="col" className="py-2 font-semibold text-end">{en("Defended")}</th>
+                  <th scope="col" className="py-2 pe-3 font-medium">{en("Category")}</th>
+                  <th scope="col" className="py-2 pe-3 font-medium text-end">{en("Attempts started")}</th>
+                  <th scope="col" className="py-2 pe-3 font-medium text-end">{en("Attempts submitted")}</th>
+                  <th scope="col" className="py-2 pe-3 font-medium text-end">{en("Submissions")}</th>
+                  <th scope="col" className="py-2 font-medium text-end">{en("Defended")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -209,16 +205,16 @@ export default function TransparencyReportView({ report, meta, draft = false }: 
         </p>
         <div className="grid lg:grid-cols-2 gap-6">
           <div>
-            <h3 className="text-sm font-bold text-foreground mb-2">{en("Integrity level")}</h3>
+            <h3 className="text-sm font-semibold text-foreground mb-2">{en("Integrity level")}</h3>
             <ShareTable rows={integrity.riskLevels} keyHeader="Level" caption={en("Distribution of integrity levels")} />
           </div>
           <div>
-            <h3 className="text-sm font-bold text-foreground mb-2">{en("How often each signal appeared")}</h3>
+            <h3 className="text-sm font-semibold text-foreground mb-2">{en("How often each signal appeared")}</h3>
             <ShareTable rows={integrity.signals} keyHeader="Signal" caption={en("Share of analysed submissions with each signal")} formatKey={(k) => k} />
           </div>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
           <Stat title={en("With a human decision")} value={pct(oversight.humanDecisionShare)} hint={`${oversight.withHumanDecision} of ${oversight.submissions}`} />
           <Stat title={en("Flagged but advanced")} value={pct(oversight.flaggedAdvancedShare)} hint={`${oversight.flaggedAdvanced} of ${oversight.flaggedDecided} decided flagged`} />
           <Stat title={en("Flagged submissions")} value={oversight.flaggedSubmissions} hint={en("Review or High risk")} />
@@ -227,16 +223,16 @@ export default function TransparencyReportView({ report, meta, draft = false }: 
 
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
-            <caption className="text-start text-xs font-semibold text-muted-foreground pb-1">{en("Human decisions by integrity level (latest decision per submission)")}</caption>
+            <caption className="pb-1 text-start text-xs font-medium text-muted-foreground">{en("Human decisions by integrity level (latest decision per submission)")}</caption>
             <thead>
               <tr className="text-start text-xs text-muted-foreground border-b border-border">
-                <th scope="col" className="py-2 pe-3 font-semibold">{en("Integrity level")}</th>
-                <th scope="col" className="py-2 pe-3 font-semibold text-end">{en("Submissions")}</th>
-                <th scope="col" className="py-2 pe-3 font-semibold text-end">{en("Decided")}</th>
-                <th scope="col" className="py-2 pe-3 font-semibold text-end">{en("Advance")}</th>
-                <th scope="col" className="py-2 pe-3 font-semibold text-end">{en("Hold")}</th>
-                <th scope="col" className="py-2 pe-3 font-semibold text-end">{en("Decline")}</th>
-                <th scope="col" className="py-2 font-semibold text-end">{en("Advanced")}</th>
+                <th scope="col" className="py-2 pe-3 font-medium">{en("Integrity level")}</th>
+                <th scope="col" className="py-2 pe-3 font-medium text-end">{en("Submissions")}</th>
+                <th scope="col" className="py-2 pe-3 font-medium text-end">{en("Decided")}</th>
+                <th scope="col" className="py-2 pe-3 font-medium text-end">{en("Advance")}</th>
+                <th scope="col" className="py-2 pe-3 font-medium text-end">{en("Hold")}</th>
+                <th scope="col" className="py-2 pe-3 font-medium text-end">{en("Decline")}</th>
+                <th scope="col" className="py-2 font-medium text-end">{en("Advanced")}</th>
               </tr>
             </thead>
             <tbody>
@@ -261,7 +257,7 @@ export default function TransparencyReportView({ report, meta, draft = false }: 
           <Insufficient>{appeals.statusText}</Insufficient>
         ) : (
           <>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
               <Stat title={en("Appeals filed")} value={appeals.total} hint={`${pct(appeals.appealRate)} of submissions`} />
               <Stat title={en("Resolved (upheld or overturned)")} value={appeals.resolved} />
               <Stat title={en("Overturned")} value={pct(appeals.overturnedShareOfResolved)} hint={en("of resolved appeals")} />
@@ -286,11 +282,11 @@ export default function TransparencyReportView({ report, meta, draft = false }: 
             <caption className="sr-only">{en("Correlations between assessment scores and post-hire outcomes")}</caption>
             <thead>
               <tr className="text-start text-xs text-muted-foreground border-b border-border">
-                <th scope="col" className="py-2 pe-3 font-semibold">{en("Predictor → outcome")}</th>
-                <th scope="col" className="py-2 pe-3 font-semibold text-end">n</th>
-                <th scope="col" className="py-2 pe-3 font-semibold text-end">r</th>
-                <th scope="col" className="py-2 pe-3 font-semibold">{en("95% CI")}</th>
-                <th scope="col" className="py-2 font-semibold">{en("Reading")}</th>
+                <th scope="col" className="py-2 pe-3 font-medium">{en("Predictor → outcome")}</th>
+                <th scope="col" className="py-2 pe-3 font-medium text-end">n</th>
+                <th scope="col" className="py-2 pe-3 font-medium text-end">r</th>
+                <th scope="col" className="py-2 pe-3 font-medium">{en("95% CI")}</th>
+                <th scope="col" className="py-2 font-medium">{en("Reading")}</th>
               </tr>
             </thead>
             <tbody>
@@ -314,21 +310,21 @@ export default function TransparencyReportView({ report, meta, draft = false }: 
       </Section>
 
       <Section id="tr-fairness" icon={<Scale className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />} title={en("Fairness by self-identified group")}>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
           <Stat title={en("Candidates in scope")} value={fairness.candidatesInScope} />
           <Stat title={en("Self-identified (voluntary)")} value={pct(fairness.selfIdentifiedShare)} hint={`${fairness.selfIdentified} candidates`} />
           <Stat title={en("Median defense score")} value={fairness.medianDefenseScore == null ? "—" : fairness.medianDefenseScore} hint={en("threshold for scoring rate")} />
           <Stat title={en("Smallest group shown")} value={fairness.minimumGroupSize} hint={en("smaller groups are suppressed")} />
         </div>
         <p className="text-xs text-muted-foreground">
-          {en("Selection rate = share advanced by a human; scoring rate = share above the median defense score. Impact ratio = group rate ÷ highest group rate. Rows marked ")}<span className="font-semibold text-rose-700 dark:text-rose-400">{en("below 4/5")}</span>{en(" have a ratio under 0.80, a screening threshold that warrants investigation.")}
+          {en("Selection rate = share advanced by a human; scoring rate = share above the median defense score. Impact ratio = group rate ÷ highest group rate. Rows marked ")}<span className="font-semibold text-red-700 dark:text-red-400">{en("below 4/5")}</span>{en(" have a ratio under 0.80, a screening threshold that warrants investigation.")}
         </p>
         <div className="grid xl:grid-cols-2 gap-4">
           {fairness.categories.map((c) => (
-            <div key={c.category} className="rounded-xl border border-border p-4 space-y-2">
+            <div key={c.category} className="space-y-2 rounded-lg border border-border p-4">
               <div className="flex flex-wrap items-baseline justify-between gap-2">
-                <h3 className="text-sm font-bold text-foreground">{c.category}</h3>
-                <span className="text-[11px] text-muted-foreground">
+                <h3 className="text-sm font-semibold text-foreground">{c.category}</h3>
+                <span className="text-xs text-muted-foreground">
                   {en("Disclosed by {disclosureShare} · {notReported} not reported{value}", { disclosureShare: pct(c.disclosureShare), notReported: c.notReported, value: c.suppressedGroups > 0 ? ` (incl. ${c.suppressedGroups} suppressed group${c.suppressedGroups === 1 ? "" : "s"})` : "" })}
                 </span>
               </div>
@@ -340,12 +336,12 @@ export default function TransparencyReportView({ report, meta, draft = false }: 
                     <caption className="sr-only">{en("Selection and scoring rates by {category}", { category: c.category })}</caption>
                     <thead>
                       <tr className="text-start text-muted-foreground border-b border-border">
-                        <th scope="col" className="py-1.5 pe-2 font-semibold">{en("Group")}</th>
-                        <th scope="col" className="py-1.5 pe-2 font-semibold text-end">n</th>
-                        <th scope="col" className="py-1.5 pe-2 font-semibold text-end">{en("Selection")}</th>
-                        <th scope="col" className="py-1.5 pe-2 font-semibold text-end">{en("Ratio")}</th>
-                        <th scope="col" className="py-1.5 pe-2 font-semibold text-end">{en("Scoring")}</th>
-                        <th scope="col" className="py-1.5 font-semibold text-end">{en("Ratio")}</th>
+                        <th scope="col" className="py-1.5 pe-2 font-medium">{en("Group")}</th>
+                        <th scope="col" className="py-1.5 pe-2 font-medium text-end">n</th>
+                        <th scope="col" className="py-1.5 pe-2 font-medium text-end">{en("Selection")}</th>
+                        <th scope="col" className="py-1.5 pe-2 font-medium text-end">{en("Ratio")}</th>
+                        <th scope="col" className="py-1.5 pe-2 font-medium text-end">{en("Scoring")}</th>
+                        <th scope="col" className="py-1.5 font-medium text-end">{en("Ratio")}</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -356,16 +352,16 @@ export default function TransparencyReportView({ report, meta, draft = false }: 
                           <td className="py-1.5 pe-2 text-end tabular-nums" title={`${g.decided} with a decision`}>
                             {g.selectionRate == null ? <span className="text-muted-foreground">{en("too few ({decided})", { decided: g.decided })}</span> : pct(g.selectionRate)}
                           </td>
-                          <td className={`py-1.5 pe-2 text-end tabular-nums ${g.selectionBelowFourFifths ? "text-rose-700 dark:text-rose-400 font-semibold" : ""}`}>
+                          <td className={`py-1.5 pe-2 text-end tabular-nums ${g.selectionBelowFourFifths ? "text-red-700 dark:text-red-400 font-semibold" : ""}`}>
                             {g.selectionImpactRatio == null ? "—" : g.selectionImpactRatio.toFixed(2)}
-                            {g.selectionBelowFourFifths && <span className="block text-[10px]">{en("below 4/5")}</span>}
+                            {g.selectionBelowFourFifths && <span className="block text-xs">{en("below 4/5")}</span>}
                           </td>
                           <td className="py-1.5 pe-2 text-end tabular-nums" title={`${g.scored} with a defense score`}>
                             {g.scoringRate == null ? <span className="text-muted-foreground">{en("too few ({scored})", { scored: g.scored })}</span> : pct(g.scoringRate)}
                           </td>
-                          <td className={`py-1.5 text-end tabular-nums ${g.scoringBelowFourFifths ? "text-rose-700 dark:text-rose-400 font-semibold" : ""}`}>
+                          <td className={`py-1.5 text-end tabular-nums ${g.scoringBelowFourFifths ? "text-red-700 dark:text-red-400 font-semibold" : ""}`}>
                             {g.scoringImpactRatio == null ? "—" : g.scoringImpactRatio.toFixed(2)}
-                            {g.scoringBelowFourFifths && <span className="block text-[10px]">{en("below 4/5")}</span>}
+                            {g.scoringBelowFourFifths && <span className="block text-xs">{en("below 4/5")}</span>}
                           </td>
                         </tr>
                       ))}
@@ -380,7 +376,7 @@ export default function TransparencyReportView({ report, meta, draft = false }: 
       </Section>
 
       <Section id="tr-accessibility" icon={<Accessibility className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />} title={en("Accessibility and voice")}>
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
           <Stat title={en("Defenses completed")} value={accessibility.defensesCompleted} />
           <Stat
             title={en("Average voice minutes per defense")}
@@ -394,8 +390,8 @@ export default function TransparencyReportView({ report, meta, draft = false }: 
       <Section id="tr-commitments" icon={<HeartHandshake className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />} title={en("Our commitments")}>
         <ul className="grid md:grid-cols-2 gap-3">
           {report.commitments.map((c) => (
-            <li key={c.title} className="rounded-xl border border-border bg-muted/30 p-4">
-              <h3 className="text-sm font-bold text-foreground">{c.title}</h3>
+            <li key={c.title} className="rounded-lg border border-border p-4">
+              <h3 className="text-sm font-semibold text-foreground">{c.title}</h3>
               <p className="text-sm text-muted-foreground mt-1">{c.text}</p>
               {c.note && <p className="mt-2"><Insufficient>{c.note}</Insufficient></p>}
             </li>
@@ -406,7 +402,7 @@ export default function TransparencyReportView({ report, meta, draft = false }: 
       <Section id="tr-methodology" icon={<BookOpen className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />} title={`Methodology (version ${report.methodology.version})`}>
         <div className="space-y-2">
           {report.methodology.sections.map((s) => (
-            <details key={s.title} className="group rounded-xl border border-border bg-muted/20">
+            <details key={s.title} className="group rounded-lg border border-border">
               <summary className="cursor-pointer list-none px-4 py-3 text-sm font-semibold text-foreground flex items-center justify-between gap-2">
                 {s.title}
                 <ChevronDown className="w-4 h-4 text-muted-foreground transition-transform group-open:rotate-180" aria-hidden="true" />
@@ -424,7 +420,7 @@ export default function TransparencyReportView({ report, meta, draft = false }: 
         </div>
         {report.limitations.length > 0 && (
           <div>
-            <h3 className="text-sm font-bold text-foreground mb-1">{en("Limitations")}</h3>
+            <h3 className="text-sm font-semibold text-foreground mb-1">{en("Limitations")}</h3>
             <ul className="list-disc ps-5 text-xs text-muted-foreground space-y-1">
               {report.limitations.map((l) => <li key={l}>{l}</li>)}
             </ul>

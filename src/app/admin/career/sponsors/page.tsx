@@ -8,7 +8,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useApi } from "@/lib/appAuth";
-import { Badge, Button, Card, EmptyState, ErrorBanner, Field, Loading, PageHeader, SuccessBanner, formatDate, useLoad, ScrollArea } from "@/components/career/ui";
+import { Badge, Button, buttonClass, Card, EmptyState, ErrorBanner, Field, Loading, PageHeader, SuccessBanner, formatDate, useLoad, ScrollArea } from "@/components/career/ui";
 
 interface ImportRow {
   id: string;
@@ -172,8 +172,8 @@ export default function AdminSponsorDataPage() {
         title="Sponsorship history data"
         description="Public U.S. Department of Labor (OFLC) Labor Condition Application disclosure data, shared by every school. Students and career staff look employers up by name; it is never a job search."
         actions={
-          <Link href="/admin/career" className="text-sm underline">
-            Back to career suite admin
+          <Link href="/admin/career" className={buttonClass("secondary")}>
+            Back to career settings
           </Link>
         }
       />
@@ -272,7 +272,7 @@ export default function AdminSponsorDataPage() {
           <ScrollArea><div aria-live="polite">
             <table className="w-full text-sm">
               <caption className="sr-only">Sponsorship data imports</caption>
-              <thead className="text-start text-xs uppercase text-muted-foreground">
+              <thead className="text-start text-xs font-medium text-muted-foreground">
                 <tr>
                   <th scope="col" className="py-2 pe-3">File</th>
                   <th scope="col" className="py-2 pe-3">Status</th>
@@ -356,7 +356,7 @@ export default function AdminSponsorDataPage() {
           <ScrollArea>
             <table className="w-full text-sm">
               <caption className="sr-only">Partner API keys</caption>
-              <thead className="text-start text-xs uppercase text-muted-foreground">
+              <thead className="text-start text-xs font-medium text-muted-foreground">
                 <tr>
                   <th scope="col" className="py-2 pe-3">Partner</th>
                   <th scope="col" className="py-2 pe-3">Key starts with</th>

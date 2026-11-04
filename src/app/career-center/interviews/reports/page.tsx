@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { useApi } from "@/lib/appAuth";
 import { useCareerShell } from "@/components/career/CareerShell";
-import { Button, Card, ErrorBanner, Field, Loading, PageHeader, useLoad, ScrollArea, useCareerT } from "@/components/career/ui";
+import { Button, Card, ErrorBanner, Field, Loading, PageHeader, useLoad, ScrollArea, useCareerT, StatTile } from "@/components/career/ui";
 import { useDownload } from "@/components/career/appointments/shared";
 
 interface Summary {
@@ -82,14 +82,11 @@ export default function InterviewReportsPage() {
           <ErrorBanner error={r.error} onRetry={r.reload} />
         ) : (
           <div className="space-y-4">
-            <dl className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
               {stats.map(([k, v]) => (
-                <div key={k} className="rounded-lg border border-border p-3">
-                  <dt className="text-xs text-muted-foreground">{k}</dt>
-                  <dd className="text-xl font-semibold">{v}</dd>
-                </div>
+                <StatTile key={k} label={k} value={v} />
               ))}
-            </dl>
+            </div>
             <Card title={t("schedulesByStatus")}>
               <p className="text-sm">{Object.entries(r.data!.schedulesByStatus).map(([k, v]) => `${k}: ${v}`).join(" · ") || t("noneYet")}</p>
             </Card>

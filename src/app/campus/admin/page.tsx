@@ -8,7 +8,6 @@ import {
   BarChart3,
   CheckCircle2,
   Download,
-  GraduationCap,
   Info,
   Loader2,
   Plus,
@@ -18,7 +17,9 @@ import {
   Upload,
   Users,
 } from "lucide-react";
+import { useSchoolCountry } from "@/components/institute/SchoolEnglish";
 import { useEn } from "@/lib/english/EnglishProvider";
+import { PageHeader, Tabs, buttonClass as uiButtonClass } from "@/components/career/ui";
 
 type GetToken = () => Promise<string | null>;
 
@@ -162,11 +163,10 @@ const STATUS_LABEL: Record<string, string> = {
 const PO_CODES = Array.from({ length: 12 }, (_, i) => `PO${i + 1}`);
 const PSO_CODES = Array.from({ length: 9 }, (_, i) => `PSO${i + 1}`);
 
-const inputClass = "w-full rounded-xl bg-card border border-border px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground";
-const buttonClass =
-  "inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-semibold cursor-pointer";
-const secondaryButtonClass =
-  "inline-flex items-center justify-center gap-2 px-3 py-2 rounded-xl border border-border bg-card hover:bg-muted disabled:opacity-50 text-xs font-semibold text-foreground cursor-pointer";
+const inputClass = "w-full rounded-lg bg-card border border-border px-3 py-2 text-sm text-foreground shadow-sm placeholder:text-muted-foreground";
+// Shared button look; the primary fill comes from the brand variable
+const buttonClass = `${uiButtonClass("primary")} bg-[var(--brand,#0e7490)]`;
+const secondaryButtonClass = uiButtonClass("secondary");
 
 async function apiJson<T>(path: string, getToken: GetToken, init: RequestInit = {}): Promise<T> {
   const res = await authenticatedFetch(path, init, getToken);
@@ -216,6 +216,7 @@ function Spinner({ text }: { text: string }) {
 
 export default function CampusAdminPage() {
   const en = useEn();
+  const india = useSchoolCountry() === "IN";
   const { getToken } = useAuth();
   const [version, setVersion] = useState(0);
   const [cohorts, setCohorts] = useState<Loaded<Cohort[]> | null>(null);
@@ -264,20 +265,17 @@ export default function CampusAdminPage() {
 
   return (
     <div className="space-y-6">
-      <div className="pb-4 border-b border-border">
-        <div className="flex items-center gap-2 text-xs font-semibold text-indigo-700 dark:text-indigo-400 uppercase tracking-wider">
-          <GraduationCap className="w-4 h-4" />{en(" Placement office")}
-        </div>
-        <h1 className="text-xl sm:text-2xl font-extrabold text-foreground mt-1">{en("Campus cohorts and readiness")}</h1>
-        <p className="text-xs text-muted-foreground mt-1 max-w-2xl">
-          {en("Import students, assign coding sprints with a voice defense, follow completion, and export readiness and NBA outcome evidence. Results support your planning; they do not decide who may sit for a placement drive.")}
-        </p>
-      </div>
+      <PageHeader
+        title={en("Campus cohorts and readiness")}
+        description={india
+          ? en("Import students, assign coding sprints with a voice defense, follow completion, and export readiness and NBA outcome evidence. Results support your planning; they do not decide who may sit for a placement drive.")
+          : en("Import students, assign coding sprints with a voice defense, follow completion, and export readiness. Results support your planning; they do not decide who may take part in recruiting.")}
+      />
 
       <div className="grid gap-6 lg:grid-cols-[280px_minmax(0,1fr)]">
         <aside className="space-y-4">
-          <div className="glass-panel rounded-2xl border border-border p-4 space-y-2">
-            <h2 className="text-sm font-bold text-foreground flex items-center gap-2"><Users className="w-4 h-4" />{en(" Cohorts")}</h2>
+          <div className="rounded-xl border border-border bg-card p-4 shadow-sm space-y-2">
+            <h2 className="text-sm font-semibold text-foreground flex items-center gap-2"><Users className="w-4 h-4" />{en(" Cohorts")}</h2>
             {!cohorts || cohorts.key !== key ? (
               <Spinner text={en("Loading...")} />
             ) : cohorts.error ? (
@@ -290,12 +288,12 @@ export default function CampusAdminPage() {
                   <li key={c.id}>
                     <button
                       onClick={() => setSelectedId(c.id)}
-                      className={`w-full text-start rounded-xl border px-3 py-2 cursor-pointer ${
-                        c.id === activeId ? "border-indigo-500/50 bg-indigo-500/10" : "border-border bg-card/60 hover:bg-muted"
+                      className={`w-full text-start rounded-lg border px-3 py-2 cursor-pointer ${
+                        c.id === activeId ? "border-indigo-500/50 bg-muted" : "border-border hover:bg-muted"
                       }`}
                     >
                       <span className="block text-sm font-semibold text-foreground truncate">{c.name}</span>
-                      <span className="block text-[11px] text-muted-foreground">
+                      <span className="block text-xs text-muted-foreground">
                         {en("{value} · {memberCount} students · {assignmentCount} sprints", { value: [c.program, c.graduationYear].filter(Boolean).join(" · "), memberCount: c.memberCount, assignmentCount: c.assignmentCount })}</span>
                     </button>
                   </li>
@@ -304,10 +302,10 @@ export default function CampusAdminPage() {
             )}
           </div>
 
-          <form onSubmit={createCohort} className="glass-panel rounded-2xl border border-border p-4 space-y-2">
-            <h2 className="text-sm font-bold text-foreground flex items-center gap-2"><Plus className="w-4 h-4" />{en(" New cohort")}</h2>
-            <input className={inputClass} value={name} onChange={(e) => setName(e.target.value)} placeholder={en("Name, e.g. CSE 2027 batch")} required maxLength={120} />
-            <input className={inputClass} value={program} onChange={(e) => setProgram(e.target.value)} placeholder={en("Program, e.g. B.Tech CSE")} maxLength={120} />
+          <form onSubmit={createCohort} className="rounded-xl border border-border bg-card p-4 shadow-sm space-y-2">
+            <h2 className="text-sm font-semibold text-foreground flex items-center gap-2"><Plus className="w-4 h-4" />{en(" New cohort")}</h2>
+            <input className={inputClass} value={name} onChange={(e) => setName(e.target.value)} placeholder={en("Name, e.g. Class of 2027")} required maxLength={120} />
+            <input className={inputClass} value={program} onChange={(e) => setProgram(e.target.value)} placeholder={en("Program, e.g. Computer Science")} maxLength={120} />
             <input className={inputClass} value={year} onChange={(e) => setYear(e.target.value)} type="number" min={2000} max={2100} placeholder={en("Graduation year")} required />
             <button type="submit" disabled={creating || !name.trim()} className={`${buttonClass} w-full`}>
               {creating && <Loader2 className="w-4 h-4 animate-spin" />}{en(" Create cohort")}
@@ -330,7 +328,7 @@ export default function CampusAdminPage() {
             />
           ) : (
             cohorts?.data && (
-              <div className="glass-panel rounded-2xl border border-border p-6 text-sm text-muted-foreground">{en("Create a cohort to get started.")}</div>
+              <div className="rounded-xl border border-border bg-card p-6 shadow-sm text-sm text-muted-foreground">{en("Create a cohort to get started.")}</div>
             )
           )}
         </section>
@@ -343,6 +341,8 @@ type Tab = "members" | "assign" | "dashboard" | "outcomes";
 
 function CohortPanel({ cohortId, getToken, onChanged, onDeleted }: { cohortId: string; getToken: GetToken; onChanged: () => void; onDeleted: () => void }) {
   const en = useEn();
+  // NBA outcomes are India's accreditation: schools in India only
+  const india = useSchoolCountry() === "IN";
   const [version, setVersion] = useState(0);
   const [detail, setDetail] = useState<Loaded<CohortDetail> | null>(null);
   const [tab, setTab] = useState<Tab>("members");
@@ -374,22 +374,22 @@ function CohortPanel({ cohortId, getToken, onChanged, onDeleted }: { cohortId: s
     }
   };
 
-  if (!detail) return <div className="glass-panel rounded-2xl border border-border p-6"><Spinner text={en("Loading cohort...")} /></div>;
-  if (detail.error) return <div className="glass-panel rounded-2xl border border-border p-6"><Message ok={false} text={detail.error} /></div>;
+  if (!detail) return <div className="rounded-xl border border-border bg-card p-6 shadow-sm"><Spinner text={en("Loading cohort...")} /></div>;
+  if (detail.error) return <div className="rounded-xl border border-border bg-card p-6 shadow-sm"><Message ok={false} text={detail.error} /></div>;
   const d = detail.data!;
 
-  const tabs: { id: Tab; label: string }[] = [
-    { id: "members", label: `Students (${d.memberCount})` },
-    { id: "assign", label: `Sprints (${d.assignments.length})` },
+  const tabs: { id: Tab; label: string; count?: number }[] = [
+    { id: "members", label: en("Students"), count: d.memberCount },
+    { id: "assign", label: en("Sprints"), count: d.assignments.length },
     { id: "dashboard", label: en("Dashboard") },
-    { id: "outcomes", label: en("NBA outcomes") },
+    ...(india ? [{ id: "outcomes" as Tab, label: en("NBA outcomes") }] : []),
   ];
 
   return (
-    <div className="glass-panel rounded-2xl border border-border p-4 sm:p-5 space-y-4">
+    <div className="rounded-xl border border-border bg-card p-4 shadow-sm sm:p-5 space-y-4">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0">
-          <h2 className="text-lg font-bold text-foreground break-words">{d.name}</h2>
+          <h2 className="text-lg font-semibold text-foreground break-words">{d.name}</h2>
           <p className="text-xs text-muted-foreground">
             {[d.program, d.graduationYear].filter(Boolean).join(" · ")}
             {d.branches.length > 0 && ` · ${d.branches.map((b) => `${b.branch} ${b.count}`).join(", ")}`}
@@ -401,26 +401,12 @@ function CohortPanel({ cohortId, getToken, onChanged, onDeleted }: { cohortId: s
       </div>
       {deleteError && <Message ok={false} text={deleteError} />}
 
-      <div className="flex gap-1 overflow-x-auto border-b border-border -mx-1 px-1" role="tablist">
-        {tabs.map((t) => (
-          <button
-            key={t.id}
-            role="tab"
-            aria-selected={tab === t.id}
-            onClick={() => setTab(t.id)}
-            className={`px-3 py-2 text-xs font-semibold whitespace-nowrap border-b-2 -mb-px cursor-pointer ${
-              tab === t.id ? "border-indigo-600 text-indigo-700 dark:text-indigo-300" : "border-transparent text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            {en(t.label)}
-          </button>
-        ))}
-      </div>
+      <Tabs items={tabs} value={tab} onChange={setTab} label={en("Cohort sections")} />
 
       {tab === "members" && <MembersTab cohortId={cohortId} getToken={getToken} onChanged={refresh} />}
       {tab === "assign" && <AssignTab cohortId={cohortId} assignments={d.assignments} getToken={getToken} onChanged={refresh} />}
       {tab === "dashboard" && <DashboardTab cohortId={cohortId} assignments={d.assignments} getToken={getToken} />}
-      {tab === "outcomes" && <OutcomesTab cohortId={cohortId} assignments={d.assignments} getToken={getToken} />}
+      {tab === "outcomes" && india && <OutcomesTab cohortId={cohortId} assignments={d.assignments} getToken={getToken} />}
     </div>
   );
 }
@@ -510,8 +496,8 @@ function MembersTab({ cohortId, getToken, onChanged }: { cohortId: string; getTo
 
   return (
     <div className="space-y-5">
-      <div className="rounded-xl border border-border bg-card/60 p-4 space-y-3">
-        <h3 className="text-sm font-bold text-foreground flex items-center gap-2"><Upload className="w-4 h-4" />{en(" Import students from CSV")}</h3>
+      <div className="rounded-lg border border-border p-4 space-y-3">
+        <h3 className="text-sm font-semibold text-foreground flex items-center gap-2"><Upload className="w-4 h-4" />{en(" Import students from CSV")}</h3>
         <p className="text-xs text-muted-foreground">
           {en("Header row: ")}<code className="font-mono">{en("name,email,roll_number,branch")}</code>{en(". Other columns are ignored. Up to 5,000 rows per file; existing students (same email) are updated.")}
         </p>
@@ -529,7 +515,7 @@ function MembersTab({ cohortId, getToken, onChanged }: { cohortId: string; getTo
             setFileName(null);
           }}
           rows={5}
-          placeholder={en("name,email,roll_number,branch\nPriya Sharma,priya@college.edu,21CS001,CSE")}
+          placeholder={en("name,email,roll_number,branch\nFull name,student@example.edu,ID-001,Computer Science")}
           className={`${inputClass} font-mono text-xs`}
         />
         <button onClick={runImport} disabled={importing || !csv.trim()} className={buttonClass}>
@@ -605,7 +591,7 @@ function MembersTab({ cohortId, getToken, onChanged }: { cohortId: string; getTo
                       <td className="py-2 pe-3 font-mono text-xs text-foreground">{m.rollNumber || "—"}</td>
                       <td className="py-2 pe-3 text-foreground">
                         {m.name}
-                        <span className="block sm:hidden text-[11px] text-muted-foreground break-all">{m.email}</span>
+                        <span className="block sm:hidden text-xs text-muted-foreground break-all">{m.email}</span>
                       </td>
                       <td className="py-2 pe-3 text-xs text-muted-foreground hidden sm:table-cell break-all">{m.email}</td>
                       <td className="py-2 pe-3 text-xs text-foreground">{m.branch || "—"}</td>
@@ -725,10 +711,10 @@ function AssignTab({ cohortId, assignments, getToken, onChanged }: { cohortId: s
 
   return (
     <div className="space-y-5">
-      <form onSubmit={assign} className="rounded-xl border border-border bg-card/60 p-4 space-y-3">
-        <h3 className="text-sm font-bold text-foreground flex items-center gap-2"><Send className="w-4 h-4" />{en(" Assign a sprint")}</h3>
+      <form onSubmit={assign} className="rounded-lg border border-border p-4 space-y-3">
+        <h3 className="text-sm font-semibold text-foreground flex items-center gap-2"><Send className="w-4 h-4" />{en(" Assign a sprint")}</h3>
         <div className="grid gap-3 sm:grid-cols-2">
-          <label className="block text-xs font-semibold text-foreground">
+          <label className="block text-sm font-medium text-foreground">
             {en("Public sprint")}
             <select className={`${inputClass} mt-1`} value={sprintId} onChange={(e) => setSprintId(e.target.value)} disabled={!sprints}>
               <option value="">{sprints ? en("Choose a sprint") : en("Loading...")}</option>
@@ -740,29 +726,29 @@ function AssignTab({ cohortId, assignments, getToken, onChanged }: { cohortId: s
               ))}
             </select>
           </label>
-          <label className="block text-xs font-semibold text-foreground">
+          <label className="block text-sm font-medium text-foreground">
             {en("Or a private sprint id")}
             <input className={`${inputClass} mt-1 font-mono text-xs`} value={manualId} onChange={(e) => setManualId(e.target.value)} placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" />
           </label>
           {manualId.trim() && (
-            <label className="block text-xs font-semibold text-foreground sm:col-span-2">
+            <label className="block text-sm font-medium text-foreground sm:col-span-2">
               {en("Invite code (needed for private sprints owned by another organisation)")}
               <input className={`${inputClass} mt-1`} value={inviteCode} onChange={(e) => setInviteCode(e.target.value)} />
             </label>
           )}
-          <label className="block text-xs font-semibold text-foreground">
+          <label className="block text-sm font-medium text-foreground">
             {en("Opens")}
             <input type="datetime-local" className={`${inputClass} mt-1`} value={opensAt} onChange={(e) => setOpensAt(e.target.value)} required />
           </label>
-          <label className="block text-xs font-semibold text-foreground">
+          <label className="block text-sm font-medium text-foreground">
             {en("Due")}
             <input type="datetime-local" className={`${inputClass} mt-1`} value={dueAt} onChange={(e) => setDueAt(e.target.value)} required />
           </label>
         </div>
-        <label className="flex items-center gap-2 text-xs font-semibold text-foreground">
+        <label className="flex items-center gap-2 text-sm text-foreground">
           <input type="checkbox" checked={sendInvites} onChange={(e) => setSendInvites(e.target.checked)} />{en(" Email every student the link and due date")}
         </label>
-        <p className="text-[11px] text-muted-foreground">
+        <p className="text-xs text-muted-foreground">
           {en("Only work students start after you assign the sprint counts on the dashboard. Assigning the same sprint again updates its dates.")}
         </p>
         <button type="submit" disabled={saving || !chosen} className={buttonClass}>
@@ -772,18 +758,18 @@ function AssignTab({ cohortId, assignments, getToken, onChanged }: { cohortId: s
       </form>
 
       <div className="space-y-2">
-        <h3 className="text-sm font-bold text-foreground">{en("Assigned sprints")}</h3>
+        <h3 className="text-sm font-semibold text-foreground">{en("Assigned sprints")}</h3>
         {assignments.length === 0 ? (
           <p className="text-xs text-muted-foreground">{en("Nothing assigned yet.")}</p>
         ) : (
           <ul className="space-y-2">
             {assignments.map((a) => (
-              <li key={a.id} className="rounded-xl border border-border bg-card/60 p-3 flex flex-wrap items-start justify-between gap-2">
+              <li key={a.id} className="rounded-lg border border-border p-3 flex flex-wrap items-start justify-between gap-2">
                 <div className="min-w-0">
                   <p className="text-sm font-semibold text-foreground break-words">
-                    {a.sprintTitle} {a.isPrivate && <span className="text-[10px] px-1.5 py-0.5 rounded border border-border text-muted-foreground align-middle">private</span>}
+                    {a.sprintTitle} {a.isPrivate && <span className="text-xs px-1.5 py-0.5 rounded border border-border text-muted-foreground align-middle">private</span>}
                   </p>
-                  <p className="text-[11px] text-muted-foreground">{en("Opens {date} · Due {date2}", { date: formatDate(a.opensAt), date2: formatDate(a.dueAt) })}</p>
+                  <p className="text-xs text-muted-foreground">{en("Opens {date} · Due {date2}", { date: formatDate(a.opensAt), date2: formatDate(a.dueAt) })}</p>
                 </div>
                 <button onClick={() => remove(a)} className="p-1.5 rounded-lg text-muted-foreground hover:text-rose-600 cursor-pointer" aria-label={`Remove ${a.sprintTitle}`}>
                   <Trash2 className="w-4 h-4" />
@@ -802,7 +788,7 @@ function SprintPicker({ assignments, value, onChange }: { assignments: Assignmen
   return (
     <label className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 text-xs text-muted-foreground">
       {en("Sprint")}
-      <select className="px-3 py-2 rounded-xl bg-card border border-border text-xs text-foreground max-w-full" value={value} onChange={(e) => onChange(e.target.value)}>
+      <select className="h-9 px-3 rounded-lg bg-card border border-border text-sm text-foreground shadow-sm max-w-full" value={value} onChange={(e) => onChange(e.target.value)}>
         {assignments.map((a) => (
           <option key={a.sprintId} value={a.sprintId}>{a.sprintTitle}</option>
         ))}
@@ -844,10 +830,10 @@ function Histogram({ title, dist, suffix }: { title: string; dist: Distribution;
   const en = useEn();
   const max = Math.max(1, ...dist.buckets.map((b) => b.count));
   return (
-    <div className="rounded-xl border border-border bg-card/60 p-3 space-y-2">
+    <div className="rounded-lg border border-border p-3 space-y-2">
       <div className="flex items-baseline justify-between gap-2">
-        <h4 className="text-xs font-bold text-foreground">{title}</h4>
-        <span className="text-[11px] text-muted-foreground">
+        <h4 className="text-sm font-semibold text-foreground">{title}</h4>
+        <span className="text-xs text-muted-foreground">
           {en("n {n} · mean {mean} · median {median}", { n: dist.n, mean: fmt(dist.mean, suffix), median: fmt(dist.median, suffix) })}
         </span>
       </div>
@@ -857,7 +843,7 @@ function Histogram({ title, dist, suffix }: { title: string; dist: Distribution;
         <div className="flex items-end gap-1.5 h-24" role="img" aria-label={`${title}: ${dist.buckets.map((b) => `${b.label} ${b.count}`).join(", ")}`}>
           {dist.buckets.map((b) => (
             <div key={b.label} className="flex-1 flex flex-col items-center justify-end h-full gap-1" title={`${b.label}: ${b.count} student${b.count === 1 ? "" : "s"}`}>
-              <span className="text-[10px] text-foreground tabular-nums">{b.count > 0 ? b.count : ""}</span>
+              <span className="text-xs text-foreground tabular-nums">{b.count > 0 ? b.count : ""}</span>
               <div className="w-full rounded-t bg-indigo-500 dark:bg-indigo-400" style={{ height: `${(70 * b.count) / max}%`, minHeight: b.count > 0 ? 2 : 0 }} />
             </div>
           ))}
@@ -865,7 +851,7 @@ function Histogram({ title, dist, suffix }: { title: string; dist: Distribution;
       )}
       <div className="flex gap-1.5">
         {dist.buckets.map((b) => (
-          <span key={b.label} className="flex-1 text-center text-[10px] text-muted-foreground">{b.label}</span>
+          <span key={b.label} className="flex-1 text-center text-xs text-muted-foreground">{b.label}</span>
         ))}
       </div>
     </div>
@@ -925,12 +911,12 @@ function DashboardTab({ cohortId, assignments, getToken }: { cohortId: string; a
       ) : d ? (
         <>
           <div className="grid gap-4 md:grid-cols-2">
-            <div className="rounded-xl border border-border bg-card/60 p-3 space-y-3">
-              <h4 className="text-xs font-bold text-foreground flex items-center gap-1.5"><BarChart3 className="w-3.5 h-3.5" />{en(" Completion")}</h4>
+            <div className="rounded-lg border border-border p-3 space-y-3">
+              <h4 className="text-sm font-semibold text-foreground flex items-center gap-1.5"><BarChart3 className="w-3.5 h-3.5" />{en(" Completion")}</h4>
               <FunnelBars funnel={d.funnel} />
             </div>
-            <div className="rounded-xl border border-border bg-card/60 p-3 space-y-3">
-              <h4 className="text-xs font-bold text-foreground">{en("Readiness")}</h4>
+            <div className="rounded-lg border border-border p-3 space-y-3">
+              <h4 className="text-sm font-semibold text-foreground">{en("Readiness")}</h4>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                 {BANDS.map((b) => (
                   <button
@@ -939,14 +925,14 @@ function DashboardTab({ cohortId, assignments, getToken }: { cohortId: string; a
                     className={`rounded-lg border px-2 py-1.5 text-start cursor-pointer ${BAND_CLASS[b]} ${band === b ? "ring-2 ring-indigo-500" : ""}`}
                     title={`Show only ${b}`}
                   >
-                    <span className="block text-lg font-bold tabular-nums">{d.readiness.counts[b] ?? 0}</span>
-                    <span className="block text-[11px] font-semibold">{en(b)}</span>
+                    <span className="block text-lg font-semibold tabular-nums">{d.readiness.counts[b] ?? 0}</span>
+                    <span className="block text-xs font-semibold">{en(b)}</span>
                   </button>
                 ))}
               </div>
               <div>
-                <h5 className="text-[11px] font-semibold text-muted-foreground mb-1">{en("Integrity review (submissions)")}</h5>
-                <div className="flex flex-wrap gap-2 text-[11px]">
+                <h5 className="text-sm font-medium text-muted-foreground mb-1">{en("Integrity review (submissions)")}</h5>
+                <div className="flex flex-wrap gap-2 text-xs">
                   {[["Clear", "Clear"], ["Review", "Review"], ["HighRisk", "High risk"], ["Unknown", en("Not analysed")]].map(([k, label]) => (
                     <span key={k} className="px-2 py-1 rounded-lg border border-border bg-card text-foreground">
                       {en(label)}: <strong className="tabular-nums">{d.integrityReview[k] ?? 0}</strong>
@@ -963,7 +949,7 @@ function DashboardTab({ cohortId, assignments, getToken }: { cohortId: string; a
           </div>
 
           <div className="space-y-2">
-            <h4 className="text-xs font-bold text-foreground">{en("By branch")}</h4>
+            <h4 className="text-sm font-semibold text-foreground">{en("By branch")}</h4>
             <div className="overflow-x-auto">
               <table className="w-full text-xs">
                 <thead>
@@ -1000,7 +986,7 @@ function DashboardTab({ cohortId, assignments, getToken }: { cohortId: string; a
 
           <div className="space-y-2">
             <div className="flex flex-wrap items-center justify-between gap-2">
-              <h4 className="text-xs font-bold text-foreground">{en("Students {value}", { value: band && `· ${band}` })}</h4>
+              <h4 className="text-sm font-semibold text-foreground">{en("Students {value}", { value: band && `· ${band}` })}</h4>
               {band && <button className={secondaryButtonClass} onClick={() => setBand("")}>{en("Show all")}</button>}
             </div>
             <div className="overflow-x-auto">
@@ -1035,7 +1021,7 @@ function DashboardTab({ cohortId, assignments, getToken }: { cohortId: string; a
                         {s.defenseMissing && "*"}
                       </td>
                       <td className="py-2 pe-3">
-                        <span className={`inline-block px-2 py-0.5 rounded-full border text-[11px] font-semibold whitespace-nowrap ${BAND_CLASS[s.readiness] ?? ""}`}>{s.readiness}</span>
+                        <span className={`inline-block px-2 py-0.5 rounded-full border text-xs font-semibold whitespace-nowrap ${BAND_CLASS[s.readiness] ?? ""}`}>{s.readiness}</span>
                       </td>
                       <td className="py-2 hidden md:table-cell text-muted-foreground">{s.languageLabel ?? "—"}</td>
                     </tr>
@@ -1052,7 +1038,7 @@ function DashboardTab({ cohortId, assignments, getToken }: { cohortId: string; a
             )}
           </div>
 
-          <ul className="space-y-1 text-[11px] text-muted-foreground">
+          <ul className="space-y-1 text-xs text-muted-foreground">
             {d.notes.map((n) => (
               <li key={n} className="flex gap-1.5"><Info className="w-3.5 h-3.5 shrink-0 mt-0.5" /> {n}</li>
             ))}
@@ -1121,7 +1107,7 @@ function OutcomesTab({ cohortId, assignments, getToken }: { cohortId: string; as
     };
   }, [getToken, cohortId, sprintId, target, attainmentKey]);
 
-  if (assignments.length === 0) return <p className="text-sm text-muted-foreground">{en("Assign a sprint to map it to programme outcomes.")}</p>;
+  if (assignments.length === 0) return <p className="text-sm text-muted-foreground">{en("Assign a sprint to map it to program outcomes.")}</p>;
 
   const save = async (reset: boolean) => {
     setSaving(true);
@@ -1155,10 +1141,10 @@ function OutcomesTab({ cohortId, assignments, getToken }: { cohortId: string; as
     <div className="space-y-5">
       <SprintPicker assignments={assignments} value={sprintId} onChange={setSprintId} />
 
-      <div className="rounded-xl border border-border bg-card/60 p-4 space-y-3">
-        <h3 className="text-sm font-bold text-foreground">{en("Outcome mapping for this sprint")}</h3>
-        <p className="text-[11px] text-muted-foreground">
-          {en("Choose which programme outcomes this sprint provides evidence for and which measure to use: tests (code correctness), defense (explaining the work) or combined. Weight is carried into the export for your own CO-PO calculation (for example correlation level 1–3).")}
+      <div className="rounded-lg border border-border p-4 space-y-3">
+        <h3 className="text-sm font-semibold text-foreground">{en("Outcome mapping for this sprint")}</h3>
+        <p className="text-xs text-muted-foreground">
+          {en("Choose which program outcomes this sprint provides evidence for and which measure to use: tests (code correctness), defense (explaining the work) or combined. Weight is carried into the export for your own CO-PO calculation (for example correlation level 1–3).")}
         </p>
         {!mappings || mappings.key !== mappingKey ? (
           <Spinner text={en("Loading mapping...")} />
@@ -1166,7 +1152,7 @@ function OutcomesTab({ cohortId, assignments, getToken }: { cohortId: string; as
           <Message ok={false} text={mappings.error} />
         ) : (
           <>
-            {mappings.data?.isDefault && <p className="text-[11px] text-muted-foreground">{en("Showing the default mapping. Save to customise it.")}</p>}
+            {mappings.data?.isDefault && <p className="text-xs text-muted-foreground">{en("Showing the default mapping. Save to customize it.")}</p>}
             <div className="space-y-2">
               {rows.map((r) => (
                 <div key={r.rowId} className="grid grid-cols-[1fr_auto] sm:grid-cols-[minmax(0,1fr)_140px_90px_auto] gap-2 items-center">
@@ -1218,7 +1204,7 @@ function OutcomesTab({ cohortId, assignments, getToken }: { cohortId: string; as
 
       <div className="space-y-3">
         <div className="flex flex-wrap items-end justify-between gap-3">
-          <h3 className="text-sm font-bold text-foreground flex items-center gap-2"><Target className="w-4 h-4" />{en(" Attainment")}</h3>
+          <h3 className="text-sm font-semibold text-foreground flex items-center gap-2"><Target className="w-4 h-4" />{en(" Attainment")}</h3>
           <div className="flex flex-wrap items-end gap-2">
             <form
               className="flex items-end gap-2"
@@ -1230,7 +1216,7 @@ function OutcomesTab({ cohortId, assignments, getToken }: { cohortId: string; as
             >
               <label className="text-xs text-muted-foreground">
                 {en("Target score")}
-                <input className="mt-1 w-20 rounded-xl bg-card border border-border px-3 py-2 text-xs text-foreground block" type="number" min={0} max={100} value={targetInput} onChange={(e) => setTargetInput(e.target.value)} />
+                <input className="mt-1 w-20 rounded-lg bg-card border border-border px-3 py-2 text-sm text-foreground shadow-sm block" type="number" min={0} max={100} value={targetInput} onChange={(e) => setTargetInput(e.target.value)} />
               </label>
               <button type="submit" className={secondaryButtonClass}>{en("Apply")}</button>
             </form>
@@ -1268,17 +1254,17 @@ function OutcomesTab({ cohortId, assignments, getToken }: { cohortId: string; as
                       <td className="py-2 pe-3 text-end">{o.assessed}</td>
                       <td className="py-2 pe-3 text-end">{o.atOrAboveTarget}</td>
                       <td className="py-2 pe-3 text-end">{fmt(o.percentAtOrAboveTarget, "%")}</td>
-                      <td className="py-2 text-end font-bold">{o.attainmentLevel ?? "—"}</td>
+                      <td className="py-2 text-end font-semibold">{o.attainmentLevel ?? "—"}</td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             </div>
-            <p className="text-[11px] text-muted-foreground">
+            <p className="text-xs text-muted-foreground">
               {en("Level 3 if at least ")}{a.thresholds.level3}{en("% of assessed students reach the target, 2 if at least ")}{a.thresholds.level2}{en("%, 1 if at least ")}{a.thresholds.level1}{en("%, otherwise 0.")}
               {a.usingDefaultMappings && en(" Using the default mapping.")}
             </p>
-            <p className="text-[11px] text-muted-foreground flex gap-1.5 rounded-lg border border-border bg-card/60 p-2">
+            <p className="text-xs text-muted-foreground flex gap-1.5 rounded-lg border border-border p-2">
               <Info className="w-3.5 h-3.5 shrink-0 mt-0.5" /> {a.note}
             </p>
           </>

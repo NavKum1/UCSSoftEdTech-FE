@@ -7,7 +7,7 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { API_BASE_URL } from "@/lib/apiClient";
-import { Button, Card, ErrorBanner, Field, Loading, SuccessBanner, formatDate, useCareerT } from "@/components/career/ui";
+import { Button, Card, ErrorBanner, Field, Loading, PageHeader, SuccessBanner, formatDate, useCareerT } from "@/components/career/ui";
 
 interface View {
   school?: string | null;
@@ -78,10 +78,7 @@ export default function GuardianConsentPage() {
 
   return (
     <div>
-      <header className="mb-6">
-        <p className="text-sm text-muted-foreground">{brand}</p>
-        <h1 className="text-2xl font-semibold">{t("parentOrGuardianConsent")}</h1>
-      </header>
+      <PageHeader title={t("parentOrGuardianConsent")} description={brand} />
       <ErrorBanner error={err} />
       <SuccessBanner message={done} />
       {!view && !err ? (

@@ -6,6 +6,7 @@ import { useAppAuth as useAuth } from "@/lib/appAuth";
 import { Mic, Zap, PlusCircle, CreditCard, Loader2, AlertTriangle, Clock } from "lucide-react";
 import { API_BASE_URL, authenticatedFetch } from "@/lib/apiClient";
 import { useEn } from "@/lib/english/EnglishProvider";
+import { Badge, Button, buttonClass } from "@/components/career/ui";
 
 export interface BillingPlan {
   id: string;
@@ -128,25 +129,17 @@ export default function VoiceUsageCard() {
   const sessionCap = usage?.maxSessionMinutes ?? plans?.maxSessionMinutes;
 
   return (
-    <div className="glass-panel rounded-2xl p-5 border border-border">
+    <div className="rounded-xl border border-border bg-card p-5 shadow-sm">
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-5">
         <div className="flex items-start gap-4 min-w-0">
-          <div className="p-3 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-700 dark:text-indigo-400 shrink-0">
+          <div className="shrink-0 rounded-lg border border-border bg-muted p-2.5 text-indigo-700 dark:text-indigo-400">
             <Mic className="w-5 h-5" />
           </div>
           <div className="min-w-0 space-y-1.5">
             <div className="flex flex-wrap items-center gap-2">
-              <h2 className="text-sm font-bold text-foreground">{en("Voice defense minutes")}</h2>
+              <h2 className="text-base font-semibold text-foreground">{en("Voice defense minutes")}</h2>
               {usage && (
-                <span
-                  className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border ${
-                    isPro
-                      ? "bg-purple-500/10 text-purple-700 dark:text-purple-300 border-purple-500/30"
-                      : "bg-muted text-muted-foreground border-border"
-                  }`}
-                >
-                  {usage.subscriptionTier} plan
-                </span>
+                <Badge tone={isPro ? "info" : "neutral"}>{usage.subscriptionTier} plan</Badge>
               )}
             </div>
 
@@ -157,7 +150,7 @@ export default function VoiceUsageCard() {
             ) : usage ? (
               <>
                 <p className="text-xs text-muted-foreground">
-                  <span className={`text-lg font-black ${usage.isQuotaExhausted ? "text-red-600 dark:text-red-400" : "text-foreground"}`}>
+                  <span className={`text-lg font-semibold tabular-nums ${usage.isQuotaExhausted ? "text-red-600 dark:text-red-400" : "text-foreground"}`}>
                     {usage.remainingMinutes}
                   </span>{" "}
                   {en("min remaining · ")}{usage.usedMinutes} of {usage.allocatedMinutes}{en(" monthly min used")}
@@ -169,7 +162,7 @@ export default function VoiceUsageCard() {
                     style={{ width: `${usedPct}%` }}
                   />
                 </div>
-                <p className="text-[11px] text-muted-foreground flex flex-wrap items-center gap-x-3 gap-y-1">
+                <p className="text-xs text-muted-foreground flex flex-wrap items-center gap-x-3 gap-y-1">
                   {usage.usageResetsAt && (
                     <span className="flex items-center gap-1">
                       <Clock className="w-3 h-3" />{" "}{en("Monthly minutes reset {date}", { date: new Date(usage.usageResetsAt).toLocaleDateString() })}
@@ -178,7 +171,7 @@ export default function VoiceUsageCard() {
                   {sessionCap ? <span>{en("Max {sessionCap} min per session", { sessionCap })}</span> : null}
                 </p>
                 {usage.isQuotaExhausted && (
-                  <p className="text-[11px] font-semibold text-red-600 dark:text-red-400 flex items-center gap-1">
+                  <p className="text-xs font-semibold text-red-600 dark:text-red-400 flex items-center gap-1">
                     <AlertTriangle className="w-3 h-3" />{en(" You're out of minutes for this period.")}
                   </p>
                 )}
@@ -194,12 +187,7 @@ export default function VoiceUsageCard() {
         {usage && (
           <div className="flex flex-wrap items-center gap-2 shrink-0">
             {!isPro && (
-              <button
-                type="button"
-                onClick={() => runAction("checkout")}
-                disabled={busy !== null}
-                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 disabled:opacity-60 text-white text-xs font-semibold shadow-md"
-              >
+              <Button type="button" onClick={() => runAction("checkout")} disabled={busy !== null}>
                 {busy === "checkout" ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Zap className="w-3.5 h-3.5" />}
                 {en("Upgrade to Pro")}
                 {proPlan && plans && (
@@ -207,31 +195,21 @@ export default function VoiceUsageCard() {
                     · {formatPrice(proPlan.priceCents, plans.currency)}/{proPlan.interval ?? "month"}
                   </span>
                 )}
-              </button>
+              </Button>
             )}
             {plans && (
-              <button
-                type="button"
-                onClick={() => runAction("topup")}
-                disabled={busy !== null}
-                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl border border-border bg-card hover:bg-muted disabled:opacity-60 text-foreground text-xs font-semibold"
-              >
+              <Button type="button" variant="secondary" onClick={() => runAction("topup")} disabled={busy !== null}>
                 {busy === "topup" ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <PlusCircle className="w-3.5 h-3.5" />}
                 {en("Buy ")}{plans.topUp.minutes}{en(" minutes · ")}{formatPrice(plans.topUp.priceCents, plans.currency)}
-              </button>
+              </Button>
             )}
             {isPro && (
-              <button
-                type="button"
-                onClick={() => runAction("portal")}
-                disabled={busy !== null}
-                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl border border-border bg-card hover:bg-muted disabled:opacity-60 text-foreground text-xs font-semibold"
-              >
+              <Button type="button" variant="secondary" onClick={() => runAction("portal")} disabled={busy !== null}>
                 {busy === "portal" ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <CreditCard className="w-3.5 h-3.5" />}
                 {en("Manage billing")}
-              </button>
+              </Button>
             )}
-            <Link href="/pricing" className="text-xs font-semibold text-indigo-700 dark:text-indigo-400 hover:underline px-1">
+            <Link href="/pricing" className={buttonClass("ghost")}>
               {en("Compare plans")}
             </Link>
           </div>

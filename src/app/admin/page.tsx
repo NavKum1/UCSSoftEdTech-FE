@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 import { UserCog, ShieldCheck, X as CloseIcon, Pencil } from "lucide-react";
 import { authenticatedFetch } from "@/lib/apiClient";
+import { Badge, Button, Card, EmptyState, Modal, PageHeader, ScrollArea, StatTile, Tabs } from "@/components/career/ui";
 import StaffAccess from "@/components/institute/StaffAccess";
 import AccessRequestsAdmin from "@/components/admin/AccessRequestsAdmin";
 import PlatformSetupBanner from "@/components/admin/PlatformSetupBanner";
@@ -116,7 +117,7 @@ export default function SuperAdminDashboard() {
   const [newCourseInstId, setNewCourseInstId] = useState<string>("");
   const [newCourseName, setNewCourseName] = useState<string>("");
   const [newCourseDesc, setNewCourseDesc] = useState<string>("");
-  const [newCourseSkillTags, setNewCourseSkillTags] = useState<string>("React Hooks, Next.js");
+  const [newCourseSkillTags, setNewCourseSkillTags] = useState<string>("");
 
   // Inline Skill Tag Form State
   const [activeCourseIdForTag, setActiveCourseIdForTag] = useState<string | null>(null);
@@ -177,7 +178,7 @@ export default function SuperAdminDashboard() {
       }
     } catch (err) {
       console.error("[ADMIN DASHBOARD ERROR]", err);
-      setError("Failed to synchronize with .NET SuperAdmin API. Verify server connectivity.");
+      setError("We couldn't load the overview. Check your connection and try again.");
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -205,7 +206,7 @@ export default function SuperAdminDashboard() {
       });
 
       if (res.ok) {
-        showNotification(`Partner Institute "${newInstName}" created successfully.`);
+        showNotification(`Added partner institute "${newInstName}".`);
         setNewInstName("");
         setNewInstWebhook("");
         setNewInstApiKey("");
@@ -259,12 +260,12 @@ export default function SuperAdminDashboard() {
 
   // Handle Institute Deletion
   const handleDeleteInstitute = async (id: string, name: string) => {
-    if (!confirm(`Are you sure you want to remove partner institute "${name}" and all associated courses?`)) return;
+    if (!confirm(`Are you sure you want to remove partner institute "${name}" and all its courses?`)) return;
 
     try {
       const res = await customFetch(`/api/admin/institutes/${id}`, { method: "DELETE" });
       if (res.ok) {
-        showNotification(`Partner Institute "${name}" removed.`);
+        showNotification(`Removed partner institute "${name}".`);
         loadData();
       }
     } catch (err) {
@@ -294,10 +295,10 @@ export default function SuperAdminDashboard() {
       });
 
       if (res.ok) {
-        showNotification(`Course "${newCourseName}" and ${tags.length} skill tag mappings registered.`);
+        showNotification(`Course "${newCourseName}" and ${tags.length} skills linked.`);
         setNewCourseName("");
         setNewCourseDesc("");
-        setNewCourseSkillTags("React Hooks, Next.js");
+        setNewCourseSkillTags("");
         setShowAddCourseModal(false);
         loadData();
       }
@@ -308,7 +309,7 @@ export default function SuperAdminDashboard() {
 
   // Handle Course Deletion
   const handleDeleteCourse = async (id: string, courseName: string) => {
-    if (!confirm(`Delete course "${courseName}" and all associated skill tags?`)) return;
+    if (!confirm(`Delete course "${courseName}" and its linked skills?`)) return;
 
     try {
       const res = await customFetch(`/api/admin/courses/${id}`, { method: "DELETE" });
@@ -332,7 +333,7 @@ export default function SuperAdminDashboard() {
       });
 
       if (res.ok) {
-        showNotification(`Skill tag "${newSkillTagInput.trim()}" mapped to course.`);
+        showNotification(`Added skill "${newSkillTagInput.trim()}" to the course.`);
         setNewSkillTagInput("");
         setActiveCourseIdForTag(null);
         loadData();
@@ -366,7 +367,7 @@ export default function SuperAdminDashboard() {
       a.remove();
       window.URL.revokeObjectURL(downloadUrl);
 
-      showNotification("CSV export successfully generated and downloaded.");
+      showNotification("CSV downloaded.");
     } catch (err) {
       setError(err instanceof TypeError ? "We couldn't reach the server. Please check your connection and try again." : (err as Error).message || "We couldn't create the export. Please try again.");
     } finally {
@@ -374,12 +375,18 @@ export default function SuperAdminDashboard() {
     }
   };
 
+  const inputCls =
+    "w-full rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground shadow-sm placeholder:text-muted-foreground focus:border-indigo-500 focus:outline-none";
+  const labelCls = "mb-1 block text-sm font-medium text-foreground";
+  const iconBtnCls =
+    "inline-flex items-center gap-1 rounded-lg px-2 py-1.5 text-xs text-muted-foreground transition-colors hover:bg-muted hover:text-foreground";
+
   return (
     <div className="space-y-8">
       {/* Toast Notification */}
       {actionMessage && (
-        <div className="fixed bottom-6 end-6 z-50 px-5 py-3 rounded-2xl bg-emerald-500/90 text-white font-medium text-sm shadow-2xl flex items-center space-x-2 border border-emerald-400/40 backdrop-blur-md animate-in fade-in slide-in-from-bottom-5">
-          <CheckCircle2 className="w-4 h-4" />
+        <div role="status" className="fixed bottom-6 end-6 z-50 flex items-center gap-2 rounded-lg border border-emerald-300 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-800 shadow-lg dark:border-emerald-900 dark:bg-emerald-950 dark:text-emerald-300">
+          <CheckCircle2 className="h-4 w-4" aria-hidden="true" />
           <span>{actionMessage}</span>
         </div>
       )}
@@ -388,217 +395,58 @@ export default function SuperAdminDashboard() {
 
       {/* Global Error Banner */}
       {error && (
-        <div className="p-4 rounded-2xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-sm flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            <AlertCircle className="w-5 h-5 text-rose-400 shrink-0" />
+        <div role="alert" className="flex items-start justify-between gap-3 rounded-lg border border-red-300 bg-red-50 p-3 text-sm text-red-800 dark:border-red-900 dark:bg-red-950/40 dark:text-red-300">
+          <div className="flex items-start gap-2">
+            <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
             <span>{error}</span>
           </div>
-          <button
-            onClick={() => setError(null)}
-            className="text-xs uppercase font-bold text-rose-400 hover:text-rose-200 cursor-pointer"
-          >
+          <button type="button" onClick={() => setError(null)} className="text-sm font-medium underline">
             Dismiss
           </button>
         </div>
       )}
 
-      {/* Dashboard Top Header & Tabs Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-border">
-        <div>
-          <h1 className="text-2xl font-black tracking-tight text-foreground flex items-center space-x-2">
-            <span>Enterprise Operations Center</span>
-          </h1>
-          <p className="text-xs text-muted-foreground mt-1">
-            B2B Partner Institute Management, Course Skill Gap Mappings, and Monetization Routing.
-          </p>
-        </div>
-
-        <div className="flex items-center space-x-3">
-          <a
-            href="/admin/transparency"
-            className="text-xs font-semibold px-3 py-1.5 rounded-lg bg-muted hover:bg-muted/80 text-foreground border border-border transition"
-          >
-            Transparency reports
-          </a>
-          <button
+      <PageHeader
+        title="Overview"
+        description="People, schools and courses across Edulexa, and the requests waiting for you."
+        actions={
+          <Button
+            variant="secondary"
+            id="admin-refresh-btn"
+            busy={refreshing}
             onClick={() => {
               setRefreshing(true);
               loadData();
             }}
-            disabled={refreshing}
-            id="admin-refresh-btn"
-            className="p-2.5 rounded-xl bg-card border border-border hover:border-border text-muted-foreground hover:text-white transition-all cursor-pointer shadow-sm disabled:opacity-50"
-            title="Refresh Dashboard Data"
           >
-            <RefreshCw className={`w-4 h-4 ${refreshing ? "animate-spin text-indigo-700 dark:text-indigo-400" : ""}`} />
-          </button>
-
-          {/* Tab Selection Buttons */}
-          <div className="flex items-center p-1 rounded-2xl bg-card/90 border border-border shadow-inner">
-            <button
-              onClick={() => setActiveTab("analytics")}
-              id="admin-tab-analytics"
-              className={`flex items-center space-x-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                activeTab === "analytics"
-                  ? "bg-gradient-to-r from-indigo-600 to-indigo-500 text-white shadow-lg shadow-indigo-600/30"
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              <BarChart3 className="w-3.5 h-3.5" />
-              <span>Analytics</span>
-            </button>
-
-            <button
-              onClick={() => setActiveTab("partners")}
-              id="admin-tab-partners"
-              className={`flex items-center space-x-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                activeTab === "partners"
-                  ? "bg-gradient-to-r from-indigo-600 to-indigo-500 text-white shadow-lg shadow-indigo-600/30"
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              <Building2 className="w-3.5 h-3.5" />
-              <span>Partners &amp; Courses</span>
-            </button>
-
-            <button
-              onClick={() => setActiveTab("leads")}
-              id="admin-tab-leads"
-              className={`flex items-center space-x-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                activeTab === "leads"
-                  ? "bg-gradient-to-r from-indigo-600 to-indigo-500 text-white shadow-lg shadow-indigo-600/30"
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              <FileSpreadsheet className="w-3.5 h-3.5" />
-              <span>Leads ({leads.length})</span>
-            </button>
-
-            <button
-              onClick={() => setActiveTab("access")}
-              id="admin-tab-access"
-              className={`flex items-center space-x-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                activeTab === "access"
-                  ? "bg-gradient-to-r from-indigo-600 to-indigo-500 text-white shadow-lg shadow-indigo-600/30"
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              <ShieldCheck className="w-3.5 h-3.5" />
-              <span>Access requests</span>
-            </button>
-          </div>
-        </div>
-      </div>
-
+            {!refreshing && <RefreshCw aria-hidden="true" className="h-4 w-4" />}
+            Refresh
+          </Button>
+        }
+      />
+      <Tabs
+        label="Overview sections"
+        value={activeTab}
+        onChange={setActiveTab}
+        items={[
+          { id: "analytics", label: "Analytics", icon: <BarChart3 /> },
+          { id: "partners", label: "Partners and courses", icon: <Building2 /> },
+          { id: "leads", label: "Leads", count: leads.length, icon: <FileSpreadsheet /> },
+          { id: "access", label: "Access requests", icon: <ShieldCheck /> },
+        ]}
+      />
       {/* ========================================================================= */}
       {/* TAB 1: ANALYTICS */}
       {/* ========================================================================= */}
       {activeTab === "analytics" && (
         <div className="space-y-6">
-          {/* Key Metric Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-            {/* Total Users */}
-            <div className="glass-card rounded-2xl p-5 border border-border hover:border-indigo-500/40 transition-all shadow-xl">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Total Users</span>
-                <div className="w-9 h-9 rounded-xl bg-indigo-500/15 border border-indigo-500/30 flex items-center justify-center text-indigo-700 dark:text-indigo-400">
-                  <Users className="w-4 h-4" />
-                </div>
-              </div>
-              <div className="mt-3">
-                <span className="text-3xl font-extrabold text-foreground tracking-tight">
-                  {analytics?.totalUsers ?? (loading ? "..." : 0)}
-                </span>
-                <p className="text-[11px] text-muted-foreground mt-1">Registered candidate &amp; engineer accounts</p>
-              </div>
-            </div>
-
-            {/* Active Pro Subscriptions */}
-            <div className="glass-card rounded-2xl p-5 border border-border hover:border-purple-500/40 transition-all shadow-xl">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Active Pro Tier</span>
-                <div className="w-9 h-9 rounded-xl bg-purple-500/15 border border-purple-500/30 flex items-center justify-center text-purple-700 dark:text-purple-400">
-                  <Sparkles className="w-4 h-4" />
-                </div>
-              </div>
-              <div className="mt-3">
-                <div className="flex items-baseline space-x-2">
-                  <span className="text-3xl font-extrabold text-foreground tracking-tight">
-                    {analytics?.activeProSubscriptions ?? (loading ? "..." : 0)}
-                  </span>
-                  <span className="text-xs font-bold text-purple-700 dark:text-purple-400">
-                    ({config.symbol}{analytics ? (config.id === "IN" ? (analytics.mrrEstimate * 83).toLocaleString("en-IN") : config.id === "EU" ? Math.round(analytics.mrrEstimate * 0.92) : analytics.mrrEstimate) : 0}/mo MRR)
-                  </span>
-                </div>
-                <p className="text-[11px] text-muted-foreground mt-1">
-                  Active Pro subscriptions
-                </p>
-              </div>
-            </div>
-
-            {/* Total Leads Generated */}
-            <div className="glass-card rounded-2xl p-5 border border-border hover:border-emerald-500/40 transition-all shadow-xl">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">B2B Leads Routed</span>
-                <div className="w-9 h-9 rounded-xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-700 dark:text-emerald-400">
-                  <Send className="w-4 h-4" />
-                </div>
-              </div>
-              <div className="mt-3">
-                <span className="text-3xl font-extrabold text-foreground tracking-tight">
-                  {analytics?.totalLeadsGenerated ?? (loading ? "..." : 0)}
-                </span>
-                <p className="text-[11px] text-muted-foreground mt-1">Qualified candidate skill gap referrals dispatched</p>
-              </div>
-            </div>
-
-            {/* Partner Institutes */}
-            <div className="glass-card rounded-2xl p-5 border border-border hover:border-sky-500/40 transition-all shadow-xl">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Partner Institutes</span>
-                <div className="w-9 h-9 rounded-xl bg-sky-500/15 border border-sky-500/30 flex items-center justify-center text-sky-400">
-                  <Building2 className="w-4 h-4" />
-                </div>
-              </div>
-              <div className="mt-3">
-                <span className="text-3xl font-extrabold text-foreground tracking-tight">
-                  {analytics?.totalInstitutes ?? (loading ? "..." : 0)}
-                </span>
-                <p className="text-[11px] text-muted-foreground mt-1">Affiliate academies &amp; bootcamps connected</p>
-              </div>
-            </div>
-
-            {/* Courses & Skill Tags */}
-            <div className="glass-card rounded-2xl p-5 border border-border hover:border-amber-500/40 transition-all shadow-xl">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Active Courses</span>
-                <div className="w-9 h-9 rounded-xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-700 dark:text-amber-400">
-                  <BookOpen className="w-4 h-4" />
-                </div>
-              </div>
-              <div className="mt-3">
-                <span className="text-3xl font-extrabold text-foreground tracking-tight">
-                  {analytics?.totalCourses ?? (loading ? "..." : 0)}
-                </span>
-                <p className="text-[11px] text-muted-foreground mt-1">Curated programs mapped to technical failure tags</p>
-              </div>
-            </div>
-
-            {/* Public Credentials Minted */}
-            <div className="glass-card rounded-2xl p-5 border border-border hover:border-teal-500/40 transition-all shadow-xl">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Minted Credentials</span>
-                <div className="w-9 h-9 rounded-xl bg-teal-500/15 border border-teal-500/30 flex items-center justify-center text-teal-400">
-                  <Award className="w-4 h-4" />
-                </div>
-              </div>
-              <div className="mt-3">
-                <span className="text-3xl font-extrabold text-foreground tracking-tight">
-                  {analytics?.totalCredentials ?? (loading ? "..." : 0)}
-                </span>
-                <p className="text-[11px] text-muted-foreground mt-1">Official tamper-evident digital certifications issued</p>
-              </div>
-            </div>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <StatTile icon={<Users />} label="People" value={analytics?.totalUsers ?? (loading ? "…" : 0)} hint="Candidate and engineer accounts" />
+            <StatTile icon={<Sparkles />} label="Pro subscriptions" value={analytics?.activeProSubscriptions ?? (loading ? "…" : 0)} hint="Active paid plans" />
+            <StatTile icon={<Send />} label="Course referrals" value={analytics?.totalLeadsGenerated ?? (loading ? "…" : 0)} hint="Candidates referred to a course for a skill gap" />
+            <StatTile icon={<Building2 />} label="Partner schools" value={analytics?.totalInstitutes ?? (loading ? "…" : 0)} hint="Schools and bootcamps connected" />
+            <StatTile icon={<BookOpen />} label="Courses" value={analytics?.totalCourses ?? (loading ? "…" : 0)} hint="Matched to the skills people miss" />
+            <StatTile icon={<Award />} label="Credentials issued" value={analytics?.totalCredentials ?? (loading ? "…" : 0)} hint="Each one can be verified online" />
           </div>
 
         </div>
@@ -611,237 +459,205 @@ export default function SuperAdminDashboard() {
         <div className="space-y-8">
           {/* Section 1: Partner Institutes */}
           <div className="space-y-4">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-wrap items-end justify-between gap-3">
               <div>
-                <h2 className="text-lg font-bold text-foreground flex items-center space-x-2">
-                  <Building2 className="w-5 h-5 text-indigo-700 dark:text-indigo-400" />
-                  <span>Partner Institutes ({institutes.length})</span>
-                </h2>
-                <p className="text-xs text-muted-foreground">Partner education providers who receive interested learners as leads.</p>
+                <h2 className="text-base font-semibold text-foreground">Partner institutes ({institutes.length})</h2>
+                <p className="text-sm text-muted-foreground">Education providers who receive interested learners as leads.</p>
               </div>
 
-              <button
-                onClick={() => setShowAddInstituteModal(true)}
-                id="admin-add-institute-btn"
-                className="px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs flex items-center space-x-1.5 transition-all shadow-lg shadow-indigo-600/20 cursor-pointer"
-              >
-                <Plus className="w-3.5 h-3.5" />
-                <span>Add Partner Institute</span>
-              </button>
+              <Button onClick={() => setShowAddInstituteModal(true)} id="admin-add-institute-btn">
+                <Plus className="h-4 w-4" aria-hidden="true" />
+                Add partner institute
+              </Button>
             </div>
 
             {/* Institutes Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {institutes.map((inst) => (
-                <div
-                  key={inst.id}
-                  className="glass-card rounded-2xl p-5 border border-border/90 hover:border-border transition-all space-y-3"
-                >
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <h3 className="text-base font-bold text-foreground">{inst.name}</h3>
-                      <p className="text-[11px] text-muted-foreground font-mono mt-0.5">ID: {inst.id}</p>
-                    </div>
+            {institutes.length === 0 && !loading ? (
+              <EmptyState title="No partner institutes yet">Add a partner institute to start sending it leads.</EmptyState>
+            ) : (
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                {institutes.map((inst) => (
+                  <div key={inst.id} className="space-y-3 rounded-xl border border-border bg-card p-5 shadow-sm">
+                    <div className="flex flex-wrap items-start justify-between gap-2">
+                      <div className="min-w-0">
+                        <h3 className="text-base font-semibold text-foreground">{inst.name}</h3>
+                        <p className="mt-0.5 break-all font-mono text-xs text-muted-foreground">ID: {inst.id}</p>
+                      </div>
 
-                    <div className="flex items-center space-x-1">
-                      <button
-                        type="button"
-                        onClick={() => openEdit(inst)}
-                        className="inline-flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs text-muted-foreground hover:text-foreground hover:bg-muted transition-all cursor-pointer"
-                        title="Rename this institute or change where its leads are sent"
-                      >
-                        <Pencil className="w-4 h-4" />
-                        <span>Edit</span>
-                      </button>
-                      <button
-                        onClick={() => setStaffFor(inst)}
-                        className="inline-flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs text-muted-foreground hover:text-foreground hover:bg-muted transition-all cursor-pointer"
-                        title="Invite this institute's admin and staff"
-                      >
-                        <UserCog className="w-4 h-4" />
-                        <span>Staff access</span>
-                      </button>
-                      <button
-                        onClick={() => handleDeleteInstitute(inst.id, inst.name)}
-                        className="p-1.5 rounded-lg text-muted-foreground hover:text-rose-400 hover:bg-rose-500/10 transition-all cursor-pointer"
-                        title="Delete Institute"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </div>
-
-                  <div className="space-y-1.5 text-xs text-muted-foreground">
-                    <div className="flex items-center justify-between py-1 border-t border-border/60">
-                      <span className="text-muted-foreground">Lead delivery address:</span>
-                      <span className="font-mono text-[11px] text-indigo-600 dark:text-indigo-300 truncate max-w-[240px]" title={inst.webhookUrl}>
-                        {inst.webhookUrl || "Not set up"}
-                      </span>
-                    </div>
-
-                    <div className="flex items-center justify-between py-1 border-t border-border/60">
-                      <span className="text-muted-foreground">Access key:</span>
-                      <div className="flex items-center space-x-1 font-mono text-[11px] text-muted-foreground">
-                        <span>{visibleKeys[inst.id] ? inst.apiKey : "••••••••••••••••"}</span>
+                      <div className="flex items-center gap-1">
+                        <button type="button" onClick={() => openEdit(inst)} className={iconBtnCls} title="Rename this institute or change where its leads are sent">
+                          <Pencil className="h-4 w-4" aria-hidden="true" />
+                          <span>Edit</span>
+                        </button>
+                        <button type="button" onClick={() => setStaffFor(inst)} className={iconBtnCls} title="Invite this institute's admin and staff">
+                          <UserCog className="h-4 w-4" aria-hidden="true" />
+                          <span>Staff access</span>
+                        </button>
                         <button
                           type="button"
-                          onClick={() => setVisibleKeys(prev => ({ ...prev, [inst.id]: !prev[inst.id] }))}
-                          className="p-1 text-muted-foreground hover:text-foreground cursor-pointer"
+                          onClick={() => handleDeleteInstitute(inst.id, inst.name)}
+                          className="rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950/40 dark:hover:text-red-400"
+                          title="Delete institute"
+                          aria-label={`Delete institute ${inst.name}`}
                         >
-                          {visibleKeys[inst.id] ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                          <Trash2 className="h-4 w-4" aria-hidden="true" />
                         </button>
                       </div>
                     </div>
 
-                    <div className="flex items-center justify-between pt-1 border-t border-border/60">
-                      <span className="text-muted-foreground">Catalog &amp; Activity:</span>
-                      <div className="flex items-center space-x-3">
-                        <span className="px-2 py-0.5 rounded-md bg-indigo-500/10 text-indigo-700 dark:text-indigo-400 font-semibold text-[11px]">
-                          {inst.courseCount ?? 0} Courses
-                        </span>
-                        <span className="px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 font-semibold text-[11px]">
-                          {inst.leadCount ?? 0} Leads Routed
-                        </span>
+                    <dl className="space-y-1.5 text-sm">
+                      <div className="flex items-center justify-between gap-3 border-t border-border py-1.5">
+                        <dt className="shrink-0 text-muted-foreground">Lead delivery address</dt>
+                        <dd className="min-w-0 truncate font-mono text-xs text-foreground" title={inst.webhookUrl}>
+                          {inst.webhookUrl || "Not set up"}
+                        </dd>
                       </div>
-                    </div>
+
+                      <div className="flex items-center justify-between gap-3 border-t border-border py-1.5">
+                        <dt className="shrink-0 text-muted-foreground">Access key</dt>
+                        <dd className="flex min-w-0 items-center gap-1 font-mono text-xs text-foreground">
+                          <span className="truncate">{visibleKeys[inst.id] ? inst.apiKey : "••••••••••••••••"}</span>
+                          <button
+                            type="button"
+                            onClick={() => setVisibleKeys(prev => ({ ...prev, [inst.id]: !prev[inst.id] }))}
+                            className="rounded p-1 text-muted-foreground hover:text-foreground"
+                            aria-label={visibleKeys[inst.id] ? "Hide access key" : "Show access key"}
+                          >
+                            {visibleKeys[inst.id] ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
+                          </button>
+                        </dd>
+                      </div>
+
+                      <div className="flex flex-wrap items-center justify-between gap-2 border-t border-border pt-1.5">
+                        <dt className="text-muted-foreground">Catalog and activity</dt>
+                        <dd className="flex items-center gap-2">
+                          <Badge>{inst.courseCount ?? 0} courses</Badge>
+                          <Badge>{inst.leadCount ?? 0} leads sent</Badge>
+                        </dd>
+                      </div>
+                    </dl>
                   </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Section 2: Courses & Skill Tag Mappings */}
-          <div className="space-y-4 pt-6 border-t border-border">
-            <div className="flex items-center justify-between">
+          <div className="space-y-4 border-t border-border pt-6">
+            <div className="flex flex-wrap items-end justify-between gap-3">
               <div>
-                <h2 className="text-lg font-bold text-foreground flex items-center space-x-2">
-                  <BookOpen className="w-5 h-5 text-purple-700 dark:text-purple-400" />
-                  <span>Courses &amp; Skill Gap Mappings ({courses.length})</span>
-                </h2>
-                <p className="text-xs text-muted-foreground">
-                  Map failed interview skill tags (e.g. &quot;React Hooks&quot;, &quot;AWS VPC&quot;) to partner courses for automated routing.
+                <h2 className="text-base font-semibold text-foreground">Courses and skill gaps ({courses.length})</h2>
+                <p className="text-sm text-muted-foreground">
+                  Link the skills candidates miss in interviews (e.g. &quot;React Hooks&quot;, &quot;AWS VPC&quot;) to partner courses, so the right course is recommended.
                 </p>
               </div>
 
-              <button
+              <Button
+                variant="secondary"
                 onClick={() => {
                   if (institutes.length > 0) setNewCourseInstId(institutes[0].id);
                   setShowAddCourseModal(true);
                 }}
                 id="admin-add-course-btn"
-                className="px-3.5 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-semibold text-xs flex items-center space-x-1.5 transition-all shadow-lg shadow-purple-600/20 cursor-pointer"
               >
-                <Plus className="w-3.5 h-3.5" />
-                <span>Add Course &amp; Mappings</span>
-              </button>
+                <Plus className="h-4 w-4" aria-hidden="true" />
+                Add course
+              </Button>
             </div>
 
             {/* Courses Cards Grid */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-              {courses.map((course) => (
-                <div
-                  key={course.id}
-                  className="glass-card rounded-2xl p-5 border border-border/90 hover:border-purple-500/30 transition-all space-y-4 flex flex-col justify-between"
-                >
-                  <div className="space-y-2">
-                    <div className="flex items-start justify-between">
-                      <div>
-                        <span className="inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-indigo-500/10 text-indigo-700 dark:text-indigo-400 border border-indigo-500/20 mb-1">
-                          {course.instituteName}
+            {courses.length === 0 && !loading ? (
+              <EmptyState title="No courses yet">Add a course and the skills it teaches.</EmptyState>
+            ) : (
+              <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+                {courses.map((course) => (
+                  <div key={course.id} className="flex flex-col justify-between space-y-4 rounded-xl border border-border bg-card p-5 shadow-sm">
+                    <div className="space-y-2">
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="min-w-0 space-y-1">
+                          <Badge>{course.instituteName}</Badge>
+                          <h3 className="text-base font-semibold leading-tight text-foreground">{course.courseName}</h3>
+                        </div>
+
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteCourse(course.id, course.courseName)}
+                          className="rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950/40 dark:hover:text-red-400"
+                          title="Delete course"
+                          aria-label={`Delete course ${course.courseName}`}
+                        >
+                          <Trash2 className="h-4 w-4" aria-hidden="true" />
+                        </button>
+                      </div>
+
+                      <p className="text-sm leading-relaxed text-muted-foreground">
+                        {course.description || "No description provided."}
+                      </p>
+                    </div>
+
+                    {/* Skill Tag Chips & Adder */}
+                    <div className="space-y-2 border-t border-border pt-3">
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="flex items-center gap-1 font-medium text-muted-foreground">
+                          <Tag className="h-3.5 w-3.5" aria-hidden="true" />
+                          Skill gaps this course covers
                         </span>
-                        <h3 className="text-base font-bold text-foreground leading-tight">{course.courseName}</h3>
-                      </div>
 
-                      <button
-                        onClick={() => handleDeleteCourse(course.id, course.courseName)}
-                        className="p-1.5 rounded-lg text-muted-foreground hover:text-rose-400 hover:bg-rose-500/10 transition-all cursor-pointer"
-                        title="Delete Course"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
-
-                    <p className="text-xs text-muted-foreground leading-relaxed">
-                      {course.description || "No description provided."}
-                    </p>
-                  </div>
-
-                  {/* Skill Tag Chips & Adder */}
-                  <div className="pt-3 border-t border-border/70 space-y-2">
-                    <div className="flex items-center justify-between text-xs">
-                      <span className="font-semibold text-muted-foreground flex items-center space-x-1">
-                        <Tag className="w-3 h-3 text-purple-700 dark:text-purple-400" />
-                        <span>Mapped Failure Tags:</span>
-                      </span>
-
-                      {activeCourseIdForTag !== course.id && (
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setActiveCourseIdForTag(course.id);
-                            setNewSkillTagInput("");
-                          }}
-                          className="text-[11px] font-bold text-purple-700 dark:text-purple-400 hover:text-purple-600 dark:text-purple-300 cursor-pointer flex items-center space-x-0.5"
-                        >
-                          <Plus className="w-3 h-3" />
-                          <span>Add Tag</span>
-                        </button>
-                      )}
-                    </div>
-
-                    {/* Chips Display */}
-                    <div className="flex flex-wrap gap-1.5">
-                      {course.skillTags && course.skillTags.length > 0 ? (
-                        course.skillTags.map((tag, idx) => (
-                          <span
-                            key={idx}
-                            className="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-semibold bg-rose-500/10 text-rose-300 border border-rose-500/20"
+                        {activeCourseIdForTag !== course.id && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setActiveCourseIdForTag(course.id);
+                              setNewSkillTagInput("");
+                            }}
+                            className="flex items-center gap-0.5 text-xs font-medium text-indigo-700 hover:underline dark:text-indigo-400"
                           >
-                            {tag}
-                          </span>
-                        ))
-                      ) : (
-                        <span className="text-[11px] text-muted-foreground italic">No skill tags mapped yet.</span>
+                            <Plus className="h-3 w-3" aria-hidden="true" />
+                            Add skill
+                          </button>
+                        )}
+                      </div>
+
+                      {/* Chips Display */}
+                      <div className="flex flex-wrap gap-1.5">
+                        {course.skillTags && course.skillTags.length > 0 ? (
+                          course.skillTags.map((tag, idx) => <Badge key={idx}>{tag}</Badge>)
+                        ) : (
+                          <span className="text-xs text-muted-foreground">No skills linked yet.</span>
+                        )}
+                      </div>
+
+                      {/* Inline Tag Adder Form */}
+                      {activeCourseIdForTag === course.id && (
+                        <div className="flex flex-wrap items-center gap-2 pt-2">
+                          <input
+                            type="text"
+                            placeholder="e.g. React Hooks"
+                            aria-label="Skill"
+                            value={newSkillTagInput}
+                            onChange={(e) => setNewSkillTagInput(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter") {
+                                e.preventDefault();
+                                handleAddSkillTag(course.id);
+                              }
+                            }}
+                            className={`${inputCls} min-w-0 flex-1`}
+                            autoFocus
+                          />
+                          <Button type="button" onClick={() => handleAddSkillTag(course.id)}>
+                            Save
+                          </Button>
+                          <Button type="button" variant="ghost" onClick={() => setActiveCourseIdForTag(null)}>
+                            Cancel
+                          </Button>
+                        </div>
                       )}
                     </div>
-
-                    {/* Inline Tag Adder Form */}
-                    {activeCourseIdForTag === course.id && (
-                      <div className="pt-2 flex items-center space-x-2">
-                        <input
-                          type="text"
-                          placeholder="e.g. React Hooks"
-                          value={newSkillTagInput}
-                          onChange={(e) => setNewSkillTagInput(e.target.value)}
-                          onKeyDown={(e) => {
-                            if (e.key === "Enter") {
-                              e.preventDefault();
-                              handleAddSkillTag(course.id);
-                            }
-                          }}
-                          className="flex-1 px-3 py-1.5 rounded-lg bg-card border border-purple-500/40 text-xs text-white placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-purple-400"
-                          autoFocus
-                        />
-                        <button
-                          type="button"
-                          onClick={() => handleAddSkillTag(course.id)}
-                          className="px-3 py-1.5 rounded-lg bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs cursor-pointer"
-                        >
-                          Save
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setActiveCourseIdForTag(null)}
-                          className="px-2 py-1.5 rounded-lg text-muted-foreground hover:text-foreground text-xs cursor-pointer"
-                        >
-                          Cancel
-                        </button>
-                      </div>
-                    )}
                   </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       )}
@@ -852,8 +668,8 @@ export default function SuperAdminDashboard() {
       {activeTab === "access" && <AccessRequestsAdmin getToken={getToken} />}
 
       {editFor && (
-        <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/50 p-4" role="dialog" aria-modal="true" aria-labelledby="edit-dialog-title">
-          <div className="my-8 w-full max-w-lg space-y-4 rounded-2xl border border-border bg-background p-5 shadow-xl">
+        <Modal labelledBy="edit-dialog-title" onClose={() => setEditFor(null)}>
+          <div className="max-h-[90vh] w-full max-w-lg space-y-4 overflow-y-auto rounded-xl border border-border bg-card p-5 shadow-xl">
             <div className="flex items-start justify-between gap-3">
               <h2 id="edit-dialog-title" className="text-lg font-semibold">
                 {editResult ? "Renamed" : `Edit ${editFor.name}`}
@@ -874,15 +690,15 @@ export default function SuperAdminDashboard() {
                   ))}
                 </ul>
                 <div className="flex justify-end">
-                  <button type="button" onClick={() => setEditFor(null)} className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700">
+                  <Button type="button" onClick={() => setEditFor(null)}>
                     Done
-                  </button>
+                  </Button>
                 </div>
               </div>
             ) : (
               <form onSubmit={handleSaveInstitute} className="space-y-4 text-sm">
                 <div>
-                  <label htmlFor="edit-inst-name" className="mb-1 block font-semibold text-muted-foreground">
+                  <label htmlFor="edit-inst-name" className={labelCls}>
                     Name
                   </label>
                   <input
@@ -891,43 +707,43 @@ export default function SuperAdminDashboard() {
                     maxLength={200}
                     value={editName}
                     onChange={(e) => setEditName(e.target.value)}
-                    className="w-full rounded-lg border border-border bg-background px-3 py-2 text-foreground focus:border-indigo-500 focus:outline-none"
+                    className={inputCls}
                   />
                   <p className="mt-1 text-xs text-muted-foreground">Shown to students, families and staff wherever the institute appears.</p>
                 </div>
                 <div>
-                  <label htmlFor="edit-inst-webhook" className="mb-1 block font-semibold text-muted-foreground">
+                  <label htmlFor="edit-inst-webhook" className={labelCls}>
                     Lead delivery address
                   </label>
                   <input
                     id="edit-inst-webhook"
                     value={editWebhook}
                     onChange={(e) => setEditWebhook(e.target.value)}
-                    className="w-full rounded-lg border border-border bg-background px-3 py-2 font-mono text-xs text-foreground focus:border-indigo-500 focus:outline-none"
+                    className={`${inputCls} font-mono`}
                   />
                 </div>
                 {editError && (
-                  <p role="alert" className="text-rose-600 dark:text-rose-400">
+                  <p role="alert" className="text-red-700 dark:text-red-400">
                     {editError}
                   </p>
                 )}
                 <div className="flex justify-end gap-2">
-                  <button type="button" onClick={() => setEditFor(null)} className="rounded-lg border border-border px-4 py-2 hover:bg-muted">
+                  <Button type="button" variant="secondary" onClick={() => setEditFor(null)}>
                     Cancel
-                  </button>
-                  <button type="submit" disabled={editBusy || !editName.trim()} className="rounded-lg bg-indigo-600 px-4 py-2 font-semibold text-white hover:bg-indigo-700 disabled:opacity-50">
+                  </Button>
+                  <Button type="submit" busy={editBusy} disabled={!editName.trim()}>
                     {editBusy ? "Saving…" : "Save"}
-                  </button>
+                  </Button>
                 </div>
               </form>
             )}
           </div>
-        </div>
+        </Modal>
       )}
 
       {staffFor && (
-        <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/50 p-4" role="dialog" aria-modal="true" aria-labelledby="staff-dialog-title">
-          <div className="my-8 w-full max-w-2xl space-y-4 rounded-2xl border border-border bg-background p-5 shadow-xl">
+        <Modal labelledBy="staff-dialog-title" onClose={() => setStaffFor(null)}>
+          <div className="max-h-[90vh] w-full max-w-2xl space-y-4 overflow-y-auto rounded-xl border border-border bg-card p-5 shadow-xl">
             <div className="flex items-start justify-between gap-3">
               <div>
                 <h2 id="staff-dialog-title" className="text-lg font-semibold">Staff access: {staffFor.name}</h2>
@@ -939,7 +755,7 @@ export default function SuperAdminDashboard() {
             </div>
             <StaffAccess getToken={getToken} instituteId={staffFor.id} compact />
           </div>
-        </div>
+        </Modal>
       )}
 
       {/* ========================================================================= */}
@@ -948,41 +764,31 @@ export default function SuperAdminDashboard() {
       {activeTab === "leads" && (
         <div className="space-y-6">
           {/* Header & Filter Controls */}
-          <div className="glass-panel rounded-2xl p-5 border border-border space-y-4">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-              <div>
-                <h2 className="text-lg font-bold text-foreground flex items-center space-x-2">
-                  <FileSpreadsheet className="w-5 h-5 text-emerald-700 dark:text-emerald-400" />
-                  <span>Lead Referral Invoicing &amp; Audit Log</span>
-                </h2>
-                <p className="text-xs text-muted-foreground">
-                  Real-time generated candidate referrals for partner institute verification and manual billing.
-                </p>
-              </div>
-
-              {/* Download CSV Button */}
-              <button
-                onClick={handleDownloadCsv}
-                disabled={isExportingCsv}
-                id="admin-export-csv-btn"
-                className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs flex items-center space-x-2 transition-all shadow-lg shadow-emerald-600/25 cursor-pointer disabled:opacity-50 shrink-0"
-              >
-                <Download className={`w-4 h-4 ${isExportingCsv ? "animate-bounce" : ""}`} />
-                <span>{isExportingCsv ? "Exporting CSV..." : "Download CSV for Billing"}</span>
-              </button>
-            </div>
+          <Card
+            title="Course referrals"
+            actions={
+              <Button variant="secondary" onClick={handleDownloadCsv} busy={isExportingCsv} id="admin-export-csv-btn">
+                {!isExportingCsv && <Download className="h-4 w-4" aria-hidden="true" />}
+                {isExportingCsv ? "Exporting…" : "Download CSV"}
+              </Button>
+            }
+          >
+            <p className="-mt-2 mb-4 text-sm text-muted-foreground">
+              Candidates referred to partner courses, for partner checks and billing.
+            </p>
 
             {/* Filter Bar */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-3 border-t border-border/80">
+            <div className="grid grid-cols-1 gap-3 border-t border-border pt-4 sm:grid-cols-3">
               {/* Institute Filter */}
               <div>
-                <label className="block text-[11px] font-semibold text-muted-foreground mb-1">Filter by Institute</label>
+                <label htmlFor="lead-filter-institute" className={labelCls}>Institute</label>
                 <select
+                  id="lead-filter-institute"
                   value={leadFilterInstitute}
                   onChange={(e) => setLeadFilterInstitute(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl bg-card border border-border text-xs text-foreground focus:outline-none focus:border-indigo-500 cursor-pointer"
+                  className={inputCls}
                 >
-                  <option value="all">All Institutes</option>
+                  <option value="all">All institutes</option>
                   {institutes.map((inst) => (
                     <option key={inst.id} value={inst.id}>
                       {inst.name}
@@ -993,92 +799,75 @@ export default function SuperAdminDashboard() {
 
               {/* From Date */}
               <div>
-                <label className="block text-[11px] font-semibold text-muted-foreground mb-1">From Date</label>
+                <label htmlFor="lead-filter-from" className={labelCls}>From</label>
                 <input
+                  id="lead-filter-from"
                   type="date"
                   value={leadFromDate}
                   onChange={(e) => setLeadFromDate(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl bg-card border border-border text-xs text-foreground focus:outline-none focus:border-indigo-500"
+                  className={inputCls}
                 />
               </div>
 
               {/* To Date */}
               <div>
-                <label className="block text-[11px] font-semibold text-muted-foreground mb-1">To Date</label>
+                <label htmlFor="lead-filter-to" className={labelCls}>To</label>
                 <input
+                  id="lead-filter-to"
                   type="date"
                   value={leadToDate}
                   onChange={(e) => setLeadToDate(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl bg-card border border-border text-xs text-foreground focus:outline-none focus:border-indigo-500"
+                  className={inputCls}
                 />
               </div>
             </div>
-          </div>
+          </Card>
 
           {/* Leads Data Table */}
-          <div className="glass-panel rounded-2xl border border-border overflow-hidden shadow-2xl">
-            <div className="overflow-x-auto">
-              <table className="w-full text-start text-xs">
-                <thead className="bg-card/90 text-muted-foreground uppercase tracking-wider font-semibold border-b border-border">
-                  <tr>
-                    <th className="py-3.5 px-4">Date &amp; Time</th>
-                    <th className="py-3.5 px-4">Candidate</th>
-                    <th className="py-3.5 px-4">Partner Institute</th>
-                    <th className="py-3.5 px-4">Recommended Course</th>
-                    <th className="py-3.5 px-4">Status</th>
-                    <th className="py-3.5 px-4">Referral ID</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-800/70 text-muted-foreground">
-                  {leads.length > 0 ? (
-                    leads.map((lead) => (
-                      <tr key={lead.leadId} className="hover:bg-card/40 transition-colors">
-                        <td className="py-3 px-4 font-mono text-[11px] text-muted-foreground whitespace-nowrap">
+          {leads.length === 0 ? (
+            <EmptyState title="No referrals match these filters">
+              A referral is made when a candidate scores below 70% on a skill in a sprint review.
+            </EmptyState>
+          ) : (
+            <div className="overflow-hidden rounded-xl border border-border bg-card shadow-sm">
+              <ScrollArea>
+                <table className="w-full text-start text-sm">
+                  <caption className="sr-only">Course referrals</caption>
+                  <thead className="border-b border-border bg-muted/50 text-xs font-medium text-muted-foreground">
+                    <tr>
+                      <th className="px-4 py-3 text-start font-medium">Date and time</th>
+                      <th className="px-4 py-3 text-start font-medium">Candidate</th>
+                      <th className="px-4 py-3 text-start font-medium">Partner institute</th>
+                      <th className="px-4 py-3 text-start font-medium">Recommended course</th>
+                      <th className="px-4 py-3 text-start font-medium">Status</th>
+                      <th className="px-4 py-3 text-start font-medium">Referral ID</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-border">
+                    {leads.map((lead) => (
+                      <tr key={lead.leadId} className="transition-colors hover:bg-muted/40">
+                        <td className="whitespace-nowrap px-4 py-3 text-muted-foreground">
                           {new Date(lead.createdAt).toLocaleString()}
                         </td>
-                        <td className="py-3 px-4">
-                          <div className="font-bold text-foreground">{lead.candidateName}</div>
-                          <div className="text-[11px] text-muted-foreground">{lead.candidateEmail}</div>
+                        <td className="px-4 py-3">
+                          <div className="font-medium text-foreground">{lead.candidateName}</div>
+                          <div className="text-xs text-muted-foreground">{lead.candidateEmail}</div>
                         </td>
-                        <td className="py-3 px-4 font-medium text-foreground">
-                          {lead.instituteName}
+                        <td className="px-4 py-3 text-foreground">{lead.instituteName}</td>
+                        <td className="px-4 py-3 text-foreground">{lead.courseName}</td>
+                        <td className="whitespace-nowrap px-4 py-3">
+                          <Badge tone={lead.status === "Pending" ? "warn" : lead.status === "Contacted" ? "info" : "good"}>{lead.status}</Badge>
                         </td>
-                        <td className="py-3 px-4 text-indigo-600 dark:text-indigo-300">
-                          {lead.courseName}
-                        </td>
-                        <td className="py-3 px-4 whitespace-nowrap">
-                          <span
-                            className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
-                              lead.status === "Pending"
-                                ? "bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/30"
-                                : lead.status === "Contacted"
-                                ? "bg-blue-500/10 text-blue-700 dark:text-blue-400 border border-blue-500/30"
-                                : "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/30"
-                            }`}
-                          >
-                            {lead.status}
-                          </span>
-                        </td>
-                        <td className="py-3 px-4 font-mono text-[10px] text-muted-foreground">
-                          {lead.leadId.slice(0, 8)}...
+                        <td className="px-4 py-3 font-mono text-xs text-muted-foreground" title={lead.leadId}>
+                          {lead.leadId.slice(0, 8)}…
                         </td>
                       </tr>
-                    ))
-                  ) : (
-                    <tr>
-                      <td colSpan={6} className="py-12 text-center text-muted-foreground">
-                        <FileSpreadsheet className="w-8 h-8 text-muted-foreground mx-auto mb-2 opacity-50" />
-                        <p className="font-semibold">No lead referrals found for the selected criteria.</p>
-                        <p className="text-xs text-muted-foreground mt-1">
-                          Leads are dynamically generated whenever candidate scores fall below 70% during sprint defense.
-                        </p>
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
+                    ))}
+                  </tbody>
+                </table>
+              </ScrollArea>
             </div>
-          </div>
+          )}
         </div>
       )}
 
@@ -1086,105 +875,87 @@ export default function SuperAdminDashboard() {
       {/* MODAL: ADD PARTNER INSTITUTE */}
       {/* ========================================================================= */}
       {showAddInstituteModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-in fade-in">
-          <div className="max-w-md w-full glass-panel rounded-3xl p-6 border border-border shadow-2xl space-y-4">
-            <div className="flex items-center justify-between pb-3 border-b border-border">
-              <h3 className="text-base font-bold text-foreground flex items-center space-x-2">
-                <Building2 className="w-5 h-5 text-indigo-700 dark:text-indigo-400" />
-                <span>Add Partner Institute</span>
-              </h3>
-              <button
-                type="button"
-                onClick={() => setShowAddInstituteModal(false)}
-                className="text-muted-foreground hover:text-white cursor-pointer"
-              >
-                &times;
+        <Modal labelledBy="add-institute-title" onClose={() => setShowAddInstituteModal(false)}>
+          <div className="max-h-[90vh] w-full max-w-md space-y-4 overflow-y-auto rounded-xl border border-border bg-card p-5 shadow-xl">
+            <div className="flex items-start justify-between gap-3">
+              <h2 id="add-institute-title" className="text-lg font-semibold text-foreground">Add partner institute</h2>
+              <button type="button" onClick={() => setShowAddInstituteModal(false)} className="rounded-lg p-1.5 hover:bg-muted" aria-label="Close">
+                <CloseIcon className="h-5 w-5" />
               </button>
             </div>
 
-            <form onSubmit={handleCreateInstitute} className="space-y-3 text-xs">
+            <form onSubmit={handleCreateInstitute} className="space-y-4 text-sm">
               <div>
-                <label className="block text-muted-foreground font-semibold mb-1">Institute Name *</label>
+                <label htmlFor="new-inst-name" className={labelCls}>Institute name</label>
                 <input
+                  id="new-inst-name"
                   type="text"
                   required
                   placeholder="e.g. Lambda School Global"
                   value={newInstName}
                   onChange={(e) => setNewInstName(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl bg-card border border-border text-white focus:outline-none focus:border-indigo-500"
+                  className={inputCls}
                 />
               </div>
 
               <div>
-                <label className="block text-muted-foreground font-semibold mb-1">Lead delivery address (web address where we send new leads)</label>
+                <label htmlFor="new-inst-webhook" className={labelCls}>Lead delivery address</label>
                 <input
+                  id="new-inst-webhook"
                   type="url"
-                  placeholder="https://institute.domain.com/webhooks/leads"
+                  placeholder="https://institute.example.com/webhooks/leads"
                   value={newInstWebhook}
                   onChange={(e) => setNewInstWebhook(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl bg-card border border-border text-white focus:outline-none focus:border-indigo-500"
+                  className={`${inputCls} font-mono`}
                 />
+                <p className="mt-1 text-xs text-muted-foreground">The web address where we send new leads.</p>
               </div>
 
               <div>
-                <label className="block text-muted-foreground font-semibold mb-1">Access key (optional)</label>
+                <label htmlFor="new-inst-key" className={labelCls}>Access key (optional)</label>
                 <input
+                  id="new-inst-key"
                   type="text"
-                  placeholder="Leave empty to auto-generate secret"
+                  placeholder="Leave empty to generate one"
                   value={newInstApiKey}
                   onChange={(e) => setNewInstApiKey(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl bg-card border border-border text-white focus:outline-none focus:border-indigo-500"
+                  className={`${inputCls} font-mono`}
                 />
               </div>
 
-              <div className="flex items-center justify-end space-x-2 pt-4 border-t border-border">
-                <button
-                  type="button"
-                  onClick={() => setShowAddInstituteModal(false)}
-                  className="px-4 py-2 rounded-xl bg-muted hover:bg-slate-700 text-muted-foreground font-semibold cursor-pointer"
-                >
+              <div className="flex items-center justify-end gap-2 border-t border-border pt-4">
+                <Button type="button" variant="secondary" onClick={() => setShowAddInstituteModal(false)}>
                   Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold cursor-pointer"
-                >
-                  Save Partner
-                </button>
+                </Button>
+                <Button type="submit">Save partner</Button>
               </div>
             </form>
           </div>
-        </div>
+        </Modal>
       )}
 
       {/* ========================================================================= */}
       {/* MODAL: ADD COURSE & MAPPINGS */}
       {/* ========================================================================= */}
       {showAddCourseModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-in fade-in">
-          <div className="max-w-md w-full glass-panel rounded-3xl p-6 border border-border shadow-2xl space-y-4">
-            <div className="flex items-center justify-between pb-3 border-b border-border">
-              <h3 className="text-base font-bold text-foreground flex items-center space-x-2">
-                <BookOpen className="w-5 h-5 text-purple-700 dark:text-purple-400" />
-                <span>Add Course &amp; Map Skills</span>
-              </h3>
-              <button
-                type="button"
-                onClick={() => setShowAddCourseModal(false)}
-                className="text-muted-foreground hover:text-white cursor-pointer"
-              >
-                &times;
+        <Modal labelledBy="add-course-title" onClose={() => setShowAddCourseModal(false)}>
+          <div className="max-h-[90vh] w-full max-w-md space-y-4 overflow-y-auto rounded-xl border border-border bg-card p-5 shadow-xl">
+            <div className="flex items-start justify-between gap-3">
+              <h2 id="add-course-title" className="text-lg font-semibold text-foreground">Add course</h2>
+              <button type="button" onClick={() => setShowAddCourseModal(false)} className="rounded-lg p-1.5 hover:bg-muted" aria-label="Close">
+                <CloseIcon className="h-5 w-5" />
               </button>
             </div>
 
-            <form onSubmit={handleCreateCourse} className="space-y-3 text-xs">
+            <form onSubmit={handleCreateCourse} className="space-y-4 text-sm">
               <div>
-                <label className="block text-muted-foreground font-semibold mb-1">Partner Institute *</label>
+                <label htmlFor="new-course-inst" className={labelCls}>Partner institute</label>
                 <select
+                  id="new-course-inst"
                   value={newCourseInstId}
                   onChange={(e) => setNewCourseInstId(e.target.value)}
                   required
-                  className="w-full px-3 py-2 rounded-xl bg-card border border-border text-white focus:outline-none focus:border-purple-500 cursor-pointer"
+                  className={inputCls}
                 >
                   {institutes.map((inst) => (
                     <option key={inst.id} value={inst.id}>
@@ -1195,62 +966,54 @@ export default function SuperAdminDashboard() {
               </div>
 
               <div>
-                <label className="block text-muted-foreground font-semibold mb-1">Course Title *</label>
+                <label htmlFor="new-course-name" className={labelCls}>Course title</label>
                 <input
+                  id="new-course-name"
                   type="text"
                   required
-                  placeholder="e.g. AWS VPC & Cloud Networking Professional"
+                  placeholder="e.g. AWS VPC and cloud networking"
                   value={newCourseName}
                   onChange={(e) => setNewCourseName(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl bg-card border border-border text-white focus:outline-none focus:border-purple-500"
+                  className={inputCls}
                 />
               </div>
 
               <div>
-                <label className="block text-muted-foreground font-semibold mb-1">Description</label>
+                <label htmlFor="new-course-desc" className={labelCls}>Description</label>
                 <textarea
+                  id="new-course-desc"
                   rows={3}
-                  placeholder="Brief curriculum overview..."
+                  placeholder="A short overview of what the course covers"
                   value={newCourseDesc}
                   onChange={(e) => setNewCourseDesc(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl bg-card border border-border text-white focus:outline-none focus:border-purple-500"
+                  className={inputCls}
                 />
               </div>
 
               <div>
-                <label className="block text-muted-foreground font-semibold mb-1">
-                  Mapped Skill Gap Tags (comma-separated)
-                </label>
+                <label htmlFor="new-course-tags" className={labelCls}>Skill gaps (comma-separated)</label>
                 <input
+                  id="new-course-tags"
                   type="text"
-                  placeholder="React Hooks, System Architecture, AWS VPC"
+                  placeholder="e.g. React Hooks, System Architecture, AWS VPC"
                   value={newCourseSkillTags}
                   onChange={(e) => setNewCourseSkillTags(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl bg-card border border-border text-white focus:outline-none focus:border-purple-500"
+                  className={inputCls}
                 />
-                <p className="text-[10px] text-muted-foreground mt-1">
-                  When a candidate fails any of these tags in their defense, this course is recommended.
+                <p className="mt-1 text-xs text-muted-foreground">
+                  When a candidate misses one of these skills in a sprint review, this course is recommended.
                 </p>
               </div>
 
-              <div className="flex items-center justify-end space-x-2 pt-4 border-t border-border">
-                <button
-                  type="button"
-                  onClick={() => setShowAddCourseModal(false)}
-                  className="px-4 py-2 rounded-xl bg-muted hover:bg-slate-700 text-muted-foreground font-semibold cursor-pointer"
-                >
+              <div className="flex items-center justify-end gap-2 border-t border-border pt-4">
+                <Button type="button" variant="secondary" onClick={() => setShowAddCourseModal(false)}>
                   Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold cursor-pointer"
-                >
-                  Save Course
-                </button>
+                </Button>
+                <Button type="submit">Save course</Button>
               </div>
             </form>
           </div>
-        </div>
+        </Modal>
       )}
     </div>
   );

@@ -8,6 +8,7 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { AccessNotice, useLatestRef, useLegacyApi } from "@/lib/legacyApi";
 import { Messages, ReplyBox, RequestDetails, STATUS_LABEL, type GuidanceRequestView } from "@/components/guidance/Conversation";
+import { PageHeader, buttonClass } from "@/components/career/ui";
 import { useEn } from "@/lib/english/EnglishProvider";
 
 export default function MentorGuidancePage() {
@@ -39,20 +40,18 @@ export default function MentorGuidancePage() {
   if (access) return <AccessNotice problem={access} feature="guidance requests" />;
   return (
     <div className="space-y-6">
-      <header>
-        <h1 className="text-2xl font-semibold tracking-tight">{en("Guidance requests for you")}</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          {en("Edulexa's advisors asked you to help these people choose an area or certification. Reply here or to the email. If you can't help, hand it back.")}
-        </p>
-      </header>
+      <PageHeader
+        title={en("Guidance requests for you")}
+        description={en("Edulexa's advisors asked you to help these people choose an area or certification. Reply here or to the email. If you can't help, hand it back.")}
+      />
       {error && <p className="text-sm text-red-700 dark:text-red-400">{error}</p>}
       {!items ? (
-        <div className="h-40 animate-pulse rounded-2xl bg-muted motion-reduce:animate-none" aria-busy="true" />
+        <div className="h-40 animate-pulse rounded-xl bg-muted motion-reduce:animate-none" aria-busy="true" />
       ) : items.length === 0 ? (
         <p className="text-sm text-muted-foreground">{en("No requests for you right now.")}</p>
       ) : (
         items.map((r) => (
-          <section key={r.id} className="space-y-4 rounded-2xl border border-border bg-card p-5">
+          <section key={r.id} className="space-y-4 rounded-xl border border-border bg-card shadow-sm p-5">
             <div className="flex flex-wrap items-start justify-between gap-2">
               <h2 className="font-semibold">{r.name}</h2>
               <span className="rounded-full bg-muted px-2.5 py-0.5 text-xs">{en(STATUS_LABEL[r.status] ?? r.status)}</span>
@@ -60,7 +59,7 @@ export default function MentorGuidancePage() {
             <RequestDetails r={r} />
             <Messages messages={r.messages} />
             <ReplyBox allowInternal onSend={(body, internal) => post(`/api/guidance/mentor/${r.id}/messages`, { body, internal })} />
-            <button type="button" onClick={() => void post(`/api/guidance/mentor/${r.id}/hand-back`, { body: "" })} className="rounded-lg border border-border px-3 py-1.5 text-sm hover:bg-muted">
+            <button type="button" onClick={() => void post(`/api/guidance/mentor/${r.id}/hand-back`, { body: "" })} className={buttonClass("secondary")}>
               {en("Hand back to the advisors")}
             </button>
           </section>

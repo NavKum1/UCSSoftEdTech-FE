@@ -13,6 +13,8 @@ export interface CareerNavItem {
   // Plan item that delivers the page (docs/career_services_suite_plan.md)
   module: string;
   ready: boolean;
+  // Only for schools in these countries (ISO codes); absent = every school
+  countries?: string[];
 }
 
 export const CAREER_PREFIXES = ["/student", "/career-center", "/employer", "/faculty", "/alumni", "/supervisor", "/kiosk"];
@@ -87,11 +89,11 @@ export const careerNav: Record<CareerPersona, CareerNavItem[]> = {
     { label: "Placement office", href: "/career-center/placements", module: "G14a", ready: true },
     { label: "Campus drives", href: "/career-center/placements/drives", module: "H1", ready: true },
     { label: "Reports", href: "/career-center/reports", module: "C11", ready: true },
-    { label: "NIRF, NAAC and NBA reports", href: "/career-center/reports/india", module: "G3/G4", ready: true },
+    { label: "NIRF, NAAC and NBA reports", href: "/career-center/reports/india", module: "G3/G4", ready: true, countries: ["IN"] },
     // en() where shown (careerNav labels)
-    { label: "Workforce localisation", href: "/career-center/reports/localisation", module: "G12", ready: true },
-    { label: "Workforce (WIOA) reports", href: "/career-center/reports/workforce", module: "G15", ready: true },
-    { label: "Apprenticeships", href: "/career-center/apprenticeships", module: "G15", ready: true },
+    { label: "Workforce localisation", href: "/career-center/reports/localisation", module: "G12", ready: true, countries: ["SA", "AE", "QA", "ZA"] },
+    { label: "Workforce (WIOA) reports", href: "/career-center/reports/workforce", module: "G15", ready: true, countries: ["US"] },
+    { label: "Apprenticeships", href: "/career-center/apprenticeships", module: "G15", ready: true, countries: ["US"] },
     { label: "Bootcamp outcomes (CIRR-style)", href: "/career-center/reports/cirr", module: "G16", ready: true },
     { label: "Frameworks", href: "/career-center/frameworks", module: "D1", ready: true },
     { label: "Challenges", href: "/career-center/challenges", module: "D7", ready: true },

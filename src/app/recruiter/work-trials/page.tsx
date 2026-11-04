@@ -4,7 +4,6 @@ import React, { useEffect, useState } from "react";
 import { useAppAuth as useAuth } from "@/lib/appAuth";
 import { authenticatedFetch } from "@/lib/apiClient";
 import {
-  AlertCircle,
   AlertTriangle,
   ArrowLeft,
   Bug,
@@ -31,6 +30,7 @@ import {
   XCircle,
 } from "lucide-react";
 import { useEn } from "@/lib/english/EnglishProvider";
+import { Badge, Button, EmptyState, ErrorBanner, Loading, PageHeader, SuccessBanner, Tabs } from "@/components/career/ui";
 
 type Language = "python" | "javascript" | "typescript";
 type AiPolicy = "Prohibited" | "Allowed" | "Evaluated";
@@ -131,13 +131,13 @@ const AI_POLICY_LABELS: Record<AiPolicy, string> = {
   Evaluated: "Evaluated: AI usage is part of the review",
 };
 
-const STATUS_STYLES: Record<string, string> = {
-  Fetched: "border-border bg-muted text-muted-foreground",
-  Generated: "border-indigo-500/30 bg-indigo-500/10 text-indigo-700 dark:text-indigo-300",
-  Validated: "border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400",
-  ValidationFailed: "border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-400",
-  Published: "border-purple-500/30 bg-purple-500/10 text-purple-700 dark:text-purple-300",
-  Discarded: "border-border bg-muted text-muted-foreground",
+const STATUS_TONES: Record<string, "neutral" | "good" | "warn" | "info"> = {
+  Fetched: "neutral",
+  Generated: "info",
+  Validated: "good",
+  ValidationFailed: "warn",
+  Published: "good",
+  Discarded: "neutral",
 };
 
 const STATUS_LABELS: Record<string, string> = {
@@ -150,11 +150,9 @@ const STATUS_LABELS: Record<string, string> = {
 };
 
 const inputClass =
-  "mt-1 w-full rounded-xl bg-card border border-border px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground";
-const secondaryButton =
-  "py-2 px-3 rounded-xl bg-card hover:bg-muted border border-border text-xs font-semibold text-foreground flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer";
-const primaryButton =
-  "py-2 px-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer";
+  "mt-1 w-full rounded-lg bg-card border border-border px-3 py-2 text-sm font-normal text-foreground shadow-sm placeholder:text-muted-foreground";
+const labelClass = "block text-sm font-medium text-foreground";
+const sectionClass = "rounded-xl border border-border bg-card p-5 shadow-sm space-y-3";
 
 async function errorMessage(res: Response, fallback: string) {
   try {
@@ -174,9 +172,7 @@ async function errorMessage(res: Response, fallback: string) {
 function StatusBadge({ status }: { status: string }) {
   const en = useEn();
   return (
-    <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold border ${STATUS_STYLES[status] ?? STATUS_STYLES.Fetched}`}>
-      {en(STATUS_LABELS[status] ?? status)}
-    </span>
+<Badge tone={STATUS_TONES[status] ?? "neutral"}>{en(STATUS_LABELS[status] ?? status)}</Badge>
   );
 }
 
@@ -193,10 +189,10 @@ function CopyField({ label, value }: { label: string; value: string }) {
   };
   return (
     <div>
-      <div className="text-[11px] font-semibold text-muted-foreground">{label}</div>
+      <div className="text-xs font-medium text-muted-foreground">{label}</div>
       <div className="mt-1 flex items-center gap-2">
         <code className="flex-1 min-w-0 break-all rounded-lg bg-muted/50 border border-border px-3 py-2 text-xs font-mono text-foreground select-all">{value}</code>
-        <button onClick={copy} aria-label={`Copy ${label}`} className="shrink-0 p-2 rounded-lg border border-border bg-card hover:bg-muted cursor-pointer">
+        <button type="button" onClick={copy} aria-label={`Copy ${label}`} className="shrink-0 p-2 rounded-lg border border-border bg-card shadow-sm hover:bg-muted cursor-pointer">
           {copied ? <Check className="w-4 h-4 text-emerald-600" /> : <Copy className="w-4 h-4 text-muted-foreground" />}
         </button>
       </div>
@@ -206,7 +202,7 @@ function CopyField({ label, value }: { label: string; value: string }) {
 
 function CodeBlock({ code, maxHeight = "max-h-96" }: { code: string; maxHeight?: string }) {
   return (
-    <pre className={`text-xs font-mono overflow-auto ${maxHeight} rounded-xl border border-border bg-muted/30 p-3 text-foreground whitespace-pre`}>
+    <pre className={`text-xs font-mono overflow-auto ${maxHeight} rounded-lg border border-border bg-muted/40 p-3 text-foreground whitespace-pre`}>
       {code || " "}
     </pre>
   );
@@ -216,7 +212,7 @@ function DefectDiff({ defect }: { defect: Defect }) {
   const removed = defect.search.replace(/\n$/, "").split("\n");
   const added = defect.replace.replace(/\n$/, "").split("\n");
   return (
-    <pre className="text-xs font-mono overflow-x-auto rounded-xl border border-border bg-muted/30 py-2">
+    <pre className="text-xs font-mono overflow-x-auto rounded-lg border border-border bg-muted/40 py-2">
       {removed.map((line, i) => (
         <div key={`d${i}`} className="px-3 whitespace-pre bg-emerald-500/10 text-emerald-800 dark:text-emerald-300">
           {"  original  "}
@@ -224,7 +220,7 @@ function DefectDiff({ defect }: { defect: Defect }) {
         </div>
       ))}
       {added.map((line, i) => (
-        <div key={`a${i}`} className="px-3 whitespace-pre bg-rose-500/10 text-rose-800 dark:text-rose-300">
+        <div key={`a${i}`} className="px-3 whitespace-pre bg-red-500/10 text-red-800 dark:text-red-300">
           {"  seeded    "}
           {line || " "}
         </div>
@@ -236,15 +232,15 @@ function DefectDiff({ defect }: { defect: Defect }) {
 function ResultIcon({ value }: { value: boolean | null | undefined }) {
   const en = useEn();
   if (value === true) return <span className="inline-flex items-center gap-1 text-emerald-700 dark:text-emerald-400"><CheckCircle2 className="w-3 h-3" /> pass</span>;
-  if (value === false) return <span className="inline-flex items-center gap-1 text-rose-700 dark:text-rose-400"><XCircle className="w-3 h-3" /> fail</span>;
+  if (value === false) return <span className="inline-flex items-center gap-1 text-red-700 dark:text-red-400"><XCircle className="w-3 h-3" /> fail</span>;
   return <span className="text-muted-foreground">{en("not run")}</span>;
 }
 
 function Section({ title, icon, children, actions }: { title: string; icon: React.ReactNode; children: React.ReactNode; actions?: React.ReactNode }) {
   return (
-    <section className="glass-panel rounded-2xl border border-border p-5 space-y-3">
+    <section className={sectionClass}>
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
+        <h2 className="text-base font-semibold text-foreground flex items-center gap-2">
           {icon} {title}
         </h2>
         {actions}
@@ -349,14 +345,15 @@ function NewTrialWizard({
 
   return (
     <form onSubmit={submit} className="space-y-5">
-      <div className="flex items-center justify-between gap-3">
-        <h2 className="text-lg font-extrabold text-foreground flex items-center gap-2"><Plus className="w-5 h-5" />{en(" New work trial")}</h2>
-        <button type="button" onClick={onCancel} className={secondaryButton}><X className="w-3.5 h-3.5" />{en(" Cancel")}</button>
-      </div>
+      <PageHeader
+        title={en("New work trial")}
+        description={en("Choose the code to start from and describe the role. Nothing is sent to an AI model until you click Generate on the next screen.")}
+        actions={<Button type="button" variant="secondary" onClick={onCancel}><X className="w-4 h-4" />{en(" Cancel")}</Button>}
+      />
 
-      <div className="grid lg:grid-cols-2 gap-5">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
         <Section title={en("1. Source code")} icon={<GitBranch className="w-4 h-4" />}>
-          <div className="flex gap-2" role="radiogroup" aria-label={en("Source")}>
+          <div className="flex flex-wrap gap-2" role="radiogroup" aria-label={en("Source")}>
             {(["github", "files"] as const).map((s) => (
               <button
                 key={s}
@@ -364,7 +361,7 @@ function NewTrialWizard({
                 role="radio"
                 aria-checked={source === s}
                 onClick={() => setSource(s)}
-                className={`flex-1 py-2 px-3 rounded-xl border text-xs font-semibold cursor-pointer ${
+                className={`flex-1 py-2 px-3 rounded-lg border text-sm font-medium cursor-pointer ${
                   source === s ? "border-indigo-500 bg-indigo-500/10 text-indigo-700 dark:text-indigo-300" : "border-border bg-card text-muted-foreground hover:bg-muted"
                 }`}
               >
@@ -375,24 +372,24 @@ function NewTrialWizard({
 
           {source === "github" ? (
             <div className="space-y-3">
-              <label className="block text-xs font-semibold text-foreground">
+              <label className={labelClass}>
                 {en("Repository")}
                 <input value={repository} onChange={(e) => setRepository(e.target.value)} placeholder={en("owner/repo or https://github.com/owner/repo")} className={inputClass} />
               </label>
-              <div className="grid grid-cols-2 gap-3">
-                <label className="block text-xs font-semibold text-foreground">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <label className={labelClass}>
                   {en("Branch (optional)")}
                   <input value={branch} onChange={(e) => setBranch(e.target.value)} placeholder={en("default branch")} className={inputClass} />
                 </label>
-                <label className="block text-xs font-semibold text-foreground">
+                <label className={labelClass}>
                   {en("Path prefix (optional)")}
                   <input value={pathPrefix} onChange={(e) => setPathPrefix(e.target.value)} placeholder={en("e.g. services/billing")} className={inputClass} />
                 </label>
               </div>
-              <label className="block text-xs font-semibold text-foreground">
+              <label className={labelClass}>
                 {en("GitHub token (optional, needed for private repositories)")}
                 <input type="password" value={githubToken} onChange={(e) => setGithubToken(e.target.value)} autoComplete="off" placeholder={en("Fine-grained token with read-only Contents access")} className={inputClass} />
-                <span className="mt-1 flex items-start gap-1.5 font-normal text-[11px] text-muted-foreground">
+                <span className="mt-1 flex items-start gap-1.5 font-normal text-xs text-muted-foreground">
                   <Lock className="w-3 h-3 mt-0.5 shrink-0" />
                   {en("Used once to read the files for this request, then discarded. It is never stored or logged. Prefer a short-lived, read-only token scoped to this repository.")}
                 </span>
@@ -400,7 +397,7 @@ function NewTrialWizard({
             </div>
           ) : (
             <div className="space-y-3">
-              <label className="block text-xs font-semibold text-foreground">
+              <label className={labelClass}>
                 {en("Upload files")}
                 <input
                   type="file"
@@ -410,16 +407,16 @@ function NewTrialWizard({
                     void addUploaded(e.target.files);
                     e.target.value = "";
                   }}
-                  className="mt-1 block w-full text-xs text-muted-foreground file:me-3 file:rounded-lg file:border file:border-border file:bg-card file:px-3 file:py-1.5 file:text-xs file:font-semibold file:text-foreground"
+                  className="mt-1 block w-full text-xs text-muted-foreground file:me-3 file:rounded-lg file:border file:border-border file:bg-card file:px-3 file:py-1.5 file:text-xs file:font-medium file:text-foreground"
                 />
               </label>
-              <div className="rounded-xl border border-border p-3 space-y-2">
-                <div className="text-xs font-semibold text-foreground">{en("Or paste a file")}</div>
+              <div className="rounded-lg border border-border p-3 space-y-2">
+                <div className="text-sm font-medium text-foreground">{en("Or paste a file")}</div>
                 <input value={pasteName} onChange={(e) => setPasteName(e.target.value)} placeholder={`path/to/file${LANGUAGE_EXTENSIONS[language].split(",")[0]}`} className={inputClass} aria-label={en("File name")} />
                 <textarea value={pasteContent} onChange={(e) => setPasteContent(e.target.value)} rows={6} placeholder={en("File content")} className={`${inputClass} font-mono text-xs`} aria-label={en("File content")} />
-                <button type="button" onClick={addPasted} disabled={!pasteName.trim() || !pasteContent} className={secondaryButton}>
-                  <Upload className="w-3.5 h-3.5" />{en(" Add file")}
-                </button>
+                <Button type="button" variant="secondary" onClick={addPasted} disabled={!pasteName.trim() || !pasteContent}>
+                  <Upload className="w-4 h-4" />{en(" Add file")}
+                </Button>
               </div>
               {files.length > 0 && (
                 <ul className="text-xs space-y-1">
@@ -438,13 +435,13 @@ function NewTrialWizard({
               )}
             </div>
           )}
-          <p className="text-[11px] text-muted-foreground">
+          <p className="text-xs text-muted-foreground">
             {en("At most 60 files / 500 KB in the chosen language are used. Tests, vendored, generated and configuration files are skipped; .env, key and certificate files are always dropped.")}
           </p>
         </Section>
 
         <Section title={en("2. The role")} icon={<ListChecks className="w-4 h-4" />}>
-          <label className="block text-xs font-semibold text-foreground">
+          <label className={labelClass}>
             {en("Language")}
             <select value={language} onChange={(e) => setLanguage(e.target.value as Language)} className={inputClass}>
               <option value="python">{en("Python")}</option>
@@ -452,15 +449,15 @@ function NewTrialWizard({
               <option value="typescript">{en("TypeScript (Node.js)")}</option>
             </select>
           </label>
-          <label className="block text-xs font-semibold text-foreground">
+          <label className={labelClass}>
             {en("Role title")}
             <input value={roleTitle} onChange={(e) => setRoleTitle(e.target.value)} maxLength={120} placeholder={en("e.g. Backend Engineer, Payments")} className={inputClass} />
           </label>
-          <label className="block text-xs font-semibold text-foreground">
+          <label className={labelClass}>
             {en("Focus areas (comma separated, up to 8)")}
             <input value={focusAreas} onChange={(e) => setFocusAreas(e.target.value)} placeholder={en("e.g. input validation, money handling, error handling")} className={inputClass} />
           </label>
-          <label className="block text-xs font-semibold text-foreground">
+          <label className={labelClass}>
             {en("AI policy for candidates")}
             <select value={aiPolicy} onChange={(e) => setAiPolicy(e.target.value as AiPolicy)} className={inputClass}>
               {(Object.keys(AI_POLICY_LABELS) as AiPolicy[]).map((p) => (
@@ -471,11 +468,11 @@ function NewTrialWizard({
         </Section>
       </div>
 
-      <div className="rounded-2xl border border-amber-500/40 bg-amber-500/5 p-5 space-y-3">
+      <div className="rounded-xl border border-amber-300 bg-amber-50 p-5 space-y-3 dark:border-amber-900 dark:bg-amber-950/40">
         <div className="flex items-start gap-3">
           <ShieldCheck className="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
-          <div className="text-xs text-foreground space-y-1.5">
-            <p className="font-bold text-sm">{en("How your code is handled")}</p>
+          <div className="text-sm text-foreground space-y-1.5">
+            <p className="font-semibold">{en("How your code is handled")}</p>
             <p>
               {en("Before anything leaves our servers, the fetched files are sanitized: secret files are dropped, and AWS keys, private-key blocks, bearer and API tokens, password/secret assignments, connection strings, email addresses and internal hostnames/IPs are redacted. You will see every redaction (file, line, kind) on the next screen.")}
             </p>
@@ -487,18 +484,16 @@ function NewTrialWizard({
             </p>
           </div>
         </div>
-        <label className="flex items-start gap-2 text-xs font-semibold text-foreground cursor-pointer">
+        <label className="flex items-start gap-2 text-sm font-medium text-foreground cursor-pointer">
           <input type="checkbox" checked={consent} onChange={(e) => setConsent(e.target.checked)} className="mt-0.5" />
-          {en("I am authorised to share this code, and I agree that it is sanitized and then sent to an AI model to generate the work trial.")}
+          {en("I am authorized to share this code, and I agree that it is sanitized and then sent to an AI model to generate the work trial.")}
         </label>
       </div>
 
-      {error && (
-        <p className="text-xs text-rose-700 dark:text-rose-400 flex items-center gap-1.5"><AlertCircle className="w-3.5 h-3.5 shrink-0" /> {error}</p>
-      )}
-      <button type="submit" disabled={!canSubmit || submitting} className="w-full py-2.5 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-semibold flex items-center justify-center gap-2 cursor-pointer">
-        {submitting && <Loader2 className="w-4 h-4 animate-spin" />}{en(" Fetch and sanitize source")}
-      </button>
+      <ErrorBanner error={error} />
+      <Button type="submit" disabled={!canSubmit} busy={submitting} className="w-full sm:w-auto">
+        {en(" Fetch and sanitize source")}
+      </Button>
     </form>
   );
 }
@@ -512,20 +507,20 @@ function ValidationPanel({ validation }: { validation: Validation }) {
   return (
     <div className="space-y-3">
       {validation.sandboxUnavailable ? (
-        <div className="rounded-xl border border-amber-500/40 bg-amber-500/5 p-3 text-xs text-foreground flex items-start gap-2">
+        <div className="rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm text-foreground flex items-start gap-2 dark:border-amber-900 dark:bg-amber-950/40">
           <AlertTriangle className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0" />
           <span>{en("Sandbox unavailable at {number}: the tests could not be run, so nothing was validated. Try again once the code sandbox is running.", { number: new Date(validation.ranAt).toLocaleString() })}</span>
         </div>
       ) : validation.passed ? (
-        <div className="rounded-xl border border-emerald-500/40 bg-emerald-500/5 p-3 text-xs text-foreground flex items-start gap-2">
+        <div className="rounded-lg border border-emerald-300 bg-emerald-50 p-3 text-sm text-foreground flex items-start gap-2 dark:border-emerald-900 dark:bg-emerald-950/40">
           <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
           <span>
             {en("Validated {number}{value}: all tests pass on the original module, each defect's tests fail on the seeded module, and the control tests still pass.", { number: new Date(validation.ranAt).toLocaleString(), value: validation.runtime ? ` on ${validation.runtime}` : "" })}
           </span>
         </div>
       ) : (
-        <div className="rounded-xl border border-rose-500/40 bg-rose-500/5 p-3 text-xs text-foreground space-y-1">
-          <div className="flex items-center gap-2 font-semibold"><XCircle className="w-4 h-4 text-rose-600 dark:text-rose-400" />{" "}{en("Validation failed ({number})", { number: new Date(validation.ranAt).toLocaleString() })}</div>
+        <div className="rounded-lg border border-red-300 bg-red-50 p-3 text-sm text-foreground space-y-1 dark:border-red-900 dark:bg-red-950/40">
+          <div className="flex items-center gap-2 font-semibold"><XCircle className="w-4 h-4 text-red-600 dark:text-red-400" />{" "}{en("Validation failed ({number})", { number: new Date(validation.ranAt).toLocaleString() })}</div>
           <ul className="list-disc ps-6 space-y-0.5">
             {validation.problems.map((p, i) => <li key={i}>{p}</li>)}
           </ul>
@@ -538,10 +533,10 @@ function ValidationPanel({ validation }: { validation: Validation }) {
           <table className="w-full text-xs">
             <thead>
               <tr className="text-start text-muted-foreground border-b border-border">
-                <th className="py-1.5 pe-3 font-semibold">{en("Defect")}</th>
-                <th className="py-1.5 pe-3 font-semibold">{en("Test")}</th>
-                <th className="py-1.5 pe-3 font-semibold">{en("Original (expect pass)")}</th>
-                <th className="py-1.5 font-semibold">{en("Seeded")}</th>
+                <th className="py-1.5 pe-3 font-medium">{en("Defect")}</th>
+                <th className="py-1.5 pe-3 font-medium">{en("Test")}</th>
+                <th className="py-1.5 pe-3 font-medium">{en("Original (expect pass)")}</th>
+                <th className="py-1.5 font-medium">{en("Seeded")}</th>
               </tr>
             </thead>
             <tbody>
@@ -549,7 +544,7 @@ function ValidationPanel({ validation }: { validation: Validation }) {
                 d.tests.map((t) => (
                   <tr key={`${d.id}-${t.name}`} className="border-b border-border last:border-0">
                     <td className="py-1.5 pe-3 text-foreground">
-                      <span className="inline-flex items-center gap-1">{d.ok ? <CheckCircle2 className="w-3 h-3 text-emerald-600" /> : <XCircle className="w-3 h-3 text-rose-600" />} {d.id}</span>
+                      <span className="inline-flex items-center gap-1">{d.ok ? <CheckCircle2 className="w-3 h-3 text-emerald-600" /> : <XCircle className="w-3 h-3 text-red-600" />} {d.id}</span>
                     </td>
                     <td className="py-1.5 pe-3 font-mono text-foreground">{t.name}</td>
                     <td className="py-1.5 pe-3"><ResultIcon value={t.original} /></td>
@@ -572,13 +567,13 @@ function ValidationPanel({ validation }: { validation: Validation }) {
 
       {validation.original && (
         <details className="text-xs">
-          <summary className="cursor-pointer font-semibold text-foreground">{en("Output: original module ({passed}/{total} passed, exit {exitCode})", { passed: validation.original.passed, total: validation.original.total, exitCode: validation.original.exitCode })}</summary>
+          <summary className="cursor-pointer font-medium text-foreground">{en("Output: original module ({passed}/{total} passed, exit {exitCode})", { passed: validation.original.passed, total: validation.original.total, exitCode: validation.original.exitCode })}</summary>
           <div className="mt-2"><CodeBlock code={validation.original.output} maxHeight="max-h-72" /></div>
         </details>
       )}
       {validation.seeded && (
         <details className="text-xs">
-          <summary className="cursor-pointer font-semibold text-foreground">{en("Output: seeded module ({passed}/{total} passed, exit {exitCode})", { passed: validation.seeded.passed, total: validation.seeded.total, exitCode: validation.seeded.exitCode })}</summary>
+          <summary className="cursor-pointer font-medium text-foreground">{en("Output: seeded module ({passed}/{total} passed, exit {exitCode})", { passed: validation.seeded.passed, total: validation.seeded.total, exitCode: validation.seeded.exitCode })}</summary>
           <div className="mt-2"><CodeBlock code={validation.seeded.output} maxHeight="max-h-72" /></div>
         </details>
       )}
@@ -702,81 +697,79 @@ function TrialReview({
 
   return (
     <div className="space-y-5">
-      <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 pb-4 border-b border-border">
-        <div className="min-w-0">
-          <button onClick={onBack} className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1 cursor-pointer">
-            <ArrowLeft className="w-3.5 h-3.5" />{en(" All work trials")}
-          </button>
-          <div className="mt-2 flex flex-wrap items-center gap-2">
-            <h1 className="text-xl font-extrabold text-foreground break-words">{trial.title}</h1>
-            <StatusBadge status={trial.status} />
-            {trial.generationModel === "dev-stub" && (
-              <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold border border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-400">{en("Development stub output")}</span>
-            )}
-          </div>
-          <p className="text-xs text-muted-foreground mt-1">
+      <div>
+        <button type="button" onClick={onBack} className="mb-3 text-sm text-muted-foreground hover:text-foreground inline-flex items-center gap-1 cursor-pointer">
+          <ArrowLeft className="w-4 h-4" />{en(" All work trials")}
+        </button>
+        <PageHeader
+          title={trial.title}
+          description={
+            <span className="flex flex-wrap items-center gap-2">
+              <StatusBadge status={trial.status} />
+              {trial.generationModel === "dev-stub" && <Badge tone="warn">{en("Development stub output")}</Badge>}
+              <span>
             {en("{roleTitle} · {language} · AI {value}{value2}", { roleTitle: trial.roleTitle, language: trial.language, value: trial.aiPolicy.toLowerCase(), value2: trial.status !== "Published" ? ` · draft deleted ${new Date(trial.expiresAt).toLocaleDateString()} unless published` : "" })}
-          </p>
-        </div>
-        <div className="flex flex-wrap items-center gap-2">
-          {editable && (
-            <button onClick={generate} disabled={busy !== null} className={generated ? secondaryButton : primaryButton}>
-              {busy === "generate" ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <WandSparkles className="w-3.5 h-3.5" />} {generated ? en("Regenerate") : en("Generate")}
-            </button>
-          )}
-          {editable && generated && (
-            <button onClick={validate} disabled={busy !== null} className={trial.status === "Generated" ? primaryButton : secondaryButton}>
-              {busy === "validate" ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <FlaskConical className="w-3.5 h-3.5" />}{en(" Validate in sandbox")}
-            </button>
-          )}
-          {editable && generated && (
-            <button onClick={() => (trial.status === "Validated" ? publish(false) : setShowForce((s) => !s))} disabled={busy !== null} className={trial.status === "Validated" ? primaryButton : secondaryButton}>
-              {busy === "publish" ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Send className="w-3.5 h-3.5" />}{en(" Publish")}
-            </button>
-          )}
-          {trial.status !== "Discarded" && (
-            <button onClick={discard} disabled={busy !== null} className="py-2 px-3 rounded-xl border border-rose-500/30 bg-card hover:bg-rose-500/10 text-xs font-semibold text-rose-700 dark:text-rose-400 flex items-center gap-1.5 disabled:opacity-50 cursor-pointer">
-              {busy === "discard" ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Trash2 className="w-3.5 h-3.5" />}{en(" Discard")}
-            </button>
-          )}
-        </div>
+              </span>
+            </span>
+          }
+          actions={
+            <>
+              {editable && (
+                <Button onClick={generate} disabled={busy !== null} variant={generated ? "secondary" : "primary"}>
+                  {busy === "generate" ? <Loader2 className="w-4 h-4 animate-spin" /> : <WandSparkles className="w-4 h-4" />} {generated ? en("Regenerate") : en("Generate")}
+                </Button>
+              )}
+              {editable && generated && (
+                <Button onClick={validate} disabled={busy !== null} variant={trial.status === "Generated" ? "primary" : "secondary"}>
+                  {busy === "validate" ? <Loader2 className="w-4 h-4 animate-spin" /> : <FlaskConical className="w-4 h-4" />}{en(" Validate in sandbox")}
+                </Button>
+              )}
+              {editable && generated && (
+                <Button onClick={() => (trial.status === "Validated" ? publish(false) : setShowForce((s) => !s))} disabled={busy !== null} variant={trial.status === "Validated" ? "primary" : "secondary"}>
+                  {busy === "publish" ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}{en(" Publish")}
+                </Button>
+              )}
+              {trial.status !== "Discarded" && (
+                <Button onClick={discard} disabled={busy !== null} variant="secondary" className="text-red-700 dark:text-red-400">
+                  {busy === "discard" ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}{en(" Discard")}
+                </Button>
+              )}
+            </>
+          }
+        />
       </div>
 
       {busy === "generate" && (
-        <p className="text-xs text-muted-foreground flex items-center gap-1.5"><Loader2 className="w-3.5 h-3.5 animate-spin" />{en(" Generating. Selecting a module and planting defects can take a minute or two; the result is saved even if you leave this page.")}</p>
+        <p role="status" className="text-sm text-muted-foreground flex items-center gap-1.5"><Loader2 className="w-4 h-4 animate-spin" />{en(" Generating. Selecting a module and planting defects can take a minute or two; the result is saved even if you leave this page.")}</p>
       )}
       {busy === "validate" && (
-        <p className="text-xs text-muted-foreground flex items-center gap-1.5"><Loader2 className="w-3.5 h-3.5 animate-spin" />{en(" Running the hidden tests against the original and the seeded module...")}</p>
+        <p role="status" className="text-sm text-muted-foreground flex items-center gap-1.5"><Loader2 className="w-4 h-4 animate-spin" />{en(" Running the hidden tests against the original and the seeded module...")}</p>
       )}
-      {error && (
-        <div className="rounded-xl border border-rose-500/40 bg-rose-500/5 p-3 text-xs text-rose-700 dark:text-rose-400 flex items-start gap-2"><AlertCircle className="w-4 h-4 shrink-0" /> {error}</div>
-      )}
-      {notice && (
-        <div className="rounded-xl border border-emerald-500/40 bg-emerald-500/5 p-3 text-xs text-emerald-800 dark:text-emerald-300 flex items-start gap-2"><CheckCircle2 className="w-4 h-4 shrink-0" /> {notice}</div>
-      )}
+      <ErrorBanner error={error} />
+      <SuccessBanner message={notice} />
 
       {showForce && editable && trial.status !== "Validated" && (
-        <div className="rounded-2xl border border-amber-500/40 bg-amber-500/5 p-5 space-y-3">
+        <div className="rounded-xl border border-amber-300 bg-amber-50 p-5 space-y-3 dark:border-amber-900 dark:bg-amber-950/40">
           <div className="flex items-start gap-3">
             <AlertTriangle className="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
-            <p className="text-xs text-foreground">
+            <p className="text-sm text-foreground">
               {en("This trial has not passed sandbox validation, so its hidden tests may not detect the planted defects (or may fail on correct code). Publishing anyway records your reason with the trial.")}
             </p>
           </div>
           <textarea value={forceReason} onChange={(e) => setForceReason(e.target.value)} rows={3} maxLength={1000} placeholder={en("Why is it safe to publish without a passing validation? (at least 10 characters)")} className={inputClass} />
-          <div className="flex gap-2">
-            <button onClick={() => publish(true)} disabled={busy !== null || forceReason.trim().length < 10} className="py-2 px-3 rounded-xl bg-amber-600 hover:bg-amber-500 text-white text-xs font-semibold flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer">
-              <Send className="w-3.5 h-3.5" />{en(" Publish without validation")}
-            </button>
-            <button onClick={() => setShowForce(false)} className={secondaryButton}>{en("Cancel")}</button>
+          <div className="flex flex-wrap gap-2">
+            <Button onClick={() => publish(true)} disabled={busy !== null || forceReason.trim().length < 10}>
+              <Send className="w-4 h-4" />{en(" Publish without validation")}
+            </Button>
+            <Button variant="secondary" onClick={() => setShowForce(false)}>{en("Cancel")}</Button>
           </div>
         </div>
       )}
 
       {trial.status === "Published" && trial.inviteCode && candidateUrl && (
-        <div className="rounded-2xl border border-purple-500/40 bg-purple-500/5 p-5 space-y-3">
-          <h2 className="text-sm font-bold text-foreground flex items-center gap-2"><ClipboardCheck className="w-4 h-4" />{en(" Published as a private sprint")}</h2>
-          <p className="text-xs text-muted-foreground">
+        <div className={sectionClass}>
+          <h2 className="text-base font-semibold text-foreground flex items-center gap-2"><ClipboardCheck className="w-4 h-4" />{en(" Published as a private sprint")}</h2>
+          <p className="text-sm text-muted-foreground">
             {en("Share the link (or the invite code) with candidates. Submissions appear in Evidence packs, where a person reviews them and decides.{value}", { value: trial.forcePublishReason ? ` Published without a passing validation: "${trial.forcePublishReason}"` : "" })}
           </p>
           <CopyField label={en("Invite code")} value={trial.inviteCode} />
@@ -784,7 +777,7 @@ function TrialReview({
         </div>
       )}
 
-      <div className="grid lg:grid-cols-2 gap-5">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
         <Section title={en("Source and redactions")} icon={<EyeOff className="w-4 h-4" />}>
           <p className="text-xs text-foreground">{trial.sourceSummary}</p>
           {trial.redactions.length === 0 ? (
@@ -794,9 +787,9 @@ function TrialReview({
               <table className="w-full text-xs">
                 <thead>
                   <tr className="text-start text-muted-foreground border-b border-border">
-                    <th className="py-1.5 pe-3 font-semibold">{en("File")}</th>
-                    <th className="py-1.5 pe-3 font-semibold">{en("Line")}</th>
-                    <th className="py-1.5 font-semibold">{en("Redacted")}</th>
+                    <th className="py-1.5 pe-3 font-medium">{en("File")}</th>
+                    <th className="py-1.5 pe-3 font-medium">{en("Line")}</th>
+                    <th className="py-1.5 font-medium">{en("Redacted")}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -813,7 +806,7 @@ function TrialReview({
           )}
           {trial.sourceFiles.length > 0 && (
             <details className="text-xs">
-              <summary className="cursor-pointer font-semibold text-foreground">{en("{length} sanitized source file(s) stored", { length: trial.sourceFiles.length })}</summary>
+              <summary className="cursor-pointer font-medium text-foreground">{en("{length} sanitized source file(s) stored", { length: trial.sourceFiles.length })}</summary>
               <ul className="mt-2 space-y-0.5">
                 {trial.sourceFiles.map((f) => (
                   <li key={f.name} className="flex justify-between gap-2"><span className="font-mono text-foreground break-all">{f.name}</span><span className="text-muted-foreground shrink-0">{f.lines} lines</span></li>
@@ -830,14 +823,14 @@ function TrialReview({
             <>
               <div className="flex flex-wrap gap-1.5">
                 {trial.module.files.map((f) => (
-                  <span key={f} className="px-2 py-0.5 rounded-lg border border-border bg-muted text-[11px] font-mono text-foreground">
+                  <span key={f} className="px-2 py-0.5 rounded-md border border-border bg-muted text-xs font-mono text-foreground">
                     {f}{f === trial.module.entryFile ? en(" (entry)") : ""}
                   </span>
                 ))}
               </div>
               {trial.module.rationale && <p className="text-xs text-foreground">{trial.module.rationale}</p>}
-              {trial.generationNotes && <p className="text-xs text-muted-foreground"><span className="font-semibold">{en("Changes made to run in a bare runtime:")}</span> {trial.generationNotes}</p>}
-              {trial.generationModel && <p className="text-[11px] text-muted-foreground">{en("Generated by {value}. AI output: review it before publishing.", { value: trial.generationModel === "dev-stub" ? en("the development stub (no AI model configured)") : trial.generationModel })}</p>}
+              {trial.generationNotes && <p className="text-xs text-muted-foreground"><span className="font-medium">{en("Changes made to run in a bare runtime:")}</span> {trial.generationNotes}</p>}
+              {trial.generationModel && <p className="text-xs text-muted-foreground">{en("Generated by {value}. AI output: review it before publishing.", { value: trial.generationModel === "dev-stub" ? en("the development stub (no AI model configured)") : trial.generationModel })}</p>}
             </>
           )}
         </Section>
@@ -845,14 +838,14 @@ function TrialReview({
 
       {trial.defects.length > 0 && (
         <Section title={`Planted defects (${trial.defects.length})`} icon={<Bug className="w-4 h-4" />}>
-          <p className="text-[11px] text-muted-foreground">{en("Hidden from candidates. Titles are shown to reviewers in evidence packs.")}</p>
+          <p className="text-xs text-muted-foreground">{en("Hidden from candidates. Titles are shown to reviewers in evidence packs.")}</p>
           <div className="space-y-4">
             {trial.defects.map((d) => (
-              <div key={d.id} className="rounded-xl border border-border p-3 space-y-2">
+              <div key={d.id} className="rounded-lg border border-border p-3 space-y-2">
                 <div className="flex flex-wrap items-center gap-2">
-                  <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold border border-border bg-muted text-muted-foreground">{d.id}</span>
-                  {d.category && <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold border border-indigo-500/30 bg-indigo-500/10 text-indigo-700 dark:text-indigo-300">{d.category}</span>}
-                  <span className="text-[11px] font-mono text-muted-foreground">{d.file}</span>
+                  <Badge>{d.id}</Badge>
+                  {d.category && <Badge tone="info">{d.category}</Badge>}
+                  <span className="text-xs font-mono text-muted-foreground">{d.file}</span>
                 </div>
                 {editable ? (
                   <input
@@ -867,7 +860,7 @@ function TrialReview({
                 )}
                 {d.explanation && <p className="text-xs text-foreground">{d.explanation}</p>}
                 <DefectDiff defect={d} />
-                <p className="text-[11px] text-muted-foreground">
+                <p className="text-xs text-muted-foreground">
                   {en("Detected by: ")}{d.tests.map((t) => <code key={t} className="font-mono text-foreground me-1.5">{t}</code>)}
                 </p>
               </div>
@@ -878,35 +871,28 @@ function TrialReview({
 
       {trial.seededFiles.length > 0 && activeFile && (
         <Section title={en("Files candidates receive")} icon={<FileCode className="w-4 h-4" />}>
-          <div className="flex flex-wrap gap-1.5" role="tablist">
-            {trial.seededFiles.map((f) => (
-              <button
-                key={f.name}
-                role="tab"
-                aria-selected={f.name === activeFile.name}
-                onClick={() => setFileTab(f.name)}
-                className={`px-2.5 py-1 rounded-lg border text-[11px] font-mono cursor-pointer ${f.name === activeFile.name ? "border-indigo-500 bg-indigo-500/10 text-indigo-700 dark:text-indigo-300" : "border-border bg-card text-muted-foreground hover:bg-muted"}`}
-              >
-                {f.name}
-              </button>
-            ))}
-          </div>
+          <Tabs
+            label={en("Files candidates receive")}
+            value={activeFile.name}
+            onChange={(name) => setFileTab(name)}
+            items={trial.seededFiles.map((f) => ({ id: f.name, label: f.name }))}
+          />
           <CodeBlock code={activeFile.content} />
           {activeOriginal && (
             <details className="text-xs">
-              <summary className="cursor-pointer font-semibold text-foreground">{en("Original (correct) version of {name}", { name: activeFile.name })}</summary>
+              <summary className="cursor-pointer font-medium text-foreground">{en("Original (correct) version of {name}", { name: activeFile.name })}</summary>
               <div className="mt-2"><CodeBlock code={activeOriginal.content} /></div>
             </details>
           )}
-          {trial.status === "Published" && <p className="text-[11px] text-muted-foreground">{en("The original module was deleted when the trial was published.")}</p>}
+          {trial.status === "Published" && <p className="text-xs text-muted-foreground">{en("The original module was deleted when the trial was published.")}</p>}
         </Section>
       )}
 
       {trial.hiddenTests && (
         <Section title={`Hidden tests (${trial.hiddenTestFile})`} icon={<Lock className="w-4 h-4" />}>
-          <p className="text-[11px] text-muted-foreground">{en("Never shown to candidates. Run against each submission in the sandbox.")}</p>
+          <p className="text-xs text-muted-foreground">{en("Never shown to candidates. Run against each submission in the sandbox.")}</p>
           <details className="text-xs">
-            <summary className="cursor-pointer font-semibold text-foreground">{en("Show test file")}</summary>
+            <summary className="cursor-pointer font-medium text-foreground">{en("Show test file")}</summary>
             <div className="mt-2"><CodeBlock code={trial.hiddenTests} /></div>
           </details>
         </Section>
@@ -917,22 +903,22 @@ function TrialReview({
         icon={<ListChecks className="w-4 h-4" />}
         actions={
           editable ? (
-            <button onClick={save} disabled={busy !== null || !dirty} className={secondaryButton}>
-              {busy === "save" ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}{en(" Save changes")}
-            </button>
+            <Button variant="secondary" onClick={save} disabled={busy !== null || !dirty}>
+              {busy === "save" ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}{en(" Save changes")}
+            </Button>
           ) : undefined
         }
       >
-        <div className="grid md:grid-cols-3 gap-3">
-          <label className="block text-xs font-semibold text-foreground">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <label className={labelClass}>
             {en("Title")}
             <input value={title} onChange={(e) => setTitle(e.target.value)} disabled={!editable} maxLength={160} className={inputClass} />
           </label>
-          <label className="block text-xs font-semibold text-foreground">
+          <label className={labelClass}>
             {en("Role title")}
             <input value={roleTitle} onChange={(e) => setRoleTitle(e.target.value)} disabled={!editable} maxLength={120} className={inputClass} />
           </label>
-          <label className="block text-xs font-semibold text-foreground">
+          <label className={labelClass}>
             {en("AI policy")}
             <select value={aiPolicy} onChange={(e) => setAiPolicy(e.target.value as AiPolicy)} disabled={!editable} className={inputClass}>
               {(Object.keys(AI_POLICY_LABELS) as AiPolicy[]).map((p) => (
@@ -944,11 +930,11 @@ function TrialReview({
         {trial.status === "Fetched" ? (
           <p className="text-xs text-muted-foreground">{en("The task description is written during generation; you can edit it afterwards.")}</p>
         ) : (
-          <label className="block text-xs font-semibold text-foreground">
+          <label className={labelClass}>
             {en("Task description (symptoms, not answers)")}
             <textarea value={description} onChange={(e) => setDescription(e.target.value)} disabled={!editable} rows={10} maxLength={8000} className={`${inputClass} font-normal`} />
             {editable && aiPolicy !== trial.aiPolicy && (
-              <span className="mt-1 block font-normal text-[11px] text-amber-700 dark:text-amber-400">{en("The description may mention the previous AI policy; update the text to match.")}</span>
+              <span className="mt-1 block font-normal text-xs text-amber-700 dark:text-amber-400">{en("The description may mention the previous AI policy; update the text to match.")}</span>
             )}
           </label>
         )}
@@ -1063,16 +1049,14 @@ export default function WorkTrialsPage() {
     if (detailError) {
       return (
         <div className="space-y-4">
-          <button onClick={backToList} className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1 cursor-pointer"><ArrowLeft className="w-3.5 h-3.5" />{en(" All work trials")}</button>
-          <div className="glass-panel rounded-2xl border border-border p-6 text-sm text-rose-700 dark:text-rose-400 flex items-center gap-2"><AlertCircle className="w-4 h-4" /> {detailError}</div>
+          <button type="button" onClick={backToList} className="text-sm text-muted-foreground hover:text-foreground inline-flex items-center gap-1 cursor-pointer"><ArrowLeft className="w-4 h-4" />{en(" All work trials")}</button>
+          <ErrorBanner error={detailError} />
         </div>
       );
     }
     if (!detail || detail.id !== selectedId) {
       return (
-        <div className="glass-panel rounded-2xl border border-border p-8 flex items-center justify-center gap-2 text-sm text-muted-foreground">
-          <Loader2 className="w-4 h-4 animate-spin" />{en(" Loading work trial...")}
-        </div>
+<Loading label={en("Loading work trial...")} />
       );
     }
     return <TrialReview key={detail.id} initial={detail} getToken={getToken} onBack={backToList} onChanged={refresh} />;
@@ -1080,27 +1064,27 @@ export default function WorkTrialsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 pb-4 border-b border-border">
-        <div>
-          <div className="flex items-center gap-2 text-xs font-semibold text-indigo-700 dark:text-indigo-400 uppercase tracking-wider">
-            <FlaskConical className="w-4 h-4" />{en(" Work trials ")}<span className="normal-case tracking-normal px-1.5 py-0.5 rounded-full border border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-400 text-[10px]">{en("Beta")}</span>
-          </div>
-          <h1 className="text-2xl font-extrabold text-foreground mt-1">{en("Work trials from your own code")}</h1>
-          <p className="text-xs text-muted-foreground mt-1 max-w-2xl">
+      <PageHeader
+        title={en("Work trials from your own code")}
+        description={
+          <>
+            <Badge tone="warn">{en("Beta")}</Badge>{" "}
             {en("Point at a part of your codebase and get a private brownfield task: a small module from your code with planted defects and hidden tests, checked in the sandbox before you publish. Because each trial is generated from your code and kept private, it is harder to find answers online than for a reused take-home. AI output: always review it before publishing.")}
-          </p>
-        </div>
-        <div className="flex items-center gap-2 self-start md:self-auto">
-          <button onClick={refresh} className={secondaryButton}>
-            <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} />{en(" Refresh")}
-          </button>
-          <button onClick={() => setMode("new")} className={primaryButton}>
-            <Plus className="w-3.5 h-3.5" />{en(" New work trial")}
-          </button>
-        </div>
-      </div>
+          </>
+        }
+        actions={
+          <>
+            <Button variant="secondary" onClick={refresh}>
+              <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />{en(" Refresh")}
+            </Button>
+            <Button onClick={() => setMode("new")}>
+              <Plus className="w-4 h-4" />{en(" New work trial")}
+            </Button>
+          </>
+        }
+      />
 
-      <label className="flex items-center gap-2 text-xs text-muted-foreground cursor-pointer">
+      <label className="flex items-center gap-2 text-sm text-muted-foreground cursor-pointer">
         <input
           type="checkbox"
           checked={showDiscarded}
@@ -1113,41 +1097,37 @@ export default function WorkTrialsPage() {
       </label>
 
       {loading && rows.length === 0 ? (
-        <div className="glass-panel rounded-2xl border border-border p-8 flex items-center justify-center gap-2 text-sm text-muted-foreground">
-          <Loader2 className="w-4 h-4 animate-spin" />{en(" Loading work trials...")}
-        </div>
+        <Loading label={en("Loading work trials...")} />
       ) : error ? (
-        <div className="glass-panel rounded-2xl border border-border p-6 text-sm text-rose-700 dark:text-rose-400 flex items-center gap-2">
-          <AlertCircle className="w-4 h-4" /> {error}
-        </div>
+        <ErrorBanner error={error} onRetry={refresh} />
       ) : rows.length === 0 ? (
-        <div className="glass-panel rounded-2xl border border-border p-8 text-center text-sm text-muted-foreground space-y-3">
-          <p>{en("No work trials yet.")}</p>
-          <button onClick={() => setMode("new")} className={`${primaryButton} mx-auto`}>
-            <Plus className="w-3.5 h-3.5" />{en(" Create your first work trial")}
-          </button>
-        </div>
+        <EmptyState title={en("No work trials yet.")}>
+          <Button onClick={() => setMode("new")}>
+            <Plus className="w-4 h-4" />{en(" Create your first work trial")}
+          </Button>
+        </EmptyState>
       ) : (
         <div className="space-y-3">
           {rows.map((r) => (
             <button
               key={r.id}
               onClick={() => openTrial(r.id)}
-              className="w-full text-start glass-panel rounded-2xl border border-border p-4 hover:bg-muted/40 transition-colors cursor-pointer"
+              type="button"
+              className="w-full text-start rounded-xl border border-border bg-card p-4 shadow-sm hover:bg-muted/40 transition-colors cursor-pointer"
             >
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div className="min-w-0">
                   <div className="flex flex-wrap items-center gap-2">
-                    <span className="text-sm font-bold text-foreground">{r.title}</span>
+                    <span className="text-sm font-semibold text-foreground">{r.title}</span>
                     <StatusBadge status={r.status} />
                   </div>
-                  <p className="text-[11px] text-muted-foreground mt-1">
+                  <p className="text-xs text-muted-foreground mt-1">
                     {en("{roleTitle} · {language} · AI {value} · updated {number}", { roleTitle: r.roleTitle, language: r.language, value: r.aiPolicy.toLowerCase(), number: new Date(r.updatedAt).toLocaleString() })}
                   </p>
-                  <p className="text-[11px] text-muted-foreground mt-0.5 break-words">{r.sourceSummary}</p>
+                  <p className="text-xs text-muted-foreground mt-0.5 break-words">{r.sourceSummary}</p>
                 </div>
                 {r.inviteCode && (
-                  <span className="text-[11px] font-mono px-2 py-1 rounded-lg border border-purple-500/30 bg-purple-500/10 text-purple-700 dark:text-purple-300">{r.inviteCode}</span>
+                  <span className="text-xs font-mono px-2 py-1 rounded-md border border-border bg-muted text-foreground">{r.inviteCode}</span>
                 )}
               </div>
             </button>

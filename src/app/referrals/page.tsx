@@ -2,10 +2,11 @@
 
 import React, { useCallback, useEffect, useState } from "react";
 import { useAppAuth as useAuth } from "@/lib/appAuth";
-import { BookOpen, Info, Loader2, AlertTriangle, Share2, Undo2, CheckCircle2, X, Mail } from "lucide-react";
+import { Info, AlertTriangle, Share2, Undo2, CheckCircle2, X, Mail } from "lucide-react";
 import { authenticatedFetch } from "@/lib/apiClient";
 import SignInRequired from "@/components/SignInRequired";
 import { useEn } from "@/lib/english/EnglishProvider";
+import { Button, Loading, PageHeader } from "@/components/career/ui";
 
 interface Recommendation {
   courseId: string;
@@ -151,25 +152,20 @@ export default function ReferralsPage() {
   return (
     <div className="text-foreground">
       <div className="space-y-8">
-        <div>
-          <h1 className="text-2xl font-black tracking-tight text-foreground flex items-center gap-2">
-            <BookOpen className="w-6 h-6 text-indigo-700 dark:text-indigo-400" />
-            {en("Learning recommendations")}
-          </h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            {en("Courses that match the skills your latest defense suggested you strengthen. Nothing is shared unless you choose to.")}
-          </p>
-        </div>
+        <PageHeader
+          title={en("Learning recommendations")}
+          description={en("Courses that match the skills your latest defense suggested you strengthen. Nothing is shared unless you choose to.")}
+        />
 
         {data?.disclosure && (
-          <div className="p-4 rounded-2xl border-2 border-amber-400/60 bg-amber-50 dark:bg-amber-500/10 flex items-start gap-3">
+          <div className="p-4 rounded-lg border border-amber-400/60 bg-amber-50 dark:bg-amber-500/10 flex items-start gap-3">
             <Info className="w-5 h-5 shrink-0 text-amber-700 dark:text-amber-300 mt-0.5" />
             <p className="text-sm font-medium text-amber-900 dark:text-amber-100">{data.disclosure}</p>
           </div>
         )}
 
         {notice && (
-          <div className="p-3 rounded-xl border border-emerald-500/30 bg-emerald-50 dark:bg-emerald-500/10 text-xs text-emerald-800 dark:text-emerald-300 flex items-center justify-between gap-2">
+          <div className="p-3 rounded-lg border border-emerald-500/30 bg-emerald-50 dark:bg-emerald-500/10 text-xs text-emerald-800 dark:text-emerald-300 flex items-center justify-between gap-2">
             <span className="flex items-center gap-2">
               <CheckCircle2 className="w-4 h-4 shrink-0" /> {notice}
             </span>
@@ -180,7 +176,7 @@ export default function ReferralsPage() {
         )}
 
         {error && (
-          <div className="p-3 rounded-xl border border-red-500/30 bg-red-50 dark:bg-red-500/10 text-xs text-red-700 dark:text-red-300 flex items-center justify-between gap-2">
+          <div className="p-3 rounded-lg border border-red-500/30 bg-red-50 dark:bg-red-500/10 text-xs text-red-700 dark:text-red-300 flex items-center justify-between gap-2">
             <span className="flex items-center gap-2">
               <AlertTriangle className="w-4 h-4 shrink-0" /> {error}
             </span>
@@ -191,28 +187,26 @@ export default function ReferralsPage() {
         )}
 
         {loading ? (
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Loader2 className="w-4 h-4 animate-spin" />{en(" Loading recommendations...")}
-          </div>
+          <Loading label={en("Loading recommendations…")} />
         ) : (
           <>
             <section className="space-y-3">
-              <h2 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">{en("Suggested courses")}</h2>
+              <h2 className="text-base font-semibold">{en("Suggested courses")}</h2>
               {!data || data.recommendations.length === 0 ? (
-                <div className="glass-panel rounded-2xl p-6 border border-border text-sm text-muted-foreground">
+                <div className="rounded-xl border border-border bg-card p-6 shadow-sm text-sm text-muted-foreground">
                   {en("No recommendations yet. Complete a voice defense and we'll suggest courses for any skills to strengthen.")}
                 </div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {data.recommendations.map((rec) => (
-                    <div key={rec.courseId} className="glass-panel rounded-2xl p-5 border border-border flex flex-col gap-3">
+                    <div key={rec.courseId} className="rounded-xl border border-border bg-card p-5 shadow-sm flex flex-col gap-3">
                       <div className="flex items-start justify-between gap-3">
                         <div className="min-w-0">
-                          <h3 className="text-sm font-bold text-foreground">{rec.courseName}</h3>
+                          <h3 className="text-sm font-semibold text-foreground">{rec.courseName}</h3>
                           <p className="text-xs text-muted-foreground">{rec.instituteName}</p>
                         </div>
                         {rec.sponsored && (
-                          <span className="shrink-0 px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider bg-amber-100 dark:bg-amber-500/15 text-amber-800 dark:text-amber-300 border border-amber-300 dark:border-amber-500/40">
+                          <span className="shrink-0 px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 dark:bg-amber-500/15 text-amber-800 dark:text-amber-300 border border-amber-300 dark:border-amber-500/40">
                             {en("Sponsored")}
                           </span>
                         )}
@@ -221,7 +215,7 @@ export default function ReferralsPage() {
                       {rec.matchedSkills.length > 0 && (
                         <div className="flex flex-wrap gap-1.5">
                           {rec.matchedSkills.map((s) => (
-                            <span key={s} className="px-2 py-0.5 rounded-md text-[11px] bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 border border-indigo-500/20">
+                            <span key={s} className="px-2 py-0.5 rounded-full text-xs bg-muted text-foreground">
                               {s}
                             </span>
                           ))}
@@ -233,14 +227,10 @@ export default function ReferralsPage() {
                             <CheckCircle2 className="w-4 h-4" />{en(" Details shared — manage below")}
                           </span>
                         ) : (
-                          <button
-                            type="button"
-                            onClick={() => setConfirm({ kind: "opt-in", rec })}
-                            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-border bg-card hover:bg-muted text-xs font-semibold text-foreground"
-                          >
-                            <Share2 className="w-3.5 h-3.5" />
+                          <Button type="button" variant="secondary" onClick={() => setConfirm({ kind: "opt-in", rec })}>
+                            <Share2 className="w-4 h-4" />
                             {en("Share my details with {instituteName}", { instituteName: rec.instituteName })}
-                          </button>
+                          </Button>
                         )}
                       </div>
                     </div>
@@ -250,13 +240,13 @@ export default function ReferralsPage() {
             </section>
 
             <section className="space-y-3">
-              <h2 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">{en("Details you've shared")}</h2>
+              <h2 className="text-base font-semibold">{en("Details you've shared")}</h2>
               {mine.length === 0 ? (
-                <div className="glass-panel rounded-2xl p-5 border border-border text-sm text-muted-foreground">
+                <div className="rounded-xl border border-border bg-card p-5 shadow-sm text-sm text-muted-foreground">
                   {en("You haven't shared your details with any course provider.")}
                 </div>
               ) : (
-                <div className="glass-panel rounded-2xl border border-border divide-y divide-border">
+                <div className="rounded-xl border border-border bg-card shadow-sm divide-y divide-border">
                   {[...activeReferrals, ...pastReferrals].map((r) => (
                     <div key={r.referralId} className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                       <div className="min-w-0">
@@ -267,13 +257,10 @@ export default function ReferralsPage() {
                         </p>
                       </div>
                       {r.status !== "Withdrawn" && (
-                        <button
-                          type="button"
-                          onClick={() => setConfirm({ kind: "withdraw", referral: r })}
-                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-red-500/30 text-red-700 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 text-xs font-semibold shrink-0"
-                        >
-                          <Undo2 className="w-3.5 h-3.5" />{en(" Withdraw")}
-                        </button>
+                        <Button type="button" variant="secondary" className="shrink-0 text-red-700 dark:text-red-400" onClick={() => setConfirm({ kind: "withdraw", referral: r })}>
+                          <Undo2 className="w-4 h-4" />
+                          {en("Withdraw")}
+                        </Button>
                       )}
                     </div>
                   ))}
@@ -282,7 +269,7 @@ export default function ReferralsPage() {
             </section>
 
             {data && (
-              <section className="glass-panel rounded-2xl p-5 border border-border flex items-start justify-between gap-4">
+              <section className="rounded-xl border border-border bg-card p-5 shadow-sm flex items-start justify-between gap-4">
                 <div className="flex items-start gap-3">
                   <Mail className="w-5 h-5 shrink-0 text-muted-foreground mt-0.5" />
                   <div>
@@ -317,10 +304,10 @@ export default function ReferralsPage() {
 
       {confirm && (
         <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/50 p-4" role="dialog" aria-modal="true">
-          <div className="w-full max-w-md rounded-2xl bg-white dark:bg-slate-900 border border-border shadow-2xl p-6 space-y-4">
+          <div className="w-full max-w-md rounded-xl bg-card border border-border shadow-xl p-6 space-y-4">
             {confirm.kind === "opt-in" ? (
               <>
-                <h3 className="text-base font-bold text-foreground">{en("Share your details with {instituteName}?", { instituteName: confirm.rec.instituteName })}</h3>
+                <h3 className="text-base font-semibold text-foreground">{en("Share your details with {instituteName}?", { instituteName: confirm.rec.instituteName })}</h3>
                 <div className="text-sm text-muted-foreground space-y-2">
                   <p>
                     {en("{instituteName} will receive the following so they can contact you about “{courseName}”:", { instituteName: confirm.rec.instituteName, courseName: confirm.rec.courseName })}
@@ -340,32 +327,19 @@ export default function ReferralsPage() {
               </>
             ) : (
               <>
-                <h3 className="text-base font-bold text-foreground">{en("Withdraw from {instituteName}?", { instituteName: confirm.referral.instituteName })}</h3>
+                <h3 className="text-base font-semibold text-foreground">{en("Withdraw from {instituteName}?", { instituteName: confirm.referral.instituteName })}</h3>
                 <p className="text-sm text-muted-foreground">
                   {en("We'll tell {instituteName} to stop contacting you about “{courseName}” and to delete the details you shared.", { instituteName: confirm.referral.instituteName, courseName: confirm.referral.courseName })}
                 </p>
               </>
             )}
             <div className="flex justify-end gap-2 pt-2">
-              <button
-                type="button"
-                onClick={() => setConfirm(null)}
-                disabled={working}
-                className="px-4 py-2 rounded-xl border border-border text-sm font-medium text-foreground hover:bg-muted"
-              >
+              <Button type="button" variant="secondary" onClick={() => setConfirm(null)} disabled={working}>
                 {en("Cancel")}
-              </button>
-              <button
-                type="button"
-                onClick={performConfirmed}
-                disabled={working}
-                className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-semibold text-white disabled:opacity-60 ${
-                  confirm.kind === "opt-in" ? "bg-indigo-600 hover:bg-indigo-500" : "bg-red-600 hover:bg-red-500"
-                }`}
-              >
-                {working && <Loader2 className="w-4 h-4 animate-spin" />}
+              </Button>
+              <Button type="button" variant={confirm.kind === "opt-in" ? "primary" : "danger"} onClick={performConfirmed} busy={working}>
                 {confirm.kind === "opt-in" ? en("Share my details") : en("Withdraw")}
-              </button>
+              </Button>
             </div>
           </div>
         </div>

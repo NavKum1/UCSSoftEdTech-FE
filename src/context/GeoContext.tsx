@@ -13,22 +13,6 @@ export interface RegionComplianceConfig {
   currency: string;
   symbol: string;
   locale: string;
-  rateMultiplier: number;
-  tax: {
-    regimeTitle: string;
-    withholdingRatePercent: number;
-    withholdingLabel: string;
-    certificateName: string;
-    taxIdLabel: string;
-    taxIdPlaceholder: string;
-    payoutRail: string;
-    institutionLegalNotice: string;
-  };
-  metrics: {
-    recoveredGmvSample: number;
-    taxWithheldSample: number;
-    currencyCode: string;
-  };
 }
 
 export const REGIONS: Record<Region, RegionComplianceConfig> = {
@@ -40,22 +24,6 @@ export const REGIONS: Record<Region, RegionComplianceConfig> = {
     currency: "USD",
     symbol: "$",
     locale: "en-US",
-    rateMultiplier: 0.05, // e.g. 1500 INR -> $75.00
-    tax: {
-      regimeTitle: "IRS Form 1099-NEC & W-9 Independent Contractor Ledger",
-      withholdingRatePercent: 0,
-      withholdingLabel: "0% Backup Withholding (W-9 on File)",
-      certificateName: "IRS Form 1099-NEC",
-      taxIdLabel: "Tax ID (SSN / EIN / ITIN)",
-      taxIdPlaceholder: "XX-XXXXXXX",
-      payoutRail: "ACH Direct Deposit",
-      institutionLegalNotice: "Payer tax ID on file • Form 1099-NEC annual summary prepared for IRS reporting and sent to mentors by Jan 31.",
-    },
-    metrics: {
-      recoveredGmvSample: 0,
-      taxWithheldSample: 0,
-      currencyCode: "USD",
-    },
   },
   IN: {
     id: "IN",
@@ -65,22 +33,6 @@ export const REGIONS: Record<Region, RegionComplianceConfig> = {
     currency: "INR",
     symbol: "₹",
     locale: "en-IN",
-    rateMultiplier: 1.0, // base 1500 INR -> ₹1,500
-    tax: {
-      regimeTitle: "Indian Statutory Section 194J Professional Services Ledger",
-      withholdingRatePercent: 10,
-      withholdingLabel: "10% Section 194J Statutory TDS",
-      certificateName: "Form 16A TDS Certificate",
-      taxIdLabel: "Permanent Account Number (PAN)",
-      taxIdPlaceholder: "ABCDE1234F",
-      payoutRail: "NEFT / RTGS Bank Batch (CSV Export)",
-      institutionLegalNotice: "Deductor TAN on file • Section 194J TDS deducted against mentor PAN; Form 16A issued after quarterly reconciliation.",
-    },
-    metrics: {
-      recoveredGmvSample: 0,
-      taxWithheldSample: 0,
-      currencyCode: "INR",
-    },
   },
   EU: {
     id: "EU",
@@ -90,22 +42,6 @@ export const REGIONS: Record<Region, RegionComplianceConfig> = {
     currency: "EUR",
     symbol: "€",
     locale: "en-GB",
-    rateMultiplier: 0.046, // e.g. 1500 INR -> €70.00
-    tax: {
-      regimeTitle: "EU DAC7 Directive & VAT Reverse Charge Ledger",
-      withholdingRatePercent: 0,
-      withholdingLabel: "0% (Reverse Charge / DAC7 Platform Directive)",
-      certificateName: "EU DAC7 Annual Platform Report / W-8BEN",
-      taxIdLabel: "EU VAT Number or National Tax ID",
-      taxIdPlaceholder: "EU123456789",
-      payoutRail: "SEPA Credit Transfer / BACS",
-      institutionLegalNotice: "EU VAT ID on file • Cross-border digital services reportable under the EU DAC7 Directive.",
-    },
-    metrics: {
-      recoveredGmvSample: 0,
-      taxWithheldSample: 0,
-      currencyCode: "EUR",
-    },
   },
 };
 
@@ -113,8 +49,6 @@ interface GeoContextType {
   region: Region;
   config: RegionComplianceConfig;
   setRegion: (region: Region) => void;
-  formatCurrency: (amount: number) => string;
-  convertFromInr: (inrAmount: number) => number;
 }
 
 // The US unless the visitor's time zone says otherwise (owner decision 4 Nov 2026: Edulexa is a US product)
@@ -161,8 +95,6 @@ const GeoContext = createContext<GeoContextType>({
   region: "US",
   config: REGIONS.US,
   setRegion: () => {},
-  formatCurrency: (amt) => `${amt.toLocaleString("en-US")}`,
-  convertFromInr: (amt) => Math.round(amt * REGIONS.US.rateMultiplier),
 });
 
 export function GeoProvider({ children }: { children: React.ReactNode }) {
@@ -209,15 +141,6 @@ export function GeoProvider({ children }: { children: React.ReactNode }) {
 
   const config = REGIONS[region];
 
-  const formatCurrency = (amount: number): string => {
-    return `${config.symbol}${amount.toLocaleString(config.locale)}`;
-  };
-
-  const convertFromInr = (inrAmount: number): number => {
-    if (region === "IN") return inrAmount;
-    if (region === "US") return Math.round(inrAmount * 0.05);
-    return Math.round(inrAmount * 0.046);
-  };
 
   return (
     <GeoContext.Provider
@@ -225,8 +148,6 @@ export function GeoProvider({ children }: { children: React.ReactNode }) {
         region,
         config,
         setRegion,
-        formatCurrency,
-        convertFromInr,
       }}
     >
       {children}

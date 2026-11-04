@@ -5,7 +5,6 @@ import Link from "next/link";
 import { useAppAuth as useAuth } from "@/lib/appAuth";
 import {
   AlertTriangle,
-  Award,
   Briefcase,
   Check,
   CheckCircle2,
@@ -26,6 +25,7 @@ import { authenticatedFetch } from "@/lib/apiClient";
 import { formatDate, statusBadgeClass } from "@/lib/credentialVerification";
 import SignInRequired from "@/components/SignInRequired";
 import { useEn } from "@/lib/english/EnglishProvider";
+import { Loading, PageHeader, brandFill, buttonClass } from "@/components/career/ui";
 
 type GetToken = () => Promise<string | null>;
 
@@ -186,8 +186,8 @@ function ClrDialog({ getToken, onClose, onDone }: { getToken: GetToken; onClose:
         </select>
       </label>
       <div className="flex justify-end gap-2">
-        <button type="button" onClick={onClose} className="px-3 py-1.5 rounded-lg border border-border text-xs font-semibold">{en("Cancel")}</button>
-        <button type="button" onClick={download} disabled={working || chosen.length === 0} className="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold disabled:opacity-50 flex items-center gap-1.5">
+        <button type="button" onClick={onClose} className={buttonClass("secondary")}>{en("Cancel")}</button>
+        <button type="button" onClick={download} disabled={working || chosen.length === 0} className={buttonClass("primary")} style={brandFill}>
           {working ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Download className="w-3.5 h-3.5" />}{en(" Download CLR")}
         </button>
       </div>
@@ -207,7 +207,7 @@ function CopyButton({ text, label }: { text: string; label: string }) {
           setTimeout(() => setCopied(false), 2000);
         });
       }}
-      className="px-3 py-1.5 rounded-lg border border-border text-xs font-semibold text-foreground hover:bg-muted flex items-center gap-1.5"
+      className={buttonClass("secondary")}
     >
       {copied ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />} {copied ? en("Copied") : label}
     </button>
@@ -218,9 +218,9 @@ function Modal({ title, onClose, children }: { title: string; onClose: () => voi
   const en = useEn();
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" role="dialog" aria-modal="true" aria-label={title}>
-      <div className="w-full max-w-lg rounded-2xl border border-border bg-background p-6 shadow-xl space-y-4 max-h-[90vh] overflow-y-auto">
+      <div className="w-full max-w-lg rounded-xl border border-border bg-card p-6 shadow-xl space-y-4 max-h-[90vh] overflow-y-auto">
         <div className="flex items-start justify-between gap-3">
-          <h2 className="text-lg font-bold text-foreground">{title}</h2>
+          <h2 className="text-lg font-semibold text-foreground">{title}</h2>
           <button type="button" onClick={onClose} aria-label={en("Close")} className="text-muted-foreground hover:text-foreground">
             <X className="w-5 h-5" />
           </button>
@@ -279,7 +279,7 @@ function ShareDialog({ credential, getToken, onClose, onCreated }: { credential:
         {en("Anyone with the link can see the signed results and the evidence you tick below, until it expires or you revoke it.")}
       </p>
       <div className="space-y-1">
-        <label htmlFor="recipient" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+        <label htmlFor="recipient" className="text-xs font-semibold text-muted-foreground">
           {en("Who is it for? (only you see this label)")}
         </label>
         <input
@@ -288,7 +288,7 @@ function ShareDialog({ credential, getToken, onClose, onCreated }: { credential:
           maxLength={120}
           onChange={(e) => setRecipientLabel(e.target.value)}
           placeholder={en("e.g. Globex recruiting team")}
-          className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          className="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-indigo-500"
         />
       </div>
       <div className="space-y-2.5">
@@ -304,14 +304,14 @@ function ShareDialog({ credential, getToken, onClose, onCreated }: { credential:
         />
       </div>
       <div className="space-y-1">
-        <label htmlFor="expiry" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+        <label htmlFor="expiry" className="text-xs font-semibold text-muted-foreground">
           {en("Link expires after")}
         </label>
         <select
           id="expiry"
           value={expiresInDays}
           onChange={(e) => setExpiresInDays(Number(e.target.value))}
-          className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground"
+          className="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground"
         >
           {[1, 7, 14, 30, 60, 90].map((d) => (
             <option key={d} value={d}>
@@ -322,10 +322,10 @@ function ShareDialog({ credential, getToken, onClose, onCreated }: { credential:
       </div>
       {error && <p className="text-sm text-red-700 dark:text-red-300">{error}</p>}
       <div className="flex justify-end gap-2">
-        <button type="button" onClick={onClose} className="px-4 py-2 rounded-xl border border-border text-sm font-semibold text-foreground">
+        <button type="button" onClick={onClose} className={buttonClass("secondary")}>
           {en("Cancel")}
         </button>
-        <button type="button" onClick={submit} disabled={working} className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white text-sm font-semibold flex items-center gap-2">
+        <button type="button" onClick={submit} disabled={working} className={buttonClass("primary")} style={brandFill}>
           {working && <Loader2 className="w-4 h-4 animate-spin" />}{en(" Create link")}
         </button>
       </div>
@@ -383,7 +383,7 @@ function InviteDialog({ credential, getToken, onClose, onUsed }: { credential: W
         {en("If an employer invited you to an assessment through their hiring system, you can answer with this credential instead of re-testing. They receive a link to the signed results and the evidence you choose. A person at the company still decides; they may ask you to take their own assessment.")}
       </p>
       <div className="space-y-2">
-        <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">{en("Invitations sent to your email")}</p>
+        <p className="text-xs font-semibold text-muted-foreground">{en("Invitations sent to your email")}</p>
         {invites === null ? (
           <p className="text-sm text-muted-foreground flex items-center gap-2">
             <Loader2 className="w-4 h-4 animate-spin" />{en(" Loading...")}
@@ -407,7 +407,7 @@ function InviteDialog({ credential, getToken, onClose, onUsed }: { credential: W
         )}
       </div>
       <div className="space-y-1">
-        <label htmlFor="invite-id" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+        <label htmlFor="invite-id" className="text-xs font-semibold text-muted-foreground">
           {en("Invitation id")}
         </label>
         <input
@@ -415,7 +415,7 @@ function InviteDialog({ credential, getToken, onClose, onUsed }: { credential: W
           value={inviteId}
           onChange={(e) => setInviteId(e.target.value)}
           placeholder={en("Paste the invitation id")}
-          className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm font-mono text-foreground focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          className="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm font-mono text-foreground focus:outline-none focus:ring-2 focus:ring-indigo-500"
         />
       </div>
       <div className="space-y-2.5">
@@ -431,14 +431,14 @@ function InviteDialog({ credential, getToken, onClose, onUsed }: { credential: W
       </div>
       {error && <p className="text-sm text-red-700 dark:text-red-300">{error}</p>}
       <div className="flex justify-end gap-2">
-        <button type="button" onClick={onClose} className="px-4 py-2 rounded-xl border border-border text-sm font-semibold text-foreground">
+        <button type="button" onClick={onClose} className={buttonClass("secondary")}>
           {en("Cancel")}
         </button>
         <button
           type="button"
           onClick={submit}
           disabled={working || !inviteId.trim()}
-          className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white text-sm font-semibold flex items-center gap-2"
+          className={buttonClass("primary")} style={brandFill}
         >
           {working && <Loader2 className="w-4 h-4 animate-spin" />}{en(" Send credential")}
         </button>
@@ -473,26 +473,26 @@ function RevokeDialog({ credential, getToken, onClose, onRevoked }: { credential
         {en("Revoking ")}<span className="font-semibold text-foreground">{credential.task.title}</span>{en(" is permanent. All its share links stop working, and anyone who checks a copy of the signed credential will see that it was revoked. You can't undo this.")}
       </p>
       <div className="space-y-1">
-        <label htmlFor="confirm-revoke" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+        <label htmlFor="confirm-revoke" className="text-xs font-semibold text-muted-foreground">
           {en("Type REVOKE to confirm")}
         </label>
         <input
           id="confirm-revoke"
           value={confirmText}
           onChange={(e) => setConfirmText(e.target.value)}
-          className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-red-500"
+          className="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-red-500"
         />
       </div>
       {error && <p className="text-sm text-red-700 dark:text-red-300">{error}</p>}
       <div className="flex justify-end gap-2">
-        <button type="button" onClick={onClose} className="px-4 py-2 rounded-xl border border-border text-sm font-semibold text-foreground">
+        <button type="button" onClick={onClose} className={buttonClass("secondary")}>
           {en("Keep it")}
         </button>
         <button
           type="button"
           onClick={submit}
           disabled={working || confirmText.trim().toUpperCase() !== "REVOKE"}
-          className="px-4 py-2 rounded-xl bg-red-600 hover:bg-red-700 disabled:opacity-50 text-white text-sm font-semibold flex items-center gap-2"
+          className={buttonClass("danger")}
         >
           {working && <Loader2 className="w-4 h-4 animate-spin" />}{en(" Revoke credential")}
         </button>
@@ -578,11 +578,11 @@ function ShareLinksPanel({ credential, getToken, reloadKey }: { credential: Wall
                 </p>
               </div>
               <div className="flex items-center gap-2">
-                <button type="button" onClick={() => toggleViews(s.shareId)} className="px-2.5 py-1 rounded-lg border border-border text-foreground hover:bg-muted flex items-center gap-1">
+                <button type="button" onClick={() => toggleViews(s.shareId)} className={`${buttonClass("secondary")} h-8 px-2.5 text-xs`}>
                   <Eye className="w-3.5 h-3.5" /> {s.viewCount} {s.viewCount === 1 ? "view" : "views"}
                 </button>
                 {s.status === "Active" && (
-                  <button type="button" onClick={() => revoke(s.shareId)} className="px-2.5 py-1 rounded-lg border border-red-500/40 text-red-700 dark:text-red-300 hover:bg-red-50 dark:hover:bg-red-500/10 flex items-center gap-1">
+                  <button type="button" onClick={() => revoke(s.shareId)} className={`${buttonClass("secondary")} h-8 px-2.5 text-xs text-red-700 dark:text-red-300`}>
                     <Trash2 className="w-3.5 h-3.5" />{en(" Revoke")}
                   </button>
                 )}
@@ -663,15 +663,15 @@ function CredentialCard({
   };
 
   return (
-    <div className="glass-panel rounded-2xl p-5 border border-border space-y-4">
+    <div className="rounded-xl border border-border bg-card p-5 shadow-sm space-y-4">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0">
-          <h3 className="text-base font-bold text-foreground">{credential.task.title}</h3>
+          <h3 className="text-base font-semibold text-foreground">{credential.task.title}</h3>
           <p className="text-xs text-muted-foreground">
             {en("{value} · issued {date} · {value2}", { value: [credential.task.taskType, credential.task.language].filter(Boolean).join(" · ") || en("Voice defense"), date: formatDate(credential.issuedAt), value2: credential.status === "Revoked" ? `revoked ${formatDate(credential.revokedAt)}` : `valid until ${formatDate(credential.validUntil)}` })}
           </p>
         </div>
-        <span className={`px-2.5 py-0.5 rounded-md text-[11px] font-bold uppercase tracking-wider border ${statusBadgeClass(credential.status)}`}>{String(credential.status ?? "").replace(/([a-z])([A-Z])/g, (_m, a: string, b: string) => `${a} ${b.toLowerCase()}`)}</span>
+        <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium border ${statusBadgeClass(credential.status)}`}>{String(credential.status ?? "").replace(/([a-z])([A-Z])/g, (_m, a: string, b: string) => `${a} ${b.toLowerCase()}`)}</span>
       </div>
 
       <div className="flex flex-wrap gap-x-6 gap-y-1 text-sm">
@@ -705,11 +705,11 @@ function CredentialCard({
 
       {active && (
         <div className="flex flex-wrap items-center gap-2">
-          <button type="button" onClick={() => onDialog({ kind: "share", credential })} className="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold flex items-center gap-1.5">
+          <button type="button" onClick={() => onDialog({ kind: "share", credential })} className={buttonClass("primary")} style={brandFill}>
             <Share2 className="w-3.5 h-3.5" />{en(" Share")}
           </button>
           {credential.status === "Valid" && (
-            <button type="button" onClick={() => onDialog({ kind: "invite", credential })} className="px-3 py-1.5 rounded-lg border border-border text-xs font-semibold text-foreground hover:bg-muted flex items-center gap-1.5">
+            <button type="button" onClick={() => onDialog({ kind: "invite", credential })} className={buttonClass("secondary")}>
               <Briefcase className="w-3.5 h-3.5" />{en(" Use for a job application")}
             </button>
           )}
@@ -718,7 +718,7 @@ function CredentialCard({
             onClick={copyJws}
             disabled={!signingAvailable}
             title={signingAvailable ? en("Copy the signed credential for offline verification") : en("Signing is not configured on this server")}
-            className="px-3 py-1.5 rounded-lg border border-border text-xs font-semibold text-foreground hover:bg-muted disabled:opacity-50 flex items-center gap-1.5"
+            className={buttonClass("secondary")}
           >
             {jwsCopied ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <KeyRound className="w-3.5 h-3.5" />} {jwsCopied ? en("Copied") : en("Copy JWS")}
           </button>
@@ -727,7 +727,7 @@ function CredentialCard({
             onClick={downloadBadge}
             disabled={!signingAvailable}
             title={en("Download as an Open Badges 3.0 credential (VC-JWT)")}
-            className="px-3 py-1.5 rounded-lg border border-border text-xs font-semibold text-foreground hover:bg-muted disabled:opacity-50 flex items-center gap-1.5"
+            className={buttonClass("secondary")}
           >
             <Download className="w-3.5 h-3.5" />{en(" Download Open Badge")}
           </button>
@@ -740,7 +740,7 @@ function CredentialCard({
           <button
             type="button"
             onClick={() => onDialog({ kind: "revoke", credential })}
-            className="ms-auto px-3 py-1.5 rounded-lg border border-red-500/40 text-red-700 dark:text-red-300 hover:bg-red-50 dark:hover:bg-red-500/10 text-xs font-semibold flex items-center gap-1.5"
+            className={`${buttonClass("secondary")} ms-auto text-red-700 dark:text-red-300`}
           >
             <ShieldOff className="w-3.5 h-3.5" />{en(" Revoke")}
           </button>
@@ -748,7 +748,7 @@ function CredentialCard({
       )}
 
       <div className="border-t border-border pt-3">
-        <button type="button" onClick={() => setShowShares((v) => !v)} className="text-xs font-semibold text-muted-foreground hover:text-foreground flex items-center gap-1">
+        <button type="button" onClick={() => setShowShares((v) => !v)} className="text-sm font-medium text-muted-foreground hover:text-foreground flex items-center gap-1">
           {showShares ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
           {en("Share links (")}{credential.activeShareCount}{en(" active)")}
         </button>
@@ -811,18 +811,13 @@ export default function CredentialWalletPage() {
   return (
     <div className="text-foreground">
       <div className="space-y-6">
-        <div>
-          <h1 className="text-2xl font-black tracking-tight text-foreground flex items-center gap-2">
-            <Award className="w-6 h-6 text-indigo-700 dark:text-indigo-400" />
-            {en("Your credentials")}
-          </h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            {en("Each passing defense gives you a credential signed by Edulexa. Share it with employers so they can check your results without asking you to re-test. You decide what evidence each link shows, and you can withdraw it at any time.")}
-          </p>
-        </div>
+        <PageHeader
+          title={en("Your credentials")}
+          description={en("Each passing defense gives you a credential signed by Edulexa. Share it with employers so they can check your results without asking you to re-test. You decide what evidence each link shows, and you can withdraw it at any time.")}
+        />
 
         {notice && (
-          <div className="p-3 rounded-xl border border-emerald-500/30 bg-emerald-50 dark:bg-emerald-500/10 text-xs text-emerald-800 dark:text-emerald-300 flex items-center justify-between gap-2">
+          <div className="p-3 rounded-lg border border-emerald-500/30 bg-emerald-50 dark:bg-emerald-500/10 text-xs text-emerald-800 dark:text-emerald-300 flex items-center justify-between gap-2">
             <span className="flex items-center gap-2">
               <CheckCircle2 className="w-4 h-4 shrink-0" /> {notice}
             </span>
@@ -832,7 +827,7 @@ export default function CredentialWalletPage() {
           </div>
         )}
         {error && (
-          <div className="p-3 rounded-xl border border-red-500/30 bg-red-50 dark:bg-red-500/10 text-xs text-red-700 dark:text-red-300 flex items-center justify-between gap-2">
+          <div className="p-3 rounded-lg border border-red-500/30 bg-red-50 dark:bg-red-500/10 text-xs text-red-700 dark:text-red-300 flex items-center justify-between gap-2">
             <span className="flex items-center gap-2">
               <AlertTriangle className="w-4 h-4 shrink-0" /> {error}
             </span>
@@ -842,18 +837,16 @@ export default function CredentialWalletPage() {
           </div>
         )}
         {wallet && !wallet.signingAvailable && (
-          <div className="p-3 rounded-xl border border-amber-400/50 bg-amber-50 dark:bg-amber-500/10 text-xs text-amber-900 dark:text-amber-100 flex items-center gap-2">
+          <div className="p-3 rounded-lg border border-amber-400/50 bg-amber-50 dark:bg-amber-500/10 text-xs text-amber-900 dark:text-amber-100 flex items-center gap-2">
             <AlertTriangle className="w-4 h-4 shrink-0" />{en(" Credential signing is not configured on this server yet, so links can't be verified right now.")}
           </div>
         )}
 
         {loading ? (
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Loader2 className="w-4 h-4 animate-spin" />{en(" Loading your credentials...")}
-          </div>
+          <Loading label={en("Loading your credentials…")} />
         ) : !wallet || wallet.credentials.length === 0 ? (
           !error && (
-            <div className="glass-panel rounded-2xl p-6 border border-border text-sm text-muted-foreground">
+            <div className="rounded-xl border border-border bg-card p-6 shadow-sm text-sm text-muted-foreground">
               {en("No credentials yet. Complete a coding sprint and pass its voice defense to earn one.")}{" "}
               <Link href="/dashboard" className="underline text-foreground">
                 {en("Find a sprint")}
@@ -877,7 +870,7 @@ export default function CredentialWalletPage() {
               type="button"
               onClick={() => setDialog({ kind: "clr" })}
               disabled={!wallet.signingAvailable}
-              className="px-3 py-1.5 rounded-lg border border-border text-xs font-semibold text-foreground hover:bg-muted disabled:opacity-50 flex items-center gap-1.5"
+              className={buttonClass("secondary")}
             >
               <Download className="w-3.5 h-3.5" />{en(" Download CLR")}
             </button>

@@ -49,8 +49,8 @@ const ACTION_LABEL: Record<string, string> = {
   removed: "Access removed",
 };
 
-const input = "w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:border-cyan-600 focus:outline-none focus:ring-2 focus:ring-cyan-600/20";
-const primary = "inline-flex items-center gap-1.5 rounded-lg bg-cyan-700 px-3.5 py-2 text-sm font-medium text-white hover:bg-cyan-800 disabled:opacity-50";
+const input = "w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:border-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-600/20";
+const primary = "inline-flex items-center gap-1.5 rounded-lg bg-indigo-700 px-3.5 py-2 text-sm font-medium text-white hover:bg-indigo-800 disabled:opacity-50";
 const secondary = "inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-2 text-sm hover:bg-muted disabled:opacity-50";
 
 async function api<T>(getToken: GetToken, path: string, instituteId?: string, init?: { method?: string; body?: unknown }): Promise<T> {
@@ -190,7 +190,7 @@ export default function StaffAccess({ getToken, instituteId, compact = false }: 
         </div>
       )}
 
-      <form onSubmit={invite} className="space-y-3 rounded-2xl border border-border bg-card p-4" aria-label={en("Invite a staff member")}>
+      <form onSubmit={invite} className="space-y-3 rounded-xl border border-border bg-card shadow-sm p-4" aria-label={en("Invite a staff member")}>
         <div className="grid gap-3 sm:grid-cols-2">
           <label className="block text-sm sm:col-span-2">
             <span className="mb-1 block font-medium">{en("Work e-mail")}</span>
@@ -210,7 +210,7 @@ export default function StaffAccess({ getToken, instituteId, compact = false }: 
           <legend className="mb-1 text-sm font-medium">{en("Role")}</legend>
           <div className="grid gap-2 sm:grid-cols-3">
             {roles.map((r) => (
-              <label key={r} className={`cursor-pointer rounded-lg border px-3 py-2 text-sm ${form.role === r ? "border-cyan-600 bg-cyan-600/5" : "border-border"}`}>
+              <label key={r} className={`cursor-pointer rounded-lg border px-3 py-2 text-sm ${form.role === r ? "border-indigo-600 bg-indigo-600/5" : "border-border"}`}>
                 <input type="radio" name="role" value={r} checked={form.role === r} onChange={() => setForm({ ...form, role: r })} className="sr-only" />
                 <span className="block font-medium">{en(ROLE_LABEL[r] ?? r)}</span>
                 <span className="block text-xs text-muted-foreground">{en(ROLE_HELP[r])}</span>
@@ -232,7 +232,7 @@ export default function StaffAccess({ getToken, instituteId, compact = false }: 
         </p>
       )}
 
-      <div className="overflow-hidden rounded-2xl border border-border">
+      <div className="overflow-hidden rounded-xl border border-border">
         {members.length === 0 ? (
           <p className="px-4 py-6 text-center text-sm text-muted-foreground">{en("No one has been invited through Edulexa yet.")}</p>
         ) : (
@@ -293,7 +293,7 @@ export default function StaffAccess({ getToken, instituteId, compact = false }: 
       </div>
 
       {audit && (
-        <div className="rounded-2xl border border-border">
+        <div className="rounded-xl border border-border">
           {audit.length === 0 ? (
             <p className="px-4 py-4 text-sm text-muted-foreground">{en("No changes yet.")}</p>
           ) : (

@@ -11,7 +11,7 @@
  */
 
 import React, { useEffect, useMemo, useState } from "react";
-import { Badge, Button, Card, EmptyState, ErrorBanner, Field, Loading, SuccessBanner, formatDate, useLoad, useCareerT, useCareerLabels } from "@/components/career/ui";
+import { Badge, Button, Card, EmptyState, ErrorBanner, Field, Loading, SuccessBanner, formatDate, useLoad, useCareerT, useCareerLabels, ScrollArea } from "@/components/career/ui";
 import { downloadWith, type Api } from "@/components/career/experiences/shared";
 import type { CareerTranslator } from "@/components/career/i18n/CareerI18nProvider";
 
@@ -241,8 +241,8 @@ function HoursProgress({ p }: { p: NonNullable<PackView["progress"]> }) {
         {p.creditEquivalent != null && tr("creditEquivalentCreditEquivalent", { creditEquivalent: p.creditEquivalent })}
       </p>
       <div className="relative mt-2 h-3 w-full overflow-hidden rounded-full bg-muted" aria-hidden>
-        <div className="absolute inset-y-0 start-0 bg-[var(--brand,#4f46e5)] opacity-40" style={{ width: `${supPct}%` }} />
-        <div className="absolute inset-y-0 start-0 bg-[var(--brand,#4f46e5)]" style={{ width: `${pct}%` }} />
+        <div className="absolute inset-y-0 start-0 bg-[var(--brand,#0e7490)] opacity-40" style={{ width: `${supPct}%` }} />
+        <div className="absolute inset-y-0 start-0 bg-[var(--brand,#0e7490)]" style={{ width: `${pct}%` }} />
       </div>
       <p className="mt-1 text-xs text-muted-foreground">{tr("darkBarVerifiedByFaculty")}</p>
       {p.meetsRequirement && <p className="mt-1 text-sm font-medium">{tr("theHourRequirementIsMet")}</p>}
@@ -913,7 +913,7 @@ export function PackSettingsPanel({ api, schoolId }: { api: Api; schoolId?: stri
 function RulesTable({ eff }: { eff: PackDefinition }) {
   const tr = useCareerT("internshipPack");
   return (
-    <div className="overflow-x-auto">
+    <ScrollArea>
       <table className="w-full text-start text-sm [&_th]:text-start">
         <caption className="sr-only">{tr("hourRules")}</caption>
         <thead>
@@ -957,7 +957,7 @@ function RulesTable({ eff }: { eff: PackDefinition }) {
           ))}
         </tbody>
       </table>
-    </div>
+    </ScrollArea>
   );
 }
 

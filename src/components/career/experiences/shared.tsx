@@ -6,7 +6,7 @@
  */
 
 import React, { useState } from "react";
-import { Badge, Button, Card, Field, formatDate, useCareerT, useCareerLabels } from "@/components/career/ui";
+import { Badge, Button, Card, Field, formatDate, useCareerT, useCareerLabels, ScrollArea } from "@/components/career/ui";
 import type { useApi } from "@/lib/appAuth";
 
 export type Api = ReturnType<typeof useApi>;
@@ -153,7 +153,7 @@ export function Stepper({ status }: { status: string }) {
         <li
           key={s}
           aria-current={i === current ? "step" : undefined}
-          className={`rounded-full border px-2 py-1 ${i === current ? "border-[var(--brand,#4f46e5)] font-semibold" : "border-border"} ${i < current ? "bg-muted" : ""}`}
+          className={`rounded-full border px-2 py-1 ${i === current ? "border-[var(--brand,#0e7490)] font-semibold" : "border-border"} ${i < current ? "bg-muted" : ""}`}
         >
           {i < current ? "✓ " : ""}
           {STATUS_LABELS[s]}
@@ -297,30 +297,32 @@ export function HoursCard({ x, children }: { x: ExperienceDetail; children?: Rea
       {x.hours.length === 0 ? (
         <p className="text-sm text-muted-foreground">{tr("noHoursLoggedYet")}</p>
       ) : (
-        <table className="w-full text-start text-sm [&_th]:text-start">
-          <caption className="sr-only">{tr("weeklyHours")}</caption>
-          <thead>
-            <tr className="border-b border-border">
-              <th scope="col" className="py-1">{tr("weekOf")}</th>
-              <th scope="col">{tr("hours")}</th>
-              <th scope="col">{tr("whatYouWorkedOn")}</th>
-              <th scope="col">{tr("status")}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {x.hours.map((h) => (
-              <tr key={h.id} className="border-b border-border/60 align-top">
-                <td className="py-1">{formatDate(h.weekStart)}</td>
-                <td>{h.hours}</td>
-                <td>{h.description ?? "—"}</td>
-                <td>
-                  <Badge tone={h.status === "Approved" ? "good" : h.status === "Rejected" ? "bad" : "warn"}>{h.status === "Rejected" ? tr("returned") : h.status}</Badge>
-                  {h.decisionNote && <span className="block text-xs">{h.decisionNote}</span>}
-                </td>
+        <ScrollArea>
+          <table className="w-full text-start text-sm [&_th]:text-start">
+            <caption className="sr-only">{tr("weeklyHours")}</caption>
+            <thead>
+              <tr className="border-b border-border">
+                <th scope="col" className="py-1">{tr("weekOf")}</th>
+                <th scope="col">{tr("hours")}</th>
+                <th scope="col">{tr("whatYouWorkedOn")}</th>
+                <th scope="col">{tr("status")}</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {x.hours.map((h) => (
+                <tr key={h.id} className="border-b border-border/60 align-top">
+                  <td className="py-1">{formatDate(h.weekStart)}</td>
+                  <td>{h.hours}</td>
+                  <td>{h.description ?? "—"}</td>
+                  <td>
+                    <Badge tone={h.status === "Approved" ? "good" : h.status === "Rejected" ? "bad" : "warn"}>{h.status === "Rejected" ? tr("returned") : h.status}</Badge>
+                    {h.decisionNote && <span className="block text-xs">{h.decisionNote}</span>}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </ScrollArea>
       )}
     </Card>
   );

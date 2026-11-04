@@ -9,11 +9,12 @@
 
 import React, { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { HeartHandshake, ShieldCheck, Users } from "lucide-react";
+import { ShieldCheck, Users } from "lucide-react";
 import { AccessNotice, useLatestRef, useLegacyApi } from "@/lib/legacyApi";
 import { setSelectedSchool } from "@/lib/appAuth";
 import { COMMUNITY_INSTITUTE_ID } from "@/lib/community";
 import { useEn } from "@/lib/english/EnglishProvider";
+import { ErrorBanner, PageHeader, brandFill, buttonClass } from "@/components/career/ui";
 
 interface CommunityStatus {
   instituteId: string;
@@ -25,10 +26,9 @@ interface CommunityStatus {
   isSuperAdmin: boolean;
 }
 
-const card = "rounded-2xl border border-border bg-card shadow-[0_1px_2px_rgb(16_24_40/0.04)]";
-const primary =
-  "inline-flex items-center justify-center gap-2 rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-indigo-500 disabled:opacity-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600";
-const secondary = "inline-flex items-center justify-center gap-2 rounded-xl border border-border px-4 py-2.5 text-sm font-semibold hover:bg-muted disabled:opacity-50";
+const card = "rounded-xl border border-border bg-card shadow-sm";
+const primary = buttonClass("primary");
+const secondary = buttonClass("secondary");
 
 const MENTOR_STATUS: Record<string, string> = {
   Draft: "Your mentor profile is a draft. Finish it and send it for review.",
@@ -87,27 +87,18 @@ export default function MentorsPage() {
 
   return (
     <div>
-      <header>
-        <p className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-indigo-700 dark:text-indigo-300">
-          <HeartHandshake aria-hidden="true" className="h-4 w-4" />{en(" Mentoring")}
-        </p>
-        <h1 className="mt-1 text-2xl font-semibold tracking-tight">{en("Learn from people who have done it")}</h1>
-        <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
-          {en("Find a mentor for your resume, interviews, a career change or your first job, or volunteer as one. Mentoring here is free. If your school runs its own mentoring, you'll find it in your school's career pages.")}
-        </p>
-      </header>
+      <PageHeader
+        title={en("Mentoring")}
+        description={en("Find a mentor for your resume, interviews, a career change or your first job, or volunteer as one. Mentoring here is free. If your school runs its own mentoring, you'll find it in your school's career pages.")}
+      />
 
-      {error && (
-        <p role="alert" className="mt-6 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm">
-          {error}
-        </p>
-      )}
+      <ErrorBanner error={error} />
 
       {!status ? (
-        !error && <div className={`${card} mt-6 h-40 animate-pulse motion-reduce:animate-none`} aria-busy="true" aria-label={en("Loading")} />
+        !error && <div className={`${card} h-40 animate-pulse motion-reduce:animate-none`} aria-busy="true" aria-label={en("Loading")} />
       ) : (
         <>
-          <p className="mt-6 flex items-center gap-2 text-sm text-muted-foreground">
+          <p className="flex items-center gap-2 text-sm text-muted-foreground">
             <Users aria-hidden="true" className="h-4 w-4" />
             {status.approvedMentors === 0
               ? en("There are no community mentors yet. Mentors appear once the Edulexa team has reviewed them.")
@@ -115,7 +106,7 @@ export default function MentorsPage() {
           </p>
 
           {!status.emailVerified ? (
-            <section className={`${card} mt-4 p-6`}>
+            <section className={`${card} mt-4 p-5`}>
               <h2 className="text-base font-semibold">{en("Verify your email first")}</h2>
               <p className="mt-1 text-sm text-muted-foreground">
                 {en("Mentors and mentees reach each other by email, so mentoring needs a verified email address on your account.")}
@@ -123,24 +114,24 @@ export default function MentorsPage() {
             </section>
           ) : (
             <div className="mt-4 grid gap-4 md:grid-cols-2">
-              <section className={`${card} flex flex-col p-6`}>
+              <section className={`${card} flex flex-col p-5`}>
                 <h2 className="text-base font-semibold">{en("Find a mentor")}</h2>
                 <p className="mt-1 text-sm text-muted-foreground">
                   {en("Tell us what you'd like help with and see mentors who match, with the reasons for each match. A mentor accepts before you share contact details.")}
                 </p>
                 <div className="mt-auto pt-5">
                   {status.joined ? (
-                    <button type="button" className={primary} onClick={() => open("/student/mentoring")}>
+                    <button type="button" className={primary} style={brandFill} onClick={() => open("/student/mentoring")}>
                       {en("Open mentoring")}
                     </button>
                   ) : (
-                    <button type="button" className={primary} disabled={busy} onClick={() => void join(false)}>
+                    <button type="button" className={primary} style={brandFill} disabled={busy} onClick={() => void join(false)}>
                       {en("Join the community")}
                     </button>
                   )}
                 </div>
               </section>
-              <section className={`${card} flex flex-col p-6`}>
+              <section className={`${card} flex flex-col p-5`}>
                 <h2 className="text-base font-semibold">{en("Become a mentor")}</h2>
                 <p className="mt-1 text-sm text-muted-foreground">
                   {status.mentorStatus
@@ -165,7 +156,7 @@ export default function MentorsPage() {
           {status.isSuperAdmin && (
             <section className={`${card} mt-4 flex flex-wrap items-center justify-between gap-3 p-5`}>
               <p className="flex items-center gap-2 text-sm">
-                <ShieldCheck aria-hidden="true" className="h-4 w-4 text-emerald-600" />{en(" Edulexa staff: review mentor applications and reports for the community.")}
+                <ShieldCheck aria-hidden="true" className="h-4 w-4 text-muted-foreground" />{en(" Edulexa staff: review mentor applications and reports for the community.")}
               </p>
               <button type="button" className={secondary} onClick={() => open("/career-center/mentoring")}>
                 {en("Review the community")}

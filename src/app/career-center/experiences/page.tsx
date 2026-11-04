@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { useApi } from "@/lib/appAuth";
 import { useCareerShell } from "@/components/career/CareerShell";
-import { Badge, Button, Card, EmptyState, ErrorBanner, Field, Loading, PageHeader, SuccessBanner, formatDate, useLoad, useCareerT, useCareerLabels } from "@/components/career/ui";
+import { Badge, Button, Card, EmptyState, ErrorBanner, Field, Loading, PageHeader, SuccessBanner, Tabs, formatDate, useLoad, useCareerT, useCareerLabels, StatTile, ScrollArea } from "@/components/career/ui";
 import { StatusBadge, downloadWith, useExperienceStatusLabels, type ExperienceSummary, type Program, type Question } from "@/components/career/experiences/shared";
 import { PackSettingsPanel } from "@/components/career/experiences/InternshipPack";
 
@@ -33,19 +33,8 @@ export default function CareerCenterExperiencesPage() {
   return (
     <div>
       <PageHeader title={tr("internshipsForCredit")} description={tr("creditProgramsRegistrationsAwaitingRevie")} />
-      <div role="tablist" aria-label={tr("sections")} className="mb-6 flex flex-wrap gap-2">
-        {TABS.map((t) => (
-          <button
-            key={t}
-            role="tab"
-            type="button"
-            aria-selected={tab === t}
-            onClick={() => setTab(t)}
-            className={`rounded-md border px-3 py-1.5 text-sm ${tab === t ? "border-[var(--brand,#4f46e5)] font-semibold" : "border-border"}`}
-          >
-            {TAB_LABELS[t]}
-          </button>
-        ))}
+      <div className="mb-6">
+        <Tabs label={tr("sections")} items={TABS.map((t) => ({ id: t, label: TAB_LABELS[t] }))} value={tab} onChange={setTab} />
       </div>
       <div role="tabpanel" aria-label={TAB_LABELS[tab]}>
         {tab === "Dashboard" && <DashboardTab />}
@@ -107,9 +96,8 @@ function DashboardTab() {
 
 function Stat({ label, value }: { label: string; value: number }) {
   return (
-    <li className="rounded-xl border border-border p-4">
-      <p className="text-2xl font-semibold">{value}</p>
-      <p className="text-sm text-muted-foreground">{label}</p>
+    <li>
+      <StatTile label={label} value={value} />
     </li>
   );
 }
@@ -179,44 +167,46 @@ function QueueTab() {
       ) : !list.data?.length ? (
         <EmptyState title={tr("nothingHere")} />
       ) : (
-        <table className="w-full text-start text-sm [&_th]:text-start">
-          <caption className="sr-only">{tr("experiences")}</caption>
-          <thead>
-            <tr className="border-b border-border">
-              <th scope="col" className="py-2">{tr("student")}</th>
-              <th scope="col">{tr("organizationAndRole")}</th>
-              <th scope="col">{tr("dates")}</th>
-              <th scope="col">{tr("status")}</th>
-              <th scope="col">{tr("checks")}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {list.data.map((x) => (
-              <tr key={x.id} className="border-b border-border/60 align-top">
-                <td className="py-2">
-                  <Link href={`/career-center/experiences/${x.id}`} className="underline">
-                    {x.studentName}
-                  </Link>
-                  <span className="block text-xs text-muted-foreground">{x.program?.code}</span>
-                </td>
-                <td>
-                  {x.employerName}
-                  <span className="block text-xs">{x.roleTitle}</span>
-                </td>
-                <td>
-                  {tr("startDateToEndDate", { startDate: formatDate(x.startDate), endDate: formatDate(x.endDate) })}
-                </td>
-                <td>
-                  <StatusBadge status={x.status} />
-                </td>
-                <td className="space-x-1">
-                  {x.status === "Submitted" && <Badge tone={x.facultyApproved ? "good" : "warn"}>{x.facultyApproved ? tr("facultyApproved") : tr("awaitingFaculty")}</Badge>}
-                  {x.isF1 && <Badge tone={x.cptStatus === "Authorized" ? "good" : "warn"}>{tr("f1CPTCptStatus", { cptStatus: x.cptStatus ?? tr("notRecorded") })}</Badge>}
-                </td>
+        <ScrollArea>
+          <table className="w-full text-start text-sm [&_th]:text-start">
+            <caption className="sr-only">{tr("experiences")}</caption>
+            <thead>
+              <tr className="border-b border-border">
+                <th scope="col" className="py-2">{tr("student")}</th>
+                <th scope="col">{tr("organizationAndRole")}</th>
+                <th scope="col">{tr("dates")}</th>
+                <th scope="col">{tr("status")}</th>
+                <th scope="col">{tr("checks")}</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {list.data.map((x) => (
+                <tr key={x.id} className="border-b border-border/60 align-top">
+                  <td className="py-2">
+                    <Link href={`/career-center/experiences/${x.id}`} className="underline">
+                      {x.studentName}
+                    </Link>
+                    <span className="block text-xs text-muted-foreground">{x.program?.code}</span>
+                  </td>
+                  <td>
+                    {x.employerName}
+                    <span className="block text-xs">{x.roleTitle}</span>
+                  </td>
+                  <td>
+                    {tr("startDateToEndDate", { startDate: formatDate(x.startDate), endDate: formatDate(x.endDate) })}
+                  </td>
+                  <td>
+                    <StatusBadge status={x.status} />
+                  </td>
+                  <td className="space-x-1">
+                    {x.status === "Submitted" && <Badge tone={x.facultyApproved ? "good" : "warn"}>{x.facultyApproved ? tr("facultyApproved") : tr("awaitingFaculty")}</Badge>}
+                    {x.isF1 && <Badge tone={x.cptStatus === "Authorized" ? "good" : "warn"}>{tr("f1CPTCptStatus", { cptStatus: x.cptStatus ?? tr("notRecorded") })}</Badge>}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </ScrollArea>
       )}
     </div>
   );

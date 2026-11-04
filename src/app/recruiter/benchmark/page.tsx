@@ -13,6 +13,7 @@ import { useSearchParams } from "next/navigation";
 import { AlertTriangle, Search } from "lucide-react";
 import { AccessNotice, useLatestRef, useLegacyApi } from "@/lib/legacyApi";
 import { useEn } from "@/lib/english/EnglishProvider";
+import { Button, Card, EmptyState, Loading, PageHeader, ScrollArea } from "@/components/career/ui";
 
 interface ChallengeCohort {
   sprintId: string;
@@ -55,7 +56,6 @@ interface Similarity {
   note: string;
 }
 
-const card = "rounded-2xl border border-border bg-card shadow-[0_1px_2px_rgb(16_24_40/0.04)]";
 const BUCKETS = ["0-49", "50-79", "80-99", "100"];
 const BUCKET_LABEL: Record<string, string> = { "0-49": "Under 50%", "50-79": "50–79%", "80-99": "80–99%", "100": "All tests" };
 
@@ -92,7 +92,7 @@ function ChallengeResults() {
       try {
         const res = await apiFetch(`/api/benchmark/submission/${id.trim()}`, {}, { quiet: true });
         if (res.ok) setBenchmark(((await res.json()) as { benchmark: Benchmark }).benchmark);
-        else setLookupError(en("No submission with this id in your organisation."));
+        else setLookupError(en("No submission with this id in your organization."));
       } finally {
         setBusy(false);
       }
@@ -135,14 +135,12 @@ function ChallengeResults() {
 
   return (
     <div className="space-y-8">
-      <header>
-        <h1 className="text-2xl font-semibold tracking-tight">{en("Challenge results")}</h1>
-        <p className="mt-1 max-w-3xl text-sm text-muted-foreground">
-          {en("How candidates did on each coding challenge, from graded results only: the share of hidden tests passed, or a mentor's adjusted score. Integrity signals are reasons to review a submission, not conclusions.")}
-        </p>
-      </header>
+      <PageHeader
+        title={en("Challenge results")}
+        description={en("How candidates did on each coding challenge, from graded results only: the share of hidden tests passed, or a mentor's adjusted score. Integrity signals are reasons to review a submission, not conclusions.")}
+      />
 
-      <section aria-labelledby="cr-lookup" className={`${card} p-5`}>
+      <section aria-labelledby="cr-lookup" className="rounded-xl border border-border bg-card p-5 shadow-sm">
         <h2 id="cr-lookup" className="text-base font-semibold">
           {en("Look up a submission")}
         </h2>
@@ -158,15 +156,16 @@ function ChallengeResults() {
             onChange={(e) => setQuery(e.target.value)}
             placeholder={en("Submission id")}
             aria-label={en("Submission id")}
-            className="min-w-0 flex-1 rounded-xl border border-border bg-background px-3 py-2 font-mono text-sm"
+            className="min-w-0 flex-1 rounded-lg border border-border bg-card px-3 py-2 font-mono text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-2 focus-visible:outline-offset-1"
           />
-          <button type="submit" disabled={busy} className="inline-flex items-center gap-1.5 rounded-xl bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-500 disabled:opacity-50">
-            <Search aria-hidden="true" className="h-4 w-4" />{en(" Show")}
-          </button>
+          <Button type="submit" disabled={busy}>
+            <Search aria-hidden="true" className="h-4 w-4" />
+            {en("Show")}
+          </Button>
         </form>
         {lookupError && <p className="mt-3 text-sm text-red-700 dark:text-red-400">{lookupError}</p>}
         {benchmark && (
-          <div className="mt-5 grid gap-4 md:grid-cols-3">
+          <div className="mt-5 grid grid-cols-1 gap-4 md:grid-cols-3">
             <div className="rounded-xl border border-border p-4">
               <p className="text-xs text-muted-foreground">{benchmark.challengeTitle ?? "Challenge"}</p>
               <p className="mt-1 text-3xl font-semibold tabular-nums">{benchmark.score != null ? `${benchmark.score}%` : en("Not graded")}</p>
@@ -201,7 +200,7 @@ function ChallengeResults() {
                   ))}
                 </ul>
               )}
-              <button type="button" onClick={() => void checkSimilarity()} disabled={busy} className="mt-3 text-sm font-semibold text-indigo-700 hover:underline disabled:opacity-50 dark:text-indigo-300">
+              <button type="button" onClick={() => void checkSimilarity()} disabled={busy} className="mt-3 text-start text-sm font-medium text-indigo-700 hover:underline disabled:opacity-50 dark:text-indigo-300">
                 {en("Compare with other submissions of this challenge")}
               </button>
               {similarity && (
@@ -234,21 +233,24 @@ function ChallengeResults() {
           )}
         </div>
         {failed ? (
-          <p className={`${card} p-6 text-sm text-muted-foreground`}>{en("The results couldn't be loaded. Please refresh the page.")}</p>
+          <Card>
+            <p className="text-sm text-muted-foreground">{en("The results couldn't be loaded. Please refresh the page.")}</p>
+          </Card>
         ) : !analytics ? (
-          <div className={`${card} h-40 animate-pulse motion-reduce:animate-none`} aria-busy="true" />
+          <Loading />
         ) : analytics.challenges.length === 0 ? (
-          <p className={`${card} p-6 text-sm text-muted-foreground`}>{en("No candidate has submitted a challenge yet.")}</p>
+          <EmptyState title={en("No candidate has submitted a challenge yet.")} />
         ) : (
-          <div className={`${card} overflow-x-auto`}>
+          <ScrollArea className="overflow-x-auto rounded-xl border border-border bg-card shadow-sm">
             <table className="w-full text-sm">
-              <thead className="border-b border-border text-start text-xs text-muted-foreground">
+              <caption className="sr-only">{en("Results by challenge")}</caption>
+              <thead className="border-b border-border text-xs text-muted-foreground">
                 <tr>
-                  <th className="p-3 font-medium">{en("Challenge")}</th>
-                  <th className="p-3 text-end font-medium">{en("Candidates")}</th>
-                  <th className="p-3 text-end font-medium">{en("Median tests passed")}</th>
-                  <th className="p-3 font-medium">{en("Spread (best result per candidate)")}</th>
-                  <th className="p-3 text-end font-medium">{en("For review")}</th>
+                  <th scope="col" className="p-3 text-start font-medium">{en("Challenge")}</th>
+                  <th scope="col" className="p-3 text-end font-medium">{en("Candidates")}</th>
+                  <th scope="col" className="p-3 text-end font-medium">{en("Median tests passed")}</th>
+                  <th scope="col" className="p-3 text-start font-medium">{en("Spread (best result per candidate)")}</th>
+                  <th scope="col" className="p-3 text-end font-medium">{en("For review")}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
@@ -269,7 +271,7 @@ function ChallengeResults() {
                                 key={b}
                                 title={`${BUCKET_LABEL[b]}: ${c.distribution[b] ?? 0}`}
                                 style={{ width: `${(100 * (c.distribution[b] ?? 0)) / total}%` }}
-                                className={["bg-rose-400", "bg-amber-400", "bg-sky-500", "bg-emerald-500"][i]}
+                                className={["bg-red-400", "bg-amber-400", "bg-indigo-500", "bg-emerald-500"][i]}
                               />
                             ))}
                           </div>
@@ -281,7 +283,7 @@ function ChallengeResults() {
                 })}
               </tbody>
             </table>
-          </div>
+          </ScrollArea>
         )}
       </section>
     </div>

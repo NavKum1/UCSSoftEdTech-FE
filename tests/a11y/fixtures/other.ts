@@ -988,7 +988,8 @@ export const otherFixtures: ApiFixture[] = [
 
   // Shared signed-in-required state (components/SignInRequired): the API refuses the session (401) or the role (403)
   { path: /^\/api\/passport(\/radar)?$/, status: 401, body: { message: "Unauthorized" } },
-  { path: "/api/leaderboard", status: 403, body: { message: "Forbidden" } },
+  // The leaderboard page loads the practice board first (this week), so that is the call refused
+  { path: /^\/api\/(practice\/)?leaderboard$/i, status: 403, body: { message: "Forbidden" } },
 ];
 
 export const otherRoutes: A11yRoute[] = [

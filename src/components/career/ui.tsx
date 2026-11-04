@@ -1,8 +1,9 @@
 "use client";
 
 /**
- * Small, accessible building blocks shared by career-suite pages. Brand color comes from the --brand
- * CSS variable that CareerShell sets, so pages look right under any white-label brand.
+ * Small, accessible building blocks shared by every page of every role (5 Nov 2026; first made for the career suite).
+ * Brand color comes from the --brand CSS variable that the shells set (the role's accent, or a school's white-label
+ * brand), so pages look right in every area. Type, surfaces, corners and shadows come from app/globals.css.
  */
 
 import React, { useEffect, useId, useRef, useState } from "react";
@@ -14,19 +15,19 @@ export { labelKey, useCareerFormat, useCareerI18n, useCareerLabels, useCareerT }
 
 export function PageHeader({ title, description, actions }: { title: string; description?: React.ReactNode; actions?: React.ReactNode }) {
   return (
-    <div className="mb-6 flex flex-wrap items-start justify-between gap-3">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight">{title}</h1>
-        {description && <p className="mt-1 max-w-3xl text-sm text-muted-foreground">{description}</p>}
+    <div className="mb-6 flex flex-wrap items-end justify-between gap-x-6 gap-y-3">
+      <div className="min-w-0">
+        <h1 className="text-2xl font-semibold tracking-tight text-foreground sm:text-[1.75rem] sm:leading-9">{title}</h1>
+        {description && <p className="mt-1.5 max-w-3xl text-sm leading-6 text-muted-foreground">{description}</p>}
       </div>
-      {actions && <div className="flex flex-wrap gap-2">{actions}</div>}
+      {actions && <div className="flex flex-wrap items-center gap-2">{actions}</div>}
     </div>
   );
 }
 
 export function Card({ title, children, className = "", actions }: { title?: string; children: React.ReactNode; className?: string; actions?: React.ReactNode }) {
   return (
-    <section className={`rounded-xl border border-border bg-card p-5 ${className}`}>
+    <section className={`rounded-xl border border-border bg-card p-5 shadow-sm ${className}`}>
       {(title || actions) && (
         <div className="mb-4 flex items-center justify-between gap-2">
           {title && <h2 className="text-base font-semibold">{title}</h2>}
@@ -38,22 +39,79 @@ export function Card({ title, children, className = "", actions }: { title?: str
   );
 }
 
+/**
+ * The button look, also for links that act as buttons (<Link className={buttonClass("secondary")}>). A primary link
+ * also needs style={brandFill}.
+ */
+export function buttonClass(variant: "primary" | "secondary" | "danger" | "ghost" = "primary") {
+  const base =
+    "inline-flex min-h-9 max-w-full items-center justify-center gap-2 rounded-lg px-3.5 py-1.5 text-center text-sm font-medium leading-5 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:opacity-50";
+  const variants: Record<string, string> = {
+    primary: "text-[var(--brand-foreground,#fff)] shadow-sm hover:brightness-110",
+    secondary: "border border-border bg-card text-foreground shadow-sm hover:bg-muted",
+    danger: "bg-red-600 text-white shadow-sm hover:bg-red-700",
+    ghost: "text-foreground hover:bg-muted",
+  };
+  return `${base} ${variants[variant]}`;
+}
+
+/** The brand fill of a primary button, for a <Link> styled with buttonClass("primary") */
+export const brandFill: React.CSSProperties = { background: "var(--brand, #0e7490)", outlineColor: "var(--brand, #0e7490)" };
+
+/** A figure on a dashboard: what it counts, the number, and an optional line under it */
+export function StatTile({ label, value, hint, icon, tone }: { label: string; value: React.ReactNode; hint?: React.ReactNode; icon?: React.ReactNode; tone?: "bad" | "good" }) {
+  const color = tone === "bad" ? "text-red-700 dark:text-red-400" : tone === "good" ? "text-emerald-700 dark:text-emerald-400" : "text-foreground";
+  return (
+    <div className="rounded-xl border border-border bg-card p-4 shadow-sm">
+      <p className="flex items-center gap-1.5 text-sm text-muted-foreground">
+        {icon && <span aria-hidden="true" className="[&>svg]:h-4 [&>svg]:w-4">{icon}</span>}
+        {label}
+      </p>
+      <p className={`mt-2 text-2xl font-semibold tabular-nums tracking-tight ${color}`}>{value}</p>
+      {hint && <p className="mt-1 text-xs text-muted-foreground">{hint}</p>}
+    </div>
+  );
+}
+
+/**
+ * Tabs within a page (underlined, like the menu above): one look for every in-page tab bar. Each tab is a button
+ * that shows its panel; counts sit beside the label.
+ */
+export function Tabs<T extends string>({ items, value, onChange, label }: { items: { id: T; label: string; count?: number; icon?: React.ReactNode }[]; value: T; onChange: (id: T) => void; label: string }) {
+  return (
+    <div role="tablist" aria-label={label} className="flex gap-1 overflow-x-auto border-b border-border">
+      {items.map((t) => {
+        const on = t.id === value;
+        return (
+          <button
+            key={t.id}
+            type="button"
+            role="tab"
+            aria-selected={on}
+            onClick={() => onChange(t.id)}
+            className={`-mb-px inline-flex shrink-0 items-center gap-2 whitespace-nowrap border-b-2 px-3 py-2.5 text-sm transition-colors ${
+              on ? "border-[var(--brand,#0e7490)] font-medium text-foreground" : "border-transparent text-muted-foreground hover:border-border hover:text-foreground"
+            }`}
+          >
+            {t.icon && <span aria-hidden="true" className="[&>svg]:h-4 [&>svg]:w-4">{t.icon}</span>}
+            {t.label}
+            {t.count != null && <span className="rounded-full bg-muted px-1.5 py-0.5 text-xs tabular-nums text-muted-foreground">{t.count}</span>}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
 type ButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & { variant?: "primary" | "secondary" | "danger" | "ghost"; busy?: boolean };
 
 export function Button({ variant = "primary", busy, className = "", children, disabled, style, ...rest }: ButtonProps) {
-  const base = "inline-flex items-center justify-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition focus-visible:outline-2 focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:opacity-50";
-  const variants: Record<string, string> = {
-    primary: "text-white hover:opacity-90",
-    secondary: "border border-border bg-background hover:bg-muted",
-    danger: "bg-red-600 text-white hover:bg-red-700",
-    ghost: "hover:bg-muted",
-  };
   return (
     <button
       {...rest}
       disabled={disabled || busy}
-      className={`${base} ${variants[variant]} ${className}`}
-      style={variant === "primary" ? { background: "var(--brand, #4f46e5)", outlineColor: "var(--brand, #4f46e5)", ...style } : style}
+      className={`${buttonClass(variant)} ${className}`}
+      style={variant === "primary" ? { background: "var(--brand, #0e7490)", outlineColor: "var(--brand, #0e7490)", ...style } : style}
     >
       {busy && <Loader2 className="h-4 w-4 animate-spin" aria-hidden />}
       {children}
@@ -76,7 +134,7 @@ export function ErrorBanner({ error, onRetry }: { error: string | null | undefin
   const t = useCareerT("ui");
   if (!error) return null;
   return (
-    <div role="alert" className="mb-4 flex items-start gap-2 rounded-md border border-red-300 bg-red-50 p-3 text-sm text-red-800 dark:border-red-900 dark:bg-red-950/40 dark:text-red-300">
+    <div role="alert" className="mb-4 flex items-start gap-2 rounded-lg border border-red-300 bg-red-50 p-3 text-sm text-red-800 dark:border-red-900 dark:bg-red-950/40 dark:text-red-300">
       <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
       <span className="flex-1">{error}</span>
       {onRetry && (
@@ -91,7 +149,7 @@ export function ErrorBanner({ error, onRetry }: { error: string | null | undefin
 export function SuccessBanner({ message }: { message: string | null | undefined }) {
   if (!message) return null;
   return (
-    <div role="status" className="mb-4 rounded-md border border-emerald-300 bg-emerald-50 p-3 text-sm text-emerald-800 dark:border-emerald-900 dark:bg-emerald-950/40 dark:text-emerald-300">
+    <div role="status" className="mb-4 rounded-lg border border-emerald-300 bg-emerald-50 p-3 text-sm text-emerald-800 dark:border-emerald-900 dark:bg-emerald-950/40 dark:text-emerald-300">
       {message}
     </div>
   );
@@ -109,14 +167,14 @@ export function Loading({ label }: { label?: string }) {
 
 export function EmptyState({ title, children }: { title: string; children?: React.ReactNode }) {
   return (
-    <div className="rounded-xl border border-dashed border-border p-8 text-center">
+    <div className="rounded-xl border border-dashed border-border bg-card/60 p-8 text-center">
       <p className="font-medium">{title}</p>
       {children && <div className="mt-2 text-sm text-muted-foreground">{children}</div>}
     </div>
   );
 }
 
-const inputClass = "w-full rounded-md border border-border bg-background px-3 py-2 text-sm focus-visible:outline-2 focus-visible:outline-offset-1";
+const inputClass = "w-full rounded-lg border border-border bg-card px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-2 focus-visible:outline-offset-1";
 
 export function Field({
   label,
@@ -133,13 +191,14 @@ export function Field({
   const hintId = hint ? `${id}-hint` : undefined;
   const errId = error ? `${id}-err` : undefined;
   return (
-    <div className="space-y-1">
+    // min-w-0: a field in a grid can shrink to a phone's width even when its hint has a long URL
+    <div className="min-w-0 space-y-1">
       <label htmlFor={id} className="block text-sm font-medium">
         {label}
       </label>
       {children({ id, "aria-describedby": [hintId, errId].filter(Boolean).join(" ") || undefined, "aria-invalid": error ? true : undefined, className: inputClass })}
       {hint && (
-        <p id={hintId} className="text-xs text-muted-foreground">
+        <p id={hintId} className="text-xs text-muted-foreground [overflow-wrap:anywhere]">
           {hint}
         </p>
       )}

@@ -30,6 +30,7 @@ import { AccessNotice, useLegacyApi } from "@/lib/legacyApi";
 import { useAppAuth } from "@/lib/appAuth";
 import { useRoleHome } from "@/lib/roleHome";
 import { useEn } from "@/lib/english/EnglishProvider";
+import { Badge, Button, PageHeader, StatTile, brandFill, buttonClass } from "@/components/career/ui";
 
 interface Skill {
   skillCategory: string;
@@ -120,7 +121,7 @@ function relative(iso: string): string {
 const scoreTone = (score: number) =>
   score >= 80 ? "text-emerald-700 dark:text-emerald-400" : score >= 60 ? "text-amber-700 dark:text-amber-400" : "text-rose-700 dark:text-rose-400";
 
-const card = "rounded-2xl border border-border bg-card shadow-[0_1px_2px_rgb(16_24_40/0.04)]";
+const card = "rounded-xl border border-border bg-card shadow-sm";
 
 export default function DashboardPage() {
   const en = useEn();
@@ -167,13 +168,9 @@ export default function DashboardPage() {
         <p className="text-sm text-muted-foreground">
           {en("{value} Your work is saved; please try again.", { value: failed === 0 ? en("The connection to Edulexa failed.") : en("Something went wrong on our side.") })}
         </p>
-        <button
-          type="button"
-          onClick={() => setAttempt((n) => n + 1)}
-          className="rounded-xl bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-        >
+        <Button type="button" onClick={() => setAttempt((n) => n + 1)}>
           {en("Try again")}
-        </button>
+        </Button>
       </div>
     );
   }
@@ -187,36 +184,31 @@ export default function DashboardPage() {
   return (
     <div>
       {/* Header */}
-      <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-        <div className="space-y-1.5">
-          <p className="text-sm font-medium text-muted-foreground">
-            {data.profile.organization?.name || en("Individual member")}
-            {data.profile.targetRole ? en(" · Aiming for {role}", { role: data.profile.targetRole }) : ""}
-          </p>
-          <h1 className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
-            {firstName ? en("{greeting}, {name}", { greeting: en(greeting()), name: firstName }) : en(greeting())}
-          </h1>
-          <p className="text-sm text-muted-foreground">
+      <PageHeader
+        title={firstName ? en("{greeting}, {name}", { greeting: en(greeting()), name: firstName }) : en(greeting())}
+        description={
+          <>
+            <span className="block">
+              {data.profile.organization?.name || en("Individual member")}
+              {data.profile.targetRole ? en(" · Aiming for {role}", { role: data.profile.targetRole }) : ""}
+            </span>
             {isNew
               ? en("Welcome to Edulexa. Start with one of the steps below; everything you do builds your verified skill record.")
               : data.activity.lastActiveAt
                 ? `Last active ${relative(data.activity.lastActiveAt)}.`
                 : ""}
-          </p>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          <Link
-            href="/passport"
-            className="inline-flex items-center gap-2 rounded-xl border border-border bg-card px-4 py-2.5 text-sm font-semibold text-foreground hover:bg-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-          >
+          </>
+        }
+        actions={
+          <Link href="/passport" className={buttonClass("secondary")}>
             {data.passport.sharingEnabled ? <Share2 aria-hidden="true" className="h-4 w-4" /> : <ShieldCheck aria-hidden="true" className="h-4 w-4" />}
             {en("Skill passport")}
           </Link>
-        </div>
-      </header>
+        }
+      />
 
       {/* Key figures */}
-      <section aria-label={en("Your progress")} className="mt-8 grid grid-cols-2 gap-3 lg:grid-cols-4">
+      <section aria-label={en("Your progress")} className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         <Stat
           icon={Flame}
           label={en("Current streak")}
@@ -247,7 +239,7 @@ export default function DashboardPage() {
         <div className="space-y-6 lg:col-span-2">
           {/* Next steps */}
           {data.nextSteps.length > 0 && (
-            <section aria-labelledby="next-steps" className={`${card} p-5 sm:p-6`}>
+            <section aria-labelledby="next-steps" className={`${card} p-5`}>
               <h2 id="next-steps" className="flex items-center gap-2 text-base font-semibold">
                 <Sparkles aria-hidden="true" className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
                 {isNew ? en("Get started") : en("Up next")}
@@ -259,7 +251,7 @@ export default function DashboardPage() {
                     <li key={s.key}>
                       <Link
                         href={s.href}
-                        className="group flex h-full flex-col gap-2 rounded-xl border border-border bg-background p-4 transition-colors hover:border-indigo-300 hover:bg-indigo-50/40 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 dark:hover:border-indigo-800 dark:hover:bg-indigo-950/30"
+                        className="group flex h-full flex-col gap-2 rounded-lg border border-border bg-background p-4 transition-colors hover:border-indigo-300 hover:bg-indigo-50/40 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 dark:hover:border-indigo-800 dark:hover:bg-indigo-950/30"
                       >
                         <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-indigo-600/10 text-indigo-700 dark:text-indigo-300">
                           <Icon aria-hidden="true" className="h-4.5 w-4.5" />
@@ -279,7 +271,7 @@ export default function DashboardPage() {
           )}
 
           {/* Activity calendar */}
-          <section aria-labelledby="activity" className={`${card} p-5 sm:p-6`}>
+          <section aria-labelledby="activity" className={`${card} p-5`}>
             <div className="flex items-baseline justify-between gap-4">
               <h2 id="activity" className="text-base font-semibold">
                 {en("Activity")}
@@ -290,7 +282,7 @@ export default function DashboardPage() {
           </section>
 
           {/* Skills */}
-          <section aria-labelledby="skills" className={`${card} p-5 sm:p-6`}>
+          <section aria-labelledby="skills" className={`${card} p-5`}>
             <div className="flex items-baseline justify-between gap-4">
               <h2 id="skills" className="text-base font-semibold">
                 {en("Skills")}
@@ -307,10 +299,10 @@ export default function DashboardPage() {
                       <p className="flex items-center gap-2 truncate text-sm font-medium text-foreground">
                         {s.skillCategory}
                         {s.verified && (
-                          <span className="inline-flex items-center gap-1 rounded-full bg-emerald-600/10 px-2 py-0.5 text-[11px] font-semibold text-emerald-700 dark:text-emerald-400">
-                            <BadgeCheck aria-hidden="true" className="h-3 w-3" />
+                          <Badge tone="good">
+                            <BadgeCheck aria-hidden="true" className="me-1 h-3 w-3" />
                             {en("Verified")}
-                          </span>
+                          </Badge>
                         )}
                       </p>
                       <p className="mt-0.5 text-xs text-muted-foreground">
@@ -334,7 +326,7 @@ export default function DashboardPage() {
           </section>
 
           {/* Recent results */}
-          <section aria-labelledby="recent" className={`${card} p-5 sm:p-6`}>
+          <section aria-labelledby="recent" className={`${card} p-5`}>
             <h2 id="recent" className="text-base font-semibold">
               {en("Recent results")}
             </h2>
@@ -373,7 +365,7 @@ export default function DashboardPage() {
 
         <aside className="space-y-6">
           {/* Credentials */}
-          <section aria-labelledby="credentials" className={`${card} p-5 sm:p-6`}>
+          <section aria-labelledby="credentials" className={`${card} p-5`}>
             <h2 id="credentials" className="flex items-center gap-2 text-base font-semibold">
               <Award aria-hidden="true" className="h-4 w-4 text-amber-600 dark:text-amber-400" />
               {en("Credentials")}
@@ -386,7 +378,7 @@ export default function DashboardPage() {
                   <li key={c.verificationUrl}>
                     <Link
                       href={c.verificationUrl}
-                      className="block rounded-xl border border-border p-3 hover:bg-muted/50 focus-visible:outline-2 focus-visible:outline-indigo-600"
+                      className="block rounded-lg border border-border p-3 hover:bg-muted/50 focus-visible:outline-2 focus-visible:outline-indigo-600"
                     >
                       <span className="block truncate text-sm font-medium text-foreground">{c.title}</span>
                       <span className="mt-0.5 block text-xs text-muted-foreground">
@@ -400,7 +392,7 @@ export default function DashboardPage() {
           </section>
 
           {/* Career track */}
-          <section aria-labelledby="track" className={`${card} p-5 sm:p-6`}>
+          <section aria-labelledby="track" className={`${card} p-5`}>
             <h2 id="track" className="flex items-center gap-2 text-base font-semibold">
               <Compass aria-hidden="true" className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
               {en("Career track")}
@@ -416,10 +408,7 @@ export default function DashboardPage() {
             ) : (
               <div className="mt-3 space-y-3">
                 <p className="text-sm text-muted-foreground">{en("A short quiz matches your interests and strengths to a career track and the skills it needs.")}</p>
-                <Link
-                  href="/prep/counselling"
-                  className="inline-flex items-center gap-1.5 rounded-xl bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-                >
+                <Link href="/prep/counselling" className={buttonClass("primary")} style={brandFill}>
                   {en("Take the quiz ")}<ArrowRight aria-hidden="true" className="h-4 w-4" />
                 </Link>
               </div>
@@ -427,7 +416,7 @@ export default function DashboardPage() {
           </section>
 
           {/* Practice */}
-          <section aria-labelledby="practice" className={`${card} p-5 sm:p-6`}>
+          <section aria-labelledby="practice" className={`${card} p-5`}>
             <h2 id="practice" className="text-base font-semibold">
               {en("Practice")}
             </h2>
@@ -443,7 +432,7 @@ export default function DashboardPage() {
                 <li key={p.href + p.label}>
                   <Link
                     href={p.href}
-                    className="flex items-center gap-2 rounded-xl border border-border p-3 text-sm font-medium text-foreground hover:bg-muted/50 focus-visible:outline-2 focus-visible:outline-indigo-600"
+                    className="flex items-center gap-2 rounded-lg border border-border p-3 text-sm font-medium text-foreground hover:bg-muted/50 focus-visible:outline-2 focus-visible:outline-indigo-600"
                   >
                     <p.icon aria-hidden="true" className="h-4 w-4 text-muted-foreground" />
                     <span className="flex-1">{en(p.label)}</span>
@@ -474,22 +463,13 @@ function Stat({
   hint: string;
   href?: string;
 }) {
-  const body = (
-    <>
-      <span className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
-        <Icon aria-hidden="true" className="h-4 w-4" />
-        {label}
-      </span>
-      <span className="mt-2 block text-2xl font-semibold tracking-tight text-foreground tabular-nums">{value}</span>
-      <span className="mt-1 block text-xs text-muted-foreground">{hint}</span>
-    </>
-  );
+  const tile = <StatTile icon={<Icon />} label={label} value={value} hint={hint} />;
   return href ? (
-    <Link href={href} className={`${card} block p-4 hover:bg-muted/40 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 sm:p-5`}>
-      {body}
+    <Link href={href} className="block rounded-xl transition-opacity hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">
+      {tile}
     </Link>
   ) : (
-    <div className={`${card} p-4 sm:p-5`}>{body}</div>
+    tile
   );
 }
 
@@ -527,7 +507,7 @@ function ActivityCalendar({ days }: { days: { date: string; count: number }[] })
           </div>
         ))}
       </div>
-      <div className="mt-2 flex items-center justify-end gap-1.5 text-[11px] text-muted-foreground" aria-hidden="true">
+      <div className="mt-2 flex items-center justify-end gap-1.5 text-xs text-muted-foreground" aria-hidden="true">
         {en("Less")}
         {[0, 1, 2, 4].map((n) => (
           <span key={n} className={`h-3 w-3 rounded-[3px] ${level(n)}`} />
@@ -539,7 +519,7 @@ function ActivityCalendar({ days }: { days: { date: string; count: number }[] })
 }
 
 function EmptyState({ text }: { text: string }) {
-  return <p className="mt-3 rounded-xl border border-dashed border-border px-4 py-6 text-center text-sm text-muted-foreground">{text}</p>;
+  return <p className="mt-3 rounded-lg border border-dashed border-border px-4 py-6 text-center text-sm text-muted-foreground">{text}</p>;
 }
 
 function DashboardSkeleton() {
@@ -548,7 +528,7 @@ function DashboardSkeleton() {
     <div aria-busy="true" aria-label={en("Loading your dashboard")}>
       <div className="h-4 w-40 animate-pulse rounded bg-muted motion-reduce:animate-none" />
       <div className="mt-3 h-8 w-72 animate-pulse rounded bg-muted motion-reduce:animate-none" />
-      <div className="mt-8 grid grid-cols-2 gap-3 lg:grid-cols-4">
+      <div className="mt-6 grid grid-cols-2 gap-3 lg:grid-cols-4">
         {Array.from({ length: 4 }).map((_, i) => (
           <div key={i} className={`${card} h-28 animate-pulse motion-reduce:animate-none`} />
         ))}

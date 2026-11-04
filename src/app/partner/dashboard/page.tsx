@@ -9,9 +9,10 @@
 
 import React, { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
-import { Building2, Link2, RefreshCw, Send } from "lucide-react";
+import { RefreshCw, Send } from "lucide-react";
 import { AccessNotice, useLatestRef, useLegacyApi } from "@/lib/legacyApi";
 import { useEn } from "@/lib/english/EnglishProvider";
+import { Button, EmptyState, Loading, PageHeader, ScrollArea, StatTile, buttonClass } from "@/components/career/ui";
 
 interface PartnerLead {
   leadId: string;
@@ -30,8 +31,8 @@ interface PartnerDashboardData {
   recentLeads: PartnerLead[];
 }
 
-const card = "rounded-2xl border border-border bg-card shadow-[0_1px_2px_rgb(16_24_40/0.04)]";
-const input = "mt-1 block w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus:outline-2 focus:outline-indigo-600";
+const card = "rounded-xl border border-border bg-card shadow-sm";
+const input = "mt-1 block w-full rounded-lg border border-border bg-card px-3 py-2 text-sm shadow-sm focus:outline-2 focus:outline-indigo-600";
 
 export default function PartnerDashboardPage() {
   const en = useEn();
@@ -104,52 +105,49 @@ export default function PartnerDashboardPage() {
   if (access) return <AccessNotice problem={access} feature="The partner dashboard" />;
   if (failed)
     return (
-      <div className="mx-auto max-w-md py-16 text-center">
-        <h1 className="text-xl font-semibold">{en("We couldn't load your dashboard")}</h1>
-        <p className="mt-2 text-sm text-muted-foreground">{en("Your account may not be linked to an institute yet. Please refresh, or ask Edulexa support.")}</p>
+      <div>
+        <PageHeader title={en("Partner dashboard")} />
+        <EmptyState title={en("We couldn't load your dashboard")}>
+          {en("Your account may not be linked to an institute yet. Please refresh, or ask Edulexa support.")}
+        </EmptyState>
       </div>
     );
   if (!data)
     return (
-      <div aria-busy="true" aria-label={en("Loading your dashboard")}>
-        <div className={`${card} h-40 animate-pulse motion-reduce:animate-none`} />
+      <div aria-busy="true">
+        <Loading label={en("Loading your dashboard")} />
       </div>
     );
 
   const k = data.kpis;
   return (
     <div className="space-y-6">
-      <header className="flex flex-wrap items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-indigo-600/10 text-indigo-700 dark:text-indigo-300">
-            <Building2 aria-hidden="true" className="h-5 w-5" />
-          </span>
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{en("Partner institute")}</p>
-            <h1 className="text-xl font-semibold">{data.instituteName}</h1>
-          </div>
-        </div>
-        <div className="flex gap-2">
-          <Link href="/institute/counselling" className="rounded-xl border border-border px-3 py-2 text-sm font-medium hover:bg-muted">
-            {en("Courses and quiz")}
-          </Link>
-          <button type="button" onClick={() => void load()} className="inline-flex items-center gap-1.5 rounded-xl border border-border px-3 py-2 text-sm font-medium hover:bg-muted">
-            <RefreshCw aria-hidden="true" className="h-4 w-4" />{en(" Refresh")}
-          </button>
-        </div>
-      </header>
+      <PageHeader
+        title={data.instituteName}
+        description={en("Inquiries members sent to your institute, what they asked about, and where new inquiries are sent.")}
+        actions={
+          <>
+            <Link href="/institute/counselling" className={buttonClass("secondary")}>
+              {en("Courses and quiz")}
+            </Link>
+            <Button type="button" variant="secondary" onClick={() => void load()}>
+              <RefreshCw aria-hidden="true" className="h-4 w-4" />
+              {en("Refresh")}
+            </Button>
+          </>
+        }
+      />
 
-      <section aria-label={en("Inquiries")} className="grid gap-4 sm:grid-cols-4">
-        {[
-          ["Inquiries", k.totalLeadsReceived],
-          ["Waiting for contact", k.pendingLeads],
-          ["Contacted", k.contactedLeads],
-          ["Enrolled", k.enrolledLeads],
-        ].map(([label, n]) => (
-          <div key={label} className={`${card} p-5`}>
-            <p className="text-xs text-muted-foreground">{label}</p>
-            <p className="mt-1 text-3xl font-semibold tabular-nums">{n}</p>
-          </div>
+      <section aria-label={en("Inquiries")} className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        {(
+          [
+            ["Inquiries", k.totalLeadsReceived],
+            ["Waiting for contact", k.pendingLeads],
+            ["Contacted", k.contactedLeads],
+            ["Enrolled", k.enrolledLeads],
+          ] as const
+        ).map(([label, n]) => (
+          <StatTile key={label} label={en(label)} value={n} />
         ))}
       </section>
       {k.totalLeadsReceived > 0 && (
@@ -165,7 +163,9 @@ export default function PartnerDashboardPage() {
           </h2>
           <p className="mt-1 text-xs text-muted-foreground">{en("The area of each member's counselling result, as sent with their inquiry.")}</p>
           {data.interestByArea.length === 0 ? (
-            <p className="mt-4 text-sm text-muted-foreground">{en("No inquiries yet.")}</p>
+            <div className="mt-4">
+              <EmptyState title={en("No inquiries yet.")} />
+            </div>
           ) : (
             <ul className="mt-4 space-y-2">
               {data.interestByArea.map((a) => (
@@ -181,8 +181,8 @@ export default function PartnerDashboardPage() {
         </section>
 
         <section aria-labelledby="pd-webhook" className={`${card} p-5`}>
-          <h2 id="pd-webhook" className="flex items-center gap-2 text-base font-semibold">
-            <Link2 aria-hidden="true" className="h-4 w-4" />{en(" CRM webhook")}
+          <h2 id="pd-webhook" className="text-base font-semibold">
+            {en("CRM webhook")}
           </h2>
           <p className="mt-1 text-xs text-muted-foreground">{en("Each new inquiry is also sent as JSON to this address, for your CRM.")}</p>
           <form onSubmit={saveWebhook} className="mt-3 space-y-3">
@@ -194,13 +194,14 @@ export default function PartnerDashboardPage() {
               <span className="font-medium">{en("API key header {value}", { value: data.apiKeyConfigured ? en("(set; enter a new one to replace it)") : en("(optional)") })}</span>
               <input type="password" value={apiKey} onChange={(e) => setApiKey(e.target.value)} autoComplete="off" className={input} />
             </label>
-            <div className="flex gap-2">
-              <button type="submit" className="flex-1 rounded-xl bg-indigo-600 px-3 py-2 text-sm font-semibold text-white hover:bg-indigo-500">
+            <div className="flex flex-wrap gap-2">
+              <Button type="submit" className="flex-1">
                 {en("Save")}
-              </button>
-              <button type="button" onClick={() => void testWebhook()} disabled={!data.outboundWebhookUrl} className="inline-flex items-center gap-1 rounded-xl border border-border px-3 py-2 text-sm hover:bg-muted disabled:opacity-50">
-                <Send aria-hidden="true" className="h-4 w-4" />{en(" Test")}
-              </button>
+              </Button>
+              <Button type="button" variant="secondary" onClick={() => void testWebhook()} disabled={!data.outboundWebhookUrl}>
+                <Send aria-hidden="true" className="h-4 w-4" />
+                {en("Test")}
+              </Button>
             </div>
             {webhookStatus && (
               <p role="status" className="text-sm text-muted-foreground">
@@ -219,15 +220,17 @@ export default function PartnerDashboardPage() {
           <p className="mt-1 text-xs text-muted-foreground">{en("Mark each inquiry as you follow it up. Members agreed to share these details with you.")}</p>
         </div>
         {data.recentLeads.length === 0 ? (
-          <p className="px-5 pb-5 text-sm text-muted-foreground">{en("No inquiries yet. They appear here when members ask about your courses.")}</p>
+          <div className="px-5 pb-5">
+            <EmptyState title={en("No inquiries yet.")}>{en("They appear here when members ask about your courses.")}</EmptyState>
+          </div>
         ) : (
-          <div className="overflow-x-auto">
+          <ScrollArea label={en("Inquiries")}>
             <table className="w-full text-sm">
               <thead className="border-y border-border text-start text-xs text-muted-foreground">
                 <tr>
-                  <th className="p-3 font-medium">{en("Member")}</th>
-                  <th className="p-3 font-medium">{en("Course")}</th>
-                  <th className="p-3 font-medium">{en("Received")}</th>
+                  <th className="p-3 text-start font-medium">{en("Member")}</th>
+                  <th className="p-3 text-start font-medium">{en("Course")}</th>
+                  <th className="p-3 text-start font-medium">{en("Received")}</th>
                   <th className="p-3 text-end font-medium">{en("Status")}</th>
                 </tr>
               </thead>
@@ -250,7 +253,7 @@ export default function PartnerDashboardPage() {
                         value={lead.status}
                         disabled={updatingLeadId === lead.leadId}
                         onChange={(e) => void updateStatus(lead.leadId, e.target.value)}
-                        className="rounded-lg border border-border bg-background px-2 py-1 text-sm"
+                        className="rounded-lg border border-border bg-card px-2 py-1 text-sm shadow-sm"
                       >
                         <option value="Pending">{en("Waiting for contact")}</option>
                         <option value="Contacted">{en("Contacted")}</option>
@@ -261,7 +264,7 @@ export default function PartnerDashboardPage() {
                 ))}
               </tbody>
             </table>
-          </div>
+          </ScrollArea>
         )}
       </section>
     </div>

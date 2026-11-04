@@ -10,9 +10,10 @@
 
 import React, { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
-import { EyeOff, Trophy } from "lucide-react";
+import { EyeOff } from "lucide-react";
 import { AccessNotice, useLatestRef, useLegacyApi } from "@/lib/legacyApi";
 import { useEn } from "@/lib/english/EnglishProvider";
+import { PageHeader, ScrollArea, Tabs } from "@/components/career/ui";
 
 interface PracticeBoard {
   period: "week" | "all";
@@ -38,7 +39,7 @@ interface ChallengeBoard {
   you: { rank: number; finalScore: number; sprintTitle: string | null; visible: boolean } | null;
 }
 
-const card = "rounded-2xl border border-border bg-card shadow-[0_1px_2px_rgb(16_24_40/0.04)]";
+const card = "rounded-xl border border-border bg-card shadow-sm";
 type Tab = "week" | "all" | "challenges";
 
 export default function LeaderboardPage() {
@@ -106,38 +107,23 @@ export default function LeaderboardPage() {
 
   return (
     <div>
-      <header className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <h1 className="flex items-center gap-2 text-2xl font-semibold tracking-tight">
-            <Trophy aria-hidden="true" className="h-6 w-6 text-amber-500" />{en(" Leaderboards")}
-          </h1>
-          <p className="mt-1 text-sm text-muted-foreground">{en("Built from graded results only. Names show as first name and last initial.")}</p>
-        </div>
-        {visible !== null && (
-          <label className="flex items-center gap-2 text-sm">
-            <input type="checkbox" checked={visible} disabled={saving} onChange={(e) => void toggleVisible(e.target.checked)} className="h-4 w-4 accent-indigo-600" />
-            {en("Show me to other members")}
-          </label>
-        )}
-      </header>
+      <PageHeader
+        title={en("Leaderboards")}
+        description={en("Built from graded results only. Names show as first name and last initial.")}
+        actions={
+          visible !== null && (
+            <label className="flex items-center gap-2 text-sm">
+              <input type="checkbox" checked={visible} disabled={saving} onChange={(e) => void toggleVisible(e.target.checked)} className="h-4 w-4 accent-indigo-600" />
+              {en("Show me to other members")}
+            </label>
+          )
+        }
+      />
 
-      <div role="tablist" aria-label={en("Leaderboards")} className="mt-6 flex gap-1 border-b border-border">
-        {tabs.map((t) => (
-          <button
-            key={t.key}
-            role="tab"
-            type="button"
-            aria-selected={tab === t.key}
-            onClick={() => setTab(t.key)}
-            className={`-mb-px border-b-2 px-3 py-2 text-sm ${tab === t.key ? "border-indigo-600 font-semibold" : "border-transparent text-muted-foreground hover:text-foreground"}`}
-          >
-            {en(t.label)}
-          </button>
-        ))}
-      </div>
+      <Tabs label={en("Leaderboards")} value={tab} onChange={setTab} items={tabs.map((t) => ({ id: t.key, label: en(t.label) }))} />
 
       {visible === false && (
-        <p className="mt-4 flex items-center gap-2 rounded-xl border border-border bg-muted/50 px-4 py-3 text-sm">
+        <p className="mt-4 flex items-center gap-2 rounded-lg border border-border bg-muted/50 px-4 py-3 text-sm">
           <EyeOff aria-hidden="true" className="h-4 w-4" />{en(" You are hidden from other members. You still see your own rank below.")}
         </p>
       )}
@@ -195,7 +181,7 @@ function Table({
   const en = useEn();
   if (rows.length === 0 && !you) return <p className={`${card} p-6 text-sm text-muted-foreground`}>{empty}</p>;
   return (
-    <div className={`${card} overflow-x-auto`}>
+    <ScrollArea className={`${card} overflow-x-auto`}>
       <table className="w-full text-sm">
         <thead className="border-b border-border text-start text-xs text-muted-foreground">
           <tr>
@@ -242,6 +228,6 @@ function Table({
           )}
         </tbody>
       </table>
-    </div>
+    </ScrollArea>
   );
 }

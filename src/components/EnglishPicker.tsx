@@ -24,7 +24,7 @@ export default function EnglishPicker({ className = "" }: { className?: string }
     chooseLanguage(v as AppLanguage);
   };
   return (
-    <label className={`relative inline-flex items-center ${className}`}>
+    <label className={`relative items-center ${/\b(hidden|inline-flex|flex)\b/.test(className) ? className : `inline-flex ${className}`}`}>
       <span className="sr-only">Language</span>
       <select
         value={value}

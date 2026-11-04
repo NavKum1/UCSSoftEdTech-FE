@@ -14,6 +14,7 @@ import { SCHOOL_KINDS, countryList, countryName } from "@/lib/schoolKinds";
 import { CHECK_TEXT, type SetupState } from "@/components/institute/SetupChecklist";
 import StaffAccess from "@/components/institute/StaffAccess";
 import EmbedBuilder from "@/components/guidance/editor/EmbedBuilder";
+import { PageHeader, buttonClass } from "@/components/career/ui";
 import { useEn } from "@/lib/english/EnglishProvider";
 
 const STEPS = [
@@ -26,10 +27,9 @@ type Step = (typeof STEPS)[number]["key"];
 
 const SWATCHES = ["#0e7490", "#4f46e5", "#047857", "#b91c1c", "#c2410c", "#7c3aed", "#0f172a"];
 const input =
-  "mt-1.5 w-full rounded-xl border border-border bg-background px-3.5 py-2.5 text-[15px] outline-none transition focus:border-cyan-600 focus:ring-4 focus:ring-cyan-600/15";
-const primary =
-  "inline-flex items-center justify-center gap-2 rounded-xl bg-cyan-700 px-5 py-2.5 text-[15px] font-semibold text-white hover:bg-cyan-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-700 disabled:opacity-60";
-const secondary = "inline-flex items-center justify-center gap-2 rounded-xl border border-border px-4 py-2.5 text-[15px] font-medium hover:bg-muted disabled:opacity-60";
+  "mt-1.5 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm shadow-sm outline-none transition focus:border-indigo-600 focus:ring-4 focus:ring-indigo-600/15";
+const primary = `${buttonClass("primary")} bg-[var(--brand,#0e7490)] outline-[var(--brand,#0e7490)]`;
+const secondary = buttonClass("secondary");
 
 export default function SetupPage() {
   return (
@@ -81,10 +81,10 @@ function Setup() {
 
   return (
     <div>
-      <div className="mb-6">
-        <h1 className="text-2xl font-semibold tracking-tight">{en("Set up {name}", { name: s.school.name })}</h1>
-        <p className="mt-1 text-sm text-muted-foreground">{en("Four short steps. Skip any of them and come back from the checklist on your dashboard.")}</p>
-      </div>
+      <PageHeader
+        title={en("Set up {name}", { name: s.school.name })}
+        description={en("Four short steps. Skip any of them and come back from the checklist on your dashboard.")}
+      />
 
       <div className="lg:grid lg:grid-cols-[230px_1fr] lg:gap-8">
         {/* Steps: a list on the side on wide screens, a bar on phones */}
@@ -93,7 +93,7 @@ function Setup() {
             {en("Step {value} of {length}: {title}", { value: index + 1, length: STEPS.length, title: STEPS[index].title })}
           </p>
           <div className="h-1.5 overflow-hidden rounded-full bg-muted lg:hidden">
-            <div className="h-full rounded-full bg-cyan-600" style={{ width: `${((index + 1) / STEPS.length) * 100}%` }} />
+            <div className="h-full rounded-full bg-indigo-600" style={{ width: `${((index + 1) / STEPS.length) * 100}%` }} />
           </div>
           <ol className="hidden space-y-1 lg:block">
             {STEPS.map((x, i) => (
@@ -102,11 +102,11 @@ function Setup() {
                   type="button"
                   onClick={() => go(x.key)}
                   aria-current={x.key === step ? "step" : undefined}
-                  className={`flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-start ${x.key === step ? "bg-cyan-50 dark:bg-cyan-950/40" : "hover:bg-muted"}`}
+                  className={`flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-start ${x.key === step ? "bg-muted" : "hover:bg-muted"}`}
                 >
                   <span
                     className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-semibold ${
-                      done(x.key) ? "bg-emerald-600 text-white" : x.key === step ? "bg-cyan-700 text-white" : "border border-border text-muted-foreground"
+                      done(x.key) ? "bg-emerald-600 text-white" : x.key === step ? "bg-indigo-700 text-white" : "border border-border text-muted-foreground"
                     }`}
                   >
                     {done(x.key) ? <Check aria-label={en("Done")} className="h-4 w-4" strokeWidth={3} /> : i + 1}
@@ -121,7 +121,7 @@ function Setup() {
           </ol>
         </nav>
 
-        <section aria-labelledby="step-title" className="rounded-2xl border border-border bg-card p-5 shadow-sm sm:p-7">
+        <section aria-labelledby="step-title" className="rounded-xl border border-border bg-card p-5 shadow-sm sm:p-7">
           {step === "school" && <SchoolStep {...props} />}
           {step === "form" && <FormStep {...props} />}
           {step === "team" && <TeamStep {...props} getToken={getToken} />}
@@ -154,7 +154,7 @@ type StepProps = {
 function Heading({ title, text }: { title: string; text: string }) {
   return (
     <div className="mb-6">
-      <h2 id="step-title" className="text-xl font-semibold tracking-tight">
+      <h2 id="step-title" className="text-lg font-semibold tracking-tight">
         {title}
       </h2>
       <p className="mt-1 text-sm text-muted-foreground">{text}</p>
@@ -245,9 +245,9 @@ function SchoolStep({ s, setS, apiFetch, next }: StepProps) {
           {SCHOOL_KINDS.map((k) => (
             <label
               key={k.value}
-              className={`flex cursor-pointer items-start gap-3 rounded-xl border p-3.5 transition ${f.kind === k.value ? "border-cyan-600 bg-cyan-50/60 ring-1 ring-cyan-600 dark:bg-cyan-950/30" : "border-border hover:bg-muted/50"}`}
+              className={`flex cursor-pointer items-start gap-3 rounded-xl border p-3.5 transition ${f.kind === k.value ? "border-indigo-600 bg-indigo-50/60 ring-1 ring-indigo-600 dark:bg-indigo-950/30" : "border-border hover:bg-muted/50"}`}
             >
-              <input type="radio" name="kind" value={k.value} checked={f.kind === k.value} onChange={() => setF({ ...f, kind: k.value })} className="mt-1 accent-cyan-700" />
+              <input type="radio" name="kind" value={k.value} checked={f.kind === k.value} onChange={() => setF({ ...f, kind: k.value })} className="mt-1 accent-indigo-700" />
               <span>
                 <span className="block text-sm font-medium">{en(k.label)}</span>
                 <span className="block text-xs text-muted-foreground">{en(k.text)}</span>
@@ -261,7 +261,7 @@ function SchoolStep({ s, setS, apiFetch, next }: StepProps) {
         <div>
           <p className="text-sm font-medium">{en("Logo")}</p>
           <div className="mt-2 flex items-center gap-4">
-            <div className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-border bg-background">
+            <div className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-border bg-background">
               {s.school.logoUrl ? (
                 // eslint-disable-next-line @next/next/no-img-element -- the school's own image from the API
                 <img src={s.school.logoUrl} alt={`${s.school.name} logo`} className="max-h-full max-w-full object-contain p-1.5" />
@@ -324,7 +324,7 @@ function SchoolStep({ s, setS, apiFetch, next }: StepProps) {
             {en("Country")}
           </label>
           {s.school.countryLocked ? (
-            <p id="country" className="mt-1.5 rounded-xl bg-muted/60 px-3.5 py-2.5 text-[15px]">
+            <p id="country" className="mt-1.5 rounded-lg bg-muted/60 px-3 py-2 text-sm">
               {countryName(s.school.country)} <span className="text-xs text-muted-foreground">{en("(set at sign-up: it decides your currency)")}</span>
             </p>
           ) : (
@@ -369,9 +369,9 @@ function SchoolStep({ s, setS, apiFetch, next }: StepProps) {
           ] as const).map(([v, label]) => (
             <label
               key={v}
-              className={`flex cursor-pointer items-start gap-2.5 rounded-xl border p-3 text-sm transition ${f.english === v ? "border-cyan-600 bg-cyan-50/60 ring-1 ring-cyan-600 dark:bg-cyan-950/30" : "border-border hover:bg-muted/50"}`}
+              className={`flex cursor-pointer items-start gap-2.5 rounded-xl border p-3 text-sm transition ${f.english === v ? "border-indigo-600 bg-indigo-50/60 ring-1 ring-indigo-600 dark:bg-indigo-950/30" : "border-border hover:bg-muted/50"}`}
             >
-              <input type="radio" name="english" value={v} checked={f.english === v} onChange={() => setF({ ...f, english: v })} className="mt-0.5 accent-cyan-700" />
+              <input type="radio" name="english" value={v} checked={f.english === v} onChange={() => setF({ ...f, english: v })} className="mt-0.5 accent-indigo-700" />
               {label}
             </label>
           ))}
@@ -444,10 +444,10 @@ function FormStep({ s, setS, apiFetch }: StepProps) {
           {s.suggested.map((t) => (
             <label
               key={t.key}
-              className={`flex cursor-pointer flex-col rounded-xl border p-4 transition ${choice === t.key ? "border-cyan-600 bg-cyan-50/60 ring-1 ring-cyan-600 dark:bg-cyan-950/30" : "border-border hover:bg-muted/50"}`}
+              className={`flex cursor-pointer flex-col rounded-xl border p-4 transition ${choice === t.key ? "border-indigo-600 bg-indigo-50/60 ring-1 ring-indigo-600 dark:bg-indigo-950/30" : "border-border hover:bg-muted/50"}`}
             >
               <span className="flex items-start gap-3">
-                <input type="radio" name="template" value={t.key} checked={choice === t.key} onChange={() => setChoice(t.key)} className="mt-1 accent-cyan-700" />
+                <input type="radio" name="template" value={t.key} checked={choice === t.key} onChange={() => setChoice(t.key)} className="mt-1 accent-indigo-700" />
                 <span>
                   <span className="block font-medium">{t.name}</span>
                   <span className="block text-xs text-muted-foreground">
@@ -463,7 +463,7 @@ function FormStep({ s, setS, apiFetch }: StepProps) {
       </fieldset>
       <p className="mt-3 text-sm text-muted-foreground">
         {en("More templates, and a blank form, are in")}{" "}
-        <Link href="/institute/guidance" className="font-medium text-cyan-700 hover:underline dark:text-cyan-400">
+        <Link href="/institute/guidance" className="font-medium text-indigo-700 hover:underline dark:text-indigo-400">
           {en("Guidance forms")}
         </Link>
         .
@@ -489,7 +489,7 @@ function TeamStep({ s, getToken }: StepProps & { getToken: () => Promise<string 
       <p className="mb-5 text-sm">
         {s.team.limit == null ? `${s.team.used} on your team.` : `${s.team.used} of ${s.team.limit} places on your ${s.plan?.name ?? ""} plan are used.`}{" "}
         {s.team.limit != null && s.team.used >= s.team.limit && (
-          <Link href="/institute/billing" className="font-medium text-cyan-700 hover:underline dark:text-cyan-400">
+          <Link href="/institute/billing" className="font-medium text-indigo-700 hover:underline dark:text-indigo-400">
             {en("Upgrade for more places")}
           </Link>
         )}
@@ -575,7 +575,7 @@ function WebsiteStep({ s, apiFetch }: StepProps) {
       {s.plan?.customDomain && (
         <p className="mt-6 text-sm text-muted-foreground">
           {en("Your plan includes your own address for the form, such as guidance.yourschool.edu. Set it up in")}{" "}
-          <Link href="/institute/guidance" className="font-medium text-cyan-700 hover:underline dark:text-cyan-400">
+          <Link href="/institute/guidance" className="font-medium text-indigo-700 hover:underline dark:text-indigo-400">
             {en("Guidance forms")}
           </Link>
           .

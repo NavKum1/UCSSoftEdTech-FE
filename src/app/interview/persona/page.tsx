@@ -4,18 +4,15 @@ import React, { useState, useEffect } from "react";
 import { AccessNotice, useLegacyApi, useLatestRef } from "@/lib/legacyApi";
 import {
   Mic,
-  Sparkles,
   ShieldAlert,
   HeartHandshake,
   Rocket,
   Lock,
-  Globe,
   CheckCircle2,
-  Sliders,
-  Code2,
   RotateCw,
 } from "lucide-react";
 import { useEn } from "@/lib/english/EnglishProvider";
+import { Badge, Button, Card, PageHeader } from "@/components/career/ui";
 
 interface PersonaItem {
   id: string;
@@ -64,12 +61,6 @@ export default function PersonaSelectorPage() {
       label: en("London Financial Tech"),
       region: "United Kingdom (City of London)",
       desc: "Composed, analytical cadence with British technical phrasing.",
-    },
-    {
-      code: "India_Bangalore_Enterprise",
-      label: en("Bangalore Enterprise Cloud"),
-      region: "India (Bangalore Hub)",
-      desc: "High-scale architecture vocabulary, SLA and concurrency focus.",
     },
     {
       code: "EU_Berlin_Pragmatic",
@@ -147,15 +138,15 @@ export default function PersonaSelectorPage() {
   const getPersonaIcon = (code: string) => {
     switch (code) {
       case "StaffArchitectFAANG":
-        return <ShieldAlert className="w-5 h-5 text-red-700 dark:text-red-400" />;
+        return <ShieldAlert className="h-5 w-5 text-indigo-700 dark:text-indigo-400" />;
       case "EmpatheticMentor":
-        return <HeartHandshake className="w-5 h-5 text-emerald-700 dark:text-emerald-400" />;
+        return <HeartHandshake className="h-5 w-5 text-indigo-700 dark:text-indigo-400" />;
       case "StartupCTO":
-        return <Rocket className="w-5 h-5 text-amber-700 dark:text-amber-400" />;
+        return <Rocket className="h-5 w-5 text-indigo-700 dark:text-indigo-400" />;
       case "SecurityAuditor":
-        return <Lock className="w-5 h-5 text-purple-700 dark:text-purple-400" />;
+        return <Lock className="h-5 w-5 text-indigo-700 dark:text-indigo-400" />;
       default:
-        return <Mic className="w-5 h-5 text-indigo-700 dark:text-indigo-400" />;
+        return <Mic className="h-5 w-5 text-indigo-700 dark:text-indigo-400" />;
     }
   };
 
@@ -163,33 +154,15 @@ export default function PersonaSelectorPage() {
 
   return (
     <div className="text-foreground">
+      <PageHeader
+        title={en("Interviewer style")}
+        description={en("Choose how your AI interviewer asks questions, how often it interrupts, and how it speaks.")}
+      />
+
       <div className="space-y-8">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-6 border-b border-border">
-          <div>
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-xl bg-indigo-500/20 text-indigo-700 dark:text-indigo-400 border border-indigo-500/30">
-                <Sliders className="w-6 h-6" />
-              </div>
-              <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
-                {en("AI Technical Interviewer Persona Studio")}
-              </h1>
-            </div>
-            <p className="mt-1 text-sm text-muted-foreground">
-              {en("Customize technical inquiry styles, voice aggression thresholds, and regional dialect profiles.")}
-            </p>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <span className="px-3 py-1 rounded-lg bg-indigo-500/10 border border-indigo-500/20 text-indigo-600 dark:text-indigo-300 text-xs font-mono">
-              {en("Vapi Real-Time Voice Engine Active")}
-            </span>
-          </div>
-        </div>
-
         {statusMessage && (
-          <div className="flex items-center gap-2 p-3 rounded-xl bg-indigo-950/40 border border-indigo-500/30 text-indigo-600 dark:text-indigo-300 text-xs font-mono">
-            <CheckCircle2 className="w-4 h-4 text-indigo-700 dark:text-indigo-400 shrink-0" />
+          <div role="status" className="flex items-center gap-2 rounded-lg border border-border bg-card p-3 text-sm text-muted-foreground shadow-sm">
+            <CheckCircle2 className="h-4 w-4 shrink-0 text-indigo-700 dark:text-indigo-400" />
             <span>{statusMessage}</span>
           </div>
         )}
@@ -197,55 +170,36 @@ export default function PersonaSelectorPage() {
         {/* Section 1: Choose Persona */}
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <h2 className="text-base font-semibold text-foreground flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-indigo-700 dark:text-indigo-400" />
-              {en("1. Select Interviewer Persona & Scrutiny Style")}
-            </h2>
-            <span className="text-xs text-muted-foreground">{en("{length} Available Profiles", { length: personas.length })}</span>
+            <h2 className="text-base font-semibold text-foreground">{en("1. Choose an interviewer")}</h2>
+            <span className="text-xs text-muted-foreground">{en("{length} available", { length: personas.length })}</span>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
             {personas.map((persona) => {
               const isSelected = selectedPersona === persona.code;
               return (
                 <div
                   key={persona.id}
                   onClick={() => setSelectedPersona(persona.code)}
-                  className={`cursor-pointer p-5 rounded-2xl border transition-all space-y-3 relative ${
-                    isSelected
-                      ? "border-indigo-500 bg-indigo-950/30 shadow-lg shadow-indigo-500/10 ring-1 ring-indigo-500"
-                      : "border-border bg-card/40 hover:border-border hover:bg-card/70"
+                  className={`relative cursor-pointer space-y-3 rounded-xl border bg-card p-5 shadow-sm transition-colors ${
+                    isSelected ? "border-indigo-500 ring-1 ring-indigo-500" : "border-border hover:bg-muted/50"
                   }`}
                 >
                   <div className="flex items-center justify-between">
-                    <div className="p-2 rounded-xl bg-muted/80 border border-border/50">
-                      {getPersonaIcon(persona.code)}
-                    </div>
-                    <span
-                      className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded tracking-wider ${
-                        persona.scrutinyLevel === "Draconian"
-                          ? "bg-red-500/20 text-red-600 dark:text-red-300 border border-red-500/30"
-                          : persona.scrutinyLevel === "Lenient"
-                          ? "bg-emerald-500/20 text-emerald-600 dark:text-emerald-300 border border-emerald-500/30"
-                          : "bg-amber-500/20 text-amber-600 dark:text-amber-300 border border-amber-500/30"
-                      }`}
-                    >
+                    <div className="rounded-lg border border-border bg-muted p-2">{getPersonaIcon(persona.code)}</div>
+                    <Badge tone={persona.scrutinyLevel === "Draconian" ? "bad" : persona.scrutinyLevel === "Lenient" ? "good" : "warn"}>
                       {persona.scrutinyLevel}
-                    </span>
+                    </Badge>
                   </div>
 
                   <div>
-                    <h3 className="text-sm font-bold text-foreground tracking-tight">{persona.displayName}</h3>
-                    <p className="text-xs text-muted-foreground mt-1 line-clamp-2 leading-relaxed">
-                      {persona.description}
-                    </p>
+                    <h3 className="text-sm font-semibold text-foreground">{persona.displayName}</h3>
+                    <p className="mt-1 line-clamp-2 text-xs leading-relaxed text-muted-foreground">{persona.description}</p>
                   </div>
 
-                  <div className="pt-2 border-t border-border/60 flex items-center justify-between text-[11px] text-muted-foreground">
-                    <span>{en("Interruption Rate")}</span>
-                    <span className="font-mono font-semibold text-foreground">
-                      {(persona.interruptionAggressiveness * 100).toFixed(0)}%
-                    </span>
+                  <div className="flex items-center justify-between border-t border-border pt-2 text-xs text-muted-foreground">
+                    <span>{en("Interruption rate")}</span>
+                    <span className="font-semibold tabular-nums text-foreground">{(persona.interruptionAggressiveness * 100).toFixed(0)}%</span>
                   </div>
                 </div>
               );
@@ -255,29 +209,24 @@ export default function PersonaSelectorPage() {
 
         {/* Section 2: Dialect & Accent Tuning */}
         <div className="space-y-4">
-          <h2 className="text-base font-semibold text-foreground flex items-center gap-2">
-            <Globe className="w-4 h-4 text-emerald-700 dark:text-emerald-400" />
-            {en("2. Choose Speech Dialect & Regional Cadence")}
-          </h2>
+          <h2 className="text-base font-semibold text-foreground">{en("2. Choose a speaking style")}</h2>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {dialects.map((d) => {
               const isSelected = selectedDialect === d.code;
               return (
                 <div
                   key={d.code}
                   onClick={() => setSelectedDialect(d.code)}
-                  className={`cursor-pointer p-4 rounded-xl border transition-all space-y-1.5 ${
-                    isSelected
-                      ? "border-emerald-500 bg-emerald-950/20 ring-1 ring-emerald-500"
-                      : "border-border bg-card/40 hover:border-border"
+                  className={`cursor-pointer space-y-1.5 rounded-xl border bg-card p-4 shadow-sm transition-colors ${
+                    isSelected ? "border-indigo-500 ring-1 ring-indigo-500" : "border-border hover:bg-muted/50"
                   }`}
                 >
-                  <div className="flex items-center justify-between">
-                    <span className="font-semibold text-xs text-foreground">{en(d.label)}</span>
-                    <span className="text-[10px] text-muted-foreground font-mono">{en(d.region)}</span>
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-sm font-medium text-foreground">{en(d.label)}</span>
+                    <span className="text-xs text-muted-foreground">{en(d.region)}</span>
                   </div>
-                  <p className="text-[11px] text-muted-foreground leading-relaxed">{en(d.desc)}</p>
+                  <p className="text-xs leading-relaxed text-muted-foreground">{en(d.desc)}</p>
                 </div>
               );
             })}
@@ -285,56 +234,44 @@ export default function PersonaSelectorPage() {
         </div>
 
         {/* Section 3: Live Injected System Prompt Preview */}
-        <div className="p-6 rounded-2xl border border-border bg-card/50 space-y-4">
-          <div className="flex items-center justify-between pb-3 border-b border-border">
-            <div className="flex items-center gap-2">
-              <Code2 className="w-5 h-5 text-indigo-700 dark:text-indigo-400" />
-              <h2 className="text-sm font-bold text-foreground uppercase tracking-wider">
-                {en("Live Vapi System Prompt & Directives Inspector")}
-              </h2>
-            </div>
-
-            <button
-              onClick={() => handleGeneratePreview(selectedPersona, selectedDialect)}
-              disabled={generatingPreview}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-muted hover:bg-slate-700 text-xs text-muted-foreground transition-colors"
-            >
-              <RotateCw className={`w-3.5 h-3.5 ${generatingPreview ? "animate-spin" : ""}`} />
-              <span>{en("Recompile Prompt")}</span>
-            </button>
-          </div>
-
+        <Card
+          title={en("Interviewer instructions preview")}
+          actions={
+            <Button variant="secondary" onClick={() => handleGeneratePreview(selectedPersona, selectedDialect)} disabled={generatingPreview}>
+              <RotateCw className={`h-4 w-4 ${generatingPreview ? "animate-spin" : ""}`} />
+              <span>{en("Refresh preview")}</span>
+            </Button>
+          }
+        >
           {previewConfig ? (
             <div className="space-y-4">
-              <div className="flex flex-wrap items-center gap-4 text-xs font-mono bg-background p-3 rounded-xl border border-border">
+              <dl className="flex flex-wrap items-center gap-6 rounded-lg border border-border bg-muted/40 p-3 text-sm">
                 <div>
-                  <span className="text-muted-foreground block">{en("Persona:")}</span>
-                  <span className="text-indigo-700 dark:text-indigo-400 font-bold">{previewConfig.displayName}</span>
+                  <dt className="text-xs text-muted-foreground">{en("Interviewer")}</dt>
+                  <dd className="font-medium text-foreground">{previewConfig.displayName}</dd>
                 </div>
                 <div>
-                  <span className="text-muted-foreground block">{en("Scrutiny:")}</span>
-                  <span className="text-foreground font-bold">{previewConfig.scrutinyLevel}</span>
+                  <dt className="text-xs text-muted-foreground">{en("Scrutiny")}</dt>
+                  <dd className="font-medium text-foreground">{previewConfig.scrutinyLevel}</dd>
                 </div>
                 <div>
-                  <span className="text-muted-foreground block">{en("Dialect:")}</span>
-                  <span className="text-emerald-700 dark:text-emerald-400 font-bold">{previewConfig.dialectCode}</span>
+                  <dt className="text-xs text-muted-foreground">{en("Speaking style")}</dt>
+                  <dd className="font-mono text-xs text-foreground">{previewConfig.dialectCode}</dd>
                 </div>
                 <div>
-                  <span className="text-muted-foreground block">{en("Voice ID:")}</span>
-                  <span className="text-amber-700 dark:text-amber-400 font-bold">{previewConfig.voiceId}</span>
+                  <dt className="text-xs text-muted-foreground">{en("Voice ID")}</dt>
+                  <dd className="font-mono text-xs text-foreground">{previewConfig.voiceId}</dd>
                 </div>
-              </div>
+              </dl>
 
-              <div className="p-4 rounded-xl bg-background border border-border text-xs font-mono text-muted-foreground leading-relaxed max-h-72 overflow-y-auto whitespace-pre-wrap">
+              <div className="max-h-72 overflow-y-auto whitespace-pre-wrap rounded-lg border border-border bg-background p-4 font-mono text-xs leading-relaxed text-muted-foreground">
                 {previewConfig.injectedSystemPrompt}
               </div>
             </div>
           ) : (
-            <div className="py-8 text-center text-muted-foreground text-xs italic">
-              {en("Loading adapted prompt directives...")}
-            </div>
+            <p className="py-8 text-center text-sm text-muted-foreground">{en("Loading the preview…")}</p>
           )}
-        </div>
+        </Card>
       </div>
     </div>
   );

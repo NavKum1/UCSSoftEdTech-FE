@@ -3,7 +3,7 @@
 import React, { useRef, useState } from "react";
 import { useApi } from "@/lib/appAuth";
 import { useCareerShell } from "@/components/career/CareerShell";
-import { Badge, Button, Card, EmptyState, ErrorBanner, Field, Loading, PageHeader, SuccessBanner, formatDate, useLoad, ScrollArea, useCareerT, useCareerLabels } from "@/components/career/ui";
+import { Badge, Button, Card, EmptyState, ErrorBanner, Field, Loading, PageHeader, SuccessBanner, formatDate, useLoad, ScrollArea, useCareerT, useCareerLabels, StatTile } from "@/components/career/ui";
 import { ConnectedPlatforms } from "@/components/career/ConnectedPlatforms";
 
 interface FieldDef {
@@ -428,7 +428,7 @@ export default function ImportsPage() {
       {view && dryRun && (
         <Card title={t("n3DryRunResults")} className="mb-6">
           <div role="status" aria-live="polite">
-            <dl className="mb-4 grid grid-cols-2 gap-3 text-sm md:grid-cols-4">
+            <div className="mb-4 grid grid-cols-2 gap-3 md:grid-cols-4">
               <Stat label={t("rows")} value={dryRun.total} />
               <Stat label={t("willBeImported")} value={dryRun.toCreate} />
               <Stat label={t("rowsWithErrorsSkipped")} value={dryRun.errors} />
@@ -449,7 +449,7 @@ export default function ImportsPage() {
               )}
               <Stat label={t("waitingForSignIn")} value={dryRun.waitingForSignIn} />
               <Stat label={t("rowsWithWarnings")} value={dryRun.warnings} />
-            </dl>
+            </div>
           </div>
           <IssueTable issues={dryRun.issues} truncated={dryRun.issuesTruncated} />
           {dryRun.matches.length > 0 && (
@@ -556,10 +556,7 @@ export default function ImportsPage() {
 
 function Stat({ label, value }: { label: string; value: number | undefined }) {
   return (
-    <div className="rounded-md border border-border p-2">
-      <dt className="text-xs text-muted-foreground">{label}</dt>
-      <dd className="text-lg font-semibold">{value ?? 0}</dd>
-    </div>
+    <StatTile label={label} value={value ?? 0} />
   );
 }
 

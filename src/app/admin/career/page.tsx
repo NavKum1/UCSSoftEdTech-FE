@@ -5,7 +5,7 @@ import Link from "next/link";
 
 import React, { useState } from "react";
 import { useApi } from "@/lib/appAuth";
-import { Badge, Button, Card, EmptyState, ErrorBanner, Field, Loading, PageHeader, SuccessBanner, useLoad, ScrollArea } from "@/components/career/ui";
+import { Badge, Button, buttonClass, Card, EmptyState, ErrorBanner, Field, Loading, PageHeader, SuccessBanner, useLoad, ScrollArea } from "@/components/career/ui";
 
 interface Brand {
   id: string;
@@ -281,9 +281,9 @@ export default function CareerPlatformAdminPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Career suite"
+        title="Career settings"
         description="Enable schools, manage white-label brands and review employer verification."
-        actions={<div className="flex gap-2"><Link href="/admin/career/sponsors" className="rounded-md border border-border px-3 py-2 text-sm hover:bg-muted">Sponsorship data</Link><Link href="/admin/career/incidents" className="rounded-md border border-border px-3 py-2 text-sm hover:bg-muted">Privacy incidents</Link></div>}
+        actions={<><Link href="/admin/career/sponsors" className={buttonClass("secondary")}>Sponsorship data</Link><Link href="/admin/career/incidents" className={buttonClass("secondary")}>Privacy incidents</Link></>}
       />
       <ErrorBanner error={err} />
       <SuccessBanner message={msg} />
@@ -326,7 +326,7 @@ export default function CareerPlatformAdminPage() {
           <ScrollArea>
             <table className="w-full text-sm">
               <caption className="sr-only">Schools with the career suite</caption>
-              <thead>
+              <thead className="text-xs text-muted-foreground">
                 <tr className="border-b border-border text-start">
                   <th scope="col" className="py-2 pe-3 font-medium">School</th>
                   <th scope="col" className="py-2 pe-3 font-medium">Slug</th>
@@ -398,7 +398,7 @@ export default function CareerPlatformAdminPage() {
             e.preventDefault();
             setEmpSearch(empQ.trim());
           }}
-          className="mb-3 flex max-w-lg items-end gap-2"
+          className="mb-3 flex max-w-lg flex-wrap items-end gap-2"
           role="search"
         >
           <Field label="Find an employer" hint="Name, email domain or website.">{(p) => <input {...p} type="search" value={empQ} onChange={(e) => setEmpQ(e.target.value)} />}</Field>

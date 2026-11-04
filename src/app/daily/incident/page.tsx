@@ -15,6 +15,7 @@ import { useSearchParams } from "next/navigation";
 import { ArrowLeft, CheckCircle2, Clock, Sparkles, XCircle } from "lucide-react";
 import { AccessNotice, useLatestRef, useLegacyApi } from "@/lib/legacyApi";
 import { useEn } from "@/lib/english/EnglishProvider";
+import { PageHeader, buttonClass } from "@/components/career/ui";
 
 const TRACKS = [
   { id: "DevOps", label: "DevOps and SRE" },
@@ -71,10 +72,10 @@ interface Result {
   postMortem: string;
 }
 
-const card = "rounded-2xl border border-border bg-card shadow-[0_1px_2px_rgb(16_24_40/0.04)]";
+const card = "rounded-xl border border-border bg-card shadow-sm";
 const primary =
-  "inline-flex items-center justify-center gap-2 rounded-xl bg-amber-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-amber-500 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-600";
-const select = "mt-1 block w-full rounded-xl border border-border bg-background px-3 py-2 text-sm";
+  `${buttonClass("primary")} bg-[var(--brand,#0e7490)]`;
+const select = "mt-1 block w-full rounded-lg border border-border bg-background px-3 py-2 text-sm";
 
 const metricLabel = (k: string) => k.replace(/([a-z])([A-Z])/g, "$1 $2").replace(/^./, (c) => c.toUpperCase());
 
@@ -232,7 +233,7 @@ function IncidentDrill() {
               ))}
             </select>
           </label>
-          <button type="submit" className="rounded-xl border border-border px-4 py-2 text-sm font-semibold hover:bg-muted">
+          <button type="submit" className={buttonClass("secondary")}>
             {en("Show today's drill")}
           </button>
         </form>
@@ -249,20 +250,24 @@ function IncidentDrill() {
         <div className={`${card} mt-6 h-64 animate-pulse motion-reduce:animate-none`} aria-busy="true" aria-label={en("Loading the drill")} />
       ) : drill && status ? (
         <>
-          <header className="mt-6 flex flex-wrap items-start justify-between gap-4">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                {drill.severity} · {TRACKS.find((t) => t.id === drill.track)?.label ?? drill.track} · {drill.difficultyTier}
-                {drill.isPrivateAssessment && drill.organizationOrTeamName ? ` · ${drill.organizationOrTeamName} assessment` : ""}
-              </p>
-              <h1 className="mt-1 text-xl font-semibold">{drill.title}</h1>
-            </div>
-            {attempt && (
-              <p className="inline-flex items-center gap-1.5 rounded-full border border-border px-3 py-1 text-sm tabular-nums">
-                <Clock aria-hidden="true" className="h-4 w-4" /> {Math.floor(elapsed / 60)}:{String(elapsed % 60).padStart(2, "0")}
-              </p>
-            )}
-          </header>
+          <div className="mt-6">
+            <PageHeader
+              title={drill.title}
+              description={
+                <>
+                  {drill.severity} · {TRACKS.find((t) => t.id === drill.track)?.label ?? drill.track} · {drill.difficultyTier}
+                  {drill.isPrivateAssessment && drill.organizationOrTeamName ? ` · ${drill.organizationOrTeamName} assessment` : ""}
+                </>
+              }
+              actions={
+                attempt && (
+                  <p className="inline-flex items-center gap-1.5 rounded-full border border-border px-3 py-1 text-sm tabular-nums">
+                    <Clock aria-hidden="true" className="h-4 w-4" /> {Math.floor(elapsed / 60)}:{String(elapsed % 60).padStart(2, "0")}
+                  </p>
+                )
+              }
+            />
+          </div>
 
           {status.completed && !result && (
             <p className="mt-4 rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-sm">
@@ -323,8 +328,8 @@ function IncidentDrill() {
                   <legend className="text-sm font-semibold">{en("Root cause")}</legend>
                   <div className="mt-2 space-y-2">
                     {drill.hypotheses.map((h) => (
-                      <label key={h.key} className={`flex cursor-pointer gap-2.5 rounded-xl border p-3 text-sm ${hypothesis === h.key ? "border-amber-500 bg-amber-50 dark:bg-amber-500/10" : "border-border"}`}>
-                        <input type="radio" name="hypothesis" required value={h.key} checked={hypothesis === h.key} onChange={() => setHypothesis(h.key)} className="mt-0.5 accent-amber-600" />
+                      <label key={h.key} className={`flex cursor-pointer gap-2.5 rounded-xl border p-3 text-sm ${hypothesis === h.key ? "border-indigo-500 bg-indigo-50 dark:bg-indigo-500/10" : "border-border"}`}>
+                        <input type="radio" name="hypothesis" required value={h.key} checked={hypothesis === h.key} onChange={() => setHypothesis(h.key)} className="mt-0.5 accent-indigo-600" />
                         {h.label}
                       </label>
                     ))}
@@ -334,8 +339,8 @@ function IncidentDrill() {
                   <legend className="text-sm font-semibold">{en("What do you do now?")}</legend>
                   <div className="mt-2 space-y-2">
                     {drill.actions.map((a) => (
-                      <label key={a.key} className={`flex cursor-pointer gap-2.5 rounded-xl border p-3 text-sm ${action === a.key ? "border-amber-500 bg-amber-50 dark:bg-amber-500/10" : "border-border"}`}>
-                        <input type="radio" name="action" required value={a.key} checked={action === a.key} onChange={() => setAction(a.key)} className="mt-0.5 accent-amber-600" />
+                      <label key={a.key} className={`flex cursor-pointer gap-2.5 rounded-xl border p-3 text-sm ${action === a.key ? "border-indigo-500 bg-indigo-50 dark:bg-indigo-500/10" : "border-border"}`}>
+                        <input type="radio" name="action" required value={a.key} checked={action === a.key} onChange={() => setAction(a.key)} className="mt-0.5 accent-indigo-600" />
                         <span>
                           <span className="block">{a.label}</span>
                           {a.detail && <code className="mt-1 block break-all text-xs text-muted-foreground">{a.detail}</code>}
@@ -371,7 +376,7 @@ function IncidentResultView({ result, onAgain, busy }: { result: Result; onAgain
         <p className="text-sm text-muted-foreground">
           {en("{value} Time: {value2}m {value3}s.", { value: result.countsForPoints ? `${result.points} points${result.speedBonus ? `, including a ${result.speedBonus}-point speed bonus` : ""}.` : en("Practice: no points for a repeat."), value2: Math.floor(result.timeSeconds / 60), value3: result.timeSeconds % 60 })}</p>
         <p className="mt-3 text-sm">{result.feedback}</p>
-        <button type="button" className="mt-4 text-sm font-semibold text-amber-700 hover:underline disabled:opacity-50 dark:text-amber-400" disabled={busy} onClick={onAgain}>
+        <button type="button" className="mt-4 text-sm font-medium text-indigo-700 hover:underline disabled:opacity-50 dark:text-indigo-300" disabled={busy} onClick={onAgain}>
           {en("Practise again (no points)")}
         </button>
       </section>
@@ -481,7 +486,7 @@ function GenerateDrill({
   return (
     <section className={`${card} mt-8 p-5`}>
       <button type="button" onClick={() => setOpen((o) => !o)} aria-expanded={open} className="flex items-center gap-2 text-sm font-semibold">
-        <Sparkles aria-hidden="true" className="h-4 w-4 text-amber-500" />{en(" Generate a drill for your own stack")}
+        <Sparkles aria-hidden="true" className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />{en(" Generate a drill for your own stack")}
       </button>
       {share && (
         <p className="mt-3 text-sm">
@@ -517,7 +522,7 @@ function GenerateDrill({
             <input value={failure} onChange={(e) => setFailure(e.target.value)} maxLength={300} placeholder={en("e.g. connection pool exhaustion")} className={select} />
           </label>
           <label className="flex items-center gap-2 text-sm sm:col-span-2">
-            <input type="checkbox" checked={isPrivate} onChange={(e) => setIsPrivate(e.target.checked)} className="accent-amber-600" />
+            <input type="checkbox" checked={isPrivate} onChange={(e) => setIsPrivate(e.target.checked)} className="accent-indigo-600" />
             {en("Private drill for my team (shared by link, not shown to others)")}
           </label>
           {isPrivate && (

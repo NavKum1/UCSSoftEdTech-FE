@@ -4,9 +4,7 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { ApiError, useApi, useAppAuth } from "@/lib/appAuth";
-import {
-  Badge, Button, Card, EmptyState, ErrorBanner, Loading, PageHeader, SuccessBanner, useCareerFormat, useCareerT, useLoad,
-} from "@/components/career/ui";
+import { Badge, Button, Card, EmptyState, ErrorBanner, Loading, PageHeader, SuccessBanner, useCareerFormat, useCareerT, useLoad, StatTile } from "@/components/career/ui";
 import type { FreeHome } from "@/components/career/freeTier/FreeTierFrame";
 
 // Existing product pages for the included tools only (no resume, cover-letter, networking or job tools)
@@ -115,22 +113,14 @@ export default function FreeHomePage() {
         </ul>
       </Card>
 
-      <Card title={t("portfolioTitle")}>
-        <dl className="grid grid-cols-3 gap-3 text-sm">
-          <div>
-            <dt className="text-muted-foreground">{t("portfolioCredentials")}</dt>
-            <dd className="text-lg font-semibold">{fmt.number(data.portfolio.credentials)}</dd>
-          </div>
-          <div>
-            <dt className="text-muted-foreground">{t("portfolioProjects")}</dt>
-            <dd className="text-lg font-semibold">{fmt.number(data.portfolio.projects)}</dd>
-          </div>
-          <div>
-            <dt className="text-muted-foreground">{t("portfolioInterviews")}</dt>
-            <dd className="text-lg font-semibold">{fmt.number(data.portfolio.interviews)}</dd>
-          </div>
-        </dl>
-      </Card>
+      <section aria-labelledby="free-portfolio">
+        <h2 id="free-portfolio" className="mb-3 text-base font-semibold">{t("portfolioTitle")}</h2>
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+          <StatTile label={t("portfolioCredentials")} value={fmt.number(data.portfolio.credentials)} />
+          <StatTile label={t("portfolioProjects")} value={fmt.number(data.portfolio.projects)} />
+          <StatTile label={t("portfolioInterviews")} value={fmt.number(data.portfolio.interviews)} />
+        </div>
+      </section>
 
       {data.schoolMatches.length > 0 && (
         <Card title={t("schoolTitle")}>

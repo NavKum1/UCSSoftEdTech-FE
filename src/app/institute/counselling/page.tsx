@@ -11,6 +11,7 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { Plus, RotateCcw, Save, Trash2 } from "lucide-react";
 import { AccessNotice, useLatestRef, useLegacyApi } from "@/lib/legacyApi";
+import { PageHeader, Tabs, buttonClass } from "@/components/career/ui";
 import { useEn } from "@/lib/english/EnglishProvider";
 
 const CORE_TRACKS = [
@@ -68,12 +69,10 @@ interface Lead {
 type Tab = "questions" | "courses" | "inquiries";
 type ApiFetch = (path: string, init?: RequestInit, options?: { quiet?: boolean }) => Promise<Response>;
 
-const card = "rounded-2xl border border-border bg-card shadow-[0_1px_2px_rgb(16_24_40/0.04)]";
-const input = "mt-1 block w-full rounded-lg border border-border bg-background px-2.5 py-1.5 text-sm focus:outline-2 focus:outline-cyan-600";
-const button =
-  "inline-flex items-center justify-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-sm font-medium hover:bg-muted disabled:cursor-not-allowed disabled:opacity-50";
-const primary =
-  "inline-flex items-center justify-center gap-1.5 rounded-lg bg-cyan-700 px-3 py-1.5 text-sm font-semibold text-white hover:bg-cyan-600 disabled:cursor-not-allowed disabled:opacity-50";
+const card = "rounded-xl border border-border bg-card shadow-sm";
+const input = "mt-1 block w-full rounded-lg border border-border bg-background px-2.5 py-1.5 text-sm focus:outline-2 focus:outline-indigo-600";
+const button = buttonClass("secondary");
+const primary = `${buttonClass("primary")} bg-[var(--brand,#0e7490)]`;
 
 const blankCourse = (instituteId: string): CourseItem => ({
   courseId: "",
@@ -125,7 +124,7 @@ export default function InstituteCounsellingPage() {
         <h1 className="text-lg font-semibold">{en("For institute staff")}</h1>
         <p className="mt-1 text-sm text-muted-foreground">
           {en("This is where institute administrators and counselors manage the counselling quiz. To take the quiz, open")}{" "}
-          <Link href="/prep/counselling" className="font-medium text-cyan-700 underline dark:text-cyan-400">
+          <Link href="/prep/counselling" className="font-medium text-indigo-700 underline dark:text-indigo-400">
             {en("Career counselling")}
           </Link>
           .
@@ -150,16 +149,15 @@ export default function InstituteCounsellingPage() {
 
   return (
     <div className="space-y-6">
-      <header className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <h1 className="text-xl font-semibold">{en("Counselling quiz and courses")}</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            {scope
-              ? `${ownInstitute && scope === ownInstitute.id ? ownInstitute.name : `Institute ${scope}`}: the questions your members answer and the courses suggested with their results.`
-              : en("The platform question pool: the quiz every member takes unless their institute has its own questions.")}
-          </p>
-        </div>
-        {isSuper && (
+      <PageHeader
+        title={en("Counselling quiz and courses")}
+        description={
+          scope
+            ? `${ownInstitute && scope === ownInstitute.id ? ownInstitute.name : `Institute ${scope}`}: the questions your members answer and the courses suggested with their results.`
+            : en("The platform question pool: the quiz every member takes unless their institute has its own questions.")
+        }
+        actions={
+          isSuper && (
           <form
             className="flex flex-wrap items-end gap-2"
             onSubmit={(e) => {
@@ -175,23 +173,11 @@ export default function InstituteCounsellingPage() {
               {en("Open")}
             </button>
           </form>
-        )}
-      </header>
+          )
+        }
+      />
 
-      <div role="tablist" aria-label={en("Builder sections")} className="flex gap-1 border-b border-border">
-        {tabs.map((t) => (
-          <button
-            key={t.key}
-            role="tab"
-            type="button"
-            aria-selected={activeTab === t.key}
-            onClick={() => setTab(t.key)}
-            className={`-mb-px border-b-2 px-3 py-2 text-sm ${activeTab === t.key ? "border-cyan-600 font-semibold" : "border-transparent text-muted-foreground hover:text-foreground"}`}
-          >
-            {en(t.label)}
-          </button>
-        ))}
-      </div>
+      <Tabs<Tab> label={en("Builder sections")} value={activeTab} onChange={setTab} items={tabs.map((t) => ({ id: t.key, label: en(t.label) }))} />
 
       {activeTab === "questions" && <QuestionsTab key={`q-${scope}`} scope={scope} apiFetch={apiFetch} canEdit={isAdmin} />}
       {activeTab === "courses" && scope && <CoursesTab key={`c-${scope}`} scope={scope} apiFetch={apiFetch} canEdit={isAdmin} isSuper={isSuper} />}
@@ -322,7 +308,8 @@ function QuestionsTab({ scope, apiFetch, canEdit }: { scope: string | null; apiF
                   <span className="font-medium">{en("Hint (optional)")}</span>
                   <input value={q.subtitle} disabled={!canEdit} onChange={(e) => update(i, { subtitle: e.target.value })} className={input} />
                 </label>
-                <table className="w-full text-xs">
+                <div className="overflow-x-auto">
+                <table className="w-full min-w-[28rem] text-xs">
                   <thead>
                     <tr className="text-start text-muted-foreground">
                       <th className="py-1 font-medium">{en("Answer")}</th>
@@ -360,6 +347,7 @@ function QuestionsTab({ scope, apiFetch, canEdit }: { scope: string | null; apiF
                     ))}
                   </tbody>
                 </table>
+                </div>
                 {canEdit && (
                   <div className="flex flex-wrap gap-2 pt-1">
                     <button
@@ -371,7 +359,7 @@ function QuestionsTab({ scope, apiFetch, canEdit }: { scope: string | null; apiF
                       <Plus aria-hidden="true" className="h-4 w-4" />{en(" Answer")}
                     </button>
                     <label className="inline-flex items-center gap-2 text-sm">
-                      <input type="checkbox" checked={q.isActive} onChange={(e) => update(i, { isActive: e.target.checked })} className="h-4 w-4 accent-cyan-700" />
+                      <input type="checkbox" checked={q.isActive} onChange={(e) => update(i, { isActive: e.target.checked })} className="h-4 w-4 accent-indigo-700" />
                       {en("In use")}
                     </label>
                     <button
@@ -454,7 +442,7 @@ function CoursesTab({ scope, apiFetch, canEdit, isSuper }: { scope: string; apiF
         <div className="flex items-center gap-3">
           {isSuper && (
             <label className="inline-flex items-center gap-2 text-sm">
-              <input type="checkbox" checked={listed} onChange={(e) => void toggleListing(e.target.checked)} className="h-4 w-4 accent-cyan-700" />
+              <input type="checkbox" checked={listed} onChange={(e) => void toggleListing(e.target.checked)} className="h-4 w-4 accent-indigo-700" />
               {en("Suggest on the platform quiz")}
             </label>
           )}
@@ -566,7 +554,7 @@ function CourseForm({ course, onCancel, onSave }: { course: CourseItem; onCancel
         <textarea value={features} rows={3} onChange={(e) => setFeatures(e.target.value)} className={input} />
       </label>
       <label className="inline-flex items-center gap-2 text-sm">
-        <input type="checkbox" checked={c.isActive} onChange={(e) => set({ isActive: e.target.checked })} className="h-4 w-4 accent-cyan-700" />
+        <input type="checkbox" checked={c.isActive} onChange={(e) => set({ isActive: e.target.checked })} className="h-4 w-4 accent-indigo-700" />
         {en("Shown to members")}
       </label>
       <div className="flex justify-end gap-2 sm:col-span-2">
@@ -625,11 +613,11 @@ function InquiriesTab({ scope, apiFetch }: { scope: string | null; apiFetch: Api
               <td className="whitespace-nowrap p-3 text-muted-foreground">{new Date(l.createdAt).toLocaleDateString()}</td>
               <td className="p-3">
                 <span className="block font-medium">{l.candidateName || "—"}</span>
-                <a href={`mailto:${l.candidateEmail}`} className="block text-xs text-cyan-700 hover:underline dark:text-cyan-400">
+                <a href={`mailto:${l.candidateEmail}`} className="block text-xs text-indigo-700 hover:underline dark:text-indigo-400">
                   {l.candidateEmail}
                 </a>
                 {l.candidatePhone && <span className="block text-xs text-muted-foreground">{l.candidatePhone}</span>}
-                {!l.referredForSelf && <span className="block text-[11px] text-muted-foreground">{en("Referred by staff")}</span>}
+                {!l.referredForSelf && <span className="block text-xs text-muted-foreground">{en("Referred by staff")}</span>}
               </td>
               <td className="p-3">{l.courseName ?? "—"}</td>
               <td className="p-3 text-muted-foreground">{l.primaryTrack || "—"}</td>

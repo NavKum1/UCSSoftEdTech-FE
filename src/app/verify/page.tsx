@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { AlertTriangle, CheckCircle2, KeyRound, Loader2, ShieldCheck, XCircle } from "lucide-react";
+import { AlertTriangle, CheckCircle2, KeyRound, XCircle } from "lucide-react";
 import { API_BASE_URL } from "@/lib/apiClient";
 import {
   CREDENTIAL_DISCLAIMER_POINTS,
@@ -13,6 +13,7 @@ import {
   verifyJwsInBrowser,
 } from "@/lib/credentialVerification";
 import { useEn } from "@/lib/english/EnglishProvider";
+import { Button, PageHeader } from "@/components/career/ui";
 
 interface JwsVerifyResponse {
   valid: boolean;
@@ -127,18 +128,13 @@ export default function VerifyJwsPage() {
   return (
     <div className="text-foreground">
       <div className="space-y-6">
-        <div>
-          <h1 className="text-2xl font-black tracking-tight text-foreground flex items-center gap-2">
-            <ShieldCheck className="w-6 h-6 text-indigo-700 dark:text-indigo-400" />
-            {en("Verify an Edulexa credential")}
-          </h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            {en("Paste the credential JWS the candidate gave you, or an Open Badge 3.0 / CLR 2.0 VC-JWT (or its downloaded .json file). We check the ES256 signature against Edulexa's published keys, and whether the holder has revoked it or it has expired.")}
-          </p>
-        </div>
+        <PageHeader
+          title={en("Verify an Edulexa credential")}
+          description={en("Paste the credential JWS the candidate gave you, or an Open Badge 3.0 / CLR 2.0 VC-JWT (or its downloaded .json file). We check the ES256 signature against Edulexa's published keys, and whether the holder has revoked it or it has expired.")}
+        />
 
-        <div className="glass-panel rounded-2xl p-5 border border-border space-y-3">
-          <label htmlFor="jws" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+        <div className="rounded-xl border border-border bg-card p-5 shadow-sm space-y-3">
+          <label htmlFor="jws" className="block text-sm font-medium">
             {en("Credential JWS")}
           </label>
           <textarea
@@ -148,37 +144,32 @@ export default function VerifyJwsPage() {
             rows={6}
             spellCheck={false}
             placeholder={en("eyJhbGciOiJFUzI1NiIs...")}
-            className="w-full rounded-xl border border-border bg-background p-3 font-mono text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="w-full rounded-lg border border-border bg-card p-3 font-mono text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-indigo-500"
           />
           <div className="flex flex-wrap items-center justify-between gap-3">
             <a href={`${API_BASE_URL}${CREDENTIAL_JWKS_PATH}`} target="_blank" rel="noreferrer" className="text-xs text-muted-foreground underline flex items-center gap-1">
               <KeyRound className="w-3.5 h-3.5" />{en(" Public keys (JWKS)")}
             </a>
-            <button
-              type="button"
-              onClick={verify}
-              disabled={working || jws.trim().length === 0}
-              className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white text-sm font-semibold flex items-center gap-2"
-            >
-              {working && <Loader2 className="w-4 h-4 animate-spin" />}{en(" Verify")}
-            </button>
+            <Button type="button" onClick={verify} disabled={jws.trim().length === 0} busy={working}>
+              {en("Verify")}
+            </Button>
           </div>
         </div>
 
         {error && (
-          <div className="p-3 rounded-xl border border-red-500/30 bg-red-50 dark:bg-red-500/10 text-sm text-red-700 dark:text-red-300 flex items-center gap-2">
+          <div className="p-3 rounded-lg border border-red-500/30 bg-red-50 dark:bg-red-500/10 text-sm text-red-700 dark:text-red-300 flex items-center gap-2">
             <AlertTriangle className="w-4 h-4 shrink-0" /> {error}
           </div>
         )}
 
         {ob3 && (
-          <div role="status" aria-live="polite" className={`glass-panel rounded-2xl p-5 border space-y-2 ${ob3.valid ? "border-border" : "border-red-500/40"}`}>
+          <div role="status" aria-live="polite" className={`rounded-xl border bg-card p-5 shadow-sm space-y-2 ${ob3.valid ? "border-border" : "border-red-500/40"}`}>
             <div className="flex flex-wrap items-start justify-between gap-3">
               <p className={`text-sm font-semibold flex items-center gap-2 ${ob3.valid ? "text-emerald-700 dark:text-emerald-300" : "text-red-700 dark:text-red-300"}`}>
                 {ob3.valid ? <CheckCircle2 className="w-5 h-5" /> : <XCircle className="w-5 h-5" />}
                 {ob3.valid ? `Valid ${ob3.type === "ClrCredential" ? "learner record (CLR 2.0)" : "Open Badge 3.0"}` : ob3.error ? en("Signature not valid") : `Not valid: ${ob3.status}`}
               </p>
-              <span className={`px-3 py-1 rounded-lg text-xs font-bold uppercase tracking-wider border ${statusBadgeClass(ob3.status)}`}>{ob3.status}</span>
+              <span className={`px-2.5 py-1 rounded-full text-xs font-medium border ${statusBadgeClass(ob3.status)}`}>{ob3.status}</span>
             </div>
             {ob3.error && <p className="text-sm text-muted-foreground">{ob3.error}</p>}
             {!ob3.error && <p className="text-xs text-muted-foreground">{browserCheck?.state === "verified" ? en("Signature confirmed by the server and independently in your browser.") : browserCheck?.detail}</p>}
@@ -194,7 +185,7 @@ export default function VerifyJwsPage() {
                 {ob3.items.map((it, i) => (
                   <li key={i} className="flex items-center justify-between gap-2">
                     <span>{it.name}</span>
-                    <span className={`px-2 py-0.5 rounded-md text-[11px] font-bold uppercase border ${statusBadgeClass(it.status)}`}>{it.status}</span>
+                    <span className={`px-2 py-0.5 rounded-full text-xs font-medium border ${statusBadgeClass(it.status)}`}>{it.status}</span>
                   </li>
                 ))}
               </ul>
@@ -203,8 +194,8 @@ export default function VerifyJwsPage() {
         )}
 
         {result && !result.valid && (
-          <div className="glass-panel rounded-2xl p-5 border border-red-500/40 space-y-1">
-            <p className="text-sm font-bold text-red-700 dark:text-red-300 flex items-center gap-2">
+          <div className="rounded-xl border border-red-500/40 bg-card p-5 shadow-sm space-y-1">
+            <p className="text-sm font-semibold text-red-700 dark:text-red-300 flex items-center gap-2">
               <XCircle className="w-5 h-5" />{en(" Not a valid Edulexa credential")}
             </p>
             <p className="text-sm text-muted-foreground">{result.error}</p>
@@ -213,7 +204,7 @@ export default function VerifyJwsPage() {
 
         {result?.valid && claims && (
           <div className="space-y-4">
-            <div className="glass-panel rounded-2xl p-5 border border-border space-y-3">
+            <div className="rounded-xl border border-border bg-card p-5 shadow-sm space-y-3">
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
                   <p className="text-sm font-semibold text-emerald-700 dark:text-emerald-300 flex items-center gap-2">
@@ -228,7 +219,7 @@ export default function VerifyJwsPage() {
                   </p>
                 </div>
                 {result.status && (
-                  <span className={`px-3 py-1 rounded-lg text-xs font-bold uppercase tracking-wider border ${statusBadgeClass(result.status)}`}>
+                  <span className={`px-2.5 py-1 rounded-full text-xs font-medium border ${statusBadgeClass(result.status)}`}>
                     {result.status}
                   </span>
                 )}
@@ -237,7 +228,7 @@ export default function VerifyJwsPage() {
               {result.expired && !result.revoked && <p className="text-sm text-muted-foreground">{en("This credential passed its validity date on {date}.", { date: formatDate(claims.exp) })}</p>}
             </div>
 
-            <div className="glass-panel rounded-2xl p-5 border border-border grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+            <div className="rounded-xl border border-border bg-card p-5 shadow-sm grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
               <div><span className="text-muted-foreground">{en("Holder: ")}</span><span className="font-semibold">{claims.name}</span></div>
               <div><span className="text-muted-foreground">{en("Task: ")}</span>{claims.task.title}</div>
               <div><span className="text-muted-foreground">{en("Type / language: ")}</span>{claims.task.taskType ?? "—"} · {claims.task.language ?? "—"}</div>
@@ -265,9 +256,9 @@ export default function VerifyJwsPage() {
           </div>
         )}
 
-        <section className="glass-panel rounded-2xl p-5 border border-border grid grid-cols-1 md:grid-cols-2 gap-5">
+        <section className="rounded-xl border border-border bg-card p-5 shadow-sm grid grid-cols-1 md:grid-cols-2 gap-5">
           <div>
-            <h2 className="text-sm font-bold mb-2">{en("What a valid credential shows")}</h2>
+            <h2 className="text-sm font-semibold mb-2">{en("What a valid credential shows")}</h2>
             <ul className="space-y-1.5 text-xs text-muted-foreground list-disc ps-4">
               {CREDENTIAL_DISCLAIMER_POINTS.proves.map((p) => (
                 <li key={p}>{p}</li>
@@ -275,7 +266,7 @@ export default function VerifyJwsPage() {
             </ul>
           </div>
           <div>
-            <h2 className="text-sm font-bold mb-2">{en("What it doesn't show")}</h2>
+            <h2 className="text-sm font-semibold mb-2">{en("What it doesn't show")}</h2>
             <ul className="space-y-1.5 text-xs text-muted-foreground list-disc ps-4">
               {CREDENTIAL_DISCLAIMER_POINTS.doesNotProve.map((p) => (
                 <li key={p}>{p}</li>

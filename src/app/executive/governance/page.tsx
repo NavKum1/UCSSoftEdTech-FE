@@ -4,6 +4,8 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { AccessNotice, useLegacyApi, useLatestRef } from "@/lib/legacyApi";
 import { useEn } from "@/lib/english/EnglishProvider";
+import { CheckCircle2, Plus, ShieldCheck, X, XCircle } from "lucide-react";
+import { Badge, Button, EmptyState, Loading, Modal, PageHeader, StatTile, buttonClass } from "@/components/career/ui";
 
 interface Campus {
   id: string;
@@ -62,7 +64,6 @@ interface VerificationResult {
 export default function MultiCampusGovernancePage() {
   const en = useEn();
   const { apiFetch, ready, access } = useLegacyApi();
-  const [parentInstituteId] = useState<string>("8c353f80-0a21-41fb-8b43-2287413d98bf");
   const [rollup, setRollup] = useState<SystemRollup | null>(null);
   const [selectedCampus, setSelectedCampus] = useState<Campus | null>(null);
   const [ledgerBlocks, setLedgerBlocks] = useState<AuditBlock[]>([]);
@@ -73,16 +74,16 @@ export default function MultiCampusGovernancePage() {
 
   // New Block Form State
   const [showAppendModal, setShowAppendModal] = useState<boolean>(false);
-  const [newActorEmail, setNewActorEmail] = useState<string>("dean.provost@university.edu");
+  const [newActorEmail, setNewActorEmail] = useState<string>("");
   const [newActorRole, setNewActorRole] = useState<string>("AcademicDean");
   const [newEventType, setNewEventType] = useState<string>("GradeCertification");
-  const [newNotes, setNewNotes] = useState<string>("Fall Term algorithmic engineering grading audit finalized.");
+  const [newNotes, setNewNotes] = useState<string>("");
 
   // Fetch System Roll-up
   const fetchSystemRollup = async () => {
     try {
       setIsLoading(true);
-      const res = await apiFetch(`/api/governance/system-rollup/${parentInstituteId}`);
+      const res = await apiFetch(`/api/governance/system-rollup`);
       const data = await res.json();
       if (data.success && data.report) {
         setRollup(data.report);
@@ -173,284 +174,204 @@ export default function MultiCampusGovernancePage() {
   useEffect(() => {
     if (!ready) return;
     fetchSystemRollupRef.current();
-  }, [parentInstituteId, ready, fetchSystemRollupRef]);
+  }, [ready, fetchSystemRollupRef]);
 
   if (access) return <AccessNotice problem={access} feature="Multi-campus governance" />;
 
+  const notAssessed = !rollup?.accreditationReadinessStatus || rollup.accreditationReadinessStatus === "NotAssessed";
+  const dash = isLoading ? "…" : "—";
+  const fieldClass = "w-full rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground shadow-sm placeholder:text-muted-foreground focus-visible:outline-2 focus-visible:outline-offset-1";
+
   return (
-    <div className="text-foreground flex flex-col font-sans">
-      {/* Top Header */}
-      <header className="rounded-2xl border border-border bg-card/80 backdrop-blur-md px-6 py-4 flex items-center justify-between sticky top-16 z-20">
-        <div className="flex items-center space-x-4">
-          <Link
-            href="/partner/dashboard"
-            className="text-xs font-semibold px-3 py-1.5 rounded-lg bg-muted hover:bg-slate-700 text-muted-foreground border border-border transition"
-          >
-            {en("← Partner Portal")}
-          </Link>
-          <div className="h-4 w-px bg-muted" />
-          <div className="flex items-center space-x-2">
-            <span className="text-xl">🏛️</span>
-            <div>
-              <h1 className="text-base font-bold bg-gradient-to-r from-emerald-400 via-teal-300 to-cyan-400 bg-clip-text text-transparent">
-                {en("Executive Multi-Campus Governance & Compliance Records")}
-              </h1>
-              <p className="text-[11px] text-muted-foreground">
-                {en("Institutional Consortium • Verified Compliance Record")}
-              </p>
-            </div>
-          </div>
-        </div>
+    <div className="space-y-6 text-foreground">
+      <PageHeader
+        title={en("Campus governance")}
+        description={en("Compliance records for each campus, with a tamper-evident history you can verify.")}
+        actions={
+          <>
+            <Badge tone={rollup?.accreditationReadinessStatus === "AuditReady" ? "good" : notAssessed ? "neutral" : "warn"}>
+              {notAssessed ? en("Not assessed") : rollup!.accreditationReadinessStatus === "AuditReady" ? en("Audit ready") : rollup!.accreditationReadinessStatus}
+            </Badge>
+            <Link href="/partner/dashboard" className={buttonClass("secondary")}>
+              {en("Partner portal")}
+            </Link>
+          </>
+        }
+      />
 
-        {/* Global Accreditation Status Badge */}
-        <div className="flex items-center space-x-3">
-          <div className="text-end hidden sm:block">
-            <div className="text-xs text-muted-foreground">{en("System Accreditation Health")}</div>
-            <div className="text-sm font-mono font-bold text-foreground">
-              {rollup?.averageSystemComplianceScore != null ? `${rollup.averageSystemComplianceScore}% compliance` : en("Not assessed yet")}
-            </div>
-          </div>
-          <span
-            className={`px-3 py-1.5 rounded-lg border text-xs font-bold uppercase tracking-wider ${
-              rollup?.accreditationReadinessStatus === "AuditReady"
-                ? "bg-emerald-950 text-emerald-700 dark:text-emerald-400 border-emerald-500/50"
-                : "bg-amber-950 text-amber-700 dark:text-amber-400 border-amber-500/50"
-            }`}
-          >
-            ● {!rollup?.accreditationReadinessStatus || rollup.accreditationReadinessStatus === "NotAssessed" ? en("Not assessed") : rollup.accreditationReadinessStatus}
-          </span>
-        </div>
-      </header>
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <StatTile
+          label={en("Campuses")}
+          value={rollup ? rollup.totalCampuses : dash}
+          hint={
+            rollup?.averageSystemComplianceScore != null
+              ? en("{value}% average compliance", { value: rollup.averageSystemComplianceScore })
+              : en("Compliance not assessed yet")
+          }
+        />
+        <StatTile
+          label={en("Students")}
+          value={rollup ? rollup.totalStudentsEnrolled.toLocaleString() : dash}
+          hint={rollup ? en("{number} faculty members", { number: rollup.totalFacultyMembers.toLocaleString() }) : undefined}
+        />
+        <StatTile label={en("Audit records")} value={rollup ? rollup.totalAuditLedgerBlocks : dash} hint={en("Linked by SHA-256 hashes")} />
+        <StatTile
+          label={en("Certifications")}
+          value={rollup ? rollup.totalGradeCertifications + rollup.totalAccreditationClearances : dash}
+          hint={rollup ? en("{value} proctoring overrides", { value: rollup.totalProctoringOverrides }) : undefined}
+        />
+      </div>
 
-      {/* Main Content */}
-      <div className="flex-1 pt-6 space-y-6 w-full">
-        {/* KPI Summary Cards */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="p-4 rounded-2xl bg-card/60 border border-border/80 shadow-sm">
-            <div className="text-muted-foreground text-xs font-medium">{en("Chartered Campuses")}</div>
-            <div className="text-2xl font-black text-foreground mt-1">
-              {rollup?.totalCampuses || 0}
-            </div>
-            <div className="text-[11px] text-emerald-700 dark:text-emerald-400 mt-1 font-mono">{en("100% Fully Isolated")}</div>
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
+        <section className="space-y-3 lg:col-span-4">
+          <div className="flex items-center justify-between">
+            <h2 className="text-base font-semibold">{en("Campuses")}</h2>
+            {rollup && <Badge>{en("{value} registered", { value: rollup.campuses?.length || 0 })}</Badge>}
           </div>
 
-          <div className="p-4 rounded-2xl bg-card/60 border border-border/80 shadow-sm">
-            <div className="text-muted-foreground text-xs font-medium">{en("Total Student Body")}</div>
-            <div className="text-2xl font-black text-cyan-700 dark:text-cyan-400 mt-1 font-mono">
-              {(rollup?.totalStudentsEnrolled || 0).toLocaleString()}
-            </div>
-            <div className="text-[11px] text-muted-foreground mt-1">
-              {en("{number} Faculty Members", { number: (rollup?.totalFacultyMembers || 0).toLocaleString() })}
-            </div>
-          </div>
-
-          <div className="p-4 rounded-2xl bg-card/60 border border-border/80 shadow-sm">
-            <div className="text-muted-foreground text-xs font-medium">{en("Immutable Audit Blocks")}</div>
-            <div className="text-2xl font-black text-purple-700 dark:text-purple-400 mt-1 font-mono">
-              {rollup?.totalAuditLedgerBlocks || 0}
-            </div>
-            <div className="text-[11px] text-purple-600 dark:text-purple-300 mt-1 font-mono">{en("SHA-256 Hash Chain")}</div>
-          </div>
-
-          <div className="p-4 rounded-2xl bg-card/60 border border-border/80 shadow-sm">
-            <div className="text-muted-foreground text-xs font-medium">{en("Compliance Certifications")}</div>
-            <div className="text-2xl font-black text-emerald-700 dark:text-emerald-400 mt-1 font-mono">
-              {(rollup?.totalGradeCertifications || 0) + (rollup?.totalAccreditationClearances || 0)}
-            </div>
-            <div className="text-[11px] text-muted-foreground mt-1">
-              {en("{value} Proctoring Overrides", { value: rollup?.totalProctoringOverrides || 0 })}
-            </div>
-          </div>
-        </div>
-
-        {/* Two-Column Section: Campus Selector & Ledger View */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          {/* Left Column: Campus Hierarchy (4 cols) */}
-          <div className="lg:col-span-4 space-y-4">
-            <div className="flex items-center justify-between">
-              <h2 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">
-                {en("Institutional Campuses")}
-              </h2>
-              <span className="text-xs px-2 py-0.5 rounded bg-muted text-muted-foreground font-mono">
-                {en("{value} Registered", { value: rollup?.campuses?.length || 0 })}
-              </span>
-            </div>
-
+          {isLoading && !rollup ? (
+            <Loading />
+          ) : !rollup?.campuses?.length ? (
+            <EmptyState title={en("No campuses yet")}>{en("Campuses appear here once they are registered for this institution.")}</EmptyState>
+          ) : (
             <div className="space-y-3">
-              {rollup?.campuses?.map((c) => {
+              {rollup.campuses.map((c) => {
                 const isSelected = selectedCampus?.id === c.id;
                 return (
-                  <div
+                  <button
+                    type="button"
                     key={c.id}
                     onClick={() => selectCampus(c)}
-                    className={`p-4 rounded-xl border cursor-pointer transition relative ${
-                      isSelected
-                        ? "bg-card border-emerald-500 shadow-md shadow-emerald-500/10 ring-1 ring-emerald-500/50"
-                        : "bg-card/40 border-border/80 hover:bg-card/70 hover:border-border"
+                    aria-pressed={isSelected}
+                    className={`block w-full rounded-xl border bg-card p-4 text-start shadow-sm transition-colors ${
+                      isSelected ? "border-[var(--brand,#0e7490)] ring-1 ring-[var(--brand,#0e7490)]" : "border-border hover:bg-muted/50"
                     }`}
                   >
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold text-foreground">{c.campusName}</span>
-                      <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-muted text-emerald-700 dark:text-emerald-400 font-semibold border border-border">
-                        {c.campusCode}
-                      </span>
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-sm font-semibold text-foreground">{c.campusName}</span>
+                      <span className="rounded bg-muted px-2 py-0.5 font-mono text-xs text-muted-foreground">{c.campusCode}</span>
                     </div>
-
-                    <div className="mt-2 text-xs text-muted-foreground flex items-center justify-between">
-                      <span>{en("Dean: {deanEmail}", { deanEmail: c.deanEmail })}</span>
-                      <span className="font-mono text-emerald-700 dark:text-emerald-400 font-bold">{c.complianceScore}%</span>
+                    <div className="mt-2 flex items-center justify-between gap-2 text-xs text-muted-foreground">
+                      <span className="truncate">{en("Dean: {deanEmail}", { deanEmail: c.deanEmail })}</span>
+                      <span className="font-medium tabular-nums text-foreground">{c.complianceScore}%</span>
                     </div>
-
-                    <div className="mt-2 text-[11px] text-muted-foreground flex items-center justify-between font-mono">
+                    <div className="mt-1 flex items-center justify-between gap-2 text-xs text-muted-foreground">
                       <span>{en("Students: {number}", { number: c.studentCount.toLocaleString() })}</span>
                       <span>{en("Tier: {accreditationTier}", { accreditationTier: c.accreditationTier })}</span>
                     </div>
-                  </div>
+                  </button>
                 );
               })}
             </div>
-          </div>
+          )}
+        </section>
 
-          {/* Right Column: Cryptographic Audit Ledger (8 cols) */}
-          <div className="lg:col-span-8 space-y-4">
-            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border pb-3">
-              <div>
-                <h2 className="text-sm font-bold text-foreground">
-                  {selectedCampus ? `${selectedCampus.campusName} Compliance Records` : en("Campus Compliance Records")}
-                </h2>
-                <p className="text-xs text-muted-foreground">
-                  {en("Verified compliance records certified by Academic Leadership")}
-                </p>
-              </div>
-
-              <div className="flex items-center space-x-2">
-                <button
-                  onClick={handleVerifyLedger}
-                  disabled={isVerifying || !selectedCampus}
-                  className="px-3.5 py-1.5 rounded-lg bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-600 dark:text-emerald-300 border border-emerald-500/40 text-xs font-semibold transition flex items-center space-x-1.5"
-                >
-                  <span>{isVerifying ? "⏳" : "🛡️"}</span>
-                  <span>{isVerifying ? en("Verifying...") : en("Verify Records Integrity")}</span>
-                </button>
-
-                <button
-                  onClick={() => setShowAppendModal(true)}
-                  disabled={!selectedCampus}
-                  className="px-3.5 py-1.5 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-semibold transition shadow-md shadow-cyan-600/20 flex items-center space-x-1"
-                >
-                  <span>+</span>
-                  <span>{en("Certify New Event")}</span>
-                </button>
-              </div>
+        <section className="space-y-4 lg:col-span-8">
+          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border pb-3">
+            <div>
+              <h2 className="text-base font-semibold text-foreground">
+                {selectedCampus ? en("{campus} compliance records", { campus: selectedCampus.campusName }) : en("Campus compliance records")}
+              </h2>
+              <p className="text-sm text-muted-foreground">{en("Records certified by academic leadership")}</p>
             </div>
 
-            {/* Tamper Verification Banner */}
-            {verification && (
-              <div
-                className={`p-3.5 rounded-xl border text-xs font-mono flex items-center justify-between ${
-                  verification.isTamperFree
-                    ? "bg-emerald-950/40 border-emerald-500/50 text-emerald-600 dark:text-emerald-300"
-                    : "bg-rose-950/40 border-rose-500/50 text-rose-300"
-                }`}
-              >
-                <div className="flex items-center space-x-2">
-                  <span className="text-base">{verification.isTamperFree ? "✅" : "❌"}</span>
-                  <div>
-                    <span className="font-bold">{en("STATUS: {status}", { status: verification.status })}</span>
-                    <span className="ms-2 text-muted-foreground">
-                      {en("({totalBlocksVerified} blocks verified across chain)", { totalBlocksVerified: verification.totalBlocksVerified })}
-                    </span>
+            <div className="flex flex-wrap items-center gap-2">
+              <Button variant="secondary" onClick={handleVerifyLedger} busy={isVerifying} disabled={!selectedCampus}>
+                {!isVerifying && <ShieldCheck className="h-4 w-4" aria-hidden />}
+                {isVerifying ? en("Verifying...") : en("Verify records")}
+              </Button>
+              <Button onClick={() => setShowAppendModal(true)} disabled={!selectedCampus}>
+                <Plus className="h-4 w-4" aria-hidden />
+                {en("Certify new event")}
+              </Button>
+            </div>
+          </div>
+
+          {verification && (
+            <div
+              role="status"
+              className={`flex flex-wrap items-center justify-between gap-2 rounded-lg border p-3 text-sm ${
+                verification.isTamperFree
+                  ? "border-emerald-300 bg-emerald-50 text-emerald-800 dark:border-emerald-900 dark:bg-emerald-950/40 dark:text-emerald-300"
+                  : "border-red-300 bg-red-50 text-red-800 dark:border-red-900 dark:bg-red-950/40 dark:text-red-300"
+              }`}
+            >
+              <div className="flex items-center gap-2">
+                {verification.isTamperFree ? <CheckCircle2 className="h-4 w-4 shrink-0" aria-hidden /> : <XCircle className="h-4 w-4 shrink-0" aria-hidden />}
+                <span>
+                  <span className="font-medium">{en("Status: {status}", { status: verification.status })}</span>
+                  <span className="ms-2 opacity-80">
+                    {en("({totalBlocksVerified} records verified)", { totalBlocksVerified: verification.totalBlocksVerified })}
+                  </span>
+                </span>
+              </div>
+              <span className="text-xs opacity-80">{en("Verified: {date}", { date: new Date(verification.verifiedAt).toLocaleTimeString() })}</span>
+            </div>
+          )}
+
+          <div className="max-h-[600px] space-y-3 overflow-y-auto pe-1">
+            {ledgerBlocks.length === 0 ? (
+              <EmptyState title={en("No records yet")}>{en("No audit records have been certified for this campus.")}</EmptyState>
+            ) : (
+              ledgerBlocks.map((b) => (
+                <div key={b.id} className="space-y-2.5 rounded-xl border border-border bg-card p-4 shadow-sm">
+                  <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="rounded bg-muted px-2 py-0.5 font-mono font-medium text-foreground">#{b.blockIndex}</span>
+                      <Badge>{b.eventType}</Badge>
+                      <span className="text-muted-foreground">{en("by {actor}", { actor: b.actorEmail })}</span>
+                    </div>
+                    <span className="text-muted-foreground">{new Date(b.createdAt).toLocaleString()}</span>
+                  </div>
+
+                  <p className="text-sm text-muted-foreground">{b.notes}</p>
+
+                  <div className="grid grid-cols-1 gap-2 border-t border-border pt-2 text-xs text-muted-foreground md:grid-cols-2">
+                    <div className="truncate">
+                      <span>{en("Record hash: ")}</span>
+                      <span className="font-mono text-foreground">{b.blockHash}</span>
+                    </div>
+                    <div className="truncate">
+                      <span>{en("Previous hash: ")}</span>
+                      <span className="font-mono">{b.previousBlockHash}</span>
+                    </div>
                   </div>
                 </div>
-                <div className="text-[10px] text-muted-foreground">
-                  {en("Verified: {date}", { date: new Date(verification.verifiedAt).toLocaleTimeString() })}
-                </div>
-              </div>
+              ))
             )}
-
-            {/* Block Chain Timeline */}
-            <div className="space-y-3 max-h-[600px] overflow-y-auto pe-1">
-              {ledgerBlocks.length === 0 ? (
-                <div className="p-8 text-center border border-dashed border-border rounded-2xl bg-card/30 text-muted-foreground text-xs">
-                  {en("No audit blocks recorded for this campus.")}
-                </div>
-              ) : (
-                ledgerBlocks.map((b) => (
-                  <div
-                    key={b.id}
-                    className="p-4 rounded-xl border border-border bg-card/60 space-y-2.5 relative"
-                  >
-                    <div className="flex items-center justify-between text-xs">
-                      <div className="flex items-center space-x-2">
-                        <span className="px-2 py-0.5 rounded font-mono font-bold bg-muted text-cyan-600 dark:text-cyan-300 border border-border">
-                          #{b.blockIndex}
-                        </span>
-                        <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-indigo-950 text-indigo-600 dark:text-indigo-300 border border-indigo-700/50">
-                          {b.eventType}
-                        </span>
-                        <span className="text-muted-foreground text-xs">by {b.actorEmail}</span>
-                      </div>
-                      <span className="text-[11px] text-muted-foreground font-mono">
-                        {new Date(b.createdAt).toLocaleString()}
-                      </span>
-                    </div>
-
-                    <p className="text-xs text-muted-foreground">{b.notes}</p>
-
-                    {/* Cryptographic Hashes Bar */}
-                    <div className="pt-2 border-t border-border/80 grid grid-cols-1 md:grid-cols-2 gap-2 text-[10px] font-mono text-muted-foreground">
-                      <div className="truncate">
-                        <span className="text-muted-foreground">{en("Block Hash: ")}</span>
-                        <span className="text-emerald-700 dark:text-emerald-400">{b.blockHash}</span>
-                      </div>
-                      <div className="truncate">
-                        <span className="text-muted-foreground">{en("Prev Hash: ")}</span>
-                        <span className="text-muted-foreground">{b.previousBlockHash}</span>
-                      </div>
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
           </div>
-        </div>
+        </section>
       </div>
 
-      {/* Append Block Modal */}
       {showAppendModal && (
-        <div className="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-card border border-border rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl">
-            <div className="flex items-center justify-between border-b border-border pb-3">
-              <h3 className="text-sm font-bold text-foreground">
-                {en("Certify Audit Block: ")}{selectedCampus?.campusName}
+        <Modal labelledBy="certify-event-title" onClose={() => setShowAppendModal(false)}>
+          <div className="w-full max-w-md space-y-4 rounded-xl border border-border bg-card p-6 shadow-xl">
+            <div className="flex items-center justify-between gap-2 border-b border-border pb-3">
+              <h3 id="certify-event-title" className="text-base font-semibold text-foreground">
+                {en("Certify an event for {campus}", { campus: selectedCampus?.campusName ?? "" })}
               </h3>
-              <button
-                onClick={() => setShowAppendModal(false)}
-                className="text-muted-foreground hover:text-foreground text-sm font-bold"
-              >
-                ✕
-              </button>
+              <Button variant="ghost" onClick={() => setShowAppendModal(false)} aria-label={en("Close")} className="px-2">
+                <X className="h-4 w-4" aria-hidden />
+              </Button>
             </div>
 
-            <form onSubmit={handleAppendBlock} className="space-y-3 text-xs">
+            <form onSubmit={handleAppendBlock} className="space-y-3">
               <div>
-                <label className="block text-muted-foreground mb-1">{en("Actor Email")}</label>
+                <label htmlFor="gov-actor-email" className="mb-1 block text-sm font-medium">{en("Actor email")}</label>
                 <input
+                  id="gov-actor-email"
                   type="email"
                   value={newActorEmail}
                   onChange={(e) => setNewActorEmail(e.target.value)}
                   required
-                  className="w-full bg-background text-foreground p-2.5 rounded-lg border border-border focus:outline-none focus:ring-1 focus:ring-cyan-500"
+                  placeholder={en("e.g. dean@yourschool.edu")}
+                  className={fieldClass}
                 />
               </div>
 
               <div>
-                <label className="block text-muted-foreground mb-1">{en("Actor Role")}</label>
-                <select
-                  value={newActorRole}
-                  onChange={(e) => setNewActorRole(e.target.value)}
-                  className="w-full bg-background text-foreground p-2.5 rounded-lg border border-border focus:outline-none focus:ring-1 focus:ring-cyan-500"
-                >
+                <label htmlFor="gov-actor-role" className="mb-1 block text-sm font-medium">{en("Actor role")}</label>
+                <select id="gov-actor-role" value={newActorRole} onChange={(e) => setNewActorRole(e.target.value)} className={fieldClass}>
                   <option value="AcademicDean">{en("Academic Dean")}</option>
                   <option value="CampusProvost">{en("Campus Provost")}</option>
                   <option value="ChiefComplianceOfficer">{en("Chief Compliance Officer")}</option>
@@ -459,50 +380,32 @@ export default function MultiCampusGovernancePage() {
               </div>
 
               <div>
-                <label className="block text-muted-foreground mb-1">{en("Event Type")}</label>
-                <select
-                  value={newEventType}
-                  onChange={(e) => setNewEventType(e.target.value)}
-                  className="w-full bg-background text-foreground p-2.5 rounded-lg border border-border focus:outline-none focus:ring-1 focus:ring-cyan-500"
-                >
-                  <option value="GradeCertification">{en("Grade Certification")}</option>
-                  <option value="ProctoringAnomalyOverride">{en("Proctoring Anomaly Override")}</option>
-                  <option value="AccreditationClearance">{en("Accreditation Clearance")}</option>
-                  <option value="FERPA_AuditExport">{en("FERPA Audit Export")}</option>
-                  <option value="CurriculumReviewApproved">{en("Curriculum Review Approved")}</option>
+                <label htmlFor="gov-event-type" className="mb-1 block text-sm font-medium">{en("Event type")}</label>
+                <select id="gov-event-type" value={newEventType} onChange={(e) => setNewEventType(e.target.value)} className={fieldClass}>
+                  <option value="GradeCertification">{en("Grade certification")}</option>
+                  <option value="ProctoringAnomalyOverride">{en("Proctoring anomaly override")}</option>
+                  <option value="AccreditationClearance">{en("Accreditation clearance")}</option>
+                  <option value="FERPA_AuditExport">{en("FERPA audit export")}</option>
+                  <option value="CurriculumReviewApproved">{en("Curriculum review approved")}</option>
                 </select>
               </div>
 
               <div>
-                <label className="block text-muted-foreground mb-1">{en("Compliance Notes & Rationale")}</label>
-                <textarea
-                  value={newNotes}
-                  onChange={(e) => setNewNotes(e.target.value)}
-                  required
-                  rows={3}
-                  className="w-full bg-background text-foreground p-2.5 rounded-lg border border-border focus:outline-none focus:ring-1 focus:ring-cyan-500 resize-none"
-                />
+                <label htmlFor="gov-notes" className="mb-1 block text-sm font-medium">{en("Notes and rationale")}</label>
+                <textarea id="gov-notes" value={newNotes} onChange={(e) => setNewNotes(e.target.value)} required rows={3} className={`${fieldClass} resize-none`} />
               </div>
 
-              <div className="flex items-center justify-end space-x-2 pt-2">
-                <button
-                  type="button"
-                  onClick={() => setShowAppendModal(false)}
-                  className="px-4 py-2 rounded-lg bg-muted hover:bg-slate-700 text-muted-foreground font-semibold"
-                >
+              <div className="flex flex-wrap items-center justify-end gap-2 pt-2">
+                <Button type="button" variant="secondary" onClick={() => setShowAppendModal(false)}>
                   {en("Cancel")}
-                </button>
-                <button
-                  type="submit"
-                  disabled={isAppending}
-                  className="px-4 py-2 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white font-semibold shadow-md shadow-cyan-600/20 disabled:opacity-50"
-                >
-                  {isAppending ? en("Signing Block...") : en("Sign & Append Block")}
-                </button>
+                </Button>
+                <Button type="submit" busy={isAppending}>
+                  {isAppending ? en("Signing record...") : en("Sign and add record")}
+                </Button>
               </div>
             </form>
           </div>
-        </div>
+        </Modal>
       )}
     </div>
   );

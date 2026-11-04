@@ -12,6 +12,7 @@ import Link from "next/link";
 import { ArrowLeft, CheckCircle2, Clock, XCircle } from "lucide-react";
 import { AccessNotice, useLatestRef, useLegacyApi } from "@/lib/legacyApi";
 import { useEn } from "@/lib/english/EnglishProvider";
+import { PageHeader, buttonClass } from "@/components/career/ui";
 
 interface Review {
   id: string;
@@ -61,9 +62,9 @@ const DECISIONS = [
 ];
 const decisionLabel = (v: string) => DECISIONS.find((d) => d.value === v)?.label ?? v;
 
-const card = "rounded-2xl border border-border bg-card shadow-[0_1px_2px_rgb(16_24_40/0.04)]";
+const card = "rounded-xl border border-border bg-card shadow-sm";
 const primary =
-  "inline-flex items-center justify-center gap-2 rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-indigo-500 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600";
+  `${buttonClass("primary")} bg-[var(--brand,#0e7490)]`;
 
 export default function DailyCodeReviewPage() {
   const en = useEn();
@@ -181,20 +182,25 @@ export default function DailyCodeReviewPage() {
       <Link href="/daily" className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
         <ArrowLeft aria-hidden="true" className="h-4 w-4" />{en(" Daily practice")}
       </Link>
-      <header className="mt-3 flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{en("Today's code review · {language}", { language: review.language })}</p>
-          <h1 className="mt-1 text-xl font-semibold">{review.title}</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            {en("{repository} · opened by {author} (a practice scenario)", { repository: review.repository, author: review.author })}
-          </p>
-        </div>
-        {attempt && (
-          <p className="inline-flex items-center gap-1.5 rounded-full border border-border px-3 py-1 text-sm tabular-nums" aria-live="off">
-            <Clock aria-hidden="true" className="h-4 w-4" /> {Math.floor(elapsed / 60)}:{String(elapsed % 60).padStart(2, "0")}
-          </p>
-        )}
-      </header>
+      <div className="mt-3">
+        <PageHeader
+          title={review.title}
+          description={
+            <>
+              {en("Today's code review · {language}", { language: review.language })}
+              {" · "}
+              {en("{repository} · opened by {author} (a practice scenario)", { repository: review.repository, author: review.author })}
+            </>
+          }
+          actions={
+            attempt && (
+              <p className="inline-flex items-center gap-1.5 rounded-full border border-border px-3 py-1 text-sm tabular-nums" aria-live="off">
+                <Clock aria-hidden="true" className="h-4 w-4" /> {Math.floor(elapsed / 60)}:{String(elapsed % 60).padStart(2, "0")}
+              </p>
+            )
+          }
+        />
+      </div>
 
       {status.completed && !result && (
         <p className="mt-4 rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-sm">
@@ -340,7 +346,7 @@ function ReviewResultPanel({ result, onAgain, busy }: { result: Result; onAgain:
           <pre className="mt-1 overflow-x-auto rounded-lg bg-muted p-3 text-xs">{result.suggestedRemediation}</pre>
         </div>
       )}
-      <button type="button" className="text-sm font-semibold text-indigo-700 hover:underline disabled:opacity-50 dark:text-indigo-300" disabled={busy} onClick={onAgain}>
+      <button type="button" className="text-sm font-medium text-indigo-700 hover:underline disabled:opacity-50 dark:text-indigo-300" disabled={busy} onClick={onAgain}>
         {en("Practise again (no points)")}
       </button>
     </section>

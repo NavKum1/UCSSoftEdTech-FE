@@ -91,7 +91,7 @@ export function StaffDropIn({ isAdmin }: { isAdmin: boolean }) {
                       type="button"
                       aria-pressed={active === s.id}
                       onClick={() => setSelected(s.id)}
-                      className={`w-full rounded-md border p-2 text-start text-sm focus-visible:outline-2 ${active === s.id ? "border-[var(--brand,#4f46e5)]" : "border-border hover:bg-muted"}`}
+                      className={`w-full rounded-md border p-2 text-start text-sm focus-visible:outline-2 ${active === s.id ? "border-[var(--brand,#0e7490)]" : "border-border hover:bg-muted"}`}
                     >
                       <span className="flex items-center justify-between gap-2">
                         <span className="font-medium">{s.name}</span>

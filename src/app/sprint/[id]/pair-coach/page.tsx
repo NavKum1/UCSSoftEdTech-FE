@@ -5,6 +5,8 @@ import { useParams } from "next/navigation";
 import Link from "next/link";
 import { AccessNotice, useLegacyApi, useLatestRef } from "@/lib/legacyApi";
 import { useEn } from "@/lib/english/EnglishProvider";
+import { ArrowLeft, ArrowRight, BookOpen, Lightbulb, MessageSquare, Search, Wand2 } from "lucide-react";
+import { Badge, Button, EmptyState, PageHeader, Tabs, brandFill, buttonClass } from "@/components/career/ui";
 
 interface InteractionLog {
   id: string;
@@ -48,7 +50,6 @@ export default function AiPairCoachStudioPage() {
   const { apiFetch, ready, access } = useLegacyApi();
   const params = useParams();
   const sprintId = (params?.id as string) || "";
-  const [userId] = useState<string>("c89ef120-745a-4b9b-9801-9a776c5b9812");
 
   const [session, setSession] = useState<PairSession | null>(null);
   const [interactions, setInteractions] = useState<InteractionLog[]>([]);
@@ -56,36 +57,8 @@ export default function AiPairCoachStudioPage() {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
-  // Active Code Snapshot in Candidate's IDE
-  const [codeSnippet, setCodeSnippet] = useState<string>(`// Concurrent In-Memory Ring Buffer with Lock-Free Enqueue
-public class HighThroughputBuffer<T>
-{
-    private readonly T[] _buffer;
-    private long _head = 0;
-    private long _tail = 0;
-    private const int BufferCapacity = 1024;
-
-    public HighThroughputBuffer()
-    {
-        _buffer = new T[BufferCapacity];
-    }
-
-    public bool TryEnqueue(T item)
-    {
-        long currentTail = Interlocked.Read(ref _tail);
-        long currentHead = Interlocked.Read(ref _head);
-
-        if (currentTail - currentHead >= BufferCapacity)
-        {
-            return false; // Ring buffer is saturated
-        }
-
-        int index = (int)(currentTail % BufferCapacity);
-        _buffer[index] = item;
-        Interlocked.Increment(ref _tail);
-        return true;
-    }
-}`);
+  // The member's code: they write or paste it here (it used to start with an invented sample solution)
+  const [codeSnippet, setCodeSnippet] = useState<string>("");
 
   const [userPrompt, setUserPrompt] = useState<string>("");
   const [activeTab, setActiveTab] = useState<"chat" | "smells" | "diff">("chat");
@@ -103,8 +76,8 @@ public class HighThroughputBuffer<T>
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          // The session belongs to the signed-in member; the server takes them from the sign-in
           sprintId: sprintId,
-          userId: userId,
         }),
       });
 
@@ -144,7 +117,7 @@ public class HighThroughputBuffer<T>
     if (!session) return;
     try {
       setIsSubmitting(true);
-      const promptToSend = customPrompt || userPrompt || `Requesting ${type.toLowerCase()} for current buffer implementation`;
+      const promptToSend = customPrompt || userPrompt || `Requesting ${type.toLowerCase()} for my current code`;
 
       const res = await apiFetch(`/api/pair-coach/interact`, {
         method: "POST",
@@ -213,29 +186,17 @@ public class HighThroughputBuffer<T>
     }
   };
 
-  const getTierColor = (tier?: string) => {
-    switch (tier) {
-      case "Autonomous_Lead":
-        return "text-emerald-700 dark:text-emerald-400 bg-emerald-950/60 border-emerald-500/50";
-      case "Self_Directed":
-        return "text-cyan-700 dark:text-cyan-400 bg-cyan-950/60 border-cyan-500/50";
-      case "Guided_Contributor":
-        return "text-amber-700 dark:text-amber-400 bg-amber-950/60 border-amber-500/50";
-      default:
-        return "text-rose-400 bg-rose-950/60 border-rose-500/50";
-    }
-  };
+  const tierLabel = (tier: string) => tier.replace(/_/g, " ");
 
   const getSeverityBadge = (severity: string) => {
     switch (severity) {
       case "Critical":
-        return "bg-rose-900/60 text-rose-300 border-rose-600/50";
       case "High":
-        return "bg-orange-900/60 text-orange-300 border-orange-600/50";
+        return "bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-300";
       case "Medium":
-        return "bg-amber-900/60 text-amber-600 dark:text-amber-300 border-amber-600/50";
+        return "bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300";
       default:
-        return "bg-blue-900/60 text-blue-600 dark:text-blue-300 border-blue-600/50";
+        return "bg-muted text-foreground";
     }
   };
 
@@ -243,236 +204,135 @@ public class HighThroughputBuffer<T>
 
   if (!sprintId) {
     return (
-      <div className="flex min-h-[50vh] flex-col items-center justify-center text-center text-foreground">
-        <div className="mx-auto max-w-md p-8 rounded-2xl border border-border bg-card/60 space-y-4">
-          <div className="w-12 h-12 rounded-xl bg-indigo-500/10 text-indigo-700 dark:text-indigo-400 flex items-center justify-center mx-auto text-2xl">
-            🤖
-          </div>
-          <h2 className="text-xl font-bold text-foreground">{en("No Challenge Selected")}</h2>
-          <p className="text-xs text-muted-foreground">
-            {en("Please select an active project challenge from your dashboard to begin coaching with your AI assistant.")}
-          </p>
-          <Link
-            href="/dashboard"
-            className="inline-block px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold transition shadow-lg shadow-indigo-600/20"
-          >
-            {en("Go to Dashboard →")}
-          </Link>
-        </div>
-      </div>
+      <EmptyState title={en("No challenge selected")}>
+        <p>{en("Choose a challenge from your dashboard to work through it with the AI coach.")}</p>
+        <Link href="/dashboard" className={`${buttonClass("primary")} mt-4`} style={brandFill}>
+          {en("Go to dashboard")}
+        </Link>
+      </EmptyState>
     );
   }
 
+  const tabs: { id: "chat" | "smells" | "diff"; label: string; count?: number }[] = [
+    { id: "chat", label: en("Coach"), count: interactions.length },
+    { id: "smells", label: en("Code review"), count: codeSmells.length },
+    ...(activeDiff ? [{ id: "diff" as const, label: en("Suggested changes") }] : []),
+  ];
+
   return (
-    <div className="flex min-h-[70vh] flex-col font-sans text-foreground">
-      {/* Top Navbar */}
-      <header className="border-b border-border bg-card/80 backdrop-blur-md px-6 py-4 flex items-center justify-between sticky top-16 z-20">
-        <div className="flex items-center space-x-4">
-          <Link
-            href={`/sprint/${sprintId}`}
-            className="text-xs font-semibold px-3 py-1.5 rounded-lg bg-muted hover:bg-slate-700 text-muted-foreground border border-border transition"
-          >
-            {en("← Back to Challenge")}
-          </Link>
-          <div className="h-4 w-px bg-muted" />
-          <div className="flex items-center space-x-2">
-            <span className="flex h-3 w-3 relative">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-3 w-3 bg-indigo-500"></span>
-            </span>
-            <h1 className="text-base font-bold bg-gradient-to-r from-indigo-400 via-purple-300 to-pink-400 bg-clip-text text-transparent">
-              {en("AI Coding Coach & Interactive Assistant")}
-            </h1>
+    <div className="flex min-h-[70vh] flex-col text-foreground">
+      <Link href={`/sprint/${sprintId}`} className="mb-3 inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
+        <ArrowLeft aria-hidden="true" className="h-4 w-4" />
+        {en("Back to the challenge")}
+      </Link>
+      <PageHeader
+        title={en("AI coding coach")}
+        description={en("Ask for hints, explanations or a code-quality review while you work. Each kind of help changes your independence score.")}
+        actions={
+          <div className="flex items-center gap-3">
+            <div className="text-end">
+              <div className="text-xs text-muted-foreground">{en("Independence score")}</div>
+              <div className="text-sm font-semibold tabular-nums text-foreground">{session ? `${session.autonomyScore.toFixed(1)} / 100` : "—"}</div>
+            </div>
+            {session?.autonomyTier && <Badge>{tierLabel(session.autonomyTier)}</Badge>}
           </div>
-        </div>
+        }
+      />
 
-        {/* Real-time Autonomy Meter */}
-        <div className="flex items-center space-x-3">
-          <div className="text-end hidden sm:block">
-            <div className="text-xs text-muted-foreground">{en("Independent Problem Solving")}</div>
-            <div className="text-sm font-mono font-bold text-foreground">
-              {session?.autonomyScore ? session.autonomyScore.toFixed(1) : "100.0"} / 100.0
+      <div className="grid flex-1 grid-cols-1 overflow-hidden rounded-xl border border-border bg-card shadow-sm lg:grid-cols-12">
+        {/* Left pane: the member's code (7 cols) */}
+        <div className="flex flex-col border-border lg:col-span-7 lg:border-e">
+          <div className="flex items-center justify-between border-b border-border px-4 py-3">
+            <div className="flex items-center gap-2">
+              <span className="font-mono text-xs text-muted-foreground">Solution.cs</span>
+              <Badge>{en("C#")}</Badge>
             </div>
-          </div>
-          <div
-            className={`px-3 py-1.5 rounded-lg border text-xs font-semibold uppercase tracking-wider flex items-center space-x-2 ${getTierColor(
-              session?.autonomyTier
-            )}`}
-          >
-            <span>🛡️</span>
-            <span>{session?.autonomyTier ? session.autonomyTier.replace("_", " ") : en("Independent Lead")}</span>
-          </div>
-        </div>
-      </header>
-
-      {/* Main Studio Body */}
-      <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-0 overflow-hidden">
-        {/* Left Pane: Candidate Code Editor (7 Cols) */}
-        <div className="lg:col-span-7 flex flex-col border-e border-border bg-background">
-          <div className="bg-card/60 px-5 py-3 border-b border-border flex items-center justify-between">
-            <div className="flex items-center space-x-2">
-              <span className="text-muted-foreground text-xs font-mono">{en("Solution.cs")}</span>
-              <span className="text-[10px] px-2 py-0.5 rounded bg-muted text-muted-foreground font-mono">{en("C# (.NET 10)")}</span>
-            </div>
-            <div className="flex items-center space-x-2">
-              <button
-                onClick={handleAnalyzeSmells}
-                disabled={isSubmitting}
-                className="text-xs px-3 py-1 rounded bg-muted hover:bg-slate-700 text-muted-foreground border border-border font-medium transition flex items-center space-x-1"
-              >
-                <span>🔍</span>
-                <span>{en("Review Code Quality")}</span>
-              </button>
-            </div>
+            <Button variant="secondary" onClick={handleAnalyzeSmells} disabled={isSubmitting || !codeSnippet.trim()}>
+              <Search aria-hidden="true" className="h-4 w-4" />
+              {en("Review code quality")}
+            </Button>
           </div>
 
-          <div className="flex-1 p-4 relative font-mono text-xs">
+          <div className="relative flex-1 p-4">
             <textarea
               value={codeSnippet}
               onChange={(e) => setCodeSnippet(e.target.value)}
-              className="w-full h-full bg-card/90 text-indigo-100 p-4 rounded-xl border border-border focus:outline-none focus:ring-2 focus:ring-indigo-500/50 resize-none font-mono text-xs leading-relaxed"
+              aria-label={en("Your code")}
+              className="h-full min-h-80 w-full resize-none rounded-lg border border-border bg-background p-4 font-mono text-xs leading-relaxed text-foreground focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
               placeholder="// Write or paste your solution code here..."
               spellCheck={false}
             />
           </div>
 
-          {/* Quick Action Tray */}
-          <div className="p-4 border-t border-border bg-card/40 flex flex-wrap items-center gap-2">
-            <span className="text-xs font-semibold text-muted-foreground me-2">{en("Quick Actions:")}</span>
-            <button
-              onClick={() => handleInteraction("Hint")}
-              disabled={isSubmitting}
-              className="text-xs px-3 py-2 rounded-lg bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-600 dark:text-indigo-300 border border-indigo-500/40 font-medium transition flex items-center space-x-1"
+          {/* Quick actions */}
+          <div className="flex flex-wrap items-center gap-2 border-t border-border p-4">
+            <span className="me-2 text-sm text-muted-foreground">{en("Quick actions:")}</span>
+            <Button variant="secondary" onClick={() => handleInteraction("Hint")} disabled={isSubmitting}>
+              <Lightbulb aria-hidden="true" className="h-4 w-4" />
+              {en("Get a hint (-3.5 pts)")}
+            </Button>
+            <Button variant="secondary" onClick={() => handleInteraction("Explain")} disabled={isSubmitting}>
+              <BookOpen aria-hidden="true" className="h-4 w-4" />
+              {en("Explain the solution (-2.0 pts)")}
+            </Button>
+            <Button variant="secondary" onClick={() => handleInteraction("Refactor")} disabled={isSubmitting}>
+              <Wand2 aria-hidden="true" className="h-4 w-4" />
+              {en("Improve code quality (-5.0 pts)")}
+            </Button>
+            <Button
+              variant="secondary"
+              onClick={() => handleInteraction("Probe")}
+              disabled={isSubmitting || !userPrompt.trim()}
+              title={en("Type your approach in the message box first")}
             >
-              <span>💡</span>
-              <span>{en("Need a Hint (-3.5 pts)")}</span>
-            </button>
-            <button
-              onClick={() => handleInteraction("Explain")}
-              disabled={isSubmitting}
-              className="text-xs px-3 py-2 rounded-lg bg-cyan-600/20 hover:bg-cyan-600/30 text-cyan-600 dark:text-cyan-300 border border-cyan-500/40 font-medium transition flex items-center space-x-1"
-            >
-              <span>🔍</span>
-              <span>{en("Explain Solution (-2.0 pts)")}</span>
-            </button>
-            <button
-              onClick={() => handleInteraction("Refactor")}
-              disabled={isSubmitting}
-              className="text-xs px-3 py-2 rounded-lg bg-purple-600/20 hover:bg-purple-600/30 text-purple-600 dark:text-purple-300 border border-purple-500/40 font-medium transition flex items-center space-x-1"
-            >
-              <span>✨</span>
-              <span>{en("Improve Code Quality (-5.0 pts)")}</span>
-            </button>
-            <button
-              onClick={() => handleInteraction("Probe", "I used thread-safe concurrency controls to handle high load")}
-              disabled={isSubmitting}
-              className="text-xs px-3 py-2 rounded-lg bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-600 dark:text-emerald-300 border border-emerald-500/40 font-medium transition flex items-center space-x-1"
-            >
-              <span>⚡</span>
-              <span>{en("Explain My Approach (+1.5 bonus)")}</span>
-            </button>
+              <MessageSquare aria-hidden="true" className="h-4 w-4" />
+              {en("Explain my approach (+1.5 bonus)")}
+            </Button>
           </div>
         </div>
 
-        {/* Right Pane: AI Pair Coach Sidecar (5 Cols) */}
-        <div className="lg:col-span-5 flex flex-col bg-card/30">
-          {/* Tabs */}
-          <div className="border-b border-border bg-card/80 px-4 py-2 flex items-center justify-between">
-            <div className="flex space-x-1">
-              <button
-                onClick={() => setActiveTab("chat")}
-                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition ${
-                  activeTab === "chat" ? "bg-indigo-600 text-white" : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                {en("Coach Assistant ({length})", { length: interactions.length })}</button>
-              <button
-                onClick={() => setActiveTab("smells")}
-                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition ${
-                  activeTab === "smells" ? "bg-indigo-600 text-white" : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                {en("Code Review ({length})", { length: codeSmells.length })}</button>
-              {activeDiff && (
-                <button
-                  onClick={() => setActiveTab("diff")}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition ${
-                    activeTab === "diff" ? "bg-indigo-600 text-white" : "text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  {en("Suggested Changes")}
-                </button>
-              )}
-            </div>
-            <div className="text-[11px] font-mono text-muted-foreground">
-              {en("Questions: {value}", { value: session?.totalInteractions || 0 })}
-            </div>
+        {/* Right pane: the coach (5 cols) */}
+        <div className="flex flex-col border-t border-border lg:col-span-5 lg:border-t-0">
+          <div className="flex items-center justify-between gap-2 px-4">
+            <Tabs items={tabs} value={activeTab} onChange={setActiveTab} label={en("Coach panels")} />
+            <span className="shrink-0 text-xs text-muted-foreground">{en("Questions: {value}", { value: session?.totalInteractions || 0 })}</span>
           </div>
 
-          {/* Content Area */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-4 max-h-[calc(100vh-210px)]">
+          <div className="max-h-[calc(100vh-210px)] flex-1 space-y-4 overflow-y-auto p-4">
             {activeTab === "chat" && (
               <>
                 {interactions.length === 0 ? (
-                  <div className="h-64 flex flex-col items-center justify-center text-center p-6 border border-dashed border-border rounded-2xl bg-card/20 text-muted-foreground">
-                    <span className="text-3xl mb-2">🤖</span>
-                    <p className="text-xs font-medium">{en("Your AI Coding Coach is ready to assist you.")}</p>
-                    <p className="text-[11px] text-muted-foreground mt-1 max-w-xs">
-                      {en("Choose an action above or type a message below to ask questions, request hints, or review recommendations.")}
-                    </p>
-                  </div>
+                  <EmptyState title={en("Your AI coach is ready")}>
+                    {en("Choose an action or type a message below to ask questions, request hints, or review recommendations.")}
+                  </EmptyState>
                 ) : (
                   interactions.map((item) => (
-                    <div
-                      key={item.id}
-                      className="rounded-xl border border-border bg-card/60 p-4 space-y-2 shadow-sm transition"
-                    >
-                      <div className="flex items-center justify-between text-xs border-b border-border pb-2">
-                        <div className="flex items-center space-x-2">
-                          <span
-                            className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${
-                              item.interactionType === "Hint"
-                                ? "bg-indigo-950 text-indigo-600 dark:text-indigo-300 border border-indigo-700/50"
-                                : item.interactionType === "Explain"
-                                ? "bg-cyan-950 text-cyan-600 dark:text-cyan-300 border border-cyan-700/50"
-                                : item.interactionType === "Refactor"
-                                ? "bg-purple-950 text-purple-600 dark:text-purple-300 border border-purple-700/50"
-                                : "bg-emerald-950 text-emerald-600 dark:text-emerald-300 border border-emerald-700/50"
-                            }`}
-                          >
-                            {item.interactionType}
-                          </span>
-                          <span className="text-muted-foreground font-mono text-[11px]">
-                            {item.autonomyPenalty > 0
-                              ? `-${item.autonomyPenalty} pts`
-                              : `+${Math.abs(item.autonomyPenalty)} pts`}
+                    <div key={item.id} className="space-y-2 rounded-lg border border-border bg-background p-4">
+                      <div className="flex items-center justify-between border-b border-border pb-2 text-xs">
+                        <div className="flex items-center gap-2">
+                          <Badge tone="info">{item.interactionType}</Badge>
+                          <span className="tabular-nums text-muted-foreground">
+                            {item.autonomyPenalty > 0 ? `-${item.autonomyPenalty} pts` : `+${Math.abs(item.autonomyPenalty)} pts`}
                           </span>
                         </div>
-                        <span className="text-[11px] text-muted-foreground font-mono">
-                          {new Date(item.createdAt).toLocaleTimeString()}
-                        </span>
+                        <span className="tabular-nums text-muted-foreground">{new Date(item.createdAt).toLocaleTimeString()}</span>
                       </div>
 
-                      {item.prompt && (
-                        <div className="text-xs text-muted-foreground font-medium italic">
-                          {en("\"")}{item.prompt}{en("\"")}
-                        </div>
-                      )}
+                      {item.prompt && <div className="text-sm text-muted-foreground">&ldquo;{item.prompt}&rdquo;</div>}
 
-                      <div className="text-xs text-foreground leading-relaxed whitespace-pre-line bg-background/60 p-3 rounded-lg border border-border/80 font-sans">
-                        {item.aiResponse}
-                      </div>
+                      <div className="whitespace-pre-line rounded-lg bg-muted/50 p-3 text-sm leading-relaxed text-foreground">{item.aiResponse}</div>
 
                       {item.suggestedDiff && (
                         <button
+                          type="button"
                           onClick={() => {
                             setActiveDiff(item.suggestedDiff || null);
                             setActiveTab("diff");
                           }}
-                          className="text-[11px] font-semibold text-purple-700 dark:text-purple-400 hover:text-purple-600 dark:text-purple-300 flex items-center space-x-1"
+                          className="inline-flex items-center gap-1 text-sm font-medium text-indigo-700 hover:underline dark:text-indigo-300"
                         >
-                          <span>✨</span>
-                          <span>{en("View Suggested Changes →")}</span>
+                          {en("View suggested changes")}
+                          <ArrowRight aria-hidden="true" className="h-4 w-4" />
                         </button>
                       )}
                     </div>
@@ -484,41 +344,20 @@ public class HighThroughputBuffer<T>
             {activeTab === "smells" && (
               <div className="space-y-3">
                 {codeSmells.length === 0 ? (
-                  <div className="p-6 text-center border border-dashed border-border rounded-2xl bg-card/20 text-emerald-700 dark:text-emerald-400">
-                    <span className="text-3xl block mb-2">✅</span>
-                    <p className="text-xs font-semibold">{en("Great Job! Zero Code Issues Found")}</p>
-                    <p className="text-[11px] text-muted-foreground mt-1">
-                      {en("Your solution follows clean standards with no structural issues or antipatterns detected.")}
-                    </p>
-                  </div>
+                  <EmptyState title={en("No code issues to show")}>{en("Use Review code quality to check your code for structural issues.")}</EmptyState>
                 ) : (
                   codeSmells.map((smell, i) => (
-                    <div
-                      key={i}
-                      className="p-3.5 rounded-xl border border-border bg-card/60 space-y-2"
-                    >
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs font-bold font-mono text-foreground">
-                          {smell.smellType}
-                        </span>
-                        <span
-                          className={`text-[10px] px-2 py-0.5 rounded border font-semibold ${getSeverityBadge(
-                            smell.severity
-                          )}`}
-                        >
-                          {smell.severity}
-                        </span>
+                    <div key={i} className="space-y-2 rounded-lg border border-border bg-background p-3.5">
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="font-mono text-xs font-semibold text-foreground">{smell.smellType}</span>
+                        <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${getSeverityBadge(smell.severity)}`}>{smell.severity}</span>
                       </div>
-                      <p className="text-xs text-muted-foreground leading-relaxed">{smell.description}</p>
-                      <div className="text-[11px] text-indigo-600 dark:text-indigo-300 bg-indigo-950/30 p-2.5 rounded-lg border border-indigo-900/40">
-                        <span className="font-semibold text-indigo-700 dark:text-indigo-400">{en("Suggested Fix: ")}</span>
+                      <p className="text-sm leading-relaxed text-muted-foreground">{smell.description}</p>
+                      <div className="rounded-lg bg-muted/50 p-2.5 text-sm text-foreground">
+                        <span className="font-medium">{en("Suggested fix: ")}</span>
                         {smell.recommendation}
                       </div>
-                      {smell.lineNumber && (
-                        <div className="text-[10px] text-muted-foreground font-mono">
-                          {en("Line #{lineNumber}", { lineNumber: smell.lineNumber })}
-                        </div>
-                      )}
+                      {smell.lineNumber && <div className="font-mono text-xs text-muted-foreground">{en("Line #{lineNumber}", { lineNumber: smell.lineNumber })}</div>}
                     </div>
                   ))
                 )}
@@ -527,16 +366,14 @@ public class HighThroughputBuffer<T>
 
             {activeTab === "diff" && activeDiff && (
               <div className="space-y-3">
-                <div className="flex items-center justify-between text-xs text-muted-foreground">
-                  <span>{en("Suggested Code Updates")}</span>
-                  <button
-                    onClick={() => setActiveTab("chat")}
-                    className="text-indigo-700 dark:text-indigo-400 hover:text-indigo-600 dark:text-indigo-300 font-semibold"
-                  >
-                    {en("← Back to Chat")}
+                <div className="flex items-center justify-between text-sm text-muted-foreground">
+                  <span>{en("Suggested code changes")}</span>
+                  <button type="button" onClick={() => setActiveTab("chat")} className="inline-flex items-center gap-1 font-medium text-indigo-700 hover:underline dark:text-indigo-300">
+                    <ArrowLeft aria-hidden="true" className="h-4 w-4" />
+                    {en("Back to the coach")}
                   </button>
                 </div>
-                <div className="bg-background p-4 rounded-xl border border-border font-mono text-xs overflow-x-auto whitespace-pre leading-relaxed">
+                <div className="overflow-x-auto whitespace-pre rounded-lg border border-border bg-background p-4 font-mono text-xs leading-relaxed">
                   {activeDiff.split("\n").map((line, idx) => {
                     const isAdd = line.startsWith("+");
                     const isDel = line.startsWith("-");
@@ -544,15 +381,15 @@ public class HighThroughputBuffer<T>
                     return (
                       <div
                         key={idx}
-                        className={`${
-                          isAdd
-                            ? "text-emerald-700 dark:text-emerald-400 bg-emerald-950/30 -mx-4 px-4"
+                        className={
+                          isHeader
+                            ? "font-semibold text-foreground"
+                            : isAdd
+                            ? "-mx-4 bg-emerald-50 px-4 text-emerald-800 dark:bg-emerald-950/30 dark:text-emerald-400"
                             : isDel
-                            ? "text-rose-400 bg-rose-950/30 -mx-4 px-4 line-through opacity-80"
-                            : isHeader
-                            ? "text-cyan-700 dark:text-cyan-400 font-bold"
+                            ? "-mx-4 bg-red-50 px-4 text-red-800 line-through opacity-80 dark:bg-red-950/30 dark:text-red-400"
                             : "text-muted-foreground"
-                        }`}
+                        }
                       >
                         {line}
                       </div>
@@ -563,24 +400,21 @@ public class HighThroughputBuffer<T>
             )}
           </div>
 
-          {/* Interactive Chat Input */}
-          <div className="p-3 border-t border-border bg-card/60">
-            <div className="flex space-x-2">
+          {/* Message box */}
+          <div className="border-t border-border p-3">
+            <div className="flex gap-2">
               <input
                 type="text"
                 value={userPrompt}
                 onChange={(e) => setUserPrompt(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && !isSubmitting && handleInteraction("Hint")}
                 placeholder={en("Ask your coach for guidance, hints, or alternative approaches...")}
-                className="flex-1 bg-background text-foreground px-3.5 py-2 rounded-xl border border-border focus:outline-none focus:ring-2 focus:ring-indigo-500/50 text-xs font-sans placeholder-slate-500"
+                aria-label={en("Message to your coach")}
+                className="flex-1 rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
               />
-              <button
-                onClick={() => handleInteraction("Hint")}
-                disabled={isSubmitting || !userPrompt.trim()}
-                className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white text-xs font-bold transition shadow-lg shadow-indigo-600/20"
-              >
+              <Button onClick={() => handleInteraction("Hint")} disabled={isSubmitting || !userPrompt.trim()}>
                 {en("Send")}
-              </button>
+              </Button>
             </div>
           </div>
         </div>

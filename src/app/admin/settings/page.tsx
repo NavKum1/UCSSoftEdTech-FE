@@ -9,6 +9,7 @@ import React, { useEffect, useState } from "react";
 import { AlertTriangle, CheckCircle2, Loader2, Mail, Send, ShieldCheck } from "lucide-react";
 import { AccessNotice, useLatestRef, useLegacyApi } from "@/lib/legacyApi";
 import { useEn } from "@/lib/english/EnglishProvider";
+import { Button, ErrorBanner, PageHeader } from "@/components/career/ui";
 
 interface EmailState {
   working: boolean;
@@ -30,10 +31,9 @@ interface UploadsState {
 }
 
 // en() where shown
-const SOURCE_NAMES: Record<string, string> = { career: "Career centre files", guidance: "Guidance form uploads", crm: "CRM email attachments", branding: "School logos" };
-const card = "rounded-2xl border border-border bg-card p-5";
+const SOURCE_NAMES: Record<string, string> = { career: "Career center files", guidance: "Guidance form uploads", crm: "CRM email attachments", branding: "School logos" };
+const card = "rounded-xl border border-border bg-card p-5 shadow-sm";
 const input = "mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm";
-const button = "inline-flex items-center gap-1.5 rounded-lg px-3.5 py-2 text-sm font-medium disabled:opacity-50";
 
 const when = (iso: string) => new Date(iso).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" });
 const from = (source: string) => (source === "page" ? "saved on this page" : source === "server" ? "from the server file" : "default");
@@ -114,12 +114,9 @@ export default function PlatformSettingsPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold">Email and uploads</h1>
-        <p className="mt-1 text-sm text-muted-foreground">How this region sends email, and the virus check on files people upload.</p>
-      </div>
+      <PageHeader title="Email and uploads" description="How this region sends email, and the virus check on files people upload." />
 
-      {error && <p className="rounded-lg border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-800 dark:text-red-300">{error}</p>}
+      <ErrorBanner error={error} />
       {!email && !error && (
         <p className="flex items-center gap-2 text-sm text-muted-foreground">
           <Loader2 aria-hidden="true" className="h-4 w-4 animate-spin" /> Loading…
@@ -129,7 +126,7 @@ export default function PlatformSettingsPage() {
       {email && (
         <section aria-labelledby="email-title" className={card}>
           <div className="flex flex-wrap items-start justify-between gap-3">
-            <h2 id="email-title" className="flex items-center gap-2 text-lg font-semibold">
+            <h2 id="email-title" className="flex items-center gap-2 text-base font-semibold">
               <Mail aria-hidden="true" className="h-5 w-5" /> Email
             </h2>
             {email.working ? (
@@ -234,18 +231,18 @@ export default function PlatformSettingsPage() {
               </label>
             </div>
             <div className="flex flex-wrap gap-2">
-              <button type="submit" disabled={busy != null} className={`${button} bg-slate-800 text-white hover:bg-slate-900 dark:bg-slate-200 dark:text-slate-900`}>
-                {busy === "save" && <Loader2 aria-hidden="true" className="h-4 w-4 animate-spin" />} Save
-              </button>
+              <Button type="submit" disabled={busy != null && busy !== "save"} busy={busy === "save"}>
+                Save
+              </Button>
               {email.page?.hasKey && (
-                <button type="button" disabled={busy != null} onClick={() => void save({ removeKey: true })} className={`${button} border border-border hover:bg-muted`}>
+                <Button type="button" variant="secondary" disabled={busy != null} onClick={() => void save({ removeKey: true })}>
                   Remove the saved key
-                </button>
+                </Button>
               )}
               {email.page && (
-                <button type="button" disabled={busy != null} onClick={() => void reset()} className={`${button} border border-border hover:bg-muted`}>
+                <Button type="button" variant="secondary" disabled={busy != null && busy !== "reset"} busy={busy === "reset"} onClick={() => void reset()}>
                   Use the server file only
-                </button>
+                </Button>
               )}
             </div>
           </form>
@@ -261,9 +258,9 @@ export default function PlatformSettingsPage() {
               Send a test email to
               <input type="email" required className={input} value={testTo} placeholder="you@your-domain.com" onChange={(e) => setTestTo(e.target.value)} />
             </label>
-            <button type="submit" disabled={busy != null} className={`${button} border border-border hover:bg-muted`}>
-              {busy === "test" ? <Loader2 aria-hidden="true" className="h-4 w-4 animate-spin" /> : <Send aria-hidden="true" className="h-4 w-4" />} Send test
-            </button>
+            <Button type="submit" variant="secondary" disabled={busy != null && busy !== "test"} busy={busy === "test"}>
+              {busy !== "test" && <Send aria-hidden="true" className="h-4 w-4" />} Send test
+            </Button>
           </form>
           {message && (
             <p role="status" className={`mt-3 text-sm ${message.ok ? "text-emerald-800 dark:text-emerald-300" : "text-red-800 dark:text-red-300"}`}>
@@ -276,7 +273,7 @@ export default function PlatformSettingsPage() {
       {uploads && (
         <section aria-labelledby="uploads-title" className={card}>
           <div className="flex flex-wrap items-start justify-between gap-3">
-            <h2 id="uploads-title" className="flex items-center gap-2 text-lg font-semibold">
+            <h2 id="uploads-title" className="flex items-center gap-2 text-base font-semibold">
               <ShieldCheck aria-hidden="true" className="h-5 w-5" /> Virus check on uploads
             </h2>
             {!uploads.enabled ? (

@@ -1,6 +1,30 @@
 @import "tailwindcss";
 @custom-variant dark (&:where(.dark, .dark *));
 
+/*
+ * The design foundation (5 Nov 2026): one place for the app's type, surfaces, corners and shadows, for every role.
+ * Pages use the shared building blocks (components/career/ui.tsx: PageHeader, Card, Button, Badge, StatTile…) and these
+ * tokens; a change here changes every page.
+ */
+/*
+ * The brand (5 Nov 2026): the app looks like edulexa.com. Edulexa cyan is the one brand color for every role, with the
+ * website's violet as its accent. Pages written with Tailwind's indigo get the brand through this scale, so no page
+ * needs its own change; it is one shade deeper than the website's cyan, so white text on it passes WCAG AA.
+ */
+@theme {
+  --color-indigo-50: #ecfeff;
+  --color-indigo-100: #cffafe;
+  --color-indigo-200: #a5f3fc;
+  --color-indigo-300: #67e8f9;
+  --color-indigo-400: #22d3ee;
+  --color-indigo-500: #0891b2;
+  --color-indigo-600: #0e7490;
+  --color-indigo-700: #155e75;
+  --color-indigo-800: #164e63;
+  --color-indigo-900: #083344;
+  --color-indigo-950: #042f3a;
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -8,68 +32,79 @@
   --color-border: var(--border);
   --color-muted: var(--muted);
   --color-muted-foreground: var(--muted-foreground);
+
+  /* Type: the brand's, as on edulexa.com: Inter for everything, JetBrains Mono only for code */
+  --font-sans: var(--font-brand-sans), ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: var(--font-brand-mono), ui-monospace, SFMono-Regular, Menlo, monospace;
+  /* No ultra-heavy text: titles are semibold, emphasis at most bold */
+  --font-weight-extrabold: 700;
+  --font-weight-black: 700;
+
+  /* Corners: cards 12px, controls 8px, pills round; the larger radii fold into the card radius */
+  --radius-2xl: 0.75rem;
+  --radius-3xl: 0.875rem;
+
+  /* One quiet elevation for surfaces; the large shadows are kept for dialogs */
+  --shadow-sm: 0 1px 2px 0 rgb(16 24 40 / 0.04), 0 1px 3px 0 rgb(16 24 40 / 0.04);
+  --shadow-md: 0 2px 4px -1px rgb(16 24 40 / 0.05), 0 4px 10px -2px rgb(16 24 40 / 0.06);
+  --shadow-lg: 0 8px 24px -6px rgb(16 24 40 / 0.10);
 }
 
 :root {
-  /* LIGHT MODE */
-  --background: oklch(0.99 0.005 250);
-  --foreground: oklch(0.13 0.006 260);
-  --card: oklch(0.96 0.005 250);
-  --border: oklch(0.85 0.005 250);
-  --muted: oklch(0.92 0.005 250);
-  --muted-foreground: oklch(0.35 0.01 250);
+  /* Light: a cool paper page, white cards, a soft border, deep navy ink */
+  --background: oklch(0.982 0.004 255);
+  --foreground: oklch(0.21 0.02 265);
+  --card: oklch(1 0 0);
+  --border: oklch(0.915 0.006 255);
+  --muted: oklch(0.955 0.005 255);
+  --muted-foreground: oklch(0.47 0.016 260);
+  /* Edulexa cyan (buttons, the current tab, links) and what's written on it; the website's violet as the accent */
+  --brand: #0e7490;
+  --brand-foreground: #ffffff;
+  --brand-accent: oklch(0.65 0.22 295);
+  --brand-bright: oklch(0.82 0.16 195);
 }
 
 .dark {
-  /* DARK MODE (Original OLED Black) */
-  --background: oklch(0.07 0 0); /* slate-950 */
-  --foreground: oklch(0.97 0.003 250); /* slate-100 */
-  --card: oklch(0.10 0.004 250); /* slate-900 */
-  --border: oklch(0.13 0.006 260); /* slate-800 */
+  /* Dark: the website's own colors (edulexa.com): near-black, electric cyan */
+  --background: oklch(0.07 0 0);
+  --foreground: oklch(0.97 0.003 250);
+  --card: oklch(0.10 0.004 250);
+  --border: oklch(0.20 0.006 260);
   --muted: oklch(0.13 0.006 260);
-  --muted-foreground: oklch(0.62 0.015 260); /* slate-400 */
+  --muted-foreground: oklch(0.62 0.015 260);
+  --brand: oklch(0.82 0.16 195);
+  --brand-foreground: oklch(0.10 0.005 250);
 }
 
 @layer base {
   body {
-    @apply min-h-screen font-sans antialiased selection:bg-indigo-500 selection:text-white;
+    @apply min-h-screen bg-background font-sans text-foreground antialiased selection:bg-cyan-300/40;
+    font-feature-settings: "cv11", "ss01";
+  }
+  h1, h2, h3 {
+    letter-spacing: -0.012em;
   }
 }
 
-.glass-panel {
-  background: rgba(255, 255, 255, 0.7);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(0, 0, 0, 0.1);
+/* Figures line up in tables and stat tiles */
+.tabular-nums, table {
+  font-variant-numeric: tabular-nums;
 }
 
-.dark .glass-panel {
-  background: rgba(15, 23, 42, 0.75);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
+/* The old "glass" panels are ordinary cards now: one surface style everywhere */
+.glass-panel,
 .glass-card {
-  background: rgba(255, 255, 255, 0.5);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(0, 0, 0, 0.08);
+  background: var(--card);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
 }
 
-.dark .glass-card {
-  background: rgba(30, 41, 59, 0.6);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-.glow-purple {
-  box-shadow: 0 0 35px -5px rgba(147, 51, 234, 0.35);
-}
-
-.glow-blue {
-  box-shadow: 0 0 35px -5px rgba(59, 130, 246, 0.35);
-}
-
+/* Glows were decoration; surfaces use the standard elevation */
+.glow-purple,
+.glow-blue,
 .glow-emerald {
-  box-shadow: 0 0 35px -5px rgba(16, 185, 129, 0.35);
+  box-shadow: var(--shadow-sm);
 }
 
 @keyframes pulse-wave {
@@ -207,7 +242,7 @@
 }
 
 .auth-scope {
-  font-family: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  font-family: var(--font-brand-sans), ui-sans-serif, system-ui, sans-serif;
 }
 
 /* CRM emails: the editor, the preview and the timeline show the same formatting */

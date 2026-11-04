@@ -30,7 +30,7 @@ export default function TranslationsTab({
 
   if (others.length === 0)
     return (
-      <div className="max-w-xl rounded-2xl border border-border bg-card p-5 text-sm">
+      <div className="max-w-xl rounded-xl border border-border bg-card shadow-sm p-5 text-sm">
         <p className="font-medium">{en("This form is in one language")}</p>
         <p className="mt-1 text-muted-foreground">{en("Add languages in Settings (for example हिन्दी or தமிழ்); then translate each text here. People pick their language on the form.")}</p>
       </div>
@@ -114,7 +114,7 @@ export default function TranslationsTab({
     <fieldset disabled={readOnly} className="space-y-4">
       <div className="flex flex-wrap items-center gap-2">
         {others.map((l) => (
-          <button key={l} type="button" aria-pressed={current === l} onClick={() => setLang(l)} className={`rounded-full border px-3 py-1.5 text-xs font-medium ${current === l ? "border-cyan-700 bg-cyan-700 text-white" : "border-border bg-card hover:bg-muted"}`}>
+          <button key={l} type="button" aria-pressed={current === l} onClick={() => setLang(l)} className={`rounded-full border px-3 py-1.5 text-xs font-medium ${current === l ? "border-indigo-700 bg-indigo-700 text-white" : "border-border bg-card hover:bg-muted"}`}>
             {nameOf(l)}
           </button>
         ))}
@@ -234,7 +234,7 @@ function Lines({ original, value, onChange }: { original: string[]; value: strin
 
 function Group({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <section className="space-y-2 rounded-2xl border border-border bg-card p-4">
+    <section className="space-y-2 rounded-xl border border-border bg-card shadow-sm p-4">
       <h3 className="text-sm font-semibold">{title}</h3>
       {children}
     </section>

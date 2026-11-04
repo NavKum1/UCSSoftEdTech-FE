@@ -62,7 +62,7 @@ interface Batch {
   kept: number;
 }
 
-const input = "mt-1 block w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:border-cyan-600 focus:outline-none focus:ring-2 focus:ring-cyan-600/20";
+const input = "mt-1 block w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:border-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-600/20";
 const plural = (n: number, one: string, many = `${one}s`) => `${n.toLocaleString()} ${n === 1 ? one : many}`;
 const when = (iso: string) => new Date(iso).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" });
 
@@ -187,9 +187,9 @@ export default function ImportView({ getToken, onImported }: { getToken: GetToke
 
   return (
     <div className="space-y-5">
-      <section className="rounded-2xl border border-border bg-card p-5">
+      <section className="rounded-xl border border-border bg-card shadow-sm p-5">
         <h2 className="flex items-center gap-2 text-base font-semibold">
-          <FileUp aria-hidden="true" className="h-4 w-4 text-cyan-700" />{en(" Import leads")}
+          <FileUp aria-hidden="true" className="h-4 w-4 text-indigo-700" />{en(" Import leads")}
         </h2>
         <p className="mt-1 text-sm text-muted-foreground">
           {en("Bring your leads over from VirtualAdviser or another system, as a CSV file. You see what will happen before anything is saved, and nothing is sent to the people you import.")}
@@ -239,7 +239,7 @@ export default function ImportView({ getToken, onImported }: { getToken: GetToke
 
       {preview && mapping && (
         <>
-          <section className="rounded-2xl border border-border bg-card p-5">
+          <section className="rounded-xl border border-border bg-card shadow-sm p-5">
             <h3 className="text-sm font-semibold">{en("What each column is")}</h3>
             <p className="mt-1 text-xs text-muted-foreground">{en("Matched from the column names; change any that are wrong. Columns kept as answers show on the lead with what they shared.")}</p>
             <div className="mt-3 overflow-x-auto">
@@ -272,7 +272,7 @@ export default function ImportView({ getToken, onImported }: { getToken: GetToke
             </div>
           </section>
 
-          <section className="rounded-2xl border border-border bg-card p-5">
+          <section className="rounded-xl border border-border bg-card shadow-sm p-5">
             <h3 className="text-sm font-semibold">{en("What will happen")}</h3>
             <dl className="mt-3 grid grid-cols-2 gap-3 text-sm lg:grid-cols-4">
               <Count label={en("New leads")} value={preview.create} />
@@ -369,7 +369,7 @@ export default function ImportView({ getToken, onImported }: { getToken: GetToke
             )}
 
             <div className="mt-5 flex flex-wrap items-center gap-3">
-              <button type="button" disabled={busy || preview.create + (duplicates === "note" ? preview.duplicates : 0) === 0} onClick={runImport} className="rounded-lg bg-cyan-700 px-4 py-2 text-sm font-medium text-white hover:bg-cyan-800 disabled:opacity-50">
+              <button type="button" disabled={busy || preview.create + (duplicates === "note" ? preview.duplicates : 0) === 0} onClick={runImport} className="rounded-lg bg-indigo-700 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-800 disabled:opacity-50">
                 {preview.create === 0 && duplicates === "note" && preview.duplicates > 0
                   ? `Add ${plural(preview.duplicates, "note")}`
                   : `Import ${plural(preview.create, "lead")}${duplicates === "note" && preview.duplicates ? ` and ${plural(preview.duplicates, "note")}` : ""}`}
@@ -386,7 +386,7 @@ export default function ImportView({ getToken, onImported }: { getToken: GetToke
         </>
       )}
 
-      <section className="rounded-2xl border border-border bg-card p-5">
+      <section className="rounded-xl border border-border bg-card shadow-sm p-5">
         <h3 className="flex items-center gap-2 text-sm font-semibold">
           <History aria-hidden="true" className="h-4 w-4 text-muted-foreground" />{en(" Past imports")}
         </h3>

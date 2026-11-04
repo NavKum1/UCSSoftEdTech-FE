@@ -7,7 +7,7 @@
 
 import React, { useCallback } from "react";
 import type { CareerTranslator } from "@/components/career/i18n/CareerI18nProvider";
-import { Badge, Button, formatDate, useCareerT, useCareerLabels } from "@/components/career/ui";
+import { Badge, Button, formatDate, useCareerT, useCareerLabels, ScrollArea } from "@/components/career/ui";
 import type { useApi } from "@/lib/appAuth";
 
 export interface FileMeta {
@@ -220,34 +220,36 @@ export function RubricTable({ rubric }: { rubric: RubricResult[] }) {
   const RATING_LABELS = useRatingLabels();
   if (rubric.length === 0) return <p className="text-sm text-muted-foreground">{t("noChecklistResults")}</p>;
   return (
-    <table className="w-full text-start text-sm [&_th]:text-start">
-      <caption className="sr-only">{t("checklistResults")}</caption>
-      <thead>
-        <tr className="border-b border-border text-xs text-muted-foreground">
-          <th scope="col" className="py-2 pe-3 font-medium">
-            {t("item")}
-          </th>
-          <th scope="col" className="py-2 pe-3 font-medium">
-            {t("result")}
-          </th>
-          <th scope="col" className="py-2 font-medium">
-            {t("note")}
-          </th>
-        </tr>
-      </thead>
-      <tbody>
-        {rubric.map((r) => (
-          <tr key={r.key} className="border-b border-border last:border-0 align-top">
-            <th scope="row" className="py-2 pe-3 font-medium">
-              {r.label}
+    <ScrollArea>
+      <table className="w-full text-start text-sm [&_th]:text-start">
+        <caption className="sr-only">{t("checklistResults")}</caption>
+        <thead>
+          <tr className="border-b border-border text-xs text-muted-foreground">
+            <th scope="col" className="py-2 pe-3 font-medium">
+              {t("item")}
             </th>
-            <td className="py-2 pe-3">
-              {r.rating ? <Badge tone={r.rating === "Strong" ? "good" : r.rating === "NeedsWork" ? "warn" : "neutral"}>{RATING_LABELS[r.rating] ?? r.rating}</Badge> : "—"}
-            </td>
-            <td className="py-2 whitespace-pre-wrap">{r.note ?? ""}</td>
+            <th scope="col" className="py-2 pe-3 font-medium">
+              {t("result")}
+            </th>
+            <th scope="col" className="py-2 font-medium">
+              {t("note")}
+            </th>
           </tr>
-        ))}
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+          {rubric.map((r) => (
+            <tr key={r.key} className="border-b border-border last:border-0 align-top">
+              <th scope="row" className="py-2 pe-3 font-medium">
+                {r.label}
+              </th>
+              <td className="py-2 pe-3">
+                {r.rating ? <Badge tone={r.rating === "Strong" ? "good" : r.rating === "NeedsWork" ? "warn" : "neutral"}>{RATING_LABELS[r.rating] ?? r.rating}</Badge> : "—"}
+              </td>
+              <td className="py-2 whitespace-pre-wrap">{r.note ?? ""}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </ScrollArea>
   );
 }

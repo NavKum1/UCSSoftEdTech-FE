@@ -2,12 +2,11 @@
 
 import React, { useCallback, useEffect, useState } from "react";
 import { useAppAuth as useAuth } from "@/lib/appAuth";
+import { Badge, Button, ErrorBanner, PageHeader } from "@/components/career/ui";
 import {
-  GitBranch,
   Copy,
   Check,
   Loader2,
-  AlertTriangle,
   ShieldCheck,
   FileCode,
   RefreshCw,
@@ -50,11 +49,11 @@ async function fetchMine(getToken: () => Promise<string | null>): Promise<RepoDe
   }
 }
 
-const STATUS_STYLES: Record<RepoDefenseStatus, string> = {
-  PendingVerification: "bg-amber-500/10 text-amber-800 dark:text-amber-300 border-amber-500/30",
-  Ready: "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/30",
-  Failed: "bg-red-500/10 text-red-700 dark:text-red-400 border-red-500/30",
-  Defended: "bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 border-indigo-500/30",
+const STATUS_TONES: Record<RepoDefenseStatus, "warn" | "good" | "bad" | "info"> = {
+  PendingVerification: "warn",
+  Ready: "good",
+  Failed: "bad",
+  Defended: "info",
 };
 
 const STATUS_LABELS: Record<RepoDefenseStatus, string> = {
@@ -67,9 +66,7 @@ const STATUS_LABELS: Record<RepoDefenseStatus, string> = {
 function StatusBadge({ status }: { status: RepoDefenseStatus }) {
   const en = useEn();
   return (
-    <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border ${STATUS_STYLES[status] ?? ""}`}>
-      {en(STATUS_LABELS[status] ?? status)}
-    </span>
+    <Badge tone={STATUS_TONES[status] ?? "neutral"}>{en(STATUS_LABELS[status] ?? status)}</Badge>
   );
 }
 
@@ -196,26 +193,17 @@ export default function DefendRepoPage() {
   return (
     <div className="text-foreground">
       <div className="space-y-8">
-        <div>
-          <h1 className="text-2xl font-black tracking-tight text-foreground flex items-center gap-2">
-            <GitBranch className="w-6 h-6 text-indigo-700 dark:text-indigo-400" />
-            {en("Defend your real work")}
-          </h1>
-          <p className="text-sm text-muted-foreground mt-1 max-w-3xl">
-            {en("Link a public GitHub repository or pull request you wrote, prove the GitHub account is yours, then explain your code in a voice defense. The interviewer asks about the files you authored.")}
-          </p>
-        </div>
+        <PageHeader
+          title={en("Defend your real work")}
+          description={en("Link a public GitHub repository or pull request you wrote, prove the GitHub account is yours, then explain your code in a voice defense. The interviewer asks about the files you authored.")}
+        />
 
-        {error && (
-          <div className="p-3 rounded-xl border border-red-500/30 bg-red-50 dark:bg-red-500/10 text-xs text-red-700 dark:text-red-300 flex items-center gap-2">
-            <AlertTriangle className="w-4 h-4 shrink-0" /> {error}
-          </div>
-        )}
+        <ErrorBanner error={error} />
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 space-y-6">
-            <form onSubmit={handleCreate} className="glass-panel rounded-2xl p-5 border border-border space-y-4">
-              <h2 className="text-sm font-bold text-foreground">{en("1. Link a repository or pull request")}</h2>
+            <form onSubmit={handleCreate} className="space-y-4 rounded-xl border border-border bg-card p-5 shadow-sm">
+              <h2 className="text-base font-semibold text-foreground">{en("1. Link a repository or pull request")}</h2>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <label className="sm:col-span-2 text-xs text-muted-foreground space-y-1">
                   <span>{en("GitHub repo or PR URL")}</span>
@@ -248,21 +236,16 @@ export default function DefendRepoPage() {
                   className="w-full sm:max-w-xs px-3 py-2 rounded-xl border border-border bg-background text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
                 />
               </label>
-              <p className="text-[11px] text-muted-foreground">{en("Only public repositories are supported.")}</p>
-              <button
-                type="submit"
-                disabled={creating}
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 disabled:opacity-60 text-white text-sm font-semibold"
-              >
-                {creating && <Loader2 className="w-4 h-4 animate-spin" />}
+              <p className="text-xs text-muted-foreground">{en("Only public repositories are supported.")}</p>
+              <Button type="submit" busy={creating}>
                 {en("Get verification token")}
-              </button>
+              </Button>
             </form>
 
             {current && (
-              <div className="glass-panel rounded-2xl p-5 border border-border space-y-4">
+              <div className="space-y-4 rounded-xl border border-border bg-card p-5 shadow-sm">
                 <div className="flex flex-wrap items-center justify-between gap-2">
-                  <h2 className="text-sm font-bold text-foreground">
+                  <h2 className="text-base font-semibold text-foreground">
                     {en("2. Verify ownership")}
                     {current.repository && (
                       <span className="ms-2 font-mono font-normal text-muted-foreground">
@@ -283,14 +266,10 @@ export default function DefendRepoPage() {
                           <code className="flex-1 min-w-0 truncate px-3 py-2 rounded-xl bg-muted border border-border font-mono text-sm text-foreground">
                             {currentToken}
                           </code>
-                          <button
-                            type="button"
-                            onClick={copyToken}
-                            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-border bg-card hover:bg-muted text-xs font-semibold text-foreground shrink-0"
-                          >
-                            {copied ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
+                          <Button type="button" variant="secondary" onClick={copyToken} className="shrink-0">
+                            {copied ? <Check className="h-4 w-4 text-emerald-600" /> : <Copy className="h-4 w-4" />}
                             {copied ? en("Copied") : en("Copy")}
-                          </button>
+                          </Button>
                         </div>
                       </div>
                     ) : null}
@@ -311,15 +290,10 @@ export default function DefendRepoPage() {
                         <li>{en("Click Verify. You can remove the token from GitHub afterwards.")}</li>
                       </ol>
                     </div>
-                    <button
-                      type="button"
-                      onClick={handleVerify}
-                      disabled={verifying}
-                      className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 disabled:opacity-60 text-white text-sm font-semibold"
-                    >
-                      {verifying ? <Loader2 className="w-4 h-4 animate-spin" /> : <ShieldCheck className="w-4 h-4" />}
+                    <Button type="button" onClick={handleVerify} busy={verifying}>
+                      {!verifying && <ShieldCheck className="h-4 w-4" aria-hidden />}
                       {en("Verify")}
-                    </button>
+                    </Button>
                   </>
                 )}
 
@@ -362,7 +336,7 @@ export default function DefendRepoPage() {
 
             {canDefend && current && (
               <div className="space-y-2">
-                <h2 className="text-sm font-bold text-foreground">{en("3. Defend it")}</h2>
+                <h2 className="text-base font-semibold text-foreground">{en("3. Defend it")}</h2>
                 {current.status === "Defended" && (
                   <p className="text-xs text-muted-foreground">{en("You've already defended this work. You can start another session if you want.")}</p>
                 )}
@@ -376,9 +350,9 @@ export default function DefendRepoPage() {
             )}
           </div>
 
-          <aside className="glass-panel rounded-2xl p-5 border border-border h-fit space-y-3">
+          <aside className="h-fit space-y-3 rounded-xl border border-border bg-card p-5 shadow-sm">
             <div className="flex items-center justify-between">
-              <h2 className="text-sm font-bold text-foreground">{en("Your linked work")}</h2>
+              <h2 className="text-base font-semibold text-foreground">{en("Your linked work")}</h2>
               <button
                 type="button"
                 onClick={() => void refreshHistory()}
@@ -402,7 +376,7 @@ export default function DefendRepoPage() {
                       type="button"
                       onClick={() => selectExisting(item)}
                       className={`w-full text-start p-3 rounded-xl border transition-colors ${
-                        current?.id === item.id ? "border-indigo-500/50 bg-indigo-500/5" : "border-border hover:bg-muted/60"
+                        current?.id === item.id ? "border-indigo-500 bg-muted/60" : "border-border hover:bg-muted/60"
                       }`}
                     >
                       <div className="flex items-center justify-between gap-2">
@@ -415,7 +389,7 @@ export default function DefendRepoPage() {
                       <div className="mt-1.5 flex items-center justify-between gap-2">
                         <StatusBadge status={item.status} />
                         {item.createdAt && (
-                          <span className="text-[10px] text-muted-foreground">{new Date(item.createdAt).toLocaleDateString()}</span>
+                          <span className="text-xs text-muted-foreground">{new Date(item.createdAt).toLocaleDateString()}</span>
                         )}
                       </div>
                     </button>

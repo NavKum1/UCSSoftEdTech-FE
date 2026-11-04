@@ -30,7 +30,7 @@ import {
 } from "./api";
 import { useEn } from "@/lib/english/EnglishProvider";
 
-const input = "rounded-lg border border-border bg-background px-3 py-2 text-sm focus:border-cyan-600 focus:outline-none focus:ring-2 focus:ring-cyan-600/20";
+const input = "rounded-lg border border-border bg-background px-3 py-2 text-sm focus:border-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-600/20";
 
 const QUICK: { key: string; label: string; filters: Filters }[] = [
   { key: "all", label: "All leads", filters: {} },
@@ -215,7 +215,7 @@ export default function LeadsView({
               aria-pressed={on}
               onClick={() => setFilters({ ...q.filters, q: filters.q })}
               title={q.key === "overdue" ? en("Leads with a follow-up whose due time has passed and isn't ticked off") : q.key === "incomplete" ? en("People who started a website form and gave their contact details but haven't sent it yet") : undefined}
-              className={`rounded-full border px-3 py-1.5 text-xs font-medium ${on ? "border-cyan-700 bg-cyan-700 text-white" : "border-border bg-card hover:bg-muted"}`}
+              className={`rounded-full border px-3 py-1.5 text-xs font-medium ${on ? "border-indigo-700 bg-indigo-700 text-white" : "border-border bg-card hover:bg-muted"}`}
             >
               {en(q.label)}
               {count ? <span className="ms-1 tabular-nums opacity-80">{count}</span> : null}
@@ -225,7 +225,7 @@ export default function LeadsView({
         {views.map((v) => {
           const on = same(v.filters, filters);
           return (
-            <span key={v.id} className={`inline-flex items-center rounded-full border text-xs font-medium ${on ? "border-cyan-700 bg-cyan-700 text-white" : "border-border bg-card"}`}>
+            <span key={v.id} className={`inline-flex items-center rounded-full border text-xs font-medium ${on ? "border-indigo-700 bg-indigo-700 text-white" : "border-border bg-card"}`}>
               <button type="button" onClick={() => { setFilters(v.filters); setSearch(v.filters.q ?? ""); }} className="inline-flex items-center gap-1 py-1.5 ps-3 pe-1.5">
                 <Bookmark aria-hidden="true" className="h-3 w-3" />
                 {v.name}
@@ -250,7 +250,7 @@ export default function LeadsView({
           <Search aria-hidden="true" className="pointer-events-none absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <input className={`${input} w-full ps-9`} placeholder={en("Search name, email, phone, course, source, tag or question")} value={search} onChange={(e) => setSearch(e.target.value)} />
         </label>
-        <button type="button" onClick={() => setMore(!more)} aria-expanded={more} className={`inline-flex items-center gap-1.5 rounded-lg border px-3 py-2 text-sm ${advanced ? "border-cyan-600 text-cyan-800 dark:text-cyan-300" : "border-border"} hover:bg-muted`}>
+        <button type="button" onClick={() => setMore(!more)} aria-expanded={more} className={`inline-flex items-center gap-1.5 rounded-lg border px-3 py-2 text-sm ${advanced ? "border-indigo-600 text-indigo-800 dark:text-indigo-300" : "border-border"} hover:bg-muted`}>
           <SlidersHorizontal aria-hidden="true" className="h-4 w-4" />{en(" Filters")}
         </button>
         <label className="inline-flex items-center gap-1.5 text-sm">
@@ -301,7 +301,7 @@ export default function LeadsView({
             <label className="flex items-center gap-2 text-sm">
               <input type="checkbox" checked={!!filters.overdue} onChange={(e) => setFilters({ ...filters, overdue: e.target.checked || undefined })} />{en(" Follow-up overdue only")}
             </label>
-            <button type="button" className="ms-auto text-sm text-cyan-700 hover:underline dark:text-cyan-400" onClick={() => { setFilters({}); setSearch(""); }}>
+            <button type="button" className="ms-auto text-sm text-indigo-700 hover:underline dark:text-indigo-400" onClick={() => { setFilters({}); setSearch(""); }}>
               {en("Clear filters")}
             </button>
           </div>
@@ -326,7 +326,7 @@ export default function LeadsView({
 
       {/* Bulk actions */}
       {selected.size > 0 && (
-        <div className="sticky top-16 z-10 flex flex-wrap items-center gap-2 rounded-xl border border-cyan-600/40 bg-card p-2.5 shadow-sm">
+        <div className="sticky top-16 z-10 flex flex-wrap items-center gap-2 rounded-xl border border-border bg-card p-2.5 shadow-md">
           <span className="px-1 text-sm font-medium">{selected.size} selected</span>
           <BulkSelect label={en("Assign to…")} onPick={(v) => bulk({ ownerSet: true, ownerMemberId: v === "none" ? null : v }, "Assigned")} options={[["none", "Unassigned"], ...activeTeam.map((m) => [m.id, m.name] as [string, string])]} />
           <BulkSelect label={en("Move to…")} onPick={(v) => bulk({ stage: v }, `Moved to ${en(STAGE_LABEL[v])}`)} options={STAGES.filter((s) => s !== "Lost").map((s) => [s, en(STAGE_LABEL[s])])} />
@@ -348,11 +348,11 @@ export default function LeadsView({
       )}
 
       {loading && !data ? (
-        <div className="h-64 animate-pulse rounded-2xl bg-muted motion-reduce:animate-none" aria-busy="true" />
+        <div className="h-64 animate-pulse rounded-xl bg-muted motion-reduce:animate-none" aria-busy="true" />
       ) : data && (data.totalAll ?? data.total) === 0 ? (
         <Empty />
       ) : layout === "table" ? (
-        <div className="overflow-x-auto rounded-2xl border border-border bg-card">
+        <div className="overflow-x-auto rounded-xl border border-border bg-card shadow-sm">
           <table className="w-full text-start text-sm">
             <thead className="border-b border-border bg-muted/40 text-xs text-muted-foreground">
               <tr>
@@ -372,12 +372,12 @@ export default function LeadsView({
               {leads.length === 0 && (
                 <tr>
                   <td colSpan={8} className="px-3 py-10 text-center text-muted-foreground">
-                    {en("No leads match. ")}<button type="button" className="text-cyan-700 hover:underline dark:text-cyan-400" onClick={() => { setFilters({}); setSearch(""); }}>{en("Show all leads")}</button>
+                    {en("No leads match. ")}<button type="button" className="text-indigo-700 hover:underline dark:text-indigo-400" onClick={() => { setFilters({}); setSearch(""); }}>{en("Show all leads")}</button>
                   </td>
                 </tr>
               )}
               {leads.map((l) => (
-                <tr key={l.leadId} className={`cursor-pointer border-b border-border last:border-0 hover:bg-muted/40 ${selected.has(l.leadId) ? "bg-cyan-600/5" : ""}`} onClick={() => openLead(l.leadId)}>
+                <tr key={l.leadId} className={`cursor-pointer border-b border-border last:border-0 hover:bg-muted/40 ${selected.has(l.leadId) ? "bg-indigo-600/5" : ""}`} onClick={() => openLead(l.leadId)}>
                   <td className="px-3 py-2.5" onClick={(e) => e.stopPropagation()}>
                     <input type="checkbox" aria-label={`Select ${l.name ?? l.email ?? "lead"}`} checked={selected.has(l.leadId)} onChange={() => toggle(l.leadId)} />
                   </td>
@@ -391,14 +391,14 @@ export default function LeadsView({
                       {l.doNotContact && <span className="inline-flex items-center gap-0.5 text-red-700 dark:text-red-400"><Ban aria-hidden="true" className="h-3 w-3" />{en("Do not contact")}</span>}
                       {l.highPriority && <PriorityBadge />}
                       {l.spam && (
-                        <span className="rounded-full border border-zinc-500/30 bg-zinc-500/10 px-1.5 py-0.5 text-[11px] font-medium text-zinc-700 dark:text-zinc-300" title={l.spamReasons ?? undefined}>
+                        <span className="rounded-full border border-zinc-500/30 bg-zinc-500/10 px-1.5 py-0.5 text-xs font-medium text-zinc-700 dark:text-zinc-300" title={l.spamReasons ?? undefined}>
                           {en("Possible spam")}
                         </span>
                       )}
                       {l.incomplete && <IncompleteBadge unconfirmed={l.unconfirmed} />}
                       {l.unconfirmed && !l.incomplete && (
                         <span
-                          className="rounded-full border border-sky-500/30 bg-sky-500/10 px-1.5 py-0.5 text-[11px] font-medium text-sky-800 dark:text-sky-300"
+                          className="rounded-full border border-sky-500/30 bg-sky-500/10 px-1.5 py-0.5 text-xs font-medium text-sky-800 dark:text-sky-300"
                           title={en("They haven't clicked the link in the confirmation email yet. The form's automatic messages to them wait until they do.")}
                         >
                           {en("Email not confirmed")}
@@ -420,7 +420,7 @@ export default function LeadsView({
                   </td>
                   <td className="px-3 py-2.5 whitespace-nowrap">
                     {l.awaitingReply ? (
-                      <span className="rounded-full bg-cyan-600/10 px-2 py-0.5 text-xs font-medium text-cyan-800 dark:text-cyan-300">{en("Replied {lastReplyAt}", { lastReplyAt: relative(l.lastReplyAt) })}</span>
+                      <span className="rounded-full bg-indigo-600/10 px-2 py-0.5 text-xs font-medium text-indigo-800 dark:text-indigo-300">{en("Replied {lastReplyAt}", { lastReplyAt: relative(l.lastReplyAt) })}</span>
                     ) : l.lastContactAt ? (
                       <span className="text-muted-foreground">{relative(l.lastContactAt)}</span>
                     ) : l.stage !== "New" ? (
@@ -617,7 +617,7 @@ function BoardColumn({
         setDragging(null);
         setOver(false);
       }}
-      className={`flex w-64 shrink-0 flex-col rounded-2xl border border-t-4 p-2 ${STAGE_BORDER[stage]} ${over ? "bg-cyan-600/5 ring-2 ring-cyan-600/40" : "border-x-border border-b-border bg-muted/30"}`}
+      className={`flex w-64 shrink-0 flex-col rounded-xl border border-t-4 p-2 ${STAGE_BORDER[stage]} ${over ? "bg-indigo-600/5 ring-2 ring-indigo-600/40" : "border-x-border border-b-border bg-muted/30"}`}
     >
       <h3 className="flex items-center justify-between px-1.5 pb-2 text-xs font-semibold">
         <span className="inline-flex items-center gap-1.5">
@@ -644,12 +644,12 @@ function BoardColumn({
                 <PriorityBadge />
               </p>
             )}
-            {l.awaitingReply && <p className="mt-1 inline-block rounded-full bg-cyan-600/10 px-2 py-0.5 text-[11px] font-medium text-cyan-800 dark:text-cyan-300">{en("Replied, needs answer")}</p>}
+            {l.awaitingReply && <p className="mt-1 inline-block rounded-full bg-indigo-600/10 px-2 py-0.5 text-xs font-medium text-indigo-800 dark:text-indigo-300">{en("Replied, needs answer")}</p>}
             <p className="mt-1.5 truncate text-xs text-muted-foreground">{l.owner ?? "Unassigned"}</p>
             <p className={`text-xs ${l.overdue ? "font-medium text-red-700 dark:text-red-400" : "text-muted-foreground"}`}>
               {l.nextFollowUpAt ? `${l.overdue ? "Follow-up overdue" : "Next follow-up"} ${relative(l.nextFollowUpAt)}` : en("No follow-up scheduled")}
             </p>
-            <button type="button" onClick={() => openLead(l.leadId)} className="mt-1.5 w-full rounded-md border border-cyan-600/40 px-1.5 py-1 text-xs font-medium text-cyan-800 hover:bg-cyan-600/10 dark:text-cyan-300">
+            <button type="button" onClick={() => openLead(l.leadId)} className="mt-1.5 w-full rounded-md border border-indigo-600/40 px-1.5 py-1 text-xs font-medium text-indigo-800 hover:bg-indigo-600/10 dark:text-indigo-300">
               {en("Open: notes, calls, follow-ups")}
             </button>
             <select aria-label={`Move ${l.name ?? "lead"}`} value={l.stage} onChange={(e) => onMove(l, e.target.value)} className="mt-1.5 w-full rounded-md border border-border bg-background px-1.5 py-1 text-xs">
@@ -678,12 +678,12 @@ function BoardColumn({
 function Empty() {
   const en = useEn();
   return (
-    <div className="rounded-2xl border border-dashed border-border p-10 text-center">
+    <div className="rounded-xl border border-dashed border-border p-10 text-center">
       <p className="font-medium">{en("No leads yet")}</p>
       <p className="mx-auto mt-1 max-w-md text-sm text-muted-foreground">
         {en("Leads arrive when people ask about your courses on Edulexa, request career guidance from you, or fill in the guidance form on your website.")}
       </p>
-      <Link href="/institute/guidance" className="mt-3 inline-block text-sm text-cyan-700 hover:underline dark:text-cyan-400">
+      <Link href="/institute/guidance" className="mt-3 inline-block text-sm text-indigo-700 hover:underline dark:text-indigo-400">
         {en("Get the form for your website")}
       </Link>
     </div>
@@ -719,7 +719,7 @@ function IncompleteBadge({ unconfirmed }: { unconfirmed?: boolean }) {
   const en = useEn();
   return (
     <span
-      className="rounded-full border border-amber-500/30 bg-amber-500/10 px-1.5 py-0.5 text-[11px] font-medium text-amber-800 dark:text-amber-300"
+      className="rounded-full border border-amber-500/30 bg-amber-500/10 px-1.5 py-0.5 text-xs font-medium text-amber-800 dark:text-amber-300"
       title={`Started your website form but hasn't sent it yet${unconfirmed ? "; email not confirmed" : ""}`}
     >
       {en("Incomplete")}

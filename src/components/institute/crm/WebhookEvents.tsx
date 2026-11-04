@@ -146,7 +146,7 @@ export default function WebhookEvents({ getToken, version }: { getToken: GetToke
                     {d.nextAttemptAt ? ` Next try ${when(d.nextAttemptAt)}.` : ""}
                   </p>
                 )}
-                {open === d.id && <pre className="mt-2 max-h-64 overflow-auto rounded-lg bg-muted p-2 text-[11px]">{JSON.stringify(d.payload, null, 2)}</pre>}
+                {open === d.id && <pre className="mt-2 max-h-64 overflow-auto rounded-lg bg-muted p-2 text-xs">{JSON.stringify(d.payload, null, 2)}</pre>}
               </li>
             ))}
           </ul>

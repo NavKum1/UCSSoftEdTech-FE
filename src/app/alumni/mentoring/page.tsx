@@ -188,7 +188,7 @@ export default function AlumniMentoringPage() {
                         type="button"
                         onClick={() => setOpenId(r.id)}
                         aria-current={openId === r.id ? "true" : undefined}
-                        className={`w-full rounded-lg border p-3 text-start text-sm focus-visible:outline-2 ${openId === r.id ? "border-[var(--brand,#4f46e5)]" : "border-border"}`}
+                        className={`w-full rounded-lg border p-3 text-start text-sm focus-visible:outline-2 ${openId === r.id ? "border-[var(--brand,#0e7490)]" : "border-border"}`}
                       >
                         <span className="flex items-center justify-between gap-2">
                           <span className="font-medium">{r.studentName}</span>

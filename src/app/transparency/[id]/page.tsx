@@ -3,11 +3,12 @@
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { AlertCircle, AlertTriangle, ArrowLeft, Loader2 } from "lucide-react";
+import { AlertCircle, AlertTriangle, ArrowLeft } from "lucide-react";
 import TransparencyReportView from "@/components/transparency/TransparencyReportView";
 import { TransparencyArchive, TransparencyIntro } from "@/components/transparency/TransparencyArchive";
 import { fetchPublic, formatDate, formatPeriod, type ArchiveEntry, type PublicFetchResult, type PublishedReport } from "@/lib/transparency";
 import { useEn } from "@/lib/english/EnglishProvider";
+import { EmptyState, Loading } from "@/components/career/ui";
 
 export default function TransparencyArchiveReportPage() {
   const en = useEn();
@@ -29,33 +30,37 @@ export default function TransparencyArchiveReportPage() {
 
   return (
     <div className="space-y-6">
-      <Link href="/transparency" className="text-xs font-semibold text-muted-foreground hover:text-foreground inline-flex items-center gap-1.5">
-        <ArrowLeft className="w-3.5 h-3.5" />{en(" Latest report")}
+      <Link href="/transparency" className="inline-flex items-center gap-1.5 text-sm font-medium text-muted-foreground hover:text-foreground">
+        <ArrowLeft className="h-4 w-4" aria-hidden /> {en("Latest report")}
       </Link>
       <TransparencyIntro />
 
       {current == null ? (
-        <div className="glass-panel rounded-2xl border border-border py-10 flex items-center justify-center gap-2 text-sm text-muted-foreground">
-          <Loader2 className="w-4 h-4 animate-spin" />{en(" Loading report...")}
-        </div>
+        <Loading label={en("Loading report...")} />
       ) : current.kind === "ok" && current.data.report ? (
         <TransparencyReportView report={current.data.report} meta={current.data} />
       ) : current.kind === "withdrawn" ? (
-        <div className="rounded-2xl border border-rose-500/30 bg-rose-500/5 p-6 text-sm text-foreground flex gap-3">
-          <AlertTriangle className="w-5 h-5 text-rose-600 dark:text-rose-400 shrink-0 mt-0.5" />
+        <div role="status" className="flex gap-3 rounded-lg border border-red-300 bg-red-50 p-5 text-sm text-foreground dark:border-red-900 dark:bg-red-950/40">
+          <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-red-600 dark:text-red-400" aria-hidden />
           <div>
             <p className="font-semibold">
-              {en("The report for {amount} was withdrawn on {date}.", { amount: formatPeriod(current.data.periodStart, current.data.periodEnd), date: formatDate(current.data.withdrawnAt) })}</p>
-            {current.data.withdrawalReason && <p className="text-muted-foreground mt-1">{en("Reason: {withdrawalReason}", { withdrawalReason: current.data.withdrawalReason })}</p>}
-            <p className="text-muted-foreground mt-1">{en("Its figures are no longer shown. A corrected report, if issued, appears in the archive.")}</p>
+              {en("The report for {amount} was withdrawn on {date}.", {
+                amount: formatPeriod(current.data.periodStart, current.data.periodEnd),
+                date: formatDate(current.data.withdrawnAt),
+              })}
+            </p>
+            {current.data.withdrawalReason && (
+              <p className="mt-1 text-muted-foreground">{en("Reason: {withdrawalReason}", { withdrawalReason: current.data.withdrawalReason })}</p>
+            )}
+            <p className="mt-1 text-muted-foreground">{en("Its figures are no longer shown. A corrected report, if issued, appears in the archive.")}</p>
           </div>
         </div>
       ) : current.kind === "error" ? (
-        <div className="glass-panel rounded-2xl border border-border p-6 text-sm text-rose-700 dark:text-rose-400 flex items-center gap-2">
-          <AlertCircle className="w-4 h-4" />{" "}{en("Could not load the report. {message}", { message: current.message })}
+        <div role="alert" className="flex items-center gap-2 rounded-lg border border-red-300 bg-red-50 p-4 text-sm text-red-800 dark:border-red-900 dark:bg-red-950/40 dark:text-red-300">
+          <AlertCircle className="h-4 w-4 shrink-0" aria-hidden /> {en("Could not load the report. {message}", { message: current.message })}
         </div>
       ) : (
-        <div className="glass-panel rounded-2xl border border-border p-6 text-sm text-muted-foreground">{en("This report does not exist or has not been published.")}</div>
+        <EmptyState title={en("Report not found")}>{en("This report does not exist or has not been published.")}</EmptyState>
       )}
 
       <TransparencyArchive entries={archive} currentId={id} />

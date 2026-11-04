@@ -9,6 +9,7 @@ import React, { useCallback, useEffect, useState } from "react";
 import { Check, History, Trash2, X } from "lucide-react";
 import { authenticatedFetch } from "@/lib/apiClient";
 import { useLatestRef } from "@/lib/legacyApi";
+import { Badge, brandFill, buttonClass } from "@/components/career/ui";
 
 type GetToken = () => Promise<string | null>;
 
@@ -36,7 +37,7 @@ const ACTION_LABEL: Record<string, string> = {
   removed: "Access removed",
 };
 
-const secondary = "inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-sm hover:bg-muted disabled:opacity-50";
+const secondary = buttonClass("secondary");
 const when = (iso: string) => new Date(iso).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" });
 
 async function api<T>(getToken: GetToken, path: string, init?: { method?: string; body?: unknown }): Promise<T> {
@@ -114,7 +115,7 @@ export default function AccessRequestsAdmin({ getToken }: { getToken: GetToken }
     <div className="space-y-6">
       <section className="space-y-3">
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <h2 className="text-lg font-semibold">Recruiter access requests</h2>
+          <h2 className="text-base font-semibold">Recruiter access requests</h2>
           <div className="flex gap-1 rounded-lg border border-border p-0.5 text-sm" role="group" aria-label="Show">
             {(["pending", "all"] as const).map((s) => (
               <button key={s} type="button" aria-pressed={status === s} onClick={() => setStatus(s)} className={`rounded-md px-3 py-1 ${status === s ? "bg-muted font-medium" : "text-muted-foreground"}`}>
@@ -125,13 +126,13 @@ export default function AccessRequestsAdmin({ getToken }: { getToken: GetToken }
         </div>
 
         {msg && (
-          <p role={msg.ok ? "status" : "alert"} className={`rounded-lg px-3 py-2 text-sm ${msg.ok ? "bg-emerald-500/10 text-emerald-800 dark:text-emerald-300" : "bg-red-500/10 text-red-800 dark:text-red-300"}`}>
+          <p role={msg.ok ? "status" : "alert"} className={`rounded-lg border px-3 py-2 text-sm ${msg.ok ? "border-emerald-300 bg-emerald-50 text-emerald-800 dark:border-emerald-900 dark:bg-emerald-950/40 dark:text-emerald-300" : "border-red-300 bg-red-50 text-red-800 dark:border-red-900 dark:bg-red-950/40 dark:text-red-300"}`}>
             {msg.text}
           </p>
         )}
 
         {loadError ? (
-          <div role="alert" className="flex flex-wrap items-center gap-2 rounded-lg bg-red-500/10 px-3 py-2 text-sm text-red-800 dark:text-red-300">
+          <div role="alert" className="flex flex-wrap items-center gap-2 rounded-lg border border-red-300 bg-red-50 px-3 py-2 text-sm text-red-800 dark:border-red-900 dark:bg-red-950/40 dark:text-red-300">
             {loadError}
             <button type="button" className={secondary} onClick={() => void load()}>
               Try again
@@ -140,11 +141,11 @@ export default function AccessRequestsAdmin({ getToken }: { getToken: GetToken }
         ) : requests === null ? (
           <p className="text-sm text-muted-foreground">Loading…</p>
         ) : requests.length === 0 ? (
-          <p className="rounded-2xl border border-border px-4 py-6 text-center text-sm text-muted-foreground">{status === "pending" ? "No requests waiting." : "No requests yet."}</p>
+          <p className="rounded-xl border border-dashed border-border bg-card px-4 py-6 text-center text-sm text-muted-foreground">{status === "pending" ? "No requests waiting." : "No requests yet."}</p>
         ) : (
           <ul className="space-y-3">
             {requests.map((r) => (
-              <li key={r.id} className="space-y-2 rounded-2xl border border-border bg-card p-4 text-sm">
+              <li key={r.id} className="space-y-2 rounded-xl border border-border bg-card p-4 text-sm shadow-sm">
                 <div className="flex flex-wrap items-start justify-between gap-2">
                   <div>
                     <div className="font-medium">
@@ -155,16 +156,16 @@ export default function AccessRequestsAdmin({ getToken }: { getToken: GetToken }
                       {r.jobTitle ? ` · ${r.jobTitle}` : ""} · asked {when(r.createdAt)}
                     </div>
                     {r.website && (
-                      <a href={r.website} target="_blank" rel="noopener noreferrer nofollow" className="text-xs text-cyan-700 underline dark:text-cyan-400">
+                      <a href={r.website} target="_blank" rel="noopener noreferrer nofollow" className="text-xs text-indigo-700 underline dark:text-indigo-400">
                         {r.website}
                       </a>
                     )}
                   </div>
                   {r.status !== "pending" && (
-                    <span className={`rounded-full px-2 py-0.5 text-xs ${r.status === "approved" ? "bg-emerald-500/10 text-emerald-800 dark:text-emerald-300" : "bg-red-500/10 text-red-800 dark:text-red-300"}`}>
+                    <Badge tone={r.status === "approved" ? "good" : "bad"}>
                       {r.status === "approved" ? "Approved" : "Rejected"}
                       {r.decidedByName ? ` by ${r.decidedByName}` : ""}
-                    </span>
+                    </Badge>
                   )}
                 </div>
                 {r.message && <p className="whitespace-pre-wrap rounded-lg bg-muted/50 px-3 py-2">{r.message}</p>}
@@ -172,14 +173,14 @@ export default function AccessRequestsAdmin({ getToken }: { getToken: GetToken }
                 {r.status === "pending" && (
                   <div className="flex flex-wrap items-center gap-2">
                     <input
-                      className="min-w-[14rem] flex-1 rounded-lg border border-border bg-background px-3 py-1.5 text-sm"
+                      className="min-w-[14rem] flex-1 rounded-lg border border-border bg-card px-3 py-1.5 text-sm shadow-sm placeholder:text-muted-foreground"
                       placeholder="Note to the person (optional, sent by e-mail)"
                       aria-label={`Note to ${r.email}`}
                       value={notes[r.id] ?? ""}
                       onChange={(e) => setNotes({ ...notes, [r.id]: e.target.value })}
                       maxLength={500}
                     />
-                    <button type="button" className={secondary} disabled={busy === r.id} onClick={() => void decide(r, true)}>
+                    <button type="button" className={buttonClass("primary")} style={brandFill} disabled={busy === r.id} onClick={() => void decide(r, true)}>
                       <Check aria-hidden="true" className="h-4 w-4" />
                       Approve
                     </button>
@@ -196,11 +197,11 @@ export default function AccessRequestsAdmin({ getToken }: { getToken: GetToken }
       </section>
 
       <section className="space-y-3">
-        <h2 className="text-lg font-semibold">Recruiters with access</h2>
+        <h2 className="text-base font-semibold">Recruiters with access</h2>
         {grants.length === 0 ? (
-          <p className="rounded-2xl border border-border px-4 py-6 text-center text-sm text-muted-foreground">No recruiters approved through Edulexa yet.</p>
+          <p className="rounded-xl border border-dashed border-border bg-card px-4 py-6 text-center text-sm text-muted-foreground">No recruiters approved through Edulexa yet.</p>
         ) : (
-          <ul className="divide-y divide-border rounded-2xl border border-border">
+          <ul className="divide-y divide-border rounded-xl border border-border bg-card shadow-sm">
             {grants.map((g) => (
               <li key={g.id} className="flex flex-wrap items-center gap-3 px-4 py-3 text-sm">
                 <div className="min-w-0 flex-1">
@@ -246,7 +247,7 @@ export default function AccessRequestsAdmin({ getToken }: { getToken: GetToken }
           {audit ? "Hide history" : "History of platform access changes"}
         </button>
         {audit && (
-          <ol className="divide-y divide-border rounded-2xl border border-border text-sm">
+          <ol className="divide-y divide-border rounded-xl border border-border bg-card shadow-sm text-sm">
             {audit.length === 0 && <li className="px-4 py-4 text-muted-foreground">No changes yet.</li>}
             {audit.map((a) => (
               <li key={a.id} className="px-4 py-2.5">

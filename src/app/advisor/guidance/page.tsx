@@ -10,6 +10,7 @@ import React, { Suspense, useCallback, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { AccessNotice, useLatestRef, useLegacyApi } from "@/lib/legacyApi";
 import { Messages, ReplyBox, RequestDetails, STATUS_LABEL, type GuidanceRequestView } from "@/components/guidance/Conversation";
+import { PageHeader, buttonClass } from "@/components/career/ui";
 import { useEn } from "@/lib/english/EnglishProvider";
 
 interface Row {
@@ -35,12 +36,12 @@ interface Institute {
 }
 
 const FILTERS = ["", "Open", "WithMentor", "Answered", "InstituteSuggested", "SentToInstitute", "Resolved"];
-const card = "rounded-2xl border border-border bg-card p-4";
+const card = "rounded-xl border border-border bg-card shadow-sm p-4";
 const select = "rounded-lg border border-border bg-background px-2 py-1.5 text-sm";
 
 export default function AdvisorDeskPage() {
   return (
-    <Suspense fallback={<div className="h-40 animate-pulse rounded-2xl bg-muted motion-reduce:animate-none" aria-busy="true" />}>
+    <Suspense fallback={<div className="h-40 animate-pulse rounded-xl bg-muted motion-reduce:animate-none" aria-busy="true" />}>
       <AdvisorDesk />
     </Suspense>
   );
@@ -104,12 +105,17 @@ function AdvisorDesk() {
   if (forbidden) return <AccessNotice problem="forbidden" feature="the advisors' desk" />;
 
   return (
+    <div>
+    <PageHeader
+      title={en("Guidance requests")}
+      description={en("People who asked Edulexa for career guidance. Reply, hand a request to a community mentor, or suggest an institute.")}
+    />
     <div className="grid gap-6 lg:grid-cols-[360px_1fr]">
       <section aria-labelledby="desk-list" className="space-y-3">
         <div className="flex items-center justify-between gap-2">
-          <h1 id="desk-list" className="text-lg font-semibold">
-            {en("Guidance requests")}
-          </h1>
+          <h2 id="desk-list" className="text-base font-semibold">
+            {en("Requests")}
+          </h2>
           <select value={filter} onChange={(e) => setFilter(e.target.value)} className={select} aria-label={en("Show")}>
             {FILTERS.map((f) => (
               <option key={f} value={f}>
@@ -119,7 +125,7 @@ function AdvisorDesk() {
           </select>
         </div>
         {!rows ? (
-          <div className="h-40 animate-pulse rounded-2xl bg-muted motion-reduce:animate-none" aria-busy="true" />
+          <div className="h-40 animate-pulse rounded-xl bg-muted motion-reduce:animate-none" aria-busy="true" />
         ) : rows.length === 0 ? (
           <p className="text-sm text-muted-foreground">{en("Nothing here.")}</p>
         ) : (
@@ -130,7 +136,7 @@ function AdvisorDesk() {
                   type="button"
                   onClick={() => setOpen(r.id)}
                   aria-current={open === r.id ? "true" : undefined}
-                  className={`w-full rounded-xl border p-3 text-start text-sm ${open === r.id ? "border-indigo-500 bg-indigo-500/5" : "border-border hover:bg-muted/50"}`}
+                  className={`w-full rounded-xl border bg-card p-3 text-start text-sm shadow-sm ${open === r.id ? "border-indigo-600 ring-1 ring-indigo-600" : "border-border hover:bg-muted/50"}`}
                 >
                   <span className="flex justify-between gap-2">
                     <span className="font-medium">{r.name}</span>
@@ -167,7 +173,7 @@ function AdvisorDesk() {
                 <button
                   type="button"
                   onClick={() => void act("status", { status: item.status === "Resolved" ? "Open" : "Resolved" })}
-                  className="rounded-lg border border-border px-3 py-1.5 text-sm hover:bg-muted"
+                  className={buttonClass("secondary")}
                 >
                   {item.status === "Resolved" ? en("Reopen") : en("Mark resolved")}
                 </button>
@@ -193,11 +199,11 @@ function AdvisorDesk() {
                       </option>
                     ))}
                   </select>
-                  <button type="button" disabled={!mentorPick} onClick={() => void act("mentor", { mentorProfileId: mentorPick })} className="rounded-lg border border-border px-3 py-1.5 text-sm hover:bg-muted disabled:opacity-50">
+                  <button type="button" disabled={!mentorPick} onClick={() => void act("mentor", { mentorProfileId: mentorPick })} className={buttonClass("secondary")}>
                     {en("Hand over")}
                   </button>
                   {item.mentor && (
-                    <button type="button" onClick={() => void act("mentor", { mentorProfileId: null })} className="rounded-lg px-3 py-1.5 text-sm hover:bg-muted">
+                    <button type="button" onClick={() => void act("mentor", { mentorProfileId: null })} className={buttonClass("ghost")}>
                       {en("Take back")}
                     </button>
                   )}
@@ -222,7 +228,7 @@ function AdvisorDesk() {
                     onClick={async () => {
                       if (await act("suggest", { instituteId: institutePick, note })) setNote("");
                     }}
-                    className="rounded-lg border border-border px-3 py-1.5 text-sm hover:bg-muted disabled:opacity-50"
+                    className={buttonClass("secondary")}
                   >
                     {en("Suggest")}
                   </button>
@@ -238,6 +244,7 @@ function AdvisorDesk() {
           </>
         )}
       </section>
+    </div>
     </div>
   );
 }

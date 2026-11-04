@@ -5,7 +5,7 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ApiError, useApi, useAppAuth } from "@/lib/appAuth";
-import { Button, Card, EmptyState, ErrorBanner, Field, Loading, PageHeader, useCareerT, useLoad } from "@/components/career/ui";
+import { Button, Card, EmptyState, ErrorBanner, Field, Loading, PageHeader, useCareerT, useLoad, brandFill, buttonClass } from "@/components/career/ui";
 import { publicGet, type FreeAvailability } from "@/components/career/freeTier/FreeTierFrame";
 
 export default function FreeSignupPage() {
@@ -49,11 +49,7 @@ export default function FreeSignupPage() {
       {avail?.available && isLoaded && !isSignedIn && (
         <Card>
           <p className="text-sm">{t("signInFirst")}</p>
-          <Link
-            href={`/login?redirect_url=${encodeURIComponent("/free/signup")}`}
-            className="mt-3 inline-block rounded-md px-4 py-2 text-sm font-medium text-white focus-visible:outline-2 focus-visible:outline-offset-2"
-            style={{ background: "var(--brand, #4f46e5)" }}
-          >
+          <Link href={`/login?redirect_url=${encodeURIComponent("/free/signup")}`} className={`mt-3 ${buttonClass("primary")}`} style={brandFill}>
             {t("signInCta")}
           </Link>
         </Card>

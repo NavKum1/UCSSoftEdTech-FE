@@ -13,8 +13,8 @@ import RichTextEditor from "./RichTextEditor";
 import WebhookEvents from "./WebhookEvents";
 import { useEn } from "@/lib/english/EnglishProvider";
 
-const input = "w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:border-cyan-600 focus:outline-none focus:ring-2 focus:ring-cyan-600/20";
-const primary = "inline-flex items-center gap-1.5 rounded-lg bg-cyan-700 px-3.5 py-2 text-sm font-medium text-white hover:bg-cyan-800 disabled:opacity-50";
+const input = "w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:border-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-600/20";
+const primary = "inline-flex items-center gap-1.5 rounded-lg bg-indigo-700 px-3.5 py-2 text-sm font-medium text-white hover:bg-indigo-800 disabled:opacity-50";
 const secondary = "inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-2 text-sm hover:bg-muted disabled:opacity-50";
 
 export default function SettingsView({
@@ -343,7 +343,7 @@ function Integrations({ getToken, webhookUrl, reload }: { getToken: GetToken; we
         <p className="text-sm text-muted-foreground">
           {en("WhatsApp works without setup: it opens the chat with your message ready. To send SMS from Edulexa, connect your Pulse Relay workspace.")}
         </p>
-        <a href="/career-center/settings/chat-sms" className="inline-block text-sm text-cyan-700 hover:underline dark:text-cyan-400">
+        <a href="/career-center/settings/chat-sms" className="inline-block text-sm text-indigo-700 hover:underline dark:text-indigo-400">
           {en("Connect Pulse Relay")}
         </a>
       </section>

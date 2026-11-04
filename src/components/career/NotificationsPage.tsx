@@ -6,7 +6,7 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { useApi } from "@/lib/appAuth";
 import { NonEssential, useDataSaver, useListSize } from "@/components/career/mobile/dataSaver";
-import { Badge, Button, Card, EmptyState, ErrorBanner, Loading, PageHeader, SuccessBanner, useLoad, ScrollArea, useCareerFormat, useCareerT } from "@/components/career/ui";
+import { Badge, Button, Card, EmptyState, ErrorBanner, Loading, PageHeader, SuccessBanner, useLoad, ScrollArea, useCareerFormat, useCareerT, buttonClass } from "@/components/career/ui";
 
 export interface CareerNotificationItem {
   id: string;
@@ -126,7 +126,7 @@ export default function NotificationsPage() {
               <li
                 key={n.id}
                 className={`rounded-xl border p-4 ${isUnread ? "border-s-4 bg-card" : "border-border bg-background"}`}
-                style={isUnread ? { borderInlineStartColor: "var(--brand, #4f46e5)" } : undefined}
+                style={isUnread ? { borderInlineStartColor: "var(--brand,#0e7490)" } : undefined}
               >
                 <div className="flex flex-wrap items-start justify-between gap-2">
                   <div className="min-w-0">
@@ -144,7 +144,7 @@ export default function NotificationsPage() {
                   </div>
                   <div className="flex gap-2">
                     {n.link && n.link.startsWith("/") && (
-                      <Link href={n.link} className="rounded-md border border-border px-3 py-2 text-sm hover:bg-muted" onClick={() => isUnread && markRead(n)}>
+                      <Link href={n.link} className={buttonClass("secondary")} onClick={() => isUnread && markRead(n)}>
                         {t("open")}
                       </Link>
                     )}

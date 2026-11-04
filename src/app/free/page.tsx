@@ -3,7 +3,7 @@
 // G13 landing: what the free student plan includes, and whether it is offered where the visitor is.
 import React from "react";
 import Link from "next/link";
-import { Card, EmptyState, ErrorBanner, Loading, PageHeader, useCareerT, useLoad } from "@/components/career/ui";
+import { Card, EmptyState, ErrorBanner, Loading, PageHeader, useCareerT, useLoad, brandFill, buttonClass } from "@/components/career/ui";
 import { publicGet, useFreeBrand, type FreeAvailability } from "@/components/career/freeTier/FreeTierFrame";
 
 const INCLUDED = ["mockInterviews", "voiceDefenses", "buildAndDefend", "credentials"] as const;
@@ -30,11 +30,7 @@ export default function FreeLandingPage() {
         {data?.available && (
           <Card>
             <p className="text-sm">{t("availableHere")}</p>
-            <Link
-              href="/free/signup"
-              className="mt-3 inline-block rounded-md px-4 py-2 text-sm font-medium text-white focus-visible:outline-2 focus-visible:outline-offset-2"
-              style={{ background: "var(--brand, #4f46e5)" }}
-            >
+            <Link href="/free/signup" className={`mt-3 ${buttonClass("primary")}`} style={brandFill}>
               {t("ctaSignup")}
             </Link>
           </Card>

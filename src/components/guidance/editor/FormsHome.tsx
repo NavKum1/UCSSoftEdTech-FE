@@ -17,6 +17,7 @@ import SiteCard from "./SiteCard";
 import { AccessNotice, useLatestRef, useLegacyApi } from "@/lib/legacyApi";
 import GuidanceForm from "@/components/guidance/form/GuidanceForm";
 import type { FormDef } from "@/components/guidance/form/model";
+import { Badge as UiBadge, PageHeader, Tabs, brandFill, buttonClass } from "@/components/career/ui";
 import { useEn } from "@/lib/english/EnglishProvider";
 import { useSchoolCountry } from "@/components/institute/SchoolEnglish";
 
@@ -65,7 +66,8 @@ interface Profile {
   about: string | null;
 }
 
-const card = "rounded-2xl border border-border bg-card p-5";
+const card = "rounded-xl border border-border bg-card p-5 shadow-sm";
+const small = "inline-flex items-center gap-1 rounded-lg border border-border bg-card px-3 py-1.5 text-xs font-medium hover:bg-muted";
 const input = "mt-1 block w-full rounded-lg border border-border bg-background px-3 py-2 text-sm";
 const MODES = ["Online", "In person", "Hybrid"];
 const noSubscribe = () => () => undefined;
@@ -135,17 +137,17 @@ export default function FormsHome({
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">{title}</h1>
-          <p className="mt-1 max-w-2xl text-sm text-muted-foreground">{intro}</p>
-        </div>
-        {canEdit && (
-          <button type="button" onClick={() => setCreating(true)} className="inline-flex items-center gap-1.5 rounded-lg bg-cyan-700 px-3.5 py-2 text-sm font-medium text-white hover:bg-cyan-800">
-            <Plus aria-hidden="true" className="h-4 w-4" />{en(" New form")}
-          </button>
-        )}
-      </div>
+      <PageHeader
+        title={title}
+        description={intro}
+        actions={
+          canEdit && (
+            <button type="button" onClick={() => setCreating(true)} className={buttonClass("primary")} style={brandFill}>
+              <Plus aria-hidden="true" className="h-4 w-4" />{en(" New form")}
+            </button>
+          )
+        }
+      />
 
       {notice && (
         <p role={notice.ok ? "status" : "alert"} className={`rounded-lg px-3 py-2 text-sm ${notice.ok ? "bg-emerald-500/10 text-emerald-800 dark:text-emerald-300" : "bg-red-500/10 text-red-800 dark:text-red-300"}`}>
@@ -153,33 +155,23 @@ export default function FormsHome({
         </p>
       )}
 
-      <div role="tablist" aria-label={en("Forms and messages")} className="flex gap-5 border-b border-border text-sm">
-        {(
-          [
-            ["forms", "Forms"],
-            ["statistics", "Statistics"],
-            ["notifications", "Notifications"],
-          ] as const
-        ).map(([k, label]) => (
-          <button
-            key={k}
-            role="tab"
-            type="button"
-            aria-selected={view === k}
-            onClick={() => showView(k)}
-            className={`-mb-px border-b-2 pb-2.5 ${view === k ? "border-cyan-600 font-medium text-foreground" : "border-transparent text-muted-foreground hover:text-foreground"}`}
-          >
-            {label}
-          </button>
-        ))}
-      </div>
+      <Tabs<View>
+        label={en("Forms and messages")}
+        value={view}
+        onChange={showView}
+        items={[
+          { id: "forms", label: en("Forms") },
+          { id: "statistics", label: en("Statistics") },
+          { id: "notifications", label: en("Notifications") },
+        ]}
+      />
 
       {view === "statistics" ? (
         <StatisticsView instituteId={instituteId} />
       ) : view === "notifications" ? (
         <NotificationsView instituteId={instituteId} forms={forms ?? []} canEdit={canEdit} />
       ) : !forms ? (
-        <div className="h-40 animate-pulse rounded-2xl bg-muted motion-reduce:animate-none" aria-busy="true" />
+        <div className="h-40 animate-pulse rounded-xl bg-muted motion-reduce:animate-none" aria-busy="true" />
       ) : (
         <ul className="grid gap-3 md:grid-cols-2">
           {forms.map((f) => (
@@ -187,9 +179,9 @@ export default function FormsHome({
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
                   <Link href={`${basePath}/${f.id}`} className="inline-flex items-center gap-1.5 text-base font-semibold hover:underline">
-                    <FileText aria-hidden="true" className="h-4 w-4 text-cyan-700" /> {f.name}
+                    <FileText aria-hidden="true" className="h-4 w-4 text-indigo-700" /> {f.name}
                   </Link>
-                  <div className="mt-1 flex flex-wrap gap-1.5 text-[11px]">
+                  <div className="mt-1.5 flex flex-wrap gap-1.5 text-xs">
                     {f.isDefault && <Badge tone="cyan">{en("Used for “Ask an advisor”")}</Badge>}
                     <Badge tone={f.publicEnabled ? "emerald" : "zinc"}>{f.publicEnabled ? en("Public link on") : en("Public link off")}</Badge>
                     <Badge tone="zinc">{en("Version {version}", { version: f.version })}</Badge>
@@ -202,42 +194,42 @@ export default function FormsHome({
                 </span>
               </div>
               <div className="mt-auto flex flex-wrap gap-1.5">
-                <Link href={`${basePath}/${f.id}`} className="rounded-lg bg-cyan-700 px-3 py-1.5 text-xs font-medium text-white hover:bg-cyan-800">
+                <Link href={`${basePath}/${f.id}`} className="rounded-lg px-3 py-1.5 text-xs font-medium text-[var(--brand-foreground,#fff)] shadow-sm hover:brightness-110" style={brandFill}>
                   {canEdit ? en("Edit") : en("Open")}
                 </Link>
-                <Link href={`${basePath}/${f.id}?tab=insights`} className="rounded-lg border border-border px-3 py-1.5 text-xs hover:bg-muted">
+                <Link href={`${basePath}/${f.id}?tab=insights`} className={small}>
                   {en("Insights")}
                 </Link>
                 <button
                   type="button"
                   onClick={() => navigator.clipboard?.writeText(f.link).then(() => setCopied(f.id))}
                   title={f.publicEnabled ? undefined : en("Works once the public link is on")}
-                  className="inline-flex items-center gap-1 rounded-lg border border-border px-3 py-1.5 text-xs hover:bg-muted"
+                  className={small}
                 >
                   <Copy aria-hidden="true" className="h-3 w-3" /> {copied === f.id ? en("Copied") : en("Copy link")}
                 </button>
-                <button type="button" onClick={() => setEmbedFor(f)} className="inline-flex items-center gap-1 rounded-lg border border-border px-3 py-1.5 text-xs hover:bg-muted">
+                <button type="button" onClick={() => setEmbedFor(f)} className={small}>
                   <Code2 aria-hidden="true" className="h-3 w-3" />{en(" Put on your website")}
                 </button>
                 {f.publicEnabled && (
-                  <a href={f.link} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 rounded-lg border border-border px-3 py-1.5 text-xs hover:bg-muted">
+                  <a href={f.link} target="_blank" rel="noreferrer" className={small}>
                     <ExternalLink aria-hidden="true" className="h-3 w-3" />{en(" Open")}
                   </a>
                 )}
                 {canEdit && (
                   <>
-                    <button type="button" onClick={() => createCopy(apiFetch, q, f, router, basePath, setNotice)} className="rounded-lg border border-border px-3 py-1.5 text-xs hover:bg-muted">
+                    <button type="button" onClick={() => createCopy(apiFetch, q, f, router, basePath, setNotice)} className={small}>
                       {en("Duplicate")}
                     </button>
                     {!f.isDefault && (
                       <>
-                        <button type="button" onClick={() => act(`/api/guidance-forms/${f.id}/default`, "POST", `"${f.name}" is now used for “Ask an advisor”.`)} className="inline-flex items-center gap-1 rounded-lg border border-border px-3 py-1.5 text-xs hover:bg-muted">
+                        <button type="button" onClick={() => act(`/api/guidance-forms/${f.id}/default`, "POST", `"${f.name}" is now used for “Ask an advisor”.`)} className={small}>
                           <Star aria-hidden="true" className="h-3 w-3" />{en(" Use for “Ask an advisor”")}
                         </button>
                         <button
                           type="button"
                           onClick={() => window.confirm(`Remove "${f.name}"? Its link stops working; inquiries already sent are kept.`) && act(`/api/guidance-forms/${f.id}`, "DELETE", `"${f.name}" removed.`)}
-                          className="inline-flex items-center gap-1 rounded-lg border border-border px-3 py-1.5 text-xs text-red-700 hover:bg-red-500/10 dark:text-red-400"
+                          className={`${small} text-red-700 hover:bg-red-500/10 dark:text-red-400`}
                         >
                           <Trash2 aria-hidden="true" className="h-3 w-3" />{en(" Remove")}
                         </button>
@@ -256,7 +248,7 @@ export default function FormsHome({
 
       {embedFor && (
         <div className="fixed inset-0 z-100 flex items-start justify-center overflow-y-auto bg-black/40 p-4" onClick={() => setEmbedFor(null)}>
-          <div role="dialog" aria-modal="true" aria-labelledby="embed-title" className="my-8 w-full max-w-5xl rounded-2xl bg-card p-5 shadow-xl" onClick={(e) => e.stopPropagation()}>
+          <div role="dialog" aria-modal="true" aria-labelledby="embed-title" className="my-8 w-full max-w-5xl rounded-xl bg-card p-5 shadow-xl" onClick={(e) => e.stopPropagation()}>
             <div className="mb-4 flex items-center justify-between gap-3">
               <h2 id="embed-title" className="text-base font-semibold">
                 {en("Put “{name}” on your website", { name: embedFor.name })}
@@ -272,7 +264,8 @@ export default function FormsHome({
                         load();
                       }
                     }}
-                    className="rounded-lg bg-cyan-700 px-3 py-1.5 text-xs font-medium text-white hover:bg-cyan-800"
+                    className={buttonClass("primary")}
+                    style={brandFill}
                   >
                     {en("Turn on the public link")}
                   </button>
@@ -315,13 +308,7 @@ async function createCopy(
 }
 
 function Badge({ tone, children }: { tone: "cyan" | "emerald" | "zinc" | "amber"; children: React.ReactNode }) {
-  const c = {
-    cyan: "bg-cyan-500/10 text-cyan-800 dark:text-cyan-300 border-cyan-500/30",
-    emerald: "bg-emerald-500/10 text-emerald-800 dark:text-emerald-300 border-emerald-500/30",
-    zinc: "bg-zinc-500/10 text-zinc-700 dark:text-zinc-300 border-zinc-500/30",
-    amber: "bg-amber-500/10 text-amber-900 dark:text-amber-300 border-amber-500/30",
-  }[tone];
-  return <span className={`rounded-full border px-2 py-0.5 font-medium ${c}`}>{children}</span>;
+  return <UiBadge tone={({ cyan: "info", emerald: "good", zinc: "neutral", amber: "warn" } as const)[tone]}>{children}</UiBadge>;
 }
 
 function NewForm({
@@ -373,7 +360,7 @@ function NewForm({
 
   return (
     <div className="fixed inset-0 z-100 flex items-center justify-center bg-black/40 p-4" onClick={onClose}>
-      <div role="dialog" aria-modal="true" aria-labelledby="new-form-title" className="flex max-h-[90vh] w-full max-w-5xl flex-col overflow-hidden rounded-2xl bg-card shadow-xl" onClick={(e) => e.stopPropagation()}>
+      <div role="dialog" aria-modal="true" aria-labelledby="new-form-title" className="flex max-h-[90vh] w-full max-w-5xl flex-col overflow-hidden rounded-xl bg-card shadow-xl" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-between border-b border-border px-5 py-3">
           <h2 id="new-form-title" className="text-base font-semibold">
             {en("New form")}
@@ -414,17 +401,17 @@ function NewForm({
                       type="button"
                       onClick={() => setPick(t.key)}
                       aria-pressed={pick === t.key}
-                      className={`block w-full rounded-xl border p-3 text-start text-sm ${pick === t.key ? "border-cyan-600 bg-cyan-600/5" : "border-border hover:bg-muted"}`}
+                      className={`block w-full rounded-xl border p-3 text-start text-sm ${pick === t.key ? "border-indigo-600 ring-1 ring-indigo-600" : "border-border hover:bg-muted"}`}
                     >
                       <span className="flex items-start justify-between gap-2">
                         <span className="font-medium">{t.name}</span>
                         {t.country !== "any" && (
-                          <span className="shrink-0 rounded-full border border-border px-2 py-0.5 text-[11px] text-muted-foreground">{en(COUNTRY_NAMES[t.country] ?? t.country)}</span>
+                          <span className="shrink-0 rounded-full border border-border px-2 py-0.5 text-xs text-muted-foreground">{en(COUNTRY_NAMES[t.country] ?? t.country)}</span>
                         )}
                       </span>
                       <span className="block text-xs text-muted-foreground">{en("For: {audience}", { audience: t.audience })}</span>
                       <span className="mt-1 block text-xs text-muted-foreground">{t.description}</span>
-                      {reportOf(t.definition) && <span className="mt-1 block text-xs font-medium text-cyan-800 dark:text-cyan-300">{reportOf(t.definition)}</span>}
+                      {reportOf(t.definition) && <span className="mt-1 block text-xs font-medium text-indigo-800 dark:text-indigo-300">{reportOf(t.definition)}</span>}
                       <span className="mt-1 block text-xs text-muted-foreground">
                         {en("{length} questions · {length2} {value}", { length: t.definition.questions.length, length2: t.definition.sections.length, value: t.definition.sections.length === 1 ? "step" : "steps" })}
                       </span>
@@ -438,7 +425,7 @@ function NewForm({
               <input className={input} value={name} maxLength={120} placeholder={chosen?.name ?? "e.g. Data Science open day 2027"} onChange={(e) => setName(e.target.value)} />
             </label>
             {error && <p className="text-sm text-red-700 dark:text-red-400">{error}</p>}
-            <button type="button" disabled={busy || !chosen} onClick={create} className="w-full rounded-lg bg-cyan-700 px-3.5 py-2 text-sm font-medium text-white hover:bg-cyan-800 disabled:opacity-50">
+            <button type="button" disabled={busy || !chosen} onClick={create} className={`${buttonClass("primary")} w-full`} style={brandFill}>
               {en("Create and edit")}
             </button>
             <p className="text-xs text-muted-foreground">{en("You can change every question before publishing.")}</p>
@@ -446,7 +433,7 @@ function NewForm({
           <div className="overflow-y-auto bg-muted/30 p-5">
             <p className="mb-3 text-xs font-medium text-muted-foreground">{en("Preview")}</p>
             {chosen && (
-              <div className="mx-auto max-w-lg rounded-2xl border border-border bg-background p-5">
+              <div className="mx-auto max-w-lg rounded-xl border border-border bg-background p-5">
                 <GuidanceForm
                   key={chosen.key}
                   fill={{ formId: "preview", name: chosen.name, version: 1, instituteId: "", instituteName: "your institute", definition: chosen.definition, languageNames: { en: "English" } }}
@@ -509,7 +496,7 @@ function ProfileCard({ apiFetch, q, ready }: { apiFetch: (p: string, i?: Request
         </label>
       </div>
       <div className="mt-3 flex items-center gap-3">
-        <button type="button" onClick={save} className="rounded-lg bg-cyan-700 px-3.5 py-2 text-sm font-medium text-white hover:bg-cyan-800">
+        <button type="button" onClick={save} className={buttonClass("primary")} style={brandFill}>
           {en("Save card")}
         </button>
         {msg && <span className={`text-sm ${msg.ok ? "text-emerald-700 dark:text-emerald-400" : "text-red-700 dark:text-red-400"}`}>{msg.text}</span>}

@@ -5,7 +5,7 @@ import { Plus, Trash2 } from "lucide-react";
 import { useApi } from "@/lib/appAuth";
 import { API_BASE_URL } from "@/lib/apiClient";
 import { useCareerShell } from "@/components/career/CareerShell";
-import { Badge, Button, Card, EmptyState, ErrorBanner, Field, Loading, SuccessBanner, useLoad, ScrollArea, useCareerT } from "@/components/career/ui";
+import { Badge, Button, Card, EmptyState, ErrorBanner, Field, Loading, SuccessBanner, useLoad, ScrollArea, useCareerT, StatTile } from "@/components/career/ui";
 import { type ApptType, type IntakeQuestion, todayIn, useDownload, useModeLabels, useDayNames } from "./shared";
 import { useCounselors, useStaffTypes } from "./StaffSchedule";
 
@@ -604,11 +604,7 @@ export function ReportsPanel() {
 
 function Stat({ label, value, hint }: { label: string; value: React.ReactNode; hint?: string }) {
   return (
-    <div className="rounded-xl border border-border bg-card p-4">
-      <p className="text-sm text-muted-foreground">{label}</p>
-      <p className="text-2xl font-semibold">{value}</p>
-      {hint && <p className="text-xs text-muted-foreground">{hint}</p>}
-    </div>
+    <StatTile label={label} value={value} hint={hint} />
   );
 }
 

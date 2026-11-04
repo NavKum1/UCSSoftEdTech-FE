@@ -8,7 +8,7 @@
 import React, { useMemo, useState } from "react";
 import Link from "next/link";
 import { useApi } from "@/lib/appAuth";
-import { Badge, Button, Card, ErrorBanner, Field, Loading, SuccessBanner, formatDate, useLoad, useCareerT, useCareerLabels } from "@/components/career/ui";
+import { Badge, Button, Card, ErrorBanner, Field, Loading, SuccessBanner, formatDate, useLoad, useCareerT, useCareerLabels, ScrollArea, brandFill, buttonClass } from "@/components/career/ui";
 
 export const DEFENSE_API = "/api/career/internship-defense";
 
@@ -137,29 +137,31 @@ export function DefenseResult({ result }: { result: NonNullable<NonNullable<Defe
         </p>
       )}
       {Object.keys(result.rubric).length > 0 && (
-        <table className="w-full max-w-md text-start [&_th]:text-start">
-          <caption className="sr-only">{tr("rubricScores")}</caption>
-          <thead>
-            <tr className="text-xs text-muted-foreground">
-              <th scope="col" className="py-1 font-medium">
-                {tr("dimension")}
-              </th>
-              <th scope="col" className="py-1 font-medium">
-                {tr("score0100")}
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {Object.entries(result.rubric).map(([k, v]) => (
-              <tr key={k} className="border-t border-border">
-                <th scope="row" className="py-1 font-normal">
-                  {RUBRIC_LABELS[k] ?? k}
+        <ScrollArea>
+          <table className="w-full max-w-md text-start [&_th]:text-start">
+            <caption className="sr-only">{tr("rubricScores")}</caption>
+            <thead>
+              <tr className="text-xs text-muted-foreground">
+                <th scope="col" className="py-1 font-medium">
+                  {tr("dimension")}
                 </th>
-                <td className="py-1">{v}</td>
+                <th scope="col" className="py-1 font-medium">
+                  {tr("score0100")}
+                </th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {Object.entries(result.rubric).map(([k, v]) => (
+                <tr key={k} className="border-t border-border">
+                  <th scope="row" className="py-1 font-normal">
+                    {RUBRIC_LABELS[k] ?? k}
+                  </th>
+                  <td className="py-1">{v}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </ScrollArea>
       )}
       {result.summary && <p className="whitespace-pre-wrap">{result.summary}</p>}
       {result.evidence.items.length > 0 && (
@@ -241,11 +243,7 @@ export function DefenseSummaryCard({ experienceId }: { experienceId: string }) {
         </p>
       )}
       {(s.eligibility.canStart || d) && (
-        <Link
-          href={`/student/experiences/${experienceId}/defend`}
-          className="inline-flex items-center rounded-md px-3 py-2 text-sm font-medium text-white focus-visible:outline-2 focus-visible:outline-offset-2"
-          style={{ background: "var(--brand, #4f46e5)" }}
-        >
+        <Link href={`/student/experiences/${experienceId}/defend`} className={buttonClass("primary")} style={brandFill}>
           {!d ? tr("defendThisInternship") : d.status === "InProgress" ? tr("continueYourDefense") : tr("seeYourDefense")}
         </Link>
       )}

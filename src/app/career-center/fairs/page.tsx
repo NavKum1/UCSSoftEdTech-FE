@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { useApi } from "@/lib/appAuth";
-import { Badge, Button, Card, EmptyState, ErrorBanner, Field, Loading, PageHeader, SuccessBanner, formatDate, useLoad, useCareerT } from "@/components/career/ui";
+import { Badge, Button, Card, EmptyState, ErrorBanner, Field, Loading, PageHeader, SuccessBanner, formatDate, useLoad, useCareerT, ScrollArea } from "@/components/career/ui";
 
 interface Connection {
   configured: boolean;
@@ -184,29 +184,31 @@ export default function CareerCenterFairsPage() {
                           {detail.booths.length === 0 ? (
                             <p>{t("noBoothsYet")}</p>
                           ) : (
-                            <table className="w-full text-start [&_th]:text-start">
-                              <caption className="sr-only">{t("boothsAtName", { name: ev.name })}</caption>
-                              <thead>
-                                <tr>
-                                  <th scope="col">{t("company")}</th>
-                                  <th scope="col">{t("tier")}</th>
-                                  <th scope="col">{t("booth")}</th>
-                                  <th scope="col">{t("status")}</th>
-                                  <th scope="col">{t("leadsShared")}</th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                {detail.booths.map((b) => (
-                                  <tr key={b.id}>
-                                    <td>{b.companyName}</td>
-                                    <td>{b.tier ?? "—"}</td>
-                                    <td>{b.boothCell ?? "—"}</td>
-                                    <td>{b.status ?? "—"}</td>
-                                    <td>{b.consentedLeadCount}</td>
+                            <ScrollArea>
+                              <table className="w-full text-start [&_th]:text-start">
+                                <caption className="sr-only">{t("boothsAtName", { name: ev.name })}</caption>
+                                <thead>
+                                  <tr>
+                                    <th scope="col">{t("company")}</th>
+                                    <th scope="col">{t("tier")}</th>
+                                    <th scope="col">{t("booth")}</th>
+                                    <th scope="col">{t("status")}</th>
+                                    <th scope="col">{t("leadsShared")}</th>
                                   </tr>
-                                ))}
-                              </tbody>
-                            </table>
+                                </thead>
+                                <tbody>
+                                  {detail.booths.map((b) => (
+                                    <tr key={b.id}>
+                                      <td>{b.companyName}</td>
+                                      <td>{b.tier ?? "—"}</td>
+                                      <td>{b.boothCell ?? "—"}</td>
+                                      <td>{b.status ?? "—"}</td>
+                                      <td>{b.consentedLeadCount}</td>
+                                    </tr>
+                                  ))}
+                                </tbody>
+                              </table>
+                            </ScrollArea>
                           )}
                         </>
                       )}

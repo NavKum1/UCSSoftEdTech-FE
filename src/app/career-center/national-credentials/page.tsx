@@ -10,21 +10,7 @@ import React, { useState } from "react";
 import { FileDown } from "lucide-react";
 import { useApi } from "@/lib/appAuth";
 import { useCareerShell } from "@/components/career/CareerShell";
-import {
-  Badge,
-  Button,
-  Card,
-  EmptyState,
-  ErrorBanner,
-  Field,
-  Loading,
-  PageHeader,
-  ScrollArea,
-  SuccessBanner,
-  useCareerFormat,
-  useCareerT,
-  useLoad,
-} from "@/components/career/ui";
+import { Badge, Button, Card, EmptyState, ErrorBanner, Field, Loading, PageHeader, ScrollArea, SuccessBanner, useCareerFormat, useCareerT, useLoad, StatTile } from "@/components/career/ui";
 import { saveResponse } from "@/components/career/billing/money";
 
 interface SettingField {
@@ -165,7 +151,7 @@ export default function NationalCredentialsStaffPage() {
             ) : (
               coverage.data && (
                 <div className="space-y-4">
-                  <dl className="grid gap-4 sm:grid-cols-3">
+                  <div className="grid gap-3 sm:grid-cols-3">
                     <Stat label={t("students")} value={fmt.number(coverage.data.students)} />
                     <Stat
                       label={t("withApaar")}
@@ -173,7 +159,7 @@ export default function NationalCredentialsStaffPage() {
                       note={coverage.data.students > 0 ? t("percentOfStudents", { percent: fmt.percent(coverage.data.withApaar / coverage.data.students) }) : undefined}
                     />
                     <Stat label={t("withoutApaar")} value={fmt.number(coverage.data.withoutApaar)} />
-                  </dl>
+                  </div>
                   {coverage.data.repositories.length > 0 && (
                     <ScrollArea>
                       <table className="w-full text-sm">
@@ -343,11 +329,7 @@ export default function NationalCredentialsStaffPage() {
 
 function Stat({ label, value, note }: { label: string; value: string; note?: string }) {
   return (
-    <div className="rounded-lg border border-border p-4">
-      <dt className="text-sm text-muted-foreground">{label}</dt>
-      <dd className="mt-1 text-2xl font-semibold tabular-nums">{value}</dd>
-      {note && <dd className="text-xs text-muted-foreground">{note}</dd>}
-    </div>
+    <StatTile label={label} value={value} hint={note} />
   );
 }
 

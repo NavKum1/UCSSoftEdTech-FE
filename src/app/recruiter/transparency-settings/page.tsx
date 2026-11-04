@@ -4,7 +4,8 @@ import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { useAppAuth as useAuth } from "@/lib/appAuth";
 import { authenticatedFetch } from "@/lib/apiClient";
-import { AlertCircle, CheckCircle2, ExternalLink, FileBarChart, Loader2 } from "lucide-react";
+import { AlertCircle, CheckCircle2, ExternalLink, Loader2 } from "lucide-react";
+import { ErrorBanner, Loading, PageHeader } from "@/components/career/ui";
 import { formatDate } from "@/lib/transparency";
 import { useEn } from "@/lib/english/EnglishProvider";
 
@@ -58,35 +59,30 @@ export default function TransparencySettingsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="pb-4 border-b border-border">
-        <div className="flex items-center gap-2 text-xs font-semibold text-indigo-700 dark:text-indigo-400 uppercase tracking-wider">
-          <FileBarChart className="w-4 h-4" />{en(" Transparency")}
-        </div>
-        <h1 className="text-2xl font-extrabold text-foreground mt-1">{en("Contribute to the public transparency report")}</h1>
-        <p className="text-xs text-muted-foreground mt-1 max-w-3xl">
-          {en("The public")}{" "}
-          <Link href="/transparency" className="text-indigo-700 dark:text-indigo-400 hover:underline inline-flex items-center gap-0.5">
-            {en("transparency report ")}<ExternalLink className="w-3 h-3" />
-          </Link>{" "}
-          {en("shows whether assessment scores predict on-the-job outcomes. That needs hire outcomes from employers like you. Taking part is optional and off by default.")}
-        </p>
-      </div>
+      <PageHeader
+        title={en("Contribute to the public transparency report")}
+        description={
+          <>
+            {en("The public")}{" "}
+            <Link href="/transparency" className="inline-flex items-center gap-0.5 text-indigo-700 hover:underline dark:text-indigo-400">
+              {en("transparency report ")}<ExternalLink aria-hidden="true" className="h-3 w-3" />
+            </Link>{" "}
+            {en("shows whether assessment scores predict on-the-job outcomes. That needs hire outcomes from employers like you. Taking part is optional and off by default.")}
+          </>
+        }
+      />
 
       {state == null ? (
-        <div className="glass-panel rounded-2xl border border-border py-8 flex items-center justify-center gap-2 text-sm text-muted-foreground">
-          <Loader2 className="w-4 h-4 animate-spin" />{en(" Loading...")}
-        </div>
+        <Loading />
       ) : state.error ? (
-        <div className="glass-panel rounded-2xl border border-border p-6 text-sm text-rose-700 dark:text-rose-400 flex items-center gap-2">
-          <AlertCircle className="w-4 h-4" /> {state.error}
-        </div>
+        <ErrorBanner error={state.error} />
       ) : data ? (
-        <div className="glass-panel rounded-2xl border border-border p-5 space-y-4">
+        <div className="space-y-4 rounded-xl border border-border bg-card p-5 shadow-sm">
           <div className="flex items-start justify-between gap-4">
             <div>
-              <h2 id="participation-label" className="text-sm font-bold text-foreground">{en("Include our hire-outcome data")}</h2>
-              <p className="text-xs text-muted-foreground mt-0.5">
-                {en("{outcomesRecorded} outcome{value} recorded by your organisation{value2}.", { outcomesRecorded: data.outcomesRecorded, value: data.outcomesRecorded === 1 ? "" : "s", value2: data.updatedAt ? ` · last changed ${formatDate(data.updatedAt)}` : "" })}</p>
+              <h2 id="participation-label" className="text-base font-semibold text-foreground">{en("Include our hire-outcome data")}</h2>
+              <p className="mt-0.5 text-sm text-muted-foreground">
+                {en("{outcomesRecorded} outcome{value} recorded by your organization{value2}.", { outcomesRecorded: data.outcomesRecorded, value: data.outcomesRecorded === 1 ? "" : "s", value2: data.updatedAt ? ` · last changed ${formatDate(data.updatedAt)}` : "" })}</p>
             </div>
             <button
               type="button"
@@ -95,8 +91,9 @@ export default function TransparencySettingsPage() {
               aria-labelledby="participation-label"
               disabled={saving}
               onClick={() => toggle(!data.includeOutcomeData)}
-              className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full border transition-colors cursor-pointer disabled:opacity-50 ${
-                data.includeOutcomeData ? "bg-indigo-600 border-indigo-600" : "bg-muted border-border"
+              style={data.includeOutcomeData ? { background: "var(--brand, #0e7490)", borderColor: "var(--brand, #0e7490)" } : undefined}
+              className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full border transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-50 ${
+                data.includeOutcomeData ? "" : "border-border bg-muted"
               }`}
             >
               <span className={`inline-block h-5 w-5 rounded-full bg-white shadow transition-transform ${data.includeOutcomeData ? "translate-x-5" : "translate-x-0.5"}`} />
@@ -104,12 +101,12 @@ export default function TransparencySettingsPage() {
           </div>
           <p className="text-sm text-muted-foreground max-w-3xl">{data.explanation}</p>
           <p className="text-xs text-muted-foreground">
-            {en("Outcomes are recorded on the ")}<Link href="/recruiter/validity" className="text-indigo-700 dark:text-indigo-400 hover:underline">{en("validity & fairness")}</Link> page.
+            {en("Outcomes are recorded on the ")}<Link href="/recruiter/validity" className="text-indigo-700 dark:text-indigo-400 hover:underline">{en("validity and fairness")}</Link>{en(" page.")}
           </p>
-          {saving && <p className="text-xs text-muted-foreground flex items-center gap-1.5"><Loader2 className="w-3.5 h-3.5 animate-spin" />{en(" Saving...")}</p>}
+          {saving && <p role="status" className="flex items-center gap-1.5 text-sm text-muted-foreground"><Loader2 aria-hidden="true" className="h-4 w-4 animate-spin" />{en("Saving…")}</p>}
           {message && (
-            <p className={`text-xs flex items-center gap-1.5 ${message.ok ? "text-emerald-700 dark:text-emerald-400" : "text-rose-700 dark:text-rose-400"}`}>
-              {message.ok ? <CheckCircle2 className="w-3.5 h-3.5" /> : <AlertCircle className="w-3.5 h-3.5" />} {message.text}
+            <p role="status" className={`flex items-center gap-1.5 text-sm ${message.ok ? "text-emerald-700 dark:text-emerald-400" : "text-red-700 dark:text-red-400"}`}>
+              {message.ok ? <CheckCircle2 aria-hidden="true" className="h-4 w-4" /> : <AlertCircle aria-hidden="true" className="h-4 w-4" />} {message.text}
             </p>
           )}
         </div>

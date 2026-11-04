@@ -11,7 +11,7 @@ import React, { useId, useState, useSyncExternalStore } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { AccessNotice } from "@/lib/legacyApi";
-import { Badge, Button, Card, EmptyState, ErrorBanner, Field, Loading, Modal, PageHeader, ScrollArea, SuccessBanner, formatDate, useLoad } from "@/components/career/ui";
+import { Badge, Button, Card, EmptyState, ErrorBanner, Field, Loading, Modal, PageHeader, ScrollArea, StatTile, SuccessBanner, formatDate, useLoad } from "@/components/career/ui";
 import { TabPanel, Tabs } from "@/components/career/appointments/shared";
 import {
   ACTION_LABEL,
@@ -260,7 +260,7 @@ function QuestionsTab({ exam, onChanged }: { exam: ExamDetail; onChanged: (msg: 
           <table className="w-full text-sm">
             <caption className="sr-only">Questions of {exam.title}</caption>
             <thead>
-              <tr className="border-b border-border [&_th]:py-2 [&_th]:pe-3 [&_th]:text-start">
+              <tr className="border-b border-border text-xs text-muted-foreground [&_th]:py-2 [&_th]:pe-3 [&_th]:text-start [&_th]:font-medium">
                 <th scope="col">No.</th>
                 <th scope="col">Question</th>
                 <th scope="col">Answer</th>
@@ -342,7 +342,7 @@ function StatisticsTab({ exam }: { exam: ExamDetail }) {
           <table className="w-full text-sm">
             <caption className="sr-only">Statistics per question</caption>
             <thead>
-              <tr className="border-b border-border [&_th]:py-2 [&_th]:pe-3 [&_th]:text-start">
+              <tr className="border-b border-border text-xs text-muted-foreground [&_th]:py-2 [&_th]:pe-3 [&_th]:text-start [&_th]:font-medium">
                 <th scope="col">No.</th>
                 <th scope="col">Question</th>
                 <th scope="col">Served</th>
@@ -478,7 +478,7 @@ function StudentAttempts({ examId, userId, reloadKey, onAction }: { examId: stri
         <table className="w-full text-sm">
           <caption className="sr-only">Attempts by {who}</caption>
           <thead>
-            <tr className="border-b border-border [&_th]:py-2 [&_th]:pe-3 [&_th]:text-start">
+            <tr className="border-b border-border text-xs text-muted-foreground [&_th]:py-2 [&_th]:pe-3 [&_th]:text-start [&_th]:font-medium">
               <th scope="col">Attempt</th>
               <th scope="col">Status</th>
               <th scope="col">Score</th>
@@ -576,7 +576,7 @@ function StudentsTab({ exam, onChanged }: { exam: ExamDetail; onChanged: (msg: s
           <table className="w-full text-sm">
             <caption className="sr-only">Students who attempted {exam.title}</caption>
             <thead>
-              <tr className="border-b border-border [&_th]:py-2 [&_th]:pe-3 [&_th]:text-start">
+              <tr className="border-b border-border text-xs text-muted-foreground [&_th]:py-2 [&_th]:pe-3 [&_th]:text-start [&_th]:font-medium">
                 <th scope="col">Student</th>
                 <th scope="col">Attempts</th>
                 <th scope="col">Best score</th>
@@ -750,19 +750,12 @@ export default function ExamAdminDetailPage() {
             }
           />
           <SuccessBanner message={message} />
-          <dl className="grid gap-3 sm:grid-cols-4">
-            {[
-              ["Attempts", String(e.attempts.total)],
-              ["Students", String(e.attempts.students)],
-              ["Pass rate", e.attempts.passRate === null ? "—" : `${e.attempts.passRate}%`],
-              ["Credentials under review", String(e.credentialsUnderReview)],
-            ].map(([k, v]) => (
-              <div key={k} className="rounded-xl border border-border bg-card p-4">
-                <dt className="text-xs text-muted-foreground">{k}</dt>
-                <dd className="text-xl font-semibold">{v}</dd>
-              </div>
-            ))}
-          </dl>
+          <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+            <StatTile label="Attempts" value={e.attempts.total} />
+            <StatTile label="Students" value={e.attempts.students} />
+            <StatTile label="Pass rate" value={e.attempts.passRate === null ? "—" : `${e.attempts.passRate}%`} />
+            <StatTile label="Credentials under review" value={e.credentialsUnderReview} />
+          </div>
           <Tabs label="Exam administration sections" tabs={TABS} value={tab} onChange={setTab} />
           <TabPanel id={tab}>
             {tab === "settings" && (

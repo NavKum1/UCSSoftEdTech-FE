@@ -2,7 +2,8 @@
 
 import React, { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { Award, ShieldCheck, Share2, Calendar, Copy, Check, AlertTriangle } from "lucide-react";
+import { ShieldCheck, Share2, Calendar, Copy, Check, AlertTriangle } from "lucide-react";
+import { Badge, brandFill, buttonClass } from "@/components/career/ui";
 import { useEn } from "@/lib/english/EnglishProvider";
 
 function LinkedInIcon({ className = "w-4 h-4" }: { className?: string }) {
@@ -65,9 +66,9 @@ export default function CredentialBadgePage() {
     }[lookup];
     return (
       <main className="min-h-screen bg-background text-foreground flex items-center justify-center p-6">
-        <div className="max-w-md w-full rounded-3xl p-8 border border-border text-center space-y-3" role={lookup === "loading" ? "status" : "alert"}>
-          {lookup !== "loading" && <AlertTriangle className="w-8 h-8 mx-auto text-amber-700 dark:text-amber-400" aria-hidden />}
-          <h1 className="text-lg font-bold">{message.title}</h1>
+        <div className="w-full max-w-md space-y-3 rounded-xl border border-border bg-card p-8 text-center shadow-sm" role={lookup === "loading" ? "status" : "alert"}>
+          {lookup !== "loading" && <AlertTriangle className="mx-auto h-8 w-8 text-amber-700 dark:text-amber-400" aria-hidden />}
+          <h1 className="text-lg font-semibold">{message.title}</h1>
           {message.body && <p className="text-sm text-muted-foreground">{message.body}</p>}
         </div>
       </main>
@@ -98,127 +99,87 @@ export default function CredentialBadgePage() {
   };
 
   return (
-    <div className="min-h-screen bg-background text-foreground flex flex-col items-center justify-center font-sans p-6">
-      {/* Background Glow */}
-      <div className="absolute top-1/3 start-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-gradient-to-tr from-indigo-600/30 to-purple-600/30 blur-3xl rounded-full pointer-events-none"></div>
-
-      <div className="max-w-2xl w-full glass-panel rounded-3xl p-8 border border-indigo-500/30 relative z-10 space-y-6 shadow-2xl">
-        {/* Top Seal Badge Header */}
-        <div className="flex items-center justify-between pb-6 border-b border-border">
-          <div className="flex items-center space-x-3">
-            <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-emerald-500 to-teal-500 flex items-center justify-center font-bold text-white shadow-lg shadow-emerald-500/20">
-              <Award className="w-6 h-6 text-white" />
-            </div>
-            <div>
-              <span className="text-xs font-semibold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider">{en("Verifiable Digital Certificate")}</span>
-              <h1 className="text-lg font-bold text-foreground">{en("ACCREDITED CERTIFICATE OF COMPLETION")}</h1>
-            </div>
+    <main className="flex min-h-screen flex-col items-center justify-center bg-background p-4 text-foreground sm:p-6">
+      <div className="w-full max-w-2xl space-y-6 rounded-xl border border-border bg-card p-6 shadow-sm sm:p-8">
+        <div className="flex flex-wrap items-start justify-between gap-3 border-b border-border pb-6">
+          <div className="min-w-0">
+            <h1 className="text-xl font-semibold tracking-tight">{en("Certificate of completion")}</h1>
+            <p className="mt-1 text-sm text-muted-foreground">{en("A verifiable digital certificate.")}</p>
           </div>
-
-          <div className="flex items-center space-x-2">
-            <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/30">
-              <ShieldCheck className="w-3.5 h-3.5 me-1.5" />
-              {en("VERIFIED")}
-            </span>
-
+          <div className="flex flex-wrap items-center gap-2">
+            <Badge tone="good">
+              <ShieldCheck className="me-1 h-3.5 w-3.5" aria-hidden />
+              {en("Verified")}
+            </Badge>
             {credential?.verificationFlagged && (
-              <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-amber-500/20 text-amber-700 dark:text-amber-400 border border-amber-500/40">
-                <AlertTriangle className="w-3.5 h-3.5 me-1.5 text-amber-700 dark:text-amber-400" />
-                {en("Under Review")}
-              </span>
+              <Badge tone="warn">
+                <AlertTriangle className="me-1 h-3.5 w-3.5" aria-hidden />
+                {en("Under review")}
+              </Badge>
             )}
           </div>
         </div>
 
-        {/* Integrity Warning Alert Box */}
         {credential?.verificationFlagged && (
-          <div className="p-4 bg-amber-950/40 border border-amber-500/30 rounded-2xl flex items-start space-x-3 text-start">
-            <AlertTriangle className="w-5 h-5 text-amber-700 dark:text-amber-400 shrink-0 mt-0.5" />
+          <div className="flex items-start gap-3 rounded-lg border border-amber-300 bg-amber-50 p-4 text-start dark:border-amber-900 dark:bg-amber-950/40">
+            <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-amber-700 dark:text-amber-400" aria-hidden />
             <div className="space-y-1">
-              <p className="text-xs font-semibold text-amber-600 dark:text-amber-300">{en("Academic Review Notice")}</p>
-              <p className="text-[11px] text-amber-200/90 leading-relaxed">
+              <p className="text-sm font-medium text-amber-900 dark:text-amber-200">{en("Under academic review")}</p>
+              <p className="text-sm leading-relaxed text-amber-800 dark:text-amber-300">
                 {credential?.flagReason || "An unusual submission pattern was flagged during this evaluation session and is awaiting review."}
               </p>
             </div>
           </div>
         )}
 
-        {/* Badge Title & Candidate Info */}
-        <div className="text-center space-y-3 py-4">
-          <p className="text-xs text-muted-foreground uppercase tracking-widest font-semibold">{en("This Certifies That")}</p>
-          <h2 className="text-3xl font-extrabold text-white bg-gradient-to-r from-white via-indigo-200 to-slate-200 bg-clip-text text-transparent">
-            {candidateName ?? "Name not shared"}
-          </h2>
-          <p className="text-xs text-muted-foreground">{en("earned this credential with the result below, graded by Edulexa.")}</p>
-
-          <div className="inline-block mt-2 px-4 py-2 bg-indigo-500/10 border border-indigo-500/30 rounded-xl text-indigo-600 dark:text-indigo-300 font-bold text-sm">
-            {badgeTitle}
-          </div>
+        <div className="space-y-2 py-2 text-center">
+          <p className="text-sm text-muted-foreground">{en("This certifies that")}</p>
+          <h2 className="text-3xl font-semibold tracking-tight">{candidateName ?? "Name not shared"}</h2>
+          <p className="text-sm text-muted-foreground">{en("earned this credential with the result below, graded by Edulexa.")}</p>
+          <p className="pt-2 text-lg font-semibold">{badgeTitle}</p>
         </div>
 
-        {/* Competency & Score Grid */}
-        <div className="grid grid-cols-2 gap-4">
-          <div className="glass-card rounded-2xl p-4 border border-border text-center">
-            <span className="text-xs text-muted-foreground font-medium">{en("Final Assessment Score")}</span>
-            <div className="text-2xl font-extrabold text-indigo-700 dark:text-indigo-400 mt-1">{finalScore}%</div>
+        <dl className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <div className="rounded-xl border border-border bg-card p-4 shadow-sm">
+            <dt className="text-sm text-muted-foreground">{en("Final score")}</dt>
+            <dd className="mt-2 text-2xl font-semibold tabular-nums tracking-tight">{finalScore}%</dd>
           </div>
-
-          <div className="glass-card rounded-2xl p-4 border border-border text-center">
-            <span className="text-xs text-muted-foreground font-medium">{en("Accrediting Authority")}</span>
-            <div className="text-xs font-bold text-foreground mt-2">{instituteName}</div>
+          <div className="rounded-xl border border-border bg-card p-4 shadow-sm">
+            <dt className="text-sm text-muted-foreground">{en("Issued by")}</dt>
+            <dd className="mt-2 text-base font-semibold">{instituteName}</dd>
           </div>
-        </div>
+        </dl>
 
-        {/* 1-Click LinkedIn Integration Buttons */}
-        <div className="pt-2 space-y-3">
-          <p className="text-xs font-semibold text-muted-foreground text-center uppercase tracking-wider">{en("Share Your Achievement")}</p>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            <a
-              href={linkedInCertUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="py-3 px-4 rounded-xl bg-sky-700 hover:bg-sky-600 text-white font-medium text-xs flex items-center justify-center space-x-2 transition-all shadow-lg shadow-sky-700/25 cursor-pointer"
-            >
-              <LinkedInIcon className="w-4 h-4" />
-              <span>{en("Add to LinkedIn Profile")}</span>
+        <div className="space-y-3">
+          <h3 className="text-sm font-medium">{en("Share this certificate")}</h3>
+          <div className="flex flex-wrap gap-2">
+            <a href={linkedInCertUrl} target="_blank" rel="noopener noreferrer" className={buttonClass("primary")} style={brandFill}>
+              <LinkedInIcon className="h-4 w-4" />
+              {en("Add to LinkedIn profile")}
             </a>
-
-            <a
-              href={linkedInShareUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="py-3 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-xs flex items-center justify-center space-x-2 transition-all shadow-lg shadow-indigo-600/25 cursor-pointer"
-            >
-              <Share2 className="w-4 h-4" />
-              <span>{en("Share on LinkedIn Feed")}</span>
+            <a href={linkedInShareUrl} target="_blank" rel="noopener noreferrer" className={buttonClass("secondary")}>
+              <Share2 className="h-4 w-4" aria-hidden />
+              {en("Share on LinkedIn")}
             </a>
           </div>
         </div>
 
-        {/* Verification Footer Details */}
-        <div className="pt-4 border-t border-border flex items-center justify-between text-xs text-muted-foreground">
-          <div className="flex items-center space-x-1.5">
-            <Calendar className="w-4 h-4 text-muted-foreground" />
+        <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border pt-4 text-sm text-muted-foreground">
+          <div className="flex items-center gap-1.5">
+            <Calendar className="h-4 w-4" aria-hidden />
             <span>{en("Issued: {value}", { value: issued ? issued.toLocaleDateString(undefined, { year: "numeric", month: "long", day: "numeric", timeZone: "UTC" }) : "—" })}</span>
           </div>
 
-          <button
-            onClick={handleCopyLink}
-            className="flex items-center space-x-1 font-mono text-[11px] text-indigo-700 dark:text-indigo-400 bg-card hover:bg-muted px-3 py-1 rounded-lg border border-border cursor-pointer transition-colors"
-          >
-            {copied ? <Check className="w-3.5 h-3.5 text-emerald-700 dark:text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
-            <span>{copied ? en("Link Copied!") : `ID: ${slug}`}</span>
+          <button type="button" onClick={handleCopyLink} className={`${buttonClass("secondary")} h-8 px-3 text-xs`}>
+            {copied ? <Check className="h-3.5 w-3.5 text-emerald-700 dark:text-emerald-400" aria-hidden /> : <Copy className="h-3.5 w-3.5" aria-hidden />}
+            <span className={copied ? undefined : "font-mono"}>{copied ? en("Link copied") : `ID: ${slug}`}</span>
           </button>
         </div>
 
-        <button
-          onClick={() => router.push("/")}
-          className="w-full py-2.5 bg-card hover:bg-muted text-muted-foreground rounded-xl text-xs font-medium border border-border transition-colors flex items-center justify-center space-x-2 cursor-pointer"
-        >
-          <span>{en("Return to Dashboard")}</span>
+        <button type="button" onClick={() => router.push("/")} className={`${buttonClass("ghost")} w-full`}>
+          {en("Go to the home page")}
         </button>
       </div>
-    </div>
+    </main>
   );
 }

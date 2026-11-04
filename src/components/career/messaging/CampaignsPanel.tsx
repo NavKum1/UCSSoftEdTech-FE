@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { useApi } from "@/lib/appAuth";
-import { Badge, Button, Card, EmptyState, ErrorBanner, Field, Loading, SuccessBanner, formatDate, useLoad, ScrollArea, useCareerT } from "@/components/career/ui";
+import { Badge, Button, Card, EmptyState, ErrorBanner, Field, Loading, SuccessBanner, formatDate, useLoad, ScrollArea, useCareerT, StatTile } from "@/components/career/ui";
 
 interface Segment {
   roles: string[];
@@ -381,14 +381,11 @@ function Metrics({ id, onEdit, onChanged, onClose }: { id: string; onEdit: () =>
         <Badge tone={STATUS_TONE[data.status]}>{data.status}</Badge> <span className="ms-2">{data.subject}</span>
         {data.scheduledAt && <span className="ms-2 text-muted-foreground">{t("scheduledScheduledAt", { scheduledAt: formatDate(data.scheduledAt, true) })}</span>}
       </p>
-      <dl className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         {stats.map(([label, value]) => (
-          <div key={label} className="rounded-md border border-border p-3">
-            <dt className="text-xs text-muted-foreground">{label}</dt>
-            <dd className="text-lg font-semibold">{value}</dd>
-          </div>
+          <StatTile key={label} label={label} value={value} />
         ))}
-      </dl>
+      </div>
       <p className="mt-2 text-xs text-muted-foreground">{m.trackingNote}</p>
       {data.failures.length > 0 && (
         <details className="mt-3 text-sm">

@@ -8,6 +8,7 @@
 
 import React, { useCallback, useEffect, useState } from "react";
 import { useLatestRef, useLegacyApi } from "@/lib/legacyApi";
+import { StatTile } from "@/components/career/ui";
 import { useEn } from "@/lib/english/EnglishProvider";
 
 interface FormStats {
@@ -67,7 +68,7 @@ function Bars({ rows, label }: { rows: { name: string; count: number }[]; label:
         <li key={r.name} className="grid grid-cols-[8rem_minmax(0,1fr)_2.5rem] items-center gap-2 text-xs" title={`${r.name}: ${r.count}`}>
           <span className="truncate text-muted-foreground">{r.name}</span>
           <span className="h-2.5 rounded-sm bg-muted" aria-hidden="true">
-            <span className="block h-full rounded-e bg-cyan-600 dark:bg-cyan-500" style={{ width: `${(r.count / max) * 100}%` }} />
+            <span className="block h-full rounded-e bg-indigo-600 dark:bg-indigo-500" style={{ width: `${(r.count / max) * 100}%` }} />
           </span>
           <span className="text-end tabular-nums">{r.count}</span>
         </li>
@@ -77,13 +78,7 @@ function Bars({ rows, label }: { rows: { name: string; count: number }[]; label:
 }
 
 function Tile({ label, value, note }: { label: string; value: string; note?: string }) {
-  return (
-    <div className="rounded-2xl border border-border bg-card p-4">
-      <p className="text-xs text-muted-foreground">{label}</p>
-      <p className="mt-1 text-2xl font-semibold tabular-nums">{value}</p>
-      {note && <p className="text-xs text-muted-foreground">{note}</p>}
-    </div>
-  );
+  return <StatTile label={label} value={value} hint={note} />;
 }
 
 export default function StatisticsView({ instituteId }: { instituteId?: string }) {
@@ -110,7 +105,7 @@ export default function StatisticsView({ instituteId }: { instituteId?: string }
         {error}
       </p>
     );
-  if (!stats) return <div className="h-64 animate-pulse rounded-2xl bg-muted motion-reduce:animate-none" aria-busy="true" />;
+  if (!stats) return <div className="h-64 animate-pulse rounded-xl bg-muted motion-reduce:animate-none" aria-busy="true" />;
   const t = stats.totals;
   const withResults = stats.forms.filter((f) => f.outcomes.length > 0 || f.match);
 
@@ -135,7 +130,7 @@ export default function StatisticsView({ instituteId }: { instituteId?: string }
 
       <section>
         <h2 className="text-base font-semibold">{en("Each form")}</h2>
-        <div className="mt-2 overflow-x-auto rounded-2xl border border-border bg-card">
+        <div className="mt-2 overflow-x-auto rounded-xl border border-border bg-card shadow-sm">
           <table className="w-full text-sm">
             <thead className="text-start text-xs text-muted-foreground">
               <tr>
@@ -191,7 +186,7 @@ export default function StatisticsView({ instituteId }: { instituteId?: string }
           <h2 className="text-base font-semibold">{en("Results")}</h2>
           <div className="mt-2 grid gap-3 md:grid-cols-2">
             {withResults.map((f) => (
-              <div key={f.formId} className="space-y-4 rounded-2xl border border-border bg-card p-4">
+              <div key={f.formId} className="space-y-4 rounded-xl border border-border bg-card shadow-sm p-4">
                 <h3 className="text-sm font-semibold">{f.form}</h3>
                 {f.outcomes.length > 0 && (
                   <div>
@@ -214,7 +209,7 @@ export default function StatisticsView({ instituteId }: { instituteId?: string }
       {stats.byCampaign.length > 0 && (
         <section>
           <h2 className="text-base font-semibold">{en("Where they came from")}</h2>
-          <div className="mt-2 overflow-x-auto rounded-2xl border border-border bg-card">
+          <div className="mt-2 overflow-x-auto rounded-xl border border-border bg-card shadow-sm">
             <table className="w-full text-sm">
               <thead className="text-start text-xs text-muted-foreground">
                 <tr>

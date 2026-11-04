@@ -35,6 +35,7 @@ import { useTheme } from "next-themes";
 import I18nProvider from "@/components/I18nProvider";
 import { useTranslations } from "next-intl";
 import { useEn } from "@/lib/english/EnglishProvider";
+import { buttonClass, brandFill } from "@/components/career/ui";
 
 type CandidateTrack =
   | "DevOps"
@@ -548,7 +549,7 @@ function ElapsedClock({ baseMs, startedAt }: { baseMs: number; startedAt: number
     return () => clearInterval(id);
   }, [baseMs, startedAt]);
   return (
-    <span className="flex items-center gap-1 font-mono text-[11px] text-foreground" title={en("Time since this attempt started")}>
+    <span className="flex items-center gap-1 font-mono text-xs tabular-nums text-foreground" title={en("Time since this attempt started")}>
       <Clock className="w-3.5 h-3.5 text-indigo-700 dark:text-indigo-400" />
       {formatElapsed(elapsed)}
     </span>
@@ -579,13 +580,13 @@ function WorkspaceHeader({
         <div className="flex items-center space-x-3 min-w-0">
           <Link
             href="/dashboard"
-            className="text-xs font-mono uppercase tracking-widest text-muted-foreground hover:text-foreground transition flex items-center gap-1"
+            className="text-sm text-muted-foreground hover:text-foreground transition flex items-center gap-1"
           >
             <span>←</span>{en(" Dashboard")}
           </Link>
           <span className="text-border">|</span>
           <div className="flex items-center space-x-2 min-w-0">
-            <span className="font-bold text-sm text-foreground truncate">{title}</span>
+            <span className="font-semibold text-sm text-foreground truncate">{title}</span>
             {badges}
           </div>
         </div>
@@ -593,7 +594,7 @@ function WorkspaceHeader({
         <div className="flex items-center space-x-3">
           {controls}
           <span
-            className="text-xs px-2.5 py-1 rounded-lg bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 border border-indigo-500/30 font-semibold font-mono tracking-wide"
+            className="text-xs px-2 py-0.5 rounded-full bg-muted text-muted-foreground font-mono"
             title={`Sprint Identifier: ${sprintId}`}
           >
             {en("ID: {amount}", { amount: formatChallengeId(sprintId) })}
@@ -607,7 +608,7 @@ function WorkspaceHeader({
 function CenteredCard({ children }: { children: React.ReactNode }) {
   return (
     <div className="mx-auto w-full max-w-lg pt-8">
-      <div className="glass-panel rounded-2xl p-8 border border-border text-center space-y-4">{children}</div>
+      <div className="rounded-xl border border-border bg-card p-8 shadow-sm text-center space-y-4">{children}</div>
     </div>
   );
 }
@@ -901,7 +902,7 @@ function GradedWorkspace({ sprintId }: { sprintId: string }) {
     []
   );
 
-  const title = meta?.title || "Coding Sprint";
+  const title = meta?.title || "Coding sprint";
   const header = (
     <WorkspaceHeader
       title={title}
@@ -910,11 +911,11 @@ function GradedWorkspace({ sprintId }: { sprintId: string }) {
         attempt && (
           <>
             {isBrownfield && (
-              <span className="text-[10px] px-2 py-0.5 rounded-full bg-purple-500/15 text-purple-700 dark:text-purple-300 font-semibold border border-purple-500/30">
+              <span className="text-xs px-2 py-0.5 rounded-full bg-muted text-foreground font-medium">
                 {en("Multi-file")}
               </span>
             )}
-            <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 font-semibold border border-emerald-500/30">
+            <span className="text-xs px-2 py-0.5 rounded-full bg-muted text-foreground font-medium">
               {attempt.aiPolicy === "Prohibited" ? en("No AI tools") : attempt.aiPolicy === "Evaluated" ? en("AI use reviewed") : en("AI allowed")}
             </span>
           </>
@@ -957,7 +958,7 @@ function GradedWorkspace({ sprintId }: { sprintId: string }) {
           {startIssue?.kind === "invite" ? (
             <>
               <KeyRound className="w-10 h-10 text-indigo-700 dark:text-indigo-400 mx-auto" />
-              <h2 className="text-lg font-bold text-foreground">{en("Invite code required")}</h2>
+              <h2 className="text-lg font-semibold text-foreground">{en("Invite code required")}</h2>
               <p className="text-xs text-muted-foreground">{startIssue.message}</p>
               <form
                 className="flex gap-2 max-w-sm mx-auto"
@@ -971,12 +972,13 @@ function GradedWorkspace({ sprintId }: { sprintId: string }) {
                   onChange={(e) => setInviteInput(e.target.value)}
                   placeholder={en("Invite code")}
                   autoFocus
-                  className="flex-1 rounded-xl border border-border bg-background px-3 py-2 text-xs text-foreground font-mono focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                  className="flex-1 rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground font-mono focus:outline-none focus:ring-1 focus:ring-indigo-500"
                 />
                 <button
                   type="submit"
                   disabled={!inviteInput.trim()}
-                  className="py-2 px-4 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-xl text-xs disabled:bg-muted disabled:text-muted-foreground cursor-pointer disabled:cursor-not-allowed"
+                  className={buttonClass("primary")}
+                  style={brandFill}
                 >
                   {en("Start sprint")}
                 </button>
@@ -984,13 +986,14 @@ function GradedWorkspace({ sprintId }: { sprintId: string }) {
             </>
           ) : startIssue?.kind === "pro" ? (
             <>
-              <Sparkles className="w-10 h-10 text-purple-700 dark:text-purple-400 mx-auto" />
-              <h2 className="text-lg font-bold text-foreground">{en("Pro sprint")}</h2>
+              <Sparkles className="w-10 h-10 text-indigo-700 dark:text-indigo-400 mx-auto" />
+              <h2 className="text-lg font-semibold text-foreground">{en("Pro sprint")}</h2>
               <p className="text-xs text-muted-foreground">{startIssue.message}</p>
               <button
                 onClick={handleUpgrade}
                 disabled={upgrading}
-                className="inline-flex items-center gap-2 py-2.5 px-5 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-semibold rounded-xl text-xs shadow-lg shadow-indigo-500/25 cursor-pointer disabled:opacity-60"
+                className={buttonClass("primary")}
+                style={brandFill}
               >
                 {upgrading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
                 {en("Upgrade to Pro")}
@@ -999,7 +1002,7 @@ function GradedWorkspace({ sprintId }: { sprintId: string }) {
           ) : (
             <>
               <AlertTriangle className="w-10 h-10 text-amber-700 dark:text-amber-400 mx-auto" />
-              <h2 className="text-lg font-bold text-foreground">
+              <h2 className="text-lg font-semibold text-foreground">
                 {startIssue?.kind === "notFound" ? en("Sprint not found") : en("Couldn't start the sprint")}
               </h2>
               <p className="text-xs text-muted-foreground">{startIssue?.message || "Please try again."}</p>
@@ -1007,14 +1010,15 @@ function GradedWorkspace({ sprintId }: { sprintId: string }) {
                 {startIssue?.kind !== "notFound" && (
                   <button
                     onClick={retryStart}
-                    className="inline-flex items-center gap-2 py-2 px-4 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-xl text-xs cursor-pointer"
+                    className={buttonClass("primary")}
+                    style={brandFill}
                   >
                     <RefreshCw className="w-4 h-4" />{en(" Try again")}
                   </button>
                 )}
                 <Link
                   href="/dashboard"
-                  className="py-2 px-4 rounded-xl border border-border text-xs font-semibold text-foreground hover:bg-muted"
+                  className={buttonClass("secondary")}
                 >
                   {en("Back to dashboard")}
                 </Link>
@@ -1035,9 +1039,9 @@ function GradedWorkspace({ sprintId }: { sprintId: string }) {
 
       <div className="pt-8 flex-1 w-full space-y-6">
         {/* Session notice */}
-        <div className="glass-panel rounded-2xl p-4 border border-border flex flex-col md:flex-row md:items-center justify-between gap-3">
+        <div className="rounded-xl border border-border bg-card shadow-sm p-4 flex flex-col md:flex-row md:items-center justify-between gap-3">
           <div className="space-y-1.5">
-            <div className="flex items-start gap-2 text-[11px] text-muted-foreground">
+            <div className="flex items-start gap-2 text-xs text-muted-foreground">
               <ShieldCheck className="w-3.5 h-3.5 mt-0.5 shrink-0 text-emerald-700 dark:text-emerald-400" />
               <span>
                 {en("Your editing activity (edits, pastes and switching away from this window) is recorded and shared with reviewers alongside your submission.")}
@@ -1045,7 +1049,7 @@ function GradedWorkspace({ sprintId }: { sprintId: string }) {
             </div>
             {attempt.aiPolicy === "Prohibited" && <AiPolicyNotice aiPolicy="Prohibited" />}
             {attempt.resumed && (
-              <div className="flex items-start gap-2 text-[11px] text-indigo-700 dark:text-indigo-300">
+              <div className="flex items-start gap-2 text-xs text-indigo-700 dark:text-indigo-300">
                 <RefreshCw className="w-3.5 h-3.5 mt-0.5 shrink-0" />
                 <span>{en("Welcome back. Your attempt was resumed with the work saved so far.")}</span>
               </div>
@@ -1055,7 +1059,7 @@ function GradedWorkspace({ sprintId }: { sprintId: string }) {
             <ElapsedClock baseMs={attempt.serverElapsedMs} startedAt={attempt.clientStartedAt} />
             {telemetry && (
               <span
-                className={`flex items-center gap-1 text-[11px] font-medium ${
+                className={`flex items-center gap-1 text-xs font-medium ${
                   syncState === "ok"
                     ? "text-emerald-700 dark:text-emerald-400"
                     : syncState === "retrying"
@@ -1071,18 +1075,18 @@ function GradedWorkspace({ sprintId }: { sprintId: string }) {
         </div>
 
         {/* Pipeline Progress Bar */}
-        <div className="glass-panel rounded-2xl p-4 border border-border flex items-center justify-between">
+        <div className="rounded-xl border border-border bg-card shadow-sm p-4 flex items-center justify-between">
           <div className="flex flex-wrap items-center gap-2 text-xs font-semibold">
             <span className={`px-3 py-1 rounded-lg ${pipelineState === "editor" || pipelineState === "submitting" ? "bg-indigo-600 text-white" : "bg-muted text-muted-foreground"}`}>
-              {en("1. Code Submission")}
+              {en("1. Submit code")}
             </span>
             <ArrowRight className="w-3.5 h-3.5 text-muted-foreground" />
             <span className={`px-3 py-1 rounded-lg ${pipelineState === "running" || pipelineState === "completed" ? "bg-indigo-600 text-white" : "bg-muted text-muted-foreground"}`}>
-              {en("2. Automated Test Runner")}
+              {en("2. Automated tests")}
             </span>
             <ArrowRight className="w-3.5 h-3.5 text-muted-foreground" />
             <span className={`px-3 py-1 rounded-lg ${pipelineState === "voice_interview" ? "bg-indigo-600 text-white" : "bg-muted text-muted-foreground"}`}>
-              {en("3. Voice Defense")}
+              {en("3. Voice defense")}
             </span>
             <ArrowRight className="w-3.5 h-3.5 text-muted-foreground" />
             <span className={`px-3 py-1 rounded-lg ${pipelineState === "passed" ? "bg-emerald-600 text-white" : pipelineState === "not_passed" ? "bg-indigo-600 text-white" : "bg-muted text-muted-foreground"}`}>
@@ -1093,24 +1097,24 @@ function GradedWorkspace({ sprintId }: { sprintId: string }) {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Left Pane: Code Editor */}
-          <div className="glass-panel rounded-2xl p-6 border border-border flex flex-col space-y-4">
+          <div className="rounded-xl border border-border bg-card shadow-sm p-6 flex flex-col space-y-4">
             <div className="flex items-center justify-between pb-3 border-b border-border">
               <div className="flex items-center space-x-2">
                 <Code className="w-5 h-5 text-indigo-700 dark:text-indigo-400" />
                 <h3 className="text-sm font-semibold text-foreground">{t("codeEditor")}</h3>
               </div>
-              <span className="text-[10px] px-2.5 py-0.5 rounded bg-indigo-500/10 text-indigo-600 dark:text-indigo-300 font-semibold border border-indigo-500/20">
+              <span className="text-xs px-2 py-0.5 rounded-full bg-muted text-muted-foreground font-medium">
                 {isBrownfield ? `${attempt.files.length} files · ${attempt.language}` : `Language: ${attempt.language}`}
               </span>
             </div>
 
             {meta?.description && (
-              <p className="text-xs text-foreground font-medium bg-card/80 p-3 rounded-lg border border-border/80 leading-relaxed shadow-inner whitespace-pre-wrap">
+              <p className="text-sm text-foreground bg-muted/50 p-3 rounded-lg border border-border leading-relaxed whitespace-pre-wrap">
                 {meta.description}
               </p>
             )}
             {isBrownfield && (
-              <p className="text-[11px] text-muted-foreground flex items-start gap-1.5">
+              <p className="text-xs text-muted-foreground flex items-start gap-1.5">
                 <Layers className="w-3.5 h-3.5 mt-0.5 shrink-0" />
                 {en("This is an existing project. Find and fix the defects across its files; hidden tests run when you submit.")}
               </p>
@@ -1137,7 +1141,7 @@ function GradedWorkspace({ sprintId }: { sprintId: string }) {
                 <button
                   onClick={handleRun}
                   disabled={editorLocked || isRunning || isOffline}
-                  className="py-3 px-4 rounded-xl font-medium text-xs flex items-center justify-center space-x-2 transition-all cursor-pointer border border-border text-foreground hover:bg-muted disabled:opacity-50 disabled:cursor-not-allowed"
+                  className={buttonClass("secondary")}
                 >
                   {isRunning ? <Loader2 className="w-4 h-4 animate-spin" /> : <Terminal className="w-4 h-4" />}
                   <span>{en("Run")}</span>
@@ -1146,11 +1150,8 @@ function GradedWorkspace({ sprintId }: { sprintId: string }) {
               <button
                 onClick={handleSubmitCode}
                 disabled={editorLocked || isOffline}
-                className={`flex-1 py-3 px-4 rounded-xl font-medium text-xs flex items-center justify-center space-x-2 transition-all cursor-pointer ${
-                  !editorLocked && !isOffline
-                    ? "bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white shadow-lg shadow-indigo-500/25"
-                    : "bg-muted text-muted-foreground cursor-not-allowed"
-                }`}
+                className={`${buttonClass("primary")} flex-1`}
+                style={brandFill}
               >
                 <Play className="w-4 h-4" />
                 <span>
@@ -1181,16 +1182,16 @@ function GradedWorkspace({ sprintId }: { sprintId: string }) {
               />
             )}
 
-            <div className="glass-panel rounded-2xl p-6 border border-border space-y-4">
+            <div className="rounded-xl border border-border bg-card shadow-sm p-6 space-y-4">
               <div className="flex items-center justify-between pb-3 border-b border-border">
                 <div className="flex items-center space-x-2">
                   <Terminal className="w-5 h-5 text-emerald-700 dark:text-emerald-400" />
-                  <h3 className="text-sm font-semibold text-foreground">{en("Execution Output & Test Results")}</h3>
+                  <h3 className="text-sm font-semibold text-foreground">{en("Output and test results")}</h3>
                 </div>
                 {pipelineState === "running" && <RefreshCw className="w-4 h-4 text-amber-700 dark:text-amber-400 animate-spin" />}
                 {testSummary && (
                   <span
-                    className={`text-[11px] px-2.5 py-0.5 rounded font-semibold border ${
+                    className={`text-xs px-2.5 py-0.5 rounded font-semibold border ${
                       testSummary.total > 0 && testSummary.passed === testSummary.total
                         ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/30"
                         : "bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/30"
@@ -1201,20 +1202,20 @@ function GradedWorkspace({ sprintId }: { sprintId: string }) {
                 )}
               </div>
 
-              <div className="bg-slate-950 p-4 rounded-xl font-mono text-[11px] text-emerald-400 h-36 overflow-y-auto border border-slate-900 leading-relaxed whitespace-pre-wrap">
+              <div className="bg-slate-950 p-4 rounded-xl font-mono text-xs text-emerald-400 h-36 overflow-y-auto border border-slate-900 leading-relaxed whitespace-pre-wrap">
                 {stdOutLogs || statusMessage || "Awaiting submission..."}
               </div>
               {stdOutLogs && statusMessage && pipelineState !== "editor" && (
-                <p className="text-[11px] text-muted-foreground">{statusMessage}</p>
+                <p className="text-xs text-muted-foreground">{statusMessage}</p>
               )}
 
               {architecturalFlaws.length > 0 && (
-                <div className="p-3 bg-indigo-500/5 border border-indigo-500/30 rounded-xl space-y-1">
+                <div className="p-3 bg-muted/50 border border-border rounded-lg space-y-1">
                   <div className="flex items-center space-x-2 text-xs font-semibold text-indigo-700 dark:text-indigo-300">
                     <AlertTriangle className="w-4 h-4" />
                     <span>{en("Review topics for discussion:")}</span>
                   </div>
-                  <ul className="list-disc list-inside text-[11px] text-foreground space-y-0.5 ps-2">
+                  <ul className="list-disc list-inside text-xs text-foreground space-y-0.5 ps-2">
                     {architecturalFlaws.map((flaw, idx) => (
                       <li key={idx}>{flaw}</li>
                     ))}
@@ -1232,9 +1233,9 @@ function GradedWorkspace({ sprintId }: { sprintId: string }) {
             )}
 
             {pipelineState === "passed" && defenseResult && (
-              <div className="glass-panel rounded-2xl p-6 border border-emerald-500/40 bg-emerald-500/5 text-center space-y-4">
+              <div className="rounded-xl border border-emerald-300 bg-emerald-50 p-6 dark:border-emerald-900 dark:bg-emerald-950/40 text-center space-y-4">
                 <ShieldCheck className="w-12 h-12 text-emerald-700 dark:text-emerald-400 mx-auto" />
-                <h3 className="text-lg font-bold text-foreground">{en("Congratulations! Certificate Issued")}</h3>
+                <h3 className="text-lg font-semibold text-foreground">{en("Certificate issued")}</h3>
                 <p className="text-xs text-muted-foreground">
                   {defenseResult.credentialUnderReview
                     ? en("You defended your implementation. Your certificate is under review and becomes publicly verifiable once a reviewer confirms it.")
@@ -1243,25 +1244,27 @@ function GradedWorkspace({ sprintId }: { sprintId: string }) {
                 {defenseResult.publicUrlSlug && (
                   <Link
                     href={`/credential/${defenseResult.publicUrlSlug}`}
-                    className="py-2.5 px-5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-semibold rounded-xl text-xs shadow-lg shadow-emerald-500/25 inline-flex items-center space-x-2 transition-all"
+                    className={buttonClass("primary")}
+                    style={brandFill}
                   >
                     <Award className="w-4 h-4" />
-                    <span>{en("View Certificate")}</span>
+                    <span>{en("View certificate")}</span>
                   </Link>
                 )}
               </div>
             )}
 
             {pipelineState === "not_passed" && defenseResult && (
-              <div className="glass-panel rounded-2xl p-6 border border-border text-center space-y-4">
+              <div className="rounded-xl border border-border bg-card shadow-sm p-6 text-center space-y-4">
                 <BookOpen className="w-10 h-10 text-indigo-700 dark:text-indigo-400 mx-auto" />
-                <h3 className="text-lg font-bold text-foreground">{en("Defense scored")}</h3>
+                <h3 className="text-lg font-semibold text-foreground">{en("Defense scored")}</h3>
                 <p className="text-xs text-muted-foreground">
                   {en("A certificate wasn't issued for this attempt. Your scores and the skills to work on are shown above.")}
                 </p>
                 <Link
                   href="/referrals"
-                  className="py-2.5 px-5 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-xl text-xs inline-flex items-center space-x-2 transition-all"
+                  className={buttonClass("primary")}
+                  style={brandFill}
                 >
                   <BookOpen className="w-4 h-4" />
                   <span>{en("See learning recommendations")}</span>
@@ -1368,30 +1371,30 @@ function PracticeWorkspace({ sprintId }: { sprintId: string }) {
         title={humanizeSlug(sprintId)}
         sprintId={sprintId}
         badges={
-          <span className="text-[10px] px-2 py-0.5 rounded-full bg-muted text-muted-foreground font-semibold border border-border">
+          <span className="text-xs px-2 py-0.5 rounded-full bg-muted text-foreground font-medium">
             {en("Practice")}
           </span>
         }
         controls={
-          <div className="hidden lg:flex items-center space-x-2 bg-card border border-border rounded-xl px-3 py-1.5 shadow-xs">
-            <select aria-label={en("Track")} value={candidateTrack} onChange={(e) => handleTrackChange(e.target.value as CandidateTrack)} className="bg-transparent text-xs text-indigo-600 dark:text-indigo-400 font-semibold focus:outline-none cursor-pointer">
-              <option value="DevOps">{en("🚀 DevOps & SRE")}</option>
-              <option value="Backend">{en("⚙️ Backend Systems")}</option>
-              <option value="Frontend">{en("💻 Frontend & Web")}</option>
-              <option value="FullStack">{en("🌐 FullStack Systems")}</option>
-              <option value="DataMLOps">{en("🧠 Data & MLOps")}</option>
-              <option value="Cybersecurity">{en("🛡️ Cybersecurity")}</option>
-              <option value="Mobile">{en("📱 Mobile Architecture")}</option>
-              <option value="CloudFinOps">{en("💰 Cloud FinOps")}</option>
-              <option value="DatabaseRE">{en("🗄️ Database Reliability")}</option>
+          <div className="hidden lg:flex items-center space-x-2 bg-card border border-border rounded-lg px-3 py-1.5 shadow-sm">
+            <select aria-label={en("Track")} value={candidateTrack} onChange={(e) => handleTrackChange(e.target.value as CandidateTrack)} className="bg-transparent text-xs text-foreground font-medium focus:outline-none cursor-pointer">
+              <option value="DevOps">{en("DevOps and SRE")}</option>
+              <option value="Backend">{en("Backend systems")}</option>
+              <option value="Frontend">{en("Frontend and web")}</option>
+              <option value="FullStack">{en("Full-stack systems")}</option>
+              <option value="DataMLOps">{en("Data and MLOps")}</option>
+              <option value="Cybersecurity">{en("Cybersecurity")}</option>
+              <option value="Mobile">{en("Mobile architecture")}</option>
+              <option value="CloudFinOps">{en("Cloud FinOps")}</option>
+              <option value="DatabaseRE">{en("Database reliability")}</option>
             </select>
             <span className="text-border">|</span>
-            <select aria-label={en("Difficulty")} value={difficultyTier} onChange={(e) => applySelection(candidateTrack, e.target.value as Tier, language)} className="bg-transparent text-xs text-emerald-700 dark:text-emerald-400 font-semibold focus:outline-none cursor-pointer">
+            <select aria-label={en("Difficulty")} value={difficultyTier} onChange={(e) => applySelection(candidateTrack, e.target.value as Tier, language)} className="bg-transparent text-xs text-foreground font-medium focus:outline-none cursor-pointer">
               <option value="Bronze (Junior)">{en("Bronze (Junior)")}</option>
               <option value="Diamond (Staff)">{en("Diamond (Staff)")}</option>
             </select>
             <span className="text-border">|</span>
-            <select aria-label={en("Language")} value={language} onChange={(e) => applySelection(candidateTrack, difficultyTier, e.target.value)} className="bg-transparent text-xs text-purple-700 dark:text-purple-400 font-semibold focus:outline-none cursor-pointer">
+            <select aria-label={en("Language")} value={language} onChange={(e) => applySelection(candidateTrack, difficultyTier, e.target.value)} className="bg-transparent text-xs text-foreground font-medium focus:outline-none cursor-pointer">
               {TRACK_LANGUAGES[candidateTrack].options.map((opt) => (
                 <option key={opt} value={opt}>
                   {opt}
@@ -1403,7 +1406,7 @@ function PracticeWorkspace({ sprintId }: { sprintId: string }) {
       />
 
       <div className="pt-8 flex-1 w-full space-y-6">
-        <div className="glass-panel rounded-2xl p-4 border border-border flex items-start gap-2 text-[11px] text-muted-foreground">
+        <div className="rounded-xl border border-border bg-card shadow-sm p-4 flex items-start gap-2 text-xs text-muted-foreground">
           <Sparkles className="w-3.5 h-3.5 mt-0.5 shrink-0 text-indigo-700 dark:text-indigo-400" />
           <span>
             {en("Practice mode: nothing here is graded or submitted. Pick a challenge below to start a timed sprint with hidden tests and a voice defense.")}
@@ -1411,18 +1414,18 @@ function PracticeWorkspace({ sprintId }: { sprintId: string }) {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          <div className="glass-panel rounded-2xl p-6 border border-border flex flex-col space-y-4">
+          <div className="rounded-xl border border-border bg-card shadow-sm p-6 flex flex-col space-y-4">
             <div className="flex items-center justify-between pb-3 border-b border-border">
               <div className="flex items-center space-x-2">
                 <Code className="w-5 h-5 text-indigo-700 dark:text-indigo-400" />
                 <h3 className="text-sm font-semibold text-foreground">{t("codeEditor")}</h3>
               </div>
-              <span className="text-[10px] px-2.5 py-0.5 rounded bg-indigo-500/10 text-indigo-600 dark:text-indigo-300 font-semibold border border-indigo-500/20">
+              <span className="text-xs px-2 py-0.5 rounded-full bg-muted text-muted-foreground font-medium">
                 {en("Language: {language}", { language })}
               </span>
             </div>
 
-            <p className="text-xs text-foreground font-medium bg-card/80 p-3 rounded-lg border border-border/80 leading-relaxed shadow-inner">
+            <p className="text-sm text-foreground bg-muted/50 p-3 rounded-lg border border-border leading-relaxed">
               {snippet.task}
             </p>
 
@@ -1436,7 +1439,7 @@ function PracticeWorkspace({ sprintId }: { sprintId: string }) {
                 options={{
                   minimap: { enabled: false },
                   fontSize: 13,
-                  fontFamily: "var(--font-geist-mono), monospace",
+                  fontFamily: "var(--font-brand-mono), monospace",
                   padding: { top: 16 },
                 }}
               />
@@ -1445,7 +1448,7 @@ function PracticeWorkspace({ sprintId }: { sprintId: string }) {
             <button
               onClick={handleRun}
               disabled={isRunning}
-              className="py-3 px-4 rounded-xl font-medium text-xs flex items-center justify-center space-x-2 transition-all cursor-pointer border border-border text-foreground hover:bg-muted disabled:opacity-50 disabled:cursor-not-allowed"
+              className={buttonClass("secondary")}
             >
               {isRunning ? <Loader2 className="w-4 h-4 animate-spin" /> : <Terminal className="w-4 h-4" />}
               <span>{en("Run code")}</span>
@@ -1453,7 +1456,7 @@ function PracticeWorkspace({ sprintId }: { sprintId: string }) {
           </div>
 
           <div className="space-y-6">
-            <div className="glass-panel rounded-2xl p-6 border border-border space-y-4">
+            <div className="rounded-xl border border-border bg-card shadow-sm p-6 space-y-4">
               <div className="flex items-center space-x-2 pb-3 border-b border-border">
                 <Terminal className="w-5 h-5 text-emerald-700 dark:text-emerald-400" />
                 <h3 className="text-sm font-semibold text-foreground">{en("Output")}</h3>
@@ -1468,14 +1471,14 @@ function PracticeWorkspace({ sprintId }: { sprintId: string }) {
                     className="rounded-xl border border-border bg-card"
                   />
                 ) : (
-                  <div className="bg-slate-950 p-4 rounded-xl font-mono text-[11px] text-emerald-400 h-36 overflow-y-auto border border-slate-900 leading-relaxed whitespace-pre-wrap">
+                  <div className="bg-slate-950 p-4 rounded-xl font-mono text-xs text-emerald-400 h-36 overflow-y-auto border border-slate-900 leading-relaxed whitespace-pre-wrap">
                     {output || "Run your code to see its output."}
                   </div>
                 )}
               </div>
             </div>
 
-            <div className="glass-panel rounded-2xl p-6 border border-border space-y-3">
+            <div className="rounded-xl border border-border bg-card shadow-sm p-6 space-y-3">
               <div className="flex items-center space-x-2 pb-3 border-b border-border">
                 <Award className="w-5 h-5 text-indigo-700 dark:text-indigo-400" />
                 <h3 className="text-sm font-semibold text-foreground">{en("Graded challenges")}</h3>
@@ -1501,13 +1504,13 @@ function PracticeWorkspace({ sprintId }: { sprintId: string }) {
                     <li key={c.sprintId}>
                       <Link
                         href={`/sprint/${c.sprintId}`}
-                        className="flex items-center justify-between gap-3 p-3 rounded-xl border border-border hover:bg-muted transition-colors"
+                        className="flex items-center justify-between gap-3 p-3 rounded-lg border border-border hover:bg-muted transition-colors"
                       >
-                        <span className="text-xs font-semibold text-foreground truncate">{c.title}</span>
-                        <span className="flex items-center gap-2 shrink-0 text-[10px] text-muted-foreground">
+                        <span className="text-sm font-medium text-foreground truncate">{c.title}</span>
+                        <span className="flex items-center gap-2 shrink-0 text-xs text-muted-foreground">
                           {c.requiredLanguage}
                           {c.isPremium && (
-                            <span className="px-1.5 py-0.5 rounded bg-purple-500/15 text-purple-700 dark:text-purple-300 font-semibold">{en("Pro")}</span>
+                            <span className="px-1.5 py-0.5 rounded-full bg-muted text-foreground font-medium">{en("Pro")}</span>
                           )}
                           <ArrowRight className="w-3.5 h-3.5" />
                         </span>

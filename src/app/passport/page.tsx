@@ -10,6 +10,7 @@ import { Check, Copy, Link2, RefreshCw } from "lucide-react";
 import PassportView, { type PassportData } from "@/components/passport/PassportView";
 import { AccessNotice, useLegacyApi } from "@/lib/legacyApi";
 import { useEn } from "@/lib/english/EnglishProvider";
+import { Button, PageHeader, buttonClass } from "@/components/career/ui";
 
 interface OwnPassport extends PassportData {
   userId: string;
@@ -19,7 +20,7 @@ interface OwnPassport extends PassportData {
   publicShareToken: string | null;
 }
 
-const card = "rounded-2xl border border-border bg-card shadow-[0_1px_2px_rgb(16_24_40/0.04)]";
+const card = "rounded-xl border border-border bg-card shadow-sm";
 
 export default function SkillPassportPage() {
   const en = useEn();
@@ -93,12 +94,10 @@ export default function SkillPassportPage() {
 
   return (
     <div>
-      <div className="mb-6">
-        <h1 className="sr-only">{en("Skill passport")}</h1>
-        <p className="text-sm text-muted-foreground">
-          {en("Your verified record of skills and credentials, built from your graded results. You decide who sees it.")}
-        </p>
-      </div>
+      <PageHeader
+        title={en("Skill passport")}
+        description={en("Your verified record of skills and credentials, built from your graded results. You decide who sees it.")}
+      />
 
       <div className="grid gap-6 lg:grid-cols-3">
         <div className="lg:col-span-2">
@@ -114,7 +113,7 @@ export default function SkillPassportPage() {
             <p className="mt-1 text-xs text-muted-foreground">
               {en("Anyone with the link sees your name, target role, skills and credentials. Never your email or activity history.")}
             </p>
-            <label className="mt-4 flex items-center justify-between gap-3 rounded-xl border border-border p-3">
+            <label className="mt-4 flex items-center justify-between gap-3 rounded-lg border border-border p-3">
               <span className="text-sm font-medium">{passport.sharingEnabled ? en("Sharing is on") : en("Sharing is off")}</span>
               <input
                 type="checkbox"
@@ -129,7 +128,7 @@ export default function SkillPassportPage() {
             </label>
             {shareUrl && (
               <div className="mt-3 space-y-2">
-                <div className="flex items-center gap-2 rounded-xl border border-border bg-muted/40 p-2 ps-3">
+                <div className="flex items-center gap-2 rounded-lg border border-border bg-muted/40 p-2 ps-3">
                   <span className="min-w-0 flex-1 truncate font-mono text-xs text-muted-foreground">{shareUrl}</span>
                   <button
                     type="button"
@@ -139,7 +138,7 @@ export default function SkillPassportPage() {
                         setTimeout(() => setCopied(false), 2000);
                       });
                     }}
-                    className="inline-flex items-center gap-1 rounded-lg bg-indigo-600 px-2.5 py-1.5 text-xs font-semibold text-white hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                    className={`${buttonClass("secondary")} h-8 px-2.5`}
                   >
                     {copied ? <Check aria-hidden="true" className="h-3.5 w-3.5" /> : <Copy aria-hidden="true" className="h-3.5 w-3.5" />}
                     {copied ? en("Copied") : en("Copy")}
@@ -149,7 +148,7 @@ export default function SkillPassportPage() {
                   type="button"
                   disabled={saving !== null}
                   onClick={() => void update("rotate", { rotateShareLink: true }, "New link created. The old link no longer works.")}
-                  className="inline-flex items-center gap-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground disabled:opacity-60"
+                  className="inline-flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-foreground disabled:opacity-60"
                 >
                   <RefreshCw aria-hidden="true" className="h-3.5 w-3.5" />
                   {en("Create a new link (the old one stops working)")}
@@ -175,7 +174,7 @@ export default function SkillPassportPage() {
                   value={name}
                   maxLength={120}
                   onChange={(e) => setName(e.target.value)}
-                  className="mt-1 block w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus:outline-2 focus:outline-indigo-600"
+                  className="mt-1 block w-full rounded-lg border border-border bg-card px-3 py-2 text-sm shadow-sm focus:outline-2 focus:outline-indigo-600"
                 />
               </label>
               <label className="block text-sm">
@@ -185,16 +184,12 @@ export default function SkillPassportPage() {
                   maxLength={120}
                   placeholder={en("e.g. Backend engineer")}
                   onChange={(e) => setRole(e.target.value)}
-                  className="mt-1 block w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus:outline-2 focus:outline-indigo-600"
+                  className="mt-1 block w-full rounded-lg border border-border bg-card px-3 py-2 text-sm shadow-sm focus:outline-2 focus:outline-indigo-600"
                 />
               </label>
-              <button
-                type="submit"
-                disabled={!dirty || saving !== null}
-                className="w-full rounded-xl bg-indigo-600 py-2.5 text-sm font-semibold text-white hover:bg-indigo-500 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-              >
+              <Button type="submit" className="w-full" disabled={!dirty || saving !== null}>
                 {saving === "profile" ? en("Saving…") : en("Save")}
-              </button>
+              </Button>
             </form>
           </section>
           <p role="status" className="min-h-5 text-sm text-muted-foreground">

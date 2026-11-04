@@ -135,7 +135,7 @@ export default function CareerCenterChallengesPage() {
                       {c.maxParticipants ? t("upToMaxParticipants", { maxParticipants: c.maxParticipants }) : ""}
                     </p>
                     {c.prizeText && <p>{t("recognitionPrizeText", { prizeText: c.prizeText })}</p>}
-                    {c.externalJobUrl && <p>{t.rich("jobLinkExternalJobUrl", { link: (chunks) => <a className="underline" href={c.externalJobUrl!} target="_blank" rel="noreferrer">{chunks}</a>, externalJobUrl: c.externalJobUrl })}</p>}
+                    {c.externalJobUrl && <p>{t.rich("jobLinkExternalJobUrl", { link: (chunks) => <a className="underline [overflow-wrap:anywhere]" href={c.externalJobUrl!} target="_blank" rel="noreferrer">{chunks}</a>, externalJobUrl: c.externalJobUrl })}</p>}
                     {row.decisionNote && <p>{t("noteDecisionNote", { decisionNote: row.decisionNote })}</p>}
                     <div className="flex flex-wrap items-end gap-2">
                       <div className="min-w-[16rem] flex-1">

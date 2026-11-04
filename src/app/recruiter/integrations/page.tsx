@@ -11,7 +11,6 @@ import {
   Copy,
   Link2,
   Loader2,
-  Plug,
   Plus,
   Power,
   RefreshCw,
@@ -20,6 +19,7 @@ import {
   XCircle,
 } from "lucide-react";
 import { useEn } from "@/lib/english/EnglishProvider";
+import { Button, PageHeader, ScrollArea } from "@/components/career/ui";
 
 interface Provider {
   id: string;
@@ -120,7 +120,7 @@ function CopyField({ label, value }: { label: string; value: string }) {
   };
   return (
     <div>
-      <div className="text-[11px] font-semibold text-muted-foreground">{label}</div>
+      <div className="text-xs font-medium text-muted-foreground">{label}</div>
       <div className="mt-1 flex items-center gap-2">
         <code className="flex-1 min-w-0 break-all rounded-lg bg-muted/50 border border-border px-3 py-2 text-xs font-mono text-foreground select-all">{value}</code>
         <button
@@ -155,19 +155,19 @@ function ConnectionLogs({ connectionId, getToken }: { connectionId: string; getT
   }, [connectionId, getToken]);
 
   if (error) return <p className="text-xs text-rose-700 dark:text-rose-400">{error}</p>;
-  if (!logs) return <p className="text-xs text-muted-foreground flex items-center gap-1"><Loader2 className="w-3 h-3 animate-spin" />{en(" Loading logs...")}</p>;
+  if (!logs) return <p className="text-xs text-muted-foreground flex items-center gap-1"><Loader2 className="w-3 h-3 animate-spin" aria-hidden />{en("Loading logs...")}</p>;
   if (logs.length === 0) return <p className="text-xs text-muted-foreground">{en("No deliveries yet.")}</p>;
 
   return (
-    <div className="overflow-x-auto">
+    <ScrollArea>
       <table className="w-full text-xs">
         <thead>
           <tr className="text-start text-muted-foreground border-b border-border">
-            <th className="py-1.5 pe-3 font-semibold">{en("Time")}</th>
-            <th className="py-1.5 pe-3 font-semibold">{en("Result")}</th>
-            <th className="py-1.5 pe-3 font-semibold">{en("HTTP")}</th>
-            <th className="py-1.5 pe-3 font-semibold">{en("Submission")}</th>
-            <th className="py-1.5 font-semibold">{en("Error")}</th>
+            <th className="py-1.5 pe-3 text-start font-medium">{en("Time")}</th>
+            <th className="py-1.5 pe-3 text-start font-medium">{en("Result")}</th>
+            <th className="py-1.5 pe-3 text-start font-medium">{en("HTTP")}</th>
+            <th className="py-1.5 pe-3 text-start font-medium">{en("Submission")}</th>
+            <th className="py-1.5 text-start font-medium">{en("Error")}</th>
           </tr>
         </thead>
         <tbody>
@@ -176,9 +176,9 @@ function ConnectionLogs({ connectionId, getToken }: { connectionId: string; getT
               <td className="py-1.5 pe-3 text-muted-foreground whitespace-nowrap">{new Date(l.createdAt).toLocaleString()}</td>
               <td className="py-1.5 pe-3">
                 {l.success ? (
-                  <span className="inline-flex items-center gap-1 text-emerald-700 dark:text-emerald-400"><CheckCircle2 className="w-3 h-3" />{en(" Delivered")}</span>
+                  <span className="inline-flex items-center gap-1 text-emerald-700 dark:text-emerald-400"><CheckCircle2 className="w-3 h-3" aria-hidden />{en("Delivered")}</span>
                 ) : (
-                  <span className="inline-flex items-center gap-1 text-rose-700 dark:text-rose-400"><XCircle className="w-3 h-3" />{en(" Failed")}</span>
+                  <span className="inline-flex items-center gap-1 text-rose-700 dark:text-rose-400"><XCircle className="w-3 h-3" aria-hidden />{en("Failed")}</span>
                 )}
               </td>
               <td className="py-1.5 pe-3 text-foreground">{l.httpStatus ?? "—"}</td>
@@ -188,7 +188,7 @@ function ConnectionLogs({ connectionId, getToken }: { connectionId: string; getT
           ))}
         </tbody>
       </table>
-    </div>
+    </ScrollArea>
   );
 }
 
@@ -337,37 +337,30 @@ export default function IntegrationsPage() {
       return next;
     });
 
-  const inputClass = "mt-1 w-full rounded-xl bg-card border border-border px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground";
+  const inputClass = "mt-1 w-full rounded-lg bg-card border border-border px-3 py-2 text-sm font-normal text-foreground shadow-sm placeholder:text-muted-foreground";
   const providerOptions = providers.length > 0 ? providers : ["Greenhouse", "Lever", "Workday", "SeekJobs", "Webhook"].map((id) => ({ id, mode: "" }));
   const selectedMode = providerOptions.find((p) => p.id === provider)?.mode;
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 pb-4 border-b border-border">
-        <div>
-          <div className="flex items-center gap-2 text-xs font-semibold text-indigo-700 dark:text-indigo-400 uppercase tracking-wider">
-            <Plug className="w-4 h-4" />{en(" Integrations")}
-          </div>
-          <h1 className="text-2xl font-extrabold text-foreground mt-1">{en("ATS connections")}</h1>
-          <p className="text-xs text-muted-foreground mt-1 max-w-2xl">
-            {en("Invite candidates from your applicant tracking system and receive results back. Results include the reviewer's decision (if any) and a link to the evidence pack, never an automatic verdict.")}
-          </p>
-        </div>
-        <button
-          onClick={refresh}
-          className="self-start md:self-auto py-2 px-3 rounded-xl bg-card hover:bg-muted border border-border text-xs font-medium text-muted-foreground flex items-center gap-1.5 cursor-pointer"
-        >
-          <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} />{en(" Refresh")}
-        </button>
-      </div>
+      <PageHeader
+        title={en("ATS connections")}
+        description={en("Invite candidates from your applicant tracking system and receive results back. Results include the reviewer's decision (if any) and a link to the evidence pack, never an automatic verdict.")}
+        actions={
+          <Button variant="secondary" onClick={refresh}>
+            <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} aria-hidden />
+            {en("Refresh")}
+          </Button>
+        }
+      />
 
       {created && (
-        <div className="rounded-2xl border border-amber-500/40 bg-amber-500/5 p-5 space-y-4">
+        <div role="status" className="rounded-xl border border-amber-300 bg-amber-50 dark:border-amber-900 dark:bg-amber-950/30 p-5 space-y-4">
           <div className="flex items-start gap-3">
-            <AlertTriangle className="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+            <AlertTriangle className="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" aria-hidden />
             <div>
-              <h2 className="text-sm font-bold text-foreground">{en("\"{displayName}\" ({provider}) created", { displayName: created.displayName, provider: created.provider })}</h2>
-              <p className="text-xs text-foreground mt-1">
+              <h2 className="text-base font-semibold text-foreground">{en("\"{displayName}\" ({provider}) created", { displayName: created.displayName, provider: created.provider })}</h2>
+              <p className="text-sm text-foreground mt-1">
                 {en("Copy these values now and store them securely. They will not be shown again; to get new ones, disable this connection and create another.")}
               </p>
             </div>
@@ -375,75 +368,60 @@ export default function IntegrationsPage() {
           <CopyField label={en("Inbound API key")} value={created.inboundApiKey} />
           <CopyField label={en("Webhook signing secret")} value={created.signingSecret} />
           <div>
-            <div className="text-[11px] font-semibold text-muted-foreground">{en("Setup")}</div>
+            <div className="text-xs font-medium text-muted-foreground">{en("Setup")}</div>
             <p className="mt-1 text-xs text-foreground wrap-break-word">{created.setup}</p>
           </div>
-          <button
-            onClick={() => setCreated(null)}
-            className="py-2 px-3 rounded-xl bg-card hover:bg-muted border border-border text-xs font-semibold text-foreground cursor-pointer"
-          >
+          <Button variant="secondary" onClick={() => setCreated(null)}>
             {en("I have saved these values")}
-          </button>
+          </Button>
         </div>
       )}
 
-      <div className="grid lg:grid-cols-5 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
         {/* Connections */}
-        <section className="lg:col-span-3 space-y-3">
-          <h2 className="text-sm font-bold text-foreground flex items-center gap-2"><Link2 className="w-4 h-4" />{en(" Your connections")}</h2>
+        <section className="min-w-0 lg:col-span-3 space-y-3">
+          <h2 className="text-base font-semibold text-foreground flex items-center gap-2"><Link2 className="w-4 h-4 text-muted-foreground" aria-hidden />{en("Your connections")}</h2>
           {loading && connections.length === 0 ? (
-            <div className="glass-panel rounded-2xl border border-border p-8 flex items-center justify-center gap-2 text-sm text-muted-foreground">
-              <Loader2 className="w-4 h-4 animate-spin" />{en(" Loading connections...")}
+            <div className="rounded-xl border border-border bg-card shadow-sm p-8 flex items-center justify-center gap-2 text-sm text-muted-foreground">
+              <Loader2 className="w-4 h-4 animate-spin" aria-hidden />{en("Loading connections...")}
             </div>
           ) : error ? (
-            <div className="glass-panel rounded-2xl border border-border p-6 text-sm text-rose-700 dark:text-rose-400 flex items-center gap-2">
-              <AlertCircle className="w-4 h-4" /> {error}
+            <div role="alert" className="rounded-xl border border-red-300 bg-red-50 dark:border-red-900 dark:bg-red-950/40 p-4 text-sm text-red-800 dark:text-red-300 flex items-center gap-2">
+              <AlertCircle className="w-4 h-4 shrink-0" aria-hidden /> {error}
             </div>
           ) : connections.length === 0 ? (
-            <div className="glass-panel rounded-2xl border border-border p-8 text-center text-sm text-muted-foreground">
+            <div className="rounded-xl border border-dashed border-border bg-card/60 p-8 text-center text-sm text-muted-foreground">
               {en("No connections yet. Create one to start inviting candidates from your ATS.")}
             </div>
           ) : (
             connections.map((c) => (
-              <div key={c.id} className={`glass-panel rounded-2xl border border-border p-4 space-y-3 ${c.isActive ? "" : "opacity-70"}`}>
+              <div key={c.id} className={`rounded-xl border border-border bg-card shadow-sm p-4 space-y-3 ${c.isActive ? "" : "opacity-70"}`}>
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div className="min-w-0">
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm font-bold text-foreground">{c.displayName}</span>
-                      <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold border border-border bg-muted text-muted-foreground">{c.provider}</span>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="text-sm font-semibold text-foreground">{c.displayName}</span>
+                      <span className="px-2 py-0.5 rounded-full text-xs font-medium border border-border bg-muted text-muted-foreground">{c.provider}</span>
                       {c.isActive ? (
-                        <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold border border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400">{en("Active")}</span>
+                        <span className="px-2 py-0.5 rounded-full text-xs font-medium border border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400">{en("Active")}</span>
                       ) : (
-                        <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold border border-border bg-muted text-muted-foreground">{en("Disabled")}</span>
+                        <span className="px-2 py-0.5 rounded-full text-xs font-medium border border-border bg-muted text-muted-foreground">{en("Disabled")}</span>
                       )}
                     </div>
-                    <p className="text-[11px] text-muted-foreground mt-1 break-all">
+                    <p className="text-xs text-muted-foreground mt-1 break-all">
                       {en("Created {date}{value}{value2}", { date: new Date(c.createdAt).toLocaleDateString(), value: c.webhookUrl ? ` · ${c.webhookUrl}` : "", value2: c.hasProviderApiKey ? en(" · provider API key stored") : "" })}
                     </p>
                   </div>
                   <div className="flex flex-wrap items-center gap-2">
-                    <button
-                      onClick={() => sendTest(c.id)}
-                      disabled={!c.isActive || busy !== null}
-                      className="py-1.5 px-2.5 rounded-lg border border-border bg-card hover:bg-muted text-xs font-medium text-foreground flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
-                    >
-                      {busy === `test-${c.id}` ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Send className="w-3.5 h-3.5" />}{en(" Send test")}
-                    </button>
-                    <button
-                      onClick={() => toggleLogs(c.id)}
-                      aria-expanded={c.id in openLogs}
-                      className="py-1.5 px-2.5 rounded-lg border border-border bg-card hover:bg-muted text-xs font-medium text-foreground flex items-center gap-1 cursor-pointer"
-                    >
-                      <ScrollText className="w-3.5 h-3.5" /> {c.id in openLogs ? en("Hide logs") : en("Logs")}
-                    </button>
+                    <Button variant="secondary" onClick={() => sendTest(c.id)} disabled={!c.isActive || busy !== null}>
+                      {busy === `test-${c.id}` ? <Loader2 className="w-4 h-4 animate-spin" aria-hidden /> : <Send className="w-4 h-4" aria-hidden />}{en("Send test")}
+                    </Button>
+                    <Button variant="ghost" onClick={() => toggleLogs(c.id)} aria-expanded={c.id in openLogs}>
+                      <ScrollText className="w-4 h-4" aria-hidden /> {c.id in openLogs ? en("Hide logs") : en("Logs")}
+                    </Button>
                     {c.isActive && (
-                      <button
-                        onClick={() => disable(c)}
-                        disabled={busy !== null}
-                        className="py-1.5 px-2.5 rounded-lg border border-rose-500/30 bg-card hover:bg-rose-500/10 text-xs font-medium text-rose-700 dark:text-rose-400 flex items-center gap-1 disabled:opacity-50 cursor-pointer"
-                      >
-                        {busy === `disable-${c.id}` ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Power className="w-3.5 h-3.5" />}{en(" Disable")}
-                      </button>
+                      <Button variant="ghost" onClick={() => disable(c)} disabled={busy !== null} className="text-red-700 dark:text-red-400">
+                        {busy === `disable-${c.id}` ? <Loader2 className="w-4 h-4 animate-spin" aria-hidden /> : <Power className="w-4 h-4" aria-hidden />}{en("Disable")}
+                      </Button>
                     )}
                   </div>
                 </div>
@@ -463,24 +441,24 @@ export default function IntegrationsPage() {
         </section>
 
         {/* Create form */}
-        <section className="lg:col-span-2">
-          <form onSubmit={createConnection} className="glass-panel rounded-2xl border border-border p-5 space-y-4">
-            <h2 className="text-sm font-bold text-foreground flex items-center gap-2"><Plus className="w-4 h-4" />{en(" New connection")}</h2>
-            <label className="block text-xs font-semibold text-foreground">
+        <section className="min-w-0 lg:col-span-2">
+          <form onSubmit={createConnection} className="rounded-xl border border-border bg-card shadow-sm p-5 space-y-4">
+            <h2 className="text-base font-semibold text-foreground flex items-center gap-2"><Plus className="w-4 h-4 text-muted-foreground" aria-hidden />{en("New connection")}</h2>
+            <label className="block text-sm font-medium text-foreground">
               {en("Provider")}
               <select value={provider} onChange={(e) => setProvider(e.target.value)} className={inputClass}>
                 {providerOptions.map((p) => (
                   <option key={p.id} value={p.id}>{p.id}</option>
                 ))}
               </select>
-              {selectedMode && <span className="block mt-1 font-normal text-[11px] text-muted-foreground">{selectedMode}</span>}
+              {selectedMode && <span className="block mt-1 font-normal text-xs text-muted-foreground">{selectedMode}</span>}
             </label>
-            <label className="block text-xs font-semibold text-foreground">
+            <label className="block text-sm font-medium text-foreground">
               {en("Display name")}
               <input value={displayName} onChange={(e) => setDisplayName(e.target.value)} placeholder={en("e.g. Engineering hiring")} className={inputClass} required />
             </label>
             {needsWebhook && (
-              <label className="block text-xs font-semibold text-foreground">
+              <label className="block text-sm font-medium text-foreground">
                 {en("Webhook URL (HTTPS; HTTP only for localhost)")}
                 <input
                   type="url"
@@ -494,37 +472,33 @@ export default function IntegrationsPage() {
             )}
             {isLever && (
               <>
-                <label className="block text-xs font-semibold text-foreground">
+                <label className="block text-sm font-medium text-foreground">
                   {en("Lever API key")}
                   <input type="password" value={providerApiKey} onChange={(e) => setProviderApiKey(e.target.value)} autoComplete="off" className={inputClass} required />
                 </label>
-                <label className="block text-xs font-semibold text-foreground">
+                <label className="block text-sm font-medium text-foreground">
                   {en("Perform as (Lever user id)")}
                   <input value={leverPerformAs} onChange={(e) => setLeverPerformAs(e.target.value)} placeholder={en("Lever user who authors the notes")} className={inputClass} />
                 </label>
               </>
             )}
             {createError && (
-              <p className="text-xs text-rose-700 dark:text-rose-400 flex items-center gap-1.5"><AlertCircle className="w-3.5 h-3.5" /> {createError}</p>
+              <p role="alert" className="text-sm text-red-700 dark:text-red-400 flex items-center gap-1.5"><AlertCircle className="w-4 h-4 shrink-0" aria-hidden /> {createError}</p>
             )}
-            <button
-              type="submit"
-              disabled={!canCreate || creating}
-              className="w-full py-2.5 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-semibold flex items-center justify-center gap-2 cursor-pointer"
-            >
-              {creating && <Loader2 className="w-4 h-4 animate-spin" />}{en(" Create connection")}
-            </button>
+            <Button type="submit" busy={creating} disabled={!canCreate} className="w-full">
+              {en("Create connection")}
+            </Button>
           </form>
         </section>
       </div>
 
       {/* Verification guide */}
-      <section className="glass-panel rounded-2xl border border-border p-5 space-y-3">
-        <h2 className="text-sm font-bold text-foreground">{en("How to verify our webhooks")}</h2>
-        <p className="text-xs text-muted-foreground">
+      <section className="rounded-xl border border-border bg-card shadow-sm p-5 space-y-3">
+        <h2 className="text-base font-semibold text-foreground">{en("How to verify our webhooks")}</h2>
+        <p className="text-sm text-muted-foreground">
           {en("Every webhook (")}<code className="font-mono">assessment.completed</code>, <code className="font-mono">assessment.reviewed</code>{en(") carries a header ")}<code className="font-mono">{en("X-Edulexa-Signature: t=<unix seconds>,v1=<hex>")}</code>{en(", where v1 is HMAC-SHA256 of ")}<code className="font-mono">{"`${t}.${rawBody}`"}</code>{en(" keyed with your signing secret. Compare with a constant-time check and reject timestamps older than five minutes.")}
         </p>
-        <pre className="text-xs font-mono rounded-xl border border-border bg-muted/30 p-4 overflow-x-auto text-foreground">{VERIFY_SNIPPET}</pre>
+        <pre className="text-xs font-mono rounded-lg border border-border bg-muted/30 p-4 overflow-x-auto text-foreground">{VERIFY_SNIPPET}</pre>
       </section>
     </div>
   );

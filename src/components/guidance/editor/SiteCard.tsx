@@ -72,9 +72,9 @@ export default function SiteCard({ instituteId, forms, canEdit }: { instituteId?
   const copy = (text: string) => navigator.clipboard?.writeText(text).then(() => setCopied(text));
 
   return (
-    <section className="rounded-2xl border border-border bg-card p-5">
+    <section className="rounded-xl border border-border bg-card shadow-sm p-5">
       <h2 className="flex items-center gap-2 text-base font-semibold">
-        <Globe aria-hidden="true" className="h-4 w-4 text-cyan-700" />{en(" Your form's own address")}
+        <Globe aria-hidden="true" className="h-4 w-4 text-indigo-700" />{en(" Your form's own address")}
       </h2>
       <p className="mt-1 text-sm text-muted-foreground">{en("Share a simple address that opens your form, on Edulexa's domain or your own.")}</p>
       {chosen && !chosen.publicEnabled && (
@@ -92,7 +92,7 @@ export default function SiteCard({ instituteId, forms, canEdit }: { instituteId?
           {site.siteDomain && (
             <label className="block font-medium">
               {en("Address on Edulexa")}
-              <span className="mt-1 flex items-center rounded-lg border border-border bg-background focus-within:border-cyan-600">
+              <span className="mt-1 flex items-center rounded-lg border border-border bg-background focus-within:border-indigo-600">
                 <span className="ps-3 text-muted-foreground">https://</span>
                 <input value={slug} onChange={(e) => setSlug(e.target.value.toLowerCase())} maxLength={40} placeholder="yourschool" aria-label={en("Your name")} className="min-w-0 flex-1 bg-transparent px-1 py-2 focus:outline-none" />
                 <span className="pe-3 text-muted-foreground">.{site.siteDomain}</span>
@@ -122,7 +122,7 @@ export default function SiteCard({ instituteId, forms, canEdit }: { instituteId?
           <button
             type="button"
             onClick={() => call(`/api/guidance-forms/site${q}`, "PUT", { slug: slug.trim() || null, formId: formId || null, customDomain: domain.trim() || null }, "Saved.")}
-            className="rounded-lg bg-cyan-700 px-3.5 py-2 font-medium text-white hover:bg-cyan-800"
+            className="rounded-lg bg-indigo-700 px-3.5 py-2 font-medium text-white hover:bg-indigo-800"
           >
             {en("Save")}
           </button>
@@ -133,7 +133,7 @@ export default function SiteCard({ instituteId, forms, canEdit }: { instituteId?
         <div className="mt-4 space-y-3 text-sm">
           {site.url && (
             <p className="flex flex-wrap items-center gap-2">
-              <a href={site.url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 font-medium text-cyan-700 hover:underline dark:text-cyan-400">
+              <a href={site.url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 font-medium text-indigo-700 hover:underline dark:text-indigo-400">
                 {site.url} <ExternalLink aria-hidden="true" className="h-3.5 w-3.5" />
               </a>
               <button type="button" onClick={() => copy(site.url!)} className="inline-flex items-center gap-1 rounded-lg border border-border px-2 py-1 text-xs hover:bg-muted">
@@ -145,7 +145,7 @@ export default function SiteCard({ instituteId, forms, canEdit }: { instituteId?
             (site.verified ? (
               <p className="flex flex-wrap items-center gap-2">
                 <CheckCircle2 aria-hidden="true" className="h-4 w-4 text-emerald-600" />
-                <a href={site.customUrl!} target="_blank" rel="noreferrer" className="font-medium text-cyan-700 hover:underline dark:text-cyan-400">
+                <a href={site.customUrl!} target="_blank" rel="noreferrer" className="font-medium text-indigo-700 hover:underline dark:text-indigo-400">
                   {site.customUrl}
                 </a>
                 <span className="text-xs text-muted-foreground">{en("Verified. The secure certificate is set up on the first visit.")}</span>

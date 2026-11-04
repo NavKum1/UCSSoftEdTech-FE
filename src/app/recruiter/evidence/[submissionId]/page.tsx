@@ -28,6 +28,7 @@ import {
   XCircle,
 } from "lucide-react";
 import { useEn } from "@/lib/english/EnglishProvider";
+import { Button, PageHeader } from "@/components/career/ui";
 
 interface IntegritySignal {
   code: string;
@@ -108,7 +109,7 @@ const PRINT_CSS = `
 @media print {
   header, nav, .no-print { display: none !important; }
   body { background: #fff !important; color: #000 !important; }
-  .glass-panel { box-shadow: none !important; backdrop-filter: none !important; background: #fff !important; break-inside: avoid; }
+  .print-card { box-shadow: none !important; background: #fff !important; break-inside: avoid; }
   .print-break { break-inside: auto !important; }
   pre { white-space: pre-wrap !important; }
 }
@@ -126,8 +127,8 @@ function pct(v: number | null | undefined) {
 
 function Section({ title, icon, children, className = "" }: { title: string; icon: React.ReactNode; children: React.ReactNode; className?: string }) {
   return (
-    <section className={`glass-panel rounded-2xl p-5 border border-border space-y-3 ${className}`}>
-      <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
+    <section className={`rounded-xl border border-border bg-card shadow-sm print-card p-5 space-y-3 ${className}`}>
+      <h2 className="text-base font-semibold text-foreground flex items-center gap-2">
         {icon}
         {title}
       </h2>
@@ -138,8 +139,8 @@ function Section({ title, icon, children, className = "" }: { title: string; ico
 
 function Stat({ label, value }: { label: string; value: React.ReactNode }) {
   return (
-    <div className="rounded-xl bg-muted/40 border border-border px-3 py-2">
-      <div className="text-[11px] text-muted-foreground">{label}</div>
+    <div className="rounded-lg bg-muted/40 border border-border px-3 py-2">
+      <div className="text-xs text-muted-foreground">{label}</div>
       <div className="text-sm font-semibold text-foreground mt-0.5">{value}</div>
     </div>
   );
@@ -148,7 +149,7 @@ function Stat({ label, value }: { label: string; value: React.ReactNode }) {
 function DiffView({ diff }: { diff: string }) {
   const lines = diff.replace(/\n$/, "").split("\n");
   return (
-    <pre className="text-xs font-mono overflow-x-auto rounded-xl border border-border bg-muted/30 py-2">
+    <pre className="text-xs font-mono overflow-x-auto rounded-lg border border-border bg-muted/30 py-2">
       {lines.map((line, i) => {
         const kind = line.startsWith("+ ") ? "add" : line.startsWith("- ") ? "del" : "ctx";
         const cls =
@@ -201,7 +202,7 @@ function GenericValue({ value, depth = 0 }: { value: unknown; depth?: number }) 
     const isDate = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/.test(value);
     return <span className="whitespace-pre-wrap wrap-break-word">{isDate ? fmtDate(value) : value}</span>;
   }
-  if (depth > 3) return <pre className="text-[11px] font-mono whitespace-pre-wrap break-all">{JSON.stringify(value, null, 2)}</pre>;
+  if (depth > 3) return <pre className="text-xs font-mono whitespace-pre-wrap break-all">{JSON.stringify(value, null, 2)}</pre>;
   if (Array.isArray(value)) {
     if (value.length === 0) return <span className="text-muted-foreground">{en("None")}</span>;
     if (value.every((v) => v === null || typeof v !== "object")) return <span>{value.map((v) => String(v)).join(", ")}</span>;
@@ -329,7 +330,7 @@ export default function EvidencePackPage() {
   if (loading && !pack) {
     return (
       <div className="py-16 flex items-center justify-center gap-2 text-sm text-muted-foreground">
-        <Loader2 className="w-4 h-4 animate-spin" />{en(" Loading evidence pack...")}
+        <Loader2 className="w-4 h-4 animate-spin" aria-hidden />{en("Loading evidence pack...")}
       </div>
     );
   }
@@ -337,11 +338,11 @@ export default function EvidencePackPage() {
   if (error || !pack) {
     return (
       <div className="space-y-4">
-        <Link href="/recruiter/evidence" className="text-xs text-muted-foreground hover:text-foreground inline-flex items-center gap-1">
-          <ArrowLeft className="w-3.5 h-3.5" />{en(" Back to queue")}
+        <Link href="/recruiter/evidence" className="text-sm text-muted-foreground hover:text-foreground inline-flex items-center gap-1">
+          <ArrowLeft className="w-3.5 h-3.5" aria-hidden />{en("Back to queue")}
         </Link>
-        <div className="glass-panel rounded-2xl p-8 border border-border flex flex-col items-center gap-3 text-sm text-rose-700 dark:text-rose-400">
-          <div className="flex items-center gap-2"><AlertCircle className="w-4 h-4" /> {error ?? "Evidence pack unavailable."}</div>
+        <div role="alert" className="rounded-xl border border-red-300 bg-red-50 dark:border-red-900 dark:bg-red-950/40 p-8 flex flex-col items-center gap-3 text-sm text-red-800 dark:text-red-300">
+          <div className="flex items-center gap-2"><AlertCircle className="w-4 h-4" aria-hidden /> {error ?? "Evidence pack unavailable."}</div>
           <button onClick={reload} className="text-xs underline text-muted-foreground hover:text-foreground cursor-pointer">{en("Try again")}</button>
         </div>
       </div>
@@ -362,32 +363,27 @@ export default function EvidencePackPage() {
     <div className="space-y-6">
       <style>{PRINT_CSS}</style>
 
-      <div className="flex items-center justify-between gap-3 no-print">
-        <Link href="/recruiter/evidence" className="text-xs text-muted-foreground hover:text-foreground inline-flex items-center gap-1">
-          <ArrowLeft className="w-3.5 h-3.5" />{en(" Back to queue")}
+      <div className="flex flex-wrap items-center justify-between gap-3 no-print">
+        <Link href="/recruiter/evidence" className="text-sm text-muted-foreground hover:text-foreground inline-flex items-center gap-1">
+          <ArrowLeft className="w-3.5 h-3.5" aria-hidden />{en("Back to queue")}
         </Link>
-        <div className="flex items-center gap-2">
-          <button
-            onClick={reload}
-            className="py-2 px-3 rounded-xl bg-card hover:bg-muted border border-border text-xs font-medium text-muted-foreground flex items-center gap-1.5 cursor-pointer"
-          >
-            <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} />{en(" Reload")}
-          </button>
-          <button
-            onClick={handlePrint}
-            className="py-2 px-3 rounded-xl bg-card hover:bg-muted border border-border text-xs font-semibold text-foreground flex items-center gap-1.5 cursor-pointer"
-          >
-            <Printer className="w-3.5 h-3.5" />{en(" Print / Save as PDF")}
-          </button>
+        <div className="flex flex-wrap items-center gap-2">
+          <Button variant="ghost" onClick={reload}>
+            <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} aria-hidden />{en("Reload")}
+          </Button>
+          <Button variant="secondary" onClick={handlePrint}>
+            <Printer className="w-4 h-4" aria-hidden />{en("Print / Save as PDF")}
+          </Button>
         </div>
       </div>
 
       {/* Header */}
-      <div className="pb-4 border-b border-border">
-        <div className="text-xs font-semibold text-indigo-700 dark:text-indigo-400 uppercase tracking-wider">{en("Evidence pack")}</div>
-        <h1 className="text-2xl font-extrabold text-foreground mt-1">{pack.candidate.name || "Unnamed candidate"}</h1>
-        <p className="text-xs text-muted-foreground">{pack.candidate.email}</p>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-4">
+      <div>
+        <PageHeader
+          title={pack.candidate.name || en("Unnamed candidate")}
+          description={pack.candidate.email ? en("Evidence pack · {email}", { email: pack.candidate.email }) : en("Evidence pack")}
+        />
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
           <Stat label={en("Task")} value={pack.task.title || "Untitled sprint"} />
           <Stat label={en("Task type / language")} value={`${pack.task.taskType ?? "—"} · ${pack.task.language ?? "—"}`} />
           <Stat label={en("AI policy")} value={AI_POLICY_LABELS[pack.task.aiPolicy ?? ""] ?? pack.task.aiPolicy ?? "—"} />
@@ -395,18 +391,18 @@ export default function EvidencePackPage() {
           <Stat label={en("Attempt started")} value={fmtDate(pack.timing.attemptStartedAt)} />
           <Stat label={en("Elapsed")} value={pack.timing.elapsedMinutes != null ? `${pack.timing.elapsedMinutes} min` : "—"} />
           <Stat label={en("Active editing")} value={pack.timing.activeEditingMinutes != null ? `${pack.timing.activeEditingMinutes} min` : "—"} />
-          <Stat label={en("Evidence hash")} value={<span className="font-mono text-[11px] break-all">{pack.evidenceHash.slice(0, 16)}…</span>} />
+          <Stat label={en("Evidence hash")} value={<span className="font-mono text-xs break-all">{pack.evidenceHash.slice(0, 16)}…</span>} />
         </div>
       </div>
 
       {/* Disclaimer */}
-      <div className="rounded-2xl border border-indigo-500/30 bg-indigo-500/5 p-4 text-sm text-foreground flex gap-3">
-        <Info className="w-5 h-5 text-indigo-600 dark:text-indigo-400 shrink-0 mt-0.5" />
+      <div className="rounded-xl border border-border bg-card shadow-sm p-4 text-sm text-foreground flex gap-3">
+        <Info className="w-5 h-5 text-indigo-600 dark:text-indigo-400 shrink-0 mt-0.5" aria-hidden />
         <div className="space-y-2">
           <p>{pack.disclaimer}</p>
           {pack.notIncluded.length > 0 && (
             <div className="text-xs text-muted-foreground">
-              <span className="font-semibold">{en("Not included in this pack:")}</span>
+              <span className="font-medium">{en("Not included in this pack:")}</span>
               <ul className="list-disc ms-5 mt-1 space-y-0.5">
                 {pack.notIncluded.map((n) => (
                   <li key={n}>{n}</li>
@@ -419,8 +415,8 @@ export default function EvidencePackPage() {
 
       {/* Consistency notes */}
       {pack.consistencyNotes.length > 0 && (
-        <div className="rounded-2xl border border-amber-500/30 bg-amber-500/5 p-4">
-          <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
+        <div className="rounded-xl border border-amber-300 bg-amber-50 dark:border-amber-900 dark:bg-amber-950/30 p-4">
+          <h2 className="text-base font-semibold text-foreground flex items-center gap-2">
             <ShieldQuestion className="w-4 h-4 text-amber-600 dark:text-amber-400" />
             {en("Implementation vs. explanation")}
           </h2>
@@ -433,7 +429,7 @@ export default function EvidencePackPage() {
       )}
 
       {/* Tests */}
-      <Section title={`Tests: ${tests.passed}/${tests.total} passed`} icon={<CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />}>
+      <Section title={en("Tests: {passed}/{total} passed", { passed: tests.passed, total: tests.total })} icon={<CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />}>
         <p className="text-xs text-muted-foreground">{en("Status: {status}", { status: tests.status })}</p>
         {caseEntries.length === 0 ? (
           <p className="text-xs text-muted-foreground">{en("No per-test results recorded.")}</p>
@@ -454,14 +450,14 @@ export default function EvidencePackPage() {
         )}
         {pack.defects.length > 0 && (
           <div className="pt-2">
-            <h3 className="text-xs font-semibold text-foreground mb-1.5">{en("Planted defects")}</h3>
+            <h3 className="text-sm font-medium text-foreground mb-1.5">{en("Planted defects")}</h3>
             <ul className="space-y-1">
               {pack.defects.map((d) => (
                 <li key={d.id} className="flex items-center gap-2 text-xs">
                   {d.fixedDefect ? (
-                    <span className="px-2 py-0.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 font-semibold">{en("Fixed")}</span>
+                    <span className="px-2 py-0.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 font-medium">{en("Fixed")}</span>
                   ) : (
-                    <span className="px-2 py-0.5 rounded-full border border-rose-500/30 bg-rose-500/10 text-rose-700 dark:text-rose-400 font-semibold">{en("Not fixed")}</span>
+                    <span className="px-2 py-0.5 rounded-full border border-rose-500/30 bg-rose-500/10 text-rose-700 dark:text-rose-400 font-medium">{en("Not fixed")}</span>
                   )}
                   <span className="text-foreground">{d.title}</span>
                 </li>
@@ -480,13 +476,13 @@ export default function EvidencePackPage() {
             {pack.codeChanges.map((c) => {
               const open = openFiles.has(c.file);
               return (
-                <div key={c.file} className="rounded-xl border border-border">
+                <div key={c.file} className="rounded-lg border border-border">
                   <button
                     onClick={() => toggleFile(c.file)}
                     aria-expanded={open}
-                    className="w-full flex items-center justify-between gap-3 px-3 py-2 text-xs hover:bg-muted/50 rounded-xl cursor-pointer"
+                    className="w-full flex items-center justify-between gap-3 px-3 py-2 text-xs hover:bg-muted/50 rounded-lg cursor-pointer"
                   >
-                    <span className="flex items-center gap-2 font-mono text-foreground">
+                    <span className="flex min-w-0 items-center gap-2 font-mono text-foreground break-all text-start">
                       {open ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
                       {c.file}
                     </span>
@@ -509,8 +505,8 @@ export default function EvidencePackPage() {
 
       {/* AI usage */}
       {aiUsage && (
-        <Section title={en("AI assistant usage")} icon={<Bot className="w-4 h-4 text-purple-600 dark:text-purple-400" />} className="print-break">
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+        <Section title={en("AI assistant usage")} icon={<Bot className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />} className="print-break">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
             <Stat label={en("Prompts")} value={aiUsage.prompts} />
             <Stat label={en("Characters inserted from assistant")} value={aiUsage.charactersInsertedFromAssistant.toLocaleString()} />
             <Stat label={en("Share of final code from assistant")} value={pct(aiUsage.shareOfFinalCodeFromAssistant)} />
@@ -520,13 +516,13 @@ export default function EvidencePackPage() {
           ) : (
             <ol className="space-y-3">
               {aiUsage.conversation.map((m, i) => (
-                <li key={i} className="rounded-xl border border-border p-3 space-y-2 text-xs">
-                  <div className="flex items-center justify-between text-muted-foreground">
+                <li key={i} className="rounded-lg border border-border p-3 space-y-2 text-xs">
+                  <div className="flex flex-wrap items-center justify-between gap-x-3 text-muted-foreground">
                     <span>{en("Prompt {value} · {date}", { value: i + 1, date: fmtDate(m.at) })}</span>
                     <span>{en("{number} characters used in code", { number: m.charactersUsed.toLocaleString() })}</span>
                   </div>
-                  <p className="text-foreground whitespace-pre-wrap"><span className="font-semibold">{en("Candidate: ")}</span>{m.prompt}</p>
-                  <pre className="whitespace-pre-wrap font-mono text-[11px] text-muted-foreground bg-muted/30 rounded-lg p-2 overflow-x-auto">{m.response}</pre>
+                  <p className="text-foreground whitespace-pre-wrap"><span className="font-medium">{en("Candidate: ")}</span>{m.prompt}</p>
+                  <pre className="whitespace-pre-wrap font-mono text-xs text-muted-foreground bg-muted/30 rounded-lg p-2 overflow-x-auto">{m.response}</pre>
                 </li>
               ))}
             </ol>
@@ -539,15 +535,15 @@ export default function EvidencePackPage() {
         <p className="text-xs text-muted-foreground">
           {en("These are patterns worth discussing with the candidate, not proof of misconduct. Many have innocent explanations.")}
         </p>
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
           <Stat
             label={en("Signal level")}
-            value={<span className={`inline-flex px-2 py-0.5 rounded-full text-[11px] font-semibold border ${risk.className}`}>{risk.label}</span>}
+            value={<span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium border ${risk.className}`}>{risk.label}</span>}
           />
           <Stat label={en("Signal score")} value={integrity.riskScore != null ? Math.round(integrity.riskScore) : "—"} />
           <Stat
             label={en("Editor replay matches submission")}
-            value={integrity.replayMatchesSubmission == null ? "No replay recorded" : integrity.replayMatchesSubmission ? "Yes" : "No"}
+            value={integrity.replayMatchesSubmission == null ? en("No replay recorded") : integrity.replayMatchesSubmission ? en("Yes") : en("No")}
           />
           <Stat label={en("Typed characters")} value={integrity.typedCharacters?.toLocaleString() ?? "—"} />
           <Stat label={en("Pasted from outside the editor")} value={integrity.externallyPastedCharacters?.toLocaleString() ?? "—"} />
@@ -555,7 +551,7 @@ export default function EvidencePackPage() {
           <Stat
             label={en("Highest similarity to another candidate")}
             value={
-              <span className="flex items-center gap-2">
+              <span className="flex flex-wrap items-center gap-2">
                 {pct(integrity.maxSimilarityToAnotherCandidate)}
                 {integrity.mostSimilarSubmissionId && (
                   <Link href={`/recruiter/evidence/${integrity.mostSimilarSubmissionId}`} className="text-xs text-indigo-700 dark:text-indigo-400 underline no-print">
@@ -571,11 +567,11 @@ export default function EvidencePackPage() {
         ) : (
           <ul className="space-y-2">
             {signals.map((s, i) => (
-              <li key={`${s.code}-${i}`} className="rounded-xl border border-border p-3 text-sm flex gap-3">
+              <li key={`${s.code}-${i}`} className="rounded-lg border border-border p-3 text-sm flex gap-3">
                 <AlertTriangle className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
                 <div>
                   <p className="text-foreground">{s.detail}</p>
-                  <p className="text-[11px] text-muted-foreground mt-0.5">
+                  <p className="text-xs text-muted-foreground mt-0.5">
                     <span className="font-mono">{s.code}</span>{" "}{en("· weight {weight}", { weight: s.weight })}
                   </p>
                 </div>
@@ -591,7 +587,7 @@ export default function EvidencePackPage() {
           <p className="text-xs text-muted-foreground">{en("No voice defense has been completed for this submission yet.")}</p>
         ) : (
           <div className="space-y-3">
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
               <Stat label={en("Technical score")} value={defense.technicalScore != null ? `${Math.round(defense.technicalScore)}/100` : "Not scored"} />
               <Stat label={en("Duration")} value={defense.durationSeconds != null ? `${Math.round(defense.durationSeconds / 60)} min` : "—"} />
               <Stat
@@ -609,9 +605,9 @@ export default function EvidencePackPage() {
             ) : (
               <ol className="space-y-2">
                 {defense.questionsAndAnswers.map((qa, i) => (
-                  <li key={i} className="rounded-xl border border-border p-3 text-sm space-y-1">
-                    <p className="text-muted-foreground"><span className="font-semibold text-foreground">Q: </span>{qa.question}</p>
-                    <p className="text-foreground"><span className="font-semibold">A: </span>{qa.answer}</p>
+                  <li key={i} className="rounded-lg border border-border p-3 text-sm space-y-1">
+                    <p className="text-muted-foreground"><span className="font-medium text-foreground">Q: </span>{qa.question}</p>
+                    <p className="text-foreground"><span className="font-medium">A: </span>{qa.answer}</p>
                   </li>
                 ))}
               </ol>
@@ -626,9 +622,9 @@ export default function EvidencePackPage() {
           {accommodationsSection.note && <p className="text-xs text-muted-foreground">{accommodationsSection.note}</p>}
           <ul className="space-y-2">
             {accommodationsSection.items.map((a, i) => (
-              <li key={i} className="rounded-xl border border-border p-3 text-sm space-y-1">
+              <li key={i} className="rounded-lg border border-border p-3 text-sm space-y-1">
                 <div className="flex flex-wrap items-center gap-2 text-xs">
-                  <span className="font-bold text-foreground">{humanize(a.type)}</span>
+                  <span className="font-medium text-foreground">{humanize(a.type)}</span>
                   <span className="text-muted-foreground">{en("{scope} · approved by {value} on {date}", { scope: a.scope, value: a.decidedBy ?? "reviewer", date: fmtDate(a.decidedAt) })}</span>
                 </div>
                 <p className="text-foreground whitespace-pre-wrap">{a.details}</p>
@@ -644,18 +640,18 @@ export default function EvidencePackPage() {
           {appealsSection.note && <p className="text-xs text-muted-foreground">{appealsSection.note}</p>}
           <ul className="space-y-2">
             {appealsSection.items.map((a) => (
-              <li key={a.id} className="rounded-xl border border-border p-3 text-sm space-y-1.5">
+              <li key={a.id} className="rounded-lg border border-border p-3 text-sm space-y-1.5">
                 <div className="flex flex-wrap items-center gap-2 text-xs">
-                  <span className={`px-2 py-0.5 rounded-full border font-semibold ${APPEAL_STATUS_STYLES[a.status] ?? APPEAL_STATUS_STYLES.Upheld}`}>
+                  <span className={`px-2 py-0.5 rounded-full border font-medium ${APPEAL_STATUS_STYLES[a.status] ?? APPEAL_STATUS_STYLES.Upheld}`}>
                     {a.status === "Overturned" ? en("Overturned (appeal succeeded)") : a.status}
                   </span>
-                  <span className="font-semibold text-foreground">{humanize(a.category)}</span>
+                  <span className="font-medium text-foreground">{humanize(a.category)}</span>
                   <span className="text-muted-foreground">{fmtDate(a.createdAt)}</span>
                 </div>
                 <p className="text-foreground whitespace-pre-wrap">{a.reason}</p>
                 {a.response && (
                   <p className="text-xs text-muted-foreground whitespace-pre-wrap">
-                    <span className="font-semibold text-foreground">{en("Response by {value} ({date}):", { value: a.resolverName ?? "reviewer", date: fmtDate(a.resolvedAt) })}{" "}</span>
+                    <span className="font-medium text-foreground">{en("Response by {value} ({date}):", { value: a.resolverName ?? "reviewer", date: fmtDate(a.resolvedAt) })}{" "}</span>
                     {a.response}
                   </p>
                 )}
@@ -672,8 +668,8 @@ export default function EvidencePackPage() {
 
       {/* Sections contributed by other features, rendered generically */}
       {otherSections.map(([key, value]) => (
-        <details key={key} className="glass-panel rounded-2xl p-5 border border-border group" open>
-          <summary className="text-sm font-bold text-foreground flex items-center gap-2 cursor-pointer list-none">
+        <details key={key} className="rounded-xl border border-border bg-card shadow-sm print-card p-5 group" open>
+          <summary className="text-base font-semibold text-foreground flex items-center gap-2 cursor-pointer list-none">
             <ChevronRight className="w-4 h-4 transition-transform group-open:rotate-90 no-print" />
             <Layers className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
             {humanize(key)}
@@ -691,12 +687,12 @@ export default function EvidencePackPage() {
         ) : (
           <ul className="space-y-2">
             {pack.decisions.map((d, i) => (
-              <li key={i} className="rounded-xl border border-border p-3 text-sm space-y-1">
+              <li key={i} className="rounded-lg border border-border p-3 text-sm space-y-1">
                 <div className="flex flex-wrap items-center gap-2 text-xs">
-                  <span className="font-bold text-foreground">{d.decision}</span>
-                  <span className="text-muted-foreground">by {d.reviewerName} · {fmtDate(d.createdAt)}</span>
+                  <span className="font-medium text-foreground">{d.decision}</span>
+                  <span className="text-muted-foreground">{en("by {name} · {date}", { name: d.reviewerName, date: fmtDate(d.createdAt) })}</span>
                   {d.evidenceChangedSince && (
-                    <span className="px-2 py-0.5 rounded-full border border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-400 font-semibold">
+                    <span className="px-2 py-0.5 rounded-full border border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-400 font-medium">
                       {en("Evidence has changed since this decision")}
                     </span>
                   )}
@@ -709,20 +705,20 @@ export default function EvidencePackPage() {
       </Section>
 
       {/* Decision panel */}
-      <section className="glass-panel rounded-2xl p-5 border border-indigo-500/30 space-y-4 no-print">
-        <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
-          <Gavel className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />{en(" Record your decision")}
+      <section className="rounded-xl border border-border bg-card shadow-sm p-5 space-y-4 no-print">
+        <h2 className="text-base font-semibold text-foreground flex items-center gap-2">
+          <Gavel className="w-4 h-4 text-indigo-600 dark:text-indigo-400" aria-hidden />{en("Record your decision")}
         </h2>
         <fieldset className="grid sm:grid-cols-3 gap-2">
           <legend className="sr-only">{en("Decision")}</legend>
           {DECISIONS.map((d) => (
             <label
               key={d.value}
-              className={`rounded-xl border p-3 cursor-pointer text-sm transition-colors ${
+              className={`rounded-lg border p-3 cursor-pointer text-sm transition-colors ${
                 decision === d.value ? "border-indigo-500 bg-indigo-500/10" : "border-border hover:bg-muted/50"
               }`}
             >
-              <span className="flex items-center gap-2 font-semibold text-foreground">
+              <span className="flex items-center gap-2 font-medium text-foreground">
                 <input type="radio" name="decision" value={d.value} checked={decision === d.value} onChange={() => setDecision(d.value)} />
                 {en(d.value)}
               </span>
@@ -731,7 +727,7 @@ export default function EvidencePackPage() {
           ))}
         </fieldset>
         <div>
-          <label htmlFor="rationale" className="text-xs font-semibold text-foreground">
+          <label htmlFor="rationale" className="text-sm font-medium text-foreground">
             {en("Rationale (shared with your team and connected ATS)")}
           </label>
           <textarea
@@ -740,37 +736,32 @@ export default function EvidencePackPage() {
             onChange={(e) => setRationale(e.target.value)}
             rows={4}
             placeholder={en("What in the evidence supports this decision?")}
-            className="mt-1 w-full rounded-xl bg-card border border-border p-3 text-sm text-foreground placeholder:text-muted-foreground"
+            className="mt-1 w-full rounded-lg bg-card border border-border p-3 text-sm shadow-sm text-foreground placeholder:text-muted-foreground"
           />
-          <div className={`text-[11px] mt-1 ${rationaleLength >= MIN_RATIONALE ? "text-muted-foreground" : "text-amber-700 dark:text-amber-400"}`}>
+          <div className={`text-xs mt-1 ${rationaleLength >= MIN_RATIONALE ? "text-muted-foreground" : "text-amber-700 dark:text-amber-400"}`}>
             {en("{rationaleLength}/{mIN_RATIONALE} characters minimum", { rationaleLength, mIN_RATIONALE: MIN_RATIONALE })}
           </div>
         </div>
 
         {submitError && (
-          <div className="rounded-xl border border-rose-500/30 bg-rose-500/5 p-3 text-sm text-rose-700 dark:text-rose-400 flex flex-wrap items-center gap-3">
+          <div role="alert" className="rounded-lg border border-red-300 bg-red-50 dark:border-red-900 dark:bg-red-950/40 p-3 text-sm text-red-800 dark:text-red-300 flex flex-wrap items-center gap-3">
             <AlertCircle className="w-4 h-4" />
             <span>{submitError}</span>
             {evidenceStale && (
-              <button onClick={reload} className="px-3 py-1 rounded-lg border border-rose-500/40 text-xs font-semibold hover:bg-rose-500/10 cursor-pointer">
+              <Button variant="secondary" onClick={reload}>
                 {en("Reload evidence")}
-              </button>
+              </Button>
             )}
           </div>
         )}
         {submitted && !submitError && (
-          <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/5 p-3 text-sm text-emerald-700 dark:text-emerald-400 flex items-center gap-2">
+          <div role="status" className="rounded-lg border border-emerald-300 bg-emerald-50 dark:border-emerald-900 dark:bg-emerald-950/40 p-3 text-sm text-emerald-800 dark:text-emerald-300 flex items-center gap-2">
             <CheckCircle2 className="w-4 h-4" />{" "}{en("Decision recorded: {submitted}.", { submitted })}</div>
         )}
 
-        <button
-          onClick={submitDecision}
-          disabled={submitting || !decision || rationaleLength < MIN_RATIONALE}
-          className="py-2.5 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-semibold flex items-center gap-2 cursor-pointer"
-        >
-          {submitting && <Loader2 className="w-4 h-4 animate-spin" />}
+        <Button onClick={submitDecision} busy={submitting} disabled={!decision || rationaleLength < MIN_RATIONALE}>
           {en("Submit decision")}
-        </button>
+        </Button>
       </section>
     </div>
   );

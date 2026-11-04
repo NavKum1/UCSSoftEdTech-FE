@@ -250,7 +250,7 @@ function OptStudents() {
             <ScrollArea>
               <table className="w-full text-sm">
                 <caption className="sr-only">{t("f1StudentsOnOPT")}</caption>
-                <thead className="text-start text-xs uppercase text-muted-foreground [&_th]:text-start">
+                <thead className="text-start text-xs text-muted-foreground [&_th]:text-start">
                   <tr>
                     <th scope="col" className="py-2 pe-3">{t("student")}</th>
                     <th scope="col" className="py-2 pe-3">{t("oPT")}</th>

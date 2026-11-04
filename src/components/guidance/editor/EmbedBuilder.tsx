@@ -53,7 +53,7 @@ export default function EmbedBuilder({ instituteId, formId, formName, publicEnab
   }, [formId, theme, corners, heading, validAccent, slug, instituteId]);
 
   const opt = (label: string, value: string, current: string, set: (v: never) => void) => (
-    <button key={value} type="button" aria-pressed={current === value} onClick={() => set(value as never)} className={`rounded-full border px-2.5 py-1 text-xs ${current === value ? "border-cyan-700 bg-cyan-700 text-white" : "border-border hover:bg-muted"}`}>
+    <button key={value} type="button" aria-pressed={current === value} onClick={() => set(value as never)} className={`rounded-full border px-2.5 py-1 text-xs ${current === value ? "border-indigo-700 bg-indigo-700 text-white" : "border-border hover:bg-muted"}`}>
       {label}
     </button>
   );
@@ -119,7 +119,7 @@ export default function EmbedBuilder({ instituteId, formId, formName, publicEnab
                 setTimeout(() => setCopied(false), 1500);
               })
             }
-            className="mt-1 inline-flex items-center gap-1 rounded-lg bg-cyan-700 px-3 py-1.5 text-xs font-medium text-white hover:bg-cyan-800"
+            className="mt-1 inline-flex items-center gap-1 rounded-lg bg-indigo-700 px-3 py-1.5 text-xs font-medium text-white hover:bg-indigo-800"
           >
             {copied ? <Check aria-hidden="true" className="h-3.5 w-3.5" /> : <Copy aria-hidden="true" className="h-3.5 w-3.5" />} {copied ? en("Copied") : en("Copy code")}
           </button>
@@ -134,7 +134,7 @@ export default function EmbedBuilder({ instituteId, formId, formName, publicEnab
 
       <div>
         <p className="mb-2 text-xs font-medium text-muted-foreground">{en("Preview of “{formName}”", { formName })}</p>
-        <div className={`rounded-2xl border border-border p-4 ${theme === "dark" ? "bg-slate-900" : "bg-white"}`}>
+        <div className={`rounded-xl border border-border p-4 ${theme === "dark" ? "bg-slate-900" : "bg-white"}`}>
           {mode === "inline" ? (
             publicEnabled ? (
               <iframe key={previewSrc} src={previewSrc} title={en("Preview")} className="h-[560px] w-full rounded-lg border-0" />

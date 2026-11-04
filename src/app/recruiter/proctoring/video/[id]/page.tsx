@@ -1,8 +1,17 @@
 'use client';
 
-import React, { useState, useEffect, use } from 'react';
+/**
+ * Proctoring recording review: plays the session recording the API returns and lists the flagged moments so a reviewer can
+ * jump to each one. Decisions are recorded on the session integrity review page; this page does not approve or disqualify
+ * anyone. (It used to simulate playback with a timer, show invented capture details and offer approve/disqualify buttons
+ * that only displayed a notice.)
+ */
+
+import React, { useState, useEffect, useRef, use } from 'react';
 import Link from 'next/link';
+import { ArrowLeft } from 'lucide-react';
 import { AccessNotice, useLegacyApi } from "@/lib/legacyApi";
+import { Badge, Card, EmptyState, Loading, PageHeader, StatTile, brandFill, buttonClass } from "@/components/career/ui";
 
 interface ViolationMarker {
   id: string;
@@ -31,19 +40,35 @@ interface PlayerPayload {
   markers: ViolationMarker[];
 }
 
+const SPEEDS = [1.0, 1.5, 2.0];
+
+function severityTone(severity: string): "bad" | "warn" | "neutral" {
+  return severity === 'Critical' ? 'bad' : severity === 'High' ? 'warn' : 'neutral';
+}
+
+function pinColor(severity: string) {
+  return severity === 'Critical' ? 'bg-red-600' : severity === 'High' ? 'bg-amber-500' : 'bg-amber-300';
+}
+
+const formatSeconds = (sec: number) => {
+  const whole = Math.max(0, Math.floor(sec));
+  const mins = Math.floor(whole / 60);
+  const remainder = whole % 60;
+  return `${mins.toString().padStart(2, '0')}:${remainder.toString().padStart(2, '0')}`;
+};
+
 export default function ProctoringVideoReviewPage({ params }: { params: Promise<{ id: string }> }) {
   const { apiFetch, ready, access } = useLegacyApi();
   const resolvedParams = use(params);
   const recordingId = resolvedParams.id;
 
+  const videoRef = useRef<HTMLVideoElement>(null);
   const [loading, setLoading] = useState(true);
   const [playerData, setPlayerData] = useState<PlayerPayload | null>(null);
   const [currentTime, setCurrentTime] = useState<number>(0);
-  const [isPlaying, setIsPlaying] = useState<boolean>(false);
-  const [activeTrack, setActiveTrack] = useState<'Webcam' | 'ScreenCapture'>('Webcam');
+  const [mediaDuration, setMediaDuration] = useState<number>(0);
   const [selectedMarker, setSelectedMarker] = useState<ViolationMarker | null>(null);
   const [playbackSpeed, setPlaybackSpeed] = useState<number>(1.0);
-  const [actionNotice, setActionNotice] = useState<string | null>(null);
   const [fetchError, setFetchError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -75,395 +100,200 @@ export default function ProctoringVideoReviewPage({ params }: { params: Promise<
     fetchPlayerData();
   }, [recordingId, ready, apiFetch]);
 
-  // Simulated video playback timer
   useEffect(() => {
-    let interval: NodeJS.Timeout | null = null;
-    if (isPlaying && playerData) {
-      interval = setInterval(() => {
-        setCurrentTime((prev) => {
-          if (prev >= playerData.durationSeconds) {
-            setIsPlaying(false);
-            return 0;
-          }
-          return prev + 1;
-        });
-      }, 1000 / playbackSpeed);
-    }
-    return () => {
-      if (interval) clearInterval(interval);
-    };
-  }, [isPlaying, playerData, playbackSpeed]);
-
-  const formatSeconds = (sec: number) => {
-    const mins = Math.floor(sec / 60);
-    const remainder = sec % 60;
-    return `${mins.toString().padStart(2, '0')}:${remainder.toString().padStart(2, '0')}`;
-  };
+    if (videoRef.current) videoRef.current.playbackRate = playbackSpeed;
+  }, [playbackSpeed, playerData]);
 
   const jumpToSeconds = (sec: number) => {
     setCurrentTime(sec);
+    if (videoRef.current) videoRef.current.currentTime = sec;
     const markerAtTime = playerData?.markers.find((m) => m.timestampSeconds === sec);
     if (markerAtTime) {
       setSelectedMarker(markerAtTime);
     }
   };
 
-  const handleAdminAction = (action: string) => {
-    setActionNotice(`[AUDIT LEDGER] Action executed: ${action}. Notification dispatched to university dean and candidate record.`);
-    setTimeout(() => setActionNotice(null), 5000);
-  };
-
   if (access) return <AccessNotice problem={access} feature="Proctoring video review" />;
 
+  const backLink = (
+    <Link href="/partner/dashboard" className={buttonClass('secondary')}>
+      <ArrowLeft className="h-4 w-4" aria-hidden />
+      Back to dashboard
+    </Link>
+  );
+
   if (loading) {
-    return (
-      <div className="text-foreground flex items-center justify-center py-24">
-        <div className="flex flex-col items-center gap-4">
-          <div className="w-12 h-12 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
-          <p className="text-muted-foreground font-mono text-sm">Loading Assessment Video Recording...</p>
-        </div>
-      </div>
-    );
+    return <Loading label="Loading recording..." />;
   }
 
   if (fetchError || !playerData) {
     return (
-      <div className="text-foreground flex items-center justify-center font-sans py-12">
-        <div className="max-w-md w-full p-8 rounded-2xl bg-card border border-border text-center space-y-4">
-          <div className="w-12 h-12 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 flex items-center justify-center mx-auto text-lg font-bold">
-            !
-          </div>
-          <h2 className="text-lg font-bold text-foreground">Recording Not Found</h2>
-          <p className="text-xs text-muted-foreground">
-            {fetchError || "The requested assessment recording could not be found or has expired."}
-          </p>
-          <Link
-            href="/partner/dashboard"
-            className="inline-block px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-xs transition"
-          >
-            &larr; Return to Dashboard
-          </Link>
-        </div>
+      <div className="space-y-6">
+        <PageHeader title="Recording review" actions={backLink} />
+        <EmptyState title="Recording not found">
+          {fetchError || "The requested recording could not be found or has expired."}
+        </EmptyState>
       </div>
     );
   }
 
-  const duration = playerData?.durationSeconds || 180;
-  const progressPercent = (currentTime / duration) * 100;
+  const duration = playerData.durationSeconds || mediaDuration;
+  const progressPercent = duration > 0 ? Math.min(100, (currentTime / duration) * 100) : 0;
+  const nearbyMarker = playerData.markers.find((m) => Math.abs(m.timestampSeconds - currentTime) <= 2);
 
   return (
-    <div className="text-foreground flex flex-col gap-6 font-sans">
-      {/* Top Header */}
-      <header className="border-b border-border pb-4 flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-3">
-          <Link
-            href="/partner/dashboard"
-            className="text-xs px-2.5 py-1 rounded bg-muted hover:bg-slate-700 text-muted-foreground font-mono transition"
-          >
-            &larr; Back to Reviews
-          </Link>
-          <div className="h-4 w-[1px] bg-slate-700"></div>
-          <h1 className="text-base font-semibold text-foreground tracking-tight flex items-center gap-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-rose-500 animate-pulse"></span>
-            Assessment Video Review
-          </h1>
-          <span className="text-xs px-2 py-0.5 rounded font-mono bg-indigo-950/80 text-indigo-600 dark:text-indigo-300 border border-indigo-700/50">
-            HD Recording
-          </span>
-        </div>
+    <div className="space-y-6">
+      <PageHeader
+        title="Recording review"
+        description="Play back the session recording and jump to each flagged moment. Flags are prompts for a person to review, not proof of misconduct; record your review on the session integrity page."
+        actions={
+          <>
+            {backLink}
+            <Link href="/recruiter/proctoring" className={buttonClass('primary')} style={brandFill}>
+              Record a review
+            </Link>
+          </>
+        }
+      />
 
-        <div className="flex items-center gap-2">
-          {actionNotice && (
-            <span className="text-xs text-amber-700 dark:text-amber-400 font-mono bg-amber-950/60 px-3 py-1 rounded border border-amber-800/40 animate-fade-in">
-              {actionNotice}
-            </span>
-          )}
-          <button
-            onClick={() => handleAdminAction('Approved Integrity Score (Pass)')}
-            className="px-3 py-1.5 rounded text-xs font-semibold bg-emerald-600 hover:bg-emerald-500 text-white transition shadow-sm"
-          >
-            Approve Session
-          </button>
-          <button
-            onClick={() => handleAdminAction('Disqualified Candidate (Integrity Breach)')}
-            className="px-3 py-1.5 rounded text-xs font-semibold bg-rose-600 hover:bg-rose-500 text-white transition shadow-sm"
-          >
-            Disqualify Candidate
-          </button>
-        </div>
-      </header>
-
-      {/* Main Review Workspace */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* Left Column: Dual Video Stream & Synchronized Scrubber (8 Cols) */}
-        <div className="lg:col-span-8 flex flex-col gap-4">
-          {/* Track Switcher */}
-          <div className="flex items-center justify-between bg-card border border-border rounded-lg p-1.5">
-            <div className="flex items-center gap-1.5">
-              <button
-                onClick={() => setActiveTrack('Webcam')}
-                className={`px-3 py-1 rounded text-xs font-medium transition ${
-                  activeTrack === 'Webcam'
-                    ? 'bg-indigo-600 text-white shadow'
-                    : 'text-muted-foreground hover:text-white'
-                }`}
-              >
-                Webcam Stream (HD)
-              </button>
-              <button
-                onClick={() => setActiveTrack('ScreenCapture')}
-                className={`px-3 py-1 rounded text-xs font-medium transition ${
-                  activeTrack === 'ScreenCapture'
-                    ? 'bg-indigo-600 text-white shadow'
-                    : 'text-muted-foreground hover:text-white'
-                }`}
-              >
-                Screen Capture (1080p)
-              </button>
-            </div>
-            <div className="flex items-center gap-2 text-xs font-mono text-muted-foreground pe-2">
-              <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
-              Audio Synced (Opus 128kbps)
-            </div>
-          </div>
-
-          {/* Video Player Display Container */}
-          <div className="relative aspect-video bg-black rounded-xl border border-border overflow-hidden shadow-2xl flex items-center justify-center group">
-            {/* Background Stream Simulation Canvas */}
-            <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-slate-950 to-black flex items-center justify-center">
-              {activeTrack === 'Webcam' ? (
-                <div className="text-center p-6">
-                  <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-indigo-950/60 border border-indigo-700/40 flex items-center justify-center text-indigo-700 dark:text-indigo-400 text-2xl font-bold">
-                    REC
-                  </div>
-                  <p className="text-sm font-semibold text-foreground">
-                    Proctored Webcam Candidate Feed
-                  </p>
-                  <p className="text-xs text-muted-foreground font-mono mt-1">
-                    Continuous AI Face &amp; Eye Gaze Tracking Active
-                  </p>
-                </div>
-              ) : (
-                <div className="text-center p-6">
-                  <div className="w-20 h-20 mx-auto mb-4 rounded-xl bg-cyan-950/60 border border-cyan-700/40 flex items-center justify-center text-cyan-700 dark:text-cyan-400 text-2xl font-bold">
-                    SCR
-                  </div>
-                  <p className="text-sm font-semibold text-foreground">
-                    Candidate Primary Display (1920x1080)
-                  </p>
-                  <p className="text-xs text-muted-foreground font-mono mt-1">
-                    Keystroke &amp; Window Switch Activity Recorded
-                  </p>
-                </div>
+        {/* Recording and timeline */}
+        <div className="min-w-0 lg:col-span-8 flex flex-col gap-4">
+          <Card>
+            <div className="mb-3 flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+              {playerData.trackType && <Badge>{playerData.trackType}</Badge>}
+              {playerData.status && <Badge>{playerData.status}</Badge>}
+              {nearbyMarker && (
+                <Badge tone={severityTone(nearbyMarker.severity) === 'bad' ? 'bad' : 'warn'}>
+                  Flagged moment at {nearbyMarker.timestampFormatted}
+                </Badge>
               )}
+            </div>
 
-              {/* PiP Inset (Picture in Picture for other track) */}
-              <div className="absolute bottom-4 end-4 w-44 aspect-video bg-card/90 rounded-lg border border-border overflow-hidden shadow-lg flex items-center justify-center cursor-pointer hover:border-indigo-500 transition">
-                <span className="text-[10px] font-mono text-muted-foreground">
-                  {activeTrack === 'Webcam' ? 'Screen (PiP)' : 'Webcam (PiP)'}
-                </span>
+            {playerData.transcodedUrl ? (
+              <video
+                ref={videoRef}
+                src={playerData.transcodedUrl}
+                poster={playerData.thumbnailUrl || undefined}
+                controls
+                preload="metadata"
+                className="aspect-video w-full rounded-lg bg-black"
+                onTimeUpdate={(e) => setCurrentTime(e.currentTarget.currentTime)}
+                onLoadedMetadata={(e) => {
+                  e.currentTarget.playbackRate = playbackSpeed;
+                  if (Number.isFinite(e.currentTarget.duration)) setMediaDuration(e.currentTarget.duration);
+                }}
+              >
+                Your browser does not support video playback.
+              </video>
+            ) : (
+              <EmptyState title="This recording isn't ready to play yet">
+                {playerData.status ? `Status: ${playerData.status}` : null}
+              </EmptyState>
+            )}
+
+            {/* Timeline with flagged moments */}
+            <div className="mt-4 space-y-3">
+              <div className="relative flex h-8 w-full items-center">
+                <div className="relative h-2 w-full rounded-full bg-muted">
+                  <div className="h-full rounded-full bg-indigo-500" style={{ width: `${progressPercent}%` }} />
+                  {duration > 0 &&
+                    playerData.markers.map((marker) => (
+                      <button
+                        key={marker.id}
+                        type="button"
+                        onClick={() => jumpToSeconds(marker.timestampSeconds)}
+                        title={`${marker.severity}: ${marker.violationType} (${marker.timestampFormatted})`}
+                        aria-label={`Jump to ${marker.violationType} at ${marker.timestampFormatted} (${marker.severity})`}
+                        className={`absolute top-1/2 h-3.5 w-3.5 -translate-x-1/2 -translate-y-1/2 rounded-full ring-2 ring-card transition-transform hover:scale-125 ${pinColor(marker.severity)}`}
+                        style={{ left: `${Math.min(100, (marker.timestampSeconds / duration) * 100)}%` }}
+                      />
+                    ))}
+                </div>
               </div>
 
-              {/* Real-Time Violation Flash Overlay if current time matches marker */}
-              {playerData?.markers.some((m) => Math.abs(m.timestampSeconds - currentTime) <= 2) && (
-                <div className="absolute top-4 start-4 bg-rose-950/90 border border-rose-600 px-3 py-1.5 rounded-lg flex items-center gap-2 text-rose-300 text-xs font-mono animate-bounce">
-                  <span className="w-2 h-2 rounded-full bg-rose-500"></span>
-                  Active Violation Flagged at {formatSeconds(currentTime)}
+              <div className="flex flex-wrap items-center justify-between gap-3 text-sm text-muted-foreground">
+                <span className="tabular-nums">
+                  <span className="font-medium text-foreground">{formatSeconds(currentTime)}</span> / {duration > 0 ? formatSeconds(duration) : '—'}
+                </span>
+                <div className="flex items-center gap-1.5" role="group" aria-label="Playback speed">
+                  <span>Speed</span>
+                  {SPEEDS.map((s) => (
+                    <button
+                      key={s}
+                      type="button"
+                      onClick={() => setPlaybackSpeed(s)}
+                      aria-pressed={playbackSpeed === s}
+                      className={`rounded-md px-2 py-0.5 text-xs tabular-nums transition-colors ${
+                        playbackSpeed === s ? 'bg-muted font-medium text-foreground' : 'hover:bg-muted'
+                      }`}
+                    >
+                      {s}x
+                    </button>
+                  ))}
                 </div>
-              )}
+              </div>
             </div>
+          </Card>
+        </div>
 
-            {/* Play/Pause Center Overlay */}
-            <button
-              onClick={() => setIsPlaying(!isPlaying)}
-              className="absolute z-20 w-16 h-16 rounded-full bg-card/80 hover:bg-indigo-600 text-white flex items-center justify-center text-xl transition shadow-xl border border-border hover:scale-105"
-            >
-              {isPlaying ? '⏸' : '▶'}
-            </button>
+        {/* Flag summary, list and snapshot */}
+        <div className="min-w-0 lg:col-span-4 flex flex-col gap-4">
+          <div className="grid grid-cols-3 gap-2">
+            <StatTile label="Critical" value={playerData.summary.criticalViolations} tone={playerData.summary.criticalViolations > 0 ? 'bad' : undefined} />
+            <StatTile label="High" value={playerData.summary.highViolations} />
+            <StatTile label="Medium" value={playerData.summary.mediumViolations} />
           </div>
 
-          {/* Interactive Timeline Scrubber & Marker Pins */}
-          <div className="bg-card border border-border rounded-xl p-4 flex flex-col gap-3">
-            {/* Scrubber Bar */}
-            <div className="relative w-full h-8 flex items-center cursor-pointer select-none">
-              {/* Background Track */}
-              <div className="w-full h-2.5 bg-muted rounded-full relative overflow-visible">
-                {/* Progress Fill */}
-                <div
-                  className="h-full bg-indigo-500 rounded-full transition-all"
-                  style={{ width: `${progressPercent}%` }}
-                ></div>
-
-                {/* Violation Marker Pins along scrubber */}
-                {playerData?.markers.map((marker) => {
-                  const markerPercent = (marker.timestampSeconds / duration) * 100;
-                  const isCritical = marker.severity === 'Critical';
-                  const isHigh = marker.severity === 'High';
-                  const pinColor = isCritical
-                    ? 'bg-rose-500 hover:bg-rose-400 ring-rose-900'
-                    : isHigh
-                    ? 'bg-amber-500 hover:bg-amber-400 ring-amber-900'
-                    : 'bg-yellow-400 hover:bg-yellow-300 ring-yellow-900';
-
+          <Card title="Flagged moments" actions={<span className="text-sm text-muted-foreground">{playerData.markers.length} flagged</span>}>
+            {playerData.markers.length === 0 ? (
+              <p className="text-sm text-muted-foreground">No moments were flagged in this recording.</p>
+            ) : (
+              <ul className="max-h-[380px] space-y-2 overflow-y-auto pe-1">
+                {playerData.markers.map((marker) => {
+                  const isSelected = selectedMarker?.id === marker.id;
                   return (
-                    <div
-                      key={marker.id}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        jumpToSeconds(marker.timestampSeconds);
-                      }}
-                      title={`[${marker.severity}] ${marker.violationType} (${marker.timestampFormatted})`}
-                      className={`absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3.5 h-3.5 rounded-full ring-4 shadow-lg cursor-pointer transition transform hover:scale-125 z-10 ${pinColor}`}
-                      style={{ left: `${markerPercent}%` }}
-                    ></div>
+                    <li key={marker.id}>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          jumpToSeconds(marker.timestampSeconds);
+                          setSelectedMarker(marker);
+                        }}
+                        aria-current={isSelected ? 'true' : undefined}
+                        className={`w-full rounded-lg border p-3 text-start transition-colors ${
+                          isSelected ? 'border-indigo-500 bg-muted/60' : 'border-border hover:bg-muted/40'
+                        }`}
+                      >
+                        <div className="mb-1 flex items-center justify-between gap-2">
+                          <span className="text-sm font-medium tabular-nums text-foreground">{marker.timestampFormatted}</span>
+                          <Badge tone={severityTone(marker.severity)}>{marker.severity}</Badge>
+                        </div>
+                        <p className="text-sm text-foreground">{marker.violationType}</p>
+                        {marker.notes && <p className="mt-1 line-clamp-2 text-xs leading-relaxed text-muted-foreground">{marker.notes}</p>}
+                      </button>
+                    </li>
                   );
                 })}
-              </div>
-            </div>
+              </ul>
+            )}
+          </Card>
 
-            {/* Controls Bar */}
-            <div className="flex items-center justify-between text-xs text-muted-foreground font-mono">
-              <div className="flex items-center gap-3">
-                <button
-                  onClick={() => setIsPlaying(!isPlaying)}
-                  className="px-2.5 py-1 rounded bg-muted hover:bg-slate-700 text-white font-medium transition"
-                >
-                  {isPlaying ? 'Pause' : 'Play'}
-                </button>
-                <button
-                  onClick={() => jumpToSeconds(0)}
-                  className="px-2 py-1 rounded bg-muted hover:bg-slate-700 text-muted-foreground transition"
-                >
-                  Rewind
-                </button>
-                <div className="flex items-center gap-1">
-                  <span className="text-foreground font-semibold">{formatSeconds(currentTime)}</span>
-                  <span>/</span>
-                  <span>{formatSeconds(duration)}</span>
-                </div>
-              </div>
-
-              {/* Speed Controls */}
-              <div className="flex items-center gap-1.5">
-                <span className="text-muted-foreground">Speed:</span>
-                {[1.0, 1.5, 2.0].map((s) => (
-                  <button
-                    key={s}
-                    onClick={() => setPlaybackSpeed(s)}
-                    className={`px-2 py-0.5 rounded text-xs transition ${
-                      playbackSpeed === s
-                        ? 'bg-indigo-600 text-white font-semibold'
-                        : 'bg-muted hover:bg-slate-700 text-muted-foreground'
-                    }`}
-                  >
-                    {s}x
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Right Column: Violation Event Ledger & Inspector (4 Cols) */}
-        <div className="lg:col-span-4 flex flex-col gap-4">
-          {/* Summary Box */}
-          <div className="bg-card border border-border rounded-xl p-4">
-            <h2 className="text-xs uppercase font-mono tracking-wider text-muted-foreground mb-3">
-              Integrity &amp; Audio Summary
-            </h2>
-            <div className="grid grid-cols-3 gap-2 text-center">
-              <div className="bg-rose-950/40 border border-rose-800/40 rounded-lg p-2.5">
-                <span className="text-xl font-bold text-rose-400">
-                  {playerData?.summary.criticalViolations}
-                </span>
-                <p className="text-[10px] font-mono text-rose-300/80 mt-0.5">Critical</p>
-              </div>
-              <div className="bg-amber-950/40 border border-amber-800/40 rounded-lg p-2.5">
-                <span className="text-xl font-bold text-amber-700 dark:text-amber-400">
-                  {playerData?.summary.highViolations}
-                </span>
-                <p className="text-[10px] font-mono text-amber-600 dark:text-amber-300/80 mt-0.5">High</p>
-              </div>
-              <div className="bg-yellow-950/40 border border-yellow-800/40 rounded-lg p-2.5">
-                <span className="text-xl font-bold text-yellow-700 dark:text-yellow-400">
-                  {playerData?.summary.mediumViolations}
-                </span>
-                <p className="text-[10px] font-mono text-yellow-600 dark:text-yellow-300/80 mt-0.5">Medium</p>
-              </div>
-            </div>
-          </div>
-
-          {/* Violation Event Pins List */}
-          <div className="bg-card border border-border rounded-xl p-4 flex-1 flex flex-col">
-            <h2 className="text-xs uppercase font-mono tracking-wider text-muted-foreground mb-3 flex items-center justify-between">
-              <span>Incident Timestamp Log</span>
-              <span className="text-indigo-700 dark:text-indigo-400">{playerData?.markers.length} Tagged</span>
-            </h2>
-
-            <div className="flex-1 overflow-y-auto space-y-2 pe-1 max-h-[380px]">
-              {playerData?.markers.map((marker) => {
-                const isSelected = selectedMarker?.id === marker.id;
-                const isCritical = marker.severity === 'Critical';
-                const isHigh = marker.severity === 'High';
-                const badgeColor = isCritical
-                  ? 'bg-rose-950 text-rose-300 border-rose-700/60'
-                  : isHigh
-                  ? 'bg-amber-950 text-amber-600 dark:text-amber-300 border-amber-700/60'
-                  : 'bg-yellow-950 text-yellow-600 dark:text-yellow-300 border-yellow-700/60';
-
-                return (
-                  <div
-                    key={marker.id}
-                    onClick={() => {
-                      jumpToSeconds(marker.timestampSeconds);
-                      setSelectedMarker(marker);
-                    }}
-                    className={`p-3 rounded-lg border cursor-pointer transition ${
-                      isSelected
-                        ? 'bg-muted/90 border-indigo-500 shadow-md ring-1 ring-indigo-500/50'
-                        : 'bg-background/60 border-border hover:border-border'
-                    }`}
-                  >
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="text-xs font-mono font-bold text-foreground flex items-center gap-1.5">
-                        <span className="text-indigo-700 dark:text-indigo-400">⏱</span> {marker.timestampFormatted}
-                      </span>
-                      <span className={`text-[10px] font-mono px-2 py-0.5 rounded border ${badgeColor}`}>
-                        {marker.severity}
-                      </span>
-                    </div>
-                    <p className="text-xs font-semibold text-foreground">{marker.violationType}</p>
-                    <p className="text-[11px] text-muted-foreground mt-1 line-clamp-2 leading-relaxed">
-                      {marker.notes}
-                    </p>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Selected Incident Snapshot Inspector */}
           {selectedMarker && (
-            <div className="bg-card border border-border rounded-xl p-4">
-              <h3 className="text-xs font-mono uppercase text-muted-foreground mb-2">
-                Frame Snapshot: {selectedMarker.timestampFormatted}
-              </h3>
+            <Card title={`Frame at ${selectedMarker.timestampFormatted}`}>
               {selectedMarker.snapshotUrl ? (
-                <div className="relative aspect-video rounded-lg overflow-hidden border border-border bg-black">
+                <div className="relative aspect-video overflow-hidden rounded-lg border border-border bg-black">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={selectedMarker.snapshotUrl}
-                    alt="Proctoring Frame Snapshot"
-                    className="w-full h-full object-cover"
+                    alt={`Frame captured at ${selectedMarker.timestampFormatted}`}
+                    className="h-full w-full object-cover"
                   />
-                  <div className="absolute bottom-1 end-2 text-[10px] font-mono text-white/80 bg-black/60 px-1.5 py-0.5 rounded">
-                    Tagged by Vision Sensor
-                  </div>
                 </div>
               ) : (
-                <p className="text-xs text-muted-foreground font-mono">No snapshot frame captured.</p>
+                <p className="text-sm text-muted-foreground">No frame was captured for this moment.</p>
               )}
-            </div>
+            </Card>
           )}
         </div>
       </div>

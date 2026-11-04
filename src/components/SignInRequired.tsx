@@ -47,11 +47,11 @@ export function signUpHref(returnPath: string): string {
  */
 export const CAN_SIGN_UP = process.env.NEXT_PUBLIC_DISABLE_SIGN_UP !== "true";
 
-// White text on indigo-600 is 6.3:1; the focus ring is drawn outside the button so it shows on any background
+// Same look as the shared buttons (components/career/ui buttonClass); the focus ring is drawn outside the button so it shows on any background
 const primaryClass =
-  "inline-flex items-center justify-center gap-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 dark:focus-visible:outline-indigo-400";
+  "inline-flex items-center justify-center gap-2 rounded-lg bg-[var(--brand,#0e7490)] hover:brightness-110 text-[var(--brand-foreground,#fff)] font-medium shadow-sm transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 dark:focus-visible:outline-indigo-400";
 const secondaryClass =
-  "inline-flex items-center justify-center gap-2 rounded-xl border border-border bg-card hover:bg-muted text-foreground font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 dark:focus-visible:outline-indigo-400";
+  "inline-flex items-center justify-center gap-2 rounded-lg border border-border bg-card hover:bg-muted text-foreground font-medium shadow-sm transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 dark:focus-visible:outline-indigo-400";
 
 type HeadingLevel = 1 | 2 | 3 | 4;
 
@@ -98,7 +98,7 @@ export default function SignInRequired({
     ? (message ?? `${feature ?? "This page"} needs an account. Sign in and you'll come straight back here.`)
     : (message ?? `Your account's role can't use ${feature ? feature.charAt(0).toLowerCase() + feature.slice(1) : "this page"}. If you think it should, ask your administrator for access.`);
 
-  const size = inline ? "px-4 py-2 text-xs" : "px-5 py-2.5 text-sm";
+  const size = inline ? "h-9 px-3.5 text-sm" : "h-10 px-4 text-sm";
 
   return (
     <section
@@ -108,11 +108,11 @@ export default function SignInRequired({
     >
       <div
         aria-hidden="true"
-        className={`${inline ? "w-9 h-9 mb-2" : "w-12 h-12 mb-4"} mx-auto rounded-2xl flex items-center justify-center bg-indigo-50 dark:bg-indigo-500/10 text-indigo-700 dark:text-indigo-300`}
+        className={`${inline ? "w-9 h-9 mb-2" : "w-12 h-12 mb-4"} mx-auto rounded-xl flex items-center justify-center bg-indigo-50 dark:bg-indigo-500/10 text-indigo-700 dark:text-indigo-300`}
       >
         <Icon className={inline ? "w-4 h-4" : "w-6 h-6"} />
       </div>
-      <Heading id={headingId} className={`${inline ? "text-sm" : "text-xl"} font-bold text-foreground`}>
+      <Heading id={headingId} className={`${inline ? "text-sm" : "text-xl"} font-semibold text-foreground`}>
         {heading}
       </Heading>
       <p className={`${inline ? "text-xs mt-1" : "text-sm mt-2"} text-muted-foreground max-w-md mx-auto`}>{text}</p>

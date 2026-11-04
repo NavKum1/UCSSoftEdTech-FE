@@ -62,6 +62,7 @@ import InsightsTab from "./InsightsTab";
 import TranslationsTab from "./TranslationsTab";
 import AutomationsTab from "./AutomationsTab";
 import MeetingEditor, { EditingInstitute } from "./MeetingEditor";
+import { Tabs, brandFill, buttonClass } from "@/components/career/ui";
 import { useEn } from "@/lib/english/EnglishProvider";
 
 interface View {
@@ -89,7 +90,7 @@ const TABS: [Tab, string][] = [
   ["insights", "Insights"],
 ];
 
-export const input = "mt-1 block w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:border-cyan-600 focus:outline-none focus:ring-2 focus:ring-cyan-600/20";
+export const input = "mt-1 block w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:border-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-600/20";
 const small = "rounded-lg border border-border px-2.5 py-1.5 text-xs hover:bg-muted disabled:opacity-40";
 
 /** The notice when the institute writes none (the form shows it in each language) */
@@ -338,7 +339,7 @@ export default function FormBuilder({ formId, backHref }: { formId: string; back
   };
 
   if (access) return <AccessNotice problem={access} />;
-  if (!view || !def) return <div className="h-64 animate-pulse rounded-2xl bg-muted motion-reduce:animate-none" aria-busy="true" />;
+  if (!view || !def) return <div className="h-64 animate-pulse rounded-xl bg-muted motion-reduce:animate-none" aria-busy="true" />;
   const readOnly = !canEdit;
 
   return (
@@ -360,7 +361,7 @@ export default function FormBuilder({ formId, backHref }: { formId: string; back
               editVersion.current++;
               setStatus("dirty");
             }}
-            className="min-w-0 rounded-lg border border-transparent bg-transparent px-2 py-1 text-xl font-semibold hover:border-border focus:border-cyan-600 focus:outline-none"
+            className="min-w-0 rounded-lg border border-transparent bg-transparent px-2 py-1 text-2xl font-semibold tracking-tight hover:border-border focus:border-indigo-600 focus:outline-none"
           />
         </div>
         <div className="flex flex-wrap items-center gap-2 text-xs">
@@ -377,7 +378,8 @@ export default function FormBuilder({ formId, backHref }: { formId: string; back
               type="button"
               onClick={publish}
               disabled={!view.hasDraft && status === "saved"}
-              className="rounded-lg bg-cyan-700 px-3.5 py-2 text-sm font-medium text-white hover:bg-cyan-800 disabled:opacity-50"
+              className={buttonClass("primary")}
+              style={brandFill}
             >
               {en("Publish")}
             </button>
@@ -391,20 +393,7 @@ export default function FormBuilder({ formId, backHref }: { formId: string; back
         </p>
       )}
 
-      <div role="tablist" aria-label={en("Form")} className="flex gap-5 overflow-x-auto border-b border-border text-sm">
-        {TABS.map(([k, label]) => (
-          <button
-            key={k}
-            role="tab"
-            type="button"
-            aria-selected={tab === k}
-            onClick={() => setTab(k)}
-            className={`-mb-px whitespace-nowrap border-b-2 pb-2.5 ${tab === k ? "border-cyan-600 font-medium text-foreground" : "border-transparent text-muted-foreground hover:text-foreground"}`}
-          >
-            {en(label)}
-          </button>
-        ))}
-      </div>
+      <Tabs<Tab> label={en("Form")} value={tab} onChange={setTab} items={TABS.map(([k, label]) => ({ id: k, label: en(label) }))} />
 
       {(tab === "questions" || tab === "results" || tab === "settings") && (
         <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(20rem,26rem)]">
@@ -421,7 +410,7 @@ export default function FormBuilder({ formId, backHref }: { formId: string; back
             <aside className="lg:sticky lg:top-24 lg:self-start">
               <p className="mb-2 text-xs font-medium text-muted-foreground">{en("Example of what people see after sending")}</p>
               <div
-                className="rounded-2xl border border-border bg-background p-4 text-sm shadow-sm"
+                className="rounded-xl border border-border bg-background p-4 text-sm shadow-sm"
                 style={{ "--gf-accent": def.settings.accent || "#4f46e5", "--gf-on": onAccent(def.settings.accent || "#4f46e5") } as React.CSSProperties}
               >
                 {(() => {
@@ -461,7 +450,7 @@ export default function FormBuilder({ formId, backHref }: { formId: string; back
                 </button>
               </div>
             </div>
-            <div className={`mx-auto max-h-[75vh] overflow-y-auto rounded-2xl border border-border bg-background p-4 shadow-sm ${device === "phone" ? "max-w-[375px]" : ""}`}>
+            <div className={`mx-auto max-h-[75vh] overflow-y-auto rounded-xl border border-border bg-background p-4 shadow-sm ${device === "phone" ? "max-w-[375px]" : ""}`}>
               <GuidanceForm
                 fill={{ formId: view.id, name, version: view.version, instituteId: view.instituteId, instituteName: "your institute", definition: { ...def, questions: def.questions.map((x) => ({ ...x, label: x.label || "(question text)", options: x.options.filter((o) => o.trim()) })) }, languageNames: Object.fromEntries(languages.map((l) => [l.code, l.name])) }}
                 mode="preview"
@@ -619,7 +608,7 @@ function QuestionsEditor({
         return (
           <section
             key={s.id}
-            className="rounded-2xl border border-border bg-card"
+            className="rounded-xl border border-border bg-card shadow-sm"
             onDragOver={(e) => drag && e.preventDefault()}
             onDrop={() => {
               if (drag) moveTo(drag, null, s.id);
@@ -627,7 +616,7 @@ function QuestionsEditor({
             }}
           >
             <div className="flex flex-wrap items-start gap-2 border-b border-border p-3">
-              <span className="mt-2 rounded-full bg-cyan-600/10 px-2 py-0.5 text-[11px] font-medium text-cyan-800 dark:text-cyan-300">{en("Step {value}", { value: si + 1 })}</span>
+              <span className="mt-2 rounded-full bg-indigo-600/10 px-2 py-0.5 text-xs font-medium text-indigo-800 dark:text-indigo-300">{en("Step {value}", { value: si + 1 })}</span>
               <div className="min-w-0 flex-1 space-y-1">
                 <input
                   value={s.title}
@@ -635,7 +624,7 @@ function QuestionsEditor({
                   maxLength={160}
                   aria-label={en("Step title")}
                   onChange={(e) => updateS(s.id, { title: e.target.value })}
-                  className="w-full rounded-lg border border-transparent bg-transparent px-2 py-1 font-semibold hover:border-border focus:border-cyan-600 focus:outline-none"
+                  className="w-full rounded-lg border border-transparent bg-transparent px-2 py-1 font-semibold hover:border-border focus:border-indigo-600 focus:outline-none"
                 />
                 <input
                   value={s.description ?? ""}
@@ -644,7 +633,7 @@ function QuestionsEditor({
                   placeholder={en("Description (optional)")}
                   aria-label={en("Step description")}
                   onChange={(e) => updateS(s.id, { description: e.target.value })}
-                  className="w-full rounded-lg border border-transparent bg-transparent px-2 py-1 text-xs text-muted-foreground hover:border-border focus:border-cyan-600 focus:outline-none"
+                  className="w-full rounded-lg border border-transparent bg-transparent px-2 py-1 text-xs text-muted-foreground hover:border-border focus:border-indigo-600 focus:outline-none"
                 />
                 {si > 0 && <ConditionEditor value={s.showIf ?? null} earlier={earlier} onChange={(c) => updateS(s.id, { showIf: c })} what="this step" readOnly={readOnly} />}
                 <SectionReportEditor s={s} readOnly={readOnly} update={(p) => updateS(s.id, p)} />
@@ -681,7 +670,7 @@ function QuestionsEditor({
                       if (drag) moveTo(drag, q.id, s.id);
                       setDrag(null);
                     }}
-                    className={`rounded-xl border ${isOpen ? "border-cyan-600/50 shadow-sm" : "border-border"} bg-background`}
+                    className={`rounded-xl border ${isOpen ? "border-indigo-600/50 shadow-sm" : "border-border"} bg-background`}
                   >
                     <div className="flex items-center gap-2 p-2.5">
                       {!readOnly && <GripVertical aria-hidden="true" className="h-4 w-4 shrink-0 cursor-grab text-muted-foreground" />}
@@ -692,11 +681,11 @@ function QuestionsEditor({
                             {q.label || <span className="font-normal italic text-muted-foreground">{en("New question (type it below)")}</span>}
                             {q.required && <span className="text-red-600"> *</span>}
                           </span>
-                          <span className="flex flex-wrap items-center gap-1.5 text-[11px] text-muted-foreground">
+                          <span className="flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground">
                             {KIND_LABEL[q.kind]}
                             {q.options.filter((o) => o.trim()).length > 0 && ` · ${q.options.filter((o) => o.trim()).length} options`}
                             {q.showIf && (
-                              <span className="inline-flex items-center gap-0.5 text-violet-700 dark:text-violet-300">
+                              <span className="inline-flex items-center gap-0.5 text-indigo-700 dark:text-indigo-300">
                                 <GitBranch aria-hidden="true" className="h-3 w-3" />{en(" shown only sometimes")}
                               </span>
                             )}
@@ -739,7 +728,7 @@ function QuestionsEditor({
             {!readOnly && (
               <div className="flex flex-wrap gap-2 px-3 pb-3">
                 <div className="relative">
-                  <button type="button" onClick={() => setAdding(adding === s.id ? null : s.id)} className="inline-flex items-center gap-1 rounded-lg border border-dashed border-cyan-600/60 px-3 py-1.5 text-xs font-medium text-cyan-800 hover:bg-cyan-600/5 dark:text-cyan-300">
+                  <button type="button" onClick={() => setAdding(adding === s.id ? null : s.id)} className="inline-flex items-center gap-1 rounded-lg border border-dashed border-indigo-600/60 px-3 py-1.5 text-xs font-medium text-indigo-800 hover:bg-indigo-600/5 dark:text-indigo-300">
                     <Plus aria-hidden="true" className="h-3.5 w-3.5" />{en(" Add question")}
                   </button>
                   {adding === s.id && (
@@ -780,13 +769,13 @@ function ConditionEditor({ value, earlier, onChange, what, readOnly }: { value: 
   const options = q ? (q.kind === "yesno" ? ["Yes", "No"] : q.options) : [];
   if (!value)
     return readOnly || usable.length === 0 ? null : (
-      <button type="button" onClick={() => onChange({ questionId: usable[usable.length - 1].id, op: "answered" })} className="inline-flex items-center gap-1 text-xs text-violet-700 hover:underline dark:text-violet-300">
+      <button type="button" onClick={() => onChange({ questionId: usable[usable.length - 1].id, op: "answered" })} className="inline-flex items-center gap-1 text-xs text-indigo-700 hover:underline dark:text-indigo-300">
         <GitBranch aria-hidden="true" className="h-3 w-3" />{" "}{en("Show {what} only for some answers", { what })}
       </button>
     );
   return (
-    <div className="flex flex-wrap items-center gap-1.5 rounded-lg bg-violet-500/5 p-2 text-xs">
-      <GitBranch aria-hidden="true" className="h-3.5 w-3.5 text-violet-700 dark:text-violet-300" />
+    <div className="flex flex-wrap items-center gap-1.5 rounded-lg bg-indigo-500/5 p-2 text-xs">
+      <GitBranch aria-hidden="true" className="h-3.5 w-3.5 text-indigo-700 dark:text-indigo-300" />
       {en("Show {what} only if", { what })}
       <select disabled={readOnly} value={value.questionId} onChange={(e) => onChange({ questionId: e.target.value, op: "answered" })} className="max-w-48 rounded-md border border-border bg-background px-1.5 py-1">
         {usable.map((x) => (
@@ -902,7 +891,7 @@ function QuestionEditor({
               {en("Required")}
               <span className="relative inline-flex">
                 <input type="checkbox" role="switch" className="peer sr-only" checked={q.required} onChange={(e) => update({ required: e.target.checked })} />
-                <span className="h-5 w-9 rounded-full bg-muted-foreground/30 transition-colors peer-checked:bg-cyan-700 peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-cyan-600" />
+                <span className="h-5 w-9 rounded-full bg-muted-foreground/30 transition-colors peer-checked:bg-indigo-700 peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-indigo-600" />
                 <span className="absolute start-0.5 top-0.5 h-4 w-4 rounded-full bg-white shadow transition-transform peer-checked:translate-x-4" />
               </span>
             </label>
@@ -931,7 +920,7 @@ function QuestionEditor({
               <input type="checkbox" checked={!!q.allowOther} onChange={(e) => update({ allowOther: e.target.checked })} />{en(" Add “Other (please specify)”")}
             </label>
             {q.kind === "multi" && !limits && (
-              <button type="button" onClick={() => setLimits(true)} className="text-cyan-700 hover:underline dark:text-cyan-400">
+              <button type="button" onClick={() => setLimits(true)} className="text-indigo-700 hover:underline dark:text-indigo-400">
                 {en("Limit how many they can pick")}
               </button>
             )}
@@ -1181,7 +1170,7 @@ function OptionsEditor({ options, onChange }: { options: string[]; onChange: (o:
                 list.splice(i, o ? 0 : 1, ...lines);
                 onChange(list.slice(0, 30));
               }}
-              className={`min-w-0 flex-1 rounded-lg border bg-background px-3 py-1.5 text-sm focus:border-cyan-600 focus:outline-none focus:ring-2 focus:ring-cyan-600/20 ${dupes.has(o.trim().toLowerCase()) ? "border-red-500" : "border-border"}`}
+              className={`min-w-0 flex-1 rounded-lg border bg-background px-3 py-1.5 text-sm focus:border-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-600/20 ${dupes.has(o.trim().toLowerCase()) ? "border-red-500" : "border-border"}`}
             />
             <div className="flex shrink-0 opacity-60 transition-opacity group-focus-within:opacity-100 group-hover:opacity-100">
               <button type="button" onClick={() => move(i, -1)} disabled={i === 0} aria-label={`Move option ${i + 1} up`} className="rounded p-1 hover:bg-muted disabled:opacity-30">
@@ -1205,12 +1194,12 @@ function OptionsEditor({ options, onChange }: { options: string[]; onChange: (o:
             insert(options.length, [""]);
             setFocus(options.length);
           }}
-          className="ms-6 inline-flex items-center gap-1 text-xs font-medium text-cyan-700 hover:underline dark:text-cyan-400"
+          className="ms-6 inline-flex items-center gap-1 text-xs font-medium text-indigo-700 hover:underline dark:text-indigo-400"
         >
           <Plus aria-hidden="true" className="h-3.5 w-3.5" />{en(" Add option")}
         </button>
       )}
-      <p className="ps-6 text-[11px] text-muted-foreground">{en("Tip: press Enter for the next option, or paste a list to add many at once.")}</p>
+      <p className="ps-6 text-xs text-muted-foreground">{en("Tip: press Enter for the next option, or paste a list to add many at once.")}</p>
     </div>
   );
 }
@@ -1221,7 +1210,7 @@ function BankPicker({ bank, onPick, onClose }: { bank: { topic: string; question
   const t = q.trim().toLowerCase();
   return (
     <div className="fixed inset-0 z-100 flex items-center justify-center bg-black/40 p-4" onClick={onClose}>
-      <div role="dialog" aria-modal="true" aria-labelledby="bank-title" className="flex max-h-[85vh] w-full max-w-2xl flex-col rounded-2xl bg-card shadow-xl" onClick={(e) => e.stopPropagation()}>
+      <div role="dialog" aria-modal="true" aria-labelledby="bank-title" className="flex max-h-[85vh] w-full max-w-2xl flex-col rounded-xl bg-card shadow-xl" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center gap-3 border-b border-border p-4">
           <h2 id="bank-title" className="text-base font-semibold">
             {en("Question bank")}
@@ -1237,7 +1226,7 @@ function BankPicker({ bank, onPick, onClose }: { bank: { topic: string; question
             if (list.length === 0) return null;
             return (
               <section key={g.topic}>
-                <h3 className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">{g.topic}</h3>
+                <h3 className="mb-1.5 text-xs font-medium text-muted-foreground">{g.topic}</h3>
                 <ul className="space-y-1.5">
                   {list.map((x) => (
                     <li key={x.label}>
@@ -1246,7 +1235,7 @@ function BankPicker({ bank, onPick, onClose }: { bank: { topic: string; question
                           {x.label}
                           {x.options.length > 0 && <span className="block truncate text-xs text-muted-foreground">{x.options.join(" · ")}</span>}
                         </span>
-                        <span className="shrink-0 rounded-full bg-muted px-2 py-0.5 text-[11px]">{KIND_LABEL[x.kind]}</span>
+                        <span className="shrink-0 rounded-full bg-muted px-2 py-0.5 text-xs">{KIND_LABEL[x.kind]}</span>
                       </button>
                     </li>
                   ))}
@@ -1599,7 +1588,7 @@ function ResultsEditor({ def, onChange, readOnly, onFill }: { def: FormDef; onCh
     });
   return (
     <fieldset disabled={readOnly} className="space-y-5">
-      <section className="space-y-2 rounded-2xl border border-border bg-card p-4 text-sm">
+      <section className="space-y-2 rounded-xl border border-border bg-card shadow-sm p-4 text-sm">
         <h2 className="text-sm font-semibold">{en("How results work")}</h2>
         <p className="text-xs text-muted-foreground">
           {en("Switch on an outcome, a match score or both. Then, in the Questions tab, open a question with options, yes/no or a slider and set what each answer counts for. Your team sees the result on the lead in your CRM, with your note on how to talk with them.")}
@@ -1615,7 +1604,7 @@ function ResultsEditor({ def, onChange, readOnly, onFill }: { def: FormDef; onCh
         />
       </section>
 
-      <section className="space-y-3 rounded-2xl border border-border bg-card p-4 text-sm">
+      <section className="space-y-3 rounded-xl border border-border bg-card shadow-sm p-4 text-sm">
         <Switch
           checked={r.outcomeEnabled}
           onChange={(v) => set({ outcomeEnabled: v, outcomes: v ? (r.outcomes.length === 0 ? [{ id: newId(), name: "" }, { id: newId(), name: "" }] : r.outcomes) : r.outcomes.filter((o) => o.name.trim()) })}
@@ -1657,7 +1646,7 @@ function ResultsEditor({ def, onChange, readOnly, onFill }: { def: FormDef; onCh
         )}
       </section>
 
-      <section className="space-y-3 rounded-2xl border border-border bg-card p-4 text-sm">
+      <section className="space-y-3 rounded-xl border border-border bg-card shadow-sm p-4 text-sm">
         <Switch
           checked={r.matchEnabled}
           onChange={(v) =>
@@ -1743,7 +1732,7 @@ function ReportSettings({ r, set, onFill }: { r: Results; set: (p: Partial<Resul
   const setGrid = (patch: Partial<NonNullable<Results["grid"]>>) => grid && set({ grid: { ...grid, ...patch } });
   const CELLS = ["Top left", "Top right", "Bottom left", "Bottom right"];
   return (
-    <section className="space-y-3 rounded-2xl border border-border bg-card p-4 text-sm">
+    <section className="space-y-3 rounded-xl border border-border bg-card shadow-sm p-4 text-sm">
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div>
           <h2 className="text-sm font-semibold">{en("The person's report")}</h2>
@@ -1879,7 +1868,7 @@ function SettingsEditor({
   const set = (patch: Partial<FormDef["settings"]>) => onChange({ ...def, settings: { ...s, ...patch } });
   return (
     <fieldset disabled={readOnly} className="space-y-5">
-      <section className="space-y-3 rounded-2xl border border-border bg-card p-4">
+      <section className="space-y-3 rounded-xl border border-border bg-card shadow-sm p-4">
         <h2 className="text-sm font-semibold">{en("Texts")}</h2>
         <label className="block text-xs font-medium text-muted-foreground">
           {en("Heading")}
@@ -1899,7 +1888,7 @@ function SettingsEditor({
         </label>
       </section>
 
-      <section className="space-y-3 rounded-2xl border border-border bg-card p-4">
+      <section className="space-y-3 rounded-xl border border-border bg-card shadow-sm p-4">
         <h2 className="text-sm font-semibold">{en("Look")}</h2>
         <div className="flex flex-wrap items-end gap-4">
           <label className="block text-xs font-medium text-muted-foreground">
@@ -1929,7 +1918,7 @@ function SettingsEditor({
                 role="radio"
                 aria-checked={on}
                 onClick={() => set({ layout: value })}
-                className={`rounded-xl border p-3 text-start text-xs ${on ? "border-cyan-600 bg-cyan-600/5 ring-1 ring-cyan-600" : "border-border hover:bg-muted"}`}
+                className={`rounded-xl border p-3 text-start text-xs ${on ? "border-indigo-600 bg-indigo-600/5 ring-1 ring-indigo-600" : "border-border hover:bg-muted"}`}
               >
                 <span
                   aria-hidden="true"
@@ -1953,7 +1942,7 @@ function SettingsEditor({
         )}
       </section>
 
-      <section className="space-y-2 rounded-2xl border border-border bg-card p-4 text-sm">
+      <section className="space-y-2 rounded-xl border border-border bg-card shadow-sm p-4 text-sm">
         <h2 className="text-sm font-semibold">{en("What else is asked")}</h2>
         <label className="flex items-center gap-2">
           <input type="checkbox" checked={s.askUnsure} onChange={(e) => set({ askUnsure: e.target.checked })} />{en(" “What are you unsure about?” (first, required)")}
@@ -1969,7 +1958,7 @@ function SettingsEditor({
         <p className="text-xs text-muted-foreground">{en("Name, email and consent are always asked.")}</p>
       </section>
 
-      <section className="space-y-2 rounded-2xl border border-border bg-card p-4 text-sm">
+      <section className="space-y-2 rounded-xl border border-border bg-card shadow-sm p-4 text-sm">
         <h2 className="text-sm font-semibold">{en("Languages")}</h2>
         <p className="text-xs text-muted-foreground">{en("People choose the language on the form. Translate your texts in the Translations tab (untranslated texts show in {value}).", { value: languages.find((l) => l.code === def.languages[0])?.name ?? en("the first language") })}</p>
         <div className="flex flex-wrap gap-2">
@@ -1977,7 +1966,7 @@ function SettingsEditor({
             const on = def.languages.includes(l.code);
             const first = def.languages[0] === l.code;
             return (
-              <label key={l.code} className={`flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs ${on ? "border-cyan-600 bg-cyan-600/5" : "border-border"}`}>
+              <label key={l.code} className={`flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs ${on ? "border-indigo-600 bg-indigo-600/5" : "border-border"}`}>
                 <input
                   type="checkbox"
                   checked={on}
@@ -1992,7 +1981,7 @@ function SettingsEditor({
         </div>
       </section>
 
-      <section className="space-y-2 rounded-2xl border border-border bg-card p-4 text-sm">
+      <section className="space-y-2 rounded-xl border border-border bg-card shadow-sm p-4 text-sm">
         <h2 className="text-sm font-semibold">{en("Who can fill it in")}</h2>
         <label className="flex items-center gap-2">
           <input type="checkbox" checked={publicEnabled} onChange={(e) => setPublic(e.target.checked)} />{en(" Anyone with the link (your website, QR codes, social media)")}
@@ -2002,7 +1991,7 @@ function SettingsEditor({
         </p>
       </section>
 
-      <section className="space-y-3 rounded-2xl border border-border bg-card p-4 text-sm">
+      <section className="space-y-3 rounded-xl border border-border bg-card shadow-sm p-4 text-sm">
         <div>
           <h2 className="text-sm font-semibold">{en("People who don't finish")}</h2>
           <p className="text-xs text-muted-foreground">{en("For the public link and your website. Answers are always kept in the person's own browser, so they can pick up where they left off.")}</p>
@@ -2062,7 +2051,7 @@ function SettingsEditor({
         )}
       </section>
 
-      <section className="space-y-3 rounded-2xl border border-border bg-card p-4 text-sm">
+      <section className="space-y-3 rounded-xl border border-border bg-card shadow-sm p-4 text-sm">
         <div>
           <h2 className="text-sm font-semibold">{en("Protection against bots and fake requests")}</h2>
           <p className="text-xs text-muted-foreground">{en("For the public link and your website. Members signed in to Edulexa are already verified.")}</p>
@@ -2104,7 +2093,7 @@ function Switch({ checked, onChange, title, detail }: { checked: boolean; onChan
       </span>
       <span className="relative mt-0.5 inline-flex shrink-0">
         <input type="checkbox" role="switch" className="peer sr-only" checked={checked} onChange={(e) => onChange(e.target.checked)} />
-        <span className="h-5 w-9 rounded-full bg-muted-foreground/30 transition-colors peer-checked:bg-cyan-700 peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-cyan-600" />
+        <span className="h-5 w-9 rounded-full bg-muted-foreground/30 transition-colors peer-checked:bg-indigo-700 peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-indigo-600" />
         <span className="absolute start-0.5 top-0.5 h-4 w-4 rounded-full bg-white shadow transition-transform peer-checked:translate-x-4" />
       </span>
     </label>

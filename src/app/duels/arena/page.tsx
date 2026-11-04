@@ -12,6 +12,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { AlertTriangle, Check, Plus, Swords, Trash2, Trophy, X } from "lucide-react";
 import { AccessNotice, useLatestRef, useLegacyApi } from "@/lib/legacyApi";
 import { useEn } from "@/lib/english/EnglishProvider";
+import { ErrorBanner, PageHeader, ScrollArea, buttonClass } from "@/components/career/ui";
 
 interface Scenario {
   code: string;
@@ -98,8 +99,8 @@ interface Edge {
 
 const REGIONS = ["region-a", "region-b", "region-c"];
 const AREA: Record<string, string> = { components: "Components", resilience: "Handling the chaos event", flow: "Flows", economy: "Economy" };
-const card = "rounded-2xl border border-border bg-card shadow-[0_1px_2px_rgb(16_24_40/0.04)]";
-const button = "inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-500 disabled:opacity-60";
+const card = "rounded-xl border border-border bg-card shadow-sm";
+const button = `${buttonClass("primary")} bg-[var(--brand,#0e7490)]`;
 const ghost = "inline-flex items-center gap-1 rounded-lg border border-border px-2 py-1 text-xs font-medium hover:bg-muted disabled:opacity-60";
 const input = "rounded-lg border border-border bg-background px-2 py-1 text-sm";
 
@@ -221,14 +222,12 @@ export default function DuelArenaPage() {
 
   return (
     <div className="space-y-6">
-      <header>
-        <h1 className="text-2xl font-semibold tracking-tight">{en("System design duels")}</h1>
-        <p className="mt-1 max-w-3xl text-sm text-muted-foreground">
-          {en("Build a design for a practice scenario before the time runs out, then see how it scores against a practice bot. {note}", { note: catalogue.note })}
-        </p>
-      </header>
+      <PageHeader
+        title={en("System design duels")}
+        description={en("Build a design for a practice scenario before the time runs out, then see how it scores against a practice bot. {note}", { note: catalogue.note })}
+      />
 
-      {error && <p className="text-sm text-red-700 dark:text-red-400">{error}</p>}
+      <ErrorBanner error={error} />
 
       {!match || result ? (
         <section className={`${card} space-y-4 p-5`} aria-labelledby="duel-start">
@@ -292,7 +291,7 @@ export default function DuelArenaPage() {
               <div className="mt-2 space-y-3">
                 {Object.entries(groups).map(([g, list]) => (
                   <div key={g}>
-                    <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{g}</p>
+                    <p className="text-xs font-medium text-muted-foreground">{g}</p>
                     <ul className="mt-1 space-y-1">
                       {list.map((c) => (
                         <li key={c.type}>
@@ -456,7 +455,7 @@ export default function DuelArenaPage() {
       )}
 
       {board && (
-        <section className={`${card} overflow-x-auto p-5`} aria-labelledby="duel-board">
+        <section className={`${card} p-5`} aria-labelledby="duel-board">
           <h2 id="duel-board" className="text-base font-semibold">
             {en("Ratings")}
           </h2>
@@ -471,7 +470,8 @@ export default function DuelArenaPage() {
           {board.entries.length === 0 ? (
             <p className="mt-2 text-sm text-muted-foreground">{en("No rated members yet.")}</p>
           ) : (
-            <table className="mt-3 w-full min-w-140 text-start text-sm">
+            <ScrollArea className="mt-3 overflow-x-auto">
+            <table className="w-full min-w-140 text-start text-sm">
               <thead className="text-xs text-muted-foreground">
                 <tr>
                   <th className="py-2 pe-3 font-medium">{en("Rank")}</th>
@@ -496,6 +496,7 @@ export default function DuelArenaPage() {
                 ))}
               </tbody>
             </table>
+            </ScrollArea>
           )}
           <p className="mt-3 text-xs text-muted-foreground">
             {en("Practice bots (fixed): {value}.", { value: board.bots.map((b) => `${b.name}, rating ${b.rating}, scores ${b.score}`).join("; ") })}</p>

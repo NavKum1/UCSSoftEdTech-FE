@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { useApi } from "@/lib/appAuth";
-import { Badge, Button, Card, EmptyState, ErrorBanner, Field, Loading, PageHeader, SuccessBanner, formatDate, useLoad, ScrollArea, useCareerT, useCareerLabels } from "@/components/career/ui";
+import { Badge, Button, Card, EmptyState, ErrorBanner, Field, Loading, PageHeader, SuccessBanner, formatDate, useLoad, ScrollArea, useCareerT, useCareerLabels, StatTile } from "@/components/career/ui";
 import { StatusBadge, topicLabel, type MentoringOptions, type RelationshipSummary, useMeetingLabels, useReportReasonLabels, useMentoringStatusLabels } from "@/components/career/mentoring/MentorshipPanel";
 
 interface StaffMentor {
@@ -84,7 +84,7 @@ export default function CareerCenterMentoringPage() {
   return (
     <div>
       <PageHeader title={tr("mentoringNetwork")} description={tr("approveVolunteerMentorsFollowMentorships")} />
-      <div role="tablist" aria-label={tr("mentoringAdministration")} className="mb-6 flex flex-wrap gap-2 border-b border-border">
+      <div role="tablist" aria-label={tr("mentoringAdministration")} className="mb-6 flex gap-1 overflow-x-auto border-b border-border">
         {TABS.map((key) => [key, TAB_LABELS[key]] as const).map(([key, label]) => (
           <button
             key={key}
@@ -94,7 +94,7 @@ export default function CareerCenterMentoringPage() {
             aria-selected={tab === key}
             aria-controls={`panel-${key}`}
             onClick={() => setTab(key)}
-            className={`-mb-px border-b-2 px-3 py-2 text-sm font-medium focus-visible:outline-2 ${tab === key ? "border-[var(--brand,#4f46e5)]" : "border-transparent text-muted-foreground"}`}
+            className={`-mb-px inline-flex shrink-0 items-center gap-2 whitespace-nowrap border-b-2 px-3 py-2.5 text-sm transition-colors focus-visible:outline-2 ${tab === key ? "border-[var(--brand,#0e7490)] font-medium text-foreground" : "border-transparent text-muted-foreground hover:border-border hover:text-foreground"}`}
           >
             {label}
           </button>
@@ -181,16 +181,14 @@ function Overview() {
     <div className="space-y-6">
       <ErrorBanner error={err ?? stats.error} />
       <SuccessBanner message={msg} />
-      <Card title={tr("activity")}>
-        <dl className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+      <section aria-labelledby="mentoring-activity">
+        <h2 id="mentoring-activity" className="mb-3 text-base font-semibold">{tr("activity")}</h2>
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
           {tiles.map(([label, value]) => (
-            <div key={label} className="rounded-lg border border-border p-3">
-              <dt className="text-xs text-muted-foreground">{label}</dt>
-              <dd className="text-2xl font-semibold">{value}</dd>
-            </div>
+            <StatTile key={label} label={label} value={value} />
           ))}
-        </dl>
-      </Card>
+        </div>
+      </section>
       <Card title={tr("checkInReminders")}>
         <p className="mb-3 text-sm">{tr("sendAReminderToBoth")}</p>
         <Button busy={busy === "checkins"} onClick={() => run("checkins", () => api<{ sent: number }>("/api/career/mentoring/staff/check-ins/send", { method: "POST" }).then((r) => { stats.reload(); return r; }), (r) => tr("remindersSentToSentMentorships", { sent: (r as { sent: number }).sent }))}>
