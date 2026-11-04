@@ -6,7 +6,7 @@ export default function InstituteGuidancePage() {
     <FormsHome
       basePath="/institute/guidance"
       title="Career guidance forms"
-      intro="The questions people answer when they ask your advisors for help choosing an area or certification. Answers arrive as leads in your Admissions CRM."
+      intro="The questions people answer when they ask your advisors for help choosing an area or certification. Answers arrive in your Leads."
     />
   );
 }

@@ -27,7 +27,6 @@ import { Badge, Button, Card, EmptyState, Modal, PageHeader, ScrollArea, StatTil
 import StaffAccess from "@/components/institute/StaffAccess";
 import AccessRequestsAdmin from "@/components/admin/AccessRequestsAdmin";
 import PlatformSetupBanner from "@/components/admin/PlatformSetupBanner";
-import { useGeo } from "@/context/GeoContext";
 import { useLatestRef } from "@/lib/legacyApi";
 import { useEn } from "@/lib/english/EnglishProvider";
 
@@ -77,7 +76,6 @@ interface Lead {
 export default function SuperAdminDashboard() {
   const en = useEn();
   const { getToken } = useAuth();
-  const { config } = useGeo();
 
   // Tab State
   const [activeTab, setActiveTab] = useState<"analytics" | "partners" | "leads" | "access">("analytics");

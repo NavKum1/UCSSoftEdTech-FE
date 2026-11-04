@@ -2,8 +2,8 @@
 
 /**
  * The institute admissions CRM (API: /api/institute/crm). Opens on the day's work: leads not contacted yet, follow-ups
- * due, and the caller's own leads, then Leads (table or board), Follow-ups, Insights and, for institute admins, Settings
- * (team, email templates, integrations), Staff access and Import (leads from another system's CSV export). ?lead=<id>
+ * due, and the caller's own leads, then Leads (table or board), People, Follow-ups and Insights. The admin pages that used
+ * to be tabs here (admissions settings, staff access, import) are in the portal's Settings since 5 Nov 2026. ?lead=<id>
  * opens a lead directly (links in reminder and reply emails).
  */
 
@@ -19,13 +19,10 @@ import LeadDrawer from "@/components/institute/crm/LeadDrawer";
 import TasksView from "@/components/institute/crm/TasksView";
 import InsightsView from "@/components/institute/crm/InsightsView";
 import PeopleView from "@/components/institute/crm/PeopleView";
-import SettingsView from "@/components/institute/crm/SettingsView";
-import ImportView from "@/components/institute/crm/ImportView";
-import StaffAccess from "@/components/institute/StaffAccess";
 import { Button, PageHeader, Tabs } from "@/components/career/ui";
 import { useEn } from "@/lib/english/EnglishProvider";
 
-type Tab = "leads" | "people" | "followups" | "insights" | "settings" | "staff" | "import";
+type Tab = "leads" | "people" | "followups" | "insights";
 
 export default function InstituteCrmPage() {
   return (
@@ -134,7 +131,6 @@ function Crm() {
     ["people", "People"],
     ["followups", "Follow-ups"],
     ["insights", "Insights"],
-    ...(isAdmin ? [["settings", "Settings"] as [Tab, string], ["staff", "Staff access"] as [Tab, string], ["import", "Import"] as [Tab, string]] : []),
   ];
 
   return (
@@ -168,7 +164,7 @@ function Crm() {
           <p>
             <span className="font-medium">{en("Set up your team")}</span>{en(" to assign leads and send follow-up reminders. Add your email templates while you're there.")}
           </p>
-          <Button type="button" onClick={() => setTab("settings")}>
+          <Button type="button" onClick={() => router.push("/institute/admissions-settings")}>
             {en("Add your team")}
           </Button>
         </div>
@@ -187,12 +183,6 @@ function Crm() {
       {tab === "people" && <PeopleView getToken={getToken} openLead={openLead} />}
       {tab === "followups" && <TasksView getToken={getToken} openLead={openLead} version={version} />}
       {tab === "insights" && <InsightsView getToken={getToken} />}
-      {tab === "settings" && isAdmin && (
-        <SettingsView getToken={getToken} team={team} templates={templates} webhookUrl={profile?.outboundWebhookUrl ?? ""} reload={() => setVersion((v) => v + 1)} />
-      )}
-
-      {tab === "staff" && isAdmin && <StaffAccess getToken={getToken} />}
-      {tab === "import" && isAdmin && <ImportView getToken={getToken} onImported={refresh} />}
 
       {openId && ready && <LeadDrawer key={openId} leadId={openId} getToken={getToken} team={team} templates={templates} isAdmin={isAdmin} me={data?.me ?? null} onClose={closeLead} onChanged={refresh} />}
     </div>

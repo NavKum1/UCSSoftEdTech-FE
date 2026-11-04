@@ -2,7 +2,7 @@
 
 /**
  * The main app header for members (candidates and students), in the same design as the portal headers
- * (components/portal/PortalShell): a top row with the brand, voice minutes, region and the shared controls (language,
+ * (components/portal/PortalShell): a top row with the brand, voice minutes and the shared controls (language,
  * light/dark, the account menu), and a row with Dashboard and three menus (5 Nov 2026: Practice, Guidance and Your
  * record replaced seven tabs and a "More" menu of eighteen). Account pages live in the account menu, and so do the
  * other areas a person works in ("Switch to"). Small screens get a drawer with the same groups. Hidden on routes with a
@@ -16,7 +16,6 @@ import { BarChart3, ChevronDown, CreditCard, LogIn, Menu, Mic, Scale, ShieldChec
 import { useAppAuth } from "@/lib/appAuth";
 import { CAN_SIGN_UP, signInHref, signUpHref, useReturnPath } from "@/components/SignInRequired";
 import { hidesGlobalNavigation } from "@/lib/careerNav";
-import { ProductRegionSwitcher } from "@/context/GeoContext";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import EnglishPicker from "@/components/EnglishPicker";
 import { useEn } from "@/lib/english/EnglishProvider";
@@ -197,9 +196,6 @@ export default function GlobalNavigation() {
                 {en("{minutes} min left", { minutes })}
               </Link>
             )}
-            <span className="hidden sm:inline-flex">
-              <ProductRegionSwitcher />
-            </span>
             {isSignedIn ? (
               <HeaderControls links={ACCOUNT_LINKS} area="/dashboard" />
             ) : !isLoaded ? (
@@ -283,7 +279,6 @@ export default function GlobalNavigation() {
         {mobileOpen && (
           <nav id="mobile-navigation" aria-label={en("Main (mobile)")} className="max-h-[75vh] space-y-3 overflow-y-auto border-t border-border px-4 py-4 lg:hidden">
             <div className="flex flex-wrap items-center gap-2 sm:hidden">
-              <ProductRegionSwitcher />
               <EnglishPicker />
               {!isSignedIn && <ThemeToggle />}
             </div>

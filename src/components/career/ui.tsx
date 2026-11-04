@@ -74,12 +74,18 @@ export function StatTile({ label, value, hint, icon, tone }: { label: string; va
 }
 
 /**
- * Tabs within a page (underlined, like the menu above): one look for every in-page tab bar. Each tab is a button
- * that shows its panel; counts sit beside the label.
+ * Tabs within a page: one look for every in-page tab bar. A segmented control (a grey track with the current tab
+ * raised), so it never looks like the menus above it, which are underlined (5 Nov 2026). Each tab is a button that shows
+ * its panel; counts sit beside the label. Custom tab bars use TAB_LIST and tabClass for the same look.
  */
+export const TAB_LIST = "flex w-fit max-w-full gap-1 overflow-x-auto rounded-lg bg-muted p-1";
+export const tabClass = (on: boolean) =>
+  `inline-flex shrink-0 items-center gap-2 whitespace-nowrap rounded-md px-3 py-1.5 text-sm transition-colors focus-visible:outline-2 ${
+    on ? "bg-card font-medium text-foreground shadow-sm" : "text-muted-foreground hover:bg-card/60 hover:text-foreground"
+  }`;
 export function Tabs<T extends string>({ items, value, onChange, label }: { items: { id: T; label: string; count?: number; icon?: React.ReactNode }[]; value: T; onChange: (id: T) => void; label: string }) {
   return (
-    <div role="tablist" aria-label={label} className="flex gap-1 overflow-x-auto border-b border-border">
+    <div role="tablist" aria-label={label} className={TAB_LIST}>
       {items.map((t) => {
         const on = t.id === value;
         return (
@@ -89,13 +95,11 @@ export function Tabs<T extends string>({ items, value, onChange, label }: { item
             role="tab"
             aria-selected={on}
             onClick={() => onChange(t.id)}
-            className={`-mb-px inline-flex shrink-0 items-center gap-2 whitespace-nowrap border-b-2 px-3 py-2.5 text-sm transition-colors ${
-              on ? "border-[var(--brand,#0e7490)] font-medium text-foreground" : "border-transparent text-muted-foreground hover:border-border hover:text-foreground"
-            }`}
+            className={tabClass(on)}
           >
             {t.icon && <span aria-hidden="true" className="[&>svg]:h-4 [&>svg]:w-4">{t.icon}</span>}
             {t.label}
-            {t.count != null && <span className="rounded-full bg-muted px-1.5 py-0.5 text-xs tabular-nums text-muted-foreground">{t.count}</span>}
+            {t.count != null && <span className="rounded-full bg-background px-1.5 py-0.5 text-xs tabular-nums text-muted-foreground">{t.count}</span>}
           </button>
         );
       })}

@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { useApi } from "@/lib/appAuth";
-import { Badge, Button, Card, EmptyState, ErrorBanner, Field, Loading, PageHeader, SuccessBanner, formatDate, useLoad, useCareerT } from "@/components/career/ui";
+import { Badge, Button, Card, EmptyState, ErrorBanner, Field, Loading, PageHeader, SuccessBanner, formatDate, useLoad, useCareerT, TAB_LIST, tabClass } from "@/components/career/ui";
 import {
   CheckboxGroup,
   MentorshipPanel,
@@ -59,7 +59,7 @@ export default function StudentMentoringPage() {
         description={tr("connectWithAlumniAndProfessionals")}
       />
       <ErrorBanner error={options.error ?? mine.error} />
-      <div role="tablist" aria-label={tr("mentoringSections")} className="mb-6 flex gap-1 overflow-x-auto border-b border-border">
+      <div role="tablist" aria-label={tr("mentoringSections")} className={`mb-6 ${TAB_LIST}`}>
         {(
           [
             ["find", tr("tabFind")],
@@ -74,7 +74,7 @@ export default function StudentMentoringPage() {
             aria-selected={tab === key}
             aria-controls={`panel-${key}`}
             onClick={() => setTab(key)}
-            className={`-mb-px inline-flex shrink-0 items-center gap-2 whitespace-nowrap border-b-2 px-3 py-2.5 text-sm transition-colors focus-visible:outline-2 ${tab === key ? "border-[var(--brand,#0e7490)] font-medium text-foreground" : "border-transparent text-muted-foreground hover:border-border hover:text-foreground"}`}
+            className={tabClass(tab === key)}
           >
             {label}
           </button>

@@ -2,7 +2,7 @@
 
 import React, { useCallback, useState } from "react";
 import { useApi } from "@/lib/appAuth";
-import { Button, Card, ErrorBanner, Field, Loading, PageHeader, SuccessBanner, useLoad, useCareerT, useCareerLabels, StatTile } from "@/components/career/ui";
+import { Button, Card, ErrorBanner, Field, Loading, PageHeader, SuccessBanner, useLoad, useCareerT, useCareerLabels, StatTile, TAB_LIST, tabClass } from "@/components/career/ui";
 import { ReportTableView, formatCell, type Cell, type ReportTable } from "@/components/career/reports/ReportTableView";
 
 type Section = "engagement" | "service" | "employers" | "equity";
@@ -153,14 +153,14 @@ export default function ReportsPage() {
         }
       />
 
-      <nav aria-label={tr("reportSections")} className="flex gap-1 overflow-x-auto border-b border-border">
+      <nav aria-label={tr("reportSections")} className={TAB_LIST}>
         {o.sections.map((s) => (
           <button
             key={s}
             type="button"
             aria-current={sec === s ? "page" : undefined}
             onClick={() => setSection(s)}
-            className={`-mb-px inline-flex shrink-0 items-center whitespace-nowrap border-b-2 px-3 py-2.5 text-sm transition-colors focus-visible:outline-2 ${sec === s ? "border-[var(--brand,#0e7490)] font-medium text-foreground" : "border-transparent text-muted-foreground hover:border-border hover:text-foreground"}`}
+            className={tabClass(sec === s)}
           >
             {SECTION_LABELS[s]}
           </button>

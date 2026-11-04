@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { useApi } from "@/lib/appAuth";
 import { useCareerShell } from "@/components/career/CareerShell";
-import { EmptyState, ErrorBanner, Loading, PageHeader, formatDate, useLoad, useCareerT, useCareerLabels } from "@/components/career/ui";
+import { EmptyState, ErrorBanner, Loading, PageHeader, formatDate, useLoad, useCareerT, useCareerLabels, TAB_LIST, tabClass } from "@/components/career/ui";
 import { labelOf, useFerpaCategoryLabels } from "@/components/career/coreLabels";
 
 interface Disclosure {
@@ -76,7 +76,7 @@ export default function PrivacyLogPage() {
   return (
     <div>
       <PageHeader title={t("privacyLog")} description={t("fERPARequiresARecordOf")} />
-      <div role="tablist" aria-label={t("log")} className="mb-4 flex gap-1 overflow-x-auto border-b border-border">
+      <div role="tablist" aria-label={t("log")} className={`mb-4 ${TAB_LIST}`}>
         {(
           [
             ["disclosures", t("disclosures")],
@@ -90,7 +90,7 @@ export default function PrivacyLogPage() {
             aria-selected={tab === key}
             aria-controls="log-panel"
             onClick={() => setTab(key)}
-            className={`-mb-px inline-flex shrink-0 items-center gap-2 whitespace-nowrap border-b-2 px-3 py-2.5 text-sm transition-colors focus-visible:outline-2 ${tab === key ? "border-[var(--brand,#0e7490)] font-medium text-foreground" : "border-transparent text-muted-foreground hover:border-border hover:text-foreground"}`}
+            className={tabClass(tab === key)}
           >
             {label}
           </button>

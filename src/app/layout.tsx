@@ -4,7 +4,6 @@ import { AppAuthProvider } from "@/lib/appAuth";
 import GlobalNavigation from "@/components/GlobalNavigation";
 import AppMain from "@/components/AppMain";
 import MfaRequiredNotice from "@/components/auth/MfaRequiredNotice";
-import { GeoProvider } from "@/context/GeoContext";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { TextProvider } from "@/lib/english/EnglishProvider";
 import { requestLanguage } from "@/lib/i18n/server";
@@ -47,13 +46,11 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       >
         <AppAuthProvider>
           <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-            <GeoProvider>
               <TextProvider language={language} messages={messages}>
               <GlobalNavigation />
               <AppMain>{children}</AppMain>
               <MfaRequiredNotice />
               </TextProvider>
-            </GeoProvider>
           </ThemeProvider>
         </AppAuthProvider>
       </body>

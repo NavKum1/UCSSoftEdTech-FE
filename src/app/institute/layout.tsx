@@ -8,17 +8,21 @@ import { SchoolEnglishScope } from "@/components/institute/SchoolEnglish";
 import { useAppAuth } from "@/lib/appAuth";
 
 // en() where shown (PortalShell)
+// Three tabs (5 Nov 2026): the leads; the forms and quiz that bring leads in; and settings, all in one place
 const SECTIONS = [
-  { href: "/institute/dashboard", label: "Admissions CRM" },
-  { href: "/institute/counselling", label: "Counselling quiz and courses" }, // en() where shown
-  { href: "/institute/guidance", label: "Guidance forms" },
-  { href: "/institute/setup", label: "Setup" },
-  { href: "/institute/billing", label: "Billing" },
+  { href: "/institute/dashboard", label: "Admissions leads", group: "Leads" },
+  { href: "/institute/guidance", label: "Guidance forms", group: "Forms" },
+  { href: "/institute/counselling", label: "Counseling quiz", group: "Forms" },
+  { href: "/institute/setup", label: "School setup", group: "Settings" },
+  { href: "/institute/admissions-settings", label: "Admissions settings", group: "Settings" },
+  { href: "/institute/staff", label: "Staff access", group: "Settings" },
+  { href: "/institute/import", label: "Import leads", group: "Settings" },
+  { href: "/institute/billing", label: "Billing", group: "Settings" },
 ];
 
 export default function InstituteLayout({ children }: { children: React.ReactNode }) {
   const { roles } = useAppAuth();
-  // Counsellors work leads; the quiz, courses, guidance form, setup and the school's plan are the institute admin's
+  // Counselors work leads; the forms, quiz and settings are the institute admin's
   const admin = roles.includes("InstituteAdmin") || roles.includes("SuperAdmin");
   const sections = admin ? SECTIONS : SECTIONS.slice(0, 1);
   return (

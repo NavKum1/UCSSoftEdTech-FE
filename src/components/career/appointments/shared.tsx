@@ -9,7 +9,7 @@ import React, { useEffect, useId, useMemo, useRef, useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useApi } from "@/lib/appAuth";
 import { currentFormatLocale } from "@/components/career/i18n/CareerI18nProvider";
-import { Button, Field, useCareerFormat, useCareerT, useCareerLabels } from "@/components/career/ui";
+import { Button, Field, useCareerFormat, useCareerT, useCareerLabels, TAB_LIST, tabClass } from "@/components/career/ui";
 
 export interface IntakeQuestion {
   id: string;
@@ -236,7 +236,7 @@ export function Tabs<T extends string>({ label, tabs, value, onChange }: { label
     }
   };
   return (
-    <div role="tablist" aria-label={label} className="mb-4 flex gap-1 overflow-x-auto border-b border-border">
+    <div role="tablist" aria-label={label} className={`mb-4 ${TAB_LIST}`}>
       {tabs.map((t, i) => (
         <button
           key={t.key}
@@ -251,7 +251,7 @@ export function Tabs<T extends string>({ label, tabs, value, onChange }: { label
           tabIndex={value === t.key ? 0 : -1}
           onKeyDown={(e) => onKey(e, i)}
           onClick={() => onChange(t.key)}
-          className={`-mb-px inline-flex shrink-0 items-center gap-2 whitespace-nowrap border-b-2 px-3 py-2.5 text-sm transition-colors focus-visible:outline-2 ${value === t.key ? "border-[var(--brand,#0e7490)] font-medium text-foreground" : "border-transparent text-muted-foreground hover:border-border hover:text-foreground"}`}
+          className={tabClass(value === t.key)}
         >
           {t.label}
         </button>

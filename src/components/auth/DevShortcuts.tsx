@@ -19,7 +19,7 @@ export { DEMO_LOGIN_ENABLED };
 const SHORTCUTS = [
   { role: "Recruiter", label: "Recruiter", hint: "Assessments and integrity reviews", href: "/recruiter/dashboard", icon: Briefcase },
   { role: "Candidate", label: "Candidate", hint: "Sprints, voice defense and katas", href: "/dashboard", icon: UserCheck },
-  { role: "InstituteAdmin", label: "Institute admin", hint: "Admissions CRM, team and settings", href: "/institute/dashboard", icon: GraduationCap },
+  { role: "InstituteAdmin", label: "Institute admin", hint: "Admissions leads, forms and settings", href: "/institute/dashboard", icon: GraduationCap },
   { role: "Counselor", label: "Institute counsellor", hint: "Work the admissions leads assigned to you", href: "/institute/dashboard", icon: GraduationCap },
   { role: "EdulexaAdvisor", label: "Edulexa advisor", hint: "Career guidance requests to Edulexa", href: "/advisor/guidance", icon: UserCheck },
 ];
