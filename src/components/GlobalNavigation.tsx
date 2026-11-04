@@ -2,17 +2,18 @@
 
 /**
  * The main app header for members (candidates and students), in the same design as the portal headers
- * (components/portal/PortalShell): a top row with the brand, voice minutes, region, theme and account, and a row of
- * section tabs (underlined when current) with a "More" menu that groups the other tools. Small screens get a drawer
- * with the same groups. Hidden on routes with a header of their own (lib/careerNav hidesGlobalNavigation).
+ * (components/portal/PortalShell): a top row with the brand, voice minutes, region and the shared controls (language,
+ * light/dark, the account menu), and a row with Dashboard and three menus (5 Nov 2026: Practice, Guidance and Your
+ * record replaced seven tabs and a "More" menu of eighteen). Account pages live in the account menu, and so do the
+ * other areas a person works in ("Switch to"). Small screens get a drawer with the same groups. Hidden on routes with a
+ * header of their own (lib/careerNav hidesGlobalNavigation).
  */
 
 import React, { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
-import { ChevronDown, LogIn, Menu, Mic, X } from "lucide-react";
-import { AppUserButton, useAppAuth } from "@/lib/appAuth";
-import { endDevSession, useDevSession } from "@/lib/devSession";
+import { usePathname } from "next/navigation";
+import { BarChart3, ChevronDown, CreditCard, LogIn, Menu, Mic, Scale, ShieldCheck, X } from "lucide-react";
+import { useAppAuth } from "@/lib/appAuth";
 import { CAN_SIGN_UP, signInHref, signUpHref, useReturnPath } from "@/components/SignInRequired";
 import { hidesGlobalNavigation } from "@/lib/careerNav";
 import { ProductRegionSwitcher } from "@/context/GeoContext";
@@ -20,6 +21,7 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import EnglishPicker from "@/components/EnglishPicker";
 import { useEn } from "@/lib/english/EnglishProvider";
 import { FRAME } from "@/components/layout/Frame";
+import { HeaderControls, type AccountLink } from "@/components/layout/AccountMenu";
 import BrandMark from "@/components/brand/BrandMark";
 import { authenticatedFetch } from "@/lib/apiClient";
 
@@ -29,20 +31,16 @@ interface NavItem {
   desc?: string;
 }
 
-const TABS: NavItem[] = [
-  { name: "Dashboard", href: "/dashboard" },
-  { name: "Challenges", href: "/sprint/distributed-database" },
-  { name: "Exams", href: "/prep/exam" },
-  { name: "Interviews", href: "/interview/practice" },
-  { name: "Incidents", href: "/daily/incident" },
-  { name: "Counselling", href: "/prep/counselling" }, // en() where shown
-  { name: "Mentoring", href: "/mentors" },
-];
-
-const GROUPS: { title: string; items: NavItem[] }[] = [
+const MENUS: { id: string; title: string; wide?: boolean; items: NavItem[] }[] = [
   {
+    id: "practice",
     title: "Practice",
+    wide: true,
     items: [
+      { name: "Coding challenges", href: "/sprint/distributed-database", desc: "Build a feature, then explain your code" },
+      { name: "Written exams", href: "/prep/exam", desc: "Timed exams; pass one to earn a credential" },
+      { name: "Interview practice", href: "/interview/practice", desc: "A spoken interview with an AI interviewer" },
+      { name: "Incident drills", href: "/daily/incident", desc: "Find and fix a production problem" },
       { name: "Code review drills", href: "/daily/review", desc: "Find the defect in a real-looking pull request" },
       { name: "System design duels", href: "/duels/arena", desc: "Design against practice bots, graded on the server" },
       { name: "Speaking practice", href: "/prep/delivery", desc: "Pace, filler words and pauses (private)" },
@@ -52,56 +50,52 @@ const GROUPS: { title: string; items: NavItem[] }[] = [
     ],
   },
   {
-    title: "Your record",
+    id: "guidance",
+    title: "Guidance",
     items: [
-      { name: "My results", href: "/my/results", desc: "Feedback on every submission, reviews and appeals" },
-      { name: "My guidance requests", href: "/my/guidance", desc: "Your questions to Edulexa and the replies" },
-      { name: "Credentials", href: "/credentials", desc: "Signed credentials you can share with employers" },
-      { name: "Skill passport", href: "/passport", desc: "Your verified skills and a link to share" },
+      { name: "Counseling", href: "/prep/counselling", desc: "A short quiz that matches you to a career track" },
+      { name: "Mentoring", href: "/mentors", desc: "Find a mentor, or volunteer as one; free" },
       { name: "Career path", href: "/prep/career", desc: "Where you are and what to learn next" },
-      { name: "Defend your repo", href: "/defend-repo", desc: "Defend code you wrote on GitHub" },
       { name: "Recommendations", href: "/referrals", desc: "Courses for skills to strengthen; you control sharing" },
-      { name: "Campus", href: "/campus", desc: "College assignments and connection check" },
+      { name: "My guidance requests", href: "/my/guidance", desc: "Your questions to Edulexa and the replies" },
     ],
   },
   {
-    title: "Account",
+    id: "record",
+    title: "Your record",
     items: [
-      { name: "Pricing and minutes", href: "/pricing", desc: "Plans, voice minutes and top-ups" },
-      { name: "Privacy and your data", href: "/settings/privacy", desc: "Download or delete your data" },
-      { name: "Fairness self-ID", href: "/settings/self-identification", desc: "Optional answers used only for fairness checks" },
-      { name: "Transparency report", href: "/transparency", desc: "How our assessments perform, published" },
+      { name: "My results", href: "/my/results", desc: "Feedback on every submission, reviews and appeals" },
+      { name: "Credentials", href: "/credentials", desc: "Signed credentials you can share with employers" },
+      { name: "Skill passport", href: "/passport", desc: "Your verified skills and a link to share" },
+      { name: "Defend your repo", href: "/defend-repo", desc: "Defend code you wrote on GitHub" },
+      { name: "Campus", href: "/campus", desc: "College assignments and connection check" },
     ],
   },
 ];
 
-const HIRING: NavItem[] = [
-  { name: "Recruiter portal", href: "/recruiter/dashboard", desc: "Candidates, evidence packs and work trials" },
-  { name: "Placement office", href: "/campus/admin", desc: "Campus placement for colleges" },
+const icon = "h-4 w-4 text-muted-foreground";
+const ACCOUNT_LINKS: AccountLink[] = [
+  { label: "Pricing and minutes", href: "/pricing", icon: <CreditCard aria-hidden="true" className={icon} /> },
+  { label: "Privacy and your data", href: "/settings/privacy", icon: <ShieldCheck aria-hidden="true" className={icon} /> },
+  { label: "Fairness self-ID", href: "/settings/self-identification", icon: <Scale aria-hidden="true" className={icon} /> },
+  { label: "Transparency report", href: "/transparency", icon: <BarChart3 aria-hidden="true" className={icon} /> },
 ];
 
-const ADMINISTRATION: NavItem[] = [
-  { name: "Admin console", href: "/admin", desc: "Institutes, staff access, access requests and the platform" },
-];
-const INSTITUTE: NavItem[] = [
-  { name: "Institute dashboard", href: "/institute/dashboard", desc: "Leads, follow-ups, settings and staff access" },
-];
-
-const isRecruiterRole = (roles: string[]) => roles.some((r) => ["recruiter", "admin", "instituteadmin", "superadmin"].includes(r.toLowerCase()));
-const hasAnyRole = (roles: string[], wanted: string[]) => roles.some((r) => wanted.includes(r.toLowerCase()));
 const active = (pathname: string | null, href: string) => (href === "/dashboard" ? pathname === href : !!pathname && (pathname === href || pathname.startsWith(href + "/")));
+const tab = (on: boolean) =>
+  `flex items-center gap-1 whitespace-nowrap border-b-2 px-3 py-2.5 text-sm transition-colors ${
+    on ? "border-[var(--brand)] font-medium text-foreground" : "border-transparent text-muted-foreground hover:border-border hover:text-foreground"
+  }`;
 
 export default function GlobalNavigation() {
   const en = useEn();
   const pathname = usePathname();
-  const router = useRouter();
-  const { isLoaded, isSignedIn, roles, getToken } = useAppAuth();
-  const dev = useDevSession();
-  const [moreOpen, setMoreOpen] = useState(false);
+  const { isLoaded, isSignedIn, getToken } = useAppAuth();
+  const [openMenu, setOpenMenu] = useState<string | null>(null);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [minutes, setMinutes] = useState<number | null>(null);
-  const moreRef = useRef<HTMLLIElement>(null);
-  const moreButtonRef = useRef<HTMLButtonElement>(null);
+  const navRef = useRef<HTMLUListElement>(null);
+  const menuButtons = useRef<Record<string, HTMLButtonElement | null>>({});
   const mobileButtonRef = useRef<HTMLButtonElement>(null);
 
   // Signed out: Sign in / Sign up return to this page. On the sign-in page itself, keep its own redirect_url.
@@ -115,13 +109,6 @@ export default function GlobalNavigation() {
     : returnPath;
   const signInLink = loginRedirect ? signInHref(loginRedirect) : "/login";
   const signUpLink = signUpHref(loginRedirect || "/dashboard");
-  // Staff see where they work: the admin console for platform admins, the institute dashboard for institute staff
-  const groups = [
-    ...GROUPS,
-    ...(isRecruiterRole(roles) ? [{ title: en("Hiring"), items: HIRING }] : []),
-    ...(hasAnyRole(roles, ["instituteadmin", "counselor", "superadmin"]) ? [{ title: en("Institute"), items: INSTITUTE }] : []),
-    ...(hasAnyRole(roles, ["superadmin"]) ? [{ title: en("Administration"), items: ADMINISTRATION }] : []),
-  ];
 
   useEffect(() => {
     if (!isSignedIn) return;
@@ -137,21 +124,21 @@ export default function GlobalNavigation() {
     };
   }, [isSignedIn, getToken, pathname]);
 
-  // Outside click closes "More"; Escape closes either menu and returns focus to its button
+  // Outside click closes an open menu; Escape closes it (or the drawer) and returns focus to its button
   useEffect(() => {
     const onClick = (e: MouseEvent) => {
-      if (moreRef.current && !moreRef.current.contains(e.target as Node)) setMoreOpen(false);
+      if (navRef.current && !navRef.current.contains(e.target as Node)) setOpenMenu(null);
     };
     document.addEventListener("mousedown", onClick);
     return () => document.removeEventListener("mousedown", onClick);
   }, []);
   useEffect(() => {
-    if (!moreOpen && !mobileOpen) return;
+    if (!openMenu && !mobileOpen) return;
     const onKey = (e: KeyboardEvent) => {
       if (e.key !== "Escape") return;
-      if (moreOpen) {
-        setMoreOpen(false);
-        moreButtonRef.current?.focus();
+      if (openMenu) {
+        menuButtons.current[openMenu]?.focus();
+        setOpenMenu(null);
       }
       if (mobileOpen) {
         setMobileOpen(false);
@@ -160,41 +147,23 @@ export default function GlobalNavigation() {
     };
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
-  }, [moreOpen, mobileOpen]);
+  }, [openMenu, mobileOpen]);
 
   // Close menus on route change
   const [lastPathname, setLastPathname] = useState(pathname);
   if (pathname !== lastPathname) {
     setLastPathname(pathname);
-    setMoreOpen(false);
+    setOpenMenu(null);
     setMobileOpen(false);
   }
 
   if (hidesGlobalNavigation(pathname)) return null;
-  const moreActive = groups.some((g) => g.items.some((i) => active(pathname, i.href)));
 
-  const account = dev ? (
-    <span className="inline-flex items-center gap-2 text-xs">
-      <span className="rounded-full border border-amber-600/30 bg-amber-500/10 px-2 py-1 font-medium text-amber-800 dark:text-amber-300">{en("Dev: {label}", { label: dev.label })}</span>
-      <button
-        type="button"
-        onClick={() => {
-          endDevSession();
-          router.push("/login");
-        }}
-        className="rounded-md border border-border px-2 py-1 font-medium hover:bg-muted"
-      >
-        {en("End")}
-      </button>
-    </span>
-  ) : isSignedIn ? (
-    <AppUserButton />
-  ) : !isLoaded ? (
-    <div className="h-8 w-8 animate-pulse rounded-lg bg-muted" aria-hidden="true" />
-  ) : (
+  const signedOut = (
     <div className="flex items-center gap-1.5" data-nav-signed-out>
-      <Link href={signInLink} className="inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-indigo-500">
-        <LogIn aria-hidden="true" className="h-3.5 w-3.5" />{en(" Sign in")}
+      <Link href={signInLink} className="inline-flex items-center gap-1.5 rounded-lg bg-[var(--brand)] px-3 py-1.5 text-xs font-semibold text-[var(--brand-foreground,#fff)] hover:opacity-90">
+        <LogIn aria-hidden="true" className="h-3.5 w-3.5" />
+        {en("Sign in")}
       </Link>
       {CAN_SIGN_UP && (
         <Link href={signUpLink} className="hidden rounded-lg border border-border px-3 py-1.5 text-xs font-semibold hover:bg-muted sm:inline-flex">
@@ -221,19 +190,29 @@ export default function GlobalNavigation() {
             {isSignedIn && minutes !== null && (
               <Link
                 href="/pricing"
-                title={`${minutes} voice minutes left`}
+                title={en("{minutes} voice minutes left", { minutes })}
                 className="hidden items-center gap-1 rounded-full border border-border px-2.5 py-1 text-xs text-muted-foreground hover:text-foreground md:inline-flex"
               >
-                <Mic aria-hidden="true" className="h-3.5 w-3.5" /> {" "}{en("{minutes} min left", { minutes })}
+                <Mic aria-hidden="true" className="h-3.5 w-3.5" />
+                {en("{minutes} min left", { minutes })}
               </Link>
             )}
-            {/* On phones these move into the menu, so the header fits the screen */}
-            <div className="hidden items-center gap-2 sm:flex">
+            <span className="hidden sm:inline-flex">
               <ProductRegionSwitcher />
-              <EnglishPicker />
-              <ThemeToggle />
-            </div>
-            <div className="ps-1">{account}</div>
+            </span>
+            {isSignedIn ? (
+              <HeaderControls links={ACCOUNT_LINKS} area="/dashboard" />
+            ) : !isLoaded ? (
+              <div className="h-8 w-8 animate-pulse rounded-full bg-muted" aria-hidden="true" />
+            ) : (
+              <>
+                <EnglishPicker className="hidden md:inline-flex" />
+                <span className="hidden sm:inline-flex">
+                  <ThemeToggle />
+                </span>
+                {signedOut}
+              </>
+            )}
             <button
               ref={mobileButtonRef}
               type="button"
@@ -249,88 +228,83 @@ export default function GlobalNavigation() {
         </div>
 
         <nav aria-label={en("Main")} className={`${FRAME} hidden !px-1 sm:!px-3 lg:block`}>
-          <ul className="-mb-px flex items-center gap-1">
-            {TABS.map((t) => (
-              <li key={t.href}>
-                <Link
-                  href={t.href}
-                  aria-current={active(pathname, t.href) ? "page" : undefined}
-                  className={`block whitespace-nowrap border-b-2 px-3 py-2.5 text-sm transition-colors ${
-                    active(pathname, t.href) ? "border-[var(--brand)] font-medium text-foreground" : "border-transparent text-muted-foreground hover:border-border hover:text-foreground"
-                  }`}
-                >
-                  {en(t.name)}
-                </Link>
-              </li>
-            ))}
-            <li className="relative" ref={moreRef}>
-              <button
-                ref={moreButtonRef}
-                type="button"
-                aria-expanded={moreOpen}
-                aria-controls="more-menu"
-                onClick={() => setMoreOpen(!moreOpen)}
-                className={`flex items-center gap-1 whitespace-nowrap border-b-2 px-3 py-2.5 text-sm transition-colors ${
-                  moreActive ? "border-[var(--brand)] font-medium text-foreground" : "border-transparent text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                {en("More ")}<ChevronDown aria-hidden="true" className={`h-3.5 w-3.5 transition-transform ${moreOpen ? "rotate-180" : ""}`} />
-              </button>
-              {moreOpen && (
-                <div id="more-menu" className="absolute start-0 top-full z-100 mt-1 grid w-[min(92vw,720px)] gap-4 rounded-xl border border-border bg-card p-4 shadow-xl sm:grid-cols-3">
-                  {groups.map((g) => (
-                    <div key={g.title}>
-                      <p className="px-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">{en(g.title)}</p>
-                      <ul className="mt-1 space-y-0.5">
-                        {g.items.map((i) => (
+          <ul ref={navRef} className="-mb-px flex items-center gap-1">
+            <li>
+              <Link href="/dashboard" aria-current={active(pathname, "/dashboard") ? "page" : undefined} className={tab(active(pathname, "/dashboard"))}>
+                {en("Dashboard")}
+              </Link>
+            </li>
+            {MENUS.map((m) => {
+              const open = openMenu === m.id;
+              const here = m.items.some((i) => active(pathname, i.href));
+              return (
+                <li key={m.id} className="relative">
+                  <button
+                    ref={(el) => {
+                      menuButtons.current[m.id] = el;
+                    }}
+                    type="button"
+                    aria-expanded={open}
+                    aria-controls={`nav-menu-${m.id}`}
+                    onClick={() => setOpenMenu(open ? null : m.id)}
+                    className={tab(here)}
+                  >
+                    {en(m.title)}
+                    <ChevronDown aria-hidden="true" className={`h-3.5 w-3.5 transition-transform ${open ? "rotate-180" : ""}`} />
+                  </button>
+                  {open && (
+                    <div
+                      id={`nav-menu-${m.id}`}
+                      className={`absolute start-0 top-full z-100 mt-1 rounded-xl border border-border bg-card p-2 shadow-xl ${m.wide ? "w-[min(92vw,640px)]" : "w-80"}`}
+                    >
+                      <ul className={m.wide ? "grid grid-cols-2 gap-x-2" : ""}>
+                        {m.items.map((i) => (
                           <li key={i.href}>
                             <Link
                               href={i.href}
-                              onClick={() => setMoreOpen(false)}
+                              onClick={() => setOpenMenu(null)}
                               aria-current={active(pathname, i.href) ? "page" : undefined}
-                              className={`block rounded-lg px-2 py-1.5 hover:bg-muted ${active(pathname, i.href) ? "bg-muted" : ""}`}
+                              className={`block rounded-lg px-3 py-2 hover:bg-muted ${active(pathname, i.href) ? "bg-muted" : ""}`}
                             >
-                              <span className="block text-sm font-medium">{en(i.name)}</span>
-                              {i.desc && <span className="block text-xs text-muted-foreground">{i.desc}</span>}
+                              <span className="block text-sm font-medium text-foreground">{en(i.name)}</span>
+                              {i.desc && <span className="block text-xs text-muted-foreground">{en(i.desc)}</span>}
                             </Link>
                           </li>
                         ))}
                       </ul>
                     </div>
-                  ))}
-                </div>
-              )}
-            </li>
+                  )}
+                </li>
+              );
+            })}
           </ul>
         </nav>
 
         {mobileOpen && (
-          <nav id="mobile-navigation" aria-label={en("Main (mobile)")} className="max-h-[75vh] space-y-4 overflow-y-auto border-t border-border px-4 py-4 lg:hidden">
+          <nav id="mobile-navigation" aria-label={en("Main (mobile)")} className="max-h-[75vh] space-y-3 overflow-y-auto border-t border-border px-4 py-4 lg:hidden">
             <div className="flex flex-wrap items-center gap-2 sm:hidden">
               <ProductRegionSwitcher />
               <EnglishPicker />
-              <ThemeToggle />
+              {!isSignedIn && <ThemeToggle />}
             </div>
-            <ul className="grid grid-cols-2 gap-1">
-              {TABS.map((t) => (
-                <li key={t.href}>
-                  <Link
-                    href={t.href}
-                    aria-current={active(pathname, t.href) ? "page" : undefined}
-                    className={`block rounded-lg px-3 py-2 text-sm ${active(pathname, t.href) ? "bg-muted font-medium" : "text-muted-foreground hover:bg-muted"}`}
-                  >
-                    {en(t.name)}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-            {groups.map((g) => (
-              <div key={g.title} className="border-t border-border pt-3">
-                <p className="px-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">{en(g.title)}</p>
-                <ul className="mt-1">
-                  {g.items.map((i) => (
+            <Link
+              href="/dashboard"
+              aria-current={active(pathname, "/dashboard") ? "page" : undefined}
+              className={`block rounded-lg px-3 py-2 text-sm ${active(pathname, "/dashboard") ? "bg-muted font-medium" : "text-foreground hover:bg-muted"}`}
+            >
+              {en("Dashboard")}
+            </Link>
+            {MENUS.map((m) => (
+              <div key={m.id} className="border-t border-border pt-3">
+                <p className="px-3 text-xs font-medium text-muted-foreground">{en(m.title)}</p>
+                <ul className="mt-1 grid grid-cols-1 gap-0.5 sm:grid-cols-2">
+                  {m.items.map((i) => (
                     <li key={i.href}>
-                      <Link href={i.href} className="block rounded-lg px-3 py-2 text-sm text-muted-foreground hover:bg-muted hover:text-foreground">
+                      <Link
+                        href={i.href}
+                        aria-current={active(pathname, i.href) ? "page" : undefined}
+                        className={`block rounded-lg px-3 py-2 text-sm ${active(pathname, i.href) ? "bg-muted font-medium text-foreground" : "text-muted-foreground hover:bg-muted hover:text-foreground"}`}
+                      >
                         {en(i.name)}
                       </Link>
                     </li>
@@ -338,6 +312,7 @@ export default function GlobalNavigation() {
                 </ul>
               </div>
             ))}
+            {!isSignedIn && isLoaded && <div className="border-t border-border pt-3">{signedOut}</div>}
           </nav>
         )}
       </header>

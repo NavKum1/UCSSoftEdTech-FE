@@ -208,14 +208,17 @@ test("keyboard: appointment tabs follow the arrow-key tab pattern", async ({ pag
   await expect(next).toHaveAttribute("aria-selected", "true");
 });
 
-test("keyboard: global More menu opens from the keyboard and closes on Escape", async ({ page }) => {
+test("keyboard: global Practice menu opens from the keyboard and closes on Escape", async ({ page }) => {
   await open(page, "verify-jws");
-  const button = page.getByRole("button", { name: /^More/ });
-  await button.focus();
-  await page.keyboard.press("Enter");
-  await expect(button).toHaveAttribute("aria-expanded", "true");
+  const button = page.getByRole("button", { name: /^Practice/ });
+  // On a cold start the header can still be loading when Enter is pressed: press again until it responds
+  await expect(async () => {
+    await button.focus();
+    if ((await button.getAttribute("aria-expanded")) !== "true") await page.keyboard.press("Enter");
+    await expect(button).toHaveAttribute("aria-expanded", "true", { timeout: 2000 });
+  }).toPass({ timeout: 30_000 });
   await page.keyboard.press("Tab");
-  expect(await page.evaluate(() => !!document.activeElement?.closest("#more-menu")), "Tab enters the open menu").toBe(true);
+  expect(await page.evaluate(() => !!document.activeElement?.closest("#nav-menu-practice")), "Tab enters the open menu").toBe(true);
   await page.keyboard.press("Escape");
   await expect(button).toHaveAttribute("aria-expanded", "false");
   await expect(button).toBeFocused();

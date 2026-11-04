@@ -5,14 +5,11 @@
  * Clerk was removed on 1 Nov 2026 (plan item A6); production had already moved to Keycloak.
  */
 
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef } from "react";
 import { SessionProvider, getSession, signIn, useSession } from "next-auth/react";
-import { CreditCard, LogOut, Scale } from "lucide-react";
-import Link from "next/link";
 import { API_BASE_URL, REGION_ROUTING, authenticatedFetch, getApiRegion, setApiRegion } from "@/lib/apiClient";
 import { getPartnerSession, usePartnerToken } from "@/lib/partnerSession";
 import { getDevSession, useDevSession } from "@/lib/devSession";
-import { useEn } from "@/lib/english/EnglishProvider";
 
 
 export interface AppAuth {
@@ -214,74 +211,4 @@ export function useApi() {
   );
 }
 
-function KeycloakUserButton() {
-  const en = useEn();
-  const { data: session } = useSession();
-  const [open, setOpen] = useState(false);
-  const buttonRef = useRef<HTMLButtonElement>(null);
-  // Escape closes the menu and returns focus to its button
-  useEffect(() => {
-    if (!open) return;
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
-        setOpen(false);
-        buttonRef.current?.focus();
-      }
-    };
-    document.addEventListener("keydown", onKey);
-    return () => document.removeEventListener("keydown", onKey);
-  }, [open]);
-  const name = session?.user?.name ?? session?.user?.email ?? "Account";
-  const initials = name
-    .split(/[s@.]+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((p) => p[0]!.toUpperCase())
-    .join("");
-  return (
-    <div className="relative">
-      <button
-        ref={buttonRef}
-        type="button"
-        onClick={() => setOpen(!open)}
-        className="w-8 h-8 rounded-xl bg-gradient-to-tr from-indigo-600 to-purple-600 flex items-center justify-center text-white text-xs font-bold shadow-md"
-        title={name}
-        aria-label={`Account menu for ${name}`}
-        aria-expanded={open}
-        aria-controls="account-menu"
-      >
-        {initials || "?"}
-      </button>
-      {open && (
-        <div id="account-menu" className="absolute end-0 mt-2 w-60 rounded-2xl bg-card border border-border shadow-2xl p-2 z-[100]">
-          <div className="px-3 py-2 border-b border-border">
-            <div className="text-xs font-bold text-foreground truncate">{session?.user?.name}</div>
-            <div className="text-[11px] text-muted-foreground truncate">{session?.user?.email}</div>
-          </div>
-          <Link href="/pricing" onClick={() => setOpen(false)} className="mt-1 flex items-center gap-2 px-3 py-2 rounded-xl text-xs text-foreground hover:bg-muted">
-            <CreditCard aria-hidden="true" className="w-3.5 h-3.5" />
-            {en("Pricing and minutes")}
-          </Link>
-          <Link href="/settings/self-identification" onClick={() => setOpen(false)} className="flex items-center gap-2 px-3 py-2 rounded-xl text-xs text-foreground hover:bg-muted">
-            <Scale aria-hidden="true" className="w-3.5 h-3.5" />
-            {en("Fairness self-ID")}
-          </Link>
-          {/* Full-page GET (no client routing/prefetch): the route ends the Keycloak session as well */}
-          <form method="get" action="/api/auth/federated-logout">
-          <button
-            type="submit"
-            className="mt-1 w-full flex items-center gap-2 px-3 py-2 rounded-xl text-xs text-foreground hover:bg-muted"
-          >
-            <LogOut className="w-3.5 h-3.5" />
-            {en("Sign out")}
-          </button>
-          </form>
-        </div>
-      )}
-    </div>
-  );
-}
-
-export function AppUserButton() {
-  return <KeycloakUserButton />;
-}
+// The account menu is components/layout/AccountMenu (one for every header)

@@ -4,7 +4,7 @@ import React, { createContext, useCallback, useContext, useEffect, useRef, useSt
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Bell, Menu, X } from "lucide-react";
-import { AppUserButton, getSelectedSchool, setSelectedSchool, useApi, useAppAuth } from "@/lib/appAuth";
+import { getSelectedSchool, setSelectedSchool, useApi, useAppAuth } from "@/lib/appAuth";
 import { careerNav, type CareerPersona } from "@/lib/careerNav";
 import { COMMUNITY_INSTITUTE_ID } from "@/lib/community";
 import { useCareerFormat, useCareerI18n, useCareerT } from "@/components/career/i18n/CareerI18nProvider";
@@ -12,6 +12,7 @@ import { useCareerNavLabels } from "@/components/career/i18n/nav";
 import LanguagePicker from "@/components/career/i18n/LanguagePicker";
 import { accessibleBrandColor, brandCssVars } from "@/components/career/brandColor";
 import { FRAME, PAGE_Y } from "@/components/layout/Frame";
+import { HeaderControls } from "@/components/layout/AccountMenu";
 import { useDataSaver } from "@/components/career/mobile/dataSaver";
 
 export interface CareerBrand {
@@ -249,16 +250,20 @@ export default function CareerShell({ persona, children }: { persona: CareerPers
                   </span>
                 )}
               </Link>
-              <AppUserButton />
+              <HeaderControls area={careerNav[persona][0]?.href} />
             </div>
           </div>
         </header>
 
         <div className={`${FRAME} flex gap-6`}>
-          <nav id="career-nav" aria-label={t("navigation", { persona: nav.title })} className={`${menuOpen ? "block" : "hidden"} fixed inset-x-0 top-14 z-30 border-b border-border bg-card p-3 md:static md:block md:w-56 md:shrink-0 md:border-0 md:bg-transparent md:p-0 md:pt-6`}>
+          <nav id="career-nav" aria-label={t("navigation", { persona: nav.title })} className={`${menuOpen ? "block" : "hidden"} fixed inset-x-0 top-14 z-30 max-h-[calc(100dvh-3.5rem)] overflow-y-auto border-b border-border bg-card p-3 md:static md:max-h-none md:overflow-visible md:block md:w-56 md:shrink-0 md:border-0 md:bg-transparent md:p-0 md:pt-6`}>
             <ul className="space-y-1">
-              {items.map((item) => (
+              {/* The bell in the header opens notifications; groups get a heading where they start */}
+              {items.filter((i) => !i.href.endsWith("/notifications")).map((item, idx, shown) => (
                 <li key={item.href}>
+                  {item.group && item.group !== shown[idx - 1]?.group && (
+                    <p className="px-3 pb-1 pt-4 text-xs font-medium text-muted-foreground">{nav.group(item.group)}</p>
+                  )}
                   <Link
                     href={item.href}
                     prefetch={dataSaver.on ? false : undefined}

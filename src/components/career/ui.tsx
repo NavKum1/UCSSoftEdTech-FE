@@ -103,7 +103,7 @@ export function Tabs<T extends string>({ items, value, onChange, label }: { item
   );
 }
 
-type ButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & { variant?: "primary" | "secondary" | "danger" | "ghost"; busy?: boolean };
+type ButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & { variant?: "primary" | "secondary" | "danger" | "ghost"; busy?: boolean; ref?: React.Ref<HTMLButtonElement> };
 
 export function Button({ variant = "primary", busy, className = "", children, disabled, style, ...rest }: ButtonProps) {
   return (

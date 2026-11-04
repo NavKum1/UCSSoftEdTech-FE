@@ -27,7 +27,7 @@ export function ThemeToggle() {
       onClick={() => setTheme(isDark ? "light" : "dark")}
       className="relative flex items-center justify-center w-8 h-8 rounded-full border border-border/80 bg-card/60 hover:bg-card text-muted-foreground hover:text-foreground hover:border-foreground/20 transition-all duration-200 hover:scale-105 active:scale-95 shadow-sm shrink-0 cursor-pointer p-0 overflow-hidden"
       aria-label={en("Toggle theme")}
-      title={isDark ? en("Switch to Light Mode") : en("Switch to Dark Mode")}
+      title={isDark ? en("Switch to light mode") : en("Switch to dark mode")}
     >
       <div className="relative w-4 h-4 flex items-center justify-center pointer-events-none">
         <Sun className={`w-4 h-4 text-foreground transition-all duration-300 absolute inset-0 m-auto ${isDark ? "rotate-90 scale-0 opacity-0" : "rotate-0 scale-100 opacity-100"}`} />

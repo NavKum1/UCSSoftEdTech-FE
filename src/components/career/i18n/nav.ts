@@ -27,5 +27,13 @@ export function useCareerNavLabels(persona: CareerPersona) {
     [t, en, persona],
   );
   const title = t.has(`persona.${persona}`) ? t(`persona.${persona}`) : en(personaTitle[persona]);
-  return { label, title };
+  // A menu group heading (careerNav group): a career message when there is one, else the app's translation
+  const group = useCallback(
+    (name: string) => {
+      const key = `navGroup.${name.toLowerCase().replace(/[^a-z]+/g, "_")}`;
+      return t.has(key) ? t(key) : en(name);
+    },
+    [t, en],
+  );
+  return { label, title, group };
 }

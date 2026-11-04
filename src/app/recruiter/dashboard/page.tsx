@@ -1,13 +1,13 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { Badge, Button, Card, EmptyState, ErrorBanner, Field, Loading, Modal, PageHeader, ScrollArea, StatTile, Tabs, brandFill, buttonClass } from "@/components/career/ui";
 import { AccessNotice, useLatestRef, useLegacyApi } from "@/lib/legacyApi";
 import {
   ShieldAlert, ShieldCheck, Plus, ExternalLink, RefreshCw, Copy, Check,
-  AlertTriangle, Sparkles, Filter, Code2, Award, Mic, CheckCircle2, Clock,
-  Layers, ArrowRight, Brain, CheckCheck, X, MessageSquare, FileSearch, Target,
+  AlertTriangle, Sparkles, Code2, Mic, CheckCircle2, Clock,
+  Layers, Brain, CheckCheck, X, MessageSquare, FileSearch, ChevronDown,
 } from "lucide-react";
 import { useEn } from "@/lib/english/EnglishProvider";
 
@@ -543,6 +543,8 @@ export default function RecruiterDashboardPage() {
             <>
               <Button
                 variant="ghost"
+                aria-label={en("Refresh")}
+                title={en("Refresh")}
                 onClick={() => {
                   fetchCandidates();
                   fetchBundles();
@@ -550,27 +552,26 @@ export default function RecruiterDashboardPage() {
                 busy={loading || loadingBundles}
               >
                 {!(loading || loadingBundles) && <RefreshCw aria-hidden="true" className="h-4 w-4" />}
-                {en("Refresh")}
               </Button>
-              <Button
-                variant="secondary"
-                onClick={() => {
-                  setScrutinyResult(null);
-                  setScrutinyResumeText("");
-                  setScrutinyCandidateName("");
-                  setScrutinyTargetRole("");
-                  setScrutinyTargetCompany("");
-                  setScrutinyYearsExp(0);
-                  setShowScrutinyModal(true);
-                }}
-              >
-                <FileSearch aria-hidden="true" className="h-4 w-4" />
-                {en("Review a résumé")}
-              </Button>
-              <Button variant="secondary" onClick={() => setShowCreateModal(true)}>
-                <Plus aria-hidden="true" className="h-4 w-4" />
-                {en("New challenge")}
-              </Button>
+              <MoreActions
+                label={en("More actions")}
+                items={[
+                  {
+                    label: en("Review a résumé"),
+                    icon: <FileSearch aria-hidden="true" className="h-4 w-4" />,
+                    onSelect: () => {
+                      setScrutinyResult(null);
+                      setScrutinyResumeText("");
+                      setScrutinyCandidateName("");
+                      setScrutinyTargetRole("");
+                      setScrutinyTargetCompany("");
+                      setScrutinyYearsExp(0);
+                      setShowScrutinyModal(true);
+                    },
+                  },
+                  { label: en("New coding challenge"), icon: <Plus aria-hidden="true" className="h-4 w-4" />, onSelect: () => setShowCreateModal(true) },
+                ]}
+              />
               <Button
                 onClick={() => {
                   setBundleCreatedData(null);
@@ -586,40 +587,29 @@ export default function RecruiterDashboardPage() {
           }
         />
 
-        {/* Human review, integrations and validity */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          {[
-            { href: "/recruiter/evidence", title: en("Evidence review queue"), text: en("Review evidence packs and record Advance / Hold / Decline decisions."), Icon: FileSearch },
-            { href: "/recruiter/integrations", title: en("ATS integrations"), text: en("Connect Greenhouse, Lever, Workday, SeekJobs or a signed webhook."), Icon: Layers },
-            { href: "/recruiter/validity", title: en("Validity & bias audit"), text: en("Score-to-performance correlations and four-fifths impact ratios."), Icon: Target },
-          ].map(({ href, title, text, Icon }) => (
-            <Link
-              key={href}
-              href={href}
-              className="flex items-start gap-3 rounded-xl border border-border bg-card p-4 shadow-sm transition-colors hover:border-[var(--brand)]"
-            >
-              <Icon className="w-5 h-5 text-indigo-600 dark:text-indigo-400 shrink-0 mt-0.5" />
-              <div className="min-w-0">
-                <div className="flex items-center gap-1 text-sm font-semibold text-foreground">
-                  {en(title)}
-                  <ArrowRight className="w-3.5 h-3.5 text-muted-foreground" />
-                </div>
-                <p className="text-xs text-muted-foreground mt-0.5">{en(text)}</p>
-              </div>
-            </Link>
-          ))}
-        </div>
-
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <StatTile icon={<FileSearch />} label={en("Awaiting review")} value={bundles.filter((b) => reviewStatus(b) === "AWAITING").length} hint={en("All stages done; you decide on the evidence")} />
-          <StatTile icon={<Award />} label={en("Advanced")} value={bundles.filter((b) => reviewStatus(b) === "ADVANCED").length} hint={en("Advanced by a recruiter")} />
-          <StatTile
-            icon={<Clock />}
-            label={en("On hold / declined")}
-            value={`${bundles.filter((b) => reviewStatus(b) === "HOLD").length} / ${bundles.filter((b) => reviewStatus(b) === "DECLINED").length}`}
-            hint={en("Decided by a recruiter")}
-          />
-          <StatTile icon={<Layers />} label={en("In progress")} value={bundles.filter((b) => reviewStatus(b) === "IN_PROGRESS").length} hint={en("Still completing the assessment")} />
+        {/* Where each assessment stands; choosing one shows those candidates (choose it again for everyone) */}
+        <div role="group" aria-label={en("Filter by review status")} className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+          {(["AWAITING", "IN_PROGRESS", "ADVANCED", "HOLD", "DECLINED"] as const).map((s) => {
+            const on = decisionFilter === s;
+            const count = bundles.filter((b) => reviewStatus(b) === s).length;
+            return (
+              <button
+                key={s}
+                type="button"
+                aria-pressed={on}
+                onClick={() => {
+                  setDecisionFilter(on ? "ALL" : s);
+                  setActiveTab("bundles");
+                }}
+                className={`rounded-xl border bg-card p-4 text-start shadow-sm transition-colors ${
+                  on ? "border-[var(--brand)] ring-1 ring-[var(--brand)]" : "border-border hover:border-foreground/30"
+                }`}
+              >
+                <span className="block text-sm text-muted-foreground">{en(REVIEW_STATUS_LABELS[s])}</span>
+                <span className="mt-1 block text-2xl font-semibold tabular-nums tracking-tight text-foreground">{count}</span>
+              </button>
+            );
+          })}
         </div>
 
         <Tabs
@@ -634,55 +624,19 @@ export default function RecruiterDashboardPage() {
 
         {/* Tab 1: assessments (written exam, coding sprint, voice defense) */}
         {activeTab === "bundles" && (
-          <Card
-            title={en("Assessment pipeline")}
-            actions={
-              <Button
-                variant="secondary"
-                onClick={() => {
-                  setBundleCreatedData(null);
-                  setShowBundleModal(true);
-                }}
-              >
-                <Plus aria-hidden="true" className="h-4 w-4" />
-                {en("Invite a candidate")}
-              </Button>
-            }
-            className="min-w-0 space-y-4"
-          >
-            <p className="-mt-2 text-sm text-muted-foreground">
-              {en("Candidates complete a written exam, a coding sprint and a voice defense. Scores are evidence for a recruiter; nobody is advanced or declined automatically.")}
-            </p>
-
-            {/* Review status filter */}
-            <div role="group" aria-label={en("Filter by review status")} className="flex flex-wrap items-center gap-2">
-              <span className="me-1 inline-flex items-center gap-1 text-xs font-medium text-muted-foreground">
-                <Filter aria-hidden="true" className="h-3.5 w-3.5" />
-                {en("Review status")}
-              </span>
-              {([
-                { id: "ALL", label: en("All ({count})", { count: bundles.length }) },
-                ...(["AWAITING", "ADVANCED", "HOLD", "DECLINED", "IN_PROGRESS"] as const).map((s) => ({
-                  id: s,
-                  label: `${en(REVIEW_STATUS_LABELS[s])} (${bundles.filter((b) => reviewStatus(b) === s).length})`,
-                })),
-              ] as { id: "ALL" | ReviewStatus; label: string }[]).map((pill) => {
-                const on = decisionFilter === pill.id;
-                return (
-                  <button
-                    key={pill.id}
-                    type="button"
-                    aria-pressed={on}
-                    onClick={() => setDecisionFilter(pill.id)}
-                    style={on ? brandFill : undefined}
-                    className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
-                      on ? "text-[var(--brand-foreground,#fff)]" : "border border-border bg-card text-muted-foreground hover:text-foreground"
-                    }`}
-                  >
-                    {pill.label}
+          <Card className="min-w-0 space-y-4">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <p className="text-sm text-muted-foreground">
+                {en("Candidates complete a written exam, a coding sprint and a voice defense. Scores are evidence for a recruiter; nobody is advanced or declined automatically.")}
+              </p>
+              {decisionFilter !== "ALL" && (
+                <p className="flex items-center gap-2 text-sm">
+                  <span className="text-foreground">{en("Showing: {status}", { status: en(REVIEW_STATUS_LABELS[decisionFilter]) })}</span>
+                  <button type="button" onClick={() => setDecisionFilter("ALL")} className="font-medium text-[var(--brand)] underline-offset-2 hover:underline">
+                    {en("Show all")}
                   </button>
-                );
-              })}
+                </p>
+              )}
             </div>
 
             {linkMessage && (
@@ -1549,6 +1503,58 @@ export default function RecruiterDashboardPage() {
             </div>
           </div>
         </Modal>
+      )}
+    </div>
+  );
+}
+
+/** A small menu of the page's less frequent actions, next to its main button */
+function MoreActions({ label, items }: { label: string; items: { label: string; icon?: React.ReactNode; onSelect: () => void }[] }) {
+  const [open, setOpen] = useState(false);
+  const box = useRef<HTMLDivElement>(null);
+  const button = useRef<HTMLButtonElement>(null);
+  useEffect(() => {
+    if (!open) return;
+    const onClick = (e: MouseEvent) => {
+      if (box.current && !box.current.contains(e.target as Node)) setOpen(false);
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setOpen(false);
+        button.current?.focus();
+      }
+    };
+    document.addEventListener("mousedown", onClick);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onClick);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [open]);
+  return (
+    <div ref={box} className="relative">
+      <Button ref={button} variant="secondary" aria-expanded={open} aria-controls="more-actions" onClick={() => setOpen(!open)}>
+        {label}
+        <ChevronDown aria-hidden="true" className={`h-4 w-4 transition-transform ${open ? "rotate-180" : ""}`} />
+      </Button>
+      {open && (
+        <ul id="more-actions" className="absolute end-0 z-20 mt-1 w-56 rounded-xl border border-border bg-card p-1 shadow-lg">
+          {items.map((i) => (
+            <li key={i.label}>
+              <button
+                type="button"
+                onClick={() => {
+                  setOpen(false);
+                  i.onSelect();
+                }}
+                className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-start text-sm text-foreground hover:bg-muted"
+              >
+                {i.icon}
+                {i.label}
+              </button>
+            </li>
+          ))}
+        </ul>
       )}
     </div>
   );
