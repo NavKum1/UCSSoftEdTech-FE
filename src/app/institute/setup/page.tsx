@@ -346,9 +346,10 @@ function SchoolStep({ s, setS, apiFetch, next }: StepProps) {
         </div>
         <div>
           <label htmlFor="contact" className="text-sm font-medium">
-            {en("Contact e-mail for families and students")}
+            {en("E-mail for families' replies and questions")}
           </label>
-          <input id="contact" type="email" value={f.contactEmail} onChange={(e) => setF({ ...f, contactEmail: e.target.value })} placeholder={en("admissions@yourschool.edu")} className={input} />
+          <input id="contact" type="email" aria-describedby="contact-hint" value={f.contactEmail} onChange={(e) => setF({ ...f, contactEmail: e.target.value })} placeholder={en("admissions@yourschool.edu")} className={input} />
+          <p id="contact-hint" className="mt-1 text-xs text-muted-foreground">{en("Families see this address, and replies to your e-mails come here.")}</p>
         </div>
         <div>
           <label htmlFor="address" className="text-sm font-medium">

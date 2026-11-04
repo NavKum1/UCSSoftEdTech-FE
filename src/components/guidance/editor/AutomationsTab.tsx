@@ -12,7 +12,7 @@ import Link from "next/link";
 import { ChevronDown, ChevronRight, Mail, MessageSquare, Plus, Send, Trash2, Users } from "lucide-react";
 import { newId, type Automation, type FormDef } from "@/components/guidance/form/model";
 import { useEn } from "@/lib/english/EnglishProvider";
-import { useSchoolCountry } from "@/components/institute/SchoolEnglish";
+import { useSchoolCountry, useSchoolReplies } from "@/components/institute/SchoolEnglish";
 
 const field = "mt-1 block w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:border-cyan-600 focus:outline-none focus:ring-2 focus:ring-cyan-600/20";
 
@@ -169,6 +169,7 @@ function AutomationEditor({ a, update, outcomes, match, team }: { a: Automation;
   const en = useEn();
   // India's DLT id: for a school in India (or one already filled in)
   const dltNeeded = useSchoolCountry() === "IN" || !!a.dltTemplateId;
+  const replies = useSchoolReplies();
   const unit = a.delayMinutes > 0 && a.delayMinutes % 1440 === 0 ? 1440 : a.delayMinutes > 0 && a.delayMinutes % 60 === 0 ? 60 : 1;
   const email = a.channel === "email" || a.channel === "team";
   const fill = (t: string | null | undefined) => (t ?? "").replace(/\{(\w+)\}/g, (m, k: string) => FIELDS.find((f) => f[0] === k)?.[1] ?? m);
@@ -235,6 +236,27 @@ function AutomationEditor({ a, update, outcomes, match, team }: { a: Automation;
           {en("Subject")}
           <input className={field} maxLength={200} value={a.subject ?? ""} onChange={(e) => update({ subject: e.target.value })} />
         </label>
+      )}
+      {a.channel === "email" && replies && (
+        <p className="text-muted-foreground">
+          {replies.intoCrm ? (
+            en("Replies appear on the person's page in the CRM.")
+          ) : replies.address ? (
+            <>
+              {en("Replies go to {address}.", { address: replies.address })}{" "}
+              <Link href="/institute/setup?step=school" className="text-cyan-700 underline-offset-2 hover:underline dark:text-cyan-400">
+                {en("Change")}
+              </Link>
+            </>
+          ) : (
+            <>
+              {en("Replies have nowhere to go yet.")}{" "}
+              <Link href="/institute/setup?step=school" className="text-cyan-700 underline-offset-2 hover:underline dark:text-cyan-400">
+                {en("Add your e-mail for families")}
+              </Link>
+            </>
+          )}
+        </p>
       )}
       {a.channel !== "whatsapp" ? (
         <label className="block font-medium">
