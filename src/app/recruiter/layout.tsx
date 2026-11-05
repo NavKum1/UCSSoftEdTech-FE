@@ -14,6 +14,7 @@ const SECTIONS = [
   { label: "Accommodations", href: "/recruiter/accommodations", group: "Fairness" },
   { label: "Validity & bias audit", href: "/recruiter/validity", group: "Fairness" },
   { label: "Transparency", href: "/recruiter/transparency-settings", group: "Fairness" },
+  { label: "Team", href: "/recruiter/team", group: "Settings" },
   { label: "ATS integrations", href: "/recruiter/integrations", group: "Settings" },
 ];
 

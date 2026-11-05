@@ -8,6 +8,8 @@
 import React, { useState } from "react";
 import { useApi } from "@/lib/appAuth";
 import { Badge, Button, Card, ErrorBanner, Loading, ScrollArea, SuccessBanner, useCareerT, useLoad } from "@/components/career/ui";
+import { useCareerShell } from "@/components/career/CareerShell";
+import { isIndia } from "@/components/career/country";
 
 interface DefaultsType {
   type: string;
@@ -32,6 +34,9 @@ const td = "py-2 pe-3 align-top";
 export function DriveMessageDefaults<S>({ canEdit, onApplied }: { canEdit: boolean; onApplied: (settings: S) => void }) {
   const t = useCareerT("channelDriveDefaults");
   const tt = useCareerT("careerCenterChatSms");
+  // P5: DLT registration (texts, categories, link length, notes) is India's SMS rule; other schools see the SMS texts only
+  const tw = useCareerT("countryWords");
+  const india = isIndia(useCareerShell().schoolCountry);
   const api = useApi();
   const loaded = useLoad(() => api<Defaults>("/api/career/channels/admin/template-defaults"), [api]);
   const [busy, setBusy] = useState(false);
@@ -59,8 +64,8 @@ export function DriveMessageDefaults<S>({ canEdit, onApplied }: { canEdit: boole
 
   const d = loaded.data;
   return (
-    <Card title={t("title")}>
-      <p className="text-sm text-muted-foreground">{t("intro")}</p>
+    <Card title={india ? t("title") : tw("driveMessagesTitle")}>
+      <p className="text-sm text-muted-foreground">{india ? t("intro") : tw("driveMessagesIntro")}</p>
       {canEdit && d && (
         <div className="mt-3 flex flex-wrap gap-2">
           <Button type="button" variant="secondary" busy={busy} onClick={() => void apply(false)}>
@@ -78,7 +83,7 @@ export function DriveMessageDefaults<S>({ canEdit, onApplied }: { canEdit: boole
       ) : (
         <div className="mt-3 space-y-4">
           {!d.workspaceChecked && <p className="text-sm text-muted-foreground">{t("notChecked")}</p>}
-          {!d.linkFitsDltVariable && <p className="break-words text-sm text-amber-800 dark:text-amber-200">{t("linkTooLong", { link: d.linkExample })}</p>}
+          {india && !d.linkFitsDltVariable && <p className="break-words text-sm text-amber-800 dark:text-amber-200">{t("linkTooLong", { link: d.linkExample })}</p>}
           <ScrollArea label={t("tableLabel")}>
             <table className="w-full text-sm">
               <caption className="sr-only">{t("tableLabel")}</caption>
@@ -86,7 +91,7 @@ export function DriveMessageDefaults<S>({ canEdit, onApplied }: { canEdit: boole
                 <tr className="border-b border-border [&_th]:text-start">
                   <th scope="col" className={th}>{t("colType")}</th>
                   <th scope="col" className={th}>{t("colWhatsApp")}</th>
-                  <th scope="col" className={th}>{t("colDlt")}</th>
+                  <th scope="col" className={th}>{india ? t("colDlt") : tw("smsText")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -104,9 +109,9 @@ export function DriveMessageDefaults<S>({ canEdit, onApplied }: { canEdit: boole
                       )}
                     </td>
                     <td className={td}>
-                      <p dir="ltr" className="break-words text-xs">{x.sms.dltText}</p>
-                      <p className="mt-1 text-xs text-muted-foreground">{t("dltCategory", { category: x.sms.dltCategory })}</p>
-                      {d.workspaceChecked && (
+                      <p dir="ltr" className="break-words text-xs">{india ? x.sms.dltText : x.sms.text}</p>
+                      {india && <p className="mt-1 text-xs text-muted-foreground">{t("dltCategory", { category: x.sms.dltCategory })}</p>}
+                      {india && d.workspaceChecked && (
                         <Badge tone={x.sms.matchedDltTemplateId ? "good" : "warn"}>
                           {x.sms.matchedDltTemplateId ? t("registered", { id: x.sms.matchedDltTemplateId }) : t("notRegistered")}
                         </Badge>
@@ -117,6 +122,7 @@ export function DriveMessageDefaults<S>({ canEdit, onApplied }: { canEdit: boole
               </tbody>
             </table>
           </ScrollArea>
+          {india && (
           <div>
             <h3 className="text-sm font-semibold">{t("notesTitle")}</h3>
             <ul className="mt-1 list-disc space-y-1 ps-5 text-sm text-muted-foreground">
@@ -125,6 +131,7 @@ export function DriveMessageDefaults<S>({ canEdit, onApplied }: { canEdit: boole
               ))}
             </ul>
           </div>
+          )}
         </div>
       )}
     </Card>

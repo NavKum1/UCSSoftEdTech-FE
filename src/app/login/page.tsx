@@ -168,6 +168,15 @@ function KeycloakSignIn({ redirectUrl, signUp, loginHint, authError, brand }: Ke
             </button>
           </p>
         )}
+        {platform && !signUp && (
+          // P3 (5 Nov 2026): schools find their sign-up from the sign-in page too
+          <p className="text-center text-sm text-muted-foreground">
+            {en("New school or college? ")}
+            <a href="/start" className="rounded-md font-medium text-[var(--auth-link)] underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--auth-ring)]">
+              {en("Start a free trial")}
+            </a>
+          </p>
+        )}
         <p className="flex items-start justify-center gap-1.5 border-t border-[var(--auth-card-border)] pt-4 text-center text-xs text-muted-foreground">
           <ShieldCheck aria-hidden="true" className="mt-px h-3.5 w-3.5 shrink-0" />
           {platform

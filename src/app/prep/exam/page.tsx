@@ -257,6 +257,7 @@ export default function WrittenExamPrepPage() {
   const [uploadDuration, setUploadDuration] = useState<number>(20);
   const [uploadJson, setUploadJson] = useState<string>("");
   const [uploadError, setUploadError] = useState<string | null>(null);
+  const [aiError, setAiError] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState<boolean>(false);
 
 
@@ -482,6 +483,7 @@ export default function WrittenExamPrepPage() {
 
   const handleSynthesizeExam = async (e: React.FormEvent) => {
     e.preventDefault();
+    setAiError(null);
     setIsSynthesizing(true);
     try {
       const res = await apiFetch(`/api/quiz/exams/generate`, {
@@ -500,9 +502,13 @@ export default function WrittenExamPrepPage() {
         setShowAiModal(false);
         await fetchCatalog();
         startExam(newExam.id);
+      } else {
+        // P6: the server refuses rather than inventing an exam; show why
+        const body = await res.json().catch(() => null);
+        setAiError(body?.error || en("We couldn't generate this exam just now. Please try again, or upload your own questions."));
       }
-    } catch (err) {
-      console.error("AI Exam generation failed:", err);
+    } catch {
+      setAiError(en("We couldn't reach the server. Please check your connection and try again."));
     } finally {
       setIsSynthesizing(false);
     }
@@ -1395,6 +1401,8 @@ export default function WrittenExamPrepPage() {
                   ))}
                 </div>
               </fieldset>
+
+              <ErrorBanner error={aiError} />
 
               <div className="flex items-center justify-end gap-2 pt-3 border-t border-border">
                 <Button type="button" variant="secondary" onClick={() => setShowAiModal(false)}>

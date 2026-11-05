@@ -14,7 +14,6 @@ import {
   ArrowLeft,
   Bot,
   User,
-  Filter,
 } from "lucide-react";
 import { useEn } from "@/lib/english/EnglishProvider";
 import { Badge, Button, Card, EmptyState, Loading, PageHeader, StatTile } from "@/components/career/ui";
@@ -43,8 +42,6 @@ interface InterviewSessionData {
 interface DialogueMessage {
   speaker: "AI" | "Candidate";
   text: string;
-  isFlagged: boolean;
-  flagReason?: string;
 }
 
 export default function StudentInterviewReplayPage() {
@@ -65,7 +62,6 @@ export default function StudentInterviewReplayPage() {
   const [duration, setDuration] = useState<number>(300);
   const [playbackSpeed, setPlaybackSpeed] = useState<number>(1);
   const [isMuted, setIsMuted] = useState<boolean>(false);
-  const [filterFlaggedOnly, setFilterFlaggedOnly] = useState<boolean>(false);
 
   // Fetch Session & Evaluation
   useEffect(() => {
@@ -152,60 +148,18 @@ export default function StudentInterviewReplayPage() {
     return `${m}:${s < 10 ? "0" : ""}${s}`;
   };
 
-  // Parse Transcript into Dialogue Bubbles with AI Flaw & Missing Skill Moment Highlighting
+  // The transcript as it was spoken. P6 (5 Nov 2026): lines are no longer flagged by matching tech keywords on this page.
   const parseTranscript = (rawText: string): DialogueMessage[] => {
     if (!rawText) return [];
-
-    const lines = rawText.split(/\r?\n/).filter((l) => l.trim().length > 0);
-    const parsed: DialogueMessage[] = [];
-
-    const flawKeywords = [
-      "sql",
-      "injection",
-      "hardcoded",
-      "connection",
-      "pooling",
-      "concurrency",
-      "flaw",
-      "missing",
-      "leak",
-      "parameterized",
-      "react hooks",
-      "aws vpc",
-    ];
-
-    lines.forEach((line) => {
-      let speaker: "AI" | "Candidate" = "AI";
-      let text = line;
-
-      if (line.startsWith("AI:") || line.startsWith("Interviewer:")) {
-        speaker = "AI";
-        text = line.replace(/^(AI:|Interviewer:)/, "").trim();
-      } else if (line.startsWith("Candidate:") || line.startsWith("User:")) {
-        speaker = "Candidate";
-        text = line.replace(/^(Candidate:|User:)/, "").trim();
-      }
-
-      const lower = text.toLowerCase();
-      const isFlagged = flawKeywords.some((kw) => lower.includes(kw));
-      let flagReason = "";
-
-      if (isFlagged) {
-        if (lower.includes("sql") || lower.includes("injection") || lower.includes("hardcoded")) {
-          flagReason = "Key topic: Database security & safe queries";
-        } else if (lower.includes("connection") || lower.includes("pooling")) {
-          flagReason = "Key topic: Resource management & efficiency";
-        } else if (lower.includes("concurrency") || lower.includes("race")) {
-          flagReason = "Key topic: Handling concurrent operations";
-        } else {
-          flagReason = "Key topic: Core problem solving concepts";
+    return rawText
+      .split(/\r?\n/)
+      .filter((l) => l.trim().length > 0)
+      .map((line) => {
+        if (line.startsWith("Candidate:") || line.startsWith("User:")) {
+          return { speaker: "Candidate" as const, text: line.replace(/^(Candidate:|User:)/, "").trim() };
         }
-      }
-
-      parsed.push({ speaker, text, isFlagged, flagReason });
-    });
-
-    return parsed;
+        return { speaker: "AI" as const, text: line.replace(/^(AI:|Interviewer:)/, "").trim() };
+      });
   };
 
   if (access) return <AccessNotice problem={access} feature="This interview replay" />;
@@ -232,7 +186,6 @@ export default function StudentInterviewReplayPage() {
   }
 
   const dialogues = parseTranscript(sessionData.transcript || "");
-  const displayedDialogues = filterFlaggedOnly ? dialogues.filter((d) => d.isFlagged) : dialogues;
   const score = sessionData?.evaluation?.technicalScore;
 
   return (
@@ -335,27 +288,15 @@ export default function StudentInterviewReplayPage() {
         </Card>
 
         {/* Transcript Visualizer & Flaw Highlights */}
-        <Card
-          title={en("Transcript")}
-          actions={
-            <Button variant="secondary" onClick={() => setFilterFlaggedOnly(!filterFlaggedOnly)}>
-              <Filter className="h-4 w-4" />
-              <span>{filterFlaggedOnly ? en("Show full conversation") : en("Show key moments only")}</span>
-            </Button>
-          }
-        >
-          <p className="-mt-2 mb-4 text-sm text-muted-foreground">{en("Key topics worth discussing are highlighted in amber.")}</p>
-
+        <Card title={en("Transcript")}>
           {/* Dialogue Stream */}
           <div className="max-h-[600px] space-y-3 overflow-y-auto pe-2">
-            {displayedDialogues.length === 0 && <EmptyState title={en("No transcript lines to show.")} />}
-            {displayedDialogues.map((msg, idx) => (
+            {dialogues.length === 0 && <EmptyState title={en("No transcript lines to show.")} />}
+            {dialogues.map((msg, idx) => (
               <div
                 key={idx}
                 className={`rounded-lg border p-4 ${
-                  msg.isFlagged
-                    ? "border-amber-300 bg-amber-50 dark:border-amber-900 dark:bg-amber-950/40"
-                    : msg.speaker === "AI"
+                  msg.speaker === "AI"
                     ? "border-border bg-card"
                     : "ms-6 border-border bg-muted/40"
                 }`}
@@ -366,12 +307,6 @@ export default function StudentInterviewReplayPage() {
                     <span>{msg.speaker === "AI" ? en("Interviewer") : sessionData?.candidateName || en("Candidate")}</span>
                   </div>
 
-                  {msg.isFlagged && (
-                    <Badge tone="warn">
-                      <AlertTriangle className="me-1 h-3 w-3" />
-                      {msg.flagReason || en("Key discussion point")}
-                    </Badge>
-                  )}
                 </div>
 
                 <p className="whitespace-pre-line ps-6 text-sm leading-relaxed text-muted-foreground">{msg.text}</p>

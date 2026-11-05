@@ -15,7 +15,8 @@ import { ArrowRightLeft, LogOut, Monitor, Moon, Sun } from "lucide-react";
 import { useAppAuth } from "@/lib/appAuth";
 import { endDevSession, useDevSession } from "@/lib/devSession";
 import { useEn } from "@/lib/english/EnglishProvider";
-import { platformHome } from "@/lib/roleHome";
+import { platformHome, schoolHome, type CareerMe } from "@/lib/roleHome";
+import { authenticatedFetch } from "@/lib/apiClient";
 import EnglishPicker from "@/components/EnglishPicker";
 import { ThemeToggle } from "@/components/ThemeToggle";
 
@@ -77,7 +78,7 @@ export function AccountMenu({ links = [], area }: { links?: AccountLink[]; /** T
   const en = useEn();
   const router = useRouter();
   const { data: session } = useSession();
-  const { roles } = useAppAuth();
+  const { roles, getToken } = useAppAuth();
   const dev = useDevSession();
   const [open, setOpen] = useState(false);
   const buttonRef = useRef<HTMLButtonElement>(null);
@@ -111,7 +112,24 @@ export function AccountMenu({ links = [], area }: { links?: AccountLink[]; /** T
       .map((p) => p[0]!.toUpperCase())
       .join("") || "?";
   const member = platformHome(roles) === null;
-  const areas = AREAS.filter((a) => a.href !== area && (a.roles === null ? member : has(roles, a.roles)));
+  // P1 (5 Nov 2026): a school's student works in the school's area (practice is in its menu); others keep the member dashboard
+  // The school area (/student, or /alumni for a graduate); undefined until looked up: once, the first time the menu opens
+  const [school, setSchool] = useState<string | null | undefined>(undefined);
+  useEffect(() => {
+    if (!open || !member || dev || school !== undefined) return;
+    let live = true;
+    authenticatedFetch("/api/career/me", {}, getToken)
+      .then(async (res) => (res.ok ? ((await res.json()) as CareerMe) : null))
+      .catch(() => null)
+      .then((me) => live && setSchool(schoolHome(me)));
+    return () => {
+      live = false;
+    };
+  }, [open, member, dev, getToken, school]);
+  const areas = [
+    ...(school && area !== school ? [{ href: school, label: "My school", roles: null }] : []),
+    ...AREAS.filter((a) => a.href !== area && (a.roles === null ? member && !school : has(roles, a.roles))),
+  ];
   const item = "flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-foreground hover:bg-muted";
 
   return (

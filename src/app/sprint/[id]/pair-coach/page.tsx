@@ -6,7 +6,7 @@ import Link from "next/link";
 import { AccessNotice, useLegacyApi, useLatestRef } from "@/lib/legacyApi";
 import { useEn } from "@/lib/english/EnglishProvider";
 import { ArrowLeft, ArrowRight, BookOpen, Lightbulb, MessageSquare, Search, Wand2 } from "lucide-react";
-import { Badge, Button, EmptyState, PageHeader, Tabs, brandFill, buttonClass } from "@/components/career/ui";
+import { Badge, Button, EmptyState, ErrorBanner, PageHeader, Tabs, brandFill, buttonClass } from "@/components/career/ui";
 
 interface InteractionLog {
   id: string;
@@ -63,6 +63,7 @@ export default function AiPairCoachStudioPage() {
   const [userPrompt, setUserPrompt] = useState<string>("");
   const [activeTab, setActiveTab] = useState<"chat" | "smells" | "diff">("chat");
   const [activeDiff, setActiveDiff] = useState<string | null>(null);
+  const [coachError, setCoachError] = useState<string | null>(null);
 
   // Initialize or fetch active Pair Coach session
   const fetchOrStartSession = async () => {
@@ -115,6 +116,7 @@ export default function AiPairCoachStudioPage() {
   // Handle interaction dispatch (Hint, Explain, Refactor, Probe)
   const handleInteraction = async (type: "Hint" | "Explain" | "Refactor" | "Probe", customPrompt?: string) => {
     if (!session) return;
+    setCoachError(null);
     try {
       setIsSubmitting(true);
       const promptToSend = customPrompt || userPrompt || `Requesting ${type.toLowerCase()} for my current code`;
@@ -131,8 +133,13 @@ export default function AiPairCoachStudioPage() {
         }),
       });
 
-      const data = await res.json();
-      if (data.success && data.interaction) {
+      const data = await res.json().catch(() => null);
+      if (!res.ok || !data?.success) {
+        // P6: the server says when the AI coach isn't available; show it rather than an invented answer
+        setCoachError(data?.message || en("The coach couldn't respond just now. Please try again."));
+        return;
+      }
+      if (data.interaction) {
         setInteractions((prev) => [data.interaction, ...prev]);
         if (data.interaction.suggestedDiff) {
           setActiveDiff(data.interaction.suggestedDiff);
@@ -140,10 +147,11 @@ export default function AiPairCoachStudioPage() {
         }
         setUserPrompt("");
 
-        // Refresh session telemetry
-        const auditRes = await apiFetch(`/api/pair-coach/session/${session.id}`);
-        const auditData = await auditRes.json();
-        if (auditData.success && auditData.session) {
+        // Refresh session telemetry (best effort: the coach's answer is already shown, so a failed refresh isn't an error)
+        const auditData = await apiFetch(`/api/pair-coach/session/${session.id}`)
+          .then((r) => r.json())
+          .catch(() => null);
+        if (auditData?.success && auditData.session) {
           setSession(auditData.session);
           if (auditData.session.codeSmellsDetected_JSON) {
             try {
@@ -154,8 +162,8 @@ export default function AiPairCoachStudioPage() {
           }
         }
       }
-    } catch (err) {
-      console.error("Failed to submit interaction:", err);
+    } catch {
+      setCoachError(en("We couldn't reach the server. Please check your connection and try again."));
     } finally {
       setIsSubmitting(false);
     }
@@ -401,7 +409,8 @@ export default function AiPairCoachStudioPage() {
           </div>
 
           {/* Message box */}
-          <div className="border-t border-border p-3">
+          <div className="border-t border-border p-3 space-y-2">
+            <ErrorBanner error={coachError} />
             <div className="flex gap-2">
               <input
                 type="text"

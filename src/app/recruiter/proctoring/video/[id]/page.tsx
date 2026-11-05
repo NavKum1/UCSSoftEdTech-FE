@@ -28,7 +28,7 @@ interface PlayerPayload {
   sessionId: string;
   trackType: string;
   status: string;
-  transcodedUrl: string;
+  transcodedUrl: string | null;
   thumbnailUrl: string;
   durationSeconds: number;
   totalMarkers: number;
@@ -116,9 +116,9 @@ export default function ProctoringVideoReviewPage({ params }: { params: Promise<
   if (access) return <AccessNotice problem={access} feature="Proctoring video review" />;
 
   const backLink = (
-    <Link href="/partner/dashboard" className={buttonClass('secondary')}>
+    <Link href="/recruiter/proctoring" className={buttonClass('secondary')}>
       <ArrowLeft className="h-4 w-4" aria-hidden />
-      Back to dashboard
+      Back to session recordings
     </Link>
   );
 
@@ -187,8 +187,8 @@ export default function ProctoringVideoReviewPage({ params }: { params: Promise<
                 Your browser does not support video playback.
               </video>
             ) : (
-              <EmptyState title="This recording isn't ready to play yet">
-                {playerData.status ? `Status: ${playerData.status}` : null}
+              <EmptyState title="No video was stored for this session">
+                {"Video recording isn’t available yet. The flagged moments below come from the session’s event log."}
               </EmptyState>
             )}
 

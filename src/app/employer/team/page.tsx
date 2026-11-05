@@ -17,6 +17,11 @@ interface TeamMember {
   status: string;
 }
 
+interface InviteStatus {
+  id: string;
+  delivery?: { status: string; sentAt: string } | null;
+}
+
 export default function EmployerTeamPage() {
   const t = useCareerT("employerTeam");
   const api = useApi();
@@ -24,6 +29,11 @@ export default function EmployerTeamPage() {
   const emp = useEmployers();
   const employerId = emp.current?.employer.id;
   const team = useLoad(() => (employerId ? api<TeamMember[]>(`/api/career/employer/${employerId}/team`) : Promise.resolve([] as TeamMember[])), [api, employerId]);
+  // P15 (5 Nov 2026): what happened to each invitation e-mail
+  const invites = useLoad(
+    () => (employerId ? api<InviteStatus[]>(`/api/career/employer/${employerId}/team/invites`) : Promise.resolve([] as InviteStatus[])),
+    [api, employerId]
+  );
   const [form, setForm] = useState({ email: "", name: "", title: "" });
   const [busy, setBusy] = useState<string | null>(null);
   const [err, setErr] = useState<string | null>(null);
@@ -55,10 +65,11 @@ export default function EmployerTeamPage() {
   const invite = (e: React.FormEvent) => {
     e.preventDefault();
     void run("invite", async () => {
-      await api(`/api/career/employer/${employerId}/team`, { method: "POST", json: { email: form.email, name: form.name || null, title: form.title || null } });
-      setMsg(t("emailWasInvitedTheyJoin", { email: form.email }));
+      const res = await api<{ emailed?: boolean }>(`/api/career/employer/${employerId}/team`, { method: "POST", json: { email: form.email, name: form.name || null, title: form.title || null } });
+      setMsg(res.emailed === false ? t("inviteEmailNotSent", { email: form.email }) : t("emailWasInvitedTheyJoin", { email: form.email }));
       setForm({ email: "", name: "", title: "" });
       team.reload();
+      invites.reload();
     });
   };
 
@@ -72,11 +83,26 @@ export default function EmployerTeamPage() {
   };
 
   const pending = (m: TeamMember) => m.status === "Invited" && !m.userId;
+  const inviteEmail = (id: string) => invites.data?.find((i) => i.id === id)?.delivery ?? null;
+  const inviteBad = (id: string) => ["bounced", "failed", "complained"].includes(inviteEmail(id)?.status ?? "");
+  const inviteNote = (id: string) => {
+    const e = inviteEmail(id);
+    if (!e) return null;
+    switch (e.status) {
+      case "bounced": return t("inviteEmailBounced");
+      case "failed": return t("inviteEmailFailed");
+      case "complained": return t("inviteEmailComplained");
+      case "delivered": return t("inviteEmailDelivered");
+      default: return t("inviteEmailSent");
+    }
+  };
 
   const resend = (m: TeamMember) =>
     run(m.id, async () => {
-      const res = await api<{ notified: boolean; message: string }>(`/api/career/employer/${employerId}/team/invites/${m.id}/resend`, { method: "POST" });
-      setMsg(res.notified ? t("reminderSentToEmail", { email: m.email }) : res.message);
+      const res = await api<{ notified: boolean; emailed?: boolean; message: string }>(`/api/career/employer/${employerId}/team/invites/${m.id}/resend`, { method: "POST" });
+      // Our own (translated) words, chosen by whether the e-mail went out
+      setMsg(res.emailed === false ? t("inviteEmailNotSent", { email: m.email }) : t("reminderSentToEmail", { email: m.email }));
+      invites.reload();
     });
 
   const revoke = (m: TeamMember) => {
@@ -105,6 +131,7 @@ export default function EmployerTeamPage() {
                 <div>
                   <p className="font-medium">{m.name}{m.title && <span className="font-normal text-muted-foreground"> · {m.title}</span>}</p>
                   <p className="text-sm text-muted-foreground">{m.email}</p>
+                  {pending(m) && inviteNote(m.id) && <p className={`text-xs ${inviteBad(m.id) ? "font-medium text-amber-700 dark:text-amber-400" : "text-muted-foreground"}`}>{inviteNote(m.id)}</p>}
                 </div>
                 <div className="flex items-center gap-2">
                   <Badge tone={m.role === "Owner" ? "info" : "neutral"}>{m.role}</Badge>

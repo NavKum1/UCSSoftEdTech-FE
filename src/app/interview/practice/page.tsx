@@ -196,6 +196,7 @@ export default function MultiStreamInterviewPracticePage() {
   // Scorecard modal state
   const [completedReport, setCompletedReport] = useState<InterviewReport | null>(null);
   const [isEvaluating, setIsEvaluating] = useState<boolean>(false);
+  const [scoreFailure, setScoreFailure] = useState<{ message: string; transcripts: TranscriptMessage[] } | null>(null);
 
   // Cancellation modal
   const [showCancelModal, setShowCancelModal] = useState<boolean>(false);
@@ -532,11 +533,11 @@ export default function MultiStreamInterviewPracticePage() {
     setAudioLevel(0);
   };
 
-  const endInterviewAndScore = async () => {
-    const finalTranscripts = [...transcripts];
-    endSessionCleanup();
+  // P6 (5 Nov 2026): only a real score is shown. When scoring fails, the interview's transcript is kept so the person can
+  // try scoring again or download it; nothing is guessed from keywords.
+  const scoreTranscripts = async (finalTranscripts: TranscriptMessage[]) => {
+    setScoreFailure(null);
     setIsEvaluating(true);
-
     try {
       const res = await apiFetch(`/api/interview/evaluate`, {
         method: "POST",
@@ -551,80 +552,26 @@ export default function MultiStreamInterviewPracticePage() {
           transcripts: finalTranscripts,
         }),
       });
-
       if (!res.ok) {
-        throw new Error("Evaluation request failed.");
+        const body = await res.json().catch(() => null);
+        throw new Error(body?.error || en("We couldn't score this interview just now. Please try again."));
       }
-
       const report = await res.json();
-      setCompletedReport({
-        ...report,
-        transcripts: finalTranscripts,
-      });
+      setCompletedReport({ ...report, transcripts: finalTranscripts });
     } catch (err) {
-      console.warn("Real evaluation call fallback:", err);
-      const candidateTurns = finalTranscripts.filter(t => t.role === "candidate").length;
-      const candidateText = finalTranscripts
-        .filter(t => t.role === "candidate")
-        .map(t => t.text.toLowerCase())
-        .join(" ");
-
-      const candidateWords = candidateText.split(/\s+/).filter(Boolean).length;
-
-      // Semantic domain inspection
-      const hasConcurrency = /lock|mutex|semaphore|atomic|thread|goroutine|race condition/.test(candidateText);
-      const hasConsistency = /raft|paxos|quorum|cap|lease|consensus|lineariz/.test(candidateText);
-      const hasPerformance = /p99|cache|redis|index|throughput|latency|pool/.test(candidateText);
-      const hasResilience = /circuit breaker|backoff|retry|canary|failover|rollback/.test(candidateText);
-      const hasDeflection = /i don't know|no idea|not sure|can you hear me/.test(candidateText);
-
-      const pillarCount = [hasConcurrency, hasConsistency, hasPerformance, hasResilience].filter(Boolean).length;
-      let calculatedScore = 0;
-      if (candidateTurns === 0 || candidateWords < 10 || (hasDeflection && candidateWords < 30)) {
-        calculatedScore = 0;
-      } else if (pillarCount >= 3) {
-        calculatedScore = 88;
-      } else if (pillarCount >= 2) {
-        calculatedScore = 74;
-      } else if (pillarCount === 1) {
-        calculatedScore = 52;
-      } else {
-        calculatedScore = candidateWords >= 40 ? 30 : 15;
-      }
-
-      const strengths: string[] = [];
-      if (hasConcurrency) strengths.push("Articulated concurrency safety and lock boundaries.");
-      if (hasConsistency) strengths.push("Addressed distributed consensus models and consistency bounds.");
-      if (hasPerformance) strengths.push("Proactively addressed latency optimization and caching.");
-      if (hasResilience) strengths.push("Addressed automated rollbacks and fault isolation.");
-      if (strengths.length === 0 && calculatedScore > 40) strengths.push("Completed interview dialogue under pressure.");
-
-      const improvements: string[] = [];
-      if (!hasConcurrency) improvements.push("Address thread safety, race conditions, and lock contention.");
-      if (!hasConsistency) improvements.push("Detail distributed consensus (Raft/Paxos) and network partition trade-offs.");
-      if (!hasPerformance) improvements.push("Specify quantitative P99 latency SLAs and caching eviction policies.");
-      if (!hasResilience) improvements.push("Incorporate automated circuit breakers and canary rollback triggers.");
-
-      setCompletedReport({
-        jobTitle,
-        stream: selectedStream,
-        durationMinutes: Math.max(1, Math.round(sessionDuration / 60)),
-        overallScore: calculatedScore,
-        candidateTurns,
-        candidateWords,
+      setScoreFailure({
+        message: err instanceof TypeError ? en("We couldn't reach the server. Please check your connection and try again.") : (err as Error).message,
         transcripts: finalTranscripts,
-        dimensions: [
-          { label: en("Domain & Technical Competency"), score: calculatedScore },
-          { label: en("Communication & STAR Articulation"), score: Math.min(100, calculatedScore + (hasDeflection ? -15 : 5)) },
-          { label: en("Handling Pushback & Trade-offs"), score: Math.max(0, calculatedScore - 5) },
-          { label: en("Confidence & Executive Presence"), score: calculatedScore },
-        ],
-        strengths,
-        improvements
       });
     } finally {
       setIsEvaluating(false);
     }
+  };
+
+  const endInterviewAndScore = async () => {
+    const finalTranscripts = [...transcripts];
+    endSessionCleanup();
+    await scoreTranscripts(finalTranscripts);
   };
 
   const toggleMute = () => {
@@ -937,6 +884,20 @@ export default function MultiStreamInterviewPracticePage() {
               <p className="text-sm text-muted-foreground leading-relaxed">
                 {en("Reviewing your answers for ")}<span className="font-medium text-foreground">{jobTitle}</span>{en(": relevance, depth, structure and trade-offs.")}
               </p>
+            </div>
+          </div>
+        ) : scoreFailure ? (
+          <div role="alert" className="p-10 rounded-xl border border-border bg-card shadow-sm flex flex-col items-center justify-center text-center space-y-4">
+            <AlertTriangle aria-hidden="true" className="w-8 h-8 text-amber-600 dark:text-amber-400" />
+            <div className="space-y-1.5 max-w-lg">
+              <h2 className="text-lg font-semibold text-foreground">{en("We couldn't score this interview")}</h2>
+              <p className="text-sm text-muted-foreground leading-relaxed">{scoreFailure.message}</p>
+              <p className="text-sm text-muted-foreground leading-relaxed">{en("Your answers are kept on this page. No score was given or saved.")}</p>
+            </div>
+            <div className="flex flex-wrap justify-center gap-2">
+              <Button onClick={() => scoreTranscripts(scoreFailure.transcripts)}>{en("Try scoring again")}</Button>
+              <Button variant="secondary" onClick={() => handleDownloadTranscript(scoreFailure.transcripts)}>{en("Download transcript")}</Button>
+              <Button variant="ghost" onClick={() => { setScoreFailure(null); setTranscripts([]); }}>{en("Start a new interview")}</Button>
             </div>
           </div>
         ) : completedReport ? (

@@ -9,9 +9,10 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { useApi } from "@/lib/appAuth";
 import { useCareerShell } from "@/components/career/CareerShell";
+import { useCountryWords } from "@/components/career/country";
 import { Badge, Button, Card, EmptyState, ErrorBanner, Field, Loading, PageHeader, SuccessBanner, formatDate, useLoad, useCareerT } from "@/components/career/ui";
 import { TabPanel, Tabs } from "@/components/career/appointments/shared";
-import { inrShort, label } from "@/components/career/placements/shared";
+import { label } from "@/components/career/placements/shared";
 import { APPROVAL_KEYS, APPROVAL_TONE, JOB_TYPE_KEYS, localToIso, toList, toNum, useApprovalLabels, useJobTypeLabels, useTierLabels, type CampusDrive, type CampusJob } from "@/components/career/campus/shared";
 
 interface Settings {
@@ -75,6 +76,9 @@ function QueueView() {
   const TYPE = useJobTypeLabels();
   const api = useApi();
   const { schoolId } = useCareerShell();
+  // P5: amounts in the school's currency; dream/super-dream tiers and the GSTIN check are India only
+  const w = useCountryWords();
+  const india = w.rules.india;
   const [filter, setFilter] = useState("all");
   const q = useLoad(() => api<Queue>(`/api/career/campus/staff/drives?approval=${filter}`), [api, schoolId, filter]);
   if (q.loading && !q.data) return <Loading />;
@@ -113,12 +117,12 @@ function QueueView() {
                       {d.companyName}: {d.title}
                     </Link>
                     <div className="text-sm text-muted-foreground">
-                      {label(TYPE, d.jobType)} · {d.ctcDisplay ?? "—"} · {label(TIER, d.tier)} · {t("deadline", { date: formatDate(d.applyDeadline) })} · {t("applications", { count: applications })}
+                      {label(TYPE, d.jobType)} · {w.rules.money(d.ctcAnnual)}{india && ` · ${label(TIER, d.tier)}`} · {t("deadline", { date: formatDate(d.applyDeadline) })} · {t("applications", { count: applications })}
                     </div>
                     {employer && (
                       <div className="mt-1 flex flex-wrap gap-2 text-xs">
                         <Badge tone={employer.campusVerified ? "good" : "warn"}>{employer.campusVerified ? t("verifiedEmployer") : t("unverifiedEmployer")}</Badge>
-                        {employer.gstinValid && <Badge tone="neutral">{t("gstinChecked")}</Badge>}
+                        {india && employer.gstinValid && <Badge tone="neutral">{t("gstinChecked")}</Badge>}
                         {employer.emailDomainVerified && <Badge tone="neutral">{t("domainChecked")}</Badge>}
                       </div>
                     )}
@@ -143,6 +147,8 @@ function SettingsView() {
   const api = useApi();
   const { schoolId } = useCareerShell();
   const s = useLoad(() => api<{ settings: Settings; canEdit: boolean }>("/api/career/campus/staff/settings"), [api, schoolId]);
+  const w = useCountryWords();
+  const india = w.rules.india;
   const [form, setForm] = useState<Record<string, string | boolean> | null>(null);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
@@ -193,7 +199,7 @@ function SettingsView() {
       {!s.data!.canEdit && <p className="text-sm text-muted-foreground">{t("adminOnly")}</p>}
       <Card title={t("approvalRules")}>
         <div className="space-y-2">
-          {box("autoApproveVerifiedEmployers", t("autoApprove"))}
+          {box("autoApproveVerifiedEmployers", india ? t("autoApprove") : w.t("autoApprove"))}
           {box("acceptOpenJobs", t("acceptOpen"))}
           {box("allowIneligibleApplications", t("allowIneligible"))}
         </div>
@@ -203,14 +209,17 @@ function SettingsView() {
           {box("oneOfferPerStudent", t("oneOffer"))}
           {box("blockAfterAcceptance", t("blockAfter"))}
         </div>
+        {/* Dream and super-dream tiers by CTC: India only (P5) */}
+        {india && (
         <div className="mt-3 grid gap-3 md:grid-cols-2">
-          <Field label={t("dream")} hint={cur.dreamCtcMin ? inrShort(cur.dreamCtcMin) : t("tiersHint")}>
+          <Field label={t("dream")} hint={cur.dreamCtcMin ? w.rules.money(cur.dreamCtcMin) : t("tiersHint")}>
             {(p) => <input {...p} inputMode="numeric" disabled={!s.data!.canEdit} value={String(v.dream)} onChange={(e) => set("dream", e.target.value)} />}
           </Field>
-          <Field label={t("superDream")} hint={cur.superDreamCtcMin ? inrShort(cur.superDreamCtcMin) : t("tiersHint")}>
+          <Field label={t("superDream")} hint={cur.superDreamCtcMin ? w.rules.money(cur.superDreamCtcMin) : t("tiersHint")}>
             {(p) => <input {...p} inputMode="numeric" disabled={!s.data!.canEdit} value={String(v.superDream)} onChange={(e) => set("superDream", e.target.value)} />}
           </Field>
         </div>
+        )}
       </Card>
       <Card title={t("pricingTitle")}>
         <p className="mb-2 text-sm text-muted-foreground">{t("pricingNote")}</p>
@@ -232,6 +241,8 @@ function CreateView({ onDone }: { onDone: () => void }) {
   const t = useCareerT("careerCenterDrives");
   const TYPE = useJobTypeLabels();
   const api = useApi();
+  const w = useCountryWords();
+  const india = w.rules.india;
   const [f, setF] = useState({ companyName: "", title: "", jobType: "FullTime", ctcText: "", stipendMonthly: "", batches: "", degrees: "", branches: "", minCgpa: "", rounds: "", applyDeadline: "", driveDate: "" });
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
@@ -273,12 +284,12 @@ function CreateView({ onDone }: { onDone: () => void }) {
             </select>
           )}
         </Field>
-        <Field label={t("ctc")} hint={t("ctcHint")}>{(p) => <input {...p} value={f.ctcText} onChange={on("ctcText")} />}</Field>
-        <Field label={t("stipend")}>{(p) => <input {...p} inputMode="numeric" value={f.stipendMonthly} onChange={on("stipendMonthly")} />}</Field>
-        <Field label={t("batches")}>{(p) => <input {...p} value={f.batches} onChange={on("batches")} />}</Field>
+        <Field label={india ? t("ctc") : w.salaryPerYear} hint={india ? t("ctcHint") : w.salaryHint}>{(p) => <input {...p} value={f.ctcText} onChange={on("ctcText")} />}</Field>
+        <Field label={india ? t("stipend") : w.stipendPerMonth}>{(p) => <input {...p} inputMode="numeric" value={f.stipendMonthly} onChange={on("stipendMonthly")} />}</Field>
+        <Field label={india ? t("batches") : w.t("graduationYears")}>{(p) => <input {...p} value={f.batches} onChange={on("batches")} />}</Field>
         <Field label={t("degrees")}>{(p) => <input {...p} value={f.degrees} onChange={on("degrees")} />}</Field>
-        <Field label={t("branches")}>{(p) => <input {...p} value={f.branches} onChange={on("branches")} />}</Field>
-        <Field label={t("minCgpa")}>{(p) => <input {...p} inputMode="decimal" value={f.minCgpa} onChange={on("minCgpa")} />}</Field>
+        <Field label={india ? t("branches") : w.programs}>{(p) => <input {...p} value={f.branches} onChange={on("branches")} />}</Field>
+        <Field label={india ? t("minCgpa") : w.minGrade} hint={india ? undefined : w.minGradeHint}>{(p) => <input {...p} inputMode="decimal" value={f.minCgpa} onChange={on("minCgpa")} />}</Field>
         <Field label={t("rounds")}>{(p) => <input {...p} value={f.rounds} onChange={on("rounds")} />}</Field>
         <Field label={t("applyDeadline")}>{(p) => <input {...p} type="datetime-local" value={f.applyDeadline} onChange={on("applyDeadline")} />}</Field>
         <Field label={t("driveDate")}>{(p) => <input {...p} type="date" value={f.driveDate} onChange={on("driveDate")} />}</Field>

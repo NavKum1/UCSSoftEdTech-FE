@@ -113,13 +113,14 @@ export default function ChallengeSynthesizerPage() {
 
   const selectClass =
     "rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground shadow-sm focus:outline-none focus:border-indigo-500";
-  const passed = evaluation?.executionStatus === "Passed";
+  // P6: the check is a text check of the code (it never runs tests); "found" means the code mentions the expected handling
+  const passed = evaluation ? !evaluation.weaknessExploited : false;
 
   return (
     <div className="text-foreground">
       <PageHeader
         title={en("Generated coding challenges")}
-        description={en("Generate a new variant of a coding challenge that targets a common weakness, write your solution, and run it against the generated tests.")}
+        description={en("Generate a new variant of a coding challenge that targets a common weakness, write your solution, and get a quick text check of how it handles that weakness.")}
         actions={
           <>
             <Link href="/prep/career" className={buttonClass("secondary")}>
@@ -213,7 +214,7 @@ export default function ChallengeSynthesizerPage() {
               </div>
             </Card>
 
-            <Card title={en("Generated tests")}>
+            <Card title={en("Tests to run yourself")}>
               <pre className="overflow-x-auto whitespace-pre-wrap rounded-lg border border-border bg-muted p-3 font-mono text-xs text-foreground">
                 {activeChallenge.synthesizedTestHarness}
               </pre>
@@ -225,7 +226,7 @@ export default function ChallengeSynthesizerPage() {
               <div className="mb-3 flex items-center justify-between gap-2 border-b border-border pb-3">
                 <h2 className="text-base font-semibold">{en("Your solution ({language})", { language: activeChallenge.language })}</h2>
                 <Button onClick={handleEvaluate} busy={evaluating}>
-                  {evaluating ? en("Running tests…") : en("Run tests")}
+                  {evaluating ? en("Checking…") : en("Check my code")}
                 </Button>
               </div>
 
@@ -239,32 +240,16 @@ export default function ChallengeSynthesizerPage() {
             </section>
 
             {evaluation && (
-              <div
-                role="status"
-                className={`rounded-xl border p-5 shadow-sm ${
-                  passed
-                    ? "border-emerald-300 bg-emerald-50 dark:border-emerald-900 dark:bg-emerald-950/40"
-                    : "border-red-300 bg-red-50 dark:border-red-900 dark:bg-red-950/40"
-                }`}
-              >
+              <div role="status" className="rounded-xl border border-border bg-card p-5 shadow-sm">
                 <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border pb-3">
-                  <span className={`text-sm font-semibold ${passed ? "text-emerald-800 dark:text-emerald-300" : "text-red-800 dark:text-red-300"}`}>
-                    {passed ? en("All tests passed") : en("Some tests failed")}
+                  <span className={`text-sm font-semibold ${passed ? "text-emerald-700 dark:text-emerald-400" : "text-amber-700 dark:text-amber-400"}`}>
+                    {passed ? en("Your code mentions the expected handling") : en("Your code doesn't mention the expected handling")}
                   </span>
-                  <span className="font-mono text-xs text-muted-foreground">
-                    {en("{testsPassed} / {totalTests} passed ({performanceMs} ms)", { testsPassed: evaluation.testsPassed, totalTests: evaluation.totalTests, performanceMs: evaluation.performanceMs })}
-                  </span>
+                  <Badge tone="neutral">{en("Text check, not a test run")}</Badge>
                 </div>
-
                 <div className="mt-3 space-y-2 text-sm">
-                  <p className="text-muted-foreground">
-                    <strong className="font-medium text-foreground">{en("What happened:")}</strong> {evaluation.remediationHint}
-                  </p>
-                  {evaluation.selfHealingGuidance && (
-                    <p className="rounded-lg border border-border bg-card p-3 text-foreground">
-                      <strong className="font-medium">{en("How to fix it:")}</strong> {evaluation.selfHealingGuidance}
-                    </p>
-                  )}
+                  <p className="text-muted-foreground">{evaluation.remediationHint}</p>
+                  {evaluation.selfHealingGuidance && <p className="text-xs text-muted-foreground">{evaluation.selfHealingGuidance}</p>}
                 </div>
               </div>
             )}

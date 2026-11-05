@@ -5,6 +5,7 @@ import { useApi } from "@/lib/appAuth";
 import { Badge, Button, Card, EmptyState, ErrorBanner, Loading, PageHeader, SuccessBanner, formatDate, useLoad, ScrollArea, useCareerT } from "@/components/career/ui";
 import StudentPrivacyRights from "@/components/career/privacy/StudentPrivacyRights";
 import { labelOf, useFerpaCategoryLabels, useLegalBasisLabels } from "@/components/career/coreLabels";
+import { usePrivacyLaw } from "@/components/career/country";
 
 interface Consent {
   id: string;
@@ -36,6 +37,9 @@ export default function StudentPrivacyPage() {
   const LEGAL_BASIS_LABELS = useLegalBasisLabels();
   const cats = catsWith(useFerpaCategoryLabels());
   const api = useApi();
+  // P13: FERPA wording for US schools only; others name their own privacy law
+  const privacy = usePrivacyLaw("student");
+  const tw = useCareerT("countryWords");
   const record = useLoad(() => api<{ ferpaHold: boolean; school: { displayName: string } }>("/api/career/student/record"), [api]);
   const consents = useLoad(() => api<Consent[]>("/api/career/student/consents"), [api]);
   const disclosures = useLoad(() => api<Disclosure[]>("/api/career/student/disclosures"), [api]);
@@ -78,7 +82,7 @@ export default function StudentPrivacyPage() {
 
   return (
     <div>
-      <PageHeader title={t("privacySharing")} description={t("youControlWhoSeesYour")} />
+      <PageHeader title={t("privacySharing")} description={privacy.us ? t("youControlWhoSeesYour") : privacy.law ? tw("studentPrivacyLaw", { law: privacy.law }) : tw("studentPrivacyNoLaw")} />
       <ErrorBanner error={err ?? record.error ?? consents.error ?? disclosures.error} />
       <SuccessBanner message={msg} />
 

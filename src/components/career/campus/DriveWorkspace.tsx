@@ -10,7 +10,8 @@
 import React, { useState } from "react";
 import { Badge, Button, Card, EmptyState, ErrorBanner, Field, ScrollArea, SuccessBanner, formatDate, useCareerT } from "@/components/career/ui";
 import { useRunner } from "@/components/career/placements/useRunner";
-import { OFFER_TONE, inrFull, label, useOfferStatusLabels, useResultLabels } from "@/components/career/placements/shared";
+import { OFFER_TONE, label, useOfferStatusLabels, useResultLabels } from "@/components/career/placements/shared";
+import { useCountryWords } from "@/components/career/country";
 import { APP_TONE, ELIG_TONE, localToIso, toNum, useAppStatusLabels, useDocKindLabels, useEligLabels, useTierLabels, type Applicant, type CampusRound } from "@/components/career/campus/shared";
 import { OfferLetterPanel } from "@/components/career/campus/OfferLetterPanel";
 
@@ -24,14 +25,20 @@ export function DriveWorkspace({
   rounds,
   applicants,
   onChanged,
+  country,
 }: {
   base: string;
   mode: "employer" | "staff";
   rounds: CampusRound[];
   applicants: Applicant[];
   onChanged: () => void;
+  // The college's country (an employer's view); staff pages use the school in the career shell
+  country?: string | null;
 }) {
   const t = useCareerT("campusWorkspace");
+  // P5: India keeps CTC, CGPA, backlogs, Class 10/12 marks and tiers; other colleges get salary, grade and programs
+  const w = useCountryWords(country);
+  const india = w.rules.india;
   const RESULT_LABELS = useResultLabels();
   const STATUS = useAppStatusLabels();
   const ELIG = useEligLabels();
@@ -227,7 +234,11 @@ export function DriveWorkspace({
                           <div>
                             {a.student.degree} {a.student.branch} · {a.student.batch ?? "—"}
                           </div>
-                          <div className="text-xs text-muted-foreground">{t("cgpaLine", { cgpa: a.student.cgpa ?? "—", backlogs: a.student.activeBacklogs ?? "—", p10: a.student.class10Percent ?? "—", p12: a.student.class12Percent ?? "—" })}</div>
+                          <div className="text-xs text-muted-foreground">
+                            {india
+                              ? t("cgpaLine", { cgpa: a.student.cgpa ?? "—", backlogs: a.student.activeBacklogs ?? "—", p10: a.student.class10Percent ?? "—", p12: a.student.class12Percent ?? "—" })
+                              : w.applicantGrade(a.student.cgpa ?? "—")}
+                          </div>
                         </>
                       ) : (
                         "—"
@@ -250,7 +261,7 @@ export function DriveWorkspace({
                       {a.progress?.offer ? (
                         <div className="space-y-1">
                           <div>
-                            {inrFull(a.progress.offer.ctcAnnual)} · {label(TIER, a.progress.offer.tier)}
+                            {w.rules.moneyFull(a.progress.offer.ctcAnnual)}{india && ` · ${label(TIER, a.progress.offer.tier)}`}
                           </div>
                           <Badge tone={OFFER_TONE[a.progress.offer.status] ?? "neutral"}>{label(OFFER, a.progress.offer.status)}</Badge>
                           {a.progress.offer.status === "Offered" && (
@@ -374,7 +385,7 @@ export function DriveWorkspace({
               </select>
             )}
           </Field>
-          <Field label={t("ctc")} hint={t("ctcHint")}>
+          <Field label={india ? t("ctc") : w.salaryPerYear} hint={india ? t("ctcHint") : w.salaryFromDriveHint}>
             {(p) => <input {...p} value={offer.ctcText} onChange={(e) => setOffer({ ...offer, ctcText: e.target.value })} />}
           </Field>
           <Field label={t("joiningDate")}>{(p) => <input {...p} type="date" value={offer.joiningDate} onChange={(e) => setOffer({ ...offer, joiningDate: e.target.value })} />}</Field>
@@ -408,7 +419,7 @@ export function DriveWorkspace({
           </Field>
           {letterOffer && (
             <div className="mt-4">
-              <OfferLetterPanel key={letterOffer} base={base} offerId={letterOffer} onChanged={onChanged} />
+              <OfferLetterPanel key={letterOffer} base={base} offerId={letterOffer} onChanged={onChanged} country={country} />
             </div>
           )}
         </Card>

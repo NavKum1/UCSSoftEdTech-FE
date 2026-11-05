@@ -9,7 +9,8 @@ import { useApi } from "@/lib/appAuth";
 import { HireJobLink } from "@/components/career/campus/HireDrivePanels";
 import { Badge, Button, Card, EmptyState, ErrorBanner, Field, Loading, PageHeader, SuccessBanner, formatDate, useLoad, useCareerT } from "@/components/career/ui";
 import { useEmployers } from "@/components/career/EmployerPicker";
-import { inrFull, label, usePlacementModeLabels, MODE_LABELS_KEYS } from "@/components/career/placements/shared";
+import { label, usePlacementModeLabels, MODE_LABELS_KEYS } from "@/components/career/placements/shared";
+import { useCountryWords } from "@/components/career/country";
 import { APPROVAL_TONE, useApprovalLabels, useJobStatusLabels, useJobTypeLabels, useTierLabels, type CampusDrive, type CampusJob } from "@/components/career/campus/shared";
 
 interface JobDetail {
@@ -30,11 +31,14 @@ export default function EmployerJobPage() {
   const employerId = emp.current?.employer.id;
   if (emp.loading) return <Loading />;
   if (!employerId) return <EmptyState title={t("noEmployer")} />;
-  return <Detail employerId={employerId} jobId={id} />;
+  return <Detail employerId={employerId} jobId={id} country={emp.current?.employer.hqCountry ?? null} />;
 }
 
-function Detail({ employerId, jobId }: { employerId: string; jobId: string }) {
+function Detail({ employerId, jobId, country }: { employerId: string; jobId: string; country: string | null }) {
   const t = useCareerT("employerJobDetail");
+  // P5: the employer's head-office country sets the words and currency of its own job
+  const w = useCountryWords(country);
+  const india = w.rules.india;
   const STATUS = useJobStatusLabels();
   const TYPE = useJobTypeLabels();
   const APPROVAL = useApprovalLabels();
@@ -76,7 +80,7 @@ function Detail({ employerId, jobId }: { employerId: string; jobId: string }) {
     <div>
       <PageHeader
         title={job.title}
-        description={`${label(TYPE, job.jobType)} · ${job.jobType === "Internship" ? inrFull(job.stipendMonthly) : inrFull(job.ctcAnnual)}`}
+        description={`${label(TYPE, job.jobType)} · ${job.jobType === "Internship" ? w.rules.moneyFull(job.stipendMonthly) : w.rules.moneyFull(job.ctcAnnual)}`}
         actions={
           <>
             {(job.status === "Draft" || job.status === "Paused") && (
@@ -122,7 +126,11 @@ function Detail({ employerId, jobId }: { employerId: string; jobId: string }) {
             </div>
             <div>
               <dt className="text-muted-foreground">{t("criteria")}</dt>
-              <dd>{t("criteriaLine", { branches: job.branches.join(", ") || t("any"), cgpa: job.minCgpa ?? "—", batches: job.batches.join(", ") || t("any") })}</dd>
+              <dd>
+                {india
+                  ? t("criteriaLine", { branches: job.branches.join(", ") || t("any"), cgpa: job.minCgpa ?? "—", batches: job.batches.join(", ") || t("any") })
+                  : w.criteria(job.branches.join(", ") || w.t("any"), job.minCgpa ?? "—", job.batches.join(", ") || w.t("any"))}
+              </dd>
             </div>
             <div>
               <dt className="text-muted-foreground">{t("rounds")}</dt>
@@ -145,7 +153,7 @@ function Detail({ employerId, jobId }: { employerId: string; jobId: string }) {
                       {d.school ?? d.instituteId}
                     </Link>
                     <div className="text-sm text-muted-foreground">
-                      {label(TIER, d.tier)} · {t("applicationsCount", { count: applications })}
+                      {(india || d.tier !== "Normal") && `${label(TIER, d.tier)} · `}{t("applicationsCount", { count: applications })}
                       {d.approvalNote ? ` · ${t("collegeNote", { note: d.approvalNote })}` : ""}
                     </div>
                     {postingFeeRequired && <p className="text-xs text-muted-foreground">{t("feeFlag")}</p>}

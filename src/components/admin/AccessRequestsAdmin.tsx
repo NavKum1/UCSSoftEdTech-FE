@@ -26,7 +26,9 @@ type Request = {
   decidedAt: string | null;
   decisionNote: string | null;
   createdAt: string;
+  companyId?: string | null;
 };
+type Company = { id: string; name: string; website: string | null; recruiters: number };
 type Grant = { id: string; email: string; name: string; role: string; invitedBy: string; activatedAt: string | null };
 type AuditRow = { id: string; action: string; targetEmail: string; role: string | null; actorName: string; detail: string | null; createdAt: string };
 
@@ -58,6 +60,8 @@ export default function AccessRequestsAdmin({ getToken }: { getToken: GetToken }
   const [grants, setGrants] = useState<Grant[]>([]);
   const [audit, setAudit] = useState<AuditRow[] | null>(null);
   const [notes, setNotes] = useState<Record<string, string>>({});
+  // P2: the company each approval connects the person to ("" = a new company made from the request)
+  const [companyFor, setCompanyFor] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState<string | null>(null);
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -107,8 +111,8 @@ export default function AccessRequestsAdmin({ getToken }: { getToken: GetToken }
   const decide = (r: Request, approve: boolean) =>
     act(
       r.id,
-      () => api(getToken, `/recruiter-requests/${r.id}/${approve ? "approve" : "reject"}`, { method: "POST", body: { note: notes[r.id] || null } }),
-      approve ? `${r.email} now has recruiter access. They need to sign out and in again.` : `Request from ${r.email} rejected.`
+      () => api(getToken, `/recruiter-requests/${r.id}/${approve ? "approve" : "reject"}`, { method: "POST", body: { note: notes[r.id] || null, companyId: approve ? companyFor[r.id] || null : null } }),
+      approve ? `${r.email} now has recruiter access at their company. They need to sign out and in again.` : `Request from ${r.email} rejected.`
     );
 
   return (
@@ -170,6 +174,9 @@ export default function AccessRequestsAdmin({ getToken }: { getToken: GetToken }
                 </div>
                 {r.message && <p className="whitespace-pre-wrap rounded-lg bg-muted/50 px-3 py-2">{r.message}</p>}
                 {r.decisionNote && <p className="text-xs text-muted-foreground">Note: {r.decisionNote}</p>}
+                {r.status === "pending" && (
+                  <CompanyChoice getToken={getToken} request={r} value={companyFor[r.id] ?? ""} onChange={(v) => setCompanyFor((prev) => ({ ...prev, [r.id]: v }))} />
+                )}
                 {r.status === "pending" && (
                   <div className="flex flex-wrap items-center gap-2">
                     <input
@@ -261,6 +268,75 @@ export default function AccessRequestsAdmin({ getToken }: { getToken: GetToken }
           </ol>
         )}
       </section>
+    </div>
+  );
+}
+
+/**
+ * P2 (5 Nov 2026): approval connects the recruiter to a company. The default makes a new company from the request; companies
+ * whose recruiters share the person's e-mail domain are suggested, and any other company can be found by name.
+ */
+function CompanyChoice({ getToken, request, value, onChange }: { getToken: GetToken; request: Request; value: string; onChange: (v: string) => void }) {
+  const [suggested, setSuggested] = useState<Company[]>([]);
+  const [found, setFound] = useState<Company[]>([]);
+  const [search, setSearch] = useState("");
+  const id = `company-${request.id}`;
+
+  const loadSuggested = useLatestRef(async () => {
+    try {
+      const list = await api<Company[]>(getToken, `/recruiter-requests/${request.id}/companies`);
+      setSuggested(list);
+      // A company the person's colleagues already belong to is the likely answer
+      if (list.length === 1 && value === "") onChange(list[0].id);
+    } catch {
+      /* suggestions are a convenience; a new company stays the default */
+    }
+  });
+  useEffect(() => {
+    void loadSuggested.current();
+  }, [loadSuggested, request.id]);
+
+  const find = async () => {
+    if (!search.trim()) return;
+    try {
+      setFound(await api<Company[]>(getToken, `/companies?search=${encodeURIComponent(search.trim())}`));
+    } catch {
+      setFound([]);
+    }
+  };
+
+  const options = [...suggested, ...found.filter((c) => !suggested.some((x) => x.id === c.id))];
+  const label = (c: Company) => `Add to ${c.name} (${c.recruiters} recruiter${c.recruiters === 1 ? "" : "s"})`;
+  return (
+    <div className="flex flex-wrap items-center gap-2">
+      <label htmlFor={id} className="text-xs text-muted-foreground">
+        Company
+      </label>
+      <select id={id} value={value} onChange={(e) => onChange(e.target.value)} className="min-w-[14rem] rounded-lg border border-border bg-card px-3 py-1.5 text-sm shadow-sm">
+        <option value="">Create a new company: {request.company}</option>
+        {options.map((c) => (
+          <option key={c.id} value={c.id}>
+            {label(c)}
+            {suggested.some((x) => x.id === c.id) ? " · same e-mail domain" : ""}
+          </option>
+        ))}
+      </select>
+      <input
+        className="w-44 rounded-lg border border-border bg-card px-3 py-1.5 text-sm shadow-sm placeholder:text-muted-foreground"
+        placeholder="Find another company"
+        aria-label={`Find a company for ${request.email}`}
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") {
+            e.preventDefault();
+            void find();
+          }
+        }}
+      />
+      <button type="button" className={secondary} onClick={() => void find()}>
+        Find
+      </button>
     </div>
   );
 }

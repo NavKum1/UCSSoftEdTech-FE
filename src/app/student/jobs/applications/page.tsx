@@ -7,7 +7,8 @@ import Link from "next/link";
 import { useApi } from "@/lib/appAuth";
 import { useCareerShell } from "@/components/career/CareerShell";
 import { Badge, Button, Card, EmptyState, ErrorBanner, Loading, PageHeader, SuccessBanner, formatDate, useLoad, useCareerT } from "@/components/career/ui";
-import { OFFER_TONE, RESULT_TONE, inrFull, label, useOfferStatusLabels, useResultLabels } from "@/components/career/placements/shared";
+import { OFFER_TONE, RESULT_TONE, label, useOfferStatusLabels, useResultLabels } from "@/components/career/placements/shared";
+import { useCountryRules } from "@/components/career/country";
 import { APP_TONE, useAppStatusLabels, useTierLabels, type CampusOffer } from "@/components/career/campus/shared";
 import { StudentOfferLetter } from "@/components/career/campus/StudentOfferLetter";
 
@@ -36,6 +37,8 @@ export default function StudentApplicationsPage() {
   const RESULT = useResultLabels();
   const OFFER = useOfferStatusLabels();
   const TIER = useTierLabels();
+  // P5: amounts in the school's currency; dream/super-dream tiers are India only
+  const rules = useCountryRules();
   const api = useApi();
   const { schoolId } = useCareerShell();
   const mine = useLoad(() => api<Mine>("/api/career/campus/student/applications"), [api, schoolId]);
@@ -120,9 +123,9 @@ export default function StudentApplicationsPage() {
               {a.offer && (
                 <div className="mt-4 rounded-md border border-border p-3 text-sm">
                   <div className="flex flex-wrap items-center gap-2">
-                    <span className="font-medium">{t("offer", { role: a.offer.roleTitle, ctc: inrFull(a.offer.ctcAnnual) })}</span>
+                    <span className="font-medium">{t("offer", { role: a.offer.roleTitle, ctc: rules.moneyFull(a.offer.ctcAnnual) })}</span>
                     <Badge tone={OFFER_TONE[a.offer.status] ?? "neutral"}>{label(OFFER, a.offer.status)}</Badge>
-                    <span>{label(TIER, a.offer.tier)}</span>
+                    {rules.india && <span>{label(TIER, a.offer.tier)}</span>}
                   </div>
                   {a.offer.joiningDate && <p>{t("joining", { date: formatDate(a.offer.joiningDate) })}</p>}
                   {a.offer.respondBy && <p>{t("respondBy", { date: formatDate(a.offer.respondBy) })}</p>}

@@ -5,6 +5,7 @@ import { useApi } from "@/lib/appAuth";
 import { useCareerShell } from "@/components/career/CareerShell";
 import { EmptyState, ErrorBanner, Loading, PageHeader, formatDate, useLoad, useCareerT, useCareerLabels, TAB_LIST, tabClass } from "@/components/career/ui";
 import { labelOf, useFerpaCategoryLabels } from "@/components/career/coreLabels";
+import { usePrivacyLaw } from "@/components/career/country";
 
 interface Disclosure {
   id: string;
@@ -68,6 +69,9 @@ export default function PrivacyLogPage() {
   const LEGAL_BASIS = useCareerLabels("careerCenterPrivacyLog.legalBasisLabel", LEGAL_BASIS_KEYS);
   const api = useApi();
   const { schoolId } = useCareerShell();
+  // P13: FERPA wording for US schools only; others name their own privacy law
+  const privacy = usePrivacyLaw("staff");
+  const tw = useCareerT("countryWords");
   const [tab, setTab] = useState<"disclosures" | "audit">("disclosures");
   const disclosures = useLoad(() => (tab === "disclosures" ? api<Disclosure[]>("/api/career/admin/disclosures?take=500") : Promise.resolve(null)), [api, schoolId, tab]);
   const audit = useLoad(() => (tab === "audit" ? api<AuditEvent[]>("/api/career/admin/audit?take=500") : Promise.resolve(null)), [api, schoolId, tab]);
@@ -75,7 +79,7 @@ export default function PrivacyLogPage() {
 
   return (
     <div>
-      <PageHeader title={t("privacyLog")} description={t("fERPARequiresARecordOf")} />
+      <PageHeader title={t("privacyLog")} description={privacy.us ? t("fERPARequiresARecordOf") : privacy.law ? tw("privacyLogLaw", { law: privacy.law }) : tw("privacyLogNoLaw")} />
       <div role="tablist" aria-label={t("log")} className={`mb-4 ${TAB_LIST}`}>
         {(
           [

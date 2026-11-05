@@ -11,6 +11,7 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import type { CareerTranslator } from "@/components/career/i18n/CareerI18nProvider";
 import { useCareerShell } from "@/components/career/CareerShell";
+import { useCountryWords } from "@/components/career/country";
 import { Badge, Button, Card, EmptyState, ErrorBanner, Field, Loading, PageHeader, ScrollArea, SuccessBanner, formatDate, useLoad, useCareerT } from "@/components/career/ui";
 import {
   AcademicRecord,
@@ -20,7 +21,6 @@ import {
   RESULT_TONE,
   StudentRef,
   Vocabulary,
-  inrFull,
   label,
   usePlacementModeLabels,
   useDriveStatusLabels,
@@ -68,16 +68,19 @@ interface ResultsImport {
 const th = "py-2 pe-3 font-medium";
 const td = "py-2 pe-3 align-top";
 
-function criteriaSummary(d: Drive, t: CareerTranslator): string[] {
+// P5: India keeps branches, CGPA, backlogs and Class 10/12; other schools see programs and their own grade scale
+function criteriaSummary(d: Drive, t: CareerTranslator, w: ReturnType<typeof useCountryWords>): string[] {
+  const india = w.rules.india;
   const out: string[] = [];
   out.push(d.batches.length ? t("criteria.batches", { list: d.batches.join(", ") }) : t("criteria.anyBatch"));
   if (d.degrees.length) out.push(t("criteria.degrees", { list: d.degrees.join(", ") }));
-  out.push(d.branches.length ? t("criteria.branches", { list: d.branches.join(", ") }) : t("criteria.anyBranch"));
-  if (d.minCgpa != null) out.push(t("criteria.minCgpa", { value: d.minCgpa }));
-  if (d.maxActiveBacklogs != null) out.push(t("criteria.maxActiveBacklogs", { value: d.maxActiveBacklogs }));
-  if (d.maxTotalBacklogs != null) out.push(t("criteria.maxTotalBacklogs", { value: d.maxTotalBacklogs }));
-  if (d.minClass10Percent != null) out.push(t("criteria.minClass10", { value: d.minClass10Percent }));
-  if (d.minClass12Percent != null) out.push(t("criteria.minClass12", { value: d.minClass12Percent }));
+  if (india) out.push(d.branches.length ? t("criteria.branches", { list: d.branches.join(", ") }) : t("criteria.anyBranch"));
+  else out.push(d.branches.length ? w.t("programsList", { list: d.branches.join(", ") }) : w.t("anyProgram"));
+  if (d.minCgpa != null) out.push(india ? t("criteria.minCgpa", { value: d.minCgpa }) : w.gradeAtLeast(d.minCgpa));
+  if (india && d.maxActiveBacklogs != null) out.push(t("criteria.maxActiveBacklogs", { value: d.maxActiveBacklogs }));
+  if (india && d.maxTotalBacklogs != null) out.push(t("criteria.maxTotalBacklogs", { value: d.maxTotalBacklogs }));
+  if (india && d.minClass10Percent != null) out.push(t("criteria.minClass10", { value: d.minClass10Percent }));
+  if (india && d.minClass12Percent != null) out.push(t("criteria.minClass12", { value: d.minClass12Percent }));
   if (d.excludePlaced) out.push(t("criteria.excludePlaced"));
   return out;
 }
@@ -91,6 +94,8 @@ export default function DrivePage() {
   const MODE_LABELS = usePlacementModeLabels();
   const { id } = useParams<{ id: string }>();
   const { schoolId } = useCareerShell();
+  const w = useCountryWords();
+  const india = w.rules.india;
   const { api, busy, err, msg, setMsg, run, download } = useRunner();
   const detail = useLoad(() => api<DriveDetail>(`/api/career/placement-office/drives/${id}`), [api, schoolId, id]);
   const elig = useLoad(() => api<Eligibility>(`/api/career/placement-office/drives/${id}/eligibility`), [api, schoolId, id]);
@@ -212,7 +217,7 @@ export default function DrivePage() {
           <tr className="border-b border-border [&_th]:text-start">
             <th scope="col" className={th}>{t("student")}</th>
             <th scope="col" className={th}>{t("programmeAndBatch")}</th>
-            <th scope="col" className={th}>{t("cGPA")}</th>
+            <th scope="col" className={th}>{india ? t("cGPA") : w.grade}</th>
             <th scope="col" className={th}>{t("reasons")}</th>
           </tr>
         </thead>
@@ -265,10 +270,10 @@ export default function DrivePage() {
       <div className="space-y-6">
         <Card title={t("rolesAndPublishedCriteria")}>
           <ul className="mb-3 list-disc space-y-1 ps-5 text-sm">
-            {roles.length === 0 ? <li>{t("noRolesRecorded")}</li> : roles.map((r) => <li key={r.title}>{r.title}{r.ctcAnnual ? t("ctcAnnualPerYear", { ctcAnnual: inrFull(r.ctcAnnual) }) : ""}{r.stipendMonthly ? t("stipendStipendMonthlyAMonth", { stipendMonthly: inrFull(r.stipendMonthly) }) : ""}</li>)}
+            {roles.length === 0 ? <li>{t("noRolesRecorded")}</li> : roles.map((r) => <li key={r.title}>{r.title}{r.ctcAnnual ? t("ctcAnnualPerYear", { ctcAnnual: w.rules.moneyFull(r.ctcAnnual) }) : ""}{r.stipendMonthly ? t("stipendStipendMonthlyAMonth", { stipendMonthly: w.rules.moneyFull(r.stipendMonthly) }) : ""}</li>)}
           </ul>
           <ul className="list-disc space-y-1 ps-5 text-sm">
-            {criteriaSummary(d, t).map((c) => <li key={c}>{c}</li>)}
+            {criteriaSummary(d, t, w).map((c) => <li key={c}>{c}</li>)}
           </ul>
           {d.criteriaNotes && <p className="mt-2 text-sm text-muted-foreground">{d.criteriaNotes}</p>}
           {d.companyContact && <p className="mt-2 text-sm">{t("companyContactCompanyContact", { companyContact: d.companyContact })}</p>}
@@ -418,7 +423,7 @@ export default function DrivePage() {
                     <tr key={o.id} className="border-b border-border last:border-0">
                       <th scope="row" className={`${td} text-start font-normal`}>{o.student?.name ?? "—"}</th>
                       <td className={td}>{o.roleTitle}</td>
-                      <td className={td}>{inrFull(o.ctcAnnual)}</td>
+                      <td className={td}>{w.rules.moneyFull(o.ctcAnnual)}</td>
                       <td className={td}>{formatDate(o.joiningDate)}</td>
                       <td className={td}>
                         <label className="sr-only" htmlFor={`ost-${o.id}`}>{t("statusOfNameSOffer", { name: o.student?.name })}</label>
@@ -454,7 +459,7 @@ export default function DrivePage() {
                 )
               }
             </Field>
-            <Field label={t("packageCTCPerYear")} hint={t("leaveBlankToUseThe")}>
+            <Field label={india ? t("packageCTCPerYear") : w.salaryPerYear} hint={india ? t("leaveBlankToUseThe") : w.salaryFromRoleHint}>
               {(p) => <input {...p} value={offer.ctcText} onChange={(e) => setOffer({ ...offer, ctcText: e.target.value })} />}
             </Field>
             <Field label={t("joiningDate")}>{(p) => <input {...p} type="date" value={offer.joiningDate} onChange={(e) => setOffer({ ...offer, joiningDate: e.target.value })} />}</Field>
@@ -473,7 +478,7 @@ export default function DrivePage() {
 
         <Card title={t("importResultsAndOffers")}>
           <p className="mb-3 text-sm text-muted-foreground">
-            {t("uploadTheDrivesResultSheet")}
+            {india ? t("uploadTheDrivesResultSheet") : w.t("resultSheetHelp")}
           </p>
           <div className="flex flex-wrap items-end gap-3">
             <Field label={t("file")}>{(p) => <input {...p} type="file" accept=".csv,.xlsx,.txt,.tsv" onChange={(e) => { setFile(e.target.files?.[0] ?? null); setImp(null); }} />}</Field>

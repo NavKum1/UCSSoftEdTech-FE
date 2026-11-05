@@ -9,7 +9,8 @@ import React from "react";
 import { useApi } from "@/lib/appAuth";
 import { useCareerShell } from "@/components/career/CareerShell";
 import { Badge, Card, EmptyState, ErrorBanner, Loading, PageHeader, ScrollArea, formatDate, useLoad, useCareerT } from "@/components/career/ui";
-import { OFFER_TONE, RESULT_TONE, inrFull, label, useResultLabels, useOfferStatusLabels } from "@/components/career/placements/shared";
+import { OFFER_TONE, RESULT_TONE, label, useResultLabels, useOfferStatusLabels } from "@/components/career/placements/shared";
+import { useCountryWords } from "@/components/career/country";
 
 interface Mine {
   drives: { id: string; companyName: string; driveDate?: string | null; rounds: { name: string; roundDate?: string | null; result?: string | null }[] }[];
@@ -37,6 +38,8 @@ export default function StudentPlacementsPage() {
   const RESULT_LABELS = useResultLabels();
   const api = useApi();
   const { schoolId } = useCareerShell();
+  // P5: amounts in the school's currency; "package" is India's word
+  const w = useCountryWords();
   const mine = useLoad(() => api<Mine>("/api/career/placement-office/me"), [api, schoolId]);
 
   return (
@@ -61,7 +64,7 @@ export default function StudentPlacementsPage() {
                       <tr className="border-b border-border [&_th]:text-start">
                         <th scope="col" className={th}>{t("company")}</th>
                         <th scope="col" className={th}>{t("role")}</th>
-                        <th scope="col" className={th}>{t("packagePerYear")}</th>
+                        <th scope="col" className={th}>{w.rules.india ? t("packagePerYear") : w.t("salaryPerYearColumn")}</th>
                         <th scope="col" className={th}>{t("offerDate")}</th>
                         <th scope="col" className={th}>{t("joiningDate")}</th>
                         <th scope="col" className={th}>{t("status")}</th>
@@ -72,7 +75,7 @@ export default function StudentPlacementsPage() {
                         <tr key={o.id} className="border-b border-border last:border-0">
                           <th scope="row" className={`${td} text-start font-normal`}>{o.companyName}</th>
                           <td className={td}>{o.roleTitle}</td>
-                          <td className={td}>{inrFull(o.ctcAnnual)}</td>
+                          <td className={td}>{w.rules.moneyFull(o.ctcAnnual)}</td>
                           <td className={td}>{formatDate(o.offerDate)}</td>
                           <td className={td}>{formatDate(o.joiningDate)}</td>
                           <td className={td}>

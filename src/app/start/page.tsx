@@ -9,7 +9,8 @@
 import React, { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Check, ChevronLeft, Loader2, Lock, ShieldCheck, Sparkles } from "lucide-react";
+import { Check, ChevronLeft, Loader2, Lock, Sparkles } from "lucide-react";
+import BrandMark from "@/components/brand/BrandMark";
 import { keycloakSignIn, useAppAuth } from "@/lib/appAuth";
 import { authenticatedFetch } from "@/lib/apiClient";
 import { openRazorpayCheckout, type RazorpayStart } from "@/lib/razorpayCheckout";
@@ -31,6 +32,8 @@ interface Plans {
   provider: "stripe" | "razorpay";
   region: string;
   regionUrl: string | null;
+  /** P3: online payment is set up for this country on this server */
+  available?: boolean;
   trialDays: number;
   timeZone: string;
   plans: Plan[];
@@ -151,7 +154,7 @@ function Wizard() {
       const p = await fetchPlans(d.country);
       setPlans(p);
       if (!d.timeZone) update({ timeZone: p.timeZone });
-      if (!p.regionUrl) go(2);
+      if (!p.regionUrl && p.available !== false) go(2);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Something went wrong.");
     } finally {
@@ -227,10 +230,9 @@ function Wizard() {
         <div aria-hidden="true" className="absolute -bottom-32 -start-16 h-80 w-80 rounded-full bg-indigo-400/20 blur-3xl" />
         <div className="relative">
           <Link href="/" className="inline-flex items-center gap-2.5 text-lg font-semibold text-white">
-            <span className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-linear-to-br from-indigo-400 to-violet-600 ring-1 ring-white/20">
-              <ShieldCheck aria-hidden="true" className="h-5 w-5" />
-            </span>
-            {en("Edulexa")}
+            {/* The app's logo (components/brand/BrandMark.tsx); the wordmark is drawn here in white for the dark panel */}
+            <BrandMark size={36} wordmark={false} />
+            <span className="tracking-tight">edulexa</span>
           </Link>
           <h1 className="mt-14 text-[2rem] font-semibold leading-tight tracking-tight text-white">{en("Set up your school in about five minutes")}</h1>
           <p className="mt-3 text-[15px] leading-relaxed text-indigo-100/80">{en("Guidance forms, admissions CRM and career services for your students, ready to use today.")}</p>
@@ -323,6 +325,15 @@ function Wizard() {
                 ))}
               </div>
             </fieldset>
+            {plans && !plans.regionUrl && plans.available === false && plans.country === d.country && (
+              <div role="status" className="mt-6 rounded-2xl border border-amber-200 bg-amber-50 p-5 dark:border-amber-900 dark:bg-amber-950/40">
+                <p className="font-medium">{en("Online sign-up isn't open yet for your country ({country}).", { country: country ?? d.country })}</p>
+                <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">{en("Write to us and we'll set up your school's trial with you.")}</p>
+                <a className={`${primary} mt-4`} href={`mailto:sales@edulexa.com?subject=${encodeURIComponent("School trial: " + (country ?? d.country))}`}>
+                  {en("Email sales@edulexa.com")}
+                </a>
+              </div>
+            )}
             {plans?.regionUrl && plans.country === d.country && (
               <div className="mt-6 rounded-2xl border border-indigo-200 bg-indigo-50 p-5 dark:border-indigo-900 dark:bg-indigo-950/40">
                 <p className="font-medium">{en("Schools in ")}{country}{en(" are hosted in our ")}{plans.region === "US" ? en("Americas") : plans.region === "IN" ? en("India") : plans.region} region.</p>
@@ -333,7 +344,7 @@ function Wizard() {
               </div>
             )}
             <div className="mt-8">
-              <button type="button" className={primary} disabled={busy} onClick={chooseSchool}>
+              <button type="button" className={primary} disabled={busy || (plans?.available === false && !plans.regionUrl && plans.country === d.country)} onClick={chooseSchool}>
                 {busy && <Loader2 aria-hidden="true" className="h-4 w-4 animate-spin" />}{en(" Continue")}
               </button>
             </div>

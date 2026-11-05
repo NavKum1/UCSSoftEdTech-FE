@@ -10,7 +10,8 @@ import Link from "next/link";
 import { useApi } from "@/lib/appAuth";
 import { Badge, Button, Card, EmptyState, ErrorBanner, Field, Loading, PageHeader, SuccessBanner, formatDate, useLoad, useCareerT } from "@/components/career/ui";
 import { EmployerPicker, useEmployers } from "@/components/career/EmployerPicker";
-import { inrFull, label } from "@/components/career/placements/shared";
+import { label } from "@/components/career/placements/shared";
+import { useCountryWords } from "@/components/career/country";
 import { HireConnection } from "@/components/career/campus/HireConnection";
 import { DOC_KIND_KEYS, JOB_TYPE_KEYS, localToIso, toList, toNum, useDocKindLabels, useJobStatusLabels, useJobTypeLabels, type CampusJob } from "@/components/career/campus/shared";
 
@@ -52,14 +53,17 @@ export default function EmployerJobsPage() {
       ) : !employerId ? (
         <EmptyState title={t("noEmployer")}>{t.rich("createProfileFirst", { link: (c) => <Link className="underline" href="/employer/company">{c}</Link> })}</EmptyState>
       ) : (
-        <Jobs employerId={employerId} />
+        <Jobs employerId={employerId} country={emp.current?.employer.hqCountry ?? null} />
       )}
     </div>
   );
 }
 
-function Jobs({ employerId }: { employerId: string }) {
+function Jobs({ employerId, country }: { employerId: string; country: string | null }) {
   const t = useCareerT("employerJobs");
+  // P5: an employer based in India keeps CTC in rupees, CGPA, backlogs and 10th/12th marks; others get salary and grade
+  const w = useCountryWords(country);
+  const india = w.rules.india;
   const STATUS = useJobStatusLabels();
   const TYPE = useJobTypeLabels();
   const KIND = useDocKindLabels();
@@ -171,7 +175,7 @@ function Jobs({ employerId }: { employerId: string }) {
                     {j.title}
                   </Link>
                   <div className="text-sm text-muted-foreground">
-                    {label(TYPE, j.jobType)} · {j.jobType === "Internship" ? t("stipendLine", { amount: inrFull(j.stipendMonthly) }) : inrFull(j.ctcAnnual)} ·{" "}
+                    {label(TYPE, j.jobType)} · {j.jobType === "Internship" ? t("stipendLine", { amount: w.rules.moneyFull(j.stipendMonthly) }) : w.rules.moneyFull(j.ctcAnnual)} ·{" "}
                     {t("deadline", { date: formatDate(j.applyDeadline) })}
                   </div>
                 </div>
@@ -200,17 +204,21 @@ function Jobs({ employerId }: { employerId: string }) {
               </select>
             )}
           </Field>
-          <Field label={t("ctc")} hint={t("ctcHint")}>{(p) => <input {...p} value={job.ctcText} onChange={f("ctcText")} />}</Field>
-          <Field label={t("stipend")}>{(p) => <input {...p} inputMode="numeric" value={job.stipendMonthly} onChange={f("stipendMonthly")} />}</Field>
-          <Field label={t("ctcNotes")}>{(p) => <input {...p} value={job.ctcNotes} onChange={f("ctcNotes")} />}</Field>
+          <Field label={india ? t("ctc") : w.salaryPerYear} hint={india ? t("ctcHint") : w.salaryHint}>{(p) => <input {...p} value={job.ctcText} onChange={f("ctcText")} />}</Field>
+          <Field label={india ? t("stipend") : w.stipendPerMonth}>{(p) => <input {...p} inputMode="numeric" value={job.stipendMonthly} onChange={f("stipendMonthly")} />}</Field>
+          <Field label={india ? t("ctcNotes") : w.t("payDetails")}>{(p) => <input {...p} value={job.ctcNotes} onChange={f("ctcNotes")} />}</Field>
           <Field label={t("locations")} hint={t("commaHint")}>{(p) => <input {...p} value={job.locations} onChange={f("locations")} />}</Field>
           <Field label={t("degrees")} hint={t("commaHint")}>{(p) => <input {...p} value={job.degrees} onChange={f("degrees")} />}</Field>
-          <Field label={t("branches")} hint={t("commaHint")}>{(p) => <input {...p} value={job.branches} onChange={f("branches")} />}</Field>
+          <Field label={india ? t("branches") : w.programs} hint={t("commaHint")}>{(p) => <input {...p} value={job.branches} onChange={f("branches")} />}</Field>
           <Field label={t("batches")} hint={t("batchesHint")}>{(p) => <input {...p} value={job.batches} onChange={f("batches")} />}</Field>
-          <Field label={t("minCgpa")}>{(p) => <input {...p} inputMode="decimal" value={job.minCgpa} onChange={f("minCgpa")} />}</Field>
-          <Field label={t("maxBacklogs")}>{(p) => <input {...p} inputMode="numeric" value={job.maxActiveBacklogs} onChange={f("maxActiveBacklogs")} />}</Field>
-          <Field label={t("min10")}>{(p) => <input {...p} inputMode="decimal" value={job.minClass10Percent} onChange={f("minClass10Percent")} />}</Field>
-          <Field label={t("min12")}>{(p) => <input {...p} inputMode="decimal" value={job.minClass12Percent} onChange={f("minClass12Percent")} />}</Field>
+          <Field label={india ? t("minCgpa") : w.minGrade} hint={india ? undefined : w.minGradeHint}>{(p) => <input {...p} inputMode="decimal" value={job.minCgpa} onChange={f("minCgpa")} />}</Field>
+          {india && (
+            <>
+              <Field label={t("maxBacklogs")}>{(p) => <input {...p} inputMode="numeric" value={job.maxActiveBacklogs} onChange={f("maxActiveBacklogs")} />}</Field>
+              <Field label={t("min10")}>{(p) => <input {...p} inputMode="decimal" value={job.minClass10Percent} onChange={f("minClass10Percent")} />}</Field>
+              <Field label={t("min12")}>{(p) => <input {...p} inputMode="decimal" value={job.minClass12Percent} onChange={f("minClass12Percent")} />}</Field>
+            </>
+          )}
           <Field label={t("rounds")} hint={t("roundsHint")}>{(p) => <input {...p} value={job.rounds} onChange={f("rounds")} />}</Field>
           <Field label={t("applyDeadline")}>{(p) => <input {...p} type="datetime-local" value={job.applyDeadline} onChange={f("applyDeadline")} />}</Field>
           <Field label={t("visibility")}>

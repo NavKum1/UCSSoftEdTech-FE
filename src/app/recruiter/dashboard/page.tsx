@@ -5,9 +5,9 @@ import Link from "next/link";
 import { Badge, Button, Card, EmptyState, ErrorBanner, Field, Loading, Modal, PageHeader, ScrollArea, StatTile, Tabs, brandFill, buttonClass } from "@/components/career/ui";
 import { AccessNotice, useLatestRef, useLegacyApi } from "@/lib/legacyApi";
 import {
-  ShieldAlert, ShieldCheck, Plus, ExternalLink, RefreshCw, Copy, Check,
+  ShieldCheck, Plus, ExternalLink, RefreshCw, Copy, Check,
   AlertTriangle, Sparkles, Code2, Mic, CheckCircle2, Clock,
-  Layers, Brain, CheckCheck, X, MessageSquare, FileSearch, ChevronDown,
+  Layers, Brain, CheckCheck, X, MessageSquare, FileSearch, ChevronDown, Mail,
 } from "lucide-react";
 import { useEn } from "@/lib/english/EnglishProvider";
 
@@ -33,30 +33,41 @@ interface AiHiringVerdict {
   transcriptLog: TranscriptEntry[];
 }
 
-interface ScrutinyFlaggedClaim {
-  claim: string;
-  severity: "HIGH" | "MEDIUM" | string;
-  critique: string;
-  interrogationQuestion: string;
+// P6 (5 Nov 2026, owner decision D1): the résumé check lists which of the recruiter's requirements the résumé mentions.
+// No score and no AI; nothing is stored.
+interface RequirementResult {
+  requirement: string;
+  mentioned: boolean;
+  matchedTerms: string[];
+  lines: string[];
 }
 
-interface ScrutinyResultData {
-  candidateName: string;
-  targetRole: string;
-  summary: string;
-  credibilityScore: number;
-  flaggedClaims: ScrutinyFlaggedClaim[];
-  buzzwordInflation: string[];
-  technicalDeficiencies: string[];
-  generatedAssessmentToken: string;
-  tailoredWrittenFocus: string;
-  tailoredCodingPrompt: string;
-  tailoredVoiceDefenseQuestions: string[];
-  [key: string]: unknown;
+interface RequirementsMatchData {
+  mentionedCount: number;
+  requirementCount: number;
+  results: RequirementResult[];
+  note: string;
 }
 
 // PL1/PL2: the list carries the bundle id and a link hint; the link itself is shown once (at create or "New link")
+// P15 (5 Nov 2026): the e-mailed invitation and the recruiter's own decision
+interface BundleEmail {
+  status: "sent" | "failed" | "delivered" | "delayed" | "bounced" | "complained" | string;
+  detail?: string | null;
+  sentAt: string;
+  sendCount: number;
+}
+interface BundleDecision {
+  decision: "advance" | "hire" | "reject" | string;
+  notes?: string | null;
+  decidedBy?: string | null;
+  decidedAt?: string | null;
+}
+
 interface AssessmentBundle {
+  email?: BundleEmail | null;
+  openedAt?: string | null;
+  decision?: BundleDecision | null;
   id: string;
   linkHint: string;
   linkStatus: "active" | "expired" | "revoked" | "completed" | string;
@@ -108,6 +119,8 @@ interface CorporateCandidatesResponse {
 
 // POST /api/recruiter/assessments/bundle/create: the only response that carries the link token
 interface CreatedBundle {
+  emailed?: boolean | null;
+  message?: string;
   id: string;
   token: string;
   inviteUrl: string;
@@ -124,7 +137,7 @@ type ReviewStatus = "AWAITING" | "ADVANCED" | "HOLD" | "DECLINED" | "IN_PROGRESS
 // Only a recruiter's action changes a candidate's status; AI scores never do.
 function reviewStatus(bundle: AssessmentBundle): ReviewStatus {
   const s = bundle.corporateDecisionStatus;
-  if (s === "OFFER_EXTENDED") return "ADVANCED";
+  if (s === "OFFER_EXTENDED" || s === "ADVANCED") return "ADVANCED";
   if (s === "REJECTION_ISSUED") return "DECLINED";
   if (s === "ON_HOLD" || s === "HOLD") return "HOLD";
   return bundle.overallStatus === "Completed" ? "AWAITING" : "IN_PROGRESS";
@@ -161,10 +174,6 @@ function CloseButton({ onClick, label }: { onClick: () => void; label: string })
   );
 }
 
-function sentenceCase(value: string) {
-  return value ? value.charAt(0).toUpperCase() + value.slice(1).toLowerCase() : value;
-}
-
 function linkStatusClass(bundle: AssessmentBundle) {
   return bundle.linkStatus === "revoked" || bundle.linkStatus === "expired" ? "font-medium text-amber-700 dark:text-amber-400" : "text-muted-foreground";
 }
@@ -190,6 +199,34 @@ function linkStatusText(bundle: AssessmentBundle) {
     default: return bundle.expiresAt ? `Link expires ${formatLinkDate(bundle.expiresAt)}` : "Link active";
   }
 }
+
+type En = (text: string, values?: Record<string, string | number>) => string;
+
+/** P15: e-mail delivery and the candidate opening the link, in plain words ("" when there is nothing to say) */
+function invitationText(bundle: AssessmentBundle, en: En) {
+  const e = bundle.email;
+  const mail = !e
+    ? ""
+    : e.status === "bounced" ? en("E-mail bounced: check the address")
+    : e.status === "complained" ? en("Marked as spam by the candidate")
+    : e.status === "failed" ? en("E-mail not sent")
+    : e.status === "delayed" ? en("E-mail delayed")
+    : e.status === "delivered" ? en("E-mail delivered {date}", { date: formatLinkDate(e.sentAt) })
+    : en("E-mailed {date}", { date: formatLinkDate(e.sentAt) });
+  const opened = bundle.openedAt ? en("Opened {date}", { date: formatLinkDate(bundle.openedAt) }) : e && bundle.currentStage <= 1 ? en("Not opened yet") : "";
+  return [mail, opened].filter(Boolean).join(" · ");
+}
+
+/** P15: the invitation line under a candidate's stage (nothing when there is nothing to say); a failed or bounced e-mail stands out */
+function InvitationStatus({ bundle, className }: { bundle: AssessmentBundle; className: string }) {
+  const en = useEn();
+  const text = invitationText(bundle, en);
+  if (!text) return null;
+  const bad = bundle.email?.status === "bounced" || bundle.email?.status === "failed";
+  return <span className={`block ${className} ${bad ? "font-medium text-amber-700 dark:text-amber-400" : "text-muted-foreground"}`}>{text}</span>;
+}
+
+const DECISION_LABEL: Record<string, string> = { advance: "Advanced to the next step", hire: "Hire", reject: "Not moving forward" };
 
 function evidenceHref(submissionId?: string | null) {
   return submissionId && GUID_PATTERN.test(submissionId) ? `/recruiter/evidence/${submissionId}` : "/recruiter/evidence";
@@ -229,15 +266,19 @@ export default function RecruiterDashboardPage() {
   const [bundleDefenseTopic, setBundleDefenseTopic] = useState("");
   const [bundleStatus, setBundleStatus] = useState<string | null>(null);
   const [bundleCreatedData, setBundleCreatedData] = useState<CreatedBundle | null>(null);
+  const [bundleSendEmail, setBundleSendEmail] = useState(true);
+  const [decisionFor, setDecisionFor] = useState<AssessmentBundle | null>(null);
+  const [decisionChoice, setDecisionChoice] = useState<"advance" | "hire" | "reject">("advance");
+  const [decisionNotes, setDecisionNotes] = useState("");
+  const [decisionError, setDecisionError] = useState<string | null>(null);
+  const [decisionBusy, setDecisionBusy] = useState(false);
 
-  // AI Deep Resume Scrutiny State
+  // Résumé check against the job's requirements
   const [showScrutinyModal, setShowScrutinyModal] = useState<boolean>(false);
   const [scrutinyResumeText, setScrutinyResumeText] = useState<string>("");
-  const [scrutinyCandidateName, setScrutinyCandidateName] = useState<string>("");
-  const [scrutinyTargetRole, setScrutinyTargetRole] = useState<string>("");
-  const [scrutinyTargetCompany, setScrutinyTargetCompany] = useState<string>("");
-  const [scrutinyYearsExp, setScrutinyYearsExp] = useState<number>(0);
-  const [scrutinyResult, setScrutinyResult] = useState<ScrutinyResultData | null>(null);
+  const [scrutinyRequirements, setScrutinyRequirements] = useState<string>("");
+  const [scrutinyResult, setScrutinyResult] = useState<RequirementsMatchData | null>(null);
+  const [scrutinyError, setScrutinyError] = useState<string | null>(null);
   const [scrutinyLoading, setScrutinyLoading] = useState<boolean>(false);
 
   // AI Decision Filters & Audit Modal State
@@ -343,7 +384,8 @@ export default function RecruiterDashboardPage() {
           companyName: bundleCompany,
           examId: bundleExamId,
           requiredLanguage: bundleLanguage,
-          defenseTopic: bundleDefenseTopic
+          defenseTopic: bundleDefenseTopic,
+          sendEmail: bundleSendEmail
         }),
       });
 
@@ -353,7 +395,8 @@ export default function RecruiterDashboardPage() {
         setBundleStatus(null);
         fetchBundles();
       } else {
-        setBundleStatus("We couldn't create the assessment bundle. Please try again.");
+        const body = await res.json().catch(() => null);
+        setBundleStatus(body?.error || "We couldn't create the assessment bundle. Please try again.");
       }
     } catch (e) {
       setBundleStatus("We couldn't reach the server. Please check your connection and try again.");
@@ -391,7 +434,7 @@ export default function RecruiterDashboardPage() {
       const body = await res.json().catch(() => ({}));
       if (res.ok && body.token) {
         setReissued({ id: bundle.id, token: body.token, expiresAt: body.expiresAt });
-        setLinkMessage(`New link for ${bundle.candidateName}. The previous link no longer works. Copy it now: it is shown only once.`);
+        setLinkMessage(en("New link for {name}. The previous link no longer works. Copy it now: it is shown only once.", { name: bundle.candidateName }));
         fetchBundles();
       } else {
         setLinkMessage(body.error || "Could not create a new link.");
@@ -403,30 +446,87 @@ export default function RecruiterDashboardPage() {
     }
   };
 
+  // P15: e-mail the candidate a new link (the previous one stops working)
+  const handleSendAgain = async (bundle: AssessmentBundle) => {
+    setLinkBusyId(bundle.id);
+    setLinkMessage(null);
+    try {
+      const res = await apiFetch(`/api/recruiter/assessments/bundle/${encodeURIComponent(bundle.id)}/send`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({}),
+      });
+      const body = await res.json().catch(() => ({}));
+      if (res.ok && body.token) {
+        setReissued({ id: bundle.id, token: body.token, expiresAt: body.expiresAt });
+        setLinkMessage(
+          body.emailed
+            ? en("A new link was e-mailed to {email}. The previous link no longer works.", { email: bundle.candidateEmail })
+            : en("The e-mail couldn't be sent. Copy the new link below and send it yourself; the previous link no longer works.")
+        );
+        fetchBundles();
+      } else {
+        setLinkMessage(body.error || "Could not send the link.");
+      }
+    } catch {
+      setLinkMessage("We couldn't reach the server. Please check your connection and try again.");
+    } finally {
+      setLinkBusyId(null);
+    }
+  };
+
+  const openDecision = (bundle: AssessmentBundle) => {
+    setDecisionFor(bundle);
+    setDecisionChoice((bundle.decision?.decision as "advance" | "hire" | "reject") ?? "advance");
+    setDecisionNotes(bundle.decision?.notes ?? "");
+    setDecisionError(null);
+  };
+
+  const saveDecision = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!decisionFor) return;
+    setDecisionBusy(true);
+    setDecisionError(null);
+    try {
+      const res = await apiFetch(`/api/recruiter/assessments/bundle/${encodeURIComponent(decisionFor.id)}/action`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: decisionChoice.toUpperCase(), notes: decisionNotes.trim() || null }),
+      });
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setDecisionError(body.error || "We couldn't save the decision. Please try again.");
+        return;
+      }
+      setLinkMessage(en("Decision recorded for {name}.", { name: decisionFor.candidateName }));
+      setDecisionFor(null);
+      fetchBundles();
+    } catch {
+      setDecisionError("We couldn't reach the server. Please check your connection and try again.");
+    } finally {
+      setDecisionBusy(false);
+    }
+  };
+
   const handleRunDeepScrutiny = async (e: React.FormEvent) => {
     e.preventDefault();
     setScrutinyLoading(true);
     setScrutinyResult(null);
+    setScrutinyError(null);
     try {
-      const res = await apiFetch(`/api/resume/deep-scrutiny`, {
+      const res = await apiFetch(`/api/resume/requirements-match`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           resumeText: scrutinyResumeText,
-          candidateName: scrutinyCandidateName || undefined,
-          targetRole: scrutinyTargetRole || undefined,
-          targetCompany: scrutinyTargetCompany || undefined,
-          yearsOfExperience: Number(scrutinyYearsExp) || 5,
+          requirements: scrutinyRequirements.split(/\r?\n/).map((r) => r.trim()).filter(Boolean),
         }),
       });
-
-      if (res.ok) {
-        const json = await res.json();
-        setScrutinyResult(json);
-        fetchBundles();
-      }
-    } catch (err) {
-      console.error("[DEEP SCRUTINY ERROR]:", err);
+      const json = await res.json().catch(() => null);
+      if (res.ok) setScrutinyResult(json);
+      else setScrutinyError(json?.error || en("We couldn't check this résumé. Please try again."));
+    } catch {
+      setScrutinyError(en("We couldn't reach the server. Please check your connection and try again."));
     } finally {
       setScrutinyLoading(false);
     }
@@ -465,6 +565,20 @@ export default function RecruiterDashboardPage() {
       {bundle.aiVerdict && (
         <Button variant="ghost" onClick={() => setSelectedBundleForAudit(bundle)} title={en("Stage scores and interview transcript")}>
           {en("Details")}
+        </Button>
+      )}
+      <Button variant="secondary" onClick={() => openDecision(bundle)} title={en("Advance, hire or reject this candidate")}>
+        {bundle.decision ? en("Change decision") : en("Record decision")}
+      </Button>
+      {(bundle.linkStatus === "active" || bundle.linkStatus === "expired") && (
+        <Button
+          variant="ghost"
+          onClick={() => handleSendAgain(bundle)}
+          disabled={linkBusyId === bundle.id}
+          title={en("E-mail the candidate a new link (the previous one stops working)")}
+        >
+          <Mail aria-hidden="true" className="h-4 w-4 text-muted-foreground" />
+          {en("E-mail again")}
         </Button>
       )}
       {(bundle.linkStatus === "active" || bundle.linkStatus === "expired") && (
@@ -557,15 +671,12 @@ export default function RecruiterDashboardPage() {
                 label={en("More actions")}
                 items={[
                   {
-                    label: en("Review a résumé"),
+                    label: en("Check a résumé"),
                     icon: <FileSearch aria-hidden="true" className="h-4 w-4" />,
                     onSelect: () => {
                       setScrutinyResult(null);
+                      setScrutinyError(null);
                       setScrutinyResumeText("");
-                      setScrutinyCandidateName("");
-                      setScrutinyTargetRole("");
-                      setScrutinyTargetCompany("");
-                      setScrutinyYearsExp(0);
                       setShowScrutinyModal(true);
                     },
                   },
@@ -710,6 +821,8 @@ export default function RecruiterDashboardPage() {
                             <dd className="mt-0.5 text-foreground">
                               {isCompleted ? en("All stages complete") : en("Stage {stage} of 3", { stage: bundle.currentStage })}
                               <span className={`block ${linkStatusClass(bundle)}`}>{linkStatusText(bundle)}</span>
+                              <InvitationStatus bundle={bundle} className="" />
+                              {bundle.decision && <span className="block font-medium text-foreground">{en(DECISION_LABEL[bundle.decision.decision] ?? bundle.decision.decision)}</span>}
                             </dd>
                           </div>
                         </dl>
@@ -758,6 +871,8 @@ export default function RecruiterDashboardPage() {
                                 {isCompleted ? en("All stages complete") : en("Stage {stage} of 3", { stage: bundle.currentStage })}
                               </span>
                               <div className={`mt-1 text-xs ${linkStatusClass(bundle)}`}>{linkStatusText(bundle)}</div>
+                              <InvitationStatus bundle={bundle} className="text-xs" />
+                              {bundle.decision && <div className="text-xs font-medium text-foreground">{en(DECISION_LABEL[bundle.decision.decision] ?? bundle.decision.decision)}</div>}
                               <div className="max-w-[160px] truncate font-mono text-xs text-muted-foreground" title={en("Link reference (the full link is shown only when it is created)")}>
                                 {bundle.linkHint}
                               </div>
@@ -885,7 +1000,11 @@ export default function RecruiterDashboardPage() {
                   <CheckCircle2 aria-hidden="true" className="mx-auto h-6 w-6 text-emerald-600 dark:text-emerald-400" />
                   <p className="text-sm font-semibold text-foreground">{en("Assessment created")}</p>
                   <p className="text-sm text-muted-foreground">
-                    {en("Candidate ")}<strong className="font-medium text-foreground">{bundleCreatedData.candidateName}</strong>{en(" is ready to be invited.")}
+                    {bundleCreatedData.emailed === true
+                      ? en("The link was e-mailed to {email}.", { email: bundleCreatedData.candidateEmail })
+                      : bundleCreatedData.emailed === false
+                        ? en("The e-mail couldn't be sent. Copy the link below and send it to {email} yourself.", { email: bundleCreatedData.candidateEmail })
+                        : <>{en("Candidate ")}<strong className="font-medium text-foreground">{bundleCreatedData.candidateName}</strong>{en(" is ready to be invited.")}</>}
                   </p>
                 </div>
 
@@ -1018,6 +1137,14 @@ export default function RecruiterDashboardPage() {
                   )}
                 </Field>
 
+                <label className="flex items-start gap-2 text-sm text-foreground">
+                  <input type="checkbox" className="mt-0.5 h-4 w-4" checked={bundleSendEmail} onChange={(e) => setBundleSendEmail(e.target.checked)} />
+                  <span>
+                    {en("E-mail the link to the candidate")}
+                    <span className="block text-xs text-muted-foreground">{en("Sent in your company's name; their replies come to you. You can also copy the link.")}</span>
+                  </span>
+                </label>
+
                 {bundleStatus && (
                   <div role="status" className="rounded-lg border border-border bg-muted/50 p-3 text-sm text-foreground">
                     {bundleStatus}
@@ -1127,15 +1254,48 @@ export default function RecruiterDashboardPage() {
         </Modal>
       )}
 
-      {/* Review a résumé: claim check and a tailored assessment */}
+      {/* P15: the recruiter's own decision on a candidate */}
+      {decisionFor && (
+        <Modal labelledBy="decision-title" onClose={() => setDecisionFor(null)}>
+          <form onSubmit={saveDecision} className="w-full max-w-md space-y-4 rounded-xl border border-border bg-card p-5 shadow-xl">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <h2 id="decision-title" className="text-base font-semibold text-foreground">{en("Decision for {name}", { name: decisionFor.candidateName })}</h2>
+                <p className="mt-0.5 text-sm text-muted-foreground">{decisionFor.targetRole}</p>
+              </div>
+              <CloseButton onClick={() => setDecisionFor(null)} label={en("Close")} />
+            </div>
+            <fieldset className="space-y-2">
+              <legend className="sr-only">{en("Decision")}</legend>
+              {(["advance", "hire", "reject"] as const).map((d) => (
+                <label key={d} className={`flex cursor-pointer items-center gap-2 rounded-lg border px-3 py-2 text-sm ${decisionChoice === d ? "border-[var(--brand,#0e7490)] bg-muted/40" : "border-border"}`}>
+                  <input type="radio" name="decision" value={d} checked={decisionChoice === d} onChange={() => setDecisionChoice(d)} />
+                  {en(DECISION_LABEL[d])}
+                </label>
+              ))}
+            </fieldset>
+            <Field label={en("Notes for your team (optional)")}>
+              {(p) => <textarea {...p} rows={3} maxLength={1000} value={decisionNotes} onChange={(e) => setDecisionNotes(e.target.value)} />}
+            </Field>
+            <p className="text-xs text-muted-foreground">{en("This records your decision in Edulexa. Nothing is sent to the candidate.")}</p>
+            <ErrorBanner error={decisionError} />
+            <div className="flex justify-end gap-2">
+              <Button type="button" variant="secondary" onClick={() => setDecisionFor(null)}>{en("Cancel")}</Button>
+              <Button type="submit" busy={decisionBusy}>{en("Save decision")}</Button>
+            </div>
+          </form>
+        </Modal>
+      )}
+
+      {/* Check a résumé against the job's requirements */}
       {showScrutinyModal && (
         <Modal labelledBy="scrutiny-modal-title" onClose={() => setShowScrutinyModal(false)}>
-          <div className="flex max-h-[92vh] w-full max-w-4xl flex-col overflow-hidden rounded-xl border border-border bg-card shadow-xl">
+          <div className="flex max-h-[92vh] w-full max-w-3xl flex-col overflow-hidden rounded-xl border border-border bg-card shadow-xl">
             <div className="flex items-start justify-between gap-3 border-b border-border p-5">
               <div className="min-w-0">
-                <h2 id="scrutiny-modal-title" className="text-base font-semibold text-foreground">{en("Review a résumé")}</h2>
+                <h2 id="scrutiny-modal-title" className="text-base font-semibold text-foreground">{en("Check a résumé")}</h2>
                 <p className="mt-0.5 text-sm text-muted-foreground">
-                  {en("Checks résumé claims for inflated numbers and buzzwords, and drafts a tailored three-stage assessment. Treat the result as questions for the interview, not a verdict.")}
+                  {en("See which of the job's requirements a résumé mentions, and where. There's no score, nothing is sent to an AI, and the résumé isn't saved.")}
                 </p>
               </div>
               <CloseButton onClick={() => setShowScrutinyModal(false)} label={en("Close")} />
@@ -1143,199 +1303,70 @@ export default function RecruiterDashboardPage() {
 
             <div className="flex-1 space-y-6 overflow-y-auto p-5">
               <form onSubmit={handleRunDeepScrutiny} className="space-y-4">
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                  <Field label={en("Candidate name")}>
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                  <Field label={en("Requirements")} hint={en("One per line. Use / or \"or\" for alternatives, for example \"RN or LPN\".")}>
                     {(p) => (
-                      <input {...p} type="text" value={scrutinyCandidateName} onChange={(e) => setScrutinyCandidateName(e.target.value)} placeholder={en("e.g. Alex Rivera")} />
+                      <textarea
+                        {...p}
+                        rows={8}
+                        value={scrutinyRequirements}
+                        onChange={(e) => setScrutinyRequirements(e.target.value)}
+                        placeholder={en("Customer service\nSpanish / Portuguese\nExcel")}
+                        required
+                      />
                     )}
                   </Field>
-                  <Field label={en("Target role")}>
+                  <Field label={en("Résumé text")} hint={en("{count} characters", { count: scrutinyResumeText.length })}>
                     {(p) => (
-                      <input {...p} type="text" value={scrutinyTargetRole} onChange={(e) => setScrutinyTargetRole(e.target.value)} placeholder={en("e.g. Staff backend engineer")} />
-                    )}
-                  </Field>
-                  <Field label={en("Target company")}>
-                    {(p) => (
-                      <input {...p} type="text" value={scrutinyTargetCompany} onChange={(e) => setScrutinyTargetCompany(e.target.value)} placeholder={en("e.g. Your company")} />
-                    )}
-                  </Field>
-                  <Field label={en("Years of experience")}>
-                    {(p) => (
-                      <input {...p} type="number" min={0} value={scrutinyYearsExp} onChange={(e) => setScrutinyYearsExp(Number(e.target.value))} />
+                      <textarea
+                        {...p}
+                        rows={8}
+                        value={scrutinyResumeText}
+                        onChange={(e) => setScrutinyResumeText(e.target.value)}
+                        placeholder={en("Paste the résumé text")}
+                        required
+                      />
                     )}
                   </Field>
                 </div>
-
-                <Field label={en("Résumé text")} hint={en("{count} characters", { count: scrutinyResumeText.length })}>
-                  {(p) => (
-                    <textarea
-                      {...p}
-                      rows={5}
-                      value={scrutinyResumeText}
-                      onChange={(e) => setScrutinyResumeText(e.target.value)}
-                      placeholder={en("Paste the résumé, experience highlights, or CV bullets")}
-                      required
-                    />
-                  )}
-                </Field>
-
-                <div className="flex flex-wrap items-center justify-between gap-3">
-                  <span className="text-xs text-muted-foreground">
-                    {en("The AI checks whether claimed numbers are plausible for the role and level.")}
-                  </span>
+                <ErrorBanner error={scrutinyError} />
+                <div className="flex justify-end">
                   <Button type="submit" busy={scrutinyLoading}>
-                    {scrutinyLoading ? en("Reviewing…") : en("Review résumé")}
+                    {scrutinyLoading ? en("Checking…") : en("Check résumé")}
                   </Button>
                 </div>
               </form>
 
               {scrutinyResult && (
-                <div className="space-y-6">
-                  {/* Overall credibility */}
-                  <div
-                    className={`flex flex-col justify-between gap-4 rounded-lg border p-4 sm:flex-row sm:items-center ${
-                      scrutinyResult.credibilityScore >= 75
-                        ? "border-emerald-300 bg-emerald-50 dark:border-emerald-900 dark:bg-emerald-950/40"
-                        : scrutinyResult.credibilityScore >= 55
-                        ? "border-amber-300 bg-amber-50 dark:border-amber-900 dark:bg-amber-950/40"
-                        : "border-red-300 bg-red-50 dark:border-red-900 dark:bg-red-950/40"
-                    }`}
-                  >
-                    <div className="min-w-0 space-y-1">
-                      <p className="text-sm font-semibold text-foreground">
-                        {scrutinyResult.candidateName} • {scrutinyResult.targetRole}
-                      </p>
-                      <p className="text-sm text-muted-foreground">{scrutinyResult.summary}</p>
-                    </div>
-                    <div className="shrink-0 sm:text-end">
-                      <p className="text-xs text-muted-foreground">{en("Claim credibility")}</p>
-                      <p className="text-2xl font-semibold tabular-nums text-foreground">{scrutinyResult.credibilityScore}%</p>
-                      <p
-                        className={`text-sm font-medium ${
-                          scrutinyResult.credibilityScore >= 75
-                            ? "text-emerald-700 dark:text-emerald-400"
-                            : scrutinyResult.credibilityScore >= 55
-                            ? "text-amber-700 dark:text-amber-400"
-                            : "text-red-700 dark:text-red-400"
-                        }`}
-                      >
-                        {scrutinyResult.credibilityScore >= 75 ? en("Mostly credible") : scrutinyResult.credibilityScore >= 55 ? en("Some questions") : en("Many unsupported claims")}
-                      </p>
-                    </div>
+                <section aria-labelledby="scrutiny-results-title" className="space-y-3">
+                  <div className="flex flex-wrap items-baseline justify-between gap-2">
+                    <h3 id="scrutiny-results-title" className="text-sm font-semibold text-foreground">
+                      {en("Mentioned: {count} of {total} requirements", { count: scrutinyResult.mentionedCount, total: scrutinyResult.requirementCount })}
+                    </h3>
+                    <p className="text-xs text-muted-foreground">{en("A mention is not proof. Ask about each requirement in the interview.")}</p>
                   </div>
-
-                  <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-                    {/* Flagged claims, buzzwords and gaps */}
-                    <div className="space-y-4">
-                      <section className="space-y-3 rounded-lg border border-border p-4">
-                        <div className="flex items-center justify-between gap-2">
-                          <h3 className="flex items-center gap-2 text-sm font-semibold text-foreground">
-                            <ShieldAlert aria-hidden="true" className="h-4 w-4 text-muted-foreground" />
-                            {en("Flagged claims")}
-                          </h3>
-                          <span className="text-xs text-muted-foreground">
-                            {en("{value} flagged", { value: scrutinyResult.flaggedClaims?.length ?? 0 })}
-                          </span>
+                  <ul className="divide-y divide-border rounded-lg border border-border">
+                    {scrutinyResult.results.map((r) => (
+                      <li key={r.requirement} className="space-y-1.5 p-3">
+                        <div className="flex items-start justify-between gap-3">
+                          <span className="text-sm font-medium text-foreground">{r.requirement}</span>
+                          {r.mentioned ? (
+                            <Badge tone="good"><Check aria-hidden="true" className="me-1 h-3.5 w-3.5" />{en("Mentioned")}</Badge>
+                          ) : (
+                            <Badge tone="neutral">{en("Not mentioned")}</Badge>
+                          )}
                         </div>
-                        <div className="space-y-3">
-                          {scrutinyResult.flaggedClaims?.map((item: ScrutinyFlaggedClaim, idx: number) => (
-                            <div key={idx} className="space-y-2 rounded-lg bg-muted/40 p-3">
-                              <div className="flex items-start justify-between gap-2">
-                                <span className="text-sm font-medium text-foreground">{en("“")}{item.claim}{en("”")}</span>
-                                <Badge tone={item.severity === "HIGH" ? "bad" : "warn"}>
-                                  {en("{severity} severity", { severity: sentenceCase(item.severity) })}
-                                </Badge>
-                              </div>
-                              <p className="text-sm text-muted-foreground">
-                                <span className="font-medium text-foreground">{en("Why:")}</span> {item.critique}
-                              </p>
-                              <div className="rounded-md border border-border bg-card p-2.5 text-sm text-foreground">
-                                <span className="block text-xs font-medium text-muted-foreground">{en("Question to ask")}</span>
-                                {en("“")}{item.interrogationQuestion}{en("”")}
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </section>
-
-                      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                        <section className="space-y-2 rounded-lg border border-border p-4">
-                          <h3 className="text-xs font-medium text-muted-foreground">{en("Buzzwords")}</h3>
-                          <div className="flex flex-wrap gap-1.5">
-                            {scrutinyResult.buzzwordInflation?.map((bw: string, i: number) => (
-                              <Badge key={i} tone="bad">{bw}</Badge>
+                        {r.lines.length > 0 && (
+                          <ul className="space-y-1">
+                            {r.lines.map((l, i) => (
+                              <li key={i} className="rounded-md bg-muted/50 px-2.5 py-1.5 text-sm text-muted-foreground">{l}</li>
                             ))}
-                          </div>
-                        </section>
-                        <section className="space-y-2 rounded-lg border border-border p-4">
-                          <h3 className="text-xs font-medium text-muted-foreground">{en("Gaps")}</h3>
-                          <div className="flex flex-wrap gap-1.5">
-                            {scrutinyResult.technicalDeficiencies?.map((def: string, i: number) => (
-                              <Badge key={i} tone="warn">{def}</Badge>
-                            ))}
-                          </div>
-                        </section>
-                      </div>
-                    </div>
-
-                    {/* Tailored assessment and its link */}
-                    <section className="space-y-4 rounded-lg border border-border p-4">
-                      <div className="flex flex-wrap items-center justify-between gap-2">
-                        <h3 className="text-sm font-semibold text-foreground">{en("Tailored assessment")}</h3>
-                        <span className="max-w-full truncate rounded-md bg-muted px-2 py-0.5 font-mono text-xs text-muted-foreground">
-                          {scrutinyResult.generatedAssessmentToken}
-                        </span>
-                      </div>
-
-                      <div className="space-y-1">
-                        <h4 className="text-xs font-medium text-muted-foreground">{en("Stage 1: written exam focus")}</h4>
-                        <p className="text-sm text-foreground">{scrutinyResult.tailoredWrittenFocus}</p>
-                      </div>
-
-                      <div className="space-y-1">
-                        <h4 className="text-xs font-medium text-muted-foreground">{en("Stage 2: coding challenge")}</h4>
-                        <p className="text-sm text-foreground">{scrutinyResult.tailoredCodingPrompt}</p>
-                      </div>
-
-                      <div className="space-y-1">
-                        <h4 className="text-xs font-medium text-muted-foreground">{en("Stage 3: voice defense questions")}</h4>
-                        <ol className="list-decimal space-y-1.5 ps-5 text-sm text-foreground">
-                          {scrutinyResult.tailoredVoiceDefenseQuestions?.map((q: string, i: number) => (
-                            <li key={i}>{q}</li>
-                          ))}
-                        </ol>
-                      </div>
-
-                      <div className="space-y-2 border-t border-border pt-4">
-                        <label htmlFor="scrutiny-link" className="block text-sm font-medium text-foreground">
-                          {en("Candidate link")}
-                        </label>
-                        <div className="flex items-center gap-2">
-                          <input
-                            id="scrutiny-link"
-                            type="text"
-                            readOnly
-                            value={typeof window !== "undefined" ? `${window.location.origin}/assessment/${scrutinyResult.generatedAssessmentToken}` : `/assessment/${scrutinyResult.generatedAssessmentToken}`}
-                            className={`${inputCls} min-w-0 font-mono`}
-                          />
-                          <Button onClick={() => handleCopyBundleUrl(scrutinyResult.generatedAssessmentToken)} className="shrink-0">
-                            {copiedToken === scrutinyResult.generatedAssessmentToken ? <Check aria-hidden="true" className="h-4 w-4" /> : <Copy aria-hidden="true" className="h-4 w-4" />}
-                            {copiedToken === scrutinyResult.generatedAssessmentToken ? en("Copied") : en("Copy link")}
-                          </Button>
-                        </div>
-                        <a
-                          href={`/assessment/${scrutinyResult.generatedAssessmentToken}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className={buttonClass("secondary")}
-                        >
-                          {en("Open the assessment")}
-                          <ExternalLink aria-hidden="true" className="h-4 w-4" />
-                        </a>
-                      </div>
-                    </section>
-                  </div>
-                </div>
+                          </ul>
+                        )}
+                      </li>
+                    ))}
+                  </ul>
+                </section>
               )}
             </div>
           </div>

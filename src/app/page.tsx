@@ -99,9 +99,10 @@ export default function HomePage() {
           <h2 className="font-semibold">{en("Plans")}</h2>
           <p className="mt-1 text-sm text-muted-foreground">{en("What's free and what's included in each plan.")}</p>
         </Link>
-        <Link href="/free" className="rounded-xl border border-border bg-card p-5 shadow-sm transition-colors hover:border-indigo-400">
-          <h2 className="font-semibold">{en("Free for students")}</h2>
-          <p className="mt-1 text-sm text-muted-foreground">{en("See whether the free student plan is offered where you are.")}</p>
+        {/* P3 (5 Nov 2026): schools sign up here (the free student plan is switched off) */}
+        <Link href="/start" className="rounded-xl border border-border bg-card p-5 shadow-sm transition-colors hover:border-indigo-400">
+          <h2 className="font-semibold">{en("For schools and colleges")}</h2>
+          <p className="mt-1 text-sm text-muted-foreground">{en("Start a 30-day free trial and set up your school in a few minutes.")}</p>
         </Link>
       </section>
     </div>

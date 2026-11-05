@@ -21,6 +21,8 @@ const HOMES = {
   careerCentre: "/career-center",
   faculty: "/faculty",
   employer: "/employer",
+  student: "/student",
+  alumni: "/alumni",
 };
 
 /** The area a platform role works in; null when memberships decide (or for a member) */
@@ -33,7 +35,7 @@ export function platformHome(roles: string[]): RoleHome | null {
   return null;
 }
 
-interface CareerMe {
+export interface CareerMe {
   memberships?: { role: string; status: string }[];
   employers?: unknown[];
 }
@@ -47,6 +49,18 @@ export function membershipHome(roles: string[], me: CareerMe | null): RoleHome |
   if (active.some((m) => m.role === "Faculty") || has(roles, "Faculty")) return HOMES.faculty;
   if ((me?.employers ?? []).length > 0) return HOMES.employer;
   if (has(roles, "Counselor")) return HOMES.institute;
+  // P1 (5 Nov 2026): a school's student (or alumnus) has one home, the school's area, whose menu also holds practice and
+  // guidance; the member dashboard is for people without a school
+  if (active.some((m) => m.role === "Student")) return HOMES.student;
+  if (active.some((m) => m.role === "Alumni")) return HOMES.alumni;
+  return null;
+}
+
+/** P1: the school area of a person who studies at (or graduated from) a school on Edulexa, the same one membershipHome picks; null otherwise */
+export function schoolHome(me: CareerMe | null): typeof HOMES.student | typeof HOMES.alumni | null {
+  const active = (me?.memberships ?? []).filter((m) => m.status === "Active");
+  if (active.some((m) => m.role === "Student")) return HOMES.student;
+  if (active.some((m) => m.role === "Alumni")) return HOMES.alumni;
   return null;
 }
 

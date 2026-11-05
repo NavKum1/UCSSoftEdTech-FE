@@ -3,7 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import { useApi } from "@/lib/appAuth";
-import { careerNav } from "@/lib/careerNav";
+import { careerNav, shownForCountry } from "@/lib/careerNav";
 import { useCareerShell } from "@/components/career/CareerShell";
 import { Card, ErrorBanner, Loading, PageHeader, useLoad, useCareerFormat, useCareerT, StatTile } from "@/components/career/ui";
 import { useCareerNavLabels } from "@/components/career/i18n/nav";
@@ -17,7 +17,7 @@ interface Summary {
 
 export default function CareerCenterHome() {
   const api = useApi();
-  const { me, schoolId } = useCareerShell();
+  const { me, schoolId, schoolCountry } = useCareerShell();
   const t = useCareerT("careerCenterHome");
   const tRoles = useCareerT("roles");
   const fmt = useCareerFormat();
@@ -32,7 +32,8 @@ export default function CareerCenterHome() {
   }, [api, schoolId]);
 
   const role = me?.memberships.find((m) => m.instituteId === schoolId)?.role;
-  const links = careerNav["career-center"].filter((i) => i.ready && i.href !== "/career-center");
+  // The same country rule as the menu (CareerShell): country pages only for schools in those countries (P5)
+  const links = careerNav["career-center"].filter((i) => i.ready && i.href !== "/career-center" && shownForCountry(i, schoolCountry));
 
   return (
     <div>

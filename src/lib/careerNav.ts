@@ -19,6 +19,10 @@ export interface CareerNavItem {
   group?: string;
 }
 
+/** Whether an entry shows for a school in this country (country pages only for schools in those countries; none while unknown) */
+export const shownForCountry = (item: CareerNavItem, country: string | null) =>
+  !item.countries || (country !== null && item.countries.includes(country));
+
 export const CAREER_PREFIXES = ["/student", "/career-center", "/employer", "/faculty", "/alumni", "/supervisor", "/kiosk"];
 
 // Career pages that render without the career shell (they keep the app's <main>) but are reached by white-label
@@ -69,11 +73,22 @@ export const careerNav: Record<CareerPersona, CareerNavItem[]> = {
     { label: "Career fairs", href: "/student/fairs", module: "C5", ready: true, group: "Find work" },
     { label: "Challenges", href: "/student/challenges", module: "D7", ready: true, group: "Find work" },
     { label: "International", href: "/student/international", module: "D3", ready: true, group: "Find work" },
+    // P1 (5 Nov 2026): practice and guidance live in the same menu as the school's pages
+    { label: "Interview practice", href: "/interview/practice", module: "B2", ready: true, group: "Practice" },
+    { label: "Exams", href: "/prep/exam", module: "B2", ready: true, group: "Practice" },
+    { label: "Speaking practice", href: "/prep/delivery", module: "B2", ready: true, group: "Practice" },
+    { label: "Workplace scenarios", href: "/leadership/simulator", module: "B3", ready: true, group: "Practice" },
+    { label: "Counseling quiz", href: "/prep/counselling", module: "C3", ready: true, group: "Guidance" },
+    { label: "Career path", href: "/prep/career", module: "C3", ready: true, group: "Guidance" },
+    { label: "My guidance requests", href: "/my/guidance", module: "C3", ready: true, group: "Guidance" },
     { label: "My next step", href: "/student/next-step", module: "D4", ready: true, group: "Your record" },
     { label: "My competencies", href: "/student/competencies", module: "D1", ready: true, group: "Your record" },
     { label: "My record", href: "/student/record", module: "F2", ready: true, group: "Your record" },
     { label: "My placement record", href: "/student/placements", module: "G14a", ready: true, group: "Your record" },
-    { label: "National credentials", href: "/student/national-credentials", module: "G6", ready: true, group: "Your record" },
+    { label: "Results", href: "/my/results", module: "F2", ready: true, group: "Your record" },
+    { label: "Credentials", href: "/credentials", module: "F2", ready: true, group: "Your record" },
+    { label: "Skill passport", href: "/passport", module: "F2", ready: true, group: "Your record" },
+    { label: "National credentials", href: "/student/national-credentials", module: "G6", ready: true, countries: ["IN"], group: "Your record" },
     { label: "Privacy & sharing", href: "/student/privacy", module: "F4", ready: true, group: "Account" },
     { label: "Notifications", href: "/student/notifications", module: "F5", ready: true, group: "Account" },
   ],
@@ -96,7 +111,7 @@ export const careerNav: Record<CareerPersona, CareerNavItem[]> = {
     { label: "Outcomes", href: "/career-center/outcomes", module: "D4", ready: true, group: "Reports" },
     { label: "Reports", href: "/career-center/reports", module: "C11", ready: true, group: "Reports" },
     { label: "NIRF, NAAC and NBA reports", href: "/career-center/reports/india", module: "G3/G4", ready: true, countries: ["IN"], group: "Reports" },
-    { label: "Workforce localisation", href: "/career-center/reports/localisation", module: "G12", ready: true, countries: ["SA", "AE", "QA", "ZA"], group: "Reports" },
+    { label: "Workforce localization", href: "/career-center/reports/localisation", module: "G12", ready: true, countries: ["SA", "AE", "QA", "ZA"], group: "Reports" },
     { label: "Workforce (WIOA) reports", href: "/career-center/reports/workforce", module: "G15", ready: true, countries: ["US"], group: "Reports" },
     { label: "Bootcamp outcomes (CIRR-style)", href: "/career-center/reports/cirr", module: "G16", ready: true, group: "Reports" },
     { label: "Frameworks", href: "/career-center/frameworks", module: "D1", ready: true, group: "Reports" },
@@ -105,7 +120,7 @@ export const careerNav: Record<CareerPersona, CareerNavItem[]> = {
     { label: "SIS roster sync", href: "/career-center/settings/sis", module: "I2", ready: true, group: "Setup" },
     { label: "Calendar sync", href: "/career-center/calendar", module: "I3", ready: true, group: "Setup" },
     { label: "Chat & SMS", href: "/career-center/settings/chat-sms", module: "G7", ready: true, group: "Setup" },
-    { label: "National credentials", href: "/career-center/national-credentials", module: "G6", ready: true, group: "Setup" },
+    { label: "National credentials", href: "/career-center/national-credentials", module: "G6", ready: true, countries: ["IN"], group: "Setup" },
     { label: "Settings", href: "/career-center/settings", module: "F1", ready: true, group: "Setup" },
     { label: "Billing", href: "/career-center/billing", module: "G9", ready: true, group: "Setup" },
     { label: "Privacy requests", href: "/career-center/privacy", module: "G18", ready: true, group: "Privacy" },

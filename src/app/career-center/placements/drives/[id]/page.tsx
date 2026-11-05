@@ -11,6 +11,7 @@ import { useParams } from "next/navigation";
 import { useApi } from "@/lib/appAuth";
 import { Badge, Button, Card, ErrorBanner, Field, Loading, PageHeader, SuccessBanner, formatDate, useLoad, useCareerT } from "@/components/career/ui";
 import { label } from "@/components/career/placements/shared";
+import { useCountryWords } from "@/components/career/country";
 import { DriveWorkspace } from "@/components/career/campus/DriveWorkspace";
 import { HireDriveStatus } from "@/components/career/campus/HireDrivePanels";
 import { APPROVAL_TONE, TIER_KEYS, localToIso, toList, toNum, useApprovalLabels, useTierLabels, type Applicant, type CampusDrive, type CampusJob, type CampusRound } from "@/components/career/campus/shared";
@@ -28,6 +29,9 @@ export default function StaffDrivePage() {
   const t = useCareerT("careerCenterDrive");
   const APPROVAL = useApprovalLabels();
   const TIER = useTierLabels();
+  // P5: amounts in the school's currency; tiers, backlogs and the GSTIN state are India only
+  const w = useCountryWords();
+  const india = w.rules.india;
   const { id } = useParams<{ id: string }>();
   const api = useApi();
   const base = `/api/career/campus/staff/drives/${id}`;
@@ -89,18 +93,20 @@ export default function StaffDrivePage() {
         <Card title={t("summary")}>
           <div className="flex flex-wrap items-center gap-2 text-sm">
             <Badge tone={APPROVAL_TONE[d.approvalStatus] ?? "neutral"}>{label(APPROVAL, d.approvalStatus)}</Badge>
-            <span>{d.ctcDisplay ?? "—"}</span>
-            <span>· {label(TIER, d.tier)}</span>
+            <span>{w.rules.money(d.ctcAnnual)}</span>
+            {india && <span>· {label(TIER, d.tier)}</span>}
             <span>· {t("deadline", { date: formatDate(d.applyDeadline, true) })}</span>
             <span>· {d.applicationsOpen ? t("open") : t("closed")}</span>
           </div>
           {employer && (
             <p className="mt-2 text-sm">
-              {t("employerLine", {
-                name: employer.name,
-                verified: employer.campusVerified ? t("verified") : t("notVerified"),
-                state: employer.gstinState ?? "—",
-              })}
+              {india
+                ? t("employerLine", {
+                    name: employer.name,
+                    verified: employer.campusVerified ? t("verified") : t("notVerified"),
+                    state: employer.gstinState ?? "—",
+                  })
+                : w.t("employerLine", { name: employer.name, verified: employer.campusVerified ? t("verified") : t("notVerified") })}
             </p>
           )}
           {job?.description && <p className="mt-2 whitespace-pre-line text-sm">{job.description}</p>}
@@ -108,10 +114,10 @@ export default function StaffDrivePage() {
 
         <Card title={t("eligibilityTitle")}>
           <div className="grid gap-3 md:grid-cols-2">
-            <Field label={t("minCgpa")}>{(p) => <input {...p} inputMode="decimal" disabled={!canDecide} value={c.minCgpa} onChange={(e) => setCrit({ ...c, minCgpa: e.target.value })} />}</Field>
-            <Field label={t("maxBacklogs")}>{(p) => <input {...p} inputMode="numeric" disabled={!canDecide} value={c.maxActiveBacklogs} onChange={(e) => setCrit({ ...c, maxActiveBacklogs: e.target.value })} />}</Field>
-            <Field label={t("branches")}>{(p) => <input {...p} disabled={!canDecide} value={c.branches} onChange={(e) => setCrit({ ...c, branches: e.target.value })} />}</Field>
-            <Field label={t("batches")}>{(p) => <input {...p} disabled={!canDecide} value={c.batches} onChange={(e) => setCrit({ ...c, batches: e.target.value })} />}</Field>
+            <Field label={india ? t("minCgpa") : w.minGrade} hint={india ? undefined : w.minGradeHint}>{(p) => <input {...p} inputMode="decimal" disabled={!canDecide} value={c.minCgpa} onChange={(e) => setCrit({ ...c, minCgpa: e.target.value })} />}</Field>
+            {india && <Field label={t("maxBacklogs")}>{(p) => <input {...p} inputMode="numeric" disabled={!canDecide} value={c.maxActiveBacklogs} onChange={(e) => setCrit({ ...c, maxActiveBacklogs: e.target.value })} />}</Field>}
+            <Field label={india ? t("branches") : w.programs}>{(p) => <input {...p} disabled={!canDecide} value={c.branches} onChange={(e) => setCrit({ ...c, branches: e.target.value })} />}</Field>
+            <Field label={india ? t("batches") : w.t("graduationYears")}>{(p) => <input {...p} disabled={!canDecide} value={c.batches} onChange={(e) => setCrit({ ...c, batches: e.target.value })} />}</Field>
           </div>
           {canDecide && d.approvalStatus === "Approved" && (
             <Button className="mt-3" variant="secondary" busy={busy === "elig"} onClick={() => act("elig", () => api(`${base}/eligibility`, { method: "PUT", json: eligibility() }), t("eligibilitySaved"))}>
@@ -138,18 +144,20 @@ export default function StaffDrivePage() {
           <Card title={t("publishingTitle")}>
             <div className="grid gap-3 md:grid-cols-2">
               <Field label={t("newDeadline")}>{(p) => <input {...p} type="datetime-local" value={deadline} onChange={(e) => setDeadline(e.target.value)} />}</Field>
-              <Field label={t("tierOverride")}>
-                {(p) => (
-                  <select {...p} value={tier} onChange={(e) => setTier(e.target.value)}>
-                    <option value="">{t("tierAuto")}</option>
-                    {TIER_KEYS.map((k) => (
-                      <option key={k} value={k}>
-                        {label(TIER, k)}
-                      </option>
-                    ))}
-                  </select>
-                )}
-              </Field>
+              {india && (
+                <Field label={t("tierOverride")}>
+                  {(p) => (
+                    <select {...p} value={tier} onChange={(e) => setTier(e.target.value)}>
+                      <option value="">{t("tierAuto")}</option>
+                      {TIER_KEYS.map((k) => (
+                        <option key={k} value={k}>
+                          {label(TIER, k)}
+                        </option>
+                      ))}
+                    </select>
+                  )}
+                </Field>
+              )}
             </div>
             <div className="mt-3 flex flex-wrap gap-2">
               <Button

@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { useApi } from "@/lib/appAuth";
 import { Badge, Button, Card, EmptyState, ErrorBanner, Field, Loading, PageHeader, SuccessBanner, formatDate, useCareerT, useLoad } from "@/components/career/ui";
+import { useCountryWords } from "@/components/career/country";
 
 interface ChannelInfo {
   channel: string;
@@ -45,6 +46,8 @@ const TYPE_KEYS = ["appointment_reminders", "group_session_reminders", "group_se
 
 function ChannelPanel({ c, mine, onChanged }: { c: MyChannel; mine: MineResponse; onChanged: () => void }) {
   const t = useCareerT("studentChatSms");
+  // P5: a sample number for the school's country (India: +91, as before)
+  const w = useCountryWords();
   const api = useApi();
   const [phone, setPhone] = useState("");
   const [consent, setConsent] = useState(false);
@@ -184,7 +187,7 @@ function ChannelPanel({ c, mine, onChanged }: { c: MyChannel; mine: MineResponse
         <div className="space-y-4">
           {status === "OptedOut" && c.optOutAt && <p className="text-xs text-muted-foreground">{t("turnedOffOn", { date: formatDate(c.optOutAt, true) })}</p>}
           <form onSubmit={start} className="space-y-3">
-            <Field label={t("mobileNumber")} hint={t("mobileNumberHint")}>
+            <Field label={t("mobileNumber")} hint={w.rules.india ? t("mobileNumberHint") : w.phoneHint}>
               {(p) => <input {...p} type="tel" inputMode="tel" autoComplete="tel" dir="ltr" value={phone} onChange={(e) => setPhone(e.target.value)} required />}
             </Field>
             <label htmlFor={`${ch}-consent`} className="flex items-start gap-2 text-sm">

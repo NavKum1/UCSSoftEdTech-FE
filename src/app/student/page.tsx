@@ -3,7 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import { ApiError, useApi } from "@/lib/appAuth";
-import { careerNav } from "@/lib/careerNav";
+import { careerNav, shownForCountry } from "@/lib/careerNav";
 import { useCareerShell } from "@/components/career/CareerShell";
 import { Badge, Card, ErrorBanner, Loading, PageHeader, useLoad, useCareerT } from "@/components/career/ui";
 import { useCareerNavLabels } from "@/components/career/i18n/nav";
@@ -20,7 +20,7 @@ type Result = { record: StudentRecord } | { notLinked: string };
 
 export default function StudentHome() {
   const api = useApi();
-  const { me, brand } = useCareerShell();
+  const { me, brand, schoolCountry } = useCareerShell();
   const t = useCareerT("studentHome");
   const tRoles = useCareerT("roles");
   const nav = useCareerNavLabels("student");
@@ -37,7 +37,8 @@ export default function StudentHome() {
     [api],
   );
 
-  const links = careerNav.student.filter((i) => i.ready && i.href !== "/student");
+  // The same country rule as the menu (CareerShell): country pages only for schools in those countries (P5)
+  const links = careerNav.student.filter((i) => i.ready && i.href !== "/student" && shownForCountry(i, schoolCountry));
   const name = data && "record" in data ? data.record.profile?.preferredName || me?.name : me?.name;
 
   return (

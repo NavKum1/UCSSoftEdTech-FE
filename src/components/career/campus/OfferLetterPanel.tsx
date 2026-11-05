@@ -10,7 +10,8 @@
 import React, { useState } from "react";
 import { Badge, Button, ErrorBanner, Field, Loading, SuccessBanner, formatDate, useCareerLabels, useCareerT, useLoad } from "@/components/career/ui";
 import { useRunner } from "@/components/career/placements/useRunner";
-import { inrFull, label } from "@/components/career/placements/shared";
+import { label } from "@/components/career/placements/shared";
+import { useCountryWords } from "@/components/career/country";
 import { toNum } from "@/components/career/campus/shared";
 
 export const LETTER_STATUS_KEYS = ["Issued", "Signed", "Declined", "Superseded", "Withdrawn"];
@@ -48,8 +49,11 @@ interface LetterView {
   canIssue: boolean;
 }
 
-export function OfferLetterPanel({ base, offerId, onChanged }: { base: string; offerId: string; onChanged?: () => void }) {
+export function OfferLetterPanel({ base, offerId, onChanged, country }: { base: string; offerId: string; onChanged?: () => void; country?: string | null }) {
   const t = useCareerT("campusOfferLetter");
+  // P5: India's CTC breakup in rupees; elsewhere a pay breakdown in the college's currency
+  const w = useCountryWords(country);
+  const india = w.rules.india;
   const STATUS = useLetterStatusLabels();
   const { api, busy, err, msg, setMsg, run, download } = useRunner();
   const view = useLoad(() => api<LetterView>(`${base}/offers/${offerId}/letter`), [api, base, offerId]);
@@ -153,11 +157,11 @@ export function OfferLetterPanel({ base, offerId, onChanged }: { base: string; o
           {mode === "generate" ? (
             <>
               <div className="space-y-2">
-                <p className="text-sm font-medium">{t("breakupTitle", { ctc: inrFull(v.offer.ctcAnnual) })}</p>
+                <p className="text-sm font-medium">{india ? t("breakupTitle", { ctc: w.rules.moneyFull(v.offer.ctcAnnual) }) : w.t("payBreakdownTitle", { currency: w.rules.currency, ctc: w.rules.moneyFull(v.offer.ctcAnnual) })}</p>
                 {rows.map((r, i) => (
                   <div key={i} className="flex flex-wrap items-end gap-2">
                     <Field label={t("component", { n: i + 1 })}>{(p) => <input {...p} value={r.label} onChange={(e) => setRows(rows.map((x, j) => (j === i ? { ...x, label: e.target.value } : x)))} />}</Field>
-                    <Field label={t("amount", { n: i + 1 })}>{(p) => <input {...p} inputMode="numeric" value={r.amount} onChange={(e) => setRows(rows.map((x, j) => (j === i ? { ...x, amount: e.target.value } : x)))} />}</Field>
+                    <Field label={india ? t("amount", { n: i + 1 }) : w.t("payBreakdownAmount", { n: i + 1, currency: w.rules.currency })}>{(p) => <input {...p} inputMode="numeric" value={r.amount} onChange={(e) => setRows(rows.map((x, j) => (j === i ? { ...x, amount: e.target.value } : x)))} />}</Field>
                     {rows.length > 1 && (
                       <Button variant="ghost" onClick={() => setRows(rows.filter((_, j) => j !== i))}>
                         {t("removeComponent")}
@@ -169,7 +173,7 @@ export function OfferLetterPanel({ base, offerId, onChanged }: { base: string; o
                   <Button variant="ghost" onClick={() => setRows([...rows, { label: "", amount: "" }])}>
                     {t("addComponent")}
                   </Button>
-                  <span className="text-xs text-muted-foreground" aria-live="polite">{t("breakupSum", { sum: inrFull(sum) })}</span>
+                  <span className="text-xs text-muted-foreground" aria-live="polite">{t("breakupSum", { sum: w.rules.moneyFull(sum) })}</span>
                 </div>
               </div>
               <div className="grid gap-3 md:grid-cols-2">

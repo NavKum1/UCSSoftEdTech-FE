@@ -15,6 +15,7 @@ import { useApi } from "@/lib/appAuth";
 import { useCareerShell } from "@/components/career/CareerShell";
 import { Badge, Button, Card, EmptyState, ErrorBanner, Field, Loading, PageHeader, SuccessBanner, formatDate, useLoad } from "@/components/career/ui";
 import { useEn } from "@/lib/english/EnglishProvider";
+import { useCountryRules } from "@/components/career/country";
 
 interface Settings {
   active: boolean;
@@ -97,6 +98,8 @@ const list = (s: string) =>
 
 function SettingsForm({ settings, jobTypes, busy, onSave }: { settings: Settings; jobTypes: string[]; busy: boolean; onSave: (s: Record<string, unknown>) => void }) {
   const en = useEn();
+  // P5: rupees for schools in India; elsewhere the school's currency
+  const rules = useCountryRules();
   const [active, setActive] = useState(settings.active);
   const [keywords, setKeywords] = useState(settings.keywords.join(", "));
   const [types, setTypes] = useState<string[]>(settings.jobTypes);
@@ -128,10 +131,10 @@ function SettingsForm({ settings, jobTypes, busy, onSave }: { settings: Settings
         <Field label={en("Locations")} hint={en("Comma-separated. Leave empty for anywhere.")}>
           {(p) => <input {...p} value={locations} onChange={(e) => setLocations(e.target.value)} />}
         </Field>
-        <Field label={en("Minimum pay for jobs (rupees a year)")} hint={en("Leave empty for no minimum.")}>
+        <Field label={rules.india ? en("Minimum pay for jobs (rupees a year)") : en("Minimum pay for jobs ({currency} a year)", { currency: rules.currency })} hint={en("Leave empty for no minimum.")}>
           {(p) => <input {...p} type="number" min="0" value={minCtc} onChange={(e) => setMinCtc(e.target.value)} />}
         </Field>
-        <Field label={en("Minimum stipend for internships (rupees a month)")}>
+        <Field label={rules.india ? en("Minimum stipend for internships (rupees a month)") : en("Minimum stipend for internships ({currency} a month)", { currency: rules.currency })}>
           {(p) => <input {...p} type="number" min="0" value={minStipend} onChange={(e) => setMinStipend(e.target.value)} />}
         </Field>
       </div>
@@ -155,6 +158,7 @@ function SettingsForm({ settings, jobTypes, busy, onSave }: { settings: Settings
 
 function RuleForm({ college, jobTypes, docs, busy, onCreate }: { college: string; jobTypes: string[]; docs: Doc[]; busy: boolean; onCreate: (r: Record<string, unknown>) => Promise<boolean> }) {
   const en = useEn();
+  const rules = useCountryRules();
   const [name, setName] = useState("");
   const [keywords, setKeywords] = useState("");
   const [types, setTypes] = useState<string[]>([]);
@@ -196,7 +200,7 @@ function RuleForm({ college, jobTypes, docs, busy, onCreate }: { college: string
         <Field label={en("Locations")} hint={en("Comma-separated. Leave empty for anywhere.")}>
           {(p) => <input {...p} value={locations} onChange={(e) => setLocations(e.target.value)} />}
         </Field>
-        <Field label={en("Minimum pay (rupees a year)")} hint={en("With a minimum, drives that don't state their pay are skipped.")}>
+        <Field label={rules.india ? en("Minimum pay (rupees a year)") : en("Minimum pay ({currency} a year)", { currency: rules.currency })} hint={en("With a minimum, drives that don't state their pay are skipped.")}>
           {(p) => <input {...p} type="number" min="0" value={minCtc} onChange={(e) => setMinCtc(e.target.value)} />}
         </Field>
         <Field label={en("Résumé to attach")} hint={en("From your uploaded documents (upload them on the job board).")}>

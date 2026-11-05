@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Bell, Menu, X } from "lucide-react";
 import { getSelectedSchool, setSelectedSchool, useApi, useAppAuth } from "@/lib/appAuth";
-import { careerNav, type CareerPersona } from "@/lib/careerNav";
+import { careerNav, shownForCountry, type CareerPersona } from "@/lib/careerNav";
 import { COMMUNITY_INSTITUTE_ID } from "@/lib/community";
 import { useCareerFormat, useCareerI18n, useCareerT } from "@/components/career/i18n/CareerI18nProvider";
 import { useCareerNavLabels } from "@/components/career/i18n/nav";
@@ -150,7 +150,7 @@ export default function CareerShell({ persona, children }: { persona: CareerPers
   const schoolCountry = me?.memberships.find((m) => m.instituteId === schoolId)?.country ?? null;
   // Country-specific pages (India's accreditation reports, US WIOA...) show only to schools in those countries
   const items = careerNav[persona].filter(
-    (i) => i.ready && (!inCommunity || i.module === "C10") && (!i.countries || (schoolCountry !== null && i.countries.includes(schoolCountry))),
+    (i) => i.ready && (!inCommunity || i.module === "C10") && shownForCountry(i, schoolCountry),
   );
   const schools = (me?.memberships ?? [])
     .filter((m) => STAFF_ROLES[persona].includes(m.role))

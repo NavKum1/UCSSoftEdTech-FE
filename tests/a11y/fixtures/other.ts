@@ -924,6 +924,8 @@ export const otherFixtures: ApiFixture[] = [
   // Employer
   { path: /^\/api\/career\/employer\/[^/]+\/schools$/, body: employerSchools },
   { path: /^\/api\/career\/employer\/[^/]+\/team$/, body: team },
+  // P15: what happened to each pending invitation e-mail
+  { path: /^\/api\/career\/employer\/[^/]+\/team\/invites$/, body: [{ id: "tm-4", email: "priya.shah@northwind.example", name: "Priya Shah", status: "Invited", delivery: { status: "bounced", sentAt: "2026-11-04T10:00:00Z" } }] },
   { method: "POST", path: /^\/api\/career\/employer\/[^/]+\/team\/invites\/[^/]+\/resend$/, body: { notified: true, message: "Reminder sent." } },
   { path: "/api/career/schools", body: searchSchools },
   { path: /^\/api\/career\/challenges\/employer\/[^/]+\/assessments$/, body: assessments },

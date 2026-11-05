@@ -9,6 +9,7 @@
 import React, { useMemo, useState } from "react";
 import Link from "next/link";
 import { useCareerShell } from "@/components/career/CareerShell";
+import { useCountryWords } from "@/components/career/country";
 import { Badge, Button, Card, EmptyState, ErrorBanner, Field, Loading, PageHeader, ScrollArea, SuccessBanner, formatDate, useLoad, useCareerT, StatTile, buttonClass, TAB_LIST, tabClass } from "@/components/career/ui";
 import {
   AcademicRecord,
@@ -16,8 +17,6 @@ import {
   Offer,
   StudentRef,
   Vocabulary,
-  inrFull,
-  inrShort,
   label,
   numOrNull,
   splitList,
@@ -97,6 +96,8 @@ interface ImportResult {
 type Tab = "drives" | "offers" | "records" | "progression" | "intake";
 // Labels: messages careerCenterPlacements.tab.<key>
 const TABS: Tab[] = ["drives", "offers", "records", "progression", "intake"];
+// Intake figures feed India's NIRF/NAAC/NBA reports only (P5)
+const TABS_ELSEWHERE: Tab[] = ["drives", "offers", "records", "progression"];
 
 const emptyDrive = {
   companyName: "",
@@ -134,7 +135,10 @@ export default function PlacementOfficePage() {
   const OFFER_STATUS_LABELS = useOfferStatusLabels();
   const DRIVE_STATUS_LABELS = useDriveStatusLabels();
   const MODE_LABELS = usePlacementModeLabels();
-  const { schoolId, schoolCountry } = useCareerShell();
+  const { schoolId } = useCareerShell();
+  // P5: India keeps CTC in rupees, CGPA out of 10, backlogs and Class 10/12 marks; other schools get neutral words
+  const w = useCountryWords();
+  const india = w.rules.india;
   const { api, busy, err, msg, setMsg, run } = useRunner();
   const [tab, setTab] = useState<Tab>("drives");
 
@@ -301,7 +305,7 @@ export default function PlacementOfficePage() {
         description={tr("yourRecordsOfCampusDrives")}
         actions={
           // India's accreditation reports: schools in India only
-          schoolCountry === "IN" ? (
+          india ? (
             <Link href="/career-center/reports/india" className={buttonClass("secondary")}>
               {tr("nIRFNAACAndNBAReports")}
             </Link>
@@ -316,7 +320,7 @@ export default function PlacementOfficePage() {
             [tr("statAcademicRecords"), String(t.academicRecords)],
             [tr("statOffers"), String(t.offers)],
             [tr("statStudentsWithAcceptedOffer"), String(t.studentsWithAcceptedOffer)],
-            [tr("statHighestAcceptedPackage"), inrShort(t.highestCtc)],
+            [india ? tr("statHighestAcceptedPackage") : w.t("highestAcceptedSalary"), w.rules.money(t.highestCtc)],
           ].map(([k, v]) => (
             <StatTile key={k} label={k} value={v} />
           ))}
@@ -324,7 +328,7 @@ export default function PlacementOfficePage() {
       )}
 
       <div role="tablist" aria-label={tr("placementOffice")} className={`mb-4 ${TAB_LIST}`}>
-        {TABS.map((key) => [key, tr(`tab.${key}`)] as const).map(([key, text]) => (
+        {(india ? TABS : TABS_ELSEWHERE).map((key) => [key, tr(`tab.${key}`)] as const).map(([key, text]) => (
           <button
             key={key}
             type="button"
@@ -357,7 +361,7 @@ export default function PlacementOfficePage() {
                         <th scope="col" className={th}>{tr("company")}</th>
                         <th scope="col" className={th}>{tr("date")}</th>
                         <th scope="col" className={th}>{tr("status")}</th>
-                        <th scope="col" className={th}>{tr("rolesAndPackages")}</th>
+                        <th scope="col" className={th}>{india ? tr("rolesAndPackages") : w.t("rolesAndSalaries")}</th>
                         <th scope="col" className={th}>{tr("batches")}</th>
                         <th scope="col" className={th}>{tr("rounds")}</th>
                         <th scope="col" className={th}>{tr("offersAccepted")}</th>
@@ -376,7 +380,7 @@ export default function PlacementOfficePage() {
                           <td className={td}>
                             <Badge tone={d.status === "Completed" ? "good" : d.status === "Cancelled" ? "bad" : "info"}>{label(DRIVE_STATUS_LABELS, d.status)}</Badge>
                           </td>
-                          <td className={td}>{d.roles.length === 0 ? "—" : d.roles.map((r) => `${r.title}${r.ctcAnnual ? ` · ${inrShort(r.ctcAnnual)}` : ""}`).join("; ")}</td>
+                          <td className={td}>{d.roles.length === 0 ? "—" : d.roles.map((r) => `${r.title}${r.ctcAnnual ? ` · ${w.rules.money(r.ctcAnnual)}` : ""}`).join("; ")}</td>
                           <td className={td}>{d.batches.join(", ") || tr("any")}</td>
                           <td className={td}>{d.rounds}</td>
                           <td className={td}>
@@ -419,7 +423,7 @@ export default function PlacementOfficePage() {
                       </select>
                     )}
                   </Field>
-                  <Field label={tr("packageCTCRupeesPerYear")} hint={drive.roleCtc && numOrNull(drive.roleCtc) ? inrFull(numOrNull(drive.roleCtc)) : tr("forExample1200000For12")}>
+                  <Field label={india ? tr("packageCTCRupeesPerYear") : w.salaryPerYearCurrency} hint={drive.roleCtc && numOrNull(drive.roleCtc) ? w.rules.moneyFull(numOrNull(drive.roleCtc)) : india ? tr("forExample1200000For12") : w.salaryHint}>
                     {(p) => <input {...p} inputMode="numeric" value={drive.roleCtc} onChange={(e) => setDrive({ ...drive, roleCtc: e.target.value })} />}
                   </Field>
                 </div>
@@ -428,12 +432,16 @@ export default function PlacementOfficePage() {
                   <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                     <Field label={tr("batchesGraduatingYears")} hint={tr("commaSeparatedEG2025")}>{(p) => <input {...p} value={drive.batches} onChange={(e) => setDrive({ ...drive, batches: e.target.value })} />}</Field>
                     <Field label={tr("degrees")} hint={tr("commaSeparatedOnRecordDegrees", { degrees: overview.data?.degrees.join(", ") || tr("noneYet") })}>{(p) => <input {...p} value={drive.degrees} onChange={(e) => setDrive({ ...drive, degrees: e.target.value })} />}</Field>
-                    <Field label={tr("branches")} hint={tr("commaSeparatedBlankMeansAny")}>{(p) => <textarea {...p} rows={2} value={drive.branches} onChange={(e) => setDrive({ ...drive, branches: e.target.value })} />}</Field>
-                    <Field label={tr("minimumCGPAOutOf10")}>{(p) => <input {...p} inputMode="decimal" value={drive.minCgpa} onChange={(e) => setDrive({ ...drive, minCgpa: e.target.value })} />}</Field>
-                    <Field label={tr("mostActiveBacklogsAllowed")}>{(p) => <input {...p} inputMode="numeric" value={drive.maxActiveBacklogs} onChange={(e) => setDrive({ ...drive, maxActiveBacklogs: e.target.value })} />}</Field>
-                    <Field label={tr("mostBacklogsEverAllowed")}>{(p) => <input {...p} inputMode="numeric" value={drive.maxTotalBacklogs} onChange={(e) => setDrive({ ...drive, maxTotalBacklogs: e.target.value })} />}</Field>
-                    <Field label={tr("minimumClass10")}>{(p) => <input {...p} inputMode="decimal" value={drive.minClass10Percent} onChange={(e) => setDrive({ ...drive, minClass10Percent: e.target.value })} />}</Field>
-                    <Field label={tr("minimumClass12Diploma")}>{(p) => <input {...p} inputMode="decimal" value={drive.minClass12Percent} onChange={(e) => setDrive({ ...drive, minClass12Percent: e.target.value })} />}</Field>
+                    <Field label={india ? tr("branches") : w.programs} hint={india ? tr("commaSeparatedBlankMeansAny") : w.programsHint}>{(p) => <textarea {...p} rows={2} value={drive.branches} onChange={(e) => setDrive({ ...drive, branches: e.target.value })} />}</Field>
+                    <Field label={india ? tr("minimumCGPAOutOf10") : w.minGrade} hint={india ? undefined : w.minGradeHint}>{(p) => <input {...p} inputMode="decimal" value={drive.minCgpa} onChange={(e) => setDrive({ ...drive, minCgpa: e.target.value })} />}</Field>
+                    {india && (
+                      <>
+                        <Field label={tr("mostActiveBacklogsAllowed")}>{(p) => <input {...p} inputMode="numeric" value={drive.maxActiveBacklogs} onChange={(e) => setDrive({ ...drive, maxActiveBacklogs: e.target.value })} />}</Field>
+                        <Field label={tr("mostBacklogsEverAllowed")}>{(p) => <input {...p} inputMode="numeric" value={drive.maxTotalBacklogs} onChange={(e) => setDrive({ ...drive, maxTotalBacklogs: e.target.value })} />}</Field>
+                        <Field label={tr("minimumClass10")}>{(p) => <input {...p} inputMode="decimal" value={drive.minClass10Percent} onChange={(e) => setDrive({ ...drive, minClass10Percent: e.target.value })} />}</Field>
+                        <Field label={tr("minimumClass12Diploma")}>{(p) => <input {...p} inputMode="decimal" value={drive.minClass12Percent} onChange={(e) => setDrive({ ...drive, minClass12Percent: e.target.value })} />}</Field>
+                      </>
+                    )}
                     <Field label={tr("otherPublishedConditionsNotes")}>{(p) => <textarea {...p} rows={2} maxLength={2000} value={drive.criteriaNotes} onChange={(e) => setDrive({ ...drive, criteriaNotes: e.target.value })} />}</Field>
                   </div>
                   <label className="mt-3 flex items-center gap-2 text-sm">
@@ -491,7 +499,7 @@ export default function PlacementOfficePage() {
                             {o.companyName}
                             <div className="text-xs text-muted-foreground">{o.roleTitle}{o.driveId ? "" : tr("offCampus")}</div>
                           </td>
-                          <td className={td}>{inrFull(o.ctcAnnual)}</td>
+                          <td className={td}>{w.rules.moneyFull(o.ctcAnnual)}</td>
                           <td className={td}>
                             {formatDate(o.offerDate)} / {formatDate(o.joiningDate)}
                           </td>
@@ -524,7 +532,7 @@ export default function PlacementOfficePage() {
                     </select>
                   )}
                 </Field>
-                <Field label={tr("packageCTCPerYear")} hint={tr("rupeesOrForExample12")}>{(p) => <input {...p} value={offer.ctcText} onChange={(e) => setOffer({ ...offer, ctcText: e.target.value })} />}</Field>
+                <Field label={india ? tr("packageCTCPerYear") : w.salaryPerYear} hint={india ? tr("rupeesOrForExample12") : w.salaryHint}>{(p) => <input {...p} value={offer.ctcText} onChange={(e) => setOffer({ ...offer, ctcText: e.target.value })} />}</Field>
                 <Field label={tr("status")}>
                   {(p) => (
                     <select {...p} value={offer.status} onChange={(e) => setOffer({ ...offer, status: e.target.value })}>
@@ -546,7 +554,7 @@ export default function PlacementOfficePage() {
           <>
             <Card title={tr("importAcademicRecords")}>
               <p className="mb-3 text-sm text-muted-foreground">
-                {tr("uploadTheExamCellsExport")}
+                {india ? tr("uploadTheExamCellsExport") : w.t("recordsImportHelp")}
               </p>
               <div className="flex flex-wrap items-end gap-3">
                 <Field label={tr("file")}>{(p) => <input {...p} type="file" accept=".csv,.xlsx,.txt,.tsv" onChange={(e) => { setFile(e.target.files?.[0] ?? null); setImportResult(null); }} />}</Field>
@@ -572,7 +580,7 @@ export default function PlacementOfficePage() {
               {records.loading && !records.data ? (
                 <Loading />
               ) : (records.data?.items.length ?? 0) === 0 ? (
-                <EmptyState title={tr("noAcademicRecordsYet")}>{tr("importThemAboveEligibilityLists")}</EmptyState>
+                <EmptyState title={tr("noAcademicRecordsYet")}>{india ? tr("importThemAboveEligibilityLists") : w.t("recordsEmptyHelp")}</EmptyState>
               ) : (
                 <ScrollArea>
                   <table className="w-full text-sm">
@@ -582,9 +590,9 @@ export default function PlacementOfficePage() {
                         <th scope="col" className={th}>{tr("student")}</th>
                         <th scope="col" className={th}>{tr("programme")}</th>
                         <th scope="col" className={th}>{tr("batch")}</th>
-                        <th scope="col" className={th}>{tr("cGPA")}</th>
-                        <th scope="col" className={th}>{tr("backlogsActiveEver")}</th>
-                        <th scope="col" className={th}>{tr("n10th12thDiploma")}</th>
+                        <th scope="col" className={th}>{india ? tr("cGPA") : w.grade}</th>
+                        {india && <th scope="col" className={th}>{tr("backlogsActiveEver")}</th>}
+                        {india && <th scope="col" className={th}>{tr("n10th12thDiploma")}</th>}
                         <th scope="col" className={th}>{tr("notes")}</th>
                       </tr>
                     </thead>
@@ -598,12 +606,16 @@ export default function PlacementOfficePage() {
                           <td className={td}>{record.programme}</td>
                           <td className={td}>{record.batch}</td>
                           <td className={td}>{record.cgpa ?? "—"}</td>
-                          <td className={td}>
-                            {record.activeBacklogs ?? "—"} / {record.totalBacklogs ?? "—"}
-                          </td>
-                          <td className={td}>
-                            {record.class10Percent ?? "—"} / {record.class12Percent ?? "—"} / {record.diplomaPercent ?? "—"}
-                          </td>
+                          {india && (
+                            <td className={td}>
+                              {record.activeBacklogs ?? "—"} / {record.totalBacklogs ?? "—"}
+                            </td>
+                          )}
+                          {india && (
+                            <td className={td}>
+                              {record.class10Percent ?? "—"} / {record.class12Percent ?? "—"} / {record.diplomaPercent ?? "—"}
+                            </td>
+                          )}
                           <td className={td}>
                             {[record.lateralEntry ? tr("lateralEntry") : null, record.optedOut ? tr("optedOut") : null, record.graduatedOnTime === false ? tr("notGraduatedOnTime") : null].filter(Boolean).join(", ") || "—"}
                           </td>
@@ -729,7 +741,7 @@ export default function PlacementOfficePage() {
           </>
         )}
 
-        {tab === "intake" && (
+        {tab === "intake" && india && (
           <>
             <Card title={tr("intakeFigures")}>
               <p className="mb-3 text-sm text-muted-foreground">

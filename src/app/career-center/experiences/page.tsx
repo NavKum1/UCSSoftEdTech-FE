@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { useApi } from "@/lib/appAuth";
 import { useCareerShell } from "@/components/career/CareerShell";
+import { isIndia } from "@/components/career/country";
 import { Badge, Button, Card, EmptyState, ErrorBanner, Field, Loading, PageHeader, SuccessBanner, Tabs, formatDate, useLoad, useCareerT, useCareerLabels, StatTile, ScrollArea } from "@/components/career/ui";
 import { StatusBadge, downloadWith, useExperienceStatusLabels, type ExperienceSummary, type Program, type Question } from "@/components/career/experiences/shared";
 import { PackSettingsPanel } from "@/components/career/experiences/InternshipPack";
@@ -25,6 +26,12 @@ export default function CareerCenterExperiencesPage() {
   const tr = useCareerT("careerCenterExperiences");
   const TAB_LABELS = useCareerLabels("careerCenterExperiences.tabs", TABS);
   const [tab, setTab] = useState<(typeof TABS)[number]>("Dashboard");
+  // P5: the only country pack so far is India's (UGC/AICTE); other schools don't see the tab until theirs exists (A5)
+  const { schoolCountry } = useCareerShell();
+  const packs = isIndia(schoolCountry);
+  const tabs = TABS.filter((t) => packs || t !== "Country pack");
+  // A hidden tab (the #country-pack link at a school without a pack, or before the school loads) shows the dashboard
+  const active = tabs.includes(tab) ? tab : "Dashboard";
   // Deep link to the country-pack settings: /career-center/experiences#country-pack
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- the hash is only readable after mount
@@ -34,13 +41,13 @@ export default function CareerCenterExperiencesPage() {
     <div>
       <PageHeader title={tr("internshipsForCredit")} description={tr("creditProgramsRegistrationsAwaitingRevie")} />
       <div className="mb-6">
-        <Tabs label={tr("sections")} items={TABS.map((t) => ({ id: t, label: TAB_LABELS[t] }))} value={tab} onChange={setTab} />
+        <Tabs label={tr("sections")} items={tabs.map((t) => ({ id: t, label: TAB_LABELS[t] }))} value={active} onChange={setTab} />
       </div>
-      <div role="tabpanel" aria-label={TAB_LABELS[tab]}>
-        {tab === "Dashboard" && <DashboardTab />}
-        {tab === "Review queue" && <QueueTab />}
-        {tab === "Programs" && <ProgramsTab />}
-        {tab === "Country pack" && <CountryPackTab />}
+      <div role="tabpanel" aria-label={TAB_LABELS[active]}>
+        {active === "Dashboard" && <DashboardTab />}
+        {active === "Review queue" && <QueueTab />}
+        {active === "Programs" && <ProgramsTab />}
+        {active === "Country pack" && <CountryPackTab />}
       </div>
     </div>
   );

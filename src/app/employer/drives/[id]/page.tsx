@@ -8,7 +8,8 @@ import { useParams } from "next/navigation";
 import { useApi } from "@/lib/appAuth";
 import { Badge, Card, EmptyState, ErrorBanner, Loading, PageHeader, formatDate, useLoad, useCareerT } from "@/components/career/ui";
 import { useEmployers } from "@/components/career/EmployerPicker";
-import { inrShort, label } from "@/components/career/placements/shared";
+import { label } from "@/components/career/placements/shared";
+import { useCountryRules } from "@/components/career/country";
 import { DriveWorkspace } from "@/components/career/campus/DriveWorkspace";
 import { HireDriveStatus } from "@/components/career/campus/HireDrivePanels";
 import { APPROVAL_TONE, useApprovalLabels, useTierLabels, type Applicant, type CampusDrive, type CampusJob, type CampusRound } from "@/components/career/campus/shared";
@@ -18,6 +19,8 @@ interface DriveView {
   job?: CampusJob | null;
   rounds: CampusRound[];
   counts: Record<string, number>;
+  // The college's country (P5): amounts in its currency
+  schoolCountry?: string | null;
   policy: { oneOfferPerStudent: boolean; blockAfterAcceptance: boolean; tiersOn: boolean; dreamCtcMin?: number | null; superDreamCtcMin?: number | null };
   pricing: { employerPostingFeeRequired: boolean; premiumVisibilityEnabled: boolean };
 }
@@ -39,6 +42,7 @@ function Drive({ employerId, driveId }: { employerId: string; driveId: string })
   const api = useApi();
   const base = `/api/career/campus/employer/${employerId}/drives/${driveId}`;
   const view = useLoad(() => api<DriveView>(base), [api, base]);
+  const rules = useCountryRules(view.data?.schoolCountry ?? null);
   const approved = view.data?.drive.approvalStatus === "Approved";
   const applicants = useLoad(
     () => (approved ? api<{ applicants: Applicant[] }>(`${base}/applicants`) : Promise.resolve({ applicants: [] as Applicant[] })),
@@ -70,14 +74,14 @@ function Drive({ employerId, driveId }: { employerId: string; driveId: string })
         <Card title={t("summary")}>
           <div className="flex flex-wrap items-center gap-2 text-sm">
             <Badge tone={APPROVAL_TONE[d.approvalStatus] ?? "neutral"}>{label(APPROVAL, d.approvalStatus)}</Badge>
-            <span>{label(TIER, d.tier)}</span>
-            <span>· {t("deadline", { date: formatDate(d.applyDeadline, true) })}</span>
+            {rules.india && <span>{label(TIER, d.tier)} ·</span>}
+            <span>{t("deadline", { date: formatDate(d.applyDeadline, true) })}</span>
             <span>· {d.applicationsOpen ? t("open") : t("closedForApplications")}</span>
           </div>
           {d.approvalNote && <p className="mt-2 text-sm">{t("collegeNote", { note: d.approvalNote })}</p>}
           <p className="mt-2 text-sm text-muted-foreground">
             {policy.tiersOn
-              ? t("policyTiers", { dream: inrShort(policy.dreamCtcMin), superDream: inrShort(policy.superDreamCtcMin) })
+              ? t("policyTiers", { dream: rules.money(policy.dreamCtcMin), superDream: rules.money(policy.superDreamCtcMin) })
               : policy.oneOfferPerStudent
                 ? t("policyOneOffer")
                 : t("policyNone")}{" "}
@@ -93,7 +97,7 @@ function Drive({ employerId, driveId }: { employerId: string; driveId: string })
           <ErrorBanner error={applicants.error} onRetry={applicants.reload} />
         ) : (
           <>
-            <DriveWorkspace base={base} mode="employer" rounds={view.data!.rounds} applicants={applicants.data?.applicants ?? []} onChanged={reload} />
+            <DriveWorkspace base={base} mode="employer" rounds={view.data!.rounds} applicants={applicants.data?.applicants ?? []} onChanged={reload} country={view.data!.schoolCountry ?? null} />
             <HireDriveStatus base={base} mode="employer" applicants={applicants.data?.applicants ?? []} />
           </>
         )}

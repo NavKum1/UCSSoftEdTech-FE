@@ -5,6 +5,7 @@ import { useApi } from "@/lib/appAuth";
 import { useCareerShell } from "@/components/career/CareerShell";
 import { Button, Card, ErrorBanner, Field, Loading, PageHeader, SuccessBanner, useLoad, useCareerT } from "@/components/career/ui";
 import { useFerpaCategoryLabels } from "@/components/career/coreLabels";
+import { usePrivacyLaw } from "@/components/career/country";
 import SchoolLanguageSetting from "@/components/career/i18n/SchoolLanguageSetting";
 
 interface Settings {
@@ -42,6 +43,9 @@ export default function CareerCenterSettingsPage() {
   const FERPA_CATEGORY_LABELS = useFerpaCategoryLabels();
   const api = useApi();
   const { me, schoolId } = useCareerShell();
+  // P13: FERPA wording for US schools only; others name their own privacy law
+  const privacy = usePrivacyLaw("staff");
+  const tw = useCareerT("countryWords");
   const { data, error, loading, reload } = useLoad(() => api<Settings>("/api/career/admin/settings"), [api, schoolId]);
   const [draft, setForm] = useState<Settings | null>(null);
   const form = draft ?? data ?? null;
@@ -153,7 +157,7 @@ export default function CareerCenterSettingsPage() {
           <Card title={t("directoryInformation")}>
             <fieldset>
               <legend className="mb-3 text-sm text-muted-foreground">
-                {t("underFERPAYourSchoolMay")}
+                {privacy.us ? t("underFERPAYourSchoolMay") : privacy.law ? tw("privacySettingsLaw", { law: privacy.law }) : tw("privacySettingsNoLaw")}
               </legend>
               <div className="space-y-2">
                 {DIRECTORY_CATEGORIES.map((c) => (

@@ -5,6 +5,8 @@ import { useApi } from "@/lib/appAuth";
 import { Badge, Button, Card, ErrorBanner, Field, Loading, PageHeader, SuccessBanner, formatDate, useCareerT, useLoad, ScrollArea } from "@/components/career/ui";
 import { DriveMessageDefaults } from "@/components/career/channels/DriveMessageDefaults";
 import { useEn } from "@/lib/english/EnglishProvider";
+import { isIndia } from "@/components/career/country";
+import { useCareerShell } from "@/components/career/CareerShell";
 
 interface ChannelInfo {
   channel: string;
@@ -169,6 +171,8 @@ function ConnectionCard({ s, onSaved }: { s: Settings; onSaved: (v: Settings) =>
 export default function ChannelSettings() {
   const en = useEn();
   const t = useCareerT("careerCenterChatSms");
+  // P5: DLT template ids are India's SMS rule; other schools don't see them
+  const india = isIndia(useCareerShell().schoolCountry);
   const api = useApi();
   const loaded = useLoad(() => api<Settings>("/api/career/channels/admin/settings"), [api]);
   // The loaded settings are also the form state (edited in place, replaced by each save)
@@ -366,6 +370,7 @@ export default function ChannelSettings() {
                     </Field>
                   </div>
                   <div className="grid gap-3 sm:grid-cols-3">
+                    {india && (
                     <Field label={t("dltTemplate")}>
                       {(p) =>
                         catalog ? (
@@ -380,7 +385,8 @@ export default function ChannelSettings() {
                         )
                       }
                     </Field>
-                    <div className="sm:col-span-2">
+                    )}
+                    <div className={india ? "sm:col-span-2" : "sm:col-span-3"}>
                       <Field label={t("smsText")} hint={t("smsTextHint")}>
                         {(p) => <textarea {...p} rows={2} value={sms.text ?? ""} onChange={(e) => setSms(type, { ...sms, text: e.target.value || null })} />}
                       </Field>
@@ -409,6 +415,7 @@ export default function ChannelSettings() {
                     )
                   }
                 </Field>
+                {india && (
                 <Field label={t("otpDltTemplate")}>
                   {(p) =>
                     catalog ? (
@@ -423,6 +430,7 @@ export default function ChannelSettings() {
                     )
                   }
                 </Field>
+                )}
                 <Field label={t("otpSmsText")} hint={t("otpSmsTextHint")}>
                   {(p) => <input {...p} value={s.smsOtpText ?? ""} onChange={(e) => set({ smsOtpText: e.target.value || null })} />}
                 </Field>

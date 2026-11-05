@@ -26,6 +26,7 @@ import {
   useLoad,
 } from "@/components/career/ui";
 import { GST_STATES, formatMinor, saveResponse } from "@/components/career/billing/money";
+import { currencyFor, useCountryWords } from "@/components/career/country";
 
 interface Profile {
   instituteId: string;
@@ -39,6 +40,9 @@ interface Profile {
   stateName?: string | null;
   pincode?: string | null;
   countryCode?: string | null;
+  // P5: outside India, a tax id (VAT, EIN) and the state or region as written
+  taxId?: string | null;
+  region?: string | null;
   billingEmail?: string | null;
   provider?: string | null;
   currency?: string | null;
@@ -111,7 +115,7 @@ const STATUS_TONE: Record<string, "neutral" | "good" | "warn" | "bad" | "info"> 
   Cancelled: "bad",
 };
 
-const PROFILE_FIELDS = ["legalName", "gstin", "addressLine1", "addressLine2", "city", "stateCode", "pincode", "countryCode", "billingEmail"] as const;
+const PROFILE_FIELDS = ["legalName", "gstin", "taxId", "addressLine1", "addressLine2", "city", "stateCode", "region", "pincode", "countryCode", "billingEmail"] as const;
 type ProfileForm = Record<(typeof PROFILE_FIELDS)[number], string>;
 
 const th = "py-2 pe-3 font-medium";
@@ -119,7 +123,8 @@ const td = "py-2 pe-3 align-top";
 
 function toForm(p: Profile | null): ProfileForm {
   const f = {} as ProfileForm;
-  for (const k of PROFILE_FIELDS) f[k] = (p?.[k] as string | null | undefined) ?? (k === "countryCode" ? "IN" : "");
+  // A new profile's country is the school's (filled in at render time, see billingCountry)
+  for (const k of PROFILE_FIELDS) f[k] = (p?.[k] as string | null | undefined) ?? "";
   return f;
 }
 
@@ -134,7 +139,8 @@ export default function CareerBillingPage() {
   const t = useCareerT("billing");
   const fmt = useCareerFormat();
   const api = useApi();
-  const { me, schoolId } = useCareerShell();
+  const { me, schoolId, schoolCountry } = useCareerShell();
+  const w = useCountryWords();
   const isAdmin = me ? me.memberships.some((m) => m.instituteId === schoolId && m.role === "CareerAdmin") : true;
 
   const profile = useLoad(() => api<Profile>("/api/career/billing/profile"), [api, schoolId]);
@@ -154,6 +160,10 @@ export default function CareerBillingPage() {
   }
 
   const money = (minor: number | null | undefined, currency: string) => formatMinor(minor, currency, fmt.locale);
+  // P5: India keeps GSTIN, GST state, PIN code and INR; elsewhere a tax id, state or region, postal code and the school's currency
+  const billingCountry = (form.countryCode.trim() || schoolCountry || "").toUpperCase();
+  // Code review: an unknown country gets the neutral fields, like every other country rule (Indian schools are recorded as IN)
+  const india = billingCountry === "IN";
 
   const run = async (key: string, fn: () => Promise<void>) => {
     setBusy(key);
@@ -173,6 +183,18 @@ export default function CareerBillingPage() {
     run("profile", async () => {
       const body: Record<string, string> = {};
       for (const k of PROFILE_FIELDS) body[k] = form[k].trim();
+      // Blank means the school's country; with no school country either, leave it unchanged (the API rejects an empty code)
+      if (!body.countryCode) {
+        if (billingCountry) body.countryCode = billingCountry;
+        else delete body.countryCode;
+      }
+      if (india) {
+        delete body.taxId;
+        delete body.region;
+      } else {
+        delete body.gstin;
+        delete body.stateCode;
+      }
       // A registered school's state comes from its GSTIN
       if (body.gstin) delete body.stateCode;
       const saved = await api<Profile>("/api/career/billing/profile", { method: "PUT", json: body });
@@ -224,29 +246,46 @@ export default function CareerBillingPage() {
             <ErrorBanner error={profile.error} onRetry={profile.reload} />
           ) : (
             <form onSubmit={saveProfile} className="space-y-4">
-              <p className="text-sm text-muted-foreground">{t("profileHelp")}</p>
+              <p className="text-sm text-muted-foreground">{india ? t("profileHelp") : w.t("billingProfileHelp")}</p>
               <div className="grid gap-4 sm:grid-cols-2">
                 <Field label={t("legalName")}>{(p) => <input {...p} value={form.legalName} onChange={set("legalName")} autoComplete="organization" required maxLength={200} />}</Field>
-                <Field label={t("gstin")} hint={t("gstinHint")}>
-                  {(p) => <input {...p} value={form.gstin} onChange={set("gstin")} maxLength={15} spellCheck={false} className={`${p.className} uppercase`} dir="ltr" />}
-                </Field>
+                {india ? (
+                  <Field label={t("gstin")} hint={t("gstinHint")}>
+                    {(p) => <input {...p} value={form.gstin} onChange={set("gstin")} maxLength={15} spellCheck={false} className={`${p.className} uppercase`} dir="ltr" />}
+                  </Field>
+                ) : (
+                  <Field label={w.t("taxId")} hint={w.t("taxIdHint")}>
+                    {(p) => <input {...p} value={form.taxId} onChange={set("taxId")} maxLength={40} spellCheck={false} autoComplete="off" dir="ltr" />}
+                  </Field>
+                )}
                 <Field label={t("addressLine1")}>{(p) => <input {...p} value={form.addressLine1} onChange={set("addressLine1")} autoComplete="address-line1" maxLength={200} />}</Field>
                 <Field label={t("addressLine2")}>{(p) => <input {...p} value={form.addressLine2} onChange={set("addressLine2")} autoComplete="address-line2" maxLength={200} />}</Field>
                 <Field label={t("city")}>{(p) => <input {...p} value={form.city} onChange={set("city")} autoComplete="address-level2" maxLength={100} />}</Field>
-                <Field label={t("state")} hint={form.gstin.trim() ? t("stateFromGstin") : t("stateHint")}>
-                  {(p) => (
-                    <select {...p} value={form.gstin.trim() ? form.gstin.trim().slice(0, 2) : form.stateCode} onChange={set("stateCode")} disabled={!!form.gstin.trim()}>
-                      <option value="">{t("stateNone")}</option>
-                      {GST_STATES.map(([code, name]) => (
-                        <option key={code} value={code}>
-                          {t("stateOption", { code, name })}
-                        </option>
-                      ))}
-                    </select>
-                  )}
+                {india ? (
+                  <Field label={t("state")} hint={form.gstin.trim() ? t("stateFromGstin") : t("stateHint")}>
+                    {(p) => (
+                      <select {...p} value={form.gstin.trim() ? form.gstin.trim().slice(0, 2) : form.stateCode} onChange={set("stateCode")} disabled={!!form.gstin.trim()}>
+                        <option value="">{t("stateNone")}</option>
+                        {GST_STATES.map(([code, name]) => (
+                          <option key={code} value={code}>
+                            {t("stateOption", { code, name })}
+                          </option>
+                        ))}
+                      </select>
+                    )}
+                  </Field>
+                ) : (
+                  <Field label={w.t("region")}>{(p) => <input {...p} value={form.region} onChange={set("region")} autoComplete="address-level1" maxLength={100} />}</Field>
+                )}
+                {india ? (
+                  <Field label={t("pincode")}>{(p) => <input {...p} value={form.pincode} onChange={set("pincode")} inputMode="numeric" autoComplete="postal-code" maxLength={10} dir="ltr" />}</Field>
+                ) : (
+                  <Field label={w.t("postalCode")}>{(p) => <input {...p} value={form.pincode} onChange={set("pincode")} autoComplete="postal-code" maxLength={10} dir="ltr" />}</Field>
+                )}
+                {/* Blank means the school's country (shown as the placeholder, used on save), so the field can be cleared and retyped */}
+                <Field label={t("country")} hint={india ? t("countryHint") : w.t("countryHint", { example: billingCountry || "US" })}>
+                  {(p) => <input {...p} value={form.countryCode} placeholder={schoolCountry ?? ""} onChange={set("countryCode")} maxLength={2} className={`${p.className} uppercase`} dir="ltr" />}
                 </Field>
-                <Field label={t("pincode")}>{(p) => <input {...p} value={form.pincode} onChange={set("pincode")} inputMode="numeric" autoComplete="postal-code" maxLength={10} dir="ltr" />}</Field>
-                <Field label={t("country")} hint={t("countryHint")}>{(p) => <input {...p} value={form.countryCode} onChange={set("countryCode")} maxLength={2} className={`${p.className} uppercase`} dir="ltr" />}</Field>
                 <Field label={t("billingEmail")}>{(p) => <input {...p} type="email" value={form.billingEmail} onChange={set("billingEmail")} autoComplete="email" maxLength={200} dir="ltr" />}</Field>
               </div>
               <dl className="grid gap-2 text-sm sm:grid-cols-2">
@@ -256,7 +295,7 @@ export default function CareerBillingPage() {
                 </div>
                 <div>
                   <dt className="font-medium">{t("currency")}</dt>
-                  <dd className="text-muted-foreground">{profile.data?.currency || "INR"}</dd>
+                  <dd className="text-muted-foreground">{profile.data?.currency || currencyFor(billingCountry)}</dd>
                 </div>
               </dl>
               <p className="text-xs text-muted-foreground">{t("providerSetByOperator")}</p>
@@ -337,7 +376,7 @@ export default function CareerBillingPage() {
             </ScrollArea>
           )}
         </Card>
-        <p className="text-xs text-muted-foreground">{t("taxNotice")}</p>
+        <p className="text-xs text-muted-foreground">{india ? t("taxNotice") : w.t("billingTaxNotice")}</p>
       </div>
     </div>
   );

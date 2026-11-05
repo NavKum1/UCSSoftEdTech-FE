@@ -6,7 +6,7 @@
  * uploads: whether it answers, its background check of stored files, and the files it refused or removed.
  */
 import React, { useEffect, useState } from "react";
-import { AlertTriangle, CheckCircle2, Loader2, Mail, Send, ShieldCheck } from "lucide-react";
+import { AlertTriangle, CheckCircle2, KeyRound, Loader2, Mail, Send, ShieldCheck } from "lucide-react";
 import { AccessNotice, useLatestRef, useLegacyApi } from "@/lib/legacyApi";
 import { useEn } from "@/lib/english/EnglishProvider";
 import { Button, ErrorBanner, PageHeader } from "@/components/career/ui";
@@ -48,6 +48,21 @@ export default function PlatformSettingsPage() {
   const [busy, setBusy] = useState<string | null>(null);
   const [message, setMessage] = useState<{ ok: boolean; text: string } | null>(null);
   const [testTo, setTestTo] = useState("");
+  // P7 (5 Nov 2026): whether staff invitations can reach the sign-in service
+  const [identity, setIdentity] = useState<{ ok: boolean; message: string } | null>(null);
+  const [checkingIdentity, setCheckingIdentity] = useState(false);
+  const checkIdentity = async () => {
+    setCheckingIdentity(true);
+    try {
+      const res = await apiFetch("/api/admin/access/identity-check", { method: "POST" });
+      const body = await res.json().catch(() => null);
+      setIdentity(res.ok && body ? { ok: !!body.ok, message: body.message } : { ok: false, message: body?.error ?? "The check couldn't run. Please try again." });
+    } catch {
+      setIdentity({ ok: false, message: "We couldn't reach the server. Please check your connection and try again." });
+    } finally {
+      setCheckingIdentity(false);
+    }
+  };
 
   const showEmail = (d: EmailState) => {
     setEmail(d);
@@ -61,9 +76,13 @@ export default function PlatformSettingsPage() {
     setUploads(await u.json());
   };
   const loadRef = useLatestRef(load);
+  const checkIdentityRef = useLatestRef(checkIdentity);
   useEffect(() => {
-    if (ready) void loadRef.current();
-  }, [ready, loadRef]);
+    if (!ready) return;
+    void loadRef.current();
+    // Checked once on open (independent of the email/uploads load, which can fail on its own); "Test connection" re-checks
+    void checkIdentityRef.current();
+  }, [ready, loadRef, checkIdentityRef]);
 
   if (access) return <AccessNotice problem={access} feature="platform settings" />;
 
@@ -114,7 +133,7 @@ export default function PlatformSettingsPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="Email and uploads" description="How this region sends email, and the virus check on files people upload." />
+      <PageHeader title="Email, uploads and invitations" description="How this region sends email, the virus check on files people upload, and whether staff invitations reach the sign-in service." />
 
       <ErrorBanner error={error} />
       {!email && !error && (
@@ -336,6 +355,35 @@ export default function PlatformSettingsPage() {
           )}
         </section>
       )}
+
+      <section aria-labelledby="identity-title" className={card}>
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <h2 id="identity-title" className="flex items-center gap-2 text-base font-semibold">
+            <KeyRound aria-hidden="true" className="h-5 w-5" /> Staff invitations
+          </h2>
+          {identity === null ? (
+            <span className="text-xs text-muted-foreground">Checking…</span>
+          ) : identity.ok ? (
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-1 text-xs font-medium text-emerald-800 dark:text-emerald-300">
+              <CheckCircle2 aria-hidden="true" className="h-3.5 w-3.5" /> Connected
+            </span>
+          ) : (
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-red-500/30 bg-red-500/10 px-2.5 py-1 text-xs font-medium text-red-800 dark:text-red-300">
+              <AlertTriangle aria-hidden="true" className="h-3.5 w-3.5" /> Not connected
+            </span>
+          )}
+        </div>
+        <div className="mt-3 space-y-3 text-sm">
+          <p className="text-muted-foreground">Schools invite their team, and approved recruiters get their company, through the sign-in service. Without this connection every invitation fails.</p>
+          {identity && <p role={identity.ok ? "status" : "alert"}>{identity.message}</p>}
+          {identity && !identity.ok && (
+            <p className="text-muted-foreground">On a server, run a release with &quot;Keycloak changes&quot; ticked: it copies the provisioning secret into the API settings (Identity__Admin__ClientSecret).</p>
+          )}
+          <Button variant="secondary" busy={checkingIdentity} onClick={() => void checkIdentity()}>
+            Test connection
+          </Button>
+        </div>
+      </section>
     </div>
   );
 }

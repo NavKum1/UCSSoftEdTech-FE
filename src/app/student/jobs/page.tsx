@@ -11,7 +11,8 @@ import Link from "next/link";
 import { useApi } from "@/lib/appAuth";
 import { useCareerShell } from "@/components/career/CareerShell";
 import { Badge, Button, Card, EmptyState, ErrorBanner, Field, Loading, PageHeader, SuccessBanner, formatDate, useLoad, useCareerT } from "@/components/career/ui";
-import { inrFull, label } from "@/components/career/placements/shared";
+import { label } from "@/components/career/placements/shared";
+import { useCountryWords } from "@/components/career/country";
 import { APP_TONE, DOC_KIND_KEYS, ELIG_TONE, useAppStatusLabels, useDocKindLabels, useEligLabels, useJobTypeLabels, useTierLabels, type Criteria } from "@/components/career/campus/shared";
 
 interface BoardCard {
@@ -104,6 +105,9 @@ export default function StudentJobsPage() {
 
 function JobCard({ card: c, docs, expanded, onToggle, onUploaded, onApplied }: { card: BoardCard; docs: Doc[]; expanded: boolean; onToggle: () => void; onUploaded: () => void; onApplied: () => void }) {
   const t = useCareerT("studentJobs");
+  // P5: India keeps CTC, CGPA, backlogs and tiers; other schools see salary, grade and programs
+  const w = useCountryWords();
+  const india = w.rules.india;
   const TYPE = useJobTypeLabels();
   const TIER = useTierLabels();
   const ELIG = useEligLabels();
@@ -151,7 +155,8 @@ function JobCard({ card: c, docs, expanded, onToggle, onUploaded, onApplied }: {
               {c.companyName}: {c.title}
             </h2>
             <p className="text-sm text-muted-foreground">
-              {label(TYPE, c.jobType)} · {c.jobType === "Internship" ? t("stipend", { amount: inrFull(c.stipendMonthly) }) : t("ctc", { amount: inrFull(c.ctcAnnual) })} · {label(TIER, c.tier)}
+              {label(TYPE, c.jobType)} · {c.jobType === "Internship" ? t("stipend", { amount: w.rules.moneyFull(c.stipendMonthly) }) : india ? t("ctc", { amount: w.rules.moneyFull(c.ctcAnnual) }) : w.t("salaryAmount", { amount: w.rules.moneyFull(c.ctcAnnual) })}
+              {india && ` · ${label(TIER, c.tier)}`}
               {c.locations.length > 0 && ` · ${c.locations.join(", ")}`}
             </p>
             <p className="text-sm text-muted-foreground">{t("deadline", { date: formatDate(c.applyDeadline, true) })}</p>
@@ -183,7 +188,11 @@ function JobCard({ card: c, docs, expanded, onToggle, onUploaded, onApplied }: {
           <div id={`${titleId}-details`} className="mt-4 space-y-3 border-t border-border pt-4 text-sm">
             {c.description && <p className="whitespace-pre-line">{c.description}</p>}
             {c.ctcNotes && <p>{t("ctcNotes", { notes: c.ctcNotes })}</p>}
-            <p>{t("criteriaLine", { branches: c.criteria.branches.join(", ") || t("any"), cgpa: c.criteria.minCgpa ?? "—", backlogs: c.criteria.maxActiveBacklogs ?? "—", batches: c.criteria.batches.join(", ") || t("any") })}</p>
+            <p>
+              {india
+                ? t("criteriaLine", { branches: c.criteria.branches.join(", ") || t("any"), cgpa: c.criteria.minCgpa ?? "—", backlogs: c.criteria.maxActiveBacklogs ?? "—", batches: c.criteria.batches.join(", ") || t("any") })
+                : w.t("eligibilityLine", { criteria: w.criteria(c.criteria.branches.join(", ") || w.t("any"), c.criteria.minCgpa ?? "—", c.criteria.batches.join(", ") || w.t("any")) })}
+            </p>
             {c.rounds.length > 0 && <p>{t("roundsLine", { rounds: c.rounds.join(" → ") })}</p>}
             {c.canApply && (
               <div className="space-y-3">
@@ -225,7 +234,7 @@ function JobCard({ card: c, docs, expanded, onToggle, onUploaded, onApplied }: {
                 {c.sharesWith && (
                   <label className="flex items-start gap-2">
                     <input type="checkbox" className="mt-1" checked={consent} onChange={(e) => setConsent(e.target.checked)} />
-                    <span>{t("consent", { company: c.sharesWith })}</span>
+                    <span>{india ? t("consent", { company: c.sharesWith }) : w.t("applyConsent", { company: c.sharesWith })}</span>
                   </label>
                 )}
                 <Button busy={busy} disabled={!!c.sharesWith && !consent} onClick={apply}>
