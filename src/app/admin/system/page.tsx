@@ -4,6 +4,8 @@ import React, { useState, useEffect } from "react";
 import { AccessNotice, useLegacyApi, useLatestRef } from "@/lib/legacyApi";
 import { Zap, Database, RefreshCw, Layers, Trash2, Play, RotateCcw, AlertTriangle, Flame } from "lucide-react";
 import { Badge, Button, Card, PageHeader, StatTile } from "@/components/career/ui";
+import LiveCheckCard from "@/components/admin/LiveCheckCard";
+import AiUsageCard from "@/components/admin/AiUsageCard";
 
 interface QueueStats {
   workerNodeId: string;
@@ -130,7 +132,7 @@ export default function SystemOperationsDashboard() {
     <div className="space-y-6 text-foreground">
       <PageHeader
         title="System status"
-        description="Background job queues and the cache, with tools to clear cached data and retry failed jobs."
+        description="A live check of every service an assessment needs, AI usage per school, and the background job queues and cache."
         actions={
           <>
             {queueStats?.workerNodeId && (
@@ -145,6 +147,10 @@ export default function SystemOperationsDashboard() {
           </>
         }
       />
+
+      <LiveCheckCard />
+
+      <AiUsageCard />
 
       {actionLog && (
         <div role="status" className="rounded-lg border border-border bg-card p-3 text-sm text-foreground shadow-sm">

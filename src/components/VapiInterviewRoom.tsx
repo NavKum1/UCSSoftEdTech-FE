@@ -2,6 +2,7 @@
 
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import Vapi from "@vapi-ai/web";
 import { useAppAuth as useAuth } from "@/lib/appAuth";
 import {
@@ -150,6 +151,33 @@ export default function VapiInterviewRoom({
   const [now, setNow] = useState(() => Date.now());
   const [languages, setLanguages] = useState<LanguageOption[]>([]);
   const [selectedLanguage, setSelectedLanguage] = useState(language ?? "");
+  // Build & Defend pilot 1.7 (6 Nov 2026): when voice doesn't work, the student can answer in writing (reviewers see it was typed)
+  const router = useRouter();
+  const [typedBusy, setTypedBusy] = useState(false);
+  const [typedError, setTypedError] = useState<string | null>(null);
+  const [voiceTrouble, setVoiceTrouble] = useState(false);
+  const answerInWriting = async () => {
+    if (!sprintSubmissionId) return;
+    setTypedBusy(true);
+    setTypedError(null);
+    try {
+      const res = await authenticatedFetch(
+        "/api/written-defense/start",
+        { method: "POST", body: JSON.stringify({ sprintSubmissionId, afterVoiceProblem: true }) },
+        getToken
+      );
+      const body = (await res.json().catch(() => null)) as { sessionId?: string; error?: string } | null;
+      if (!res.ok || !body?.sessionId) {
+        setTypedError(body?.error ?? en("We couldn't start the written defense. Please try again."));
+        return;
+      }
+      router.push(`/written-defense/${body.sessionId}`);
+    } catch {
+      setTypedError(en("We couldn't reach the server. Please check your connection and try again."));
+    } finally {
+      setTypedBusy(false);
+    }
+  };
   const languageTouchedRef = useRef(Boolean(language));
 
   // Languages offered for the defense; default to the prop, else the student's campus preference, else the server default
@@ -231,6 +259,8 @@ export default function VapiInterviewRoom({
 
     vapiInstance.on("error", (err: unknown) => {
       console.warn("Vapi SDK error:", err);
+      // Offer the written defense prominently once the voice service has failed
+      setVoiceTrouble(true);
     });
 
     return () => {
@@ -585,6 +615,19 @@ export default function VapiInterviewRoom({
                   <PhoneOff className="w-4 h-4" />
                   <span>{en("End call")}</span>
                 </Button>
+              </div>
+            )}
+            {sprintSubmissionId && !inCall && callStatus !== "finishing" && !result && (
+              <div className={`mt-3 rounded-lg p-3 text-xs ${voiceTrouble || micPermission === "denied" ? "border border-amber-300 bg-amber-50 text-amber-900 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-200" : "text-muted-foreground"}`}>
+                <p>
+                  {voiceTrouble || micPermission === "denied"
+                    ? en("Voice isn't working here. You can answer the same questions in writing instead; your reviewer will see that you typed them.")
+                    : en("Microphone or connection trouble? You can answer in writing instead; your reviewer will see that you typed it.")}
+                </p>
+                <Button variant="secondary" onClick={answerInWriting} busy={typedBusy} className="mt-2 h-9 w-full">
+                  {en("Answer in writing instead")}
+                </Button>
+                {typedError && <p role="alert" className="mt-2 text-red-700 dark:text-red-400">{typedError}</p>}
               </div>
             )}
           </div>
