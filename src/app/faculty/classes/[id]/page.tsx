@@ -6,7 +6,7 @@
  */
 import React, { useState } from "react";
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useApi } from "@/lib/appAuth";
 import { useCareerShell } from "@/components/career/CareerShell";
 import { useEn } from "@/lib/english/EnglishProvider";
@@ -26,6 +26,7 @@ export default function FacultyClassPage() {
   const api = useApi();
   const { schoolId } = useCareerShell();
   const { id } = useParams<{ id: string }>();
+  const router = useRouter();
   const cls = useLoad(() => api<ClassDetail>(`${CA_API}/faculty/classes/${id}`), [api, id, schoolId]);
   const [csv, setCsv] = useState("");
   const [teacherEmail, setTeacherEmail] = useState("");
@@ -94,10 +95,16 @@ export default function FacultyClassPage() {
     }
   };
 
-  const removeTeacher = async (userId: string) => {
+  const removeTeacher = async (userId: string, self: boolean) => {
+    if (self && !window.confirm(en("Leave this class? You'll no longer see it or its students' work."))) return;
     setBusy(userId);
     try {
-      cls.setData(await api<ClassDetail>(`${CA_API}/faculty/classes/${id}/teachers/${userId}`, { method: "DELETE" }));
+      const r = await api<ClassDetail | { left: true }>(`${CA_API}/faculty/classes/${id}/teachers/${userId}`, { method: "DELETE" });
+      if ("left" in r) {
+        router.push("/faculty/classes");
+        return;
+      }
+      cls.setData(r);
     } catch (e) {
       fail(e);
     } finally {
@@ -151,9 +158,11 @@ export default function FacultyClassPage() {
                         <td className="hidden pe-3 sm:table-cell">{m.rollNumber || "—"}</td>
                         <td className="whitespace-nowrap pe-3">{m.signedIn ? <Badge tone="good">{en("Yes")}</Badge> : <Badge>{en("Not yet")}</Badge>}</td>
                         <td className="text-end">
-                          <Button variant="ghost" busy={busy === m.id} onClick={() => void removeMember(m.id, m.name)} aria-label={en("Remove {name}", { name: m.name })}>
-                            {en("Remove")}
-                          </Button>
+                          {c.canManage && (
+                            <Button variant="ghost" busy={busy === m.id} onClick={() => void removeMember(m.id, m.name)} aria-label={en("Remove {name}", { name: m.name })}>
+                              {en("Remove")}
+                            </Button>
+                          )}
                         </td>
                       </tr>
                     ))}
@@ -182,6 +191,7 @@ export default function FacultyClassPage() {
         </div>
 
         <div className="space-y-6">
+          {c.canManage && (
           <Card title={en("Import roster")}>
             <p className="mb-3 text-sm text-muted-foreground">
               {en("A CSV with the columns name, email, roll_number and branch (roll number and branch are optional). Students already in the class are updated, not added twice.")}
@@ -205,6 +215,7 @@ export default function FacultyClassPage() {
               )}
             </div>
           </Card>
+          )}
 
           <Card title={en("Teachers")}>
             <ul className="mb-3 space-y-2 text-sm">
@@ -216,9 +227,9 @@ export default function FacultyClassPage() {
                       {t.role === "Owner" ? en("Owner") : en("Co-teacher")} · {t.email}
                     </span>
                   </span>
-                  {c.canManage && t.role !== "Owner" && (
-                    <Button variant="ghost" busy={busy === t.userId} onClick={() => void removeTeacher(t.userId)}>
-                      {en("Remove")}
+                  {t.role !== "Owner" && (c.canManage || t.userId === c.myUserId) && (
+                    <Button variant="ghost" busy={busy === t.userId} onClick={() => void removeTeacher(t.userId, t.userId === c.myUserId)}>
+                      {t.userId === c.myUserId ? en("Leave") : en("Remove")}
                     </Button>
                   )}
                 </li>

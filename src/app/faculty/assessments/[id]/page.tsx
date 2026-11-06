@@ -87,7 +87,8 @@ function AssessmentBuilder() {
   const setDraft = (f: (d: Draft | null) => Draft | null) => setEdits(f(draft));
 
   const a = saved.data;
-  const readOnly = !!a && !a.canEdit;
+  const archived = a?.status === "Archived";
+  const readOnly = !!a && (!a.canEdit || archived);
   const locked = !!a?.locked;
   const total = useMemo(() => (draft?.rubric ?? []).reduce((s, c) => s + (Number(c.weight) || 0), 0), [draft]);
 
@@ -155,7 +156,7 @@ function AssessmentBuilder() {
     setError(null);
     setMessage(null);
     try {
-      const r = await api<{ emailed: number; assessment: AssessmentDetail }>(`${CA_API}/faculty/assessments/${id}/assign`, {
+      const r = await api<{ emailWhen: "now" | "opens"; opensAt: string; assessment: AssessmentDetail }>(`${CA_API}/faculty/assessments/${id}/assign`, {
         json: {
           classId: assign.classId,
           opensAt: assign.opensAt ? new Date(assign.opensAt).toISOString() : undefined,
@@ -165,9 +166,41 @@ function AssessmentBuilder() {
       });
       saved.setData(r.assessment);
       setAssign({ classId: "", opensAt: "", dueAt: "", acceptLate: true });
-      setMessage(en("Given to the class. {count} students were e-mailed.", { count: r.emailed }));
+      setMessage(
+        r.emailWhen === "now"
+          ? en("Given to the class. The students are being e-mailed now.")
+          : en("Given to the class. The students will be e-mailed when it opens on {when}.", { when: formatWhen(r.opensAt) }),
+      );
     } catch (err) {
       fail(err);
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  const archive = async () => {
+    if (!window.confirm(en("Archive this assessment? It leaves your list; you can restore it from the archived ones."))) return;
+    setBusy("archive");
+    setError(null);
+    setMessage(null);
+    try {
+      await api(`${CA_API}/faculty/assessments/${id}/archive`, { method: "POST" });
+      router.push("/faculty/assessments?archived=1");
+    } catch (e) {
+      fail(e);
+      setBusy(null);
+    }
+  };
+
+  const restore = async () => {
+    setBusy("restore");
+    setError(null);
+    setMessage(null);
+    try {
+      saved.setData(await api<AssessmentDetail>(`${CA_API}/faculty/assessments/${id}/restore`, { method: "POST" }));
+      setMessage(en("Restored."));
+    } catch (e) {
+      fail(e);
     } finally {
       setBusy(null);
     }
@@ -199,7 +232,9 @@ function AssessmentBuilder() {
         description={names[draft.template]}
         actions={
           a && (
-            <Badge tone={a.status === "Published" ? "good" : "neutral"}>{a.status === "Published" ? en("Published") : en("Draft")}</Badge>
+            <Badge tone={a.status === "Published" ? "good" : "neutral"}>
+              {a.status === "Published" ? en("Published") : a.status === "Archived" ? en("Archived") : en("Draft")}
+            </Badge>
           )
         }
       />
@@ -210,7 +245,15 @@ function AssessmentBuilder() {
       </p>
       <ErrorBanner error={error} />
       <SuccessBanner message={message} />
-      {readOnly && <p className="mb-4 rounded-lg border border-border bg-muted/40 p-3 text-sm">{en("You can see this assessment because it's given to your class. Only its owner or a school admin can change it.")}</p>}
+      {archived && a?.canEdit && (
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border bg-muted/40 p-3 text-sm">
+          <span>{en("This assessment is archived. Restore it to change it or give it to a class.")}</span>
+          <Button variant="secondary" busy={busy === "restore"} onClick={() => void restore()}>
+            {en("Restore")}
+          </Button>
+        </div>
+      )}
+      {readOnly && !archived && <p className="mb-4 rounded-lg border border-border bg-muted/40 p-3 text-sm">{en("You can see this assessment because it's given to your class. Only its owner or a school admin can change it.")}</p>}
       {locked && !readOnly && (
         <p className="mb-4 rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-200">
           {en("Students have started this assessment, so its task, rubric and viva are locked (everyone is assessed the same way). You can still edit the title and instructions.")}
@@ -346,6 +389,11 @@ function AssessmentBuilder() {
                 {a && a.status === "Draft" && (
                   <Button variant="secondary" busy={busy === "publish"} onClick={() => void publish()} className="w-full">
                     {en("Publish")}
+                  </Button>
+                )}
+                {a && (
+                  <Button variant="ghost" busy={busy === "archive"} onClick={() => void archive()} className="w-full">
+                    {en("Archive")}
                   </Button>
                 )}
               </div>

@@ -31,6 +31,7 @@ export interface ClassDetail {
   program: string;
   graduationYear: number | null;
   canManage: boolean;
+  myUserId: string;
   members: { id: string; name: string; email: string; rollNumber: string; branch: string; signedIn: boolean }[];
   teachers: Teacher[];
   assignments: { id: string; assessmentId: string; title: string; template: Template; opensAt: string; dueAt: string; acceptLate: boolean }[];
@@ -79,6 +80,31 @@ export interface AssessmentSummary {
   mine: boolean;
   classes: { assignmentId: string; classId: string; className: string; dueAt: string }[];
   toReview: number;
+}
+
+export type StudentState = "upcoming" | "open" | "late" | "closed" | "in-progress" | "submitted" | "decided";
+
+export interface StudentAssessmentSummary {
+  assignmentId: string;
+  title: string;
+  template: Template;
+  className: string;
+  opensAt: string;
+  dueAt: string;
+  acceptLate: boolean;
+  state: StudentState;
+  decision: "pass" | "resubmit" | "fail" | null;
+  score: number | null;
+}
+
+export interface StudentAssessmentDetail extends StudentAssessmentSummary {
+  teachers: string[];
+  instructions: string | null;
+  task: { kind: "coding" | "exam"; title: string; language: string | null; minutes: number | null } | null;
+  rubric: { name: string; description: string; weight: number }[];
+  viva: { mode: VivaMode; questions: number; minutes: number; language: string };
+  changeTaskMinutes: number | null;
+  comment: string | null;
 }
 
 export interface TaskChoices {

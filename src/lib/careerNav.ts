@@ -59,6 +59,7 @@ export function hidesGlobalNavigation(pathname: string | null | undefined): bool
 export const careerNav: Record<CareerPersona, CareerNavItem[]> = {
   student: [
     { label: "Home", href: "/student", module: "F1", ready: true },
+    { label: "My assessments", href: "/student/assessments", module: "BD2", ready: true },
     { label: "Appointments", href: "/student/appointments", module: "C3", ready: true, group: "Get help" },
     { label: "Document review", href: "/student/document-review", module: "C6", ready: true, group: "Get help" },
     { label: "Mentoring", href: "/student/mentoring", module: "C10", ready: true, group: "Get help" },

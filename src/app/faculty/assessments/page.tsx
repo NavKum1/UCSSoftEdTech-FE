@@ -4,9 +4,9 @@
  * Build & Defend 1.0 Stage 2 (2.3): a teacher's assessments, and starting a new one from a template (project defense, coding
  * task, written exam plus viva). API: /api/career/class-assessments/faculty/assessments.
  */
-import React, { useState } from "react";
+import React, { Suspense, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useApi } from "@/lib/appAuth";
 import { useCareerShell } from "@/components/career/CareerShell";
 import { useEn } from "@/lib/english/EnglishProvider";
@@ -15,12 +15,24 @@ import { CA_API, formatWhen, type AssessmentSummary, type Template, type Templat
 import { useTemplateNames } from "@/components/career/classAssessments/names";
 
 export default function FacultyAssessmentsPage() {
+  return (
+    <Suspense fallback={<Loading />}>
+      <FacultyAssessments />
+    </Suspense>
+  );
+}
+
+function FacultyAssessments() {
   const en = useEn();
   const api = useApi();
   const router = useRouter();
+  const archived = useSearchParams().get("archived") === "1";
   const { schoolId } = useCareerShell();
   const names = useTemplateNames();
-  const list = useLoad(() => api<{ assessments: AssessmentSummary[] }>(`${CA_API}/faculty/assessments`), [api, schoolId]);
+  const list = useLoad(
+    () => api<{ assessments: AssessmentSummary[] }>(`${CA_API}/faculty/assessments${archived ? "?archived=true" : ""}`),
+    [api, schoolId, archived],
+  );
   const templates = useLoad(() => api<{ templates: TemplateInfo[] }>(`${CA_API}/faculty/templates`), [api, schoolId]);
   const [template, setTemplate] = useState<Template>("project");
   const [title, setTitle] = useState("");
@@ -52,10 +64,22 @@ export default function FacultyAssessmentsPage() {
       <ErrorBanner error={list.error} onRetry={list.reload} />
       <div className="grid gap-6 lg:grid-cols-3">
         <div className="lg:col-span-2">
+          <nav aria-label={en("Which assessments")} className="mb-3 flex gap-4 text-sm">
+            <Link href="/faculty/assessments" aria-current={!archived ? "page" : undefined} className={archived ? "text-muted-foreground underline-offset-2 hover:underline" : "font-medium"}>
+              {en("Current")}
+            </Link>
+            <Link href="/faculty/assessments?archived=1" aria-current={archived ? "page" : undefined} className={archived ? "font-medium" : "text-muted-foreground underline-offset-2 hover:underline"}>
+              {en("Archived")}
+            </Link>
+          </nav>
           {list.loading ? (
             <Loading />
           ) : rows.length === 0 ? (
-            <EmptyState title={en("No assessments yet")}>{en("Start one from a template.")}</EmptyState>
+            archived ? (
+              <EmptyState title={en("No archived assessments")}>{en("Assessments you archive are kept here.")}</EmptyState>
+            ) : (
+              <EmptyState title={en("No assessments yet")}>{en("Start one from a template.")}</EmptyState>
+            )
           ) : (
             <ScrollArea>
               <table className="w-full text-start text-sm [&_th]:text-start">
@@ -78,7 +102,9 @@ export default function FacultyAssessmentsPage() {
                         <span className="block text-xs text-muted-foreground">{names[x.template]}</span>
                       </td>
                       <td className="pe-3">
-                        <Badge tone={x.status === "Published" ? "good" : "neutral"}>{x.status === "Published" ? en("Published") : en("Draft")}</Badge>
+                        <Badge tone={x.status === "Published" ? "good" : "neutral"}>
+                          {x.status === "Published" ? en("Published") : x.status === "Archived" ? en("Archived") : en("Draft")}
+                        </Badge>
                       </td>
                       <td className="pe-3 text-xs">
                         {x.classes.length === 0
