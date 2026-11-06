@@ -24,7 +24,7 @@ interface AttemptState {
     submittedAt: string | null;
     late: boolean;
     work: { kind: Kind; title: string; files: number; tests?: string | null } | null;
-    viva: { sessionId: string; mode: "voice" | "text"; finished: boolean; questions: number; answered: number; turns: { role: "interviewer" | "student"; text: string }[] } | null;
+    viva: { sessionId: string; mode: "voice" | "text"; finished: boolean; live: boolean; saving: boolean; questions: number; answered: number; turns: { role: "interviewer" | "student"; text: string }[] } | null;
   } | null;
   canStart: boolean;
   submitWith: Kind[];
@@ -63,8 +63,10 @@ export function AttemptPanel({ assignmentId, onChange }: { assignmentId: string;
       const moved = next.attempt?.status !== state.data?.attempt?.status;
       state.setData(next);
       if (moved) onChange?.();
+      return true;
     } catch (e) {
       fail(e);
+      return false;
     } finally {
       setBusy(null);
     }
@@ -149,7 +151,7 @@ function Steps({ status }: { status: string | null }) {
   );
 }
 
-type Run = (key: string, f: () => Promise<AttemptState>) => Promise<void>;
+type Run = (key: string, f: () => Promise<AttemptState>) => Promise<boolean>;
 
 function HandIn({ state, base, busy, run }: { state: AttemptState; base: string; busy: string | null; run: Run }) {
   const en = useEn();
@@ -331,6 +333,16 @@ function Viva({
   }, [call]);
   useEffect(() => () => callRef.current?.close(), []);
 
+  // A call that has ended is being kept: check again until it's done
+  const saving = !!viva && viva.mode === "voice" && viva.saving && call === "idle";
+  useEffect(() => {
+    if (!saving) return;
+    const timer = setTimeout(() => {
+      api<AttemptState>(base).then(onDone).catch(() => {});
+    }, 2500);
+    return () => clearTimeout(timer);
+  }, [saving, state, api, base, onDone]);
+
   const finishVoice = async () => {
     if (endingRef.current) return;
     endingRef.current = true;
@@ -340,7 +352,7 @@ function Viva({
     try {
       const next = await api<AttemptState>(`${base}/viva/voice/end`, { method: "POST" });
       onDone(next);
-      if (next.attempt?.status === "Viva")
+      if (next.attempt?.status === "Viva" && !next.attempt.viva)
         setNotice(en("No answers were recorded, so nothing was kept. Start the viva again, or answer in writing."));
     } catch (e) {
       setError((e as Error).message);
@@ -401,7 +413,10 @@ function Viva({
           <form
             onSubmit={(e) => {
               e.preventDefault();
-              void run("answer", () => api<AttemptState>(`${base}/viva/text/answer`, { json: { answer } })).then(() => setAnswer(""));
+              void run("answer", () => api<AttemptState>(`${base}/viva/text/answer`, { json: { answer } })).then((ok) => {
+                // Kept when sending failed, so nothing has to be typed again
+                if (ok) setAnswer("");
+              });
             }}
             className="space-y-2"
           >
@@ -423,7 +438,14 @@ function Viva({
   return (
     <div className="space-y-3">
       <audio ref={audioRef} autoPlay className="hidden" />
-      {call === "idle" ? (
+      {call === "idle" && viva?.mode === "voice" && (viva.saving || viva.live) ? (
+        <p className="flex items-center gap-2" role="status">
+          <span className="inline-block h-2.5 w-2.5 rounded-full bg-amber-500" aria-hidden />
+          {viva.saving
+            ? en("We're saving your viva. This page updates in a moment.")
+            : en("Your voice viva is on in another window or tab. End it there first.")}
+        </p>
+      ) : call === "idle" ? (
         <>
           <p>{en("Now explain your work. The interviewer asks about what you handed in, one question at a time.")}</p>
           {state.voiceUnavailable && <p className="text-muted-foreground">{en("Voice isn't available for this viva right now, so you answer in writing.")}</p>}
