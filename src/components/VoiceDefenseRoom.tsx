@@ -26,6 +26,7 @@ import {
   ArrowRight,
 } from "lucide-react";
 import { authenticatedFetch } from "@/lib/apiClient";
+import { openRealtimeCall, type RealtimeCall } from "@/lib/realtimeCall";
 import { useEn } from "@/lib/english/EnglishProvider";
 import { Badge, Button, brandFill, buttonClass } from "@/components/career/ui";
 
@@ -39,7 +40,9 @@ export interface DefenseRecommendation {
 }
 
 export interface DefenseResult {
-  status: "evaluated" | "processing" | "evaluation-unavailable";
+  // no-answers: the call didn't connect, the student said nothing, or its recording broke; nothing was graded or charged
+  status: "evaluated" | "processing" | "evaluation-unavailable" | "no-answers";
+  message?: string;
   technicalScore?: number;
   communicationScore?: number;
   missingSkills?: string[];
@@ -97,11 +100,7 @@ interface LanguageOption {
   label: string;
 }
 
-// The OpenAI Realtime events used for on-screen captions (current and older names)
-interface RealtimeEvent {
-  type?: string;
-  transcript?: string;
-}
+
 
 const POLL_INTERVAL_MS = 3000;
 const POLL_TIMEOUT_MS = 120000;
@@ -135,8 +134,7 @@ export default function VoiceDefenseRoom({
   const en = useEn();
   const { getToken, isLoaded } = useAuth();
 
-  const pcRef = useRef<RTCPeerConnection | null>(null);
-  const micRef = useRef<MediaStream | null>(null);
+  const callRef = useRef<RealtimeCall | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const meterRef = useRef<{ ctx: AudioContext; raf: number } | null>(null);
   const sessionRef = useRef<ActiveSession | null>(null);
@@ -227,21 +225,21 @@ export default function VoiceDefenseRoom({
     };
   }, []);
 
-  // Ends our side of the call: the server notices and grades what it kept
-  const closeConnection = useCallback(() => {
+  const stopMeter = useCallback(() => {
     if (meterRef.current) {
       cancelAnimationFrame(meterRef.current.raf);
       void meterRef.current.ctx.close().catch(() => undefined);
       meterRef.current = null;
     }
-    pcRef.current?.getSenders().forEach((s) => s.track?.stop());
-    pcRef.current?.close();
-    pcRef.current = null;
-    micRef.current?.getTracks().forEach((t) => t.stop());
-    micRef.current = null;
-    if (audioRef.current) audioRef.current.srcObject = null;
     setVolumeLevel(0);
   }, []);
+
+  // Ends our side of the call; /complete then ends it on the server and grades what the server kept
+  const closeConnection = useCallback(() => {
+    stopMeter();
+    callRef.current?.close();
+    callRef.current = null;
+  }, [stopMeter]);
 
   // The interviewer's loudness, for the wave
   const watchVolume = (stream: MediaStream) => {
@@ -265,10 +263,10 @@ export default function VoiceDefenseRoom({
 
   useEffect(() => {
     return () => {
-      // Leaving the page mid-call: hang up; the server grades the call when it ends
+      // Leaving the page during a call: hang up and let the server finish it (a call that never connected isn't graded)
       const session = sessionRef.current;
       closeConnection();
-      if (session && !session.completing && session.connected) {
+      if (session && !session.completing) {
         void authenticatedFetch(`/api/interview/${session.id}/complete`, { method: "POST", body: "{}" }, getToken).catch(() => undefined);
       }
     };
@@ -325,9 +323,12 @@ export default function VoiceDefenseRoom({
     session.completing = true;
 
     if (!session.connected) {
+      // Release the call the server opened; it isn't graded or charged
+      void authenticatedFetch(`/api/interview/${session.id}/complete`, { method: "POST", body: "{}" }, getToken).catch(() => undefined);
       sessionRef.current = null;
+      setVoiceTrouble(true);
       setCallStatus("idle");
-      setStatusMessage("The call did not connect. Please try again.");
+      setStatusMessage("The call did not connect. Please try again, or answer in writing.");
       return;
     }
 
@@ -365,6 +366,14 @@ export default function VoiceDefenseRoom({
       }
 
       if (!mountedRef.current) return;
+      if (data.status === "no-answers") {
+        // Nothing was graded: the student can try again or answer in writing
+        sessionRef.current = null;
+        setVoiceTrouble(true);
+        setStatusMessage(data.message || "No answers were recorded, so nothing was graded. Try again, or answer in writing.");
+        setCallStatus("idle");
+        return;
+      }
       applyResult(data);
     } catch (err) {
       console.error("Defense completion error:", err);
@@ -374,7 +383,7 @@ export default function VoiceDefenseRoom({
     } finally {
       if (mountedRef.current) {
         setIsLoading(false);
-        setCallStatus("ended");
+        setCallStatus((c) => (c === "idle" ? c : "ended"));
       }
     }
   }, [applyResult, getToken]);
@@ -406,106 +415,78 @@ export default function VoiceDefenseRoom({
       setIsLoading(false);
       return;
     }
-    micRef.current = mic;
-
+    let upgrade = false;
     try {
-      if (typeof RTCPeerConnection === "undefined") throw new Error("This browser can't make voice calls. Answer in writing instead.");
-      // The voice connection: the student's microphone out, the interviewer's voice in, captions on a data channel
-      const pc = new RTCPeerConnection();
-      pcRef.current = pc;
-      mic.getTracks().forEach((t) => pc.addTrack(t, mic));
-      pc.ontrack = (e) => {
-        if (audioRef.current) {
-          audioRef.current.srcObject = e.streams[0];
-          void audioRef.current.play().catch(() => undefined);
-        }
-        watchVolume(e.streams[0]);
-      };
-      const dc = pc.createDataChannel("oai-events");
-      dc.onmessage = (e) => {
-        try {
-          const msg = JSON.parse(e.data) as RealtimeEvent;
-          const said = msg.transcript?.trim();
-          if (!said) return;
-          let role: TranscriptLine["role"] | null = null;
-          if (msg.type === "conversation.item.input_audio_transcription.completed") role = "Candidate";
-          else if (msg.type === "response.output_audio_transcript.done" || msg.type === "response.audio_transcript.done") role = "AI Interviewer";
-          if (!role) return;
-          transcriptRef.current = [...transcriptRef.current, { role, text: said }];
+      // The voice connection: the student's microphone out, the interviewer's voice in, captions for the student
+      callRef.current = await openRealtimeCall({
+        mic,
+        audio: audioRef.current,
+        exchange: async (sdpOffer) => {
+          const res = await authenticatedFetch(
+            "/api/interview/start",
+            {
+              method: "POST",
+              body: JSON.stringify({
+                jobDescription,
+                sprintSubmissionId,
+                repoDefenseId,
+                personaCode,
+                dialectCode,
+                language: selectedLanguage || language || undefined,
+                sdpOffer,
+              }),
+            },
+            getToken
+          );
+          if (!res.ok) {
+            const err = await readJson<{ error?: string; message?: string; requiresUpgrade?: boolean; usageResetsAt?: string; remainingMinutes?: number }>(res);
+            if (res.status === 403 && err?.requiresUpgrade) {
+              upgrade = true;
+              setUpgradePrompt({ message: err.message || "You have no voice-defense minutes left this period.", usageResetsAt: err.usageResetsAt });
+              if (typeof err.remainingMinutes === "number") setRemainingMinutes(err.remainingMinutes);
+              throw new Error("Voice minutes exhausted.");
+            }
+            if (res.status === 401) throw new Error("Please sign in to start a defense.");
+            throw new Error(err?.error || err?.message || "The defense couldn't start. Please try again in a moment.");
+          }
+          const data = await readJson<StartResponse>(res);
+          if (!data?.sessionId || !data.sdpAnswer) throw new Error("The session couldn't be set up. Please try again.");
+          sessionRef.current = { id: data.sessionId, resultsVia: data.resultsVia ?? "server", completing: false, connected: false };
+          transcriptRef.current = [];
+          setTranscripts([]);
+          setRemainingMinutes(data.remainingMinutes);
+          setSessionCapSeconds(data.maxDurationSeconds);
+          setCallStatus("connecting");
+          setStatusMessage("Joining room...");
+          return data.sdpAnswer;
+        },
+        onRemoteStream: watchVolume,
+        onCaption: (c) => {
+          transcriptRef.current = [...transcriptRef.current, { role: c.role === "student" ? "Candidate" : "AI Interviewer", text: c.text }];
           setTranscripts(transcriptRef.current);
-        } catch {
-          // captions are optional
-        }
-      };
-      pc.onconnectionstatechange = () => {
-        const state = pc.connectionState;
-        const session = sessionRef.current;
-        if (state === "connected" && session && !session.connected) {
-          session.connected = true;
+        },
+        onConnected: () => {
+          if (sessionRef.current) sessionRef.current.connected = true;
           setCallStatus("active");
           setCallStartedAt(Date.now());
           setStatusMessage("Connected. The interviewer will begin shortly.");
-        } else if (state === "failed" || state === "disconnected" || state === "closed") {
-          if (pcRef.current !== pc) return; // we closed it ourselves
-          if (state === "failed" && !session?.connected) setVoiceTrouble(true);
-          closeConnection();
+        },
+        onEnded: () => {
+          callRef.current = null;
+          stopMeter();
           setCallStartedAt(null);
           void finalizeRef.current();
-        }
-      };
-      const offer = await pc.createOffer();
-      await pc.setLocalDescription(offer);
-
-      const res = await authenticatedFetch(
-        "/api/interview/start",
-        {
-          method: "POST",
-          body: JSON.stringify({
-            jobDescription,
-            sprintSubmissionId,
-            repoDefenseId,
-            personaCode,
-            dialectCode,
-            language: selectedLanguage || language || undefined,
-            sdpOffer: offer.sdp,
-          }),
         },
-        getToken
-      );
-
-      if (!res.ok) {
-        const err = await readJson<{ error?: string; message?: string; requiresUpgrade?: boolean; usageResetsAt?: string; remainingMinutes?: number }>(res);
-        if (res.status === 403 && err?.requiresUpgrade) {
-          setUpgradePrompt({
-            message: err.message || "You have no voice-defense minutes left this period.",
-            usageResetsAt: err.usageResetsAt,
-          });
-          if (typeof err.remainingMinutes === "number") setRemainingMinutes(err.remainingMinutes);
-          setStatusMessage("Voice minutes exhausted.");
-          return;
-        }
-        if (res.status === 401) throw new Error("Please sign in to start a defense.");
-        throw new Error(err?.error || err?.message || "The defense couldn't start. Please try again in a moment.");
-      }
-
-      const data = await readJson<StartResponse>(res);
-      if (!data?.sessionId || !data.sdpAnswer) throw new Error("The session couldn't be set up. Please try again.");
-
-      sessionRef.current = { id: data.sessionId, resultsVia: data.resultsVia ?? "server", completing: false, connected: false };
-      transcriptRef.current = [];
-      setTranscripts([]);
-      setRemainingMinutes(data.remainingMinutes);
-      setSessionCapSeconds(data.maxDurationSeconds);
-      setCallStatus("connecting");
-      setStatusMessage("Joining room...");
-
-      await pc.setRemoteDescription({ type: "answer", sdp: data.sdpAnswer });
+      });
     } catch (err) {
+      // If the server already opened the call, release it (not graded, not charged)
+      const session = sessionRef.current;
+      if (session) void authenticatedFetch(`/api/interview/${session.id}/complete`, { method: "POST", body: "{}" }, getToken).catch(() => undefined);
       sessionRef.current = null;
       closeConnection();
-      setVoiceTrouble(true);
+      if (!upgrade) setVoiceTrouble(true);
       setCallStatus("idle");
-      setStatusMessage(err instanceof Error && err.message ? `Could not start the defense. ${err.message}` : "Could not start the defense. Please try again in a moment.");
+      setStatusMessage(upgrade ? "Voice minutes exhausted." : err instanceof Error && err.message ? `Could not start the defense. ${err.message}` : "Could not start the defense. Please try again in a moment.");
     } finally {
       setIsLoading(false);
     }
@@ -513,7 +494,7 @@ export default function VoiceDefenseRoom({
 
   const toggleMute = () => {
     const next = !isMuted;
-    if (callStatus === "active") micRef.current?.getAudioTracks().forEach((t) => (t.enabled = !next));
+    if (callStatus === "active") callRef.current?.setMuted(next);
     setIsMuted(next);
   };
 
@@ -644,17 +625,19 @@ export default function VoiceDefenseRoom({
                 </Button>
               </div>
             )}
-            {sprintSubmissionId && !inCall && callStatus !== "finishing" && !result && (
-              <div className={`mt-3 rounded-lg p-3 text-xs ${voiceTrouble || micPermission === "denied" ? "border border-amber-300 bg-amber-50 text-amber-900 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-200" : "text-muted-foreground"}`}>
-                <p>
-                  {voiceTrouble || micPermission === "denied"
-                    ? en("Voice isn't working here. You can answer the same questions in writing instead; your reviewer will see that you typed them.")
-                    : en("Microphone or connection trouble? You can answer in writing instead; your reviewer will see that you typed it.")}
-                </p>
-                <Button variant="secondary" onClick={answerInWriting} busy={typedBusy} className="mt-2 h-9 w-full">
-                  {en("Answer in writing instead")}
-                </Button>
-                {typedError && <p role="alert" className="mt-2 text-red-700 dark:text-red-400">{typedError}</p>}
+            {sprintSubmissionId && !inCall && callStatus !== "finishing" && !result && (voiceTrouble || micPermission === "denied") && (
+              <div className="mt-3 rounded-lg border border-amber-300 bg-amber-50 p-3 text-xs text-amber-900 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-200">
+                {voiceTrouble ? (
+                  <>
+                    <p>{en("Voice isn't working here. You can answer the same questions in writing instead; your reviewer will see that you typed them.")}</p>
+                    <Button variant="secondary" onClick={answerInWriting} busy={typedBusy} className="mt-2 h-9 w-full">
+                      {en("Answer in writing instead")}
+                    </Button>
+                    {typedError && <p role="alert" className="mt-2 text-red-700 dark:text-red-400">{typedError}</p>}
+                  </>
+                ) : (
+                  <p>{en("Allow microphone access in your browser, then start again. If you can't use a microphone, ask your school for a written defense.")}</p>
+                )}
               </div>
             )}
           </div>

@@ -9,6 +9,7 @@ import React, { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useApi } from "@/lib/appAuth";
+import { openRealtimeCall, type RealtimeCall } from "@/lib/realtimeCall";
 import { useCareerShell } from "@/components/career/CareerShell";
 import { Button, Card, ErrorBanner, Field, Loading, PageHeader, SuccessBanner, formatDate, useLoad, useCareerT } from "@/components/career/ui";
 import {
@@ -314,29 +315,23 @@ function VoiceDefense({
 }) {
   const t = useCareerT("studentExperiencesDetailDefend");
   const [phase, setPhase] = useState<"idle" | "connecting" | "live" | "processing">("idle");
-  const pcRef = useRef<RTCPeerConnection | null>(null);
-  const micRef = useRef<MediaStream | null>(null);
+  const liveRef = useRef<RealtimeCall | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const callRef = useRef<string | null>(null);
 
   const hangUp = () => {
-    pcRef.current?.close();
-    pcRef.current = null;
-    micRef.current?.getTracks().forEach((tr) => tr.stop());
-    micRef.current = null;
-    if (audioRef.current) audioRef.current.srcObject = null;
+    liveRef.current?.close();
+    liveRef.current = null;
   };
   useEffect(() => hangUp, []);
 
+  // The server ends the call and grades the transcript it kept
   const finish = async () => {
-    if (!callRef.current) return;
+    const callId = callRef.current;
+    callRef.current = null;
+    if (!callId) return;
     setPhase("processing");
-    // The transcript may take a few seconds to be ready on the voice provider
-    for (let i = 0; i < 6; i++) {
-      const ok = await complete(callRef.current);
-      if (ok) return;
-      await new Promise((r) => setTimeout(r, 3000));
-    }
+    await complete(callId);
     setPhase("idle");
   };
 
@@ -347,35 +342,27 @@ function VoiceDefense({
       const st = await resume();
       if (!st.voice || typeof RTCPeerConnection === "undefined") throw new Error(t("voiceIsntAvailableRightNow"));
       const mic = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true } });
-      micRef.current = mic;
-      const pc = new RTCPeerConnection();
-      pcRef.current = pc;
-      mic.getTracks().forEach((tr) => pc.addTrack(tr, mic));
-      pc.ontrack = (e) => {
-        if (audioRef.current) {
-          audioRef.current.srcObject = e.streams[0];
-          void audioRef.current.play().catch(() => undefined);
-        }
-      };
-      pc.createDataChannel("oai-events");
-      pc.onconnectionstatechange = () => {
-        if (pcRef.current !== pc) return; // closed by us
-        if (pc.connectionState === "connected") setPhase("live");
-        else if (pc.connectionState === "failed" || pc.connectionState === "disconnected" || pc.connectionState === "closed") {
-          if (pc.connectionState === "failed" && !callRef.current) setErr(t("theVoiceConnectionHadA"));
-          hangUp();
+      liveRef.current = await openRealtimeCall({
+        mic,
+        audio: audioRef.current,
+        exchange: async (sdp) => {
+          const call = await connect(sdp);
+          callRef.current = call?.callId ?? null;
+          if (!callRef.current || !call.sdpAnswer) throw new Error(t("theCallDidntStartCheck"));
+          return call.sdpAnswer;
+        },
+        onConnected: () => setPhase("live"),
+        onEnded: (_reason, wasConnected) => {
+          liveRef.current = null;
+          if (!wasConnected) setErr(t("theVoiceConnectionHadA"));
           void finish();
-        }
-      };
-      const offer = await pc.createOffer();
-      await pc.setLocalDescription(offer);
-      const call = await connect(offer.sdp ?? "");
-      callRef.current = call?.callId ?? null;
-      if (!callRef.current || !call.sdpAnswer) throw new Error(t("theCallDidntStartCheck"));
-      await pc.setRemoteDescription({ type: "answer", sdp: call.sdpAnswer });
+        },
+      });
     } catch (e) {
       hangUp();
       setErr(e instanceof TypeError ? "We couldn't reach the server. Please check your connection and try again." : (e as Error).message);
+      // A call the server opened is released by finishing it (too short to grade, nothing is recorded)
+      void finish();
       setPhase("idle");
     }
   };
