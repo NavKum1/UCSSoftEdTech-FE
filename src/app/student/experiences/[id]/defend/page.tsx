@@ -88,6 +88,7 @@ export default function DefendInternshipPage() {
         <VoiceDefense
           resume={() => api<DefenseState>(`${DEFENSE_API}/mine/${id}/start`, { json: {} })}
           connect={(sdp) => api<{ callId: string; sdpAnswer: string }>(`${DEFENSE_API}/mine/${id}/voice/connect`, { json: { sdp } })}
+          cancel={(callId) => api(`${DEFENSE_API}/mine/${id}/voice/cancel`, { json: { callId } })}
           complete={(callId) => run(() => api(`${DEFENSE_API}/mine/${id}/voice/complete`, { json: { callId } }), t("thanksSupervisorNameHasBeenAsked", { supervisorName: s.experience.supervisorName }))}
           setErr={setErr}
         />
@@ -305,11 +306,13 @@ function WrittenDefense({ d, onAnswer, onFinish }: { d: NonNullable<DefenseState
 function VoiceDefense({
   resume,
   connect,
+  cancel,
   complete,
   setErr,
 }: {
   resume: () => Promise<DefenseState>;
   connect: (sdp: string) => Promise<{ callId: string; sdpAnswer: string }>;
+  cancel: (callId: string) => Promise<unknown>;
   complete: (callId: string) => Promise<unknown>;
   setErr: (e: string | null) => void;
 }) {
@@ -335,6 +338,13 @@ function VoiceDefense({
     setPhase("idle");
   };
 
+  // A call that never worked is ended without grading; the error the student saw stays on screen
+  const cancelCall = () => {
+    const callId = callRef.current;
+    callRef.current = null;
+    if (callId) void cancel(callId).catch(() => undefined);
+  };
+
   const start = async () => {
     setErr(null);
     setPhase("connecting");
@@ -354,15 +364,19 @@ function VoiceDefense({
         onConnected: () => setPhase("live"),
         onEnded: (_reason, wasConnected) => {
           liveRef.current = null;
-          if (!wasConnected) setErr(t("theVoiceConnectionHadA"));
+          if (!wasConnected) {
+            setErr(t("theVoiceConnectionHadA"));
+            cancelCall();
+            setPhase("idle");
+            return;
+          }
           void finish();
         },
       });
     } catch (e) {
       hangUp();
       setErr(e instanceof TypeError ? "We couldn't reach the server. Please check your connection and try again." : (e as Error).message);
-      // A call the server opened is released by finishing it (too short to grade, nothing is recorded)
-      void finish();
+      cancelCall();
       setPhase("idle");
     }
   };
