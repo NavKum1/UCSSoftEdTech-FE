@@ -5,10 +5,9 @@
  * interviewer's questions about them (written, or voice where the school has it set up), and the site supervisor confirms.
  */
 
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import type VapiClient from "@vapi-ai/web";
 import { useApi } from "@/lib/appAuth";
 import { useCareerShell } from "@/components/career/CareerShell";
 import { Button, Card, ErrorBanner, Field, Loading, PageHeader, SuccessBanner, formatDate, useLoad, useCareerT } from "@/components/career/ui";
@@ -24,7 +23,6 @@ import {
 } from "@/components/career/experiences/InternshipDefense";
 
 const EMPTY: DefenseArtifact = { kind: "description", title: "", url: "", description: "" };
-const VOICE_KEY = process.env.NEXT_PUBLIC_VAPI_PUBLIC_KEY || "";
 
 export default function DefendInternshipPage() {
   const t = useCareerT("studentExperiencesDetailDefend");
@@ -88,6 +86,7 @@ export default function DefendInternshipPage() {
       {d && d.status === "InProgress" && d.mode === "Voice" && (
         <VoiceDefense
           resume={() => api<DefenseState>(`${DEFENSE_API}/mine/${id}/start`, { json: {} })}
+          connect={(sdp) => api<{ callId: string; sdpAnswer: string }>(`${DEFENSE_API}/mine/${id}/voice/connect`, { json: { sdp } })}
           complete={(callId) => run(() => api(`${DEFENSE_API}/mine/${id}/voice/complete`, { json: { callId } }), t("thanksSupervisorNameHasBeenAsked", { supervisorName: s.experience.supervisorName }))}
           setErr={setErr}
         />
@@ -154,7 +153,7 @@ function StartForm({ s, onStart }: { s: DefenseState; onStart: (body: unknown) =
   const [mode, setMode] = useState<"written" | "voice">("written");
   const [consent, setConsent] = useState(false);
   const [busy, setBusy] = useState(false);
-  const voiceReady = s.options.voiceAvailable && VOICE_KEY.length > 0;
+  const voiceReady = s.options.voiceAvailable;
   const update = (i: number, patch: Partial<DefenseArtifact>) => setArtifacts((list) => list.map((a, j) => (j === i ? { ...a, ...patch } : a)));
 
   return (
@@ -300,11 +299,34 @@ function WrittenDefense({ d, onAnswer, onFinish }: { d: NonNullable<DefenseState
   );
 }
 
-function VoiceDefense({ resume, complete, setErr }: { resume: () => Promise<DefenseState>; complete: (callId: string) => Promise<unknown>; setErr: (e: string | null) => void }) {
+// Voice on OpenAI Realtime (6 Nov 2026): the browser sends its WebRTC offer; the API opens the call, keeps the transcript and
+// grades it when the student ends the call. The browser never sends a transcript.
+function VoiceDefense({
+  resume,
+  connect,
+  complete,
+  setErr,
+}: {
+  resume: () => Promise<DefenseState>;
+  connect: (sdp: string) => Promise<{ callId: string; sdpAnswer: string }>;
+  complete: (callId: string) => Promise<unknown>;
+  setErr: (e: string | null) => void;
+}) {
   const t = useCareerT("studentExperiencesDetailDefend");
   const [phase, setPhase] = useState<"idle" | "connecting" | "live" | "processing">("idle");
-  const vapiRef = useRef<VapiClient | null>(null);
+  const pcRef = useRef<RTCPeerConnection | null>(null);
+  const micRef = useRef<MediaStream | null>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
   const callRef = useRef<string | null>(null);
+
+  const hangUp = () => {
+    pcRef.current?.close();
+    pcRef.current = null;
+    micRef.current?.getTracks().forEach((tr) => tr.stop());
+    micRef.current = null;
+    if (audioRef.current) audioRef.current.srcObject = null;
+  };
+  useEffect(() => hangUp, []);
 
   const finish = async () => {
     if (!callRef.current) return;
@@ -323,19 +345,36 @@ function VoiceDefense({ resume, complete, setErr }: { resume: () => Promise<Defe
     setPhase("connecting");
     try {
       const st = await resume();
-      if (!st.voice) throw new Error(t("voiceIsntAvailableRightNow"));
-      const { default: Vapi } = await import("@vapi-ai/web");
-      const vapi = new Vapi(VOICE_KEY);
-      vapiRef.current = vapi;
-      vapi.on("call-start", () => setPhase("live"));
-      vapi.on("call-end", () => {
-        void finish();
-      });
-      vapi.on("error", () => setErr(t("theVoiceConnectionHadA")));
-      const call = await vapi.start(st.voice.assistant as Parameters<VapiClient["start"]>[0]);
-      callRef.current = call?.id ?? null;
-      if (!callRef.current) throw new Error(t("theCallDidntStartCheck"));
+      if (!st.voice || typeof RTCPeerConnection === "undefined") throw new Error(t("voiceIsntAvailableRightNow"));
+      const mic = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true } });
+      micRef.current = mic;
+      const pc = new RTCPeerConnection();
+      pcRef.current = pc;
+      mic.getTracks().forEach((tr) => pc.addTrack(tr, mic));
+      pc.ontrack = (e) => {
+        if (audioRef.current) {
+          audioRef.current.srcObject = e.streams[0];
+          void audioRef.current.play().catch(() => undefined);
+        }
+      };
+      pc.createDataChannel("oai-events");
+      pc.onconnectionstatechange = () => {
+        if (pcRef.current !== pc) return; // closed by us
+        if (pc.connectionState === "connected") setPhase("live");
+        else if (pc.connectionState === "failed" || pc.connectionState === "disconnected" || pc.connectionState === "closed") {
+          if (pc.connectionState === "failed" && !callRef.current) setErr(t("theVoiceConnectionHadA"));
+          hangUp();
+          void finish();
+        }
+      };
+      const offer = await pc.createOffer();
+      await pc.setLocalDescription(offer);
+      const call = await connect(offer.sdp ?? "");
+      callRef.current = call?.callId ?? null;
+      if (!callRef.current || !call.sdpAnswer) throw new Error(t("theCallDidntStartCheck"));
+      await pc.setRemoteDescription({ type: "answer", sdp: call.sdpAnswer });
     } catch (e) {
+      hangUp();
       setErr(e instanceof TypeError ? "We couldn't reach the server. Please check your connection and try again." : (e as Error).message);
       setPhase("idle");
     }
@@ -343,13 +382,20 @@ function VoiceDefense({ resume, complete, setErr }: { resume: () => Promise<Defe
 
   return (
     <Card title={t("voiceDefense")}>
+      <audio ref={audioRef} autoPlay className="hidden" />
       <p className="mb-3 text-sm">{t("youllTalkWithAnInterviewer")}</p>
       <p role="status" className="mb-3 text-sm font-medium">
         {phase === "idle" ? t("ready") : phase === "connecting" ? t("connecting") : phase === "live" ? t("callInProgress") : t("processingYourCall")}
       </p>
       {phase === "idle" && <Button onClick={start}>{t("startTheCall")}</Button>}
       {phase === "live" && (
-        <Button variant="secondary" onClick={() => vapiRef.current?.stop()}>
+        <Button
+          variant="secondary"
+          onClick={() => {
+            hangUp();
+            void finish();
+          }}
+        >
           {t("endTheCall")}
         </Button>
       )}

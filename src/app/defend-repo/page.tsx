@@ -13,7 +13,7 @@ import {
   CircleDot,
 } from "lucide-react";
 import { authenticatedFetch } from "@/lib/apiClient";
-import VapiInterviewRoom from "@/components/VapiInterviewRoom";
+import VoiceDefenseRoom from "@/components/VoiceDefenseRoom";
 import SignInRequired from "@/components/SignInRequired";
 import { useEn } from "@/lib/english/EnglishProvider";
 
@@ -340,7 +340,7 @@ export default function DefendRepoPage() {
                 {current.status === "Defended" && (
                   <p className="text-xs text-muted-foreground">{en("You've already defended this work. You can start another session if you want.")}</p>
                 )}
-                <VapiInterviewRoom
+                <VoiceDefenseRoom
                   key={current.id}
                   repoDefenseId={current.id}
                   jobDescription="Defend your real work"

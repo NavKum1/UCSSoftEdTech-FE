@@ -3,7 +3,7 @@
 import React, { Suspense, useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import Link from "next/link";
 import Editor from "@monaco-editor/react";
-import VapiInterviewRoom, { type DefenseResult } from "@/components/VapiInterviewRoom";
+import VoiceDefenseRoom, { type DefenseResult } from "@/components/VoiceDefenseRoom";
 import MultiFileEditor, { type EditorFile, type MultiFileEditorApi } from "@/components/MultiFileEditor";
 import AiAssistantPanel, { AiPolicyNotice, type AiPolicy } from "@/components/AiAssistantPanel";
 import AgentSupervisorPanel from "@/components/AgentSupervisorPanel";
@@ -1225,7 +1225,7 @@ function GradedWorkspace({ sprintId }: { sprintId: string }) {
             </div>
 
             {showDefense && submissionId && (
-              <VapiInterviewRoom
+              <VoiceDefenseRoom
                 sprintSubmissionId={submissionId}
                 jobDescription="Coding challenge review"
                 onResult={handleDefenseResult}

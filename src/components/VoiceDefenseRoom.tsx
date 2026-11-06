@@ -1,9 +1,15 @@
 "use client";
 
+/**
+ * Graded AI voice defense on OpenAI Realtime (6 Nov 2026: Vapi is no longer used). The browser sends its WebRTC offer to
+ * POST /api/interview/start; the API opens the call with instructions built from the student's own work, joins it, keeps the
+ * transcript and grades it when the call ends. Captions on screen are for the student only; the browser never sends a
+ * transcript or holds a key.
+ */
+
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import Vapi from "@vapi-ai/web";
 import { useAppAuth as useAuth } from "@/lib/appAuth";
 import {
   Mic,
@@ -43,7 +49,7 @@ export interface DefenseResult {
   recommendations?: DefenseRecommendation[];
 }
 
-export interface VapiInterviewRoomProps {
+export interface VoiceDefenseRoomProps {
   userId?: string;
   jobDescription?: string;
   selectedTenantId?: string;
@@ -58,14 +64,14 @@ export interface VapiInterviewRoomProps {
   onLeadReferralGenerated?: (recs: any[]) => void;
 }
 
-type VapiAssistant = Parameters<Vapi["start"]>[0];
 type CallStatus = "idle" | "connecting" | "active" | "finishing" | "ended";
 
 interface StartResponse {
   sessionId: string;
   maxDurationSeconds: number;
   remainingMinutes: number;
-  assistant: unknown;
+  voice?: string;
+  sdpAnswer?: string | null;
   resultsVia?: string;
 }
 
@@ -91,11 +97,10 @@ interface LanguageOption {
   label: string;
 }
 
-interface VapiMessage {
+// The OpenAI Realtime events used for on-screen captions (current and older names)
+interface RealtimeEvent {
   type?: string;
-  transcriptType?: string;
   transcript?: string;
-  role?: string;
 }
 
 const POLL_INTERVAL_MS = 3000;
@@ -117,7 +122,7 @@ function formatClock(totalSeconds: number) {
   return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
 }
 
-export default function VapiInterviewRoom({
+export default function VoiceDefenseRoom({
   jobDescription,
   sprintSubmissionId,
   repoDefenseId,
@@ -126,11 +131,14 @@ export default function VapiInterviewRoom({
   language,
   onResult,
   onLeadReferralGenerated,
-}: VapiInterviewRoomProps) {
+}: VoiceDefenseRoomProps) {
   const en = useEn();
   const { getToken, isLoaded } = useAuth();
 
-  const vapiRef = useRef<Vapi | null>(null);
+  const pcRef = useRef<RTCPeerConnection | null>(null);
+  const micRef = useRef<MediaStream | null>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const meterRef = useRef<{ ctx: AudioContext; raf: number } | null>(null);
   const sessionRef = useRef<ActiveSession | null>(null);
   const transcriptRef = useRef<TranscriptLine[]>([]);
   const mountedRef = useRef(true);
@@ -219,59 +227,52 @@ export default function VapiInterviewRoom({
     };
   }, []);
 
-  useEffect(() => {
-    let vapiInstance: Vapi | null = null;
-    try {
-      vapiInstance = new Vapi(process.env.NEXT_PUBLIC_VAPI_PUBLIC_KEY || "");
-    } catch (e) {
-      console.warn("Vapi SDK could not be initialised:", e); // not text: a developer log
-      return;
+  // Ends our side of the call: the server notices and grades what it kept
+  const closeConnection = useCallback(() => {
+    if (meterRef.current) {
+      cancelAnimationFrame(meterRef.current.raf);
+      void meterRef.current.ctx.close().catch(() => undefined);
+      meterRef.current = null;
     }
-    vapiRef.current = vapiInstance;
+    pcRef.current?.getSenders().forEach((s) => s.track?.stop());
+    pcRef.current?.close();
+    pcRef.current = null;
+    micRef.current?.getTracks().forEach((t) => t.stop());
+    micRef.current = null;
+    if (audioRef.current) audioRef.current.srcObject = null;
+    setVolumeLevel(0);
+  }, []);
 
-    vapiInstance.on("call-start", () => {
-      if (sessionRef.current) sessionRef.current.connected = true;
-      setCallStatus("active");
-      setCallStartedAt(Date.now());
-      setStatusMessage("Connected. The interviewer will begin shortly.");
-    });
+  // The interviewer's loudness, for the wave
+  const watchVolume = (stream: MediaStream) => {
+    try {
+      const ctx = new AudioContext();
+      const analyser = ctx.createAnalyser();
+      analyser.fftSize = 256;
+      ctx.createMediaStreamSource(stream).connect(analyser);
+      const data = new Uint8Array(analyser.frequencyBinCount);
+      const tick = () => {
+        analyser.getByteFrequencyData(data);
+        const avg = data.reduce((a, b) => a + b, 0) / data.length;
+        setVolumeLevel(Math.min(100, Math.round((avg / 128) * 100)));
+        if (meterRef.current) meterRef.current.raf = requestAnimationFrame(tick);
+      };
+      meterRef.current = { ctx, raf: requestAnimationFrame(tick) };
+    } catch {
+      // the wave is decoration; the call works without it
+    }
+  };
 
-    vapiInstance.on("call-end", () => {
-      setVolumeLevel(0);
-      setCallStartedAt(null);
-      void finalizeRef.current();
-    });
-
-    vapiInstance.on("volume-level", (volume: number) => {
-      setVolumeLevel(Math.min(100, Math.round(volume * 100)));
-    });
-
-    vapiInstance.on("message", (message: VapiMessage) => {
-      if (message?.type === "transcript" && message.transcriptType === "final" && message.transcript) {
-        const line: TranscriptLine = {
-          role: message.role === "user" ? "Candidate" : "AI Interviewer",
-          text: message.transcript,
-        };
-        transcriptRef.current = [...transcriptRef.current, line];
-        setTranscripts(transcriptRef.current);
-      }
-    });
-
-    vapiInstance.on("error", (err: unknown) => {
-      console.warn("Vapi SDK error:", err);
-      // Offer the written defense prominently once the voice service has failed
-      setVoiceTrouble(true);
-    });
-
+  useEffect(() => {
     return () => {
-      const instance = vapiInstance;
-      if (!instance) return;
-      instance.removeAllListeners();
-      if (sessionRef.current && !sessionRef.current.completing) {
-        void instance.stop().catch(() => undefined);
+      // Leaving the page mid-call: hang up; the server grades the call when it ends
+      const session = sessionRef.current;
+      closeConnection();
+      if (session && !session.completing && session.connected) {
+        void authenticatedFetch(`/api/interview/${session.id}/complete`, { method: "POST", body: "{}" }, getToken).catch(() => undefined);
       }
-      if (vapiRef.current === instance) vapiRef.current = null;
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Show the user's balance before they start
@@ -382,16 +383,15 @@ export default function VapiInterviewRoom({
     finalizeRef.current = finalize;
   }, [finalize]);
 
-  const requestMicrophoneAccess = async (): Promise<boolean> => {
+  const requestMicrophoneAccess = async (): Promise<MediaStream | null> => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      stream.getTracks().forEach((track) => track.stop());
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true } });
       setMicPermission("granted");
-      return true;
+      return stream;
     } catch {
       setMicPermission("denied");
       setStatusMessage("Microphone permission denied. Please enable microphone access in your browser.");
-      return false;
+      return null;
     }
   };
 
@@ -401,12 +401,61 @@ export default function VapiInterviewRoom({
     setResult(null);
     setStatusMessage("Preparing your defense room...");
 
-    if (!(await requestMicrophoneAccess())) {
+    const mic = await requestMicrophoneAccess();
+    if (!mic) {
       setIsLoading(false);
       return;
     }
+    micRef.current = mic;
 
     try {
+      if (typeof RTCPeerConnection === "undefined") throw new Error("This browser can't make voice calls. Answer in writing instead.");
+      // The voice connection: the student's microphone out, the interviewer's voice in, captions on a data channel
+      const pc = new RTCPeerConnection();
+      pcRef.current = pc;
+      mic.getTracks().forEach((t) => pc.addTrack(t, mic));
+      pc.ontrack = (e) => {
+        if (audioRef.current) {
+          audioRef.current.srcObject = e.streams[0];
+          void audioRef.current.play().catch(() => undefined);
+        }
+        watchVolume(e.streams[0]);
+      };
+      const dc = pc.createDataChannel("oai-events");
+      dc.onmessage = (e) => {
+        try {
+          const msg = JSON.parse(e.data) as RealtimeEvent;
+          const said = msg.transcript?.trim();
+          if (!said) return;
+          let role: TranscriptLine["role"] | null = null;
+          if (msg.type === "conversation.item.input_audio_transcription.completed") role = "Candidate";
+          else if (msg.type === "response.output_audio_transcript.done" || msg.type === "response.audio_transcript.done") role = "AI Interviewer";
+          if (!role) return;
+          transcriptRef.current = [...transcriptRef.current, { role, text: said }];
+          setTranscripts(transcriptRef.current);
+        } catch {
+          // captions are optional
+        }
+      };
+      pc.onconnectionstatechange = () => {
+        const state = pc.connectionState;
+        const session = sessionRef.current;
+        if (state === "connected" && session && !session.connected) {
+          session.connected = true;
+          setCallStatus("active");
+          setCallStartedAt(Date.now());
+          setStatusMessage("Connected. The interviewer will begin shortly.");
+        } else if (state === "failed" || state === "disconnected" || state === "closed") {
+          if (pcRef.current !== pc) return; // we closed it ourselves
+          if (state === "failed" && !session?.connected) setVoiceTrouble(true);
+          closeConnection();
+          setCallStartedAt(null);
+          void finalizeRef.current();
+        }
+      };
+      const offer = await pc.createOffer();
+      await pc.setLocalDescription(offer);
+
       const res = await authenticatedFetch(
         "/api/interview/start",
         {
@@ -418,6 +467,7 @@ export default function VapiInterviewRoom({
             personaCode,
             dialectCode,
             language: selectedLanguage || language || undefined,
+            sdpOffer: offer.sdp,
           }),
         },
         getToken
@@ -439,12 +489,9 @@ export default function VapiInterviewRoom({
       }
 
       const data = await readJson<StartResponse>(res);
-      if (!data?.sessionId || !data.assistant) throw new Error("The session couldn't be set up. Please try again.");
+      if (!data?.sessionId || !data.sdpAnswer) throw new Error("The session couldn't be set up. Please try again.");
 
-      const vapi = vapiRef.current;
-      if (!vapi) throw new Error("Voice client is unavailable in this browser.");
-
-      sessionRef.current = { id: data.sessionId, resultsVia: data.resultsVia ?? "vapi-webhook", completing: false, connected: false };
+      sessionRef.current = { id: data.sessionId, resultsVia: data.resultsVia ?? "server", completing: false, connected: false };
       transcriptRef.current = [];
       setTranscripts([]);
       setRemainingMinutes(data.remainingMinutes);
@@ -452,22 +499,11 @@ export default function VapiInterviewRoom({
       setCallStatus("connecting");
       setStatusMessage("Joining room...");
 
-      const call = await vapi.start(data.assistant as VapiAssistant);
-      if (!call?.id) {
-        sessionRef.current = null;
-        setCallStatus("idle");
-        setStatusMessage("Could not connect the voice call. Please check your connection and try again.");
-        return;
-      }
-
-      const bindRes = await authenticatedFetch(
-        `/api/interview/${data.sessionId}/bind-call`,
-        { method: "POST", body: JSON.stringify({ vapiCallId: call.id }) },
-        getToken
-      ).catch(() => null);
-      if (!bindRes?.ok) console.warn("bind-call did not succeed; relying on assistant metadata to match the call.");
+      await pc.setRemoteDescription({ type: "answer", sdp: data.sdpAnswer });
     } catch (err) {
       sessionRef.current = null;
+      closeConnection();
+      setVoiceTrouble(true);
       setCallStatus("idle");
       setStatusMessage(err instanceof Error && err.message ? `Could not start the defense. ${err.message}` : "Could not start the defense. Please try again in a moment.");
     } finally {
@@ -477,24 +513,14 @@ export default function VapiInterviewRoom({
 
   const toggleMute = () => {
     const next = !isMuted;
-    if (vapiRef.current && callStatus === "active") {
-      try {
-        vapiRef.current.setMuted(next);
-      } catch (e) {
-        console.warn("Mute failed:", e);
-      }
-    }
+    if (callStatus === "active") micRef.current?.getAudioTracks().forEach((t) => (t.enabled = !next));
     setIsMuted(next);
   };
 
   const handleEndCall = async () => {
     setStatusMessage("Ending call...");
-    try {
-      await vapiRef.current?.stop();
-    } catch (e) {
-      console.warn("Vapi stop failed:", e);
-    }
-    // call-end normally triggers finalize; this covers the case where it never fires
+    closeConnection();
+    setCallStartedAt(null);
     void finalizeRef.current();
   };
 
@@ -507,6 +533,7 @@ export default function VapiInterviewRoom({
 
   return (
     <div className="relative overflow-hidden rounded-xl border border-border bg-card p-6 shadow-sm">
+      <audio ref={audioRef} autoPlay className="hidden" />
       <div className="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-border">
         <div className="flex items-center space-x-3">
           <div>

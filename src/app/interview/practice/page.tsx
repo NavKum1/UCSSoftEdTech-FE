@@ -400,12 +400,12 @@ export default function MultiStreamInterviewPracticePage() {
           const msg = JSON.parse(event.data);
           
           // AI speech streaming delta
-          if (msg.type === "response.audio_transcript.delta") {
+          if (msg.type === "response.audio_transcript.delta" || msg.type === "response.output_audio_transcript.delta") {
             setCurrentAiInterim((prev) => prev + msg.delta);
             setAiStatus("speaking");
           } 
           // AI speech turn completed
-          else if (msg.type === "response.audio_transcript.done") {
+          else if (msg.type === "response.audio_transcript.done" || msg.type === "response.output_audio_transcript.done") {
             const finalAiText = msg.transcript;
             setCurrentAiInterim("");
             if (finalAiText && finalAiText.trim()) {

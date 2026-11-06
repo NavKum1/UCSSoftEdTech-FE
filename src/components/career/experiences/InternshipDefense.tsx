@@ -59,7 +59,8 @@ export interface DefenseState {
     supervisorLinks?: { issuedAt: string; expiresAt: string; lastUsedAt?: string | null; useCount: number; state: string }[] | null;
   };
   credential: null | { id: string; status: string; issuedAt: string; publicUrlSlug: string; verifyPath: string };
-  voice: null | { assistant: unknown; maxDurationSeconds: number };
+  // Voice runs on OpenAI Realtime: the browser connects through POST .../voice/connect (the instructions stay on the server)
+  voice: null | { voice: string; maxDurationSeconds: number };
   devToken?: string | null;
 }
 

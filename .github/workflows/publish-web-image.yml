@@ -54,6 +54,5 @@ jobs:
             NEXT_PUBLIC_API_URL=${{ inputs.api_url }}
             NEXT_PUBLIC_APP_URL=${{ inputs.app_url }}
             NEXT_PUBLIC_ENABLE_DEMO_LOGIN=false
-            NEXT_PUBLIC_VAPI_PUBLIC_KEY=${{ vars.VAPI_PUBLIC_KEY }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
