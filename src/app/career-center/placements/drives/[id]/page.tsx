@@ -29,7 +29,7 @@ export default function StaffDrivePage() {
   const t = useCareerT("careerCenterDrive");
   const APPROVAL = useApprovalLabels();
   const TIER = useTierLabels();
-  // P5: amounts in the school's currency; tiers, backlogs and the GSTIN state are India only
+  // P5: amounts in the drive's own currency (the school's by default); tiers, backlogs and the GSTIN state are India only
   const w = useCountryWords();
   const india = w.rules.india;
   const { id } = useParams<{ id: string }>();
@@ -93,7 +93,7 @@ export default function StaffDrivePage() {
         <Card title={t("summary")}>
           <div className="flex flex-wrap items-center gap-2 text-sm">
             <Badge tone={APPROVAL_TONE[d.approvalStatus] ?? "neutral"}>{label(APPROVAL, d.approvalStatus)}</Badge>
-            <span>{w.rules.money(d.ctcAnnual)}</span>
+            <span>{w.rules.moneyIn(d.ctcAnnual, d.currency)}</span>
             {india && <span>· {label(TIER, d.tier)}</span>}
             <span>· {t("deadline", { date: formatDate(d.applyDeadline, true) })}</span>
             <span>· {d.applicationsOpen ? t("open") : t("closed")}</span>
@@ -183,7 +183,7 @@ export default function StaffDrivePage() {
           </Card>
         )}
 
-        <DriveWorkspace base={base} mode="staff" rounds={view.data!.rounds} applicants={view.data!.applicants} onChanged={view.reload} />
+        <DriveWorkspace base={base} mode="staff" rounds={view.data!.rounds} applicants={view.data!.applicants} onChanged={view.reload} currency={d.currency ?? null} />
         <HireDriveStatus base={base} mode="staff" applicants={view.data!.applicants} />
       </div>
     </div>

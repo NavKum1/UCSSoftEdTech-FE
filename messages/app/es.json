@@ -3130,6 +3130,7 @@
  "Preview of “{formName}”": "Vista previa de “{formName}”",
  "Preview of a ": "Vista previa de un ",
  "Preview size": "Tamaño de la vista previa",
+ "Preview: you're signed in as staff, so this visit isn't counted as the candidate opening the link. Don't start the assessment here: your answers would count as the candidate's.": "Vista previa: has iniciado sesión como miembro del personal, por lo que esta visita no cuenta como si el candidato hubiera abierto el enlace. No inicies la evaluación aquí: tus respuestas contarían como las del candidato.",
  "Previous": "Anterior",
  "Previous hash: ": "Hash anterior: ",
  "Previous question": "Pregunta anterior",

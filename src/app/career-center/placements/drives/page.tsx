@@ -117,7 +117,7 @@ function QueueView() {
                       {d.companyName}: {d.title}
                     </Link>
                     <div className="text-sm text-muted-foreground">
-                      {label(TYPE, d.jobType)} · {w.rules.money(d.ctcAnnual)}{india && ` · ${label(TIER, d.tier)}`} · {t("deadline", { date: formatDate(d.applyDeadline) })} · {t("applications", { count: applications })}
+                      {label(TYPE, d.jobType)} · {w.rules.moneyIn(d.ctcAnnual, d.currency)}{india && ` · ${label(TIER, d.tier)}`} · {t("deadline", { date: formatDate(d.applyDeadline) })} · {t("applications", { count: applications })}
                     </div>
                     {employer && (
                       <div className="mt-1 flex flex-wrap gap-2 text-xs">

@@ -26,6 +26,7 @@ export function DriveWorkspace({
   applicants,
   onChanged,
   country,
+  currency,
 }: {
   base: string;
   mode: "employer" | "staff";
@@ -34,11 +35,16 @@ export function DriveWorkspace({
   onChanged: () => void;
   // The college's country (an employer's view); staff pages use the school in the career shell
   country?: string | null;
+  // The drive's currency (an employer's drive keeps its job's); offers default to it
+  currency?: string | null;
 }) {
   const t = useCareerT("campusWorkspace");
   // P5: India keeps CTC, CGPA, backlogs, Class 10/12 marks and tiers; other colleges get salary, grade and programs
   const w = useCountryWords(country);
   const india = w.rules.india;
+  // An offer is in the drive's currency: India's CTC words only for rupees, else the salary words in that currency
+  const payCurrency = currency ?? w.rules.currency;
+  const payIndia = india && payCurrency === "INR";
   const RESULT_LABELS = useResultLabels();
   const STATUS = useAppStatusLabels();
   const ELIG = useEligLabels();
@@ -261,7 +267,7 @@ export function DriveWorkspace({
                       {a.progress?.offer ? (
                         <div className="space-y-1">
                           <div>
-                            {w.rules.moneyFull(a.progress.offer.ctcAnnual)}{india && ` · ${label(TIER, a.progress.offer.tier)}`}
+                            {w.rules.moneyFullIn(a.progress.offer.ctcAnnual, a.progress.offer.currency ?? payCurrency)}{india && ` · ${label(TIER, a.progress.offer.tier)}`}
                           </div>
                           <Badge tone={OFFER_TONE[a.progress.offer.status] ?? "neutral"}>{label(OFFER, a.progress.offer.status)}</Badge>
                           {a.progress.offer.status === "Offered" && (
@@ -385,7 +391,7 @@ export function DriveWorkspace({
               </select>
             )}
           </Field>
-          <Field label={india ? t("ctc") : w.salaryPerYear} hint={india ? t("ctcHint") : w.salaryFromDriveHint}>
+          <Field label={payIndia ? t("ctc") : w.salaryPerYear} hint={payIndia ? t("ctcHint") : w.payIn(payCurrency).salaryFromDriveHint}>
             {(p) => <input {...p} value={offer.ctcText} onChange={(e) => setOffer({ ...offer, ctcText: e.target.value })} />}
           </Field>
           <Field label={t("joiningDate")}>{(p) => <input {...p} type="date" value={offer.joiningDate} onChange={(e) => setOffer({ ...offer, joiningDate: e.target.value })} />}</Field>

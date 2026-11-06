@@ -21,6 +21,8 @@ interface Mine {
     employmentType: string;
     ctcAnnual?: number | null;
     stipendMonthly?: number | null;
+    // ISO 4217 of the amounts
+    currency?: string | null;
     offerDate?: string | null;
     joiningDate?: string | null;
     location?: string | null;
@@ -38,7 +40,7 @@ export default function StudentPlacementsPage() {
   const RESULT_LABELS = useResultLabels();
   const api = useApi();
   const { schoolId } = useCareerShell();
-  // P5: amounts in the school's currency; "package" is India's word
+  // P5: amounts in each offer's own currency; "package" is India's word
   const w = useCountryWords();
   const mine = useLoad(() => api<Mine>("/api/career/placement-office/me"), [api, schoolId]);
 
@@ -75,7 +77,7 @@ export default function StudentPlacementsPage() {
                         <tr key={o.id} className="border-b border-border last:border-0">
                           <th scope="row" className={`${td} text-start font-normal`}>{o.companyName}</th>
                           <td className={td}>{o.roleTitle}</td>
-                          <td className={td}>{w.rules.moneyFull(o.ctcAnnual)}</td>
+                          <td className={td}>{w.rules.moneyFullIn(o.ctcAnnual, o.currency)}</td>
                           <td className={td}>{formatDate(o.offerDate)}</td>
                           <td className={td}>{formatDate(o.joiningDate)}</td>
                           <td className={td}>

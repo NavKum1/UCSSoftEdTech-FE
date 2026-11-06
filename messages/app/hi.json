@@ -3130,6 +3130,7 @@
  "Preview of “{formName}”": "“{formName}” की झलक",
  "Preview of a ": "एक की झलक ",
  "Preview size": "झलक का आकार",
+ "Preview: you're signed in as staff, so this visit isn't counted as the candidate opening the link. Don't start the assessment here: your answers would count as the candidate's.": "पूर्वावलोकन: आप स्टाफ़ के तौर पर लॉग इन हैं, इसलिए इस विज़िट को उम्मीदवार द्वारा लिंक खोलना नहीं माना जाएगा। यहाँ मूल्यांकन शुरू न करें: आपके जवाब उम्मीदवार के जवाब माने जाएंगे।",
  "Previous": "पिछला",
  "Previous hash: ": "पिछला हैश: ",
  "Previous question": "पिछला प्रश्न",

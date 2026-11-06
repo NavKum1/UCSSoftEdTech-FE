@@ -37,7 +37,7 @@ export default function StudentApplicationsPage() {
   const RESULT = useResultLabels();
   const OFFER = useOfferStatusLabels();
   const TIER = useTierLabels();
-  // P5: amounts in the school's currency; dream/super-dream tiers are India only
+  // P5: amounts in each offer's own currency; dream/super-dream tiers are India only
   const rules = useCountryRules();
   const api = useApi();
   const { schoolId } = useCareerShell();
@@ -123,7 +123,7 @@ export default function StudentApplicationsPage() {
               {a.offer && (
                 <div className="mt-4 rounded-md border border-border p-3 text-sm">
                   <div className="flex flex-wrap items-center gap-2">
-                    <span className="font-medium">{t("offer", { role: a.offer.roleTitle, ctc: rules.moneyFull(a.offer.ctcAnnual) })}</span>
+                    <span className="font-medium">{t("offer", { role: a.offer.roleTitle, ctc: rules.moneyFullIn(a.offer.ctcAnnual, a.offer.currency) })}</span>
                     <Badge tone={OFFER_TONE[a.offer.status] ?? "neutral"}>{label(OFFER, a.offer.status)}</Badge>
                     {rules.india && <span>{label(TIER, a.offer.tier)}</span>}
                   </div>

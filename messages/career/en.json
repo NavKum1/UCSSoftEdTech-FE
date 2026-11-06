@@ -6139,6 +6139,8 @@
       "verifyBeforePosting": "Verify your company above before posting.",
       "jobTitle": "Title",
       "jobType": "Type",
+      "currency": "Currency",
+      "currencyHint": "The currency of the salary and stipend. Colleges see the amounts in this currency.",
       "ctc": "CTC per year",
       "ctcHint": "For example 12 LPA, ₹12,00,000 or 1.2 crore",
       "stipend": "Stipend per month (₹)",

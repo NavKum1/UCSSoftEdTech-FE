@@ -1,7 +1,7 @@
 import { useCareerLabels } from "@/components/career/ui";
 /**
  * H1 campus drives and the student job board: shared types and label hooks for the employer, placement-office and
- * student pages. Rupee amounts use the placement helpers (Indian grouping, lakh/crore).
+ * student pages. Amounts are shown in each record's own currency (useCountryRules().moneyIn); rupees keep lakh/crore.
  */
 
 // not text: status codes (labels come from the messages)
@@ -62,6 +62,8 @@ export interface CampusJob {
   jobType: string;
   description?: string | null;
   locations: string[];
+  // ISO 4217 of the amounts (6 Nov 2026)
+  currency?: string | null;
   ctcAnnual?: number | null;
   ctcDisplay?: string | null;
   stipendMonthly?: number | null;
@@ -107,6 +109,9 @@ export interface CampusDrive {
   applicationsOpen: boolean;
   applyDeadline?: string | null;
   tier: string;
+  tierOverride?: string | null;
+  // ISO 4217 of the amounts (the job's currency for a drive made from a job)
+  currency?: string | null;
   ctcAnnual?: number | null;
   ctcDisplay?: string | null;
 }
@@ -129,6 +134,8 @@ export interface CampusOffer {
   applicationId?: string | null;
   companyName: string;
   roleTitle: string;
+  // ISO 4217 of the amounts
+  currency?: string | null;
   ctcAnnual?: number | null;
   ctcDisplay?: string | null;
   joiningDate?: string | null;

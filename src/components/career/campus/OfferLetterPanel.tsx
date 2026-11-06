@@ -26,6 +26,8 @@ export interface OfferLetter {
   kind: string;
   status: string;
   roleTitle: string;
+  // ISO 4217 of the letter's amounts (the offer's currency)
+  currency?: string | null;
   ctcAnnual?: number | null;
   ctcBreakup: { label: string; amount: number }[];
   joiningDate?: string | null;
@@ -42,7 +44,7 @@ export interface OfferLetter {
 }
 
 interface LetterView {
-  offer: { id: string; status: string; ctcAnnual?: number | null; joiningDate?: string | null; respondBy?: string | null; location?: string | null };
+  offer: { id: string; status: string; currency?: string | null; ctcAnnual?: number | null; joiningDate?: string | null; respondBy?: string | null; location?: string | null };
   current?: OfferLetter | null;
   history: OfferLetter[];
   signatureProvider: string;
@@ -51,7 +53,7 @@ interface LetterView {
 
 export function OfferLetterPanel({ base, offerId, onChanged, country }: { base: string; offerId: string; onChanged?: () => void; country?: string | null }) {
   const t = useCareerT("campusOfferLetter");
-  // P5: India's CTC breakup in rupees; elsewhere a pay breakdown in the college's currency
+  // P5: India's CTC breakup in rupees; otherwise a pay breakdown in the offer's own currency
   const w = useCountryWords(country);
   const india = w.rules.india;
   const STATUS = useLetterStatusLabels();
@@ -67,6 +69,9 @@ export function OfferLetterPanel({ base, offerId, onChanged, country }: { base: 
   const v = view.data;
   const cur = v.current;
   const sum = rows.reduce((s, r) => s + (toNum(r.amount) ?? 0), 0);
+  // The letter is in the offer's currency; India's CTC words only for rupees
+  const currency = v.offer.currency ?? w.rules.currency;
+  const payIndia = india && currency === "INR";
   const done = (m: string) => {
     setMsg(m);
     view.reload();
@@ -157,11 +162,11 @@ export function OfferLetterPanel({ base, offerId, onChanged, country }: { base: 
           {mode === "generate" ? (
             <>
               <div className="space-y-2">
-                <p className="text-sm font-medium">{india ? t("breakupTitle", { ctc: w.rules.moneyFull(v.offer.ctcAnnual) }) : w.t("payBreakdownTitle", { currency: w.rules.currency, ctc: w.rules.moneyFull(v.offer.ctcAnnual) })}</p>
+                <p className="text-sm font-medium">{payIndia ? t("breakupTitle", { ctc: w.rules.moneyFullIn(v.offer.ctcAnnual, currency) }) : w.t("payBreakdownTitle", { currency, ctc: w.rules.moneyFullIn(v.offer.ctcAnnual, currency) })}</p>
                 {rows.map((r, i) => (
                   <div key={i} className="flex flex-wrap items-end gap-2">
                     <Field label={t("component", { n: i + 1 })}>{(p) => <input {...p} value={r.label} onChange={(e) => setRows(rows.map((x, j) => (j === i ? { ...x, label: e.target.value } : x)))} />}</Field>
-                    <Field label={india ? t("amount", { n: i + 1 }) : w.t("payBreakdownAmount", { n: i + 1, currency: w.rules.currency })}>{(p) => <input {...p} inputMode="numeric" value={r.amount} onChange={(e) => setRows(rows.map((x, j) => (j === i ? { ...x, amount: e.target.value } : x)))} />}</Field>
+                    <Field label={payIndia ? t("amount", { n: i + 1 }) : w.t("payBreakdownAmount", { n: i + 1, currency })}>{(p) => <input {...p} inputMode="numeric" value={r.amount} onChange={(e) => setRows(rows.map((x, j) => (j === i ? { ...x, amount: e.target.value } : x)))} />}</Field>
                     {rows.length > 1 && (
                       <Button variant="ghost" onClick={() => setRows(rows.filter((_, j) => j !== i))}>
                         {t("removeComponent")}
@@ -173,7 +178,7 @@ export function OfferLetterPanel({ base, offerId, onChanged, country }: { base: 
                   <Button variant="ghost" onClick={() => setRows([...rows, { label: "", amount: "" }])}>
                     {t("addComponent")}
                   </Button>
-                  <span className="text-xs text-muted-foreground" aria-live="polite">{t("breakupSum", { sum: w.rules.moneyFull(sum) })}</span>
+                  <span className="text-xs text-muted-foreground" aria-live="polite">{t("breakupSum", { sum: w.rules.moneyFullIn(sum, currency) })}</span>
                 </div>
               </div>
               <div className="grid gap-3 md:grid-cols-2">

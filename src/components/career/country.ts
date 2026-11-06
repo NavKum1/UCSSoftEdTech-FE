@@ -10,8 +10,9 @@ import { inrFull, inrGrouped, inrShort } from "@/components/career/placements/sh
  * India keeps what it has always had: rupees with lakh and crore, CTC and LPA, CGPA out of 10, backlogs, dream and
  * super-dream tiers. The US gets GPA out of 4.0. Every other country gets neutral defaults: its own currency with normal
  * grouping, "salary per year", a minimum grade on the school's own scale, and no backlogs or tiers.
- * Amounts are stored as plain numbers (no currency per drive or offer), so they show in the school's currency; an
- * employer's own pages use the employer's head-office country.
+ * 6 Nov 2026: every job, drive, offer and offer letter carries its own currency (ISO 4217), so an amount is shown in that
+ * currency (moneyIn / moneyFullIn); the school's (or, on an employer's pages, the head office's) currency is only the
+ * fallback for a record without one.
  */
 
 // Euro area (ISO 3166-1 alpha-2)
@@ -32,6 +33,14 @@ const SALARY_EXAMPLE: Record<string, number> = {
 };
 
 const norm = (country?: string | null) => (country ?? "").trim().toUpperCase();
+
+/** Every currency the API accepts for a job, drive or offer (the same table, the euro included), sorted for a picker. */
+export const CURRENCIES: string[] = Array.from(new Set([...Object.values(CURRENCY), "EUR"])).sort();
+
+/** A round yearly salary in this currency for input hints (as typed, not formatted). */
+export function salaryExampleFor(currency: string): string {
+  return currency === "INR" ? "1200000" : String(SALARY_EXAMPLE[currency] ?? 60000);
+}
 
 export const isIndia = (country?: string | null) => norm(country) === "IN";
 export const isUS = (country?: string | null) => norm(country) === "US";
@@ -72,6 +81,18 @@ export function formatMoney(amount: number | null | undefined, country: string |
   return isIndia(country) ? inrShort(amount) : plainMoney(amount, currencyFor(country), locale);
 }
 
+/** An amount in its own currency: rupees "₹12 lakh" (as before), anything else "$120,000" in the page language's grouping. */
+export function formatMoneyIn(amount: number | null | undefined, currency: string, locale: string): string {
+  if (amount === null || amount === undefined) return "—";
+  return currency === "INR" ? inrShort(amount) : plainMoney(amount, currency, locale);
+}
+
+/** A full amount in its own currency: rupees "₹12 lakh (₹12,00,000)", anything else the same as formatMoneyIn. */
+export function formatMoneyFullIn(amount: number | null | undefined, currency: string, locale: string): string {
+  if (amount === null || amount === undefined) return "—";
+  return currency === "INR" ? inrFull(amount) : plainMoney(amount, currency, locale);
+}
+
 /** A full amount: India "₹12 lakh (₹12,00,000)", elsewhere the same as formatMoney. */
 export function formatMoneyFull(amount: number | null | undefined, country: string | null | undefined, locale: string): string {
   if (amount === null || amount === undefined) return "—";
@@ -90,6 +111,10 @@ export interface CountryRules {
   moneyFull: (amount: number | null | undefined) => string;
   /** Exact amount with grouping, e.g. "₹12,00,000" or "$60,000" */
   moneyExact: (amount: number | null | undefined) => string;
+  /** An amount in a record's own currency (a job's, drive's, offer's); without one, the same as money */
+  moneyIn: (amount: number | null | undefined, currency?: string | null) => string;
+  /** A full amount in a record's own currency; without one, the same as moneyFull */
+  moneyFullIn: (amount: number | null | undefined, currency?: string | null) => string;
   /** Example yearly salary for hints, e.g. "60000" (not formatted, as typed) */
   salaryExample: string;
   grade: { scale: GradeScale; max: number };
@@ -115,6 +140,8 @@ export function useCountryRules(explicit?: string | null): CountryRules {
       money: (a) => formatMoney(a, country, locale),
       moneyFull: (a) => formatMoneyFull(a, country, locale),
       moneyExact: (a) => (a === null || a === undefined ? "—" : india ? `₹${inrGrouped(a)}` : plainMoney(a, currency, locale)),
+      moneyIn: (a, cur) => (cur ? formatMoneyIn(a, cur.toUpperCase(), locale) : formatMoney(a, country, locale)),
+      moneyFullIn: (a, cur) => (cur ? formatMoneyFullIn(a, cur.toUpperCase(), locale) : formatMoneyFull(a, country, locale)),
       salaryExample: india ? "1200000" : String(SALARY_EXAMPLE[currency] ?? 60000),
       grade: gradeScaleFor(country),
       phoneExample: phoneExampleFor(country),
@@ -152,6 +179,17 @@ export function useCountryWords(explicit?: string | null) {
       criteria: (programs: string, grade: number | string, batches: string) =>
         gpa ? t("criteriaGpa", { programs, grade, batches }) : t("criteriaGrade", { programs, grade, batches }),
       phoneHint: t("phoneHint", { example: rules.phoneExample }),
+      /** The pay labels and hints for amounts in a given currency (a job's own, or the one chosen on a form) */
+      payIn: (currency: string) => {
+        const e = { currency, example: salaryExampleFor(currency) };
+        return {
+          salaryPerYearCurrency: t("salaryPerYearCurrency", { currency }),
+          salaryHint: t("salaryHint", e),
+          salaryFromDriveHint: t("salaryFromDriveHint", e),
+          salaryFromRoleHint: t("salaryFromRoleHint", e),
+          stipendPerMonth: t("stipendPerMonth", { currency }),
+        };
+      },
     };
   }, [rules, t]);
 }

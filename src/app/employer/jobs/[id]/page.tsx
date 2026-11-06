@@ -10,12 +10,13 @@ import { HireJobLink } from "@/components/career/campus/HireDrivePanels";
 import { Badge, Button, Card, EmptyState, ErrorBanner, Field, Loading, PageHeader, SuccessBanner, formatDate, useLoad, useCareerT } from "@/components/career/ui";
 import { useEmployers } from "@/components/career/EmployerPicker";
 import { label, usePlacementModeLabels, MODE_LABELS_KEYS } from "@/components/career/placements/shared";
-import { useCountryWords } from "@/components/career/country";
+import { isIndia, useCountryWords } from "@/components/career/country";
 import { APPROVAL_TONE, useApprovalLabels, useJobStatusLabels, useJobTypeLabels, useTierLabels, type CampusDrive, type CampusJob } from "@/components/career/campus/shared";
 
 interface JobDetail {
   job: CampusJob;
-  drives: { drive: CampusDrive; applications: number; postingFeeRequired: boolean; premiumVisibilityAvailable: boolean }[];
+  // schoolCountry: the college's country (tiers are each college's own); tiersOn: the college uses dream/super-dream tiers
+  drives: { drive: CampusDrive; applications: number; postingFeeRequired: boolean; premiumVisibilityAvailable: boolean; schoolCountry?: string | null; tiersOn?: boolean }[];
 }
 
 interface Relationship {
@@ -36,7 +37,7 @@ export default function EmployerJobPage() {
 
 function Detail({ employerId, jobId, country }: { employerId: string; jobId: string; country: string | null }) {
   const t = useCareerT("employerJobDetail");
-  // P5: the employer's head-office country sets the words and currency of its own job
+  // P5: the employer's head-office country sets the words of its own job; amounts show in the job's own currency
   const w = useCountryWords(country);
   const india = w.rules.india;
   const STATUS = useJobStatusLabels();
@@ -80,7 +81,7 @@ function Detail({ employerId, jobId, country }: { employerId: string; jobId: str
     <div>
       <PageHeader
         title={job.title}
-        description={`${label(TYPE, job.jobType)} · ${job.jobType === "Internship" ? w.rules.moneyFull(job.stipendMonthly) : w.rules.moneyFull(job.ctcAnnual)}`}
+        description={`${label(TYPE, job.jobType)} · ${job.jobType === "Internship" ? w.rules.moneyFullIn(job.stipendMonthly, job.currency) : w.rules.moneyFullIn(job.ctcAnnual, job.currency)}`}
         actions={
           <>
             {(job.status === "Draft" || job.status === "Paused") && (
@@ -146,14 +147,15 @@ function Detail({ employerId, jobId, country }: { employerId: string; jobId: str
             <EmptyState title={t("noDrives")} />
           ) : (
             <ul className="divide-y divide-border">
-              {drives.map(({ drive: d, applications, postingFeeRequired }) => (
+              {drives.map(({ drive: d, applications, postingFeeRequired, schoolCountry }) => (
                 <li key={d.id} className="flex flex-wrap items-center justify-between gap-2 py-3">
                   <div>
                     <Link href={`/employer/drives/${d.id}`} className="font-medium underline">
                       {d.school ?? d.instituteId}
                     </Link>
                     <div className="text-sm text-muted-foreground">
-                      {(india || d.tier !== "Normal") && `${label(TIER, d.tier)} · `}{t("applicationsCount", { count: applications })}
+                      {/* Dream/super-dream tiers belong to each college: shown for a college in India, or when the college set the drive's tier */}
+                      {(isIndia(schoolCountry) || !!d.tierOverride) && `${label(TIER, d.tier)} · `}{t("applicationsCount", { count: applications })}
                       {d.approvalNote ? ` · ${t("collegeNote", { note: d.approvalNote })}` : ""}
                     </div>
                     {postingFeeRequired && <p className="text-xs text-muted-foreground">{t("feeFlag")}</p>}

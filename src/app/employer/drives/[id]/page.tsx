@@ -74,7 +74,7 @@ function Drive({ employerId, driveId }: { employerId: string; driveId: string })
         <Card title={t("summary")}>
           <div className="flex flex-wrap items-center gap-2 text-sm">
             <Badge tone={APPROVAL_TONE[d.approvalStatus] ?? "neutral"}>{label(APPROVAL, d.approvalStatus)}</Badge>
-            {rules.india && <span>{label(TIER, d.tier)} ·</span>}
+            {(rules.india || !!d.tierOverride) && <span>{label(TIER, d.tier)} ·</span>}
             <span>{t("deadline", { date: formatDate(d.applyDeadline, true) })}</span>
             <span>· {d.applicationsOpen ? t("open") : t("closedForApplications")}</span>
           </div>
@@ -97,7 +97,7 @@ function Drive({ employerId, driveId }: { employerId: string; driveId: string })
           <ErrorBanner error={applicants.error} onRetry={applicants.reload} />
         ) : (
           <>
-            <DriveWorkspace base={base} mode="employer" rounds={view.data!.rounds} applicants={applicants.data?.applicants ?? []} onChanged={reload} country={view.data!.schoolCountry ?? null} />
+            <DriveWorkspace base={base} mode="employer" rounds={view.data!.rounds} applicants={applicants.data?.applicants ?? []} onChanged={reload} country={view.data!.schoolCountry ?? null} currency={d.currency ?? null} />
             <HireDriveStatus base={base} mode="employer" applicants={applicants.data?.applicants ?? []} />
           </>
         )}

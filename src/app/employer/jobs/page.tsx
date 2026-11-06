@@ -11,7 +11,7 @@ import { useApi } from "@/lib/appAuth";
 import { Badge, Button, Card, EmptyState, ErrorBanner, Field, Loading, PageHeader, SuccessBanner, formatDate, useLoad, useCareerT } from "@/components/career/ui";
 import { EmployerPicker, useEmployers } from "@/components/career/EmployerPicker";
 import { label } from "@/components/career/placements/shared";
-import { useCountryWords } from "@/components/career/country";
+import { CURRENCIES, useCountryWords } from "@/components/career/country";
 import { HireConnection } from "@/components/career/campus/HireConnection";
 import { DOC_KIND_KEYS, JOB_TYPE_KEYS, localToIso, toList, toNum, useDocKindLabels, useJobStatusLabels, useJobTypeLabels, type CampusJob } from "@/components/career/campus/shared";
 
@@ -34,7 +34,7 @@ interface JobList {
 const emptyJob = {
   title: "", jobType: "FullTime", description: "", locations: "", ctcText: "", stipendMonthly: "", ctcNotes: "", degrees: "", branches: "", batches: "",
   minCgpa: "", maxActiveBacklogs: "", minClass10Percent: "", minClass12Percent: "", rounds: "", requiredDocuments: ["Resume"] as string[], applicationMode: "Apply",
-  applyDeadline: "", visibility: "Targeted", premiumVisibility: false,
+  applyDeadline: "", visibility: "Targeted", premiumVisibility: false, currency: "",
 };
 
 export default function EmployerJobsPage() {
@@ -70,7 +70,12 @@ function Jobs({ employerId, country }: { employerId: string; country: string | n
   const api = useApi();
   const list = useLoad(() => api<JobList>(`/api/career/campus/employer/${employerId}/jobs`), [api, employerId]);
   const [gstin, setGstin] = useState("");
-  const [job, setJob] = useState(emptyJob);
+  // The job's currency defaults to the head office's (USD when it isn't known); the employer may choose another
+  const newJob = () => ({ ...emptyJob, currency: w.rules.currency });
+  const [job, setJob] = useState(newJob);
+  // India's CTC words only for rupees; any other currency gets the salary words with that currency's hints
+  const payIndia = india && job.currency === "INR";
+  const pay = w.payIn(job.currency);
   const [busy, setBusy] = useState<string | null>(null);
   const [err, setErr] = useState<string | null>(null);
   const [msg, setMsg] = useState<string | null>(null);
@@ -106,6 +111,7 @@ function Jobs({ employerId, country }: { employerId: string; country: string | n
           locations: toList(job.locations),
           ctcText: job.ctcText || undefined,
           stipendMonthly: toNum(job.stipendMonthly),
+          currency: job.currency,
           ctcNotes: job.ctcNotes || undefined,
           degrees: toList(job.degrees),
           branches: toList(job.branches),
@@ -122,7 +128,7 @@ function Jobs({ employerId, country }: { employerId: string; country: string | n
           premiumVisibility: job.premiumVisibility,
         },
       });
-      setJob(emptyJob);
+      setJob(newJob());
       setMsg(t("jobCreated"));
       list.reload();
     });
@@ -175,7 +181,7 @@ function Jobs({ employerId, country }: { employerId: string; country: string | n
                     {j.title}
                   </Link>
                   <div className="text-sm text-muted-foreground">
-                    {label(TYPE, j.jobType)} · {j.jobType === "Internship" ? t("stipendLine", { amount: w.rules.moneyFull(j.stipendMonthly) }) : w.rules.moneyFull(j.ctcAnnual)} ·{" "}
+                    {label(TYPE, j.jobType)} · {j.jobType === "Internship" ? t("stipendLine", { amount: w.rules.moneyFullIn(j.stipendMonthly, j.currency) }) : w.rules.moneyFullIn(j.ctcAnnual, j.currency)} ·{" "}
                     {t("deadline", { date: formatDate(j.applyDeadline) })}
                   </div>
                 </div>
@@ -204,8 +210,19 @@ function Jobs({ employerId, country }: { employerId: string; country: string | n
               </select>
             )}
           </Field>
-          <Field label={india ? t("ctc") : w.salaryPerYear} hint={india ? t("ctcHint") : w.salaryHint}>{(p) => <input {...p} value={job.ctcText} onChange={f("ctcText")} />}</Field>
-          <Field label={india ? t("stipend") : w.stipendPerMonth}>{(p) => <input {...p} inputMode="numeric" value={job.stipendMonthly} onChange={f("stipendMonthly")} />}</Field>
+          <Field label={t("currency")} hint={t("currencyHint")}>
+            {(p) => (
+              <select {...p} value={job.currency} onChange={f("currency")}>
+                {CURRENCIES.map((c) => (
+                  <option key={c} value={c}>
+                    {c}
+                  </option>
+                ))}
+              </select>
+            )}
+          </Field>
+          <Field label={payIndia ? t("ctc") : w.salaryPerYear} hint={payIndia ? t("ctcHint") : pay.salaryHint}>{(p) => <input {...p} value={job.ctcText} onChange={f("ctcText")} />}</Field>
+          <Field label={payIndia ? t("stipend") : pay.stipendPerMonth}>{(p) => <input {...p} inputMode="numeric" value={job.stipendMonthly} onChange={f("stipendMonthly")} />}</Field>
           <Field label={india ? t("ctcNotes") : w.t("payDetails")}>{(p) => <input {...p} value={job.ctcNotes} onChange={f("ctcNotes")} />}</Field>
           <Field label={t("locations")} hint={t("commaHint")}>{(p) => <input {...p} value={job.locations} onChange={f("locations")} />}</Field>
           <Field label={t("degrees")} hint={t("commaHint")}>{(p) => <input {...p} value={job.degrees} onChange={f("degrees")} />}</Field>

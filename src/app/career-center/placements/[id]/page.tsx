@@ -168,6 +168,9 @@ export default function DrivePage() {
 
   // Offers
   const roles = d?.roles ?? [];
+  // The drive's own currency (an employer's drive keeps its job's); India's CTC words only for rupees
+  const driveCurrency = d?.currency ?? w.rules.currency;
+  const payIndia = india && driveCurrency === "INR";
   const [offer, setOffer] = useState({ membershipId: "", roleTitle: "", ctcText: "", joiningDate: "", status: "Offered" });
   const addOffer = (e: React.FormEvent) => {
     e.preventDefault();
@@ -270,7 +273,7 @@ export default function DrivePage() {
       <div className="space-y-6">
         <Card title={t("rolesAndPublishedCriteria")}>
           <ul className="mb-3 list-disc space-y-1 ps-5 text-sm">
-            {roles.length === 0 ? <li>{t("noRolesRecorded")}</li> : roles.map((r) => <li key={r.title}>{r.title}{r.ctcAnnual ? t("ctcAnnualPerYear", { ctcAnnual: w.rules.moneyFull(r.ctcAnnual) }) : ""}{r.stipendMonthly ? t("stipendStipendMonthlyAMonth", { stipendMonthly: w.rules.moneyFull(r.stipendMonthly) }) : ""}</li>)}
+            {roles.length === 0 ? <li>{t("noRolesRecorded")}</li> : roles.map((r) => <li key={r.title}>{r.title}{r.ctcAnnual ? t("ctcAnnualPerYear", { ctcAnnual: w.rules.moneyFullIn(r.ctcAnnual, driveCurrency) }) : ""}{r.stipendMonthly ? t("stipendStipendMonthlyAMonth", { stipendMonthly: w.rules.moneyFullIn(r.stipendMonthly, driveCurrency) }) : ""}</li>)}
           </ul>
           <ul className="list-disc space-y-1 ps-5 text-sm">
             {criteriaSummary(d, t, w).map((c) => <li key={c}>{c}</li>)}
@@ -423,7 +426,7 @@ export default function DrivePage() {
                     <tr key={o.id} className="border-b border-border last:border-0">
                       <th scope="row" className={`${td} text-start font-normal`}>{o.student?.name ?? "—"}</th>
                       <td className={td}>{o.roleTitle}</td>
-                      <td className={td}>{w.rules.moneyFull(o.ctcAnnual)}</td>
+                      <td className={td}>{w.rules.moneyFullIn(o.ctcAnnual, o.currency)}</td>
                       <td className={td}>{formatDate(o.joiningDate)}</td>
                       <td className={td}>
                         <label className="sr-only" htmlFor={`ost-${o.id}`}>{t("statusOfNameSOffer", { name: o.student?.name })}</label>
@@ -459,7 +462,7 @@ export default function DrivePage() {
                 )
               }
             </Field>
-            <Field label={india ? t("packageCTCPerYear") : w.salaryPerYear} hint={india ? t("leaveBlankToUseThe") : w.salaryFromRoleHint}>
+            <Field label={payIndia ? t("packageCTCPerYear") : w.salaryPerYear} hint={payIndia ? t("leaveBlankToUseThe") : w.payIn(driveCurrency).salaryFromRoleHint}>
               {(p) => <input {...p} value={offer.ctcText} onChange={(e) => setOffer({ ...offer, ctcText: e.target.value })} />}
             </Field>
             <Field label={t("joiningDate")}>{(p) => <input {...p} type="date" value={offer.joiningDate} onChange={(e) => setOffer({ ...offer, joiningDate: e.target.value })} />}</Field>

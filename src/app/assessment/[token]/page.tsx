@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { getApiBaseUrl } from "@/lib/apiClient";
+import { useAppAuth } from "@/lib/appAuth";
 import { useEn } from "@/lib/english/EnglishProvider";
 import { Badge, Button, ErrorBanner, Loading, StatTile } from "@/components/career/ui";
 
@@ -104,8 +105,14 @@ interface ExamQuestion {
   topic: string;
 }
 
+// Staff who may author assessment links: when one of them opens a candidate link it's a preview, not the candidate
+const STAFF_ROLES = ["recruiter", "instituteadmin", "superadmin", "counselor", "faculty", "admin"];
+
 export default function CandidateAssessmentBundlePage() {
   const en = useEn();
+  // Code review (6 Nov 2026): a recruiter checking the link before sending it must not show up as "opened by the candidate"
+  const { isLoaded: authLoaded, roles } = useAppAuth();
+  const preview = roles.some((r) => STAFF_ROLES.includes(r.toLowerCase()));
   const params = useParams();
   const token = (params?.token as string) || "";
   const [linkProblem, setLinkProblem] = useState<LinkProblem | null>(null);
@@ -158,7 +165,7 @@ export default function CandidateAssessmentBundlePage() {
   const fetchBundle = async () => {
     // loading starts true and there is no link problem yet; every state update below comes after the first await
     try {
-      const res = await bundleFetch(token, "");
+      const res = await bundleFetch(token, preview ? "?preview=true" : "");
       if (!res.ok) {
         setLinkProblem(await linkProblemOf(res));
         return;
@@ -208,10 +215,12 @@ export default function CandidateAssessmentBundlePage() {
   };
 
   useEffect(() => {
+    // Waits for the sign-in state, so a staff preview is known before the first request
+    if (!authLoaded) return;
     // Loaded outside the effect body (state is only set once the response is in)
     void Promise.resolve().then(fetchBundle);
     // eslint-disable-next-line react-hooks/exhaustive-deps -- load once per token
-  }, [token]);
+  }, [token, authLoaded]);
 
   // Stage 1 (written exam): graded on the server against this bundle's exam; moves the bundle on to stage 2
   const handleSubmitStage1 = async () => {
@@ -453,6 +462,11 @@ export default function CandidateAssessmentBundlePage() {
 
   return (
     <div className="text-foreground flex flex-col">
+      {preview && (
+        <p role="status" className="mb-4 rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-200">
+          {en("Preview: you're signed in as staff, so this visit isn't counted as the candidate opening the link. Don't start the assessment here: your answers would count as the candidate's.")}
+        </p>
+      )}
       {/* Assessment header */}
       <header className="rounded-xl border border-border bg-card px-5 py-4 sticky top-0 z-30 shadow-sm">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">

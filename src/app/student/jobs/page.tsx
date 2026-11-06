@@ -22,6 +22,8 @@ interface BoardCard {
   jobType: string;
   description?: string | null;
   locations: string[];
+  // ISO 4217 of the amounts (the drive's own; an employer's job may be in another currency than the school's)
+  currency?: string | null;
   ctcAnnual?: number | null;
   stipendMonthly?: number | null;
   ctcNotes?: string | null;
@@ -155,7 +157,7 @@ function JobCard({ card: c, docs, expanded, onToggle, onUploaded, onApplied }: {
               {c.companyName}: {c.title}
             </h2>
             <p className="text-sm text-muted-foreground">
-              {label(TYPE, c.jobType)} · {c.jobType === "Internship" ? t("stipend", { amount: w.rules.moneyFull(c.stipendMonthly) }) : india ? t("ctc", { amount: w.rules.moneyFull(c.ctcAnnual) }) : w.t("salaryAmount", { amount: w.rules.moneyFull(c.ctcAnnual) })}
+              {label(TYPE, c.jobType)} · {c.jobType === "Internship" ? t("stipend", { amount: w.rules.moneyFullIn(c.stipendMonthly, c.currency) }) : india ? t("ctc", { amount: w.rules.moneyFullIn(c.ctcAnnual, c.currency) }) : w.t("salaryAmount", { amount: w.rules.moneyFullIn(c.ctcAnnual, c.currency) })}
               {india && ` · ${label(TIER, c.tier)}`}
               {c.locations.length > 0 && ` · ${c.locations.join(", ")}`}
             </p>

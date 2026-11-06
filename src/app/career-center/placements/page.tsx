@@ -37,6 +37,8 @@ interface Overview {
     mode: string;
     status: string;
     roles: { title: string; ctcAnnual?: number | null }[];
+    // ISO 4217 of the roles' amounts
+    currency?: string | null;
     batches: number[];
     rounds: number;
     offers: number;
@@ -380,7 +382,7 @@ export default function PlacementOfficePage() {
                           <td className={td}>
                             <Badge tone={d.status === "Completed" ? "good" : d.status === "Cancelled" ? "bad" : "info"}>{label(DRIVE_STATUS_LABELS, d.status)}</Badge>
                           </td>
-                          <td className={td}>{d.roles.length === 0 ? "—" : d.roles.map((r) => `${r.title}${r.ctcAnnual ? ` · ${w.rules.money(r.ctcAnnual)}` : ""}`).join("; ")}</td>
+                          <td className={td}>{d.roles.length === 0 ? "—" : d.roles.map((r) => `${r.title}${r.ctcAnnual ? ` · ${w.rules.moneyIn(r.ctcAnnual, d.currency)}` : ""}`).join("; ")}</td>
                           <td className={td}>{d.batches.join(", ") || tr("any")}</td>
                           <td className={td}>{d.rounds}</td>
                           <td className={td}>
@@ -499,7 +501,7 @@ export default function PlacementOfficePage() {
                             {o.companyName}
                             <div className="text-xs text-muted-foreground">{o.roleTitle}{o.driveId ? "" : tr("offCampus")}</div>
                           </td>
-                          <td className={td}>{w.rules.moneyFull(o.ctcAnnual)}</td>
+                          <td className={td}>{w.rules.moneyFullIn(o.ctcAnnual, o.currency)}</td>
                           <td className={td}>
                             {formatDate(o.offerDate)} / {formatDate(o.joiningDate)}
                           </td>

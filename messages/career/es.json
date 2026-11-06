@@ -4075,7 +4075,9 @@
    "modeOptIn": "Aceptar",
    "requiredDocuments": "Documentos que deben adjuntar los estudiantes",
    "premiumVisibility": "Solicita visibilidad prémium cuando las instituciones la ofrezcan (hoy no se cobra nada)",
-   "saveDraft": "Guardar como borrador"
+   "saveDraft": "Guardar como borrador",
+   "currency": "Moneda",
+   "currencyHint": "La moneda del salario y la beca. Las instituciones educativas ven los montos en esta moneda."
   },
   "studentChatSms": {
    "type": {

@@ -117,6 +117,8 @@ export interface Drive {
   location?: string | null;
   status: string;
   roles: DriveRole[];
+  // ISO 4217 of the roles' amounts (an employer's drive keeps its job's currency)
+  currency?: string | null;
   batches: number[];
   degrees: string[];
   branches: string[];
@@ -140,6 +142,8 @@ export interface Offer {
   employmentType: string;
   ctcAnnual?: number | null;
   stipendMonthly?: number | null;
+  // ISO 4217 of the amounts
+  currency?: string | null;
   offerDate?: string | null;
   joiningDate?: string | null;
   location?: string | null;

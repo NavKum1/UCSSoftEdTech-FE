@@ -3130,6 +3130,7 @@
  "Preview of “{formName}”": "معاينة «{formName}»",
  "Preview of a ": "معاينة لـ ",
  "Preview size": "حجم المعاينة",
+ "Preview: you're signed in as staff, so this visit isn't counted as the candidate opening the link. Don't start the assessment here: your answers would count as the candidate's.": "معاينة: لقد سجلت الدخول بصفتك أحد أفراد طاقم العمل، لذا لن تُحتسب هذه الزيارة على أنها فتح المرشح للرابط. لا تبدأ التقييم هنا، فستُحتسب إجاباتك على أنها إجابات المرشح.",
  "Previous": "السابق",
  "Previous hash: ": "التجزئة السابقة: ",
  "Previous question": "السؤال السابق",
