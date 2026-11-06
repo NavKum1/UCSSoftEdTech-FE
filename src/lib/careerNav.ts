@@ -141,6 +141,8 @@ export const careerNav: Record<CareerPersona, CareerNavItem[]> = {
   ],
   faculty: [
     { label: "Home", href: "/faculty", module: "F1", ready: true },
+    { label: "Classes", href: "/faculty/classes", module: "BD2", ready: true },
+    { label: "Assessments", href: "/faculty/assessments", module: "BD2", ready: true },
     { label: "Internship approvals", href: "/faculty/experiences", module: "C9", ready: true },
     { label: "Outcome attainment", href: "/faculty/frameworks", module: "D1", ready: true },
     { label: "Notifications", href: "/faculty/notifications", module: "F5", ready: true },
