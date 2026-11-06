@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { Suspense, useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import {
   FileText,
   Clock,
@@ -200,8 +201,20 @@ function inCooldown(nextAttemptAt?: string | null): boolean {
 }
 
 export default function WrittenExamPrepPage() {
+  return (
+    <Suspense fallback={null}>
+      <WrittenExamPrep />
+    </Suspense>
+  );
+}
+
+function WrittenExamPrep() {
   const en = useEn();
   const { apiFetch, ready, access } = useLegacyApi();
+  // Build & Defend Stage 2: an exam taken for a class assessment (the viva follows on the assessment page)
+  const search = useSearchParams();
+  const classAssignment = /^[0-9a-f-]{36}$/i.test(search.get("assessment") ?? "") ? search.get("assessment") : null;
+  const classExam = classAssignment ? search.get("exam") : null;
   const [catalog, setCatalog] = useState<ExamCatalogItem[]>([]);
   const [selectedStream, setSelectedStream] = useState<string>("All");
   const [loading, setLoading] = useState<boolean>(true);
@@ -625,6 +638,14 @@ export default function WrittenExamPrepPage() {
     return (
       <div className="text-foreground">
         <div className="space-y-6">
+          {classAssignment && (
+            <div className="flex flex-col gap-3 rounded-xl border border-primary/40 bg-primary/5 p-4 sm:flex-row sm:items-center sm:justify-between">
+              <p className="text-sm">{en("Your exam is in. Go back to your assessment to hand it in and do the viva.")}</p>
+              <Link href={`/student/assessments/${classAssignment}`} className={buttonClass("primary")}>
+                {en("Back to your assessment")}
+              </Link>
+            </div>
+          )}
           {/* Result summary */}
           <div className="p-5 md:p-6 rounded-xl border border-border bg-card shadow-sm space-y-6">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -1017,6 +1038,14 @@ export default function WrittenExamPrepPage() {
   return (
     <div className="text-foreground">
       <div className="space-y-6">
+        {classAssignment && classExam && (
+          <div className="flex flex-col gap-3 rounded-xl border border-primary/40 bg-primary/5 p-4 sm:flex-row sm:items-center sm:justify-between">
+            <p className="text-sm">{en("This exam is part of your class assessment. When you finish it, go back to the assessment for the viva.")}</p>
+            <Button onClick={() => void startExam(classExam)} busy={examLoading}>
+              {en("Start the exam")}
+            </Button>
+          </div>
+        )}
         <PageHeader
           title={en("Written exams")}
           description={en("Timed multiple-choice exams with automatic grading. Pass a credential exam to earn a credential anyone can check.")}

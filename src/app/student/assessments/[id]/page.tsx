@@ -15,6 +15,7 @@ import { Card, ErrorBanner, Loading, PageHeader, useLoad } from "@/components/ca
 import { CA_API, formatWhen, type StudentAssessmentDetail } from "@/components/career/classAssessments/types";
 import { useTemplateNames } from "@/components/career/classAssessments/names";
 import { StudentStateBadge } from "@/components/career/classAssessments/studentState";
+import { AttemptPanel } from "@/components/career/classAssessments/AttemptPanel";
 
 export default function StudentAssessmentPage() {
   const en = useEn();
@@ -24,7 +25,8 @@ export default function StudentAssessmentPage() {
   const names = useTemplateNames();
   const item = useLoad(() => api<StudentAssessmentDetail>(`${CA_API}/student/assessments/${id}`), [api, id, schoolId]);
 
-  if (item.loading) return <Loading />;
+  // A reload (after the attempt moves on) keeps the page, so the attempt panel stays as it is
+  if (item.loading && !item.data) return <Loading />;
   if (!item.data) return <ErrorBanner error={item.error ?? en("This assessment couldn't be loaded.")} onRetry={item.reload} />;
   const x = item.data;
   const vivaHow =
@@ -66,6 +68,8 @@ export default function StudentAssessmentPage() {
               </div>
             )}
           </Card>
+
+          {x.state !== "upcoming" && <AttemptPanel assignmentId={x.assignmentId} onChange={item.reload} />}
 
           <Card title={en("How you're assessed")}>
             <ul className="divide-y divide-border text-sm">

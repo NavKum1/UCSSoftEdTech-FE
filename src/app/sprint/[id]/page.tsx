@@ -622,6 +622,8 @@ function GradedWorkspace({ sprintId }: { sprintId: string }) {
   const isOffline = useIsOffline();
 
   const [inviteCode, setInviteCode] = useState<string>(() => searchParams.get("invite")?.trim() || "");
+  // Build & Defend Stage 2: done for a class assessment, the viva is on the assessment page (the teacher decides, no public defense)
+  const classAssignment = /^[0-9a-f-]{36}$/i.test(searchParams.get("assessment") ?? "") ? searchParams.get("assessment") : null;
   const [inviteInput, setInviteInput] = useState<string>("");
   const [starting, setStarting] = useState<boolean>(true);
   const [startIssue, setStartIssue] = useState<StartIssue | null>(null);
@@ -1224,7 +1226,17 @@ function GradedWorkspace({ sprintId }: { sprintId: string }) {
               )}
             </div>
 
-            {showDefense && submissionId && (
+            {showDefense && submissionId && classAssignment && (
+              <div className="rounded-xl border border-border bg-card p-6 text-center space-y-3">
+                <h3 className="text-lg font-semibold text-foreground">{en("Your solution is in")}</h3>
+                <p className="text-sm text-muted-foreground">{en("Go back to your assessment to hand it in and do the viva. Your teacher reviews the result.")}</p>
+                <Link href={`/student/assessments/${classAssignment}`} className={buttonClass("primary")}>
+                  {en("Back to your assessment")}
+                </Link>
+              </div>
+            )}
+
+            {showDefense && submissionId && !classAssignment && (
               <VoiceDefenseRoom
                 sprintSubmissionId={submissionId}
                 jobDescription="Coding challenge review"
