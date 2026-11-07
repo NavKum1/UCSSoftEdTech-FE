@@ -124,3 +124,124 @@ export function toLocalInput(iso: string | null | undefined) {
 export function formatWhen(iso: string) {
   return formatDate(iso, true);
 }
+
+// ----- 2.7: the evidence for teachers -----
+
+export type AttemptStatus = "Started" | "Viva" | "Submitted" | "Decided";
+export type WorkKind = "repo" | "upload" | "sprint" | "exam";
+/** ready | after_viva (not handed in yet) | pending (being worked out) | off (no AI key) | none (the AI couldn't) */
+export type SuggestionState = "ready" | "after_viva" | "pending" | "off" | "none";
+export type Decision = "pass" | "resubmit" | "fail";
+
+export interface StudentRow {
+  memberId: string | null;
+  userId: string | null;
+  name: string;
+  email: string;
+  rollNumber: string;
+  signedIn: boolean;
+  inClass: boolean;
+  attempt: {
+    id: string;
+    number: number;
+    attempts: number;
+    status: AttemptStatus;
+    late: boolean;
+    startedAt: string;
+    submittedAt: string | null;
+    workKind: WorkKind | null;
+    vivaStarted: boolean;
+    voiceTries: number;
+    suggestions: SuggestionState;
+    decision: Decision | null;
+    score: number | null;
+  } | null;
+}
+
+export interface AssignmentStudents {
+  assessment: { id: string; title: string; template: Template; vivaMode: VivaMode };
+  class: { id: string; name: string };
+  assignment: { id: string; opensAt: string; dueAt: string; acceptLate: boolean };
+  counts: { students: number; notStarted: number; working: number; vivaNext: number; toReview: number; decided: number };
+  students: StudentRow[];
+}
+
+export interface EvidenceFile {
+  path: string;
+  content: string;
+  linesByStudent?: number;
+}
+
+export type EvidenceWork =
+  | { kind: WorkKind; gone: true }
+  | { kind: "repo"; gone?: undefined; repository: string; pullRequest: number | null; url: string; ownershipVerified: boolean; files: EvidenceFile[] }
+  | { kind: "upload"; gone?: undefined; fileName: string; sizeBytes: number; uploadedAt: string; files: EvidenceFile[]; listing: string[] }
+  | {
+      kind: "sprint";
+      gone?: undefined;
+      title: string | null;
+      tests: { passed: number; total: number; status: string; cases: Record<string, boolean> };
+      changes: { file: string; linesAdded: number; linesRemoved: number; diff: string }[];
+      aiUse: { prompts: number; shareOfFinalCodeFromAssistant: number; conversation: { at: string; prompt: string; response: string; charactersUsed: number }[] } | null;
+    }
+  | {
+      kind: "exam";
+      gone?: undefined;
+      title: string;
+      correct: number;
+      total: number;
+      percentage: number;
+      startedAt: string | null;
+      submittedAt: string | null;
+      answers: { number: number; question: string; code: string | null; answer: string | null; correctAnswer: string | null; correct: boolean }[];
+    };
+
+export type EvidenceViva =
+  | { state: "not_done" | "not_yet" | "missing"; voiceTries: number }
+  | {
+      state: "done";
+      mode: "voice" | "typed" | "typed_after_voice";
+      language: string | null;
+      startedAt: string;
+      seconds: number;
+      voiceTries: number;
+      answered: number;
+      asked: number;
+      turns: { who: "ai" | "student"; text: string }[];
+    };
+
+export interface EvidenceSignal {
+  code: string;
+  tone: "info" | "warn";
+  values: Record<string, unknown>;
+}
+
+export interface AttemptEvidence {
+  id: string;
+  evidenceHash: string;
+  student: { userId: string; name: string; email: string; rollNumber: string | null; inClass: boolean };
+  assessment: { id: string; title: string; template: Template; instructions: string; vivaMode: VivaMode; vivaQuestions: number };
+  class: { id: string; name: string | null; assignmentId: string; dueAt: string; acceptLate: boolean };
+  attempt: {
+    number: number;
+    status: AttemptStatus;
+    startedAt: string;
+    submittedAt: string | null;
+    late: boolean;
+    vivaStartedAt: string | null;
+    decision: Decision | null;
+    score: number | null;
+    comment: string | null;
+    decidedBy: string | null;
+    decidedAt: string | null;
+  };
+  attempts: { id: string; number: number; status: AttemptStatus }[];
+  work: EvidenceWork | null;
+  viva: EvidenceViva;
+  suggestions: {
+    state: SuggestionState;
+    at: string | null;
+    criteria: { key: string; name: string; description: string; weight: number; score: number | null; reason: string | null; quote: string | null; quoteFrom: string | null }[];
+  };
+  signals: EvidenceSignal[];
+}

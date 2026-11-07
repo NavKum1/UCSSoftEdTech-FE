@@ -414,6 +414,9 @@ function AssessmentBuilder() {
                           {en("Due {when}", { when: formatWhen(x.dueAt) })}
                           {!x.acceptLate && " · " + en("no late work")}
                         </span>
+                        <Link href={`/faculty/assessments/${a.id}/classes/${x.id}`} className="mt-1 inline-block text-xs font-medium underline underline-offset-2 hover:decoration-2">
+                          {en("Students and their work")}
+                        </Link>
                       </span>
                       {!readOnly && (
                         <Button variant="ghost" className="shrink-0 whitespace-nowrap" busy={busy === x.id} onClick={() => void takeBack(x.id, x.className)}>
