@@ -1,0 +1,12 @@
+#!/bin/sh
+# Before every push: the feature register check, which lives in the Edulexa root repository next to this one
+# (../scripts/features/check.mjs). Every page and API route belongs to exactly one feature. Set up by scripts/dev.ps1.
+check="$(git rev-parse --show-toplevel)/../scripts/features/check.mjs"
+if [ ! -f "$check" ]; then
+  echo "Feature register check not found at $check (clone the Edulexa root repository next to this one); skipped."
+  exit 0
+fi
+if ! node "$check"; then
+  echo "Push stopped: fix the feature register in the root repository (docs/feature_register.json), then push again."
+  exit 1
+fi

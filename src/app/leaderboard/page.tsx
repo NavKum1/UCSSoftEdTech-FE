@@ -5,6 +5,7 @@
  * - Daily practice: points from members' first attempt at each incident drill and code review, this week (Monday 00:00
  *   UTC onwards) or all time.
  * - Verified challenges: each member's best verified coding-challenge credential.
+ * One API serves all three tabs (api/practice/leaderboard, since 7 Nov 2026), with one "Show me to other members" setting.
  * Names show as first name and last initial. Members can hide themselves; they still see their own rank.
  */
 
@@ -57,7 +58,7 @@ export default function LeaderboardPage() {
       setFailed(false);
       try {
         if (which === "challenges") {
-          const res = await apiFetch("/api/Leaderboard?limit=100");
+          const res = await apiFetch("/api/practice/leaderboard/challenges?take=100");
           if (!res.ok) return setFailed(true);
           const body = (await res.json()) as ChallengeBoard;
           setChallenges(body);

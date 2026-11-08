@@ -1,4 +1,4 @@
-import { getDevSession } from "@/lib/devSession";
+import { DEV_PERSONAS, getDevSession } from "@/lib/devSession";
 import { browserEnglish } from "@/lib/english/browser";
 
 /**
@@ -151,6 +151,8 @@ export async function authenticatedFetch(
         // Local developer session: the candidate dev token needs a stable user id
         const dev = getDevSession();
         if (dev?.userId && token === dev.token && !headers.has("X-User-Id")) headers.set("X-User-Id", dev.userId);
+        const devInstitute = dev && token === dev.token ? DEV_PERSONAS[dev.role]?.institute : undefined;
+        if (devInstitute && !headers.has("X-Institute-Id")) headers.set("X-Institute-Id", devInstitute);
       }
     } catch (error) {
       console.warn("[API CLIENT] Could not get the sign-in token:", error);

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import { careerNav, personaTitle, type CareerNavItem, type CareerPersona } from "@/lib/careerNav";
 import { useCareerT } from "./CareerI18nProvider";
 import { useEn } from "@/lib/english/EnglishProvider";
@@ -35,5 +35,6 @@ export function useCareerNavLabels(persona: CareerPersona) {
     },
     [t, en],
   );
-  return { label, title, group };
+  // One object while the language stays the same, so menus built from it (CareerShell) aren't rebuilt on every render
+  return useMemo(() => ({ label, title, group }), [label, title, group]);
 }

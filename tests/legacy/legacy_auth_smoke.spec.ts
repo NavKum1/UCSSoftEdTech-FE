@@ -36,7 +36,7 @@ const PAGES: LegacyPage[] = [
   { path: "/daily/review", persona: "candidate", calls: ["/api/codereview/today"] },
   { path: "/duels/arena", persona: "candidate", calls: ["/api/duels/presets"] },
   { path: "/guilds/battles", persona: "candidate", calls: ["/api/guilds"] },
-  { path: "/leaderboard", persona: "candidate", calls: ["/api/leaderboard"] },
+  { path: "/leaderboard", persona: "candidate", calls: ["/api/practice/leaderboard"] },
   { path: "/leadership/simulator", persona: "candidate", calls: ["/api/leadership/scenarios"] },
   { path: "/mentors/book", persona: "candidate", calls: ["/v1/mentors"] },
   { path: "/career/agent", persona: "candidate", calls: ["/api/agent/config/"] },

@@ -10,7 +10,7 @@ import path from "node:path";
 import ts from "typescript";
 
 const SKIP = [/^src[\\/]app[\\/]admin[\\/]/, /^src[\\/]components[\\/]admin[\\/]/, /^src[\\/]components[\\/]guidance[\\/]form[\\/]/, /^src[\\/]app[\\/]embed[\\/]/];
-const LABEL_KEYS = new Set(["label", "title", "text", "description", "message", "error", "placeholder", "hint", "help", "summary", "heading", "subtitle", "caption", "note", "empty", "tooltip", "name", "action", "group"]);
+const LABEL_KEYS = new Set(["label", "title", "text", "description", "message", "error", "placeholder", "hint", "help", "summary", "heading", "subtitle", "caption", "note", "empty", "tooltip", "name", "action", "group", "desc", "sub", "short"]);
 const visible = (s: string) => /[A-Za-z]{2,}/.test(s) && /\s|^[A-Z]/.test(s.trim()) && !/^(https?:|\/|#|mailto:)/.test(s.trim()) && !/^[a-z0-9_.:/#-]+$/.test(s.trim());
 
 function files(p: string): string[] {

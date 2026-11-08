@@ -205,10 +205,6 @@ export default function SystemOperationsDashboard() {
               <Trash2 className="h-4 w-4" aria-hidden />
               Clear credentials
             </Button>
-            <Button variant="secondary" disabled={isProcessing} onClick={() => handleInvalidateCache("leaderboard")}>
-              <Trash2 className="h-4 w-4" aria-hidden />
-              Clear leaderboard
-            </Button>
             <Button variant="danger" disabled={isProcessing} onClick={() => handleInvalidateCache(undefined, true)}>
               <Database className="h-4 w-4" aria-hidden />
               Clear entire cache

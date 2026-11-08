@@ -7,6 +7,8 @@
  */
 
 import React, { useState } from "react";
+import { useLibraryResumes } from "@/components/resumes/LibraryPicker";
+import { useEn } from "@/lib/english/EnglishProvider";
 import Link from "next/link";
 import { useApi } from "@/lib/appAuth";
 import { useCareerShell } from "@/components/career/CareerShell";
@@ -116,7 +118,10 @@ function JobCard({ card: c, docs, expanded, onToggle, onUploaded, onApplied }: {
   const STATUS = useAppStatusLabels();
   const KIND = useDocKindLabels();
   const api = useApi();
-  const [picked, setPicked] = useState<{ fileId: string; kind: string }[]>([]);
+  // A document is an uploaded file (fileId) or a résumé from the library (libraryVersionId; the application keeps its own copy)
+  const [picked, setPicked] = useState<{ fileId?: string; libraryVersionId?: string; kind: string }[]>([]);
+  const en = useEn();
+  const library = useLibraryResumes();
   const [kind, setKind] = useState(c.requiredDocuments[0] ?? "Resume");
   const [consent, setConsent] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -218,6 +223,29 @@ function JobCard({ card: c, docs, expanded, onToggle, onUploaded, onApplied }: {
                       );
                     })}
                   </div>
+                  {(library.items?.length ?? 0) > 0 && (
+                    <div className="mt-3">
+                      <p className="text-sm font-medium">{en("From your library")}</p>
+                      <div className="mt-1 space-y-1">
+                        {library.items!.map((r) => {
+                          const on = picked.some((p) => p.libraryVersionId === r.versionId);
+                          return (
+                            <label key={r.versionId} className="flex items-center gap-2">
+                              <input
+                                type="checkbox"
+                                checked={on}
+                                onChange={(e) =>
+                                  setPicked(e.target.checked ? [...picked, { libraryVersionId: r.versionId, kind: "Resume" }] : picked.filter((p) => p.libraryVersionId !== r.versionId))
+                                }
+                              />
+                              <bdi>{r.title}</bdi>
+                              <span className="text-muted-foreground">({label(KIND, "Resume")})</span>
+                            </label>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
                 </fieldset>
                 <div className="flex flex-wrap items-end gap-2">
                   <Field label={t("kind")}>

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Bell, Menu, X } from "lucide-react";
@@ -14,6 +14,7 @@ import { accessibleBrandColor, brandCssVars } from "@/components/career/brandCol
 import { FRAME, PAGE_Y } from "@/components/layout/Frame";
 import { HeaderControls } from "@/components/layout/AccountMenu";
 import { useDataSaver } from "@/components/career/mobile/dataSaver";
+import { SectionBar, SectionDrawerList, SectionTabs, findCurrent, type NavTab } from "@/components/layout/SectionNav";
 
 export interface CareerBrand {
   key: string;
@@ -81,7 +82,12 @@ const STAFF_ROLES: Record<CareerPersona, string[]> = {
   alumni: ["Alumni"],
 };
 
-/** Brand-aware frame for every career-suite page: header, persona navigation, school switcher, notifications. */
+/**
+ * Brand-aware frame for every career-suite page: header, persona navigation, school switcher, notifications.
+ * 7 Nov 2026: the same menus as every other role (components/layout/SectionNav) instead of a sidebar: one tab per menu
+ * group (ungrouped pages are tabs of their own), a group's pages open when the mouse points at its tab, and the current
+ * group's pages show as a bar under the header, so every page is one click away. Phones get the menu button.
+ */
 export default function CareerShell({ persona, children }: { persona: CareerPersona; children: React.ReactNode }) {
   const pathname = usePathname();
   const api = useApi();
@@ -157,17 +163,31 @@ export default function CareerShell({ persona, children }: { persona: CareerPers
     .filter((m, i, all) => all.findIndex((x) => x.instituteId === m.instituteId) === i);
   const notificationsHref = `${careerNav[persona][0]?.href ?? "/student"}/notifications`;
 
-  const isActive = (href: string) => {
-    const root = careerNav[persona][0]?.href;
-    return href === root ? pathname === href : pathname === href || pathname?.startsWith(href + "/");
-  };
-
-  const activeItem = items.filter((i) => isActive(i.href)).sort((x, y) => y.href.length - x.href.length)[0];
+  // One tab per group (in the order the groups first appear), and one per page without a group. The bell in the header
+  // opens notifications, so they aren't in the menu.
+  const root = careerNav[persona][0]?.href ?? "/";
+  const itemKey = items.map((i) => i.href).join("|");
+  const tabs = useMemo(() => {
+    const list: NavTab[] = [];
+    for (const item of items) {
+      if (item.href.endsWith("/notifications")) continue;
+      const page = { href: item.href, label: nav.label(item), short: item.short && nav.group(item.short), sub: item.sub && nav.group(item.sub) };
+      const tab = item.group ? list.find((t) => t.key === "g-" + item.group) : undefined;
+      if (tab) tab.pages.push(page);
+      else list.push({ key: item.group ? "g-" + item.group : "p-" + item.href, label: item.group ? nav.group(item.group) : page.label, pages: [page] });
+    }
+    for (const t of list) t.key = t.key.replace(/[^a-z0-9]+/gi, "-").toLowerCase();
+    return list;
+    // `items` is a new array on every render; its routes (itemKey) say when the menu really changed
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [itemKey, nav]);
   // Only the most specific match is the current page (e.g. /reports/india marks its own entry, not also "Reports")
-  const isCurrent = (href: string) => activeItem?.href === href;
+  const { tab: currentTab, page: currentPage } = findCurrent(tabs, pathname, [root]);
+  const activeItem = currentPage ? items.find((i) => i.href === currentPage.href) : undefined;
   // Data saver: the menu does not load every linked page in the background
   const dataSaver = useDataSaver();
-  const activeLabel = activeItem && activeItem.href !== careerNav[persona][0]?.href ? nav.label(activeItem) : null;
+  const prefetch = dataSaver.on ? false : undefined;
+  const activeLabel = activeItem && activeItem.href !== root ? nav.label(activeItem) : null;
 
   // Each page gets its own title (WCAG 2.4.2), e.g. "Appointments · Career · Brand"
   const separator = t("titleSeparator");
@@ -200,7 +220,7 @@ export default function CareerShell({ persona, children }: { persona: CareerPers
             <button
               ref={menuButtonRef}
               type="button"
-              className="rounded-md p-2 md:hidden hover:bg-muted"
+              className="rounded-md p-2 lg:hidden hover:bg-muted"
               aria-controls="career-nav"
               aria-label={menuOpen ? t("closeMenu") : t("openMenu")}
               aria-expanded={menuOpen}
@@ -253,35 +273,26 @@ export default function CareerShell({ persona, children }: { persona: CareerPers
               <HeaderControls area={careerNav[persona][0]?.href} />
             </div>
           </div>
+          <SectionTabs
+            tabs={tabs}
+            current={currentPage}
+            idPrefix="career-menu"
+            prefetch={prefetch}
+            label={t("navigation", { persona: nav.title })}
+            className={`${FRAME} hidden !px-1 sm:!px-3 lg:block`}
+          />
+          {menuOpen && (
+            <nav id="career-nav" aria-label={t("navigation", { persona: nav.title })} className="max-h-[calc(100dvh-3.5rem)] overflow-y-auto border-t border-border bg-card px-4 py-4 lg:hidden">
+              <SectionDrawerList tabs={tabs} current={currentPage} prefetch={prefetch} onNavigate={() => setMenuOpen(false)} />
+            </nav>
+          )}
         </header>
 
-        <div className={`${FRAME} flex gap-6`}>
-          <nav id="career-nav" aria-label={t("navigation", { persona: nav.title })} className={`${menuOpen ? "block" : "hidden"} fixed inset-x-0 top-14 z-30 max-h-[calc(100dvh-3.5rem)] overflow-y-auto border-b border-border bg-card p-3 md:static md:max-h-none md:overflow-visible md:block md:w-56 md:shrink-0 md:border-0 md:bg-transparent md:p-0 md:pt-6`}>
-            <ul className="space-y-1">
-              {/* The bell in the header opens notifications; groups get a heading where they start */}
-              {items.filter((i) => !i.href.endsWith("/notifications")).map((item, idx, shown) => (
-                <li key={item.href}>
-                  {item.group && item.group !== shown[idx - 1]?.group && (
-                    <p className="px-3 pb-1 pt-4 text-xs font-medium text-muted-foreground">{nav.group(item.group)}</p>
-                  )}
-                  <Link
-                    href={item.href}
-                    prefetch={dataSaver.on ? false : undefined}
-                    onClick={() => setMenuOpen(false)}
-                    aria-current={isCurrent(item.href) ? "page" : undefined}
-                    className={`block rounded-md px-3 py-2 text-sm ${isCurrent(item.href) ? "font-semibold text-white" : "text-muted-foreground hover:bg-muted hover:text-foreground"}`}
-                    style={isCurrent(item.href) ? { background: brandSolid } : undefined}
-                  >
-                    {nav.label(item)}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </nav>
-          <main id="career-main" tabIndex={-1} className={`min-w-0 flex-1 ${PAGE_Y} focus:outline-none`}>
-            {children}
-          </main>
-        </div>
+        <SectionBar tabs={tabs} tab={currentTab} current={currentPage} prefetch={prefetch} />
+
+        <main id="career-main" tabIndex={-1} className={`${FRAME} ${PAGE_Y} focus:outline-none`}>
+          {children}
+        </main>
 
         <footer className={`${FRAME} py-6 text-xs text-muted-foreground`}>
           <div className="flex flex-wrap gap-4 border-t border-border pt-4">

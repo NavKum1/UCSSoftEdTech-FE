@@ -1,6 +1,8 @@
 "use client";
 
 import React, { useState } from "react";
+import LibraryPicker from "@/components/resumes/LibraryPicker";
+import { useEn } from "@/lib/english/EnglishProvider";
 import Link from "next/link";
 import { useApi } from "@/lib/appAuth";
 import { useCareerShell } from "@/components/career/CareerShell";
@@ -230,6 +232,9 @@ function SignupForm({ schedule, timeZone, onDone }: { schedule: Listed; timeZone
   const resumes = useLoad(() => api<Resume[]>("/api/career/ocr/student/resumes"), [api]);
   const [slotId, setSlotId] = useState<string>("");
   const [resumeId, setResumeId] = useState<string>("");
+  // or a résumé from the library (the sign-up keeps its own copy)
+  const [libraryVersion, setLibraryVersion] = useState<string | null>(null);
+  const en = useEn();
   const [consent, setConsent] = useState(false);
   const [attest, setAttest] = useState(false);
   const [alternates, setAlternates] = useState(!schedule.extra.canBook);
@@ -244,6 +249,7 @@ function SignupForm({ schedule, timeZone, onDone }: { schedule: Listed; timeZone
       const r = await api<Resume>("/api/career/ocr/student/resumes", { method: "POST", body: fd });
       resumes.reload();
       setResumeId(r.id);
+      setLibraryVersion(null);
     } catch (e) {
       setErr(e instanceof TypeError ? "We couldn't reach the server. Please check your connection and try again." : (e as Error).message);
     }
@@ -255,7 +261,7 @@ function SignupForm({ schedule, timeZone, onDone }: { schedule: Listed; timeZone
     setErr(null);
     try {
       const r = await api<{ candidateStatus: string; bookingId?: string }>(`/api/career/ocr/student/schedules/${schedule.id}/signup`, {
-        json: { slotId: slotId || null, resumeFileId: resumeId || null, consent, workAuthAttested: attest, joinAlternates: alternates },
+        json: { slotId: slotId || null, resumeFileId: libraryVersion ? null : resumeId || null, resumeLibraryVersionId: libraryVersion, consent, workAuthAttested: attest, joinAlternates: alternates },
       });
       onDone(r.bookingId ? tr("youreBookedWithEmployerName", { employerName: String(schedule.employerName) }) : tr("youreOnTheAlternateList2", { employerName: String(schedule.employerName) }));
     } catch (e2) {
@@ -293,7 +299,15 @@ function SignupForm({ schedule, timeZone, onDone }: { schedule: Listed; timeZone
         <>
           <Field label={tr("resumeToShare")} hint={tr("pDFWordOrTextUp")}>
             {(p) => (
-              <select {...p} value={resumeId} onChange={(e) => setResumeId(e.target.value)} required>
+              <select
+                {...p}
+                value={libraryVersion ? "" : resumeId}
+                onChange={(e) => {
+                  setResumeId(e.target.value);
+                  if (e.target.value) setLibraryVersion(null);
+                }}
+                required={!libraryVersion}
+              >
                 <option value="">{tr("chooseAResume")}</option>
                 {(resumes.data ?? []).map((r) => (
                   <option key={r.id} value={r.id}>{r.fileName}</option>
@@ -301,6 +315,17 @@ function SignupForm({ schedule, timeZone, onDone }: { schedule: Listed; timeZone
               </select>
             )}
           </Field>
+          <fieldset className="space-y-1.5">
+            <legend className="text-sm font-medium">{en("Or choose one from your library")}</legend>
+            <LibraryPicker
+              name={`library-${schedule.id}`}
+              value={libraryVersion}
+              onChange={(id) => {
+                setLibraryVersion(id);
+                if (id) setResumeId("");
+              }}
+            />
+          </fieldset>
           <Field label={tr("orUploadAResume")}>
             {(p) => <input {...p} type="file" accept=".pdf,.docx,.txt" onChange={(e) => e.target.files?.[0] && upload(e.target.files[0])} />}
           </Field>

@@ -1,6 +1,8 @@
 "use client";
 
 import React, { Suspense, useState } from "react";
+import LibraryPicker from "@/components/resumes/LibraryPicker";
+import { useEn } from "@/lib/english/EnglishProvider";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useApi } from "@/lib/appAuth";
 import { Button, Card, EmptyState, ErrorBanner, Field, Loading, PageHeader, SuccessBanner, formatDate, useLoad, useCareerT } from "@/components/career/ui";
@@ -122,7 +124,10 @@ function SubmitForm({
   const resubmit = !!requestId;
   const [kind, setKind] = useState(defaults?.kind ?? "Resume");
   const [target, setTarget] = useState(defaults?.target ?? "");
-  const [mode, setMode] = useState<"file" | "text">("file");
+  const [mode, setMode] = useState<"file" | "text" | "library">("file");
+  // a résumé from the library (the review keeps its own copy)
+  const [libraryVersion, setLibraryVersion] = useState<string | null>(null);
+  const en = useEn();
   const [file, setFile] = useState<File | null>(null);
   const [text, setText] = useState("");
   const [jd, setJd] = useState("");
@@ -137,6 +142,7 @@ function SubmitForm({
     if (mode === "file" && !file) return setError(t("chooseAFileToUpload"));
     if (mode === "file" && file && file.size > 10 * 1024 * 1024) return setError(t("filesCanBeUpTo"));
     if (mode === "text" && !text.trim()) return setError(t("pasteTheTextYouWant"));
+    if (mode === "library" && !libraryVersion) return setError(en("Choose a résumé from your library."));
     const fd = new FormData();
     if (!resubmit) fd.append("kind", kind);
     if (target.trim()) fd.append("target", target.trim());
@@ -144,6 +150,7 @@ function SubmitForm({
     if (notes.trim()) fd.append("notes", notes.trim());
     if (deadline) fd.append("deadline", deadline);
     if (mode === "file" && file) fd.append("file", file);
+    else if (mode === "library" && libraryVersion) fd.append("libraryVersionId", libraryVersion);
     else fd.append("text", text);
     setBusy(true);
     try {
@@ -163,7 +170,15 @@ function SubmitForm({
         {!resubmit && (
           <Field label={t("documentType")}>
             {(p) => (
-              <select {...p} value={kind} onChange={(e) => setKind(e.target.value)}>
+              <select
+                {...p}
+                value={kind}
+                onChange={(e) => {
+                  setKind(e.target.value);
+                  // the library holds résumés only: another type can't be sent from it
+                  if (e.target.value !== "Resume" && mode === "library") setMode("file");
+                }}
+              >
                 {options.kinds.map((k) => (
                   <option key={k.kind} value={k.kind}>
                     {k.label}
@@ -185,9 +200,19 @@ function SubmitForm({
             <label className="inline-flex items-center gap-2">
               <input type="radio" name="mode" checked={mode === "text"} onChange={() => setMode("text")} />{" "}{t("pasteText")}
             </label>
+            {kind === "Resume" && (
+              <label className="inline-flex items-center gap-2">
+                <input type="radio" name="mode" checked={mode === "library"} onChange={() => setMode("library")} />{" "}{en("From your library")}
+              </label>
+            )}
           </div>
         </fieldset>
-        {mode === "file" ? (
+        {mode === "library" ? (
+          <fieldset className="space-y-1.5">
+            <legend className="text-sm font-medium">{en("Résumé from your library")}</legend>
+            <LibraryPicker value={libraryVersion} onChange={setLibraryVersion} name={`library-${requestId ?? "new"}`} />
+          </fieldset>
+        ) : mode === "file" ? (
           <Field label={t("file")} hint={t("pDFWordDocxPNGJPEG")}>
             {(p) => <input {...p} type="file" accept=".pdf,.docx,.png,.jpg,.jpeg,.txt" onChange={(e) => setFile(e.target.files?.[0] ?? null)} />}
           </Field>
