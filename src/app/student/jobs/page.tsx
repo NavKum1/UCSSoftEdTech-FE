@@ -8,6 +8,7 @@
 
 import React, { useState } from "react";
 import { useLibraryResumes } from "@/components/resumes/LibraryPicker";
+import { saveToLibrary } from "@/lib/resumeLibrary";
 import { useEn } from "@/lib/english/EnglishProvider";
 import Link from "next/link";
 import { useApi } from "@/lib/appAuth";
@@ -131,6 +132,15 @@ function JobCard({ card: c, docs, expanded, onToggle, onUploaded, onApplied }: {
   const upload = async (file: File) => {
     setErr(null);
     try {
+      // A résumé goes into the library first; the application then takes its own copy
+      if (kind === "Resume" && !library.disabled) {
+        const versionId = await saveToLibrary(api, file);
+        if (versionId) {
+          setPicked([...picked, { libraryVersionId: versionId, kind }]);
+          void library.reload();
+          return;
+        }
+      }
       const fd = new FormData();
       fd.append("file", file);
       const d = await api<Doc>("/api/career/campus/student/documents", { method: "POST", body: fd });

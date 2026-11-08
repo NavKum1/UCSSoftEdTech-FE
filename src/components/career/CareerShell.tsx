@@ -99,6 +99,8 @@ export default function CareerShell({ persona, children }: { persona: CareerPers
   const [schoolId, setSchoolId] = useState<string | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
   const [version, setVersion] = useState(0);
+  // The school's résumé rule (stage 2): with the tools off, its students' menu doesn't list Résumés
+  const [resumeTools, setResumeTools] = useState<boolean | null>(null);
   const t = useCareerT("shell");
   const fmt = useCareerFormat();
   const { locale, dir } = useCareerI18n();
@@ -137,6 +139,12 @@ export default function CareerShell({ persona, children }: { persona: CareerPers
       .catch((e: Error) => {
         if (!cancelled) setMeError(e.message);
       });
+    if (persona === "student" || persona === "alumni")
+      api<{ toolsEnabled: boolean }>("/api/resumes/rules")
+        .then((r) => {
+          if (!cancelled) setResumeTools(r.toolsEnabled);
+        })
+        .catch(() => {});
     api<{ unread: number }>("/api/career/notifications?unreadOnly=true&take=1")
       .then((n) => {
         if (!cancelled) setUnread(n.unread);
@@ -156,7 +164,7 @@ export default function CareerShell({ persona, children }: { persona: CareerPers
   const schoolCountry = me?.memberships.find((m) => m.instituteId === schoolId)?.country ?? null;
   // Country-specific pages (India's accreditation reports, US WIOA...) show only to schools in those countries
   const items = careerNav[persona].filter(
-    (i) => i.ready && (!inCommunity || i.module === "C10") && shownForCountry(i, schoolCountry),
+    (i) => i.ready && (!inCommunity || i.module === "C10") && shownForCountry(i, schoolCountry) && (i.href !== "/resumes" || resumeTools !== false),
   );
   const schools = (me?.memberships ?? [])
     .filter((m) => STAFF_ROLES[persona].includes(m.role))

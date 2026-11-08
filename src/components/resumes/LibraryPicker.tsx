@@ -22,39 +22,74 @@ export interface LibraryResume {
   createdAt: string;
 }
 
-/** The current version of each résumé in the library that can be sent (null while loading) */
+// One request for every picker on a page (a job board can show many), kept for 30 seconds; reload() fetches again
+let shared: { key: string; at: number; promise: Promise<LibraryResume[] | null> } | null = null;
+
+async function fetchLibrary(getToken: () => Promise<string | null>): Promise<LibraryResume[] | null> {
+  try {
+    const [rules, list] = await Promise.all([
+      authenticatedFetch("/api/resumes/rules", {}, getToken).then((r) => (r.ok ? (r.json() as Promise<{ toolsEnabled: boolean }>) : null)),
+      authenticatedFetch("/api/resumes/attachable", {}, getToken).then((r) => (r.ok ? (r.json() as Promise<{ resumes: LibraryResume[] }>) : null)),
+    ]);
+    // The school uses another résumé tool: its forms don't offer the library
+    if (rules && !rules.toolsEnabled) return null;
+    return list?.resumes ?? [];
+  } catch {
+    return [];
+  }
+}
+
+/**
+ * The current version of each résumé in the library that can be sent: null while loading, [] when there are none or the
+ * visitor is signed out; `disabled` when the person's school uses another résumé tool (then the forms don't offer it).
+ */
 export function useLibraryResumes() {
-  const { getToken, isSignedIn } = useAppAuth();
-  const [items, setItems] = useState<LibraryResume[] | null>(null);
-  const load = useCallback(async () => {
-    try {
-      const res = await authenticatedFetch("/api/resumes/attachable", {}, getToken);
-      const body = res.ok ? ((await res.json()) as { resumes: LibraryResume[] }) : { resumes: [] };
-      setItems(body.resumes);
-    } catch {
-      setItems([]);
-    }
-  }, [getToken]);
+  const { getToken, isSignedIn, isLoaded, userId } = useAppAuth() as ReturnType<typeof useAppAuth> & { userId?: string | null };
+  const [state, setState] = useState<{ items: LibraryResume[] | null; disabled: boolean }>({ items: null, disabled: false });
+  const load = useCallback(
+    async (fresh: boolean) => {
+      const key = String(userId ?? "me");
+      if (fresh || !shared || shared.key !== key || Date.now() - shared.at > 30_000) shared = { key, at: Date.now(), promise: fetchLibrary(getToken) };
+      const list = await shared.promise;
+      setState({ items: list ?? [], disabled: list === null });
+    },
+    [getToken, userId],
+  );
   useEffect(() => {
-    if (!isSignedIn) return;
+    if (!isLoaded) return;
     let cancelled = false;
-    authenticatedFetch("/api/resumes/attachable", {}, getToken)
-      .then(async (res) => (res.ok ? ((await res.json()) as { resumes: LibraryResume[] }).resumes : []))
-      .catch(() => [] as LibraryResume[])
-      .then((list) => {
-        if (!cancelled) setItems(list);
+    if (!isSignedIn) {
+      Promise.resolve().then(() => !cancelled && setState({ items: [], disabled: false }));
+      return () => {
+        cancelled = true;
+      };
+    }
+    const key = String(userId ?? "me");
+    if (!shared || shared.key !== key || Date.now() - shared.at > 30_000) shared = { key, at: Date.now(), promise: fetchLibrary(getToken) };
+    shared.promise.then((list) => {
+      if (!cancelled) setState({ items: list ?? [], disabled: list === null });
+    });
+    // A résumé added on this page (lib/resumeLibrary saveToLibrary): load again
+    const onChange = () => {
+      shared = { key, at: Date.now(), promise: fetchLibrary(getToken) };
+      shared.promise.then((list) => {
+        if (!cancelled) setState({ items: list ?? [], disabled: list === null });
       });
+    };
+    window.addEventListener("resume-library-changed", onChange);
     return () => {
       cancelled = true;
+      window.removeEventListener("resume-library-changed", onChange);
     };
-  }, [getToken, isSignedIn]);
-  return { items, reload: load };
+  }, [getToken, isLoaded, isSignedIn, userId]);
+  return { items: state.items, disabled: state.disabled, reload: () => load(true) };
 }
 
 /** One résumé from the library, as radio choices; `null` means none chosen */
 export default function LibraryPicker({ value, onChange, name = "library-resume" }: { value: string | null; onChange: (versionId: string | null) => void; name?: string }) {
   const en = useEn();
-  const { items } = useLibraryResumes();
+  const { items, disabled } = useLibraryResumes();
+  if (disabled) return null;
   if (items === null) return <div className="h-16 animate-pulse rounded-lg bg-muted motion-reduce:animate-none" aria-busy="true" />;
   if (items.length === 0)
     return (

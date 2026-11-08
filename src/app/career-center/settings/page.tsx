@@ -7,6 +7,7 @@ import { Button, Card, ErrorBanner, Field, Loading, PageHeader, SuccessBanner, u
 import { useFerpaCategoryLabels } from "@/components/career/coreLabels";
 import { usePrivacyLaw } from "@/components/career/country";
 import SchoolLanguageSetting from "@/components/career/i18n/SchoolLanguageSetting";
+import { useEn } from "@/lib/english/EnglishProvider";
 
 interface Settings {
   instituteId: string;
@@ -20,6 +21,11 @@ interface Settings {
   primaryColor?: string | null;
   contactEmail?: string | null;
   postalAddress?: string | null;
+  partnerKey?: string | null;
+  // Résumé rules (stage 2): null = the default (on for direct schools, off for partner schools)
+  resumeToolsEnabled?: boolean | null;
+  resumeTemplate?: string;
+  resumePageLimit?: number | null;
 }
 
 const TIME_ZONES = [
@@ -40,6 +46,7 @@ const DIRECTORY_CATEGORIES = ["Profile", "ContactInfo", "Education"];
 
 export default function CareerCenterSettingsPage() {
   const t = useCareerT("careerCenterSettings");
+  const en = useEn();
   const FERPA_CATEGORY_LABELS = useFerpaCategoryLabels();
   const api = useApi();
   const { me, schoolId } = useCareerShell();
@@ -54,6 +61,7 @@ export default function CareerCenterSettingsPage() {
   const [saving, setSaving] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
   const [err, setErr] = useState<string | null>(null);
+  const [toolsTouched, setToolsTouched] = useState(false);
 
   const isAdmin = me?.memberships.some((m) => m.instituteId === schoolId && m.role === "CareerAdmin") ?? false;
   const dirCats = (form?.directoryInformation ?? "").split(",").map((s) => s.trim()).filter(Boolean);
@@ -88,6 +96,10 @@ export default function CareerCenterSettingsPage() {
           // Empty text clears an optional field
           primaryColor: form.primaryColor ?? "",
           postalAddress: form.postalAddress ?? "",
+          // Sent only when changed here, so a school left on the default keeps following it
+          resumeToolsEnabled: toolsTouched ? form.resumeToolsEnabled : undefined,
+          resumeTemplate: form.resumeTemplate ?? "classic",
+          resumePageLimit: form.resumePageLimit ?? 0,
         },
       });
       setForm(saved);
@@ -187,6 +199,47 @@ export default function CareerCenterSettingsPage() {
                   </div>
                 )}
               </Field>
+            </div>
+          </Card>
+
+          <Card title={en("Résumés")}>
+            <div className="space-y-4">
+              <label className="flex items-start gap-2 text-sm">
+                <input
+                  type="checkbox"
+                  className="mt-0.5 h-4 w-4"
+                  checked={form.resumeToolsEnabled ?? !form.partnerKey}
+                  onChange={(e) => {
+                    setToolsTouched(true);
+                    setForm({ ...form, resumeToolsEnabled: e.target.checked });
+                  }}
+                />
+                <span>
+                  {en("Students use Edulexa's résumé tools")}
+                  <span className="block text-xs text-muted-foreground">
+                    {en("Their résumé library and builder, and \"From your library\" in applications, document review and interview sign-up. Turn this off if your students use another résumé tool.")}
+                  </span>
+                </span>
+              </label>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <Field label={en("Résumé template")} hint={en("Used for the résumés your students build and export.")}>
+                  {(p) => (
+                    <select {...p} value={form.resumeTemplate ?? "classic"} onChange={(e) => setForm({ ...form, resumeTemplate: e.target.value })}>
+                      <option value="classic">{en("Classic: centered name, roomy spacing")}</option>
+                      <option value="compact">{en("Compact: more on each page")}</option>
+                    </select>
+                  )}
+                </Field>
+                <Field label={en("Page limit")} hint={en("Students are warned when a résumé runs past it.")}>
+                  {(p) => (
+                    <select {...p} value={String(form.resumePageLimit ?? 0)} onChange={(e) => setForm({ ...form, resumePageLimit: Number(e.target.value) || null })}>
+                      <option value="0">{en("No limit")}</option>
+                      <option value="1">{en("One page")}</option>
+                      <option value="2">{en("Two pages")}</option>
+                    </select>
+                  )}
+                </Field>
+              </div>
             </div>
           </Card>
 

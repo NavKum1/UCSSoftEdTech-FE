@@ -1,7 +1,8 @@
 "use client";
 
 import React, { useState } from "react";
-import LibraryPicker from "@/components/resumes/LibraryPicker";
+import LibraryPicker, { useLibraryResumes } from "@/components/resumes/LibraryPicker";
+import { saveToLibrary } from "@/lib/resumeLibrary";
 import { useEn } from "@/lib/english/EnglishProvider";
 import Link from "next/link";
 import { useApi } from "@/lib/appAuth";
@@ -235,6 +236,8 @@ function SignupForm({ schedule, timeZone, onDone }: { schedule: Listed; timeZone
   // or a résumé from the library (the sign-up keeps its own copy)
   const [libraryVersion, setLibraryVersion] = useState<string | null>(null);
   const en = useEn();
+  // The school may use another résumé tool: then this form neither offers nor fills the library
+  const { disabled: libraryOff } = useLibraryResumes();
   const [consent, setConsent] = useState(false);
   const [attest, setAttest] = useState(false);
   const [alternates, setAlternates] = useState(!schedule.extra.canBook);
@@ -246,6 +249,13 @@ function SignupForm({ schedule, timeZone, onDone }: { schedule: Listed; timeZone
     const fd = new FormData();
     fd.append("file", file);
     try {
+      // A résumé goes into the library first; the sign-up then takes its own copy
+      const versionId = libraryOff ? null : await saveToLibrary(api, file);
+      if (versionId) {
+        setLibraryVersion(versionId);
+        setResumeId("");
+        return;
+      }
       const r = await api<Resume>("/api/career/ocr/student/resumes", { method: "POST", body: fd });
       resumes.reload();
       setResumeId(r.id);
@@ -315,6 +325,7 @@ function SignupForm({ schedule, timeZone, onDone }: { schedule: Listed; timeZone
               </select>
             )}
           </Field>
+          {!libraryOff && (
           <fieldset className="space-y-1.5">
             <legend className="text-sm font-medium">{en("Or choose one from your library")}</legend>
             <LibraryPicker
@@ -326,6 +337,7 @@ function SignupForm({ schedule, timeZone, onDone }: { schedule: Listed; timeZone
               }}
             />
           </fieldset>
+          )}
           <Field label={tr("orUploadAResume")}>
             {(p) => <input {...p} type="file" accept=".pdf,.docx,.txt" onChange={(e) => e.target.files?.[0] && upload(e.target.files[0])} />}
           </Field>

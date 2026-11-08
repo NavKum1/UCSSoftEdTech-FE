@@ -1,7 +1,8 @@
 "use client";
 
 import React, { Suspense, useState } from "react";
-import LibraryPicker from "@/components/resumes/LibraryPicker";
+import LibraryPicker, { useLibraryResumes } from "@/components/resumes/LibraryPicker";
+import { saveToLibrary } from "@/lib/resumeLibrary";
 import { useEn } from "@/lib/english/EnglishProvider";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useApi } from "@/lib/appAuth";
@@ -128,6 +129,8 @@ function SubmitForm({
   // a résumé from the library (the review keeps its own copy)
   const [libraryVersion, setLibraryVersion] = useState<string | null>(null);
   const en = useEn();
+  // The school may use another résumé tool: then this form neither offers nor fills the library
+  const { disabled: libraryOff } = useLibraryResumes();
   const [file, setFile] = useState<File | null>(null);
   const [text, setText] = useState("");
   const [jd, setJd] = useState("");
@@ -149,9 +152,20 @@ function SubmitForm({
     if (jd.trim()) fd.append("jobDescription", jd.trim());
     if (notes.trim()) fd.append("notes", notes.trim());
     if (deadline) fd.append("deadline", deadline);
-    if (mode === "file" && file) fd.append("file", file);
-    else if (mode === "library" && libraryVersion) fd.append("libraryVersionId", libraryVersion);
-    else fd.append("text", text);
+    // A résumé file goes into the library first; the review then takes its own copy
+    let fromLibrary = mode === "library" ? libraryVersion : null;
+    setBusy(true);
+    if (mode === "file" && file && kind === "Resume" && !libraryOff) {
+      try {
+        fromLibrary = await saveToLibrary(api, file);
+      } catch (err) {
+        setBusy(false);
+        return setError(err instanceof TypeError ? "We couldn't reach the server. Please check your connection and try again." : (err as Error).message);
+      }
+    }
+    if (fromLibrary) fd.append("libraryVersionId", fromLibrary);
+    else if (mode === "file" && file) fd.append("file", file);
+    else if (mode === "text") fd.append("text", text);
     setBusy(true);
     try {
       const d = await api<ReviewDetail>(resubmit ? `/api/career/doc-review/requests/${requestId}/versions` : "/api/career/doc-review/requests", { method: "POST", body: fd });
@@ -200,7 +214,7 @@ function SubmitForm({
             <label className="inline-flex items-center gap-2">
               <input type="radio" name="mode" checked={mode === "text"} onChange={() => setMode("text")} />{" "}{t("pasteText")}
             </label>
-            {kind === "Resume" && (
+            {kind === "Resume" && !libraryOff && (
               <label className="inline-flex items-center gap-2">
                 <input type="radio" name="mode" checked={mode === "library"} onChange={() => setMode("library")} />{" "}{en("From your library")}
               </label>

@@ -8,7 +8,9 @@
  */
 
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { Archive, Download, FileText, History, Pencil, RotateCcw, Upload } from "lucide-react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { Archive, Download, FilePlus2, FileText, History, Pencil, PenLine, RotateCcw, Upload } from "lucide-react";
 import { AccessNotice, useLatestRef, useLegacyApi } from "@/lib/legacyApi";
 import { useEn } from "@/lib/english/EnglishProvider";
 import { Badge, Button, EmptyState, ErrorBanner, formatDate, Modal, PageHeader, SuccessBanner, Tabs } from "@/components/career/ui";
@@ -21,7 +23,10 @@ interface Version {
   textReadable: boolean;
   note: string | null;
   createdAt: string;
+  // Where this version was sent (applications, document review, interview sign-up)
+  sends?: { kind: string; label: string; sentAt: string }[];
 }
+interface Rules { toolsEnabled: boolean; template: string; pageLimit: number | null; school: string | null; pageSize: string }
 interface Resume {
   id: string;
   title: string;
@@ -44,6 +49,9 @@ export default function ResumesPage() {
   const [notice, setNotice] = useState<string | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
   const [textOf, setTextOf] = useState<{ title: string; text: string | null } | null>(null);
+  const [rules, setRules] = useState<Rules | null>(null);
+  const [creating, setCreating] = useState(false);
+  const router = useRouter();
 
   const load = useCallback(async () => {
     const res = await apiFetch(`/api/resumes${view === "archived" ? "?archived=true" : ""}`);
@@ -53,6 +61,19 @@ export default function ResumesPage() {
   useEffect(() => {
     if (ready) void loadRef.current();
   }, [ready, view, loadRef]);
+  const rulesRef = useLatestRef(async () => {
+    const res = await apiFetch("/api/resumes/rules");
+    if (res.ok) setRules((await res.json()) as Rules);
+  });
+  useEffect(() => {
+    if (ready) void rulesRef.current();
+  }, [ready, rulesRef]);
+
+  /** A new built résumé (blank, from the person's record, or from an uploaded version), opened in the editor */
+  const startBuilt = async (from: "blank" | "record" | "upload", versionId?: string, title?: string) => {
+    const res = await act("new", () => apiFetch("/api/resumes/built", { method: "POST", body: JSON.stringify({ from, versionId, title }) }));
+    if (res) router.push(`/resumes/${((await res.json()) as Resume).id}`);
+  };
 
   const failure = async (res: Response) => ((await res.json().catch(() => null)) as { error?: string } | null)?.error ?? en("That didn't work. Please try again.");
 
@@ -126,6 +147,8 @@ export default function ResumesPage() {
       a.download = version.fileName ?? "resume";
       a.click();
       URL.revokeObjectURL(url);
+    } catch {
+      setError(en("The download didn't work. Please try again."));
     } finally {
       setBusy(null);
     }
@@ -138,8 +161,40 @@ export default function ResumesPage() {
       <PageHeader
         title={en("Résumés")}
         description={en("Keep your résumés in one place. Send them with campus job applications, document reviews and interview sign-ups.")}
-        actions={<FileButton label={en("Upload résumé")} busy={busy === "upload"} primary onFile={uploadNew} />}
+        actions={
+          <div className="flex flex-wrap gap-2">
+            <Button type="button" variant="secondary" aria-expanded={creating} aria-controls="new-resume" onClick={() => setCreating(!creating)}>
+              <FilePlus2 aria-hidden="true" className="h-4 w-4" />
+              {en("Build a résumé")}
+            </Button>
+            <FileButton label={en("Upload résumé")} busy={busy === "upload"} primary onFile={uploadNew} />
+          </div>
+        }
       />
+      {rules && !rules.toolsEnabled && (
+        <p role="status" className="rounded-lg border border-border bg-muted/50 px-4 py-3 text-sm">
+          {en("{school} uses another résumé tool, so its forms don't take résumés from here. Your library still works for everything else.", { school: rules.school ?? en("Your school") })}
+        </p>
+      )}
+      {creating && (
+        <section id="new-resume" aria-labelledby="new-resume-title" className="rounded-xl border border-border bg-card p-5 shadow-sm">
+          <h2 id="new-resume-title" className="text-base font-semibold">{en("Build a résumé")}</h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            {en("Edulexa lays it out and makes the PDF. Lines from your verified results print with a Verified mark that links to the proof.")}
+          </p>
+          <div className="mt-4 grid gap-3 sm:grid-cols-2">
+            <button type="button" className="rounded-lg border border-border p-4 text-start hover:bg-muted/50 disabled:opacity-60" disabled={busy === "new"} onClick={() => void startBuilt("record")}>
+              <span className="block text-sm font-semibold">{en("Start from your record")}</span>
+              <span className="mt-1 block text-sm text-muted-foreground">{en("Your name and email, and the education your school holds, already verified.")}</span>
+            </button>
+            <button type="button" className="rounded-lg border border-border p-4 text-start hover:bg-muted/50 disabled:opacity-60" disabled={busy === "new"} onClick={() => void startBuilt("blank")}>
+              <span className="block text-sm font-semibold">{en("Start blank")}</span>
+              <span className="mt-1 block text-sm text-muted-foreground">{en("Your name and email; add sections as you go.")}</span>
+            </button>
+          </div>
+          <p className="mt-3 text-sm text-muted-foreground">{en("To start from a file you uploaded, use \"Turn into a built résumé\" on it below.")}</p>
+        </section>
+      )}
       <Tabs
         label={en("Résumés")}
         value={view}
@@ -184,6 +239,7 @@ export default function ResumesPage() {
               onRename={(title) => act(`rename-${r.id}`, () => apiFetch(`/api/resumes/${r.id}`, { method: "PUT", body: JSON.stringify({ title }) }), en("Renamed."))}
               onArchive={() => act(`archive-${r.id}`, () => apiFetch(`/api/resumes/${r.id}/archive`, { method: "POST" }), en("Archived. It's under Archived if you need it again."))}
               onRestore={() => act(`restore-${r.id}`, () => apiFetch(`/api/resumes/${r.id}/restore`, { method: "POST" }), en("Restored to your library."))}
+              onBuild={() => r.currentVersion && void startBuilt("upload", r.currentVersion.id, `${r.title.slice(0, 110)} (built)`)}
               loadVersions={async () => {
                 const res = await apiFetch(`/api/resumes/${r.id}`);
                 return res.ok ? ((await res.json()) as { versions: Version[] }).versions : [];
@@ -249,6 +305,7 @@ function ResumeCard({
   onRename,
   onArchive,
   onRestore,
+  onBuild,
   loadVersions,
 }: {
   resume: Resume;
@@ -259,6 +316,7 @@ function ResumeCard({
   onRename: (title: string) => Promise<unknown>;
   onArchive: () => void;
   onRestore: () => void;
+  onBuild: () => void;
   loadVersions: () => Promise<Version[]>;
 }) {
   const en = useEn();
@@ -271,9 +329,16 @@ function ResumeCard({
   const titleId = `resume-${resume.id}`;
 
   const toggleVersions = async () => {
-    if (!showVersions && versions === null) setVersions(await loadVersions());
+    if (!showVersions) setVersions(await loadVersions());
     setShowVersions(!showVersions);
   };
+  const built = resume.kind === "Built";
+  const currentId = v?.id;
+  // A new version (or a send) since the list was opened: reload it
+  const versionsRef = useLatestRef(async () => setVersions(await loadVersions()));
+  useEffect(() => {
+    if (showVersions) void versionsRef.current();
+  }, [currentId, showVersions, versionsRef]);
 
   return (
     <li>
@@ -326,14 +391,27 @@ function ResumeCard({
             </div>
           </div>
           <div className="flex flex-wrap gap-2">
-            {v && (v.textReadable ? <Badge tone="good">{en("Text read")}</Badge> : <Badge tone="warn">{en("Couldn't read text")}</Badge>)}
+            {v && !built && (v.textReadable ? <Badge tone="good">{en("Text read")}</Badge> : <Badge tone="warn">{en("Couldn't read text")}</Badge>)}
+            {built && <Badge tone="info">{en("Built here")}</Badge>}
             {v && !v.hasFile && <Badge tone="info">{en("Text only")}</Badge>}
             {archived && <Badge>{en("Archived")}</Badge>}
           </div>
         </div>
 
         <div className="mt-4 flex flex-wrap items-center gap-1 border-t border-border pt-3">
-          {!archived && <FileButton label={en("Upload a new version")} busy={busy === `version-${resume.id}`} onFile={onVersion} />}
+          {!archived && built && (
+            <Link href={`/resumes/${resume.id}`} className="inline-flex items-center gap-1.5 rounded-md px-2 py-1.5 text-sm font-medium hover:bg-muted">
+              <PenLine aria-hidden="true" className="h-4 w-4" />
+              {en("Edit")}
+            </Link>
+          )}
+          {!archived && !built && <FileButton label={en("Upload a new version")} busy={busy === `version-${resume.id}`} onFile={onVersion} />}
+          {!archived && !built && v?.textReadable && (
+            <Button type="button" variant="ghost" className="px-2" busy={busy === "new"} onClick={onBuild}>
+              <PenLine aria-hidden="true" className="h-4 w-4" />
+              {en("Turn into a built résumé")}
+            </Button>
+          )}
           {v && (
             <Button type="button" variant="ghost" className="px-2" onClick={() => onText(v)}>
               <FileText aria-hidden="true" className="h-4 w-4" />
@@ -352,10 +430,11 @@ function ResumeCard({
               {en("Rename")}
             </Button>
           )}
-          {v && v.number > 1 && (
+          {v && (
+            v.number > 1 || built) && (
             <Button type="button" variant="ghost" className="px-2" aria-expanded={showVersions} aria-controls={`${titleId}-versions`} onClick={() => void toggleVersions()}>
               <History aria-hidden="true" className="h-4 w-4" />
-              {showVersions ? en("Hide earlier versions") : en("Earlier versions")}
+              {showVersions ? en("Hide versions") : en("Versions and where they went")}
             </Button>
           )}
           <span className="ms-auto" />
@@ -384,6 +463,11 @@ function ResumeCard({
                     {formatDate(ver.createdAt)}
                   </span>
                   {ver.note && <span className="block text-muted-foreground">{ver.note}</span>}
+                  {(ver.sends ?? []).map((x, k) => (
+                    <span key={k} className="block text-xs text-muted-foreground">
+                      {en("Sent: {label}, {date}", { label: x.label, date: formatDate(x.sentAt) })}
+                    </span>
+                  ))}
                 </span>
                 <span className="flex gap-1">
                   <Button type="button" variant="ghost" className="px-2" onClick={() => onText(ver)}>
