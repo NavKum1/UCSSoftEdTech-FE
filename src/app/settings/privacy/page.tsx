@@ -19,6 +19,8 @@ interface EraseResult {
   changed: Record<string, number>;
   keptDeidentified: { submissions: number; description: string };
   notDeleted: string[];
+  /** Schools that got an erasure request for the records they hold (docs/data_rights_groups_nov2026.md) */
+  sentToSchools?: { instituteId: string; school: string; records: string }[];
 }
 
 const DELETED = [
@@ -40,6 +42,12 @@ const ANONYMISED = [
 const KEPT = [
   "Submitted code, test results and defense scores",
   "Integrity analyses and employers' human decisions (with their rationale)",
+];
+
+// Records others are responsible for, or the law requires us to keep (owner's rule of 9 Nov 2026)
+const ELSEWHERE = [
+  "Records a school holds about you (class work, class rosters, proctoring, LMS links): we send your school an erasure request, and the school decides",
+  "Records the law or security requires us to keep (access changes, call consents, tax records for mentor payouts): kept without your name and email until their time limit",
 ];
 
 export default function PrivacySettingsPage() {
@@ -123,7 +131,7 @@ export default function PrivacySettingsPage() {
             <Download className="w-4 h-4 text-muted-foreground" />{en(" Export your data")}
           </h2>
           <p className="text-sm text-muted-foreground">
-            {en("A JSON file with your profile, assessment attempts and editor activity, AI-assistant conversations, submissions, interviews and transcripts, evaluations, credentials, referrals, repository defenses, self-identification answers, appeals, accommodations and speaking-practice measurements. Integrity-analysis details and reviewers' internal rationale are not included in the self-service export; the file explains why and how to request them.")}
+            {en("A JSON file with your profile, assessment attempts and editor activity, AI-assistant conversations, submissions, interviews and transcripts, evaluations, credentials, referrals, repository defenses, self-identification answers, appeals, accommodations and speaking-practice measurements, your other practice and activity, and the records schools, employers and the law keep about you. Integrity-analysis details and reviewers' internal rationale are not included in the self-service export; the file explains why and how to request them.")}
           </p>
           <Button onClick={downloadExport} busy={exporting}>
             {!exporting && <Download className="w-4 h-4" />}
@@ -156,6 +164,18 @@ export default function PrivacySettingsPage() {
                 {result.referralProvidersNotified > 0 && <li>{en("Course providers notified: {referralProvidersNotified}", { referralProvidersNotified: result.referralProvidersNotified })}</li>}
               </ul>
               <p className="text-xs text-foreground">{result.keptDeidentified.description}</p>
+              {(result.sentToSchools ?? []).length > 0 && (
+                <div className="text-xs text-muted-foreground">
+                  <p className="font-semibold text-foreground">{en("Sent to your schools:")}</p>
+                  <ul className="list-disc ms-5 mt-1 space-y-0.5">
+                    {result.sentToSchools!.map((s) => (
+                      <li key={s.instituteId}>
+                        {en("{school} got an erasure request for: {records}. The school decides, usually within the time its privacy notice gives.", { school: s.school, records: s.records })}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
               <div className="text-xs text-muted-foreground">
                 <p className="font-semibold text-foreground">{en("Not covered by this deletion:")}</p>
                 <ul className="list-disc ms-5 mt-1 space-y-0.5">
@@ -190,6 +210,12 @@ export default function PrivacySettingsPage() {
                     {en("Employers must be able to show how past hiring decisions were made, so these records stay, linked only to an anonymised account with no name, email, country or GitHub login.")}
                   </p>
                 </div>
+              </div>
+              <div className="text-xs">
+                <p className="font-semibold text-foreground">{en("Handled by others, or kept by law")}</p>
+                <ul className="list-disc ms-5 mt-1 space-y-0.5 text-muted-foreground">
+                  {ELSEWHERE.map((d) => <li key={d}>{en(d)}</li>)}
+                </ul>
               </div>
 
               <div className="rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900 flex gap-2 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-200">
