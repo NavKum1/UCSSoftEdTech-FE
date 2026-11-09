@@ -43,14 +43,8 @@ export default function StudentAssessmentPage() {
 
       <div className="grid gap-6 lg:grid-cols-3">
         <div className="space-y-6 lg:col-span-2">
-          {x.state === "decided" && (
-            <Card title={en("Your result")}>
-              <div className="space-y-2 text-sm">
-                <StudentStateBadge item={x} />
-                {x.comment && <p className="whitespace-pre-line">{x.comment}</p>}
-              </div>
-            </Card>
-          )}
+          {/* The result (2.8) is in the attempt panel: decision, scores, comment, appeal and starting again */}
+          {x.state === "decided" && <AttemptPanel assignmentId={x.assignmentId} onChange={item.reload} />}
 
           <Card title={en("What to do")}>
             {x.instructions == null ? (
@@ -69,7 +63,7 @@ export default function StudentAssessmentPage() {
             )}
           </Card>
 
-          {x.state !== "upcoming" && <AttemptPanel assignmentId={x.assignmentId} onChange={item.reload} />}
+          {x.state !== "upcoming" && x.state !== "decided" && <AttemptPanel assignmentId={x.assignmentId} onChange={item.reload} />}
 
           <Card title={en("How you're assessed")}>
             <ul className="divide-y divide-border text-sm">

@@ -12,7 +12,8 @@ import { useApi } from "@/lib/appAuth";
 import { useEn } from "@/lib/english/EnglishProvider";
 import { openRealtimeCall, type RealtimeCall, type RealtimeCaption } from "@/lib/realtimeCall";
 import { Badge, Button, Card, ErrorBanner, Field, Loading, buttonClass, formatDate, useLoad } from "@/components/career/ui";
-import { CA_API } from "@/components/career/classAssessments/types";
+import { CA_API, type StudentResult } from "@/components/career/classAssessments/types";
+import { PreviousFeedbackView, ResultView, type PreviousFeedback } from "@/components/career/classAssessments/StudentResult";
 
 type Kind = "repo" | "upload" | "sprint" | "exam";
 
@@ -27,6 +28,9 @@ interface AttemptState {
     viva: { sessionId: string; mode: "voice" | "text"; finished: boolean; live: boolean; saving: boolean; questions: number; answered: number; turns: { role: "interviewer" | "student"; text: string }[] } | null;
   } | null;
   canStart: boolean;
+  /** 2.8: the teacher's decision on this attempt, and the feedback on the one before while resubmitting */
+  result: StudentResult | null;
+  previous: PreviousFeedback | null;
   submitWith: Kind[];
   task: { kind: Kind; title: string; href: string } | null;
   vivaModes: ("voice" | "text")[];
@@ -83,6 +87,7 @@ export function AttemptPanel({ assignmentId, onChange }: { assignmentId: string;
         <ErrorBanner error={error} />
         {notice && <p className="rounded-lg border border-amber-300 bg-amber-50 p-3 text-amber-900 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-200">{notice}</p>}
         <Steps status={t?.status ?? null} />
+        {s.previous && t?.status !== "Decided" && <PreviousFeedbackView previous={s.previous} />}
 
         {!t && (
           s.canStart ? (
@@ -124,12 +129,25 @@ export function AttemptPanel({ assignmentId, onChange }: { assignmentId: string;
           />
         )}
 
-        {(t?.status === "Submitted" || t?.status === "Decided") && (
+        {t?.status === "Submitted" && (
           <p className="rounded-lg border border-emerald-300 bg-emerald-50 p-3 text-emerald-900 dark:border-emerald-900 dark:bg-emerald-950/40 dark:text-emerald-200">
-            {t.status === "Decided"
-              ? en("Your teacher has decided. See your result above.")
-              : en("Handed in on {when}. Your teacher reviews your work and your viva, and decides.", { when: t.submittedAt ? formatDate(t.submittedAt, true) : "" })}
+            {en("Handed in on {when}. Your teacher reviews your work and your viva, and decides.", { when: t.submittedAt ? formatDate(t.submittedAt, true) : "" })}
           </p>
+        )}
+
+        {t?.status === "Decided" && s.result && (
+          <section aria-labelledby="your-result" className="border-t border-border pt-4">
+            <h3 id="your-result" className="mb-3 text-base font-semibold">
+              {en("Your result")}
+            </h3>
+            <ResultView
+              result={s.result}
+              canStart={s.canStart}
+              busy={busy}
+              onStart={() => void run("start", () => api<AttemptState>(base, { method: "POST" }))}
+              onAppeal={(reason) => run("appeal", () => api<AttemptState>(`${base}/appeal`, { method: "POST", json: { reason } }))}
+            />
+          </section>
         )}
       </div>
     </Card>

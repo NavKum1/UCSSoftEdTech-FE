@@ -244,4 +244,57 @@ export interface AttemptEvidence {
     criteria: { key: string; name: string; description: string; weight: number; score: number | null; reason: string | null; quote: string | null; quoteFrom: string | null }[];
   };
   signals: EvidenceSignal[];
+  review: AttemptReview;
+  /** The work or viva changed after the decision was made (the fingerprint differs) */
+  evidenceChangedSinceDecision: boolean;
+}
+
+// ----- 2.8: the decision, the appeal and the review queue -----
+
+export type AppealStatus = "Open" | "Upheld" | "Changed";
+
+export interface AttemptReview {
+  id: string;
+  status: AttemptStatus;
+  decision: {
+    value: Decision;
+    score: number | null;
+    comment: string | null;
+    by: string | null;
+    at: string | null;
+    evidenceHash: string | null;
+    scores: { key: string; score: number; suggested: number | null }[];
+  } | null;
+  appeal: { status: AppealStatus; reason: string | null; at: string | null; response: string | null; by: string | null; resolvedAt: string | null; canResolve: boolean } | null;
+}
+
+export interface ReviewRow {
+  attemptId: string;
+  assessment: string;
+  class: string;
+  student: string;
+  number: number;
+  submittedAt: string | null;
+  late: boolean;
+  suggested: boolean;
+  appealedAt: string | null;
+  decidedBy: string | null;
+}
+
+export interface ReviewQueue {
+  toDecide: ReviewRow[];
+  appeals: ReviewRow[];
+}
+
+/** What the student sees once their attempt is decided (no AI suggestions) */
+export interface StudentResult {
+  decision: Decision;
+  score: number | null;
+  comment: string | null;
+  decidedAt: string | null;
+  number: number;
+  criteria: { key: string; name: string; weight: number; score: number | null }[];
+  appeal: { status: AppealStatus; reason: string | null; at: string | null; response: string | null; resolvedAt: string | null } | null;
+  canAppeal: boolean;
+  appealUntil: string | null;
 }

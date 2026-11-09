@@ -3,7 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import { useApi } from "@/lib/appAuth";
-import { careerNav, shownForCountry } from "@/lib/careerNav";
+import { careerNav, shownForCountry, shownForRoles } from "@/lib/careerNav";
 import { useCareerShell } from "@/components/career/CareerShell";
 import { Card, ErrorBanner, Loading, PageHeader, useLoad, useCareerFormat, useCareerT, StatTile } from "@/components/career/ui";
 import { useCareerNavLabels } from "@/components/career/i18n/nav";
@@ -33,7 +33,7 @@ export default function CareerCenterHome() {
 
   const role = me?.memberships.find((m) => m.instituteId === schoolId)?.role;
   // The same country rule as the menu (CareerShell): country pages only for schools in those countries (P5)
-  const links = careerNav["career-center"].filter((i) => i.ready && i.href !== "/career-center" && shownForCountry(i, schoolCountry));
+  const links = careerNav["career-center"].filter((i) => i.ready && i.href !== "/career-center" && shownForCountry(i, schoolCountry) && shownForRoles(i, (me?.memberships ?? []).filter((m) => m.instituteId === schoolId).map((m) => m.role)));
 
   return (
     <div>

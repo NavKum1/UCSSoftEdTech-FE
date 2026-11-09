@@ -184,7 +184,22 @@ function AssessmentBuilder() {
     setError(null);
     setMessage(null);
     try {
-      await api(`${CA_API}/faculty/assessments/${id}/archive`, { method: "POST" });
+      const url = `${CA_API}/faculty/assessments/${id}/archive`;
+      const r = await api<{ archived: boolean; resubmissionsWaiting?: number }>(url, { method: "POST" });
+      // 2.8: students asked to resubmit who haven't started again lose that chance; the teacher confirms, and they're told
+      if (!r.archived) {
+        const n = r.resubmissionsWaiting ?? 0;
+        const ok = window.confirm(
+          n === 1
+            ? en("One student was asked to resubmit and hasn't started again. Archiving closes the assessment for them too, and they're told. Archive anyway?")
+            : en("{count} students were asked to resubmit and haven't started again. Archiving closes the assessment for them too, and they're told. Archive anyway?", { count: n }),
+        );
+        if (!ok) {
+          setBusy(null);
+          return;
+        }
+        await api(`${url}?confirm=true`, { method: "POST" });
+      }
       router.push("/faculty/assessments?archived=1");
     } catch (e) {
       fail(e);

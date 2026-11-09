@@ -5,6 +5,7 @@
  * repository, an uploaded project, a coding task with its tests, or a written exam), the viva question by question, the AI's
  * suggested score per rubric criterion with its reason and the student's own words, and points worth talking about. Nothing
  * here decides anything: the teacher does. Only the class's teachers and school admins see it, and each look is recorded.
+ * 2.8: the decision (scores, pass, resubmit or fail, a comment) and the appeal, on the right (ReviewPanel).
  * API: /api/career/class-assessments/faculty/attempts/{id}/evidence.
  */
 import React from "react";
@@ -22,6 +23,7 @@ import {
   useSuggestionStateText,
   useWorkKindNames,
 } from "@/components/career/classAssessments/evidenceText";
+import { ReviewPanel } from "@/components/career/classAssessments/ReviewPanel";
 
 const CODE = "max-h-96 overflow-auto whitespace-pre rounded-lg border border-border bg-muted/50 p-3 font-mono text-xs leading-relaxed";
 
@@ -82,16 +84,19 @@ export default function AttemptEvidencePage() {
           <VivaCard viva={e.viva} />
         </div>
         <div className="min-w-0 space-y-6">
-          {t.status === "Decided" && t.decision && (
-            <Card title={en("Decision")}>
-              <p className="text-lg font-semibold">{decisions[t.decision]}</p>
-              {t.score !== null && <p className="text-sm text-muted-foreground">{en("Score {score} of 100", { score: Math.round(t.score) })}</p>}
-              {t.comment && <p className="mt-2 whitespace-pre-line text-sm">{t.comment}</p>}
-              {t.decidedBy && t.decidedAt && (
-                <p className="mt-2 text-xs text-muted-foreground">{en("By {name}, {when}", { name: t.decidedBy, when: formatWhen(t.decidedAt) })}</p>
-              )}
-            </Card>
-          )}
+          <ReviewPanel
+            e={e}
+            onChange={(review) => {
+              const d = review.decision;
+              ev.setData({
+                ...e,
+                review,
+                evidenceChangedSinceDecision: false,
+                attempt: { ...t, status: review.status, decision: d?.value ?? null, score: d?.score ?? null, comment: d?.comment ?? null, decidedBy: d?.by ?? null, decidedAt: d?.at ?? null },
+                attempts: e.attempts.map((a) => (a.id === e.id ? { ...a, status: review.status } : a)),
+              });
+            }}
+          />
           <SuggestionsCard e={e} />
           <SignalsCard e={e} />
         </div>

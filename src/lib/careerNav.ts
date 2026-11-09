@@ -15,6 +15,8 @@ export interface CareerNavItem {
   ready: boolean;
   // Only for schools in these countries (ISO codes); absent = every school
   countries?: string[];
+  // Only for these roles at the chosen school (e.g. CareerAdmin); absent = everyone with this persona
+  roles?: string[];
   // Heading the entry sits under in the menu (en() where shown); entries of a group are listed together
   group?: string;
   // A heading inside the group's menu (en() where shown), e.g. "Interviews" in Practice
@@ -26,6 +28,9 @@ export interface CareerNavItem {
 /** Whether an entry shows for a school in this country (country pages only for schools in those countries; none while unknown) */
 export const shownForCountry = (item: CareerNavItem, country: string | null) =>
   !item.countries || (country !== null && item.countries.includes(country));
+
+/** Whether an entry shows for someone with these roles at the chosen school (role-only entries hide while unknown) */
+export const shownForRoles = (item: CareerNavItem, roles: string[]) => !item.roles || item.roles.some((r) => roles.includes(r));
 
 export const CAREER_PREFIXES = ["/student", "/career-center", "/employer", "/faculty", "/alumni", "/supervisor", "/kiosk"];
 
@@ -123,6 +128,8 @@ export const careerNav: Record<CareerPersona, CareerNavItem[]> = {
     { label: "Messages & campaigns", href: "/career-center/messages", module: "C7", ready: true, group: "Students" },
     { label: "International students", href: "/career-center/international", module: "D3", ready: true, group: "Students" },
     { label: "Challenges", href: "/career-center/challenges", module: "D7", ready: true, group: "Students" },
+    // Build & Defend 2.8: school admins answer appeals no other teacher of the class can (and see every class's queue)
+    { label: "Class reviews", href: "/faculty/review", module: "BD2", ready: true, group: "Students", roles: ["CareerAdmin"] },
     { label: "Employers", href: "/career-center/employers", module: "F3", ready: true, group: "Employers and jobs" },
     { label: "Career fairs", href: "/career-center/fairs", module: "C5", ready: true, group: "Employers and jobs" },
     { label: "Internships", href: "/career-center/experiences", module: "C9", ready: true, group: "Employers and jobs" },
@@ -167,6 +174,7 @@ export const careerNav: Record<CareerPersona, CareerNavItem[]> = {
     { label: "Home", href: "/faculty", module: "F1", ready: true },
     { label: "Classes", href: "/faculty/classes", module: "BD2", ready: true },
     { label: "Assessments", href: "/faculty/assessments", module: "BD2", ready: true },
+    { label: "Review", href: "/faculty/review", module: "BD2", ready: true },
     { label: "Internship approvals", href: "/faculty/experiences", module: "C9", ready: true },
     { label: "Outcome attainment", href: "/faculty/frameworks", module: "D1", ready: true },
     { label: "Notifications", href: "/faculty/notifications", module: "F5", ready: true },
