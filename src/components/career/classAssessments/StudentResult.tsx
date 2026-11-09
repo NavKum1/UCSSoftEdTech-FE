@@ -7,6 +7,7 @@
  * API: /api/career/class-assessments/student/assessments/{assignmentId}/attempt and .../attempt/appeal.
  */
 import React, { useId, useState } from "react";
+import Link from "next/link";
 import { useEn } from "@/lib/english/EnglishProvider";
 import { Badge, Button } from "@/components/career/ui";
 import { formatWhen, type Decision, type StudentResult } from "@/components/career/classAssessments/types";
@@ -79,6 +80,29 @@ export function ResultView({
   return (
     <div className="space-y-4">
       <Scores r={result} />
+
+      {/* 2.9: the credential the pass issued */}
+      {result.credential?.status === "Valid" && (
+        <div className="space-y-1.5 rounded-lg border border-emerald-300 bg-emerald-50 p-3 text-emerald-950 dark:border-emerald-900 dark:bg-emerald-950/40 dark:text-emerald-100">
+          <p className="font-medium">{en("A signed credential was added to your wallet.")}</p>
+          <p className="text-xs">{en("It shows that you passed, your score and your score for each part. Your work, the viva and comments stay private. You decide whether to share it.")}</p>
+          <p className="flex flex-wrap gap-x-4 gap-y-1 pt-1">
+            <Link href={`/credential/${result.credential.slug}`} className="font-medium underline underline-offset-2">
+              {en("View your credential")}
+            </Link>
+            <Link href="/credentials" className="font-medium underline underline-offset-2">
+              {en("Your wallet")}
+            </Link>
+          </p>
+        </div>
+      )}
+      {result.credential?.status === "Revoked" && (
+        <p className="rounded-lg border border-border bg-muted/40 p-3 text-muted-foreground">
+          {result.credential.revokedAt
+            ? en("The credential for this result was revoked on {when}. It no longer verifies.", { when: formatWhen(result.credential.revokedAt) })
+            : en("The credential for this result was revoked. It no longer verifies.")}
+        </p>
+      )}
 
       {canStart && (
         <div className="space-y-2 rounded-lg border border-amber-300 bg-amber-50 p-3 text-amber-950 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-100">

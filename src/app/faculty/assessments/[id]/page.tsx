@@ -73,14 +73,14 @@ function AssessmentBuilder() {
       return {
         title: s.title, instructions: s.instructions, template: s.template, sprintId: s.sprintId, examId: s.examId, rubric: s.rubric,
         vivaMode: s.vivaMode, vivaQuestions: s.vivaQuestions, vivaMinutes: s.vivaMinutes, vivaLanguage: s.vivaLanguage,
-        changeTask: s.changeTask, changeTaskMinutes: s.changeTaskMinutes,
+        changeTask: s.changeTask, changeTaskMinutes: s.changeTaskMinutes, issuesCredential: s.issuesCredential,
       };
     }
     if (!isNew || !meta.data) return null;
     return {
       title: startTitle, instructions: "", template, sprintId: null, examId: null,
       rubric: meta.data.templates.find((x) => x.key === template)?.rubric ?? [],
-      vivaMode: "voice", vivaQuestions: 5, vivaMinutes: 15, vivaLanguage: null, changeTask: false, changeTaskMinutes: 20,
+      vivaMode: "voice", vivaQuestions: 5, vivaMinutes: 15, vivaLanguage: null, changeTask: false, changeTaskMinutes: 20, issuesCredential: true,
     };
   }, [saved.data, meta.data, isNew, template, startTitle]);
   const draft = edits ?? base;
@@ -108,6 +108,8 @@ function AssessmentBuilder() {
       title: draft.title,
       instructions: draft.instructions,
       template: draft.template,
+      // 2.9: not part of how students are assessed, so it can change after students have started
+      issuesCredential: draft.issuesCredential,
       ...(locked
         ? {}
         : {
@@ -271,7 +273,7 @@ function AssessmentBuilder() {
       {readOnly && !archived && <p className="mb-4 rounded-lg border border-border bg-muted/40 p-3 text-sm">{en("You can see this assessment because it's given to your class. Only its owner or a school admin can change it.")}</p>}
       {locked && !readOnly && (
         <p className="mb-4 rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-200">
-          {en("Students have started this assessment, so its task, rubric and viva are locked (everyone is assessed the same way). You can still edit the title and instructions.")}
+          {en("Students have started this assessment, so its task, rubric and viva are locked (everyone is assessed the same way). You can still edit the title, the instructions and whether a pass issues a credential.")}
         </p>
       )}
 
@@ -393,6 +395,25 @@ function AssessmentBuilder() {
                 )}
               </Field>
             </div>
+          </Card>
+
+          <Card title={en("Credential")}>
+            <label className="flex items-start gap-2.5 text-sm">
+              <input
+                type="checkbox"
+                className="mt-0.5"
+                checked={draft.issuesCredential}
+                onChange={(e) => set("issuesCredential", e.target.checked)}
+                disabled={readOnly}
+                aria-describedby="credential-hint"
+              />
+              <span>
+                <span className="block font-medium">{en("Issue a credential when a student passes")}</span>
+                <span id="credential-hint" className="block text-muted-foreground">
+                  {en("A signed credential goes to the student's wallet when a teacher passes their work. Turn it off for practice or homework. Credentials already issued stay.")}
+                </span>
+              </span>
+            </label>
           </Card>
 
           {!readOnly && (

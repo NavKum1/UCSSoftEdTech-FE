@@ -19,8 +19,12 @@ export interface CredentialClaims {
   humanDecision?: string | null;
   evidenceHash?: string | null;
   iat: number;
-  exp: number;
+  /** Absent: the credential never expires (a class assessment's result, Build & Defend 2.9) */
+  exp?: number;
 }
+
+/** The task type of a class assessment a teacher passed (Build & Defend 2.9) */
+export const CLASS_ASSESSMENT_TASK = "ClassAssessment";
 
 export type CredentialStatus = "Valid" | "Expired" | "Under review" | "Revoked";
 
@@ -119,6 +123,23 @@ export function statusBadgeClass(status: string): string {
       return "bg-slate-100 dark:bg-slate-500/15 text-slate-700 dark:text-slate-300 border-slate-300 dark:border-slate-500/40";
   }
 }
+
+/** What a class assessment credential shows: a teacher's decision, never the AI's (Build & Defend 2.9) */
+export const CLASS_CREDENTIAL_DISCLAIMER_POINTS = {
+  proves: [
+    "The holder handed in their own work for an assessment a teacher set at the school shown, and explained it in a viva.",
+    "A teacher of the class passed it and scored it against the assessment's rubric. AI suggestions may have helped the teacher; they never decided the result.",
+    "The details above were signed by Edulexa and have not been altered since.",
+  ],
+  doesNotProve: [
+    "That no one else helped. The viva and integrity checks raise the cost of cheating but cannot rule it out.",
+    "Every skill a role needs. It covers one assessment in one class.",
+    "Suitability for a particular job. It is not a hiring recommendation; people make hiring decisions.",
+  ],
+};
+
+/** The disclaimer that fits this credential's task type */
+export const disclaimerFor = (taskType?: string | null) => (taskType === CLASS_ASSESSMENT_TASK ? CLASS_CREDENTIAL_DISCLAIMER_POINTS : CREDENTIAL_DISCLAIMER_POINTS);
 
 export const CREDENTIAL_DISCLAIMER_POINTS = {
   proves: [

@@ -37,7 +37,8 @@ interface WalletCredential {
   integrity: string;
   humanDecisionAvailable: boolean;
   issuedAt: string;
-  validUntil: string;
+  /** null: never expires (a class assessment's result) */
+  validUntil: string | null;
   revokedAt?: string | null;
   activeShareCount: number;
 }
@@ -635,6 +636,9 @@ function CredentialCard({
   onError: (msg: string) => void;
 }) {
   const en = useEn();
+  // What kind of credential, in words (the API sends a type key)
+  const kindLabel = (t?: string | null) =>
+    t === "ClassAssessment" ? en("Class assessment") : t === "InternshipDefense" ? en("Internship defense") : t === "RealWork" ? en("Real-work defense") : t ?? null;
   const [showShares, setShowShares] = useState(false);
   const [jwsCopied, setJwsCopied] = useState(false);
   const [includeDecisionInJws, setIncludeDecisionInJws] = useState(false);
@@ -668,20 +672,32 @@ function CredentialCard({
         <div className="min-w-0">
           <h3 className="text-base font-semibold text-foreground">{credential.task.title}</h3>
           <p className="text-xs text-muted-foreground">
-            {en("{value} · issued {date} · {value2}", { value: [credential.task.taskType, credential.task.language].filter(Boolean).join(" · ") || en("Voice defense"), date: formatDate(credential.issuedAt), value2: credential.status === "Revoked" ? `revoked ${formatDate(credential.revokedAt)}` : `valid until ${formatDate(credential.validUntil)}` })}
+            {en("{value} · issued {date} · {value2}", {
+              value: [kindLabel(credential.task.taskType), credential.task.language].filter(Boolean).join(" · ") || en("Voice defense"),
+              date: formatDate(credential.issuedAt),
+              value2:
+                credential.status === "Revoked"
+                  ? en("revoked {date}", { date: formatDate(credential.revokedAt) })
+                  : credential.validUntil
+                    ? en("valid until {date}", { date: formatDate(credential.validUntil) })
+                    : en("no expiry"),
+            })}
           </p>
         </div>
         <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium border ${statusBadgeClass(credential.status)}`}>{String(credential.status ?? "").replace(/([a-z])([A-Z])/g, (_m, a: string, b: string) => `${a} ${b.toLowerCase()}`)}</span>
       </div>
 
       <div className="flex flex-wrap gap-x-6 gap-y-1 text-sm">
+        {/* A class assessment (Build & Defend 2.9) has no tests: its score is the teacher's, on the rubric */}
+        {credential.task.taskType !== "ClassAssessment" && (
+          <span>
+            <span className="text-muted-foreground">{en("Tests ")}</span>
+            <span className="font-semibold">{scores.testsTotal ? `${scores.testsPassed ?? 0}/${scores.testsTotal}` : "—"}</span>
+          </span>
+        )}
         <span>
-          <span className="text-muted-foreground">{en("Tests ")}</span>
-          <span className="font-semibold">{scores.testsTotal ? `${scores.testsPassed ?? 0}/${scores.testsTotal}` : "—"}</span>
-        </span>
-        <span>
-          <span className="text-muted-foreground">{en("Defense ")}</span>
-          <span className="font-semibold">{Math.round(scores.defenseScore)}/100</span>
+          <span className="text-muted-foreground">{credential.task.taskType === "ClassAssessment" ? en("Teacher's score ") : en("Defense ")}</span>
+          <span className="font-semibold">{credential.task.taskType === "ClassAssessment" ? scores.defenseScore : Math.round(scores.defenseScore)}/100</span>
         </span>
         {scores.defectsTotal !== undefined && (
           <span>
@@ -875,7 +891,7 @@ export default function CredentialWalletPage() {
               <Download className="w-3.5 h-3.5" />{en(" Download CLR")}
             </button>
             <p className="text-xs text-muted-foreground">
-              {en("Credentials are valid for {validityMonths} months from issue. Employers can check any copied JWS at", { validityMonths: wallet.validityMonths })}{" "}
+              {en("Credentials are valid for {validityMonths} months from issue; class assessment results don't expire. Employers can check any copied JWS at", { validityMonths: wallet.validityMonths })}{" "}
               <Link href="/verify" className="underline">
                 /verify
               </Link>

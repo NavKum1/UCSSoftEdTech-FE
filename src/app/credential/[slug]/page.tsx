@@ -25,6 +25,8 @@ interface CredentialBadge {
   verificationStatus: string;
   verificationFlagged: boolean;
   flagReason?: string | null;
+  /** Build & Defend 2.9: a class assessment a teacher passed (the teacher's score per rubric criterion) */
+  classResult?: { decision: string; className: string; criteria: { name: string; weight: number; score: number | null }[]; decidedBy: string } | null;
 }
 
 export default function CredentialBadgePage() {
@@ -60,7 +62,7 @@ export default function CredentialBadgePage() {
     const message = {
       loading: { title: en("Checking credential…"), body: "" },
       notFound: { title: en("Credential not found"), body: "No credential matches this link. Check the link with the person who shared it." },
-      revoked: { title: en("Credential revoked"), body: "The holder revoked this credential. It is no longer valid." },
+      revoked: { title: en("Credential revoked"), body: en("This credential has been revoked. It is no longer valid.") },
       error: { title: en("Couldn't check this credential"), body: "The verification service didn't respond. Try again in a few minutes." },
       found: { title: "", body: "" },
     }[lookup];
@@ -79,6 +81,7 @@ export default function CredentialBadgePage() {
   const badgeTitle = credential.badgeTitle;
   const instituteName = credential.instituteName;
   const finalScore = credential.finalScore;
+  const classResult = credential.classResult ?? null;
   const issued = credential.verifiedAt ? new Date(credential.verifiedAt) : null;
   const credentialUrl = typeof window !== "undefined" ? `${window.location.origin}/credential/${slug}` : `/credential/${slug}`;
 
@@ -135,20 +138,57 @@ export default function CredentialBadgePage() {
         <div className="space-y-2 py-2 text-center">
           <p className="text-sm text-muted-foreground">{en("This certifies that")}</p>
           <h2 className="text-3xl font-semibold tracking-tight">{candidateName ?? "Name not shared"}</h2>
-          <p className="text-sm text-muted-foreground">{en("earned this credential with the result below, graded by Edulexa.")}</p>
+          <p className="text-sm text-muted-foreground">
+            {classResult
+              ? en("passed this class assessment. A teacher decided the result after a viva on the student's own work.")
+              : en("earned this credential with the result below, graded by Edulexa.")}
+          </p>
           <p className="pt-2 text-lg font-semibold">{badgeTitle}</p>
         </div>
 
         <dl className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <div className="rounded-xl border border-border bg-card p-4 shadow-sm">
-            <dt className="text-sm text-muted-foreground">{en("Final score")}</dt>
-            <dd className="mt-2 text-2xl font-semibold tabular-nums tracking-tight">{finalScore}%</dd>
+            <dt className="text-sm text-muted-foreground">{classResult ? en("Teacher's score") : en("Final score")}</dt>
+            <dd className="mt-2 text-2xl font-semibold tabular-nums tracking-tight">{classResult ? en("{score} / 100", { score: finalScore }) : `${finalScore}%`}</dd>
           </div>
           <div className="rounded-xl border border-border bg-card p-4 shadow-sm">
             <dt className="text-sm text-muted-foreground">{en("Issued by")}</dt>
             <dd className="mt-2 text-base font-semibold">{instituteName}</dd>
           </div>
         </dl>
+
+        {classResult && (
+          <section aria-labelledby="class-result" className="rounded-xl border border-border p-4">
+            <div className="flex flex-wrap items-baseline justify-between gap-2">
+              <h3 id="class-result" className="text-sm font-medium">
+                {classResult.className ? en("Result in {className}", { className: classResult.className }) : en("Result")}
+              </h3>
+              <Badge tone="good">{en("Passed")}</Badge>
+            </div>
+            <table className="mt-3 w-full text-sm">
+              <caption className="sr-only">{en("The teacher's score for each part of the rubric")}</caption>
+              <thead>
+                <tr className="border-b border-border text-xs text-muted-foreground">
+                  <th scope="col" className="py-1.5 text-start font-medium">{en("Rubric")}</th>
+                  <th scope="col" className="py-1.5 text-end font-medium">{en("Weight")}</th>
+                  <th scope="col" className="py-1.5 text-end font-medium">{en("Score")}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {classResult.criteria.map((c) => (
+                  <tr key={c.name} className="border-b border-border/60 last:border-0">
+                    <td className="py-2 pe-3">{c.name}</td>
+                    <td className="py-2 text-end tabular-nums text-muted-foreground">{c.weight}%</td>
+                    <td className="py-2 text-end font-medium tabular-nums">{c.score ?? "—"}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            <p className="mt-3 text-xs text-muted-foreground">
+              {en("Decided by a teacher after a viva on the student's own work. The work, the viva and comments are private.")}
+            </p>
+          </section>
+        )}
 
         <div className="space-y-3">
           <h3 className="text-sm font-medium">{en("Share this certificate")}</h3>

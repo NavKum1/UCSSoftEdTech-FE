@@ -42,6 +42,7 @@ export function ReviewPanel({ e, onChange }: { e: AttemptEvidence; onChange: (re
   return (
     <>
       <DecisionCard e={e} />
+      {r.credential && <CredentialCard e={e} onChange={onChange} />}
       {r.appeal && <AppealCard e={e} onChange={onChange} />}
       {e.evidenceChangedSinceDecision && (
         <p role="note" className="rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-200">
@@ -257,6 +258,90 @@ function DecisionCard({ e }: { e: AttemptEvidence }) {
       )}
       {d.comment && <p className="mt-4 whitespace-pre-line border-t border-border pt-3 text-sm">{d.comment}</p>}
       {d.by && d.at && <p className="mt-3 text-xs text-muted-foreground">{en("By {name}, {when}", { name: d.by, when: formatWhen(d.at) })}</p>}
+    </Card>
+  );
+}
+
+/** 2.9: the credential the pass issued; a school admin can withdraw it with a reason (kept from the public) */
+function CredentialCard({ e, onChange }: { e: AttemptEvidence; onChange: (review: AttemptReview) => void }) {
+  const en = useEn();
+  const api = useApi();
+  const id = useId();
+  const c = e.review.credential!;
+  const [open, setOpen] = useState(false);
+  const [reason, setReason] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const valid = c.status === "Valid";
+  const short = reason.trim().length < 10;
+
+  const withdraw = async () => {
+    setBusy(true);
+    setError(null);
+    try {
+      onChange(await api<AttemptReview>(`${CA_API}/faculty/attempts/${e.id}/credential/withdraw`, { method: "POST", json: { reason: reason.trim() } }));
+      setOpen(false);
+    } catch (err) {
+      setError((err as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <Card title={en("Credential")}>
+      <div className="space-y-3 text-sm">
+        <div className="flex flex-wrap items-center gap-2">
+          <Badge tone={valid ? "good" : "bad"}>{valid ? en("Issued") : en("Revoked")}</Badge>
+          <span className="text-xs text-muted-foreground">
+            {valid ? en("Issued {when}", { when: formatWhen(c.issuedAt) }) : c.revokedAt ? en("Revoked {when}", { when: formatWhen(c.revokedAt) }) : null}
+          </span>
+        </div>
+        {valid ? (
+          <p className="text-muted-foreground">
+            {en("The student's pass added a signed credential to their wallet. They decide whether to share it.")}{" "}
+            <a href={`/credential/${c.slug}`} target="_blank" rel="noreferrer" className="font-medium text-foreground underline underline-offset-2">
+              {en("View it")}
+            </a>
+          </p>
+        ) : (
+          c.reason && <p className="whitespace-pre-line text-muted-foreground">{c.reason}</p>
+        )}
+        {valid && e.review.canWithdrawCredential && !open && (
+          <Button type="button" variant="ghost" onClick={() => setOpen(true)} className="px-0">
+            {en("Withdraw the credential")}
+          </Button>
+        )}
+        {valid && open && (
+          <div className="space-y-2 border-t border-border pt-3">
+            <ErrorBanner error={error} />
+            <label htmlFor={`${id}-reason`} className="block font-medium">
+              {en("Why is it withdrawn?")}
+            </label>
+            <p id={`${id}-hint`} className="text-xs text-muted-foreground">
+              {en("Kept in the audit log and shown to teachers, never on the public page. The student is told it was withdrawn.")}
+            </p>
+            <textarea
+              id={`${id}-reason`}
+              rows={3}
+              maxLength={300}
+              value={reason}
+              aria-describedby={`${id}-hint`}
+              onChange={(ev) => setReason(ev.target.value)}
+              className={INPUT + " w-full"}
+            />
+            <div className="flex flex-wrap gap-2">
+              <Button type="button" variant="danger" busy={busy} disabled={short} onClick={() => void withdraw()}>
+                {en("Withdraw")}
+              </Button>
+              <Button type="button" variant="ghost" onClick={() => setOpen(false)}>
+                {en("Cancel")}
+              </Button>
+            </div>
+            {short && <p className="text-xs text-muted-foreground">{en("Write at least {count} characters.", { count: 10 })}</p>}
+          </div>
+        )}
+      </div>
     </Card>
   );
 }

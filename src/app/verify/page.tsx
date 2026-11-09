@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import { AlertTriangle, CheckCircle2, KeyRound, XCircle } from "lucide-react";
 import { API_BASE_URL } from "@/lib/apiClient";
 import {
-  CREDENTIAL_DISCLAIMER_POINTS,
+  disclaimerFor,
   CREDENTIAL_JWKS_PATH,
   type ClientSignatureCheck,
   type CredentialClaims,
@@ -243,7 +243,7 @@ export default function VerifyJwsPage() {
               )}
               <div><span className="text-muted-foreground">{en("Integrity: ")}</span>{claims.integrity}</div>
               {claims.humanDecision && <div><span className="text-muted-foreground">{en("Human reviewer: ")}</span>{claims.humanDecision}</div>}
-              <div><span className="text-muted-foreground">{en("Issued / valid until: ")}</span>{formatDate(claims.iat)} · {formatDate(claims.exp)}</div>
+              <div><span className="text-muted-foreground">{en("Issued / valid until: ")}</span>{formatDate(claims.iat)} · {claims.exp ? formatDate(claims.exp) : en("no expiry")}</div>
               <div className="sm:col-span-2 text-xs text-muted-foreground break-all">
                 {en("Issuer ")}<span className="font-mono">{claims.iss}</span>{en(" · credential id ")}<span className="font-mono">{claims.sub}</span>
                 {claims.evidenceHash && (
@@ -260,7 +260,7 @@ export default function VerifyJwsPage() {
           <div>
             <h2 className="text-sm font-semibold mb-2">{en("What a valid credential shows")}</h2>
             <ul className="space-y-1.5 text-xs text-muted-foreground list-disc ps-4">
-              {CREDENTIAL_DISCLAIMER_POINTS.proves.map((p) => (
+              {disclaimerFor(claims?.task.taskType).proves.map((p) => (
                 <li key={p}>{p}</li>
               ))}
             </ul>
@@ -268,7 +268,7 @@ export default function VerifyJwsPage() {
           <div>
             <h2 className="text-sm font-semibold mb-2">{en("What it doesn't show")}</h2>
             <ul className="space-y-1.5 text-xs text-muted-foreground list-disc ps-4">
-              {CREDENTIAL_DISCLAIMER_POINTS.doesNotProve.map((p) => (
+              {disclaimerFor(claims?.task.taskType).doesNotProve.map((p) => (
                 <li key={p}>{p}</li>
               ))}
             </ul>

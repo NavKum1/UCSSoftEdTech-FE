@@ -21,7 +21,8 @@ import {
 } from "lucide-react";
 import { API_BASE_URL } from "@/lib/apiClient";
 import {
-  CREDENTIAL_DISCLAIMER_POINTS,
+  CLASS_ASSESSMENT_TASK,
+  disclaimerFor,
   type ClientSignatureCheck,
   type CredentialClaims,
   formatDate,
@@ -262,7 +263,7 @@ export default function VerifyTokenPage() {
         <div className="rounded-xl border border-border bg-card p-5 shadow-sm grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
           <div>
             <span className="text-muted-foreground">{en("Task type: ")}</span>
-            {claims.task.taskType ?? "—"}
+            {claims.task.taskType === CLASS_ASSESSMENT_TASK ? en("Class assessment, decided by a teacher") : claims.task.taskType ?? "—"}
           </div>
           <div>
             <span className="text-muted-foreground">{en("Language: ")}</span>
@@ -280,7 +281,9 @@ export default function VerifyTokenPage() {
           </div>
           <div className="flex items-center gap-1.5">
             <Calendar className="w-4 h-4 text-muted-foreground" />
-            {en("Issued {date} · valid until {date2}", { date: formatDate(claims.iat), date2: formatDate(claims.exp) })}
+            {claims.exp
+              ? en("Issued {date} · valid until {date2}", { date: formatDate(claims.iat), date2: formatDate(claims.exp) })
+              : en("Issued {date} · no expiry", { date: formatDate(claims.iat) })}
           </div>
           {evidence.included.humanDecision && (
             <div className="sm:col-span-2 flex items-center gap-1.5">
@@ -339,7 +342,7 @@ export default function VerifyTokenPage() {
               <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />{en(" What this shows")}
             </h3>
             <ul className="space-y-1.5 text-xs text-muted-foreground list-disc ps-4">
-              {CREDENTIAL_DISCLAIMER_POINTS.proves.map((p) => (
+              {disclaimerFor(claims.task.taskType).proves.map((p) => (
                 <li key={p}>{p}</li>
               ))}
             </ul>
@@ -349,7 +352,7 @@ export default function VerifyTokenPage() {
               <AlertTriangle className="w-4 h-4 text-amber-600 dark:text-amber-400" />{en(" What it doesn't show")}
             </h3>
             <ul className="space-y-1.5 text-xs text-muted-foreground list-disc ps-4">
-              {CREDENTIAL_DISCLAIMER_POINTS.doesNotProve.map((p) => (
+              {disclaimerFor(claims.task.taskType).doesNotProve.map((p) => (
                 <li key={p}>{p}</li>
               ))}
             </ul>

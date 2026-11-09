@@ -65,6 +65,8 @@ export interface AssessmentDetail {
   vivaLanguage: string | null;
   changeTask: boolean;
   changeTaskMinutes: number;
+  /** 2.9: a pass issues a credential (on by default) */
+  issuesCredential: boolean;
   status: "Draft" | "Published" | "Archived";
   canEdit: boolean;
   locked: boolean;
@@ -253,9 +255,22 @@ export interface AttemptEvidence {
 
 export type AppealStatus = "Open" | "Upheld" | "Changed";
 
+/** 2.9: the credential a pass issued (teachers also see why it was revoked) */
+export interface AttemptCredential {
+  id: string;
+  slug: string;
+  issuedAt: string;
+  status: "Valid" | "Revoked";
+  revokedAt: string | null;
+  reason?: string | null;
+}
+
 export interface AttemptReview {
   id: string;
   status: AttemptStatus;
+  credential: AttemptCredential | null;
+  /** School admins can withdraw a credential, with a reason */
+  canWithdrawCredential: boolean;
   decision: {
     value: Decision;
     score: number | null;
@@ -297,4 +312,5 @@ export interface StudentResult {
   appeal: { status: AppealStatus; reason: string | null; at: string | null; response: string | null; resolvedAt: string | null } | null;
   canAppeal: boolean;
   appealUntil: string | null;
+  credential: AttemptCredential | null;
 }
