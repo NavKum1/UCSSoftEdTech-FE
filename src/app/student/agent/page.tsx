@@ -16,6 +16,7 @@ import { useCareerShell } from "@/components/career/CareerShell";
 import { Badge, Button, Card, EmptyState, ErrorBanner, Field, Loading, PageHeader, SuccessBanner, formatDate, useLoad } from "@/components/career/ui";
 import { useEn } from "@/lib/english/EnglishProvider";
 import { useCountryRules } from "@/components/career/country";
+import { useLibraryResumes } from "@/components/resumes/LibraryPicker";
 
 interface Settings {
   active: boolean;
@@ -164,7 +165,9 @@ function RuleForm({ college, jobTypes, docs, busy, onCreate }: { college: string
   const [types, setTypes] = useState<string[]>([]);
   const [locations, setLocations] = useState("");
   const [minCtc, setMinCtc] = useState("");
+  // "file:<id>" (an uploaded document) or "library:<id>" (a library résumé, sent as its current or approved version)
   const [resume, setResume] = useState("");
+  const library = useLibraryResumes();
   const [note, setNote] = useState("Hello {company} team,\n\nI'd like to apply for {title}.\n\nThank you,\n{name}");
   const [maxPerWeek, setMaxPerWeek] = useState("3");
   const [consent, setConsent] = useState(false);
@@ -180,7 +183,11 @@ function RuleForm({ college, jobTypes, docs, busy, onCreate }: { college: string
           jobTypes: types,
           locations: list(locations),
           minCtcAnnual: minCtc ? Number(minCtc) : null,
-          documents: resume ? [{ fileId: resume, kind: "Resume" }] : [],
+          documents: resume.startsWith("library:")
+            ? [{ libraryDocumentId: resume.slice(8), kind: "Resume" }]
+            : resume
+              ? [{ fileId: resume.slice(5), kind: "Resume" }]
+              : [],
           noteTemplate: note,
           maxPerWeek: Number(maxPerWeek),
           consent,
@@ -203,15 +210,31 @@ function RuleForm({ college, jobTypes, docs, busy, onCreate }: { college: string
         <Field label={rules.india ? en("Minimum pay (rupees a year)") : en("Minimum pay ({currency} a year)", { currency: rules.currency })} hint={en("With a minimum, drives that don't state their pay are skipped.")}>
           {(p) => <input {...p} type="number" min="0" value={minCtc} onChange={(e) => setMinCtc(e.target.value)} />}
         </Field>
-        <Field label={en("Résumé to attach")} hint={en("From your uploaded documents (upload them on the job board).")}>
+        <Field
+          label={en("Résumé to attach")}
+          hint={library.disabled
+            ? en("From your uploaded documents (upload them on the job board).")
+            : en("A résumé from your library is sent as its newest version, or the newest one your school approved when it asks for that.")}
+        >
           {(p) => (
             <select {...p} value={resume} onChange={(e) => setResume(e.target.value)}>
               <option value="">{en("None")}</option>
-              {docs.map((d) => (
-                <option key={d.id} value={d.id}>
-                  {d.fileName}
-                </option>
-              ))}
+              {!library.disabled && (library.items ?? []).length > 0 && (
+                <optgroup label={en("From your library")}>
+                  {(library.items ?? []).map((r) => (
+                    <option key={r.documentId} value={`library:${r.documentId}`}>
+                      {r.title}
+                    </option>
+                  ))}
+                </optgroup>
+              )}
+              <optgroup label={en("Uploaded documents")}>
+                {docs.map((d) => (
+                  <option key={d.id} value={`file:${d.id}`}>
+                    {d.fileName}
+                  </option>
+                ))}
+              </optgroup>
             </select>
           )}
         </Field>

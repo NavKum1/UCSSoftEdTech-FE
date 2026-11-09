@@ -26,6 +26,8 @@ interface Settings {
   resumeToolsEnabled?: boolean | null;
   resumeTemplate?: string;
   resumePageLimit?: number | null;
+  resumeApprovalRequired?: boolean;
+  resumeBookEnabled?: boolean;
 }
 
 const TIME_ZONES = [
@@ -100,6 +102,8 @@ export default function CareerCenterSettingsPage() {
           resumeToolsEnabled: toolsTouched ? form.resumeToolsEnabled : undefined,
           resumeTemplate: form.resumeTemplate ?? "classic",
           resumePageLimit: form.resumePageLimit ?? 0,
+          resumeApprovalRequired: !!form.resumeApprovalRequired,
+          resumeBookEnabled: !!form.resumeBookEnabled,
         },
       });
       setForm(saved);
@@ -240,6 +244,28 @@ export default function CareerCenterSettingsPage() {
                   )}
                 </Field>
               </div>
+              {(form.resumeToolsEnabled ?? !form.partnerKey) && (
+                <div className="space-y-4 border-t border-border pt-4">
+                  <label className="flex items-start gap-2 text-sm">
+                    <input type="checkbox" className="mt-0.5 h-4 w-4" checked={!!form.resumeApprovalRequired} onChange={(e) => setForm({ ...form, resumeApprovalRequired: e.target.checked })} />
+                    <span>
+                      {en("Campus applications need an approved résumé")}
+                      <span className="block text-xs text-muted-foreground">
+                        {en("Reviewers approve a résumé when they return a document review. Students then apply with that version.")}
+                      </span>
+                    </span>
+                  </label>
+                  <label className="flex items-start gap-2 text-sm">
+                    <input type="checkbox" className="mt-0.5 h-4 w-4" checked={!!form.resumeBookEnabled} onChange={(e) => setForm({ ...form, resumeBookEnabled: e.target.checked })} />
+                    <span>
+                      {en("Open the résumé book")}
+                      <span className="block text-xs text-muted-foreground">
+                        {en("Students who choose to can add a résumé. Employers you approved browse by program and graduation year, and every résumé they open is logged.")}
+                      </span>
+                    </span>
+                  </label>
+                </div>
+              )}
             </div>
           </Card>
 

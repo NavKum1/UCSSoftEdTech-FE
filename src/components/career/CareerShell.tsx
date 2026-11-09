@@ -164,7 +164,7 @@ export default function CareerShell({ persona, children }: { persona: CareerPers
   const schoolCountry = me?.memberships.find((m) => m.instituteId === schoolId)?.country ?? null;
   // Country-specific pages (India's accreditation reports, US WIOA...) show only to schools in those countries
   const items = careerNav[persona].filter(
-    (i) => i.ready && (!inCommunity || i.module === "C10") && shownForCountry(i, schoolCountry) && (i.href !== "/resumes" || resumeTools !== false),
+    (i) => i.ready && (!inCommunity || i.module === "C10") && shownForCountry(i, schoolCountry) && (!(i.href === "/resumes" || i.href.startsWith("/resumes/") || i.href === "/career-center/resume-books") || resumeTools !== false),
   );
   const schools = (me?.memberships ?? [])
     .filter((m) => STAFF_ROLES[persona].includes(m.role))

@@ -3,6 +3,7 @@
 import React, { Suspense, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useApi } from "@/lib/appAuth";
+import { useEn } from "@/lib/english/EnglishProvider";
 import { useCareerShell } from "@/components/career/CareerShell";
 import { Badge, Button, Card, EmptyState, ErrorBanner, Field, Loading, PageHeader, SuccessBanner, formatDate, useLoad, ScrollArea, useCareerT, useCareerLabels, StatTile, TAB_LIST, tabClass } from "@/components/career/ui";
 import {
@@ -298,6 +299,7 @@ function Workspace({ id, isAdmin, onBack }: { id: string; isAdmin: boolean; onBa
   const RATING_LABELS = useRatingLabels();
   const api = useApi();
   const { me } = useCareerShell();
+  const en = useEn();
   const detail = useLoad(() => api<ReviewDetail>(`/api/career/doc-review/staff/requests/${id}`), [id]);
   const reviewers = useLoad(() => api<Reviewer[]>("/api/career/doc-review/staff/reviewers"), []);
   const [error, setError] = useState<string | null>(null);
@@ -308,6 +310,8 @@ function Workspace({ id, isAdmin, onBack }: { id: string; isAdmin: boolean; onBa
   const [page, setPage] = useState("");
   const [anchor, setAnchor] = useState<{ start: number; end: number; text: string } | null>(null);
   const [assignTo, setAssignTo] = useState("");
+  // Résumé tools stage 3: approve a library résumé as it's returned
+  const [approve, setApprove] = useState(false);
   const textRef = useRef<HTMLPreElement>(null);
   const annotatedRef = useRef<HTMLInputElement>(null);
 
@@ -569,6 +573,15 @@ function Workspace({ id, isAdmin, onBack }: { id: string; isAdmin: boolean; onBa
                     </div>
                   ))}
                 </div>
+                {current.canApprove && (
+                  <label className="flex items-start gap-2 text-sm">
+                    <input type="checkbox" className="mt-0.5 h-4 w-4" checked={approve} onChange={(e) => setApprove(e.target.checked)} />
+                    <span>
+                      {en("Approve this résumé")}
+                      <span className="block text-xs text-muted-foreground">{en("The student can then use this version where your school asks for an approved résumé. A later version needs a new approval.")}</span>
+                    </span>
+                  </label>
+                )}
                 <div className="flex flex-wrap gap-2">
                   <Button variant="secondary" busy={busy === "save"} onClick={() => void saveReview()}>
                     {tr("saveDraft")}
@@ -580,7 +593,7 @@ function Workspace({ id, isAdmin, onBack }: { id: string; isAdmin: boolean; onBa
                         // Save edits first so what's returned matches the screen
                         await saveReview();
                       }
-                      void act("return", () => post("/return"), tr("returnedToTheStudentTheyve"));
+                      void act("return", () => post("/return", approve ? { approve: true } : undefined), tr("returnedToTheStudentTheyve"));
                     }}
                   >
                     {tr("returnToStudent")}

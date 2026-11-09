@@ -6,6 +6,7 @@ import { Zap, Database, RefreshCw, Layers, Trash2, Play, RotateCcw, AlertTriangl
 import { Badge, Button, Card, PageHeader, StatTile } from "@/components/career/ui";
 import LiveCheckCard from "@/components/admin/LiveCheckCard";
 import AiUsageCard from "@/components/admin/AiUsageCard";
+import ResumeAllowanceCard from "@/components/admin/ResumeAllowanceCard";
 
 interface QueueStats {
   workerNodeId: string;
@@ -151,6 +152,7 @@ export default function SystemOperationsDashboard() {
       <LiveCheckCard />
 
       <AiUsageCard />
+      <ResumeAllowanceCard />
 
       {actionLog && (
         <div role="status" className="rounded-lg border border-border bg-card p-3 text-sm text-foreground shadow-sm">

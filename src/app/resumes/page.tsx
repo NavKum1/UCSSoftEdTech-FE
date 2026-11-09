@@ -10,7 +10,8 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Archive, Download, FilePlus2, FileText, History, Pencil, PenLine, RotateCcw, Upload } from "lucide-react";
+import { Archive, Download, FilePlus2, FileText, History, ListChecks, Pencil, PenLine, RotateCcw, Upload } from "lucide-react";
+import ResumeBookCard from "@/components/resumes/ResumeBookCard";
 import { AccessNotice, useLatestRef, useLegacyApi } from "@/lib/legacyApi";
 import { useEn } from "@/lib/english/EnglishProvider";
 import { Badge, Button, EmptyState, ErrorBanner, formatDate, Modal, PageHeader, SuccessBanner, Tabs } from "@/components/career/ui";
@@ -25,6 +26,8 @@ interface Version {
   createdAt: string;
   // Where this version was sent (applications, document review, interview sign-up)
   sends?: { kind: string; label: string; sentAt: string }[];
+  // Career-center approvals (stage 3): the school and when
+  approvals?: { instituteId: string; school: string; approvedAt: string }[];
 }
 interface Rules { toolsEnabled: boolean; template: string; pageLimit: number | null; school: string | null; pageSize: string }
 interface Resume {
@@ -45,6 +48,8 @@ export default function ResumesPage() {
   const { apiFetch, ready, access } = useLegacyApi();
   const [view, setView] = useState<"library" | "archived">("library");
   const [items, setItems] = useState<Resume[] | null>(null);
+  const [approvedIds, setApprovedIds] = useState<string[]>([]);
+  const [approvedOlder, setApprovedOlder] = useState<{ versionId: string; documentId: string; number: number }[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
@@ -55,7 +60,12 @@ export default function ResumesPage() {
 
   const load = useCallback(async () => {
     const res = await apiFetch(`/api/resumes${view === "archived" ? "?archived=true" : ""}`);
-    setItems(res.ok ? ((await res.json()) as { resumes: Resume[] }).resumes : []);
+    const body = res.ok
+      ? ((await res.json()) as { resumes: Resume[]; approvedVersionIds?: string[]; approvedVersions?: { versionId: string; documentId: string; number: number }[] })
+      : null;
+    setItems(body?.resumes ?? []);
+    setApprovedIds(body?.approvedVersionIds ?? []);
+    setApprovedOlder(body?.approvedVersions ?? []);
   }, [apiFetch, view]);
   const loadRef = useLatestRef(load);
   useEffect(() => {
@@ -163,6 +173,10 @@ export default function ResumesPage() {
         description={en("Keep your résumés in one place. Send them with campus job applications, document reviews and interview sign-ups.")}
         actions={
           <div className="flex flex-wrap gap-2">
+            <Link href="/resumes/job-check" className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-2 text-sm font-medium hover:bg-muted">
+              <ListChecks aria-hidden="true" className="h-4 w-4" />
+              {en("Check against a job")}
+            </Link>
             <Button type="button" variant="secondary" aria-expanded={creating} aria-controls="new-resume" onClick={() => setCreating(!creating)}>
               <FilePlus2 aria-hidden="true" className="h-4 w-4" />
               {en("Build a résumé")}
@@ -232,6 +246,7 @@ export default function ResumesPage() {
             <ResumeCard
               key={r.id}
               resume={r}
+              approved={!!r.currentVersion && approvedIds.includes(r.currentVersion.id)}
               busy={busy}
               onVersion={(file) => uploadVersion(r, file)}
               onText={(v) => showText(r, v)}
@@ -247,6 +262,28 @@ export default function ResumesPage() {
             />
           ))}
         </ul>
+      )}
+
+      {view === "library" && items && (
+        <ResumeBookCard
+          choices={[
+            ...items
+              .filter((r) => r.currentVersion?.hasFile)
+              .map((r) => ({
+                versionId: r.currentVersion!.id,
+                label: en("{title}, version {number}", { title: r.title, number: r.currentVersion!.number }),
+                approved: approvedIds.includes(r.currentVersion!.id),
+              })),
+            // Approved versions that aren't the newest (a school asking for approval can still get them)
+            ...approvedOlder
+              .filter((a) => !items.some((r) => r.currentVersion?.id === a.versionId) && items.some((r) => r.id === a.documentId))
+              .map((a) => ({
+                versionId: a.versionId,
+                label: en("{title}, version {number} (approved)", { title: items.find((r) => r.id === a.documentId)!.title, number: a.number }),
+                approved: true,
+              })),
+          ]}
+        />
       )}
 
       {textOf && (
@@ -298,6 +335,7 @@ function FileButton({ label, busy, primary, onFile }: { label: string; busy?: bo
 
 function ResumeCard({
   resume,
+  approved,
   busy,
   onVersion,
   onText,
@@ -309,6 +347,7 @@ function ResumeCard({
   loadVersions,
 }: {
   resume: Resume;
+  approved: boolean;
   busy: string | null;
   onVersion: (file: File) => void;
   onText: (v: Version) => void;
@@ -393,6 +432,7 @@ function ResumeCard({
           <div className="flex flex-wrap gap-2">
             {v && !built && (v.textReadable ? <Badge tone="good">{en("Text read")}</Badge> : <Badge tone="warn">{en("Couldn't read text")}</Badge>)}
             {built && <Badge tone="info">{en("Built here")}</Badge>}
+            {approved && <Badge tone="good">{en("Approved by your school")}</Badge>}
             {v && !v.hasFile && <Badge tone="info">{en("Text only")}</Badge>}
             {archived && <Badge>{en("Archived")}</Badge>}
           </div>
@@ -463,6 +503,11 @@ function ResumeCard({
                     {formatDate(ver.createdAt)}
                   </span>
                   {ver.note && <span className="block text-muted-foreground">{ver.note}</span>}
+                  {(ver.approvals ?? []).map((x) => (
+                    <span key={x.instituteId} className="block text-xs font-medium text-emerald-700 dark:text-emerald-400">
+                      {en("Approved by {school}, {date}", { school: x.school, date: formatDate(x.approvedAt) })}
+                    </span>
+                  ))}
                   {(ver.sends ?? []).map((x, k) => (
                     <span key={k} className="block text-xs text-muted-foreground">
                       {en("Sent: {label}, {date}", { label: x.label, date: formatDate(x.sentAt) })}

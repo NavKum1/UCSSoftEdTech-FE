@@ -56,6 +56,9 @@ export interface ReviewVersion {
   summary: string | null;
   rubric: RubricResult[] | null;
   annotatedFile: FileMeta | null;
+  /** Résumé tools stage 3: a résumé sent from the student's library can be approved when returned */
+  canApprove?: boolean;
+  approved?: boolean;
   comments: ReviewComment[];
 }
 
