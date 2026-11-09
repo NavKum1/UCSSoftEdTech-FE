@@ -33,3 +33,23 @@ export async function saveToLibrary(api: <T>(path: string, init?: { method?: str
   }
   return id;
 }
+
+/**
+ * Downloads a file from the API under the given name; returns the error to show, or null when it worked
+ * (stage 4: Word and PDF downloads of résumés and cover letters).
+ */
+export async function downloadFrom(apiFetch: (path: string, init?: RequestInit) => Promise<Response>, path: string, fileName: string): Promise<string | null> {
+  try {
+    const res = await apiFetch(path);
+    if (!res.ok) return ((await res.json().catch(() => null)) as { error?: string } | null)?.error ?? "The download didn't work. Please try again.";
+    const url = URL.createObjectURL(await res.blob());
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = fileName;
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 10_000);
+    return null;
+  } catch {
+    return "The download didn't work. Please try again.";
+  }
+}

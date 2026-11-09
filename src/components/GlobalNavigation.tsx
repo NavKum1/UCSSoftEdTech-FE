@@ -68,6 +68,7 @@ const MENUS: NavTab[] = [
       { label: "Skill passport", href: "/passport", desc: "Your verified skills and a link to share" },
       { label: "Résumés", href: "/resumes", desc: "Your résumés in one place, ready to send" },
       { label: "Job check", href: "/resumes/job-check", desc: "See where your résumé meets a job's requirements" },
+      { label: "Cover letters", href: "/resumes/cover-letters", desc: "A letter for each job, drafted from your résumé" },
       { label: "Campus", href: "/campus", desc: "College assignments and connection check" },
     ],
   },

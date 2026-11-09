@@ -10,7 +10,7 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Archive, Download, FilePlus2, FileText, History, ListChecks, Pencil, PenLine, RotateCcw, Upload } from "lucide-react";
+import { Archive, Download, FilePlus2, FileText, History, ListChecks, Pencil, PenLine, RotateCcw, Sparkles, Upload } from "lucide-react";
 import ResumeBookCard from "@/components/resumes/ResumeBookCard";
 import { AccessNotice, useLatestRef, useLegacyApi } from "@/lib/legacyApi";
 import { useEn } from "@/lib/english/EnglishProvider";
@@ -54,6 +54,8 @@ export default function ResumesPage() {
   const [notice, setNotice] = useState<string | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
   const [textOf, setTextOf] = useState<{ title: string; text: string | null } | null>(null);
+  // Stage 4: AI feedback on an uploaded résumé's lines (built résumés get it in the editor)
+  const [feedbackOf, setFeedbackOf] = useState<{ title: string; comments: { line: string; kind: string; comment: string }[] } | null>(null);
   const [rules, setRules] = useState<Rules | null>(null);
   const [creating, setCreating] = useState(false);
   const router = useRouter();
@@ -177,6 +179,10 @@ export default function ResumesPage() {
               <ListChecks aria-hidden="true" className="h-4 w-4" />
               {en("Check against a job")}
             </Link>
+            <Link href="/resumes/cover-letters" className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-2 text-sm font-medium hover:bg-muted">
+              <FileText aria-hidden="true" className="h-4 w-4" />
+              {en("Cover letters")}
+            </Link>
             <Button type="button" variant="secondary" aria-expanded={creating} aria-controls="new-resume" onClick={() => setCreating(!creating)}>
               <FilePlus2 aria-hidden="true" className="h-4 w-4" />
               {en("Build a résumé")}
@@ -254,6 +260,11 @@ export default function ResumesPage() {
               onRename={(title) => act(`rename-${r.id}`, () => apiFetch(`/api/resumes/${r.id}`, { method: "PUT", body: JSON.stringify({ title }) }), en("Renamed."))}
               onArchive={() => act(`archive-${r.id}`, () => apiFetch(`/api/resumes/${r.id}/archive`, { method: "POST" }), en("Archived. It's under Archived if you need it again."))}
               onRestore={() => act(`restore-${r.id}`, () => apiFetch(`/api/resumes/${r.id}/restore`, { method: "POST" }), en("Restored to your library."))}
+              onFeedback={async () => {
+                if (!r.currentVersion) return;
+                const res = await act(`feedback-${r.id}`, () => apiFetch(`/api/resumes/versions/${r.currentVersion!.id}/feedback`, { method: "POST" }));
+                if (res) setFeedbackOf({ title: r.title, comments: ((await res.json()) as { comments: { line: string; kind: string; comment: string }[] }).comments });
+              }}
               onBuild={() => r.currentVersion && void startBuilt("upload", r.currentVersion.id, `${r.title.slice(0, 110)} (built)`)}
               loadVersions={async () => {
                 const res = await apiFetch(`/api/resumes/${r.id}`);
@@ -284,6 +295,28 @@ export default function ResumesPage() {
               })),
           ]}
         />
+      )}
+
+      {feedbackOf && (
+        <Modal labelledBy="feedback-title" onClose={() => setFeedbackOf(null)}>
+          <h2 id="feedback-title" className="text-lg font-semibold">{en("Feedback on {title}", { title: feedbackOf.title })}</h2>
+          <p className="mt-1 text-sm text-muted-foreground">{en("Suggestions only. Change what helps, in your own words.")}</p>
+          {feedbackOf.comments.length === 0 ? (
+            <p className="mt-3 text-sm">{en("No suggestions this time.")}</p>
+          ) : (
+            <ul className="mt-3 max-h-[60vh] space-y-3 overflow-auto">
+              {feedbackOf.comments.map((c, i) => (
+                <li key={i} className="text-sm">
+                  <p className="text-xs text-muted-foreground">“{c.line}”</p>
+                  <p className="mt-0.5"><Badge tone="info">{c.kind === "verb" ? en("Stronger verb") : c.kind === "outcome" ? en("Outcome") : en("Clarity")}</Badge> {c.comment}</p>
+                </li>
+              ))}
+            </ul>
+          )}
+          <div className="mt-4 flex justify-end">
+            <Button variant="secondary" onClick={() => setFeedbackOf(null)}>{en("Close")}</Button>
+          </div>
+        </Modal>
       )}
 
       {textOf && (
@@ -344,6 +377,7 @@ function ResumeCard({
   onArchive,
   onRestore,
   onBuild,
+  onFeedback,
   loadVersions,
 }: {
   resume: Resume;
@@ -356,6 +390,7 @@ function ResumeCard({
   onArchive: () => void;
   onRestore: () => void;
   onBuild: () => void;
+  onFeedback: () => void;
   loadVersions: () => Promise<Version[]>;
 }) {
   const en = useEn();
@@ -450,6 +485,12 @@ function ResumeCard({
             <Button type="button" variant="ghost" className="px-2" busy={busy === "new"} onClick={onBuild}>
               <PenLine aria-hidden="true" className="h-4 w-4" />
               {en("Turn into a built résumé")}
+            </Button>
+          )}
+          {!archived && !built && v?.textReadable && (
+            <Button type="button" variant="ghost" className="px-2" busy={busy === `feedback-${resume.id}`} onClick={onFeedback}>
+              <Sparkles aria-hidden="true" className="h-4 w-4" />
+              {en("AI feedback")}
             </Button>
           )}
           {v && (

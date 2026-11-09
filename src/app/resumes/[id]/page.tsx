@@ -14,6 +14,8 @@ import { ArrowDown, ArrowLeft, ArrowUp, BadgeCheck, Download, Plus, Trash2 } fro
 import { AccessNotice, useLatestRef, useLegacyApi } from "@/lib/legacyApi";
 import { useEn } from "@/lib/english/EnglishProvider";
 import { Badge, Button, ErrorBanner, Field, PageHeader, SuccessBanner } from "@/components/career/ui";
+import WritingHelp from "@/components/resumes/WritingHelp";
+import { downloadFrom } from "@/lib/resumeLibrary";
 
 type Evidence = { kind: string; id: string } | null | undefined;
 interface Line { id: string; text: string; evidence?: Evidence }
@@ -200,6 +202,21 @@ export default function ResumeEditorPage() {
             <Button type="button" variant="secondary" busy={busy === "download"} disabled={dirty} onClick={() => void download()} title={dirty ? en("Save first to download this version") : undefined}>
               <Download aria-hidden="true" className="h-4 w-4" />
               {en("Download PDF")}
+            </Button>
+            <Button
+              type="button"
+              variant="secondary"
+              busy={busy === "docx"}
+              disabled={dirty || !detail.currentVersionId}
+              title={dirty ? en("Save first to download this version") : undefined}
+              onClick={async () => {
+                setBusy("docx");
+                setError(await downloadFrom(apiFetch, `/api/resumes/versions/${detail.currentVersionId}/docx`, `${detail.title}.docx`));
+                setBusy(null);
+              }}
+            >
+              <Download aria-hidden="true" className="h-4 w-4" />
+              {en("Download Word")}
             </Button>
             <Button type="button" busy={busy === "save"} onClick={() => void save()}>
               {en("Save version")}
@@ -397,6 +414,30 @@ export default function ResumeEditorPage() {
               })}
             </ul>
           </div>
+          <WritingHelp
+            documentId={detail.id}
+            versionId={detail.currentVersionId}
+            dirty={dirty}
+            lineText={(lineId) => content.sections.flatMap((s) => s.entries.flatMap((e) => e.lines)).find((l) => l.id === lineId)?.text ?? ""}
+            onApply={(lines, orders) => {
+              update((c) => ({
+                ...c,
+                sections: c.sections.map((s) => ({
+                  ...s,
+                  entries: s.entries.map((e) => {
+                    const order = orders[e.id];
+                    // Lines added since the suggestion (not in the suggested order) stay, after the reordered ones
+                    const ordered = order
+                      ? [...order.map((id) => e.lines.find((l) => l.id === id)).filter((l): l is Line => !!l), ...e.lines.filter((l) => !order.includes(l.id))]
+                      : e.lines;
+                    return { ...e, lines: ordered.map((l) => (lines[l.id] !== undefined ? { ...l, text: lines[l.id] } : l)) };
+                  }),
+                })),
+              }));
+              const n = Object.keys(lines).length + Object.keys(orders).length;
+              setNotice(n === 1 ? en("Applied 1 change. Look it over, then save a version.") : en("Applied {count} changes. Look them over, then save a version.", { count: n }));
+            }}
+          />
         </aside>
       </div>
     </div>

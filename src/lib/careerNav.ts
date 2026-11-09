@@ -108,6 +108,7 @@ export const careerNav: Record<CareerPersona, CareerNavItem[]> = {
     { label: "Skill passport", href: "/passport", module: "F2", ready: true, group: "Your record" },
     { label: "Résumés", href: "/resumes", module: "R1", ready: true, group: "Your record" },
     { label: "Job check", href: "/resumes/job-check", module: "R1", ready: true, group: "Your record" },
+    { label: "Cover letters", href: "/resumes/cover-letters", module: "R1", ready: true, group: "Your record" },
     { label: "National credentials", href: "/student/national-credentials", module: "G6", ready: true, countries: ["IN"], group: "Your record" },
     { label: "Privacy & sharing", href: "/student/privacy", module: "F4", ready: true, group: "Account" },
     { label: "Notifications", href: "/student/notifications", module: "F5", ready: true, group: "Account" },
