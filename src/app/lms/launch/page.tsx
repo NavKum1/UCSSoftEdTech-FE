@@ -6,9 +6,12 @@
  * #error=...). The fragment never reaches a server; we remove it from the address bar at once, keep the session token
  * for this tab (as for partner sign-ins) and show the course the learner came from. (This page used to show an
  * invented course and student and claimed a certification it doesn't have.)
+ * Build & Defend 2.10: a launch of an LMS assignment linked to a class assessment (classAssignment=...) doesn't keep the
+ * LMS session: the person opens the assessment (or, a teacher, the class) with their own Edulexa account. A student whose
+ * course email isn't on the class list is told, since their grade can't reach the gradebook.
  */
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { brandFill, buttonClass } from "@/components/career/ui";
 import { ArrowRight, BookOpen, GraduationCap } from "lucide-react";
@@ -21,14 +24,23 @@ interface Launch {
   course: string | null;
   assignment: string | null;
   grades: boolean;
+  /** 2.10: a class assessment linked to this LMS assignment */
+  classAssignment: string | null;
+  classAssessment: string | null;
+  matched: boolean;
 }
 
 export default function LmsLaunchPage() {
   const en = useEn();
   const [launch, setLaunch] = useState<Launch | null>(null);
   const [error, setError] = useState<string | null>(null);
+  // The fragment is read once: the address bar is cleared straight after, so a second run (development's double effects,
+  // or the language loading) would find nothing and show an error over a good launch
+  const started = useRef(false);
 
   useEffect(() => {
+    if (started.current) return;
+    started.current = true;
     const params = new URLSearchParams(window.location.hash.replace(/^#/, ""));
     // Remove the token from the address bar and history before doing anything else
     window.history.replaceState(null, "", window.location.pathname);
@@ -41,13 +53,30 @@ export default function LmsLaunchPage() {
       done(() => setError(failure ?? "This page is opened from your course in your learning platform. Please launch Edulexa from there."));
       return;
     }
+    // A class assessment is opened with the person's own Edulexa account, never this LMS session
+    const classAssignment = params.get("classAssignment");
+    if (classAssignment) {
+      clearPartnerSession();
+      done(() =>
+        setLaunch({
+          role: params.get("role"), course: params.get("course"), assignment: params.get("assignment"), grades: params.get("grades") === "1",
+          classAssignment, classAssessment: params.get("classAssessment"), matched: params.get("matched") === "1",
+        }),
+      );
+      return;
+    }
     const session = savePartnerSession(token);
     if (!session) {
       done(() => setError(en("This launch link is not valid or has expired. Please launch Edulexa again from your course.")));
       return;
     }
     if (session.instituteId) setSelectedSchool(session.instituteId);
-    done(() => setLaunch({ role: params.get("role") ?? session.role, course: params.get("course"), assignment: params.get("assignment"), grades: params.get("grades") === "1" }));
+    done(() =>
+      setLaunch({
+        role: params.get("role") ?? session.role, course: params.get("course"), assignment: params.get("assignment"), grades: params.get("grades") === "1",
+        classAssignment: null, classAssessment: null, matched: false,
+      }),
+    );
   }, [en]);
 
   const faculty = launch?.role === "Faculty";
@@ -81,20 +110,45 @@ export default function LmsLaunchPage() {
                 {launch.assignment && <p className="mt-0.5 text-sm text-muted-foreground">{en("Activity: {assignment}", { assignment: launch.assignment })}</p>}
               </div>
             )}
-            <p className="mt-4 text-sm text-muted-foreground">
-              {faculty
-                ? en("You're signed in as teaching staff for this course.")
-                : launch.grades
-                  ? en("Your result for this activity is sent back to your course's gradebook when it is graded.")
-                  : en("You're signed in for this session through your course.")}
-            </p>
-            <Link
-              href={faculty ? "/institute/dashboard" : "/dashboard"}
-              className={`${buttonClass("primary")} mt-6 w-full`}
-              style={brandFill}
-            >
-              {faculty ? en("Open the institute portal") : en("Continue")} <ArrowRight aria-hidden="true" className="h-4 w-4" />
-            </Link>
+            {launch.classAssignment ? (
+              <>
+                <p className="mt-4 text-sm text-muted-foreground">
+                  {faculty
+                    ? en("This course assignment is linked to your class assessment in Edulexa. When you decide, the score and your comment go to the course's gradebook.")
+                    : launch.matched
+                      ? en("Your course's gradebook is connected. Your result goes there when your teacher decides. Open the assessment with your Edulexa account.")
+                      : en("Your email in this course isn't on the class list in Edulexa, so your result can't reach the gradebook yet. Ask your teacher to check your email on the class list, then open this again from your course.")}
+                </p>
+                <Link
+                  href={
+                    faculty && launch.classAssessment
+                      ? `/faculty/assessments/${launch.classAssessment}/classes/${launch.classAssignment}`
+                      : `/student/assessments/${launch.classAssignment}`
+                  }
+                  className={`${buttonClass("primary")} mt-6 w-full`}
+                  style={brandFill}
+                >
+                  {faculty ? en("Open the class") : en("Open the assessment")} <ArrowRight aria-hidden="true" className="h-4 w-4" />
+                </Link>
+              </>
+            ) : (
+              <>
+                <p className="mt-4 text-sm text-muted-foreground">
+                  {faculty
+                    ? en("You're signed in as teaching staff for this course.")
+                    : launch.grades
+                      ? en("Your result for this activity is sent back to your course's gradebook when it is graded.")
+                      : en("You're signed in for this session through your course.")}
+                </p>
+                <Link
+                  href={faculty ? "/institute/dashboard" : "/dashboard"}
+                  className={`${buttonClass("primary")} mt-6 w-full`}
+                  style={brandFill}
+                >
+                  {faculty ? en("Open the institute portal") : en("Continue")} <ArrowRight aria-hidden="true" className="h-4 w-4" />
+                </Link>
+              </>
+            )}
           </>
         )}
       </div>

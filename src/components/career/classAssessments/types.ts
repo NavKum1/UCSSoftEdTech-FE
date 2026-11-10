@@ -158,6 +158,24 @@ export interface StudentRow {
     decision: Decision | null;
     score: number | null;
   } | null;
+  /** 2.10: the grade with the school's LMS (null when the assignment isn't linked to one) */
+  lms: { status: LmsStatus; error: string | null; syncedAt: string | null } | null;
+}
+
+/** 2.10: where a decided attempt's grade is with the LMS */
+export type LmsStatus = "Pending" | "Sent" | "Failed" | "NotLinked";
+
+/** 2.10: the class's results from the teachers' final decisions */
+export interface ClassResults {
+  passed: number;
+  resubmit: number;
+  failed: number;
+  waiting: number;
+  working: number;
+  notStarted: number;
+  average: number | null;
+  median: number | null;
+  criteria: { key: string; name: string; weight: number; average: number | null }[];
 }
 
 export interface AssignmentStudents {
@@ -165,6 +183,9 @@ export interface AssignmentStudents {
   class: { id: string; name: string };
   assignment: { id: string; opensAt: string; dueAt: string; acceptLate: boolean };
   counts: { students: number; notStarted: number; working: number; vivaNext: number; toReview: number; decided: number };
+  results: ClassResults;
+  /** Linked to an LMS assignment: decisions send the grade */
+  lmsLinked: boolean;
   students: StudentRow[];
 }
 

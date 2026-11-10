@@ -4,6 +4,8 @@
  * Build & Defend 1.0 Stage 2 (2.7): one assessment in one class. Every student and where they are: not started, working on it,
  * work in with the viva next, ready for review, or decided. Each attempt opens its evidence. Only the class's teachers and
  * school admins see it. API: /api/career/class-assessments/faculty/assessments/{id}/assignments/{assignmentId}/students.
+ * 2.10: the results from the teachers' decisions, a CSV download, and each student's grade in the school's LMS when the
+ * assignment is linked to one (ClassResults).
  */
 import React, { useMemo, useState } from "react";
 import Link from "next/link";
@@ -14,6 +16,7 @@ import { useEn } from "@/lib/english/EnglishProvider";
 import { Badge, EmptyState, ErrorBanner, Loading, PageHeader, ScrollArea, Tabs, useLoad } from "@/components/career/ui";
 import { CA_API, formatWhen, type AssignmentStudents, type StudentRow } from "@/components/career/classAssessments/types";
 import { useStudentStatus, useSuggestionStateText, useWorkKindNames } from "@/components/career/classAssessments/evidenceText";
+import { CsvButton, LmsCell, ResultsSummary } from "@/components/career/classAssessments/ClassResults";
 
 type Filter = "all" | "review" | "viva" | "working" | "not_started" | "decided";
 
@@ -55,11 +58,26 @@ export default function AssignmentStudentsPage() {
         title={d.assessment.title}
         description={en("{className}, due {when}", { className: d.class.name, when: formatWhen(d.assignment.dueAt) })}
         actions={
-          <Link href={`/faculty/assessments/${d.assessment.id}`} className="text-sm font-medium underline-offset-2 hover:underline">
-            {en("Assessment settings")}
-          </Link>
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+            <Link href={`/faculty/assessments/${d.assessment.id}`} className="text-sm font-medium underline-offset-2 hover:underline">
+              {en("Assessment settings")}
+            </Link>
+            <CsvButton
+              assessmentId={d.assessment.id}
+              assignmentId={d.assignment.id}
+              fileName={`${[d.assessment.title, d.class.name, "results"].join(" ").replace(/[^\p{L}\p{N}]+/gu, "-").replace(/^-|-$/g, "")}.csv`}
+            />
+          </div>
         }
       />
+
+      {d.lmsLinked && (
+        <p className="mb-4 rounded-lg border border-border bg-muted/40 p-3 text-sm">
+          {en("Linked to your course's gradebook. When you decide, the score and your comment go to the LMS; asked to resubmit shows as in progress.")}
+        </p>
+      )}
+
+      <ResultsSummary results={d.results} />
 
       <div className="mb-4">
         <Tabs<Filter>
@@ -93,6 +111,7 @@ export default function AssignmentStudentsPage() {
                   <th scope="col" className="hidden pe-3 font-medium md:table-cell">{en("Work")}</th>
                   <th scope="col" className="hidden pe-3 font-medium lg:table-cell">{en("Suggested scores")}</th>
                   <th scope="col" className="hidden pe-3 font-medium sm:table-cell">{en("Handed in")}</th>
+                  {d.lmsLinked && <th scope="col" className="pe-3 font-medium">{en("Gradebook")}</th>}
                   <th scope="col" className="pe-4 font-medium"><span className="sr-only">{en("Evidence")}</span></th>
                 </tr>
               </thead>
@@ -123,6 +142,11 @@ export default function AssignmentStudentsPage() {
                       <td className="hidden pe-3 align-top text-muted-foreground md:table-cell">{t?.workKind ? kinds[t.workKind] : "—"}</td>
                       <td className="hidden pe-3 align-top text-muted-foreground lg:table-cell">{t && t.suggestions !== "after_viva" ? suggestions[t.suggestions] : "—"}</td>
                       <td className="hidden whitespace-nowrap pe-3 align-top text-muted-foreground sm:table-cell">{t?.submittedAt ? formatWhen(t.submittedAt) : "—"}</td>
+                      {d.lmsLinked && (
+                        <td className="pe-3 align-top text-sm">
+                          <LmsCell row={s} onSent={data.reload} />
+                        </td>
+                      )}
                       <td className="whitespace-nowrap pe-4 text-end align-top">
                         {t && (
                           <Link href={`/faculty/attempts/${t.id}`} className="font-medium underline underline-offset-2 hover:decoration-2">
