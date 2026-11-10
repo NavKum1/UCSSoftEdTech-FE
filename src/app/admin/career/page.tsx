@@ -32,6 +32,8 @@ interface SchoolRow {
   brandId?: string | null;
   partnerKey?: string | null;
   partnerOrgId?: string | null;
+  pilotStartsAt?: string | null;
+  pilotEndsAt?: string | null;
 }
 
 interface EmployerRow {
@@ -178,6 +180,61 @@ function SchoolRowEditor({ school, brands, onSaved }: { school: SchoolRow; brand
       <Field label="Partner org id">{(p) => <input {...p} value={f.partnerOrgId} onChange={(e) => setF({ ...f, partnerOrgId: e.target.value })} />}</Field>
       <div className="flex items-end gap-2">
         <Button type="submit" busy={busy}>Save</Button>
+        <Button type="button" variant="ghost" onClick={() => setOpen(false)}>Cancel</Button>
+      </div>
+    </form>
+  );
+}
+
+/** Build & Defend Stage 3: the school's pilot weeks, and its results */
+function PilotCell({ school, onSaved }: { school: SchoolRow; onSaved: (msg: string) => void }) {
+  const api = useApi();
+  const [open, setOpen] = useState(false);
+  const [f, setF] = useState({ startsAt: school.pilotStartsAt?.slice(0, 10) ?? "", endsAt: school.pilotEndsAt?.slice(0, 10) ?? "" });
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
+  const save = async (body: { startsAt: string | null; endsAt: string | null }) => {
+    setBusy(true);
+    setErr(null);
+    try {
+      await api(`/api/career/platform/schools/${school.instituteId}/pilot`, { method: "PUT", json: body });
+      setOpen(false);
+      onSaved(body.startsAt ? `${school.displayName} is a pilot school.` : `${school.displayName} is no longer a pilot school.`);
+    } catch (e) {
+      setErr((e as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  };
+  if (!open)
+    return (
+      <div className="flex flex-wrap items-center gap-2">
+        {school.pilotStartsAt ? (
+          <>
+            <span className="whitespace-nowrap">{school.pilotStartsAt.slice(0, 10)} to {school.pilotEndsAt?.slice(0, 10)}</span>
+            <Link href={`/admin/career/pilot/${school.instituteId}`} className="font-medium underline-offset-2 hover:underline">Results</Link>
+          </>
+        ) : (
+          <span className="text-muted-foreground">—</span>
+        )}
+        <Button variant="ghost" onClick={() => setOpen(true)} aria-label={`Pilot dates for ${school.displayName}`}>{school.pilotStartsAt ? "Change" : "Set"}</Button>
+      </div>
+    );
+  return (
+    <form
+      onSubmit={(e) => {
+        e.preventDefault();
+        void save({ startsAt: f.startsAt || null, endsAt: f.endsAt ? f.endsAt + "T23:59:59Z" : null });
+      }}
+      className="grid min-w-80 gap-2 sm:grid-cols-2"
+      aria-label={`Pilot dates for ${school.displayName}`}
+    >
+      <div className="sm:col-span-2"><ErrorBanner error={err} /></div>
+      <Field label="Pilot starts">{(p) => <input {...p} type="date" required value={f.startsAt} onChange={(e) => setF({ ...f, startsAt: e.target.value })} />}</Field>
+      <Field label="Pilot ends">{(p) => <input {...p} type="date" required value={f.endsAt} onChange={(e) => setF({ ...f, endsAt: e.target.value })} />}</Field>
+      <div className="flex flex-wrap items-end gap-2 sm:col-span-2">
+        <Button type="submit" busy={busy}>Save</Button>
+        {school.pilotStartsAt && <Button type="button" variant="ghost" disabled={busy} onClick={() => void save({ startsAt: null, endsAt: null })}>End the pilot</Button>}
         <Button type="button" variant="ghost" onClick={() => setOpen(false)}>Cancel</Button>
       </div>
     </form>
@@ -333,6 +390,7 @@ export default function CareerPlatformAdminPage() {
                   <th scope="col" className="py-2 pe-3 font-medium">Domains</th>
                   <th scope="col" className="py-2 pe-3 font-medium">Brand</th>
                   <th scope="col" className="py-2 pe-3 font-medium">Partner</th>
+                  <th scope="col" className="py-2 pe-3 font-medium">Pilot</th>
                   <th scope="col" className="py-2 font-medium"><span className="sr-only">Actions</span></th>
                 </tr>
               </thead>
@@ -344,6 +402,9 @@ export default function CareerPlatformAdminPage() {
                     <td className="py-2 pe-3">{s.emailDomains || "—"}</td>
                     <td className="py-2 pe-3">{brandKey(s.brandId)}</td>
                     <td className="py-2 pe-3">{[s.partnerKey, s.partnerOrgId].filter(Boolean).join(" / ") || "—"}</td>
+                    <td className="py-2 pe-3">
+                      <PilotCell school={s} onSaved={(m) => { setMsg(m); schools.reload(); }} />
+                    </td>
                     <td className="py-2">
                       {brands.data && (
                         <SchoolRowEditor

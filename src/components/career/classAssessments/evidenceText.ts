@@ -121,6 +121,10 @@ export function useSignalText() {
   // 2.12: the change task's points are the coding task's, about the change
   return (s: EvidenceSignal): string => {
     if (s.code === "change_not_handed_in") return en("The change task wasn't handed in in time.");
+    if (s.code === "change_test_machinery")
+      return en("The change uses the test machinery ({names}), which a change like this has no reason to touch, so its test results can't be trusted. Ask why.", {
+        names: String(s.values?.names ?? ""),
+      });
     if (s.code.startsWith("change_")) return en("In the change task: {point}", { point: text({ ...s, code: "coding_" + s.code.slice("change_".length) }) });
     return text(s);
   };

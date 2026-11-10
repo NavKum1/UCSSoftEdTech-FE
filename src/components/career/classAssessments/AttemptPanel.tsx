@@ -36,6 +36,8 @@ interface AttemptState {
   /** 2.12: the change task of this attempt (made after the hand-in), and whether the assessment has one */
   change: StudentChange | null;
   hasChangeTask: boolean;
+  /** Stage 3: the questions after the viva (null until it's handed in) */
+  feedback: { given: boolean } | null;
   submitWith: Kind[];
   task: { kind: Kind; title: string; href: string } | null;
   vivaModes: ("voice" | "text")[];
@@ -146,6 +148,15 @@ export function AttemptPanel({ assignmentId, onChange }: { assignmentId: string;
           </p>
         )}
 
+        {s.feedback && (
+          <FeedbackQuestions
+            given={s.feedback.given}
+            assignmentId={assignmentId}
+            busy={busy === "feedback"}
+            onSend={(answers) => run("feedback", () => api<AttemptState>(`${base}/feedback`, { method: "POST", json: answers }))}
+          />
+        )}
+
         {t?.status === "Decided" && s.result && (
           <section aria-labelledby="your-result" className="border-t border-border pt-4">
             <h3 id="your-result" className="mb-3 text-base font-semibold">
@@ -162,6 +173,79 @@ export function AttemptPanel({ assignmentId, onChange }: { assignmentId: string;
         )}
       </div>
     </Card>
+  );
+}
+
+/**
+ * Stage 3: two questions after the viva for the school's pilot results. Anonymous: the answers aren't linked to the student,
+ * and the school sees totals only. "Not now" hides them for this visit.
+ */
+function FeedbackQuestions({ given, assignmentId, busy, onSend }: {
+  given: boolean;
+  assignmentId: string;
+  busy: boolean;
+  onSend: (answers: { fair: number; ownWork: number; comment: string }) => Promise<boolean>;
+}) {
+  const en = useEn();
+  const key = `ca-feedback-later:${assignmentId}`;
+  const [later, setLater] = useState(() => {
+    try { return sessionStorage.getItem(key) === "1"; } catch { return false; }
+  });
+  const [fair, setFair] = useState<number | null>(null);
+  const [ownWork, setOwnWork] = useState<number | null>(null);
+  const [comment, setComment] = useState("");
+  if (given)
+    return <p className="text-muted-foreground">{en("Thanks for answering the questions about this assessment.")}</p>;
+  if (later) return null;
+  const scale = [en("Not at all"), en("A little"), en("Partly"), en("Mostly"), en("Completely")];
+  const question = (name: string, label: string, value: number | null, set: (v: number) => void) => (
+    <fieldset className="space-y-2">
+      <legend className="font-medium">{label}</legend>
+      <div className="flex flex-wrap gap-2">
+        {scale.map((text, i) => (
+          <label
+            key={i}
+            className={
+              "cursor-pointer rounded-lg border px-3 py-1.5 text-sm transition-colors has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-ring " +
+              (value === i + 1 ? "border-[var(--brand)] bg-[var(--brand)]/10 font-medium text-foreground" : "border-border hover:bg-muted")
+            }
+          >
+            <input type="radio" name={name} value={i + 1} checked={value === i + 1} onChange={() => set(i + 1)} className="sr-only" />
+            {text}
+          </label>
+        ))}
+      </div>
+    </fieldset>
+  );
+  return (
+    <section aria-labelledby="ca-feedback" className="space-y-3 rounded-lg border border-border p-3">
+      <div>
+        <h3 id="ca-feedback" className="font-semibold">{en("Two quick questions")}</h3>
+        <p className="text-muted-foreground">{en("Your answers are anonymous: they aren't linked to you, and your school sees only the totals. They don't affect your result.")}</p>
+      </div>
+      {question("ca-fair", en("Was this assessment fair?"), fair, setFair)}
+      {question("ca-own", en("Did the viva reflect your own work?"), ownWork, setOwnWork)}
+      <Field label={en("Anything else? (optional)")}>
+        {(p) => (
+          <textarea {...p} value={comment} maxLength={1000} rows={3} onChange={(e) => setComment(e.target.value)} placeholder={en("Please don't include your name.")} />
+        )}
+      </Field>
+      <div className="flex flex-wrap gap-2">
+        <Button busy={busy} disabled={fair == null || ownWork == null} onClick={() => void onSend({ fair: fair!, ownWork: ownWork!, comment })}>
+          {en("Send answers")}
+        </Button>
+        <button
+          type="button"
+          className={buttonClass("secondary")}
+          onClick={() => {
+            try { sessionStorage.setItem(key, "1"); } catch { /* the page still hides them */ }
+            setLater(true);
+          }}
+        >
+          {en("Not now")}
+        </button>
+      </div>
+    </section>
   );
 }
 
@@ -371,7 +455,7 @@ function ChangeStep({
     return (
       <div className="space-y-2 rounded-lg border border-border p-3" role="status">
         <p className="flex items-center gap-2 font-medium">
-          <span className="inline-block h-2.5 w-2.5 animate-pulse rounded-full bg-primary motion-reduce:animate-none" aria-hidden />
+          <span className="inline-block h-2.5 w-2.5 animate-pulse rounded-full bg-[var(--brand)] motion-reduce:animate-none" aria-hidden />
           {en("Preparing your change task")}
         </p>
         <p className="text-muted-foreground">
@@ -395,6 +479,7 @@ function ChangeStep({
           <li>{en("You have {minutes} minutes once you start.", { minutes: change.minutes })}</li>
           <li>{en("You work in the coding workspace, on a copy of your code. The AI assistant is off.")}</li>
           <li>{en("Hidden tests check the change. Submit it in the workspace, then come back here and hand it in.")}</li>
+          <li>{en("Do the change task and the viva within 48 hours of the due date. After that, your teacher's rules for late work apply.")}</li>
         </ul>
         <Button busy={busy === "change-start"} onClick={() => void run("change-start", () => api<AttemptState>(`${base}/change/start`, { method: "POST" }))}>
           {en("Start the change task ({minutes} minutes)", { minutes: change.minutes })}
@@ -562,7 +647,7 @@ function Viva({
         <p className="font-medium">{en("The viva, in writing: question {n} of {total}", { n: Math.min(viva.answered + 1, viva.questions), total: viva.questions })}</p>
         <ol className="space-y-3">
           {viva.turns.map((x, i) => (
-            <li key={i} className={x.role === "interviewer" ? "rounded-lg border border-border bg-muted/40 p-3" : "rounded-lg border border-primary/30 p-3"}>
+            <li key={i} className={x.role === "interviewer" ? "rounded-lg border border-border bg-muted/40 p-3" : "rounded-lg border border-[var(--brand)]/30 p-3"}>
               <span className="block text-xs text-muted-foreground">{x.role === "interviewer" ? en("Question") : en("Your answer")}</span>
               <span className="whitespace-pre-line">{x.text}</span>
             </li>

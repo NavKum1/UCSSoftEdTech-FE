@@ -310,6 +310,8 @@ export interface EvidenceChange {
   minutesTaken: number | null;
   submitted: boolean | null;
   tests: { passed: number; total: number; status: string; cases: Record<string, boolean> } | null;
+  /** False when the change reaches into the test machinery (it could have faked the results); null without a handed-in change */
+  testsTrusted: boolean | null;
   changes: { file: string; linesAdded: number; linesRemoved: number; diff: string }[] | null;
 }
 
@@ -336,10 +338,14 @@ export function withChangeCriterion(rubric: Criterion[], on: boolean): Criterion
   if (total <= 0 || others.length === 0) return on ? [...others, { ...criterion, weight: 100 }] : others;
   const clamp = (w: number) => Math.min(80, Math.max(5, w));
   const scaled = others.map((c) => ({ ...c, weight: clamp(Math.round(((Number(c.weight) || 0) * target) / total)) }));
-  const diff = target - scaled.reduce((s, c) => s + c.weight, 0);
-  if (diff !== 0) {
-    const largest = scaled.reduce((best, c, i) => (c.weight > scaled[best].weight ? i : best), 0);
-    scaled[largest] = { ...scaled[largest], weight: clamp(scaled[largest].weight + diff) };
+  // Rounding and the limits: the largest criteria take up the difference, each only as far as 5 to 80 allows
+  let diff = target - scaled.reduce((s, c) => s + c.weight, 0);
+  const largestFirst = scaled.map((c, i) => i).sort((a, b) => scaled[b].weight - scaled[a].weight);
+  for (const i of largestFirst) {
+    if (diff === 0) break;
+    const weight = clamp(scaled[i].weight + diff);
+    diff -= weight - scaled[i].weight;
+    scaled[i] = { ...scaled[i], weight };
   }
   return on ? [...scaled, criterion] : scaled;
 }

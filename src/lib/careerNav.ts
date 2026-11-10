@@ -130,6 +130,8 @@ export const careerNav: Record<CareerPersona, CareerNavItem[]> = {
     { label: "Challenges", href: "/career-center/challenges", module: "D7", ready: true, group: "Students" },
     // Build & Defend 2.8: school admins answer appeals no other teacher of the class can (and see every class's queue)
     { label: "Class reviews", href: "/faculty/review", module: "BD2", ready: true, group: "Students", roles: ["CareerAdmin"] },
+    // Build & Defend Stage 3: the pilot's results, for the whole school
+    { label: "Assessment results", href: "/faculty/results", module: "BD3", ready: true, group: "Reports", roles: ["CareerAdmin"] },
     { label: "Employers", href: "/career-center/employers", module: "F3", ready: true, group: "Employers and jobs" },
     { label: "Career fairs", href: "/career-center/fairs", module: "C5", ready: true, group: "Employers and jobs" },
     { label: "Internships", href: "/career-center/experiences", module: "C9", ready: true, group: "Employers and jobs" },
@@ -175,6 +177,7 @@ export const careerNav: Record<CareerPersona, CareerNavItem[]> = {
     { label: "Classes", href: "/faculty/classes", module: "BD2", ready: true },
     { label: "Assessments", href: "/faculty/assessments", module: "BD2", ready: true },
     { label: "Review", href: "/faculty/review", module: "BD2", ready: true },
+    { label: "Results", href: "/faculty/results", module: "BD3", ready: true },
     { label: "Internship approvals", href: "/faculty/experiences", module: "C9", ready: true },
     { label: "Outcome attainment", href: "/faculty/frameworks", module: "D1", ready: true },
     { label: "Notifications", href: "/faculty/notifications", module: "F5", ready: true },

@@ -33,6 +33,7 @@ import {
   useWorkKindNames,
 } from "@/components/career/classAssessments/evidenceText";
 import { ReviewPanel } from "@/components/career/classAssessments/ReviewPanel";
+import { useReviewTime } from "@/components/career/classAssessments/reviewTime";
 
 const CODE = "max-h-96 overflow-auto whitespace-pre rounded-lg border border-border bg-muted/50 p-3 font-mono text-xs leading-relaxed focus-visible:outline-2 focus-visible:outline-offset-2";
 
@@ -44,6 +45,8 @@ export default function AttemptEvidencePage() {
   const ev = useLoad(() => api<AttemptEvidence>(`${CA_API}/faculty/attempts/${attemptId}/evidence`), [api, attemptId, schoolId]);
   const statuses = useAttemptStatusNames();
   const decisions = useDecisionNames();
+  // Stage 3: the active time spent reviewing, until the decision (for the pilot results)
+  useReviewTime(api, attemptId, ev.data?.attempt.status === "Submitted");
 
   if (ev.loading) return <Loading />;
   if (!ev.data) return <ErrorBanner error={ev.error ?? en("This attempt couldn't be loaded.")} onRetry={ev.reload} />;
@@ -277,6 +280,11 @@ function ChangeCard({ change }: { change: EvidenceChange }) {
           <span>{en("No AI assistant")}</span>
         </p>
         {/* Only the files the student changed (the starting files they left alone aren't part of the change) */}
+        {change.testsTrusted === false && (
+          <p className="rounded-lg border border-amber-300 bg-amber-50 p-3 text-amber-900 dark:border-amber-700/60 dark:bg-amber-900/30 dark:text-amber-200">
+            {en("The change uses the test machinery, so the test results below can't be trusted. See the points to talk about.")}
+          </p>
+        )}
         {change.submitted && <TestsAndChanges tests={change.tests} changes={(change.changes ?? []).filter((c) => c.linesAdded > 0 || c.linesRemoved > 0)} />}
       </div>
     </Card>

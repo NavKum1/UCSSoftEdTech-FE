@@ -8,6 +8,7 @@ import { useCareerShell } from "@/components/career/CareerShell";
 import { Card, ErrorBanner, Loading, PageHeader, useLoad, useCareerFormat, useCareerT, StatTile } from "@/components/career/ui";
 import { useCareerNavLabels } from "@/components/career/i18n/nav";
 import { ROLES } from "@/components/career/coreLabels";
+import { GettingStarted } from "@/components/career/classAssessments/GettingStarted";
 
 interface Summary {
   school: string;
@@ -43,6 +44,8 @@ export default function CareerCenterHome() {
         <Loading />
       ) : data ? (
         <div className="space-y-6">
+          {/* Build & Defend Stage 3: the admin's steps to a first result (and, for a pilot, its results) */}
+          {role === "CareerAdmin" && <GettingStarted schoolId={schoolId} />}
           <section aria-labelledby="cc-people">
             <h2 id="cc-people" className="mb-3 text-base font-semibold">{t("people")}</h2>
             <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
