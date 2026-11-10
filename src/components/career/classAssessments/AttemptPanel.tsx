@@ -3,7 +3,8 @@
 /**
  * Build & Defend 1.0 Stage 2 (2.5): the student's attempt at a class assessment. Start, hand in the work (a GitHub repository
  * whose ownership is checked, a project .zip, the coding task or the exam), then the viva by voice (OpenAI Realtime through
- * the API, which keeps the transcript) or in writing. Then it waits for the teacher, who decides.
+ * the API, which keeps the transcript) or in writing. Then it waits for the teacher, who decides. 2.12: when the assessment has a
+ * change task, the student makes one small change to their own code in the workspace (timed, no AI assistant) before the viva.
  * API: /api/career/class-assessments/student/assessments/{assignmentId}/attempt...
  */
 import React, { useEffect, useRef, useState } from "react";
@@ -12,8 +13,9 @@ import { useApi } from "@/lib/appAuth";
 import { useEn } from "@/lib/english/EnglishProvider";
 import { openRealtimeCall, type RealtimeCall, type RealtimeCaption } from "@/lib/realtimeCall";
 import { Badge, Button, Card, ErrorBanner, Field, Loading, buttonClass, formatDate, useLoad } from "@/components/career/ui";
-import { CA_API, type StudentResult } from "@/components/career/classAssessments/types";
+import { CA_API, type StudentChange, type StudentResult } from "@/components/career/classAssessments/types";
 import { PreviousFeedbackView, ResultView, type PreviousFeedback } from "@/components/career/classAssessments/StudentResult";
+import { useSkipReasonText } from "@/components/career/classAssessments/evidenceText";
 
 type Kind = "repo" | "upload" | "sprint" | "exam";
 
@@ -31,6 +33,9 @@ interface AttemptState {
   /** 2.8: the teacher's decision on this attempt, and the feedback on the one before while resubmitting */
   result: StudentResult | null;
   previous: PreviousFeedback | null;
+  /** 2.12: the change task of this attempt (made after the hand-in), and whether the assessment has one */
+  change: StudentChange | null;
+  hasChangeTask: boolean;
   submitWith: Kind[];
   task: { kind: Kind; title: string; href: string } | null;
   vivaModes: ("voice" | "text")[];
@@ -80,13 +85,15 @@ export function AttemptPanel({ assignmentId, onChange }: { assignmentId: string;
   if (!state.data) return <ErrorBanner error={state.error ?? en("Your attempt couldn't be loaded.")} onRetry={state.reload} />;
   const s = state.data;
   const t = s.attempt;
+  // 2.12: the change task comes first, until it's done or skipped
+  const changeOn = t?.status === "Viva" && !!s.change && (s.change.status === "Preparing" || s.change.status === "Ready" || s.change.status === "Started");
 
   return (
     <Card title={en("Your attempt")}>
       <div className="space-y-4 text-sm">
         <ErrorBanner error={error} />
         {notice && <p className="rounded-lg border border-amber-300 bg-amber-50 p-3 text-amber-900 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-200">{notice}</p>}
-        <Steps status={t?.status ?? null} />
+        <Steps status={t?.status ?? null} change={s.hasChangeTask} changeOn={changeOn} />
         {s.previous && t?.status !== "Decided" && <PreviousFeedbackView previous={s.previous} />}
 
         {!t && (
@@ -120,7 +127,11 @@ export function AttemptPanel({ assignmentId, onChange }: { assignmentId: string;
           </p>
         )}
 
-        {t?.status === "Viva" && (
+        {changeOn && s.change && <ChangeStep change={s.change} assignmentId={assignmentId} base={base} busy={busy} run={run} onRefresh={state.setData} />}
+
+        {(t?.status === "Viva" || t?.status === "Submitted") && !changeOn && s.change && <ChangeDone change={s.change} />}
+
+        {t?.status === "Viva" && !changeOn && (
           <Viva state={s} base={base} busy={busy} setBusy={setBusy} run={run} setNotice={setNotice} setError={setError}
             onDone={(next) => {
               state.setData(next);
@@ -154,10 +165,12 @@ export function AttemptPanel({ assignmentId, onChange }: { assignmentId: string;
   );
 }
 
-function Steps({ status }: { status: string | null }) {
+function Steps({ status, change, changeOn }: { status: string | null; change: boolean; changeOn: boolean }) {
   const en = useEn();
-  const at = status == null || status === "Started" ? 0 : status === "Viva" ? 1 : 2;
-  const steps = [en("Hand in your work"), en("The viva"), en("Your teacher decides")];
+  const steps = change
+    ? [en("Hand in your work"), en("The change task"), en("The viva"), en("Your teacher decides")]
+    : [en("Hand in your work"), en("The viva"), en("Your teacher decides")];
+  const at = status == null || status === "Started" ? 0 : status === "Viva" ? (change && !changeOn ? 2 : 1) : steps.length - 1;
   return (
     <ol className="flex flex-wrap gap-x-4 gap-y-1 text-xs">
       {steps.map((label, i) => (
@@ -309,6 +322,134 @@ function RepoHandIn({ base, busy, run }: { base: string; busy: string | null; ru
         </div>
       )}
     </div>
+  );
+}
+
+/**
+ * 2.12: the change task before the viva. While it's being prepared the page checks again every few seconds; once ready, the
+ * student starts the clock and only then sees the request (seen earlier, it could be worked out with no time limit); the
+ * workspace opens on their own code, and they hand in what they submitted there (or the time runs out).
+ */
+function ChangeStep({
+  change,
+  assignmentId,
+  base,
+  busy,
+  run,
+  onRefresh,
+}: {
+  change: StudentChange;
+  assignmentId: string;
+  base: string;
+  busy: string | null;
+  run: Run;
+  onRefresh: (s: AttemptState) => void;
+}) {
+  const en = useEn();
+  const api = useApi();
+  const [now, setNow] = useState(() => Date.now());
+  // Bumped when a check fails, so the page keeps checking
+  const [tries, setTries] = useState(0);
+
+  useEffect(() => {
+    if (change.status !== "Preparing") return;
+    const timer = setTimeout(() => {
+      api<AttemptState>(base)
+        .then(onRefresh)
+        .catch(() => setTries((n) => n + 1));
+    }, 4000);
+    return () => clearTimeout(timer);
+  }, [change, tries, api, base, onRefresh]);
+
+  useEffect(() => {
+    if (change.status !== "Started") return;
+    const timer = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(timer);
+  }, [change.status]);
+
+  if (change.status === "Preparing")
+    return (
+      <div className="space-y-2 rounded-lg border border-border p-3" role="status">
+        <p className="flex items-center gap-2 font-medium">
+          <span className="inline-block h-2.5 w-2.5 animate-pulse rounded-full bg-primary motion-reduce:animate-none" aria-hidden />
+          {en("Preparing your change task")}
+        </p>
+        <p className="text-muted-foreground">
+          {en("The AI is writing a short change request from your own code, and checking it can be done. This usually takes a minute or two; this page updates by itself.")}
+        </p>
+      </div>
+    );
+
+  const request = (
+    <div className="space-y-1.5 rounded-lg border border-border bg-muted/40 p-3">
+      <p className="font-medium">{change.title}</p>
+      <p className="whitespace-pre-line">{change.request}</p>
+    </div>
+  );
+
+  if (change.status === "Ready")
+    return (
+      <div className="space-y-3">
+        <p>{en("Before the viva, you make one small change to your own code. Your change task is ready. You see what to change when you start, and the clock runs from then.")}</p>
+        <ul className="list-disc space-y-1 ps-5 text-muted-foreground">
+          <li>{en("You have {minutes} minutes once you start.", { minutes: change.minutes })}</li>
+          <li>{en("You work in the coding workspace, on a copy of your code. The AI assistant is off.")}</li>
+          <li>{en("Hidden tests check the change. Submit it in the workspace, then come back here and hand it in.")}</li>
+        </ul>
+        <Button busy={busy === "change-start"} onClick={() => void run("change-start", () => api<AttemptState>(`${base}/change/start`, { method: "POST" }))}>
+          {en("Start the change task ({minutes} minutes)", { minutes: change.minutes })}
+        </Button>
+      </div>
+    );
+
+  // Started: the clock runs
+  const due = change.dueAt ? new Date(change.dueAt).getTime() : null;
+  const left = due == null ? null : Math.max(0, Math.floor((due - now) / 1000));
+  const over = left === 0;
+  // The workspace sends the student back here once the change is submitted (assessment=)
+  const href = change.sprintId
+    ? `/sprint/${change.sprintId}?${new URLSearchParams({ ...(change.inviteCode ? { invite: change.inviteCode } : {}), assessment: assignmentId }).toString()}`
+    : null;
+  return (
+    <div className="space-y-3">
+      {request}
+      <p className={`flex items-center gap-2 font-medium tabular-nums ${over ? "text-amber-800 dark:text-amber-300" : ""}`} role="timer" aria-live="off">
+        <span className={`inline-block h-2.5 w-2.5 rounded-full ${over ? "bg-amber-500" : "bg-emerald-500"}`} aria-hidden />
+        {left == null
+          ? en("The clock is running.")
+          : over
+            ? en("Time's up. Hand in what you submitted in the workspace. A submission made in the next two minutes still counts.")
+            : en("Time left: {time}", { time: `${Math.floor(left / 60)}:${String(left % 60).padStart(2, "0")}` })}
+      </p>
+      <div className="flex flex-wrap gap-2">
+        {href && (
+          <a href={href} target="_blank" rel="noopener" className={buttonClass("secondary")}>
+            {en("Open the workspace (new tab)")}
+          </a>
+        )}
+        <Button busy={busy === "change-hand-in"} onClick={() => void run("change-hand-in", () => api<AttemptState>(`${base}/change/hand-in`, { method: "POST" }))}>
+          {en("Hand in the change")}
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+/** 2.12: how the change task went (or why there was none), above the viva */
+function ChangeDone({ change }: { change: StudentChange }) {
+  const en = useEn();
+  const skipReason = useSkipReasonText();
+  if (change.status === "Skipped") return <p className="rounded-lg border border-border bg-muted/40 p-3">{skipReason(change.reason)}</p>;
+  if (change.status !== "Done") return null;
+  return (
+    <p className="rounded-lg border border-border bg-muted/40 p-3">
+      <span className="font-medium">{en("Change task:")}</span> {change.title}
+      {change.submitted ? (
+        change.tests && <span className="text-muted-foreground"> · {en("{passed} of {total} tests passed", { passed: change.tests.passed, total: change.tests.total })}</span>
+      ) : (
+        <span className="text-muted-foreground"> · {en("No change was handed in in time.")}</span>
+      )}
+    </p>
   );
 }
 

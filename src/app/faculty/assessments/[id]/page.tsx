@@ -4,7 +4,9 @@
  * Build & Defend 1.0 Stage 2 (2.3, 2.4): the assessment builder. Title and instructions, the task (a coding task or an exam for
  * those templates), the rubric (weights add up to 100), the viva (voice, writing or the student's choice; questions; minutes;
  * language), publishing, and giving it to a class with its dates. "new" (?template=coding|exam) creates one once its task is
- * chosen. Once students have started, the task, rubric and viva are locked. API: /api/career/class-assessments/faculty/...
+ * chosen. Once students have started, the task, rubric and viva are locked. 2.12: a project or coding assessment can add a change
+ * task (a small change to the student's own code, before the viva), which adds its rubric criterion.
+ * API: /api/career/class-assessments/faculty/...
  */
 import React, { Suspense, useMemo, useState } from "react";
 import Link from "next/link";
@@ -24,6 +26,8 @@ import {
   type Template,
   type TemplateInfo,
   type VivaMode,
+  withChangeCriterion,
+  CHANGE_CRITERION_KEY,
 } from "@/components/career/classAssessments/types";
 import { useTemplateNames, useVivaModeNames } from "@/components/career/classAssessments/names";
 
@@ -120,6 +124,9 @@ function AssessmentBuilder() {
             vivaQuestions: draft.vivaQuestions,
             vivaMinutes: draft.vivaMinutes,
             vivaLanguage: draft.vivaLanguage ?? "",
+            // 2.12: an exam has no code to change
+            changeTask: draft.template !== "exam" && draft.changeTask,
+            changeTaskMinutes: draft.changeTaskMinutes,
           }),
     };
     try {
@@ -396,6 +403,46 @@ function AssessmentBuilder() {
               </Field>
             </div>
           </Card>
+
+          {draft.template !== "exam" && (
+            <Card title={en("Change task")}>
+              <div className="space-y-3 text-sm">
+                <label className="flex items-start gap-2.5">
+                  <input
+                    type="checkbox"
+                    className="mt-0.5"
+                    checked={draft.changeTask}
+                    onChange={(e) => {
+                      const on = e.target.checked;
+                      setDraft((d) => (d ? { ...d, changeTask: on, rubric: withChangeCriterion(d.rubric, on) } : d));
+                    }}
+                    disabled={disabledHow}
+                    aria-describedby="change-hint"
+                  />
+                  <span>
+                    <span className="block font-medium">{en("Ask for a small change to their own code")}</span>
+                    <span id="change-hint" className="block text-muted-foreground">
+                      {en("After the hand-in, the AI writes one short change request from the student's own code, checked by hidden tests. They make it in the coding workspace without the AI assistant, then the viva asks about it. Python, JavaScript and TypeScript; for other code the student goes straight to the viva and you see why.")}
+                    </span>
+                  </span>
+                </label>
+                {draft.changeTask && (
+                  <>
+                    <Field label={en("Minutes for the change")}>
+                      {(p) => (
+                        <input {...p} type="number" min={10} max={60} value={draft.changeTaskMinutes} onChange={(e) => set("changeTaskMinutes", Number(e.target.value))} disabled={disabledHow} />
+                      )}
+                    </Field>
+                    <p className="text-muted-foreground">
+                      {draft.rubric.some((c) => c.key === CHANGE_CRITERION_KEY)
+                        ? en("The rubric now has \"Changes their own code\" (15%). You can edit or remove it.")
+                        : en("The rubric has no criterion for the change. A rubric has at most 8 criteria; to judge the change, make room and add one.")}
+                    </p>
+                  </>
+                )}
+              </div>
+            </Card>
+          )}
 
           <Card title={en("Credential")}>
             <label className="flex items-start gap-2.5 text-sm">

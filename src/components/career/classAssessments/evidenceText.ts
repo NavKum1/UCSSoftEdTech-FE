@@ -51,7 +51,7 @@ const str = (v: unknown) => (typeof v === "string" ? v : "");
 
 export function useSignalText() {
   const en = useEn();
-  return (s: EvidenceSignal): string => {
+  const text = (s: EvidenceSignal): string => {
     const v = s.values ?? {};
     const files = Array.isArray(v.files) ? (v.files as string[]).join(", ") : "";
     switch (s.code) {
@@ -117,5 +117,23 @@ export function useSignalText() {
       default:
         return en("Something else worth asking about ({code}).", { code: s.code });
     }
+  };
+  // 2.12: the change task's points are the coding task's, about the change
+  return (s: EvidenceSignal): string => {
+    if (s.code === "change_not_handed_in") return en("The change task wasn't handed in in time.");
+    if (s.code.startsWith("change_")) return en("In the change task: {point}", { point: text({ ...s, code: "coding_" + s.code.slice("change_".length) }) });
+    return text(s);
+  };
+}
+
+/** 2.12: why there was no change task (the API's three reasons), in the reader's language */
+export function useSkipReasonText() {
+  const en = useEn();
+  return (reason: string | null): string => {
+    if (!reason) return en("There's no change task this time. Go on to the viva.");
+    if (reason.startsWith("The change task works with")) return en("The change task works with Python, JavaScript and TypeScript projects, so there's none for this one. Go on to the viva.");
+    if (reason.startsWith("The change task couldn't be prepared")) return en("The change task couldn't be prepared: the AI or the code runner wasn't available. Go on to the viva.");
+    if (reason.startsWith("A fair change task")) return en("A fair change task couldn't be made from this project. Go on to the viva.");
+    return reason;
   };
 }

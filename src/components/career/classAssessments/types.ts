@@ -270,6 +270,78 @@ export interface AttemptEvidence {
   review: AttemptReview;
   /** The work or viva changed after the decision was made (the fingerprint differs) */
   evidenceChangedSinceDecision: boolean;
+  /** 2.12: the change task, when the assessment has one */
+  change: EvidenceChange | null;
+}
+
+// ----- 2.12: the change task -----
+
+export type ChangeStatus = "Preparing" | "Ready" | "Started" | "Done" | "Skipped";
+
+/** The change task as the student sees it */
+export interface StudentChange {
+  status: ChangeStatus;
+  /** Why there's none (Skipped) */
+  reason: string | null;
+  /** Shown once it's ready */
+  title: string | null;
+  request: string | null;
+  minutes: number;
+  startedAt: string | null;
+  dueAt: string | null;
+  handedInAt: string | null;
+  /** The private workspace task, while it's on */
+  sprintId: string | null;
+  inviteCode: string | null;
+  /** Done: whether a change was handed in in time */
+  submitted: boolean | null;
+  tests: { passed: number; total: number } | null;
+}
+
+/** The change task as the teacher sees it */
+export interface EvidenceChange {
+  status: ChangeStatus;
+  reason: string | null;
+  title: string | null;
+  request: string | null;
+  minutes: number;
+  startedAt: string | null;
+  handedInAt: string | null;
+  minutesTaken: number | null;
+  submitted: boolean | null;
+  tests: { passed: number; total: number; status: string; cases: Record<string, boolean> } | null;
+  changes: { file: string; linesAdded: number; linesRemoved: number; diff: string }[] | null;
+}
+
+/** The rubric criterion a change task adds (the API adds it on save too; same key, so it's never added twice) */
+export const CHANGE_CRITERION_KEY = "change";
+
+/**
+ * Turning the change task on adds "Changes their own code" (15%) and scales the other criteria to 85; turning it off takes it out
+ * and scales them back to 100. The same rule as the API's, so the teacher sees the rubric they'll save.
+ */
+export function withChangeCriterion(rubric: Criterion[], on: boolean): Criterion[] {
+  const others = rubric.filter((c) => c.key !== CHANGE_CRITERION_KEY);
+  if (on === rubric.some((c) => c.key === CHANGE_CRITERION_KEY)) return rubric;
+  // A rubric has at most 8 criteria: the teacher makes room for it themselves
+  if (on && others.length >= 8) return rubric;
+  const criterion: Criterion = {
+    key: CHANGE_CRITERION_KEY,
+    name: "Changes their own code",
+    description: "Makes the requested change to their own code within the time; the hidden tests check it, and the viva asks about it.",
+    weight: 15,
+  };
+  const target = on ? 85 : 100;
+  const total = others.reduce((s, c) => s + (Number(c.weight) || 0), 0);
+  if (total <= 0 || others.length === 0) return on ? [...others, { ...criterion, weight: 100 }] : others;
+  const clamp = (w: number) => Math.min(80, Math.max(5, w));
+  const scaled = others.map((c) => ({ ...c, weight: clamp(Math.round(((Number(c.weight) || 0) * target) / total)) }));
+  const diff = target - scaled.reduce((s, c) => s + c.weight, 0);
+  if (diff !== 0) {
+    const largest = scaled.reduce((best, c, i) => (c.weight > scaled[best].weight ? i : best), 0);
+    scaled[largest] = { ...scaled[largest], weight: clamp(scaled[largest].weight + diff) };
+  }
+  return on ? [...scaled, criterion] : scaled;
 }
 
 // ----- 2.8: the decision, the appeal and the review queue -----

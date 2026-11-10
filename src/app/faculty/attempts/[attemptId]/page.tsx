@@ -15,17 +15,26 @@ import { useApi } from "@/lib/appAuth";
 import { useCareerShell } from "@/components/career/CareerShell";
 import { useEn } from "@/lib/english/EnglishProvider";
 import { Badge, Card, ErrorBanner, Loading, PageHeader, useLoad } from "@/components/career/ui";
-import { CA_API, formatWhen, type AttemptEvidence, type EvidenceFile, type EvidenceViva, type EvidenceWork } from "@/components/career/classAssessments/types";
+import {
+  CA_API,
+  formatWhen,
+  type AttemptEvidence,
+  type EvidenceChange,
+  type EvidenceFile,
+  type EvidenceViva,
+  type EvidenceWork,
+} from "@/components/career/classAssessments/types";
 import {
   useAttemptStatusNames,
   useDecisionNames,
   useSignalText,
+  useSkipReasonText,
   useSuggestionStateText,
   useWorkKindNames,
 } from "@/components/career/classAssessments/evidenceText";
 import { ReviewPanel } from "@/components/career/classAssessments/ReviewPanel";
 
-const CODE = "max-h-96 overflow-auto whitespace-pre rounded-lg border border-border bg-muted/50 p-3 font-mono text-xs leading-relaxed";
+const CODE = "max-h-96 overflow-auto whitespace-pre rounded-lg border border-border bg-muted/50 p-3 font-mono text-xs leading-relaxed focus-visible:outline-2 focus-visible:outline-offset-2";
 
 export default function AttemptEvidencePage() {
   const en = useEn();
@@ -81,6 +90,7 @@ export default function AttemptEvidencePage() {
       <div className="grid gap-6 lg:grid-cols-3">
         <div className="min-w-0 space-y-6 lg:col-span-2">
           <WorkCard work={e.work} />
+          {e.change && <ChangeCard change={e.change} />}
           <VivaCard viva={e.viva} />
         </div>
         <div className="min-w-0 space-y-6">
@@ -153,31 +163,7 @@ function WorkCard({ work }: { work: EvidenceWork | null }) {
     case "sprint":
       return (
         <Card title={work.title ? `${title}: ${work.title}` : title}>
-          <p className="mb-3 text-sm">
-            {work.tests.total > 0 ? en("{passed} of {total} tests passed", { passed: work.tests.passed, total: work.tests.total }) : en("No tests were run")}
-          </p>
-          {Object.keys(work.tests.cases ?? {}).length > 0 && (
-            <ul className="mb-4 grid gap-1 text-xs sm:grid-cols-2">
-              {Object.entries(work.tests.cases).map(([name, ok]) => (
-                <li key={name} className="flex items-center gap-2">
-                  <span aria-hidden className={ok ? "text-emerald-600 dark:text-emerald-400" : "text-red-600 dark:text-red-400"}>{ok ? "✓" : "✕"}</span>
-                  <span className="font-mono" dir="ltr">{name}</span>
-                  <span className="sr-only">{ok ? en("Passed") : en("Failed")}</span>
-                </li>
-              ))}
-            </ul>
-          )}
-          <div className="space-y-2">
-            {work.changes.map((c) => (
-              <details key={c.file} className="rounded-lg border border-border">
-                <summary className="flex cursor-pointer flex-wrap items-baseline justify-between gap-2 px-3 py-2 text-sm">
-                  <span className="font-mono" dir="ltr">{c.file}</span>
-                  <span className="text-xs text-muted-foreground">{en("{added} lines added, {removed} removed", { added: c.linesAdded, removed: c.linesRemoved })}</span>
-                </summary>
-                <Diff text={c.diff} />
-              </details>
-            ))}
-          </div>
+          <TestsAndChanges tests={work.tests} changes={work.changes} />
           {work.aiUse && (
             <details className="mt-4 text-sm">
               <summary className="cursor-pointer font-medium">
@@ -203,7 +189,7 @@ function WorkCard({ work }: { work: EvidenceWork | null }) {
             {work.answers.map((a) => (
               <li key={a.number} className="text-sm">
                 <p className="font-medium">{en("Question {n}", { n: a.number })}: {a.question}</p>
-                {a.code && <pre className={`${CODE} mt-2`} dir="ltr">{a.code}</pre>}
+                {a.code && <pre className={`${CODE} mt-2`} dir="ltr" tabIndex={0} aria-label={en("Code for question {n}", { n: a.number })}>{a.code}</pre>}
                 <p className="mt-1 flex flex-wrap items-center gap-2">
                   <span>{a.answer ?? en("Not answered")}</span>
                   <Badge tone={a.correct ? "good" : "bad"}>{a.correct ? en("Correct") : en("Incorrect")}</Badge>
@@ -215,6 +201,86 @@ function WorkCard({ work }: { work: EvidenceWork | null }) {
         </Card>
       );
   }
+}
+
+type Tests = { passed: number; total: number; cases: Record<string, boolean> };
+type Changes = { file: string; linesAdded: number; linesRemoved: number; diff: string }[];
+
+/** The tests (each case passed or failed) and the changed files with their diffs: a coding task, and the change task (2.12) */
+function TestsAndChanges({ tests, changes }: { tests: Tests | null; changes: Changes | null }) {
+  const en = useEn();
+  return (
+    <>
+      <p className="mb-3 text-sm">{tests && tests.total > 0 ? en("{passed} of {total} tests passed", { passed: tests.passed, total: tests.total }) : en("No tests were run")}</p>
+      {tests && Object.keys(tests.cases ?? {}).length > 0 && (
+        <ul className="mb-4 grid gap-1 text-xs sm:grid-cols-2">
+          {Object.entries(tests.cases).map(([name, ok]) => (
+            <li key={name} className="flex items-center gap-2">
+              <span aria-hidden className={ok ? "text-emerald-600 dark:text-emerald-400" : "text-red-600 dark:text-red-400"}>{ok ? "✓" : "✕"}</span>
+              <span className="font-mono" dir="ltr">{name}</span>
+              <span className="sr-only">{ok ? en("Passed") : en("Failed")}</span>
+            </li>
+          ))}
+        </ul>
+      )}
+      <div className="space-y-2">
+        {(changes ?? []).map((c) => (
+          <details key={c.file} className="rounded-lg border border-border">
+            <summary className="flex cursor-pointer flex-wrap items-baseline justify-between gap-2 px-3 py-2 text-sm">
+              <span className="font-mono" dir="ltr">{c.file}</span>
+              <span className="text-xs text-muted-foreground">{en("{added} lines added, {removed} removed", { added: c.linesAdded, removed: c.linesRemoved })}</span>
+            </summary>
+            <Diff text={c.diff} label={c.file} />
+          </details>
+        ))}
+      </div>
+    </>
+  );
+}
+
+/** 2.12: the change task: what was asked, how it went (or why there was none), the time taken, the tests and the change itself */
+function ChangeCard({ change }: { change: EvidenceChange }) {
+  const en = useEn();
+  const skipReason = useSkipReasonText();
+  const title = en("The change task");
+  if (change.status === "Skipped")
+    return (
+      <Card title={title}>
+        <p className="text-sm text-muted-foreground">{skipReason(change.reason)}</p>
+      </Card>
+    );
+  if (change.status === "Preparing" || change.status === "Ready")
+    return (
+      <Card title={title}>
+        <p className="text-sm text-muted-foreground">{change.status === "Preparing" ? en("Being prepared from the student's work.") : en("Ready; the student hasn't started it yet.")}</p>
+      </Card>
+    );
+  return (
+    <Card title={change.title ? `${title}: ${change.title}` : title}>
+      <div className="space-y-3 text-sm">
+        {change.request && <p className="whitespace-pre-line rounded-lg border border-border bg-muted/40 p-3">{change.request}</p>}
+        <p className="flex flex-wrap items-center gap-x-3 gap-y-1 text-muted-foreground">
+          {change.status === "Started" ? (
+            <Badge tone="info">{en("In progress")}</Badge>
+          ) : change.submitted ? (
+            <Badge tone="good">{en("Handed in")}</Badge>
+          ) : (
+            <Badge tone="warn">{en("Not handed in in time")}</Badge>
+          )}
+          {change.minutesTaken != null && (
+            <span>
+              {change.minutesTaken < 1
+                ? en("Under a minute of {minutes}", { minutes: change.minutes })
+                : en("{taken} of {minutes} minutes", { taken: change.minutesTaken, minutes: change.minutes })}
+            </span>
+          )}
+          <span>{en("No AI assistant")}</span>
+        </p>
+        {/* Only the files the student changed (the starting files they left alone aren't part of the change) */}
+        {change.submitted && <TestsAndChanges tests={change.tests} changes={(change.changes ?? []).filter((c) => c.linesAdded > 0 || c.linesRemoved > 0)} />}
+      </div>
+    </Card>
+  );
 }
 
 function Files({ files }: { files: EvidenceFile[] }) {
@@ -230,16 +296,16 @@ function Files({ files }: { files: EvidenceFile[] }) {
               <span className="text-xs text-muted-foreground">{en("{count} lines by the student", { count: f.linesByStudent })}</span>
             )}
           </summary>
-          <pre className={`${CODE} m-3 mt-0`} dir="ltr">{f.content}</pre>
+          <pre className={`${CODE} m-3 mt-0`} dir="ltr" tabIndex={0} aria-label={f.path}>{f.content}</pre>
         </details>
       ))}
     </div>
   );
 }
 
-function Diff({ text }: { text: string }) {
+function Diff({ text, label }: { text: string; label: string }) {
   return (
-    <pre className={`${CODE} m-3 mt-0`} dir="ltr">
+    <pre className={`${CODE} m-3 mt-0`} dir="ltr" tabIndex={0} aria-label={label}>
       {text.split("\n").map((line, i) => (
         <span
           key={i}
