@@ -8,6 +8,7 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { BookOpen } from "lucide-react";
 import { useApi } from "@/lib/appAuth";
+import { useLatestRef } from "@/lib/legacyApi";
 import { useEn } from "@/lib/english/EnglishProvider";
 import { Badge, Button, ErrorBanner, formatDate } from "@/components/career/ui";
 
@@ -38,9 +39,10 @@ export default function ResumeBookCard({ choices }: { choices: BookChoice[] }) {
       setStatus(null);
     }
   }, [api]);
+  const loadRef = useLatestRef(load);
   useEffect(() => {
-    void load();
-  }, [load]);
+    void loadRef.current();
+  }, [api, loadRef]);
 
   if (!status?.open) return null;
   const usable = choices.filter((c) => !status.approvalRequired || c.approved);

@@ -13,7 +13,7 @@
   "dependencies": {
     "@microsoft/signalr": "^10.0.11",
     "@monaco-editor/react": "^4.7.0",
-    "@serwist/next": "^9.5.12",
+    "@serwist/next": "^9.5.13",
     "@tiptap/extensions": "^3.32.0",
     "@tiptap/pm": "^3.32.0",
     "@tiptap/react": "^3.32.0",
@@ -21,7 +21,7 @@
     "@types/qrcode": "^1.5.5",
     "clsx": "^2.1.1",
     "lucide-react": "^1.37.0",
-    "next": "16.3.3",
+    "next": "16.4.6",
     "next-auth": "5.0.0-beta.32",
     "next-intl": "^4.14.9",
     "next-themes": "^0.4.6",
@@ -38,8 +38,16 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
-    "eslint-config-next": "16.3.3",
+    "eslint-config-next": "16.4.6",
     "tailwindcss": "^4",
     "typescript": "^5"
+  },
+  "overrides": {
+    "dompurify": "^3.4.17",
+    "zod": "^4.6.7",
+    "glob": "^14.0.4",
+    "@typescript-eslint/typescript-estree": {
+      "minimatch": "^11.0.7"
+    }
   }
 }

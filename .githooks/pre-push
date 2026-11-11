@@ -10,3 +10,8 @@ if ! node "$check"; then
   echo "Push stopped: fix the feature register in the root repository (docs/feature_register.json), then push again."
   exit 1
 fi
+# S4 help center: every article's button labels, links and features still match the app (docs/s4_help_center_plan.md)
+if ! npx --no-install tsx scripts/help-build.ts --check; then
+  echo "Push stopped: fix the help articles in content/help (or rebuild them: npx tsx scripts/help-build.ts), then push again."
+  exit 1
+fi

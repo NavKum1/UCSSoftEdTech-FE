@@ -10,6 +10,7 @@ import { useApi } from "@/lib/appAuth";
 import { useCareerShell } from "@/components/career/CareerShell";
 import { useEn } from "@/lib/english/EnglishProvider";
 import { Card, EmptyState, ErrorBanner, Loading, PageHeader, useLoad } from "@/components/career/ui";
+import { HelpLink } from "@/components/help/HelpLink";
 import { CA_API, formatWhen, type StudentAssessmentSummary } from "@/components/career/classAssessments/types";
 import { useTemplateNames } from "@/components/career/classAssessments/names";
 import { StudentStateBadge, isToDo } from "@/components/career/classAssessments/studentState";
@@ -26,7 +27,7 @@ export default function StudentAssessmentsPage() {
 
   return (
     <div>
-      <PageHeader title={en("My assessments")} description={en("What your teachers have set for your classes. You submit your work, then explain it in a short viva.")} />
+      <PageHeader title={en("My assessments")} description={en("What your teachers have set for your classes. You submit your work, then explain it in a short viva.")} actions={<HelpLink slug="hand-in-your-work" />} />
       <ErrorBanner error={list.error} onRetry={list.reload} />
       {list.loading ? (
         <Loading />

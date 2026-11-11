@@ -15,6 +15,7 @@ import { useApi } from "@/lib/appAuth";
 import { useCareerShell } from "@/components/career/CareerShell";
 import { useEn } from "@/lib/english/EnglishProvider";
 import { Badge, Button, Card, ErrorBanner, Loading, PageHeader, useLoad } from "@/components/career/ui";
+import { HelpLink } from "@/components/help/HelpLink";
 import { downloadBlob } from "@/components/career/privacy/StudentPrivacyRights";
 import {
   CA_API,
@@ -60,9 +61,12 @@ export default function AttemptEvidencePage() {
         title={e.student.name || e.student.email}
         description={en("{assessment}, {className}", { assessment: e.assessment.title, className: e.class.name ?? "" })}
         actions={
-          <Link href={`/faculty/assessments/${e.assessment.id}/classes/${e.class.assignmentId}`} className="text-sm font-medium underline-offset-2 hover:underline">
-            {en("All students")}
-          </Link>
+          <span className="flex items-center gap-4">
+            <HelpLink slug="review-the-evidence" />
+            <Link href={`/faculty/assessments/${e.assessment.id}/classes/${e.class.assignmentId}`} className="text-sm font-medium underline-offset-2 hover:underline">
+              {en("All students")}
+            </Link>
+          </span>
         }
       />
 

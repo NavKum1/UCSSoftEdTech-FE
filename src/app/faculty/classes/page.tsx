@@ -11,6 +11,7 @@ import { useApi } from "@/lib/appAuth";
 import { useCareerShell } from "@/components/career/CareerShell";
 import { useEn } from "@/lib/english/EnglishProvider";
 import { Button, Card, EmptyState, ErrorBanner, Field, Loading, PageHeader, ScrollArea, useLoad } from "@/components/career/ui";
+import { HelpLink } from "@/components/help/HelpLink";
 import { CA_API, type ClassSummary } from "@/components/career/classAssessments/types";
 
 export default function FacultyClassesPage() {
@@ -45,6 +46,7 @@ export default function FacultyClassesPage() {
   return (
     <div>
       <PageHeader
+        actions={<HelpLink slug="classes-and-rosters" />}
         title={en("Classes")}
         description={list.data?.isAdmin ? en("Every class at your school. Teachers see only their own.") : en("Your classes. Add a roster, then give them an assessment.")}
       />

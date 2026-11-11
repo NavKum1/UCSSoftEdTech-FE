@@ -36,7 +36,8 @@ export const CAREER_PREFIXES = ["/student", "/career-center", "/employer", "/fac
 
 // Career pages that render without the career shell (they keep the app's <main>) but are reached by white-label
 // users, so the Edulexa header must not show on them either
-export const CAREER_STANDALONE_PREFIXES = ["/partner/callback", "/career-unsubscribe", "/verify/internship"];
+// /help: the S4 help center has a frame of its own, the same for every role, with the way back to where the reader was
+export const CAREER_STANDALONE_PREFIXES = ["/partner/callback", "/career-unsubscribe", "/verify/internship", "/help"];
 
 // Sign-in and sign-up (/login, /login?mode=signup): a full-screen, brand-aware page of their own (components/auth),
 // which may also be white-labelled. Exact paths only: /login/sso keeps the navigation.

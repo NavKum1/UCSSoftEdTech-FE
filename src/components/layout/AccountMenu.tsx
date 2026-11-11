@@ -8,10 +8,10 @@
  */
 import React, { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useTheme } from "next-themes";
-import { ArrowRightLeft, LogOut, Monitor, Moon, Sun } from "lucide-react";
+import { ArrowRightLeft, CircleHelp, LogOut, Monitor, Moon, Sun } from "lucide-react";
 import { useAppAuth } from "@/lib/appAuth";
 import { endDevSession, useDevSession } from "@/lib/devSession";
 import { useEn } from "@/lib/english/EnglishProvider";
@@ -213,10 +213,23 @@ export function AccountMenu({ links = [], area }: { links?: AccountLink[]; /** T
 }
 
 /** Language, light/dark and the account menu: the right-hand side of every header */
+/** S4: the help center, opened from any page with the way back to it */
+function HelpButton() {
+  const en = useEn();
+  const pathname = usePathname();
+  if (pathname?.startsWith("/help")) return null;
+  return (
+    <Link href={`/help?from=${encodeURIComponent(pathname ?? "/")}`} className="rounded-md p-2 text-muted-foreground hover:bg-muted hover:text-foreground" aria-label={en("Help center")} title={en("Help center")}>
+      <CircleHelp aria-hidden="true" className="h-5 w-5" />
+    </Link>
+  );
+}
+
 export function HeaderControls({ links, area, children }: { links?: AccountLink[]; area?: string; children?: React.ReactNode }) {
   return (
     <div className="flex shrink-0 items-center gap-2">
       {children}
+      <HelpButton />
       <EnglishPicker className="hidden md:inline-flex" />
       <span className="hidden sm:inline-flex">
         <ThemeToggle />

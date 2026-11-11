@@ -4,6 +4,7 @@
 import React, { useState } from "react";
 import { useApi } from "@/lib/appAuth";
 import { Badge, Button, Card, EmptyState, ErrorBanner, Field, Loading, PageHeader, SuccessBanner, formatDate, useLoad, ScrollArea, useCareerT } from "@/components/career/ui";
+import { HelpLink } from "@/components/help/HelpLink";
 import { downloadBlob, requestTone, type PrivacyRequestRow, useRequestTypeLabels, useRequestStatusLabels } from "@/components/career/privacy/StudentPrivacyRights";
 
 interface QueueRow {
@@ -349,7 +350,7 @@ export default function CareerCenterPrivacyPage() {
 
   return (
     <div>
-      <PageHeader title={tr("privacyRequests")} description={tr("dataRequestsFromStudentsAnd")} />
+      <PageHeader title={tr("privacyRequests")} description={tr("dataRequestsFromStudentsAnd")} actions={<HelpLink slug="privacy-requests" />} />
       <ErrorBanner error={queue.error} />
 
       <Card title={tr("requestQueue")} className="mb-6">

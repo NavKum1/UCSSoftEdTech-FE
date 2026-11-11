@@ -4,6 +4,7 @@ import React, { useRef, useState } from "react";
 import { useApi } from "@/lib/appAuth";
 import { useCareerShell } from "@/components/career/CareerShell";
 import { Badge, Button, Card, EmptyState, ErrorBanner, Field, Loading, PageHeader, SuccessBanner, formatDate, useLoad, ScrollArea, useCareerT, useCareerLabels } from "@/components/career/ui";
+import { HelpLink } from "@/components/help/HelpLink";
 import { ROLES, labelOf, useRoleLabels } from "@/components/career/coreLabels";
 
 interface Member {
@@ -125,7 +126,7 @@ export default function PeoplePage() {
 
   return (
     <div>
-      <PageHeader title={t("people")} description={t("studentsStaffAndFacultyAt")} />
+      <PageHeader title={t("people")} description={t("studentsStaffAndFacultyAt")} actions={<HelpLink slug="add-people" />} />
       <ErrorBanner error={err ?? list.error} />
       <SuccessBanner message={msg} />
       {counts.data && (

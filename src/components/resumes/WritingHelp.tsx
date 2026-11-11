@@ -8,7 +8,7 @@
 import React, { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { MessageSquareText, Sparkles } from "lucide-react";
-import { useLegacyApi } from "@/lib/legacyApi";
+import { useLatestRef, useLegacyApi } from "@/lib/legacyApi";
 import { useEn } from "@/lib/english/EnglishProvider";
 import { Badge, Button, ErrorBanner } from "@/components/career/ui";
 
@@ -49,21 +49,22 @@ export default function WritingHelp({
     if (a.ok) setAllowance((await a.json()) as Allowance);
     if (c.ok) setChecks(((await c.json()) as JobCheck[]).filter((x) => x.requirementCount > 0));
   }, [apiFetch]);
+  const loadRef = useLatestRef(load);
   useEffect(() => {
-    if (ready) void load();
-  }, [ready, load]);
-  // Suggestions were made for the saved version: after an edit or a new version they no longer fit, so they go
-  useEffect(() => {
-    if (dirty) {
+    if (ready) void loadRef.current();
+  }, [ready, loadRef]);
+  // Suggestions were made for the saved version: after an edit or a new version they no longer fit, so they go. Done while
+  // rendering (not in an effect), so the stale suggestions are never shown for a moment
+  const [seen, setSeen] = useState({ versionId, dirty });
+  if (seen.versionId !== versionId || seen.dirty !== dirty) {
+    const newVersion = seen.versionId !== versionId;
+    setSeen({ versionId, dirty });
+    if (newVersion || dirty) {
       setLines(null);
       setOrders([]);
     }
-  }, [dirty]);
-  useEffect(() => {
-    setLines(null);
-    setOrders([]);
-    setComments(null);
-  }, [versionId]);
+    if (newVersion) setComments(null);
+  }
 
   const call = async <T,>(key: string, path: string, body?: unknown): Promise<T | null> => {
     setBusy(key);

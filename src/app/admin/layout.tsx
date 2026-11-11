@@ -15,6 +15,7 @@ const SECTIONS = [
   { href: "/admin/schools", label: "Schools" },
   { href: "/admin/transparency", label: "Transparency" },
   { href: "/admin/settings", label: "Email and uploads" },
+  { href: "/admin/support", label: "Support" },
   { href: "/admin/system", label: "System" },
 ];
 

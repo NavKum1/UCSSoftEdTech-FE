@@ -11,6 +11,7 @@ import { useApi } from "@/lib/appAuth";
 import { useCareerShell } from "@/components/career/CareerShell";
 import { useEn } from "@/lib/english/EnglishProvider";
 import { Badge, Button, Card, EmptyState, ErrorBanner, Field, Loading, PageHeader, ScrollArea, useLoad } from "@/components/career/ui";
+import { HelpLink } from "@/components/help/HelpLink";
 import { CA_API, formatWhen, isDocumentTemplate, type AssessmentSummary, type Template, type TemplateInfo } from "@/components/career/classAssessments/types";
 import { useTemplateNames } from "@/components/career/classAssessments/names";
 
@@ -60,7 +61,7 @@ function FacultyAssessments() {
   const rows = list.data?.assessments ?? [];
   return (
     <div>
-      <PageHeader title={en("Assessments")} description={en("Build an assessment from a template, give it to a class, and review what students submit and how they defend it.")} />
+      <PageHeader title={en("Assessments")} description={en("Build an assessment from a template, give it to a class, and review what students submit and how they defend it.")} actions={<HelpLink slug="create-an-assessment" />} />
       <ErrorBanner error={list.error} onRetry={list.reload} />
       <div className="grid gap-6 lg:grid-cols-3">
         <div className="lg:col-span-2">

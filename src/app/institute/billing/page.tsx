@@ -11,6 +11,7 @@ import { AccessNotice, useLatestRef, useLegacyApi } from "@/lib/legacyApi";
 import { REASONS, day, money, type PlanOption, type SchoolPlanState } from "@/components/institute/SchoolPlan";
 import { openRazorpayCheckout, openRazorpayOrder } from "@/lib/razorpayCheckout";
 import { Button, PageHeader } from "@/components/career/ui";
+import { HelpLink } from "@/components/help/HelpLink";
 import { useEn } from "@/lib/english/EnglishProvider";
 
 const STATUS: Record<string, { label: string; tone: string }> = {
@@ -167,7 +168,7 @@ export default function SchoolBillingPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader title={en("Billing")} description={en("Your plan, what it includes and how you pay.")} />
+      <PageHeader title={en("Billing")} description={en("Your plan, what it includes and how you pay.")} actions={<HelpLink slug="billing-and-voice-minutes" />} />
 
       <section aria-labelledby="plan-now" className={card}>
         <div className="flex flex-wrap items-start justify-between gap-3">

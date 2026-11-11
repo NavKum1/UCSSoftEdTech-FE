@@ -10,6 +10,7 @@ import Link from "next/link";
 import { useApi } from "@/lib/appAuth";
 import { useEn } from "@/lib/english/EnglishProvider";
 import { Card, formatDate, useLoad } from "@/components/career/ui";
+import { HelpLink } from "@/components/help/HelpLink";
 
 interface GettingStartedData {
   pilot: { startsAt: string; endsAt: string } | null;
@@ -52,7 +53,10 @@ export function GettingStarted({ schoolId }: { schoolId: string | null }) {
       <div className="space-y-4 text-sm">
         <div>
           {pilotLine && <p className="mb-1">{pilotLine}</p>}
-          <p className="text-muted-foreground">{en("{done} of {total} steps done", { done: doneCount, total: d.steps.length })}</p>
+          <p className="flex flex-wrap items-center justify-between gap-2 text-muted-foreground">
+            {en("{done} of {total} steps done", { done: doneCount, total: d.steps.length })}
+            <HelpLink slug="getting-started" label={en("How it works")} />
+          </p>
           <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-muted" aria-hidden>
             <div className="h-full rounded-full bg-[var(--brand)]" style={{ width: `${Math.round((100 * doneCount) / d.steps.length)}%` }} />
           </div>

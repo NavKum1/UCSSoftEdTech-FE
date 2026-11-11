@@ -11,6 +11,7 @@ import { useApi } from "@/lib/appAuth";
 import { useCareerShell } from "@/components/career/CareerShell";
 import { useEn } from "@/lib/english/EnglishProvider";
 import { Badge, EmptyState, ErrorBanner, Loading, PageHeader, ScrollArea, Tabs, useLoad } from "@/components/career/ui";
+import { HelpLink } from "@/components/help/HelpLink";
 import { CA_API, formatWhen, type ReviewQueue, type ReviewRow } from "@/components/career/classAssessments/types";
 
 type Tab = "decide" | "appeals";
@@ -31,7 +32,7 @@ export default function ReviewQueuePage() {
 
   return (
     <div>
-      <PageHeader title={en("Review")} description={en("Attempts waiting for your decision, and appeals to resolve, across your classes.")} />
+      <PageHeader title={en("Review")} description={en("Attempts waiting for your decision, and appeals to resolve, across your classes.")} actions={<HelpLink slug="decide-and-appeals" />} />
       <div className="mb-4">
         <Tabs<Tab>
           label={en("Show")}
