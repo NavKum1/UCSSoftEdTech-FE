@@ -3,7 +3,13 @@ import { formatDate } from "@/components/career/ui";
 // Build & Defend 1.0 Stage 2: teachers' classes and assessments (API: /api/career/class-assessments)
 export const CA_API = "/api/career/class-assessments";
 
-export type Template = "project" | "coding" | "exam";
+export type Template = "project" | "coding" | "exam" | DocumentTemplate;
+/** C1 (any subject): work handed in as a document (PDF, Word, PowerPoint or pasted text), then defended in a viva */
+export type DocumentTemplate = "essay" | "report" | "labreport" | "presentation";
+export const DOCUMENT_TEMPLATES: DocumentTemplate[] = ["essay", "report", "labreport", "presentation"];
+export const isDocumentTemplate = (t: string | null | undefined): t is DocumentTemplate => DOCUMENT_TEMPLATES.includes(t as DocumentTemplate);
+/** 2.12: the change task needs the student's own code */
+export const hasCode = (t: Template) => t === "project" || t === "coding";
 export type VivaMode = "voice" | "text" | "choice";
 
 export interface Teacher {
@@ -49,6 +55,10 @@ export interface TemplateInfo {
   name: string;
   description: string;
   rubric: Criterion[];
+  /** How the work is handed in ("document" for the C1 templates) */
+  handIn: string;
+  /** Whether a change task can be added */
+  changeTask: boolean;
 }
 
 export interface AssessmentDetail {
@@ -130,7 +140,9 @@ export function formatWhen(iso: string) {
 // ----- 2.7: the evidence for teachers -----
 
 export type AttemptStatus = "Started" | "Viva" | "Submitted" | "Decided";
-export type WorkKind = "repo" | "upload" | "sprint" | "exam";
+export type WorkKind = "repo" | "upload" | "sprint" | "exam" | "document";
+/** C1: a document's format ("text" when it was pasted in) */
+export type DocumentFormat = "pdf" | "docx" | "pptx" | "text";
 /** ready | after_viva (not handed in yet) | pending (being worked out) | off (no AI key) | none (the AI couldn't) */
 export type SuggestionState = "ready" | "after_viva" | "pending" | "off" | "none";
 export type Decision = "pass" | "resubmit" | "fail";
@@ -199,6 +211,20 @@ export type EvidenceWork =
   | { kind: WorkKind; gone: true }
   | { kind: "repo"; gone?: undefined; repository: string; pullRequest: number | null; url: string; ownershipVerified: boolean; files: EvidenceFile[] }
   | { kind: "upload"; gone?: undefined; fileName: string; sizeBytes: number; uploadedAt: string; files: EvidenceFile[]; listing: string[] }
+  | {
+      kind: "document";
+      gone?: undefined;
+      fileName: string;
+      format: DocumentFormat;
+      pages: number;
+      words: number;
+      sizeBytes: number;
+      uploadedAt: string;
+      /** The original file can be downloaded (none for pasted text) */
+      hasFile: boolean;
+      /** The text read from it, with "[Page 3]", "[Slide 2]" and "[Speaker notes]" lines */
+      text: string;
+    }
   | {
       kind: "sprint";
       gone?: undefined;

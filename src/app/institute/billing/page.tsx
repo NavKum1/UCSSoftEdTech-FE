@@ -2,14 +2,14 @@
 
 /**
  * Billing for a self-serve school (S2): its plan and state, the team and voice minutes used, changing plan, cancelling or
- * undoing it, the card (Stripe's billing page), and paying again when the school is read-only. A school on a contract
- * with Edulexa's team sees a note instead.
+ * undoing it, the card (Stripe's billing page), and paying again when the school is read-only. C1: buying packs of extra AI
+ * voice minutes. A school on a contract with Edulexa's team sees a note instead.
  */
 import React, { useEffect, useState } from "react";
 import { Check, CreditCard, Loader2 } from "lucide-react";
 import { AccessNotice, useLatestRef, useLegacyApi } from "@/lib/legacyApi";
 import { REASONS, day, money, type PlanOption, type SchoolPlanState } from "@/components/institute/SchoolPlan";
-import { openRazorpayCheckout } from "@/lib/razorpayCheckout";
+import { openRazorpayCheckout, openRazorpayOrder } from "@/lib/razorpayCheckout";
 import { Button, PageHeader } from "@/components/career/ui";
 import { useEn } from "@/lib/english/EnglishProvider";
 
@@ -49,10 +49,25 @@ export default function SchoolBillingPage() {
     }
     setMessage(en("We're still waiting for the payment provider to confirm. This page updates when you reload it, and we'll e-mail you."));
   };
+  // C1: back from paying for voice minutes; the provider's confirmation adds them within a few seconds
+  const waitForMinutes = async (before: number | null) => {
+    setMessage(en("Payment received. Adding your minutes…"));
+    for (let i = 0; i < 20; i++) {
+      const b = await fetchState();
+      if (b && (before == null ? b.voice.extra > 0 : b.voice.extra > before)) return setMessage(en("Your minutes are added. Thank you."));
+      await new Promise((r) => setTimeout(r, 1500));
+    }
+    setMessage(en("We're still waiting for the payment provider to confirm. Your minutes appear here when it does."));
+  };
   const load = async () => {
-    if (new URLSearchParams(window.location.search).has("renewed")) {
+    const q = new URLSearchParams(window.location.search);
+    if (q.has("renewed")) {
       window.history.replaceState(null, "", "/institute/billing");
       return waitForReopen();
+    }
+    if (q.get("minutes") === "paid") {
+      window.history.replaceState(null, "", "/institute/billing");
+      return waitForMinutes(null);
     }
     await fetchState();
   };
@@ -98,6 +113,30 @@ export default function SchoolBillingPage() {
         onDone: () => {
           setBusy(null);
           void waitForReopen();
+        },
+        onClose: () => setBusy(null),
+      });
+    } catch (e) {
+      setBusy(null);
+      setError(e instanceof Error ? e.message : "Razorpay couldn't be opened.");
+    }
+  };
+
+  const buyMinutes = async () => {
+    if (!s) return;
+    const before = s.voice.extra;
+    const b = await act("minutes", "/api/school-billing/voice-pack");
+    if (b?.checkout?.url) return window.location.assign(b.checkout.url);
+    if (!b?.checkout?.razorpay) return;
+    setBusy("minutes");
+    try {
+      await openRazorpayOrder({
+        start: b.checkout.razorpay,
+        confirmPath: `/api/school-billing/voice-pack/${b.packId}/razorpay`,
+        getToken,
+        onDone: () => {
+          setBusy(null);
+          void waitForMinutes(before);
         },
         onClose: () => setBusy(null),
       });
@@ -167,8 +206,23 @@ export default function SchoolBillingPage() {
           <div>
             <dt className="text-muted-foreground">{en("AI voice minutes this month")}</dt>
             <dd className="mt-0.5 font-medium">{s.voice.limit > 0 ? `${s.voice.used} of ${s.voice.limit}` : en("Not in this plan")}</dd>
+            {s.voice.extra > 0 && <dd className="mt-0.5 text-muted-foreground">{en("Plus {count} bought minutes left", { count: s.voice.extra })}</dd>}
           </div>
         </dl>
+        {s.voicePack?.canBuy && (
+          <div className="mt-5 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border bg-muted/30 p-4 text-sm">
+            <p className="max-w-prose">
+              <span className="font-medium">{en("Need more voice minutes?")}</span>{" "}
+              {en("Buy {minutes} minutes for {price}. They're used after your plan's monthly minutes and kept until your plan ends.", {
+                minutes: s.voicePack.minutes,
+                price: money(s.voicePack.priceMinor, s.currency),
+              })}
+            </p>
+            <Button type="button" variant="secondary" disabled={busy != null} busy={busy === "minutes"} onClick={() => void buyMinutes()}>
+              {en("Buy {minutes} minutes", { minutes: s.voicePack.minutes })}
+            </Button>
+          </div>
+        )}
         <div className="mt-6 flex flex-wrap gap-2">
           {s.portal && (
             <Button

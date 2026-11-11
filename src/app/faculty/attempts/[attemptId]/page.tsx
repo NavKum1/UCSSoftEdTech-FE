@@ -8,13 +8,14 @@
  * 2.8: the decision (scores, pass, resubmit or fail, a comment) and the appeal, on the right (ReviewPanel).
  * API: /api/career/class-assessments/faculty/attempts/{id}/evidence.
  */
-import React from "react";
+import React, { useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useApi } from "@/lib/appAuth";
 import { useCareerShell } from "@/components/career/CareerShell";
 import { useEn } from "@/lib/english/EnglishProvider";
-import { Badge, Card, ErrorBanner, Loading, PageHeader, useLoad } from "@/components/career/ui";
+import { Badge, Button, Card, ErrorBanner, Loading, PageHeader, useLoad } from "@/components/career/ui";
+import { downloadBlob } from "@/components/career/privacy/StudentPrivacyRights";
 import {
   CA_API,
   formatWhen,
@@ -92,7 +93,7 @@ export default function AttemptEvidencePage() {
 
       <div className="grid gap-6 lg:grid-cols-3">
         <div className="min-w-0 space-y-6 lg:col-span-2">
-          <WorkCard work={e.work} />
+          <WorkCard work={e.work} attemptId={e.id} />
           {e.change && <ChangeCard change={e.change} />}
           <VivaCard viva={e.viva} />
         </div>
@@ -118,7 +119,7 @@ export default function AttemptEvidencePage() {
   );
 }
 
-function WorkCard({ work }: { work: EvidenceWork | null }) {
+function WorkCard({ work, attemptId }: { work: EvidenceWork | null; attemptId: string }) {
   const en = useEn();
   const kinds = useWorkKindNames();
   if (!work) return <Card title={en("The work")}><p className="text-sm text-muted-foreground">{en("Nothing handed in yet.")}</p></Card>;
@@ -184,6 +185,8 @@ function WorkCard({ work }: { work: EvidenceWork | null }) {
           )}
         </Card>
       );
+    case "document":
+      return <DocumentWork work={work} attemptId={attemptId} title={title} />;
     case "exam":
       return (
         <Card title={`${title}: ${work.title}`}>
@@ -204,6 +207,61 @@ function WorkCard({ work }: { work: EvidenceWork | null }) {
         </Card>
       );
   }
+}
+
+/** C1: the document as the viva read it (page and slide markers as small headings), and the original file to download */
+function DocumentWork({ work, attemptId, title }: { work: Extract<EvidenceWork, { kind: "document" }>; attemptId: string; title: string }) {
+  const en = useEn();
+  const api = useApi();
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const format = work.format === "pdf" ? "PDF" : work.format === "docx" ? en("Word document") : work.format === "pptx" ? en("PowerPoint") : en("Pasted text");
+  const download = async () => {
+    setBusy(true);
+    setError(null);
+    try {
+      const res = await api<Response>(`${CA_API}/faculty/attempts/${attemptId}/document`, { raw: true });
+      await downloadBlob(res, work.fileName);
+    } catch (err) {
+      setError((err as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  };
+  return (
+    <Card title={title}>
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-3 text-sm">
+        <p className="text-muted-foreground">
+          {work.format !== "text" && <span className="font-medium text-foreground" dir="auto">{work.fileName}</span>}
+          {work.format !== "text" && " · "}
+          {format}
+          {work.pages > 0 && <> · {work.format === "pptx" ? en("{count} slides", { count: work.pages }) : en("{count} pages", { count: work.pages })}</>}
+          {" · "}
+          {en("{count} words", { count: work.words.toLocaleString() })}
+        </p>
+        {work.hasFile && (
+          <Button variant="secondary" busy={busy} onClick={() => void download()}>
+            {en("Download the original")}
+          </Button>
+        )}
+      </div>
+      {error && <ErrorBanner error={error} />}
+      <p className="mb-2 text-xs text-muted-foreground">{en("The text read from the file. The viva and the suggested scores used this text, so check anything that looks wrong against the original.")}</p>
+      <div className="max-h-[32rem] overflow-auto rounded-lg border border-border p-4 text-sm leading-relaxed" tabIndex={0} aria-label={en("The text of the work")}>
+        {work.text.split("\n").map((line, i) => {
+          const m = /^\[(Page|Slide) (\d+)\]$/.exec(line.trim());
+          if (m)
+            return (
+              <p key={i} className="mb-1 mt-4 border-t border-border pt-3 text-xs font-semibold text-muted-foreground first:mt-0 first:border-t-0 first:pt-0">
+                {m[1] === "Page" ? en("Page {n}", { n: m[2] }) : en("Slide {n}", { n: m[2] })}
+              </p>
+            );
+          if (line.trim() === "[Speaker notes]") return <p key={i} className="mt-2 text-xs font-medium text-muted-foreground">{en("Speaker notes")}</p>;
+          return line.trim() === "" ? <div key={i} className="h-2" aria-hidden /> : <p key={i} dir="auto" className="whitespace-pre-wrap [overflow-wrap:anywhere]">{line}</p>;
+        })}
+      </div>
+    </Card>
+  );
 }
 
 type Tests = { passed: number; total: number; cases: Record<string, boolean> };

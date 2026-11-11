@@ -27,6 +27,7 @@ import {
   type TemplateInfo,
   type VivaMode,
   withChangeCriterion,
+  hasCode,
   CHANGE_CRITERION_KEY,
 } from "@/components/career/classAssessments/types";
 import { useTemplateNames, useVivaModeNames } from "@/components/career/classAssessments/names";
@@ -125,7 +126,7 @@ function AssessmentBuilder() {
             vivaMinutes: draft.vivaMinutes,
             vivaLanguage: draft.vivaLanguage ?? "",
             // 2.12: an exam has no code to change
-            changeTask: draft.template !== "exam" && draft.changeTask,
+            changeTask: hasCode(draft.template) && draft.changeTask,
             changeTaskMinutes: draft.changeTaskMinutes,
           }),
     };
@@ -404,7 +405,7 @@ function AssessmentBuilder() {
             </div>
           </Card>
 
-          {draft.template !== "exam" && (
+          {hasCode(draft.template) && (
             <Card title={en("Change task")}>
               <div className="space-y-3 text-sm">
                 <label className="flex items-start gap-2.5">

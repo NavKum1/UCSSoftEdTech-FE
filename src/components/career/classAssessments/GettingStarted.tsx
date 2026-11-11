@@ -40,7 +40,7 @@ export function GettingStarted({ schoolId }: { schoolId: string | null }) {
   const text: Record<GettingStartedData["steps"][number]["key"], { title: string; how: string; href: string; action: string }> = {
     faculty: { title: en("Add your faculty"), how: en("Each teacher gets an e-mail with where to sign in."), href: "/career-center/people", action: en("Add people") },
     class: { title: en("Add a class and its students"), how: en("Teachers create their classes and import the roster from a CSV file."), href: "/faculty/classes", action: en("Open classes") },
-    assessment: { title: en("Create an assessment from a template"), how: en("A project defense, a coding task or a written exam, each with a rubric and a viva you can change."), href: "/faculty/assessments/new", action: en("Create an assessment") },
+    assessment: { title: en("Create an assessment from a template"), how: en("An essay, report, lab report, presentation, project, coding task or written exam, each with a rubric and a viva you can change."), href: "/faculty/assessments", action: en("Create an assessment") },
     assigned: { title: en("Give it to a class"), how: en("Students get an e-mail and see it under My assessments."), href: "/faculty/assessments", action: en("Open assessments") },
     result: { title: en("Decide the first results"), how: en("Teachers review each student's work, change task and viva, and decide."), href: "/faculty/review", action: en("Open reviews") },
   };
@@ -79,7 +79,7 @@ export function GettingStarted({ schoolId }: { schoolId: string | null }) {
                   <p className="text-muted-foreground">{t.how}</p>
                 </div>
                 {!s.done && (
-                  <Link href={t.href} className="shrink-0 self-center font-medium text-[var(--brand)] underline-offset-2 hover:underline">
+                  <Link href={t.href} className="shrink-0 self-center font-medium text-[var(--brand-text-light,var(--brand))] dark:text-[var(--brand-text-dark,var(--brand))] underline-offset-2 hover:underline">
                     {t.action}
                   </Link>
                 )}

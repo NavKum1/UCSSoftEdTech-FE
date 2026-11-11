@@ -2,7 +2,7 @@
 
 /**
  * Build & Defend 1.0 Stage 2 (2.3): a teacher's assessments, and starting a new one from a template (project defense, coding
- * task, written exam plus viva). API: /api/career/class-assessments/faculty/assessments.
+ * task, written exam plus viva; C1: essay, report, lab report, presentation). API: /api/career/class-assessments/faculty/assessments.
  */
 import React, { Suspense, useState } from "react";
 import Link from "next/link";
@@ -11,7 +11,7 @@ import { useApi } from "@/lib/appAuth";
 import { useCareerShell } from "@/components/career/CareerShell";
 import { useEn } from "@/lib/english/EnglishProvider";
 import { Badge, Button, Card, EmptyState, ErrorBanner, Field, Loading, PageHeader, ScrollArea, useLoad } from "@/components/career/ui";
-import { CA_API, formatWhen, type AssessmentSummary, type Template, type TemplateInfo } from "@/components/career/classAssessments/types";
+import { CA_API, formatWhen, isDocumentTemplate, type AssessmentSummary, type Template, type TemplateInfo } from "@/components/career/classAssessments/types";
 import { useTemplateNames } from "@/components/career/classAssessments/names";
 
 export default function FacultyAssessmentsPage() {
@@ -43,7 +43,7 @@ function FacultyAssessments() {
   const create = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
-    if (template !== "project") {
+    if (template === "coding" || template === "exam") {
       router.push(`/faculty/assessments/new?template=${template}&title=${encodeURIComponent(title)}`);
       return;
     }
@@ -125,21 +125,28 @@ function FacultyAssessments() {
         </div>
         <Card title={en("New assessment")}>
           <form onSubmit={create} className="space-y-4">
-            <fieldset className="space-y-2">
-              <legend className="mb-1 text-sm font-medium">{en("Template")}</legend>
-              {(templates.data?.templates ?? []).map((t) => (
-                <label
-                  key={t.key}
-                  className={`block cursor-pointer rounded-lg border p-3 text-sm transition-colors ${template === t.key ? "border-primary bg-primary/5" : "border-border hover:bg-muted/50"}`}
-                >
-                  <span className="flex items-center gap-2 font-medium">
-                    <input type="radio" name="template" value={t.key} checked={template === t.key} onChange={() => setTemplate(t.key)} />
-                    {names[t.key]}
-                  </span>
-                  <span className="mt-1 block text-xs text-muted-foreground">{t.description}</span>
-                </label>
-              ))}
-            </fieldset>
+            {[
+              { legend: en("Any subject"), list: (templates.data?.templates ?? []).filter((t) => isDocumentTemplate(t.key)) },
+              { legend: en("Code and exams"), list: (templates.data?.templates ?? []).filter((t) => !isDocumentTemplate(t.key)) },
+            ].map((g) =>
+              g.list.length === 0 ? null : (
+                <fieldset key={g.legend} className="space-y-2">
+                  <legend className="mb-1 text-sm font-medium">{g.legend}</legend>
+                  {g.list.map((t) => (
+                    <label
+                      key={t.key}
+                      className={`block cursor-pointer rounded-lg border p-3 text-sm transition-colors ${template === t.key ? "border-[var(--brand)] bg-[var(--brand)]/5" : "border-border hover:bg-muted/50"}`}
+                    >
+                      <span className="flex items-center gap-2 font-medium">
+                        <input type="radio" name="template" value={t.key} checked={template === t.key} onChange={() => setTemplate(t.key)} />
+                        {names[t.key]}
+                      </span>
+                      <span className="mt-1 block text-xs text-muted-foreground">{t.description}</span>
+                    </label>
+                  ))}
+                </fieldset>
+              ),
+            )}
             <Field label={en("Title")}>
               {(p) => <input {...p} value={title} onChange={(e) => setTitle(e.target.value)} required maxLength={200} placeholder={en("For example: Term project defense")} />}
             </Field>

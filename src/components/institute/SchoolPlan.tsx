@@ -35,7 +35,10 @@ export interface SchoolPlanState {
   deleteAfter: string | null;
   readOnlyReason: string | null;
   team: { used: number; limit: number | null };
-  voice: { used: number; limit: number; periodStart: string };
+  /** extra: C1, minutes bought in packs and not yet used */
+  voice: { used: number; limit: number; periodStart: string; extra: number };
+  /** C1: extra minutes are sold in packs while the plan runs */
+  voicePack: { minutes: number; priceMinor: number; canBuy: boolean };
   portal: boolean;
   canResume: boolean;
   plans: PlanOption[];

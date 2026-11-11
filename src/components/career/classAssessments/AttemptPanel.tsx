@@ -5,6 +5,7 @@
  * whose ownership is checked, a project .zip, the coding task or the exam), then the viva by voice (OpenAI Realtime through
  * the API, which keeps the transcript) or in writing. Then it waits for the teacher, who decides. 2.12: when the assessment has a
  * change task, the student makes one small change to their own code in the workspace (timed, no AI assistant) before the viva.
+ * C1 (any subject): an essay, report, lab report or presentation is handed in as a PDF, Word or PowerPoint file, or pasted in.
  * API: /api/career/class-assessments/student/assessments/{assignmentId}/attempt...
  */
 import React, { useEffect, useRef, useState } from "react";
@@ -17,7 +18,7 @@ import { CA_API, type StudentChange, type StudentResult } from "@/components/car
 import { PreviousFeedbackView, ResultView, type PreviousFeedback } from "@/components/career/classAssessments/StudentResult";
 import { useSkipReasonText } from "@/components/career/classAssessments/evidenceText";
 
-type Kind = "repo" | "upload" | "sprint" | "exam";
+type Kind = "repo" | "upload" | "sprint" | "exam" | "document";
 
 interface AttemptState {
   attempt: {
@@ -26,7 +27,7 @@ interface AttemptState {
     startedAt: string;
     submittedAt: string | null;
     late: boolean;
-    work: { kind: Kind; title: string; files: number; tests?: string | null } | null;
+    work: { kind: Kind; title: string; files: number; tests?: string | null; format?: string; pages?: number; words?: number } | null;
     viva: { sessionId: string; mode: "voice" | "text"; finished: boolean; live: boolean; saving: boolean; questions: number; answered: number; turns: { role: "interviewer" | "student"; text: string }[] } | null;
   } | null;
   canStart: boolean;
@@ -125,6 +126,10 @@ export function AttemptPanel({ assignmentId, onChange }: { assignmentId: string;
             <span className="font-medium">{en("Handed in:")}</span> {t.work.title}
             {t.work.files > 0 && <span className="text-muted-foreground"> · {en("{count} files", { count: t.work.files })}</span>}
             {t.work.tests && <span className="text-muted-foreground"> · {t.work.tests}</span>}
+            {t.work.kind === "document" && !!t.work.pages && (
+              <span className="text-muted-foreground"> · {t.work.format === "pptx" ? en("{count} slides", { count: t.work.pages }) : en("{count} pages", { count: t.work.pages })}</span>
+            )}
+            {t.work.kind === "document" && !!t.work.words && <span className="text-muted-foreground"> · {en("{count} words", { count: t.work.words.toLocaleString() })}</span>}
             {t.late && <> · <Badge tone="warn">{en("Late")}</Badge></>}
           </p>
         )}
@@ -294,6 +299,8 @@ function HandIn({ state, base, busy, run }: { state: AttemptState; base: string;
     );
   }
 
+  if (state.submitWith.includes("document")) return <DocumentHandIn base={base} busy={busy} run={run} />;
+
   const upload = async () => {
     if (!file) return;
     const form = new FormData();
@@ -314,6 +321,69 @@ function HandIn({ state, base, busy, run }: { state: AttemptState; base: string;
           {en("Upload and hand in")}
         </Button>
       </div>
+    </div>
+  );
+}
+
+/** C1: the student's document (PDF, Word or PowerPoint), or its text pasted in */
+function DocumentHandIn({ base, busy, run }: { base: string; busy: string | null; run: Run }) {
+  const en = useEn();
+  const api = useApi();
+  const [file, setFile] = useState<File | null>(null);
+  const [pasting, setPasting] = useState(false);
+  const [text, setText] = useState("");
+  const words = text.trim() ? text.trim().split(/\s+/).length : 0;
+
+  const upload = async () => {
+    if (!file) return;
+    const form = new FormData();
+    form.append("file", file);
+    await run("document", () => api<AttemptState>(`${base}/document`, { method: "POST", body: form }));
+  };
+  const paste = () => run("paste", () => api<AttemptState>(`${base}/text`, { json: { text } }));
+
+  return (
+    <div className="space-y-3">
+      <p className="text-muted-foreground">
+        {en("The viva's questions are about what's in your file, so it needs readable text: a scan or a photo of the pages can't be read.")}
+      </p>
+      {!pasting ? (
+        <>
+          <Field label={en("Your file (PDF, Word or PowerPoint, 25 MB at most)")}>
+            {(p) => (
+              <input
+                {...p}
+                type="file"
+                accept=".pdf,.docx,.pptx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.openxmlformats-officedocument.presentationml.presentation"
+                onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+              />
+            )}
+          </Field>
+          <div className="flex flex-wrap items-center gap-3">
+            <Button busy={busy === "document"} disabled={!file} onClick={() => void upload()}>
+              {en("Upload and hand in")}
+            </Button>
+            <button type="button" className="text-sm font-medium text-[var(--brand-text-light,var(--brand))] dark:text-[var(--brand-text-dark,var(--brand))] underline-offset-2 hover:underline" onClick={() => setPasting(true)}>
+              {en("Paste the text instead")}
+            </button>
+          </div>
+        </>
+      ) : (
+        <>
+          <Field label={en("Your work")} hint={en("{count} words", { count: words.toLocaleString() })}>
+            {(p) => <textarea {...p} rows={12} value={text} onChange={(e) => setText(e.target.value)} />}
+          </Field>
+          <div className="flex flex-wrap items-center gap-3">
+            <Button busy={busy === "paste"} disabled={words < 50} onClick={() => void paste()}>
+              {en("Hand in this text")}
+            </Button>
+            <button type="button" className="text-sm font-medium text-[var(--brand-text-light,var(--brand))] dark:text-[var(--brand-text-dark,var(--brand))] underline-offset-2 hover:underline" onClick={() => setPasting(false)}>
+              {en("Upload a file instead")}
+            </button>
+            {words > 0 && words < 50 && <span className="text-xs text-muted-foreground">{en("Paste your whole piece of work (50 words at least).")}</span>}
+          </div>
+        </>
+      )}
     </div>
   );
 }

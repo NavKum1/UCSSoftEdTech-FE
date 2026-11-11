@@ -9,7 +9,7 @@ import { formatWhen, type AttemptStatus, type Decision, type EvidenceSignal, typ
 
 export function useWorkKindNames(): Record<WorkKind, string> {
   const en = useEn();
-  return { repo: en("GitHub repository"), upload: en("Uploaded project"), sprint: en("Coding task"), exam: en("Written exam") };
+  return { repo: en("GitHub repository"), upload: en("Uploaded project"), sprint: en("Coding task"), exam: en("Written exam"), document: en("The work handed in") };
 }
 
 export function useDecisionNames(): Record<Decision, string> {
@@ -71,6 +71,14 @@ export function useSignalText() {
       case "same_upload":
         if (str(v.student)) return en("The uploaded .zip is identical to the one {student} handed in.", { student: str(v.student) });
         return en("The uploaded .zip is identical to one another student handed in.");
+      case "same_document":
+        if (str(v.student)) return en("The file is identical to the one {student} handed in.", { student: str(v.student) });
+        return v.sameClass ? en("The file is identical to one another student in this class handed in.") : en("The file is identical to one a student in another class handed in.");
+      case "same_text":
+        if (str(v.student)) return en("{share}% of the text is the same as in {student}'s work (runs of six or more words).", { share: num(v.share), student: str(v.student) });
+        return v.sameClass
+          ? en("{share}% of the text is the same as in another student's work in this class (runs of six or more words).", { share: num(v.share) })
+          : en("{share}% of the text is the same as in a student's work in another class (runs of six or more words).", { share: num(v.share) });
       case "coding_no_attempt":
         return en("Handed in without a timed session in the workspace, so the editing couldn't be followed.");
       case "coding_no_editor_activity":
@@ -114,6 +122,8 @@ export function useSignalText() {
         return en("Answered {answered} of {asked} questions.", { answered: num(v.answered), asked: num(v.asked) });
       case "viva_short_answers":
         return en("The answers were short: {count} words on average.", { count: num(v.words) });
+      case "viva_read_from_work":
+        return en("{count} of {answered} answers were mostly the work's own words, as if read out from it.", { count: num(v.count), answered: num(v.answered) });
       default:
         return en("Something else worth asking about ({code}).", { code: s.code });
     }
