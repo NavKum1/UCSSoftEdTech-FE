@@ -65,6 +65,21 @@ export function schoolHome(me: CareerMe | null): typeof HOMES.student | typeof H
 }
 
 /**
+ * S4b: every area this person's memberships open, for "Switch to" in the account menu: someone who is career-center staff
+ * and also teaches gets both, a student who also works for an employer gets both. Labels are English (en() where shown).
+ */
+export function schoolAreas(me: CareerMe | null): { href: string; label: string }[] {
+  const active = (me?.memberships ?? []).filter((m) => m.status === "Active");
+  const areas: { href: string; label: string }[] = [];
+  if (active.some((m) => CAREER_STAFF.includes(m.role))) areas.push({ href: HOMES.careerCentre, label: "Career center" });
+  if (active.some((m) => m.role === "Faculty")) areas.push({ href: HOMES.faculty, label: "Faculty" });
+  if ((me?.employers ?? []).length > 0) areas.push({ href: HOMES.employer, label: "Employer" });
+  const school = schoolHome(me);
+  if (school) areas.push({ href: school, label: "My school" });
+  return areas;
+}
+
+/**
  * This person's own area, once known (resolved). Memberships are only looked up when no platform role decides, so a
  * member's dashboard costs one small request.
  */

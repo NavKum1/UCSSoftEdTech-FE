@@ -88,7 +88,7 @@ export function useSignalText() {
       case "coding_telemetry_gaps":
         return en("Part of the editing record didn't arrive.");
       case "coding_clock_ahead":
-        return en("The editor's clock ran ahead of the server's.");
+        return en("The editor's clock ran ahead of Edulexa's clock.");
       case "coding_too_fast":
         return en("A lot of new code arrived soon after starting.");
       case "coding_external_paste":

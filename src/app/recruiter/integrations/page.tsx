@@ -103,7 +103,7 @@ async function errorMessage(res: Response, fallback: string) {
   } catch {
     // non-JSON body
   }
-  if (res.status === 401 || res.status === 403) return "You need recruiter access to manage integrations.";
+  if (res.status === 401 || res.status === 403) return "You need recruiter access to manage ATS connections.";
   return `${fallback}. Please try again.`;
 }
 
@@ -165,7 +165,7 @@ function ConnectionLogs({ connectionId, getToken }: { connectionId: string; getT
           <tr className="text-start text-muted-foreground border-b border-border">
             <th className="py-1.5 pe-3 text-start font-medium">{en("Time")}</th>
             <th className="py-1.5 pe-3 text-start font-medium">{en("Result")}</th>
-            <th className="py-1.5 pe-3 text-start font-medium">{en("HTTP")}</th>
+            <th className="py-1.5 pe-3 text-start font-medium">{en("Response code")}</th>
             <th className="py-1.5 pe-3 text-start font-medium">{en("Submission")}</th>
             <th className="py-1.5 text-start font-medium">{en("Error")}</th>
           </tr>
@@ -281,7 +281,7 @@ export default function IntegrationsPage() {
       setLeverPerformAs("");
       refresh();
     } catch {
-      setCreateError("We couldn't reach the server while creating the connection. Please check your connection and try again.");
+      setCreateError("We couldn't reach Edulexa while creating the connection. Please check your connection and try again.");
     } finally {
       setCreating(false);
     }
@@ -300,12 +300,12 @@ export default function IntegrationsPage() {
       setRowMessage((m) => ({
         ...m,
         [id]: body.success
-          ? { ok: true, text: `Test event delivered${body.httpStatus ? ` (HTTP ${body.httpStatus})` : ""}.` }
-          : { ok: false, text: `Test event failed${body.httpStatus ? ` (HTTP ${body.httpStatus})` : ""}${body.error ? `: ${body.error}` : "."}` },
+          ? { ok: true, text: `Test event delivered${body.httpStatus ? ` (response code ${body.httpStatus})` : ""}.` }
+          : { ok: false, text: `Test event failed${body.httpStatus ? ` (response code ${body.httpStatus})` : ""}${body.error ? `: ${body.error}` : "."}` },
       }));
       setOpenLogs((o) => (id in o ? { ...o, [id]: o[id] + 1 } : o));
     } catch {
-      setRowMessage((m) => ({ ...m, [id]: { ok: false, text: en("We couldn't reach the server while sending the test. Please check your connection and try again.") } }));
+      setRowMessage((m) => ({ ...m, [id]: { ok: false, text: en("We couldn't reach Edulexa while sending the test. Please check your connection and try again.") } }));
     } finally {
       setBusy(null);
     }
@@ -323,7 +323,7 @@ export default function IntegrationsPage() {
       }
       setConnections((list) => list.map((x) => (x.id === c.id ? { ...x, isActive: false } : x)));
     } catch {
-      setRowMessage((m) => ({ ...m, [c.id]: { ok: false, text: en("We couldn't reach the server while disabling. Please check your connection and try again.") } }));
+      setRowMessage((m) => ({ ...m, [c.id]: { ok: false, text: en("We couldn't reach Edulexa while disabling. Please check your connection and try again.") } }));
     } finally {
       setBusy(null);
     }
@@ -408,7 +408,7 @@ export default function IntegrationsPage() {
                       )}
                     </div>
                     <p className="text-xs text-muted-foreground mt-1 break-all">
-                      {en("Created {date}{value}{value2}", { date: new Date(c.createdAt).toLocaleDateString(), value: c.webhookUrl ? ` · ${c.webhookUrl}` : "", value2: c.hasProviderApiKey ? en(" · provider API key stored") : "" })}
+                      {en("Created {date}{value}{value2}", { date: new Date(c.createdAt).toLocaleDateString(), value: c.webhookUrl ? ` · ${c.webhookUrl}` : "", value2: c.hasProviderApiKey ? en(" · ATS API key stored") : "" })}
                     </p>
                   </div>
                   <div className="flex flex-wrap items-center gap-2">
@@ -445,7 +445,7 @@ export default function IntegrationsPage() {
           <form onSubmit={createConnection} className="rounded-xl border border-border bg-card shadow-sm p-5 space-y-4">
             <h2 className="text-base font-semibold text-foreground flex items-center gap-2"><Plus className="w-4 h-4 text-muted-foreground" aria-hidden />{en("New connection")}</h2>
             <label className="block text-sm font-medium text-foreground">
-              {en("Provider")}
+              {en("Applicant tracking system")}
               <select value={provider} onChange={(e) => setProvider(e.target.value)} className={inputClass}>
                 {providerOptions.map((p) => (
                   <option key={p.id} value={p.id}>{p.id}</option>
@@ -459,7 +459,7 @@ export default function IntegrationsPage() {
             </label>
             {needsWebhook && (
               <label className="block text-sm font-medium text-foreground">
-                {en("Webhook URL (HTTPS; HTTP only for localhost)")}
+                {en("Webhook URL (the address that receives results; starts with https://)")}
                 <input
                   type="url"
                   value={webhookUrl}
@@ -494,9 +494,9 @@ export default function IntegrationsPage() {
 
       {/* Verification guide */}
       <section className="rounded-xl border border-border bg-card shadow-sm p-5 space-y-3">
-        <h2 className="text-base font-semibold text-foreground">{en("How to verify our webhooks")}</h2>
+        <h2 className="text-base font-semibold text-foreground">{en("For your IT team: check that results come from Edulexa")}</h2>
         <p className="text-sm text-muted-foreground">
-          {en("Every webhook (")}<code className="font-mono">assessment.completed</code>, <code className="font-mono">assessment.reviewed</code>{en(") carries a header ")}<code className="font-mono">{en("X-Edulexa-Signature: t=<unix seconds>,v1=<hex>")}</code>{en(", where v1 is HMAC-SHA256 of ")}<code className="font-mono">{"`${t}.${rawBody}`"}</code>{en(" keyed with your signing secret. Compare with a constant-time check and reject timestamps older than five minutes.")}
+          {en("Every result message (")}<code className="font-mono">assessment.completed</code>, <code className="font-mono">assessment.reviewed</code>{en(") carries a header ")}<code className="font-mono">{en("X-Edulexa-Signature: t=<unix seconds>,v1=<hex>")}</code>{en(", where v1 is HMAC-SHA256 of ")}<code className="font-mono">{"`${t}.${rawBody}`"}</code>{en(" keyed with your signing secret. Compare with a constant-time check and reject timestamps older than five minutes.")}
         </p>
         <pre className="text-xs font-mono rounded-lg border border-border bg-muted/30 p-4 overflow-x-auto text-foreground">{VERIFY_SNIPPET}</pre>
       </section>

@@ -147,7 +147,7 @@ export default function DailyCodeReviewPage() {
         setStatus((s) => (s && body.countsForPoints ? { ...s, completed: true, score: body.score, points: body.points } : s));
       } else setError(body?.error ?? "Your review couldn't be submitted. Please try again.");
     } catch {
-      setError(en("We couldn't reach the server. Please try again."));
+      setError(en("We couldn't reach Edulexa. Please try again."));
     } finally {
       setBusy(false);
     }

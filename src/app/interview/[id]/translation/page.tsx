@@ -51,7 +51,7 @@ export default function InterviewTranscriptPage() {
         setSegments([]);
       }
     } catch (e) {
-      setFetchError(e instanceof TypeError ? en("We couldn't reach the server. Please check your connection and try again.") : en("We couldn't load the transcript. Please try again."));
+      setFetchError(e instanceof TypeError ? en("We couldn't reach Edulexa. Check your internet connection and try again.") : en("We couldn't load the transcript. Please try again."));
       setSegments([]);
     } finally {
       setLoading(false);
@@ -83,7 +83,7 @@ export default function InterviewTranscriptPage() {
       a.click();
       setTimeout(() => URL.revokeObjectURL(url), 1000);
     } catch {
-      setDownloadError(en("We couldn't reach the server. Please check your connection and try again."));
+      setDownloadError(en("We couldn't reach Edulexa. Check your internet connection and try again."));
     }
   };
 

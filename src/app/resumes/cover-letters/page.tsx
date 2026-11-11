@@ -85,7 +85,7 @@ export default function CoverLettersPage() {
       }
       return (await res.json()) as T;
     } catch {
-      setError(en("We couldn't reach the server. Please check your connection and try again."));
+      setError(en("We couldn't reach Edulexa. Check your internet connection and try again."));
       return null;
     } finally {
       setBusy(null);

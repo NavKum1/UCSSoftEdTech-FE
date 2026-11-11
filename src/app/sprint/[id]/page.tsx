@@ -573,7 +573,7 @@ function WorkspaceHeader({
     <header className="border-b border-border bg-card/90 backdrop-blur-md sticky top-16 z-20">
       {isOffline && (
         <div className="w-full bg-amber-500/10 text-amber-700 dark:text-amber-400 text-center text-xs py-1.5 font-semibold border-b border-amber-500/20">
-          {en("No internet connection. Your edits stay in this tab and sync when you reconnect.")}
+          {en("No internet connection. Your edits stay in this tab and are saved when you reconnect.")}
         </div>
       )}
       <div className="px-4 h-14 flex items-center justify-between">
@@ -660,7 +660,7 @@ function GradedWorkspace({ sprintId }: { sprintId: string }) {
           getToken
         );
       } catch {
-        setStartIssue({ kind: "error", message: en("Couldn't reach the server. Check your connection and try again.") });
+        setStartIssue({ kind: "error", message: en("Couldn't reach Edulexa. Check your connection and try again.") });
         setStarting(false);
         return;
       }
@@ -786,7 +786,7 @@ function GradedWorkspace({ sprintId }: { sprintId: string }) {
       }
       setStartIssue({ kind: "pro", message: data.error || "Checkout is unavailable right now. Please try again later." });
     } catch {
-      setStartIssue({ kind: "pro", message: en("Couldn't reach the server. Check your connection and try again.") });
+      setStartIssue({ kind: "pro", message: en("Couldn't reach Edulexa. Check your connection and try again.") });
     }
     setUpgrading(false);
   };
@@ -849,7 +849,7 @@ function GradedWorkspace({ sprintId }: { sprintId: string }) {
       setStatusMessage(
         syncState === "stopped"
           ? "Your editor activity can't be saved for this attempt. Reload the page to continue."
-          : "Your latest edits haven't reached the server yet. Check your connection and submit again."
+          : "Your latest edits haven't reached Edulexa yet. Check your connection and submit again."
       );
       setPipelineState("editor");
       return;
@@ -884,7 +884,7 @@ function GradedWorkspace({ sprintId }: { sprintId: string }) {
       }
     } catch (err) {
       void err;
-      setStatusMessage("We couldn't reach the server. Please check your connection and try again.");
+      setStatusMessage("We couldn't reach Edulexa. Check your internet connection and try again.");
       setPipelineState("editor");
     }
   };
@@ -1479,7 +1479,7 @@ function PracticeWorkspace({ sprintId }: { sprintId: string }) {
                     variant="inline"
                     headingLevel={4}
                     title={en("Sign in to run your code")}
-                    message="Editing here is open to everyone. Running code on our servers needs an account."
+                    message="Editing here is open to everyone. Running code needs an account."
                     className="rounded-xl border border-border bg-card"
                   />
                 ) : (

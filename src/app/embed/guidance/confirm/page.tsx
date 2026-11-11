@@ -41,7 +41,7 @@ function Confirm() {
         }
         setState({ ok: true, institute: body?.instituteName, thankYou: body?.thankYou, meeting: body?.booking ?? null });
       })
-      .catch(() => setState({ ok: false, error: "We couldn't reach the server. Please check your connection and open the link again." }));
+      .catch(() => setState({ ok: false, error: "We couldn't reach Edulexa. Please check your connection and open the link again." }));
   }, [token]);
 
   if (!state) return <div className="mx-auto mt-10 h-40 max-w-md animate-pulse rounded-2xl bg-muted motion-reduce:animate-none" aria-busy="true" />;

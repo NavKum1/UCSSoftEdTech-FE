@@ -6,6 +6,7 @@ import AppMain from "@/components/AppMain";
 import MfaRequiredNotice from "@/components/auth/MfaRequiredNotice";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { TextProvider } from "@/lib/english/EnglishProvider";
+import { HelpPanelProvider } from "@/components/help/HelpPanel";
 import { requestLanguage } from "@/lib/i18n/server";
 import { directionOf } from "@/lib/i18n/languages";
 import "./globals.css";
@@ -47,9 +48,11 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <AppAuthProvider>
           <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
               <TextProvider language={language} messages={messages}>
+              <HelpPanelProvider>
               <GlobalNavigation />
               <AppMain>{children}</AppMain>
               <MfaRequiredNotice />
+              </HelpPanelProvider>
               </TextProvider>
           </ThemeProvider>
         </AppAuthProvider>

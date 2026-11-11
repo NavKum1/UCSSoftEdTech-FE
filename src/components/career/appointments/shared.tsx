@@ -5,6 +5,7 @@
  * intake questions and authenticated downloads (.ics / .csv).
  */
 
+import { timeZoneName } from "@/lib/timeZoneName";
 import React, { useEffect, useId, useMemo, useRef, useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useApi } from "@/lib/appAuth";
@@ -318,7 +319,7 @@ export function SlotPicker({
     <div className="space-y-3">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <p id={headingId} className="text-sm font-medium">
-          {label(from)} – {label(addDays(from, 13))} <span className="font-normal text-muted-foreground">{tr("timesInTz", { tz })}</span>
+          {label(from)} – {label(addDays(from, 13))} <span className="font-normal text-muted-foreground">{tr("timesInTz", { tz: timeZoneName(tz) })}</span>
         </p>
         <div className="flex gap-2">
           <Button type="button" variant="secondary" onClick={() => onFrom(addDays(from, -14) < minFrom ? minFrom : addDays(from, -14))} disabled={from <= minFrom || loading} aria-label={tr("previousTwoWeeks")}>

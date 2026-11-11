@@ -497,9 +497,9 @@ function MembersTab({ cohortId, getToken, onChanged }: { cohortId: string; getTo
   return (
     <div className="space-y-5">
       <div className="rounded-lg border border-border p-4 space-y-3">
-        <h3 className="text-sm font-semibold text-foreground flex items-center gap-2"><Upload className="w-4 h-4" />{en(" Import students from CSV")}</h3>
+        <h3 className="text-sm font-semibold text-foreground flex items-center gap-2"><Upload className="w-4 h-4" />{en(" Import students from a spreadsheet (CSV file)")}</h3>
         <p className="text-xs text-muted-foreground">
-          {en("Header row: ")}<code className="font-mono">{en("name,email,roll_number,branch")}</code>{en(". Other columns are ignored. Up to 5,000 rows per file; existing students (same email) are updated.")}
+          {en("First row (column names): ")}<code className="font-mono">{en("name,email,roll_number,branch")}</code>{en(". Other columns are ignored. Up to 5,000 rows per file; existing students (same email) are updated.")}
         </p>
         <div className="flex flex-col sm:flex-row sm:items-center gap-2">
           <label className={`${secondaryButtonClass} w-full sm:w-auto`}>
@@ -570,7 +570,7 @@ function MembersTab({ cohortId, getToken, onChanged }: { cohortId: string; getTo
         ) : members.error ? (
           <Message ok={false} text={members.error} />
         ) : members.data!.members.length === 0 ? (
-          <p className="text-xs text-muted-foreground">{query ? en("No students match that search.") : en("No students yet. Import a CSV above.")}</p>
+          <p className="text-xs text-muted-foreground">{query ? en("No students match that search.") : en("No students yet. Import a spreadsheet (CSV file) above.")}</p>
         ) : (
           <>
             <div className="overflow-x-auto">
@@ -900,7 +900,7 @@ function DashboardTab({ cohortId, assignments, getToken }: { cohortId: string; a
     <div className="space-y-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <SprintPicker assignments={assignments} value={sprintId} onChange={(v) => { setSprintId(v); setPage(0); }} />
-        <button onClick={download} className={secondaryButtonClass}><Download className="w-3.5 h-3.5" />{en(" Download CSV")}</button>
+        <button onClick={download} className={secondaryButtonClass}><Download className="w-3.5 h-3.5" />{en(" Download spreadsheet (CSV)")}</button>
       </div>
       {downloadError && <Message ok={false} text={downloadError} />}
 
@@ -1220,7 +1220,7 @@ function OutcomesTab({ cohortId, assignments, getToken }: { cohortId: string; as
               </label>
               <button type="submit" className={secondaryButtonClass}>{en("Apply")}</button>
             </form>
-            <button onClick={download} className={secondaryButtonClass}><Download className="w-3.5 h-3.5" />{en(" Download CSV")}</button>
+            <button onClick={download} className={secondaryButtonClass}><Download className="w-3.5 h-3.5" />{en(" Download spreadsheet (CSV)")}</button>
           </div>
         </div>
         {downloadError && <Message ok={false} text={downloadError} />}

@@ -71,13 +71,13 @@ export function decodeJwsPayload(jws: string): CredentialClaims | null {
  */
 export async function verifyJwsInBrowser(jws: string): Promise<ClientSignatureCheck> {
   if (typeof crypto === "undefined" || !crypto.subtle) {
-    return { state: "unsupported", detail: "This browser can't check signatures here (WebCrypto needs HTTPS)." };
+    return { state: "unsupported", detail: "This browser can't check signatures on a page that isn't secure." };
   }
   try {
     const parts = jws.trim().split(".");
-    if (parts.length !== 3) return { state: "failed", detail: "Not a compact JWS." };
+    if (parts.length !== 3) return { state: "failed", detail: "This isn't a signed Edulexa credential." };
     const header = decodeJsonSegment<{ alg?: string; kid?: string }>(parts[0]);
-    if (header.alg !== "ES256") return { state: "failed", detail: "Unexpected signature algorithm." };
+    if (header.alg !== "ES256") return { state: "failed", detail: "This credential is signed in a way Edulexa doesn't use." };
 
     const res = await fetch(`${API_BASE_URL}${CREDENTIAL_JWKS_PATH}`, { cache: "no-store" });
     if (!res.ok) return { state: "unsupported", detail: "The public signing keys could not be loaded." };

@@ -100,7 +100,7 @@ export const careerNav: Record<CareerPersona, CareerNavItem[]> = {
     { label: "System design duels", short: "System design", href: "/duels/arena", module: "B2", ready: true, group: "Practice", sub: "Engineering drills" },
     { label: "Coding challenges", href: "/sprint/distributed-database", module: "B2", ready: true, group: "Practice", sub: "Prove your skills" },
     { label: "Written exams", href: "/prep/exam", module: "B2", ready: true, group: "Practice", sub: "Prove your skills" },
-    { label: "Defend your repo", href: "/defend-repo", module: "B2", ready: true, group: "Practice", sub: "Prove your skills" },
+    { label: "Defend your GitHub work", href: "/defend-repo", module: "B2", ready: true, group: "Practice", sub: "Prove your skills" },
     { label: "Leaderboard", href: "/leaderboard", module: "B2", ready: true, group: "Practice" },
     { label: "Counseling quiz", href: "/prep/counselling", module: "C3", ready: true, group: "Guidance" },
     { label: "Career path", href: "/prep/career", module: "C3", ready: true, group: "Guidance" },
@@ -121,22 +121,22 @@ export const careerNav: Record<CareerPersona, CareerNavItem[]> = {
   ],
   "career-center": [
     { label: "Home", href: "/career-center", module: "F1", ready: true },
-    { label: "Appointments", href: "/career-center/appointments", module: "C3", ready: true, group: "Students" },
-    { label: "Caseload", href: "/career-center/caseload", module: "D6", ready: true, group: "Students" },
-    { label: "Document review", href: "/career-center/document-review", module: "C6", ready: true, group: "Students" },
+    { label: "Appointments", href: "/career-center/appointments", module: "C3", ready: true, group: "Students", roles: ["CareerAdmin", "Counselor"] },
+    { label: "Caseload", href: "/career-center/caseload", module: "D6", ready: true, group: "Students", roles: ["CareerAdmin", "Counselor"] },
+    { label: "Document review", href: "/career-center/document-review", module: "C6", ready: true, group: "Students", roles: ["CareerAdmin", "Counselor"] },
     { label: "Interview schedules", href: "/career-center/interviews", module: "C4", ready: true, group: "Students" },
     { label: "Mentoring", href: "/career-center/mentoring", module: "C10", ready: true, group: "Students" },
     { label: "Messages & campaigns", href: "/career-center/messages", module: "C7", ready: true, group: "Students" },
-    { label: "International students", href: "/career-center/international", module: "D3", ready: true, group: "Students" },
+    { label: "International students", href: "/career-center/international", module: "D3", ready: true, group: "Students", roles: ["CareerAdmin", "Counselor"] },
     { label: "Challenges", href: "/career-center/challenges", module: "D7", ready: true, group: "Students" },
     // Build & Defend 2.8: school admins answer appeals no other teacher of the class can (and see every class's queue)
     { label: "Class reviews", href: "/faculty/review", module: "BD2", ready: true, group: "Students", roles: ["CareerAdmin"] },
     // Build & Defend Stage 3: the pilot's results, for the whole school
     { label: "Assessment results", href: "/faculty/results", module: "BD3", ready: true, group: "Reports", roles: ["CareerAdmin"] },
-    { label: "Employers", href: "/career-center/employers", module: "F3", ready: true, group: "Employers and jobs" },
+    { label: "Employers", href: "/career-center/employers", module: "F3", ready: true, group: "Employers and jobs", roles: ["CareerAdmin", "EmployerRelations"] },
     { label: "Career fairs", href: "/career-center/fairs", module: "C5", ready: true, group: "Employers and jobs" },
     { label: "Internships", href: "/career-center/experiences", module: "C9", ready: true, group: "Employers and jobs" },
-    { label: "Placement office", href: "/career-center/placements", module: "G14a", ready: true, group: "Employers and jobs" },
+    { label: "Placements", href: "/career-center/placements", module: "G14a", ready: true, group: "Employers and jobs" },
     { label: "Campus drives", href: "/career-center/placements/drives", module: "H1", ready: true, group: "Employers and jobs" },
     { label: "Résumé book", href: "/career-center/resume-books", module: "R1", ready: true, group: "Employers and jobs" },
     { label: "Apprenticeships", href: "/career-center/apprenticeships", module: "G15", ready: true, countries: ["US"], group: "Employers and jobs" },
@@ -148,15 +148,15 @@ export const careerNav: Record<CareerPersona, CareerNavItem[]> = {
     { label: "Bootcamp outcomes (CIRR-style)", href: "/career-center/reports/cirr", module: "G16", ready: true, group: "Reports" },
     { label: "Frameworks", href: "/career-center/frameworks", module: "D1", ready: true, group: "Reports" },
     { label: "People", href: "/career-center/people", module: "F1", ready: true, group: "Setup" },
-    { label: "Imports", href: "/career-center/imports", module: "I1", ready: true, group: "Setup" },
-    { label: "SIS roster sync", href: "/career-center/settings/sis", module: "I2", ready: true, group: "Setup" },
-    { label: "Calendar sync", href: "/career-center/calendar", module: "I3", ready: true, group: "Setup" },
+    { label: "Imports", href: "/career-center/imports", module: "I1", ready: true, group: "Setup", roles: ["CareerAdmin"] },
+    { label: "Student roster (SIS)", href: "/career-center/settings/sis", module: "I2", ready: true, group: "Setup", roles: ["CareerAdmin"] },
+    { label: "Calendar connection", href: "/career-center/calendar", module: "I3", ready: true, group: "Setup" },
     { label: "Chat & SMS", href: "/career-center/settings/chat-sms", module: "G7", ready: true, group: "Setup" },
-    { label: "National credentials", href: "/career-center/national-credentials", module: "G6", ready: true, countries: ["IN"], group: "Setup" },
+    { label: "National credentials", href: "/career-center/national-credentials", module: "G6", ready: true, countries: ["IN"], group: "Setup", roles: ["CareerAdmin", "Counselor"] },
     { label: "Settings", href: "/career-center/settings", module: "F1", ready: true, group: "Setup" },
-    { label: "Billing", href: "/career-center/billing", module: "G9", ready: true, group: "Setup" },
-    { label: "Privacy requests", href: "/career-center/privacy", module: "G18", ready: true, group: "Privacy" },
-    { label: "Privacy log", href: "/career-center/privacy-log", module: "F4", ready: true, group: "Privacy" },
+    { label: "Billing", href: "/career-center/billing", module: "G9", ready: true, group: "Setup", roles: ["CareerAdmin"] },
+    { label: "Privacy requests", href: "/career-center/privacy", module: "G18", ready: true, group: "Privacy", roles: ["CareerAdmin", "Counselor"] },
+    { label: "Privacy log", href: "/career-center/privacy-log", module: "F4", ready: true, group: "Privacy", roles: ["CareerAdmin"] },
     { label: "Notifications", href: "/career-center/notifications", module: "F5", ready: true, group: "Privacy" },
   ],
   employer: [
@@ -186,6 +186,19 @@ export const careerNav: Record<CareerPersona, CareerNavItem[]> = {
   alumni: [
     { label: "Home", href: "/alumni", module: "C10", ready: true },
     { label: "Mentoring", href: "/alumni/mentoring", module: "C10", ready: true },
+    // The bell in the header opens it (the shared notifications page, as for every other role)
+    { label: "Notifications", href: "/alumni/notifications", module: "F5", ready: true },
+  ],
+};
+
+/**
+ * Pages opened from inside another page (not from the menu) that only some roles can use. Opened from a bookmark or a
+ * link by someone whose role can't use them, the shell says so instead of showing a page whose buttons the API refuses.
+ */
+export const careerPagesOutsideMenu: Partial<Record<CareerPersona, CareerNavItem[]>> = {
+  "career-center": [
+    { label: "Caseload rules", href: "/career-center/caseload/rules", module: "D6", ready: false, roles: ["CareerAdmin"] },
+    { label: "Caseload settings", href: "/career-center/caseload/settings", module: "D6", ready: false, roles: ["CareerAdmin"] },
   ],
 };
 

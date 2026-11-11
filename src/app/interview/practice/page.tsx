@@ -354,7 +354,7 @@ export default function MultiStreamInterviewPracticePage() {
 
       const { client_secret } = await res.json();
       if (!client_secret) {
-        throw new Error("Missing client_secret from voice server.");
+        throw new Error("We couldn't start the voice interview. Please try again.");
       }
 
       // 2. Initialize WebRTC Peer Connection
@@ -470,7 +470,7 @@ export default function MultiStreamInterviewPracticePage() {
       if (!sdpResponse.ok) {
         const errDetail = await sdpResponse.text().catch(() => "");
         console.error("OpenAI WebRTC call rejected:", sdpResponse.status, errDetail);
-        throw new Error(`Realtime voice handshake rejected by OpenAI (${sdpResponse.status}): ${errDetail || "SDP handshake error"}`);
+        throw new Error("We couldn't connect the voice interview. Please try again.");
       }
 
       const answerSdp = await sdpResponse.text();
@@ -485,7 +485,7 @@ export default function MultiStreamInterviewPracticePage() {
       }, 1000);
     } catch (err) {
       console.error("Interview setup failed:", err);
-      setErrorMsg(err instanceof TypeError ? "We couldn't reach the server. Please check your connection and try again." : (err as Error).message || "We couldn't start the voice interview. Please allow microphone access and try again.");
+      setErrorMsg(err instanceof TypeError ? "We couldn't reach Edulexa. Check your internet connection and try again." : (err as Error).message || "We couldn't start the voice interview. Please allow microphone access and try again.");
       endSessionCleanup();
     } finally {
       setIsConnecting(false);
@@ -560,7 +560,7 @@ export default function MultiStreamInterviewPracticePage() {
       setCompletedReport({ ...report, transcripts: finalTranscripts });
     } catch (err) {
       setScoreFailure({
-        message: err instanceof TypeError ? en("We couldn't reach the server. Please check your connection and try again.") : (err as Error).message,
+        message: err instanceof TypeError ? en("We couldn't reach Edulexa. Check your internet connection and try again.") : (err as Error).message,
         transcripts: finalTranscripts,
       });
     } finally {

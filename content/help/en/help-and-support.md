@@ -1,7 +1,7 @@
 ---
 title: Get help and contact support
 summary: Where the help center is, and who to contact when an article doesn't answer your question.
-roles: [admin, teacher, staff, student]
+roles: [everyone]
 group: Getting started
 features: [help-center]
 order: 2
@@ -11,10 +11,11 @@ Open the help center from the question-mark button at the top of any page. Searc
 
 ## Still need help?
 
-At the end of every help page is [ui: Still need help?]:
+At the end of every help page is [ui: Still need help?]. Who helps you depends on how you use Edulexa:
 
-- **School admins, teachers and career staff** can write to Edulexa support. Say [ui: What it's about] and [ui: What happened, and what you expected], then [ui: Send to support]. We see the page you came from, and we reply within two working days, by e-mail.
-- **Students** get help from their own school first. The help center shows your school's contact, or ask your teacher or career center.
+- **School admins, teachers, career staff, admissions counselors at guidance institutes, recruiters, employers and mentors** write to Edulexa support from the form. Say [ui: What it's about] and [ui: What happened, and what you expected], then select [ui: Send to support]. We see the page you came from, and we reply within two working days, by e-mail.
+- **Students and graduates** get help from their own school first. The help center shows your school's contact, or you can ask your teacher or career center.
+- **If you use Edulexa on your own, without a school,** e-mail us at support@edulexa.com.
 
 ## Tell us what's missing
 

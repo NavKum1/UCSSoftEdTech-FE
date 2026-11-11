@@ -86,7 +86,7 @@ export default function StudentInterviewReplayPage() {
         }
       } catch (err) {
         console.error("Failed to load interview session replay:", err);
-        setFetchError(err instanceof TypeError ? "We couldn't reach the server. Please check your connection and try again." : (err as Error).message || "We couldn't load this interview. Please try again.");
+        setFetchError(err instanceof TypeError ? "We couldn't reach Edulexa. Check your internet connection and try again." : (err as Error).message || "We couldn't load this interview. Please try again.");
         setSessionData(null);
       } finally {
         setLoading(false);

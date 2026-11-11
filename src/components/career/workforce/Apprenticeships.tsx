@@ -7,7 +7,7 @@
 
 import React, { useState } from "react";
 import { useApi } from "@/lib/appAuth";
-import { useCareerShell } from "@/components/career/CareerShell";
+import { useCareerShell, useHasCareerRole } from "@/components/career/CareerShell";
 import { Badge, Button, Card, EmptyState, ErrorBanner, Field, Loading, ScrollArea, SuccessBanner, useCareerFormat, useCareerT, useLoad } from "@/components/career/ui";
 import { setLocationHash, useDateOnly, useLocationHash } from "./shared";
 
@@ -233,6 +233,8 @@ function Detail({ id, onClose, onChanged }: { id: string; onClose: () => void; o
   const fmt = useCareerFormat();
   const dateOnly = useDateOnly();
   const detail = useLoad(() => api<ApprenticeshipDto>(`/api/career/workforce/apprenticeships/${id}`), [api, id]);
+  // Counselors and career admins record and change apprenticeships (as the API checks); employer relations staff see them
+  const canEdit = useHasCareerRole("CareerAdmin", "Counselor");
   const [err, setErr] = useState<string | null>(null);
   const [msg, setMsg] = useState<string | null>(null);
   const [hours, setHours] = useState({ kind: "RTI", date: "", hours: "", description: "" });
@@ -322,7 +324,7 @@ function Detail({ id, onClose, onChanged }: { id: string; onClose: () => void; o
                       <td className="py-1 pe-3">{h.description ?? "—"}{h.decisionNote ? ` (${h.decisionNote})` : ""}</td>
                       <td className="py-1 pe-3">{t(`hourStatus.${h.status}`)}</td>
                       <td className="py-1">
-                        {h.status === "Pending" && rejecting !== h.id && (
+                        {canEdit && h.status === "Pending" && rejecting !== h.id && (
                           <div className="flex flex-wrap gap-1">
                             <Button variant="secondary" onClick={() => run(() => api(`/api/career/workforce/apprenticeships/${a.id}/hours/${h.id}/decision`, { json: { approve: true } }), t("approved"))}>
                               {t("approve")}
@@ -353,7 +355,7 @@ function Detail({ id, onClose, onChanged }: { id: string; onClose: () => void; o
               </table>
             </ScrollArea>
           )}
-          {open && (
+          {canEdit && open && (
             <form
               className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-5 lg:items-end"
               onSubmit={(e) => {
@@ -390,7 +392,7 @@ function Detail({ id, onClose, onChanged }: { id: string; onClose: () => void; o
               ))}
             </ul>
           )}
-          {open && (
+          {canEdit && open && (
             <form
               className="mt-3 grid gap-3 sm:grid-cols-4 sm:items-end"
               onSubmit={(e) => {
@@ -423,7 +425,7 @@ function Detail({ id, onClose, onChanged }: { id: string; onClose: () => void; o
                     <span className="text-xs text-muted-foreground">
                       {s.signedAt ? t("signedBy", { name: s.signerName ?? "", date: fmt.dateTime(s.signedAt) }) : t("requestedOn", { date: fmt.dateTime(s.issuedAt) })}
                     </span>
-                    {s.status === "Pending" && !s.revoked && (
+                    {canEdit && s.status === "Pending" && !s.revoked && (
                       <Button variant="ghost" onClick={() => run(() => api(`/api/career/workforce/apprenticeships/${a.id}/signoffs/${s.id}/revoke`, { method: "POST" }), t("withdrawnMsg"))}>
                         {t("withdraw")}
                       </Button>
@@ -438,7 +440,7 @@ function Detail({ id, onClose, onChanged }: { id: string; onClose: () => void; o
               ))}
             </ul>
           )}
-          {open && (
+          {canEdit && open && (
             <form
               className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3 lg:items-end"
               onSubmit={(e) => {
@@ -474,15 +476,17 @@ function Detail({ id, onClose, onChanged }: { id: string; onClose: () => void; o
           )}
         </section>
 
-        <section aria-labelledby="ap-edit">
-          <h3 id="ap-edit" className="mb-2 font-semibold">{t("editTitle")}</h3>
-          <ApprenticeshipForm
-            key={a.id + a.status}
-            initial={fromDto(a)}
-            creating={false}
-            onSubmit={(f) => run(() => api(`/api/career/workforce/apprenticeships/${a.id}`, { method: "PUT", json: toPayload(f, false) }), t("saved"))}
-          />
-        </section>
+        {canEdit && (
+          <section aria-labelledby="ap-edit">
+            <h3 id="ap-edit" className="mb-2 font-semibold">{t("editTitle")}</h3>
+            <ApprenticeshipForm
+              key={a.id + a.status}
+              initial={fromDto(a)}
+              creating={false}
+              onSubmit={(f) => run(() => api(`/api/career/workforce/apprenticeships/${a.id}`, { method: "PUT", json: toPayload(f, false) }), t("saved"))}
+            />
+          </section>
+        )}
       </div>
     </Card>
   );
@@ -496,6 +500,7 @@ export function ApprenticeshipsStaff() {
   const [status, setStatus] = useState("");
   const list = useLoad(() => api<Row[]>(`/api/career/workforce/apprenticeships${status ? `?status=${status}` : ""}`), [api, schoolId, status]);
   const [creating, setCreating] = useState(false);
+  const canEdit = useHasCareerRole("CareerAdmin", "Counselor");
   // Deep link: #<apprenticeship id>
   const hash = useLocationHash();
   const [picked, setPicked] = useState<string | null | undefined>(undefined);
@@ -524,7 +529,7 @@ export function ApprenticeshipsStaff() {
             )}
           </Field>
         </div>
-        {!creating && <Button onClick={() => setCreating(true)}>{t("add")}</Button>}
+        {canEdit && !creating && <Button onClick={() => setCreating(true)}>{t("add")}</Button>}
       </div>
       {creating && (
         <Card title={t("addTitle")}>

@@ -53,7 +53,7 @@ function FacultyAssessments() {
       const created = await api<{ id: string }>(`${CA_API}/faculty/assessments`, { json: { template, title } });
       router.push(`/faculty/assessments/${created.id}`);
     } catch (err) {
-      setError(err instanceof TypeError ? en("We couldn't reach the server. Please check your connection and try again.") : (err as Error).message);
+      setError(err instanceof TypeError ? en("We couldn't reach Edulexa. Check your internet connection and try again.") : (err as Error).message);
       setBusy(false);
     }
   };

@@ -57,7 +57,7 @@ export function PhoneCheck({
       setCheckId(d.checkId);
       setMsg(`We sent a code by SMS. It works for ${d.minutes} minutes.`);
     } catch (e) {
-      setMsg(e instanceof TypeError ? "We couldn't reach the server. Please check your connection and try again." : (e as Error).message);
+      setMsg(e instanceof TypeError ? "We couldn't reach Edulexa. Check your internet connection and try again." : (e as Error).message);
     } finally {
       setBusy(false);
     }
@@ -72,7 +72,7 @@ export function PhoneCheck({
       setVerified(true);
       onVerified(checkId);
     } catch (e) {
-      setMsg(e instanceof TypeError ? "We couldn't reach the server. Please check your connection and try again." : (e as Error).message);
+      setMsg(e instanceof TypeError ? "We couldn't reach Edulexa. Check your internet connection and try again." : (e as Error).message);
     } finally {
       setBusy(false);
     }

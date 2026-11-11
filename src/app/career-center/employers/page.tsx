@@ -6,6 +6,7 @@ import { useCareerShell } from "@/components/career/CareerShell";
 import { Badge, Button, EmptyState, ErrorBanner, Field, Loading, PageHeader, SuccessBanner, formatDate, useLoad, useCareerT, TAB_LIST, tabClass } from "@/components/career/ui";
 import { RELATIONSHIP_KEYS, RELATIONSHIP_TONES, useRelationshipLabels, useVerification } from "@/components/career/coreLabels";
 import { useEn } from "@/lib/english/EnglishProvider";
+import { HelpLink } from "@/components/help/HelpLink";
 
 interface EmployerRequest {
   id: string;
@@ -54,7 +55,7 @@ export default function CareerCenterEmployersPage() {
       setMsg(tr("nameStatusTheyveBeenNotified", { name: r.employer?.name ?? tr("employer"), status }));
       list.reload();
     } catch (e) {
-      setErr(e instanceof TypeError ? "We couldn't reach the server. Please check your connection and try again." : (e as Error).message);
+      setErr(e instanceof TypeError ? "We couldn't reach Edulexa. Check your internet connection and try again." : (e as Error).message);
     } finally {
       setBusy(null);
     }
@@ -62,7 +63,7 @@ export default function CareerCenterEmployersPage() {
 
   return (
     <div>
-      <PageHeader title={tr("employers")} description={tr("companiesAskingToRecruitYour")} />
+      <PageHeader title={tr("employers")} description={tr("companiesAskingToRecruitYour")} actions={<HelpLink slug="employers-and-approvals" />} />
       <ErrorBanner error={err ?? list.error} onRetry={list.error ? list.reload : undefined} />
       <SuccessBanner message={msg} />
 

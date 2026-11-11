@@ -39,7 +39,7 @@ export default function SettingsView({
           [
             ["team", "Team"],
             ["templates", "Email templates"],
-            ["integrations", "Integrations"],
+            ["integrations", "Connected apps"],
           ] as const
         ).map(([k, label]) => (
           <button key={k} type="button" aria-current={section === k ? "page" : undefined} onClick={() => setSection(k)} className={`rounded-lg px-3 py-2 text-start text-sm ${section === k ? "bg-muted font-medium" : "text-muted-foreground hover:bg-muted/60"}`}>
@@ -291,8 +291,8 @@ function Integrations({ getToken, webhookUrl, reload }: { getToken: GetToken; we
     try {
       const res = await authenticatedFetch("/api/institute/webhook-config", { method: "POST", body: JSON.stringify({ outboundWebhookUrl: url.trim() }) }, getToken);
       const data = await res.json().catch(() => null);
-      if (!res.ok) throw new Error(data?.error ?? "The URL couldn't be saved.");
-      setMsg({ ok: true, text: en("Saved. The events below are sent to this URL.") });
+      if (!res.ok) throw new Error(data?.error ?? "The address couldn't be saved.");
+      setMsg({ ok: true, text: en("Saved. The events below are sent to this address.") });
       reload();
     } catch (e) {
       setMsg({ ok: false, text: (e as Error).message });
@@ -306,7 +306,7 @@ function Integrations({ getToken, webhookUrl, reload }: { getToken: GetToken; we
     setMsg(null);
     try {
       const r = await crm<{ delivered: boolean; status: number; error: string | null }>(getToken, "/webhook/test", { method: "POST" });
-      setMsg(r.delivered ? { ok: true, text: `Your system received the test event (response code ${r.status}).` } : { ok: false, text: r.error ?? `Your system didn't accept the test event (response code ${r.status}). Ask your IT team to check the URL.` });
+      setMsg(r.delivered ? { ok: true, text: `Your system received the test event (response code ${r.status}).` } : { ok: false, text: r.error ?? `Your system didn't accept the test event (response code ${r.status}). Ask your IT team to check the address.` });
     } catch (e) {
       setMsg({ ok: false, text: (e as Error).message });
     } finally {
@@ -320,16 +320,16 @@ function Integrations({ getToken, webhookUrl, reload }: { getToken: GetToken; we
         <div>
           <h2 className="text-base font-semibold">{en("Send leads to your own systems")}</h2>
           <p className="mt-0.5 text-sm text-muted-foreground">
-            {en("Optional. If you also use another CRM (HubSpot, Salesforce, Zoho, or Zapier/Make), Edulexa can send each new lead, form and meeting there for you. The address must be https on a public host. For your IT team: each event is posted to this URL as JSON, signed with your institute's API key in the ")}<code className="text-xs">{en("X-Edulexa-Signature")}</code>{en(" header (")}<code className="text-xs">{en("t=timestamp,v1=HMAC-SHA256 of \"timestamp.body\"")}</code>).
+            {en("Optional. If you also use another CRM (HubSpot, Salesforce, Zoho, or Zapier/Make), Edulexa can send each new lead, form and meeting there for you. The address must start with https:// and be reachable from the internet. For your IT team: each event is posted to this URL as JSON, signed with your institute's API key in the ")}<code className="text-xs">{en("X-Edulexa-Signature")}</code>{en(" header (")}<code className="text-xs">{en("t=timestamp,v1=HMAC-SHA256 of \"timestamp.body\"")}</code>).
           </p>
         </div>
         <Message m={msg} />
         <div className="flex flex-wrap gap-2">
-          <input className={`${input} min-w-64 flex-1 font-mono`} type="url" placeholder="https://" aria-label={en("Webhook URL")} value={url} onChange={(e) => setUrl(e.target.value)} />
+          <input className={`${input} min-w-64 flex-1 font-mono`} type="url" placeholder="https://" aria-label={en("Address to send to")} value={url} onChange={(e) => setUrl(e.target.value)} />
           <button type="button" className={primary} disabled={busy || !url.trim() || url.trim() === webhookUrl} onClick={save}>
             {en("Save")}
           </button>
-          <button type="button" className={secondary} disabled={busy || !webhookUrl} onClick={test} title={webhookUrl ? undefined : en("Save a URL first")}>
+          <button type="button" className={secondary} disabled={busy || !webhookUrl} onClick={test} title={webhookUrl ? undefined : en("Save an address first")}>
             <Send aria-hidden="true" className="h-4 w-4" />{en(" Send a test event")}
           </button>
         </div>

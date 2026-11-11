@@ -181,7 +181,7 @@ function SettingsView() {
       setForm(null);
       s.reload();
     } catch (e) {
-      setErr(e instanceof TypeError ? "We couldn't reach the server. Please check your connection and try again." : (e as Error).message);
+      setErr(e instanceof TypeError ? "We couldn't reach Edulexa. Check your internet connection and try again." : (e as Error).message);
     } finally {
       setBusy(false);
     }
@@ -221,6 +221,8 @@ function SettingsView() {
         </div>
         )}
       </Card>
+      {/* Employer posting fees: India only (pricing there isn't decided yet) */}
+      {india && (
       <Card title={t("pricingTitle")}>
         <p className="mb-2 text-sm text-muted-foreground">{t("pricingNote")}</p>
         <div className="space-y-2">
@@ -228,6 +230,7 @@ function SettingsView() {
           {box("premium", t("premium"))}
         </div>
       </Card>
+      )}
       {s.data!.canEdit && (
         <Button busy={busy} onClick={save}>
           {t("save")}
@@ -261,7 +264,7 @@ function CreateView({ onDone }: { onDone: () => void }) {
       });
       onDone();
     } catch (e) {
-      setErr(e instanceof TypeError ? "We couldn't reach the server. Please check your connection and try again." : (e as Error).message);
+      setErr(e instanceof TypeError ? "We couldn't reach Edulexa. Check your internet connection and try again." : (e as Error).message);
     } finally {
       setBusy(false);
     }

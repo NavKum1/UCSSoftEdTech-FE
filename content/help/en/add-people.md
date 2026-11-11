@@ -23,9 +23,11 @@ Everyone at your school is on the [ui: People] page of the career center. You ca
 
 Teachers and staff get an e-mail with where to sign in. Students added here aren't e-mailed: they hear about each assessment when a teacher gives it to their class.
 
+[shot: add-people-page]
+
 ## Import students from a spreadsheet
 
-1. Under [ui: Import student roster], choose a CSV file.
+1. Under [ui: Import student roster], choose a spreadsheet saved as a CSV file.
 2. Select [ui: Preview]. You see who would be added or updated, and any rows with problems.
 3. Select [ui: Confirm import]. Rows with problems are skipped.
 

@@ -1,0 +1,103 @@
+# S4b help center search (docs/s4b_help_center_for_everyone_plan.md, item 3): the words people type, mapped to the words the
+# articles use. scripts/help-build.ts checks that every word on the right is used in an article, and that each search in
+# "checks" finds the right article first (as the person named). Add words from the searches that found nothing
+# (Edulexa staff see them on /admin/support).
+
+words:
+  # Handing in
+  submit: [hand in]
+  submission: [hand in]
+  turn in: [hand in]
+  upload: [hand in, upload]
+  assignment: [assessment]
+  homework: [assessment]
+  test: [assessment, exam]
+  deadline: [due]
+  late: [due]
+  # Signing in
+  login: [sign in]
+  log in: [sign in]
+  logon: [sign in]
+  log out: [sign out]
+  logout: [sign out]
+  password: [password, sign in]
+  locked out: [sign in]
+  two factor: [code]
+  # The viva
+  oral exam: [viva]
+  oral: [viva]
+  defense: [viva]
+  defend: [viva]
+  voice: [voice, viva]
+  mic: [microphone]
+  audio: [microphone]
+  transcript: [every question and answer]
+  # Results
+  marks: [score, result]
+  mark: [score, result]
+  grade: [score, result]
+  grades: [score, result]
+  certificate: [credential]
+  certificates: [credential]
+  badge: [credential]
+  # Teachers
+  cheating: [points to talk about, much like another student's]
+  plagiarism: [points to talk about, much like another student's]
+  copied: [points to talk about, much like another student's]
+  ai detection: [points to talk about]
+  add students: [add people, roster]
+  add student: [add people, roster]
+  add teachers: [add people]
+  invite: [add people, invite]
+  # Career
+  resume: [résumé]
+  resumes: [résumé]
+  cv: [résumé]
+  meeting: [appointment]
+  counselor: [career center, appointment]
+  advisor: [career center, appointment]
+  job: [job]
+  jobs: [job]
+  placement: [placement, job]
+  # Account
+  dark mode: [dark]
+  theme: [dark, light]
+  emails: [e-mail]
+  email: [e-mail]
+  alerts: [notification]
+  refund: [billing]
+  invoice: [billing]
+  payment: [billing]
+  contact: [contact, support]
+  delete my account: [delete your account, your data]
+  delete account: [delete your account, your data]
+
+checks:
+  - { search: submit, as: student, first: hand-in-your-work }
+  - { search: how do I submit my essay, as: student, first: hand-in-your-work }
+  - { search: login, first: sign-in }
+  - { search: forgot password, first: sign-in }
+  - { search: sign in, as: teacher, first: sign-in }
+  - { search: oral exam, as: student, first: the-viva }
+  - { search: mic not working, as: student, first: microphone-and-browser }
+  - { search: marks, as: student, first: results-and-appeals }
+  - { search: certificate, as: student, first: credentials-and-passport }
+  - { search: plagiarism, as: teacher, first: review-the-evidence }
+  - { search: cheating, as: teacher, first: review-the-evidence }
+  - { search: transcript, as: teacher, first: review-the-evidence }
+  - { search: language, first: your-account }
+  - { search: dark mode, first: your-account }
+  - { search: appointment, as: student, first: appointments }
+  - { search: appointment, as: staff, first: appointments-and-availability }
+  - { search: resume, as: student, first: resumes }
+  - { search: cv, as: alumni, first: resumes }
+  - { search: job, as: student, first: campus-jobs-and-interviews }
+  - { search: refund, as: admin, first: billing-and-voice-minutes }
+  - { search: notification, first: notifications }
+  - { search: how do I add students, as: admin, first: add-people }
+  - { search: roster, as: teacher, first: classes-and-rosters }
+  - { search: switch school, first: switch-schools-and-roles }
+  - { search: delete my account, as: student, first: your-data }
+  - { search: appeal, as: student, first: results-and-appeals }
+  - { search: appeal, as: teacher, first: decide-and-appeals }
+  - { search: contact support, first: help-and-support }

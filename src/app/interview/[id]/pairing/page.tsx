@@ -415,7 +415,7 @@ export default function InterviewPairingStudioPage({ params }: { params: Promise
           /* Real-Time Code Pairing Editor */
           <div className="relative flex flex-1 flex-col overflow-hidden rounded-xl border border-border bg-card shadow-sm">
             <div className="flex h-9 items-center border-b border-border bg-muted/40 px-4 text-xs text-muted-foreground">
-              <span>{en("Shared editor: changes sync to everyone in the room")}</span>
+              <span>{en("Shared editor: everyone in the room sees changes as they happen")}</span>
             </div>
 
             <textarea

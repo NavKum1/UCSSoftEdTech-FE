@@ -66,7 +66,7 @@ export default function RecruiterTeamPage() {
       setData(await call<TeamData>(""));
       setLoadError(null);
     } catch (e) {
-      setLoadError(e instanceof TypeError ? en("We couldn't reach the server. Please check your connection and try again.") : (e as Error).message);
+      setLoadError(e instanceof TypeError ? en("We couldn't reach Edulexa. Check your internet connection and try again.") : (e as Error).message);
     }
   };
   const loadRef = useLatestRef(load);
@@ -84,7 +84,7 @@ export default function RecruiterTeamPage() {
       await load();
       return true;
     } catch (e) {
-      setMessage({ ok: false, text: e instanceof TypeError ? en("We couldn't reach the server. Please check your connection and try again.") : (e as Error).message });
+      setMessage({ ok: false, text: e instanceof TypeError ? en("We couldn't reach Edulexa. Check your internet connection and try again.") : (e as Error).message });
       return false;
     } finally {
       setBusy(null);
@@ -128,7 +128,7 @@ export default function RecruiterTeamPage() {
         </p>
       )}
 
-      {!data.enabled && <ErrorBanner error={en("Invitations aren't set up on this server yet. Ask Edulexa support.")} />}
+      {!data.enabled && <ErrorBanner error={en("Invitations aren't set up yet. Ask Edulexa support.")} />}
 
       {manages && data.enabled && (
         <Card title={en("Invite a colleague")}>

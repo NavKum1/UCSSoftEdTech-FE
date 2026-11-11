@@ -113,7 +113,7 @@ export default function ReferralsPage() {
       setConfirm(null);
       await load();
     } catch (e) {
-      setError(e instanceof TypeError ? "We couldn't reach the server. Please check your connection and try again." : e instanceof Error ? e.message : "Something went wrong. Please try again.");
+      setError(e instanceof TypeError ? "We couldn't reach Edulexa. Check your internet connection and try again." : e instanceof Error ? e.message : "Something went wrong. Please try again.");
       setConfirm(null);
     } finally {
       setWorking(false);
@@ -275,7 +275,7 @@ export default function ReferralsPage() {
                   <div>
                     <p className="text-sm font-semibold text-foreground">{en("Include sponsored course suggestions in feedback emails")}</p>
                     <p className="text-xs text-muted-foreground mt-0.5">
-                      {en("Off by default. Turning this on only changes what we email you; it never shares your details with a provider.")}
+                      {en("Off by default. Turning this on only changes what we email you; it never shares your details with a course provider.")}
                     </p>
                   </div>
                 </div>

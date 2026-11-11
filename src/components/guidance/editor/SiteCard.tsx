@@ -152,7 +152,7 @@ export default function SiteCard({ instituteId, forms, canEdit }: { instituteId?
               </p>
             ) : (
               <div className="rounded-xl border border-border p-3">
-                <p className="font-medium">{en("Add these two records at your domain's DNS provider, then check:")}</p>
+                <p className="font-medium">{en("Add these two records where you manage your domain name (your DNS provider, such as GoDaddy or Cloudflare), then check:")}</p>
                 <table className="mt-2 w-full text-xs">
                   <thead className="text-start text-muted-foreground">
                     <tr>
@@ -186,7 +186,7 @@ export default function SiteCard({ instituteId, forms, canEdit }: { instituteId?
                     {en("Check the records")}
                   </button>
                 )}
-                <p className="mt-1 text-xs text-muted-foreground">{en("DNS changes can take a while to spread. If the check fails, try again in a few minutes.")}</p>
+                <p className="mt-1 text-xs text-muted-foreground">{en("Changes to your domain name can take a while to spread. If the check fails, try again in a few minutes.")}</p>
               </div>
             ))}
         </div>

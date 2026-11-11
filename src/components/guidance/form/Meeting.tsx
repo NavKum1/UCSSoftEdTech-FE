@@ -6,6 +6,7 @@
  * institute's time zone). And what the person is told once the form is sent.
  */
 
+import { timeZoneName } from "@/lib/timeZoneName";
 import React, { useEffect, useState } from "react";
 import { CalendarCheck, ChevronLeft, ChevronRight } from "lucide-react";
 import { getApiBaseUrl } from "@/lib/apiClient";
@@ -235,7 +236,7 @@ export function MeetingField({
       )}
 
       <div className="flex items-center justify-between gap-2 text-xs text-muted-foreground">
-        <span>{t("timesIn").replace("{tz}", cfg.timeZone)}</span>
+        <span>{t("timesIn").replace("{tz}", timeZoneName(cfg.timeZone))}</span>
         {!q.required && (b.date || b.start) && (
           <button type="button" onClick={() => onChange({ booking: { topics } })} className="underline-offset-2 hover:text-foreground hover:underline">
             {t("clearMeeting")}

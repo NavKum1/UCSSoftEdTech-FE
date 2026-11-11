@@ -4,7 +4,7 @@
 
 import React, { useState } from "react";
 import { useApi } from "@/lib/appAuth";
-import { useCareerShell } from "@/components/career/CareerShell";
+import { useCareerShell, useHasCareerRole } from "@/components/career/CareerShell";
 import { Badge, Button, Card, EmptyState, ErrorBanner, Field, Loading, ScrollArea, SuccessBanner, useCareerFormat, useCareerT, useLoad } from "@/components/career/ui";
 import { checkboxClass, useDateOnly, useIsCareerAdmin } from "./shared";
 import type { WioaDefinitions } from "./WioaReport";
@@ -177,6 +177,8 @@ function ParticipantDetail({ id, defs, onChanged, onClose }: { id: string; defs:
   const fmt = useCareerFormat();
   const dateOnly = useDateOnly();
   const isAdmin = useIsCareerAdmin();
+  // Counselors and career admins record participants, credentials and gains (as the API checks)
+  const canEdit = useHasCareerRole("CareerAdmin", "Counselor");
   const detail = useLoad(() => api<Detail>(`/api/career/workforce/wioa/participants/${id}`), [api, id]);
   const [err, setErr] = useState<string | null>(null);
   const [msg, setMsg] = useState<string | null>(null);
@@ -235,6 +237,7 @@ function ParticipantDetail({ id, defs, onChanged, onClose }: { id: string; defs:
           )}
         </section>
 
+        {canEdit && (
         <section aria-labelledby="pd-edit">
           <h3 id="pd-edit" className="mb-2 font-semibold">{t("editTitle")}</h3>
           <ParticipantForm
@@ -245,6 +248,7 @@ function ParticipantDetail({ id, defs, onChanged, onClose }: { id: string; defs:
             onSubmit={(f) => run(() => api(`/api/career/workforce/wioa/participants/${p.id}`, { method: "PUT", json: { ...payload(f), email: undefined } }), t("saved"))}
           />
         </section>
+        )}
 
         <section aria-labelledby="pd-wages">
           <h3 id="pd-wages" className="mb-2 font-semibold">{t("wagesTitle")}</h3>
@@ -336,7 +340,7 @@ function ParticipantDetail({ id, defs, onChanged, onClose }: { id: string; defs:
                 <li key={c.id ?? `v${i}`} className="flex flex-wrap items-center gap-2">
                   <span>{t("credentialLine", { name: c.name, type: t(`credentialTypes.t${c.typeCode}`), date: dateOnly(c.attainedOn) })}</span>
                   <Badge tone={c.origin === "Recorded" ? "neutral" : "info"}>{t(`origins.${c.origin}`)}</Badge>
-                  {c.id && (
+                  {canEdit && c.id && (
                     <Button variant="ghost" onClick={() => run(() => api(`/api/career/workforce/wioa/credentials/${c.id}`, { method: "DELETE" }), t("deleted"))}>
                       {t("delete")}
                     </Button>
@@ -345,6 +349,7 @@ function ParticipantDetail({ id, defs, onChanged, onClose }: { id: string; defs:
               ))}
             </ul>
           )}
+          {canEdit && (
           <form
             className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-4 lg:items-end"
             onSubmit={(e) => {
@@ -365,6 +370,7 @@ function ParticipantDetail({ id, defs, onChanged, onClose }: { id: string; defs:
             <Field label={t("attainedOn")}>{(props) => <input {...props} type="date" required value={cred.attainedOn} onChange={(e) => setCred({ ...cred, attainedOn: e.target.value })} />}</Field>
             <Button type="submit">{t("addCredential")}</Button>
           </form>
+          )}
         </section>
 
         <section aria-labelledby="pd-gains">
@@ -377,7 +383,7 @@ function ParticipantDetail({ id, defs, onChanged, onClose }: { id: string; defs:
                 <li key={g.id ?? `g${i}`} className="flex flex-wrap items-center gap-2">
                   <span>{t("gainLine", { type: t(`gainTypes.${g.gainType}`), date: dateOnly(g.achievedOn) })}</span>
                   <Badge tone={g.origin === "Recorded" ? "neutral" : "info"}>{t(`origins.${g.origin}`)}</Badge>
-                  {g.id && (
+                  {canEdit && g.id && (
                     <Button variant="ghost" onClick={() => run(() => api(`/api/career/workforce/wioa/gains/${g.id}`, { method: "DELETE" }), t("deleted"))}>
                       {t("delete")}
                     </Button>
@@ -386,6 +392,7 @@ function ParticipantDetail({ id, defs, onChanged, onClose }: { id: string; defs:
               ))}
             </ul>
           )}
+          {canEdit && (
           <form
             className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-4 lg:items-end"
             onSubmit={(e) => {
@@ -406,6 +413,7 @@ function ParticipantDetail({ id, defs, onChanged, onClose }: { id: string; defs:
             <Field label={t("gainNote")}>{(props) => <input {...props} value={gain.note} onChange={(e) => setGain({ ...gain, note: e.target.value })} />}</Field>
             <Button type="submit">{t("addGain")}</Button>
           </form>
+          )}
         </section>
 
         <section aria-labelledby="pd-placements">
@@ -446,6 +454,7 @@ export function WioaParticipantsPanel({ defs, initialSelected }: { defs: WioaDef
   const t = useCareerT("workforce");
   const dateOnly = useDateOnly();
   const isAdmin = useIsCareerAdmin();
+  const canEdit = useHasCareerRole("CareerAdmin", "Counselor");
   const [query, setQuery] = useState({ q: "", program: "" });
   const [applied, setApplied] = useState(query);
   const qs = new URLSearchParams({ ...(applied.q ? { q: applied.q } : {}), ...(applied.program ? { program: applied.program } : {}) }).toString();
@@ -485,7 +494,7 @@ export function WioaParticipantsPanel({ defs, initialSelected }: { defs: WioaDef
           </Field>
           <div className="flex flex-wrap gap-2">
             <Button type="submit">{t("searchButton")}</Button>
-            {!adding && (
+            {canEdit && !adding && (
               <Button type="button" variant="secondary" onClick={() => setAdding(true)}>
                 {t("addParticipant")}
               </Button>

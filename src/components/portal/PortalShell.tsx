@@ -95,7 +95,7 @@ export default function PortalShell({
             {badge}
           </Link>
           <div className="flex items-center gap-2">
-            <HeaderControls area={home} />
+            <HeaderControls area={home} bell />
             {several && (
               <button
                 ref={menuButton}

@@ -2,8 +2,10 @@
 
 /**
  * S4 help center: the frame of the help pages (one place for every role, with the way back to where the reader was), who to
- * contact (school admins, teachers and career staff write to Edulexa support; students go to their own school first), and
- * "Was this helpful?". API: /api/help/contact, /api/help/support, /api/help/feedback.
+ * contact, and "Was this helpful?". S4b: ten audiences; school admins, teachers, career staff, admissions counselors,
+ * recruiters, employers and mentors write to Edulexa support, students and alumni go to their own school first, individual
+ * members e-mail us; after "No" we ask what they were looking for. API: /api/help/contact, /api/help/support,
+ * /api/help/feedback.
  */
 import React, { useEffect, useState, useSyncExternalStore } from "react";
 import Link from "next/link";
@@ -18,7 +20,10 @@ import { backPath, type HelpRole } from "@/lib/help";
 
 export interface HelpContact {
   canWrite: boolean;
+  /** Whose guides come first */
   audience: HelpRole | null;
+  /** Every audience they belong to, main first ("Also for you") */
+  audiences: HelpRole[];
   replyTime: string;
   school: { name: string; email: string | null } | null;
   email: string | null;
@@ -35,6 +40,26 @@ export function useHelpApi() {
   };
 }
 
+/** S4b: the audiences' names, as the help center shows them */
+export function useAudienceNames(): Record<HelpRole, string> {
+  const en = useEn();
+  return {
+    admin: en("School admins"),
+    teacher: en("Teachers"),
+    staff: en("Career staff"),
+    student: en("Students"),
+    alumni: en("Alumni"),
+    member: en("Individual members"),
+    recruiter: en("Recruiters"),
+    employer: en("Employers"),
+    admissions: en("Admissions counselors"),
+    mentor: en("Mentors"),
+  };
+}
+
+// The answer is the same on every help page for the school picked, so it's asked once (the side panel and the pages share it)
+let contactCache: { key: string; answer: Promise<HelpContact> } | null = null;
+
 /** Who the reader is for help (null while loading, or when signed out) */
 export function useHelpContact(): HelpContact | null {
   const { isSignedIn } = useAppAuth();
@@ -43,7 +68,14 @@ export function useHelpContact(): HelpContact | null {
   useEffect(() => {
     if (!isSignedIn) return;
     let gone = false;
-    call<HelpContact>("/api/help/contact").then((x) => !gone && setC(x)).catch(() => undefined);
+    const key = getSelectedSchool() ?? "";
+    if (contactCache?.key !== key) contactCache = { key, answer: call<HelpContact>("/api/help/contact") };
+    const mine = contactCache;
+    mine.answer
+      .then((x) => !gone && setC({ ...x, audiences: x.audiences ?? (x.audience ? [x.audience] : []) }))
+      .catch(() => {
+        if (contactCache === mine) contactCache = null; // asked again next time
+      });
     return () => { gone = true; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isSignedIn]);
@@ -87,8 +119,8 @@ export function HelpFrame({ from, children }: { from: string | null; children: R
   );
 }
 
-/** Still need help? Who to contact, and (for school admins, teachers and career staff) a short request to Edulexa support */
-export function ContactPanel({ contact, page }: { contact: HelpContact | null; page: string | null }) {
+/** Still need help? Who to contact, and (for everyone who works with Edulexa) a short request to Edulexa support */
+export function ContactPanel({ contact, page, compact = false }: { contact: HelpContact | null; page: string | null; compact?: boolean }) {
   const en = useEn();
   const call = useHelpApi();
   const [subject, setSubject] = useState("");
@@ -106,15 +138,19 @@ export function ContactPanel({ contact, page }: { contact: HelpContact | null; p
       await call("/api/help/support", { method: "POST", json: { subject, message, page: backPath(page) ?? "" } });
       setSent(true);
     } catch (err) {
-      setError(err instanceof TypeError ? en("We couldn't reach the server. Please check your connection and try again.") : (err as Error).message);
+      setError(err instanceof TypeError ? en("We couldn't reach Edulexa. Check your internet connection and try again.") : (err as Error).message);
     } finally {
       setBusy(false);
     }
   };
 
   return (
-    <section aria-labelledby="help-contact" className="rounded-xl border border-border bg-card p-5 shadow-sm sm:p-6">
-      <h2 id="help-contact" className="text-lg font-semibold">{en("Still need help?")}</h2>
+    <section
+      id="help-contact"
+      aria-labelledby="help-contact-title"
+      className={compact ? "scroll-mt-20 rounded-xl border border-border bg-card p-4" : "scroll-mt-20 rounded-xl border border-border bg-card p-5 shadow-sm sm:p-6"}
+    >
+      <h2 id="help-contact-title" className={compact ? "text-base font-semibold" : "text-lg font-semibold"}>{en("Still need help?")}</h2>
       {contact.canWrite ? (
         sent ? (
           <p className="mt-3 flex items-start gap-2 text-sm" role="status">
@@ -130,7 +166,7 @@ export function ContactPanel({ contact, page }: { contact: HelpContact | null; p
               {(p) => <input {...p} value={subject} onChange={(e) => setSubject(e.target.value)} maxLength={200} required />}
             </Field>
             <Field label={en("What happened, and what you expected")}>
-              {(p) => <textarea {...p} rows={5} value={message} onChange={(e) => setMessage(e.target.value)} maxLength={4000} required />}
+              {(p) => <textarea {...p} rows={compact ? 4 : 5} value={message} onChange={(e) => setMessage(e.target.value)} maxLength={4000} required />}
             </Field>
             <ErrorBanner error={error} />
             <Button type="submit" busy={busy} disabled={!subject.trim() || message.trim().length < 10}>
@@ -155,8 +191,14 @@ export function ContactPanel({ contact, page }: { contact: HelpContact | null; p
   );
 }
 
-/** Was this helpful? (one answer per article in this browser; the API keeps only daily totals) */
-export function HelpFeedback({ slug }: { slug: string }) {
+/** The longest "What were you looking for?" note (the API's HelpService.MaxNote) */
+const MAX_NOTE = 300;
+
+/**
+ * Was this helpful? (one answer per article in this browser; the API keeps only daily totals). S4b: after "No", we ask what
+ * they were looking for (optional, kept without the person) and point to who can help.
+ */
+export function HelpFeedback({ slug, onAskPerson }: { slug: string; onAskPerson?: () => void }) {
   const en = useEn();
   const { isSignedIn } = useAppAuth();
   const call = useHelpApi();
@@ -167,24 +209,53 @@ export function HelpFeedback({ slug }: { slug: string }) {
     () => { try { return localStorage.getItem(key) != null; } catch { return false; } },
     () => false,
   );
-  const [justAnswered, setJustAnswered] = useState(false);
-  const answered = before || justAnswered;
+  const [step, setStep] = useState<"ask" | "note" | "done">("ask");
+  const [note, setNote] = useState("");
+  const [sending, setSending] = useState(false);
   if (!isSignedIn) return null;
   const answer = (helpful: boolean) => {
-    setJustAnswered(true);
+    setStep(helpful ? "done" : "note");
     try { localStorage.setItem(key, helpful ? "yes" : "no"); } catch { /* private window */ }
     void call("/api/help/feedback", { method: "POST", json: { slug, helpful } }).catch(() => undefined);
   };
+  const sendNote = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!note.trim()) { setStep("done"); return; }
+    setSending(true);
+    // Best effort: the "No" is already counted, and a note that doesn't arrive isn't worth an error
+    await call("/api/help/feedback", { method: "POST", json: { slug, helpful: false, note: note.trim() } }).catch(() => undefined);
+    setSending(false);
+    setStep("done");
+  };
+  const askPerson = (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (onAskPerson) onAskPerson();
+    else document.getElementById("help-contact")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    (document.querySelector("#help-contact input, #help-contact a") as HTMLElement | null)?.focus({ preventScroll: true });
+  };
   return (
-    <div className="flex flex-wrap items-center gap-3 border-t border-border pt-5 text-sm">
-      {answered ? (
-        <p role="status" className="text-muted-foreground">{en("Thanks for telling us.")}</p>
+    <div className="border-t border-border pt-5 text-sm">
+      {step === "note" ? (
+        <form onSubmit={sendNote} className="max-w-xl space-y-3">
+          <Field label={en("What were you looking for?")} hint={en("Optional. We keep it without your name, so please leave out names, e-mail addresses and numbers.")}>
+            {(p) => <textarea {...p} rows={3} value={note} onChange={(e) => setNote(e.target.value)} maxLength={MAX_NOTE} />}
+          </Field>
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+            <Button type="submit" busy={sending}>{note.trim() ? en("Send") : en("Skip")}</Button>
+            <a href="#help-contact" onClick={askPerson} className="font-medium underline underline-offset-2">{en("Ask a person instead")}</a>
+          </div>
+        </form>
+      ) : step === "done" || before ? (
+        <p role="status" className="text-muted-foreground">
+          {en("Thanks for telling us.")}
+          {step === "done" && note.trim() !== "" && <> {en("We read every note to make these guides better.")}</>}
+        </p>
       ) : (
-        <>
+        <div className="flex flex-wrap items-center gap-3">
           <span className="font-medium">{en("Was this helpful?")}</span>
           <Button variant="secondary" onClick={() => answer(true)}>{en("Yes")}</Button>
           <Button variant="secondary" onClick={() => answer(false)}>{en("No")}</Button>
-        </>
+        </div>
       )}
     </div>
   );

@@ -55,9 +55,9 @@ function LoginPageContent() {
 
 // Auth.js error codes (?error=...) in plain words; anything else gets the generic line
 const AUTH_ERRORS: Record<string, string> = {
-  AccessDenied: "Your account isn't allowed to sign in here. Ask your administrator for access.",
-  Verification: "That sign-in link has expired or was already used. Please sign in again.",
-  Configuration: "Sign-in isn't available right now. Please try again in a few minutes.",
+  AccessDenied: "Your account isn't allowed to sign in here. Ask your administrator for access.", // en() where shown
+  Verification: "That sign-in link has expired or was already used. Please sign in again.", // en() where shown
+  Configuration: "Sign-in isn't available right now. Please try again in a few minutes.", // en() where shown
 };
 
 const noSubscribe = () => () => {};

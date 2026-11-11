@@ -243,7 +243,7 @@ export default function CandidateAssessmentBundlePage() {
       }
     } catch (err) {
       console.error("Failed to submit Stage 1:", err);
-      setStageError("Could not reach the server. Please try again.");
+      setStageError("Could not reach Edulexa. Please try again.");
     } finally {
       setSubmittingStage(false);
     }
@@ -331,7 +331,7 @@ export default function CandidateAssessmentBundlePage() {
       }
     } catch (err) {
       console.error("Failed to submit Stage 2:", err);
-      setStageError("Could not reach the server. Please try again.");
+      setStageError("Could not reach Edulexa. Please try again.");
     } finally {
       setSubmittingStage(false);
     }
@@ -426,7 +426,7 @@ export default function CandidateAssessmentBundlePage() {
       }
     } catch (err) {
       console.error("Failed to submit Stage 3:", err);
-      setStageError("Could not reach the server. Please try again.");
+      setStageError("Could not reach Edulexa. Please try again.");
     } finally {
       setSubmittingStage(false);
     }
@@ -872,7 +872,7 @@ export default function CandidateAssessmentBundlePage() {
                 <div className="flex items-center justify-between text-xs">
                   <span className="font-medium text-muted-foreground flex items-center gap-1">
                     <ShieldCheck aria-hidden="true" className="w-3.5 h-3.5 text-emerald-600" />
-                    <span>{en("Credential seal (SHA-256)")}</span>
+                    <span>{en("Credential seal")}</span>
                   </span>
                   <button
                     onClick={() => {

@@ -60,7 +60,7 @@ export function AiPolicyNotice({ aiPolicy }: { aiPolicy: AiPolicy }) {
     <div className="flex items-start gap-2 text-[11px] text-muted-foreground">
       <Info className="w-3.5 h-3.5 mt-0.5 shrink-0 text-indigo-700 dark:text-indigo-400" />
       <span>
-        {en("AI use is allowed and logged. Reviewers see your prompts and how you used the answers.")}
+        {en("AI use is allowed and logged. Reviewers see what you asked the AI and how you used the answers.")}
         {aiPolicy === "Evaluated" && en(" How you use AI is part of the review.")}
       </span>
     </div>
@@ -125,7 +125,7 @@ export default function AiAssistantPanel({
         setInteractions((prev) => [...prev, { interactionId: data.interactionId, prompt: text, response: data.response ?? "" }]);
         setPrompt("");
       } else if (res.status === 429) {
-        setError(data.error || "You're sending prompts too quickly. Wait a moment and try again.");
+        setError(data.error || "You're sending messages too quickly. Wait a moment and try again.");
       } else {
         setError(data.error || "The assistant is unavailable right now.");
       }
@@ -226,7 +226,7 @@ export default function AiAssistantPanel({
         <button
           onClick={() => void send()}
           disabled={disabled || sending || !prompt.trim()}
-          aria-label={en("Send prompt")}
+          aria-label={en("Send message")}
           className="p-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white disabled:bg-muted disabled:text-muted-foreground transition-colors cursor-pointer disabled:cursor-not-allowed"
         >
           {sending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}

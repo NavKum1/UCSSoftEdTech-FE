@@ -6,6 +6,10 @@ group: Assessments
 features: [class-assessments]
 order: 20
 checked: 2026-11-11
+short:
+  - Open Assessments, choose a template under New assessment, give it a title and select Continue.
+  - Fill in the instructions, the rubric and the viva, then select Publish.
+  - Once students start, the task, rubric and viva are locked.
 ---
 Every assessment works the same way: students hand in their own work, then explain and defend it in a viva, and you decide the result. The template sets what students hand in and gives you a starting rubric.
 
@@ -24,6 +28,8 @@ Open [ui: Assessments]. Under [ui: New assessment], choose one:
 - [ui: Written exam plus viva]: students take a written exam, then explain their answers.
 
 Give it a [ui: Title] and select [ui: Continue]. For a coding task or an exam, you then choose which task or exam it uses.
+
+[shot: new-assessment]
 
 ## Fill in the details
 

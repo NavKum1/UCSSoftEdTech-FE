@@ -26,6 +26,7 @@ import { formatDate, statusBadgeClass } from "@/lib/credentialVerification";
 import SignInRequired from "@/components/SignInRequired";
 import { useEn } from "@/lib/english/EnglishProvider";
 import { Loading, PageHeader, brandFill, buttonClass } from "@/components/career/ui";
+import { HelpLink } from "@/components/help/HelpLink";
 
 type GetToken = () => Promise<string | null>;
 
@@ -102,7 +103,7 @@ async function fetchWallet(getToken: GetToken): Promise<WalletResponse | string>
     if (!res.ok) return await readError(res);
     return (await res.json()) as WalletResponse;
   } catch {
-    return "We couldn't reach the server. Please check your connection and try again.";
+    return "We couldn't reach Edulexa. Check your internet connection and try again.";
   }
 }
 
@@ -129,6 +130,22 @@ interface ExportableResponse {
   internships: { id: string; title: string; completedAt?: string | null }[];
 }
 
+/** Plain browser name ("Chrome on Windows") from a browser's user-agent text; null when it can't tell. */
+function browserName(ua: string | null | undefined): string | null {
+  if (!ua) return null;
+  const browser = /Edg\//.test(ua) ? "Edge" : /OPR\/|Opera/.test(ua) ? "Opera" : /Firefox\//.test(ua) ? "Firefox" : /Chrome\//.test(ua) ? "Chrome" : /Safari\//.test(ua) ? "Safari" : null;
+  const system = /Android/.test(ua) ? "Android" : /iPhone|iPad|iPod/.test(ua) ? "iPhone or iPad" : /Windows/.test(ua) ? "Windows" : /Mac OS X|Macintosh/.test(ua) ? "Mac" : /CrOS/.test(ua) ? "Chromebook" : /Linux/.test(ua) ? "Linux" : null;
+  if (browser && system) return `${browser} on ${system}`;
+  return browser ?? system;
+}
+
+/** Visitors numbered in the order they first appear, so a person sees "Visitor 2" instead of a scrambled code. */
+function visitorNumber(rows: { ipHash: string }[], ipHash: string): number {
+  const seen: string[] = [];
+  for (const r of rows) if (!seen.includes(r.ipHash)) seen.push(r.ipHash);
+  return seen.indexOf(ipHash) + 1;
+}
+
 function ClrDialog({ getToken, onClose, onDone }: { getToken: GetToken; onClose: () => void; onDone: () => void }) {
   const en = useEn();
   const [items, setItems] = useState<ExportableResponse | null>(null);
@@ -140,7 +157,7 @@ function ClrDialog({ getToken, onClose, onDone }: { getToken: GetToken; onClose:
   useEffect(() => {
     authenticatedFetch("/api/career/openbadges/mine", {}, getToken)
       .then(async (res) => (res.ok ? setItems((await res.json()) as ExportableResponse) : setErr(en("We couldn't load your items. Please try again."))))
-      .catch(() => setErr(en("We couldn't reach the server. Please check your connection and try again.")));
+      .catch(() => setErr(en("We couldn't reach Edulexa. Check your internet connection and try again.")));
   }, [getToken, en]);
 
   const chosen = Object.keys(selected).filter((k) => selected[k]);
@@ -162,7 +179,7 @@ function ClrDialog({ getToken, onClose, onDone }: { getToken: GetToken; onClose:
   };
 
   return (
-    <Modal title={en("Download a learner record (CLR 2.0)")} onClose={onClose}>
+    <Modal title={en("Download a learner record (CLR 2.0) for a registrar or another school")} onClose={onClose}>
       <p className="text-sm text-muted-foreground">{en("Choose what to include. The file is signed so anyone you give it to can check it. Nothing is sent to anyone until you share the file yourself.")}</p>
       {err && <p role="alert" className="text-xs text-red-700 dark:text-red-300">{err}</p>}
       {!items ? (
@@ -180,16 +197,16 @@ function ClrDialog({ getToken, onClose, onDone }: { getToken: GetToken; onClose:
         </fieldset>
       )}
       <label className="block text-xs text-muted-foreground">
-        {en("File format")}
+        {en("For technical checks: file format")}
         <select value={format} onChange={(e) => setFormat(e.target.value as "jwt" | "json")} className="mt-1 block w-full rounded-lg border border-border bg-background px-2 py-1.5 text-sm text-foreground">
-          <option value="jwt">{en("VC-JWT (recommended)")}</option>
-          <option value="json">{en("JSON-LD with embedded proof")}</option>
+          <option value="jwt">{en("Standard signed file (recommended)")}</option>
+          <option value="json">{en("Readable file with the proof inside")}</option>
         </select>
       </label>
       <div className="flex justify-end gap-2">
         <button type="button" onClick={onClose} className={buttonClass("secondary")}>{en("Cancel")}</button>
         <button type="button" onClick={download} disabled={working || chosen.length === 0} className={buttonClass("primary")} style={brandFill}>
-          {working ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Download className="w-3.5 h-3.5" />}{en(" Download CLR")}
+          {working ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Download className="w-3.5 h-3.5" />}{en(" Download learner record")}
         </button>
       </div>
     </Modal>
@@ -316,7 +333,7 @@ function ShareDialog({ credential, getToken, onClose, onCreated }: { credential:
         >
           {[1, 7, 14, 30, 60, 90].map((d) => (
             <option key={d} value={d}>
-              {d === 1 ? en("1 day") : `${d} days`}
+              {d === 1 ? en("1 day") : en("{count} days", { count: d })}
             </option>
           ))}
         </select>
@@ -390,7 +407,7 @@ function InviteDialog({ credential, getToken, onClose, onUsed }: { credential: W
             <Loader2 className="w-4 h-4 animate-spin" />{en(" Loading...")}
           </p>
         ) : invites.length === 0 ? (
-          <p className="text-sm text-muted-foreground">{en("None found for the email on your account. You can paste an invitation id instead.")}</p>
+          <p className="text-sm text-muted-foreground">{en("None found for the email on your account. You can paste an invitation code instead.")}</p>
         ) : (
           <div className="space-y-1.5">
             {invites.map((inv) => (
@@ -409,13 +426,13 @@ function InviteDialog({ credential, getToken, onClose, onUsed }: { credential: W
       </div>
       <div className="space-y-1">
         <label htmlFor="invite-id" className="text-xs font-semibold text-muted-foreground">
-          {en("Invitation id")}
+          {en("Invitation code")}
         </label>
         <input
           id="invite-id"
           value={inviteId}
           onChange={(e) => setInviteId(e.target.value)}
-          placeholder={en("Paste the invitation id")}
+          placeholder={en("Paste the invitation code")}
           className="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm font-mono text-foreground focus:outline-none focus:ring-2 focus:ring-indigo-500"
         />
       </div>
@@ -575,12 +592,12 @@ function ShareLinksPanel({ credential, getToken, reloadKey }: { credential: Wall
                   {s.recipientLabel || "Unlabelled link"}
                 </p>
                 <p className="text-muted-foreground">
-                  {en("Results{value} · created {date} · {value2}", { value: scope ? ` + ${scope}` : en(" only"), date: formatDate(s.createdAt), value2: s.status === "Active" ? `expires ${formatDate(s.expiresAt)}` : s.status.toLowerCase() })}
+                  {en("Results{value} · created {date} · {value2}", { value: scope ? ` + ${scope}` : en(" only"), date: formatDate(s.createdAt), value2: s.status === "Active" ? en("expires {date}", { date: formatDate(s.expiresAt) }) : s.status.toLowerCase() })}
                 </p>
               </div>
               <div className="flex items-center gap-2">
                 <button type="button" onClick={() => toggleViews(s.shareId)} className={`${buttonClass("secondary")} h-8 px-2.5 text-xs`}>
-                  <Eye className="w-3.5 h-3.5" /> {s.viewCount} {s.viewCount === 1 ? "view" : "views"}
+                  <Eye className="w-3.5 h-3.5" /> {s.viewCount === 1 ? en("1 view") : en("{count} views", { count: s.viewCount })}
                 </button>
                 {s.status === "Active" && (
                   <button type="button" onClick={() => revoke(s.shareId)} className={`${buttonClass("secondary")} h-8 px-2.5 text-xs text-red-700 dark:text-red-300`}>
@@ -599,15 +616,15 @@ function ShareLinksPanel({ credential, getToken, reloadKey }: { credential: Wall
                     <tr>
                       <th className="font-semibold py-1">{en("When")}</th>
                       <th className="font-semibold py-1">{en("Browser")}</th>
-                      <th className="font-semibold py-1">{en("Visitor (hashed)")}</th>
+                      <th className="font-semibold py-1">{en("Visitor")}</th>
                     </tr>
                   </thead>
                   <tbody>
                     {v.map((row, i) => (
                       <tr key={i} className="border-t border-border">
                         <td className="py-1">{new Date(row.viewedAt).toLocaleString()}</td>
-                        <td className="py-1">{row.userAgent}</td>
-                        <td className="py-1 font-mono">{row.ipHash}</td>
+                        <td className="py-1">{browserName(row.userAgent) ?? en("Unknown browser")}</td>
+                        <td className="py-1">{en("Visitor {n}", { n: visitorNumber(v, row.ipHash) })}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -733,16 +750,16 @@ function CredentialCard({
             type="button"
             onClick={copyJws}
             disabled={!signingAvailable}
-            title={signingAvailable ? en("Copy the signed credential for offline verification") : en("Signing is not configured on this server")}
+            title={signingAvailable ? en("Copy the signed credential, for an employer's checking tool") : en("Edulexa can't sign credentials yet")}
             className={buttonClass("secondary")}
           >
-            {jwsCopied ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <KeyRound className="w-3.5 h-3.5" />} {jwsCopied ? en("Copied") : en("Copy JWS")}
+            {jwsCopied ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <KeyRound className="w-3.5 h-3.5" />} {jwsCopied ? en("Copied") : en("Copy the signed credential")}
           </button>
           <button
             type="button"
             onClick={downloadBadge}
             disabled={!signingAvailable}
-            title={en("Download as an Open Badges 3.0 credential (VC-JWT)")}
+            title={en("Download it as an Open Badges 3.0 badge, for badge wallets and other schools' systems")}
             className={buttonClass("secondary")}
           >
             <Download className="w-3.5 h-3.5" />{en(" Download Open Badge")}
@@ -750,7 +767,7 @@ function CredentialCard({
           {credential.humanDecisionAvailable && (
             <label className="text-xs text-muted-foreground flex items-center gap-1.5 cursor-pointer">
               <input type="checkbox" className="accent-indigo-600" checked={includeDecisionInJws} onChange={(e) => setIncludeDecisionInJws(e.target.checked)} />
-              {en("include reviewer \"Advanced\" in JWS")}
+              {en("include reviewer \"Advanced\" in the signed credential")}
             </label>
           )}
           <button
@@ -829,8 +846,7 @@ export default function CredentialWalletPage() {
       <div className="space-y-6">
         <PageHeader
           title={en("Your credentials")}
-          description={en("Each passing defense gives you a credential signed by Edulexa. Share it with employers so they can check your results without asking you to re-test. You decide what evidence each link shows, and you can withdraw it at any time.")}
-        />
+          description={en("Each passing defense gives you a credential signed by Edulexa. Share it with employers so they can check your results without asking you to re-test. You decide what evidence each link shows, and you can withdraw it at any time.")} actions={<HelpLink slug="credentials-and-passport" />} />
 
         {notice && (
           <div className="p-3 rounded-lg border border-emerald-500/30 bg-emerald-50 dark:bg-emerald-500/10 text-xs text-emerald-800 dark:text-emerald-300 flex items-center justify-between gap-2">
@@ -854,7 +870,7 @@ export default function CredentialWalletPage() {
         )}
         {wallet && !wallet.signingAvailable && (
           <div className="p-3 rounded-lg border border-amber-400/50 bg-amber-50 dark:bg-amber-500/10 text-xs text-amber-900 dark:text-amber-100 flex items-center gap-2">
-            <AlertTriangle className="w-4 h-4 shrink-0" />{en(" Credential signing is not configured on this server yet, so links can't be verified right now.")}
+            <AlertTriangle className="w-4 h-4 shrink-0" />{en(" Edulexa can't sign credentials yet, so their links can't be checked right now.")}
           </div>
         )}
 
@@ -863,10 +879,7 @@ export default function CredentialWalletPage() {
         ) : !wallet || wallet.credentials.length === 0 ? (
           !error && (
             <div className="rounded-xl border border-border bg-card p-6 shadow-sm text-sm text-muted-foreground">
-              {en("No credentials yet. Complete a coding sprint and pass its voice defense to earn one.")}{" "}
-              <Link href="/dashboard" className="underline text-foreground">
-                {en("Find a sprint")}
-              </Link>
+              {en("No credentials yet. You earn one when you pass an assessment that issues credentials, or a coding sprint.")}
             </div>
           )
         ) : (
@@ -888,10 +901,10 @@ export default function CredentialWalletPage() {
               disabled={!wallet.signingAvailable}
               className={buttonClass("secondary")}
             >
-              <Download className="w-3.5 h-3.5" />{en(" Download CLR")}
+              <Download className="w-3.5 h-3.5" />{en(" Download learner record")}
             </button>
             <p className="text-xs text-muted-foreground">
-              {en("Credentials are valid for {validityMonths} months from issue; class assessment results don't expire. Employers can check any copied JWS at", { validityMonths: wallet.validityMonths })}{" "}
+              {en("Credentials are valid for {validityMonths} months from issue; class assessment results don't expire. Employers can check any copied signed credential at", { validityMonths: wallet.validityMonths })}{" "}
               <Link href="/verify" className="underline">
                 /verify
               </Link>

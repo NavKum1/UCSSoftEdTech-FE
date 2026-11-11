@@ -86,7 +86,7 @@ export default function PrivacySettingsPage() {
       a.remove();
       setTimeout(() => URL.revokeObjectURL(url), 1000);
     } catch {
-      setExportError("We couldn't reach the server while preparing your export. Please check your connection and try again.");
+      setExportError("We couldn't reach Edulexa while preparing your export. Please check your connection and try again.");
     } finally {
       setExporting(false);
     }
@@ -106,7 +106,7 @@ export default function PrivacySettingsPage() {
       setResult((await res.json()) as EraseResult);
       setConfirm("");
     } catch {
-      setDeleteError("We couldn't reach the server while deleting your data. The deletion may or may not have completed; try again (it is safe to repeat).");
+      setDeleteError("We couldn't reach Edulexa while deleting your data. The deletion may or may not have completed; try again (it is safe to repeat).");
     } finally {
       setDeleting(false);
     }
@@ -131,11 +131,11 @@ export default function PrivacySettingsPage() {
             <Download className="w-4 h-4 text-muted-foreground" />{en(" Export your data")}
           </h2>
           <p className="text-sm text-muted-foreground">
-            {en("A JSON file with your profile, assessment attempts and editor activity, AI-assistant conversations, submissions, interviews and transcripts, evaluations, credentials, referrals, repository defenses, self-identification answers, appeals, accommodations and speaking-practice measurements, your other practice and activity, and the records schools, employers and the law keep about you. Integrity-analysis details and reviewers' internal rationale are not included in the self-service export; the file explains why and how to request them.")}
+            {en("A file with your profile, assessment attempts and editor activity, AI-assistant conversations, submissions, interviews and transcripts, evaluations, credentials, referrals, repository defenses, self-identification answers, appeals, accommodations and speaking-practice measurements, your other practice and activity, and the records schools, employers and the law keep about you. Integrity-analysis details and reviewers' internal rationale are not included in the self-service export; the file explains why and how to request them.")}
           </p>
           <Button onClick={downloadExport} busy={exporting}>
             {!exporting && <Download className="w-4 h-4" />}
-            {en("Download my data (JSON)")}
+            {en("Download my data")}
           </Button>
           {exportError && <p className="text-xs text-rose-700 dark:text-rose-400">{exportError}</p>}
         </section>
@@ -151,16 +151,11 @@ export default function PrivacySettingsPage() {
                 <CheckCircle2 className="w-4 h-4" />{en(" Your data has been deleted and your account anonymised.")}
               </p>
               <ul className="text-xs text-muted-foreground list-disc ms-5 space-y-0.5">
-                {Object.entries(result.deleted)
-                  .filter(([, n]) => n > 0)
-                  .map(([k, n]) => (
-                    <li key={k}>{k}: {n} deleted</li>
-                  ))}
-                {Object.entries(result.changed)
-                  .filter(([, n]) => n > 0)
-                  .map(([k, n]) => (
-                    <li key={k}>{k}: {n}</li>
-                  ))}
+                {/* Plain totals: the API's keys are internal record names */}
+                <li>{en("Records deleted: {count}", { count: String(Object.values(result.deleted).reduce((t, n) => t + n, 0)) })}</li>
+                {Object.values(result.changed).some((n) => n > 0) && (
+                  <li>{en("Records cleared, withdrawn or kept without your details: {count}", { count: String(Object.values(result.changed).reduce((t, n) => t + n, 0)) })}</li>
+                )}
                 {result.referralProvidersNotified > 0 && <li>{en("Course providers notified: {referralProvidersNotified}", { referralProvidersNotified: result.referralProvidersNotified })}</li>}
               </ul>
               <p className="text-xs text-foreground">{result.keptDeidentified.description}</p>
@@ -221,7 +216,7 @@ export default function PrivacySettingsPage() {
               <div className="rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900 flex gap-2 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-200">
                 <AlertTriangle className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0" />
                 <span>
-                  {en("This cannot be undone. Download your data first if you want a copy. Your sign-in account with our identity provider is separate: delete it from your account settings too, otherwise signing in again reconnects to the anonymised record.")}
+                  {en("This cannot be undone. Download your data first if you want a copy. Your sign-in account is kept separately by our sign-in service: delete it from your account settings too, otherwise signing in again reconnects to the anonymised record.")}
                 </span>
               </div>
 

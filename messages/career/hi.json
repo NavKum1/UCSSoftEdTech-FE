@@ -88,9 +88,7 @@
    "joiningDate": "काम शुरू करने की तारीख",
    "choose": "चुनें…",
    "waitingForSignIn": "साइन-इन का इंतज़ार कर रहे हैं",
-   "downloadCSV": "CSV डाउनलोड करें",
    "offerRecorded": "ऑफ़र दर्ज हो गया।",
-   "placementOffice": "प्लेसमेंट कार्यालय",
    "packageCTCPerYear": "वेतन पैकेज (CTC प्रति वर्ष)",
    "imported": "इंपोर्ट किया गया",
    "checked": "जाँचा गया",
@@ -164,7 +162,9 @@
     "minClass12": "कक्षा 12 / डिप्लोमा में कम से कम {value}%",
     "excludePlaced": "स्कूल की नीति: जिन छात्रों ने ऑफ़र स्वीकार किया है, उन्हें शामिल नहीं किया जाता"
    },
-   "roundResults": "{round} के {count} नतीजे"
+   "roundResults": "{round} के {count} नतीजे",
+   "downloadCSV": "स्प्रेडशीट (CSV) डाउनलोड करें",
+   "placementOffice": "नियुक्तियाँ"
   },
   "campusWorkspace": {
    "eligibility": "पात्रता",
@@ -209,7 +209,6 @@
    "notShared": "जानकारी साझा नहीं की गई",
    "cgpaLine": "CGPA {cgpa} · सक्रिय बैकलॉग {backlogs} · 10वीं {p10}% · 12वीं {p12}%",
    "revokeOffer": "प्रस्ताव वापस लें",
-   "disclosureNote": "छात्रों ने आवेदन करते समय ये जानकारी आपकी कंपनी के साथ साझा की थी। जब भी यह सूची दिखाई जाती है, तो कॉलेज के जानकारी-साझा करने के रिकॉर्ड में इसकी प्रविष्टि दर्ज होती है।",
    "selection": "चयन",
    "shortlistSelected": "चयन-सूची के लिए चुने गए ({count})",
    "recordResult": "चुने गए आवेदकों का परिणाम दर्ज करें",
@@ -220,13 +219,10 @@
    "slotMinutes": "हर स्लॉट के मिनट",
    "gapMinutes": "स्लॉट के बीच के मिनट",
    "place": "स्थान",
-   "videoLink": "वीडियो लिंक (https)",
    "panel": "साक्षात्कार पैनल",
    "scheduleSelected": "चुने गए {count} आवेदकों का समय तय करें",
    "scheduleShortlist": "चयन-सूची के आवेदकों का समय तय करें",
    "c4Title": "कॉलेज परिसर में होने वाली साक्षात्कार समय-सारणी इस्तेमाल करें",
-   "c4Help": "इस चरण को कॉलेज की पहले से तय साक्षात्कार समय-सारणी से लिंक करें; चयन-सूची में शामिल आवेदकों को वहाँ अपना समय चुनने का निमंत्रण मिलेगा।",
-   "scheduleId": "साक्षात्कार समय-सारणी ID",
    "linkSchedule": "समय-सारणी लिंक करें",
    "inviteShortlist": "चयन-सूची में शामिल आवेदकों को आमंत्रित करें",
    "makeOfferTitle": "प्रस्ताव दें",
@@ -235,11 +231,15 @@
    "ctc": "सालाना CTC",
    "ctcHint": "ड्राइव का पैकेज इस्तेमाल करने के लिए खाली छोड़ें। उदाहरण के लिए 12 LPA या 1200000.",
    "respondBy": "जवाब देने की अंतिम तारीख",
-   "overridePolicy": "कॉलेज की प्लेसमेंट नीति के तहत मना किए जाने पर भी प्रस्ताव दर्ज करें (ऑडिट किया जाएगा)",
    "makeOffer": "प्रस्ताव दें",
    "lettersTitle": "प्रस्ताव-पत्र",
    "lettersHelp": "किसी प्रस्ताव के लिए प्रस्ताव-पत्र जारी करें। छात्र उस पर हस्ताक्षर करके इसे स्वीकार करता है; आप हस्ताक्षर की हुई प्रति डाउनलोड कर सकते हैं।",
-   "chooseOffer": "प्रस्ताव चुनें"
+   "chooseOffer": "प्रस्ताव चुनें",
+   "disclosureNote": "छात्रों ने आवेदन करते समय ये जानकारी आपकी कंपनी के साथ साझा की थी। यह सूची हर बार दिखाई जाने पर, उस देखने का रिकॉर्ड स्कूल के जानकारी-साझाकरण लॉग में दर्ज होता है।",
+   "videoLink": "वीडियो लिंक (इसकी शुरुआत https:// से होनी चाहिए)",
+   "c4Help": "इस दौर को स्कूल के पहले से चयनित उम्मीदवारों के इंटरव्यू शेड्यूल से जोड़ें; चुने गए उम्मीदवारों को वहाँ अपने समय बुक करने का निमंत्रण मिलेगा।",
+   "scheduleId": "इंटरव्यू शेड्यूल नंबर",
+   "overridePolicy": "ऑफ़र दर्ज करें, भले ही स्कूल की नीति के तहत इसे अस्वीकार किया जाता (ऑडिट किया गया)"
   },
   "employerJobDetail": {
    "criteria": "पात्रता",
@@ -399,13 +399,13 @@
     "Transcript": "प्रतिलेख",
     "Documents": "दस्तावेज़",
     "WorkAuthorization": "काम करने की अनुमति",
-    "Resume": "बायोडाटा",
     "EvidencePack": "साक्ष्य संकलन",
     "Profile": "नाम और प्रोफ़ाइल",
     "ContactInfo": "संपर्क जानकारी",
     "Education": "शिक्षा (स्कूल, डिग्री, विषय, स्नातक होने का वर्ष)",
     "Gpa": "GPA",
-    "Assessments": "मूल्यांकन"
+    "Assessments": "मूल्यांकन",
+    "Resume": "रिज़्यूमे"
    },
    "relationship": {
     "Pending": "लंबित",
@@ -425,8 +425,8 @@
      "explain": "हम कंपनी की पुष्टि अपने-आप नहीं कर पाए। अनुरोध मंज़ूर करने से पहले स्कूल आपसे और जानकारी माँग सकते हैं।"
     },
     "DomainVerified": {
-     "label": "डोमेन सत्यापित",
-     "explain": "आपका साइन-इन email कंपनी की वेबसाइट के डोमेन से मेल खाता है।"
+     "label": "ईमेल पता जाँचा गया",
+     "explain": "आपका साइन-इन ईमेल पता कंपनी की वेबसाइट के नाम पर खत्म होता है।"
     },
     "StaffVerified": {
      "label": "स्टाफ़ द्वारा सत्यापित",
@@ -664,16 +664,15 @@
    "requireInsuranceConfirmation": "बीमा की पुष्टि ज़रूरी करें",
    "theSupervisorFormIsSet": "पर्यवेक्षक फ़ॉर्म हर प्रोग्राम के लिए अलग से सेट होता है (प्रोग्राम टैब); नियम से बनाए गए प्रोग्राम में पैक का फ़ॉर्म पहले से चुना होगा।",
    "templatesAndCertificate": "टेम्पलेट और प्रमाणपत्र",
-   "downloadCSVTitle": "CSV डाउनलोड करें<span>: {title}</span>",
    "theRegulatorHasNotPublished": "नियामक संस्था ने फ़ाइल का फ़ॉर्मैट प्रकाशित नहीं किया है; जमा करने से पहले कॉलम जाँच लें।",
-   "noObjectionCertificateIssuedThe": "अनापत्ति प्रमाणपत्र जारी कर दिया गया है; छात्र को सूचना भेज दी गई है।"
+   "noObjectionCertificateIssuedThe": "अनापत्ति प्रमाणपत्र जारी कर दिया गया है; छात्र को सूचना भेज दी गई है।",
+   "downloadCSVTitle": "स्प्रेडशीट (CSV) डाउनलोड करें<span>: {title}</span>"
   },
   "workforce": {
    "saved": "सहेजा गया।",
    "program": "कार्यक्रम",
    "allPrograms": "सभी कार्यक्रम",
    "apply": "रिपोर्ट दिखाएँ",
-   "exportCsv": "CSV एक्सपोर्ट करें",
    "exportXlsx": "Excel एक्सपोर्ट करें",
    "downloadStarted": "डाउनलोड शुरू हो गया।",
    "sourcesTitle": "स्रोत",
@@ -734,7 +733,6 @@
     "VocationalRehabilitation": "शीर्षक IV व्यावसायिक पुनर्वास"
    },
    "includeOutcomes": "जहाँ मज़दूरी का डेटा दर्ज नहीं किया गया है, वहाँ पूरक रोज़गार के तौर पर परिणामों में से सत्यापित नियुक्तियों की गिनती करें",
-   "exportDetail": "PIRL-शैली की प्रतिभागी सूची (CSV)",
    "exportDetailHint": "केवल करियर व्यवस्थापकों के लिए। इसमें व्यक्तिगत जानकारी और मज़दूरी शामिल हैं; हर डाउनलोड का रिकॉर्ड रखा जाता है।",
    "periodSummary": "{from} से {to} के बीच कार्यक्रम छोड़ने वाले: {exiters} प्रतिभागी ({excluded} शामिल नहीं), कुल {participants} प्रतिभागियों के रिकॉर्ड।",
    "waitingForWages": "{count, plural, one {# कार्यक्रम छोड़ने वाला प्रतिभागी मज़दूरी के डेटा का इंतज़ार कर रहा है।} other {# कार्यक्रम छोड़ने वाले प्रतिभागी मज़दूरी के डेटा का इंतज़ार कर रहे हैं।}}",
@@ -857,7 +855,9 @@
    "addCredential": "योग्यता जोड़ें",
    "gainsTitle": "मापने योग्य कौशल प्रगति",
    "noGains": "कौशल में प्रगति दर्ज नहीं है।",
-   "gainLine": "{type}, {date}"
+   "gainLine": "{type}, {date}",
+   "exportDetail": "PIRL-शैली की प्रतिभागी सूची (स्प्रेडशीट)",
+   "exportCsv": "स्प्रेडशीट (CSV) एक्सपोर्ट करें"
   },
   "shortCredentials": {
    "saved": "सहेजा गया।",
@@ -1066,7 +1066,6 @@
    "allYears": "सभी वर्ष",
    "programName": "कार्यक्रम",
    "apply": "रिपोर्ट दिखाएँ",
-   "exportCsv": "CSV एक्सपोर्ट करें",
    "exportXlsx": "Excel एक्सपोर्ट करें",
    "downloadStarted": "डाउनलोड शुरू हो गया।",
    "sourcesTitle": "स्रोत",
@@ -1193,7 +1192,8 @@
    "totals": "{enrolled} नामांकित, {graduates} स्नातक ({onTime} समय पर), प्लेसमेंट के लिए {counted} स्नातकों की गिनती की गई।",
    "intentMissing": "{count, plural, one {# स्नातक के पहले दिन की मंशा दर्ज नहीं है।} other {# स्नातकों के पहले दिन की मंशा दर्ज नहीं है।}}",
    "rulesTitle": "CIRR मानक: किन बातों की जाँच की गई",
-   "reviewedOn": "{date} को समीक्षा की गई।"
+   "reviewedOn": "{date} को समीक्षा की गई।",
+   "exportCsv": "स्प्रेडशीट (CSV) एक्सपोर्ट करें"
   },
   "campusHire": {
    "saved": "सहेजा गया।",
@@ -1215,7 +1215,6 @@
    "colApplicant": "आवेदक",
    "title": "Hire (आवेदक ट्रैकिंग)",
    "intro": "अगर आपकी कंपनी Hire का इस्तेमाल करती है, तो उसे कनेक्ट करें: नौकरियाँ Hire से आती हैं, सहमति देने वाले छात्रों के आवेदन Hire में जाते हैं और चरण, प्रस्ताव व भर्ती से जुड़े अपडेट कैंपस भर्ती अभियान में वापस आते हैं।",
-   "platformOff": "इस प्लैटफ़ॉर्म के लिए Hire इंटीग्रेशन अभी चालू नहीं है।",
    "key": "Hire पार्टनर कुंजी",
    "keyHint": "इसे Hire में Settings → Integrations → Edulexa के अंतर्गत बनाएँ। यह एन्क्रिप्ट करके सेव की जाती है और दोबारा नहीं दिखाई जाती।",
    "autoPush": "छात्रों के आवेदन करते ही, सहमति वाले आवेदन Hire को भेजें",
@@ -1228,14 +1227,11 @@
    "webhookOff": "रजिस्टर नहीं किया गया (बदलाव पाने के लिए अपडेट करें)",
    "compensation": "प्रस्ताव का वेतन साझा किया गया",
    "compensationOff": "नहीं (कैंपस भर्ती अभियान का CTC इस्तेमाल किया जाता है)",
-   "jobsSynced": "नौकरियों का पिछला सिंक",
    "lastEvent": "Hire से आया पिछला अपडेट",
    "never": "कभी नहीं",
    "missingScopes": "कुंजी में ये स्कोप नहीं हैं: {scopes}",
    "lastError": "पिछली समस्या: {error}",
    "failedCount": "{count, plural, one {{count} अपडेट पर ध्यान देना ज़रूरी है।} other {{count} अपडेट पर ध्यान देना ज़रूरी है।}}",
-   "syncJobs": "नौकरियाँ सिंक करें",
-   "synced": "नौकरियाँ सिंक हुईं: {created} नई, {updated} अपडेट की गईं।",
    "reconcile": "Hire से नए अपडेट लें",
    "reconciled": "{count, plural, one {{count} बदलाव लागू हुआ।} other {{count} बदलाव लागू हुए।}}",
    "processed": "{count, plural, one {{count} अपडेट भेजा गया।} other {{count} अपडेट भेजे गए।}}",
@@ -1268,7 +1264,11 @@
    "notShown": "साझा नहीं किया गया",
    "notInHire": "Hire में नहीं है",
    "sendPending": "{count, plural, one {{count} लंबित अपडेट भेजें} other {{count} लंबित अपडेट भेजें}}",
-   "eventsTitle": "{count, plural, one {Hire से {count} अपडेट} other {Hire से {count} अपडेट}} ({unmatched} का मिलान नहीं हुआ)"
+   "eventsTitle": "{count, plural, one {Hire से {count} अपडेट} other {Hire से {count} अपडेट}} ({unmatched} का मिलान नहीं हुआ)",
+   "platformOff": "Hire से कनेक्शन अभी चालू नहीं है।",
+   "jobsSynced": "नौकरियों का आख़िरी अपडेट",
+   "syncJobs": "नौकरियाँ अपडेट करें",
+   "synced": "नौकरियाँ अपडेट हुईं: {created} नई, {updated} अपडेट की गईं।"
   },
   "staffSettings": {
    "removed": "हटा दिया गया।",
@@ -1296,7 +1296,6 @@
    "dropInNoShows": "अनुपस्थित",
    "colNoShows": "अनुपस्थित",
    "https": "https://",
-   "downloadCSV": "CSV डाउनलोड करें",
    "attended": "शामिल हुए",
    "colAttended": "शामिल हुए",
    "required": "ज़रूरी",
@@ -1324,7 +1323,6 @@
    "myBookingProfile": "मेरी बुकिंग प्रोफ़ाइल",
    "bookingProfileName": "बुकिंग प्रोफ़ाइल: {name}",
    "nameStudentsSee": "वह नाम जो विद्यार्थियों को दिखेगा",
-   "yourPersonalRoomAnyProvider": "आपका निजी मीटिंग रूम (किसी भी सेवा का), वीडियो अपॉइंटमेंट बुक करने वाले विद्यार्थियों के साथ साझा किया जाएगा। इसकी शुरुआत https:// से होनी चाहिए",
    "inPersonLocation": "आमने-सामने मिलने की जगह",
    "shortBioOptional": "संक्षिप्त परिचय (वैकल्पिक)",
    "calendarLink": "कैलेंडर लिंक",
@@ -1390,7 +1388,9 @@
    "timeOffAdded": "छुट्टी जोड़ दी गई।",
    "extraHoursAdded": "अतिरिक्त घंटे जोड़ दिए गए।",
    "removeDayOfWeekStartTimeEndTime": "{dayOfWeek} {startTime}–{endTime} हटाएँ",
-   "dropInCheckIns": "हाज़िरी"
+   "dropInCheckIns": "हाज़िरी",
+   "yourPersonalRoomAnyProvider": "आपका निजी कमरा (कोई भी वीडियो सेवा), उन छात्रों के साथ साझा किया जाता है जो वीडियो अपॉइंटमेंट बुक करते हैं। इसकी शुरुआत https:// से होनी चाहिए",
+   "downloadCSV": "स्प्रेडशीट (CSV) डाउनलोड करें"
   },
   "localisation": {
    "intro": "नागरिक स्नातकों का रोज़गार—सऊदीकरण (निताक़ात), अमीरातीकरण, क़तरकरण और दक्षिण अफ़्रीका SETA रिपोर्टिंग के लिए। गिनती दर्ज किए गए परिणामों और वैकल्पिक राष्ट्रीयता फ़ील्ड से ली जाती है।",
@@ -1400,7 +1400,6 @@
    "program": "कार्यक्रम",
    "allPrograms": "सभी कार्यक्रम",
    "apply": "रिपोर्ट दिखाएँ",
-   "exportCsv": "CSV एक्सपोर्ट करें",
    "exportXlsx": "Excel एक्सपोर्ट करें",
    "exportDetail": "नामों की सूची (Excel)",
    "exportDetailHint": "केवल करियर एडमिन। इसमें निजी डेटा है और इसकी गतिविधि दर्ज की जाती है।",
@@ -1426,7 +1425,8 @@
    "unconfirmed": "पुष्टि नहीं हुई",
    "verified": "आधिकारिक स्रोत",
    "title": "कार्यबल का स्थानीयकरण",
-   "importResult": "{updated, plural, one {# छात्र का रिकॉर्ड अपडेट किया गया} other {# छात्रों के रिकॉर्ड अपडेट किए गए}}; {skipped, plural, =0 {कोई भी छोड़ा नहीं गया} one {# पंक्ति छोड़ी गई} other {# पंक्तियाँ छोड़ी गईं}}."
+   "importResult": "{updated, plural, one {# छात्र का रिकॉर्ड अपडेट किया गया} other {# छात्रों के रिकॉर्ड अपडेट किए गए}}; {skipped, plural, =0 {कोई भी छोड़ा नहीं गया} one {# पंक्ति छोड़ी गई} other {# पंक्तियाँ छोड़ी गईं}}.",
+   "exportCsv": "स्प्रेडशीट (CSV) एक्सपोर्ट करें"
   },
   "studentCompetencies": {
    "framework": "ढाँचा",
@@ -1522,7 +1522,6 @@
    "allYears": "सभी वर्ष",
    "program": "कार्यक्रम",
    "allPrograms": "सभी कार्यक्रम",
-   "exportCSV": "CSV एक्सपोर्ट करें",
    "downloadStarted": "डाउनलोड शुरू हो गया।",
    "exportFailedStatus": "एक्सपोर्ट नहीं हो सका। कृपया फिर कोशिश करें।",
    "status": "स्थिति",
@@ -1571,10 +1570,6 @@
    "offersRecordedInOnCampus": "कैंपस में भर्ती के दौरान दर्ज ऑफ़र",
    "waitingForTheStudent": "छात्र के जवाब का इंतज़ार है",
    "whichEvidenceWentWithPlacement": "नियुक्ति के साथ कौन-सा सबूत जुड़ा था",
-   "linkAnApplicationSentTo": "नियोक्ता के Hire खाते में भेजा गया आवेदन जोड़ें",
-   "employerId": "नियोक्ता ID",
-   "ourApplicationId": "हमारा आवेदन ID",
-   "theExternalApplicationIdSentToHire": "Hire को भेजा गया externalApplicationId।",
    "roleOptional": "भूमिका (वैकल्पिक)",
    "recentEventsFromHire": "Hire से हाल की घटनाएँ",
    "noEventsReceivedYet": "अभी तक कोई घटना नहीं मिली",
@@ -1590,7 +1585,6 @@
    "studentsConfirmOnTheirMy": "छात्र अपने \"मेरा अगला कदम\" पेज पर पुष्टि करते हैं कि उन्होंने ऑफ़र स्वीकार किया या नहीं। स्वीकार किए गए ऑफ़र नियुक्तियों के रूप में दर्ज होते हैं।",
    "studentNamePositionTitleAtEmployerName": "{studentName} · {employerName} में {positionTitle}",
    "correlationNotCausationSmallSamples": "सहसंबंध, कारण नहीं; नमूने छोटे हैं।",
-   "whenAnEmployerUsesHire": "जब कोई नियोक्ता Hire का इस्तेमाल करता है, तो वह हमें भेजे गए आवेदनों के लिए ऑफ़र और नियुक्तियों की जानकारी देता है। हमारे आवेदन ID को छात्र से जोड़ने पर ये रिपोर्ट नियोक्ता द्वारा पुष्ट नियुक्तियों के रूप में दर्ज हो सकती हैं।",
    "linkApplication": "आवेदन जोड़ें",
    "chooseAStudentFirst": "पहले कोई छात्र चुनें।",
    "statusRecordedStatus": "स्थिति दर्ज की गई: {status}।",
@@ -1598,7 +1592,13 @@
    "tabPlacements": "नियुक्तियाँ",
    "tabAdd": "शोध प्रविष्टि जोड़ें",
    "tabOffers": "ऑफ़र के संकेत",
-   "tabHire": "Hire लिंक"
+   "exportCSV": "स्प्रेडशीट (CSV) एक्सपोर्ट करें",
+   "linkAnApplicationSentTo": "नियोक्ता के Hire भर्ती सिस्टम में भेजे गए आवेदन का लिंक जोड़ें",
+   "employerId": "नियोक्ता का संदर्भ",
+   "ourApplicationId": "Edulexa आवेदन संख्या",
+   "theExternalApplicationIdSentToHire": "वह आवेदन संख्या जो Edulexa ने Hire को भेजी।",
+   "whenAnEmployerUsesHire": "जब कोई नियोक्ता Hire का इस्तेमाल करता है, तो वह हमें उन आवेदनों के ऑफ़र और नियुक्तियों की जानकारी देता है जिन्हें हमने उसे भेजा था। किसी आवेदन को छात्र से जोड़ने पर, ये अपडेट नियोक्ता द्वारा पुष्टि की गई नियुक्तियों के रूप में दिखते हैं।",
+   "tabHire": "भर्ती सिस्टम के लिंक"
   },
   "employerChallenges": {
    "program": "कार्यक्रम",
@@ -1806,7 +1806,6 @@
    "typeYourFullNameTo": "हस्ताक्षर करने के लिए अपना पूरा नाम लिखें",
    "weeklyHours": "साप्ताहिक घंटे",
    "kindEvaluation": "{kind} मूल्यांकन",
-   "documentFingerprintSHA256Sha256": "दस्तावेज़ का फ़िंगरप्रिंट (SHA-256): {sha256}",
    "signAgreement": "समझौते पर हस्ताक्षर करें",
    "noHoursLoggedYet": "अभी तक कोई घंटे दर्ज नहीं किए गए हैं।",
    "siteSupervisor": "साइट पर्यवेक्षक",
@@ -1835,7 +1834,6 @@
    "declineReason": "अस्वीकार करने का कारण:",
    "signatures": "हस्ताक्षर",
    "hours": "घंटे",
-   "typedTypedNameEmailIPIp": "“{typedName}” टाइप किया · {email} · IP {ip} · {userAgent} · {provider}",
    "iHaveReadThisVersion": "मैंने इस समझौते का यह संस्करण पढ़ लिया है, इससे सहमत हूँ और इलेक्ट्रॉनिक रूप से हस्ताक्षर करने के लिए सहमत हूँ।",
    "earlierVersionsCount": "पहले के संस्करण ({count})",
    "versionVersionReplacedVoidedAtVoidReason": "संस्करण {version}: {voidedAt} को बदला गया ({voidReason}); {count} हस्ताक्षर रद्द किए गए।",
@@ -1849,7 +1847,9 @@
    "atActionByActorName": "<span>{at}</span> · <strong>{action}</strong>, {actorName} द्वारा",
    "cptNotice": "यह कानूनी सलाह नहीं है। आपका स्कूल का अंतरराष्ट्रीय छात्र कार्यालय (आपका DSO) तय करता है कि आप CPT के लिए पात्र हैं या नहीं और आपके I-20 पर इसकी अनुमति देता है। अपने I-20 पर दी गई CPT शुरू होने की तारीख से पहले काम शुरू न करें।",
    "programSummary": "{code} {title} · {creditHours} क्रेडिट · {requiredHours} घंटे",
-   "signerRole": "{role}:"
+   "signerRole": "{role}:",
+   "documentFingerprintSHA256Sha256": "दस्तावेज़ जाँच कोड: {sha256}",
+   "typedTypedNameEmailIPIp": "“{typedName}” टाइप करके हस्ताक्षर किए · {email} · {ip} से"
   },
   "attainmentView": {
    "allPrograms": "सभी कार्यक्रम",
@@ -1864,7 +1864,6 @@
    "colOutcome": "परिणाम",
    "colWeight": "भार",
    "colTarget": "लक्ष्य",
-   "downloadCSV": "CSV डाउनलोड करें",
    "colLevel": "स्तर",
    "apply": "लागू करें",
    "programMajor": "कार्यक्रम (मुख्य विषय)",
@@ -1904,10 +1903,10 @@
     "high": "ज़्यादा",
     "moderate": "मध्यम",
     "low": "कम"
-   }
+   },
+   "downloadCSV": "स्प्रेडशीट (CSV) डाउनलोड करें"
   },
   "careerCenterChallenges": {
-   "exportCSV": "CSV एक्सपोर्ट करें",
    "employerChallenges": "नियोक्ताओं के चैलेंज",
    "statInvitedToTalk": "बातचीत के लिए आमंत्रित",
    "recognitionPrizeText": "सम्मान: {prizeText}",
@@ -1938,10 +1937,10 @@
    "statSubmitted": "जमा किया",
    "statDefended": "बचाव किया",
    "statSharing": "साझा करना",
-   "show": "दिखाएँ"
+   "show": "दिखाएँ",
+   "exportCSV": "स्प्रेडशीट (CSV) एक्सपोर्ट करें"
   },
   "careerCenterDocumentReview": {
-   "exportCSV": "CSV एक्सपोर्ट करें",
    "exportFailedStatus": "एक्सपोर्ट नहीं हो सका। कृपया फिर कोशिश करें।",
    "status": "स्थिति",
    "documentReview": "दस्तावेज़ की समीक्षा",
@@ -1963,16 +1962,15 @@
    "any": "कोई भी",
    "kind": {
     "Other": "अन्य",
-    "Resume": "बायोडाटा",
     "CoverLetter": "आवरण पत्र",
     "PersonalStatement": "व्यक्तिगत विवरण",
-    "LinkedInSummary": "LinkedIn सारांश"
+    "LinkedInSummary": "LinkedIn सारांश",
+    "Resume": "रिज़्यूमे"
    },
    "nothingHere": "यहाँ कुछ नहीं",
    "submitted": "जमा किया",
    "queue": "कतार",
    "metrics": "आँकड़े",
-   "studentsResumesCoverLettersAnd": "छात्रों के बायोडाटा, कवर लेटर और व्यक्तिगत विवरण, जो काउंसलर की समीक्षा का इंतज़ार कर रहे हैं। समीक्षाएँ शिक्षा रिकॉर्ड हैं और इन्हें कभी भी नियोक्ताओं के साथ साझा नहीं किया जाता।",
    "documentReviewSections": "दस्तावेज़ समीक्षा के अनुभाग",
    "assignee": "ज़िम्मेदार व्यक्ति",
    "waitingAtLeastDays": "कम से कम इतने दिनों से इंतज़ार में",
@@ -2067,10 +2065,11 @@
    "annotatedFileUploaded": "टिप्पणी और निशान वाली फ़ाइल अपलोड हो गई।",
    "openNowUnassigned": "अभी खुली (किसी को नहीं सौंपी गई)",
    "overdueNow": "अभी समय-सीमा से आगे",
-   "kindChecklist": "{kind} की जाँच-सूची"
+   "kindChecklist": "{kind} की जाँच-सूची",
+   "exportCSV": "स्प्रेडशीट (CSV) एक्सपोर्ट करें",
+   "studentsResumesCoverLettersAnd": "छात्रों के रिज़्यूमे, कवर लेटर और वक्तव्य, जो काउंसलर की समीक्षा के इंतज़ार में हैं। समीक्षाएँ शिक्षा रिकॉर्ड हैं और नियोक्ताओं के साथ कभी साझा नहीं की जातीं।"
   },
   "careerCenterExperiences": {
-   "exportCSV": "CSV एक्सपोर्ट करें",
    "status": "स्थिति",
    "cancel": "रद्द करें",
    "edit": "बदलें",
@@ -2145,10 +2144,10 @@
    "facultyApproved": "फ़ैकल्टी ने मंज़ूर किया",
    "awaitingFaculty": "फ़ैकल्टी के जवाब का इंतज़ार",
    "notRecorded": "दर्ज नहीं किया गया",
-   "savedCode": "{code} सहेजा गया।"
+   "savedCode": "{code} सहेजा गया।",
+   "exportCSV": "स्प्रेडशीट (CSV) एक्सपोर्ट करें"
   },
   "careerCenterReports": {
-   "exportCSV": "CSV एक्सपोर्ट करें",
    "downloadStarted": "डाउनलोड शुरू हो गया।",
    "exportFailedStatus": "एक्सपोर्ट नहीं हो सका। कृपया फिर कोशिश करें।",
    "save": "सहेजें",
@@ -2194,7 +2193,8 @@
    "presetDeleted": "प्रीसेट हटाया गया।",
    "presetSaved": "प्रीसेट सेव किया गया।",
    "settingSaved": "सेटिंग सेव की गई।",
-   "reportsAreUnavailable": "रिपोर्ट उपलब्ध नहीं हैं।"
+   "reportsAreUnavailable": "रिपोर्ट उपलब्ध नहीं हैं।",
+   "exportCSV": "स्प्रेडशीट (CSV) एक्सपोर्ट करें"
   },
   "careerCenterMentoring": {
    "downloadStarted": "डाउनलोड शुरू हो गया।",
@@ -2264,8 +2264,6 @@
    "requestsAStudentCanHave": "एक विद्यार्थी के पास एक साथ कितने अनुरोध लंबित हो सकते हैं",
    "sendAReminderToBoth": "हाल में दर्ज सत्र न होने वाले हर सक्रिय मार्गदर्शन संबंध के दोनों लोगों को रिमाइंडर भेजें। एक ही अवधि में जिन जोड़ियों को रिमाइंडर भेजा जा चुका है, उन्हें छोड़ दिया जाएगा।",
    "sendCheckInReminders": "चेक-इन रिमाइंडर भेजें",
-   "downloadMentorshipsCSV": "मार्गदर्शन संबंध डाउनलोड करें (CSV)",
-   "downloadMentorsCSV": "मार्गदर्शक डाउनलोड करें (CSV)",
    "exportsNeverIncludePrivateSession": "निर्यात में निजी सत्र के नोट कभी शामिल नहीं होते।",
    "alumniCanSetUpA": "पूर्व छात्र अपनी प्रोफ़ाइल खुद बना सकते हैं। किसी ऐसे व्यक्ति को जोड़ने के लिए जो पूर्व छात्र नहीं है, उसे यहाँ आमंत्रित करें; वह इस email से साइन इन करके प्रोफ़ाइल पूरी करेगा और आप उसे मंज़ूरी देंगे। साइन-इन लिंक उसे खुद भेजें।",
    "invite": "आमंत्रित करें",
@@ -2338,7 +2336,9 @@
    "tileCheckInsDue": "जाँच के लिए नियत",
    "remindersSentToSentMentorships": "{sent} मेंटरशिप के लिए याद दिलाने वाले संदेश भेजे गए।",
    "countStudentsWouldBecomeAlumni": "{count} छात्र पूर्व छात्र बन जाएँगे।",
-   "countStudentsAreNowAlumni": "{count} छात्र अब पूर्व छात्र हैं।"
+   "countStudentsAreNowAlumni": "{count} छात्र अब पूर्व छात्र हैं।",
+   "downloadMentorshipsCSV": "मेंटरिंग की जानकारी डाउनलोड करें (स्प्रेडशीट)",
+   "downloadMentorsCSV": "मेंटरों की जानकारी डाउनलोड करें (स्प्रेडशीट)"
   },
   "placementsShared": {
    "downloadStarted": "डाउनलोड शुरू हो गया।",
@@ -2440,7 +2440,6 @@
    "createdRecordsAddedAndUpdated": "{created} रिकॉर्ड जोड़े गए और {updated} अपडेट किए गए।",
    "recordDeleted": "रिकॉर्ड हटा दिया गया।",
    "intakeFiguresSaved": "प्रवेश के आँकड़े सेव हो गए।",
-   "placementOffice": "प्लेसमेंट कार्यालय",
    "yourRecordsOfCampusDrives": "कैंपस भर्ती अभियानों, राउंड, ऑफ़र और पैकेज के आपके रिकॉर्ड, छात्रों के शैक्षणिक डेटा से बनी पात्रता सूचियों के साथ। कंपनियाँ यहाँ पद पोस्ट नहीं करतीं और न ही छात्रों को देख सकती हैं। छात्र यहाँ आवेदन नहीं करते; वे सिर्फ़ अपने नतीजे और ऑफ़र देखते हैं।",
    "drives": "भर्ती अभियान",
    "statDrives": "भर्ती अभियान",
@@ -2549,7 +2548,8 @@
    "optedOut": "शामिल होने से मना किया",
    "notGraduatedOnTime": "समय पर स्नातक नहीं किया",
    "qualified": "उत्तीर्ण",
-   "appeared": "परीक्षा में शामिल"
+   "appeared": "परीक्षा में शामिल",
+   "placementOffice": "नियुक्तियाँ"
   },
   "careerCenterPrivacy": {
    "import": "इम्पोर्ट करें",
@@ -2602,7 +2602,6 @@
    "minorsAndGuardianConsent": "नाबालिग और अभिभावक की सहमति",
    "countRowsHadProblemsValue": "; {count} पंक्तियों में समस्याएँ थीं: {value}",
    "updatedStudentsUpdatedValue": "{updated} छात्रों की जानकारी अपडेट की गई{value}",
-   "importDatesOfBirthCSV": "जन्मतिथि इंपोर्ट करें (CSV)",
    "columnsEmailOrStudentNumberThen": "कॉलम: Email या StudentNumber, फिर DateOfBirth (YYYY-MM-DD) और/या Under18 (yes/no)। रोस्टर इंपोर्ट में भी यही कॉलम इस्तेमाल किए जा सकते हैं।",
    "emailDateOfBirth": "Email,DateOfBirth",
    "noAgesRecorded": "उम्र की कोई जानकारी दर्ज नहीं है",
@@ -2653,7 +2652,8 @@
    "openOpen": "{open} खुले",
    "overdueOverdue": "{overdue} समय-सीमा से बाहर",
    "nameEmailTypeDueDueAt": "<strong>{name}</strong> <bdi>{email}</bdi> · {type} · अंतिम तारीख {dueAt}",
-   "recordTypeWouldBeDeleted": "{recordType}: {count} मिटाए जाएंगे"
+   "recordTypeWouldBeDeleted": "{recordType}: {count} मिटाए जाएंगे",
+   "importDatesOfBirthCSV": "जन्मतिथियाँ इंपोर्ट करें (स्प्रेडशीट)"
   },
   "billing": {
    "description": "आपके स्कूल की बिलिंग जानकारी, इनवॉइस और भुगतान। इनवॉइस और रिफ़ंड आपके प्लेटफ़ॉर्म ऑपरेटर जारी करते हैं।",
@@ -2804,7 +2804,6 @@
    "online": " · ऑनलाइन",
    "attendance": "उपस्थिति:",
    "connectionSaved": "कनेक्शन सहेजा गया।",
-   "syncedBoothsBoothsFromFairs": "{fairs} मेलों से {booths} स्टॉल सिंक किए गए; इनमें से {matchedEmployers} उन नियोक्ताओं से मेल खाते हैं जिनके साथ आप काम करते हैं।",
    "yourSchoolsEventsAndCareer": "आपके स्कूल के इवेंट सिस्टम से इवेंट और करियर मेले। इन्हें वहीं बनाएँ और प्रबंधित करें; यह पेज केवल देखने के लिए है।",
    "allEvents": "सभी इवेंट",
    "noEventsFound": "कोई इवेंट नहीं मिला",
@@ -2818,18 +2817,13 @@
    "askACareerCenterAdmin": "अपने इवेंट सिस्टम को कनेक्ट करने के लिए करियर केंद्र के एडमिन से कहें।",
    "eventSystemConnection": "इवेंट सिस्टम कनेक्शन",
    "set": "सेट करें",
-   "aPIURL": "API URL",
-   "theTenantAPIAddressE": "टेनेंट API का पता, जैसे https://…/functions/v1/tenant-api",
-   "eventAppURL": "इवेंट ऐप URL",
    "usedForManageAndBooth": "प्रबंधित करें और स्टॉल लिंक के लिए इस्तेमाल होता है",
    "aPIKey": "API कुंजी",
    "leaveEmptyToKeepThe": "मौजूदा कुंजी रखने के लिए खाली छोड़ें",
    "createOneInYourEvent": "अपने इवेंट सिस्टम की सेटिंग में एक बनाएँ",
    "webhookSigningSecret": "वेबहुक हस्ताक्षर गोपनीय कुंजी",
-   "copyFromTheWebhookEndpoint": "अपने इवेंट सिस्टम में बनाए गए वेबहुक एंडपॉइंट से कॉपी करें",
    "turnOff": "बंद करें",
    "turnOn": "चालू करें",
-   "syncBoothsForReports": "रिपोर्ट के लिए स्टॉल सिंक करें",
    "careerFairsOnly": "केवल करियर मेले",
    "includePast": "पिछले मेले शामिल करें",
    "nothingMatchesTheseFiltersYet": "अभी इन फ़िल्टर से मेल खाने वाला कुछ नहीं है।",
@@ -2841,12 +2835,17 @@
    "booth": "स्टॉल",
    "leadsShared": "साझा किए गए संभावित संपर्क",
    "webhookURLPasteIntoYour": "वेबहुक URL (अपने इवेंट सिस्टम में पेस्ट करें)",
-   "lastSyncLastWebhook": "आखिरी सिंक / आखिरी वेबहुक"
+   "syncedBoothsBoothsFromFairs": "{fairs} मेलों के {booths} बूथ अपडेट किए; {matchedEmployers} का मिलान उन नियोक्ताओं से हुआ जिनके साथ आप काम करते हैं।",
+   "aPIURL": "AttendSpot API पता",
+   "theTenantAPIAddressE": "AttendSpot द्वारा दिया गया API पता, जैसे https://…/functions/v1/tenant-api",
+   "eventAppURL": "इवेंट ऐप का पता",
+   "copyFromTheWebhookEndpoint": "इसे अपने इवेंट सिस्टम में बनाए गए webhook से कॉपी करें",
+   "syncBoothsForReports": "रिपोर्ट के लिए बूथ अपडेट करें",
+   "lastSyncLastWebhook": "आखिरी अपडेट / मिला आखिरी इवेंट"
   },
   "companyForm": {
    "countryCode": "देश का कोड",
    "industry": "उद्योग",
-   "logoURL": "लोगो URL",
    "companyName": "कंपनी का नाम",
    "website": "वेबसाइट",
    "weCompareItWithYour": "कंपनी की पुष्टि करने के लिए, हम इसकी तुलना आपके साइन-इन email के डोमेन से करते हैं।",
@@ -2858,7 +2857,8 @@
    "yourJobTitle": "आपका पद",
    "aboutTheCompany": "कंपनी के बारे में",
    "notSpecified": "बताया नहीं गया",
-   "sEmployees": "{s} कर्मचारी"
+   "sEmployees": "{s} कर्मचारी",
+   "logoURL": "लोगो का लिंक"
   },
   "freeTier": {
    "termsLabel": "मैं उपयोग की शर्तों और गोपनीयता सूचना से सहमत हूँ।",
@@ -2910,7 +2910,6 @@
     "buildAndDefend": "परियोजनाएँ बनाएँ और उनका बचाव करें",
     "credentials": "सत्यापित योग्यताओं का पोर्टफोलियो"
    },
-   "notIncluded": "नौकरी की सूची और बायोडाटा, कवर लेटर या नेटवर्किंग के साधन इस योजना में शामिल नहीं हैं।",
    "availableHere": "मुफ़्त योजना आपके क्षेत्र में उपलब्ध है।",
    "gate": {
     "available": "मुफ़्त योजना आपके क्षेत्र में उपलब्ध है।",
@@ -2925,7 +2924,8 @@
    "signInFirst": "पहले साइन इन करें या अपने email पते से login बनाएँ।",
    "signInCta": "साइन इन करें या login बनाएँ",
    "nameLabel": "आपका नाम",
-   "nameHint": "यह आपकी योग्यताओं पर दिखेगा।"
+   "nameHint": "यह आपकी योग्यताओं पर दिखेगा।",
+   "notIncluded": "नौकरी की सूचियाँ और रिज़्यूमे, कवर लेटर या नेटवर्किंग के टूल इस योजना में शामिल नहीं हैं।"
   },
   "supervisorDefense": {
    "somethingWentWrongStatus": "कुछ गड़बड़ हुई। कृपया फिर से कोशिश करें।",
@@ -2993,7 +2993,6 @@
    "theStudentsInformationIsShared": "छात्र की जानकारी आपके साथ सिर्फ़ इस अनुभव की निगरानी के लिए, उनकी सहमति से साझा की गई है।",
    "academicProgram": "शैक्षणिक कार्यक्रम",
    "codeTitleRequiredHoursHours": "{code} {title} ({requiredHours} घंटे)",
-   "documentFingerprintSHA256Sha256": "दस्तावेज़ का फ़िंगरप्रिंट (SHA-256): {sha256}",
    "signedSoFar": "अब तक हस्ताक्षर करने वाले:",
    "youSignedThisVersionThank": "आपने इस संस्करण पर हस्ताक्षर कर दिए हैं। धन्यवाद!",
    "theDetailsAreCorrect": "जानकारी सही है",
@@ -3025,7 +3024,8 @@
    "titleAgreement": "{name} के लिए सीखने का समझौता",
    "titleHours": "{name} के घंटे",
    "titleMidterm": "{name} का मध्यावधि मूल्यांकन",
-   "titleFinal": "{name} का अंतिम मूल्यांकन"
+   "titleFinal": "{name} का अंतिम मूल्यांकन",
+   "documentFingerprintSHA256Sha256": "दस्तावेज़ जाँच कोड: {sha256}"
   },
   "kiosk": {
    "somethingWentWrongStatus": "कुछ गड़बड़ हुई। कृपया फिर से कोशिश करें।",
@@ -3252,7 +3252,6 @@
    "on": "चालू",
    "off": "बंद",
    "ownerMustDo": "आपके स्कूल को पहले क्या करना होगा",
-   "pullEndpoints": "रजिस्टर करने के लिए पुल एंडपॉइंट ({method})",
    "lastActivity": "पिछली गतिविधि {date}: {status}",
    "requiredLabel": "{label} (ज़रूरी)",
    "secretSet": "एक कुंजी सेव की गई है। इसे दोबारा नहीं देखा जा सकता; बदलने के लिए नई कुंजी दर्ज करें।",
@@ -3279,12 +3278,13 @@
    "withdrawConfirm": "क्या {name} के लिए “{title}” वापस लेना है? इसके बाद रिपॉज़िटरी इसे प्राप्त नहीं कर पाएगी।",
    "withdrawn": "दस्तावेज़ {number} वापस ले लिया गया।",
    "abcTitle": "अकादमिक क्रेडिट बैंक: ड्राफ़्ट निर्यात",
-   "abcHelp": "क्रेडिट देने वाली इंटर्नशिप का एक ड्राफ़्ट CSV, जिसे आपका रजिस्ट्रार NAD/ABC अपलोड में मिलाएगा। यह जमा करने के लिए नहीं है: रजिस्ट्रार इसकी जाँच करेंगे और वे कॉलम भरेंगे जिनकी जानकारी सिर्फ़ उनके पास है।",
    "abcFrom": "पूरा करने की शुरुआत",
    "abcTo": "पूरा करने की समाप्ति",
-   "abcDownload": "ड्राफ़्ट CSV डाउनलोड करें",
    "abcFailed": "ड्राफ़्ट निर्यात डाउनलोड नहीं हो सका।",
-   "abcDone": "{rows, plural, one {# पंक्ति} other {# पंक्तियाँ}} निर्यात की गईं; {missing, plural, =0 {हर छात्र के पास APAAR ID है} one {# छात्र के पास APAAR ID नहीं है} other {# छात्रों के पास APAAR ID नहीं है}}."
+   "abcDone": "{rows, plural, one {# पंक्ति} other {# पंक्तियाँ}} निर्यात की गईं; {missing, plural, =0 {हर छात्र के पास APAAR ID है} one {# छात्र के पास APAAR ID नहीं है} other {# छात्रों के पास APAAR ID नहीं है}}.",
+   "pullEndpoints": "रिपॉज़िटरी में रजिस्टर करने के पते ({method})",
+   "abcHelp": "क्रेडिट देने वाली इंटर्नशिप की एक प्रारूप स्प्रेडशीट (CSV फ़ाइल), जिसे आपका रजिस्ट्रार NAD/ABC अपलोड में जोड़ सकता है। यह जमा करने की फ़ाइल नहीं है: रजिस्ट्रार इसकी जाँच करेगा और सिर्फ़ अपने पास मौजूद जानकारी वाले कॉलम भरेगा।",
+   "abcDownload": "प्रारूप स्प्रेडशीट (CSV) डाउनलोड करें"
   },
   "myNationalCredentials": {
    "colStatus": "स्थिति",
@@ -3344,7 +3344,6 @@
    "status": "स्थिति",
    "cancel": "रद्द करें",
    "documentReview": "दस्तावेज़ की समीक्षा",
-   "sendYourResumeCoverLetter": "अपना बायोडाटा, कवर लेटर या आवेदन के दूसरे दस्तावेज़ करियर काउंसलर को भेजें। कोई व्यक्ति इन्हें पढ़कर टिप्पणियाँ और एक चेकलिस्ट भेजेगा।",
    "sentACounselorAimsTo": "भेज दिया गया। काउंसलर इसे {dueAt} तक लौटाने की कोशिश करेगा।",
    "myReviews": "मेरी समीक्षाएँ",
    "noReviewsYet": "अभी कोई समीक्षा नहीं",
@@ -3402,7 +3401,8 @@
    "theReviewWillAppearHere": "आपके काउंसलर के लौटाने पर समीक्षा यहाँ दिखेगी।",
    "downloadedFileName": "{fileName} डाउनलोड हो गई।",
    "markedAsDone": "पूरा हुआ चिह्नित कर दिया गया।",
-   "thanksForYourRating": "रेटिंग देने के लिए धन्यवाद।"
+   "thanksForYourRating": "रेटिंग देने के लिए धन्यवाद।",
+   "sendYourResumeCoverLetter": "अपना रिज़्यूमे, कवर लेटर या आवेदन के अन्य दस्तावेज़ करियर काउंसलर को भेजें। कोई व्यक्ति उन्हें पढ़कर टिप्पणियाँ और जाँच-सूची भेजेगा।"
   },
   "studentPlacements": {
    "status": "स्थिति",
@@ -3656,7 +3656,6 @@
    "pages": "पेज",
    "inviteSomeone": "किसी को आमंत्रित करें",
    "importStudentRoster": "छात्र सूची आयात करें",
-   "cSVFile": "CSV फ़ाइल",
    "total": "कुल:",
    "allRoles": "सभी भूमिकाएँ",
    "tryAnotherRoleOrSearch": "कोई दूसरी भूमिका या खोज आज़माएँ, या नीचे किसी को आमंत्रित करें।",
@@ -3668,14 +3667,15 @@
    "pagePageOfPages": "पृष्ठ {page} / {pages}",
    "next": "अगला",
    "sendInvite": "निमंत्रण भेजें",
-   "cSVWithAnEmailColumn": "<strong>Email</strong> कॉलम वाली CSV फ़ाइल, साथ में वैकल्पिक नाम, छात्र संख्या, डिग्री, विषय (एक से ज़्यादा हों तो ; से अलग करें) और स्नातक होने की तारीख। इन पंक्तियों से स्कूल द्वारा सत्यापित शिक्षा रिकॉर्ड बनेंगे।",
    "confirmImport": "इंपोर्ट की पुष्टि करें",
    "previewCreatedNewUpdatedUpdated": "पूर्वावलोकन: {created} नए, {updated} अपडेट किए गए, {count} में समस्याएँ।",
    "lineLineError": "पंक्ति {line}: {error}",
    "rowsWithProblemsAreSkipped": "समस्याओं वाली पंक्तियाँ छोड़ दी जाएँगी। पुष्टि करने तक कुछ भी सेव नहीं होगा।",
-   "chooseACSVFileFirst": "पहले CSV फ़ाइल चुनें।",
    "emailWasInvitedAsRole": "{email} को {role} के तौर पर आमंत्रित किया गया। वे इसी ईमेल से लॉगिन करने पर लिंक हो जाएँगे।",
-   "removeNameRoleFromThis": "क्या {name} ({role}) को इस स्कूल से हटाएँ?"
+   "removeNameRoleFromThis": "क्या {name} ({role}) को इस स्कूल से हटाएँ?",
+   "cSVFile": "स्प्रेडशीट (CSV फ़ाइल)",
+   "cSVWithAnEmailColumn": "एक स्प्रेडशीट (CSV फ़ाइल), जिसमें <strong>Email</strong> कॉलम और वैकल्पिक रूप से नाम, छात्र संख्या, डिग्री, विषय (कई विषयों को ; से अलग करें) और स्नातक होने की तारीख हो। इसकी पंक्तियों को स्कूल द्वारा सत्यापित शिक्षा के रूप में जोड़ा जाएगा।",
+   "chooseACSVFileFirst": "पहले स्प्रेडशीट (CSV फ़ाइल) चुनें।"
   },
   "careerCenterSettingsSis": {
    "status": "स्थिति",
@@ -3685,26 +3685,18 @@
    "countAdded": "जोड़ा गया",
    "countSuspended": "निलंबित",
    "mode": "तरीका",
-   "suspendStudentsMissingFromThis": "इस पूरी छात्र सूची में न मिलने वाले छात्रों को निलंबित करें<span>डिफ़ॉल्ट रूप से बंद। निलंबित छात्र करियर सेवाओं में साइन इन नहीं कर सकते, जब तक कि वे बाद के सिंक में न दिखें।</span>",
-   "yourSchoolReachesTheCareer": "आपका स्कूल एक पार्टनर प्लेटफ़ॉर्म के ज़रिए करियर सेवाओं तक पहुँचता है, जो आमतौर पर छात्र सूची का प्रबंधन करता है। यहाँ सूची सिंक का उपयोग तभी करें, जब आपके पार्टनर के साथ हुए समझौते में ऐसा कहा गया हो।",
    "readColumns": "कॉलम पढ़ें",
    "options": "विकल्प",
    "importDemographicsSexAndRace": "जनसांख्यिकीय जानकारी इंपोर्ट करें (केवल लिंग और नस्ल/जातीयता के संकेत; जन्मतिथि और जन्मस्थान कभी सेव नहीं किए जाते)। इसे बंद करने पर सेव की गई जनसांख्यिकीय जानकारी मिट जाएगी।",
-   "pullTheRosterFromThe": "हर रात API से छात्र सूची लें (इस सर्वर पर रात का शेड्यूल भी चालू होना चाहिए)",
    "nightlyPullsSuspendStudentsMissing": "रात में सूची लेने पर SIS में न मिलने वाले छात्र निलंबित हो जाते हैं",
-   "saveAPISettings": "API सेटिंग सेव करें",
-   "lastSyncLastSyncAt": "आखिरी सिंक: {lastSyncAt}",
-   "syncNow": "अभी सिंक करें",
-   "rosterSyncs": "छात्र सूची सिंक",
    "changes": "बदलाव",
    "chooseTheOneRosterZipOr": "OneRoster .zip या उसकी CSV फ़ाइलें चुनें।",
-   "chooseACSVExportFirst": "पहले CSV एक्सपोर्ट चुनें।",
    "chooseAFileAndCheck": "पहले फ़ाइल चुनें और मैपिंग जाँचें।",
    "latestResultKindValue": "नवीनतम नतीजा: {kind}{value}",
    "kind": {
     "OneRosterCsv": "OneRoster CSV",
-    "GenericCsv": "SIS CSV",
-    "OneRosterRest": "OneRoster API"
+    "OneRosterRest": "OneRoster API",
+    "GenericCsv": "SIS स्प्रेडशीट (CSV)"
    },
    "countInFeed": "फ़ीड में छात्र",
    "countUpdated": "अपडेट किए गए",
@@ -3715,26 +3707,16 @@
    "required": " (ज़रूरी)",
    "sISSettingsSaved": "SIS सेटिंग सेव की गईं।",
    "dryRunFinishedNothingWas": "ट्रायल पूरा हुआ: कुछ भी सेव नहीं किया गया।",
-   "syncFinished": "सिंक पूरा हुआ।",
-   "theSyncFailed": "सिंक नहीं हो पाया।",
    "studentInformationSystem": "छात्र सूचना प्रणाली",
-   "onlyCareerAdminsCanManage": "रोस्टर सिंक को सिर्फ़ करियर एडमिन मैनेज कर सकते हैं।",
-   "keepYourStudentRosterIn": "अपने छात्रों के रोस्टर को SIS के साथ अपडेट रखें: OneRoster 1.2 फ़ाइलों या API का इस्तेमाल करें, या Banner, Workday Student या PeopleSoft से CSV एक्सपोर्ट करें। छात्रों का मिलान SIS ID और email से होता है; उनके स्कूल रिकॉर्ड को सत्यापित के रूप में चिह्नित किया जाता है।",
    "uploadAOneRosterBundle": "OneRoster बंडल अपलोड करें",
    "oneRosterFiles": "OneRoster फ़ाइलें",
    "aZipBundleOrOrgs": ".zip बंडल, या orgs.csv, users.csv, enrollments.csv और academicSessions.csv (1.2 के लिए roles.csv)। demographics.csv को सिर्फ़ तभी पढ़ा जाएगा, जब आप नीचे इसकी अनुमति दें।",
    "checkTheBundle": "बंडल जाँचें",
-   "syncRoster": "रोस्टर सिंक करें",
-   "uploadASISCSVExport": "SIS CSV एक्सपोर्ट अपलोड करें",
-   "cSVExport": "CSV एक्सपोर्ट",
    "exportLayout": "एक्सपोर्ट का फ़ॉर्मैट",
    "checkRowCountRows": "{rowCount} पंक्तियाँ जाँचें",
-   "syncRowCountRows": "{rowCount} पंक्तियाँ सिंक करें",
    "oneRosterAPI": "OneRoster API",
-   "baseURL": "बेस URL",
    "upToTheVersionE": "वर्शन तक का URL, जैसे https://sis.example.edu/ims/oneroster/rostering/v1p2",
    "tokenURL": "टोकन URL",
-   "oAuth20ClientCredentials": "OAuth 2.0 क्लाइंट-क्रेडेंशियल एंडपॉइंट",
    "clientId": "क्लाइंट ID",
    "clientSecret": "क्लाइंट सीक्रेट",
    "aSecretIsSavedStored": "एक सीक्रेट सेव है (एन्क्रिप्ट करके रखा गया है)। इसे बनाए रखने के लिए खाली छोड़ें।",
@@ -3743,8 +3725,6 @@
    "rosterCoreReadonly": "roster-core.readonly",
    "onlyThisSchoolOrgSourcedId": "सिर्फ़ इस स्कूल का संगठन (sourcedId, वैकल्पिक)",
    "alsoFiltersUploadedBundles": "अपलोड किए गए बंडलों पर भी फ़िल्टर लागू करता है।",
-   "syncHistory": "सिंक का इतिहास",
-   "noSyncsYet": "अभी तक कोई सिंक नहीं हुआ।",
    "dryRun": "ट्रायल",
    "fullSuspendMissing": "पूरा, ग़ायब छात्रों को निलंबित करें",
    "full": "पूरा",
@@ -3752,9 +3732,29 @@
    "createdAddedUpdatedUpdatedReactivated": "{created} जोड़े गए, {updated} अपडेट किए गए, {reactivated} फिर से सक्रिय किए गए, {deactivated} निलंबित किए गए, {skipped} छोड़ दिए गए",
    "dryRun2": " (ट्रायल)",
    "lineLine": "पंक्ति {line}: ",
-   "syncOptions": "सिंक के विकल्प",
    "dryRunReportWhatWould": "ट्रायल (बताएँ कि क्या बदलेगा; कुछ भी सेव न करें)",
-   "thisIsAFullRoster": "यह पूरा रोस्टर है (हर मौजूदा छात्र सूची में शामिल है)"
+   "thisIsAFullRoster": "यह पूरा रोस्टर है (हर मौजूदा छात्र सूची में शामिल है)",
+   "oAuth20ClientCredentials": "OAuth 2.0 क्लाइंट क्रेडेंशियल के लिए आपके SIS द्वारा दिया गया साइन-इन पता",
+   "syncHistory": "अपडेट का इतिहास",
+   "noSyncsYet": "अभी तक कोई अपडेट नहीं।",
+   "syncOptions": "अपडेट के विकल्प",
+   "suspendStudentsMissingFromThis": "इस पूरी छात्र सूची में न दिखने वाले छात्रों को निलंबित करें<span>डिफ़ॉल्ट रूप से बंद। निलंबित छात्र करियर सेवाओं में साइन इन नहीं कर सकते, जब तक कि वे किसी बाद के अपडेट में सूची में न दिखें।</span>",
+   "yourSchoolReachesTheCareer": "आपका स्कूल एक पार्टनर प्लेटफ़ॉर्म के ज़रिए करियर सेवाओं तक पहुँचता है, जो आमतौर पर छात्र सूची का प्रबंधन करता है। यहाँ छात्र सूची अपडेट का इस्तेमाल तभी करें, जब आपके पार्टनर समझौते में ऐसा कहा गया हो।",
+   "pullTheRosterFromThe": "हर रात अपने SIS से छात्र सूची लें (रात का शेड्यूल चालू करने के लिए Edulexa सहायता टीम को भी कहना होगा)",
+   "saveAPISettings": "कनेक्शन सेटिंग सेव करें",
+   "lastSyncLastSyncAt": "आख़िरी अपडेट: {lastSyncAt}",
+   "syncNow": "अभी अपडेट करें",
+   "rosterSyncs": "छात्र सूची अपडेट",
+   "chooseACSVExportFirst": "पहले स्प्रेडशीट (CSV) एक्सपोर्ट चुनें।",
+   "syncFinished": "रोस्टर अपडेट पूरा हुआ।",
+   "theSyncFailed": "रोस्टर अपडेट नहीं हो सका।",
+   "onlyCareerAdminsCanManage": "सिर्फ़ करियर एडमिन रोस्टर अपडेट संभाल सकते हैं।",
+   "keepYourStudentRosterIn": "अपने छात्र रोस्टर को अपने SIS के साथ अपडेट रखें: OneRoster 1.2 फ़ाइलें या OneRoster कनेक्शन, या Banner, Workday Student या PeopleSoft से स्प्रेडशीट (CSV) एक्सपोर्ट। छात्रों का मिलान SIS ID और email से होता है; उनके स्कूल रिकॉर्ड को सत्यापित के रूप में चिह्नित किया जाता है।",
+   "syncRoster": "रोस्टर अपडेट करें",
+   "uploadASISCSVExport": "अपने SIS से स्प्रेडशीट (CSV) एक्सपोर्ट अपलोड करें",
+   "cSVExport": "स्प्रेडशीट (CSV) एक्सपोर्ट",
+   "syncRowCountRows": "{rowCount} पंक्तियाँ इंपोर्ट करें",
+   "baseURL": "आधार पता (URL)"
   },
   "employerSchools": {
    "status": "स्थिति",
@@ -3958,7 +3958,6 @@
    "campaignNameStaffOnly": "अभियान का नाम (केवल स्टाफ़ के लिए)",
    "category": "श्रेणी",
    "recipientsCanUnsubscribeFromEach": "प्राप्तकर्ता हर श्रेणी की सदस्यता छोड़ सकते हैं।",
-   "mergeFields": "मर्ज फ़ील्ड: '{''{'firstName'}''}', '{''{'school'}''}'",
    "plainTextBlankLinesStart": "सादा टेक्स्ट; खाली पंक्तियों से नए अनुच्छेद शुरू होते हैं। email में आपके स्कूल की संपर्क जानकारी और सदस्यता छोड़ने का लिंक जोड़ दिया जाता है।",
    "roleNoneStudentsAndAlumni": "भूमिका (कुछ नहीं = छात्र और पूर्व छात्र)",
    "membershipStatus": "सदस्यता की स्थिति",
@@ -3994,8 +3993,9 @@
    "statDelivered": "पहुंचा दिए गए",
    "statEmailsSent": "भेजे गए email",
    "statInAppSent": "ऐप में भेजे गए",
-   "statEmailSuppressed": "रोके गए email",
-   "statUnsubscribes": "सदस्यता छोड़ने वाले"
+   "statUnsubscribes": "सदस्यता छोड़ने वाले",
+   "mergeFields": "आप संदेश में ये जोड़ सकते हैं: '{''{'firstName'}''}', '{''{'school'}''}'",
+   "statEmailSuppressed": "नहीं भेजा गया: उस व्यक्ति ने ये संदेश बंद कर रखे हैं"
   },
   "studentPrivacyRights": {
    "status": "स्थिति",
@@ -4176,12 +4176,12 @@
    },
    "docKind": {
     "Transcript": "प्रतिलेख",
-    "Resume": "बायोडाटा",
     "CoverLetter": "आवरण पत्र",
     "Marksheet": "अंकपत्र",
     "IdProof": "पहचान प्रमाण",
     "Portfolio": "पोर्टफ़ोलियो",
-    "Other": "अन्य दस्तावेज़"
+    "Other": "अन्य दस्तावेज़",
+    "Resume": "रिज़्यूमे"
    },
    "eligibility": {
     "eligible": "पात्र",
@@ -4284,7 +4284,6 @@
    "howYouMet": "आपकी मुलाक़ात कैसे हुई",
    "privateNotesOnlyTheTwo": "निजी नोट्स (सिर्फ़ आप दोनों के लिए)",
    "summaryForTheCareerCenter": "करियर केंद्र के लिए सारांश (वैकल्पिक)",
-   "keepItShortAndGeneral": "इसे छोटा और सामान्य रखें, जैसे “रिज़्यूमे के मसौदे की समीक्षा की”.",
    "finishTheMentorship": "मेंटरशिप पूरी करें",
    "reasonOrWrapUpOptional": "कारण या समापन टिप्पणी (वैकल्पिक)",
    "endTheMentorshipWithOther": "क्या {other} के साथ मेंटरशिप को समय से पहले समाप्त करें?",
@@ -4333,7 +4332,8 @@
     "Spam": "स्पैम या बिक्री",
     "SafetyConcern": "सुरक्षा से जुड़ी चिंता",
     "Other": "कुछ और"
-   }
+   },
+   "keepItShortAndGeneral": "इसे छोटा और सामान्य रखें, जैसे “रिज़्यूमे के मसौदे की समीक्षा की”।"
   },
   "careerCenterCaseloadSettings": {
    "notes": "नोट",
@@ -4351,8 +4351,8 @@
      "hint": "इसका उपयोग: मेंटरिंग अनुरोध लंबित है"
     },
     "passingSprintPercent": {
-     "label": "स्प्रिंट में पास होना (छिपे हुए परीक्षणों का %)",
-     "hint": "इसका उपयोग: कोई सत्यापित प्रमाण नहीं"
+     "hint": "इसका उपयोग: कोई सत्यापित प्रमाण नहीं",
+     "label": "स्प्रिंट पास दर (% जाँचों में पास)"
     },
     "finalYearMonths": {
      "label": "अंतिम वर्ष की अवधि (स्नातक होने से पहले के महीने)",
@@ -4380,27 +4380,27 @@
    "aICopilot": "AI सहायक",
    "turnCopilotOff": "AI सहायक बंद करें",
    "turnCopilotOn": "AI सहायक चालू करें",
-   "aIGenerationLog": "AI सामग्री बनाने का लॉग",
    "noAIGenerationsYet": "अभी तक AI से कोई सामग्री नहीं बनाई गई",
    "prepBrief": "तैयारी के लिए संक्षिप्त जानकारी",
    "signalsInUse": "इस्तेमाल हो रहे संकेत",
    "saveSignalSettings": "संकेतों की सेटिंग सहेजें",
-   "whenOnCounselorsCanGenerate": "चालू होने पर, परामर्शदाता मुलाक़ात की तैयारी के लिए संक्षिप्त जानकारी और संपर्क संदेश का मसौदा बना सकते हैं। हर सामग्री पर AI द्वारा तैयार किए जाने का लेबल होगा, कुछ भी अपने-आप नहीं भेजा जाएगा (परामर्शदाता संदेश को संपादित करके भेजेंगे), और हर बार सामग्री बनाने का रिकॉर्ड नीचे रखा जाएगा। विद्यार्थी का डेटा स्कूल के चुने हुए AI सेवा प्रदाता को सिर्फ़ इन मसौदों के लिए भेजा जाता है और नियोक्ताओं को कभी नहीं दिया जाता।",
-   "noAIProviderConfigured": "कोई AI सेवा प्रदाता सेट नहीं किया गया है",
-   "developmentStubOutputNoProvider": "डेवलपमेंट नमूने का आउटपुट (प्रदाता की कोई कुंजी नहीं)",
    "includeStaffOnlyAdvisingNotes": "तैयारी की संक्षिप्त जानकारी में सिर्फ़ स्टाफ़ के लिए परामर्श नोट शामिल करें (इन्हें सिर्फ़ स्टाफ़ के लिए चिह्नित किया जाएगा; संपर्क संदेशों के मसौदों में कभी इस्तेमाल नहीं किया जाएगा)",
    "saveNoteSetting": "नोट की सेटिंग सहेजें",
    "aIGenerationsNewestFirst": "AI से बनाई गई सामग्री, सबसे नई पहले",
    "by": "द्वारा",
-   "model": "मॉडल",
-   "promptHash": "निर्देश का हैश",
-   "stub": "नमूना",
-   "instructionLikeText": "निर्देश-जैसा पाठ",
    "sentAfterReview": "समीक्षा के बाद भेजा गया",
    "signalSettingsSaved": "संकेतों की सेटिंग सहेज दी गई।",
    "copilotTurnedOff": "AI सहायक बंद कर दिया गया।",
    "copilotTurnedOn": "AI सहायक चालू कर दिया गया।",
-   "copilotSettingsSaved": "AI सहायक की सेटिंग सहेज दी गई।"
+   "copilotSettingsSaved": "AI सहायक की सेटिंग सहेज दी गई।",
+   "aIGenerationLog": "AI गतिविधि",
+   "whenOnCounselorsCanGenerate": "चालू होने पर, काउंसलर अपॉइंटमेंट की तैयारी के लिए एक संक्षिप्त जानकारी और संपर्क संदेश का प्रारूप बना सकते हैं। हर चीज़ पर AI से तैयार होने का लेबल होगा, कुछ भी अपने-आप नहीं भेजा जाएगा (काउंसलर मैसेजिंग के ज़रिए उसे संपादित करके भेजेंगे), और हर बार तैयार की गई सामग्री का रिकॉर्ड नीचे रखा जाएगा। छात्र का डेटा सिर्फ़ इन प्रारूपों के लिए स्कूल की चुनी हुई AI सेवा को भेजा जाता है और नियोक्ताओं को कभी नहीं दिया जाता।",
+   "noAIProviderConfigured": "कोई AI सेवा सेट अप नहीं है",
+   "developmentStubOutputNoProvider": "नमूना आउटपुट (कोई AI सेवा सेट अप नहीं है)",
+   "model": "AI का इस्तेमाल किया गया",
+   "promptHash": "अनुरोध का फ़िंगरप्रिंट",
+   "stub": "नमूना (AI सेट अप नहीं है)",
+   "instructionLikeText": "AI को दिए गए निर्देश जैसे दिखने वाला टेक्स्ट"
   },
   "studentInternational": {
    "save": "सहेजें",
@@ -4520,7 +4520,6 @@
    "noSignalsRightNow": "अभी कोई संकेत नहीं है।",
    "snoozedUntilUntil": "{until} तक स्थगित",
    "snoozedByByNameReason": "{byName} ने स्थगित किया: {reason}",
-   "openModule": "मॉड्यूल खोलें",
    "removeSnooze": "स्थगन हटाएँ",
    "snooze": "स्थगित करें…",
    "snooze2": "स्थगित करें",
@@ -4529,10 +4528,7 @@
    "theAICopilotIsTurned": "इस स्कूल के लिए AI सहायक बंद है। करियर एडमिन इसे संकेत और AI सहायक की सेटिंग में चालू कर सकता है।",
    "draftOutreachMessage": "संपर्क संदेश का मसौदा तैयार करें",
    "phone": "फ़ोन",
-   "developmentStub": "डेवलपमेंट नमूना",
    "includesStaffOnlyNotesDont": "इसमें सिर्फ़ स्टाफ़ के लिए नोट हैं: इन्हें विद्यार्थी के साथ साझा न करें",
-   "studentTextContainedInstructionLike": "विद्यार्थी के संदेश में निर्देश-जैसी भाषा थी; उसे डेटा माना गया",
-   "developmentStubRemoveTheStub": "डेवलपमेंट नमूना: भेजने से पहले नमूने वाली पंक्ति हटाएँ",
    "iReviewedThisMessageAnd": "मैंने इस संदेश की समीक्षा कर ली है और इसे भेजना चाहता/चाहती हूँ",
    "sendViaMessaging": "संदेश के ज़रिए भेजें",
    "discard": "रद्द करें",
@@ -4543,7 +4539,11 @@
    "messageSentThroughMessaging": "संदेश भेज दिया गया।",
    "sourceManual": "मैन्युअल रूप से आवंटित",
    "sourceUnassigned": "आवंटित नहीं",
-   "sourceRule": "{rule} नियम के अनुसार"
+   "sourceRule": "{rule} नियम के अनुसार",
+   "openModule": "संबंधित पेज खोलें",
+   "developmentStub": "नमूना टेक्स्ट: AI सेट अप नहीं है",
+   "studentTextContainedInstructionLike": "छात्र के कुछ टेक्स्ट में AI को दिए गए निर्देश जैसे शब्द थे, इसलिए उन्हें नज़रअंदाज़ कर दिया गया।",
+   "developmentStubRemoveTheStub": "नमूना टेक्स्ट (AI सेट अप नहीं है): भेजने से पहले नमूने वाली पंक्ति हटाएँ"
   },
   "careerCenterInterviews": {
    "save": "सहेजें",
@@ -5138,7 +5138,6 @@
    "tracksRoomS": "{tracks} कमरे",
    "candidatesAndDetails": "उम्मीदवार और जानकारी",
    "studentEmails": "छात्रों के email",
-   "pasteEmailsOrTheContents": "email या CSV की सामग्री चिपकाएँ। सिर्फ़ इसी स्कूल के छात्रों को आमंत्रित किया जाएगा; उनके स्वीकार करने के बाद ही आपको उनकी जानकारी दिखेगी।",
    "inviteAs": "इस रूप में आमंत्रित करें",
    "withdrawThisScheduleBookedStudents": "यह कार्यक्रम वापस लें? जिन छात्रों ने बुकिंग की है, उन्हें बताया जाएगा कि यह रद्द हो गया है।",
    "graduatingGraduationDate": " · स्नातक होने की तारीख {graduationDate}",
@@ -5184,7 +5183,6 @@
    "withdrawSchedule": "कार्यक्रम वापस लें",
    "invitedInvitedEmailDetailsAppearOnce": "आमंत्रित: {invitedEmail}. छात्र के स्वीकार करने के बाद ही उनकी जानकारी दिखेगी।",
    "detailsWithheldReason": "जानकारी छिपाई गई: {reason}",
-   "downloadResumeFileName": "रिज़्यूमे डाउनलोड करें ({fileName})",
    "youCanRequestInterviewDays": "स्कूल के <link>स्कूल</link> पेज पर आपको मंज़ूरी मिलने के बाद ही आप साक्षात्कार के दिनों का अनुरोध कर सकते हैं।",
    "chooseASchool": "स्कूल चुनें",
    "day": "दिन",
@@ -5198,7 +5196,9 @@
    "invitationRemoved": "निमंत्रण हटा दिया गया।",
    "scheduleWithdrawn": "शेड्यूल वापस ले लिया गया।",
    "addedStudentsInvited": "{added} छात्र/छात्राओं को आमंत्रित किया गया।",
-   "notFoundAtThisSchool": " इस स्कूल में नहीं मिले: {list}।"
+   "notFoundAtThisSchool": " इस स्कूल में नहीं मिले: {list}।",
+   "pasteEmailsOrTheContents": "ईमेल पते पेस्ट करें या स्प्रेडशीट से ईमेल पतों का कॉलम कॉपी करें। सिर्फ़ इसी स्कूल के छात्रों को आमंत्रित किया जाएगा; उनके स्वीकार करने के बाद ही आपको उनकी जानकारी दिखेगी।",
+   "downloadResumeFileName": "रिज़्यूमे डाउनलोड करें ({fileName})"
   },
   "employerTeam": {
    "remove": "हटाएँ",
@@ -5252,7 +5252,6 @@
    "none": "अभी कोई प्रस्ताव पत्र नहीं है। जब तक आप पत्र जारी नहीं करते, छात्र सीधे प्रस्ताव स्वीकार कर सकता है; इसके बाद वह हस्ताक्षर करके इसे स्वीकार करेगा।",
    "issueTitle": "प्रस्ताव पत्र जारी करें",
    "reissueTitle": "नया संस्करण जारी करें",
-   "providerNote": "छात्र {provider} से इस पर हस्ताक्षर करता है। कॉलेज की प्लेसमेंट नीति के तहत, हस्ताक्षर करने पर प्रस्ताव स्वीकार हो जाता है।",
    "providerDm": "दस्तावेज़ सेवा का ई-हस्ताक्षर",
    "providerBuiltin": "क्लिक करके हस्ताक्षर करें (टाइप किया गया नाम, समय और फ़िंगरप्रिंट रिकॉर्ड किए जाते हैं)",
    "modeLabel": "पत्र कैसे तैयार करें",
@@ -5272,7 +5271,8 @@
    "fileHint": "PDF या Word (.docx), अधिकतम 10 MB।",
    "upload": "अपलोड करें और भेजें",
    "history": "{count, plural, one {{count} संस्करण} other {{count} संस्करण}}",
-   "historyLine": "संस्करण {version}: {status}, {date} को जारी किया गया"
+   "historyLine": "संस्करण {version}: {status}, {date} को जारी किया गया",
+   "providerNote": "छात्र {provider} से इस पर हस्ताक्षर करता है। हस्ताक्षर करने पर स्कूल की नीति के तहत ऑफ़र स्वीकार हो जाता है।"
   },
   "careerCenterPrivacyLog": {
    "item": "मद",
@@ -5414,9 +5414,9 @@
    "validUntil": "{date} तक मान्य",
    "downloadBadge": "Open Badge डाउनलोड करें",
    "downloadBadgeFor": "{name} के लिए Open Badge डाउनलोड करें",
-   "downloadJson": "JSON-LD",
-   "downloadJsonFor": "{name} को JSON-LD के रूप में डाउनलोड करें",
-   "badgeHint": "Open Badges 3.0 फ़ाइलें डिजिटल वॉलेट में जोड़ी जा सकती हैं और सार्वजनिक सत्यापन पेज पर जाँची जा सकती हैं।"
+   "badgeHint": "Open Badges 3.0 फ़ाइलें डिजिटल वॉलेट में जोड़ी जा सकती हैं और सार्वजनिक सत्यापन पेज पर जाँची जा सकती हैं।",
+   "downloadJson": "पढ़ने योग्य फ़ाइल (JSON-LD)",
+   "downloadJsonFor": "{name} को पढ़ने योग्य फ़ाइल (JSON-LD) के रूप में डाउनलोड करें"
   },
   "groupSessions": {
    "done": "पूरा हुआ",
@@ -5494,12 +5494,12 @@
    "noCompanyDetails": "कंपनी की जानकारी नहीं है",
    "decidedDecidedAt": " · फ़ैसला {decidedAt} को लिया गया",
    "noteDecisionNote": " · नोट: {decisionNote}",
-   "accountEmailDomainEmailDomain": "खाते के ईमेल का डोमेन: {emailDomain}",
    "flaggedFlagReason": "चिह्नित: {flagReason}",
    "requestedRequestedAt": "अनुरोध {requestedAt} को किया गया",
    "block": "ब्लॉक करें",
    "nameStatusTheyveBeenNotified": "{name}: {status, select, Approved {स्वीकृत} Declined {अस्वीकृत} Blocked {अवरुद्ध} Pending {लंबित} other {{status}}}। उन्हें सूचित कर दिया गया है।",
-   "noTabEmployers": "कोई {tab, select, Pending {लंबित} Approved {स्वीकृत} Declined {अस्वीकृत} Blocked {अवरुद्ध} other {{tab}}} नियोक्ता नहीं"
+   "noTabEmployers": "कोई {tab, select, Pending {लंबित} Approved {स्वीकृत} Declined {अस्वीकृत} Blocked {अवरुद्ध} other {{tab}}} नियोक्ता नहीं",
+   "accountEmailDomainEmailDomain": "कंपनी का email पता, जिसका अंत यह हो: {emailDomain}"
   },
   "careerCenterInterviewsReports": {
    "employer": "नियोक्ता",
@@ -5518,7 +5518,6 @@
    "noneYet": "अभी कुछ नहीं",
    "byEmployer": "नियोक्ता के अनुसार",
    "backToInterviews": "साक्षात्कार पर वापस जाएँ",
-   "downloadCSV": "CSV डाउनलोड करें",
    "noInterviewsInThisRange": "इस अवधि में कोई साक्षात्कार नहीं है।",
    "interviewsByEmployer": "नियोक्ता के अनुसार साक्षात्कार",
    "statSlotsOffered": "दिए गए समय स्लॉट",
@@ -5528,7 +5527,8 @@
    "statAttended": "शामिल हुए",
    "statCancellations": "रद्द किए गए",
    "statFilledFromAlternates": "वैकल्पिक सूची से भरे गए",
-   "statNoOffer": "कोई प्रस्ताव नहीं"
+   "statNoOffer": "कोई प्रस्ताव नहीं",
+   "downloadCSV": "स्प्रेडशीट (CSV) डाउनलोड करें"
   },
   "alumniMentoring": {
    "employer": "नियोक्ता",
@@ -5603,7 +5603,6 @@
     "home": "होम",
     "appointments": "अपॉइंटमेंट",
     "document-review": "दस्तावेज़ की समीक्षा",
-    "experiences": "इंटर्नशिप",
     "mentoring": "मार्गदर्शन",
     "interviews": "इंटरव्यू",
     "fairs": "करियर मेले",
@@ -5619,7 +5618,8 @@
     "notifications": "सूचनाएँ",
     "national-credentials": "राष्ट्रीय प्रमाण-पत्र",
     "jobs": "नौकरी बोर्ड",
-    "jobs_applications": "मेरे आवेदन"
+    "jobs_applications": "मेरे आवेदन",
+    "experiences": "शैक्षणिक क्रेडिट के लिए इंटर्नशिप"
    },
    "career-center": {
     "home": "होम",
@@ -5641,8 +5641,6 @@
     "international": "अंतरराष्ट्रीय विद्यार्थी",
     "employers": "नियोक्ता",
     "imports": "आयात",
-    "settings_sis": "SIS सूची सिंक",
-    "calendar": "कैलेंडर सिंक",
     "people": "लोग",
     "settings": "सेटिंग्स",
     "privacy-log": "गोपनीयता लॉग",
@@ -5652,7 +5650,9 @@
     "reports_workforce": "कार्यबल (WIOA) रिपोर्टें",
     "apprenticeships": "शिक्षुता कार्यक्रम",
     "reports_cirr": "प्रशिक्षण शिविर के परिणाम (CIRR-शैली)",
-    "placements_drives": "कैंपस भर्ती अभियान"
+    "placements_drives": "कैंपस भर्ती अभियान",
+    "settings_sis": "छात्र सूची (SIS)",
+    "calendar": "कैलेंडर जुड़ाव"
    },
    "employer": {
     "home": "होम",
@@ -5768,7 +5768,103 @@
    "colEmail": "email",
    "showInApp": "{kind}: ऐप में दिखाएँ",
    "sendEmail": "{kind}: email भेजें",
-   "unreadSummary": "{count, plural, one {आपके पास # अपठित सूचना है।} other {आपके पास # अपठित सूचनाएँ हैं।}}"
+   "unreadSummary": "{count, plural, one {आपके पास # अपठित सूचना है।} other {आपके पास # अपठित सूचनाएँ हैं।}}",
+   "category": {
+    "agent_update": "करियर सहायक का अपडेट",
+    "appointments_booked": "मुलाक़ात बुक हो गई",
+    "appointments_cancelled": "मुलाक़ात रद्द हो गई",
+    "appointments_dropin": "बिना अपॉइंटमेंट आएँ: अब आपकी बारी है",
+    "appointments_group_cancelled": "समूह सत्र रद्द हो गया",
+    "appointments_group_changed": "समूह सत्र में बदलाव हुआ",
+    "appointments_group_hosting": "आपके द्वारा आयोजित समूह सत्र",
+    "appointments_group_promoted": "समूह सत्र की प्रतीक्षा सूची से जगह मिली",
+    "appointments_group_registered": "समूह सत्र के लिए पंजीकरण हो गया",
+    "appointments_group_reminder": "समूह सत्र की याद दिलाना",
+    "appointments_group_waitlist_closed": "समूह सत्र की प्रतीक्षा सूची बंद हो गई",
+    "appointments_group_waitlisted": "समूह सत्र की प्रतीक्षा सूची में शामिल",
+    "appointments_notes": "मुलाक़ात के नोट",
+    "appointments_reminder": "मुलाक़ात की याद दिलाना",
+    "appointments_tasks": "आगे की कार्रवाई का काम",
+    "apprenticeships_created": "प्रशिक्षुता जोड़ी गई",
+    "apprenticeships_hours": "प्रशिक्षुता के घंटे",
+    "apprenticeships_signoff": "प्रशिक्षुता की पुष्टि",
+    "assessments_assigned": "मूल्यांकन सौंपा गया",
+    "assessments_reminder": "मूल्यांकन की याद दिलाना",
+    "challenges_decision": "चुनौती पर निर्णय",
+    "challenges_invite": "चुनौती का निमंत्रण",
+    "challenges_review": "समीक्षा के लिए चुनौती",
+    "class_appeal": "मूल्यांकन के ख़िलाफ़ अपील",
+    "class_result": "मूल्यांकन का नतीजा",
+    "credentials_awarded": "प्रमाण-पत्र प्रदान किया गया",
+    "docreview_assigned": "दस्तावेज़ की समीक्षा सौंपी गई",
+    "docreview_resubmitted": "दस्तावेज़ समीक्षा के लिए वापस भेजा गया",
+    "docreview_returned": "समीक्षा के बाद दस्तावेज़ लौटाया गया",
+    "drives_application_received": "कैंपस प्लेसमेंट कार्यक्रम के लिए नया आवेदन",
+    "drives_application_withdrawn": "कैंपस प्लेसमेंट कार्यक्रम का आवेदन वापस लिया गया",
+    "drives_approved": "कैंपस प्लेसमेंट कार्यक्रम मंज़ूर हुआ",
+    "drives_hire_issue": "जाँचने के लिए भर्ती प्रणाली का अपडेट",
+    "drives_new": "नया कैंपस प्लेसमेंट कार्यक्रम",
+    "drives_offer": "नौकरी का प्रस्ताव",
+    "drives_offer_deadline": "प्रस्ताव का जवाब देने की याद दिलाना",
+    "drives_offer_response": "नौकरी के प्रस्ताव का जवाब",
+    "drives_rejected": "कैंपस प्लेसमेंट कार्यक्रम अस्वीकार किया गया",
+    "drives_request": "कैंपस प्लेसमेंट कार्यक्रम का अनुरोध",
+    "drives_shortlisted": "कैंपस प्लेसमेंट कार्यक्रम के लिए चुने गए",
+    "drives_slot": "साक्षात्कार का समय",
+    "drives_slot_reminder": "साक्षात्कार की याद दिलाना",
+    "employer_invite": "भर्ती टीम में शामिल होने का निमंत्रण",
+    "employer_relationship": "भर्ती के अनुरोध का जवाब दिया गया",
+    "employer_request": "नियोक्ता भर्ती करना चाहता है",
+    "experiences_agreement": "इंटर्नशिप का समझौता",
+    "experiences_approved": "इंटर्नशिप मंज़ूर हुई",
+    "experiences_certificate": "इंटर्नशिप का प्रमाण-पत्र",
+    "experiences_comment": "इंटर्नशिप पर टिप्पणी",
+    "experiences_completed": "इंटर्नशिप पूरी हुई",
+    "experiences_declined": "इंटर्नशिप अस्वीकार हुई",
+    "experiences_defense": "इंटर्नशिप का मौखिक मूल्यांकन",
+    "experiences_documents": "इंटर्नशिप के दस्तावेज़",
+    "experiences_evaluation": "इंटर्नशिप का मूल्यांकन",
+    "experiences_faculty_approved": "फ़ैकल्टी ने इंटर्नशिप मंज़ूर की",
+    "experiences_hours": "इंटर्नशिप के घंटे",
+    "experiences_logbook": "इंटर्नशिप की कार्य-पुस्तिका",
+    "experiences_submitted": "इंटर्नशिप जमा की गई",
+    "experiences_supervisor": "इंटर्नशिप पर्यवेक्षक",
+    "experiences_withdrawn": "इंटर्नशिप वापस ली गई",
+    "guidance_mentor": "आपके लिए मार्गदर्शन का सवाल",
+    "guidance_reply": "आपके मार्गदर्शन संबंधी सवाल का जवाब",
+    "international_opt-reminder": "OPT की याद दिलाना",
+    "international_opt-warning": "OPT की चेतावनी",
+    "international_work-rights": "काम करने के अधिकारों की याद दिलाना",
+    "mentoring_accepted": "मार्गदर्शन का अनुरोध स्वीकार किया गया",
+    "mentoring_active": "मार्गदर्शन कार्यक्रम शुरू हुआ",
+    "mentoring_alumni": "पूर्व छात्रों के लिए मार्गदर्शन",
+    "mentoring_approval": "मंज़ूरी के लिए मार्गदर्शन का अनुरोध",
+    "mentoring_checkin": "मार्गदर्शन पर हालचाल",
+    "mentoring_declined": "मार्गदर्शन का अनुरोध अस्वीकार किया गया",
+    "mentoring_ended": "मार्गदर्शन कार्यक्रम समाप्त हुआ",
+    "mentoring_mentor_decision": "मार्गदर्शक के आवेदन पर निर्णय",
+    "mentoring_mentor_submitted": "मार्गदर्शक का नया आवेदन",
+    "mentoring_report": "मार्गदर्शन की रिपोर्ट",
+    "mentoring_request": "मार्गदर्शन का अनुरोध",
+    "mentoring_session": "मार्गदर्शन सत्र",
+    "mentoring_withdrawn": "मेंटरिंग का अनुरोध वापस लिया गया",
+    "messages_assigned": "बातचीत आपको सौंपी गई",
+    "messages_new": "नया संदेश",
+    "messages_report": "बातचीत की शिकायत की गई",
+    "ocr_alternate": "इंटरव्यू के लिए वैकल्पिक सूची में शामिल",
+    "ocr_booked": "कैंपस में इंटरव्यू बुक किया गया",
+    "ocr_cancelled": "कैंपस में इंटरव्यू रद्द किया गया",
+    "ocr_cleared": "इंटरव्यू के लिए साइन अप करने की अनुमति फिर से मिली",
+    "ocr_invited": "कैंपस में होने वाले इंटरव्यू के लिए आमंत्रित",
+    "ocr_new_schedule": "कैंपस में नए इंटरव्यू",
+    "ocr_no_show": "कैंपस में होने वाला इंटरव्यू छूट गया",
+    "ocr_promoted": "इंटरव्यू के लिए आगे बढ़ाया गया",
+    "ocr_request": "कैंपस में इंटरव्यू का अनुरोध",
+    "ocr_signup": "इंटरव्यू के लिए नया साइन-अप",
+    "privacy_guardian": "अभिभावक का जवाब",
+    "privacy_request": "निजता का अनुरोध",
+    "resumebook_removed": "रिज़्यूमे संग्रह से हटाया गया"
+   }
   },
   "studentJobs": {
    "title": "नौकरी बोर्ड",
@@ -5781,7 +5877,6 @@
    "deadline": "{date} तक आवेदन करें",
    "optIn": "सहमति दें",
    "any": "कोई भी",
-   "description": "आपके प्लेसमेंट कार्यालय से मंज़ूर किए गए कैंपस भर्ती अभियान।",
    "applied": "आपने {company} में आवेदन किया।",
    "empty": "अभी कोई कैंपस भर्ती अभियान नहीं है।",
    "stipend": "हर महीने वज़ीफ़ा {amount}",
@@ -5793,7 +5888,8 @@
    "required": "ज़रूरी दस्तावेज़: {kinds}",
    "attach": "दस्तावेज़ जोड़ें",
    "upload": "दस्तावेज़ अपलोड करें",
-   "consent": "मैं सहमत हूँ कि मेरा नाम, संपर्क विवरण, शैक्षणिक रिकॉर्ड (डिग्री, शाखा, बैच, CGPA, बैकलॉग, 10वीं और 12वीं के अंक) और मेरे जोड़े हुए दस्तावेज़ इस भर्ती अभियान के लिए {company} के साथ साझा किए जाएँ। अगर {company} अपना भर्ती सिस्टम इस्तेमाल करता है, तो जानकारी उसमें भी साझा की जाएगी। साझा करना रोकने के लिए मैं अपना आवेदन वापस ले सकता/सकती हूँ।"
+   "consent": "मैं सहमत हूँ कि मेरा नाम, संपर्क विवरण, शैक्षणिक रिकॉर्ड (डिग्री, शाखा, बैच, CGPA, बैकलॉग, 10वीं और 12वीं के अंक) और मेरे जोड़े हुए दस्तावेज़ इस भर्ती अभियान के लिए {company} के साथ साझा किए जाएँ। अगर {company} अपना भर्ती सिस्टम इस्तेमाल करता है, तो जानकारी उसमें भी साझा की जाएगी। साझा करना रोकने के लिए मैं अपना आवेदन वापस ले सकता/सकती हूँ।",
+   "description": "आपके करियर केंद्र द्वारा मंज़ूर किए गए कैंपस ड्राइव।"
   },
   "studentApplications": {
    "backToBoard": "नौकरी बोर्ड",
@@ -5801,7 +5897,6 @@
    "decline": "नामंज़ूर करें",
    "notYet": "अभी नहीं",
    "description": "आपके कैंपस भर्ती अभियान के आवेदन, चयन के चरण, इंटरव्यू स्लॉट और ऑफ़र।",
-   "accepted": "ऑफ़र स्वीकार कर लिया गया। आपके प्लेसमेंट कार्यालय के पास इसका रिकॉर्ड है।",
    "declined": "ऑफ़र अस्वीकार कर दिया गया।",
    "empty": "आपने अभी तक किसी कैंपस भर्ती अभियान में आवेदन नहीं किया है।",
    "appliedOn": "आवेदन किया {date}",
@@ -5816,7 +5911,8 @@
    "accept": "स्वीकार करें",
    "acceptAndRelease": "स्वीकार करें और अपना पहले वाला ऑफ़र छोड़ दें",
    "withdrawn": "आवेदन वापस ले लिया गया। आपकी जानकारी अब नियोक्ता के साथ साझा नहीं की जाएगी।",
-   "withdraw": "आवेदन वापस लें"
+   "withdraw": "आवेदन वापस लें",
+   "accepted": "ऑफ़र स्वीकार किया गया। आपके करियर केंद्र के पास इसका रिकॉर्ड है।"
   },
   "internshipDefense": {
    "rubric": {
@@ -5859,7 +5955,6 @@
    "newStatus": "नई स्थिति",
    "noteRequiredKeptInThe": "नोट (ज़रूरी, ऑडिट लॉग में रखा जाएगा)",
    "sayWhatYouCheckedFor": "बताएँ कि आपने क्या जाँचा, जैसे सुपरवाइज़र से की गई कॉल।",
-   "developmentModeThisGradeComes": "डेवलपमेंट मोड: यह ग्रेड एक आसान अनुमान पर आधारित है, AI मॉडल पर नहीं।",
    "thisDefenseCouldntBeGraded": "इस पक्ष का अपने-आप मूल्यांकन नहीं हो सका। शिक्षकवर्ग या कैरियर केंद्र इसकी समीक्षा करेगा।",
    "defenseScoreScoreOutOf": "पक्ष रखने का स्कोर: <strong>{score}</strong> में से 100 (स्कूल को सुपरवाइज़र की पुष्टि के साथ {threshold} या उससे ज़्यादा स्कोर चाहिए)।",
    "rubricScores": "मूल्यांकन के मानदंडों के स्कोर",
@@ -5894,7 +5989,8 @@
     "PartlyVerified": "आंशिक रूप से सत्यापित",
     "NotVerified": "सत्यापित नहीं",
     "Pending": "लंबित (और समीक्षा ज़रूरी है)"
-   }
+   },
+   "developmentModeThisGradeComes": "नमूना ग्रेड: आसान नियमों से निकाला गया है, AI से नहीं।"
   },
   "careerCenterInternational": {
    "internationalStudents": "अंतरराष्ट्रीय विद्यार्थी",
@@ -5976,7 +6072,6 @@
    "find": "खोजें"
   },
   "careerCenterCalendar": {
-   "calendarSync": "कैलेंडर सिंक",
    "yourCareerCenterHasntTurned": "आपके करियर केंद्र ने कैलेंडर में अपॉइंटमेंट जोड़ने की सुविधा चालू नहीं की है।",
    "schoolCalendarSettings": "स्कूल कैलेंडर सेटिंग",
    "connected2": "कनेक्टेड:",
@@ -5987,8 +6082,6 @@
    "checkConnection": "कनेक्शन जाँचें",
    "updateCalendarNow": "अभी कैलेंडर अपडेट करें",
    "disconnect": "कनेक्शन हटाएँ",
-   "noCalendarConnectedYoullBe": "कोई कैलेंडर कनेक्ट नहीं है। आपसे कैलेंडर सेवा में साइन इन करने और अपने कैलेंडर का ऐक्सेस देने के लिए कहा जाएगा।",
-   "providersThatAreGreyedOut": "जो सेवाएँ धूसर दिख रही हैं, उन्हें अभी इस सर्वर पर सेट अप नहीं किया गया है।",
    "calendarOptionsForAllCounselors": "सभी काउंसलर के लिए कैलेंडर विकल्प",
    "useConnectedCalendarsBusyTime": "अपॉइंटमेंट के समय रोक लगाने के लिए कनेक्ट किए गए कैलेंडर का व्यस्त समय इस्तेमाल करें",
    "addBookedAppointmentsToCounselors": "बुक किए गए अपॉइंटमेंट काउंसलर के कनेक्ट किए गए कैलेंडर में जोड़ें",
@@ -5997,7 +6090,6 @@
    "connectProvider": "{provider} कनेक्ट करें",
    "meetingLinksForVideo": "आपके द्वारा आयोजित वीडियो अपॉइंटमेंट और समूह सत्रों के लिए अपना अलग {provider} लिंक होगा, जो कैलेंडर इवेंट के साथ बनाया जाएगा।",
    "generateMeetingLinks": "वीडियो अपॉइंटमेंट और समूह सत्रों के लिए अलग मीटिंग लिंक दें<span>काउंसलर के कैलेंडर इवेंट के साथ Microsoft Teams या Google Meet लिंक बनाया जाता है। जिन काउंसलर का कैलेंडर कनेक्ट नहीं है या जो अपना कमरा चुनते हैं, वे इसके बजाय अपना स्थायी लिंक साझा करते हैं।</span>",
-   "addStudentsToMeetingInvite": "मीटिंग के आमंत्रण में छात्रों को जोड़ें<span>छात्र (या समूह सत्र के लिए पंजीकृत हर छात्र, जो एक-दूसरे को नहीं देख सकते) को होस्ट के कैलेंडर इवेंट में जोड़ा जाता है। इससे Microsoft 365 या Google उन्हें आमंत्रण, अपडेट और रद्द होने की सूचना भेजता है और वे सीधे मीटिंग में शामिल हो सकते हैं। उनका सत्यापित email होस्ट की कैलेंडर सेवा को भेजा जाता है। इसे बंद करने पर, अगले कैलेंडर अपडेट में छात्रों को आने वाले इवेंट से हटा दिया जाएगा।</span>",
    "studentsAreAddedToInvites": "छात्रों को इवेंट में प्रतिभागियों के रूप में जोड़ा जाता है और उन्हें आपके कैलेंडर से आमंत्रण, बदलाव और रद्द होने की सूचना मिलती है। प्रतीक्षा सूची वाले छात्रों को नहीं जोड़ा जाता।",
    "theCalendarWasntConnectedProviderError": "कैलेंडर कनेक्ट नहीं हो सका: {providerError}",
    "disconnectYourCalendarBusyTime": "क्या आप अपना कैलेंडर डिस्कनेक्ट करना चाहते हैं? व्यस्त समय अब आपके अपॉइंटमेंट के समय को रोक नहीं पाएगा। पहले से जोड़े गए इवेंट आपके कैलेंडर में बने रहेंगे।",
@@ -6005,7 +6097,6 @@
    "failedFailed": ", {failed} विफल",
    "calendarUpdatedCreatedAddedUpdated": "कैलेंडर अपडेट हुआ: {created} जोड़े गए, {updated} बदले गए, {deleted} हटाए गए{value}.",
    "calendarSettingsSaved": "कैलेंडर की सेटिंग सेव हो गई।",
-   "connectYourWorkCalendarSo": "अपना काम का कैलेंडर कनेक्ट करें, ताकि व्यस्त समय आपके अपॉइंटमेंट के समय को रोक सके और बुक किए गए अपॉइंटमेंट आपके कैलेंडर में दिखें। सदस्यता (ICS) फ़ीड अपॉइंटमेंट में उपलब्ध हैं।",
    "finishingTheConnection": "कनेक्शन पूरा हो रहा है…",
    "yourCalendar": "आपका कैलेंडर",
    "connected": "कनेक्टेड",
@@ -6015,7 +6106,12 @@
    "titlesIncludeTheStudentsName": " (शीर्षक में छात्र का नाम शामिल होता है)",
    "titlesShowTheAppointmentType": " (शीर्षक में सिर्फ़ अपॉइंटमेंट का प्रकार दिखता है)",
    "bookedAppointmentsAreAddedTo": "बुक किए गए अपॉइंटमेंट आपके कैलेंडर में जोड़े जाते हैं और उनमें बदलाव होने पर स्थानांतरित या हटाए जाते हैं{value}। अपॉइंटमेंट में बदलाव करियर केंद्र में करें, अपने कैलेंडर में नहीं।",
-   "connectionWorksCountBusyPeriods": "{count, plural, one {कनेक्शन काम कर रहा है: अगले 7 दिनों में # व्यस्त अवधि मिली।} other {कनेक्शन काम कर रहा है: अगले 7 दिनों में # व्यस्त अवधियाँ मिलीं।}}"
+   "connectionWorksCountBusyPeriods": "{count, plural, one {कनेक्शन काम कर रहा है: अगले 7 दिनों में # व्यस्त अवधि मिली।} other {कनेक्शन काम कर रहा है: अगले 7 दिनों में # व्यस्त अवधियाँ मिलीं।}}",
+   "calendarSync": "कैलेंडर जुड़ाव",
+   "connectYourWorkCalendarSo": "अपने काम का कैलेंडर कनेक्ट करें, ताकि व्यस्त समय आपके अपॉइंटमेंट स्लॉट रोक दे और बुक किए गए अपॉइंटमेंट आपके कैलेंडर में दिखें। अपने कैलेंडर में जोड़ने के लिए कैलेंडर लिंक अपॉइंटमेंट के नीचे मिलेंगे।",
+   "noCalendarConnectedYoullBe": "कोई कैलेंडर कनेक्ट नहीं है। आपसे अपने कैलेंडर खाते में login करने और कैलेंडर का ऐक्सेस देने के लिए कहा जाएगा।",
+   "providersThatAreGreyedOut": "धूसर रंग में दिखने वाले कैलेंडर अभी उपलब्ध नहीं हैं।",
+   "addStudentsToMeetingInvite": "मीटिंग के निमंत्रण में छात्रों को जोड़ें<span>छात्र (या समूह सत्र में रजिस्टर किए गए सभी छात्र, जो एक-दूसरे को नहीं देख सकते) होस्ट के कैलेंडर इवेंट में जोड़े जाते हैं। इससे Microsoft 365 या Google उन्हें निमंत्रण, अपडेट और रद्द करने की सूचना भेजता है और वे सीधे मीटिंग में शामिल हो सकते हैं। उनका सत्यापित email होस्ट की कैलेंडर सेवा को भेजा जाता है। इसे बंद करने पर, अगले कैलेंडर अपडेट के समय छात्रों को आने वाले इवेंट से हटा दिया जाएगा।</span>"
   },
   "careerCenterSettings": {
    "settings": "सेटिंग्स",
@@ -6033,18 +6129,18 @@
    "commaSeparatedForExampleState": "कॉमा लगाकर अलग करें। उदाहरण के लिए state.edu, mail.state.edu। हर डोमेन सिर्फ़ एक स्कूल का हो सकता है।",
    "timeZone": "समय क्षेत्र",
    "otherTimeZone": "दूसरा समय क्षेत्र",
-   "anIANANameSuchAs": "Europe/London जैसा IANA नाम।",
    "postalAddress": "डाक का पता",
    "printedAtTheBottomOf": "अमेरिकी एंटी-स्पैम कानून (CAN-SPAM) के अनुसार, यह कैंपेन email के सबसे नीचे प्रिंट होता है। इसे हटाने के लिए खाली छोड़ें।",
    "look": "दिखावट",
-   "logoURL": "लोगो URL",
    "primaryColor": "मुख्य रंग",
    "hexColorForExample4f46e5": "Hex रंग, उदाहरण के लिए #4f46e5।",
    "pickPrimaryColor": "मुख्य रंग चुनें",
    "other": "अन्य…",
    "letStudentsJoinOnTheir": "छात्रों को खुद जुड़ने दें<span>ऊपर दिए गए email डोमेन में से किसी एक से login करने वाला हर व्यक्ति यहाँ छात्र बन जाएगा।</span>",
    "underFERPAYourSchoolMay": "FERPA के तहत, आपका स्कूल मंज़ूरशुदा नियोक्ताओं के साथ निर्देशिका की जानकारी साझा कर सकता है, जब तक कि कोई छात्र इसे रोकने का अनुरोध न करे। चुनें कि निर्देशिका की जानकारी में क्या शामिल होगा।",
-   "settingsCouldntBeLoaded": "सेटिंग लोड नहीं हो सकीं।"
+   "settingsCouldntBeLoaded": "सेटिंग लोड नहीं हो सकीं।",
+   "anIANANameSuchAs": "समय क्षेत्र का मानक नाम, जैसे Europe/London या America/Chicago।",
+   "logoURL": "लोगो का लिंक"
   },
   "careerCenterDrives": {
    "title": "कैंपस भर्ती अभियान",
@@ -6091,15 +6187,15 @@
    "dream": "ड्रीम श्रेणी की शुरुआत (₹ प्रति वर्ष)",
    "superDream": "सुपर-ड्रीम श्रेणी की शुरुआत (₹ प्रति वर्ष)",
    "tiersHint": "कोई श्रेणी न रखने के लिए खाली छोड़ें",
-   "pricingTitle": "मूल्य निर्धारण फ़्लैग",
-   "pricingNote": "सिर्फ़ फ़्लैग: भारत के लिए मूल्य तय नहीं हैं और कोई शुल्क नहीं लिया जाता।",
    "feeRequired": "नियोक्ता भर्ती पोस्ट करने का शुल्क देते हैं",
    "premium": "नियोक्ताओं को ऑफ़र के लिए बेहतर दृश्यता दें",
    "save": "नियम सहेजें",
    "createTitle": "कंपनी के लिए भर्ती अभियान बनाएँ",
    "createHelp": "उस कंपनी के लिए जो आपके कार्यालय के ज़रिए भर्ती कर रही है। इसे मंज़ूरी मिल चुकी है और छात्र तुरंत आवेदन कर सकते हैं।",
    "ctcHint": "उदाहरण के लिए 6 LPA या 600000",
-   "createDrive": "भर्ती अभियान बनाएँ"
+   "createDrive": "भर्ती अभियान बनाएँ",
+   "pricingTitle": "नियोक्ता की नौकरी पोस्ट करने की फ़ीस",
+   "pricingNote": "सिर्फ़ आपके रिकॉर्ड के लिए: नियोक्ता की फ़ीस अभी तय नहीं हुई है और कोई शुल्क नहीं लिया जाएगा।"
   },
   "careerCenterDrive": {
    "backToQueue": "कैंपस भर्ती अभियान",
@@ -6272,10 +6368,10 @@
    "source": {
     "StudentReported": "विद्यार्थी",
     "EmployerReported": "नियोक्ता का प्रस्ताव (कैंपस में भर्ती)",
-    "AtsWebhook": "नियोक्ता की आवेदक ट्रैकिंग प्रणाली",
     "HireWebhook": "नियोक्ता की भर्ती प्रणाली",
     "StaffResearch": "करियर केंद्र का शोध",
-    "PlatformImport": "स्कूल का प्लेसमेंट प्लेटफ़ॉर्म (आयात किया गया)"
+    "PlatformImport": "स्कूल का प्लेसमेंट प्लेटफ़ॉर्म (आयात किया गया)",
+    "AtsWebhook": "नियोक्ता की भर्ती प्रणाली"
    },
    "verification": {
     "StaffConfirmed": "स्टाफ़ ने पुष्टि की",
@@ -6405,10 +6501,10 @@
     "CalendarWritingOff": "स्कूल के लिए कैलेंडर में अपॉइंटमेंट जोड़ने की सुविधा बंद है।",
     "MeetingLinksOff": "स्कूल के लिए मीटिंग लिंक अपने-आप बनाने की सुविधा बंद है।",
     "HostUsesOwnLink": "मेज़बान ने अपना मीटिंग लिंक साझा करने का विकल्प चुना है।",
-    "ProviderRefused": "कैलेंडर सेवा ने इस खाते के लिए ऑनलाइन मीटिंग की अनुमति नहीं दी।",
     "ProviderNoMeeting": "कैलेंडर खाते से ऑनलाइन मीटिंग नहीं बनाई जा सकती (उदाहरण के लिए, Teams के बिना कोई निजी खाता)।",
-    "ProviderError": "कैलेंडर सेवा से संपर्क नहीं हो सका। फिर से कोशिश की जाएगी।",
-    "MeetingPending": "मीटिंग अभी बनाई जा रही है। लिंक जल्द ही अपडेट हो जाएगा।"
+    "MeetingPending": "मीटिंग अभी बनाई जा रही है। लिंक जल्द ही अपडेट हो जाएगा।",
+    "ProviderRefused": "कैलेंडर सेवा ने इस खाते के लिए ऑनलाइन मीटिंग की अनुमति नहीं दी।",
+    "ProviderError": "कैलेंडर सेवा से संपर्क नहीं हो सका। फिर से कोशिश की जाएगी।"
    },
    "meetingGenerated": "इसके लिए {provider} मीटिंग बनाई गई।",
    "meetingHostLink": "मेज़बान का अपना मीटिंग लिंक इस्तेमाल हो रहा है।",
@@ -6428,8 +6524,8 @@
    "inviteSkipped": "कैलेंडर आमंत्रण में शामिल नहीं: {reason}",
    "inviteReason": {
     "NoVerifiedEmail": "कोई सत्यापित ईमेल पता नहीं है।",
-    "AttendeeLimit": "कार्यक्रम में कैलेंडर सेवा की अधिकतम अतिथि सीमा पूरी हो गई है।",
-    "InvitesOff": "स्कूल विद्यार्थियों को मीटिंग आमंत्रणों में शामिल नहीं करता।"
+    "InvitesOff": "स्कूल विद्यार्थियों को मीटिंग आमंत्रणों में शामिल नहीं करता।",
+    "AttendeeLimit": "कार्यक्रम कैलेंडर सेवा की सहभागी सीमा तक पहुँच गया है।"
    },
    "fullWaitlist": "{count, plural, =0 {पूरी तरह भरा हुआ: प्रतीक्षा सूची खुली है} one {पूरी तरह भरा हुआ: प्रतीक्षा सूची में {count} व्यक्ति} other {पूरी तरह भरा हुआ: प्रतीक्षा सूची में {count} व्यक्ति}}"
   },
@@ -6510,7 +6606,6 @@
    "notAvailableAtYourSchool": "यह सुविधा अभी आपके स्कूल में उपलब्ध नहीं है।",
    "theInterviewerAsksWhatYou": "साक्षात्कारकर्ता पूछेगा कि आपने खुद क्या किया, यह कैसे काम करता है, आपने कौन-से फैसले लिए और उसका क्या नतीजा निकला। व्याकरण, लहजे और भाषा के आधार पर आकलन नहीं होगा।",
    "startTheDefense": "बचाव शुरू करें",
-   "developmentModeQuestionsAreGenerated": "डेवलपमेंट मोड: सवाल AI मॉडल के बिना बनाए जाते हैं।",
    "sendAnswer": "जवाब भेजें",
    "finishAndSendToMy": "पूरा करके अपने पर्यवेक्षक को भेजें",
    "youllTalkWithAnInterviewer": "आप अधिकतम 15 मिनट तक साक्षात्कारकर्ता से अपने बताए काम के बारे में बात करेंगे। किसी शांत जगह पर रहें और माइक्रोफ़ोन इस्तेमाल करने की अनुमति दें।",
@@ -6519,7 +6614,8 @@
    "yourDefenseHasStarted": "आपका बचाव शुरू हो गया है।",
    "thanksSupervisorNameHasBeenAsked": "धन्यवाद! {supervisorName} से आपके काम की पुष्टि करने को कहा गया है।",
    "voiceIsntAvailableRightNow": "आवाज़ की सुविधा अभी उपलब्ध नहीं है।",
-   "theCallDidntStartCheck": "कॉल शुरू नहीं हुई। माइक्रोफ़ोन की अनुमति जांचें और फिर कोशिश करें।"
+   "theCallDidntStartCheck": "कॉल शुरू नहीं हुई। माइक्रोफ़ोन की अनुमति जांचें और फिर कोशिश करें।",
+   "developmentModeQuestionsAreGenerated": "नमूना प्रश्न: AI के बिना लिखे गए।"
   },
   "employerCompany": {
    "saveChanges": "बदलाव सेव करें",
@@ -6592,9 +6688,7 @@
    "noOpenTimes": "कोई समय उपलब्ध नहीं",
    "ifMyTimeIsTaken": "अगर मेरा चुना हुआ समय किसी और ने ले लिया हो या कोई समय न बचा हो, तो मुझे वैकल्पिक सूची में डालें",
    "joinTheAlternateListYoull": "वैकल्पिक सूची में शामिल हों (समय उपलब्ध होते ही आपका इंटरव्यू अपने-आप बुक हो जाएगा)",
-   "resumeToShare": "साझा करने के लिए रिज़्यूमे",
    "pDFWordOrTextUp": "PDF, Word या टेक्स्ट फ़ाइल, अधिकतम 10 MB।",
-   "orUploadAResume": "या रिज़्यूमे अपलोड करें",
    "bookThisTime": "यह समय बुक करें",
    "youMissedNoShowsInterviewsThe": "आप {noShows} इंटरव्यू में नहीं आए (सीमा {limit} है), इसलिए नए इंटरव्यू के लिए नाम दर्ज करना रोक दिया गया है। इसे हटवाने के लिए अपने करियर केंद्र से संपर्क करें।",
    "lookUnderFindInterviewsFor": "अपने स्कूल में भर्ती करने वाले नियोक्ताओं के लिए इंटरव्यू खोजें पर जाएँ।",
@@ -6616,13 +6710,15 @@
    "youreSignedUpSeeMy": "आपने पंजीकरण कर लिया है। मेरे इंटरव्यू देखें।",
    "signUpIsntOpen": "पंजीकरण अभी खुला नहीं है।",
    "declineInvitation": "निमंत्रण अस्वीकार करें",
-   "chooseAResume": "रिज़्यूमे चुनें",
-   "iAgreeToShareMy": "मैं इस इंटरव्यू के लिए {employerName} के साथ अपना नाम, email, शिक्षा और ऊपर दिया गया रिज़्यूमे साझा करने के लिए सहमत हूँ। आप अपनी <link>गोपनीयता सेटिंग्स</link> में सहमति वापस ले सकते हैं।",
    "cancelled": "रद्द किया गया।",
    "yourPlaceOnTheAlternate": "प्रतीक्षा सूची में आपकी जगह",
    "thisInterview": "यह इंटरव्यू",
    "youreBookedWithEmployerName": "{employerName} के साथ आपका इंटरव्यू तय हो गया है।",
-   "youreOnTheAlternateList2": "आप {employerName} के लिए प्रतीक्षा सूची में हैं।"
+   "youreOnTheAlternateList2": "आप {employerName} के लिए प्रतीक्षा सूची में हैं।",
+   "resumeToShare": "साझा करने के लिए रिज़्यूमे",
+   "orUploadAResume": "या रिज़्यूमे अपलोड करें",
+   "chooseAResume": "रिज़्यूमे चुनें",
+   "iAgreeToShareMy": "मैं इस इंटरव्यू के लिए अपना नाम, email, शिक्षा और ऊपर दिया गया रिज़्यूमे {employerName} के साथ साझा करने की सहमति देता/देती हूँ। आप <link>निजता सेटिंग</link> में जाकर अपनी सहमति वापस ले सकते हैं।"
   },
   "sponsorLookup": {
    "search": "खोजें",
@@ -6666,8 +6762,6 @@
   "careerCenterReportsIndia": {
    "show": "दिखाएँ",
    "report": "रिपोर्ट",
-   "downloadCSV": "CSV डाउनलोड करें",
-   "placementOffice": "प्लेसमेंट कार्यालय",
    "nIRFNAACAndNBAReports": "NIRF, NAAC और NBA रिपोर्ट",
    "programme": "कार्यक्रम",
    "placementHigherStudiesAndExamination": "प्लेसमेंट कार्यालय के रिकॉर्ड और नतीजों से, प्लेसमेंट, उच्च शिक्षा और परीक्षाओं के आँकड़े उन प्रारूपों में पाएँ जिनकी भारतीय रैंकिंग और मान्यता देने वाली संस्थाओं को ज़रूरत होती है। किसी भी आवेदन में आँकड़े भरने से पहले उन्हें जाँच लें।",
@@ -6688,7 +6782,9 @@
    "officialSourcesUsed": "इस्तेमाल किए गए आधिकारिक स्रोत",
    "verifyAgainstTheCurrentOfficial": "(मौजूदा आधिकारिक प्रारूप से मिलान करें)",
    "nothingRecordedForTheseYears": "इन वर्षों के लिए कुछ भी दर्ज नहीं है।",
-   "notConfirmedFromTheOfficial2": "* आधिकारिक दस्तावेज़ से पुष्टि नहीं हुई: मौजूदा प्रारूप से मिलान करें"
+   "notConfirmedFromTheOfficial2": "* आधिकारिक दस्तावेज़ से पुष्टि नहीं हुई: मौजूदा प्रारूप से मिलान करें",
+   "downloadCSV": "स्प्रेडशीट (CSV) डाउनलोड करें",
+   "placementOffice": "नियुक्तियाँ"
   },
   "employerDrive": {
    "noEmployer": "अभी नियोक्ता की कोई जानकारी नहीं",
@@ -6751,8 +6847,10 @@
   "reportTableView": {
    "titleViewAs": "{title}: इस रूप में देखें",
    "exporting": "निर्यात हो रहा है…",
-   "cSV": "CSV",
-   "noDataForThisPeriod": "इस अवधि के लिए कोई डेटा नहीं है।"
+   "noDataForThisPeriod": "इस अवधि के लिए कोई डेटा नहीं है।",
+   "cSV": "स्प्रेडशीट (CSV)",
+   "viewChart": "चार्ट",
+   "viewTable": "तालिका"
   },
   "mentorshipMessages": {
    "openMessages": "संदेश खोलें",
@@ -6767,7 +6865,6 @@
    "downloadSigned": "हस्ताक्षर की गई अपनी कॉपी डाउनलोड करें",
    "signedOn": "आपने {date} को {name} के रूप में हस्ताक्षर किए।",
    "signTitle": "हस्ताक्षर करके स्वीकार करें",
-   "signHelp": "हस्ताक्षर करने पर यह प्रस्ताव स्वीकार हो जाता है। आपके कॉलेज की प्लेसमेंट नीति लागू होगी और आपकी प्लेसमेंट कॉलेज के रिकॉर्ड में दर्ज की जाएगी।",
    "typedName": "अपना पूरा नाम टाइप करें",
    "typedNameHint": "यह आपका इलेक्ट्रॉनिक हस्ताक्षर है।",
    "agree": "मैंने प्रस्ताव पत्र पढ़ लिया है और इन शर्तों पर प्रस्ताव स्वीकार करता/करती हूँ।",
@@ -6775,7 +6872,8 @@
    "agreeFirst": "हस्ताक्षर करने के लिए इस कथन पर सही का निशान लगाएँ।",
    "release": "मैंने पहले ही एक और प्रस्ताव स्वीकार कर लिया है: इसे छोड़ें (अस्वीकार करें)",
    "signAndAccept": "हस्ताक्षर करें और स्वीकार करें",
-   "signed": "हस्ताक्षर हो गए। आपका प्रस्ताव स्वीकार कर लिया गया है।"
+   "signed": "हस्ताक्षर हो गए। आपका प्रस्ताव स्वीकार कर लिया गया है।",
+   "signHelp": "हस्ताक्षर करने पर यह ऑफ़र स्वीकार हो जाता है। आपके स्कूल की नीति लागू होगी और आपकी प्लेसमेंट का रिकॉर्ड स्कूल में दर्ज होगा।"
   },
   "countryWords": {
    "salaryPerYear": "सालाना वेतन",

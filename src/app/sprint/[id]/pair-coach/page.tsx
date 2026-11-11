@@ -163,7 +163,7 @@ export default function AiPairCoachStudioPage() {
         }
       }
     } catch {
-      setCoachError(en("We couldn't reach the server. Please check your connection and try again."));
+      setCoachError(en("We couldn't reach Edulexa. Check your internet connection and try again."));
     } finally {
       setIsSubmitting(false);
     }

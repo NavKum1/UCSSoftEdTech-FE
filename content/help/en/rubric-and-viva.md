@@ -6,6 +6,10 @@ group: Assessments
 features: [class-assessments]
 order: 21
 checked: 2026-11-11
+short:
+  - The rubric: 2 to 8 criteria, each scored 0 to 100, weights adding up to 100.
+  - The viva: 3 to 10 questions, by voice or in writing, in the language you choose.
+  - Students are judged on understanding, never on accent, grammar or spelling.
 ---
 ## The rubric
 

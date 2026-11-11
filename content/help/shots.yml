@@ -1,0 +1,110 @@
+# S4b help center: the screenshots articles show with [shot: name]. scripts/help-shots.mjs signs in to a local copy as the
+# person named (a developer sign-in of the demo school), opens the page, clicks what is listed, and takes the part of the
+# screen in "show" (desktop, light theme, English), with a ring around "point". The pictures are saved to public/help/shots/
+# and shown marked "Example". Retaken before each release (docs/s4b_help_center_for_everyone_plan.md, item 8).
+#
+# name:
+#   as: school-student-dev-token        the demo person to sign in as
+#   open: /student/assessments          the page
+#   click: ["a:has-text('Open')"]       optional: what to click first, in order (the first match each time)
+#   show: main                          optional: the part of the screen (default: main)
+#   point: "button:has-text('Start')"   optional: the thing to ring
+#   width: 900                          optional: a narrower window, so a form stays readable in the side panel and on phones
+#   alt: The assessment page, with the Start attempt button   what the picture shows, for people who can't see it
+
+document-review-request:
+  as: school-student-dev-token
+  open: /student/document-review
+  click: ["button:has-text('Request a review')"]
+  show: "xpath=//*[normalize-space()='Request a review' and not(self::button)]/ancestor::*[contains(@class,'rounded-xl')][1]"
+  width: 760
+  point: "button:has-text('Send for review')"
+  alt: The Request a review form, with the document type, what it's for, how to share it, and the Send for review button
+
+resumes-library:
+  as: school-student-dev-token
+  open: /resumes
+  show: main
+  point: "button:has-text('Upload résumé')"
+  alt: The Résumés page, with the Upload résumé button at the top
+
+passport-sharing:
+  as: school-student-dev-token
+  open: /passport
+  show: aside
+  point: "[role=switch]"
+  alt: The skill passport's Sharing panel, with the switch that turns the share link on or off
+
+staff-availability:
+  as: school-counselor-dev-token
+  open: /career-center/appointments
+  click: ["button[role=tab]:has-text('Availability')"]
+  show: "xpath=//button[normalize-space()='Save weekly hours']/ancestor::*[contains(@class,'rounded-xl')][1]"
+  point: "button:has-text('Save weekly hours')"
+  alt: The weekly hours on the Availability tab of Appointments, with the Save weekly hours button
+
+staff-document-review-queue:
+  as: school-counselor-dev-token
+  open: /career-center/document-review
+  show: main
+  alt: The document review queue, with each student's document, how long it has waited, when it's due and its reviewer
+
+staff-employer-requests:
+  as: employer-relations-dev-token
+  open: /career-center/employers
+  click: ["button:text-is('Approved')"]
+  show: main
+  alt: The Employers page, with its Pending, Approved, Declined and Blocked tabs, showing an approved company
+
+staff-reports:
+  as: school-admin-dev-token
+  open: /career-center/reports
+  show: main
+  alt: The career center's Reports page, with the report tabs, the filters and the export buttons
+
+school-checklist:
+  as: school-admin-dev-token
+  open: /career-center
+  show: "xpath=//*[normalize-space()='Get started with Build & Defend']/ancestor::*[contains(@class,'rounded-xl')][1]"
+  alt: The Get started with Build & Defend checklist on a school admin's home page, with its five steps
+
+add-people-page:
+  as: school-admin-dev-token
+  open: /career-center/people
+  show: "xpath=//*[normalize-space()='Invite someone']/ancestor::*[contains(@class,'rounded-xl')][1]"
+  width: 900
+  alt: The Invite someone form on the People page, with the e-mail, name and role
+
+class-roster:
+  as: school-faculty-dev-token
+  open: /faculty/classes
+  show: "xpath=//*[normalize-space()='New class']/ancestor::*[contains(@class,'rounded-xl')][1]"
+  alt: The New class form on the Classes page, with the class name, program and graduation year
+
+new-assessment:
+  as: school-faculty-dev-token
+  open: /faculty/assessments
+  show: "xpath=//*[normalize-space()='New assessment']/ancestor::*[contains(@class,'rounded-xl')][1]"
+  alt: The New assessment panel, with the templates for any subject and for code and exams
+
+my-assessments:
+  as: school-student-dev-token
+  open: /student/assessments
+  show: main
+  width: 1100
+  alt: My assessments, with an open project and an essay that opens later to do, and a lab report waiting for the teacher
+
+review-queue:
+  as: school-faculty-dev-token
+  open: /faculty/review
+  show: main
+  width: 1100
+  point: "main tbody a"
+  alt: The Review page's To decide tab, with three lab reports waiting for a decision, oldest first, and one marked Late
+
+suggested-scores:
+  as: school-faculty-dev-token
+  open: /faculty/attempts/5c400100-0000-4000-8000-000000000053
+  show: "xpath=//*[normalize-space()='Suggested scores']/ancestor::*[contains(@class,'rounded-xl')][1]"
+  width: 1100
+  alt: The Suggested scores on a student's evidence page, with a score and a short reason for each criterion, and quotes from the student's work and viva

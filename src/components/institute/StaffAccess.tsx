@@ -96,7 +96,7 @@ export default function StaffAccess({ getToken, instituteId, compact = false }: 
       setLoaded(true);
       return true;
     } catch (e) {
-      setLoadError(e instanceof TypeError ? "We couldn't reach the server. Please check your connection." : (e as Error).message);
+      setLoadError(e instanceof TypeError ? "We couldn't reach Edulexa. Please check your connection." : (e as Error).message);
       return false;
     } finally {
       setLoading(false);
@@ -175,7 +175,7 @@ export default function StaffAccess({ getToken, instituteId, compact = false }: 
   if (!enabled)
     return (
       <p className="rounded-lg border border-border bg-muted/40 px-4 py-3 text-sm text-muted-foreground">
-        {en("Staff invitations aren't set up on this server yet. Ask your platform administrator to connect Edulexa to the sign-in service.")}
+        {en("Staff invitations aren't set up yet. Ask Edulexa support to finish setting up sign-in.")}
       </p>
     );
 

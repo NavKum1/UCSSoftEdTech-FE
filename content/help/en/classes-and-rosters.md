@@ -13,9 +13,11 @@ checked: 2026-11-11
 2. Enter the [ui: Class name], for example "CS 341, Fall 2026". The program and graduation year are optional.
 3. Select [ui: Create class]. You're the class's owner.
 
+[shot: class-roster]
+
 ## Import the roster
 
-On the class page, use [ui: Import roster]. Either choose a [ui: CSV file] or use [ui: Or paste the rows], then select [ui: Import].
+On the class page, use [ui: Import roster]. Either choose a [ui: Spreadsheet (CSV file)] or use [ui: Or paste the rows], then select [ui: Import].
 
 The file needs a header row with these columns:
 

@@ -1,0 +1,44 @@
+# S4b help center (docs/s4b_help_center_for_everyone_plan.md): who the guides are for, the order of their groups (the order of
+# their work; privacy always last), and "Your steps" (articles in the order the work is done). scripts/help-build.ts checks
+# that every group and step named here exists and is for that audience, and that every article's group is listed for each
+# of its audiences. An article with "roles: [everyone]" is for every audience.
+
+admin:
+  groups: [Getting started, People and classes, Assessments, Reviewing and deciding, Results, Billing, Account and settings, Your data and privacy]
+  steps: [getting-started, add-people, classes-and-rosters, create-an-assessment, give-to-a-class, pilot-results]
+
+teacher:
+  groups: [Getting started, People and classes, Assessments, Reviewing and deciding, Results, Account and settings, Your data and privacy]
+  steps: [create-an-assessment, rubric-and-viva, give-to-a-class, review-the-evidence, decide-and-appeals, results-credentials-lms]
+
+staff:
+  groups: [Getting started, Students and appointments, Documents and résumés, Employers and jobs, Reports, Account and settings, Your data and privacy]
+  steps: [staff-getting-started, appointments-and-availability, caseload, staff-document-review, employers-and-approvals, jobs-drives-and-interviews, reports-and-outcomes]
+
+student:
+  groups: [Getting started, Handing in, The viva, After the decision, Your credentials, Career help, Jobs and internships, Account and settings, Your data and privacy]
+  steps: [hand-in-your-work, the-viva, results-and-appeals]
+
+alumni:
+  groups: [Getting started, Career help, Jobs and internships, Your credentials, Account and settings, Your data and privacy]
+  steps: []
+
+member:
+  groups: [Getting started, Account and settings, Your data and privacy]
+  steps: []
+
+recruiter:
+  groups: [Getting started, Account and settings, Your data and privacy]
+  steps: []
+
+employer:
+  groups: [Getting started, Account and settings, Your data and privacy]
+  steps: []
+
+admissions:
+  groups: [Getting started, Account and settings, Your data and privacy]
+  steps: []
+
+mentor:
+  groups: [Getting started, Account and settings, Your data and privacy]
+  steps: []

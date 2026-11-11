@@ -40,10 +40,10 @@ const MENUS: NavTab[] = [
       { sub: "Engineering drills", label: "Code review drills", short: "Code review", href: "/daily/review", desc: "Find the defect in a real-looking pull request" },
       { sub: "Engineering drills", label: "Incident drills", short: "Incidents", href: "/daily/incident", desc: "Find and fix a production problem" },
       { sub: "Engineering drills", label: "Failover practice", short: "Failover", href: "/practice/failover", desc: "Lead the response to a failing region" },
-      { sub: "Engineering drills", label: "System design duels", short: "System design", href: "/duels/arena", desc: "Design against practice bots, graded on the server" },
+      { sub: "Engineering drills", label: "System design duels", short: "System design", href: "/duels/arena", desc: "Design against practice bots, graded automatically" },
       { sub: "Prove your skills", label: "Coding challenges", href: "/sprint/distributed-database", match: ["/sprint"], desc: "Build a feature, then explain your code" },
       { sub: "Prove your skills", label: "Written exams", href: "/prep/exam", desc: "Timed exams; pass one to earn a credential" },
-      { sub: "Prove your skills", label: "Defend your repo", href: "/defend-repo", desc: "Defend code you wrote on GitHub" },
+      { sub: "Prove your skills", label: "Defend your GitHub work", href: "/defend-repo", desc: "Defend code you wrote on GitHub" },
       { label: "Leaderboard", href: "/leaderboard", desc: "How you rank in drills and verified challenges" },
       { label: "My results", href: "/my/results", shortcut: true, desc: "Feedback on every attempt, reviews and appeals" },
     ],
@@ -189,7 +189,7 @@ export default function GlobalNavigation() {
               </Link>
             )}
             {isSignedIn ? (
-              <HeaderControls links={ACCOUNT_LINKS} area="/dashboard" />
+              <HeaderControls links={ACCOUNT_LINKS} area="/dashboard" bell />
             ) : !isLoaded ? (
               <div className="h-8 w-8 animate-pulse rounded-full bg-muted" aria-hidden="true" />
             ) : (

@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { useApi } from "@/lib/appAuth";
-import { useCareerShell } from "@/components/career/CareerShell";
+import { useCareerShell, useHasCareerRole } from "@/components/career/CareerShell";
 import { Badge, Button, Card, EmptyState, ErrorBanner, Field, Loading, PageHeader, SuccessBanner, useLoad, ScrollArea, useCareerT, useCareerFormat } from "@/components/career/ui";
 import { TabPanel, Tabs, inZone, todayIn } from "@/components/career/appointments/shared";
 import { type OcrSchedule, StatusBadge, openHtml, useSignupLabels, useInterviewWorkAuthLabels, useDaysText, useEligibilityText } from "@/components/career/interviews/shared";
@@ -136,6 +136,8 @@ function Manage({ id, onChanged }: { id: string; onChanged: (m: string) => void 
   const tr = useCareerT("careerCenterInterviews");
   const api = useApi();
   const d = useLoad(() => api<Detail>(`/api/career/ocr/staff/schedules/${id}`), [api, id]);
+  // Career admins and employer relations staff decide, place and cancel schedules (as the API checks); counselors see them
+  const canManage = useHasCareerRole("CareerAdmin", "EmployerRelations");
   const rooms = useLoad(() => api<Room[]>("/api/career/ocr/staff/rooms"), [api]);
   const [note, setNote] = useState("");
   const [cutoff, setCutoff] = useState<number | "">("");
@@ -151,7 +153,7 @@ function Manage({ id, onChanged }: { id: string; onChanged: (m: string) => void 
       onChanged(msg);
       d.reload();
     } catch (e) {
-      setErr(e instanceof TypeError ? "We couldn't reach the server. Please check your connection and try again." : (e as Error).message);
+      setErr(e instanceof TypeError ? "We couldn't reach Edulexa. Check your internet connection and try again." : (e as Error).message);
     } finally {
       setBusy(null);
     }
@@ -172,7 +174,9 @@ function Manage({ id, onChanged }: { id: string; onChanged: (m: string) => void 
         {s.description && <div className="sm:col-span-2"><dt className="inline font-medium">{tr("notes")}{" "}</dt><dd className="inline">{s.description}</dd></div>}
       </dl>
 
-      {s.status === "Requested" && (
+      {!canManage && <p className="text-sm text-muted-foreground">{en("Career admins and employer relations staff approve, schedule and cancel interviews.")}</p>}
+
+      {canManage && s.status === "Requested" && (
         <section className="space-y-2" aria-label={tr("decision")}>
           <div className="grid gap-2 sm:grid-cols-2">
             <Field label={tr("noteToTheEmployerOptional")}>{(p) => <input {...p} value={note} onChange={(e) => setNote(e.target.value)} />}</Field>
@@ -187,7 +191,7 @@ function Manage({ id, onChanged }: { id: string; onChanged: (m: string) => void 
         </section>
       )}
 
-      {!s.virtual && (s.status === "Approved" || s.status === "Published") && (
+      {canManage && !s.virtual && (s.status === "Approved" || s.status === "Published") && (
         <section aria-label={tr("roomAssignments")} className="space-y-2">
           <h3 className="font-semibold">{tr("rooms")}</h3>
           {rooms.loading ? (
@@ -225,7 +229,7 @@ function Manage({ id, onChanged }: { id: string; onChanged: (m: string) => void 
         </section>
       )}
 
-      {s.status === "Approved" && (
+      {canManage && s.status === "Approved" && (
         <Button busy={busy === "p"} onClick={() => run("p", () => api(`/api/career/ocr/staff/schedules/${id}/publish`, { method: "POST" }), tr("publishedStudentsCanSignUp"))}>{tr("publish")}</Button>
       )}
 
@@ -244,7 +248,7 @@ function Manage({ id, onChanged }: { id: string; onChanged: (m: string) => void 
                     <td>{x.interviewer}</td>
                     <td>{x.booking ? <>{x.booking.student}{x.booking.source === "Promoted" && <> <Badge tone="info">{tr("alternate")}</Badge></>}</> : <span className="text-muted-foreground">{tr("open")}</span>}</td>
                     <td>
-                      {x.booking && (
+                      {canManage && x.booking && (
                         <Button variant="secondary" busy={busy === x.id} onClick={() => window.confirm(tr("cancelThisStudentsInterviewThe")) && run(x.id, () => api(`/api/career/ocr/staff/bookings/${x.booking!.id}/cancel`, { json: { note: en("Cancelled by the career center.") } }), tr("cancelled"))}>
                           {tr("cancel")}
                         </Button>
@@ -262,7 +266,7 @@ function Manage({ id, onChanged }: { id: string; onChanged: (m: string) => void 
         <p className="text-sm">{tr("alternatesInOrderValue", { value: s.extra.candidates.filter((c) => c.status === "Waitlisted").map((c) => c.name).join(", ") })}</p>
       )}
 
-      {!["Declined", "Withdrawn", "Cancelled"].includes(s.status) && (
+      {canManage && !["Declined", "Withdrawn", "Cancelled"].includes(s.status) && (
         <Button variant="secondary" busy={busy === "c"} onClick={() => window.confirm(tr("cancelTheWholeScheduleBooked")) && run("c", () => api(`/api/career/ocr/staff/schedules/${id}/cancel`, { json: { note } }), tr("scheduleCancelled"))}>
           {tr("cancelSchedule")}
         </Button>
@@ -277,6 +281,7 @@ function Rooms({ onMessage }: { onMessage: (m: string) => void }) {
   const api = useApi();
   const { schoolId } = useCareerShell();
   const rooms = useLoad(() => api<Room[]>("/api/career/ocr/staff/rooms"), [api, schoolId]);
+  const canManage = useHasCareerRole("CareerAdmin", "EmployerRelations");
   const [form, setForm] = useState({ name: "", building: "", capacity: 4 });
   const [block, setBlock] = useState<{ roomId: string; start: string; end: string; note: string }>({ roomId: "", start: "", end: "", note: "" });
   const [err, setErr] = useState<string | null>(null);
@@ -290,7 +295,7 @@ function Rooms({ onMessage }: { onMessage: (m: string) => void }) {
       onMessage(m);
       rooms.reload();
     } catch (e) {
-      setErr(e instanceof TypeError ? "We couldn't reach the server. Please check your connection and try again." : (e as Error).message);
+      setErr(e instanceof TypeError ? "We couldn't reach Edulexa. Check your internet connection and try again." : (e as Error).message);
     } finally {
       setBusy(false);
     }
@@ -299,6 +304,7 @@ function Rooms({ onMessage }: { onMessage: (m: string) => void }) {
   return (
     <div className="space-y-4">
       <ErrorBanner error={err} />
+      {canManage && (
       <Card title={tr("addARoom")}>
         <form
           className="grid gap-3 sm:grid-cols-4"
@@ -313,6 +319,7 @@ function Rooms({ onMessage }: { onMessage: (m: string) => void }) {
           <div className="pt-6"><Button type="submit" busy={busy}>{tr("addRoom")}</Button></div>
         </form>
       </Card>
+      )}
       {rooms.loading ? (
         <Loading />
       ) : (rooms.data ?? []).length === 0 ? (
@@ -327,18 +334,21 @@ function Rooms({ onMessage }: { onMessage: (m: string) => void }) {
                   {r.blocks.map((b) => (
                     <span key={b.id} className="ms-2">
                       <Badge tone="warn">{tr("unavailableValueValue2", { value: new Date(b.startUtc).toLocaleString(fmt.locale), value2: new Date(b.endUtc).toLocaleString(fmt.locale) })}{b.note ? `: ${b.note}` : ""}</Badge>{" "}
-                      <button type="button" className="underline" onClick={() => go(() => api(`/api/career/ocr/staff/rooms/${r.id}/blocks/${b.id}`, { method: "DELETE" }), tr("roomAvailableAgain"))}>{tr("remove")}</button>
+                      {canManage && <button type="button" className="underline" onClick={() => go(() => api(`/api/career/ocr/staff/rooms/${r.id}/blocks/${b.id}`, { method: "DELETE" }), tr("roomAvailableAgain"))}>{tr("remove")}</button>}
                     </span>
                   ))}
                 </span>
-                <Button variant="secondary" onClick={() => go(() => api(`/api/career/ocr/staff/rooms/${r.id}`, { method: "PUT", json: { ...r, active: !r.active } }), r.active ? tr("roomDeactivated") : tr("roomActivated"))}>
-                  {r.active ? tr("deactivate") : tr("activate")}
-                </Button>
+                {canManage && (
+                  <Button variant="secondary" onClick={() => go(() => api(`/api/career/ocr/staff/rooms/${r.id}`, { method: "PUT", json: { ...r, active: !r.active } }), r.active ? tr("roomDeactivated") : tr("roomActivated"))}>
+                    {r.active ? tr("deactivate") : tr("activate")}
+                  </Button>
+                )}
               </li>
             ))}
           </ul>
         </Card>
       )}
+      {canManage && (
       <Card title={tr("markARoomUnavailable")}>
         <form
           className="grid gap-3 sm:grid-cols-5"
@@ -361,6 +371,7 @@ function Rooms({ onMessage }: { onMessage: (m: string) => void }) {
           <div className="pt-6"><Button type="submit" busy={busy}>{tr("block")}</Button></div>
         </form>
       </Card>
+      )}
     </div>
   );
 }
@@ -390,7 +401,7 @@ function Day() {
       await api(path, body ? { json: body } : { method: "POST" });
       day.reload();
     } catch (e) {
-      setErr(e instanceof TypeError ? "We couldn't reach the server. Please check your connection and try again." : (e as Error).message);
+      setErr(e instanceof TypeError ? "We couldn't reach Edulexa. Check your internet connection and try again." : (e as Error).message);
     }
   };
 
@@ -399,7 +410,7 @@ function Day() {
     try {
       await openHtml(await api<Response>(`/api/career/ocr/staff/day/print?date=${date}`, { raw: true }), (status) => tr("couldntLoadAgenda", { status }));
     } catch (e) {
-      setErr(e instanceof TypeError ? "We couldn't reach the server. Please check your connection and try again." : (e as Error).message);
+      setErr(e instanceof TypeError ? "We couldn't reach Edulexa. Check your internet connection and try again." : (e as Error).message);
     }
   };
 
@@ -473,7 +484,7 @@ function NoShows({ onMessage }: { onMessage: (m: string) => void }) {
                     onMessage(tr("clearedForName", { name: String(s.name) }));
                     list.reload();
                   } catch (e) {
-                    setErr(e instanceof TypeError ? "We couldn't reach the server. Please check your connection and try again." : (e as Error).message);
+                    setErr(e instanceof TypeError ? "We couldn't reach Edulexa. Check your internet connection and try again." : (e as Error).message);
                   }
                 }}
               >
@@ -492,6 +503,9 @@ function Settings({ onMessage }: { onMessage: (m: string) => void }) {
   const api = useApi();
   const { schoolId } = useCareerShell();
   const s = useLoad(() => api<{ noShowLimit: number; defaultCancelCutoffHours: number }>("/api/career/ocr/staff/settings"), [api, schoolId]);
+  // Only career admins change these (as the API checks); everyone else sees them
+  const isAdmin = useHasCareerRole("CareerAdmin");
+  const en = useEn();
   const [v, setV] = useState<{ noShowLimit: number; defaultCancelCutoffHours: number } | null>(null);
   const [err, setErr] = useState<string | null>(null);
   if (s.loading) return <Loading />;
@@ -518,7 +532,7 @@ function Settings({ onMessage }: { onMessage: (m: string) => void }) {
         <Field label={tr("defaultCancellationCutoffHours")}>
           {(p) => <input {...p} type="number" min={0} max={336} value={cur.defaultCancelCutoffHours} onChange={(e) => setV({ ...cur, defaultCancelCutoffHours: Number(e.target.value) })} />}
         </Field>
-        <div><Button type="submit">{tr("save")}</Button></div>
+        {isAdmin ? <div><Button type="submit">{tr("save")}</Button></div> : <p className="text-sm text-muted-foreground sm:col-span-2">{en("Only a career admin can change these.")}</p>}
       </form>
     </Card>
   );

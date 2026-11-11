@@ -93,7 +93,7 @@ export default function RecruiterAppealsPage() {
       setResolving(null);
       setReloadKey((k) => k + 1);
     } catch {
-      setResolveError("We couldn't reach the server while resolving the appeal. Please check your connection and try again.");
+      setResolveError("We couldn't reach Edulexa while resolving the appeal. Please check your connection and try again.");
     } finally {
       setBusy(false);
     }

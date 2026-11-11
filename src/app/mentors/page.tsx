@@ -89,7 +89,7 @@ export default function MentorsPage() {
     <div>
       <PageHeader
         title={en("Mentoring")}
-        description={en("Find a mentor for your resume, interviews, a career change or your first job, or volunteer as one. Mentoring here is free. If your school runs its own mentoring, you'll find it in your school's career pages.")}
+        description={en("Find a mentor for your résumé, interviews, a career change or your first job, or volunteer as one. Mentoring here is free. If your school runs its own mentoring, you'll find it in your school's career pages.")}
       />
 
       <ErrorBanner error={error} />

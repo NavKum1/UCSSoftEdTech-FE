@@ -366,7 +366,7 @@ export default function RecruiterDashboardPage() {
         setCreateStatus("We couldn't create the challenge. Please try again.");
       }
     } catch (e) {
-      setCreateStatus("We couldn't reach the server. Please check your connection and try again.");
+      setCreateStatus("We couldn't reach Edulexa. Check your internet connection and try again.");
     }
   };
 
@@ -399,7 +399,7 @@ export default function RecruiterDashboardPage() {
         setBundleStatus(body?.error || "We couldn't create the assessment bundle. Please try again.");
       }
     } catch (e) {
-      setBundleStatus("We couldn't reach the server. Please check your connection and try again.");
+      setBundleStatus("We couldn't reach Edulexa. Check your internet connection and try again.");
     }
   };
 
@@ -416,7 +416,7 @@ export default function RecruiterDashboardPage() {
         fetchBundles();
       }
     } catch {
-      setLinkMessage("We couldn't reach the server. Please check your connection and try again.");
+      setLinkMessage("We couldn't reach Edulexa. Check your internet connection and try again.");
     } finally {
       setLinkBusyId(null);
     }
@@ -440,7 +440,7 @@ export default function RecruiterDashboardPage() {
         setLinkMessage(body.error || "Could not create a new link.");
       }
     } catch {
-      setLinkMessage("We couldn't reach the server. Please check your connection and try again.");
+      setLinkMessage("We couldn't reach Edulexa. Check your internet connection and try again.");
     } finally {
       setLinkBusyId(null);
     }
@@ -469,7 +469,7 @@ export default function RecruiterDashboardPage() {
         setLinkMessage(body.error || "Could not send the link.");
       }
     } catch {
-      setLinkMessage("We couldn't reach the server. Please check your connection and try again.");
+      setLinkMessage("We couldn't reach Edulexa. Check your internet connection and try again.");
     } finally {
       setLinkBusyId(null);
     }
@@ -502,7 +502,7 @@ export default function RecruiterDashboardPage() {
       setDecisionFor(null);
       fetchBundles();
     } catch {
-      setDecisionError("We couldn't reach the server. Please check your connection and try again.");
+      setDecisionError("We couldn't reach Edulexa. Check your internet connection and try again.");
     } finally {
       setDecisionBusy(false);
     }
@@ -526,7 +526,7 @@ export default function RecruiterDashboardPage() {
       if (res.ok) setScrutinyResult(json);
       else setScrutinyError(json?.error || en("We couldn't check this résumé. Please try again."));
     } catch {
-      setScrutinyError(en("We couldn't reach the server. Please check your connection and try again."));
+      setScrutinyError(en("We couldn't reach Edulexa. Check your internet connection and try again."));
     } finally {
       setScrutinyLoading(false);
     }

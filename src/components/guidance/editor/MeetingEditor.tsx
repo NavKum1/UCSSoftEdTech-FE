@@ -6,6 +6,7 @@
  * institute's appointment types), the ways they can meet, how far ahead, and the time zone.
  */
 
+import { timeZoneName, timeZoneOption } from "@/lib/timeZoneName";
 import React, { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { useLegacyApi } from "@/lib/legacyApi";
 import { MEETING_MODES, localTimeZone, type MeetingMode, type Question } from "@/components/guidance/form/model";
@@ -131,12 +132,12 @@ export default function MeetingEditor({ q, update }: { q: Question; update: (p: 
         <label className="block font-medium">
           {en("Time zone of the times")}
           {b.mode === "slots" ? (
-            <span className="mt-1 block font-normal text-muted-foreground">{en("{value} (your counsellors' hours are set in it)", { value: options?.timeZone ?? b.timeZone })}</span>
+            <span className="mt-1 block font-normal text-muted-foreground">{en("{value} (your counsellors' hours are set in it)", { value: timeZoneName(options?.timeZone ?? b.timeZone) })}</span>
           ) : (
             <select className={field} value={b.timeZone} onChange={(e) => set({ timeZone: e.target.value })}>
               {(allZones.includes(b.timeZone) ? allZones : [b.timeZone, ...allZones]).map((z) => (
                 <option key={z} value={z}>
-                  {z}
+                  {timeZoneOption(z)}
                 </option>
               ))}
             </select>

@@ -274,7 +274,7 @@ export default function LeadsView({
             <KanbanSquare aria-hidden="true" className="h-4 w-4" />{en(" Board")}
           </button>
         </div>
-        <button type="button" onClick={exportCsv} className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-2 text-sm hover:bg-muted" title={en("Download the leads shown as a CSV file")}>
+        <button type="button" onClick={exportCsv} className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-2 text-sm hover:bg-muted" title={en("Download the leads shown as a spreadsheet (CSV file)")}>
           <Download aria-hidden="true" className="h-4 w-4" />{en(" Export")}
         </button>
       </div>

@@ -88,7 +88,7 @@ export default function VerifyJwsPage() {
           verifyJwsInBrowser(vcJwt),
         ]);
         const body = (await res.json().catch(() => null)) as (Ob3VerifyResponse & { message?: string }) | null;
-        if (!res.ok) setError(res.status === 429 ? "Too many requests. Please wait a minute." : body?.message || `Verification failed (HTTP ${res.status}).`);
+        if (!res.ok) setError(res.status === 429 ? "Too many requests. Please wait a minute." : body?.message || `Verification failed (code ${res.status}).`);
         else {
           setOb3(body);
           setBrowserCheck(check);
@@ -111,7 +111,7 @@ export default function VerifyJwsPage() {
       ]);
       const body = (await res.json().catch(() => null)) as (JwsVerifyResponse & { error?: string }) | null;
       if (!res.ok) {
-        setError(res.status === 429 ? "Too many requests. Please wait a minute." : body?.error || `Verification failed (HTTP ${res.status}).`);
+        setError(res.status === 429 ? "Too many requests. Please wait a minute." : body?.error || `Verification failed (code ${res.status}).`);
       } else {
         setResult(body);
         setBrowserCheck(check);
@@ -130,12 +130,12 @@ export default function VerifyJwsPage() {
       <div className="space-y-6">
         <PageHeader
           title={en("Verify an Edulexa credential")}
-          description={en("Paste the credential JWS the candidate gave you, or an Open Badge 3.0 / CLR 2.0 VC-JWT (or its downloaded .json file). We check the ES256 signature against Edulexa's published keys, and whether the holder has revoked it or it has expired.")}
+          description={en("Paste the signed credential the candidate gave you (a long code), or the contents of an Open Badge 3.0 or learner record (CLR 2.0) file they downloaded. We check its digital signature against Edulexa's published keys, and whether the holder has revoked it or it has expired.")}
         />
 
         <div className="rounded-xl border border-border bg-card p-5 shadow-sm space-y-3">
           <label htmlFor="jws" className="block text-sm font-medium">
-            {en("Credential JWS")}
+            {en("Signed credential")}
           </label>
           <textarea
             id="jws"
@@ -146,10 +146,7 @@ export default function VerifyJwsPage() {
             placeholder={en("eyJhbGciOiJFUzI1NiIs...")}
             className="w-full rounded-lg border border-border bg-card p-3 font-mono text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-indigo-500"
           />
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <a href={`${API_BASE_URL}${CREDENTIAL_JWKS_PATH}`} target="_blank" rel="noreferrer" className="text-xs text-muted-foreground underline flex items-center gap-1">
-              <KeyRound className="w-3.5 h-3.5" />{en(" Public keys (JWKS)")}
-            </a>
+          <div className="flex flex-wrap items-center justify-end gap-3">
             <Button type="button" onClick={verify} disabled={jws.trim().length === 0} busy={working}>
               {en("Verify")}
             </Button>
@@ -172,7 +169,7 @@ export default function VerifyJwsPage() {
               <span className={`px-2.5 py-1 rounded-full text-xs font-medium border ${statusBadgeClass(ob3.status)}`}>{ob3.status}</span>
             </div>
             {ob3.error && <p className="text-sm text-muted-foreground">{ob3.error}</p>}
-            {!ob3.error && <p className="text-xs text-muted-foreground">{browserCheck?.state === "verified" ? en("Signature confirmed by the server and independently in your browser.") : browserCheck?.detail}</p>}
+            {!ob3.error && <p className="text-xs text-muted-foreground">{browserCheck?.state === "verified" ? en("Signature confirmed by Edulexa and independently in your browser.") : browserCheck?.detail}</p>}
             {ob3.name && <p className="text-sm"><span className="text-muted-foreground">{en("Name: ")}</span>{ob3.name}</p>}
             {ob3.issuer?.name && <p className="text-sm"><span className="text-muted-foreground">{en("Issuer: ")}</span>{ob3.issuer.name}</p>}
             {(ob3.validFrom || ob3.validUntil) && <p className="text-sm"><span className="text-muted-foreground">{en("Valid: ")}</span>{formatDate(ob3.validFrom)} – {formatDate(ob3.validUntil)}</p>}
@@ -208,14 +205,14 @@ export default function VerifyJwsPage() {
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
                   <p className="text-sm font-semibold text-emerald-700 dark:text-emerald-300 flex items-center gap-2">
-                    <CheckCircle2 className="w-5 h-5" />{en(" Signature verified ✓ (ES256, key id ")}{result.keyId})
+                    <CheckCircle2 className="w-5 h-5" />{en(" This credential is real: Edulexa issued it and it hasn't been changed.")}
                   </p>
                   <p className="text-xs text-muted-foreground mt-1">
                     {browserCheck?.state === "verified"
-                      ? en("Confirmed by the server and independently in your browser.")
+                      ? en("Confirmed by Edulexa and independently in your browser.")
                       : browserCheck?.state === "failed"
-                        ? en("The server accepted it, but your browser's own check did not. Treat this result with caution.")
-                        : "Confirmed by the server. " + (browserCheck?.detail ?? "")}
+                        ? en("Edulexa accepted it, but your browser's own check did not. Treat this result with caution.")
+                        : "Confirmed by Edulexa. " + (browserCheck?.detail ?? "")}
                   </p>
                 </div>
                 {result.status && (
@@ -244,14 +241,7 @@ export default function VerifyJwsPage() {
               <div><span className="text-muted-foreground">{en("Integrity: ")}</span>{claims.integrity}</div>
               {claims.humanDecision && <div><span className="text-muted-foreground">{en("Human reviewer: ")}</span>{claims.humanDecision}</div>}
               <div><span className="text-muted-foreground">{en("Issued / valid until: ")}</span>{formatDate(claims.iat)} · {claims.exp ? formatDate(claims.exp) : en("no expiry")}</div>
-              <div className="sm:col-span-2 text-xs text-muted-foreground break-all">
-                {en("Issuer ")}<span className="font-mono">{claims.iss}</span>{en(" · credential id ")}<span className="font-mono">{claims.sub}</span>
-                {claims.evidenceHash && (
-                  <>
-                    {" "}{en("· evidence hash ")}<span className="font-mono">{claims.evidenceHash}</span>
-                  </>
-                )}
-              </div>
+              <div><span className="text-muted-foreground">{en("Issued by: ")}</span>{en("Edulexa")}</div>
             </div>
           </div>
         )}
@@ -273,10 +263,27 @@ export default function VerifyJwsPage() {
               ))}
             </ul>
           </div>
-          <p className="md:col-span-2 text-xs text-muted-foreground">
-            {en("Offline checks: verify the signature with any JOSE library using the JWKS above, then call")}{" "}
-            <span className="font-mono">{en("GET /api/verify/credential/<credential id>/status")}</span>{en(" to see whether it was revoked.")}
-          </p>
+          <details className="md:col-span-2 text-xs text-muted-foreground">
+            <summary className="cursor-pointer font-medium text-foreground">{en("Technical details")}</summary>
+            <div className="mt-2 space-y-2 break-all">
+              {result?.valid && claims && (
+                <p>
+                  {en("Issuer ")}<span className="font-mono">{claims.iss}</span>{en(" · credential ID ")}<span className="font-mono">{claims.sub}</span>
+                  {result.keyId && <>{en(" · signing key (ES256) ")}<span className="font-mono">{result.keyId}</span></>}
+                  {claims.evidenceHash && <>{en(" · evidence fingerprint ")}<span className="font-mono">{claims.evidenceHash}</span></>}
+                </p>
+              )}
+              <p>
+                <a href={`${API_BASE_URL}${CREDENTIAL_JWKS_PATH}`} target="_blank" rel="noreferrer" className="underline inline-flex items-center gap-1">
+                  <KeyRound className="w-3.5 h-3.5" />{en(" Our public signing keys (JWKS)")}
+                </a>
+              </p>
+              <p>
+                {en("Offline checks: verify the signature with any JOSE library using these keys, then call")}{" "}
+                <span className="font-mono">{en("GET /api/verify/credential/<credential id>/status")}</span>{en(" to see whether it was revoked.")}
+              </p>
+            </div>
+          </details>
         </section>
       </div>
     </div>

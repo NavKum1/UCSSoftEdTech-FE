@@ -135,7 +135,7 @@ function IncidentDrill() {
           setError(res.status === 404 ? "No drill was found for this link or track." : "The drill couldn't be loaded. Please try again.");
         }
       } catch {
-        setError(en("We couldn't reach the server. Please try again."));
+        setError(en("We couldn't reach Edulexa. Please try again."));
       } finally {
         setLoading(false);
       }
@@ -190,7 +190,7 @@ function IncidentDrill() {
         window.scrollTo({ top: 0, behavior: "smooth" });
       } else setError(body?.error ?? "Your answer couldn't be submitted. Please try again.");
     } catch {
-      setError(en("We couldn't reach the server. Please try again."));
+      setError(en("We couldn't reach Edulexa. Please try again."));
     } finally {
       setBusy(false);
     }
@@ -473,11 +473,11 @@ function GenerateDrill({
         body,
         body.generatedBy === "ai"
           ? "A new drill was written for you."
-          : "The AI model isn't available right now, so this is a ready-made drill for the track (your stack and failure mode weren't used).",
+          : "The AI isn't available right now, so this is a ready-made drill for the track (your stack and failure mode weren't used).",
       );
       setOpen(false);
     } catch {
-      setError(en("We couldn't reach the server. Please try again."));
+      setError(en("We couldn't reach Edulexa. Please try again."));
     } finally {
       setBusy(false);
     }

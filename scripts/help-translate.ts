@@ -47,7 +47,8 @@ async function translate(lang: string, text: string): Promise<string> {
           content:
             `You translate help articles for Edulexa, a web app for schools and colleges, into ${LANGS[lang]}. ` +
             "Keep the Markdown exactly: headings (##), lists, **bold**, `code`, and links [text](target): translate the link text, never the target. " +
-            "Keep every token like ⟦1⟧ exactly where it belongs in the sentence (they are button names filled in later). " +
+            "Keep every token like ⟦1⟧ exactly where it belongs in the sentence (they are button names filled in later), and lines like ⟪shot: name⟫ unchanged on their own line. " +
+            "Keep the lines TITLE:, SUMMARY:, SHORT: and the --- line in English as markers, translating only what follows them. " +
             "Keep names (Edulexa, GitHub, Canvas, Moodle, Blackboard, LTI, CSV, PDF, Word, PowerPoint, UPI), e-mail addresses and numbers as written. " +
             "Translate plainly and naturally, as short as the English. Reply with the translated text only.",
         },
@@ -72,23 +73,31 @@ async function main() {
       if (fs.existsSync(target)) continue;
       const src = fs.readFileSync(path.join(EN, file), "utf8").replace(/\r\n/g, "\n");
       const m = /^---\n([\s\S]*?)\n---\n([\s\S]*)$/.exec(src)!;
-      const meta = Object.fromEntries(m[1].split("\n").map((l) => { const i = l.indexOf(":"); return [l.slice(0, i).trim(), l.slice(i + 1).trim()]; }));
+      // S4b: "short:" is a list of lines ("  - ..."); the group stays in English (it names a group in audiences.yml)
+      const metaLines = m[1].split("\n");
+      const meta = Object.fromEntries(metaLines.filter((l) => /^[a-zA-Z]+:/.test(l)).map((l) => { const i = l.indexOf(":"); return [l.slice(0, i).trim(), l.slice(i + 1).trim()]; }));
+      const short = metaLines.filter((l) => /^\s+-\s+/.test(l)).map((l) => l.replace(/^\s+-\s+/, "").trim());
       // Button names out, as tokens; the app's own translation goes back in
       const labels: string[] = [];
-      const protect = (s: string) => s.replace(/\[ui:\s*([^\]]+)\]/g, (_, l: string) => { labels.push(l.trim()); return `⟦${labels.length}⟧`; });
-      const text = `TITLE: ${meta.title}\nSUMMARY: ${meta.summary}\nGROUP: ${meta.group}\n---\n${protect(m[2])}`;
+      const protect = (s: string) =>
+        s.replace(/\[ui:\s*([^\]]+)\]/g, (_, l: string) => { labels.push(l.trim()); return `⟦${labels.length}⟧`; })
+          // Screenshots and the list of words stay as they are
+          .replace(/^\[(shot:\s*[a-z0-9-]+|glossary)\]$/gm, (_, x: string) => `⟪${x}⟫`);
+      const text = `TITLE: ${meta.title}\nSUMMARY: ${meta.summary}\nSHORT:\n${short.map((l) => `- ${l}`).join("\n")}\n---\n${protect(m[2])}`;
       const out = await translate(lang, text);
-      const restore = (s: string) => s.replace(/⟦(\d+)⟧/g, (_, n: string) => `[ui: ${label(labels[Number(n) - 1] ?? "")}]`);
-      const t = /TITLE:\s*(.*)\n\s*SUMMARY:\s*(.*)\n\s*GROUP:\s*(.*)\n---\n([\s\S]*)$/.exec(restore(out));
+      const restore = (s: string) => s.replace(/⟦(\d+)⟧/g, (_, n: string) => `[ui: ${label(labels[Number(n) - 1] ?? "")}]`).replace(/⟪([^⟫]+)⟫/g, "[$1]");
+      const t = /TITLE:\s*(.*)\n\s*SUMMARY:\s*(.*)\n\s*SHORT:\s*\n?([\s\S]*?)\n?---\n([\s\S]*)$/.exec(restore(out));
       if (!t) { console.warn(`${lang}/${file}: the answer wasn't in the expected shape; skipped`); continue; }
       const front = [
         "---",
         `title: ${t[1].trim()}`,
         `summary: ${t[2].trim()}`,
         `roles: ${meta.roles}`,
-        `group: ${t[3].trim()}`,
+        `group: ${meta.group}`,
         `features: ${meta.features}`,
+        `order: ${meta.order ?? 100}`,
         `checked: ${meta.checked}`,
+        ...(short.length ? ["short:", ...t[3].split("\n").map((l) => l.replace(/^\s*-\s*/, "").trim()).filter(Boolean).map((l) => `  - ${l}`)] : []),
         "reviewed: false",
         "---",
       ].join("\n");

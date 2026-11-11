@@ -6,6 +6,7 @@ import { useApi } from "@/lib/appAuth";
 import { useCareerShell } from "@/components/career/CareerShell";
 import { Badge, Button, Card, EmptyState, ErrorBanner, Field, Loading, PageHeader, SuccessBanner, formatDate, useLoad, useCareerT, buttonClass } from "@/components/career/ui";
 import { SeverityBadge, type Counselor, type Signal, type TriageSettings, useIsTriageAdmin, useSeverityLabels } from "@/components/career/triage/shared";
+import { HelpLink } from "@/components/help/HelpLink";
 
 interface CaseloadRow {
   userId: string;
@@ -103,7 +104,7 @@ export default function CaseloadPage() {
       <PageHeader
         title={tr("caseload")}
         description={tr("studentsWhoMayNeedA")}
-        actions={
+        actions={<div className="flex flex-wrap items-center gap-3"><HelpLink slug="caseload" />{
           isAdmin ? (
             <div className="flex gap-2">
               <Link className={buttonClass("secondary")} href="/career-center/caseload/rules">
@@ -114,7 +115,7 @@ export default function CaseloadPage() {
               </Link>
             </div>
           ) : undefined
-        }
+        }</div>}
       />
       <ErrorBanner error={settings.error || counselors.error} />
 
@@ -275,7 +276,7 @@ function StudentPanel({ studentId, onChanged }: { studentId: string; onChanged: 
       if (success) setMsg(success);
       return true;
     } catch (e) {
-      setErr(e instanceof TypeError ? "We couldn't reach the server. Please check your connection and try again." : (e as Error).message);
+      setErr(e instanceof TypeError ? "We couldn't reach Edulexa. Check your internet connection and try again." : (e as Error).message);
       return false;
     } finally {
       setBusy(null);

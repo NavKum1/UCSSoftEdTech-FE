@@ -158,7 +158,7 @@ export default function EmailComposer({
         if (!res.ok) setMsg({ ok: false, text: d?.error ?? `${file.name} couldn't be attached.` });
         else setFiles((f) => [...f, d]);
       } catch {
-        setMsg({ ok: false, text: en("We couldn't reach the server. Please check your connection and try again.") });
+        setMsg({ ok: false, text: en("We couldn't reach Edulexa. Check your internet connection and try again.") });
       } finally {
         setUploading(false);
       }
@@ -288,7 +288,7 @@ export default function EmailComposer({
           <pre className="mt-1 max-h-48 overflow-auto whitespace-pre-wrap font-sans">{sentToAi}</pre>
         </details>
       )}
-      {aiSample && <p className="border-b border-border bg-amber-500/10 px-4 py-1.5 text-xs text-amber-900 dark:text-amber-200">{en("Sample text: AI drafting isn't connected on this server.")}</p>}
+      {aiSample && <p className="border-b border-border bg-amber-500/10 px-4 py-1.5 text-xs text-amber-900 dark:text-amber-200">{en("Sample text: AI drafting isn't turned on yet.")}</p>}
 
       {/* Toolbar */}
       <div className="flex flex-wrap items-center gap-0.5 border-b border-border px-2 py-1" role="toolbar" aria-label={en("Formatting")}>

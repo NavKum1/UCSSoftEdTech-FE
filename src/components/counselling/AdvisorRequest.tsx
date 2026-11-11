@@ -302,7 +302,7 @@ function RequestDialog({
       const body = await res.json().catch(() => null);
       return res.status === 429 || res.status === 409 ? (body?.error ?? "You've sent several requests in a short time. Please try again later.") : (body?.error ?? "The request couldn't be sent. Please try again.");
     } catch {
-      return "We couldn't reach the server. Please check your connection and try again.";
+      return "We couldn't reach Edulexa. Check your internet connection and try again.";
     }
   };
 

@@ -10,6 +10,7 @@ import { StatusBadge, type ExperienceDetail, type ExperienceSummary, type Progra
 import { RegistrationForm, toPayload, valuesFrom } from "@/components/career/experiences/RegistrationForm";
 import { ApprenticeshipCard } from "@/components/career/workforce/ApprenticeshipCard";
 import { useEn } from "@/lib/english/EnglishProvider";
+import { HelpLink } from "@/components/help/HelpLink";
 
 export default function StudentExperiencesPage() {
   const en = useEn();
@@ -26,11 +27,11 @@ export default function StudentExperiencesPage() {
       <PageHeader
         title={en("Internships for credit")}
         description={en("Register an internship or other work experience for academic credit, sign the learning agreement, log your hours and write reflections.")}
-        actions={
+        actions={<div className="flex flex-wrap items-center gap-3"><HelpLink slug="internships" />{
           !registering && (programs.data?.programs.length ?? 0) > 0 ? (
             <Button onClick={() => setRegistering(true)}>{en("Register an experience")}</Button>
           ) : undefined
-        }
+        }</div>}
       />
       <ErrorBanner error={err ?? list.error ?? programs.error} onRetry={list.reload} />
       {/* G15: registered apprenticeship progress and short-term credentials (renders nothing when there are none) */}
@@ -43,14 +44,14 @@ export default function StudentExperiencesPage() {
             isF1={programs.data.isF1}
             cptStatuses={programs.data.cptStatuses}
             initial={valuesFrom(null)}
-            submitLabel="Save draft"
+            submitLabel={en("Save draft")}
             onSubmit={async (v) => {
               setErr(null);
               try {
                 const created = await api<ExperienceDetail>("/api/career/experiences/mine", { json: toPayload(v, programs.data!.isF1) });
                 router.push(`/student/experiences/${created.id}`);
               } catch (e) {
-                setErr(e instanceof TypeError ? "We couldn't reach the server. Please check your connection and try again." : (e as Error).message);
+                setErr(e instanceof TypeError ? "We couldn't reach Edulexa. Check your internet connection and try again." : (e as Error).message);
               }
             }}
           />

@@ -15,6 +15,7 @@ import ResumeBookCard from "@/components/resumes/ResumeBookCard";
 import { AccessNotice, useLatestRef, useLegacyApi } from "@/lib/legacyApi";
 import { useEn } from "@/lib/english/EnglishProvider";
 import { Badge, Button, EmptyState, ErrorBanner, formatDate, Modal, PageHeader, SuccessBanner, Tabs } from "@/components/career/ui";
+import { HelpLink } from "@/components/help/HelpLink";
 
 interface Version {
   id: string;
@@ -104,7 +105,7 @@ export default function ResumesPage() {
       await load();
       return res;
     } catch {
-      setError(en("We couldn't reach the server. Please check your connection and try again."));
+      setError(en("We couldn't reach Edulexa. Check your internet connection and try again."));
       return null;
     } finally {
       setBusy(null);
@@ -173,7 +174,7 @@ export default function ResumesPage() {
       <PageHeader
         title={en("Résumés")}
         description={en("Keep your résumés in one place. Send them with campus job applications, document reviews and interview sign-ups.")}
-        actions={
+        actions={<div className="flex flex-wrap items-center gap-3"><HelpLink slug="resumes" />{
           <div className="flex flex-wrap gap-2">
             <Link href="/resumes/job-check" className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-2 text-sm font-medium hover:bg-muted">
               <ListChecks aria-hidden="true" className="h-4 w-4" />
@@ -189,7 +190,7 @@ export default function ResumesPage() {
             </Button>
             <FileButton label={en("Upload résumé")} busy={busy === "upload"} primary onFile={uploadNew} />
           </div>
-        }
+        }</div>}
       />
       {rules && !rules.toolsEnabled && (
         <p role="status" className="rounded-lg border border-border bg-muted/50 px-4 py-3 text-sm">

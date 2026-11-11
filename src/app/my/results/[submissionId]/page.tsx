@@ -166,7 +166,7 @@ export default function SubmissionReportPage() {
       setReason("");
       reload();
     } catch {
-      setAppealMsg({ kind: "error", text: en("We couldn't reach the server while submitting your appeal. Please check your connection and try again.") });
+      setAppealMsg({ kind: "error", text: en("We couldn't reach Edulexa while submitting your appeal. Please check your connection and try again.") });
     } finally {
       setAppealBusy(false);
     }
@@ -182,7 +182,7 @@ export default function SubmissionReportPage() {
       }
       reload();
     } catch {
-      setAppealMsg({ kind: "error", text: en("We couldn't reach the server while withdrawing the appeal. Please check your connection and try again.") });
+      setAppealMsg({ kind: "error", text: en("We couldn't reach Edulexa while withdrawing the appeal. Please check your connection and try again.") });
     }
   };
 
@@ -208,7 +208,7 @@ export default function SubmissionReportPage() {
       setAccDetails("");
       reload();
     } catch {
-      setAccMsg({ kind: "error", text: en("We couldn't reach the server while sending your request. Please check your connection and try again.") });
+      setAccMsg({ kind: "error", text: en("We couldn't reach Edulexa while sending your request. Please check your connection and try again.") });
     } finally {
       setAccBusy(false);
     }
@@ -235,7 +235,7 @@ export default function SubmissionReportPage() {
       const data = (await res.json()) as { sessionId: string };
       router.push(`/written-defense/${data.sessionId}`);
     } catch {
-      setWdError("We couldn't reach the server while starting the written defense. Please check your connection and try again.");
+      setWdError("We couldn't reach Edulexa while starting the written defense. Please check your connection and try again.");
     } finally {
       setWdBusy(false);
     }
@@ -320,7 +320,7 @@ export default function SubmissionReportPage() {
             <div className="space-y-3 text-sm">
               {feedback.simulated && (
                 <p className="text-xs px-2 py-1 rounded-lg border border-amber-500/30 bg-amber-500/5 text-amber-700 dark:text-amber-400 inline-block">
-                  {en("Development stub: generated without an AI model")}
+                  {en("Sample feedback: written without AI")}
                 </p>
               )}
               {feedback.summary && <p className="text-foreground">{feedback.summary}</p>}

@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { useApi } from "@/lib/appAuth";
+import { useHasCareerRole } from "@/components/career/CareerShell";
 import { Badge, Button, Card, EmptyState, ErrorBanner, Field, Loading, PageHeader, SuccessBanner, formatDate, useLoad, ScrollArea, useCareerT, useCareerLabels, StatTile, TAB_LIST, tabClass } from "@/components/career/ui";
 import { StatusBadge, topicLabel, type MentoringOptions, type RelationshipSummary, useMeetingLabels, useReportReasonLabels, useMentoringStatusLabels } from "@/components/career/mentoring/MentorshipPanel";
 
@@ -125,7 +126,7 @@ function useAction() {
       setMsg(typeof success === "function" ? success(r) : success);
       return true;
     } catch (e) {
-      setErr(e instanceof TypeError ? "We couldn't reach the server. Please check your connection and try again." : (e as Error).message);
+      setErr(e instanceof TypeError ? "We couldn't reach Edulexa. Check your internet connection and try again." : (e as Error).message);
       return false;
     } finally {
       setBusy(null);
@@ -650,6 +651,8 @@ function Alumni() {
   const { busy, err, msg, run } = useAction();
   const [cutoff, setCutoff] = useState(new Date().toISOString().slice(0, 10));
   const [preview, setPreview] = useState<GraduateResult | null>(null);
+  // Counselors and career admins graduate students (as the API checks)
+  const canGraduate = useHasCareerRole("CareerAdmin", "Counselor");
 
   const go = (dryRun: boolean) =>
     run(
@@ -670,6 +673,7 @@ function Alumni() {
     <div className="space-y-6">
       <ErrorBanner error={err ?? alumni.error} />
       <SuccessBanner message={msg} />
+      {canGraduate && (
       <Card title={tr("graduateACohort")}>
         <p className="mb-3 text-sm">
           {tr("turnsStudentsWhoseSchoolRecorded")}
@@ -702,6 +706,7 @@ function Alumni() {
           </div>
         )}
       </Card>
+      )}
       <Card title={tr("alumniCount", { count: alumni.data?.length ?? 0 })}>
         {alumni.loading && !alumni.data ? (
           <Loading />
@@ -743,6 +748,7 @@ function Settings() {
   const s = useLoad(() => api<{ requireStaffApproval: boolean; checkInDays: number; maxOpenRequestsPerStudent: number }>("/api/career/mentoring/staff/settings"), [api]);
   const { busy, err, msg, run } = useAction();
   const [draft, setDraft] = useState<{ requireStaffApproval: boolean; checkInDays: string; maxOpenRequestsPerStudent: string } | null>(null);
+  const isAdmin = useHasCareerRole("CareerAdmin");
   if (s.loading && !s.data) return <Loading />;
   if (!s.data) return <ErrorBanner error={s.error} />;
   const v = draft ?? { requireStaffApproval: s.data.requireStaffApproval, checkInDays: String(s.data.checkInDays), maxOpenRequestsPerStudent: String(s.data.maxOpenRequestsPerStudent) };
@@ -779,9 +785,11 @@ function Settings() {
           {(p) => <input {...p} type="number" min={1} max={10} value={v.maxOpenRequestsPerStudent} onChange={(e) => setDraft({ ...v, maxOpenRequestsPerStudent: e.target.value })} />}
         </Field>
         <p className="text-xs text-muted-foreground">{tr("onlyCareerAdminsCanChange")}</p>
-        <Button type="submit" busy={busy === "save"}>
-          {tr("saveSettings")}
-        </Button>
+        {isAdmin && (
+          <Button type="submit" busy={busy === "save"}>
+            {tr("saveSettings")}
+          </Button>
+        )}
       </form>
     </Card>
   );

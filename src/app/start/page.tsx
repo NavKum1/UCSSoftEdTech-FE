@@ -6,6 +6,7 @@
  * school's details, then the payment method with the provider (Stripe Checkout, or Razorpay Checkout in India): 30 days
  * free, nothing charged today. The choices are kept in this tab (sessionStorage) across the sign-in round trip.
  */
+import { timeZoneOption } from "@/lib/timeZoneName";
 import React, { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -476,7 +477,7 @@ function Wizard() {
                   <select className={input} value={d.timeZone || plans?.timeZone || "UTC"} onChange={(e) => update({ timeZone: e.target.value })}>
                     {timeZones.map((z) => (
                       <option key={z} value={z}>
-                        {z.replaceAll("_", " ")}
+                        {timeZoneOption(z)}
                       </option>
                     ))}
                   </select>

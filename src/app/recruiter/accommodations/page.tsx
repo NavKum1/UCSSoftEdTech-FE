@@ -47,7 +47,7 @@ function DecisionForm({ row, onDone, getToken }: { row: ReviewAccommodation; onD
       }
       onDone();
     } catch {
-      setError(en("We couldn't reach the server while recording the decision. Please check your connection and try again."));
+      setError(en("We couldn't reach Edulexa while recording the decision. Please check your connection and try again."));
     } finally {
       setBusy(null);
     }

@@ -63,14 +63,21 @@ export function useAppAuth(): AppAuth {
   return { isLoaded: true, isSignedIn: true, userId: getPartnerSession()?.userId ?? null, roles: [], getToken };
 }
 
+/** S4b: what Your account can ask the sign-in service to do: change the name, the password, or add an authenticator app or a passkey */
+export type AccountAction = "UPDATE_PROFILE" | "UPDATE_PASSWORD" | "CONFIGURE_TOTP" | "webauthn-register";
+
 /** Starts the Keycloak sign-in (PKCE). loginHint lets Keycloak route a university email to its identity provider. */
 /**
  * Sends the browser to the Keycloak sign-in page (or, with `signUp`, its registration page: OIDC prompt=create).
  * location.replace keeps /login out of the history, so Back from Keycloak returns to the page the visitor came from.
  * Resolves to an error code when Auth.js refuses to start the flow.
  */
-export async function keycloakSignIn(redirectTo: string, options: { loginHint?: string; signUp?: boolean } = {}): Promise<string | undefined> {
+export async function keycloakSignIn(
+  redirectTo: string,
+  options: { loginHint?: string; signUp?: boolean; /** S4b: a change the person asked for on Your account (Keycloak required action) */ action?: AccountAction } = {},
+): Promise<string | undefined> {
   const params: Record<string, string> = {};
+  if (options.action) params.kc_action = options.action;
   if (options.loginHint) params.login_hint = options.loginHint;
   if (options.signUp) params.prompt = "create";
   const result = await signIn("keycloak", { redirectTo, redirect: false }, params);

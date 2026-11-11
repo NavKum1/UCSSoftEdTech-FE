@@ -20,4 +20,4 @@ If your school is in a pilot, the page covers the pilot's dates; otherwise choos
 - **Appeals:** how many are open, upheld or changed.
 - **Students' answers:** after the viva, students can answer two questions (was it fair, and did the viva reflect their own work) and leave a comment. Answers are anonymous: they're kept without the student or the attempt, and shown only once there are at least 3.
 
-Each assessment has its own figures below the totals, and the whole page can be downloaded as a CSV for a review meeting.
+Each assessment has its own figures below the totals, and the whole page can be downloaded as a spreadsheet for a review meeting.

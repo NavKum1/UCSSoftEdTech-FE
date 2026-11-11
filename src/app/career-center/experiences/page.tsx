@@ -8,6 +8,7 @@ import { isIndia } from "@/components/career/country";
 import { Badge, Button, Card, EmptyState, ErrorBanner, Field, Loading, PageHeader, SuccessBanner, Tabs, formatDate, useLoad, useCareerT, useCareerLabels, StatTile, ScrollArea } from "@/components/career/ui";
 import { StatusBadge, downloadWith, useExperienceStatusLabels, type ExperienceSummary, type Program, type Question } from "@/components/career/experiences/shared";
 import { PackSettingsPanel } from "@/components/career/experiences/InternshipPack";
+import { HelpLink } from "@/components/help/HelpLink";
 
 interface Dashboard {
   byStatus: Record<string, number>;
@@ -39,7 +40,7 @@ export default function CareerCenterExperiencesPage() {
   }, []);
   return (
     <div>
-      <PageHeader title={tr("internshipsForCredit")} description={tr("creditProgramsRegistrationsAwaitingRevie")} />
+      <PageHeader title={tr("internshipsForCredit")} description={tr("creditProgramsRegistrationsAwaitingRevie")} actions={<HelpLink slug="internships-and-placements" />} />
       <div className="mb-6">
         <Tabs label={tr("sections")} items={tabs.map((t) => ({ id: t, label: TAB_LABELS[t] }))} value={active} onChange={setTab} />
       </div>

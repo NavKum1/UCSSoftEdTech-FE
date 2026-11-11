@@ -11,13 +11,14 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useTheme } from "next-themes";
-import { ArrowRightLeft, CircleHelp, LogOut, Monitor, Moon, Sun } from "lucide-react";
+import { ArrowRightLeft, Bell, CircleHelp, LogOut, Monitor, Moon, Sun, UserRound } from "lucide-react";
 import { useAppAuth } from "@/lib/appAuth";
 import { endDevSession, useDevSession } from "@/lib/devSession";
 import { useEn } from "@/lib/english/EnglishProvider";
-import { platformHome, schoolHome, type CareerMe } from "@/lib/roleHome";
+import { platformHome, schoolAreas, schoolHome, type CareerMe } from "@/lib/roleHome";
 import { authenticatedFetch } from "@/lib/apiClient";
 import EnglishPicker from "@/components/EnglishPicker";
+import { useHelpPanel } from "@/components/help/helpPanelContext";
 import { ThemeToggle } from "@/components/ThemeToggle";
 
 export interface AccountLink {
@@ -113,21 +114,23 @@ export function AccountMenu({ links = [], area }: { links?: AccountLink[]; /** T
       .join("") || "?";
   const member = platformHome(roles) === null;
   // P1 (5 Nov 2026): a school's student works in the school's area (practice is in its menu); others keep the member dashboard
-  // The school area (/student, or /alumni for a graduate); undefined until looked up: once, the first time the menu opens
-  const [school, setSchool] = useState<string | null | undefined>(undefined);
+  // S4b: the person's memberships (career center, faculty, employer, their school); undefined until looked up: once, the
+  // first time the menu opens. Everyone gets every area they belong to, e.g. career-center staff who also teach.
+  const [me, setMe] = useState<CareerMe | null | undefined>(undefined);
   useEffect(() => {
-    if (!open || !member || dev || school !== undefined) return;
+    if (!open || me !== undefined) return;
     let live = true;
     authenticatedFetch("/api/career/me", {}, getToken)
       .then(async (res) => (res.ok ? ((await res.json()) as CareerMe) : null))
       .catch(() => null)
-      .then((me) => live && setSchool(schoolHome(me)));
+      .then((m) => live && setMe(m));
     return () => {
       live = false;
     };
-  }, [open, member, dev, getToken, school]);
+  }, [open, me, getToken]);
+  const school = me ? schoolHome(me) : null;
   const areas = [
-    ...(school && area !== school ? [{ href: school, label: "My school", roles: null }] : []),
+    ...(me ? schoolAreas(me) : []).filter((a) => a.href !== area).map((a) => ({ ...a, roles: null })),
     ...AREAS.filter((a) => a.href !== area && (a.roles === null ? member && !school : has(roles, a.roles))),
   ];
   const item = "flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-foreground hover:bg-muted";
@@ -153,6 +156,14 @@ export function AccountMenu({ links = [], area }: { links?: AccountLink[]; /** T
             <p className="truncate text-sm font-medium text-foreground">{name}</p>
             <p className="truncate text-xs text-muted-foreground">{dev ? en("Developer session") : session?.user?.email}</p>
           </div>
+          <ul className="border-b border-border py-1">
+            <li>
+              <Link href="/settings/account" onClick={() => setOpen(false)} className={item}>
+                <UserRound aria-hidden="true" className="h-4 w-4 text-muted-foreground" />
+                {en("Your account")}
+              </Link>
+            </li>
+          </ul>
           {links.length > 0 && (
             <ul className="border-b border-border py-1">
               {links.map((l) => (
@@ -213,22 +224,67 @@ export function AccountMenu({ links = [], area }: { links?: AccountLink[]; /** T
 }
 
 /** Language, light/dark and the account menu: the right-hand side of every header */
-/** S4: the help center, opened from any page with the way back to it */
+/** S4: the help center, opened from any page with the way back to it. S4b: it opens help beside the page (the side panel) */
 function HelpButton() {
   const en = useEn();
   const pathname = usePathname();
+  const panel = useHelpPanel();
   if (pathname?.startsWith("/help")) return null;
   return (
-    <Link href={`/help?from=${encodeURIComponent(pathname ?? "/")}`} className="rounded-md p-2 text-muted-foreground hover:bg-muted hover:text-foreground" aria-label={en("Help center")} title={en("Help center")}>
+    <Link
+      href={`/help?from=${encodeURIComponent(pathname ?? "/")}`}
+      onClick={(e) => {
+        if (!panel || e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return;
+        e.preventDefault();
+        panel.open(null);
+      }}
+      className="rounded-md p-2 text-muted-foreground hover:bg-muted hover:text-foreground" aria-label={en("Help center")} title={en("Help center")}>
       <CircleHelp aria-hidden="true" className="h-5 w-5" />
     </Link>
   );
 }
 
-export function HeaderControls({ links, area, children }: { links?: AccountLink[]; area?: string; children?: React.ReactNode }) {
+/** S4b: the bell for people whose pages have no school area of their own (members, recruiters, mentors, admissions) */
+function NotificationBell() {
+  const en = useEn();
+  const pathname = usePathname();
+  const { isLoaded, isSignedIn, getToken } = useAppAuth();
+  const dev = useDevSession();
+  const [unread, setUnread] = useState(0);
+  useEffect(() => {
+    if (!isLoaded || (!isSignedIn && !dev)) return;
+    let live = true;
+    authenticatedFetch("/api/career/notifications?unreadOnly=true&take=1", {}, getToken)
+      .then(async (res) => (res.ok ? ((await res.json()) as { unread: number }) : null))
+      .catch(() => null)
+      .then((n) => live && n && setUnread(n.unread));
+    return () => {
+      live = false;
+    };
+  }, [isLoaded, isSignedIn, dev, getToken, pathname]);
+  if (!isLoaded || (!isSignedIn && !dev)) return null;
+  return (
+    <Link
+      href="/notifications"
+      className="relative rounded-md p-2 text-muted-foreground hover:bg-muted hover:text-foreground"
+      aria-label={unread ? en("Notifications, {count} unread", { count: String(unread) }) : en("Notifications")}
+      title={en("Notifications")}
+    >
+      <Bell aria-hidden="true" className="h-5 w-5" />
+      {unread > 0 && (
+        <span className="absolute -end-0.5 -top-0.5 min-w-4 rounded-full px-1 text-center text-[10px] font-semibold leading-4 text-[var(--brand-foreground,#fff)]" style={{ background: "var(--brand)" }} aria-hidden="true">
+          {unread > 99 ? "99+" : unread}
+        </span>
+      )}
+    </Link>
+  );
+}
+
+export function HeaderControls({ links, area, bell, children }: { links?: AccountLink[]; area?: string; /** Show the notifications bell (areas without their own) */ bell?: boolean; children?: React.ReactNode }) {
   return (
     <div className="flex shrink-0 items-center gap-2">
       {children}
+      {bell && <NotificationBell />}
       <HelpButton />
       <EnglishPicker className="hidden md:inline-flex" />
       <span className="hidden sm:inline-flex">

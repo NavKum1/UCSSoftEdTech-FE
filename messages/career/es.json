@@ -115,7 +115,6 @@
    "noCompanyDetails": "No hay detalles de la empresa",
    "decidedDecidedAt": " · Decidido {decidedAt}",
    "noteDecisionNote": " · Nota: {decisionNote}",
-   "accountEmailDomainEmailDomain": "Dominio de correo de la cuenta: {emailDomain}",
    "flaggedFlagReason": "Marcado: {flagReason}",
    "requestedRequestedAt": "Solicitado {requestedAt}",
    "block": "Bloquear",
@@ -123,7 +122,8 @@
    "approve": "Aprobar",
    "decline": "Rechazar",
    "nameStatusTheyveBeenNotified": "{name}: {status, select, Approved {aprobado} Declined {rechazado} Blocked {bloqueado} Pending {pendiente} other {{status}}}. Ya se le notificó.",
-   "noTabEmployers": "No hay empleadores {tab, select, Pending {pendientes} Approved {aprobados} Declined {rechazados} Blocked {bloqueados} other {{tab}}}"
+   "noTabEmployers": "No hay empleadores {tab, select, Pending {pendientes} Approved {aprobados} Declined {rechazados} Blocked {bloqueados} other {{tab}}}",
+   "accountEmailDomainEmailDomain": "Dominio del correo electrónico de la empresa: {emailDomain}"
   },
   "careerCenterInterviewsReports": {
    "employer": "Empleador",
@@ -142,7 +142,6 @@
    "noneYet": "Todavía no hay ninguno",
    "byEmployer": "Por empleador",
    "backToInterviews": "Volver a las entrevistas",
-   "downloadCSV": "Descargar CSV",
    "noInterviewsInThisRange": "No hay entrevistas en este período.",
    "interviewsByEmployer": "Entrevistas por empleador",
    "statSlotsOffered": "Espacios ofrecidos",
@@ -152,7 +151,8 @@
    "statAttended": "Asistieron",
    "statCancellations": "Cancelaciones",
    "statFilledFromAlternates": "Cubiertos con candidatos suplentes",
-   "statNoOffer": "Sin oferta"
+   "statNoOffer": "Sin oferta",
+   "downloadCSV": "Descargar hoja de cálculo (CSV)"
   },
   "alumniMentoring": {
    "employer": "Empleador",
@@ -335,7 +335,6 @@
    "program": "Programa",
    "allPrograms": "Todos los programas",
    "apply": "Mostrar informe",
-   "exportCsv": "Exportar CSV",
    "exportXlsx": "Exportar Excel",
    "downloadStarted": "La descarga comenzó.",
    "sourcesTitle": "Fuentes",
@@ -389,7 +388,6 @@
     "VocationalRehabilitation": "Título IV de rehabilitación vocacional"
    },
    "includeOutcomes": "Cuenta las colocaciones verificadas de Resultados como empleo complementario cuando no se hayan ingresado datos salariales",
-   "exportDetail": "Lista de participantes al estilo PIRL (CSV)",
    "exportDetailHint": "Solo para administradores de orientación profesional. Incluye datos personales y salarios; cada descarga queda registrada.",
    "periodSummary": "Salidas de {from} a {to}: {exiters} personas que salieron ({excluded} excluidas), {participants} registros de participantes en total.",
    "waitingForWages": "{count, plural, one {# persona que salió está a la espera de datos salariales.} other {# personas que salieron están a la espera de datos salariales.}}",
@@ -512,7 +510,9 @@
    "importIntro": "Pega los salarios trimestrales obtenidos de la comparación con los registros salariales de tu estado o de documentos complementarios. Esta plataforma no puede acceder por sí sola a los registros salariales estatales del seguro de desempleo.",
    "importLabel": "Filas: correo electrónico, año, trimestre, monto, fuente, nombre del empleador, ID del empleador, documento fuente",
    "importHint": "La fuente es UiWage, Federal, Military, Supplemental o UiWageSwis. Hasta 10 000 filas.",
-   "importResult": "Se importaron {added} filas y se omitieron {skipped}."
+   "importResult": "Se importaron {added} filas y se omitieron {skipped}.",
+   "exportDetail": "Lista de participantes al estilo PIRL (hoja de cálculo)",
+   "exportCsv": "Exportar hoja de cálculo (CSV)"
   },
   "cirr": {
    "employerName": "Empleador",
@@ -526,7 +526,6 @@
    "allYears": "Todos los años",
    "programName": "Programa",
    "apply": "Mostrar informe",
-   "exportCsv": "Exportar CSV",
    "exportXlsx": "Exportar Excel",
    "downloadStarted": "La descarga comenzó.",
    "sourcesTitle": "Fuentes",
@@ -648,7 +647,8 @@
    "totals": "{enrolled} inscritos, {graduates} egresados ({onTime} a tiempo), {counted} egresados contabilizados para la inserción laboral.",
    "intentMissing": "{count, plural, one {# egresado no tiene registrada una intención para el primer día.} other {# egresados no tienen registrada una intención para el primer día.}}",
    "rulesTitle": "Estándar CIRR: qué se revisó",
-   "reviewedOn": "Revisado el {date}."
+   "reviewedOn": "Revisado el {date}.",
+   "exportCsv": "Exportar hoja de cálculo (CSV)"
   },
   "roles": {
    "Faculty": "Docentes",
@@ -736,7 +736,6 @@
    "typeYourFullNameTo": "Escribe tu nombre completo para firmar",
    "weeklyHours": "Horas semanales",
    "kindEvaluation": "Evaluación {kind}",
-   "documentFingerprintSHA256Sha256": "Huella digital del documento (SHA-256): {sha256}",
    "signAgreement": "Firmar acuerdo",
    "noHoursLoggedYet": "Todavía no se han registrado horas.",
    "siteSupervisor": "Supervisor del centro de prácticas",
@@ -765,7 +764,6 @@
    "cPTDatesAndDSOApproval": "Aún se necesitan las fechas de CPT y la fecha de aprobación del DSO para que el centro de orientación profesional pueda aprobar.",
    "declineReason": "Motivo del rechazo:",
    "signatures": "Firmas",
-   "typedTypedNameEmailIPIp": "Escribió “{typedName}” · {email} · IP {ip} · {userAgent} · {provider}",
    "iHaveReadThisVersion": "He leído esta versión del acuerdo, estoy de acuerdo con ella y acepto firmar electrónicamente.",
    "earlierVersionsCount": "Versiones anteriores ({count})",
    "versionVersionReplacedVoidedAtVoidReason": "Versión {version}: se sustituyó el {voidedAt} ({voidReason}); se anularon {count} firma(s).",
@@ -779,7 +777,9 @@
    "atActionByActorName": "<span>{at}</span> · <strong>{action}</strong> por {actorName}",
    "cptNotice": "Esto no es asesoramiento legal. La oficina para estudiantes internacionales de tu institución (tu DSO) determina si cumples los requisitos para CPT y lo autoriza en tu I-20. No empieces a trabajar antes de la fecha de inicio de CPT indicada en tu I-20.",
    "programSummary": "{code} {title} · {creditHours} créditos · {requiredHours} horas",
-   "signerRole": "{role}:"
+   "signerRole": "{role}:",
+   "documentFingerprintSHA256Sha256": "Código de verificación del documento: {sha256}",
+   "typedTypedNameEmailIPIp": "Firmado al escribir “{typedName}” · {email} · desde {ip}"
   },
   "studentMentoring": {
    "alumni": "Egresados",
@@ -919,8 +919,6 @@
    "requestsAStudentCanHave": "Solicitudes pendientes que puede tener un estudiante a la vez",
    "sendAReminderToBoth": "Envía un recordatorio a ambas personas de cada mentoría activa sin una sesión reciente registrada. Se omiten las parejas que recibieron un recordatorio durante el mismo período.",
    "sendCheckInReminders": "Enviar recordatorios de seguimiento",
-   "downloadMentorshipsCSV": "Descargar mentorías (CSV)",
-   "downloadMentorsCSV": "Descargar mentores (CSV)",
    "exportsNeverIncludePrivateSession": "Las exportaciones nunca incluyen notas privadas de las sesiones.",
    "alumniCanSetUpA": "Los egresados pueden crear su propio perfil. Para agregar a alguien que no sea egresado, invítalo aquí; iniciará sesión con este correo electrónico, completará un perfil y tú lo aprobarás. Comparte el enlace de inicio de sesión con esa persona.",
    "invite": "Invitar",
@@ -993,7 +991,9 @@
    "tileCheckInsDue": "Seguimientos pendientes",
    "remindersSentToSentMentorships": "Se enviaron recordatorios para {sent} mentoría(s).",
    "countStudentsWouldBecomeAlumni": "{count} estudiante(s) pasarían a ser exalumnos.",
-   "countStudentsAreNowAlumni": "{count} estudiante(s) ahora son exalumnos."
+   "countStudentsAreNowAlumni": "{count} estudiante(s) ahora son exalumnos.",
+   "downloadMentorshipsCSV": "Descargar mentorías (hoja de cálculo)",
+   "downloadMentorsCSV": "Descargar mentores (hoja de cálculo)"
   },
   "staffSettings": {
    "alumni": "Egresados",
@@ -1021,7 +1021,6 @@
    "https": "https://",
    "dropInNoShows": "Inasistencias",
    "colNoShows": "Inasistencias",
-   "downloadCSV": "Descargar CSV",
    "attended": "Asistieron",
    "colAttended": "Asistieron",
    "required": "Obligatorio",
@@ -1037,7 +1036,6 @@
    "myBookingProfile": "Mi perfil de reservas",
    "bookingProfileName": "Perfil de reservas: {name}",
    "nameStudentsSee": "Nombre que verán los estudiantes",
-   "yourPersonalRoomAnyProvider": "Tu sala personal (de cualquier proveedor), que compartirás con los estudiantes que reserven una cita por video. Debe comenzar con https://",
    "inPersonLocation": "Lugar de la cita presencial",
    "shortBioOptional": "Breve biografía (opcional)",
    "calendarLink": "Enlace de calendario",
@@ -1115,14 +1113,15 @@
    "colStillBooked": "Aún con reserva",
    "minutesShort": "{minutes} min",
    "useGeneratedMeetings": "Usa un enlace de reunión distinto para cada cita por video",
-   "useGeneratedMeetingsHint": "Si conectas un calendario de Microsoft 365 o Google, cada cita por video tendrá su propio enlace de Teams o Meet. Desactiva esta opción para compartir siempre el enlace de reunión por video de arriba."
+   "useGeneratedMeetingsHint": "Si conectas un calendario de Microsoft 365 o Google, cada cita por video tendrá su propio enlace de Teams o Meet. Desactiva esta opción para compartir siempre el enlace de reunión por video de arriba.",
+   "yourPersonalRoomAnyProvider": "Tu sala personal (de cualquier servicio de video), compartida con los estudiantes que reserven una cita por video. Debe comenzar con https://",
+   "downloadCSV": "Descargar hoja de cálculo (CSV)"
   },
   "nav": {
    "student": {
     "home": "Inicio",
     "appointments": "Citas",
     "document-review": "Revisión de documentos",
-    "experiences": "Prácticas profesionales",
     "mentoring": "Mentoría",
     "interviews": "Entrevistas",
     "fairs": "Ferias de empleo",
@@ -1138,7 +1137,8 @@
     "notifications": "Notificaciones",
     "national-credentials": "Credenciales nacionales",
     "jobs": "Bolsa de trabajo",
-    "jobs_applications": "Mis solicitudes"
+    "jobs_applications": "Mis solicitudes",
+    "experiences": "Prácticas con créditos"
    },
    "career-center": {
     "home": "Inicio",
@@ -1160,8 +1160,6 @@
     "international": "Estudiantes internacionales",
     "employers": "Empleadores",
     "imports": "Importaciones",
-    "settings_sis": "Sincronización de la lista del SIS",
-    "calendar": "Sincronización del calendario",
     "people": "Personas",
     "settings": "Configuración",
     "privacy-log": "Registro de privacidad",
@@ -1171,7 +1169,9 @@
     "reports_workforce": "Informes de la fuerza laboral (WIOA)",
     "apprenticeships": "Aprendizajes",
     "reports_cirr": "Resultados de bootcamps (al estilo CIRR)",
-    "placements_drives": "Jornadas de contratación en el campus"
+    "placements_drives": "Jornadas de contratación en el campus",
+    "settings_sis": "Lista de estudiantes (SIS)",
+    "calendar": "Conexión con el calendario"
    },
    "employer": {
     "home": "Inicio",
@@ -1282,7 +1282,6 @@
    "documentReview": "Revisión de documentos",
    "status": "Estado",
    "cancel": "Cancelar",
-   "sendYourResumeCoverLetter": "Envía tu currículum, carta de presentación u otros documentos de solicitud a un orientador profesional. Una persona los leerá y te devolverá comentarios y una lista de verificación.",
    "sentACounselorAimsTo": "Enviado. Un orientador espera devolvértelo antes del {dueAt}.",
    "myReviews": "Mis revisiones",
    "noReviewsYet": "Todavía no hay revisiones",
@@ -1340,14 +1339,14 @@
    "theReviewWillAppearHere": "La revisión aparecerá aquí cuando tu orientador te la devuelva.",
    "downloadedFileName": "Se descargó {fileName}.",
    "markedAsDone": "Marcado como completado.",
-   "thanksForYourRating": "Gracias por tu puntuación."
+   "thanksForYourRating": "Gracias por tu puntuación.",
+   "sendYourResumeCoverLetter": "Envía tu currículum, carta de presentación u otros documentos de solicitud a un orientador profesional. Una persona los revisará y te enviará comentarios y una lista de verificación."
   },
   "careerCenterDocumentReview": {
    "documentReview": "Revisión de documentos",
    "settings": "Configuración",
    "student": "Estudiante",
    "status": "Estado",
-   "exportCSV": "Exportar CSV",
    "exportFailedStatus": "No se pudo exportar. Inténtalo de nuevo.",
    "due": "Por pagar",
    "chooseAFileToUpload": "Elige un archivo para subir.",
@@ -1365,10 +1364,10 @@
    "pDFWordPNGJPEGOr": "PDF, Word, PNG, JPEG o texto, hasta 10 MB.",
    "kind": {
     "Other": "Otro",
-    "Resume": "Currículum",
     "CoverLetter": "Carta de presentación",
     "PersonalStatement": "Declaración personal",
-    "LinkedInSummary": "Resumen de LinkedIn"
+    "LinkedInSummary": "Resumen de LinkedIn",
+    "Resume": "Currículum"
    },
    "unassigned": "Sin asignar",
    "choose": "Elegir…",
@@ -1421,7 +1420,6 @@
    "submitted": "Enviado",
    "queue": "Cola",
    "metrics": "Métricas",
-   "studentsResumesCoverLettersAnd": "Currículums, cartas de presentación y declaraciones personales de estudiantes que esperan la revisión de un orientador. Las revisiones son registros educativos y nunca se comparten con los empleadores.",
    "documentReviewSections": "Secciones de revisión de documentos",
    "assignee": "Persona asignada",
    "waitingAtLeastDays": "Tiempo de espera mínimo (días)",
@@ -1469,7 +1467,9 @@
    "waiting": "En espera",
    "reviewer": "Revisor",
    "versionCurrentVersion": "Versión {currentVersion}",
-   "urgent": "Urgente"
+   "urgent": "Urgente",
+   "exportCSV": "Exportar hoja de cálculo (CSV)",
+   "studentsResumesCoverLettersAnd": "Currículums, cartas de presentación y declaraciones de estudiantes pendientes de revisión por un orientador. Las revisiones son expedientes académicos y nunca se comparten con empleadores."
   },
   "facultyExperiences": {
    "internships": "Prácticas profesionales",
@@ -1557,7 +1557,6 @@
     "buildAndDefend": "Crea y defiende proyectos",
     "credentials": "Portafolio de credenciales verificadas"
    },
-   "notIncluded": "Este plan no incluye ofertas de empleo ni herramientas para currículums, cartas de presentación o networking.",
    "availableHere": "El plan gratuito está disponible donde vives.",
    "gate": {
     "available": "El plan gratuito está disponible donde vives.",
@@ -1572,7 +1571,8 @@
    "signInFirst": "Primero, inicia sesión o crea una cuenta con tu correo electrónico.",
    "signInCta": "Inicia sesión o crea una cuenta",
    "nameLabel": "Tu nombre",
-   "nameHint": "Aparecerá en tus credenciales."
+   "nameHint": "Aparecerá en tus credenciales.",
+   "notIncluded": "Las ofertas de empleo y las herramientas para currículums, cartas de presentación o contactos profesionales no forman parte de este plan."
   },
   "employerInterviews": {
    "interviews": "Entrevistas",
@@ -1601,7 +1601,6 @@
    "tracksRoomS": "{tracks} sala(s)",
    "candidatesAndDetails": "Candidatos y detalles",
    "studentEmails": "Correos electrónicos de estudiantes",
-   "pasteEmailsOrTheContents": "Pega direcciones de correo o el contenido de un archivo CSV. Solo se invita a estudiantes de esta institución educativa; podrás ver sus detalles cuando acepten.",
    "inviteAs": "Invitar como",
    "withdrawThisScheduleBookedStudents": "¿Quieres retirar este horario? Se avisará a los estudiantes que reservaron que se canceló.",
    "graduatingGraduationDate": " · se gradúa el {graduationDate}",
@@ -1647,7 +1646,6 @@
    "withdrawSchedule": "Retirar horario",
    "invitedInvitedEmailDetailsAppearOnce": "Invitado: {invitedEmail}. Los detalles aparecerán cuando el estudiante acepte.",
    "detailsWithheldReason": "Detalles no disponibles: {reason}",
-   "downloadResumeFileName": "Descargar currículum ({fileName})",
    "youCanRequestInterviewDays": "Puedes solicitar jornadas de entrevistas cuando una institución educativa te apruebe en la página de <link>Instituciones educativas</link>.",
    "chooseASchool": "Elige una institución educativa",
    "day": "Día",
@@ -1661,7 +1659,9 @@
    "invitationRemoved": "Se eliminó la invitación.",
    "scheduleWithdrawn": "Se retiró el horario.",
    "addedStudentsInvited": "Se invitó a {added} estudiante(s).",
-   "notFoundAtThisSchool": " No se encontraron en esta escuela: {list}."
+   "notFoundAtThisSchool": " No se encontraron en esta escuela: {list}.",
+   "pasteEmailsOrTheContents": "Pega las direcciones de correo electrónico o copia una columna de direcciones de una hoja de cálculo. Solo se invita a estudiantes de esta escuela; podrás ver sus datos cuando acepten.",
+   "downloadResumeFileName": "Descargar currículum ({fileName})"
   },
   "studentFairs": {
    "careerFairs": "Ferias de empleo",
@@ -1681,7 +1681,6 @@
    "online": " · En línea",
    "attendance": "Asistencia:",
    "connectionSaved": "Conexión guardada.",
-   "syncedBoothsBoothsFromFairs": "Se sincronizaron {booths} stands de {fairs} ferias; {matchedEmployers} se asociaron con empleadores con los que trabajas.",
    "yourSchoolsEventsAndCareer": "Eventos y ferias profesionales de tu institución, provenientes de su sistema de eventos. Créalo y adminístralos allí; esta página es de solo lectura.",
    "allEvents": "Todos los eventos",
    "noEventsFound": "No se encontraron eventos",
@@ -1695,18 +1694,13 @@
    "askACareerCenterAdmin": "Pide a un administrador del centro de orientación profesional que conecte tu sistema de eventos.",
    "eventSystemConnection": "Conexión con el sistema de eventos",
    "set": "Establecer",
-   "aPIURL": "URL de la API",
-   "theTenantAPIAddressE": "Dirección de la API del espacio de trabajo, por ejemplo: https://…/functions/v1/tenant-api",
-   "eventAppURL": "URL de la aplicación de eventos",
    "usedForManageAndBooth": "Se usa para los enlaces de administración y de los stands",
    "aPIKey": "Clave de API",
    "leaveEmptyToKeepThe": "Déjalo vacío para conservar la clave actual",
    "createOneInYourEvent": "Crea una en la configuración de tu sistema de eventos",
    "webhookSigningSecret": "Secreto de firma del webhook",
-   "copyFromTheWebhookEndpoint": "Cópialo del endpoint de webhook que crees en tu sistema de eventos",
    "turnOff": "Desactivar",
    "turnOn": "Activar",
-   "syncBoothsForReports": "Sincronizar stands para los informes",
    "careerFairsOnly": "Solo ferias profesionales",
    "includePast": "Incluir las anteriores",
    "nothingMatchesTheseFiltersYet": "Todavía no hay resultados que coincidan con estos filtros.",
@@ -1718,7 +1712,13 @@
    "booth": "Stand",
    "leadsShared": "Contactos potenciales compartidos",
    "webhookURLPasteIntoYour": "URL del webhook (pégala en tu sistema de eventos)",
-   "lastSyncLastWebhook": "Última sincronización / último webhook"
+   "syncedBoothsBoothsFromFairs": "Se actualizaron {booths} puestos de {fairs} ferias; se encontraron coincidencias con {matchedEmployers} empleadores con los que trabajas.",
+   "aPIURL": "Dirección de la API de AttendSpot",
+   "theTenantAPIAddressE": "La dirección de la API que te proporciona AttendSpot, p. ej., https://…/functions/v1/tenant-api",
+   "eventAppURL": "Dirección de la aplicación del evento",
+   "copyFromTheWebhookEndpoint": "Cópiala del webhook que crees en tu sistema de eventos",
+   "syncBoothsForReports": "Actualizar puestos para los informes",
+   "lastSyncLastWebhook": "Última actualización / último evento recibido"
   },
   "employerFairs": {
    "careerFairs": "Ferias de empleo",
@@ -1803,7 +1803,6 @@
    "howYouMet": "Cómo se conocieron",
    "privateNotesOnlyTheTwo": "Notas privadas (solo para ustedes dos)",
    "summaryForTheCareerCenter": "Resumen para el centro de orientación profesional (opcional)",
-   "keepItShortAndGeneral": "Sé breve y general; por ejemplo: «Revisamos un borrador del currículum».",
    "finishTheMentorship": "Finalizar la mentoría",
    "reasonOrWrapUpOptional": "Motivo o resumen final (opcional)",
    "endTheMentorshipWithOther": "¿Quieres terminar antes de tiempo la mentoría con {other}?",
@@ -1852,7 +1851,8 @@
     "Spam": "Spam o ventas",
     "SafetyConcern": "Problema de seguridad",
     "Other": "Otro motivo"
-   }
+   },
+   "keepItShortAndGeneral": "Procura que sea breve y general, por ejemplo: “Revisé el borrador del currículum”."
   },
   "messagingShared": {
    "messages": "Mensajes",
@@ -2185,7 +2185,103 @@
    "colEmail": "Correo electrónico",
    "showInApp": "{kind}: mostrar en la aplicación",
    "sendEmail": "{kind}: enviar por correo electrónico",
-   "unreadSummary": "{count, plural, one {Tienes # notificación sin leer.} other {Tienes # notificaciones sin leer.}}"
+   "unreadSummary": "{count, plural, one {Tienes # notificación sin leer.} other {Tienes # notificaciones sin leer.}}",
+   "category": {
+    "agent_update": "Actualización del asistente de orientación profesional",
+    "appointments_booked": "Cita reservada",
+    "appointments_cancelled": "Cita cancelada",
+    "appointments_dropin": "Atención sin cita: te toca a continuación",
+    "appointments_group_cancelled": "Sesión grupal cancelada",
+    "appointments_group_changed": "Sesión grupal modificada",
+    "appointments_group_hosting": "Sesión grupal que diriges",
+    "appointments_group_promoted": "Ya no estás en la lista de espera para una sesión grupal",
+    "appointments_group_registered": "Inscripción a una sesión grupal",
+    "appointments_group_reminder": "Recordatorio de sesión grupal",
+    "appointments_group_waitlist_closed": "Lista de espera para la sesión grupal cerrada",
+    "appointments_group_waitlisted": "Estás en la lista de espera para una sesión grupal",
+    "appointments_notes": "Notas de una cita",
+    "appointments_reminder": "Recordatorio de cita",
+    "appointments_tasks": "Tarea de seguimiento",
+    "apprenticeships_created": "Aprendizaje en prácticas añadido",
+    "apprenticeships_hours": "Horas de aprendizaje en prácticas",
+    "apprenticeships_signoff": "Validación del aprendizaje en prácticas",
+    "assessments_assigned": "Evaluación asignada",
+    "assessments_reminder": "Recordatorio de evaluación",
+    "challenges_decision": "Decisión sobre la impugnación",
+    "challenges_invite": "Invitación a impugnar",
+    "challenges_review": "Impugnación pendiente de revisión",
+    "class_appeal": "Recurso de evaluación",
+    "class_result": "Resultado de la evaluación",
+    "credentials_awarded": "Credencial otorgada",
+    "docreview_assigned": "Revisión de documento asignada",
+    "docreview_resubmitted": "Documento devuelto para su revisión",
+    "docreview_returned": "Documento revisado devuelto",
+    "drives_application_received": "Nueva solicitud para una jornada de empleo en el campus",
+    "drives_application_withdrawn": "Solicitud para la jornada de empleo en el campus retirada",
+    "drives_approved": "Solicitud para la jornada de empleo en el campus aprobada",
+    "drives_hire_issue": "Actualización del sistema de contratación pendiente de revisar",
+    "drives_new": "Nueva jornada de empleo en el campus",
+    "drives_offer": "Oferta de empleo",
+    "drives_offer_deadline": "Recordatorio para responder a la oferta",
+    "drives_offer_response": "Respuesta a una oferta de empleo",
+    "drives_rejected": "Jornada de empleo en el campus rechazada",
+    "drives_request": "Solicitud de jornada de empleo en el campus",
+    "drives_shortlisted": "Preselección para una jornada de empleo en el campus",
+    "drives_slot": "Horario de entrevista",
+    "drives_slot_reminder": "Recordatorio de entrevista",
+    "employer_invite": "Invitación a un equipo de selección",
+    "employer_relationship": "Solicitud de selección respondida",
+    "employer_request": "Un empleador quiere contratar",
+    "experiences_agreement": "Convenio de prácticas",
+    "experiences_approved": "Prácticas aprobadas",
+    "experiences_certificate": "Certificado de prácticas",
+    "experiences_comment": "Comentario sobre las prácticas",
+    "experiences_completed": "Prácticas completadas",
+    "experiences_declined": "Prácticas rechazadas",
+    "experiences_defense": "Defensa de las prácticas",
+    "experiences_documents": "Documentos de prácticas",
+    "experiences_evaluation": "Evaluación de las prácticas",
+    "experiences_faculty_approved": "Prácticas aprobadas por la facultad",
+    "experiences_hours": "Horas de prácticas",
+    "experiences_logbook": "Cuaderno de prácticas",
+    "experiences_submitted": "Prácticas enviadas",
+    "experiences_supervisor": "Supervisor de prácticas",
+    "experiences_withdrawn": "Prácticas retiradas",
+    "guidance_mentor": "Pregunta de orientación para ti",
+    "guidance_reply": "Respuesta a tu pregunta de orientación",
+    "international_opt-reminder": "Recordatorio de OPT",
+    "international_opt-warning": "Aviso de OPT",
+    "international_work-rights": "Recordatorio sobre el permiso de trabajo",
+    "mentoring_accepted": "Solicitud de mentoría aceptada",
+    "mentoring_active": "Mentoría iniciada",
+    "mentoring_alumni": "Mentoría para antiguos alumnos",
+    "mentoring_approval": "Solicitud de mentoría pendiente de aprobación",
+    "mentoring_checkin": "Seguimiento de mentoría",
+    "mentoring_declined": "Solicitud de mentoría rechazada",
+    "mentoring_ended": "Mentoría finalizada",
+    "mentoring_mentor_decision": "Decisión sobre la solicitud para ser mentor",
+    "mentoring_mentor_submitted": "Nueva solicitud para ser mentor",
+    "mentoring_report": "Informe de mentoría",
+    "mentoring_request": "Solicitud de mentoría",
+    "mentoring_session": "Sesión de mentoría",
+    "mentoring_withdrawn": "Solicitud de mentoría retirada",
+    "messages_assigned": "Conversación asignada a ti",
+    "messages_new": "Mensaje nuevo",
+    "messages_report": "Conversación denunciada",
+    "ocr_alternate": "En la lista de suplentes para una entrevista",
+    "ocr_booked": "Entrevista en el campus reservada",
+    "ocr_cancelled": "Entrevista en el campus cancelada",
+    "ocr_cleared": "Ya puedes volver a inscribirte a entrevistas",
+    "ocr_invited": "Invitación a entrevistas en el campus",
+    "ocr_new_schedule": "Nuevas entrevistas en el campus",
+    "ocr_no_show": "No asististe a la entrevista en el campus",
+    "ocr_promoted": "Avanzaste a una entrevista",
+    "ocr_request": "Solicitud de entrevista en el campus",
+    "ocr_signup": "Nueva inscripción a una entrevista",
+    "privacy_guardian": "Respuesta del tutor legal",
+    "privacy_request": "Solicitud de privacidad",
+    "resumebook_removed": "Eliminado de un banco de currículums"
+   }
   },
   "nationalCredentials": {
    "title": "Credenciales nacionales",
@@ -2220,7 +2316,6 @@
    "on": "Activado",
    "off": "Desactivado",
    "ownerMustDo": "Qué debe hacer primero tu centro educativo",
-   "pullEndpoints": "Endpoints de consulta para registrarse ({method})",
    "lastActivity": "Última actividad {date}: {status}",
    "requiredLabel": "{label} (obligatorio)",
    "secretSet": "Hay una clave guardada. No se volverá a mostrar; escribe una nueva para reemplazarla.",
@@ -2247,12 +2342,13 @@
    "withdrawConfirm": "¿Retirar “{title}” de {name}? El repositorio ya no podrá obtenerlo.",
    "withdrawn": "Se retiró el documento {number}.",
    "abcTitle": "Banco Académico de Créditos: exportación preliminar",
-   "abcHelp": "Un archivo CSV preliminar con las prácticas que otorgan créditos, para que la secretaría académica lo integre en la carga de NAD/ABC. No es un envío: la secretaría lo revisa y completa las columnas que solo ella tiene.",
    "abcFrom": "Completadas desde",
    "abcTo": "Completadas hasta",
-   "abcDownload": "Descargar archivo CSV preliminar",
    "abcFailed": "No se pudo descargar la exportación preliminar.",
-   "abcDone": "{rows, plural, one {Se exportó # fila} other {Se exportaron # filas}}; {missing, plural, =0 {todos los estudiantes tienen un ID de APAAR} one {# estudiante no tiene un ID de APAAR} other {# estudiantes no tienen un ID de APAAR}}."
+   "abcDone": "{rows, plural, one {Se exportó # fila} other {Se exportaron # filas}}; {missing, plural, =0 {todos los estudiantes tienen un ID de APAAR} one {# estudiante no tiene un ID de APAAR} other {# estudiantes no tienen un ID de APAAR}}.",
+   "pullEndpoints": "Direcciones para registrarse en el repositorio ({method})",
+   "abcHelp": "Borrador de una hoja de cálculo (archivo CSV) con prácticas con créditos académicos, para que la oficina de registro lo integre en la carga de NAD/ABC. No es un envío: la oficina de registro lo revisa y completa las columnas que solo ella tiene.",
+   "abcDownload": "Descargar borrador de hoja de cálculo (CSV)"
   },
   "myNationalCredentials": {
    "title": "Credenciales nacionales",
@@ -2319,7 +2415,6 @@
    "deadline": "Postúlate antes del {date}",
    "optIn": "Aceptar",
    "any": "cualquiera",
-   "description": "Convocatorias en campus aprobadas por tu oficina de inserción laboral.",
    "applied": "Te postulaste a {company}.",
    "empty": "No hay convocatorias en campus en este momento.",
    "stipend": "estipendio de {amount} al mes",
@@ -2331,7 +2426,8 @@
    "required": "Documentos requeridos: {kinds}",
    "attach": "Adjuntar documentos",
    "upload": "Subir un documento",
-   "consent": "Acepto que mi nombre, datos de contacto, expediente académico (título, carrera, promoción, CGPA, materias reprobadas pendientes, calificaciones de 10.º y 12.º) y los documentos que adjunte se compartan con {company} para esta convocatoria, incluso en el sistema de contratación propio de {company}, si lo utiliza. Puedo retirar mi postulación para dejar de compartirlos."
+   "consent": "Acepto que mi nombre, datos de contacto, expediente académico (título, carrera, promoción, CGPA, materias reprobadas pendientes, calificaciones de 10.º y 12.º) y los documentos que adjunte se compartan con {company} para esta convocatoria, incluso en el sistema de contratación propio de {company}, si lo utiliza. Puedo retirar mi postulación para dejar de compartirlos.",
+   "description": "Convocatorias en el campus aprobadas por tu centro de orientación profesional."
   },
   "studentApplications": {
    "backToBoard": "Bolsa de trabajo",
@@ -2339,7 +2435,6 @@
    "decline": "Rechazar",
    "notYet": "Todavía no",
    "description": "Tus postulaciones a convocatorias en campus, etapas, horarios de entrevistas y ofertas.",
-   "accepted": "Oferta aceptada. Tu oficina de inserción laboral tiene el registro.",
    "declined": "Oferta rechazada.",
    "empty": "Aún no te postulaste a ninguna convocatoria en campus.",
    "appliedOn": "Postulación enviada el {date}",
@@ -2354,7 +2449,8 @@
    "accept": "Aceptar",
    "acceptAndRelease": "Aceptar y renunciar a mi oferta anterior",
    "withdrawn": "Postulación retirada. El empleador ya no puede ver tus datos.",
-   "withdraw": "Retirar postulación"
+   "withdraw": "Retirar postulación",
+   "accepted": "Oferta aceptada. Tu centro de orientación profesional tiene el registro."
   },
   "careerCenterCaseload": {
    "caseload": "Casos asignados",
@@ -2416,7 +2512,6 @@
    "noSignalsRightNow": "No hay indicadores por ahora.",
    "snoozedUntilUntil": "Pospuesto hasta {until}",
    "snoozedByByNameReason": "Pospuesto por {byName}: {reason}",
-   "openModule": "Abrir módulo",
    "removeSnooze": "Quitar aplazamiento",
    "snooze": "Posponer…",
    "snooze2": "Posponer",
@@ -2424,10 +2519,7 @@
    "other": "Otro",
    "theAICopilotIsTurned": "El copiloto de IA está desactivado para esta institución. Un administrador de orientación profesional puede activarlo en la configuración de indicadores y copiloto.",
    "draftOutreachMessage": "Redactar mensaje de contacto",
-   "developmentStub": "Marcador de desarrollo",
    "includesStaffOnlyNotesDont": "Incluye notas solo para el personal: no las compartas con el estudiante",
-   "studentTextContainedInstructionLike": "El texto del estudiante contenía instrucciones; se trató como datos",
-   "developmentStubRemoveTheStub": "Marcador de desarrollo: elimina la línea del marcador antes de enviarlo",
    "iReviewedThisMessageAnd": "Revisé este mensaje y quiero enviarlo",
    "sendViaMessaging": "Enviar por mensajería",
    "discard": "Descartar",
@@ -2438,7 +2530,11 @@
    "messageSentThroughMessaging": "Mensaje enviado por mensajería.",
    "sourceManual": "Asignado manualmente",
    "sourceUnassigned": "Sin asignar",
-   "sourceRule": "Según la regla {rule}"
+   "sourceRule": "Según la regla {rule}",
+   "openModule": "Abrir la página relacionada",
+   "developmentStub": "Texto de ejemplo: la IA no está configurada",
+   "studentTextContainedInstructionLike": "Parte del texto del estudiante parecía contener instrucciones para la IA, así que se ignoró.",
+   "developmentStubRemoveTheStub": "Texto de ejemplo (la IA no está configurada): elimina la línea de ejemplo antes de enviar"
   },
   "careerCenterMessages": {
    "messagesCampaigns": "Mensajes y campañas",
@@ -2565,7 +2661,6 @@
    "allYears": "Todos los años",
    "program": "Programa",
    "allPrograms": "Todos los programas",
-   "exportCSV": "Exportar CSV",
    "downloadStarted": "La descarga comenzó.",
    "exportFailedStatus": "No se pudo exportar. Inténtalo de nuevo.",
    "type": "Tipo",
@@ -2609,10 +2704,6 @@
    "offersRecordedInOnCampus": "Ofertas registradas en el reclutamiento en el campus",
    "waitingForTheStudent": "Esperando al estudiante",
    "whichEvidenceWentWithPlacement": "Qué evidencia se adjuntó al empleo",
-   "linkAnApplicationSentTo": "Vincular una solicitud enviada a la cuenta Hire de un empleador",
-   "employerId": "ID del empleador",
-   "ourApplicationId": "ID de nuestra solicitud",
-   "theExternalApplicationIdSentToHire": "El externalApplicationId enviado a Hire.",
    "roleOptional": "Cargo (opcional)",
    "recentEventsFromHire": "Eventos recientes de Hire",
    "noEventsReceivedYet": "Todavía no se recibieron eventos",
@@ -2628,7 +2719,6 @@
    "studentsConfirmOnTheirMy": "Los estudiantes confirman en la página «Mi próximo paso» si aceptaron la oferta. Las ofertas aceptadas se convierten en empleos.",
    "studentNamePositionTitleAtEmployerName": "{studentName} · {positionTitle} en {employerName}",
    "correlationNotCausationSmallSamples": "Correlación, no causalidad; muestras pequeñas.",
-   "whenAnEmployerUsesHire": "Cuando un empleador usa Hire, informa las ofertas y contrataciones de las solicitudes que le enviamos. Al vincular el ID de nuestra solicitud con el estudiante, esos informes se convierten en empleos verificados por el empleador.",
    "linkApplication": "Vincular solicitud",
    "chooseAStudentFirst": "Primero, elige un estudiante.",
    "statusRecordedStatus": "Estado registrado: {status}.",
@@ -2636,7 +2726,13 @@
    "tabPlacements": "Empleos",
    "tabAdd": "Agregar registro de investigación",
    "tabOffers": "Señales de ofertas",
-   "tabHire": "Vínculos de Hire"
+   "exportCSV": "Exportar hoja de cálculo (CSV)",
+   "linkAnApplicationSentTo": "Vincular una solicitud enviada al sistema de contratación Hire de un empleador",
+   "employerId": "Referencia del empleador",
+   "ourApplicationId": "Número de solicitud de Edulexa",
+   "theExternalApplicationIdSentToHire": "El número de solicitud que Edulexa envió a Hire.",
+   "whenAnEmployerUsesHire": "Cuando un empleador usa Hire, nos informa sobre las ofertas y contrataciones de las solicitudes que le enviamos. Al vincular una solicitud con el estudiante, esas actualizaciones se convierten en colocaciones confirmadas por el empleador.",
+   "tabHire": "Vínculos con sistemas de contratación"
   },
   "internshipDefense": {
    "rubric": {
@@ -2679,7 +2775,6 @@
    "newStatus": "Nuevo estado",
    "noteRequiredKeptInThe": "Nota (obligatoria; se conserva en el registro de auditoría)",
    "sayWhatYouCheckedFor": "Indica qué verificaste, por ejemplo, una llamada con el supervisor.",
-   "developmentModeThisGradeComes": "Modo de desarrollo: esta calificación se basa en una heurística sencilla, no en un modelo de IA.",
    "thisDefenseCouldntBeGraded": "No se pudo calificar esta defensa automáticamente. El profesorado o el centro de orientación profesional la revisará.",
    "defenseScoreScoreOutOf": "Puntuación de la defensa: <strong>{score}</strong> sobre 100 (la institución busca una puntuación de {threshold} o más, junto con la confirmación del supervisor).",
    "rubricScores": "Puntuaciones de la rúbrica",
@@ -2714,7 +2809,8 @@
     "PartlyVerified": "Verificado parcialmente",
     "NotVerified": "No verificado",
     "Pending": "Pendiente (requiere más revisión)"
-   }
+   },
+   "developmentModeThisGradeComes": "Calificación de muestra: calculada con reglas sencillas, no con IA."
   },
   "coreLabels": {
    "ferpaCategory": {
@@ -2723,13 +2819,13 @@
     "Transcript": "Transcripción",
     "Documents": "Documentos",
     "WorkAuthorization": "Autorización para trabajar",
-    "Resume": "Currículum",
     "EvidencePack": "Paquete de evidencias",
     "Profile": "Nombre y perfil",
     "ContactInfo": "Información de contacto",
     "Education": "Educación (centro educativo, título, especialidad, graduación)",
     "Gpa": "Promedio académico (GPA)",
-    "Assessments": "Evaluaciones"
+    "Assessments": "Evaluaciones",
+    "Resume": "Currículum"
    },
    "workAuth": {
     "PreferNotToSay": "Prefiero no decirlo",
@@ -2759,8 +2855,8 @@
      "explain": "No pudimos confirmar la empresa automáticamente. Es posible que los centros educativos soliciten más detalles antes de aprobar las solicitudes."
     },
     "DomainVerified": {
-     "label": "Dominio verificado",
-     "explain": "El correo electrónico que usas para iniciar sesión coincide con el dominio del sitio web de la empresa."
+     "label": "Dirección de correo electrónico verificada",
+     "explain": "Tu dirección de correo de inicio de sesión termina con el nombre del sitio web de la empresa."
     },
     "StaffVerified": {
      "label": "Personal verificado",
@@ -2890,7 +2986,6 @@
     "equity": "Análisis de equidad"
    },
    "save": "Guardar",
-   "exportCSV": "Exportar CSV",
    "downloadStarted": "La descarga comenzó.",
    "exportFailedStatus": "No se pudo exportar. Inténtalo de nuevo.",
    "delete": "Eliminar",
@@ -2928,7 +3023,8 @@
    "buildingReport": "Generando informe…",
    "privacySetting": "Configuración de privacidad",
    "smallestGroupShownInThe": "Tamaño mínimo del grupo que se muestra en la vista de equidad",
-   "smallerGroupsAppearAsN": "Los grupos más pequeños aparecen como “'<'n”. Mínimo: {minCellSizeFloor}."
+   "smallerGroupsAppearAsN": "Los grupos más pequeños aparecen como “'<'n”. Mínimo: {minCellSizeFloor}.",
+   "exportCSV": "Exportar hoja de cálculo (CSV)"
   },
   "internshipPack": {
    "reports": "Informes",
@@ -3092,7 +3188,6 @@
    "requireInsuranceConfirmation": "Solicitar confirmación del seguro",
    "theSupervisorFormIsSet": "El formulario del supervisor se configura en cada programa (pestaña Programas); los programas creados a partir de una regla usan el formulario del paquete como punto de partida.",
    "templatesAndCertificate": "Plantillas y certificado",
-   "downloadCSVTitle": "Descargar CSV<span>: {title}</span>",
    "theRegulatorHasNotPublished": "El organismo regulador no ha publicado un formato de archivo; revisa las columnas antes de enviarlo.",
    "noObjectionCertificateIssuedThe": "Se emitió el certificado de no objeción; se notificó al estudiante.",
    "completionCertificateIssuedTheStudent": "Se emitió el certificado de finalización; se notificó al estudiante.",
@@ -3125,7 +3220,8 @@
    "fieldMaxHours": "Horas máximas",
    "fieldMinCredits": "Créditos mínimos",
    "fieldMaxCredits": "Créditos máximos",
-   "fieldHoursPerCredit": "Horas por crédito"
+   "fieldHoursPerCredit": "Horas por crédito",
+   "downloadCSVTitle": "Descargar hoja de cálculo (CSV)<span>: {title}</span>"
   },
   "careerCenterInternational": {
    "internationalStudents": "Estudiantes internacionales",
@@ -3306,14 +3402,12 @@
    "saveMappingAndRunA": "Guardar la correspondencia y ejecutar una prueba"
   },
   "careerCenterCalendar": {
-   "calendarSync": "Sincronización del calendario",
    "theCalendarWasntConnectedProviderError": "No se pudo conectar el calendario: {providerError}",
    "disconnectYourCalendarBusyTime": "¿Desconectar tu calendario? Los horarios en los que no estás disponible dejarán de bloquear tus espacios para citas. Los eventos que ya se añadieron seguirán en tu calendario.",
    "calendarDisconnected": "Se desconectó el calendario.",
    "failedFailed": ", {failed} fallidos",
    "calendarUpdatedCreatedAddedUpdated": "Calendario actualizado: {created} añadidos, {updated} modificados, {deleted} eliminados{value}.",
    "calendarSettingsSaved": "Se guardó la configuración del calendario.",
-   "connectYourWorkCalendarSo": "Conecta tu calendario de trabajo para que los horarios en los que no estás disponible bloqueen tus espacios para citas y las citas reservadas aparezcan en tu calendario. Las suscripciones a calendarios (ICS) están en Citas.",
    "finishingTheConnection": "Finalizando la conexión…",
    "yourCalendar": "Tu calendario",
    "connected": "Conectado",
@@ -3333,8 +3427,6 @@
    "checkConnection": "Comprobar conexión",
    "updateCalendarNow": "Actualizar calendario ahora",
    "disconnect": "Desconectar",
-   "noCalendarConnectedYoullBe": "No hay ningún calendario conectado. Se te pedirá que inicies sesión en tu proveedor de calendario y permitas el acceso a tu calendario.",
-   "providersThatAreGreyedOut": "Los proveedores que aparecen atenuados aún no se han configurado en este servidor.",
    "calendarOptionsForAllCounselors": "Opciones de calendario para todos los orientadores",
    "useConnectedCalendarsBusyTime": "Usar los horarios ocupados de los calendarios conectados para bloquear horarios de citas",
    "addBookedAppointmentsToCounselors": "Añadir las citas reservadas a los calendarios conectados de los orientadores",
@@ -3343,9 +3435,13 @@
    "connectProvider": "Conectar {provider}",
    "meetingLinksForVideo": "Las citas por video y las sesiones grupales que organices tendrán su propio enlace de {provider}, que se creará junto con el evento del calendario.",
    "generateMeetingLinks": "Asignar un enlace de reunión propio a las citas por video y las sesiones grupales<span>Se creará un enlace de Microsoft Teams o Google Meet junto con el evento del calendario del orientador. Los orientadores que no tengan un calendario conectado o que elijan su propia sala compartirán su enlace permanente.</span>",
-   "addStudentsToMeetingInvite": "Añadir estudiantes a la invitación de la reunión<span>Se añadirá al estudiante (o a cada estudiante inscrito en una sesión grupal, que no podrá ver a los demás) al evento del calendario de quien organiza la reunión. Así, Microsoft 365 o Google le enviará la invitación, las actualizaciones y la cancelación, y podrá unirse directamente a la reunión. Su correo electrónico verificado se compartirá con el proveedor de calendario de quien organiza la reunión. Si desactivas esta opción, los estudiantes se eliminarán de los próximos eventos en la siguiente actualización del calendario.</span>",
    "studentsAreAddedToInvites": "Los estudiantes se añaden a los eventos como asistentes y reciben la invitación, los cambios y la cancelación desde tu calendario. No se añaden los estudiantes en lista de espera.",
-   "connectionWorksCountBusyPeriods": "{count, plural, one {La conexión funciona: se encontró # período ocupado en los próximos 7 días.} other {La conexión funciona: se encontraron # períodos ocupados en los próximos 7 días.}}"
+   "connectionWorksCountBusyPeriods": "{count, plural, one {La conexión funciona: se encontró # período ocupado en los próximos 7 días.} other {La conexión funciona: se encontraron # períodos ocupados en los próximos 7 días.}}",
+   "calendarSync": "Conexión con el calendario",
+   "connectYourWorkCalendarSo": "Conecta tu calendario de trabajo para que los bloques de tiempo ocupado bloqueen tus horarios de cita y las citas reservadas aparezcan en tu calendario. Encontrarás los enlaces de calendario que puedes añadir a tu propio calendario en Citas.",
+   "noCalendarConnectedYoullBe": "No hay ningún calendario conectado. Se te pedirá que inicies sesión en tu cuenta de calendario y permitas el acceso.",
+   "providersThatAreGreyedOut": "Los calendarios que aparecen en gris aún no están disponibles.",
+   "addStudentsToMeetingInvite": "Añadir estudiantes a la invitación de la reunión<span>El estudiante (o cada estudiante inscrito en una sesión grupal, que no puede ver a los demás) se añade al evento del calendario de quien la organiza. Así, Microsoft 365 o Google les envían la invitación, las actualizaciones y la cancelación, y pueden unirse directamente a la reunión. Su correo electrónico verificado se envía al servicio de calendario de quien la organiza. Si desactivas esta opción, los estudiantes se quitarán de los próximos eventos con la siguiente actualización del calendario.</span>"
   },
   "careerCenterPeople": {
    "people": "Personas",
@@ -3368,12 +3464,10 @@
    "pagePageOfPages": "Página {page} de {pages}",
    "next": "Siguiente",
    "sendInvite": "Enviar invitación",
-   "cSVWithAnEmailColumn": "CSV con una columna <strong>Email</strong> y columnas opcionales Nombre, Número de estudiante, Título, Especialidad (separa varias con ;) y Fecha de graduación. Las filas se convierten en estudios verificados por la institución.",
    "confirmImport": "Confirmar importación",
    "previewCreatedNewUpdatedUpdated": "Vista previa: {created} nuevos, {updated} actualizados, {count} con problemas.",
    "lineLineError": "Línea {line}: {error}",
    "rowsWithProblemsAreSkipped": "Se omiten las filas con problemas. No se guarda nada hasta que confirmes.",
-   "chooseACSVFileFirst": "Primero, elige un archivo CSV.",
    "emailWasInvitedAsRole": "Se invitó a {email} como {role}. Se vinculará cuando inicie sesión con ese correo.",
    "removeNameRoleFromThis": "¿Quitar a {name} ({role}) de esta institución?",
    "nameWasUpdated": "Se actualizó {name}.",
@@ -3391,7 +3485,6 @@
    "pages": "Páginas",
    "inviteSomeone": "Invitar a alguien",
    "importStudentRoster": "Importar lista de estudiantes",
-   "cSVFile": "Archivo CSV",
    "total": "Total:",
    "allRoles": "Todos los roles",
    "tryAnotherRoleOrSearch": "Prueba con otro rol o término de búsqueda, o invita a alguien abajo.",
@@ -3399,7 +3492,10 @@
    "directoryHold": "Bloqueo del directorio",
    "added": "Agregado",
    "directoryHoldForName": "bloqueo del directorio de {name}",
-   "previous": "Anterior"
+   "previous": "Anterior",
+   "cSVFile": "Hoja de cálculo (archivo CSV)",
+   "cSVWithAnEmailColumn": "Una hoja de cálculo (archivo CSV) con una columna <strong>Correo electrónico</strong> y columnas opcionales para Nombre, Número de estudiante, Título, Especialidad (separa varias con ;) y Fecha de graduación. Las filas se convertirán en datos académicos verificados por la institución.",
+   "chooseACSVFileFirst": "Primero, elige una hoja de cálculo (archivo CSV)."
   },
   "careerCenterSettings": {
    "settings": "Configuración",
@@ -3417,18 +3513,18 @@
    "commaSeparatedForExampleState": "Separados por comas; por ejemplo, state.edu, mail.state.edu. Cada dominio solo puede pertenecer a una institución.",
    "timeZone": "Zona horaria",
    "otherTimeZone": "Otra zona horaria",
-   "anIANANameSuchAs": "Un nombre de IANA, como Europe/London.",
    "postalAddress": "Dirección postal",
    "printedAtTheBottomOf": "Se incluye al final de los correos de campaña, tal como exige la ley antispam de EE. UU. (CAN-SPAM). Déjalo vacío para quitarla.",
    "look": "Apariencia",
-   "logoURL": "URL del logotipo",
    "primaryColor": "Color principal",
    "hexColorForExample4f46e5": "Color hexadecimal; por ejemplo, #4f46e5.",
    "pickPrimaryColor": "Elegir color principal",
    "other": "Otro…",
    "letStudentsJoinOnTheir": "Permite que los estudiantes se registren por su cuenta<span>Cualquier persona que inicie sesión con uno de los dominios de correo electrónico anteriores pasa a ser estudiante de esta institución.</span>",
    "underFERPAYourSchoolMay": "Según FERPA, tu institución puede compartir información del directorio con empleadores aprobados, a menos que un estudiante solicite restringirla. Elige qué se considera información del directorio.",
-   "settingsCouldntBeLoaded": "No se pudo cargar la configuración."
+   "settingsCouldntBeLoaded": "No se pudo cargar la configuración.",
+   "anIANANameSuchAs": "El nombre estándar de la zona horaria, como Europe/London o America/Chicago.",
+   "logoURL": "Enlace al logotipo"
   },
   "careerCenterPrivacyLog": {
    "privacyLog": "Registro de privacidad",
@@ -3507,7 +3603,6 @@
    "minorsAndGuardianConsent": "Menores de edad y consentimiento del tutor",
    "countRowsHadProblemsValue": "; {count} filas tuvieron problemas: {value}",
    "updatedStudentsUpdatedValue": "Se actualizaron {updated} estudiantes{value}",
-   "importDatesOfBirthCSV": "Importar fechas de nacimiento (CSV)",
    "columnsEmailOrStudentNumberThen": "Columnas: Email o StudentNumber, seguido de DateOfBirth (YYYY-MM-DD) o Under18 (yes/no), o ambos. La importación de la lista de estudiantes acepta las mismas columnas.",
    "emailDateOfBirth": "Email,DateOfBirth",
    "noAgesRecorded": "No hay edades registradas",
@@ -3559,7 +3654,8 @@
    "openOpen": "{open} abiertos",
    "overdueOverdue": "{overdue} vencidos",
    "nameEmailTypeDueDueAt": "<strong>{name}</strong> <bdi>{email}</bdi> · {type} · vence el {dueAt}",
-   "recordTypeWouldBeDeleted": "{recordType}: se eliminarían {count}"
+   "recordTypeWouldBeDeleted": "{recordType}: se eliminarían {count}",
+   "importDatesOfBirthCSV": "Importar fechas de nacimiento (hoja de cálculo)"
   },
   "billing": {
    "title": "Facturación",
@@ -3659,7 +3755,6 @@
    "program": "Programa",
    "allPrograms": "Todos los programas",
    "apply": "Mostrar informe",
-   "exportCsv": "Exportar CSV",
    "exportXlsx": "Exportar Excel",
    "exportDetail": "Lista con nombres (Excel)",
    "exportDetailHint": "Solo para administradores de orientación profesional. Contiene datos personales y queda registrado.",
@@ -3681,7 +3776,8 @@
    "reportLink": "Informes de localización de la fuerza laboral",
    "tablesHeading": "Empleo de graduados con ciudadanía",
    "exportFailedStatus": "No se pudo exportar. Inténtalo de nuevo.",
-   "importResult": "{updated, plural, one {Se actualizó # estudiante} other {Se actualizaron # estudiantes}}; {skipped, plural, =0 {no se omitió ninguno} one {se omitió # fila} other {se omitieron # filas}}."
+   "importResult": "{updated, plural, one {Se actualizó # estudiante} other {Se actualizaron # estudiantes}}; {skipped, plural, =0 {no se omitió ninguno} one {se omitió # fila} other {se omitieron # filas}}.",
+   "exportCsv": "Exportar hoja de cálculo (CSV)"
   },
   "careerCenterPlacements": {
    "campusDrives": "Jornadas de contratación en el campus",
@@ -3722,7 +3818,6 @@
    "createdRecordsAddedAndUpdated": "Se agregaron {created} registros y se actualizaron {updated}.",
    "recordDeleted": "Registro eliminado.",
    "intakeFiguresSaved": "Se guardaron las cifras de admisión.",
-   "placementOffice": "Oficina de inserción laboral",
    "yourRecordsOfCampusDrives": "Tus registros de jornadas de selección en el campus, rondas, ofertas y paquetes salariales, con listas de estudiantes que cumplen los requisitos según sus datos académicos. Las empresas no publican puestos ni ven a los estudiantes aquí, y los estudiantes no solicitan empleos aquí: solo ven sus propios resultados y ofertas.",
    "drives": "Jornadas",
    "statDrives": "Jornadas",
@@ -3834,7 +3929,8 @@
    "optedOut": "Se retiró",
    "notGraduatedOnTime": "No se graduó a tiempo",
    "qualified": "aprobó",
-   "appeared": "se presentó"
+   "appeared": "se presentó",
+   "placementOffice": "Colocaciones"
   },
   "careerCenterDrives": {
    "title": "Jornadas de contratación en el campus",
@@ -3881,15 +3977,15 @@
    "dream": "Nivel de ensueño desde (₹ al año)",
    "superDream": "Nivel de súper ensueño desde (₹ al año)",
    "tiersHint": "Déjalo vacío si no hay niveles",
-   "pricingTitle": "Opciones de precios",
-   "pricingNote": "Solo opciones: aún no se han definido los precios para India y no se cobra nada.",
    "feeRequired": "Los empleadores pagan una tarifa por publicar",
    "premium": "Ofrece mayor visibilidad a los empleadores",
    "save": "Guardar reglas",
    "createTitle": "Crear una convocatoria para una empresa",
    "createHelp": "Para una empresa que contrata a través de tu oficina. Está aprobada y abierta a los estudiantes desde el principio.",
    "ctcHint": "Por ejemplo, 6 LPA o 600000",
-   "createDrive": "Crear convocatoria"
+   "createDrive": "Crear convocatoria",
+   "pricingTitle": "Tarifas de publicación para empleadores",
+   "pricingNote": "Solo para tus registros: las tarifas para empleadores aún no están definidas y no se cobrará nada."
   },
   "careerCenterDrive": {
    "backToQueue": "Jornadas de contratación en el campus",
@@ -4299,7 +4395,6 @@
    "theStudentsInformationIsShared": "La información del estudiante se comparte contigo con su consentimiento y únicamente para supervisar esta experiencia.",
    "academicProgram": "Programa académico",
    "codeTitleRequiredHoursHours": "{code} {title} ({requiredHours} horas)",
-   "documentFingerprintSHA256Sha256": "Huella digital del documento (SHA-256): {sha256}",
    "signedSoFar": "Firmado hasta ahora:",
    "youSignedThisVersionThank": "Firmaste esta versión. ¡Gracias!",
    "theDetailsAreCorrect": "Los datos son correctos",
@@ -4331,7 +4426,8 @@
    "titleAgreement": "Acuerdo de aprendizaje de {name}",
    "titleHours": "Horas de {name}",
    "titleMidterm": "Evaluación de mitad de período de {name}",
-   "titleFinal": "Evaluación final de {name}"
+   "titleFinal": "Evaluación final de {name}",
+   "documentFingerprintSHA256Sha256": "Código de verificación del documento: {sha256}"
   },
   "careerUnsubscribe": {
    "privacy": "Privacidad",
@@ -4539,22 +4635,14 @@
    "aICopilot": "Copiloto de IA",
    "turnCopilotOff": "Desactivar el copiloto",
    "turnCopilotOn": "Activar el copiloto",
-   "aIGenerationLog": "Registro de generación de IA",
    "noAIGenerationsYet": "Todavía no hay generaciones de IA",
    "prepBrief": "Resumen de preparación",
    "signalsInUse": "Alertas en uso",
    "saveSignalSettings": "Guardar la configuración de alertas",
-   "whenOnCounselorsCanGenerate": "Cuando está activado, los orientadores pueden generar un resumen para preparar una cita y un borrador de mensaje de contacto. Todo se identifica como generado con IA, nada se envía automáticamente (los orientadores lo editan y lo envían por mensajería) y cada generación queda registrada abajo. Los datos de los estudiantes solo se envían al proveedor de IA configurado por la institución para crear estos borradores y nunca se comparten con empleadores.",
-   "noAIProviderConfigured": "No hay ningún proveedor de IA configurado",
-   "developmentStubOutputNoProvider": "Resultado del marcador de desarrollo (sin claves de proveedor)",
    "includeStaffOnlyAdvisingNotes": "Incluir en los resúmenes de preparación las notas de orientación solo para el personal (se marcan como solo para el personal; nunca se usan en los borradores de contacto)",
    "saveNoteSetting": "Guardar la configuración de notas",
    "aIGenerationsNewestFirst": "Generaciones de IA, de más recientes a más antiguas",
    "by": "Por",
-   "model": "Modelo",
-   "promptHash": "Hash de la instrucción",
-   "stub": "Marcador provisional",
-   "instructionLikeText": "Texto con apariencia de instrucción",
    "sentAfterReview": "Enviado después de revisarlo",
    "signalSettingsSaved": "Se guardó la configuración de alertas.",
    "copilotTurnedOff": "Se desactivó el copiloto.",
@@ -4586,17 +4674,24 @@
      "hint": "Se usa cuando: hay una solicitud de mentoría pendiente"
     },
     "passingSprintPercent": {
-     "label": "Sprint superado (% de pruebas ocultas)",
-     "hint": "Se usa cuando: no hay evidencia verificada"
+     "hint": "Se usa cuando: no hay evidencia verificada",
+     "label": "Porcentaje de sprints aprobados (porcentaje de verificaciones aprobadas)"
     }
-   }
+   },
+   "aIGenerationLog": "Actividad de IA",
+   "whenOnCounselorsCanGenerate": "Al activar esta opción, los orientadores pueden generar un resumen para preparar una cita y un borrador de mensaje de contacto. Todo se identifica como redactado con IA, no se envía nada automáticamente (los orientadores editan y envían los mensajes), y cada generación queda registrada a continuación. Los datos del estudiante solo se envían al servicio de IA elegido por la institución para crear estos borradores y nunca se comparten con empleadores.",
+   "noAIProviderConfigured": "No hay ningún servicio de IA configurado",
+   "developmentStubOutputNoProvider": "Resultado de ejemplo (no hay ningún servicio de IA configurado)",
+   "model": "IA utilizada",
+   "promptHash": "Huella de la solicitud",
+   "stub": "Ejemplo (la IA no está configurada)",
+   "instructionLikeText": "Texto que parecía contener instrucciones para la IA"
   },
   "careerCenterExperiences": {
    "student": "Estudiante",
    "status": "Estado",
    "cancel": "Cancelar",
    "edit": "Editar",
-   "exportCSV": "Exportar CSV",
    "description": "Descripción",
    "all": "Todo",
    "downloadFailed": "No se pudo descargar.",
@@ -4667,7 +4762,8 @@
    "kindWasDue": "{kind} debía completarse el {dueDate}",
    "noCptRecordsPending": "No hay registros de CPT pendientes.",
    "cptStatusStarts": "{cptStatus} · empieza el {startDate}",
-   "cptNotRecorded": "CPT no registrado"
+   "cptNotRecorded": "CPT no registrado",
+   "exportCSV": "Exportar hoja de cálculo (CSV)"
   },
   "careerCenterPlacementsDetail": {
    "student": "Estudiante",
@@ -4680,9 +4776,7 @@
    "joiningDate": "Fecha de incorporación",
    "choose": "Elegir…",
    "waitingForSignIn": "Pendientes de inicio de sesión",
-   "downloadCSV": "Descargar CSV",
    "offerRecorded": "Oferta registrada.",
-   "placementOffice": "Oficina de inserción laboral",
    "packageCTCPerYear": "Paquete (CTC al año)",
    "imported": "Importado",
    "checked": "Revisado",
@@ -4756,7 +4850,9 @@
    "resultsForName": "Resultados de {name}",
    "resultInName": "Resultado en {name}",
    "resultForName": "Resultado de {name}",
-   "saved": "Guardado"
+   "saved": "Guardado",
+   "downloadCSV": "Descargar hoja de cálculo (CSV)",
+   "placementOffice": "Colocaciones"
   },
   "appointmentDetail": {
    "student": "Estudiante",
@@ -4874,10 +4970,10 @@
    "source": {
     "StudentReported": "Estudiante",
     "EmployerReported": "Oferta de empleador (reclutamiento en el campus)",
-    "AtsWebhook": "Sistema de seguimiento de candidatos del empleador",
     "HireWebhook": "Sistema de contratación del empleador",
     "StaffResearch": "Investigación del centro de orientación profesional",
-    "PlatformImport": "Plataforma de colocación de la institución (importada)"
+    "PlatformImport": "Plataforma de colocación de la institución (importada)",
+    "AtsWebhook": "Sistema de contratación del empleador"
    },
    "verification": {
     "StaffConfirmed": "Confirmado por el personal",
@@ -4950,7 +5046,6 @@
    "notShared": "No se comparten los datos",
    "cgpaLine": "Promedio {cgpa} · materias pendientes activas {backlogs} · 10.º {p10}% · 12.º {p12}%",
    "revokeOffer": "Retirar oferta",
-   "disclosureNote": "Los estudiantes compartieron estos datos con tu empresa al presentar su solicitud. Cada vez que se muestra esta lista, la consulta queda registrada en el registro de divulgación de la universidad.",
    "selection": "Selección",
    "shortlistSelected": "Preseleccionar a los seleccionados ({count})",
    "recordResult": "Registrar resultado para los seleccionados",
@@ -4961,13 +5056,10 @@
    "slotMinutes": "Minutos por turno",
    "gapMinutes": "Minutos entre turnos",
    "place": "Lugar",
-   "videoLink": "Enlace de video (https)",
    "panel": "Panel de entrevistas",
    "scheduleSelected": "Programar para {count} seleccionados",
    "scheduleShortlist": "Programar entrevistas para la lista de preselección",
    "c4Title": "Usar un calendario de entrevistas en el campus",
-   "c4Help": "Vincula esta ronda a un calendario de entrevistas con preselección de la universidad; se invitará a los preseleccionados a reservar sus propios turnos allí.",
-   "scheduleId": "ID del calendario de entrevistas",
    "linkSchedule": "Vincular calendario",
    "inviteShortlist": "Invitar a los preseleccionados",
    "makeOfferTitle": "Hacer una oferta",
@@ -4976,11 +5068,15 @@
    "ctc": "CTC anual",
    "ctcHint": "Déjalo vacío para usar el paquete salarial de la convocatoria. Por ejemplo, 12 LPA o 1200000.",
    "respondBy": "Responder antes del",
-   "overridePolicy": "Registrar la oferta aunque la política de colocación de la universidad la rechace (queda auditado)",
    "makeOffer": "Hacer oferta",
    "lettersTitle": "Cartas de oferta",
    "lettersHelp": "Emite una carta de oferta para una oferta. El estudiante la acepta al firmarla; puedes descargar la copia firmada.",
-   "chooseOffer": "Elige una oferta"
+   "chooseOffer": "Elige una oferta",
+   "disclosureNote": "Los estudiantes compartieron estos datos con tu empresa al postularse. Cada vez que se muestra esta lista, queda registrado en el historial de divulgación de la escuela.",
+   "videoLink": "Enlace de video (comienza con https://)",
+   "c4Help": "Vincula esta ronda con un calendario de entrevistas de preselección de la escuela; se invita a las personas preseleccionadas a reservar sus propios horarios allí.",
+   "scheduleId": "Número del calendario de entrevistas",
+   "overridePolicy": "Registrar la oferta aunque la política de la escuela la rechace (queda auditado)"
   },
   "staffGroupSessions": {
    "student": "Estudiante",
@@ -5367,31 +5463,21 @@
    "countAdded": "Agregado",
    "sISSettingsSaved": "Se guardó la configuración del SIS.",
    "dryRunFinishedNothingWas": "La simulación terminó: no se guardó nada.",
-   "syncFinished": "La sincronización terminó.",
-   "theSyncFailed": "No se pudo completar la sincronización.",
    "studentInformationSystem": "Sistema de información estudiantil",
-   "onlyCareerAdminsCanManage": "Solo los administradores del centro de orientación profesional pueden gestionar la sincronización de listas.",
-   "keepYourStudentRosterIn": "Mantén la lista de estudiantes sincronizada con tu SIS: usa archivos o la API de OneRoster 1.2, o una exportación CSV de Banner, Workday Student o PeopleSoft. Los estudiantes se identifican mediante el ID del SIS y el correo electrónico; su registro en la institución se marca como verificado.",
    "uploadAOneRosterBundle": "Subir un paquete de OneRoster",
    "oneRosterFiles": "Archivos de OneRoster",
    "aZipBundleOrOrgs": "Un paquete .zip, o bien orgs.csv, users.csv, enrollments.csv y academicSessions.csv (roles.csv para la versión 1.2). demographics.csv solo se lee si lo permites abajo.",
    "checkTheBundle": "Verificar el paquete",
-   "syncRoster": "Sincronizar la lista",
-   "uploadASISCSVExport": "Subir una exportación CSV del SIS",
-   "cSVExport": "Exportación CSV",
    "exportLayout": "Formato de exportación",
    "checkRowCountRows": "Verificar {rowCount} filas",
-   "syncRowCountRows": "Sincronizar {rowCount} filas",
    "oneRosterAPI": "API de OneRoster",
    "kind": {
     "OneRosterRest": "API de OneRoster",
     "OneRosterCsv": "CSV de OneRoster",
-    "GenericCsv": "CSV del SIS"
+    "GenericCsv": "Hoja de cálculo del SIS (CSV)"
    },
-   "baseURL": "URL base",
    "upToTheVersionE": "Incluye hasta la versión; p. ej., https://sis.example.edu/ims/oneroster/rostering/v1p2",
    "tokenURL": "URL del token",
-   "oAuth20ClientCredentials": "Punto de conexión de credenciales de cliente de OAuth 2.0",
    "clientId": "ID de cliente",
    "clientSecret": "Secreto del cliente",
    "aSecretIsSavedStored": "Hay un secreto guardado (almacenado de forma cifrada). Déjalo en blanco para conservarlo.",
@@ -5400,8 +5486,6 @@
    "rosterCoreReadonly": "roster-core.readonly",
    "onlyThisSchoolOrgSourcedId": "Solo esta institución (sourcedId, opcional)",
    "alsoFiltersUploadedBundles": "También se aplica a los paquetes subidos.",
-   "syncHistory": "Historial de sincronización",
-   "noSyncsYet": "Todavía no hay sincronizaciones.",
    "dryRun": "Simulación",
    "fullSuspendMissing": "Completa, suspender a quienes falten",
    "full": "Completa",
@@ -5409,23 +5493,14 @@
    "createdAddedUpdatedUpdatedReactivated": "{created} agregados, {updated} actualizados, {reactivated} reactivados, {deactivated} suspendidos, {skipped} omitidos",
    "dryRun2": " (simulación)",
    "lineLine": "Línea {line}: ",
-   "syncOptions": "Opciones de sincronización",
    "dryRunReportWhatWould": "Simulación (informa qué cambiaría; no guarda nada)",
    "thisIsAFullRoster": "Esta es una lista completa (incluye a todos los estudiantes actuales)",
-   "suspendStudentsMissingFromThis": "Suspender a los estudiantes que falten en este listado completo<span>Desactivado de forma predeterminada. Los estudiantes suspendidos no pueden iniciar sesión en la plataforma de orientación profesional hasta que aparezcan en una sincronización posterior.</span>",
-   "yourSchoolReachesTheCareer": "Tu centro educativo accede a la plataforma de orientación profesional a través de una plataforma asociada, que normalmente gestiona el listado. Sincroniza el listado aquí solo si así lo establece el acuerdo con tu socio.",
    "readColumns": "Leer columnas",
    "options": "Opciones",
    "importDemographicsSexAndRace": "Importar datos demográficos (solo indicadores de sexo y raza/etnia; nunca se guardan la fecha ni el lugar de nacimiento). Si desactivas esta opción, se eliminarán los datos demográficos guardados.",
-   "pullTheRosterFromThe": "Obtener el listado de la API cada noche (también hay que activar la programación nocturna en este servidor)",
    "nightlyPullsSuspendStudentsMissing": "Las sincronizaciones nocturnas suspenden a los estudiantes que no aparecen en el SIS",
-   "saveAPISettings": "Guardar la configuración de la API",
-   "lastSyncLastSyncAt": "Última sincronización: {lastSyncAt}",
-   "syncNow": "Sincronizar ahora",
-   "rosterSyncs": "Sincronizaciones del listado",
    "changes": "Cambios",
    "chooseTheOneRosterZipOr": "Selecciona el archivo .zip de OneRoster o sus archivos CSV.",
-   "chooseACSVExportFirst": "Selecciona primero una exportación CSV.",
    "chooseAFileAndCheck": "Selecciona un archivo y comprueba primero la correspondencia de campos.",
    "latestResultKindValue": "Último resultado: {kind}{value}",
    "countInFeed": "Estudiantes en el archivo",
@@ -5434,7 +5509,28 @@
    "countMissing": "No aparecen en el archivo",
    "countReactivated": "Reactivados",
    "countSkipped": "Filas omitidas",
-   "required": " (obligatorio)"
+   "required": " (obligatorio)",
+   "oAuth20ClientCredentials": "La dirección de inicio de sesión que te proporciona tu SIS para las credenciales de cliente de OAuth 2.0",
+   "syncHistory": "Historial de actualizaciones",
+   "noSyncsYet": "Todavía no hay actualizaciones.",
+   "syncOptions": "Opciones de actualización",
+   "suspendStudentsMissingFromThis": "Suspender a los estudiantes que no aparezcan en esta lista completa<span>Desactivado de forma predeterminada. Los estudiantes suspendidos no pueden iniciar sesión en la plataforma de orientación profesional hasta que aparezcan en una actualización posterior.</span>",
+   "yourSchoolReachesTheCareer": "Tu escuela accede a la plataforma de orientación profesional a través de una plataforma asociada, que normalmente administra la lista de estudiantes. Usa las actualizaciones de listas aquí solo si así lo indica el acuerdo con tu socio.",
+   "pullTheRosterFromThe": "Importar la lista de estudiantes de tu SIS cada noche (el equipo de soporte de Edulexa también debe activar la programación nocturna)",
+   "saveAPISettings": "Guardar la configuración de conexión",
+   "lastSyncLastSyncAt": "Última actualización: {lastSyncAt}",
+   "syncNow": "Actualizar ahora",
+   "rosterSyncs": "Actualizaciones de la lista de estudiantes",
+   "chooseACSVExportFirst": "Primero, selecciona una exportación de hoja de cálculo (CSV).",
+   "syncFinished": "Se terminó de actualizar la lista.",
+   "theSyncFailed": "No se pudo actualizar la lista.",
+   "onlyCareerAdminsCanManage": "Solo los administradores de orientación profesional pueden gestionar las actualizaciones de la lista.",
+   "keepYourStudentRosterIn": "Mantén la lista de estudiantes sincronizada con tu SIS: usa archivos OneRoster 1.2, una conexión OneRoster o una exportación de hoja de cálculo (CSV) de Banner, Workday Student o PeopleSoft. Los estudiantes se vinculan por su ID de SIS y correo electrónico; su expediente académico queda marcado como verificado.",
+   "syncRoster": "Actualizar lista",
+   "uploadASISCSVExport": "Sube una exportación de hoja de cálculo (CSV) de tu SIS",
+   "cSVExport": "Exportación de hoja de cálculo (CSV)",
+   "syncRowCountRows": "Importar {rowCount} filas",
+   "baseURL": "Dirección base (URL)"
   },
   "campaignsPanel": {
    "status": "Estado",
@@ -5462,7 +5558,6 @@
    "campaignNameStaffOnly": "Nombre de la campaña (solo para el personal)",
    "category": "Categoría",
    "recipientsCanUnsubscribeFromEach": "Los destinatarios pueden darse de baja de cada categoría.",
-   "mergeFields": "Campos de combinación: '{''{'firstName'}''}', '{''{'school'}''}'",
    "plainTextBlankLinesStart": "Texto sin formato; las líneas en blanco comienzan párrafos nuevos. Se agrega a los correos un pie con los datos de contacto de tu institución y un enlace para darse de baja.",
    "roleNoneStudentsAndAlumni": "Rol (ninguno = estudiantes y exalumnos)",
    "membershipStatus": "Estado de membresía",
@@ -5498,8 +5593,9 @@
    "statDelivered": "Entregado",
    "statEmailsSent": "Correos enviados",
    "statInAppSent": "Notificaciones enviadas en la aplicación",
-   "statEmailSuppressed": "Correo no enviado",
-   "statUnsubscribes": "Bajas"
+   "statUnsubscribes": "Bajas",
+   "mergeFields": "Puedes agregar esto al mensaje: '{''{'firstName'}''}', '{''{'school'}''}'",
+   "statEmailSuppressed": "No se envió: la persona desactivó estos mensajes"
   },
   "studentPrivacyRights": {
    "status": "Estado",
@@ -5759,7 +5855,6 @@
    "colApplicant": "Solicitante",
    "title": "Hire (seguimiento de candidatos)",
    "intro": "Si tu empresa usa Hire, conéctalo: las vacantes se importan desde Hire, los estudiantes que postulan con su consentimiento se envían a Hire y las actualizaciones de etapa, oferta y contratación vuelven a la convocatoria del campus.",
-   "platformOff": "La integración con Hire aún no está habilitada en esta plataforma.",
    "key": "Clave de socio de Hire",
    "keyHint": "Genérala en Hire, en Configuración → Integraciones → Edulexa. Se guarda cifrada y no volverá a mostrarse.",
    "autoPush": "Enviar a Hire las postulaciones con consentimiento en cuanto los estudiantes postulen",
@@ -5772,14 +5867,11 @@
    "webhookOff": "No registrado (ponte al día para recibir los cambios)",
    "compensation": "Sueldo de la oferta compartido",
    "compensationOff": "No (se usa el CTC de la convocatoria)",
-   "jobsSynced": "Última sincronización de vacantes",
    "lastEvent": "Última actualización de Hire",
    "never": "Nunca",
    "missingScopes": "Falta la clave: {scopes}",
    "lastError": "Último problema: {error}",
    "failedCount": "{count, plural, one {{count} actualización requiere atención.} other {{count} actualizaciones requieren atención.}}",
-   "syncJobs": "Sincronizar vacantes",
-   "synced": "Vacantes sincronizadas: {created} nuevas, {updated} actualizadas.",
    "reconcile": "Ponerse al día desde Hire",
    "reconciled": "{count, plural, one {{count} cambio aplicado.} other {{count} cambios aplicados.}}",
    "processed": "{count, plural, one {{count} actualización enviada.} other {{count} actualizaciones enviadas.}}",
@@ -5812,7 +5904,11 @@
    "colLastSync": "Última actualización",
    "notShown": "No compartido",
    "notInHire": "No está en Hire",
-   "sendPending": "{count, plural, one {Enviar {count} actualización pendiente} other {Enviar {count} actualizaciones pendientes}}"
+   "sendPending": "{count, plural, one {Enviar {count} actualización pendiente} other {Enviar {count} actualizaciones pendientes}}",
+   "platformOff": "La conexión con Hire aún no está activada.",
+   "jobsSynced": "Última actualización de empleos",
+   "syncJobs": "Actualizar empleos",
+   "synced": "Empleos actualizados: {created} nuevos, {updated} actualizados."
   },
   "campusShared": {
    "appStatus": {
@@ -5846,12 +5942,12 @@
    },
    "docKind": {
     "Transcript": "Transcripción",
-    "Resume": "Currículum",
     "CoverLetter": "Carta de presentación",
     "Marksheet": "Certificado de calificaciones",
     "IdProof": "Documento de identidad",
     "Portfolio": "Portafolio",
-    "Other": "Otro documento"
+    "Other": "Otro documento",
+    "Resume": "Currículum"
    },
    "eligibility": {
     "eligible": "Apto",
@@ -6043,7 +6139,6 @@
    "none": "Todavía no hay una carta de oferta. El estudiante puede aceptar la oferta directamente hasta que emitas una; después, la acepta al firmarla.",
    "issueTitle": "Emitir una carta de oferta",
    "reissueTitle": "Emitir una nueva versión",
-   "providerNote": "El estudiante la firma con {provider}. Al firmarla, acepta la oferta conforme a la política de colocación laboral de la universidad.",
    "providerDm": "la firma electrónica del servicio de documentos",
    "providerBuiltin": "firma con un clic (se registran el nombre escrito, la hora y la huella digital)",
    "modeLabel": "Cómo crear la carta",
@@ -6063,7 +6158,8 @@
    "fileHint": "PDF o Word (.docx), hasta 10 MB.",
    "upload": "Subir y enviar",
    "history": "{count, plural, one {{count} versión} other {{count} versiones}}",
-   "historyLine": "Versión {version}: {status}, emitida el {date}"
+   "historyLine": "Versión {version}: {status}, emitida el {date}",
+   "providerNote": "El estudiante la firma con {provider}. Al firmarla, acepta la oferta, de acuerdo con la política de la escuela."
   },
   "docReviewShared": {
    "item": "Elemento",
@@ -6144,9 +6240,9 @@
    "validUntil": "Válido hasta el {date}",
    "downloadBadge": "Descargar Open Badge",
    "downloadBadgeFor": "Descargar Open Badge de {name}",
-   "downloadJson": "JSON-LD",
-   "downloadJsonFor": "Descargar {name} como JSON-LD",
-   "badgeHint": "Los archivos Open Badges 3.0 se pueden agregar a billeteras digitales y verificar en la página pública de verificación."
+   "badgeHint": "Los archivos Open Badges 3.0 se pueden agregar a billeteras digitales y verificar en la página pública de verificación.",
+   "downloadJson": "Archivo legible (JSON-LD)",
+   "downloadJsonFor": "Descargar {name} como archivo legible (JSON-LD)"
   },
   "attainmentView": {
    "colSource": "Fuente",
@@ -6161,7 +6257,6 @@
    "colOutcome": "Resultado",
    "colWeight": "Peso",
    "colTarget": "Objetivo",
-   "downloadCSV": "Descargar CSV",
    "colLevel": "Nivel",
    "apply": "Aplicar",
    "band": {
@@ -6201,7 +6296,8 @@
    "colMeasure": "Medida",
    "colThresholds321": "Umbrales 3/2/1",
    "colAssessed": "Evaluados",
-   "colAtOrAboveTarget": "Alcanza o supera el objetivo"
+   "colAtOrAboveTarget": "Alcanza o supera el objetivo",
+   "downloadCSV": "Descargar hoja de cálculo (CSV)"
   },
   "workforceShared": {
    "source": "Fuente",
@@ -6212,7 +6308,6 @@
    "verified": "Verificado"
   },
   "careerCenterChallenges": {
-   "exportCSV": "Exportar CSV",
    "participation": "Participación",
    "all": "Todo",
    "employerChallenges": "Desafíos de empleadores",
@@ -6243,7 +6338,8 @@
    "statLeft": "Se retiró",
    "statSubmitted": "Enviado",
    "statDefended": "Defendido",
-   "statSharing": "Compartir"
+   "statSharing": "Compartir",
+   "exportCSV": "Exportar hoja de cálculo (CSV)"
   },
   "placementsShared": {
    "downloadStarted": "La descarga comenzó.",
@@ -6298,7 +6394,6 @@
   "companyForm": {
    "countryCode": "Código de país",
    "industry": "Sector",
-   "logoURL": "URL del logotipo",
    "companyName": "Nombre de la empresa",
    "website": "Sitio web",
    "weCompareItWithYour": "Lo comparamos con el dominio de tu correo de inicio de sesión para verificar la empresa.",
@@ -6310,7 +6405,8 @@
    "yourJobTitle": "Tu cargo",
    "aboutTheCompany": "Acerca de la empresa",
    "notSpecified": "No especificado",
-   "sEmployees": "{s} empleados"
+   "sEmployees": "{s} empleados",
+   "logoURL": "Enlace al logotipo"
   },
   "studentHome": {
    "welcomeNamed": "Te damos la bienvenida, {name}",
@@ -6405,10 +6501,10 @@
     "CalendarWritingOff": "La escuela tiene desactivado añadir citas a los calendarios.",
     "MeetingLinksOff": "La escuela tiene desactivada la generación de enlaces para reuniones.",
     "HostUsesOwnLink": "La persona anfitriona eligió compartir su propio enlace para la reunión.",
-    "ProviderRefused": "El proveedor del calendario no permitió crear una reunión en línea para esta cuenta.",
     "ProviderNoMeeting": "La cuenta del calendario no puede crear reuniones en línea (por ejemplo, una cuenta personal sin Teams).",
-    "ProviderError": "No se pudo contactar con el proveedor del calendario. Se volverá a intentar.",
-    "MeetingPending": "La reunión todavía se está creando. El enlace se actualizará en breve."
+    "MeetingPending": "La reunión todavía se está creando. El enlace se actualizará en breve.",
+    "ProviderRefused": "El servicio de calendario no permitió crear una reunión en línea para esta cuenta.",
+    "ProviderError": "No se pudo conectar con el servicio de calendario. Se volverá a intentar."
    },
    "meetingGenerated": "Se creó una reunión de {provider} para esto.",
    "meetingHostLink": "Se está usando el enlace para reuniones de la persona anfitriona.",
@@ -6427,8 +6523,8 @@
    "inviteSkipped": "No está en la invitación del calendario: {reason}",
    "inviteReason": {
     "NoVerifiedEmail": "no tiene una dirección de correo electrónico verificada.",
-    "AttendeeLimit": "el evento alcanzó el límite de asistentes del proveedor del calendario.",
-    "InvitesOff": "la escuela no añade estudiantes a las invitaciones de reuniones."
+    "InvitesOff": "la escuela no añade estudiantes a las invitaciones de reuniones.",
+    "AttendeeLimit": "el evento alcanzó el límite de asistentes del servicio de calendario."
    },
    "seatsLeft": "{count, plural, one {Queda {count} plaza} other {Quedan {count} plazas}}",
    "fullWaitlist": "{count, plural, =0 {Completo: lista de espera abierta} one {Completo: {count} en la lista de espera} other {Completo: {count} en la lista de espera}}"
@@ -6510,7 +6606,6 @@
    "notAvailableAtYourSchool": "No está disponible en tu escuela en este momento.",
    "theInterviewerAsksWhatYou": "La persona entrevistadora te preguntará qué hiciste tú, cómo funciona, qué decisiones tomaste y cuál fue el resultado. No se evalúan la gramática, el acento ni el idioma.",
    "startTheDefense": "Iniciar la defensa",
-   "developmentModeQuestionsAreGenerated": "Modo de desarrollo: las preguntas se generan sin un modelo de IA.",
    "sendAnswer": "Enviar respuesta",
    "finishAndSendToMy": "Terminar y enviar a mi supervisor",
    "youllTalkWithAnInterviewer": "Hablarás con una persona entrevistadora sobre el trabajo que describiste durante un máximo de 15 minutos. Busca un lugar tranquilo y permite el acceso al micrófono.",
@@ -6519,7 +6614,8 @@
    "yourDefenseHasStarted": "Tu defensa ha comenzado.",
    "thanksSupervisorNameHasBeenAsked": "¡Gracias! Le pedimos a {supervisorName} que confirme tu trabajo.",
    "voiceIsntAvailableRightNow": "La función de voz no está disponible en este momento.",
-   "theCallDidntStartCheck": "La llamada no se inició. Revisa el permiso de acceso al micrófono e inténtalo de nuevo."
+   "theCallDidntStartCheck": "La llamada no se inició. Revisa el permiso de acceso al micrófono e inténtalo de nuevo.",
+   "developmentModeQuestionsAreGenerated": "Preguntas de ejemplo: redactadas sin IA."
   },
   "employerCompany": {
    "saveChanges": "Guardar cambios",
@@ -6592,9 +6688,7 @@
    "noOpenTimes": "No hay horarios disponibles",
    "ifMyTimeIsTaken": "Si alguien ocupa mi horario o ya no queda ninguno, agrégame a la lista de espera",
    "joinTheAlternateListYoull": "Unirme a la lista de espera (se reservará automáticamente si se libera un horario)",
-   "resumeToShare": "Currículum para compartir",
    "pDFWordOrTextUp": "PDF, Word o texto, hasta 10 MB.",
-   "orUploadAResume": "O sube un currículum",
    "bookThisTime": "Reservar este horario",
    "youMissedNoShowsInterviewsThe": "No asististe a {noShows} entrevistas (el límite es {limit}), así que se pausaron las nuevas inscripciones. Comunícate con tu centro de orientación profesional para que lo resuelvan.",
    "lookUnderFindInterviewsFor": "Busca en «Buscar entrevistas» a los empleadores que están contratando en tu centro educativo.",
@@ -6616,13 +6710,15 @@
    "youreSignedUpSeeMy": "Ya te inscribiste. Consulta Mis entrevistas.",
    "signUpIsntOpen": "La inscripción no está abierta.",
    "declineInvitation": "Rechazar invitación",
-   "chooseAResume": "Elegir un currículum",
-   "iAgreeToShareMy": "Acepto compartir mi nombre, correo electrónico, formación académica y el currículum anterior con {employerName} para esta entrevista. Puedes retirar tu consentimiento en la <link>configuración de privacidad</link>.",
    "cancelled": "Cancelado.",
    "yourPlaceOnTheAlternate": "tu lugar en la lista de espera",
    "thisInterview": "esta entrevista",
    "youreBookedWithEmployerName": "Tienes una entrevista reservada con {employerName}.",
-   "youreOnTheAlternateList2": "Estás en la lista de espera de {employerName}."
+   "youreOnTheAlternateList2": "Estás en la lista de espera de {employerName}.",
+   "resumeToShare": "Currículum para compartir",
+   "orUploadAResume": "O sube un currículum",
+   "chooseAResume": "Elige un currículum",
+   "iAgreeToShareMy": "Acepto compartir mi nombre, correo electrónico, formación académica y el currículum anterior con {employerName} para esta entrevista. Puedes retirar tu consentimiento en la <link>configuración de privacidad</link>."
   },
   "sponsorLookup": {
    "search": "Buscar",
@@ -6666,8 +6762,6 @@
   "careerCenterReportsIndia": {
    "show": "Mostrar",
    "report": "Informe",
-   "downloadCSV": "Descargar CSV",
-   "placementOffice": "Oficina de inserción laboral",
    "nIRFNAACAndNBAReports": "Informes NIRF, NAAC y NBA",
    "programme": "Programa",
    "placementHigherStudiesAndExamination": "Cifras de inserción laboral, estudios superiores y exámenes en los formatos que solicitan los organismos indios de clasificación y acreditación, a partir de los registros y resultados de la oficina de inserción laboral de tu institución. Verifica cada cifra antes de incluirla en una presentación.",
@@ -6688,7 +6782,9 @@
    "officialSourcesUsed": "Fuentes oficiales utilizadas",
    "verifyAgainstTheCurrentOfficial": "(verifica con el formato oficial vigente)",
    "nothingRecordedForTheseYears": "No hay registros para estos años.",
-   "notConfirmedFromTheOfficial2": "* No confirmado en el documento oficial: verifica con el formato vigente"
+   "notConfirmedFromTheOfficial2": "* No confirmado en el documento oficial: verifica con el formato vigente",
+   "downloadCSV": "Descargar hoja de cálculo (CSV)",
+   "placementOffice": "Colocaciones"
   },
   "employerDrive": {
    "noEmployer": "Aún no tienes un perfil de empleador",
@@ -6755,8 +6851,10 @@
   "reportTableView": {
    "titleViewAs": "{title}: ver como",
    "exporting": "Exportando…",
-   "cSV": "CSV",
-   "noDataForThisPeriod": "No hay datos para este período."
+   "noDataForThisPeriod": "No hay datos para este período.",
+   "cSV": "Hoja de cálculo (CSV)",
+   "viewChart": "Gráfico",
+   "viewTable": "Tabla"
   },
   "campusStudentOfferLetter": {
    "title": "Carta de oferta (versión {version})",
@@ -6767,7 +6865,6 @@
    "downloadSigned": "Descargar tu copia firmada",
    "signedOn": "Firmaste el {date} como {name}.",
    "signTitle": "Aceptar al firmar",
-   "signHelp": "Al firmar, aceptas esta oferta. Se aplica la política de colocación laboral de tu universidad y tu colocación queda registrada en ella.",
    "typedName": "Escribe tu nombre completo",
    "typedNameHint": "Esta es tu firma electrónica.",
    "agree": "Leí la carta de oferta y acepto la oferta en estos términos.",
@@ -6775,7 +6872,8 @@
    "agreeFirst": "Marca la casilla para firmar.",
    "release": "Ya acepté otra oferta: renunciar a esta (rechazarla)",
    "signAndAccept": "Firmar y aceptar",
-   "signed": "Firmado. Aceptaste la oferta."
+   "signed": "Firmado. Aceptaste la oferta.",
+   "signHelp": "Al firmar, aceptas esta oferta. Se aplica la política de tu escuela y tu colocación queda registrada en ella."
   },
   "countryWords": {
    "salaryPerYear": "Salario anual",

@@ -14,6 +14,7 @@
  * (This page used to show invented call recoveries, discounts, payees, a made-up Form 16A and fixed platform claims.)
  */
 
+import { timeZoneName } from "@/lib/timeZoneName";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { AlertTriangle, CheckCircle2, Copy, Download, PhoneCall, Search, Shield, Wallet, Webhook } from "lucide-react";
 import { AccessNotice, useLatestRef, useLegacyApi } from "@/lib/legacyApi";
@@ -253,14 +254,14 @@ export default function EdulexaConsolePage() {
     { id: "calls", label: en("Follow-up calls"), icon: <PhoneCall /> },
     { id: "content", label: en("Protected content"), icon: <Shield /> },
     { id: "payments", label: en("Mentor payments"), icon: <Wallet /> },
-    { id: "integration", label: en("Integration"), icon: <Webhook /> },
+    { id: "integration", label: en("Website connection"), icon: <Webhook /> },
   ];
 
   return (
     <div className="space-y-6">
       <PageHeader
         title={en("Edulexa console")}
-        description={en("Follow-up calls, protected content, mentor payments and integration for your organization. Every number here is a count of your own records.")}
+        description={en("Follow-up calls, protected content, mentor payments and website connection for your organization. Every number here is a count of your own records.")}
       />
 
       <Tabs items={tabs} value={tab} onChange={setTab} label={en("Console sections")} />
@@ -349,7 +350,7 @@ function CallsTab({ settings, metrics, calls, consents, optOuts, audit, busy, se
         </div>
         <div className="text-sm">
           <p className="font-medium">
-            {en("Voice provider:")}{" "}
+            {en("Calling service:")}{" "}
             {settings.providerConnected ? (
               <span className="text-emerald-700 dark:text-emerald-400">connected</span>
             ) : (
@@ -401,7 +402,7 @@ function CallsTab({ settings, metrics, calls, consents, optOuts, audit, busy, se
           <Field label={en("Phone (international format)")}>
             <input className={input} value={consent.phone} placeholder="+1 555 123 4567" onChange={(e) => setConsent({ ...consent, phone: e.target.value })} />
           </Field>
-          <Field label={en("Their time zone")} hint={en("IANA name, e.g. Asia/Kolkata. Needed for numbers in countries with several time zones.")}>
+          <Field label={en("Their time zone")} hint={en("The time zone's standard name, e.g. Asia/Kolkata or America/Chicago. Needed for numbers in countries with several time zones.")}>
             <input className={input} value={consent.timeZone} onChange={(e) => setConsent({ ...consent, timeZone: e.target.value })} />
           </Field>
           <Field label={en("The words they agreed to")}>
@@ -522,7 +523,7 @@ function CallsTab({ settings, metrics, calls, consents, optOuts, audit, busy, se
                   {c.revokedAt && <span className="ms-2 text-xs text-amber-700 dark:text-amber-400">withdrawn {when(c.revokedAt)}</span>}
                   <span className="block text-xs text-muted-foreground">
                     {when(c.capturedAt)} · {c.source}
-                    {c.timeZone ? ` · ${c.timeZone}` : ""}
+                    {c.timeZone ? ` · ${timeZoneName(c.timeZone)}` : ""}
                   </span>
                   <q className="mt-1 block text-xs italic">{c.consentText}</q>
                 </li>
@@ -596,14 +597,14 @@ function ContentTab({ metrics, assets, busy, send }: { metrics: Metrics; assets:
           <Field label={en("Title")}>
             <input className={input} value={asset.assetTitle} onChange={(e) => setAsset({ ...asset, assetTitle: e.target.value })} />
           </Field>
-          <Field label={en("Storage URL (https)")}>
+          <Field label={en("Link to the file (starts with https://)")}>
             <input className={input} value={asset.originalStorageUrl} onChange={(e) => setAsset({ ...asset, originalStorageUrl: e.target.value })} />
           </Field>
           <Field label={en("Type")}>
             <select className={input} value={asset.assetType} onChange={(e) => setAsset({ ...asset, assetType: e.target.value })}>
               <option value="CourseLecture">{en("Course lecture")}</option>
               <option value="CodeRepository">{en("Code repository")}</option>
-              <option value="AssessmentPrompt">{en("Assessment prompt")}</option>
+              <option value="AssessmentPrompt">{en("Assessment question")}</option>
               <option value="ProctoredReplayVideo">{en("Proctored replay video")}</option>
             </select>
           </Field>
@@ -626,8 +627,8 @@ function ContentTab({ metrics, assets, busy, send }: { metrics: Metrics; assets:
           <h2 id="pc-leak" className="text-base font-semibold">
             {en("Trace a leaked copy")}
           </h2>
-          <p className="text-sm text-muted-foreground">{en("Paste the watermark text, signed token or session id from the leaked copy.")}</p>
-          <Field label={en("Watermark, token or session id")}>
+          <p className="text-sm text-muted-foreground">{en("Paste the watermark text, the code from the signed link, or the session ID from the leaked copy.")}</p>
+          <Field label={en("Watermark, link code or session ID")}>
             <input className={input} value={leak} onChange={(e) => setLeak(e.target.value)} />
           </Field>
           <button
@@ -927,7 +928,7 @@ function IntegrationTab({ tenantId, busy, send }: { tenantId: string; busy: bool
           {en("Webhook test")}
         </h2>
         <p className="text-sm text-muted-foreground">
-          {en("Sends a signed test event (header X-Edulexa-Signature: t=timestamp,v1=HMAC-SHA256 of “timestamp.body” with your API key) to your webhook URL.")}
+          {en("Sends a signed test event to your webhook URL, the address where your system receives Edulexa events. For your IT team: the X-Edulexa-Signature header holds t=timestamp,v1=HMAC-SHA256 of “timestamp.body” with your API key.")}
         </p>
         <button
           className={button} style={brandFill}
@@ -939,8 +940,8 @@ function IntegrationTab({ tenantId, busy, send }: { tenantId: string; busy: bool
         {result && (
           <p className="text-sm">
             {result.delivered
-              ? `Delivered to ${result.targetWebhookUrl} (HTTP ${result.responseStatusCode}).`
-              : result.error ?? `Not delivered (HTTP ${result.responseStatusCode}).`}
+              ? `Delivered to ${result.targetWebhookUrl} (response code ${result.responseStatusCode}).`
+              : result.error ?? `Not delivered (response code ${result.responseStatusCode}).`}
           </p>
         )}
       </section>

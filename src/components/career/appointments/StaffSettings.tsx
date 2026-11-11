@@ -1,5 +1,6 @@
 "use client";
 
+import { timeZoneName } from "@/lib/timeZoneName";
 import React, { useState } from "react";
 import { Plus, Trash2 } from "lucide-react";
 import { useApi } from "@/lib/appAuth";
@@ -213,7 +214,7 @@ function WeeklyHours({ userId }: { userId: string }) {
   return (
     <div className="grid gap-4 lg:grid-cols-2">
       <Card title={tr("weeklyHours")}>
-        <p className="mb-3 text-xs text-muted-foreground">{tr("timesAreInTheSchools", { tz })}</p>
+        <p className="mb-3 text-xs text-muted-foreground">{tr("timesAreInTheSchools", { tz: timeZoneName(tz) })}</p>
         <ErrorBanner error={error} />
         <SuccessBanner message={message} />
         <WeeklyForm
@@ -593,7 +594,7 @@ export function ReportsPanel() {
               </dl>
             </Card>
             <p className="text-xs text-muted-foreground">
-              {tr("fromToToTimeZoneNo", { from: report.data.from, to: report.data.to, timeZone: report.data.timeZone, bookedOnBehalf: report.data.bookedOnBehalf })}
+              {tr("fromToToTimeZoneNo", { from: report.data.from, to: report.data.to, timeZone: timeZoneName(report.data.timeZone), bookedOnBehalf: report.data.bookedOnBehalf })}
             </p>
           </>
         )

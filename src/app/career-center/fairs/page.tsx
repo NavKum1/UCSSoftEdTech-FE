@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { useApi } from "@/lib/appAuth";
+import { useHasCareerRole } from "@/components/career/CareerShell";
 import { Badge, Button, Card, EmptyState, ErrorBanner, Field, Loading, PageHeader, SuccessBanner, formatDate, useLoad, useCareerT, ScrollArea } from "@/components/career/ui";
 
 interface Connection {
@@ -55,6 +56,8 @@ export default function CareerCenterFairsPage() {
   const [err, setErr] = useState<string | null>(null);
   const [msg, setMsg] = useState<string | null>(null);
   const [form, setForm] = useState({ apiBaseUrl: "", manageUrl: "", apiKey: "", webhookSecret: "" });
+  // Career admins and employer relations staff sync booths (as the API checks)
+  const canSync = useHasCareerRole("CareerAdmin", "EmployerRelations");
 
   if (conn.loading && !conn.data) return <Loading />;
   if (conn.error) return <ErrorBanner error={conn.error} onRetry={conn.reload} />;
@@ -67,7 +70,7 @@ export default function CareerCenterFairsPage() {
     try {
       await fn();
     } catch (e) {
-      setErr(e instanceof TypeError ? "We couldn't reach the server. Please check your connection and try again." : (e as Error).message);
+      setErr(e instanceof TypeError ? "We couldn't reach Edulexa. Check your internet connection and try again." : (e as Error).message);
     } finally {
       setBusy(null);
     }
@@ -117,7 +120,7 @@ export default function CareerCenterFairsPage() {
       <PageHeader
         title={t("careerFairs")}
         description={t("yourSchoolsEventsAndCareer")}
-        actions={c.configured && c.active ? <Button variant="secondary" busy={busy === "sync"} onClick={sync}>{t("syncBoothsForReports")}</Button> : undefined}
+        actions={canSync && c.configured && c.active ? <Button variant="secondary" busy={busy === "sync"} onClick={sync}>{t("syncBoothsForReports")}</Button> : undefined}
       />
       <ErrorBanner error={err} />
       <SuccessBanner message={msg} />

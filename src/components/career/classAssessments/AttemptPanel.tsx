@@ -64,7 +64,7 @@ export function AttemptPanel({ assignmentId, onChange }: { assignmentId: string;
   const [notice, setNotice] = useState<string | null>(null);
 
   const fail = (e: unknown) =>
-    setError(e instanceof TypeError ? en("We couldn't reach the server. Please check your connection and try again.") : (e as Error).message);
+    setError(e instanceof TypeError ? en("We couldn't reach Edulexa. Check your internet connection and try again.") : (e as Error).message);
 
   const run = async (key: string, f: () => Promise<AttemptState>) => {
     setBusy(key);

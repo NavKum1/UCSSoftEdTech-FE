@@ -1,5 +1,6 @@
 "use client";
 
+import { timeZoneName } from "@/lib/timeZoneName";
 import React, { useState } from "react";
 import { useApi } from "@/lib/appAuth";
 import { Badge, Button, Card, ErrorBanner, Field, Loading, PageHeader, SuccessBanner, formatDate, useCareerT, useLoad, ScrollArea } from "@/components/career/ui";
@@ -286,7 +287,7 @@ export default function ChannelSettings() {
             <p className="text-xs text-muted-foreground">{t("typesHint")}</p>
           </fieldset>
           <div className="mt-4 grid gap-4 sm:grid-cols-2">
-            <Field label={t("quietStart")} hint={t("quietHint", { tz: s.timeZone })}>
+            <Field label={t("quietStart")} hint={t("quietHint", { tz: timeZoneName(s.timeZone) })}>
               {(p) => <input {...p} type="time" disabled={!edit} value={s.quietStart ?? ""} onChange={(e) => set({ quietStart: e.target.value })} />}
             </Field>
             <Field label={t("quietEnd")}>

@@ -10,6 +10,7 @@ import { AppointmentDetail } from "@/components/career/appointments/AppointmentD
 import { StaffDropIn } from "@/components/career/appointments/StaffDropIn";
 import { AvailabilityPanel, ReportsPanel, TypesPanel } from "@/components/career/appointments/StaffSettings";
 import { GroupSessionDetail, StaffGroupSessions } from "@/components/career/appointments/StaffGroupSessions";
+import { HelpLink } from "@/components/help/HelpLink";
 
 export default function CareerCenterAppointmentsPage() {
   return (
@@ -44,7 +45,7 @@ function Appointments() {
 
   return (
     <div>
-      <PageHeader title={t("appointments")} description={t("advisingSchedulesAvailabilityDropIn")} />
+      <PageHeader title={t("appointments")} description={t("advisingSchedulesAvailabilityDropIn")} actions={<HelpLink slug="appointments-and-availability" />} />
       <Tabs<Tab>
         label={t("appointmentSections")}
         value={tab}

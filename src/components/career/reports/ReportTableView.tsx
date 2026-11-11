@@ -44,9 +44,9 @@ export function ReportTableView({ table, onExport, exporting }: { table: ReportT
                   type="button"
                   aria-pressed={view === v}
                   onClick={() => setView(v)}
-                  className={`px-2.5 py-1 capitalize focus-visible:outline-2 focus-visible:outline-offset-1 ${view === v ? "bg-muted font-semibold" : ""}`}
+                  className={`px-2.5 py-1 focus-visible:outline-2 focus-visible:outline-offset-1 ${view === v ? "bg-muted font-semibold" : ""}`}
                 >
-                  {v}
+                  {v === "chart" ? t("viewChart") : t("viewTable")}
                 </button>
               ))}
             </div>

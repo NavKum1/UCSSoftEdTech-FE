@@ -9,7 +9,7 @@ checked: 2026-11-11
 ---
 ## A class's results
 
-The class's page for an assessment shows its [ui: Results] from your decisions: how many passed, were asked to resubmit or didn't pass, the average and middle scores, and the average for each rubric criterion. Use [ui: Download results (CSV)] for a spreadsheet of every student.
+The class's page for an assessment shows its [ui: Results] from your decisions: how many passed, were asked to resubmit or didn't pass, the average and middle scores, and the average for each rubric criterion. Use [ui: Download results (spreadsheet)] for a spreadsheet of every student.
 
 ## Credentials
 

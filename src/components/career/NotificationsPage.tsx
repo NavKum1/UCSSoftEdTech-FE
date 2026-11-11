@@ -37,7 +37,7 @@ export default function NotificationsPage() {
   const tMobile = useCareerT("mobile");
   const fmt = useCareerFormat();
   const categoryLabel = (category: string) => {
-    const key = `category.${category.replace(/./g, "_")}`;
+    const key = `category.${category.replace(/[.]/g, "_")}`;
     return t.has(key) ? t(key) : generatedLabel(category);
   };
   // G10 data saver: fewer items, and the settings table loads only when asked for

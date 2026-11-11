@@ -95,7 +95,7 @@ export default function InsightsTab({ formId, apiFetch, instituteId }: { formId:
           </button>
         ))}
         <button type="button" onClick={download} className="ms-auto inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-xs font-medium hover:bg-muted">
-          <Download aria-hidden="true" className="h-3.5 w-3.5" />{en(" Download every answer (CSV)")}
+          <Download aria-hidden="true" className="h-3.5 w-3.5" />{en(" Download every answer (spreadsheet)")}
         </button>
       </div>
 

@@ -16,6 +16,8 @@ interface SupportData {
   requests: { id: string; createdAt: string; name: string; email: string; role: string; school: string; page: string; subject: string; message: string; emailed: boolean }[];
   feedback: { slug: string; helpful: number; notHelpful: number }[];
   misses: { query: string; count: number }[];
+  /** S4b: after "No", what people were looking for */
+  notes?: { slug: string; day: string; text: string }[];
 }
 
 export default function AdminSupportPage() {
@@ -98,6 +100,25 @@ export default function AdminSupportPage() {
               </ul>
             )}
             <p className="mt-3 text-xs text-muted-foreground">{en("Counted without the person or school; words with @ or digits are left out.")}</p>
+          </Card>
+          <Card title={en("What people were looking for (90 days)")}>
+            {!d.notes?.length ? (
+              <p className="text-sm text-muted-foreground">{en("None yet.")}</p>
+            ) : (
+              <ScrollArea>
+                <ul className="space-y-3 text-sm">
+                  {d.notes.map((n, i) => (
+                    <li key={i}>
+                      <p className="[overflow-wrap:anywhere]">{n.text}</p>
+                      <p className="mt-0.5 text-xs text-muted-foreground">
+                        <a href={`/help/${n.slug}`} className="underline underline-offset-2">{n.slug}</a> · {formatDate(n.day)}
+                      </p>
+                    </li>
+                  ))}
+                </ul>
+              </ScrollArea>
+            )}
+            <p className="mt-3 text-xs text-muted-foreground">{en("Written after \"No\" on an article. Kept without the person or school; words with @ or digits are left out.")}</p>
           </Card>
         </div>
       </div>

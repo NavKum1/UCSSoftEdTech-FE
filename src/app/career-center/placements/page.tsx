@@ -8,7 +8,7 @@
 
 import React, { useMemo, useState } from "react";
 import Link from "next/link";
-import { useCareerShell } from "@/components/career/CareerShell";
+import { useCareerShell, useHasCareerRole } from "@/components/career/CareerShell";
 import { useCountryWords } from "@/components/career/country";
 import { Badge, Button, Card, EmptyState, ErrorBanner, Field, Loading, PageHeader, ScrollArea, SuccessBanner, formatDate, useLoad, useCareerT, StatTile, buttonClass, TAB_LIST, tabClass } from "@/components/career/ui";
 import {
@@ -138,6 +138,8 @@ export default function PlacementOfficePage() {
   const DRIVE_STATUS_LABELS = useDriveStatusLabels();
   const MODE_LABELS = usePlacementModeLabels();
   const { schoolId } = useCareerShell();
+  // Only career admins import academic records (as the API checks)
+  const isAdmin = useHasCareerRole("CareerAdmin");
   // P5: India keeps CTC in rupees, CGPA out of 10, backlogs and Class 10/12 marks; other schools get neutral words
   const w = useCountryWords();
   const india = w.rules.india;
@@ -554,6 +556,7 @@ export default function PlacementOfficePage() {
 
         {tab === "records" && (
           <>
+            {isAdmin && (
             <Card title={tr("importAcademicRecords")}>
               <p className="mb-3 text-sm text-muted-foreground">
                 {india ? tr("uploadTheExamCellsExport") : w.t("recordsImportHelp")}
@@ -578,6 +581,7 @@ export default function PlacementOfficePage() {
                 </div>
               )}
             </Card>
+            )}
             <Card title={tr("academicRecords")}>
               {records.loading && !records.data ? (
                 <Loading />

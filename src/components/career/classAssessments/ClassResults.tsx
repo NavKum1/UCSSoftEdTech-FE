@@ -96,7 +96,7 @@ export function CsvButton({ assessmentId, assignmentId, fileName }: { assessment
   return (
     <span className="inline-flex flex-col items-end gap-1">
       <Button variant="secondary" busy={busy} onClick={() => void download()}>
-        {en("Download results (CSV)")}
+        {en("Download results (spreadsheet)")}
       </Button>
       {error && <span role="alert" className="text-xs text-red-600 dark:text-red-400">{error}</span>}
     </span>

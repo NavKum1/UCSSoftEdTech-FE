@@ -1,5 +1,6 @@
 "use client";
 
+import { timeZoneName } from "@/lib/timeZoneName";
 import React, { Suspense, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useApi } from "@/lib/appAuth";
@@ -21,6 +22,7 @@ import {
   useDownloadFile,
   useFormatSize,
 } from "@/components/career/docReview/shared";
+import { HelpLink } from "@/components/help/HelpLink";
 
 interface QueueItem {
   id: string;
@@ -107,7 +109,7 @@ function DocumentReviewStaff() {
   ];
   return (
     <div>
-      <PageHeader title={tr("documentReview")} description={tr("studentsResumesCoverLettersAnd")} />
+      <PageHeader title={tr("documentReview")} description={tr("studentsResumesCoverLettersAnd")} actions={<HelpLink slug="staff-document-review" />} />
       <div role="tablist" aria-label={tr("documentReviewSections")} className={`mb-4 ${TAB_LIST}`}>
         {tabs.map((t) => (
           <button
@@ -344,7 +346,7 @@ function Workspace({ id, isAdmin, onBack }: { id: string; isAdmin: boolean; onBa
       setMessage(ok);
       after?.();
     } catch (e) {
-      setError(e instanceof TypeError ? "We couldn't reach the server. Please check your connection and try again." : (e as Error).message);
+      setError(e instanceof TypeError ? "We couldn't reach Edulexa. Check your internet connection and try again." : (e as Error).message);
     } finally {
       setBusy(null);
     }
@@ -723,7 +725,7 @@ function MetricsPanel() {
       a.click();
       setTimeout(() => URL.revokeObjectURL(url), 1000);
     } catch (e) {
-      setError(e instanceof TypeError ? "We couldn't reach the server. Please check your connection and try again." : (e as Error).message);
+      setError(e instanceof TypeError ? "We couldn't reach Edulexa. Check your internet connection and try again." : (e as Error).message);
     }
   };
   const stat = (label: string, value: React.ReactNode) => <StatTile label={label} value={value} />;
@@ -838,7 +840,7 @@ function SettingsPanel({ isAdmin }: { isAdmin: boolean }) {
       setEdits({ rubrics: {} });
       setMessage(tr("settingsSaved"));
     } catch (err) {
-      setError(err instanceof TypeError ? "We couldn't reach the server. Please check your connection and try again." : (err as Error).message);
+      setError(err instanceof TypeError ? "We couldn't reach Edulexa. Check your internet connection and try again." : (err as Error).message);
     } finally {
       setBusy(false);
     }
@@ -855,7 +857,7 @@ function SettingsPanel({ isAdmin }: { isAdmin: boolean }) {
             {!isAdmin && <p className="text-sm text-muted-foreground">{tr("onlyCareerAdminsCanChange")}</p>}
             <Card title={tr("turnaround")}>
               <div className="grid gap-3 sm:grid-cols-2">
-                <Field label={tr("reviewTargetBusinessDays")} hint={tr("countedMondayToFridayIn", { timeZone: s.timeZone })}>
+                <Field label={tr("reviewTargetBusinessDays")} hint={tr("countedMondayToFridayIn", { timeZone: timeZoneName(s.timeZone) })}>
                   {(p) => <input {...p} type="number" min={1} max={20} value={edits.sla ?? String(s.slaBusinessDays)} onChange={(e) => setEdits({ ...edits, sla: e.target.value })} />}
                 </Field>
                 <Field label={tr("urgentWhenTheStudentsDeadline")}>

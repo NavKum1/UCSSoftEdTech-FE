@@ -4,7 +4,8 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useApi } from "@/lib/appAuth";
-import { useCareerShell } from "@/components/career/CareerShell";
+import { useCareerShell, useHasCareerRole } from "@/components/career/CareerShell";
+import { useEn } from "@/lib/english/EnglishProvider";
 import { Badge, Button, Card, ErrorBanner, Field, Loading, PageHeader, SuccessBanner, formatDate, useLoad, ScrollArea, useCareerT, useCareerLabels } from "@/components/career/ui";
 import {
   AgreementCard,
@@ -35,6 +36,9 @@ export default function CareerCenterExperienceDetailPage() {
   const { id } = useParams<{ id: string }>();
   const api = useApi();
   const { schoolId } = useCareerShell();
+  const en = useEn();
+  // Counselors and career admins approve, record CPT and open evaluations (as the API checks)
+  const canReview = useHasCareerRole("CareerAdmin", "Counselor");
   const detail = useLoad(() => api<ExperienceDetail>(`/api/career/experiences/staff/experiences/${id}`), [api, id, schoolId]);
   const [err, setErr] = useState<string | null>(null);
   const [msg, setMsg] = useState<string | null>(null);
@@ -49,7 +53,7 @@ export default function CareerCenterExperienceDetailPage() {
       else detail.setData(r as ExperienceDetail);
       setMsg(success);
     } catch (e) {
-      setErr(e instanceof TypeError ? "We couldn't reach the server. Please check your connection and try again." : (e as Error).message);
+      setErr(e instanceof TypeError ? "We couldn't reach Edulexa. Check your internet connection and try again." : (e as Error).message);
     }
   };
 
@@ -84,17 +88,21 @@ export default function CareerCenterExperienceDetailPage() {
             <li>{t("requiredDocuments")}{" "}{x.missingDocuments.length ? t("missingMissingDocuments", { missingDocuments: x.missingDocuments.join(", ") }) : t("complete")}</li>
             {x.cpt.required && <li>{t("f1CPT")}{" "}{x.cpt.missing ? t("datesStillNeeded") : t("recorded")}</li>}
           </ul>
-          <ApproveDecline
-            canApprove={!!x.approvals.facultyApprovedAt && !x.cpt.missing && x.missingDocuments.length === 0}
-            onApprove={(comment) => act(() => api(`${base}/approve`, { json: { comment } }), t("approvedTheLearningAgreementWas"))}
-            onDecline={(comment) => act(() => api(`${base}/decline`, { json: { comment } }), t("declined"))}
-          />
+          {canReview ? (
+            <ApproveDecline
+              canApprove={!!x.approvals.facultyApprovedAt && !x.cpt.missing && x.missingDocuments.length === 0}
+              onApprove={(comment) => act(() => api(`${base}/approve`, { json: { comment } }), t("approvedTheLearningAgreementWas"))}
+              onDecline={(comment) => act(() => api(`${base}/decline`, { json: { comment } }), t("declined"))}
+            />
+          ) : (
+            <p className="text-sm text-muted-foreground">{en("A counselor or career admin approves or declines this internship.")}</p>
+          )}
         </Card>
       )}
 
       <OverviewCard x={x} />
 
-      {x.cpt.isF1 && !["Completed", "Declined", "Withdrawn"].includes(x.status) && (
+      {canReview && x.cpt.isF1 && !["Completed", "Declined", "Withdrawn"].includes(x.status) && (
         <CptCard x={x} onSave={(body) => act(() => api(`${base}/cpt`, { method: "PUT", json: body }), t("cPTDetailsSaved"))} />
       )}
 
@@ -147,7 +155,7 @@ export default function CareerCenterExperienceDetailPage() {
               </table>
             </ScrollArea>
           )}
-          {x.status === "Active" && (
+          {canReview && x.status === "Active" && (
             <Button className="mt-4" onClick={() => act(() => api(`${base}/start-evaluations`, { method: "POST" }), t("finalEvaluationsOpenedTheSupervisor"))}>
               {t("openFinalEvaluationsNow")}
             </Button>

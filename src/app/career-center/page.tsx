@@ -18,7 +18,7 @@ interface Summary {
 
 export default function CareerCenterHome() {
   const api = useApi();
-  const { me, schoolId, schoolCountry } = useCareerShell();
+  const { me, schoolId, schoolCountry, schoolRoles } = useCareerShell();
   const t = useCareerT("careerCenterHome");
   const tRoles = useCareerT("roles");
   const fmt = useCareerFormat();
@@ -34,7 +34,7 @@ export default function CareerCenterHome() {
 
   const role = me?.memberships.find((m) => m.instituteId === schoolId)?.role;
   // The same country rule as the menu (CareerShell): country pages only for schools in those countries (P5)
-  const links = careerNav["career-center"].filter((i) => i.ready && i.href !== "/career-center" && shownForCountry(i, schoolCountry) && shownForRoles(i, (me?.memberships ?? []).filter((m) => m.instituteId === schoolId).map((m) => m.role)));
+  const links = careerNav["career-center"].filter((i) => i.ready && i.href !== "/career-center" && shownForCountry(i, schoolCountry) && shownForRoles(i, schoolRoles));
 
   return (
     <div>

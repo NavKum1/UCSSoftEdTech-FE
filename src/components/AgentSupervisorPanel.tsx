@@ -201,7 +201,7 @@ export default function AgentSupervisorPanel({ attemptId, getFiles, applyFile, o
         if (data.limits) setLimits({ ...DEFAULT_LIMITS, ...data.limits });
       })
       .catch(() => {
-        if (!cancelled) setLoadError("Couldn't reach the server to load the agent history.");
+        if (!cancelled) setLoadError("Couldn't reach Edulexa to load the agent history.");
       })
       .finally(() => {
         if (!cancelled) setLoading(false);
@@ -290,7 +290,7 @@ export default function AgentSupervisorPanel({ attemptId, getFiles, applyFile, o
         )
       );
     } catch {
-      setError(en("Couldn't reach the server. Your decision wasn't saved."));
+      setError(en("Couldn't reach Edulexa. Your decision wasn't saved."));
     } finally {
       setDeciding(null);
     }

@@ -28,6 +28,7 @@ import {
   useStatusLabel,
 } from "@/components/career/appointments/shared";
 import { StudentGroupSessions } from "@/components/career/appointments/GroupSessionsStudent";
+import { HelpLink } from "@/components/help/HelpLink";
 
 type Tab = "book" | "mine" | "group" | "dropin" | "notes";
 const TABS: Tab[] = ["mine", "book", "group", "dropin", "notes"];
@@ -48,7 +49,7 @@ function StudentAppointments() {
   const [message, setMessage] = useState<string | null>(null);
   return (
     <div>
-      <PageHeader title={tr("appointments")} description={tr("bookTimeWithACareer")} />
+      <PageHeader title={tr("appointments")} description={tr("bookTimeWithACareer")} actions={<HelpLink slug="appointments" />} />
       <SuccessBanner message={message} />
       <Tabs<Tab>
         label={tr("appointmentSections")}
@@ -130,7 +131,7 @@ function BookFlow({ onBooked }: { onBooked: (a: Appointment) => void }) {
       });
       onBooked(a);
     } catch (err) {
-      setError(err instanceof TypeError ? "We couldn't reach the server. Please check your connection and try again." : (err as Error).message);
+      setError(err instanceof TypeError ? "We couldn't reach Edulexa. Check your internet connection and try again." : (err as Error).message);
       setSlot(null);
       setRefresh((n) => n + 1);
     } finally {
@@ -320,7 +321,7 @@ function AppointmentCard({ a, onChanged, past }: { a: Appointment; onChanged: (m
     try {
       await fn();
     } catch (e) {
-      setError(e instanceof TypeError ? "We couldn't reach the server. Please check your connection and try again." : (e as Error).message);
+      setError(e instanceof TypeError ? "We couldn't reach Edulexa. Check your internet connection and try again." : (e as Error).message);
     } finally {
       setBusy(false);
     }
@@ -486,7 +487,7 @@ function DropIn() {
       await fn();
       reload();
     } catch (e) {
-      setError(e instanceof TypeError ? "We couldn't reach the server. Please check your connection and try again." : (e as Error).message);
+      setError(e instanceof TypeError ? "We couldn't reach Edulexa. Check your internet connection and try again." : (e as Error).message);
     } finally {
       setBusy(null);
     }
@@ -557,7 +558,7 @@ function NotesAndTasks() {
       const saved = await api<{ id: string; status: string; completedAt?: string | null }>(`/api/career/appointments/student/tasks/${t.id}`, { method: "POST", json: { done: t.status !== "Done" } });
       tasks.setData((d) => (d ? d.map((x) => (x.id === t.id ? { ...x, status: saved.status, completedAt: saved.completedAt } : x)) : d));
     } catch (e) {
-      setError(e instanceof TypeError ? "We couldn't reach the server. Please check your connection and try again." : (e as Error).message);
+      setError(e instanceof TypeError ? "We couldn't reach Edulexa. Check your internet connection and try again." : (e as Error).message);
     }
   };
 

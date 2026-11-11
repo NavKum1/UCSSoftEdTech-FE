@@ -50,7 +50,6 @@
     "buildAndDefend": "أنشئ مشاريع ودافع عنها",
     "credentials": "ملف إنجازات موثّق"
    },
-   "notIncluded": "لا تتضمن هذه الخطة إعلانات الوظائف أو أدوات السيرة الذاتية أو خطابات التغطية أو التواصل المهني.",
    "availableHere": "الخطة المجانية متاحة في منطقتك.",
    "gate": {
     "available": "الخطة المجانية متاحة في منطقتك.",
@@ -65,7 +64,8 @@
    "signInFirst": "سجّل الدخول أولًا، أو أنشئ بيانات تسجيل الدخول باستخدام بريدك الإلكتروني.",
    "signInCta": "سجّل الدخول أو أنشئ بيانات تسجيل الدخول",
    "nameLabel": "اسمك",
-   "nameHint": "سيظهر على بيانات اعتمادك."
+   "nameHint": "سيظهر على بيانات اعتمادك.",
+   "notIncluded": "إعلانات الوظائف وأدوات السيرة الذاتية وخطاب التقديم والتواصل المهني غير مشمولة في هذه الخطة."
   },
   "supervisorDefense": {
    "somethingWentWrongStatus": "حدث خطأ ما. يُرجى المحاولة مرة أخرى.",
@@ -133,7 +133,6 @@
    "theStudentsInformationIsShared": "تُشارك معلومات الطالب معك بموافقته، لغرض الإشراف على هذه التجربة فقط.",
    "academicProgram": "البرنامج الأكاديمي",
    "codeTitleRequiredHoursHours": "{code} {title} ({requiredHours} ساعة)",
-   "documentFingerprintSHA256Sha256": "بصمة المستند (SHA-256): {sha256}",
    "signedSoFar": "تم التوقيع حتى الآن:",
    "youSignedThisVersionThank": "لقد وقّعت على هذا الإصدار. شكرًا لك!",
    "theDetailsAreCorrect": "التفاصيل صحيحة",
@@ -165,7 +164,8 @@
    "titleAgreement": "اتفاقية التعلم لـ {name}",
    "titleHours": "ساعات {name}",
    "titleMidterm": "التقييم النصفي لـ {name}",
-   "titleFinal": "التقييم النهائي لـ {name}"
+   "titleFinal": "التقييم النهائي لـ {name}",
+   "documentFingerprintSHA256Sha256": "رمز التحقق من المستند: {sha256}"
   },
   "kiosk": {
    "somethingWentWrongStatus": "حدث خطأ ما. يُرجى المحاولة مرة أخرى.",
@@ -281,13 +281,13 @@
     "Transcript": "النص",
     "Documents": "المستندات",
     "WorkAuthorization": "تصريح العمل",
-    "Resume": "السيرة الذاتية",
     "EvidencePack": "حزمة الأدلة",
     "Profile": "الاسم والملف الشخصي",
     "ContactInfo": "معلومات الاتصال",
     "Education": "التعليم (المدرسة، الدرجة، التخصص، التخرج)",
     "Gpa": "المعدل التراكمي",
-    "Assessments": "التقييمات"
+    "Assessments": "التقييمات",
+    "Resume": "السيرة الذاتية"
    },
    "workAuth": {
     "PreferNotToSay": "أفضل عدم الإفصاح",
@@ -317,8 +317,8 @@
      "explain": "تعذّر علينا التحقق من الشركة تلقائيًا. قد تطلب المدارس مزيدًا من التفاصيل قبل الموافقة على الطلبات."
     },
     "DomainVerified": {
-     "label": "تم التحقق من النطاق",
-     "explain": "يتطابق بريدك الإلكتروني لتسجيل الدخول مع نطاق موقع الشركة."
+     "label": "تم التحقق من عنوان البريد الإلكتروني",
+     "explain": "ينتهي عنوان بريدك الإلكتروني المستخدم لتسجيل الدخول باسم موقع الشركة الإلكتروني."
     },
     "StaffVerified": {
      "label": "تم التحقق من قبل الموظفين",
@@ -343,7 +343,6 @@
    "program": "البرنامج",
    "allPrograms": "جميع البرامج",
    "apply": "عرض التقرير",
-   "exportCsv": "تصدير CSV",
    "exportXlsx": "تصدير Excel",
    "downloadStarted": "بدأ التنزيل.",
    "sourcesTitle": "المصادر",
@@ -396,7 +395,6 @@
     "VocationalRehabilitation": "العنوان الرابع: إعادة التأهيل المهني"
    },
    "includeOutcomes": "احتساب حالات التوظيف التي تم التحقق منها ضمن النتائج كتوظيف إضافي عند عدم إدخال بيانات الأجور",
-   "exportDetail": "قائمة المشاركين على نمط PIRL (CSV)",
    "exportDetailHint": "لمسؤولي التوجيه المهني فقط. تتضمن بيانات شخصية وأجورًا؛ ويتم تسجيل كل عملية تنزيل.",
    "periodSummary": "الخروج من {from} إلى {to}: {exiters} من المغادرين ({excluded} مستبعدين)، بإجمالي {participants} سجلًا للمشاركين.",
    "waitingForWages": "{count, plural, one {# مغادر بانتظار بيانات الأجور.} other {# مغادرين بانتظار بيانات الأجور.}}",
@@ -519,7 +517,9 @@
    "importIntro": "الصق بيانات الأجور ربع السنوية من مطابقة سجلات الأجور في ولايتك أو من المستندات الإضافية. لا تستطيع هذه المنصة الوصول بنفسها إلى سجلات أجور التأمين ضد البطالة في الولاية.",
    "importLabel": "الصفوف: البريد الإلكتروني، السنة، الربع، المبلغ، المصدر، اسم صاحب العمل، معرّف صاحب العمل، مستند المصدر",
    "importHint": "المصدر هو UiWage أو Federal أو Military أو Supplemental أو UiWageSwis. الحد الأقصى 10,000 صف.",
-   "importResult": "تم استيراد {added} صفًا، وتخطي {skipped}."
+   "importResult": "تم استيراد {added} صفًا، وتخطي {skipped}.",
+   "exportDetail": "قائمة مشاركين بتنسيق PIRL (جدول بيانات)",
+   "exportCsv": "تصدير جدول بيانات (CSV)"
   },
   "studentChallenges": {
    "notSharing": "غير مشارك",
@@ -802,7 +802,6 @@
    "on": "تشغيل",
    "off": "إيقاف",
    "ownerMustDo": "ما يجب على مدرستك فعله أولًا",
-   "pullEndpoints": "نقاط نهاية السحب للتسجيل ({method})",
    "lastActivity": "آخر نشاط {date}: {status}",
    "requiredLabel": "{label} (مطلوب)",
    "secretSet": "تم حفظ مفتاح. لن يظهر مجددًا؛ أدخل مفتاحًا جديدًا لاستبداله.",
@@ -829,12 +828,13 @@
    "withdrawConfirm": "هل تريد سحب «{title}» لصالح {name}؟ لن يعود المستودع قادرًا على جلبه.",
    "withdrawn": "تم سحب المستند {number}.",
    "abcTitle": "بنك الاعتمادات الأكاديمية: تصدير مسودة",
-   "abcHelp": "ملف CSV أولي بالتدريبات التي تمنح اعتمادات، ليضيفه مسؤول السجلات إلى ملف NAD/ABC. هذا ليس إرسالًا رسميًا؛ إذ يراجعه مسؤول السجلات ويملأ الأعمدة التي تتوفر لديه فقط.",
    "abcFrom": "مكتمل من",
    "abcTo": "مكتمل حتى",
-   "abcDownload": "تنزيل ملف CSV الأولي",
    "abcFailed": "تعذّر تنزيل ملف التصدير الأولي.",
-   "abcDone": "تم تصدير {rows, plural, one {# صف} other {# صفوف}}؛ {missing, plural, =0 {لدى كل طالب معرّف APAAR} one {ليس لدى # طالب معرّف APAAR} other {ليس لدى # طلاب معرّف APAAR}}."
+   "abcDone": "تم تصدير {rows, plural, one {# صف} other {# صفوف}}؛ {missing, plural, =0 {لدى كل طالب معرّف APAAR} one {ليس لدى # طالب معرّف APAAR} other {ليس لدى # طلاب معرّف APAAR}}.",
+   "pullEndpoints": "العناوين المطلوب تسجيلها في المستودع ({method})",
+   "abcHelp": "مسودة جدول بيانات (ملف CSV) للتدريبات المعتمدة للساعات الدراسية، ليضيفها مسؤول التسجيل إلى ملف الرفع NAD/ABC. هذا ليس ملفًا للإرسال: يراجعه مسؤول التسجيل ويملأ الأعمدة التي لا يملك بياناتها سواه.",
+   "abcDownload": "تنزيل مسودة جدول البيانات (CSV)"
   },
   "myNationalCredentials": {
    "colStatus": "الحالة",
@@ -894,7 +894,6 @@
    "status": "الحالة",
    "cancel": "إلغاء",
    "documentReview": "مراجعة المستندات",
-   "sendYourResumeCoverLetter": "أرسل سيرتك الذاتية أو خطاب التغطية أو مستندات التقديم الأخرى إلى مستشار مهني. سيطّلع عليها شخص ويعيدها إليك مع ملاحظات وقائمة تحقق.",
    "sentACounselorAimsTo": "تم الإرسال. يسعى المستشار إلى إعادته إليك بحلول {dueAt}.",
    "myReviews": "مراجعاتي",
    "noReviewsYet": "لا توجد مراجعات حتى الآن",
@@ -952,7 +951,8 @@
    "theReviewWillAppearHere": "ستظهر المراجعة هنا عندما يعيدها إليك المستشار.",
    "downloadedFileName": "تم تنزيل {fileName}.",
    "markedAsDone": "تم وضع علامة «تم».",
-   "thanksForYourRating": "شكرًا على تقييمك."
+   "thanksForYourRating": "شكرًا على تقييمك.",
+   "sendYourResumeCoverLetter": "أرسل سيرتك الذاتية أو خطاب التقديم أو مستندات طلبك الأخرى إلى مستشار مهني. سيطّلع عليها أحد الأشخاص ويرسل إليك ملاحظاته وقائمة تحقق."
   },
   "studentPlacements": {
    "status": "الحالة",
@@ -975,7 +975,6 @@
    "documentReview": "مراجعة المستندات",
    "settings": "الإعدادات",
    "student": "طالب",
-   "exportCSV": "تصدير CSV",
    "exportFailedStatus": "تعذّر تصدير الملف. يُرجى المحاولة مرة أخرى.",
    "due": "مستحق",
    "all": "الكل",
@@ -993,10 +992,10 @@
    "any": "أيًّا كان",
    "kind": {
     "Other": "أخرى",
-    "Resume": "السيرة الذاتية",
     "CoverLetter": "خطاب التقديم",
     "PersonalStatement": "البيان الشخصي",
-    "LinkedInSummary": "الملخص على LinkedIn"
+    "LinkedInSummary": "الملخص على LinkedIn",
+    "Resume": "السيرة الذاتية"
    },
    "unassigned": "غير معيّن",
    "choose": "اختر…",
@@ -1004,7 +1003,6 @@
    "submitted": "تم الإرسال",
    "queue": "قائمة الانتظار",
    "metrics": "المقاييس",
-   "studentsResumesCoverLettersAnd": "السير الذاتية ورسائل التغطية والبيانات الشخصية للطلاب بانتظار مراجعة المستشار. المراجعات سجلات تعليمية ولا تتم مشاركتها مع أصحاب العمل مطلقًا.",
    "documentReviewSections": "أقسام مراجعة المستندات",
    "assignee": "المكلّف",
    "waitingAtLeastDays": "مدة الانتظار على الأقل (بالأيام)",
@@ -1097,14 +1095,15 @@
    "annotatedFileUploaded": "تم رفع الملف المشروح.",
    "openNowUnassigned": "مفتوح الآن (غير معيّن)",
    "overdueNow": "متأخر الآن",
-   "kindChecklist": "قائمة التحقق: {kind}"
+   "kindChecklist": "قائمة التحقق: {kind}",
+   "exportCSV": "تصدير جدول بيانات (CSV)",
+   "studentsResumesCoverLettersAnd": "سير الطلاب الذاتية وخطابات التقديم والبيانات التي تنتظر مراجعة مستشار. تُعد المراجعات سجلات تعليمية ولا تُشارك مطلقًا مع أصحاب العمل."
   },
   "careerCenterExperiences": {
    "status": "الحالة",
    "cancel": "إلغاء",
    "edit": "تعديل",
    "student": "طالب",
-   "exportCSV": "تصدير CSV",
    "description": "الوصف",
    "all": "الكل",
    "downloadFailed": "تعذّر التنزيل.",
@@ -1175,7 +1174,8 @@
    "kindWasDue": "كان موعد {kind} في {dueDate}",
    "noCptRecordsPending": "لا توجد سجلات CPT معلّقة.",
    "cptStatusStarts": "{cptStatus} · يبدأ في {startDate}",
-   "cptNotRecorded": "لم يُسجَّل CPT"
+   "cptNotRecorded": "لم يُسجَّل CPT",
+   "exportCSV": "تصدير جدول بيانات (CSV)"
   },
   "careerCenterExperiencesDetail": {
    "status": "الحالة",
@@ -1243,7 +1243,6 @@
    "online": " · عبر الإنترنت",
    "attendance": "الحضور:",
    "connectionSaved": "تم حفظ الاتصال.",
-   "syncedBoothsBoothsFromFairs": "تمت مزامنة {booths} من الأجنحة في {fairs} من المعارض؛ وتمت مطابقة {matchedEmployers} مع جهات التوظيف التي تتعامل معها.",
    "yourSchoolsEventsAndCareer": "فعاليات مدرستك ومعارضها المهنية من نظام الفعاليات. أنشئها وأدِرها هناك؛ هذه الصفحة للقراءة فقط.",
    "allEvents": "جميع الفعاليات",
    "noEventsFound": "لم يتم العثور على فعاليات",
@@ -1257,18 +1256,13 @@
    "askACareerCenterAdmin": "اطلب من مسؤول المركز المهني توصيل نظام الفعاليات.",
    "eventSystemConnection": "اتصال نظام الفعاليات",
    "set": "تعيين",
-   "aPIURL": "عنوان URL لواجهة API",
-   "theTenantAPIAddressE": "عنوان API الخاص بالمؤسسة، مثل https://…/functions/v1/tenant-api",
-   "eventAppURL": "عنوان URL لتطبيق الفعاليات",
    "usedForManageAndBooth": "يُستخدم لروابط «إدارة» وروابط الأجنحة",
    "aPIKey": "مفتاح API",
    "leaveEmptyToKeepThe": "اتركه فارغًا للاحتفاظ بالمفتاح الحالي",
    "createOneInYourEvent": "أنشئ مفتاحًا من إعدادات نظام الفعاليات",
    "webhookSigningSecret": "سر توقيع Webhook",
-   "copyFromTheWebhookEndpoint": "انسخه من نقطة نهاية Webhook التي تنشئها في نظام الفعاليات",
    "turnOff": "إيقاف",
    "turnOn": "تشغيل",
-   "syncBoothsForReports": "مزامنة الأجنحة لإعداد التقارير",
    "careerFairsOnly": "المعارض المهنية فقط",
    "includePast": "تضمين الفعاليات السابقة",
    "nothingMatchesTheseFiltersYet": "لا توجد نتائج تطابق هذه عوامل التصفية حتى الآن.",
@@ -1280,7 +1274,13 @@
    "booth": "الجناح",
    "leadsShared": "جهات اتصال محتملة تمت مشاركتها",
    "webhookURLPasteIntoYour": "عنوان URL لـ Webhook (الصقه في نظام الفعاليات)",
-   "lastSyncLastWebhook": "آخر مزامنة / آخر Webhook"
+   "syncedBoothsBoothsFromFairs": "تم تحديث {booths} جناحًا من {fairs} معارض؛ وتمت مطابقة {matchedEmployers} مع أصحاب العمل الذين تتعامل معهم.",
+   "aPIURL": "عنوان API الخاص بـ AttendSpot",
+   "theTenantAPIAddressE": "عنوان API الذي يزودك به AttendSpot، مثل https://…/functions/v1/tenant-api",
+   "eventAppURL": "عنوان تطبيق الفعالية",
+   "copyFromTheWebhookEndpoint": "انسخه من webhook الذي تنشئه في نظام الفعاليات لديك",
+   "syncBoothsForReports": "تحديث الأجنحة لإعداد التقارير",
+   "lastSyncLastWebhook": "آخر تحديث / آخر فعالية تم استلامها"
   },
   "careerCenterImports": {
    "status": "الحالة",
@@ -1449,8 +1449,6 @@
    "requestsAStudentCanHave": "عدد الطلبات التي يمكن أن ينتظر الطالب ردًا عليها في الوقت نفسه",
    "sendAReminderToBoth": "أرسل تذكيرًا إلى طرفَي كل علاقة إرشاد نشطة لم تُسجّل لها جلسة مؤخرًا. تخطَّ الأزواج الذين تلقوا تذكيرًا خلال الفترة نفسها.",
    "sendCheckInReminders": "إرسال تذكيرات الاطمئنان",
-   "downloadMentorshipsCSV": "تنزيل علاقات الإرشاد (CSV)",
-   "downloadMentorsCSV": "تنزيل بيانات المرشدين (CSV)",
    "exportsNeverIncludePrivateSession": "لا تتضمن الملفات المصدّرة ملاحظات الجلسات الخاصة.",
    "alumniCanSetUpA": "يمكن للخريجين إعداد ملفاتهم الشخصية بأنفسهم. لإضافة شخص ليس من الخريجين، ادعه من هنا؛ سيسجل الدخول بهذا البريد الإلكتروني، ويكمل ملفه الشخصي، ثم توافق عليه. أرسل إليه رابط تسجيل الدخول بنفسك.",
    "invite": "دعوة",
@@ -1523,7 +1521,9 @@
    "remindersSentToSentMentorships": "تم إرسال تذكيرات إلى {sent} من علاقات الإرشاد.",
    "countStudentsWouldBecomeAlumni": "سيصبح {count} من الطلاب خريجين.",
    "countStudentsAreNowAlumni": "أصبح {count} من الطلاب خريجين الآن.",
-   "liftHoldForName": "إلغاء التعليق<span> لـ {name}</span>"
+   "liftHoldForName": "إلغاء التعليق<span> لـ {name}</span>",
+   "downloadMentorshipsCSV": "تنزيل برامج الإرشاد (جدول بيانات)",
+   "downloadMentorsCSV": "تنزيل المرشدين (جدول بيانات)"
   },
   "careerCenterMessages": {
    "status": "الحالة",
@@ -1582,7 +1582,6 @@
    "allYears": "جميع السنوات",
    "program": "البرنامج",
    "allPrograms": "جميع البرامج",
-   "exportCSV": "تصدير CSV",
    "downloadStarted": "بدأ التنزيل.",
    "exportFailedStatus": "تعذّر تصدير الملف. يُرجى المحاولة مرة أخرى.",
    "type": "النوع",
@@ -1626,10 +1625,6 @@
    "offersRecordedInOnCampus": "العروض المسجلة في التوظيف داخل الحرم الجامعي",
    "waitingForTheStudent": "بانتظار الطالب",
    "whichEvidenceWentWithPlacement": "ما الدليل المرتبط بالتوظيف؟",
-   "linkAnApplicationSentTo": "ربط طلب أُرسل إلى حساب Hire الخاص بصاحب العمل",
-   "employerId": "معرّف صاحب العمل",
-   "ourApplicationId": "معرّف طلبنا",
-   "theExternalApplicationIdSentToHire": "externalApplicationId المُرسل إلى Hire.",
    "roleOptional": "الدور (اختياري)",
    "recentEventsFromHire": "الأحداث الأخيرة من Hire",
    "noEventsReceivedYet": "لم نتلقَّ أي أحداث بعد",
@@ -1645,7 +1640,6 @@
    "studentsConfirmOnTheirMy": "يؤكد الطلاب قبولهم للعرض أو رفضه من صفحة \"خطوتي التالية\". وتتحول العروض المقبولة إلى حالات توظيف.",
    "studentNamePositionTitleAtEmployerName": "{studentName} · {positionTitle} لدى {employerName}",
    "correlationNotCausationSmallSamples": "ارتباط لا علاقة سببية؛ عينات صغيرة.",
-   "whenAnEmployerUsesHire": "عندما يستخدم صاحب العمل Hire، فإنه يُبلغ عن العروض وعمليات التوظيف للطلبات التي أرسلناها إليه. يتيح ربط معرّف طلبنا بالطالب تحويل هذه التقارير إلى حالات توظيف موثقة من صاحب العمل.",
    "linkApplication": "ربط الطلب",
    "chooseAStudentFirst": "اختر طالبًا أولًا.",
    "statusRecordedStatus": "تم تسجيل الحالة: {status}.",
@@ -1653,7 +1647,13 @@
    "tabPlacements": "حالات التوظيف",
    "tabAdd": "إضافة نتيجة بحث",
    "tabOffers": "مؤشرات العروض",
-   "tabHire": "روابط Hire"
+   "exportCSV": "تصدير جدول بيانات (CSV)",
+   "linkAnApplicationSentTo": "ربط طلب توظيف أُرسل إلى نظام التوظيف Hire لدى صاحب العمل",
+   "employerId": "مرجع صاحب العمل",
+   "ourApplicationId": "رقم الطلب في Edulexa",
+   "theExternalApplicationIdSentToHire": "رقم الطلب الذي أرسلته Edulexa إلى Hire.",
+   "whenAnEmployerUsesHire": "عندما يستخدم صاحب العمل Hire، فإنه يرسل إلينا معلومات عن عروض العمل والتعيينات للطلبات التي أرسلناها إليه. يؤدي ربط الطلب بالطالب إلى تسجيل هذه التحديثات كتعيينات أكدها صاحب العمل.",
+   "tabHire": "روابط أنظمة التوظيف"
   },
   "careerCenterPeople": {
    "status": "الحالة",
@@ -1688,7 +1688,6 @@
    "pages": "الصفحات",
    "inviteSomeone": "دعوة شخص",
    "importStudentRoster": "استيراد قائمة الطلاب",
-   "cSVFile": "ملف CSV",
    "total": "الإجمالي:",
    "allRoles": "جميع الأدوار",
    "tryAnotherRoleOrSearch": "جرّب دورًا أو بحثًا آخر، أو أرسل دعوة إلى شخص أدناه.",
@@ -1700,14 +1699,15 @@
    "pagePageOfPages": "الصفحة {page} من {pages}",
    "next": "التالي",
    "sendInvite": "إرسال دعوة",
-   "cSVWithAnEmailColumn": "ملف CSV يحتوي على عمود <strong>البريد الإلكتروني</strong>، ويمكن أن يتضمن أيضًا الاسم ورقم الطالب والدرجة والتخصص (افصل بين عدة تخصصات باستخدام ;) وتاريخ التخرج. تُضاف الصفوف كسجلات تعليمية موثّقة من المدرسة.",
    "confirmImport": "تأكيد الاستيراد",
    "previewCreatedNewUpdatedUpdated": "معاينة: {created} سجلات جديدة، و{updated} سجلات محدّثة، و{count} سجلات بها مشكلات.",
    "lineLineError": "السطر {line}: {error}",
    "rowsWithProblemsAreSkipped": "سيتم تخطي الصفوف التي بها مشكلات. لن يُحفظ أي شيء قبل التأكيد.",
-   "chooseACSVFileFirst": "اختر ملف CSV أولاً.",
    "emailWasInvitedAsRole": "تمت دعوة {email} بصفة {role}. سيُربط حسابهم عند تسجيل الدخول باستخدام هذا البريد الإلكتروني.",
-   "removeNameRoleFromThis": "هل تريد إزالة {name} ({role}) من هذه المدرسة؟"
+   "removeNameRoleFromThis": "هل تريد إزالة {name} ({role}) من هذه المدرسة؟",
+   "cSVFile": "جدول بيانات (ملف CSV)",
+   "cSVWithAnEmailColumn": "جدول بيانات (ملف CSV) يتضمن عمود <strong>البريد الإلكتروني</strong> وأعمدة اختيارية للاسم ورقم الطالب والدرجة والتخصص (افصل بين عدة تخصصات باستخدام ;) وتاريخ التخرج. تُسجل الصفوف كبيانات تعليمية تم التحقق منها من المدرسة.",
+   "chooseACSVFileFirst": "اختر جدول بيانات (ملف CSV) أولًا."
   },
   "careerCenterPlacements": {
    "status": "الحالة",
@@ -1751,7 +1751,6 @@
    "createdRecordsAddedAndUpdated": "تمت إضافة {created} سجلًا وتحديث {updated}.",
    "recordDeleted": "تم حذف السجل.",
    "intakeFiguresSaved": "تم حفظ أرقام القبول.",
-   "placementOffice": "مكتب التوظيف",
    "yourRecordsOfCampusDrives": "سجلات حملات التوظيف الجامعية والجولات والعروض والرواتب، مع قوائم أهلية مستندة إلى البيانات الأكاديمية للطلاب. لا تنشر الشركات الوظائف هنا ولا تطّلع على بيانات الطلاب، ولا يتقدم الطلاب للوظائف من هنا؛ إذ لا يرى الطلاب سوى نتائجهم وعروضهم.",
    "drives": "حملات التوظيف",
    "statDrives": "حملات التوظيف",
@@ -1860,7 +1859,8 @@
    "optedOut": "انسحب",
    "notGraduatedOnTime": "لم يتخرج في الوقت المحدد",
    "qualified": "اجتاز",
-   "appeared": "حضر"
+   "appeared": "حضر",
+   "placementOffice": "التعيينات"
   },
   "careerCenterPlacementsDetail": {
    "status": "الحالة",
@@ -1873,9 +1873,7 @@
    "joiningDate": "تاريخ الالتحاق",
    "choose": "اختر…",
    "waitingForSignIn": "بانتظار تسجيل الدخول",
-   "downloadCSV": "تنزيل CSV",
    "offerRecorded": "تم تسجيل العرض.",
-   "placementOffice": "مكتب التوظيف",
    "packageCTCPerYear": "الراتب (CTC سنويًا)",
    "imported": "تم الاستيراد",
    "checked": "تم التحقق",
@@ -1949,7 +1947,9 @@
     "minClass12": "الصف 12 / الدبلوم بنسبة لا تقل عن {value}%",
     "excludePlaced": "سياسة المدرسة: يُستبعد الطلاب الذين قبلوا عرضًا"
    },
-   "roundResults": "{count} نتيجة لـ {round}"
+   "roundResults": "{count} نتيجة لـ {round}",
+   "downloadCSV": "تنزيل جدول بيانات (CSV)",
+   "placementOffice": "التعيينات"
   },
   "careerCenterPrivacy": {
    "status": "الحالة",
@@ -2032,7 +2032,6 @@
    "minorsAndGuardianConsent": "القاصرون وموافقة ولي الأمر",
    "countRowsHadProblemsValue": "; واجهت {count} صفوف مشكلات: {value}",
    "updatedStudentsUpdatedValue": "تم تحديث بيانات {updated} طالبًا{value}",
-   "importDatesOfBirthCSV": "استيراد تواريخ الميلاد (CSV)",
    "columnsEmailOrStudentNumberThen": "الأعمدة: Email أو StudentNumber، ثم DateOfBirth (YYYY-MM-DD) و/أو Under18 (yes/no). يقبل استيراد قائمة الطلاب الأعمدة نفسها.",
    "emailDateOfBirth": "Email,DateOfBirth",
    "noAgesRecorded": "لا توجد أعمار مسجّلة",
@@ -2053,7 +2052,8 @@
    "whatErasureWouldDo": "ما سيترتب على المحو",
    "table": "الجدول",
    "action": "الإجراء",
-   "auditTrail": "سجل التدقيق"
+   "auditTrail": "سجل التدقيق",
+   "importDatesOfBirthCSV": "استيراد تواريخ الميلاد (جدول بيانات)"
   },
   "careerCenterSettingsSis": {
    "status": "الحالة",
@@ -2065,31 +2065,21 @@
    "mode": "النمط",
    "sISSettingsSaved": "تم حفظ إعدادات SIS.",
    "dryRunFinishedNothingWas": "اكتمل التشغيل التجريبي: لم يتم حفظ أي شيء.",
-   "syncFinished": "اكتملت المزامنة.",
-   "theSyncFailed": "فشلت المزامنة.",
    "studentInformationSystem": "نظام معلومات الطلاب",
-   "onlyCareerAdminsCanManage": "يمكن لمسؤولي مركز التوجيه المهني فقط إدارة مزامنة قوائم الطلاب.",
-   "keepYourStudentRosterIn": "حافظ على تحديث قائمة الطلاب وفقًا لنظام معلومات الطلاب SIS: باستخدام ملفات OneRoster 1.2 أو واجهة API، أو ملف CSV مُصدّر من Banner أو Workday Student أو PeopleSoft. تتم مطابقة الطلاب حسب معرّف SIS والبريد الإلكتروني، وتُعلَّم سجلاتهم المدرسية على أنها موثَّقة.",
    "uploadAOneRosterBundle": "تحميل حزمة OneRoster",
    "oneRosterFiles": "ملفات OneRoster",
    "aZipBundleOrOrgs": "حزمة .zip، أو الملفات orgs.csv وusers.csv وenrollments.csv وacademicSessions.csv (وroles.csv للإصدار 1.2). لا تتم قراءة demographics.csv إلا إذا سمحت بذلك أدناه.",
    "checkTheBundle": "التحقق من الحزمة",
-   "syncRoster": "مزامنة قائمة الطلاب",
-   "uploadASISCSVExport": "تحميل ملف CSV مُصدّر من SIS",
-   "cSVExport": "ملف CSV مُصدّر",
    "exportLayout": "تنسيق الملف المُصدّر",
    "checkRowCountRows": "التحقق من {rowCount} صفًا",
-   "syncRowCountRows": "مزامنة {rowCount} صفًا",
    "oneRosterAPI": "واجهة OneRoster API",
    "kind": {
     "OneRosterRest": "واجهة OneRoster API",
     "OneRosterCsv": "OneRoster CSV",
-    "GenericCsv": "SIS CSV"
+    "GenericCsv": "جدول بيانات نظام معلومات الطلاب (SIS) (CSV)"
    },
-   "baseURL": "عنوان URL الأساسي",
    "upToTheVersionE": "حتى الإصدار، مثل https://sis.example.edu/ims/oneroster/rostering/v1p2",
    "tokenURL": "عنوان URL للرمز",
-   "oAuth20ClientCredentials": "نقطة نهاية بيانات اعتماد العميل في OAuth 2.0",
    "clientId": "معرّف العميل",
    "clientSecret": "الرمز السري للعميل",
    "aSecretIsSavedStored": "تم حفظ رمز سري (مخزّن بشكل مشفّر). اتركه فارغًا للإبقاء عليه.",
@@ -2098,8 +2088,6 @@
    "rosterCoreReadonly": "roster-core.readonly",
    "onlyThisSchoolOrgSourcedId": "مؤسسة هذه المدرسة فقط (sourcedId، اختياري)",
    "alsoFiltersUploadedBundles": "يُطبّق هذا الفلتر أيضًا على الحزم التي يتم تحميلها.",
-   "syncHistory": "سجل المزامنة",
-   "noSyncsYet": "لا توجد عمليات مزامنة بعد.",
    "dryRun": "تشغيل تجريبي",
    "fullSuspendMissing": "كامل، مع تعليق الطلاب غير المدرجين",
    "full": "كامل",
@@ -2107,23 +2095,14 @@
    "createdAddedUpdatedUpdatedReactivated": "تمت إضافة {created}، وتحديث {updated}، وإعادة تفعيل {reactivated}، وتعليق {deactivated}، وتخطي {skipped}",
    "dryRun2": " (تشغيل تجريبي)",
    "lineLine": "السطر {line}: ",
-   "syncOptions": "خيارات المزامنة",
    "dryRunReportWhatWould": "تشغيل تجريبي (عرض التغييرات التي ستُجرى دون حفظ أي شيء)",
    "thisIsAFullRoster": "هذه قائمة كاملة (تضم جميع الطلاب الحاليين)",
-   "suspendStudentsMissingFromThis": "تعليق الطلاب غير الموجودين في هذه القائمة الكاملة<span>غير مفعّل افتراضيًا. لا يستطيع الطلاب المعلّقون تسجيل الدخول إلى حزمة الخدمات المهنية حتى يظهروا في مزامنة لاحقة.</span>",
-   "yourSchoolReachesTheCareer": "تصل مدرستك إلى حزمة الخدمات المهنية عبر منصة شريكة، وهي عادةً من تدير قائمة الطلاب. استخدم مزامنة القائمة هنا فقط إذا نصّ اتفاقك مع الشريك على ذلك.",
    "readColumns": "قراءة الأعمدة",
    "options": "الخيارات",
    "importDemographicsSexAndRace": "استيراد البيانات الديموغرافية (علامات الجنس والعرق/الإثنية فقط؛ لا تُخزّن تواريخ الميلاد أو أماكنه مطلقًا). يؤدي إيقاف هذا الخيار إلى حذف البيانات الديموغرافية المخزّنة.",
-   "pullTheRosterFromThe": "سحب قائمة الطلاب من واجهة API كل ليلة (يتطلب أيضًا تفعيل الجدولة الليلية لهذا الخادم)",
    "nightlyPullsSuspendStudentsMissing": "تؤدي عمليات السحب الليلية إلى تعليق الطلاب غير الموجودين في SIS",
-   "saveAPISettings": "حفظ إعدادات API",
-   "lastSyncLastSyncAt": "آخر مزامنة: {lastSyncAt}",
-   "syncNow": "مزامنة الآن",
-   "rosterSyncs": "مزامنات قائمة الطلاب",
    "changes": "التغييرات",
    "chooseTheOneRosterZipOr": "اختر ملف OneRoster بصيغة .zip أو ملفات CSV الخاصة به.",
-   "chooseACSVExportFirst": "اختر ملف تصدير CSV أولًا.",
    "chooseAFileAndCheck": "اختر ملفًا وتحقق من تعيين الأعمدة أولًا.",
    "latestResultKindValue": "أحدث نتيجة: {kind}{value}",
    "countInFeed": "الطلاب في الملف",
@@ -2132,7 +2111,28 @@
    "countMissing": "غير موجود في الملف",
    "countReactivated": "أُعيد التفعيل",
    "countSkipped": "الصفوف التي تم تخطيها",
-   "required": " (مطلوب)"
+   "required": " (مطلوب)",
+   "oAuth20ClientCredentials": "عنوان تسجيل الدخول الذي يحدده نظام معلومات الطلاب (SIS) لبيانات اعتماد عميل OAuth 2.0",
+   "syncHistory": "سجل التحديثات",
+   "noSyncsYet": "لا توجد تحديثات بعد.",
+   "syncOptions": "خيارات التحديث",
+   "suspendStudentsMissingFromThis": "تعليق حسابات الطلاب غير الموجودين في القائمة الكاملة<span>متوقف افتراضيًا. لا يمكن للطلاب المعلّقين تسجيل الدخول إلى مجموعة الخدمات المهنية حتى يظهروا في تحديث لاحق.</span>",
+   "yourSchoolReachesTheCareer": "تصل مدرستك إلى مجموعة الخدمات المهنية عبر منصة شريكة، تتولى عادةً إدارة قائمة الطلاب. استخدم تحديثات القائمة هنا فقط إذا نصّ اتفاقك مع الشريك على ذلك.",
+   "pullTheRosterFromThe": "استيراد قائمة الطلاب من نظام معلومات الطلاب (SIS) كل ليلة (على فريق دعم Edulexa أيضًا تفعيل الجدول الليلي)",
+   "saveAPISettings": "حفظ إعدادات الاتصال",
+   "lastSyncLastSyncAt": "آخر تحديث: {lastSyncAt}",
+   "syncNow": "التحديث الآن",
+   "rosterSyncs": "تحديثات قائمة الطلاب",
+   "chooseACSVExportFirst": "اختر أولًا ملف تصدير جدول بيانات (CSV).",
+   "syncFinished": "اكتمل تحديث قائمة الطلاب.",
+   "theSyncFailed": "تعذّر تحديث قائمة الطلاب.",
+   "onlyCareerAdminsCanManage": "يمكن لمسؤولي الخدمات المهنية فقط إدارة تحديثات قوائم الطلاب.",
+   "keepYourStudentRosterIn": "حافظ على توافق قائمة طلابك مع نظام معلومات الطلاب (SIS): استخدم ملفات OneRoster 1.2 أو اتصال OneRoster، أو ملف جدول بيانات (CSV) مُصدّرًا من Banner أو Workday Student أو PeopleSoft. تتم مطابقة الطلاب باستخدام معرّف SIS والبريد الإلكتروني، وتُعلّم سجلاتهم المدرسية بأنها موثّقة.",
+   "syncRoster": "تحديث قائمة الطلاب",
+   "uploadASISCSVExport": "ارفع ملف جدول بيانات (CSV) مُصدّرًا من نظام معلومات الطلاب (SIS)",
+   "cSVExport": "ملف جدول بيانات مُصدّر (CSV)",
+   "syncRowCountRows": "استيراد {rowCount} صفًا",
+   "baseURL": "العنوان الأساسي (URL)"
   },
   "employerSchools": {
    "status": "الحالة",
@@ -2402,7 +2402,6 @@
    "requireInsuranceConfirmation": "طلب تأكيد التأمين",
    "theSupervisorFormIsSet": "يُحدّد نموذج المشرف لكل برنامج (علامة تبويب البرامج)؛ وتبدأ البرامج المنشأة استنادًا إلى قاعدة بنموذج الحزمة.",
    "templatesAndCertificate": "القوالب والشهادة",
-   "downloadCSVTitle": "تنزيل CSV<span>: {title}</span>",
    "theRegulatorHasNotPublished": "لم تنشر الجهة التنظيمية تنسيقًا للملف؛ راجع الأعمدة قبل الإرسال.",
    "noObjectionCertificateIssuedThe": "تم إصدار شهادة عدم ممانعة؛ وتم إخطار الطالب.",
    "completionCertificateIssuedTheStudent": "تم إصدار شهادة إتمام؛ وأُبلغ الطالب.",
@@ -2435,7 +2434,8 @@
    "fieldMaxHours": "الحد الأقصى للساعات",
    "fieldMinCredits": "الحد الأدنى للوحدات المعتمدة",
    "fieldMaxCredits": "الحد الأقصى للوحدات المعتمدة",
-   "fieldHoursPerCredit": "عدد الساعات لكل وحدة معتمدة"
+   "fieldHoursPerCredit": "عدد الساعات لكل وحدة معتمدة",
+   "downloadCSVTitle": "تنزيل جدول البيانات (CSV)<span>: {title}</span>"
   },
   "experiencesShared": {
    "status": "الحالة",
@@ -2515,14 +2515,12 @@
    "typeYourFullNameTo": "اكتب اسمك الكامل للتوقيع",
    "weeklyHours": "الساعات الأسبوعية",
    "kindEvaluation": "تقييم {kind}",
-   "documentFingerprintSHA256Sha256": "بصمة المستند (SHA-256): {sha256}",
    "signAgreement": "توقيع الاتفاقية",
    "noHoursLoggedYet": "لم تُسجّل أي ساعات بعد.",
    "siteSupervisor": "مشرف موقع التدريب",
    "done": " (مكتمل)",
    "toDo": " (مطلوب)",
    "hours": "الساعات",
-   "typedTypedNameEmailIPIp": "أدخل “{typedName}” · {email} · عنوان IP {ip} · {userAgent} · {provider}",
    "iHaveReadThisVersion": "قرأت هذه النسخة من الاتفاقية، وأوافق عليها، وأوافق على التوقيع إلكترونيًا.",
    "earlierVersionsCount": "الإصدارات السابقة ({count})",
    "versionVersionReplacedVoidedAtVoidReason": "الإصدار {version}: تم استبداله في {voidedAt} ({voidReason})؛ تم إبطال {count} توقيع(ات).",
@@ -2558,7 +2556,9 @@
    "statusStatusDSOApprovalDsoApprovalDate": "الحالة: {status} · موافقة DSO: {dsoApprovalDate} · تواريخ CPT على I-20: من {startDate} إلى {endDate}",
    "cPTDatesAndDSOApproval": "لا تزال تواريخ CPT وتاريخ موافقة DSO مطلوبة قبل أن يتمكن مركز الخدمات المهنية من الموافقة.",
    "declineReason": "سبب الرفض:",
-   "signatures": "التوقيعات"
+   "signatures": "التوقيعات",
+   "documentFingerprintSHA256Sha256": "رمز التحقق من المستند: {sha256}",
+   "typedTypedNameEmailIPIp": "وقّع بكتابة “{typedName}” · {email} · من {ip}"
   },
   "optOverview": {
    "status": "الحالة",
@@ -2656,7 +2656,6 @@
    "campaignNameStaffOnly": "اسم الحملة (للموظفين فقط)",
    "category": "الفئة",
    "recipientsCanUnsubscribeFromEach": "يمكن للمستلمين إلغاء الاشتراك من كل فئة.",
-   "mergeFields": "حقول الدمج: '{''{'firstName'}''}', '{''{'school'}''}'",
    "plainTextBlankLinesStart": "نص عادي؛ تبدأ الفقرات الجديدة بالأسطر الفارغة. تُضاف إلى رسائل البريد الإلكتروني تذييلٌ يتضمن معلومات الاتصال بمدرستك ورابطًا لإلغاء الاشتراك.",
    "roleNoneStudentsAndAlumni": "الدور (بدون تحديد = الطلاب والخريجون)",
    "membershipStatus": "حالة العضوية",
@@ -2692,8 +2691,9 @@
    "statDelivered": "تم التسليم",
    "statEmailsSent": "رسائل البريد الإلكتروني المُرسلة",
    "statInAppSent": "الإشعارات المُرسلة داخل التطبيق",
-   "statEmailSuppressed": "تم حظر البريد الإلكتروني",
-   "statUnsubscribes": "إلغاء الاشتراك"
+   "statUnsubscribes": "إلغاء الاشتراك",
+   "mergeFields": "يمكنك إضافة هذه العناصر إلى الرسالة: '{''{'firstName'}''}', '{''{'school'}''}'",
+   "statEmailSuppressed": "لم تُرسل: أوقف هذا الشخص تلقي هذه الرسائل"
   },
   "studentPrivacyRights": {
    "status": "الحالة",
@@ -3031,7 +3031,6 @@
    "notShared": "التفاصيل غير متاحة",
    "cgpaLine": "المعدل التراكمي {cgpa} · المواد المتراكمة الحالية {backlogs} · الصف العاشر {p10}% · الصف الثاني عشر {p12}%",
    "revokeOffer": "سحب العرض",
-   "disclosureNote": "شارك الطلاب هذه التفاصيل مع شركتك عند تقديم طلباتهم. في كل مرة تظهر فيها هذه القائمة، يُسجل ذلك في سجل الإفصاح بالكلية.",
    "selection": "الاختيار",
    "shortlistSelected": "تم اختيارهم للقائمة المختصرة ({count})",
    "recordResult": "تسجيل نتيجة للمختارين",
@@ -3042,13 +3041,10 @@
    "slotMinutes": "الدقائق لكل موعد",
    "gapMinutes": "الدقائق بين المواعيد",
    "place": "المكان",
-   "videoLink": "رابط الفيديو (https)",
    "panel": "لجنة المقابلة",
    "scheduleSelected": "جدولة {count} من المختارين",
    "scheduleShortlist": "جدولة القائمة المختصرة",
    "c4Title": "استخدم جدول مقابلات داخل الحرم الجامعي",
-   "c4Help": "اربط هذه الجولة بجدول مقابلات للاختيار المسبق في الكلية؛ إذ تتم دعوة المرشحين في القائمة المختصرة لحجز مواعيدهم بأنفسهم.",
-   "scheduleId": "معرّف جدول المقابلات",
    "linkSchedule": "ربط الجدول",
    "inviteShortlist": "دعوة المرشحين في القائمة المختصرة",
    "makeOfferTitle": "تقديم عرض",
@@ -3057,11 +3053,15 @@
    "ctc": "التكلفة على الشركة سنويًا",
    "ctcHint": "اتركه فارغًا لاستخدام حزمة حملة التوظيف. مثال: 12 LPA أو 1200000.",
    "respondBy": "الرد بحلول",
-   "overridePolicy": "تسجيل العرض حتى إذا كانت سياسة التوظيف في الكلية ستمنعه (يخضع للتدقيق)",
    "makeOffer": "تقديم العرض",
    "lettersTitle": "خطابات العرض",
    "lettersHelp": "أصدر خطاب عرض للعرض. يقبل الطالب العرض بتوقيع الخطاب، ويمكنك تنزيل النسخة الموقعة.",
-   "chooseOffer": "اختر عرضًا"
+   "chooseOffer": "اختر عرضًا",
+   "disclosureNote": "شارك الطلاب هذه التفاصيل مع شركتك عند تقديم طلباتهم. في كل مرة تُعرض فيها هذه القائمة، يُسجَّل ذلك في سجل الإفصاح الخاص بالمدرسة.",
+   "videoLink": "رابط فيديو (يبدأ بـ https://)",
+   "c4Help": "اربط هذه الجولة بجدول مقابلات الفرز المسبق في المدرسة؛ حيث يُدعى المرشحون المدرجون في القائمة المختصرة لحجز مواعيدهم بأنفسهم.",
+   "scheduleId": "رقم جدول المقابلات",
+   "overridePolicy": "سجّل العرض حتى إذا كانت سياسة المدرسة تقتضي رفضه (خاضع للتدقيق)"
   },
   "employerJobDetail": {
    "status": "الحالة",
@@ -3119,7 +3119,6 @@
    "colApplicant": "المتقدم",
    "title": "Hire (تتبّع المتقدمين للوظائف)",
    "intro": "إذا كانت شركتك تستخدم Hire، فاربطه: ستُستورد الوظائف من Hire، وسيُرسل الطلاب الذين يتقدمون بموافقتهم إلى Hire، وستُعاد تحديثات المراحل والعروض والتوظيف إلى حملة التوظيف في الحرم الجامعي.",
-   "platformOff": "لم يتم تفعيل تكامل Hire لهذه المنصة بعد.",
    "key": "مفتاح شريك Hire",
    "keyHint": "أنشئه في Hire ضمن Settings → Integrations → Edulexa. يُخزّن مشفّراً ولن يُعرض مرة أخرى.",
    "autoPush": "أرسل الطلبات التي وافق أصحابها على مشاركتها إلى Hire فور تقديم الطلاب لها",
@@ -3132,14 +3131,11 @@
    "webhookOff": "غير مسجّل (استدرك التغييرات)",
    "compensation": "تمت مشاركة راتب العرض",
    "compensationOff": "لا (يُستخدم CTC الخاص بحملة التوظيف)",
-   "jobsSynced": "آخر مزامنة للوظائف",
    "lastEvent": "آخر تحديث من Hire",
    "never": "أبداً",
    "missingScopes": "المفتاح مفقود: {scopes}",
    "lastError": "آخر مشكلة: {error}",
    "failedCount": "{count, plural, one {{count} تحديث يحتاج إلى مراجعة.} other {{count} تحديثات تحتاج إلى مراجعة.}}",
-   "syncJobs": "مزامنة الوظائف",
-   "synced": "تمت مزامنة الوظائف: {created} جديدة، و{updated} محدّثة.",
    "reconcile": "استدراك التحديثات من Hire",
    "reconciled": "{count, plural, one {تم تطبيق تغيير واحد ({count}).} other {تم تطبيق {count} تغييرات.}}",
    "processed": "{count, plural, one {تم إرسال تحديث واحد ({count}).} other {تم إرسال {count} تحديثات.}}",
@@ -3172,7 +3168,11 @@
    "notShown": "غير مشارك",
    "notInHire": "ليس في Hire",
    "pushed": "{count, plural, one {تم إرسال {count} متقدم.} other {تم إرسال {count} متقدمين.}}",
-   "sendPending": "{count, plural, one {إرسال {count} تحديث معلّق} other {إرسال {count} تحديثات معلّقة}}"
+   "sendPending": "{count, plural, one {إرسال {count} تحديث معلّق} other {إرسال {count} تحديثات معلّقة}}",
+   "platformOff": "لم يتم تفعيل الاتصال بخدمة Hire بعد.",
+   "jobsSynced": "آخر تحديث للوظائف",
+   "syncJobs": "تحديث الوظائف",
+   "synced": "تم تحديث الوظائف: {created} جديدة، و{updated} محدّثة."
   },
   "campusShared": {
    "appStatus": {
@@ -3206,12 +3206,12 @@
    },
    "docKind": {
     "Transcript": "النص",
-    "Resume": "السيرة الذاتية",
     "CoverLetter": "خطاب التقديم",
     "Marksheet": "كشف الدرجات",
     "IdProof": "إثبات الهوية",
     "Portfolio": "ملف الأعمال",
-    "Other": "مستند آخر"
+    "Other": "مستند آخر",
+    "Resume": "السيرة الذاتية"
    },
    "eligibility": {
     "eligible": "مؤهل",
@@ -3314,7 +3314,6 @@
    "howYouMet": "كيف تعرّفتما؟",
    "privateNotesOnlyTheTwo": "ملاحظات خاصة (لكما فقط)",
    "summaryForTheCareerCenter": "ملخص لمركز المسار المهني (اختياري)",
-   "keepItShortAndGeneral": "اجعله موجزًا وعامًا، مثل «مراجعة مسودة السيرة الذاتية».",
    "finishTheMentorship": "إنهاء الإرشاد",
    "reasonOrWrapUpOptional": "السبب أو الخلاصة (اختياري)",
    "endTheMentorshipWithOther": "هل تريد إنهاء الإرشاد مع {other} مبكرًا؟",
@@ -3363,7 +3362,8 @@
     "Spam": "رسائل مزعجة أو ترويج للبيع",
     "SafetyConcern": "مخاوف تتعلق بالسلامة",
     "Other": "سبب آخر"
-   }
+   },
+   "keepItShortAndGeneral": "اجعلها موجزة وعامة، مثل “مراجعة مسودة السيرة الذاتية”."
   },
   "localisation": {
    "notes": "ملاحظات",
@@ -3377,7 +3377,6 @@
    "program": "البرنامج",
    "allPrograms": "جميع البرامج",
    "apply": "عرض التقرير",
-   "exportCsv": "تصدير CSV",
    "exportXlsx": "تصدير Excel",
    "exportDetail": "قائمة بالأسماء (Excel)",
    "exportDetailHint": "لمسؤولي مركز المسار المهني فقط. تتضمن بيانات شخصية ويُسجّل الوصول إليها.",
@@ -3399,7 +3398,8 @@
    "reportLink": "تقارير توطين القوى العاملة",
    "tablesHeading": "توظيف الخريجين المواطنين",
    "exportFailedStatus": "تعذّر تصدير الملف. يُرجى المحاولة مرة أخرى.",
-   "importResult": "{updated, plural, one {تم تحديث بيانات # طالب} other {تم تحديث بيانات # طلاب}}؛ {skipped, plural, =0 {لم يتم تخطي أي صف} one {تم تخطي # صف} other {تم تخطي # صفوف}}."
+   "importResult": "{updated, plural, one {تم تحديث بيانات # طالب} other {تم تحديث بيانات # طلاب}}؛ {skipped, plural, =0 {لم يتم تخطي أي صف} one {تم تخطي # صف} other {تم تخطي # صفوف}}.",
+   "exportCsv": "تصدير جدول بيانات (CSV)"
   },
   "careerCenterCaseloadSettings": {
    "notes": "ملاحظات",
@@ -3415,22 +3415,14 @@
    "aICopilot": "مساعد الذكاء الاصطناعي",
    "turnCopilotOff": "إيقاف المساعد",
    "turnCopilotOn": "تشغيل المساعد",
-   "aIGenerationLog": "سجل إنشاءات الذكاء الاصطناعي",
    "noAIGenerationsYet": "لا توجد إنشاءات بالذكاء الاصطناعي بعد",
    "prepBrief": "ملخص التحضير",
    "signalsInUse": "الإشارات المستخدمة",
    "saveSignalSettings": "حفظ إعدادات الإشارات",
-   "whenOnCounselorsCanGenerate": "عند تشغيله، يمكن للمرشدين إنشاء ملخص للتحضير للموعد ورسالة تواصل أولية. تُوسم جميع المحتويات بأنها صيغت بمساعدة الذكاء الاصطناعي، ولا يُرسل أي شيء تلقائيًا (يراجع المرشدون المحتوى ويعدّلونه ثم يرسلونه عبر المراسلة)، ويُسجّل كل إنشاء أدناه. تُرسل بيانات الطالب إلى مزوّد الذكاء الاصطناعي الذي أعدّته المدرسة لهذه المسودات فقط، ولا تُتاح أبدًا لأصحاب العمل.",
-   "noAIProviderConfigured": "لم يتم إعداد مزوّد للذكاء الاصطناعي",
-   "developmentStubOutputNoProvider": "مخرجات مؤقتة للتطوير (لا توجد مفاتيح للمزوّد)",
    "includeStaffOnlyAdvisingNotes": "تضمين ملاحظات الإرشاد المخصصة للموظفين فقط في ملخصات التحضير (مع تمييزها بأنها للموظفين فقط؛ ولا تُستخدم مطلقًا في مسودات التواصل)",
    "saveNoteSetting": "حفظ إعداد الملاحظات",
    "aIGenerationsNewestFirst": "إنشاءات الذكاء الاصطناعي، الأحدث أولًا",
    "by": "بواسطة",
-   "model": "النموذج",
-   "promptHash": "بصمة الطلب",
-   "stub": "مؤقت",
-   "instructionLikeText": "نص يشبه التعليمات",
    "sentAfterReview": "أُرسل بعد المراجعة",
    "signalSettingsSaved": "تم حفظ إعدادات الإشارات.",
    "copilotTurnedOff": "تم إيقاف المساعد.",
@@ -3462,11 +3454,19 @@
      "hint": "يُستخدم عند: انتظار طلب إرشاد"
     },
     "passingSprintPercent": {
-     "label": "اجتياز التحدي السريع (% من الاختبارات المخفية)",
-     "hint": "يُستخدم عند: عدم وجود أدلة موثّقة"
+     "hint": "يُستخدم عند: عدم وجود أدلة موثّقة",
+     "label": "اجتياز الاختبار (% من الفحوصات التي تم اجتيازها)"
     }
    },
-   "when": "متى"
+   "when": "متى",
+   "aIGenerationLog": "نشاط الذكاء الاصطناعي",
+   "whenOnCounselorsCanGenerate": "عند تفعيل هذا الخيار، يمكن للمستشارين إنشاء موجز للتحضير للموعد ومسودة رسالة تواصل. تُوسم كل المواد بأنها صيغت بمساعدة الذكاء الاصطناعي، ولا يُرسل أي شيء تلقائيًا (يراجع المستشارون الرسائل ويعدّلونها ثم يرسلونها عبر المراسلة)، ويُسجل كل إنشاء أدناه. لا تُرسل بيانات الطلاب إلى خدمة الذكاء الاصطناعي التي اختارتها المدرسة إلا لإعداد هذه المسودات، ولا تُشارك مطلقًا مع أصحاب العمل.",
+   "noAIProviderConfigured": "لم يتم إعداد خدمة للذكاء الاصطناعي",
+   "developmentStubOutputNoProvider": "مخرجات نموذجية (لم يتم إعداد خدمة للذكاء الاصطناعي)",
+   "model": "تم استخدام الذكاء الاصطناعي",
+   "promptHash": "بصمة الطلب",
+   "stub": "نموذج (لم يتم إعداد الذكاء الاصطناعي)",
+   "instructionLikeText": "نص بدا كأنه تعليمات للذكاء الاصطناعي"
   },
   "nationality": {
    "save": "حفظ",
@@ -3691,7 +3691,6 @@
    "noSignalsRightNow": "لا توجد مؤشرات حاليًا.",
    "snoozedUntilUntil": "مؤجل حتى {until}",
    "snoozedByByNameReason": "أجّله {byName}: {reason}",
-   "openModule": "فتح الوحدة",
    "removeSnooze": "إلغاء التأجيل",
    "snooze": "تأجيل…",
    "snooze2": "تأجيل",
@@ -3699,10 +3698,7 @@
    "other": "أخرى",
    "theAICopilotIsTurned": "المساعد الذكي معطّل لهذه المدرسة. يمكن لمسؤول المسارات المهنية تفعيله من إعدادات المؤشرات والمساعد الذكي.",
    "draftOutreachMessage": "إنشاء مسودة رسالة تواصل",
-   "developmentStub": "نص مؤقت للتطوير",
    "includesStaffOnlyNotesDont": "يتضمن ملاحظات للموظفين فقط: لا تشاركها مع الطالب",
-   "studentTextContainedInstructionLike": "احتوى نص الطالب على صياغة تشبه التعليمات؛ وتم التعامل معه على أنه بيانات",
-   "developmentStubRemoveTheStub": "نص مؤقت للتطوير: أزل السطر المؤقت قبل الإرسال",
    "iReviewedThisMessageAnd": "راجعت هذه الرسالة وأريد إرسالها",
    "sendViaMessaging": "الإرسال عبر المراسلة",
    "discard": "تجاهل",
@@ -3714,7 +3710,11 @@
    "sourceManual": "تم التعيين يدويًا",
    "sourceUnassigned": "غير معيّن",
    "sourceRule": "وفق قاعدة {rule}",
-   "phone": "الهاتف"
+   "phone": "الهاتف",
+   "openModule": "افتح الصفحة ذات الصلة",
+   "developmentStub": "نص نموذجي: لم يتم إعداد الذكاء الاصطناعي",
+   "studentTextContainedInstructionLike": "بدا أن جزءًا من نص الطالب يتضمن تعليمات للذكاء الاصطناعي، لذا تم تجاهله.",
+   "developmentStubRemoveTheStub": "نص نموذجي (لم يتم إعداد الذكاء الاصطناعي): أزل السطر النموذجي قبل الإرسال"
   },
   "careerCenterInterviews": {
    "save": "حفظ",
@@ -3834,7 +3834,6 @@
     "service": "حجم الخدمات",
     "equity": "عرض الإنصاف"
    },
-   "exportCSV": "تصدير CSV",
    "downloadStarted": "بدأ التنزيل.",
    "exportFailedStatus": "تعذّر تصدير الملف. يُرجى المحاولة مرة أخرى.",
    "filters": "الفلاتر",
@@ -3872,7 +3871,8 @@
    "presetDeleted": "تم حذف الإعداد المسبق.",
    "presetSaved": "تم حفظ الإعداد المسبق.",
    "settingSaved": "تم حفظ الإعداد.",
-   "reportsAreUnavailable": "التقارير غير متاحة."
+   "reportsAreUnavailable": "التقارير غير متاحة.",
+   "exportCSV": "تصدير جدول بيانات (CSV)"
   },
   "appointmentDetail": {
    "save": "حفظ",
@@ -3991,7 +3991,6 @@
    "allYears": "جميع السنوات",
    "programName": "البرنامج",
    "apply": "عرض التقرير",
-   "exportCsv": "تصدير CSV",
    "exportXlsx": "تصدير Excel",
    "downloadStarted": "بدأ التنزيل.",
    "sourcesTitle": "المصادر",
@@ -4113,7 +4112,8 @@
    "totals": "{enrolled} من المسجلين، و{graduates} من الخريجين ({onTime} في الموعد المحدد)، و{counted} من الخريجين المحتسبين ضمن التوظيف.",
    "intentMissing": "{count, plural, one {لم تُسجّل نية # خريج للعمل في اليوم الأول.} other {لم تُسجّل نية # خريجين للعمل في اليوم الأول.}}",
    "rulesTitle": "معيار CIRR: ما الذي تم التحقق منه",
-   "reviewedOn": "تمت المراجعة في {date}."
+   "reviewedOn": "تمت المراجعة في {date}.",
+   "exportCsv": "تصدير جدول بيانات (CSV)"
   },
   "staffGroupSessions": {
    "save": "حفظ",
@@ -4657,7 +4657,6 @@
    "https": "https://",
    "dropInNoShows": "حالات عدم الحضور",
    "colNoShows": "حالات عدم الحضور",
-   "downloadCSV": "تنزيل CSV",
    "attended": "حضروا",
    "colAttended": "حضروا",
    "required": "مطلوب",
@@ -4676,7 +4675,6 @@
    "myBookingProfile": "ملف الحجز الخاص بي",
    "bookingProfileName": "ملف الحجز: {name}",
    "nameStudentsSee": "الاسم الذي يظهر للطلاب",
-   "yourPersonalRoomAnyProvider": "رابط غرفتك الشخصية (من أي مزوّد)، يُشارك مع الطلاب الذين يحجزون موعدًا عبر الفيديو. يجب أن يبدأ بـ https://",
    "inPersonLocation": "الموقع الحضوري",
    "shortBioOptional": "نبذة قصيرة (اختيارية)",
    "calendarLink": "رابط التقويم",
@@ -4751,7 +4749,9 @@
    "colStillBooked": "ما زال محجوزًا",
    "minutesShort": "{minutes} دقيقة",
    "useGeneratedMeetings": "استخدم رابط اجتماع منفصلًا لكل موعد فيديو",
-   "useGeneratedMeetingsHint": "عند ربط تقويم Microsoft 365 أو Google، يحصل كل موعد فيديو على رابط خاص به في Teams أو Meet. أوقف هذا الخيار لمشاركة رابط اجتماع الفيديو أعلاه دائمًا."
+   "useGeneratedMeetingsHint": "عند ربط تقويم Microsoft 365 أو Google، يحصل كل موعد فيديو على رابط خاص به في Teams أو Meet. أوقف هذا الخيار لمشاركة رابط اجتماع الفيديو أعلاه دائمًا.",
+   "yourPersonalRoomAnyProvider": "رابط غرفتك الشخصية (على أي خدمة فيديو)، ويُشارَك مع الطلاب الذين يحجزون موعدًا عبر الفيديو. يجب أن يبدأ بـ https://",
+   "downloadCSV": "تنزيل جدول بيانات (CSV)"
   },
   "messagingShared": {
    "cancel": "إلغاء",
@@ -4860,7 +4860,6 @@
    "tracksRoomS": "{tracks} غرفة/غرف",
    "candidatesAndDetails": "المرشحون والتفاصيل",
    "studentEmails": "عناوين البريد الإلكتروني للطلاب",
-   "pasteEmailsOrTheContents": "ألصق عناوين البريد الإلكتروني أو محتوى ملف CSV. ستُرسل الدعوات إلى طلاب هذه المدرسة فقط؛ وستظهر لك تفاصيلهم بعد قبولهم.",
    "inviteAs": "الدعوة بصفة",
    "withdrawThisScheduleBookedStudents": "هل تريد سحب هذا الجدول؟ سيتم إبلاغ الطلاب الذين حجزوا بأن الموعد أُلغي.",
    "graduatingGraduationDate": " · التخرج في {graduationDate}",
@@ -4906,7 +4905,6 @@
    "withdrawSchedule": "سحب الجدول",
    "invitedInvitedEmailDetailsAppearOnce": "تمت دعوة: {invitedEmail}. ستظهر التفاصيل بعد قبول الطالب.",
    "detailsWithheldReason": "التفاصيل محجوبة: {reason}",
-   "downloadResumeFileName": "تنزيل السيرة الذاتية ({fileName})",
    "youCanRequestInterviewDays": "يمكنك طلب تنظيم أيام للمقابلات بعد موافقة إحدى المدارس عليك في صفحة <link>المدارس</link>.",
    "chooseASchool": "اختر مدرسة",
    "day": "اليوم",
@@ -4920,7 +4918,9 @@
    "invitationRemoved": "تمت إزالة الدعوة.",
    "scheduleWithdrawn": "تم سحب الجدول.",
    "addedStudentsInvited": "تمت دعوة {added} من الطلاب.",
-   "notFoundAtThisSchool": " لم يتم العثور عليهم في هذه المدرسة: {list}."
+   "notFoundAtThisSchool": " لم يتم العثور عليهم في هذه المدرسة: {list}.",
+   "pasteEmailsOrTheContents": "ألصق عناوين البريد الإلكتروني، أو انسخ عمودًا منها من جدول بيانات. ستتم دعوة طلاب هذه المدرسة فقط؛ وستتمكن من الاطلاع على تفاصيلهم بعد قبولهم.",
+   "downloadResumeFileName": "تنزيل السيرة الذاتية ({fileName})"
   },
   "employerTeam": {
    "remove": "إزالة",
@@ -4974,7 +4974,6 @@
    "none": "لا يوجد خطاب عرض حتى الآن. يمكن للطالب قبول العرض مباشرةً إلى أن تصدر خطاباً؛ وبعدها يكون القبول بتوقيعه.",
    "issueTitle": "إصدار خطاب عرض",
    "reissueTitle": "إصدار نسخة جديدة",
-   "providerNote": "يوقّع الطالب باستخدام {provider}. ويُعد توقيعه قبولاً للعرض، وفقاً لسياسة التوظيف في الكلية.",
    "providerDm": "التوقيع الإلكتروني لخدمة المستندات",
    "providerBuiltin": "التوقيع بالنقر (يتم تسجيل الاسم المكتوب والوقت والبصمة)",
    "modeLabel": "كيفية إنشاء الخطاب",
@@ -4994,7 +4993,8 @@
    "fileHint": "PDF أو Word (.docx)، بحد أقصى 10 MB.",
    "upload": "حمّل وأرسل",
    "history": "{count, plural, one {{count} إصدار} other {{count} إصدارات}}",
-   "historyLine": "الإصدار {version}: {status}، صدر بتاريخ {date}"
+   "historyLine": "الإصدار {version}: {status}، صدر بتاريخ {date}",
+   "providerNote": "يوقّع الطالب باستخدام {provider}. ويُعدّ التوقيع قبولًا للعرض وفقًا لسياسة المدرسة."
   },
   "careerCenterPrivacyLog": {
    "item": "البند",
@@ -5136,9 +5136,9 @@
    "validUntil": "صالحة حتى {date}",
    "downloadBadge": "تنزيل الشارة المفتوحة",
    "downloadBadgeFor": "تنزيل الشارة المفتوحة لـ {name}",
-   "downloadJson": "JSON-LD",
-   "downloadJsonFor": "تنزيل {name} بتنسيق JSON-LD",
-   "badgeHint": "يمكن إضافة ملفات Open Badges 3.0 إلى المحافظ الرقمية والتحقق منها عبر صفحة التحقق العامة."
+   "badgeHint": "يمكن إضافة ملفات Open Badges 3.0 إلى المحافظ الرقمية والتحقق منها عبر صفحة التحقق العامة.",
+   "downloadJson": "ملف قابل للقراءة (JSON-LD)",
+   "downloadJsonFor": "تنزيل {name} كملف قابل للقراءة (JSON-LD)"
   },
   "attainmentView": {
    "colSource": "المصدر",
@@ -5153,7 +5153,6 @@
    "colTarget": "الهدف",
    "direct": "مباشر",
    "indirect": "غير مباشر",
-   "downloadCSV": "تنزيل CSV",
    "colLevel": "المرحلة",
    "apply": "تطبيق",
    "programMajor": "البرنامج (التخصص)",
@@ -5193,7 +5192,8 @@
     "high": "مرتفع",
     "moderate": "متوسط",
     "low": "منخفض"
-   }
+   },
+   "downloadCSV": "تنزيل جدول بيانات (CSV)"
   },
   "workforceShared": {
    "source": "المصدر",
@@ -5279,12 +5279,12 @@
    "noCompanyDetails": "لا توجد تفاصيل عن الشركة",
    "decidedDecidedAt": " · تم اتخاذ القرار {decidedAt}",
    "noteDecisionNote": " · ملاحظة: {decisionNote}",
-   "accountEmailDomainEmailDomain": "نطاق البريد الإلكتروني للحساب: {emailDomain}",
    "flaggedFlagReason": "تم الإبلاغ: {flagReason}",
    "requestedRequestedAt": "تم الطلب {requestedAt}",
    "block": "حظر",
    "nameStatusTheyveBeenNotified": "{name}: {status, select, Approved {تمت الموافقة} Declined {مرفوض} Blocked {محظور} Pending {قيد الانتظار} other {{status}}}. تم إبلاغهم.",
-   "noTabEmployers": "لا يوجد أصحاب عمل {tab, select, Pending {قيد الانتظار} Approved {موافَق عليهم} Declined {مرفوضون} Blocked {محظورون} other {{tab}}}"
+   "noTabEmployers": "لا يوجد أصحاب عمل {tab, select, Pending {قيد الانتظار} Approved {موافَق عليهم} Declined {مرفوضون} Blocked {محظورون} other {{tab}}}",
+   "accountEmailDomainEmailDomain": "نطاق عناوين البريد الإلكتروني للشركة: {emailDomain}"
   },
   "careerCenterInterviewsReports": {
    "employer": "صاحب العمل",
@@ -5303,7 +5303,6 @@
    "noneYet": "لا شيء حتى الآن",
    "byEmployer": "حسب جهة العمل",
    "backToInterviews": "العودة إلى المقابلات",
-   "downloadCSV": "تنزيل CSV",
    "noInterviewsInThisRange": "لا توجد مقابلات في هذه الفترة.",
    "interviewsByEmployer": "المقابلات حسب جهة العمل",
    "statSlotsOffered": "المواعيد المتاحة",
@@ -5313,7 +5312,8 @@
    "statAttended": "حضروا",
    "statCancellations": "الإلغاءات",
    "statFilledFromAlternates": "تم شغلها من قائمة البدلاء",
-   "statNoOffer": "لا يوجد عرض"
+   "statNoOffer": "لا يوجد عرض",
+   "downloadCSV": "تنزيل جدول بيانات (CSV)"
   },
   "alumniMentoring": {
    "employer": "صاحب العمل",
@@ -5427,7 +5427,6 @@
     "home": "الرئيسية",
     "appointments": "المواعيد",
     "document-review": "مراجعة المستندات",
-    "experiences": "التدريبات",
     "mentoring": "الإرشاد",
     "interviews": "المقابلات",
     "fairs": "معارض التوظيف",
@@ -5443,7 +5442,8 @@
     "notifications": "الإشعارات",
     "national-credentials": "المؤهلات الوطنية",
     "jobs": "منصة الوظائف",
-    "jobs_applications": "طلباتي"
+    "jobs_applications": "طلباتي",
+    "experiences": "تدريبات عملية معتمدة أكاديميًا"
    },
    "career-center": {
     "home": "الرئيسية",
@@ -5465,8 +5465,6 @@
     "international": "الطلاب الدوليون",
     "employers": "أصحاب العمل",
     "imports": "عمليات الاستيراد",
-    "settings_sis": "مزامنة قوائم SIS",
-    "calendar": "مزامنة التقويم",
     "people": "الأشخاص",
     "settings": "الإعدادات",
     "privacy-log": "سجل الخصوصية",
@@ -5476,7 +5474,9 @@
     "reports_workforce": "تقارير القوى العاملة (WIOA)",
     "apprenticeships": "التدريب المهني",
     "reports_cirr": "نتائج المعسكر التدريبي (وفق نمط CIRR)",
-    "placements_drives": "فعاليات التوظيف في الحرم الجامعي"
+    "placements_drives": "فعاليات التوظيف في الحرم الجامعي",
+    "settings_sis": "قائمة الطلاب (SIS)",
+    "calendar": "ربط التقويم"
    },
    "employer": {
     "home": "الرئيسية",
@@ -5605,7 +5605,103 @@
    "colEmail": "البريد الإلكتروني",
    "showInApp": "{kind}: العرض داخل التطبيق",
    "sendEmail": "{kind}: إرسال بريد إلكتروني",
-   "unreadSummary": "{count, plural, one {لديك # إشعار غير مقروء.} other {لديك # إشعارات غير مقروءة.}}"
+   "unreadSummary": "{count, plural, one {لديك # إشعار غير مقروء.} other {لديك # إشعارات غير مقروءة.}}",
+   "category": {
+    "agent_update": "تحديث مساعد التوجيه المهني",
+    "appointments_booked": "تم حجز موعد",
+    "appointments_cancelled": "تم إلغاء الموعد",
+    "appointments_dropin": "دون موعد: أنت التالي",
+    "appointments_group_cancelled": "تم إلغاء الجلسة الجماعية",
+    "appointments_group_changed": "تم تغيير الجلسة الجماعية",
+    "appointments_group_hosting": "جلسة جماعية تستضيفها",
+    "appointments_group_promoted": "تمت إزالة اسمك من قائمة الانتظار لجلسة جماعية",
+    "appointments_group_registered": "تم التسجيل في جلسة جماعية",
+    "appointments_group_reminder": "تذكير بجلسة جماعية",
+    "appointments_group_waitlist_closed": "أُغلقت قائمة انتظار الجلسة الجماعية",
+    "appointments_group_waitlisted": "أُضيف اسمك إلى قائمة الانتظار لجلسة جماعية",
+    "appointments_notes": "ملاحظات من موعد",
+    "appointments_reminder": "تذكير بموعد",
+    "appointments_tasks": "مهمة متابعة",
+    "apprenticeships_created": "تمت إضافة تدريب مهني",
+    "apprenticeships_hours": "ساعات التدريب المهني",
+    "apprenticeships_signoff": "اعتماد إكمال التدريب المهني",
+    "assessments_assigned": "تم إسناد تقييم",
+    "assessments_reminder": "تذكير بتقييم",
+    "challenges_decision": "قرار بشأن التحدي",
+    "challenges_invite": "دعوة إلى تحدٍ",
+    "challenges_review": "تحدٍ للمراجعة",
+    "class_appeal": "استئناف بشأن التقييم",
+    "class_result": "نتيجة التقييم",
+    "credentials_awarded": "تم منح شهادة اعتماد",
+    "docreview_assigned": "تم إسناد مراجعة مستند",
+    "docreview_resubmitted": "أُعيد المستند للمراجعة",
+    "docreview_returned": "أُعيد المستند بعد مراجعته",
+    "drives_application_received": "طلب جديد للمشاركة في فعالية توظيف بالحرم الجامعي",
+    "drives_application_withdrawn": "تم سحب طلب المشاركة في فعالية التوظيف بالحرم الجامعي",
+    "drives_approved": "تمت الموافقة على فعالية التوظيف بالحرم الجامعي",
+    "drives_hire_issue": "تحديث من نظام التوظيف يحتاج إلى مراجعة",
+    "drives_new": "فعالية توظيف جديدة في الحرم الجامعي",
+    "drives_offer": "عرض عمل",
+    "drives_offer_deadline": "تذكير بالرد على العرض",
+    "drives_offer_response": "الرد على عرض عمل",
+    "drives_rejected": "رُفضت فعالية التوظيف بالحرم الجامعي",
+    "drives_request": "طلب إقامة فعالية توظيف بالحرم الجامعي",
+    "drives_shortlisted": "أُدرج اسمك في القائمة المختصرة لفعالية توظيف بالحرم الجامعي",
+    "drives_slot": "موعد المقابلة",
+    "drives_slot_reminder": "تذكير بمقابلة",
+    "employer_invite": "دعوة للانضمام إلى فريق التوظيف",
+    "employer_relationship": "تم الرد على طلب التوظيف",
+    "employer_request": "يرغب صاحب العمل في التوظيف",
+    "experiences_agreement": "اتفاقية التدريب العملي",
+    "experiences_approved": "تمت الموافقة على التدريب العملي",
+    "experiences_certificate": "شهادة التدريب العملي",
+    "experiences_comment": "تعليق على التدريب العملي",
+    "experiences_completed": "اكتمل التدريب العملي",
+    "experiences_declined": "رُفض التدريب العملي",
+    "experiences_defense": "مناقشة التدريب العملي",
+    "experiences_documents": "مستندات التدريب العملي",
+    "experiences_evaluation": "تقييم التدريب العملي",
+    "experiences_faculty_approved": "تمت الموافقة على التدريب العملي من قِبل أعضاء هيئة التدريس",
+    "experiences_hours": "ساعات التدريب العملي",
+    "experiences_logbook": "سجل التدريب العملي",
+    "experiences_submitted": "تم تقديم التدريب العملي",
+    "experiences_supervisor": "مشرف التدريب العملي",
+    "experiences_withdrawn": "تم سحب التدريب العملي",
+    "guidance_mentor": "سؤال إرشادي لك",
+    "guidance_reply": "الرد على سؤالك الإرشادي",
+    "international_opt-reminder": "تذكير بشأن OPT",
+    "international_opt-warning": "تحذير بشأن OPT",
+    "international_work-rights": "تذكير بشأن حق العمل",
+    "mentoring_accepted": "تم قبول طلب الإرشاد",
+    "mentoring_active": "بدأت جلسات الإرشاد",
+    "mentoring_alumni": "إرشاد الخريجين",
+    "mentoring_approval": "طلب إرشاد بانتظار الموافقة",
+    "mentoring_checkin": "متابعة الإرشاد",
+    "mentoring_declined": "رُفض طلب الإرشاد",
+    "mentoring_ended": "انتهت جلسات الإرشاد",
+    "mentoring_mentor_decision": "قرار بشأن طلب الانضمام إلى المرشدين",
+    "mentoring_mentor_submitted": "طلب جديد للانضمام إلى المرشدين",
+    "mentoring_report": "تقرير الإرشاد",
+    "mentoring_request": "طلب إرشاد",
+    "mentoring_session": "جلسة إرشاد",
+    "mentoring_withdrawn": "تم سحب طلب الإرشاد",
+    "messages_assigned": "أُسندت إليك المحادثة",
+    "messages_new": "رسالة جديدة",
+    "messages_report": "تم الإبلاغ عن المحادثة",
+    "ocr_alternate": "على قائمة الانتظار لإجراء مقابلة",
+    "ocr_booked": "تم حجز مقابلة داخل الحرم الجامعي",
+    "ocr_cancelled": "تم إلغاء مقابلة داخل الحرم الجامعي",
+    "ocr_cleared": "أصبح التسجيل للمقابلة متاحًا مجددًا",
+    "ocr_invited": "تمت دعوتك إلى مقابلات داخل الحرم الجامعي",
+    "ocr_new_schedule": "مقابلات جديدة داخل الحرم الجامعي",
+    "ocr_no_show": "فاتتك مقابلة داخل الحرم الجامعي",
+    "ocr_promoted": "تم نقلك إلى قائمة المقابلات",
+    "ocr_request": "طلب مقابلة داخل الحرم الجامعي",
+    "ocr_signup": "تسجيل جديد لمقابلة",
+    "privacy_guardian": "إجابة ولي الأمر",
+    "privacy_request": "طلب متعلق بالخصوصية",
+    "resumebook_removed": "تمت إزالتك من دليل السير الذاتية"
+   }
   },
   "studentJobs": {
    "title": "منصة الوظائف",
@@ -5615,7 +5711,6 @@
    "kind": "نوع المستند",
    "closed": "مغلقة",
    "apply": "تطبيق",
-   "description": "حملات التوظيف الجامعي التي وافق عليها مكتب التوظيف لديك.",
    "applied": "قدّمت طلبًا إلى {company}.",
    "empty": "لا توجد حملات توظيف جامعي حاليًا.",
    "stipend": "مكافأة شهرية {amount}",
@@ -5630,7 +5725,8 @@
    "consent": "أوافق على مشاركة اسمي وبيانات الاتصال وسجلي الأكاديمي (الدرجة، والفرع، والدفعة، والمعدل التراكمي، والمواد المتراكمة، ودرجات الصفين 10 و12) والمستندات التي أرفقها مع {company} لهذه الحملة، بما في ذلك نظام التوظيف الخاص بـ {company} إن كان يستخدم واحدًا. يمكنني سحب طلبي لإيقاف المشاركة.",
    "deadline": "آخر موعد للتقديم {date}",
    "optIn": "تأكيد الرغبة",
-   "any": "أيًّا كان"
+   "any": "أيًّا كان",
+   "description": "فعاليات التوظيف داخل الحرم الجامعي المعتمدة من مركزك المهني."
   },
   "studentApplications": {
    "backToBoard": "منصة الوظائف",
@@ -5638,7 +5734,6 @@
    "decline": "رفض",
    "notYet": "ليس بعد",
    "description": "طلباتك لحملات التوظيف الجامعي وجولاتها ومواعيد المقابلات والعروض.",
-   "accepted": "تم قبول العرض. لدى مكتب التوظيف لديك السجل.",
    "declined": "تم رفض العرض.",
    "empty": "لم تتقدم إلى أي حملة توظيف جامعي بعد.",
    "appliedOn": "تم التقديم في {date}",
@@ -5653,7 +5748,8 @@
    "accept": "قبول",
    "acceptAndRelease": "قبول العرض والتنازل عن عرضي السابق",
    "withdrawn": "تم سحب الطلب. لم تعد تفاصيلك تُشارك مع صاحب العمل.",
-   "withdraw": "سحب الطلب"
+   "withdraw": "سحب الطلب",
+   "accepted": "تم قبول العرض. لدى مركزك المهني سجل بذلك."
   },
   "internshipDefense": {
    "rubric": {
@@ -5696,7 +5792,6 @@
    "newStatus": "الحالة الجديدة",
    "noteRequiredKeptInThe": "ملاحظة (مطلوبة، وستُحفظ في سجل التدقيق)",
    "sayWhatYouCheckedFor": "اذكر ما تحققت منه، مثل إجراء مكالمة مع المشرف.",
-   "developmentModeThisGradeComes": "وضع التطوير: هذه الدرجة ناتجة عن قاعدة تقدير بسيطة، وليست من نموذج ذكاء اصطناعي.",
    "thisDefenseCouldntBeGraded": "تعذّر تقييم هذا الدفاع تلقائيًا. سيراجعه أحد أعضاء هيئة التدريس أو مركز التوظيف.",
    "defenseScoreScoreOutOf": "درجة الدفاع: <strong>{score}</strong> من 100 (تبحث المدرسة عن {threshold} أو أكثر، إلى جانب تأكيد المشرف).",
    "rubricScores": "درجات معايير التقييم",
@@ -5731,7 +5826,8 @@
     "PartlyVerified": "تم التحقق جزئيًا",
     "NotVerified": "لم يتم التحقق",
     "Pending": "معلّق (يتطلب مراجعة إضافية)"
-   }
+   },
+   "developmentModeThisGradeComes": "الدرجة التقديرية: محسوبة بقواعد بسيطة، وليست بالذكاء الاصطناعي."
   },
   "careerCenterInternational": {
    "internationalStudents": "الطلاب الدوليون",
@@ -5813,7 +5909,6 @@
    }
   },
   "careerCenterCalendar": {
-   "calendarSync": "مزامنة التقويم",
    "yourCareerCenterHasntTurned": "لم يفعّل مركزك المهني إضافة المواعيد إلى التقاويم.",
    "schoolCalendarSettings": "إعدادات تقويم المدرسة",
    "connected2": "متصل:",
@@ -5824,8 +5919,6 @@
    "checkConnection": "التحقق من الاتصال",
    "updateCalendarNow": "تحديث التقويم الآن",
    "disconnect": "قطع الاتصال",
-   "noCalendarConnectedYoullBe": "لا يوجد تقويم متصل. سيُطلب منك تسجيل الدخول إلى مزوّد التقويم والسماح بالوصول إلى تقويمك.",
-   "providersThatAreGreyedOut": "لم يُعَدّ المزوّدون المعطّلون على هذا الخادم بعد.",
    "calendarOptionsForAllCounselors": "خيارات التقويم لجميع المرشدين",
    "useConnectedCalendarsBusyTime": "استخدام أوقات الانشغال في التقاويم المتصلة لحظر فترات المواعيد",
    "addBookedAppointmentsToCounselors": "إضافة المواعيد المحجوزة إلى التقاويم المتصلة للمرشدين",
@@ -5834,7 +5927,6 @@
    "connectProvider": "توصيل {provider}",
    "meetingLinksForVideo": "سيكون لكل موعد فيديو وجلسة جماعية تستضيفها رابط {provider} خاص بها، يُنشأ مع حدث التقويم.",
    "generateMeetingLinks": "تخصيص رابط اجتماع لمواعيد الفيديو والجلسات الجماعية<span>يُنشأ رابط Microsoft Teams أو Google Meet مع حدث التقويم الخاص بالمرشد. أما المرشدون الذين لا يملكون تقويمًا متصلًا أو يختارون غرفة خاصة بهم، فيشاركون رابطهم الثابت بدلًا منه.</span>",
-   "addStudentsToMeetingInvite": "إضافة الطلاب إلى دعوة الاجتماع<span>يُضاف الطالب (أو كل طالب مسجل في جلسة جماعية، بحيث لا يتمكنون من رؤية بعضهم بعضًا) إلى حدث التقويم الخاص بالمضيف، لكي ترسل إليهم Microsoft 365 أو Google الدعوة والتحديثات والإلغاء، ويتمكنوا من الانضمام إلى الاجتماع مباشرةً. يُرسل بريدهم الإلكتروني الذي تم التحقق منه إلى مزوّد التقويم الخاص بالمضيف. عند إيقاف هذا الخيار، تُزال أسماء الطلاب من الفعاليات القادمة عند تحديث التقويم التالي.</span>",
    "studentsAreAddedToInvites": "يُضاف الطلاب إلى الفعاليات بصفتهم مشاركين، ويتلقون الدعوة والتغييرات والإلغاء من تقويمك. لا يُضاف الطلاب المدرجون على قائمة الانتظار.",
    "theCalendarWasntConnectedProviderError": "لم يتم ربط التقويم: {providerError}",
    "disconnectYourCalendarBusyTime": "هل تريد قطع اتصال تقويمك؟ لن تعود الفترات المشغولة تحجب مواعيدك المتاحة. وستبقى الأحداث التي أُضيفت بالفعل في تقويمك.",
@@ -5842,7 +5934,6 @@
    "failedFailed": ", فشل {failed}",
    "calendarUpdatedCreatedAddedUpdated": "تم تحديث التقويم: تمت إضافة {created}, وتغيير {updated}, وإزالة {deleted}{value}.",
    "calendarSettingsSaved": "تم حفظ إعدادات التقويم.",
-   "connectYourWorkCalendarSo": "اربط تقويم العمل لديك ليحجب وقت الانشغال مواعيدك المتاحة، ولتظهر المواعيد المحجوزة في تقويمك. تتوفر خلاصات الاشتراك (ICS) ضمن المواعيد.",
    "finishingTheConnection": "جارٍ إكمال الاتصال…",
    "yourCalendar": "تقويمك",
    "connected": "متصل",
@@ -5852,7 +5943,12 @@
    "titlesIncludeTheStudentsName": " (تتضمن العناوين اسم الطالب)",
    "titlesShowTheAppointmentType": " (تعرض العناوين نوع الموعد فقط)",
    "bookedAppointmentsAreAddedTo": "تُضاف المواعيد المحجوزة إلى تقويمك، وتُنقل أو تُحذف عند تغييرها{value}. عدّل المواعيد في مركز التوجيه المهني، لا في تقويمك.",
-   "connectionWorksCountBusyPeriods": "{count, plural, one {الاتصال يعمل: تم العثور على فترة انشغال واحدة خلال الأيام السبعة القادمة.} other {الاتصال يعمل: تم العثور على # فترات انشغال خلال الأيام السبعة القادمة.}}"
+   "connectionWorksCountBusyPeriods": "{count, plural, one {الاتصال يعمل: تم العثور على فترة انشغال واحدة خلال الأيام السبعة القادمة.} other {الاتصال يعمل: تم العثور على # فترات انشغال خلال الأيام السبعة القادمة.}}",
+   "calendarSync": "ربط التقويم",
+   "connectYourWorkCalendarSo": "اربط تقويم العمل لديك حتى تحجب الأوقات المشغولة خانات مواعيدك، وتظهر المواعيد المحجوزة في تقويمك. تجد روابط التقويم التي يمكنك إضافتها إلى تقويمك ضمن «المواعيد».",
+   "noCalendarConnectedYoullBe": "لا يوجد تقويم مرتبط. سيُطلب منك تسجيل الدخول إلى حساب التقويم والسماح بالوصول إليه.",
+   "providersThatAreGreyedOut": "التقاويم المعروضة باللون الرمادي غير متاحة بعد.",
+   "addStudentsToMeetingInvite": "أضف الطلاب إلى دعوة الاجتماع<span>يُضاف الطالب (أو كل طالب مسجل في جلسة جماعية، من دون أن يتمكنوا من رؤية بعضهم بعضًا) إلى حدث التقويم الخاص بالمضيف، لكي ترسل لهم Microsoft 365 أو Google الدعوة والتحديثات والإلغاء، ويتمكنوا من الانضمام إلى الاجتماع مباشرةً. يُرسل بريدهم الإلكتروني الذي تم التحقق منه إلى خدمة التقويم الخاصة بالمضيف. يؤدي إيقاف هذا الخيار إلى إزالة الطلاب من الأحداث القادمة عند التحديث التالي للتقويم.</span>"
   },
   "careerCenterSettings": {
    "settings": "الإعدادات",
@@ -5870,18 +5966,18 @@
    "commaSeparatedForExampleState": "افصل بينها بفواصل، مثل state.edu, mail.state.edu. يمكن أن يتبع كل نطاق مدرسة واحدة فقط.",
    "timeZone": "المنطقة الزمنية",
    "otherTimeZone": "منطقة زمنية أخرى",
-   "anIANANameSuchAs": "اسم وفق معيار IANA، مثل Europe/London.",
    "postalAddress": "العنوان البريدي",
    "printedAtTheBottomOf": "يُطبع أسفل رسائل البريد الإلكتروني للحملات، وفقًا لما يقتضيه قانون مكافحة الرسائل المزعجة في الولايات المتحدة (CAN-SPAM). اتركه فارغًا لإزالته.",
    "look": "المظهر",
-   "logoURL": "رابط الشعار",
    "primaryColor": "اللون الأساسي",
    "hexColorForExample4f46e5": "لون سداسي، مثل #4f46e5.",
    "pickPrimaryColor": "اختيار اللون الأساسي",
    "other": "غير ذلك…",
    "letStudentsJoinOnTheir": "السماح للطلاب بالانضمام بأنفسهم<span>كل من يسجّل الدخول باستخدام أحد نطاقات البريد الإلكتروني أعلاه يصبح طالبًا هنا.</span>",
    "underFERPAYourSchoolMay": "بموجب FERPA، قد تشارك مدرستك معلومات الدليل مع أصحاب العمل المعتمدين ما لم يطلب الطالب حجبها. اختر المعلومات التي تُعدّ من معلومات الدليل.",
-   "settingsCouldntBeLoaded": "تعذّر تحميل الإعدادات."
+   "settingsCouldntBeLoaded": "تعذّر تحميل الإعدادات.",
+   "anIANANameSuchAs": "الاسم القياسي للمنطقة الزمنية، مثل Europe/London أو America/Chicago.",
+   "logoURL": "رابط الشعار"
   },
   "careerCenterDrives": {
    "title": "فعاليات التوظيف في الحرم الجامعي",
@@ -5903,8 +5999,6 @@
    "dream": "فئة الأحلام ابتداءً من (₹ سنويًا)",
    "superDream": "فئة الأحلام المميزة ابتداءً من (₹ سنويًا)",
    "tiersHint": "اتركه فارغًا إذا لم تكن هناك فئات",
-   "pricingTitle": "خيارات التسعير",
-   "pricingNote": "الخيارات فقط: لم يُحدَّد تسعير الهند ولا تُفرض أي رسوم.",
    "feeRequired": "يدفع أصحاب العمل رسوم نشر الإعلان",
    "premium": "قدّم لأصحاب العمل ظهورًا مميزًا",
    "save": "حفظ القواعد",
@@ -5936,7 +6030,9 @@
    "autoApprove": "الموافقة تلقائيًا على حملات التوظيف من أصحاب العمل الموثّقين (اجتازوا التحقق من GSTIN والنطاق، أو وثّقهم فريق المنصة)",
    "acceptOpen": "استلام الوظائف التي يرسلها أصحاب العمل إلى جميع الكليات الشريكة",
    "allowIneligible": "السماح للطلاب الذين لا يستوفون معايير حملة التوظيف بالتقديم (سيتم تمييز طلباتهم)",
-   "policyTitle": "سياسة التوظيف"
+   "policyTitle": "سياسة التوظيف",
+   "pricingTitle": "رسوم نشر الوظائف على أصحاب العمل",
+   "pricingNote": "للاحتفاظ بسجلاتك فقط: لم تُحدَّد رسوم أصحاب العمل بعد، ولن يتم تحصيل أي مبلغ."
   },
   "careerCenterDrive": {
    "backToQueue": "فعاليات التوظيف في الحرم الجامعي",
@@ -6171,10 +6267,10 @@
    "source": {
     "StudentReported": "طالب",
     "EmployerReported": "عرض من جهة عمل (استقطاب داخل الحرم الجامعي)",
-    "AtsWebhook": "نظام تتبع المتقدمين لدى جهة العمل",
     "HireWebhook": "نظام التوظيف لدى جهة العمل",
     "StaffResearch": "بحث مركز التوجيه المهني",
-    "PlatformImport": "منصة التوظيف المدرسية (مستوردة)"
+    "PlatformImport": "منصة التوظيف المدرسية (مستوردة)",
+    "AtsWebhook": "نظام التوظيف لدى جهة العمل"
    },
    "verification": {
     "StaffConfirmed": "أكّد الموظفون",
@@ -6279,7 +6375,6 @@
    "statusBooked": "محجوز"
   },
   "careerCenterChallenges": {
-   "exportCSV": "تصدير CSV",
    "all": "الكل",
    "participation": "المشاركة",
    "employerChallenges": "تحديات أصحاب العمل",
@@ -6310,7 +6405,8 @@
    "statLeft": "غادر",
    "statSubmitted": "تم الإرسال",
    "statDefended": "تم الدفاع عنه",
-   "statSharing": "المشاركة"
+   "statSharing": "المشاركة",
+   "exportCSV": "تصدير جدول بيانات (CSV)"
   },
   "placementsShared": {
    "downloadStarted": "بدأ التنزيل.",
@@ -6365,7 +6461,6 @@
   "companyForm": {
    "countryCode": "رمز البلد",
    "industry": "القطاع",
-   "logoURL": "رابط الشعار",
    "companyName": "اسم الشركة",
    "website": "الموقع الإلكتروني",
    "weCompareItWithYour": "نقارنه بنطاق البريد الإلكتروني الذي تستخدمه لتسجيل الدخول للتحقق من الشركة.",
@@ -6377,7 +6472,8 @@
    "yourJobTitle": "مسمّاك الوظيفي",
    "aboutTheCompany": "نبذة عن الشركة",
    "notSpecified": "غير محدد",
-   "sEmployees": "{s} موظفًا"
+   "sEmployees": "{s} موظفًا",
+   "logoURL": "رابط الشعار"
   },
   "groupShared": {
    "cancelled": "ملغاة",
@@ -6405,10 +6501,10 @@
     "CalendarWritingOff": "إضافة المواعيد إلى التقويمات معطّلة في المدرسة.",
     "MeetingLinksOff": "إنشاء روابط الاجتماعات معطّل في المدرسة.",
     "HostUsesOwnLink": "اختار المضيف مشاركة رابط اجتماعه الخاص.",
-    "ProviderRefused": "لم يسمح موفر التقويم بإنشاء اجتماع عبر الإنترنت لهذا الحساب.",
     "ProviderNoMeeting": "لا يمكن لحساب التقويم إنشاء اجتماعات عبر الإنترنت (مثل حساب شخصي لا يتضمن Teams).",
-    "ProviderError": "تعذّر الوصول إلى موفر التقويم. ستتم إعادة المحاولة.",
-    "MeetingPending": "لا يزال الاجتماع قيد الإنشاء. سيُحدّث الرابط قريبًا."
+    "MeetingPending": "لا يزال الاجتماع قيد الإنشاء. سيُحدّث الرابط قريبًا.",
+    "ProviderRefused": "لم تسمح خدمة التقويم بإنشاء اجتماع عبر الإنترنت لهذا الحساب.",
+    "ProviderError": "تعذّر الاتصال بخدمة التقويم. ستتم إعادة المحاولة."
    },
    "meetingGenerated": "تم إنشاء اجتماع عبر {provider} لهذا الغرض.",
    "meetingHostLink": "استخدام رابط اجتماع المضيف الخاص.",
@@ -6427,8 +6523,8 @@
    "inviteSkipped": "غير مُدرج في دعوة التقويم: {reason}",
    "inviteReason": {
     "NoVerifiedEmail": "لا يوجد عنوان بريد إلكتروني تم التحقق منه.",
-    "AttendeeLimit": "بلغت الفعالية الحد الأقصى للحضور الذي يسمح به موفر التقويم.",
-    "InvitesOff": "لا تضيف المدرسة الطلاب إلى دعوات الاجتماعات."
+    "InvitesOff": "لا تضيف المدرسة الطلاب إلى دعوات الاجتماعات.",
+    "AttendeeLimit": "بلغ الحد الأقصى لعدد المدعوين في خدمة التقويم."
    },
    "seatsLeft": "{count, plural, one {بقي {count} مقعد} other {بقي {count} مقاعد}}",
    "fullWaitlist": "{count, plural, =0 {مكتمل: قائمة الانتظار مفتوحة} one {مكتمل: {count} في قائمة الانتظار} other {مكتمل: {count} في قائمة الانتظار}}"
@@ -6510,7 +6606,6 @@
    "notAvailableAtYourSchool": "غير متاح في مدرستك حاليًا.",
    "theInterviewerAsksWhatYou": "سيسألك المُحاوِر عمّا أنجزته بنفسك، وكيف يعمل، والقرارات التي اتخذتها، وما النتائج التي تحققت. لا تُقيَّم القواعد أو اللهجة أو اللغة.",
    "startTheDefense": "ابدأ الدفاع",
-   "developmentModeQuestionsAreGenerated": "وضع التطوير: تُنشأ الأسئلة دون استخدام نموذج ذكاء اصطناعي.",
    "sendAnswer": "إرسال الإجابة",
    "finishAndSendToMy": "إنهاء وإرسال إلى المشرف",
    "youllTalkWithAnInterviewer": "ستتحدث مع مُحاوِر عن العمل الذي وصفته لمدة تصل إلى 15 دقيقة. اختر مكانًا هادئًا واسمح بالوصول إلى الميكروفون.",
@@ -6519,7 +6614,8 @@
    "yourDefenseHasStarted": "بدأت جلسة الدفاع.",
    "thanksSupervisorNameHasBeenAsked": "شكرًا! طُلب من {supervisorName} تأكيد عملك.",
    "voiceIsntAvailableRightNow": "الصوت غير متاح حاليًا.",
-   "theCallDidntStartCheck": "لم تبدأ المكالمة. تحقّق من إذن استخدام الميكروفون وحاول مرة أخرى."
+   "theCallDidntStartCheck": "لم تبدأ المكالمة. تحقّق من إذن استخدام الميكروفون وحاول مرة أخرى.",
+   "developmentModeQuestionsAreGenerated": "أسئلة نموذجية: كُتبت دون استخدام الذكاء الاصطناعي."
   },
   "employerCompany": {
    "saveChanges": "حفظ التغييرات",
@@ -6592,9 +6688,7 @@
    "noOpenTimes": "لا توجد مواعيد متاحة",
    "ifMyTimeIsTaken": "إذا حُجز الموعد الذي اخترته أو لم تعد هناك مواعيد، فأضفني إلى قائمة الاحتياط",
    "joinTheAlternateListYoull": "انضم إلى قائمة الاحتياط (سيُحجز لك موعد تلقائيًا إذا توفر موعد)",
-   "resumeToShare": "السيرة الذاتية للمشاركة",
    "pDFWordOrTextUp": "PDF أو Word أو ملف نصي، بحد أقصى 10 MB.",
-   "orUploadAResume": "أو ارفع سيرة ذاتية",
    "bookThisTime": "حجز هذا الموعد",
    "youMissedNoShowsInterviewsThe": "فاتتك {noShows} مقابلات (والحد الأقصى هو {limit})، لذا أُوقفت التسجيلات الجديدة مؤقتًا. تواصل مع مركز التوظيف لإزالة هذا الإيقاف.",
    "lookUnderFindInterviewsFor": "ابحث ضمن «العثور على مقابلات» عن أصحاب العمل الذين يستقطبون موظفين في مدرستك.",
@@ -6616,13 +6710,15 @@
    "youreSignedUpSeeMy": "تم تسجيلك. اطّلع على مقابلاتي.",
    "signUpIsntOpen": "التسجيل غير متاح.",
    "declineInvitation": "رفض الدعوة",
-   "chooseAResume": "اختر سيرة ذاتية",
-   "iAgreeToShareMy": "أوافق على مشاركة اسمي وبريدي الإلكتروني وتعليمي والسيرة الذاتية أعلاه مع {employerName} لإجراء هذه المقابلة. يمكنك سحب موافقتك من <link>إعدادات الخصوصية</link>.",
    "cancelled": "تم الإلغاء.",
    "yourPlaceOnTheAlternate": "مكانك في قائمة الانتظار الاحتياطية",
    "thisInterview": "هذه المقابلة",
    "youreBookedWithEmployerName": "تم حجز موعد لك مع {employerName}.",
-   "youreOnTheAlternateList2": "أنت على قائمة الانتظار الاحتياطية لدى {employerName}."
+   "youreOnTheAlternateList2": "أنت على قائمة الانتظار الاحتياطية لدى {employerName}.",
+   "resumeToShare": "السيرة الذاتية المراد مشاركتها",
+   "orUploadAResume": "أو ارفع سيرة ذاتية",
+   "chooseAResume": "اختر سيرة ذاتية",
+   "iAgreeToShareMy": "أوافق على مشاركة اسمي وبريدي الإلكتروني وتعليمي والسيرة الذاتية أعلاه مع {employerName} من أجل هذه المقابلة. يمكنك سحب موافقتك من <link>إعدادات الخصوصية</link>."
   },
   "sponsorLookup": {
    "search": "بحث",
@@ -6666,8 +6762,6 @@
   "careerCenterReportsIndia": {
    "show": "عرض",
    "report": "التقرير",
-   "downloadCSV": "تنزيل CSV",
-   "placementOffice": "مكتب التوظيف",
    "nIRFNAACAndNBAReports": "تقارير NIRF وNAAC وNBA",
    "programme": "البرنامج",
    "placementHigherStudiesAndExamination": "أرقام التوظيف والدراسات العليا والامتحانات، وفق النماذج التي تطلبها هيئات التصنيف والاعتماد الهندية، استنادًا إلى سجلات مكتب التوظيف ونتائجه في مدرستك. تحقّق من كل رقم قبل إدخاله في التقرير.",
@@ -6688,7 +6782,9 @@
    "officialSourcesUsed": "المصادر الرسمية المستخدمة",
    "verifyAgainstTheCurrentOfficial": "(تحقّق من التنسيق الرسمي الحالي)",
    "nothingRecordedForTheseYears": "لا توجد بيانات مسجلة لهذه السنوات.",
-   "notConfirmedFromTheOfficial2": "* لم يتم التحقق منه في الوثيقة الرسمية: تحقّق من التنسيق الحالي"
+   "notConfirmedFromTheOfficial2": "* لم يتم التحقق منه في الوثيقة الرسمية: تحقّق من التنسيق الحالي",
+   "downloadCSV": "تنزيل جدول بيانات (CSV)",
+   "placementOffice": "التعيينات"
   },
   "employerDrive": {
    "noEmployer": "لا يوجد ملف لصاحب العمل بعد",
@@ -6755,8 +6851,10 @@
   "reportTableView": {
    "titleViewAs": "{title}: عرض بصفة",
    "exporting": "جارٍ التصدير…",
-   "cSV": "CSV",
-   "noDataForThisPeriod": "لا توجد بيانات لهذه الفترة."
+   "noDataForThisPeriod": "لا توجد بيانات لهذه الفترة.",
+   "cSV": "جدول بيانات (CSV)",
+   "viewChart": "مخطط",
+   "viewTable": "جدول"
   },
   "campusStudentOfferLetter": {
    "title": "خطاب العرض (الإصدار {version})",
@@ -6767,7 +6865,6 @@
    "downloadSigned": "نزّل نسختك الموقّعة",
    "signedOn": "وقّعت بتاريخ {date} باسم {name}.",
    "signTitle": "اقبل بالتوقيع",
-   "signHelp": "يُعد توقيعك قبولاً لهذا العرض. تسري سياسة التوظيف في كليتك، ويُسجّل توظيفك لدى كليتك.",
    "typedName": "اكتب اسمك الكامل",
    "typedNameHint": "هذا توقيعك الإلكتروني.",
    "agree": "قرأت خطاب العرض وأقبل العرض بهذه الشروط.",
@@ -6775,7 +6872,8 @@
    "agreeFirst": "حدّد المربع لتوقيع الخطاب.",
    "release": "سبق أن قبلت عرضاً آخر: أفرج عنه (أرفضه)",
    "signAndAccept": "وقّع واقبل",
-   "signed": "تم التوقيع. قُبل عرضك."
+   "signed": "تم التوقيع. قُبل عرضك.",
+   "signHelp": "يُعدّ التوقيع قبولًا لهذا العرض. تسري سياسة مدرستك، ويُسجَّل توظيفك لدى المدرسة."
   },
   "countryWords": {
    "salaryPerYear": "الراتب السنوي",

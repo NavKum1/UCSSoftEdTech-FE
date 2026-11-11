@@ -1,5 +1,6 @@
 "use client";
 
+import { timeZoneName } from "@/lib/timeZoneName";
 import React, { useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useApi } from "@/lib/appAuth";
@@ -147,7 +148,7 @@ export function StaffSchedule({ onOpen, onOpenGroup }: { onOpen: (id: string) =>
       <section aria-labelledby="day-h" aria-live="polite">
         {/* The label uses the browser's locale, which can differ from the server render; it re-renders once the school's time zone loads */}
         <h2 id="day-h" className="mb-3 text-lg font-semibold" suppressHydrationWarning>
-          {days === 1 ? dayLabel : tr("dayLabel6Days", { dayLabel })} <span className="text-sm font-normal text-muted-foreground">({tz})</span>
+          {days === 1 ? dayLabel : tr("dayLabel6Days", { dayLabel })} <span className="text-sm font-normal text-muted-foreground">({timeZoneName(tz)})</span>
         </h2>
         <ErrorBanner error={schedule.error || types.error} onRetry={schedule.reload} />
         {schedule.loading || types.loading ? (

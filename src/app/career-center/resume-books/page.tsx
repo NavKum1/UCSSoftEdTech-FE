@@ -9,6 +9,7 @@ import Link from "next/link";
 import { useApi } from "@/lib/appAuth";
 import { useEn } from "@/lib/english/EnglishProvider";
 import { Button, EmptyState, ErrorBanner, Loading, Modal, PageHeader, SuccessBanner, formatDate, useLoad } from "@/components/career/ui";
+import { HelpLink } from "@/components/help/HelpLink";
 
 interface Entry { id: string; name: string; program: string; degree: string | null; graduationYear: number | null; joinedAt: string; updatedAt: string; opens: number; lastOpenedAt: string | null }
 interface Book { open: boolean; entries: Entry[] }
@@ -43,8 +44,7 @@ export default function SchoolResumeBookPage() {
     <div className="space-y-6">
       <PageHeader
         title={en("Résumé book")}
-        description={en("Résumés your students chose to share with the employers you approved. Every résumé an employer opens is in the privacy log.")}
-      />
+        description={en("Résumés your students chose to share with the employers you approved. Every résumé an employer opens is in the privacy log.")} actions={<HelpLink slug="resume-book" />} />
       <ErrorBanner error={err ?? book.error} onRetry={book.error ? book.reload : undefined} />
       <SuccessBanner message={msg} />
       {book.loading && !book.data ? (

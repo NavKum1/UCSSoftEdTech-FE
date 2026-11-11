@@ -7,7 +7,7 @@
 
 import React, { useState } from "react";
 import { useApi } from "@/lib/appAuth";
-import { useCareerShell } from "@/components/career/CareerShell";
+import { useCareerShell, useHasCareerRole } from "@/components/career/CareerShell";
 import { Badge, Button, Card, EmptyState, ErrorBanner, Field, Loading, ScrollArea, SuccessBanner, useCareerFormat, useCareerT, useLoad } from "@/components/career/ui";
 import { ReportTableView, type ReportTable } from "@/components/career/reports/ReportTableView";
 import { VerifyNotice } from "@/components/career/international/WorkRights";
@@ -218,6 +218,8 @@ function CohortDetail({ id, defs, onChanged }: { id: string; defs: CirrDefinitio
   const dateOnly = useDateOnly();
   const detail = useLoad(() => api<CohortDetailDto>(`/api/career/workforce/cohorts/${id}`), [api, id]);
   const options = useLoad(() => api<{ id: string; title: string; status: string; linked: boolean }[]>(`/api/career/workforce/cohorts/${id}/challenge-options`), [api, id]);
+  // Counselors and career admins change cohorts (as the API checks); employer relations staff see them
+  const canEdit = useHasCareerRole("CareerAdmin", "Counselor");
   const [emails, setEmails] = useState("");
   const [editing, setEditing] = useState<string | null>(null);
   const [challenge, setChallenge] = useState("");
@@ -257,9 +259,9 @@ function CohortDetail({ id, defs, onChanged }: { id: string; defs: CirrDefinitio
         <section aria-labelledby="ch-members">
           <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
             <h3 id="ch-members" className="font-semibold">{t("membersTitle", { count: members.length })}</h3>
-            <Button variant="secondary" onClick={() => run(() => api<{ applied: number; suggestions: unknown[] }>(`/api/career/workforce/cohorts/${id}/prefill-outcomes`, { method: "POST" }), (r) => t("prefillResult", { applied: (r as { applied: number }).applied, suggestions: (r as { suggestions: unknown[] }).suggestions.length }))}>
+            {canEdit && <Button variant="secondary" onClick={() => run(() => api<{ applied: number; suggestions: unknown[] }>(`/api/career/workforce/cohorts/${id}/prefill-outcomes`, { method: "POST" }), (r) => t("prefillResult", { applied: (r as { applied: number }).applied, suggestions: (r as { suggestions: unknown[] }).suggestions.length }))}>
               {t("prefill")}
-            </Button>
+            </Button>}
           </div>
           <p className="mb-2 text-xs text-muted-foreground">{t("prefillHint")}</p>
           {members.length === 0 ? (
@@ -294,10 +296,10 @@ function CohortDetail({ id, defs, onChanged }: { id: string; defs: CirrDefinitio
                       </td>
                       <td className="py-1 pe-3">{m.baseSalary ? fmt.currency(m.baseSalary, "USD") : "—"}</td>
                       <td className="py-1">
-                        <div className="flex flex-wrap gap-1">
+                        {canEdit && <div className="flex flex-wrap gap-1">
                           <Button variant="secondary" onClick={() => setEditing(editing === m.id ? null : m.id)} aria-label={t("editMember", { name: m.studentName ?? m.studentEmail ?? "" })}>{t("edit")}</Button>
                           <Button variant="ghost" onClick={() => run(() => api(`/api/career/workforce/cohorts/${id}/members/${m.id}`, { method: "DELETE" }), t("removed"))} aria-label={t("removeMember", { name: m.studentName ?? m.studentEmail ?? "" })}>{t("remove")}</Button>
-                        </div>
+                        </div>}
                       </td>
                     </tr>
                   ))}
@@ -310,6 +312,7 @@ function CohortDetail({ id, defs, onChanged }: { id: string; defs: CirrDefinitio
               <MemberEditor cohortId={id} m={m} defs={defs} onCancel={() => setEditing(null)} onSaved={() => { setEditing(null); setMsg(t("memberSaved")); detail.reload(); onChanged(); }} />
             </div>
           ))}
+          {canEdit && (
           <form
             className="mt-3 grid gap-3 sm:grid-cols-3 sm:items-end"
             onSubmit={(e) => {
@@ -326,6 +329,7 @@ function CohortDetail({ id, defs, onChanged }: { id: string; defs: CirrDefinitio
             </div>
             <Button type="submit">{t("addMembersButton")}</Button>
           </form>
+          )}
         </section>
 
         <section aria-labelledby="ch-challenges">
@@ -340,12 +344,12 @@ function CohortDetail({ id, defs, onChanged }: { id: string; defs: CirrDefinitio
                   <span className="font-medium">{c.title}</span>
                   {c.employer && <span className="text-muted-foreground">{c.employer}</span>}
                   <span>{t("participants", { count: c.cohortParticipants })}</span>
-                  <Button variant="ghost" onClick={() => run(() => api(`/api/career/workforce/cohorts/${id}/challenges/${c.challengeId}`, { method: "DELETE" }), t("unlinked"))} aria-label={t("unlinkFor", { title: c.title })}>{t("unlink")}</Button>
+                  {canEdit && <Button variant="ghost" onClick={() => run(() => api(`/api/career/workforce/cohorts/${id}/challenges/${c.challengeId}`, { method: "DELETE" }), t("unlinked"))} aria-label={t("unlinkFor", { title: c.title })}>{t("unlink")}</Button>}
                 </li>
               ))}
             </ul>
           )}
-          {(options.data ?? []).some((o) => !o.linked) && (
+          {canEdit && (options.data ?? []).some((o) => !o.linked) && (
             <form
               className="mt-3 flex flex-wrap items-end gap-3"
               onSubmit={(e) => {
@@ -378,6 +382,7 @@ export function CirrPanel({ defs }: { defs: CirrDefinitions }) {
   const t = useCareerT("cirr");
   const dateOnly = useDateOnly();
   const isAdmin = useIsCareerAdmin();
+  const canEdit = useHasCareerRole("CareerAdmin", "Counselor");
   const { busy, error: dlError, download } = useDownload();
   const cohorts = useLoad(() => api<Cohort[]>("/api/career/workforce/cohorts"), [api, schoolId]);
   // Deep link: #<cohort id>
@@ -411,7 +416,7 @@ export function CirrPanel({ defs }: { defs: CirrDefinitions }) {
         <SuccessBanner message={msg} />
       </div>
 
-      <Card title={t("cohortsTitle")} actions={!creating ? <Button onClick={() => setCreating(true)}>{t("newCohort")}</Button> : undefined}>
+      <Card title={t("cohortsTitle")} actions={canEdit && !creating ? <Button onClick={() => setCreating(true)}>{t("newCohort")}</Button> : undefined}>
         {creating && (
           <form
             className="mb-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3 lg:items-end"

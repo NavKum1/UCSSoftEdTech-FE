@@ -192,11 +192,11 @@ export default function ImportView({ getToken, onImported }: { getToken: GetToke
           <FileUp aria-hidden="true" className="h-4 w-4 text-indigo-700" />{en(" Import leads")}
         </h2>
         <p className="mt-1 text-sm text-muted-foreground">
-          {en("Bring your leads over from VirtualAdviser or another system, as a CSV file. You see what will happen before anything is saved, and nothing is sent to the people you import.")}
+          {en("Bring your leads over from VirtualAdviser or another system, as a spreadsheet (CSV file). You see what will happen before anything is saved, and nothing is sent to the people you import.")}
         </p>
         <div className="mt-4 grid gap-3 text-sm md:grid-cols-2">
           <label className="block font-medium md:col-span-2">
-            {en("CSV file")}
+            {en("Spreadsheet (CSV file)")}
             <input ref={fileInput} type="file" accept=".csv,text/csv" disabled={busy} onChange={(e) => choose(e.target.files?.[0] ?? null)} className={`${input} file:me-3 file:rounded-md file:border-0 file:bg-muted file:px-3 file:py-1 file:text-sm`} />
             <span className="mt-1 block text-xs font-normal text-muted-foreground">{en("An Excel file? Open it in Excel and choose File → Save As → CSV (UTF-8). Up to 20,000 rows.")}</span>
           </label>

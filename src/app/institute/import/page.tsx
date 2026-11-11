@@ -16,7 +16,7 @@ export default function ImportLeadsPage() {
   return (
     <InstituteAdminOnly>
       <div className="space-y-6">
-        <PageHeader title={en("Import leads")} description={en("Bring in leads from another system's CSV export. They arrive in your admissions leads.")} />
+        <PageHeader title={en("Import leads")} description={en("Bring in leads from a spreadsheet (CSV file) exported from another system. They arrive in your admissions leads.")} />
         <ImportView getToken={getToken} onImported={() => router.push("/institute/dashboard")} />
       </div>
     </InstituteAdminOnly>

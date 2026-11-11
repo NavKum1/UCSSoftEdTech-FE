@@ -69,7 +69,7 @@ async function loadCredential(token: string): Promise<LoadState> {
     if (res.status === 429) return { kind: "error", message: "Too many verification requests. Please wait a minute and try again." };
     if (!res.ok) {
       const body = (await res.json().catch(() => null)) as { error?: string } | null;
-      return { kind: "error", message: body?.error || `Verification is unavailable right now (HTTP ${res.status}).` };
+      return { kind: "error", message: body?.error || "Verification is unavailable right now. Please try again later." };
     }
     const data = (await res.json()) as VerifyResponse;
     const check = await verifyJwsInBrowser(data.jws);
@@ -174,11 +174,11 @@ export default function VerifyTokenPage() {
           </h1>
           <p className="text-sm text-muted-foreground">
             {state.kind === "not-found"
-              ? en("It may have expired, or the holder may have withdrawn it. Ask them for a new link, or paste their credential JWS into the verifier.")
+              ? en("It may have expired, or the holder may have withdrawn it. Ask them for a new link, or paste their signed credential into the verifier.")
               : state.message}
           </p>
           <Link href="/verify" className={buttonClass("primary")} style={brandFill}>
-            {en("Open the JWS verifier")}
+            {en("Open the credential verifier")}
           </Link>
         </div>
       </div>
@@ -227,7 +227,7 @@ export default function VerifyTokenPage() {
             {check.state === "verified" ? (
               <>
                 <ShieldCheck className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
-                <span className="text-emerald-700 dark:text-emerald-300">{en("Signature verified ✓ (ES256, key id ")}{check.keyId})</span>
+                <span className="text-emerald-700 dark:text-emerald-300">{en("Signature verified ✓: Edulexa issued this and it hasn't been changed.")}</span>
               </>
             ) : check.state === "failed" ? (
               <>
@@ -237,17 +237,20 @@ export default function VerifyTokenPage() {
             ) : (
               <>
                 <KeyRound className="w-5 h-5 text-muted-foreground" />
-                <span>{en("Signature verified by the Edulexa server (ES256, key id {issuerKeyId})", { issuerKeyId: data.issuerKeyId })}</span>
+                <span>{en("Signature checked by Edulexa")}</span>
               </>
             )}
           </div>
           <p className="text-xs text-muted-foreground">
-            {en("{detail} Issuer:", { detail: check.detail })}{" "}<span className="font-mono">{claims.iss}</span>{en(". Checked {date}.", { date: formatDate(data.verifiedAt) })}</p>
-          {claims.evidenceHash && (
-            <p className="text-xs text-muted-foreground break-all">
-              {en("Evidence hash: ")}<span className="font-mono">{claims.evidenceHash}</span>
+            {en("{detail} Checked {date}.", { detail: check.detail, date: formatDate(data.verifiedAt) })}</p>
+          <details className="text-xs text-muted-foreground">
+            <summary className="cursor-pointer font-medium text-foreground">{en("Technical details")}</summary>
+            <p className="mt-2 break-all">
+              {en("Issuer ")}<span className="font-mono">{claims.iss}</span>
+              {en(" · signing key (ES256) ")}<span className="font-mono">{check.state === "verified" ? check.keyId : data.issuerKeyId}</span>
+              {claims.evidenceHash && <>{en(" · evidence fingerprint ")}<span className="font-mono">{claims.evidenceHash}</span></>}
             </p>
-          )}
+          </details>
         </div>
 
         {/* Results */}
@@ -360,9 +363,9 @@ export default function VerifyTokenPage() {
         </section>
 
         <p className="text-xs text-muted-foreground">
-          {en("This link was shared {value}and stops working on {date}. The holder can see when it was viewed, the browser type and a one-way hash of the network address (never the address itself).", { value: data.share.recipientLabel ? `with ${data.share.recipientLabel} ` : "", date: formatDate(data.share.expiresAt) })}{" "}
+          {en("This link was shared {value}and stops working on {date}. The holder can see when it was viewed, the browser type and a one-way scrambled code made from the network address (never the address itself).", { value: data.share.recipientLabel ? `with ${data.share.recipientLabel} ` : "", date: formatDate(data.share.expiresAt) })}{" "}
           <Link href="/verify" className="underline">
-            {en("Verify a credential JWS")}
+            {en("Verify a signed credential")}
           </Link>
         </p>
       </div>

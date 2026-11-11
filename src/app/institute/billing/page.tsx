@@ -48,7 +48,7 @@ export default function SchoolBillingPage() {
       if (b && b.status !== "ReadOnly" && b.status !== "PastDue") return setMessage(en("Your school is open again. Thank you."));
       await new Promise((r) => setTimeout(r, 1500));
     }
-    setMessage(en("We're still waiting for the payment provider to confirm. This page updates when you reload it, and we'll e-mail you."));
+    setMessage(en("We're still waiting for the payment service to confirm. This page updates when you reload it, and we'll e-mail you."));
   };
   // C1: back from paying for voice minutes; the provider's confirmation adds them within a few seconds
   const waitForMinutes = async (before: number | null) => {
@@ -58,7 +58,7 @@ export default function SchoolBillingPage() {
       if (b && (before == null ? b.voice.extra > 0 : b.voice.extra > before)) return setMessage(en("Your minutes are added. Thank you."));
       await new Promise((r) => setTimeout(r, 1500));
     }
-    setMessage(en("We're still waiting for the payment provider to confirm. Your minutes appear here when it does."));
+    setMessage(en("We're still waiting for the payment service to confirm. Your minutes appear here when it does."));
   };
   const load = async () => {
     const q = new URLSearchParams(window.location.search);

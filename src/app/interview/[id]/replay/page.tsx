@@ -81,7 +81,7 @@ export default function AudioReplayStudioPage() {
         }
       } catch (e) {
         console.error("Replay fetch error:", e);
-        setFetchError(e instanceof TypeError ? "We couldn't reach the server. Please check your connection and try again." : (e as Error).message || "We couldn't load this recording. Please try again.");
+        setFetchError(e instanceof TypeError ? "We couldn't reach Edulexa. Check your internet connection and try again." : (e as Error).message || "We couldn't load this recording. Please try again.");
         setReplay(null);
       } finally {
         setLoading(false);

@@ -1,9 +1,11 @@
 "use client";
 
+import { timeZoneName } from "@/lib/timeZoneName";
 import React, { useCallback, useState } from "react";
 import { useApi } from "@/lib/appAuth";
 import { Button, Card, ErrorBanner, Field, Loading, PageHeader, SuccessBanner, useLoad, useCareerT, useCareerLabels, StatTile, TAB_LIST, tabClass } from "@/components/career/ui";
 import { ReportTableView, formatCell, type Cell, type ReportTable } from "@/components/career/reports/ReportTableView";
+import { HelpLink } from "@/components/help/HelpLink";
 
 type Section = "engagement" | "service" | "employers" | "equity";
 
@@ -95,7 +97,7 @@ export default function ReportsPage() {
       await fn();
       if (done) setSuccess(done);
     } catch (e) {
-      setError(e instanceof TypeError ? "We couldn't reach the server. Please check your connection and try again." : (e as Error).message);
+      setError(e instanceof TypeError ? "We couldn't reach Edulexa. Check your internet connection and try again." : (e as Error).message);
     } finally {
       setBusy(null);
     }
@@ -141,7 +143,7 @@ export default function ReportsPage() {
       <PageHeader
         title={tr("reports")}
         description={tr("howStudentsUseCareerServices")}
-        actions={
+        actions={<div className="flex flex-wrap items-center gap-3"><HelpLink slug="reports-and-outcomes" />{
           <>
             <Button variant="secondary" busy={busy === "csv"} onClick={() => sec && download(`/api/career/reports/${sec}.csv?${q}`, "csv")}>
               {tr("exportCSV")}
@@ -150,7 +152,7 @@ export default function ReportsPage() {
               {tr("printableSummary")}
             </Button>
           </>
-        }
+        }</div>}
       />
 
       <nav aria-label={tr("reportSections")} className={TAB_LIST}>
@@ -256,7 +258,7 @@ export default function ReportsPage() {
             <h2 className="text-xl font-semibold">{report.title}</h2>
             <p className="text-sm text-muted-foreground">
               {report.range.term ? `${report.range.term}: ` : ""}
-              {tr("fromToToTimeZone", { from: report.range.from, to: report.range.to, timeZone: report.range.timeZone })}
+              {tr("fromToToTimeZone", { from: report.range.from, to: report.range.to, timeZone: timeZoneName(report.range.timeZone) })}
             </p>
           </div>
           <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-5">

@@ -337,7 +337,7 @@ function NewTrialWizard({
       }
       onCreated((await res.json()) as TrialDetail);
     } catch {
-      setError(en("We couldn't reach the server while fetching the source. Please check your connection and try again."));
+      setError(en("We couldn't reach Edulexa while fetching the source. Please check your connection and try again."));
     } finally {
       setSubmitting(false);
     }
@@ -347,7 +347,7 @@ function NewTrialWizard({
     <form onSubmit={submit} className="space-y-5">
       <PageHeader
         title={en("New work trial")}
-        description={en("Choose the code to start from and describe the role. Nothing is sent to an AI model until you click Generate on the next screen.")}
+        description={en("Choose the code to start from and describe the role. Nothing is sent to the AI until you click Generate on the next screen.")}
         actions={<Button type="button" variant="secondary" onClick={onCancel}><X className="w-4 h-4" />{en(" Cancel")}</Button>}
       />
 
@@ -474,25 +474,25 @@ function NewTrialWizard({
           <div className="text-sm text-foreground space-y-1.5">
             <p className="font-semibold">{en("How your code is handled")}</p>
             <p>
-              {en("Before anything leaves our servers, the fetched files are sanitized: secret files are dropped, and AWS keys, private-key blocks, bearer and API tokens, password/secret assignments, connection strings, email addresses and internal hostnames/IPs are redacted. You will see every redaction (file, line, kind) on the next screen.")}
+              {en("Before anything leaves Edulexa, the fetched files are cleaned: secret files are dropped, and AWS keys, private-key blocks, bearer and API tokens, password/secret assignments, connection strings, email addresses and internal hostnames/IPs are redacted. You will see every redaction (file, line, kind) on the next screen.")}
             </p>
             <p>
-              {en("Sanitization is pattern-based. It catches common formats but cannot guarantee that every secret or piece of personal data is found, so avoid pointing at code that embeds customer data.")}
+              {en("The cleaning looks for common patterns. It catches common formats but cannot guarantee that every secret or piece of personal data is found, so avoid pointing at code that embeds customer data.")}
             </p>
             <p>
-              {en("When you click Generate, the sanitized code is sent to a third-party AI model to choose a module and plant defects. Drafts and the code they hold are deleted after 30 days if not published; publishing keeps only the seeded files the candidate needs.")}
+              {en("When you click Generate, the cleaned code is sent to a third-party AI service to choose a module and plant defects. Drafts and the code they hold are deleted after 30 days if not published; publishing keeps only the seeded files the candidate needs.")}
             </p>
           </div>
         </div>
         <label className="flex items-start gap-2 text-sm font-medium text-foreground cursor-pointer">
           <input type="checkbox" checked={consent} onChange={(e) => setConsent(e.target.checked)} className="mt-0.5" />
-          {en("I am authorized to share this code, and I agree that it is sanitized and then sent to an AI model to generate the work trial.")}
+          {en("I am authorized to share this code, and I agree that it is cleaned and then sent to an AI service to generate the work trial.")}
         </label>
       </div>
 
       <ErrorBanner error={error} />
       <Button type="submit" disabled={!canSubmit} busy={submitting} className="w-full sm:w-auto">
-        {en(" Fetch and sanitize source")}
+        {en(" Fetch and clean the code")}
       </Button>
     </form>
   );
@@ -643,7 +643,7 @@ function TrialReview({
       applyTrial(body as TrialDetail);
       if (success) setNotice(success);
     } catch {
-      setError(en("We couldn't reach the server while trying to {action}. Please check your connection and try again.", { action }));
+      setError(en("We couldn't reach Edulexa while trying to {action}. Please check your connection and try again.", { action }));
     } finally {
       setBusy(null);
     }
@@ -706,7 +706,7 @@ function TrialReview({
           description={
             <span className="flex flex-wrap items-center gap-2">
               <StatusBadge status={trial.status} />
-              {trial.generationModel === "dev-stub" && <Badge tone="warn">{en("Development stub output")}</Badge>}
+              {trial.generationModel === "dev-stub" && <Badge tone="warn">{en("Sample output (no AI)")}</Badge>}
               <span>
             {en("{roleTitle} · {language} · AI {value}{value2}", { roleTitle: trial.roleTitle, language: trial.language, value: trial.aiPolicy.toLowerCase(), value2: trial.status !== "Published" ? ` · draft deleted ${new Date(trial.expiresAt).toLocaleDateString()} unless published` : "" })}
               </span>
@@ -781,7 +781,7 @@ function TrialReview({
         <Section title={en("Source and redactions")} icon={<EyeOff className="w-4 h-4" />}>
           <p className="text-xs text-foreground">{trial.sourceSummary}</p>
           {trial.redactions.length === 0 ? (
-            <p className="text-xs text-muted-foreground">{en("No secrets or identifying details were detected by the sanitizer. Pattern-based detection can miss things; skim the files below before generating.")}</p>
+            <p className="text-xs text-muted-foreground">{en("No secrets or identifying details were found by the automatic check. It looks for common patterns and can miss things; skim the files below before generating.")}</p>
           ) : (
             <div className="overflow-x-auto max-h-64">
               <table className="w-full text-xs">
@@ -806,7 +806,7 @@ function TrialReview({
           )}
           {trial.sourceFiles.length > 0 && (
             <details className="text-xs">
-              <summary className="cursor-pointer font-medium text-foreground">{en("{length} sanitized source file(s) stored", { length: trial.sourceFiles.length })}</summary>
+              <summary className="cursor-pointer font-medium text-foreground">{en("{length} cleaned code file(s) stored", { length: trial.sourceFiles.length })}</summary>
               <ul className="mt-2 space-y-0.5">
                 {trial.sourceFiles.map((f) => (
                   <li key={f.name} className="flex justify-between gap-2"><span className="font-mono text-foreground break-all">{f.name}</span><span className="text-muted-foreground shrink-0">{f.lines} lines</span></li>
@@ -818,7 +818,7 @@ function TrialReview({
 
         <Section title={en("Selected module")} icon={<FileCode className="w-4 h-4" />}>
           {trial.module.files.length === 0 ? (
-            <p className="text-xs text-muted-foreground">{en("Not generated yet. Generate to let the AI model choose a self-contained module of 2-5 files and plant defects.")}</p>
+            <p className="text-xs text-muted-foreground">{en("Not generated yet. Generate to let the AI choose a self-contained module of 2-5 files and plant defects.")}</p>
           ) : (
             <>
               <div className="flex flex-wrap gap-1.5">
@@ -830,7 +830,7 @@ function TrialReview({
               </div>
               {trial.module.rationale && <p className="text-xs text-foreground">{trial.module.rationale}</p>}
               {trial.generationNotes && <p className="text-xs text-muted-foreground"><span className="font-medium">{en("Changes made to run in a bare runtime:")}</span> {trial.generationNotes}</p>}
-              {trial.generationModel && <p className="text-xs text-muted-foreground">{en("Generated by {value}. AI output: review it before publishing.", { value: trial.generationModel === "dev-stub" ? en("the development stub (no AI model configured)") : trial.generationModel })}</p>}
+              {trial.generationModel && <p className="text-xs text-muted-foreground">{en("Generated by {value}. AI output: review it before publishing.", { value: trial.generationModel === "dev-stub" ? en("a sample generator (AI isn't turned on)") : trial.generationModel })}</p>}
             </>
           )}
         </Section>

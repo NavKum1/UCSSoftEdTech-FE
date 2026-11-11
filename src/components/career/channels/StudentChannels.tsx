@@ -1,5 +1,6 @@
 "use client";
 
+import { timeZoneName } from "@/lib/timeZoneName";
 import React, { useState } from "react";
 import { useApi } from "@/lib/appAuth";
 import { Badge, Button, Card, EmptyState, ErrorBanner, Field, Loading, PageHeader, SuccessBanner, formatDate, useCareerT, useLoad } from "@/components/career/ui";
@@ -230,7 +231,7 @@ export default function StudentChannels() {
         <EmptyState title={t("noneAvailable")}>{t("noneAvailableHint")}</EmptyState>
       ) : (
         <div className="space-y-4">
-          {d.quietStart && d.quietEnd && <p className="text-sm text-muted-foreground">{t("quietHours", { start: d.quietStart, end: d.quietEnd, tz: d.timeZone })}</p>}
+          {d.quietStart && d.quietEnd && <p className="text-sm text-muted-foreground">{t("quietHours", { start: d.quietStart, end: d.quietEnd, tz: timeZoneName(d.timeZone) })}</p>}
           <p className="text-sm text-muted-foreground">{t("stopHint")}</p>
           {d.channels.map((c) => (
             <ChannelPanel key={c.info.channel} c={c} mine={d} onChanged={mine.reload} />

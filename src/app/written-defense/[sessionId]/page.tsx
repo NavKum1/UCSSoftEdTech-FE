@@ -71,7 +71,7 @@ export default function WrittenDefensePage() {
       setState((await res.json()) as WrittenDefenseState);
       setAnswer("");
     } catch {
-      setActionError("We couldn't reach the server while sending your answer. Your text is still here; try again.");
+      setActionError("We couldn't reach Edulexa while sending your answer. Your text is still here; try again.");
     } finally {
       setBusy(null);
     }
@@ -88,7 +88,7 @@ export default function WrittenDefensePage() {
       }
       setReloadKey((k) => k + 1);
     } catch {
-      setActionError("We couldn't reach the server while finishing. Please check your connection and try again.");
+      setActionError("We couldn't reach Edulexa while finishing. Please check your connection and try again.");
     } finally {
       setBusy(null);
     }
@@ -133,7 +133,7 @@ export default function WrittenDefensePage() {
           </p>
           <p>{en("Your answers are scored the same way as a voice defense and shown to the reviewer as questions and answers.")}</p>
           {state.simulated && (
-            <p className="text-amber-700 dark:text-amber-400">{en("Development stub: questions are generated without an AI model.")}</p>
+            <p className="text-amber-700 dark:text-amber-400">{en("Sample questions: written without AI.")}</p>
           )}
         </div>
 

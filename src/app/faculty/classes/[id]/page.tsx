@@ -36,7 +36,7 @@ export default function FacultyClassPage() {
   const [importErrors, setImportErrors] = useState<ImportResult["errors"]>([]);
 
   const fail = (e: unknown) =>
-    setError(e instanceof TypeError ? en("We couldn't reach the server. Please check your connection and try again.") : (e as Error).message);
+    setError(e instanceof TypeError ? en("We couldn't reach Edulexa. Check your internet connection and try again.") : (e as Error).message);
 
   const importRoster = async () => {
     setBusy("import");
@@ -194,10 +194,10 @@ export default function FacultyClassPage() {
           {c.canManage && (
           <Card title={en("Import roster")}>
             <p className="mb-3 text-sm text-muted-foreground">
-              {en("A CSV with the columns name, email, roll_number and branch (roll number and branch are optional). Students already in the class are updated, not added twice.")}
+              {en("A spreadsheet (CSV file) with the columns name, email, roll_number and branch (roll number and branch are optional). Students already in the class are updated, not added twice.")}
             </p>
             <div className="space-y-3">
-              <Field label={en("CSV file")}>
+              <Field label={en("Spreadsheet (CSV file)")}>
                 {(p) => <input {...p} type="file" accept=".csv,text/csv" onChange={(e) => void readFile(e.target.files?.[0])} />}
               </Field>
               <Field label={en("Or paste the rows")}>

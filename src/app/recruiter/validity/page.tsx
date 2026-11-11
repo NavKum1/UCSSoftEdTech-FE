@@ -201,7 +201,7 @@ export default function ValidityPage() {
       setRetained("");
       setReportVersion((v) => v + 1);
     } catch {
-      setOutcomeMessage({ ok: false, text: en("We couldn't reach the server while recording the outcome. Please check your connection and try again.") });
+      setOutcomeMessage({ ok: false, text: en("We couldn't reach Edulexa while recording the outcome. Please check your connection and try again.") });
     } finally {
       setSavingOutcome(false);
     }
@@ -338,7 +338,7 @@ export default function ValidityPage() {
               {en("To ")}<input type="date" value={auditTo} onChange={(e) => setAuditTo(e.target.value)} className={selectClass} />
             </label>
             <Button variant="secondary" onClick={() => auditData && downloadBiasCsv(auditData)} disabled={!auditData || auditLoading}>
-              <Download className="w-4 h-4" aria-hidden />{en("Download CSV")}
+              <Download className="w-4 h-4" aria-hidden />{en("Download spreadsheet (CSV)")}
             </Button>
           </div>
         </div>

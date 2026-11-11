@@ -101,7 +101,7 @@ export default function NationalCredentialsStaffPage() {
     try {
       await fn();
     } catch (e) {
-      setError(e instanceof TypeError ? "We couldn't reach the server. Please check your connection and try again." : (e as Error).message);
+      setError(e instanceof TypeError ? "We couldn't reach Edulexa. Check your internet connection and try again." : (e as Error).message);
     } finally {
       setBusy(null);
     }

@@ -321,7 +321,7 @@ export default function EvidencePackPage() {
       setRationale("");
       setReloadKey((k) => k + 1);
     } catch {
-      setSubmitError("We couldn't reach the server while recording the decision. Please check your connection and try again.");
+      setSubmitError("We couldn't reach Edulexa while recording the decision. Please check your connection and try again.");
     } finally {
       setSubmitting(false);
     }
@@ -391,7 +391,7 @@ export default function EvidencePackPage() {
           <Stat label={en("Attempt started")} value={fmtDate(pack.timing.attemptStartedAt)} />
           <Stat label={en("Elapsed")} value={pack.timing.elapsedMinutes != null ? `${pack.timing.elapsedMinutes} min` : "—"} />
           <Stat label={en("Active editing")} value={pack.timing.activeEditingMinutes != null ? `${pack.timing.activeEditingMinutes} min` : "—"} />
-          <Stat label={en("Evidence hash")} value={<span className="font-mono text-xs break-all">{pack.evidenceHash.slice(0, 16)}…</span>} />
+          <Stat label={en("Evidence fingerprint")} value={<span className="font-mono text-xs break-all">{pack.evidenceHash.slice(0, 16)}…</span>} />
         </div>
       </div>
 
@@ -507,7 +507,7 @@ export default function EvidencePackPage() {
       {aiUsage && (
         <Section title={en("AI assistant usage")} icon={<Bot className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />} className="print-break">
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-            <Stat label={en("Prompts")} value={aiUsage.prompts} />
+            <Stat label={en("Questions to the AI")} value={aiUsage.prompts} />
             <Stat label={en("Characters inserted from assistant")} value={aiUsage.charactersInsertedFromAssistant.toLocaleString()} />
             <Stat label={en("Share of final code from assistant")} value={pct(aiUsage.shareOfFinalCodeFromAssistant)} />
           </div>
@@ -518,7 +518,7 @@ export default function EvidencePackPage() {
               {aiUsage.conversation.map((m, i) => (
                 <li key={i} className="rounded-lg border border-border p-3 space-y-2 text-xs">
                   <div className="flex flex-wrap items-center justify-between gap-x-3 text-muted-foreground">
-                    <span>{en("Prompt {value} · {date}", { value: i + 1, date: fmtDate(m.at) })}</span>
+                    <span>{en("Question {value} · {date}", { value: i + 1, date: fmtDate(m.at) })}</span>
                     <span>{en("{number} characters used in code", { number: m.charactersUsed.toLocaleString() })}</span>
                   </div>
                   <p className="text-foreground whitespace-pre-wrap"><span className="font-medium">{en("Candidate: ")}</span>{m.prompt}</p>

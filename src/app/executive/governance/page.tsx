@@ -214,7 +214,7 @@ export default function MultiCampusGovernancePage() {
           value={rollup ? rollup.totalStudentsEnrolled.toLocaleString() : dash}
           hint={rollup ? en("{number} faculty members", { number: rollup.totalFacultyMembers.toLocaleString() }) : undefined}
         />
-        <StatTile label={en("Audit records")} value={rollup ? rollup.totalAuditLedgerBlocks : dash} hint={en("Linked by SHA-256 hashes")} />
+        <StatTile label={en("Audit records")} value={rollup ? rollup.totalAuditLedgerBlocks : dash} hint={en("Linked by tamper-evident fingerprints")} />
         <StatTile
           label={en("Certifications")}
           value={rollup ? rollup.totalGradeCertifications + rollup.totalAccreditationClearances : dash}
@@ -328,11 +328,11 @@ export default function MultiCampusGovernancePage() {
 
                   <div className="grid grid-cols-1 gap-2 border-t border-border pt-2 text-xs text-muted-foreground md:grid-cols-2">
                     <div className="truncate">
-                      <span>{en("Record hash: ")}</span>
+                      <span>{en("Record fingerprint: ")}</span>
                       <span className="font-mono text-foreground">{b.blockHash}</span>
                     </div>
                     <div className="truncate">
-                      <span>{en("Previous hash: ")}</span>
+                      <span>{en("Previous fingerprint: ")}</span>
                       <span className="font-mono">{b.previousBlockHash}</span>
                     </div>
                   </div>

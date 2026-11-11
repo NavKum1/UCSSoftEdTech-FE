@@ -53,7 +53,7 @@ export function PilotResultsPage({ api, path, csvPath, staff = false }: { api: A
     setCsvError(null);
     try {
       const r = await api<Response>(csvPath + qs, { raw: true });
-      if (!r.ok) throw new Error(en("The CSV couldn't be made. Please try again."));
+      if (!r.ok) throw new Error(en("The spreadsheet couldn't be made. Please try again."));
       await downloadBlob(r, "pilot-results.csv");
     } catch (e) {
       setCsvError((e as Error).message);
@@ -80,7 +80,7 @@ export function PilotResultsPage({ api, path, csvPath, staff = false }: { api: A
         description={description}
         actions={
           <Button variant="secondary" busy={downloading} onClick={() => void download()} disabled={!d}>
-            {en("Download CSV")}
+            {en("Download spreadsheet (CSV)")}
           </Button>
         }
       />

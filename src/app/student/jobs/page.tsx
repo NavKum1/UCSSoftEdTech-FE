@@ -17,6 +17,7 @@ import { Badge, Button, Card, EmptyState, ErrorBanner, Field, Loading, PageHeade
 import { label } from "@/components/career/placements/shared";
 import { useCountryWords } from "@/components/career/country";
 import { APP_TONE, DOC_KIND_KEYS, ELIG_TONE, useAppStatusLabels, useDocKindLabels, useEligLabels, useJobTypeLabels, useTierLabels, type Criteria } from "@/components/career/campus/shared";
+import { HelpLink } from "@/components/help/HelpLink";
 
 interface BoardCard {
   driveId: string;
@@ -69,11 +70,11 @@ export default function StudentJobsPage() {
       <PageHeader
         title={t("title")}
         description={t("description")}
-        actions={
+        actions={<div className="flex flex-wrap items-center gap-3"><HelpLink slug="campus-jobs-and-interviews" />{
           <Link className="text-sm underline" href="/student/jobs/applications">
             {t("myApplications")}
           </Link>
-        }
+        }</div>}
       />
       <SuccessBanner message={msg} />
       {board.loading && !board.data ? (
@@ -147,7 +148,7 @@ function JobCard({ card: c, docs, expanded, onToggle, onUploaded, onApplied }: {
       setPicked([...picked, { fileId: d.id, kind }]);
       onUploaded();
     } catch (e) {
-      setErr(e instanceof TypeError ? "We couldn't reach the server. Please check your connection and try again." : (e as Error).message);
+      setErr(e instanceof TypeError ? "We couldn't reach Edulexa. Check your internet connection and try again." : (e as Error).message);
     }
   };
   const apply = async () => {
@@ -157,7 +158,7 @@ function JobCard({ card: c, docs, expanded, onToggle, onUploaded, onApplied }: {
       await api(`/api/career/campus/student/jobs/${c.driveId}/apply`, { method: "POST", json: { documents: picked, consent } });
       onApplied();
     } catch (e) {
-      setErr(e instanceof TypeError ? "We couldn't reach the server. Please check your connection and try again." : (e as Error).message);
+      setErr(e instanceof TypeError ? "We couldn't reach Edulexa. Check your internet connection and try again." : (e as Error).message);
     } finally {
       setBusy(false);
     }

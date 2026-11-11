@@ -96,7 +96,7 @@ export default function PartnerDashboardPage() {
     try {
       const res = await apiFetch("/api/partner/dispatch-test-webhook", { method: "POST" });
       const json = await res.json().catch(() => null);
-      setWebhookStatus(res.ok ? `Your endpoint answered: ${json?.status ?? "OK"}.` : json?.error ?? "The test couldn't be sent.");
+      setWebhookStatus(res.ok ? `Your CRM answered: ${json?.status ?? "OK"}.` : json?.error ?? "The test couldn't be sent.");
     } catch {
       setWebhookStatus("The test couldn't be sent.");
     }
@@ -182,16 +182,16 @@ export default function PartnerDashboardPage() {
 
         <section aria-labelledby="pd-webhook" className={`${card} p-5`}>
           <h2 id="pd-webhook" className="text-base font-semibold">
-            {en("CRM webhook")}
+            {en("Send inquiries to your CRM")}
           </h2>
-          <p className="mt-1 text-xs text-muted-foreground">{en("Each new inquiry is also sent as JSON to this address, for your CRM.")}</p>
+          <p className="mt-1 text-xs text-muted-foreground">{en("Each new inquiry is also sent to this address, so it reaches your CRM. For your IT team: it is sent as JSON.")}</p>
           <form onSubmit={saveWebhook} className="mt-3 space-y-3">
             <label className="block text-sm">
-              <span className="font-medium">{en("Endpoint address")}</span>
+              <span className="font-medium">{en("Your CRM's receiving address")}</span>
               <input type="url" value={webhookUrl} onChange={(e) => setWebhookUrl(e.target.value)} placeholder="https://crm.example.edu/api/leads" className={input} />
             </label>
             <label className="block text-sm">
-              <span className="font-medium">{en("API key header {value}", { value: data.apiKeyConfigured ? en("(set; enter a new one to replace it)") : en("(optional)") })}</span>
+              <span className="font-medium">{en("API key your CRM expects {value}", { value: data.apiKeyConfigured ? en("(set; enter a new one to replace it)") : en("(optional)") })}</span>
               <input type="password" value={apiKey} onChange={(e) => setApiKey(e.target.value)} autoComplete="off" className={input} />
             </label>
             <div className="flex flex-wrap gap-2">

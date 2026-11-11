@@ -1789,7 +1789,7 @@ function ReportSettings({ r, set, onFill }: { r: Results; set: (p: Partial<Resul
             <input className={input} value={r.nextLabel ?? ""} maxLength={40} placeholder={en("e.g. Book my consultation")} onChange={(e) => set({ nextLabel: e.target.value })} />
           </label>
           <label className="block text-xs font-medium text-muted-foreground">
-            {en("Button link ")}<span className="font-normal">{en("(https; no link, no button)")}</span>
+            {en("Button link ")}<span className="font-normal">{en("(starts with https://; leave empty for no button)")}</span>
             <input className={input} type="url" value={r.nextUrl ?? ""} maxLength={500} placeholder="https://" onChange={(e) => set({ nextUrl: e.target.value || null })} />
           </label>
         </div>
@@ -1899,7 +1899,7 @@ function SettingsEditor({
             </span>
           </label>
           <label className="block min-w-64 flex-1 text-xs font-medium text-muted-foreground">
-            {en("Logo (https link to an image)")}
+            {en("Logo (link to an image, starting with https://)")}
             <input className={input} value={s.logoUrl ?? ""} maxLength={500} placeholder="https://your-site.example/logo.png" onChange={(e) => set({ logoUrl: e.target.value })} />
           </label>
         </div>
@@ -1935,7 +1935,7 @@ function SettingsEditor({
         </div>
         {s.layout === "cover" && (
           <label className="block text-xs font-medium text-muted-foreground">
-            {en("Background photo (https link to an image; without one, your colour is used)")}
+            {en("Background photo (link to an image, starting with https://; without one, your colour is used)")}
             <input className={input} value={s.backgroundUrl ?? ""} maxLength={500} placeholder="https://your-site.example/campus.jpg" onChange={(e) => set({ backgroundUrl: e.target.value })} />
             <span className="mt-1 block font-normal">{en("Use a photo you have the rights to, at least 1600 pixels wide. It's darkened so the titles stay readable.")}</span>
           </label>
@@ -2071,7 +2071,7 @@ function SettingsEditor({
         <div className="rounded-lg bg-muted/40 p-3 text-xs text-muted-foreground">
           <p className="font-medium text-foreground">{en("Always on")}</p>
           <ul className="mt-1 list-disc space-y-0.5 ps-4">
-            <li>{en("A hidden field bots fill in, and a check that the form wasn't sent within seconds of opening (timed by our server).")}</li>
+            <li>{en("A hidden field bots fill in, and a check that the form wasn't sent within seconds of opening (timed by Edulexa).")}</li>
             <li>{en("Limits on how often one visitor can send, and on files.")}</li>
             <li>{en("An invisible human check by Cloudflare, once Edulexa has it switched on.")}</li>
             <li>

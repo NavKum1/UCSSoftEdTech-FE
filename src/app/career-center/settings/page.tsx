@@ -1,5 +1,6 @@
 "use client";
 
+import { timeZoneOption } from "@/lib/timeZoneName";
 import React, { useState } from "react";
 import { useApi } from "@/lib/appAuth";
 import { useCareerShell } from "@/components/career/CareerShell";
@@ -145,7 +146,7 @@ export default function CareerCenterSettingsPage() {
                         if (e.target.value !== OTHER) setForm({ ...form, timeZone: e.target.value });
                       }}
                     >
-                      {TIME_ZONES.map((z) => <option key={z} value={z}>{z.replace(/_/g, " ")}</option>)}
+                      {TIME_ZONES.map((z) => <option key={z} value={z}>{timeZoneOption(z)}</option>)}
                       <option value={OTHER}>{t("other")}</option>
                     </select>
                   )}

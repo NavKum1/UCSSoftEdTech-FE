@@ -19,6 +19,8 @@ Each step has a link that takes you to the page where it's done.
 
 > When all five steps are done, the checklist goes away. If your school is in a pilot, your home page then shows the pilot's dates and a link to its results.
 
+[shot: school-checklist]
+
 ## Who does what
 
 - **School admins** invite people, see every class and assessment, and can resolve appeals.

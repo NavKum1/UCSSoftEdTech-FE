@@ -98,7 +98,7 @@ function AssessmentBuilder() {
   const total = useMemo(() => (draft?.rubric ?? []).reduce((s, c) => s + (Number(c.weight) || 0), 0), [draft]);
 
   const fail = (e: unknown) =>
-    setError(e instanceof TypeError ? en("We couldn't reach the server. Please check your connection and try again.") : (e as Error).message);
+    setError(e instanceof TypeError ? en("We couldn't reach Edulexa. Check your internet connection and try again.") : (e as Error).message);
 
   const set = <K extends keyof Draft>(k: K, v: Draft[K]) => setDraft((d) => (d ? { ...d, [k]: v } : d));
   const setCriterion = (i: number, patch: Partial<Criterion>) =>

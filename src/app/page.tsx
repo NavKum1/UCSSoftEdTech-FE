@@ -24,7 +24,7 @@ const FEATURES = [
   {
     icon: GraduationCap,
     title: "Skills exams with verified credentials",
-    text: "Timed exams graded on the server. Pass one and claim a credential anyone can check with its link.",
+    text: "Timed exams graded by Edulexa. Pass one and claim a credential anyone can check with its link.",
   },
   {
     icon: Terminal,

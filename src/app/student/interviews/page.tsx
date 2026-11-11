@@ -1,5 +1,6 @@
 "use client";
 
+import { timeZoneName } from "@/lib/timeZoneName";
 import React, { useState } from "react";
 import LibraryPicker, { useLibraryResumes } from "@/components/resumes/LibraryPicker";
 import { saveToLibrary } from "@/lib/resumeLibrary";
@@ -92,7 +93,7 @@ function MyInterviews({ onMessage }: { onMessage: (m: string) => void }) {
       onMessage(tr("cancelled"));
       mine.reload();
     } catch (e) {
-      setErr(e instanceof TypeError ? "We couldn't reach the server. Please check your connection and try again." : (e as Error).message);
+      setErr(e instanceof TypeError ? "We couldn't reach Edulexa. Check your internet connection and try again." : (e as Error).message);
     } finally {
       setBusy(null);
     }
@@ -167,7 +168,7 @@ function FindInterviews({ onDone }: { onDone: (m: string) => void }) {
       await api(`/api/career/ocr/student/schedules/${id}/decline`, { method: "POST" });
       list.reload();
     } catch (e) {
-      setErr(e instanceof TypeError ? "We couldn't reach the server. Please check your connection and try again." : (e as Error).message);
+      setErr(e instanceof TypeError ? "We couldn't reach Edulexa. Check your internet connection and try again." : (e as Error).message);
     }
   };
 
@@ -261,7 +262,7 @@ function SignupForm({ schedule, timeZone, onDone }: { schedule: Listed; timeZone
       setResumeId(r.id);
       setLibraryVersion(null);
     } catch (e) {
-      setErr(e instanceof TypeError ? "We couldn't reach the server. Please check your connection and try again." : (e as Error).message);
+      setErr(e instanceof TypeError ? "We couldn't reach Edulexa. Check your internet connection and try again." : (e as Error).message);
     }
   };
 
@@ -275,7 +276,7 @@ function SignupForm({ schedule, timeZone, onDone }: { schedule: Listed; timeZone
       });
       onDone(r.bookingId ? tr("youreBookedWithEmployerName", { employerName: String(schedule.employerName) }) : tr("youreOnTheAlternateList2", { employerName: String(schedule.employerName) }));
     } catch (e2) {
-      setErr(e2 instanceof TypeError ? "We couldn't reach the server. Please check your connection and try again." : (e2 as Error).message);
+      setErr(e2 instanceof TypeError ? "We couldn't reach Edulexa. Check your internet connection and try again." : (e2 as Error).message);
       detail.reload();
     } finally {
       setBusy(false);
@@ -290,7 +291,7 @@ function SignupForm({ schedule, timeZone, onDone }: { schedule: Listed; timeZone
     <form onSubmit={submit} className="mt-4 space-y-3 rounded-lg border border-border p-4" aria-label={tr("signUpForPositionTitle", { positionTitle: schedule.positionTitle })}>
       <ErrorBanner error={err} />
       {d.extra.canBook && (
-        <Field label={tr("interviewTime")} hint={tr("timesAreInTheSchools", { timeZone })}>
+        <Field label={tr("interviewTime")} hint={tr("timesAreInTheSchools", { timeZone: timeZoneName(timeZone) })}>
           {(p) => (
             <select {...p} value={slotId} onChange={(e) => setSlotId(e.target.value)}>
               <option value="">{d.extra.slots.length ? tr("chooseATime") : tr("noOpenTimes")}</option>

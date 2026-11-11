@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { useApi } from "@/lib/appAuth";
+import { useHasCareerRole } from "@/components/career/CareerShell";
 import { Badge, Button, Card, EmptyState, ErrorBanner, Field, Loading, PageHeader, SuccessBanner, formatDate, useLoad, useCareerT } from "@/components/career/ui";
 
 interface Row {
@@ -25,6 +26,9 @@ const TONES: Record<string, "neutral" | "good" | "warn" | "bad"> = { Pending: "w
 export default function CareerCenterChallengesPage() {
   const t = useCareerT("careerCenterChallenges");
   const api = useApi();
+  // Career admins and employer relations staff approve challenges; only admins change the approval setting (as the API checks)
+  const canDecide = useHasCareerRole("CareerAdmin", "EmployerRelations");
+  const isAdmin = useHasCareerRole("CareerAdmin");
   const [filter, setFilter] = useState("Pending");
   const list = useLoad(() => api<Row[]>(`/api/career/challenges/staff${filter ? `?status=${filter}` : ""}`), [api, filter]);
   const settings = useLoad(() => api<{ autoApproveVerified: boolean }>("/api/career/challenges/staff/settings"), [api]);
@@ -41,7 +45,7 @@ export default function CareerCenterChallengesPage() {
     try {
       await fn();
     } catch (e) {
-      setErr(e instanceof TypeError ? "We couldn't reach the server. Please check your connection and try again." : (e as Error).message);
+      setErr(e instanceof TypeError ? "We couldn't reach Edulexa. Check your internet connection and try again." : (e as Error).message);
     } finally {
       setBusy(null);
     }
@@ -91,7 +95,7 @@ export default function CareerCenterChallengesPage() {
 
       <Card title={t("approvalSetting")} className="mb-4">
         <label className="flex items-center gap-2 text-sm">
-          <input type="checkbox" checked={settings.data?.autoApproveVerified ?? false} disabled={!settings.data || busy === "settings"} onChange={(e) => toggleAuto(e.target.checked)} />
+          <input type="checkbox" checked={settings.data?.autoApproveVerified ?? false} disabled={!settings.data || !isAdmin || busy === "settings"} onChange={(e) => toggleAuto(e.target.checked)} />
           {t("approveChallengesFromVerifiedEmployers")}
         </label>
       </Card>
@@ -138,13 +142,15 @@ export default function CareerCenterChallengesPage() {
                     {c.externalJobUrl && <p>{t.rich("jobLinkExternalJobUrl", { link: (chunks) => <a className="underline [overflow-wrap:anywhere]" href={c.externalJobUrl!} target="_blank" rel="noreferrer">{chunks}</a>, externalJobUrl: c.externalJobUrl })}</p>}
                     {row.decisionNote && <p>{t("noteDecisionNote", { decisionNote: row.decisionNote })}</p>}
                     <div className="flex flex-wrap items-end gap-2">
-                      <div className="min-w-[16rem] flex-1">
-                        <Field label={t("noteToTheEmployerOptional")}>
-                          {(p) => <input {...p} value={notes[c.id] ?? ""} onChange={(e) => setNotes({ ...notes, [c.id]: e.target.value })} />}
-                        </Field>
-                      </div>
-                      {row.status !== "Approved" && <Button busy={busy === `Approved-${c.id}`} onClick={() => decide(row, "Approved")}>{t("approve")}</Button>}
-                      {row.status !== "Declined" && <Button variant="danger" busy={busy === `Declined-${c.id}`} onClick={() => decide(row, "Declined")}>{t("decline")}</Button>}
+                      {canDecide && (
+                        <div className="min-w-[16rem] flex-1">
+                          <Field label={t("noteToTheEmployerOptional")}>
+                            {(p) => <input {...p} value={notes[c.id] ?? ""} onChange={(e) => setNotes({ ...notes, [c.id]: e.target.value })} />}
+                          </Field>
+                        </div>
+                      )}
+                      {canDecide && row.status !== "Approved" && <Button busy={busy === `Approved-${c.id}`} onClick={() => decide(row, "Approved")}>{t("approve")}</Button>}
+                      {canDecide && row.status !== "Declined" && <Button variant="danger" busy={busy === `Declined-${c.id}`} onClick={() => decide(row, "Declined")}>{t("decline")}</Button>}
                       <Button variant="secondary" busy={busy === `stats-${c.id}`} onClick={() => loadStats(row)}>{t("participation")}</Button>
                     </div>
                     {s && (

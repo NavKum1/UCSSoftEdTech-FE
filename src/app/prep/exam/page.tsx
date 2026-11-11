@@ -521,7 +521,7 @@ function WrittenExamPrep() {
         setAiError(body?.error || en("We couldn't generate this exam just now. Please try again, or upload your own questions."));
       }
     } catch {
-      setAiError(en("We couldn't reach the server. Please check your connection and try again."));
+      setAiError(en("We couldn't reach Edulexa. Check your internet connection and try again."));
     } finally {
       setIsSynthesizing(false);
     }
@@ -1458,7 +1458,7 @@ function WrittenExamPrep() {
                   {en("Import questions")}
                 </h2>
                 <p className="text-sm text-muted-foreground">
-                  {en("Add your school's or your own questions as JSON.")}
+                  {en("Add your school's or your own questions in the format shown in the example.")}
                 </p>
               </div>
               <button
@@ -1532,9 +1532,9 @@ function WrittenExamPrep() {
 
               <div className="space-y-1.5">
                 <label htmlFor="import-exam-json" className="text-sm font-medium text-foreground flex flex-wrap items-center justify-between gap-1">
-                  <span>{en("Questions (JSON format)")}</span>
+                  <span>{en("Questions (in the example's format)")}</span>
                   <span className="text-xs text-muted-foreground font-normal">
-                    {en("Array of objects with questionText, options, correctOptionIndex, explanation")}
+                    {en("Each question needs questionText, options, correctOptionIndex (0 is the first option) and explanation")}
                   </span>
                 </label>
                 <textarea
@@ -1618,7 +1618,7 @@ function WrittenExamPrep() {
                 <div className="flex items-center justify-between text-xs">
                   <span className="font-medium text-muted-foreground flex items-center gap-1">
                     <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" aria-hidden="true" />
-                    <span>{en("SHA-256 seal")}</span>
+                    <span>{en("Tamper-proof seal")}</span>
                   </span>
                   <button
                     type="button"

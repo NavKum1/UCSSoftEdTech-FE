@@ -5,6 +5,7 @@
  * the waitlist, session notes, per-student notes (C3 rules) and follow-up tasks.
  */
 
+import { timeZoneName } from "@/lib/timeZoneName";
 import React, { useState } from "react";
 import { ChevronLeft } from "lucide-react";
 import { useApi } from "@/lib/appAuth";
@@ -198,7 +199,7 @@ export function StaffGroupSessions({ isAdmin, onOpen }: { isAdmin: boolean; onOp
         {/* The date uses the browser's locale, which can differ from the server render (as in StaffSchedule) */}
         <h2 id="group-list-h" className="mb-3 text-lg font-semibold" suppressHydrationWarning>
           {t("sessionsFrom", { from: new Date(`${start}T12:00:00Z`).toLocaleDateString(fmt.locale, { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" }) })}{" "}
-          <span className="text-sm font-normal text-muted-foreground">({tz})</span>
+          <span className="text-sm font-normal text-muted-foreground">({timeZoneName(tz)})</span>
         </h2>
         <ErrorBanner error={sessions.error || types.error} onRetry={sessions.reload} />
         {sessions.loading || types.loading ? (
@@ -318,7 +319,7 @@ function CreateSession({ types, timeZone, onDone }: { types: GroupType[]; timeZo
         </div>
         <Field label={t("description")}>{(p) => <textarea {...p} rows={2} maxLength={4000} value={description} onChange={(e) => setDescription(e.target.value)} />}</Field>
         <div className="grid gap-3 sm:grid-cols-4">
-          <Field label={t("date")} hint={t("schoolTime", { tz: timeZone })}>
+          <Field label={t("date")} hint={t("schoolTime", { tz: timeZoneName(timeZone) })}>
             {(p) => <input {...p} type="date" required value={date} min={todayIn(timeZone)} onChange={(e) => setDate(e.target.value)} />}
           </Field>
           <Field label={t("startTime")}>{(p) => <input {...p} type="time" required value={time} onChange={(e) => setTime(e.target.value)} />}</Field>

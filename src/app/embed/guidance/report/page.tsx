@@ -71,7 +71,7 @@ function ReportView() {
         if (res.ok) setReport(body as Report);
         else setError(res.status === 429 ? "Too many requests from here just now. Please try again in a while." : (body?.error ?? "This link has expired or isn't valid."));
       })
-      .catch(() => !cancelled && setError("We couldn't reach the server. Please check your connection and try again."));
+      .catch(() => !cancelled && setError("We couldn't reach Edulexa. Check your internet connection and try again."));
     return () => {
       cancelled = true;
     };

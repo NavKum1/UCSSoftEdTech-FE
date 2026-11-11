@@ -6,6 +6,9 @@ import { useApi } from "@/lib/appAuth";
 import { Badge, Button, Card, EmptyState, ErrorBanner, Field, Loading, PageHeader, SuccessBanner, Tabs, formatDate, useLoad, useCareerT } from "@/components/career/ui";
 import { ThreadList, ThreadView, type ThreadRow } from "@/components/career/messaging/shared";
 import CampaignsPanel from "@/components/career/messaging/CampaignsPanel";
+import { useHasCareerRole } from "@/components/career/CareerShell";
+import { useEn } from "@/lib/english/EnglishProvider";
+import { HelpLink } from "@/components/help/HelpLink";
 
 type Tab = "inbox" | "campaigns" | "reports";
 // Labels: messages careerCenterMessages.filter.<key>
@@ -24,7 +27,7 @@ function CareerCenterMessages() {
   ];
   return (
     <div>
-      <PageHeader title={tr("messagesCampaigns")} description={tr("theSharedCareerCenterInbox")} />
+      <PageHeader title={tr("messagesCampaigns")} description={tr("theSharedCareerCenterInbox")} actions={<HelpLink slug="staff-messages" />} />
       <div className="mb-6">
         <Tabs label={tr("messagesSections")} items={tabs.map(([id, label]) => ({ id, label }))} value={tab} onChange={setTab} />
       </div>
@@ -117,7 +120,7 @@ function Compose({ onSent }: { onSent: (id: string) => void }) {
     try {
       setResults(await api(`/api/career/messaging/staff/students?q=${encodeURIComponent(q)}`));
     } catch (e) {
-      setError(e instanceof TypeError ? "We couldn't reach the server. Please check your connection and try again." : (e as Error).message);
+      setError(e instanceof TypeError ? "We couldn't reach Edulexa. Check your internet connection and try again." : (e as Error).message);
     }
   };
   const send = async (e: React.FormEvent) => {
@@ -134,7 +137,7 @@ function Compose({ onSent }: { onSent: (id: string) => void }) {
       const res = await api<{ id: string }>("/api/career/messaging/staff/threads", { method: "POST", body: form });
       onSent(res.id);
     } catch (err) {
-      setError(err instanceof TypeError ? "We couldn't reach the server. Please check your connection and try again." : (err as Error).message);
+      setError(err instanceof TypeError ? "We couldn't reach Edulexa. Check your internet connection and try again." : (err as Error).message);
     } finally {
       setBusy(false);
     }
@@ -213,6 +216,9 @@ interface ReportRow {
 
 function Reports() {
   const tr = useCareerT("careerCenterMessages");
+  const en = useEn();
+  // Only counselors and career admins resolve reports (the API refuses everyone else)
+  const canResolve = useHasCareerRole("CareerAdmin", "Counselor");
   const api = useApi();
   const router = useRouter();
   const [status, setStatus] = useState("Open");
@@ -259,7 +265,8 @@ function Reports() {
                   {r.thread.kind === "Mentorship" ? tr("readConversation") : tr("openConversation")}
                 </Button>
               )}
-              {r.status === "Open" && (
+              {r.status === "Open" && !canResolve && <p className="text-sm text-muted-foreground">{en("A counselor or career admin resolves this report.")}</p>}
+              {r.status === "Open" && canResolve && (
                 <>
                   <Field label={tr("resolutionNote")}>{(p) => <input {...p} value={notes[r.id] ?? ""} onChange={(e) => setNotes({ ...notes, [r.id]: e.target.value })} />}</Field>
                   <Button

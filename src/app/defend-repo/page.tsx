@@ -206,7 +206,7 @@ export default function DefendRepoPage() {
               <h2 className="text-base font-semibold text-foreground">{en("1. Link a repository or pull request")}</h2>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <label className="sm:col-span-2 text-xs text-muted-foreground space-y-1">
-                  <span>{en("GitHub repo or PR URL")}</span>
+                  <span>{en("Link to the GitHub repository or pull request")}</span>
                   <input
                     required
                     value={repository}
@@ -216,7 +216,7 @@ export default function DefendRepoPage() {
                   />
                 </label>
                 <label className="text-xs text-muted-foreground space-y-1">
-                  <span>{en("PR number (optional)")}</span>
+                  <span>{en("Pull request number (optional)")}</span>
                   <input
                     inputMode="numeric"
                     value={pullRequestNumber}
@@ -238,7 +238,7 @@ export default function DefendRepoPage() {
               </label>
               <p className="text-xs text-muted-foreground">{en("Only public repositories are supported.")}</p>
               <Button type="submit" busy={creating}>
-                {en("Get verification token")}
+                {en("Get verification code")}
               </Button>
             </form>
 
@@ -261,7 +261,7 @@ export default function DefendRepoPage() {
                   <>
                     {currentToken ? (
                       <div className="space-y-2">
-                        <p className="text-xs text-muted-foreground">{en("Your one-time verification token:")}</p>
+                        <p className="text-xs text-muted-foreground">{en("Your one-time verification code:")}</p>
                         <div className="flex items-center gap-2">
                           <code className="flex-1 min-w-0 truncate px-3 py-2 rounded-xl bg-muted border border-border font-mono text-sm text-foreground">
                             {currentToken}
@@ -277,7 +277,7 @@ export default function DefendRepoPage() {
                       {instructions && <p>{instructions}</p>}
                       <ol className="list-decimal ps-5 space-y-1">
                         <li>
-                          {en("Add the token to your GitHub profile bio (")}
+                          {en("Add the code to your GitHub profile bio (")}
                           <a href="https://github.com/settings/profile" target="_blank" rel="noreferrer" className="text-indigo-700 dark:text-indigo-400 hover:underline">
                             github.com/settings/profile
                           </a>
@@ -287,7 +287,7 @@ export default function DefendRepoPage() {
                           </a>
                           ).
                         </li>
-                        <li>{en("Click Verify. You can remove the token from GitHub afterwards.")}</li>
+                        <li>{en("Click Verify. You can remove the code from GitHub afterwards.")}</li>
                       </ol>
                     </div>
                     <Button type="button" onClick={handleVerify} busy={verifying}>

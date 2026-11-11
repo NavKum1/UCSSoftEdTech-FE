@@ -44,7 +44,7 @@ export default function DefendInternshipPage() {
       if (success) setMsg(success);
       return next;
     } catch (e) {
-      setErr(e instanceof TypeError ? "We couldn't reach the server. Please check your connection and try again." : (e as Error).message);
+      setErr(e instanceof TypeError ? "We couldn't reach Edulexa. Check your internet connection and try again." : (e as Error).message);
       return null;
     }
   };
@@ -375,7 +375,7 @@ function VoiceDefense({
       });
     } catch (e) {
       hangUp();
-      setErr(e instanceof TypeError ? "We couldn't reach the server. Please check your connection and try again." : (e as Error).message);
+      setErr(e instanceof TypeError ? "We couldn't reach Edulexa. Check your internet connection and try again." : (e as Error).message);
       cancelCall();
       setPhase("idle");
     }

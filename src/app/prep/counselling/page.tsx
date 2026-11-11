@@ -211,7 +211,7 @@ function CounsellingInner() {
         if (r.ok) setResult((await r.json()) as Result);
       }
     } catch {
-      setProblem(en("We couldn't reach the server. Please check your connection and refresh."));
+      setProblem(en("We couldn't reach Edulexa. Please check your connection and refresh."));
     } finally {
       setLoaded(true);
     }
@@ -242,7 +242,7 @@ function CounsellingInner() {
         setProblem(body?.error ?? "The quiz couldn't be started. Please try again.");
       }
     } catch {
-      setProblem(en("We couldn't reach the server. Please check your connection and try again."));
+      setProblem(en("We couldn't reach Edulexa. Check your internet connection and try again."));
     } finally {
       setBusy(false);
     }
@@ -454,7 +454,7 @@ function QuizRunner({
       }
       setError(body?.error ?? "Your answers couldn't be submitted. Please try again.");
     } catch {
-      setError(en("We couldn't reach the server. Your answers are kept on this page; please try again."));
+      setError(en("We couldn't reach Edulexa. Your answers are kept on this page; please try again."));
     } finally {
       setSubmitting(false);
     }
@@ -871,7 +871,7 @@ function InquiryDialog({
       else if (res.status === 429) setError(en("You've sent several inquiries in a short time. Please try again later."));
       else setError(body?.error ?? "The inquiry couldn't be sent. Please try again.");
     } catch {
-      setError(en("We couldn't reach the server. Please check your connection and try again."));
+      setError(en("We couldn't reach Edulexa. Check your internet connection and try again."));
     } finally {
       setSending(false);
     }

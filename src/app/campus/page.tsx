@@ -202,7 +202,7 @@ export default function CampusStudentPage() {
       }
       setSaveMessage({ ok: true, text: `Saved. Your defense will default to ${body?.label || "this language"}.` });
     } catch {
-      setSaveMessage({ ok: false, text: en("Network error while saving.") });
+      setSaveMessage({ ok: false, text: en("Saving failed: check your internet connection.") });
     } finally {
       setSaving(false);
     }
@@ -332,7 +332,7 @@ export default function CampusStudentPage() {
           <Wifi className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />{en(" Check my connection")}
         </h2>
         <p className="text-xs text-muted-foreground">
-          {en("A quick, rough check from this browser: 5 small requests to our server and a small download. It uses very little data.")}
+          {en("We test your connection from this browser with 5 quick checks and a small download. It uses very little data.")}
         </p>
         <Button type="button" variant="secondary" className="w-full sm:w-auto" onClick={checkConnection} busy={checking}>
           {!checking && <Wifi className="w-4 h-4" />}
@@ -340,13 +340,15 @@ export default function CampusStudentPage() {
         </Button>
         {connection && (
           <div className={`rounded-lg border p-3 text-sm space-y-1 ${ADVICE[connection.verdict].className}`}>
-            <p className="font-semibold">{ADVICE[connection.verdict].title}</p>
-            <p className="text-xs">{ADVICE[connection.verdict].text}</p>
+            <p className="font-semibold">{en(ADVICE[connection.verdict].title)}</p>
+            <p className="text-xs">{en(ADVICE[connection.verdict].text)}</p>
             <p className="text-xs opacity-80">
-              {en("Response time: ")}{connection.medianRtt != null ? en("{ms} ms (median)", { ms: Math.round(connection.medianRtt) }) : en("no response")}
-              {connection.jitter != null && ` · variation ${Math.round(connection.jitter)} ms`}
-              {` · download: ${connection.kbps != null ? (connection.kbps >= 1000 ? `${(connection.kbps / 1000).toFixed(1)} Mbit/s` : `${Math.round(connection.kbps)} kbit/s`) : "not measured"}`}
-              {connection.failures > 0 && ` · ${connection.failures} of 5 requests failed`}
+              {connection.medianRtt != null ? en("Typical delay: {ms} ms", { ms: Math.round(connection.medianRtt) }) : en("Typical delay: no answer")}
+              {connection.jitter != null && en(" · delay varies by {ms} ms", { ms: Math.round(connection.jitter) })}
+              {connection.kbps != null
+                ? en(" · download speed: {speed}", { speed: connection.kbps >= 1000 ? `${(connection.kbps / 1000).toFixed(1)} Mbps` : `${Math.round(connection.kbps)} kbps` })
+                : en(" · download speed: not measured")}
+              {connection.failures > 0 && en(" · {failures} of 5 checks failed", { failures: connection.failures })}
             </p>
           </div>
         )}
@@ -358,7 +360,7 @@ export default function CampusStudentPage() {
           <Info className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />{en(" How the assessment works")}
         </h2>
         <ol className="list-decimal ps-5 space-y-2 text-sm text-foreground">
-          <li><strong>{en("Build.")}</strong>{en(" Open the assignment and write or fix code in the browser. A laptop or desktop is easiest. Your edits are sent to the server as you go, so you can usually pick up where you left off after a dropped connection.")}</li>
+          <li><strong>{en("Build.")}</strong>{en(" Open the assignment and write or fix code in the browser. A laptop or desktop is easiest. Your changes are saved as you go, so you can usually pick up where you left off after a dropped connection.")}</li>
           <li><strong>{en("Test.")}</strong>{en(" When you submit, hidden tests run on your code. Your score is the share of tests that pass.")}</li>
           <li>
             <strong>{en("Defend.")}</strong> <Mic className="inline w-3.5 h-3.5" />{en(" You then have a short voice conversation with an AI interviewer about the code you wrote: why you made your choices and what you would change. It is audio only. You need a microphone and a quiet place.")}

@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useApi } from "@/lib/appAuth";
 import { Button, Card, EmptyState, ErrorBanner, Field, Loading, PageHeader, SuccessBanner, useLoad, useCareerT } from "@/components/career/ui";
 import { ThreadList, ThreadView, type ThreadRow } from "@/components/career/messaging/shared";
+import { HelpLink } from "@/components/help/HelpLink";
 
 function StudentMessages() {
   const t = useCareerT("studentMessages");
@@ -43,7 +44,7 @@ function StudentMessages() {
       reload();
       select(res.id);
     } catch (err) {
-      setComposeError(err instanceof TypeError ? "We couldn't reach the server. Please check your connection and try again." : (err as Error).message);
+      setComposeError(err instanceof TypeError ? "We couldn't reach Edulexa. Check your internet connection and try again." : (err as Error).message);
     } finally {
       setBusy(false);
     }
@@ -54,7 +55,7 @@ function StudentMessages() {
       <PageHeader
         title={t("messages")}
         description={t("privateConversationsWithYourCareer")}
-        actions={<Button onClick={() => setComposing(!composing)}>{composing ? t("cancel") : t("messageTheCareerCenter")}</Button>}
+        actions={<div className="flex flex-wrap items-center gap-3"><HelpLink slug="messages" />{<Button onClick={() => setComposing(!composing)}>{composing ? t("cancel") : t("messageTheCareerCenter")}</Button>}</div>}
       />
       <div aria-live="polite">
         <SuccessBanner message={msg} />

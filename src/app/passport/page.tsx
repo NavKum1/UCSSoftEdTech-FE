@@ -11,6 +11,7 @@ import PassportView, { type PassportData } from "@/components/passport/PassportV
 import { AccessNotice, useLegacyApi } from "@/lib/legacyApi";
 import { useEn } from "@/lib/english/EnglishProvider";
 import { Button, PageHeader, buttonClass } from "@/components/career/ui";
+import { HelpLink } from "@/components/help/HelpLink";
 
 interface OwnPassport extends PassportData {
   userId: string;
@@ -96,8 +97,7 @@ export default function SkillPassportPage() {
     <div>
       <PageHeader
         title={en("Skill passport")}
-        description={en("Your verified record of skills and credentials, built from your graded results. You decide who sees it.")}
-      />
+        description={en("Your verified record of skills and credentials, built from your graded results. You decide who sees it.")} actions={<HelpLink slug="credentials-and-passport" />} />
 
       <div className="grid gap-6 lg:grid-cols-3">
         <div className="lg:col-span-2">

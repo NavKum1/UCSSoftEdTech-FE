@@ -4,7 +4,7 @@
 
 import React, { useState } from "react";
 import { useApi } from "@/lib/appAuth";
-import { useCareerShell } from "@/components/career/CareerShell";
+import { useCareerShell, useHasCareerRole } from "@/components/career/CareerShell";
 import { Badge, Button, Card, EmptyState, ErrorBanner, Field, Loading, ScrollArea, SuccessBanner, useCareerT, useLoad } from "@/components/career/ui";
 import { checkboxClass, useDateOnly, useIsCareerAdmin } from "./shared";
 
@@ -101,6 +101,8 @@ function Awards({ credential, onChanged }: { credential: Credential; onChanged: 
   const dateOnly = useDateOnly();
   const isAdmin = useIsCareerAdmin();
   const awards = useLoad(() => api<Award[]>(`/api/career/workforce/credentials/${credential.id}/awards`), [api, credential.id]);
+  // Counselors and career admins award credentials (as the API checks)
+  const canAward = useHasCareerRole("CareerAdmin", "Counselor");
   const [emails, setEmails] = useState("");
   const [on, setOn] = useState("");
   const [evidence, setEvidence] = useState("");
@@ -116,7 +118,7 @@ function Awards({ credential, onChanged }: { credential: Credential; onChanged: 
         <ErrorBanner error={err} />
         <SuccessBanner message={msg} />
       </div>
-      {credential.active && (
+      {canAward && credential.active && (
         <form
           className="grid gap-3 sm:grid-cols-3 sm:items-end"
           onSubmit={async (e) => {

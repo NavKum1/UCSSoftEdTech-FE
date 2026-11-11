@@ -269,7 +269,7 @@ function Manage({ employerId, challengeId, onChanged }: { employerId: string; ch
       detail.reload();
       onChanged();
     } catch (e) {
-      setErr(e instanceof TypeError ? "We couldn't reach the server. Please check your connection and try again." : (e as Error).message);
+      setErr(e instanceof TypeError ? "We couldn't reach Edulexa. Check your internet connection and try again." : (e as Error).message);
     } finally {
       setBusy(null);
     }
@@ -361,7 +361,7 @@ function ResultsView({ employerId, challengeId }: { employerId: string; challeng
     try {
       setPack({ id: row.participantId, data: await api<Record<string, unknown>>(`/api/career/challenges/employer/${employerId}/${challengeId}/participants/${row.participantId}/evidence`) });
     } catch (e) {
-      setErr(e instanceof TypeError ? "We couldn't reach the server. Please check your connection and try again." : (e as Error).message);
+      setErr(e instanceof TypeError ? "We couldn't reach Edulexa. Check your internet connection and try again." : (e as Error).message);
     } finally {
       setBusy(null);
     }

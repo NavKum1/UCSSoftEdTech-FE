@@ -136,7 +136,7 @@ export default function TransparencyReportView({ report, meta, draft = false }: 
           onClick={() => downloadJson(`transparency-report-${report.periodStart}-to-${report.periodEnd}.json`, { id: meta.id, status: meta.status, publishedAt: meta.publishedAt, notes: meta.notes, report })}
         >
           <Download className="h-4 w-4" aria-hidden />
-          {en("Download JSON")}
+          {en("Download data file")}
         </Button>
       </div>
 

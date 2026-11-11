@@ -6,8 +6,14 @@ group: Handing in
 features: [class-assessments]
 order: 70
 checked: 2026-11-11
+short:
+  - Open the assessment under My assessments and select Start.
+  - Upload your file, paste your text, or hand in your project, coding task or exam.
+  - You can replace it until your viva starts.
 ---
 Your assessments are under [ui: My assessments]. Open one to see what to do, how you're assessed, and when it's due. When you're ready, select [ui: Start].
+
+[shot: my-assessments]
 
 How you hand in depends on the assessment:
 

@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Bell, Menu, X } from "lucide-react";
 import { getSelectedSchool, setSelectedSchool, useApi, useAppAuth } from "@/lib/appAuth";
-import { careerNav, shownForCountry, shownForRoles, type CareerPersona } from "@/lib/careerNav";
+import { careerNav, careerPagesOutsideMenu, shownForCountry, shownForRoles, type CareerPersona } from "@/lib/careerNav";
 import { COMMUNITY_INSTITUTE_ID } from "@/lib/community";
 import { useCareerFormat, useCareerI18n, useCareerT } from "@/components/career/i18n/CareerI18nProvider";
 import { useCareerNavLabels } from "@/components/career/i18n/nav";
@@ -14,6 +14,7 @@ import { accessibleBrandColor, brandCssVars } from "@/components/career/brandCol
 import { FRAME, PAGE_Y } from "@/components/layout/Frame";
 import { HeaderControls } from "@/components/layout/AccountMenu";
 import { useDataSaver } from "@/components/career/mobile/dataSaver";
+import { useEn } from "@/lib/english/EnglishProvider";
 import { SectionBar, SectionDrawerList, SectionTabs, findCurrent, type NavTab } from "@/components/layout/SectionNav";
 
 export interface CareerBrand {
@@ -56,13 +57,24 @@ interface CareerShellState {
   schoolId: string | null;
   // The chosen school's country; null until known
   schoolCountry: string | null;
+  // The person's roles at the chosen school (an institute or platform admin counts as CareerAdmin); empty until known
+  schoolRoles: string[];
   reloadMe: () => void;
 }
 
-const CareerShellContext = createContext<CareerShellState>({ brand: null, me: null, meError: null, schoolId: null, schoolCountry: null, reloadMe: () => {} });
+const CareerShellContext = createContext<CareerShellState>({ brand: null, me: null, meError: null, schoolId: null, schoolCountry: null, schoolRoles: [], reloadMe: () => {} });
 
 export function useCareerShell() {
   return useContext(CareerShellContext);
+}
+
+/**
+ * Whether the person's role at the chosen school is one of these (the same role lists the API checks), e.g.
+ * useHasCareerRole("CareerAdmin", "Counselor"). False until their roles are known, so buttons appear rather than vanish.
+ */
+export function useHasCareerRole(...roles: string[]) {
+  const { schoolRoles } = useContext(CareerShellContext);
+  return roles.some((r) => schoolRoles.includes(r));
 }
 
 function setDocumentTitle(title: string) {
@@ -91,7 +103,7 @@ const STAFF_ROLES: Record<CareerPersona, string[]> = {
 export default function CareerShell({ persona, children }: { persona: CareerPersona; children: React.ReactNode }) {
   const pathname = usePathname();
   const api = useApi();
-  const { isLoaded, isSignedIn } = useAppAuth();
+  const { isLoaded, isSignedIn, roles: platformRoles } = useAppAuth();
   const [brand, setBrand] = useState<CareerBrand | null>(null);
   const [me, setMe] = useState<CareerMe | null>(null);
   const [meError, setMeError] = useState<string | null>(null);
@@ -102,6 +114,8 @@ export default function CareerShell({ persona, children }: { persona: CareerPers
   // The school's résumé rule (stage 2): with the tools off, its students' menu doesn't list Résumés
   const [resumeTools, setResumeTools] = useState<boolean | null>(null);
   const t = useCareerT("shell");
+  const tRoles = useCareerT("roles");
+  const en = useEn();
   const fmt = useCareerFormat();
   const { locale, dir } = useCareerI18n();
   const nav = useCareerNavLabels(persona);
@@ -163,6 +177,15 @@ export default function CareerShell({ persona, children }: { persona: CareerPers
   const inCommunity = schoolId === COMMUNITY_INSTITUTE_ID;
   const schoolCountry = me?.memberships.find((m) => m.instituteId === schoolId)?.country ?? null;
   const schoolRoles = (me?.memberships ?? []).filter((m) => m.instituteId === schoolId).map((m) => m.role);
+  // The API makes an institute admin (signed claim) and a platform admin the school's career admin
+  if (me && (me.isSuperAdmin || platformRoles.includes("InstituteAdmin") || platformRoles.includes("SuperAdmin")) && !schoolRoles.includes("CareerAdmin")) schoolRoles.push("CareerAdmin");
+  // A page this person's role can't use (opened from a bookmark or a link): say so plainly instead of loading it.
+  // The most specific menu entry for the address decides (e.g. Student roster under Settings).
+  const pageEntry = [...careerNav[persona], ...(careerPagesOutsideMenu[persona] ?? [])]
+    .filter((i) => i.href !== careerNav[persona][0]?.href && (pathname === i.href || pathname?.startsWith(i.href + "/")))
+    .sort((a, b) => b.href.length - a.href.length)[0];
+  const personaRoles = schoolRoles.filter((r) => STAFF_ROLES[persona].includes(r));
+  const blockedPage = pageEntry?.roles && personaRoles.length > 0 && !shownForRoles(pageEntry, personaRoles) ? pageEntry : null;
   // Country-specific pages (India's accreditation reports, US WIOA...) show only to schools in those countries
   const items = careerNav[persona].filter(
     (i) => i.ready && (!inCommunity || i.module === "C10") && shownForCountry(i, schoolCountry) && shownForRoles(i, schoolRoles) && (!(i.href === "/resumes" || i.href.startsWith("/resumes/") || i.href === "/career-center/resume-books") || resumeTools !== false),
@@ -219,7 +242,7 @@ export default function CareerShell({ persona, children }: { persona: CareerPers
   }, [menuOpen]);
 
   return (
-    <CareerShellContext.Provider value={{ brand: b, me, meError, schoolId, schoolCountry, reloadMe }}>
+    <CareerShellContext.Provider value={{ brand: b, me, meError, schoolId, schoolCountry, schoolRoles, reloadMe }}>
       <div className="min-h-screen bg-background text-foreground" lang={locale} dir={dir} style={brandCssVars(b.primaryColor) as React.CSSProperties}>
         <a href="#career-main" className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:start-2 focus:z-50 focus:rounded-md focus:bg-card focus:px-3 focus:py-2">
           {t("skipToContent")}
@@ -300,7 +323,22 @@ export default function CareerShell({ persona, children }: { persona: CareerPers
         <SectionBar tabs={tabs} tab={currentTab} current={currentPage} prefetch={prefetch} />
 
         <main id="career-main" tabIndex={-1} className={`${FRAME} ${PAGE_Y} focus:outline-none`}>
-          {children}
+          {blockedPage ? (
+            <div className="mx-auto max-w-xl rounded-lg border border-border bg-card p-6">
+              <h1 className="text-lg font-semibold">{en("This page isn't part of your role")}</h1>
+              <p className="mt-2 text-sm text-muted-foreground">
+                {en("Your role at this school ({role}) can't open {page}. Ask your career center admin if you need it.", {
+                  role: personaRoles.map((r) => (tRoles.has(r) ? tRoles(r) : r)).join(", "),
+                  page: nav.label(blockedPage),
+                })}
+              </p>
+              <Link href={root} className="mt-4 inline-block text-sm font-medium underline">
+                {en("Go to the home page")}
+              </Link>
+            </div>
+          ) : (
+            children
+          )}
         </main>
 
         <footer className={`${FRAME} py-6 text-xs text-muted-foreground`}>

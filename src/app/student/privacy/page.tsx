@@ -59,7 +59,7 @@ export default function StudentPrivacyPage() {
       record.setData((d) => (d ? { ...d, ferpaHold: r.ferpaHold } : d));
       setMsg(r.ferpaHold ? t("directoryHoldIsOn") : t("directoryHoldIsOff"));
     } catch (e) {
-      setErr(e instanceof TypeError ? "We couldn't reach the server. Please check your connection and try again." : (e as Error).message);
+      setErr(e instanceof TypeError ? "We couldn't reach Edulexa. Check your internet connection and try again." : (e as Error).message);
     } finally {
       setBusy(null);
     }
@@ -74,7 +74,7 @@ export default function StudentPrivacyPage() {
       setMsg(t("sharingWithRecipientNameWasStopped", { recipientName: c.recipientName }));
       consents.reload();
     } catch (e) {
-      setErr(e instanceof TypeError ? "We couldn't reach the server. Please check your connection and try again." : (e as Error).message);
+      setErr(e instanceof TypeError ? "We couldn't reach Edulexa. Check your internet connection and try again." : (e as Error).message);
     } finally {
       setBusy(null);
     }

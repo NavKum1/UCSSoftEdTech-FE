@@ -6,6 +6,10 @@ group: The viva
 features: [class-assessments]
 order: 72
 checked: 2026-11-11
+short:
+  - A few questions about your own work, one at a time, by voice or in writing.
+  - Explain in your own words: spelling, grammar and accent don't count.
+  - If voice doesn't work, answer in writing: it doesn't count against you.
 ---
 The viva is a short oral examination about the work you handed in. An AI examiner asks a few questions, one at a time: why you made a choice, what a part of your work means, or how you'd answer an objection. It doesn't give hints or scores. Your teacher reads the whole viva and decides your result.
 

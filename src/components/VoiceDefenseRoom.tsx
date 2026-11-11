@@ -179,7 +179,7 @@ export default function VoiceDefenseRoom({
       }
       router.push(`/written-defense/${body.sessionId}`);
     } catch {
-      setTypedError(en("We couldn't reach the server. Please check your connection and try again."));
+      setTypedError(en("We couldn't reach Edulexa. Check your internet connection and try again."));
     } finally {
       setTypedBusy(false);
     }
@@ -399,7 +399,7 @@ export default function VoiceDefenseRoom({
       return stream;
     } catch {
       setMicPermission("denied");
-      setStatusMessage("Microphone permission denied. Please enable microphone access in your browser.");
+      setStatusMessage(en("Edulexa can't use your microphone. Allow it in your browser's settings, then try again."));
       return null;
     }
   };
@@ -519,7 +519,7 @@ export default function VoiceDefenseRoom({
         <div className="flex items-center space-x-3">
           <div>
             <h2 className="text-base font-semibold text-foreground">{en("AI voice defense")}</h2>
-            <p className="text-sm text-muted-foreground">{en("Graded by the server from the recorded call")}</p>
+            <p className="text-sm text-muted-foreground">{en("Graded by Edulexa from the recorded call")}</p>
           </div>
         </div>
 

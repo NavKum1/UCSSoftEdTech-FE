@@ -1,0 +1,96 @@
+# Words people meet in Edulexa and in the help articles, explained where an article first uses them and listed on
+# /help/words-we-use. "see" is the slug of the article to read next (optional).
+
+- term: viva
+  also: [vivas]
+  means: A short spoken conversation about your own work, where you explain what you did and why. Your teacher listens to it later.
+  see: the-viva
+
+- term: rubric
+  also: [rubrics]
+  means: The list of what the work is judged on, with the points for each part. Students can see it before they start.
+  see: rubric-and-viva
+
+- term: evidence
+  means: Everything a teacher looks at before deciding, such as the work handed in and the viva. For coding work, it also shows the tests and how the code was written.
+  see: review-the-evidence
+
+- term: attempt
+  also: [attempts]
+  means: One go at an assessment, from starting it to the teacher's decision. If you're asked to resubmit, you start a new attempt.
+  see: hand-in-your-work
+
+- term: change task
+  also: [change tasks]
+  means: For some coding assessments, one small, timed change you make to your own code before the viva. It shows you know your code well.
+  see: change-task-student
+
+- term: decision
+  also: [decisions]
+  means: The teacher's result for a piece of work. The work passes, is sent back to be handed in again, or doesn't pass.
+  see: results-and-appeals
+
+- term: appeal
+  also: [appeals]
+  means: Asking for a decision to be looked at again. For a class assessment, you can appeal once, within 14 days.
+  see: results-and-appeals
+
+- term: credential
+  also: [credentials]
+  means: A signed record of something you passed. It has its own page, so anyone you share it with can check it's real.
+  see: credentials-and-passport
+
+- term: wallet
+  means: The place in your account where your credentials are kept. You decide which ones to share.
+  see: credentials-and-passport
+
+- term: skill passport
+  means: A page with your checked skills and a link you can share, for example with employers. You control what it shows.
+  see: credentials-and-passport
+
+- term: roster
+  also: [rosters]
+  means: The list of students in a class, with their e-mail addresses. Students sign in with the e-mail address on the roster.
+  see: classes-and-rosters
+
+- term: LMS
+  means: Your school's online course system, such as Canvas, Moodle or Blackboard. Edulexa can send grades to it.
+  see: results-credentials-lms
+
+- term: voice minutes
+  also: [AI voice minutes]
+  means: The time available for spoken conversations with the AI, such as voice vivas. When they run out, students answer in writing instead.
+  see: billing-and-voice-minutes
+
+- term: two-step sign-in
+  means: Signing in with your password and also a code from an app on your phone. Staff accounts need it, because they can see students' information.
+  see: sign-in
+
+- term: career center
+  also: [career centers]
+  means: Your school's career office. Its staff help with appointments, résumés, jobs and internships.
+  see: appointments
+
+- term: caseload
+  also: [caseloads]
+  means: The students a career counselor is assigned to look after.
+  see: caseload
+
+- term: document review
+  means: Sending your résumé, cover letter or another document to your career center, so a counselor can comment on it.
+  see: document-review
+
+- term: résumé book
+  also: [résumé books]
+  means: A school's collection of student résumés that approved employers can look through. Students choose whether to be in it.
+  see: resume-book
+
+- term: campus drive
+  also: [campus drives]
+  means: A company's hiring round at a college. Students apply, some are shortlisted and interviewed, and some get an offer.
+  see: campus-jobs-and-interviews
+
+- term: mentoring
+  also: [mentor, mentors]
+  means: Advice from someone with more experience, often a graduate of your school, over a few conversations. It's free.
+  see: mentoring
