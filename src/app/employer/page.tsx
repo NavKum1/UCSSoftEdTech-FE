@@ -8,6 +8,7 @@ import { Badge, Card, ErrorBanner, Loading, PageHeader, useLoad, useCareerT } fr
 import { EmployerPicker, useEmployers } from "@/components/career/EmployerPicker";
 import CompanyForm, { companyPayload, emptyCompany } from "@/components/career/CompanyForm";
 import { useRelationshipLabels, useVerification } from "@/components/career/coreLabels";
+import { AskVerification, type VerificationRequestState } from "@/components/career/AskVerification";
 
 interface Relationship {
   id: string;
@@ -25,6 +26,8 @@ export default function EmployerHome() {
   const [err, setErr] = useState<string | null>(null);
   const employerId = emp.current?.employer.id;
   const rels = useLoad(() => (employerId ? api<Relationship[]>(`/api/career/employer/${employerId}/schools`) : Promise.resolve([] as Relationship[])), [api, employerId]);
+  // H52: verified for campus hiring, and the company's request to Edulexa staff
+  const ask = useLoad(() => (employerId ? api<VerificationRequestState>(`/api/career/employer/${employerId}/verification-request`) : Promise.resolve(null)), [api, employerId]);
 
   const signup = async (v: typeof emptyCompany) => {
     setBusy(true);
@@ -70,6 +73,15 @@ export default function EmployerHome() {
           <Badge tone={v.tone}>{v.label}</Badge>
           <p className="mt-2 text-sm text-muted-foreground">{v.explain}</p>
           {org.flagReason && <p className="mt-2 text-sm">{t("reasonFlagReason", { flagReason: org.flagReason })}</p>}
+          {ask.data && org.verificationStatus !== "Flagged" && (
+            <>
+              <p className="mt-2 text-sm">{ask.data.campusVerified ? t("campusVerified") : t("needsStaffCheck")}</p>
+              {!ask.data.campusVerified && org.hqCountry === "IN" && (
+                <p className="mt-1 text-sm text-muted-foreground">{t.rich("indiaGstin", { link: (c) => <Link className="underline" href="/employer/jobs">{c}</Link> })}</p>
+              )}
+              {!ask.data.campusVerified && employerId && <AskVerification employerId={employerId} state={ask.data} onChange={ask.setData} />}
+            </>
+          )}
         </Card>
         <Card title={t("schools")}>
           <ErrorBanner error={rels.error} />

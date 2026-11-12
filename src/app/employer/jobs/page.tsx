@@ -13,6 +13,7 @@ import { EmployerPicker, useEmployers } from "@/components/career/EmployerPicker
 import { label } from "@/components/career/placements/shared";
 import { CURRENCIES, useCountryWords } from "@/components/career/country";
 import { HireConnection } from "@/components/career/campus/HireConnection";
+import { AskVerification, type VerificationRequestState } from "@/components/career/AskVerification";
 import { DOC_KIND_KEYS, JOB_TYPE_KEYS, localToIso, toList, toNum, useDocKindLabels, useJobStatusLabels, useJobTypeLabels, type CampusJob } from "@/components/career/campus/shared";
 
 interface Verification {
@@ -69,6 +70,8 @@ function Jobs({ employerId, country }: { employerId: string; country: string | n
   const KIND = useDocKindLabels();
   const api = useApi();
   const list = useLoad(() => api<JobList>(`/api/career/campus/employer/${employerId}/jobs`), [api, employerId]);
+  // H52: outside India the company asks Edulexa staff to verify it ("Ask Edulexa to verify us")
+  const ask = useLoad(() => (india ? Promise.resolve(null) : api<VerificationRequestState>(`/api/career/employer/${employerId}/verification-request`)), [api, employerId, india]);
   const [gstin, setGstin] = useState("");
   // The job's currency defaults to the head office's (USD when it isn't known); the employer may choose another
   const newJob = () => ({ ...emptyJob, currency: w.rules.currency });
@@ -157,7 +160,12 @@ function Jobs({ employerId, country }: { employerId: string; country: string | n
           </ul>
         )}
         {/* Outside India there is no tax number to check: Edulexa staff verify the company (CampusDriveCore.VerifiedAsync) */}
-        {!v.verified && !india && <p className="mt-3 text-sm text-muted-foreground">{t("verificationHelpOther")}</p>}
+        {!v.verified && !india && (
+          <>
+            <p className="mt-3 text-sm text-muted-foreground">{t("verificationHelpOther")}</p>
+            {ask.data && <AskVerification employerId={employerId} state={ask.data} onChange={ask.setData} />}
+          </>
+        )}
         {!v.verified && india && (
           <>
             <p className="mt-3 text-sm text-muted-foreground">{t("verificationHelp")}</p>

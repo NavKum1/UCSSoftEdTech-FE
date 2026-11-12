@@ -19,7 +19,7 @@ Open [ui: Campus jobs] under [ui: Hiring]. [ui: Company verification] must show 
 
 - A company that Edulexa staff verified is ready.
 - A company in India can verify itself with its GSTIN, signed in with a company e-mail address.
-- Other companies ask Edulexa support to verify them, from the help center.
+- Other companies need Edulexa staff to verify them. The account owner selects [ui: Ask Edulexa to verify us] under [ui: Company verification]. The page then shows the date you asked, and you're told in the app and by e-mail when staff decide. See [Set up your company](/help/employer-getting-started).
 
 ## Post a job
 

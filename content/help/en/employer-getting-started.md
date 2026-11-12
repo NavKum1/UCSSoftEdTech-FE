@@ -9,7 +9,7 @@ checked: 2026-11-12
 short:
   - Create your company account, then ask each school for approval on the Schools page.
   - Once a school approves you, you can send it jobs, interview requests and challenges, and browse its résumé book.
-  - The account owner edits the company profile and invites colleagues.
+  - The account owner edits the company profile, invites colleagues, and asks Edulexa to verify the company before posting campus jobs.
 ---
 To recruit at a school through Edulexa, your company needs an employer account, and the school's career center must approve it.
 
@@ -26,6 +26,16 @@ Your home page shows how Edulexa checked your company:
 - [ui: Unverified]: Edulexa couldn't confirm the company automatically. Schools may ask for more detail before they approve you.
 - [ui: Staff verified]: Edulexa staff checked and verified your company.
 - [ui: Under review]: you can't ask new schools until the review is finished.
+
+## Ask Edulexa to verify your company
+
+To post campus jobs, your company must be verified for campus hiring. Edulexa staff do this. A company in India can also verify itself with its GSTIN on the [ui: Campus jobs] page.
+
+1. The account owner selects [ui: Ask Edulexa to verify us] on the home page, under [ui: Verification], or on the [ui: Campus jobs] page. You don't need to write to support.
+2. The page shows the date you asked. Asking again while you wait doesn't send a second request.
+3. Edulexa staff check your company. You're told in the app and by e-mail when they decide.
+
+If Edulexa staff don't verify your company, the home page shows their reason. Fix what they asked, then the account owner selects [ui: Ask again]. Team members see the request but can't send it.
 
 ## Your company profile and team
 

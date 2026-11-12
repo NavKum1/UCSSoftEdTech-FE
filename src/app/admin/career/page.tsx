@@ -5,7 +5,7 @@ import Link from "next/link";
 
 import React, { useState } from "react";
 import { useApi } from "@/lib/appAuth";
-import { Badge, Button, buttonClass, Card, EmptyState, ErrorBanner, Field, Loading, PageHeader, SuccessBanner, useLoad, ScrollArea } from "@/components/career/ui";
+import { Badge, Button, buttonClass, Card, EmptyState, ErrorBanner, Field, formatDate, Loading, PageHeader, SuccessBanner, useLoad, ScrollArea } from "@/components/career/ui";
 
 interface Brand {
   id: string;
@@ -43,8 +43,99 @@ interface EmployerRow {
   emailDomain?: string | null;
   verificationStatus: string;
   flagReason?: string | null;
+  hqCountry?: string | null;
+  verificationRequestedAt?: string | null;
   activeUsers: number;
   approvedSchools: number;
+}
+
+/**
+ * H52 "Ask Edulexa to verify us": companies whose owner asked Edulexa staff to verify them, oldest first. Verify, or decline with
+ * a short reason the company sees (it can ask again). The company's team is told either way.
+ */
+function WaitingForVerification({ onDecided }: { onDecided: (message: string) => void }) {
+  const api = useApi();
+  const waiting = useLoad(() => api<EmployerRow[]>("/api/career/platform/employers?requested=true&take=100"), [api]);
+  const [declining, setDeclining] = useState<string | null>(null);
+  const [reason, setReason] = useState("");
+  const [busy, setBusy] = useState<string | null>(null);
+  const [err, setErr] = useState<string | null>(null);
+
+  const decide = async (o: EmployerRow, status: "StaffVerified" | "Unverified") => {
+    setBusy(o.id + status);
+    setErr(null);
+    try {
+      await api(`/api/career/platform/employers/${o.id}/verification`, { method: "POST", json: { status, reason: status === "Unverified" ? reason.trim() : null } });
+      onDecided(status === "StaffVerified" ? `${o.name} is verified. Its team was told.` : `${o.name} was declined. Its team was told why.`);
+      setDeclining(null);
+      setReason("");
+      waiting.reload();
+    } catch (e) {
+      setErr((e as Error).message);
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  return (
+    <section aria-labelledby="waiting-verification" className="mb-6">
+      <h3 id="waiting-verification" className="mb-2 text-sm font-semibold">
+        Asked to be verified{waiting.data ? ` (${waiting.data.length})` : ""}
+      </h3>
+      <ErrorBanner error={err ?? waiting.error} onRetry={err ? undefined : waiting.reload} />
+      {waiting.loading && !waiting.data ? (
+        <Loading />
+      ) : waiting.data && waiting.data.length === 0 ? (
+        <p className="text-sm text-muted-foreground">No company is waiting.</p>
+      ) : (
+        <ul className="divide-y divide-border rounded-lg border border-border text-sm">
+          {(waiting.data ?? []).map((o) => (
+            <li key={o.id} className="space-y-2 p-3">
+              <div className="flex flex-wrap items-start justify-between gap-2">
+                <div className="min-w-0">
+                  <span className="font-medium">{o.name}</span>{" "}
+                  {o.website ? (
+                    <a className="break-all underline" href={/^https?:\/\//i.test(o.website) ? o.website : `https://${o.website}`} target="_blank" rel="noopener noreferrer">
+                      {o.website}
+                    </a>
+                  ) : (
+                    <span className="text-muted-foreground">No website</span>
+                  )}
+                  <div className="text-xs text-muted-foreground">
+                    Asked on {formatDate(o.verificationRequestedAt)} · {o.hqCountry ?? "—"} · signs in with {o.emailDomain ?? "a free e-mail service"} · {o.verificationStatus === "DomainVerified" ? "e-mail address checked" : "e-mail address not checked"} · {o.activeUsers} active users
+                  </div>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  <Button busy={busy === o.id + "StaffVerified"} onClick={() => decide(o, "StaffVerified")} aria-label={`Verify ${o.name}`}>
+                    Verify
+                  </Button>
+                  <Button variant="secondary" onClick={() => { setDeclining(declining === o.id ? null : o.id); setReason(""); }} aria-expanded={declining === o.id} aria-label={`Decline ${o.name}`}>
+                    Decline
+                  </Button>
+                </div>
+              </div>
+              {declining === o.id && (
+                <form
+                  className="flex flex-wrap items-end gap-2"
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    decide(o, "Unverified");
+                  }}
+                >
+                  <Field label="Reason the company sees" hint="Say what to fix, in a sentence.">
+                    {(p) => <input {...p} required maxLength={500} value={reason} onChange={(e) => setReason(e.target.value)} />}
+                  </Field>
+                  <Button type="submit" variant="danger" busy={busy === o.id + "Unverified"} disabled={!reason.trim()}>
+                    Decline
+                  </Button>
+                </form>
+              )}
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
+  );
 }
 
 const emptySchool = { name: "", slug: "", emailDomains: "", timeZone: "America/New_York", brandKey: "edulexa", partnerKey: "", partnerOrgId: "", adminEmail: "", adminName: "", countryCode: "US", instituteId: "" };
@@ -454,6 +545,13 @@ export default function CareerPlatformAdminPage() {
       </Card>
 
       <Card title="Employer verification">
+        <WaitingForVerification
+          onDecided={(m) => {
+            setErr(null);
+            setMsg(m);
+            employers.reload();
+          }}
+        />
         <form
           onSubmit={(e) => {
             e.preventDefault();
@@ -500,7 +598,7 @@ export default function CareerPlatformAdminPage() {
               </select>
             )}
           </Field>
-          <Field label="Reason (shown when flagged)">{(p) => <input {...p} value={verify.reason} onChange={(e) => setVerify({ ...verify, reason: e.target.value })} />}</Field>
+          <Field label="Reason (the company sees it when flagged or declined)">{(p) => <input {...p} value={verify.reason} onChange={(e) => setVerify({ ...verify, reason: e.target.value })} />}</Field>
           <div className="flex items-end">
             <Button type="submit" busy={busy === "verify"}>Update</Button>
           </div>

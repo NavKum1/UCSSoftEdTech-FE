@@ -151,7 +151,7 @@ export async function authenticatedFetch(
         // Local developer session: the candidate dev token needs a stable user id
         const dev = getDevSession();
         if (dev?.userId && token === dev.token && !headers.has("X-User-Id")) headers.set("X-User-Id", dev.userId);
-        const devInstitute = dev && token === dev.token ? DEV_PERSONAS[dev.role]?.institute : undefined;
+        const devInstitute = dev && token === dev.token ? dev.institute ?? DEV_PERSONAS[dev.role]?.institute : undefined;
         if (devInstitute && !headers.has("X-Institute-Id")) headers.set("X-Institute-Id", devInstitute);
       }
     } catch (error) {

@@ -5,7 +5,7 @@ roles: [staff]
 group: Employers and jobs
 features: [employer-accounts, campus-drives]
 order: 10
-checked: 2026-11-11
+checked: 2026-11-12
 short:
   - Companies ask to recruit at your school. Approve, decline or block them in Employers.
   - Their jobs reach your students only after you approve them in Campus drives.
@@ -16,7 +16,7 @@ Employers create a company account in Edulexa and ask to recruit at your school.
 ## Approve an employer
 
 1. Open [ui: Employers] from the [ui: Employers and jobs] menu.
-2. The [ui: Pending] tab lists new requests, with the company's details, its website and its note to you. A badge shows whether Edulexa could confirm the company. It's there to help you decide; it doesn't approve anyone.
+2. The [ui: Pending] tab lists new requests, with the company's details, its website and its note to you. A badge shows whether Edulexa could confirm the company. [ui: Staff verified] means Edulexa staff checked the company when it asked them to. The badge is there to help you decide; it doesn't approve anyone.
 3. Write a [ui: Note to the employer (optional)] if you like, then select [ui: Approve], [ui: Decline] or [ui: Block]. A blocked company can't ask again.
 
 The employer is told either way. You can change a decision later from the [ui: Approved], [ui: Declined] or [ui: Blocked] tab.

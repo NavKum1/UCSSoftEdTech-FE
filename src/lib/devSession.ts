@@ -15,6 +15,12 @@ export interface DevSession {
   label: string;
   token: string;
   userId: string | null;
+  /**
+   * Optional: the organization to send as X-Institute-Id instead of the persona's default (DEV_PERSONAS[role].institute).
+   * scripts/help-shots.mjs sets it so the recruiter works for the demo company the API seeds (Data/DevRecruiterSeeder.cs,
+   * Lakeshore Analytics (demo), 5c400300-0000-4000-8000-000000000001), with its team, evidence packs and appeals.
+   */
+  institute?: string;
 }
 
 const KEY = "edulexa_dev_session";
@@ -34,7 +40,8 @@ const SCHOOL_KEY = "career.school"; // lib/appAuth getSelectedSchool
 export const DEV_PERSONAS: Record<string, { label: string; token: string; perUser: boolean; userId?: string; school?: boolean; institute?: string }> = {
   Candidate: { label: "Member", token: "candidate-dev-token", perUser: true },
   // The development institute the institute admin and counselor tokens default to (Global ITech Institute), so the
-  // recruiter's review pages (evidence, work trials...) show that organization's data instead of "not linked to an institute"
+  // recruiter's review pages (evidence, work trials...) show that organization's data instead of "not linked to an institute".
+  // A session with `institute` set to the demo company (DevSession.institute) gets the company's team page and demo data.
   Recruiter: { label: "Recruiter", token: "recruiter-dev-token", perUser: false, institute: "6c370735-4615-44f6-9d61-dbbb41d5d5cf" },
   InstituteAdmin: { label: "Institute admin", token: "institute-admin-dev-token", perUser: false },
   Counselor: { label: "Institute counselor", token: "institute-counsellor-dev-token", perUser: false },

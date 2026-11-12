@@ -188,6 +188,7 @@
         "employer_invite": "Invitation to a recruiting team",
         "employer_relationship": "Recruiting request answered",
         "employer_request": "Employer wants to recruit",
+        "employer_verification": "Company verification",
         "experiences_agreement": "Internship agreement",
         "experiences_approved": "Internship approved",
         "experiences_certificate": "Internship certificate",
@@ -3435,7 +3436,19 @@
       "findAndRequestSchools": "Find and request schools",
       "companyProfile": "Company profile",
       "team": "Team",
-      "sizeBandEmployees": "{sizeBand} employees"
+      "sizeBandEmployees": "{sizeBand} employees",
+      "campusVerified": "Your company is verified for campus hiring.",
+      "needsStaffCheck": "To post campus jobs, Edulexa staff need to verify your company.",
+      "indiaGstin": "A company in India can also verify itself with its GSTIN on the <link>Campus jobs</link> page."
+    },
+    "employerVerifyRequest": {
+      "ask": "Ask Edulexa to verify us",
+      "askAgain": "Ask again",
+      "askedOn": "Asked on {date}. Edulexa will e-mail you when it's done.",
+      "sent": "Sent. Edulexa will e-mail you when it's done.",
+      "declinedOn": "On {date}, Edulexa didn't verify your company. Reason: {reason}",
+      "fixThenAsk": "Fix this, then ask again.",
+      "ownerAsks": "Your company's account owner can ask Edulexa to verify the company."
     },
     "employerSchools": {
       "noCompanyYet": "No company yet",
@@ -6237,7 +6250,7 @@
       "notVerified": "Not verified",
       "gstinOnFile": "GSTIN {gstin} ({state})",
       "verificationHelp": "Enter your company's GSTIN while signed in with your company email (on the same domain as your website). We check the GSTIN's format, state code and check character.",
-      "verificationHelpOther": "Edulexa staff verify companies for campus hiring. To ask, write to Edulexa support from the help center.",
+      "verificationHelpOther": "Edulexa staff verify companies outside India for campus hiring.",
       "gstin": "GSTIN",
       "verify": "Verify",
       "jobsTitle": "Your jobs",
