@@ -8,7 +8,7 @@ const SECTIONS = [
   { label: "Candidates", href: "/recruiter/dashboard", group: "Candidates" },
   { label: "Evidence packs", href: "/recruiter/evidence", group: "Review" },
   { label: "Work trials", href: "/recruiter/work-trials", group: "Review" },
-  { label: "Session recordings", href: "/recruiter/proctoring", group: "Review" },
+  { label: "Proctored sessions", href: "/recruiter/proctoring", group: "Review" },
   { label: "Challenge results", href: "/recruiter/benchmark", group: "Review" },
   { label: "Appeals", href: "/recruiter/appeals", group: "Fairness" },
   { label: "Accommodations", href: "/recruiter/accommodations", group: "Fairness" },

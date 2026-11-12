@@ -96,15 +96,15 @@ export default function SessionIntegrityPage() {
     } else setMessage(en("That didn't save. Please try again."));
   };
 
-  if (access) return <AccessNotice problem={access} feature="Session integrity review" />;
+  if (access) return <AccessNotice problem={access} feature="Proctored sessions" />;
 
   const shown = (rows ?? []).filter((r) => (filter === "all" ? true : filter === "review" ? r.needsReview : r.riskLevel === filter));
 
   return (
     <div className="space-y-6">
       <PageHeader
-        title={en("Session integrity review")}
-        description={en("Events logged during proctored sessions, for a person to review. Event severity is set by the kind of event, not by the candidate's browser. No one is disqualified automatically, and no gaze or face detection is performed.")}
+        title={en("Proctored sessions")}
+        description={en("What happened during each proctored session, such as switching tabs or pasting text, for a person to review. How serious an event is depends only on its kind. No one is disqualified automatically, and no gaze or face detection is performed.")}
       />
 
       <Tabs<Filter>
@@ -143,7 +143,7 @@ export default function SessionIntegrityPage() {
             <tbody className="divide-y divide-border">
               {shown.map((r) => (
                 <tr key={r.sessionId}>
-                  <td className="p-3">{r.candidateName ?? <span className="font-mono text-xs text-muted-foreground">{r.userId.slice(0, 8)}</span>}</td>
+                  <td className="p-3">{r.candidateName ?? <span className="text-muted-foreground">{en("Unnamed candidate")}</span>}</td>
                   <td className="p-3 text-muted-foreground">{new Date(r.lastUpdatedAt).toLocaleString()}</td>
                   <td className="p-3 text-end tabular-nums">{r.totalViolations}</td>
                   <td className="p-3 text-end tabular-nums">{r.integrityScore}</td>

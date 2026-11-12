@@ -41,13 +41,14 @@ export interface GuidanceRequestView {
   messages: GuidanceMessage[];
 }
 
+// Shown through en(): each line is marked so the texts are translated
 export const STATUS_LABEL: Record<string, string> = {
-  Open: "Waiting for an advisor",
-  WithMentor: "With a mentor",
-  Answered: "Answered",
-  InstituteSuggested: "Institute suggested",
-  SentToInstitute: "Sent to an institute",
-  Resolved: "Resolved",
+  Open: "Waiting for an advisor", // en() where shown
+  WithMentor: "With a mentor", // en() where shown
+  Answered: "Answered", // en() where shown
+  InstituteSuggested: "Institute suggested", // en() where shown
+  SentToInstitute: "Sent to an institute", // en() where shown
+  Resolved: "Resolved", // en() where shown
 };
 
 export function Messages({ messages }: { messages: GuidanceMessage[] }) {

@@ -82,12 +82,12 @@ export default function EvidenceQueuePage() {
   };
 
   const sprints = useMemo(
-    () => Array.from(new Set(rows.map((r) => r.sprintTitle ?? "Untitled sprint"))).sort(),
+    () => Array.from(new Set(rows.map((r) => r.sprintTitle ?? "Untitled challenge"))).sort(),
     [rows]
   );
 
   const filtered = rows.filter((r) => {
-    if (sprintFilter !== "all" && (r.sprintTitle ?? "Untitled sprint") !== sprintFilter) return false;
+    if (sprintFilter !== "all" && (r.sprintTitle ?? "Untitled challenge") !== sprintFilter) return false;
     if (riskFilter !== "all" && (r.integrityRiskLevel ?? "Unknown") !== riskFilter) return false;
     if (decisionFilter === "undecided" && r.latestDecision) return false;
     if (decisionFilter === "decided" && !r.latestDecision) return false;
@@ -100,7 +100,7 @@ export default function EvidenceQueuePage() {
     <div className="space-y-6">
       <PageHeader
         title={en("Evidence review queue")}
-        description={en("Each submission has an evidence pack: tests, code changes, AI usage, integrity signals and the voice defense. The platform does not advance or reject anyone; a reviewer records every decision with a rationale.")}
+        description={en("Each submission has an evidence pack: tests, code changes, AI usage, integrity signals and the voice defense. Edulexa does not advance or reject anyone; a reviewer records every decision with a rationale.")}
         actions={
           <Button variant="secondary" onClick={refresh}>
             <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} aria-hidden />
@@ -112,9 +112,9 @@ export default function EvidenceQueuePage() {
       <div className="flex flex-wrap items-center gap-3">
         <Filter className="w-4 h-4 text-muted-foreground" />
         <label className="flex items-center gap-2 text-sm text-muted-foreground">
-          {en("Sprint")}
+          {en("Challenge")}
           <select className={selectClass} value={sprintFilter} onChange={(e) => setSprintFilter(e.target.value)}>
-            <option value="all">{en("All sprints")}</option>
+            <option value="all">{en("All challenges")}</option>
             {sprints.map((s) => (
               <option key={s} value={s}>{s}</option>
             ))}
@@ -163,7 +163,7 @@ export default function EvidenceQueuePage() {
               <thead>
                 <tr className="text-start text-xs text-muted-foreground border-b border-border bg-muted/40">
                   <th className="py-3 px-4 text-start font-medium">{en("Candidate")}</th>
-                  <th className="py-3 px-4 text-start font-medium">{en("Sprint")}</th>
+                  <th className="py-3 px-4 text-start font-medium">{en("Challenge")}</th>
                   <th className="py-3 px-4 text-start font-medium">{en("Submitted")}</th>
                   <th className="py-3 px-4 text-start font-medium">{en("Tests")}</th>
                   <th className="py-3 px-4 text-start font-medium">{en("Integrity signals")}</th>
@@ -183,7 +183,7 @@ export default function EvidenceQueuePage() {
                         {r.candidateName || "Unnamed candidate"}
                       </Link>
                     </td>
-                    <td className="py-3 px-4 text-muted-foreground">{r.sprintTitle || "Untitled sprint"}</td>
+                    <td className="py-3 px-4 text-muted-foreground">{r.sprintTitle || "Untitled challenge"}</td>
                     <td className="py-3 px-4 text-muted-foreground whitespace-nowrap">{new Date(r.submittedAt).toLocaleString()}</td>
                     <td className="py-3 px-4 text-foreground whitespace-nowrap">
                       {r.passedTestsCount}/{r.totalTestsCount}

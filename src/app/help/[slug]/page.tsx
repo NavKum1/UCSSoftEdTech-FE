@@ -8,12 +8,18 @@
 import React, { Suspense } from "react";
 import Link from "next/link";
 import { useParams, useSearchParams } from "next/navigation";
-import { useEn } from "@/lib/english/EnglishProvider";
-import { formatDate, Loading } from "@/components/career/ui";
+import { useEn, useEnglish } from "@/lib/english/EnglishProvider";
+import { Loading } from "@/components/career/ui";
 import { HelpArticleBody } from "@/components/help/HelpArticleView";
 import { ContactPanel, HelpFeedback, HelpFrame, useHelpContact } from "@/components/help/HelpParts";
 import { useHelpLanguage } from "@/components/help/useHelpLanguage";
 import { helpArticle, helpArticles, isFor } from "@/lib/help";
+
+/** The day an article was checked, in the reader's English: "Nov 12, 2026" (US, everyone's default) or "12 Nov 2026" (UK) */
+function checkedDay(day: string, locale: string) {
+  const d = new Date(`${day}T12:00:00Z`);
+  return Number.isNaN(d.getTime()) ? day : d.toLocaleDateString(locale, { dateStyle: "medium", timeZone: "UTC" });
+}
 
 export default function HelpArticlePage() {
   return (
@@ -25,6 +31,7 @@ export default function HelpArticlePage() {
 
 function Article() {
   const en = useEn();
+  const { language, english } = useEnglish();
   const { slug } = useParams<{ slug: string }>();
   const from = useSearchParams().get("from");
   const lang = useHelpLanguage();
@@ -57,7 +64,7 @@ function Article() {
           </nav>
           <h1 className="text-3xl font-semibold tracking-tight">{a.title}</h1>
           <p className="mt-3 text-lg leading-7 text-muted-foreground">{a.summary}</p>
-          <p className="mt-2 text-xs text-muted-foreground" suppressHydrationWarning>{en("Checked against the app on {date}", { date: formatDate(a.checked) })}</p>
+          <p className="mt-2 text-xs text-muted-foreground" suppressHydrationWarning>{en("Checked against the app on {date}", { date: checkedDay(a.checked, language === "en" ? (english === "GB" ? "en-GB" : "en-US") : language) })}</p>
           <div className="mt-6">
             <HelpArticleBody article={a} audience={mine} from={from} />
           </div>

@@ -1,7 +1,7 @@
 /**
  * One voice call to OpenAI Realtime through the Edulexa API (6 Nov 2026). The browser makes the WebRTC offer; `exchange` sends
  * it to the API, which opens the call (instructions and key stay on the server) and returns OpenAI's answer. Used by the
- * graded defenses (VoiceDefenseRoom, the internship defense).
+ * graded defenses (VoiceDefenseRoom, the internship defense) and practice interviews (12 Nov 2026).
  *
  * A dropped network is given a moment to come back: "disconnected" only ends the call if the connection hasn't recovered
  * after `graceMs`. `onEnded` runs once, when the call ends by itself (never after `close()`).
@@ -10,6 +10,12 @@
 export interface RealtimeCaption {
   role: "student" | "interviewer";
   text: string;
+}
+
+export interface RealtimeEvent {
+  type?: string;
+  delta?: string;
+  transcript?: string;
 }
 
 export interface RealtimeCallOptions {
@@ -21,6 +27,8 @@ export interface RealtimeCallOptions {
   /** "failed": it never connected or didn't come back; "closed": the call ended */
   onEnded?: (reason: "failed" | "closed", wasConnected: boolean) => void;
   onCaption?: (caption: RealtimeCaption) => void;
+  /** Every event the voice service sends the browser (live words as they're spoken, for example); optional */
+  onEvent?: (event: RealtimeEvent) => void;
   onRemoteStream?: (stream: MediaStream) => void;
   graceMs?: number;
 }
@@ -65,7 +73,8 @@ export async function openRealtimeCall(o: RealtimeCallOptions): Promise<Realtime
   const dc = pc.createDataChannel("oai-events");
   dc.onmessage = (e) => {
     try {
-      const msg = JSON.parse(e.data) as { type?: string; transcript?: string };
+      const msg = JSON.parse(e.data) as RealtimeEvent;
+      o.onEvent?.(msg);
       const text = msg.transcript?.trim();
       if (!text) return;
       if (msg.type === "conversation.item.input_audio_transcription.completed") o.onCaption?.({ role: "student", text });

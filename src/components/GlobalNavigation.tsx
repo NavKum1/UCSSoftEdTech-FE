@@ -69,7 +69,7 @@ const MENUS: NavTab[] = [
       { label: "Résumés", href: "/resumes", desc: "Your résumés in one place, ready to send" },
       { label: "Job check", href: "/resumes/job-check", desc: "See where your résumé meets a job's requirements" },
       { label: "Cover letters", href: "/resumes/cover-letters", desc: "A letter for each job, drafted from your résumé" },
-      { label: "Campus", href: "/campus", desc: "College assignments and connection check" },
+      { label: "Campus", href: "/campus", desc: "Tasks from a school, campus jobs and a connection check" },
     ],
   },
 ];

@@ -1,5 +1,7 @@
 // Shared types and helpers for candidate results, appeals, accommodations and written defenses
 
+// The labels and hints below are shown through en() where shown (scripts/extract-text.ts collects them for translation):
+// en(c.label), en(categoryLabel(x)), en(accommodationLabel(x)), en(statusLabel(x))
 export const APPEAL_CATEGORIES = [
   { value: "TechnicalProblem", label: "Technical problem", hint: "Something broke during the assessment (crash, lost work, tests could not run)." },
   { value: "Accessibility", label: "Accessibility", hint: "The assessment was not accessible to you, or an accommodation was not applied." },
@@ -52,8 +54,8 @@ export const STATUS_STYLES: Record<string, string> = {
 };
 
 export function statusLabel(status: string) {
-  if (status === "Upheld") return "Original result upheld";
-  if (status === "Overturned") return "Appeal successful";
+  if (status === "Upheld") return "Original result upheld"; // en() where shown
+  if (status === "Overturned") return "Appeal successful"; // en() where shown
   return status;
 }
 

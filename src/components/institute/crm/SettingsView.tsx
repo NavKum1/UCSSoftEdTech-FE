@@ -92,7 +92,7 @@ function TeamSettings({ getToken, team, reload }: { getToken: GetToken; team: Me
       <div>
         <h2 className="text-base font-semibold">{en("Admissions team")}</h2>
         <p className="mt-0.5 text-sm text-muted-foreground">
-          {en("People who can own leads and get follow-up reminders. Use the email they sign in with, so “My leads” finds theirs. Counsellors also need the Counselor role on their Edulexa account to open the CRM.")}
+          {en("People who can own leads and get follow-up reminders. Use the email they sign in with, so “My leads” finds theirs. Counsellors also need the Counselor role on their Edulexa account to open Admissions leads.")}
         </p>
       </div>
       <Message m={msg} />
@@ -129,7 +129,7 @@ function TeamSettings({ getToken, team, reload }: { getToken: GetToken; team: Me
             <li key={m.id} className={`flex flex-wrap items-center gap-3 px-4 py-3 text-sm ${m.active ? "" : "opacity-60"}`}>
               <div className="min-w-0 flex-1">
                 <p className="font-medium">
-                  {m.name} <span className="text-xs font-normal text-muted-foreground">· {m.role}{m.active ? "" : en(" · inactive")}</span>
+                  {m.name} <span className="text-xs font-normal text-muted-foreground">· {m.role === "Admin" ? en("Admin") : en("Counsellor")}{m.active ? "" : en(" · inactive")}</span>
                 </p>
                 <p className="text-xs text-muted-foreground">{m.email}</p>
               </div>
@@ -320,7 +320,7 @@ function Integrations({ getToken, webhookUrl, reload }: { getToken: GetToken; we
         <div>
           <h2 className="text-base font-semibold">{en("Send leads to your own systems")}</h2>
           <p className="mt-0.5 text-sm text-muted-foreground">
-            {en("Optional. If you also use another CRM (HubSpot, Salesforce, Zoho, or Zapier/Make), Edulexa can send each new lead, form and meeting there for you. The address must start with https:// and be reachable from the internet. For your IT team: each event is posted to this URL as JSON, signed with your institute's API key in the ")}<code className="text-xs">{en("X-Edulexa-Signature")}</code>{en(" header (")}<code className="text-xs">{en("t=timestamp,v1=HMAC-SHA256 of \"timestamp.body\"")}</code>).
+            {en("Optional. If you also keep your leads in another system (HubSpot, Salesforce, Zoho, or Zapier/Make), Edulexa can send each new lead, form and meeting there for you. The address must start with https:// and be reachable from the internet. For your IT team: each event is posted to this URL as JSON, signed with your institute's API key in the ")}<code className="text-xs">{en("X-Edulexa-Signature")}</code>{en(" header (")}<code className="text-xs">{en("t=timestamp,v1=HMAC-SHA256 of \"timestamp.body\"")}</code>).
           </p>
         </div>
         <Message m={msg} />

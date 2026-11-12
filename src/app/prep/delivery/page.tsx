@@ -369,7 +369,7 @@ export default function DeliveryCoachingPage() {
         <section className={`${card} p-6 text-center`}>
           <ShieldOff aria-hidden="true" className="mx-auto h-8 w-8 text-muted-foreground" />
           <h2 className="mt-2 text-base font-semibold">{en("Speaking practice isn't available")}</h2>
-          <p className="mt-1 text-sm text-muted-foreground">{decision.reason || "It isn't offered in your region."}</p>
+          <p className="mt-1 text-sm text-muted-foreground">{decision.reason || en("It isn't offered in your country.")}</p>
         </section>
       </div>
     );

@@ -126,7 +126,7 @@ export default function EmbedBuilder({ instituteId, formId, formName, publicEnab
         </div>
         <ul className="list-disc space-y-1 ps-5 text-xs text-muted-foreground">
           <li>{en("The form fits its height on its own; no scrollbar inside it.")}</li>
-          <li>{en("Each inquiry records the page it came from and your page's UTM tags (Insights and the CRM show them).")}</li>
+          <li>{en("Each inquiry records the page it came from and your page's campaign tags (UTM tags, for your website team). Insights and the lead show them.")}</li>
           <li>{en("Works on any site builder that accepts HTML (WordPress “Custom HTML”, Wix “Embed code”, Webflow “Embed”).")}</li>
           <li>{en("Prefer a plain link? Use the link above, or the QR code.")}</li>
         </ul>

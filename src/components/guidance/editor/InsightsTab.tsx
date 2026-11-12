@@ -108,14 +108,14 @@ export default function InsightsTab({ formId, apiFetch, instituteId }: { formId:
       </div>
       {((data.incompleteSaved ?? 0) > 0 || (data.finishedAfterSave ?? 0) > 0) && (
         <div className="grid grid-cols-2 gap-3 lg:grid-cols-5">
-          <Tile label={en("Saved part way")} value={data.incompleteSaved ?? 0} sub="Under Incomplete in your CRM" />
+          <Tile label={en("Saved part way")} value={data.incompleteSaved ?? 0} sub="Under Incomplete in your admissions leads" />
           <Tile label={en("Finished after saving")} value={data.finishedAfterSave ?? 0} sub="Came back and pressed Send" />
         </div>
       )}
       {((data.awaitingConfirmation ?? 0) > 0 || (data.possibleSpam ?? 0) > 0) && (
         <p className="text-sm text-muted-foreground">
           {data.awaitingConfirmation ? `${data.awaitingConfirmation} waiting for the person to confirm their email. ` : ""}
-          {data.possibleSpam ? `${data.possibleSpam} in Possible spam in your CRM.` : ""}
+          {data.possibleSpam ? `${data.possibleSpam} in Possible spam in your admissions leads.` : ""}
         </p>
       )}
 
@@ -176,7 +176,7 @@ export default function InsightsTab({ formId, apiFetch, instituteId }: { formId:
                 </span>
                 {s.leadId && instituteId !== PLATFORM && (
                   <Link href={`/institute/dashboard?lead=${s.leadId}`} className="rounded-lg border border-border px-2.5 py-1 text-xs hover:bg-muted">
-                    {en("Open in CRM")}
+                    {en("Open the lead")}
                   </Link>
                 )}
                 {s.requestId && (

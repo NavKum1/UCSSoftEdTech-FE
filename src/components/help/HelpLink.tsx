@@ -2,17 +2,32 @@
 
 /**
  * S4 help center: a small "Help" link on a page to the article about it, keeping the way back. S4b: it opens the article in
- * the side panel, beside the page (a new tab or window still opens the full page). The slug is checked before every push
- * (scripts/help-build.ts), so a link never points at a missing article.
+ * the side panel, beside the page (a new tab or window still opens the full page). A page that several audiences share can
+ * name another article per audience (forAudience={{ member: "member-resumes" }}); everyone else gets slug. The slugs are
+ * checked before every push (scripts/help-build.ts), so a link never points at a missing article.
  */
 import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { CircleHelp } from "lucide-react";
 import { useEn } from "@/lib/english/EnglishProvider";
+import type { HelpRole } from "@/lib/help";
 import { useHelpPanel } from "./helpPanelContext";
+import { useHelpContact } from "./HelpParts";
 
-export function HelpLink({ slug, label }: { slug: string; label?: string }) {
+type Props = { slug: string; label?: string; forAudience?: Partial<Record<HelpRole, string>> };
+
+export function HelpLink({ forAudience, ...rest }: Props) {
+  return forAudience ? <AudienceHelpLink forAudience={forAudience} {...rest} /> : <ArticleLink {...rest} />;
+}
+
+/** The article for the reader's audience (the help center's own answer), else the page's usual one */
+function AudienceHelpLink({ forAudience, slug, label }: Props & { forAudience: Partial<Record<HelpRole, string>> }) {
+  const audience = useHelpContact()?.audience ?? null;
+  return <ArticleLink slug={(audience && forAudience[audience]) || slug} label={label} />;
+}
+
+function ArticleLink({ slug, label }: { slug: string; label?: string }) {
   const en = useEn();
   const pathname = usePathname();
   const panel = useHelpPanel();

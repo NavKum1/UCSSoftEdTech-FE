@@ -1534,7 +1534,7 @@ function WrittenExamPrep() {
                 <label htmlFor="import-exam-json" className="text-sm font-medium text-foreground flex flex-wrap items-center justify-between gap-1">
                   <span>{en("Questions (in the example's format)")}</span>
                   <span className="text-xs text-muted-foreground font-normal">
-                    {en("Each question needs questionText, options, correctOptionIndex (0 is the first option) and explanation")}
+                    {en("Each question needs its text, its options, which option is right (0 is the first one) and an explanation. Load an example to see how to write them.")}
                   </span>
                 </label>
                 <textarea

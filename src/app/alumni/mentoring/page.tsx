@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { useApi } from "@/lib/appAuth";
+import { COMMUNITY_INSTITUTE_ID } from "@/lib/community";
 import { Badge, Button, Card, EmptyState, ErrorBanner, Field, Loading, PageHeader, SuccessBanner, formatDate, useLoad, useCareerT } from "@/components/career/ui";
 import {
   CheckboxGroup,
@@ -37,6 +38,8 @@ interface MentorProfile {
 }
 
 interface AlumniHome {
+  /** The school, or the Edulexa community (mentoring for people with no school) */
+  instituteId: string;
   isAlumni: boolean;
   school: string | null;
   profile: MentorProfile | null;
@@ -78,27 +81,31 @@ export default function AlumniMentoringPage() {
   if (home.loading && !home.data) return <Loading />;
   if (!home.data) return <ErrorBanner error={home.error} onRetry={home.reload} />;
 
+  // A mentor in the Edulexa community: the Edulexa team reviews profiles, and mentees aren't a school's students
+  const community = home.data.instituteId === COMMUNITY_INSTITUTE_ID;
   const requests = (rels.data ?? []).filter((r) => r.status === "Requested");
   const mentees = (rels.data ?? []).filter((r) => r.status !== "Requested");
 
   return (
     <div className="space-y-6">
-      <PageHeader title={tr("mentoring")} description={tr("volunteerAsAMentorFor")} />
+      <PageHeader title={tr("mentoring")} description={community ? tr("volunteerInTheCommunity") : tr("volunteerAsAMentorFor")} />
       <ErrorBanner error={err ?? options.error ?? rels.error} />
       <SuccessBanner message={msg} />
 
       {profile && (
         <Card title={tr("yourStatus")} actions={<StatusBadge status={profile.status} />}>
           <div className="space-y-2 text-sm">
-            {profile.status === "Pending" && <p>{tr("theCareerCenterIsReviewing")}</p>}
+            {profile.status === "Pending" && <p>{community ? tr("theEdulexaTeamIsReviewing") : tr("theCareerCenterIsReviewing")}</p>}
             {profile.status === "Rejected" && (
               <p>
-                {tr("theCareerCenterAskedFor")}{profile.decisionNote ? `: ${profile.decisionNote}` : "."}{" "}{tr("updateYourProfileAndSubmit")}
+                {community ? tr("theEdulexaTeamAskedFor") : tr("theCareerCenterAskedFor")}{profile.decisionNote ? `: ${profile.decisionNote}` : "."}{" "}{tr("updateYourProfileAndSubmit")}
               </p>
             )}
-            {profile.status === "Approved" && <p>{tr("studentsAtYourSchoolCan", { activeMentees: profile.activeMentees, capacity: profile.capacity })}</p>}
-            {profile.status === "Paused" && <p>{tr("yourePausedStudentsCantSend")}</p>}
-            {profile.status === "Suspended" && <p>{tr("yourProfileWasSuspendedBy")}</p>}
+            {profile.status === "Approved" && (
+              <p>{tr(community ? "peopleInTheCommunityCan" : "studentsAtYourSchoolCan", { activeMentees: profile.activeMentees, capacity: profile.capacity })}</p>
+            )}
+            {profile.status === "Paused" && <p>{community ? tr("yourePausedPeopleCantSend") : tr("yourePausedStudentsCantSend")}</p>}
+            {profile.status === "Suspended" && <p>{community ? tr("yourProfileWasSuspendedByTeam") : tr("yourProfileWasSuspendedBy")}</p>}
             <div className="flex flex-wrap gap-2">
               {["Draft", "Rejected", "Invited"].includes(profile.status) && (
                 <Button busy={busy === "submit"} onClick={() => act("submit", "/api/career/mentoring/mentor/profile/submit", {}, tr("submittedForApproval"))}>
@@ -124,6 +131,7 @@ export default function AlumniMentoringPage() {
         <ProfileForm
           key={profile?.id ?? "new"}
           initial={profile}
+          community={community}
           options={options.data}
           onSaved={(text) => {
             setMsg(text);
@@ -154,7 +162,7 @@ export default function AlumniMentoringPage() {
                     </ul>
                     {r.matchReasons.length > 0 && <p className="mt-2 text-xs text-muted-foreground">{tr("inCommonMatchReasons", { matchReasons: r.matchReasons.join("; ") })}</p>}
                     <div className="mt-3">
-                      <Field label={tr("noteToTheStudentOptional")}>
+                      <Field label={community ? tr("noteToYourMenteeOptional") : tr("noteToTheStudentOptional")}>
                         {(p) => <input {...p} maxLength={1000} value={notes[r.id] ?? ""} onChange={(e) => setNotes({ ...notes, [r.id]: e.target.value })} />}
                       </Field>
                     </div>
@@ -212,7 +220,7 @@ export default function AlumniMentoringPage() {
   );
 }
 
-function ProfileForm({ initial, options, onSaved }: { initial: MentorProfile | null; options: MentoringOptions; onSaved: (msg: string) => void }) {
+function ProfileForm({ initial, community, options, onSaved }: { initial: MentorProfile | null; community: boolean; options: MentoringOptions; onSaved: (msg: string) => void }) {
   const tr = useCareerT("alumniMentoring");
   const MEETING_LABELS = useMeetingLabels();
   const api = useApi();
@@ -265,8 +273,8 @@ function ProfileForm({ initial, options, onSaved }: { initial: MentorProfile | n
           }
         }}
       >
-        <Field label={tr("nameShownToStudents")}>{(p) => <input {...p} maxLength={120} value={f.name} onChange={set("name")} />}</Field>
-        <Field label={tr("headline")} hint={tr("oneLineOnHowYou")}>
+        <Field label={community ? tr("nameShownToMentees") : tr("nameShownToStudents")}>{(p) => <input {...p} maxLength={120} value={f.name} onChange={set("name")} />}</Field>
+        <Field label={tr("headline")} hint={community ? tr("oneLineOnHowYouCommunity") : tr("oneLineOnHowYou")}>
           {(p) => <input {...p} required maxLength={160} value={f.headline} onChange={set("headline")} />}
         </Field>
         <Field label={tr("employer")}>{(p) => <input {...p} maxLength={120} value={f.employer} onChange={set("employer")} />}</Field>
@@ -301,14 +309,14 @@ function ProfileForm({ initial, options, onSaved }: { initial: MentorProfile | n
             onChange={(v) => setF({ ...f, meetingPreferences: v })}
           />
         </div>
-        <Field label={tr("maximumActiveMentees")} hint={tr("n1To10StudentsCant")}>
+        <Field label={tr("maximumActiveMentees")} hint={community ? tr("n1To10PeopleCant") : tr("n1To10StudentsCant")}>
           {(p) => <input {...p} type="number" min={1} max={10} required value={f.capacity} onChange={set("capacity")} />}
         </Field>
         <Field label={tr("availabilityNotes")}>{(p) => <input {...p} maxLength={500} placeholder={tr("eGWeekdayEveningsCentral")} value={f.availabilityNotes} onChange={set("availabilityNotes")} />}</Field>
         <div className="md:col-span-2">
           <Field label={tr("aboutYou")}>{(p) => <textarea {...p} rows={4} maxLength={2000} value={f.bio} onChange={set("bio")} />}</Field>
         </div>
-        <Field label={tr("contactEmailForMentees")} hint={tr("sharedOnlyWithStudentsWhose")}>
+        <Field label={tr("contactEmailForMentees")} hint={community ? tr("sharedOnlyWithMenteesWhose") : tr("sharedOnlyWithStudentsWhose")}>
           {(p) => <input {...p} type="email" maxLength={200} value={f.contactEmail} onChange={set("contactEmail")} />}
         </Field>
         <Field label={tr("contactPhoneOptional")}>{(p) => <input {...p} type="tel" maxLength={40} value={f.contactPhone} onChange={set("contactPhone")} />}</Field>
@@ -316,7 +324,7 @@ function ProfileForm({ initial, options, onSaved }: { initial: MentorProfile | n
           <Button type="submit" busy={busy}>
             {tr("saveProfile")}
           </Button>
-          {initial?.status === "Approved" && <Badge tone="info">{tr("changesShowToStudentsRight")}</Badge>}
+          {initial?.status === "Approved" && <Badge tone="info">{community ? tr("changesShowToMenteesRight") : tr("changesShowToStudentsRight")}</Badge>}
         </div>
       </form>
     </Card>

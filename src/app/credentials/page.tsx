@@ -846,7 +846,7 @@ export default function CredentialWalletPage() {
       <div className="space-y-6">
         <PageHeader
           title={en("Your credentials")}
-          description={en("Each passing defense gives you a credential signed by Edulexa. Share it with employers so they can check your results without asking you to re-test. You decide what evidence each link shows, and you can withdraw it at any time.")} actions={<HelpLink slug="credentials-and-passport" />} />
+          description={en("Each passing defense gives you a credential signed by Edulexa. Share it with employers so they can check your results without asking you to re-test. You decide what evidence each link shows, and you can withdraw it at any time.")} actions={<HelpLink slug="credentials-and-passport" forAudience={{ member: "member-results-and-credentials" }} />} />
 
         {notice && (
           <div className="p-3 rounded-lg border border-emerald-500/30 bg-emerald-50 dark:bg-emerald-500/10 text-xs text-emerald-800 dark:text-emerald-300 flex items-center justify-between gap-2">

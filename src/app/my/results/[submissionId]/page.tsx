@@ -60,9 +60,10 @@ function Stat({ label, value }: { label: string; value: React.ReactNode }) {
 }
 
 function StatusPill({ status }: { status: string }) {
+  const en = useEn();
   return (
     <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-semibold border ${STATUS_STYLES[status] ?? "bg-muted text-muted-foreground border-border"}`}>
-      {statusLabel(status)}
+      {en(statusLabel(status))}
     </span>
   );
 }
@@ -456,7 +457,7 @@ export default function SubmissionReportPage() {
                 </div>
               )}
               {defense.questionsAndAnswers.length === 0 ? (
-                <p className="text-xs text-muted-foreground">{en("No question and answer pairs could be extracted from the transcript.")}</p>
+                <p className="text-xs text-muted-foreground">{en("We couldn't pick out the questions and answers from this conversation.")}</p>
               ) : (
                 <ol className="space-y-2">
                   {defense.questionsAndAnswers.map((qa, i) => (
@@ -498,7 +499,7 @@ export default function SubmissionReportPage() {
                 <li key={a.id} className="space-y-1.5 rounded-lg border border-border p-3 text-sm">
                   <div className="flex flex-wrap items-center gap-2 text-xs">
                     <StatusPill status={a.status} />
-                    <span className="font-semibold text-foreground">{categoryLabel(a.category)}</span>
+                    <span className="font-semibold text-foreground">{en(categoryLabel(a.category))}</span>
                     <span className="text-muted-foreground">{fmtDate(a.createdAt)}</span>
                   </div>
                   <p className="text-foreground whitespace-pre-wrap text-xs">{a.reason}</p>
@@ -576,8 +577,8 @@ export default function SubmissionReportPage() {
                 <li key={a.id} className="space-y-1 rounded-lg border border-border p-3 text-xs">
                   <div className="flex flex-wrap items-center gap-2">
                     <StatusPill status={a.status} />
-                    <span className="font-semibold text-foreground">{accommodationLabel(a.type)}</span>
-                    <span className="text-muted-foreground">{a.sprintId ? en("This sprint") : en("All assessments")} · {fmtDate(a.createdAt)}</span>
+                    <span className="font-semibold text-foreground">{en(accommodationLabel(a.type))}</span>
+                    <span className="text-muted-foreground">{a.sprintId ? en("This challenge") : en("All assessments")} · {fmtDate(a.createdAt)}</span>
                   </div>
                   <p className="text-foreground whitespace-pre-wrap">{a.details}</p>
                   {a.decisionNote && <p className="text-muted-foreground">{en("Reviewer note: {decisionNote}", { decisionNote: a.decisionNote })}</p>}
@@ -601,7 +602,7 @@ export default function SubmissionReportPage() {
               </label>
               <label className="flex items-center gap-2 text-xs text-foreground sm:mt-6">
                 <input type="checkbox" checked={accThisSprint} onChange={(e) => setAccThisSprint(e.target.checked)} disabled={!report.sprint.id} />
-                {en("Only for this sprint (otherwise for all my assessments)")}
+                {en("Only for this challenge (otherwise for all my assessments)")}
               </label>
             </div>
             <label className="block space-y-1">

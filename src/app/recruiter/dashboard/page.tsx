@@ -143,12 +143,13 @@ function reviewStatus(bundle: AssessmentBundle): ReviewStatus {
   return bundle.overallStatus === "Completed" ? "AWAITING" : "IN_PROGRESS";
 }
 
+// en() where shown
 const REVIEW_STATUS_LABELS: Record<ReviewStatus, string> = {
-  AWAITING: "Awaiting review",
-  ADVANCED: "Advanced",
-  HOLD: "On hold",
-  DECLINED: "Declined",
-  IN_PROGRESS: "In progress",
+  AWAITING: "Awaiting review", // en() where shown
+  ADVANCED: "Advanced", // en() where shown
+  HOLD: "On hold", // en() where shown
+  DECLINED: "Declined", // en() where shown
+  IN_PROGRESS: "In progress", // en() where shown
 };
 
 const REVIEW_STATUS_TONES: Record<ReviewStatus, "neutral" | "good" | "warn" | "bad" | "info"> = {
@@ -226,6 +227,7 @@ function InvitationStatus({ bundle, className }: { bundle: AssessmentBundle; cla
   return <span className={`block ${className} ${bad ? "font-medium text-amber-700 dark:text-amber-400" : "text-muted-foreground"}`}>{text}</span>;
 }
 
+// en() where shown
 const DECISION_LABEL: Record<string, string> = { advance: "Advanced to the next step", hire: "Hire", reject: "Not moving forward" };
 
 function evidenceHref(submissionId?: string | null) {
@@ -738,7 +740,7 @@ export default function RecruiterDashboardPage() {
           <Card className="min-w-0 space-y-4">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <p className="text-sm text-muted-foreground">
-                {en("Candidates complete a written exam, a coding sprint and a voice defense. Scores are evidence for a recruiter; nobody is advanced or declined automatically.")}
+                {en("Candidates complete a written exam, a coding task and a voice defense. Scores are evidence for a recruiter; nobody is advanced or declined automatically.")}
               </p>
               {decisionFilter !== "ALL" && (
                 <p className="flex items-center gap-2 text-sm">
@@ -912,7 +914,7 @@ export default function RecruiterDashboardPage() {
         {activeTab === "challenges" && (
           <Card title={en("Coding challenge submissions")} className="min-w-0 space-y-4">
             <p className="-mt-2 text-sm text-muted-foreground">
-              {en("Sprint scores, project work and integrity signals. Signals are prompts for a conversation, not proof; open the evidence pack to review and decide.")}
+              {en("Challenge scores, project work and integrity signals. Signals are prompts for a conversation, not proof; open the evidence pack to review and decide.")}
             </p>
 
             <ErrorBanner error={candidatesError} onRetry={fetchCandidates} />
@@ -1408,7 +1410,7 @@ export default function RecruiterDashboardPage() {
                   )}
                 </div>
                 <p className="text-sm text-muted-foreground">
-                  {en("Scores and the AI-generated summary below are reference material. The platform does not advance or decline candidates; a recruiter records every decision, with a rationale, on the evidence pack.")}
+                  {en("Scores and the AI-generated summary below are reference material. Edulexa does not advance or decline candidates; a recruiter records every decision, with a rationale, on the evidence pack.")}
                 </p>
               </div>
 

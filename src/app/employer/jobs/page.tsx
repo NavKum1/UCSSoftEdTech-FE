@@ -156,7 +156,9 @@ function Jobs({ employerId, country }: { employerId: string; country: string | n
             ))}
           </ul>
         )}
-        {!v.verified && (
+        {/* Outside India there is no tax number to check: Edulexa staff verify the company (CampusDriveCore.VerifiedAsync) */}
+        {!v.verified && !india && <p className="mt-3 text-sm text-muted-foreground">{t("verificationHelpOther")}</p>}
+        {!v.verified && india && (
           <>
             <p className="mt-3 text-sm text-muted-foreground">{t("verificationHelp")}</p>
             <div className="mt-2 flex flex-wrap items-end gap-2">
@@ -227,7 +229,7 @@ function Jobs({ employerId, country }: { employerId: string; country: string | n
           <Field label={t("locations")} hint={t("commaHint")}>{(p) => <input {...p} value={job.locations} onChange={f("locations")} />}</Field>
           <Field label={t("degrees")} hint={t("commaHint")}>{(p) => <input {...p} value={job.degrees} onChange={f("degrees")} />}</Field>
           <Field label={india ? t("branches") : w.programs} hint={t("commaHint")}>{(p) => <input {...p} value={job.branches} onChange={f("branches")} />}</Field>
-          <Field label={t("batches")} hint={t("batchesHint")}>{(p) => <input {...p} value={job.batches} onChange={f("batches")} />}</Field>
+          <Field label={india ? t("batches") : w.t("graduationYears")} hint={t("batchesHint")}>{(p) => <input {...p} value={job.batches} onChange={f("batches")} />}</Field>
           <Field label={india ? t("minCgpa") : w.minGrade} hint={india ? undefined : w.minGradeHint}>{(p) => <input {...p} inputMode="decimal" value={job.minCgpa} onChange={f("minCgpa")} />}</Field>
           {india && (
             <>

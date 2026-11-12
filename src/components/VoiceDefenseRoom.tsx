@@ -543,7 +543,7 @@ export default function VoiceDefenseRoom({
           <div>
             <h3 className="text-sm font-semibold text-foreground mb-2">{en("Microphone")}</h3>
             <p className="text-xs text-muted-foreground mb-4">
-              {en("Status: ")}<span className="font-medium text-foreground">{micPermission}</span>
+              {en("Status: ")}<span className="font-medium text-foreground">{micPermission === "granted" ? en("Allowed") : micPermission === "denied" ? en("Blocked") : en("Not asked yet")}</span>
             </p>
 
             <div className="h-24 bg-muted/40 rounded-lg border border-border flex flex-col items-center justify-center space-y-2 px-4">

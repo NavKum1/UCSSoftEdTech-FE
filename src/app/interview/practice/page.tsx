@@ -27,6 +27,7 @@ import { CancellationQuizModal } from "@/components/CancellationQuizModal";
 import { AccessNotice, useLegacyApi } from "@/lib/legacyApi";
 import { useEn } from "@/lib/english/EnglishProvider";
 import { Badge, Button, PageHeader, StatTile, buttonClass } from "@/components/career/ui";
+import { openRealtimeCall, type RealtimeCall, type RealtimeEvent } from "@/lib/realtimeCall";
 
 interface JobPreset {
   stream: string;
@@ -61,6 +62,24 @@ interface InterviewReport {
   strengths: string[];
   improvements: string[];
   transcripts: TranscriptMessage[];
+}
+
+// A practice interview the server opened (12 Nov 2026: billed by the minutes used)
+interface PracticeCall {
+  id: string;
+  finishing: boolean;
+  ending?: Promise<PracticeEndResult | null>;
+}
+
+// POST /api/interview/practice/{id}/end: what the server measured, and the transcript it kept
+interface PracticeEndResult {
+  status: "ended" | "no-answers" | "not-connected" | "stopped" | "lost" | "ending";
+  heldMinutes: number;
+  minutesUsed: number;
+  minutesGivenBack: number;
+  message?: string | null;
+  transcript: { role: "interviewer" | "candidate"; text: string }[];
+  remainingMinutes: number;
 }
 
 // The parts of the Web Speech API this page uses (not in TypeScript's DOM lib), and the prefixed browser globals.
@@ -169,7 +188,7 @@ const VOICES = [
 
 export default function MultiStreamInterviewPracticePage() {
   const en = useEn();
-  const { apiFetch, access } = useLegacyApi();
+  const { apiFetch, access, ready } = useLegacyApi();
   const [selectedStream, setSelectedStream] = useState<string>("Technical");
   const [jobTitle, setJobTitle] = useState<string>(JOB_PRESETS[0].title);
   const [jobDescription, setJobDescription] = useState<string>(JOB_PRESETS[0].description);
@@ -184,6 +203,10 @@ export default function MultiStreamInterviewPracticePage() {
   const [aiStatus, setAiStatus] = useState<"connecting" | "speaking" | "listening" | "idle">("idle");
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [sessionDuration, setSessionDuration] = useState<number>(0);
+  // The call's length limit (the minutes set aside for it), from the server
+  const [maxSeconds, setMaxSeconds] = useState<number | null>(null);
+  // The longest interview, for the note before starting
+  const [sessionCapMinutes, setSessionCapMinutes] = useState<number | null>(null);
 
   // Live Speech-to-Text Transcript Feed State
   const [transcripts, setTranscripts] = useState<TranscriptMessage[]>([]);
@@ -197,13 +220,20 @@ export default function MultiStreamInterviewPracticePage() {
   const [completedReport, setCompletedReport] = useState<InterviewReport | null>(null);
   const [isEvaluating, setIsEvaluating] = useState<boolean>(false);
   const [scoreFailure, setScoreFailure] = useState<{ message: string; transcripts: TranscriptMessage[] } | null>(null);
+  // An interview that ended without a score (no answers, interrupted): what the server said
+  const [endNotice, setEndNotice] = useState<string | null>(null);
+  // The minutes the last interview used and gave back, measured by the server
+  const [minutesNote, setMinutesNote] = useState<{ used: number; back: number } | null>(null);
+  const [cancelNote, setCancelNote] = useState<string | null>(null);
 
   // Cancellation modal
   const [showCancelModal, setShowCancelModal] = useState<boolean>(false);
 
-  // WebRTC & Audio refs
-  const pcRef = useRef<RTCPeerConnection | null>(null);
-  const dcRef = useRef<RTCDataChannel | null>(null);
+  // Call & audio refs
+  const callRef = useRef<RealtimeCall | null>(null);
+  const practiceRef = useRef<PracticeCall | null>(null);
+  const transcriptsRef = useRef<TranscriptMessage[]>([]);
+  const sessionActiveRef = useRef<boolean>(false);
   const localStreamRef = useRef<MediaStream | null>(null);
   const audioElRef = useRef<HTMLAudioElement | null>(null);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
@@ -220,6 +250,25 @@ export default function MultiStreamInterviewPracticePage() {
       transcriptBottomRef.current.scrollIntoView({ behavior: "smooth" });
     }
   }, [transcripts, currentAiInterim, currentCandidateInterim, autoScroll]);
+
+  // The longest interview (the minutes set aside when one starts), for the note before starting
+  useEffect(() => {
+    if (!ready) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await apiFetch("/api/billing/usage", {}, { quiet: true });
+        if (!res.ok) return;
+        const usage = (await res.json()) as { maxSessionMinutes?: number };
+        if (!cancelled && typeof usage.maxSessionMinutes === "number") setSessionCapMinutes(usage.maxSessionMinutes);
+      } catch {
+        // the note falls back to general words
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [ready, apiFetch]);
 
   const handleApplyPreset = (preset: JobPreset) => {
     setSelectedStream(preset.stream);
@@ -261,7 +310,36 @@ export default function MultiStreamInterviewPracticePage() {
     }
   };
 
-  // Setup Native Browser Speech Recognition (Web Speech API) for candidate STT stream
+  const stamp = () => new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+
+  // A finished turn of the conversation, from the voice service's own transcription
+  const addTurn = (role: TranscriptMessage["role"], text: string) => {
+    const clean = text.trim();
+    if (!clean) return;
+    const prev = transcriptsRef.current;
+    const last = prev[prev.length - 1];
+    if (last && last.role === role && last.text === clean) return;
+    transcriptsRef.current = [...prev, { id: `${role}-${Date.now()}-${Math.random()}`, role, text: clean, timestamp: stamp(), isFinal: true }];
+    setTranscripts(transcriptsRef.current);
+  };
+
+  // Live words while the interviewer speaks
+  const handleEvent = (msg: RealtimeEvent) => {
+    if (msg.type === "response.audio_transcript.delta" || msg.type === "response.output_audio_transcript.delta") {
+      setCurrentAiInterim((prev) => prev + (msg.delta ?? ""));
+      setAiStatus("speaking");
+    } else if (msg.type === "response.audio_transcript.done" || msg.type === "response.output_audio_transcript.done") {
+      setCurrentAiInterim("");
+      setAiStatus("listening");
+    } else if (msg.type === "input_audio_buffer.speech_started") {
+      setAiStatus("listening");
+    } else if (msg.type === "conversation.item.input_audio_transcription.completed") {
+      setCurrentCandidateInterim("");
+    }
+  };
+
+  // The browser's own speech recognition shows your words as you speak (where the browser has it); the finished turn
+  // comes from the voice service
   const setupSpeechRecognition = () => {
     if (typeof window === "undefined") return;
     const speechWindow = window as BrowserSpeechWindow;
@@ -280,28 +358,9 @@ export default function MultiStreamInterviewPracticePage() {
         let interim = "";
         for (let i = event.resultIndex; i < event.results.length; ++i) {
           const item = event.results[i];
-          const text = item[0]?.transcript || "";
-          if (item.isFinal) {
-            if (text.trim()) {
-              setTranscripts((prev) => [
-                ...prev,
-                {
-                  id: `cand-${Date.now()}-${Math.random()}`,
-                  role: "candidate",
-                  text: text.trim(),
-                  timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" }),
-                  isFinal: true
-                }
-              ]);
-            }
-            setCurrentCandidateInterim("");
-          } else {
-            interim += text;
-          }
+          if (!item.isFinal) interim += item[0]?.transcript || "";
         }
-        if (interim) {
-          setCurrentCandidateInterim(interim);
-        }
+        setCurrentCandidateInterim(interim);
       };
 
       recognition.onerror = (e: { error: string }) => {
@@ -310,7 +369,7 @@ export default function MultiStreamInterviewPracticePage() {
 
       recognition.onend = () => {
         // Automatically restart if session remains active
-        if (recognitionRef.current && isSessionActive) {
+        if (recognitionRef.current && sessionActiveRef.current) {
           try {
             recognition.start();
           } catch {}
@@ -324,158 +383,89 @@ export default function MultiStreamInterviewPracticePage() {
     }
   };
 
+  // Ends the interview on the server: it measures the minutes used and gives the rest back (once, however often it's asked)
+  const endPractice = (keepalive = false): Promise<PracticeEndResult | null> => {
+    const p = practiceRef.current;
+    if (!p) return Promise.resolve(null);
+    if (!p.ending) {
+      p.ending = (async () => {
+        try {
+          const res = await apiFetch(`/api/interview/practice/${p.id}/end`, { method: "POST", body: "{}", keepalive }, { quiet: true });
+          return res.ok ? ((await res.json()) as PracticeEndResult) : null;
+        } catch {
+          return null;
+        }
+      })();
+    }
+    return p.ending;
+  };
+
   const startInterview = async () => {
     setIsConnecting(true);
     setErrorMsg(null);
     setCompletedReport(null);
+    setScoreFailure(null);
+    setEndNotice(null);
+    setMinutesNote(null);
+    setCancelNote(null);
     setTranscripts([]);
+    transcriptsRef.current = [];
     setCurrentAiInterim("");
     setCurrentCandidateInterim("");
+    setIsMuted(false);
+    practiceRef.current = null;
+
+    let mic: MediaStream;
+    try {
+      mic = await navigator.mediaDevices.getUserMedia({ audio: true });
+    } catch {
+      setErrorMsg(en("We couldn't use your microphone. Allow microphone access in your browser, then try again."));
+      setIsConnecting(false);
+      return;
+    }
+    localStreamRef.current = mic;
+    const audioEl = document.createElement("audio");
+    audioEl.autoplay = true;
+    audioElRef.current = audioEl;
 
     try {
-      // 1. Request ephemeral WebRTC token from backend
-      const res = await apiFetch(`/api/interview/token`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          stream: selectedStream,
-          jobTitle,
-          jobDescription,
-          voice: selectedVoice,
-          candidateName,
-          personaCode: selectedPersona,
-        }),
-      });
-
-      if (!res.ok) {
-        const errJson = await res.json().catch(() => ({}));
-        throw new Error(errJson.error || "We couldn't start the interview. Please try again.");
-      }
-
-      const { client_secret } = await res.json();
-      if (!client_secret) {
-        throw new Error("We couldn't start the voice interview. Please try again.");
-      }
-
-      // 2. Initialize WebRTC Peer Connection
-      const pc = new RTCPeerConnection();
-      pcRef.current = pc;
-
-      // Remote audio element setup
-      const audioEl = document.createElement("audio");
-      audioEl.autoplay = true;
-      audioElRef.current = audioEl;
-
-      pc.ontrack = (event) => {
-        audioEl.srcObject = event.streams[0];
-        setAiStatus("speaking");
-      };
-
-      // Local microphone setup
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      localStreamRef.current = stream;
-      stream.getTracks().forEach((track) => pc.addTrack(track, stream));
-
-      // Setup Web Audio API volume visualizer
-      setupAudioMeter(stream);
-
-      // 3. Create WebRTC DataChannel for live OpenAI Realtime events & STT deltas
-      const dc = pc.createDataChannel("oai-events");
-      dcRef.current = dc;
-
-      dc.onopen = () => {
-        // Instruct AI to open interview session
-        const openingEvent = {
-          type: "response.create",
-          response: {
-            modalities: ["audio", "text"],
-            instructions: `Introduce yourself warmly as the interviewer for the ${jobTitle} role. Welcome ${candidateName} and ask the first opening question.`
+      // The server opens the call, sets aside the minutes, and measures how long it lasts
+      callRef.current = await openRealtimeCall({
+        mic,
+        audio: audioEl,
+        exchange: async (sdpOffer) => {
+          const res = await apiFetch(`/api/interview/practice/start`, {
+            method: "POST",
+            body: JSON.stringify({
+              stream: selectedStream,
+              jobTitle,
+              jobDescription,
+              voice: selectedVoice,
+              personaCode: selectedPersona,
+              sdpOffer,
+            }),
+          });
+          const body = (await res.json().catch(() => null)) as { practiceId?: string; sdpAnswer?: string; maxSeconds?: number; error?: string } | null;
+          if (!res.ok || !body?.practiceId || !body.sdpAnswer) {
+            throw new Error(body?.error || en("We couldn't start the interview. Please try again."));
           }
-        };
-        dc.send(JSON.stringify(openingEvent));
-      };
-
-      dc.onmessage = (event) => {
-        try {
-          const msg = JSON.parse(event.data);
-          
-          // AI speech streaming delta
-          if (msg.type === "response.audio_transcript.delta" || msg.type === "response.output_audio_transcript.delta") {
-            setCurrentAiInterim((prev) => prev + msg.delta);
-            setAiStatus("speaking");
-          } 
-          // AI speech turn completed
-          else if (msg.type === "response.audio_transcript.done" || msg.type === "response.output_audio_transcript.done") {
-            const finalAiText = msg.transcript;
-            setCurrentAiInterim("");
-            if (finalAiText && finalAiText.trim()) {
-              setTranscripts((prev) => [
-                ...prev,
-                {
-                  id: `ai-${Date.now()}-${Math.random()}`,
-                  role: "interviewer",
-                  text: finalAiText.trim(),
-                  timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" }),
-                  isFinal: true
-                }
-              ]);
-            }
-            setAiStatus("listening");
-          } 
-          // Candidate input audio transcription via Whisper
-          else if (msg.type === "conversation.item.input_audio_transcription.completed") {
-            const userTranscript = msg.transcript;
-            if (userTranscript && userTranscript.trim()) {
-              setTranscripts((prev) => {
-                // Deduplicate if already captured by local Web Speech API
-                const last = [...prev].reverse().find(m => m.role === "candidate");
-                if (last && (last.text.trim() === userTranscript.trim() || userTranscript.includes(last.text.trim()))) {
-                  return prev;
-                }
-                return [
-                  ...prev,
-                  {
-                    id: `cand-${Date.now()}-${Math.random()}`,
-                    role: "candidate",
-                    text: userTranscript.trim(),
-                    timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" }),
-                    isFinal: true
-                  }
-                ];
-              });
-              setCurrentCandidateInterim("");
-            }
-          }
-        } catch (e) {
-          console.warn("Realtime message parse warning:", e);
-        }
-      };
-
-      // Setup browser speech recognition as parallel client-side STT
-      setupSpeechRecognition();
-
-      // 4. Create WebRTC Offer to OpenAI Realtime
-      const offer = await pc.createOffer();
-      await pc.setLocalDescription(offer);
-
-      const sdpResponse = await fetch("https://api.openai.com/v1/realtime/calls", {
-        method: "POST",
-        body: offer.sdp,
-        headers: {
-          Authorization: `Bearer ${client_secret}`,
-          "Content-Type": "application/sdp",
+          practiceRef.current = { id: body.practiceId, finishing: false };
+          setMaxSeconds(body.maxSeconds ?? null);
+          return body.sdpAnswer;
+        },
+        onRemoteStream: () => setAiStatus("speaking"),
+        onEvent: handleEvent,
+        onCaption: (c) => addTurn(c.role === "student" ? "candidate" : "interviewer", c.text),
+        // The time limit, a dropped line, or a call that never connected
+        onEnded: (_reason, wasConnected) => {
+          callRef.current = null;
+          void finishInterview(wasConnected ? "score" : "failed");
         },
       });
 
-      if (!sdpResponse.ok) {
-        const errDetail = await sdpResponse.text().catch(() => "");
-        console.error("OpenAI WebRTC call rejected:", sdpResponse.status, errDetail);
-        throw new Error("We couldn't connect the voice interview. Please try again.");
-      }
-
-      const answerSdp = await sdpResponse.text();
-      await pc.setRemoteDescription({ type: "answer", sdp: answerSdp });
-
+      setupAudioMeter(mic);
+      setupSpeechRecognition();
+      sessionActiveRef.current = true;
       setIsSessionActive(true);
       setAiStatus("listening");
       setSessionDuration(0);
@@ -485,7 +475,10 @@ export default function MultiStreamInterviewPracticePage() {
       }, 1000);
     } catch (err) {
       console.error("Interview setup failed:", err);
-      setErrorMsg(err instanceof TypeError ? "We couldn't reach Edulexa. Check your internet connection and try again." : (err as Error).message || "We couldn't start the voice interview. Please allow microphone access and try again.");
+      // If the server opened the call, end it: a call that never connected uses no minutes
+      void endPractice();
+      practiceRef.current = null;
+      setErrorMsg(err instanceof TypeError ? en("We couldn't reach Edulexa. Check your internet connection and try again.") : (err as Error).message || en("We couldn't start the voice interview. Please allow microphone access and try again."));
       endSessionCleanup();
     } finally {
       setIsConnecting(false);
@@ -493,14 +486,9 @@ export default function MultiStreamInterviewPracticePage() {
   };
 
   const endSessionCleanup = () => {
-    if (pcRef.current) {
-      pcRef.current.close();
-      pcRef.current = null;
-    }
-    if (dcRef.current) {
-      dcRef.current.close();
-      dcRef.current = null;
-    }
+    sessionActiveRef.current = false;
+    callRef.current?.close();
+    callRef.current = null;
     if (localStreamRef.current) {
       localStreamRef.current.getTracks().forEach((t) => t.stop());
       localStreamRef.current = null;
@@ -511,15 +499,17 @@ export default function MultiStreamInterviewPracticePage() {
       audioElRef.current = null;
     }
     if (recognitionRef.current) {
-      try {
-        recognitionRef.current.stop();
-      } catch {}
+      const recognition = recognitionRef.current;
       recognitionRef.current = null;
+      try {
+        recognition.stop();
+      } catch {}
     }
     if (animFrameRef.current) {
       cancelAnimationFrame(animFrameRef.current);
       animFrameRef.current = null;
     }
+    analyserRef.current = null;
     if (audioContextRef.current) {
       audioContextRef.current.close().catch(() => {});
       audioContextRef.current = null;
@@ -531,11 +521,28 @@ export default function MultiStreamInterviewPracticePage() {
     setIsSessionActive(false);
     setAiStatus("idle");
     setAudioLevel(0);
+    setCurrentAiInterim("");
+    setCurrentCandidateInterim("");
   };
+
+  // Leaving the page during an interview: end it, so the minutes not used go back straight away
+  useEffect(() => {
+    const leave = () => {
+      if (!practiceRef.current || practiceRef.current.finishing) return;
+      callRef.current?.close();
+      void endPractice(true);
+    };
+    window.addEventListener("pagehide", leave);
+    return () => {
+      window.removeEventListener("pagehide", leave);
+      leave();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // P6 (5 Nov 2026): only a real score is shown. When scoring fails, the interview's transcript is kept so the person can
   // try scoring again or download it; nothing is guessed from keywords.
-  const scoreTranscripts = async (finalTranscripts: TranscriptMessage[]) => {
+  const scoreTranscripts = async (finalTranscripts: TranscriptMessage[], minutesUsed?: number) => {
     setScoreFailure(null);
     setIsEvaluating(true);
     try {
@@ -546,9 +553,8 @@ export default function MultiStreamInterviewPracticePage() {
           jobTitle,
           jobDescription,
           stream: selectedStream,
-          candidateName,
           personaCode: selectedPersona,
-          durationMinutes: Math.max(1, Math.round(sessionDuration / 60)),
+          durationMinutes: minutesUsed ?? minutesNote?.used ?? Math.max(1, Math.ceil(sessionDuration / 60)),
           transcripts: finalTranscripts,
         }),
       });
@@ -568,20 +574,57 @@ export default function MultiStreamInterviewPracticePage() {
     }
   };
 
-  const endInterviewAndScore = async () => {
-    const finalTranscripts = [...transcripts];
+  /**
+   * Ends the interview, whichever way: "score" (you ended it, or it reached its time limit or the line dropped), "cancel"
+   * (no scorecard) or "failed" (it never connected). The server ends the call, keeps the minutes used and gives the rest back;
+   * the scorecard uses the transcript the server kept.
+   */
+  const finishInterview = async (mode: "score" | "cancel" | "failed") => {
+    const p = practiceRef.current;
+    if (!p || p.finishing) return;
+    p.finishing = true;
+    const local = [...transcriptsRef.current];
     endSessionCleanup();
-    await scoreTranscripts(finalTranscripts);
+
+    if (mode === "cancel") {
+      const r = await endPractice();
+      practiceRef.current = null;
+      setCancelNote(
+        r && r.minutesUsed > 0
+          ? en("Interview canceled. It used {used} of your voice minutes, and the other {back} went back to your balance.", { used: r.minutesUsed, back: r.minutesGivenBack })
+          : en("Interview canceled. No minutes were used."),
+      );
+      return;
+    }
+
+    setIsEvaluating(true);
+    const r = await endPractice();
+    practiceRef.current = null;
+    if (r && r.status !== "ended" && r.status !== "ending") {
+      setIsEvaluating(false);
+      if (mode === "failed") setErrorMsg(en("We couldn't connect the voice interview, so no minutes were used. Please try again."));
+      else setEndNotice(r.message || en("This interview didn't record any answers, so no minutes were used."));
+      return;
+    }
+    if (r?.status === "ended") setMinutesNote({ used: r.minutesUsed, back: r.minutesGivenBack });
+    // The server's transcript, with the times you saw on the page where they match
+    const matched = new Set<number>();
+    const turns: TranscriptMessage[] = r?.transcript?.length
+      ? r.transcript.map((t, i) => {
+          const j = local.findIndex((m, k) => !matched.has(k) && m.role === t.role && m.text === t.text);
+          if (j >= 0) matched.add(j);
+          return { id: `srv-${i}`, role: t.role, text: t.text, timestamp: j >= 0 ? local[j].timestamp : "", isFinal: true };
+        })
+      : local;
+    await scoreTranscripts(turns, r?.status === "ended" ? r.minutesUsed : undefined);
   };
 
+  const endInterviewAndScore = () => finishInterview("score");
+
   const toggleMute = () => {
-    if (localStreamRef.current) {
-      const audioTrack = localStreamRef.current.getAudioTracks()[0];
-      if (audioTrack) {
-        audioTrack.enabled = !audioTrack.enabled;
-        setIsMuted(!audioTrack.enabled);
-      }
-    }
+    const next = !isMuted;
+    callRef.current?.setMuted(next);
+    setIsMuted(next);
   };
 
   const handleCopyTranscript = (items: TranscriptMessage[]) => {
@@ -649,6 +692,15 @@ export default function MultiStreamInterviewPracticePage() {
           </div>
         )}
 
+        {cancelNote && !isSessionActive && (
+          <div role="status" className="p-3 rounded-lg border border-border bg-muted/40 text-sm text-foreground flex items-center justify-between">
+            <span>{cancelNote}</span>
+            <button onClick={() => setCancelNote(null)} className="font-medium underline ms-4 hover:opacity-80 cursor-pointer">
+              {en("Dismiss")}
+            </button>
+          </div>
+        )}
+
         {/* ---------------------------------------------------- */}
         {/* ACTIVE LIVE INTERVIEW HUD WITH SPLIT TRANSCRIPT VIEW */}
         {/* ---------------------------------------------------- */}
@@ -671,6 +723,7 @@ export default function MultiStreamInterviewPracticePage() {
                 <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-border bg-muted/40 text-sm font-mono font-semibold tabular-nums text-foreground">
                   <span className="w-2 h-2 rounded-full bg-emerald-500" />
                   <span>{formatDuration(sessionDuration)}</span>
+                  {maxSeconds !== null && <span className="font-sans font-normal text-xs text-muted-foreground">{en("of {limit}", { limit: formatDuration(maxSeconds) })}</span>}
                 </div>
               </div>
 
@@ -886,6 +939,18 @@ export default function MultiStreamInterviewPracticePage() {
               </p>
             </div>
           </div>
+        ) : endNotice ? (
+          <div role="status" className="p-10 rounded-xl border border-border bg-card shadow-sm flex flex-col items-center justify-center text-center space-y-4">
+            <MessageSquare aria-hidden="true" className="w-8 h-8 text-muted-foreground" />
+            <div className="space-y-1.5 max-w-lg">
+              <h2 className="text-lg font-semibold text-foreground">{en("No scorecard this time")}</h2>
+              <p className="text-sm text-muted-foreground leading-relaxed">{endNotice}</p>
+            </div>
+            <div className="flex flex-wrap justify-center gap-2">
+              <Button onClick={startInterview} busy={isConnecting}>{en("Start again")}</Button>
+              <Button variant="secondary" onClick={() => setEndNotice(null)}>{en("Set up a new role")}</Button>
+            </div>
+          </div>
         ) : scoreFailure ? (
           <div role="alert" className="p-10 rounded-xl border border-border bg-card shadow-sm flex flex-col items-center justify-center text-center space-y-4">
             <AlertTriangle aria-hidden="true" className="w-8 h-8 text-amber-600 dark:text-amber-400" />
@@ -924,6 +989,13 @@ export default function MultiStreamInterviewPracticePage() {
                 <p className="text-sm text-muted-foreground">
                   {en("Track: ")}{completedReport.stream}{en(" • Length: ")}{completedReport.durationMinutes}{en(" min • Your answers: ")}{completedReport.candidateTurns}
                 </p>
+                {minutesNote && (
+                  <p className="text-sm text-muted-foreground">
+                    {minutesNote.back > 0
+                      ? en("This interview used {used} of your voice minutes. The other {back} went back to your balance.", { used: minutesNote.used, back: minutesNote.back })
+                      : en("This interview used {used} of your voice minutes.", { used: minutesNote.used })}
+                  </p>
+                )}
               </div>
 
               <div className="shrink-0 sm:w-48">
@@ -1207,6 +1279,12 @@ export default function MultiStreamInterviewPracticePage() {
                   </div>
                 </div>
 
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  {sessionCapMinutes
+                    ? en("You pay only for the minutes you use. Starting sets aside up to {limit} minutes, and the ones you don't use go back to your balance when you end.", { limit: sessionCapMinutes })
+                    : en("You pay only for the minutes you use. Starting sets aside a whole interview's minutes, and the ones you don't use go back to your balance when you end.")}
+                </p>
+
                 <Button type="button" onClick={startInterview} disabled={!jobTitle.trim()} busy={isConnecting} className="h-10 w-full">
                   {!isConnecting && <Play className="w-4 h-4" />}
                   <span>{isConnecting ? en("Connecting…") : en("Start interview")}</span>
@@ -1251,7 +1329,7 @@ export default function MultiStreamInterviewPracticePage() {
         isOpen={showCancelModal}
         onClose={() => setShowCancelModal(false)}
         sessionType="Interview"
-        onConfirmedCancel={endSessionCleanup}
+        onConfirmedCancel={() => void finishInterview("cancel")}
       />
     </div>
   );

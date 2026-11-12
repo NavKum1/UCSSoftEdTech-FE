@@ -41,9 +41,9 @@ words:
   certificates: [credential]
   badge: [credential]
   # Teachers
-  cheating: [points to talk about, much like another student's]
-  plagiarism: [points to talk about, much like another student's]
-  copied: [points to talk about, much like another student's]
+  cheating: [points to talk about, much like another student's, integrity signals]
+  plagiarism: [points to talk about, much like another student's, integrity signals]
+  copied: [points to talk about, much like another student's, integrity signals]
   ai detection: [points to talk about]
   add students: [add people, roster]
   add student: [add people, roster]
@@ -71,6 +71,88 @@ words:
   contact: [contact, support]
   delete my account: [delete your account, your data]
   delete account: [delete your account, your data]
+
+  # Members (no school)
+  mock interview: [practice interview]
+  interview prep: [practice interview]
+  public speaking: [speaking practice]
+  filler: [filler words]
+  career test: [career quiz]
+  which career: [career quiz]
+  certification: [credential]
+  certifications: [credential]
+  coding test: [coding challenge]
+  ranking: [leaderboard]
+  rank: [leaderboard]
+  daily challenge: [drill]
+  ats: [job check, applicant tracking system]
+  keywords: [job check]
+  covering letter: [cover letter]
+  subscription: [pro plan, voice minutes]
+  upgrade: [pro plan, voice minutes]
+  credits: [voice minutes]
+  ask a question: [ask edulexa]
+
+  # Alumni, admissions and mentors
+  graduated: [graduate]
+  graduation: [graduate]
+  alum: [alumni]
+  former student: [graduate, alumni]
+  volunteer: [mentor]
+  mentee: [mentee, mentor]
+  crm: [lead]
+  enquiry: [inquiry, lead]
+  enquiries: [inquiry, lead]
+  prospect: [lead]
+  prospects: [lead]
+  pipeline: [stage]
+  reminder: [follow-up]
+  follow up: [follow-up]
+  questionnaire: [form]
+  embed: [put it on your website, code for your website]
+  widget: [put it on your website, code for your website]
+  qr: [qr code]
+  counselling: [counseling]
+  aptitude test: [counseling quiz]
+  question bank: [questions, counseling quiz]
+  virtualadviser: [import]
+  add counselor: [staff access, invite]
+  hand over: [hand back, hand]
+
+  # Recruiters and employers
+  proctor: [proctored]
+  proctoring: [proctored]
+  invigilation: [proctored]
+  monitoring: [proctored]
+  invite candidate: [send an assessment]
+  invite candidates: [send an assessment]
+  hiring test: [send an assessment]
+  screening: [assessment]
+  take home: [work trial]
+  take-home: [work trial]
+  extra time: [accommodation, extra time]
+  disability: [accommodation]
+  reasonable adjustment: [accommodation]
+  adverse impact: [impact ratio, bias audit]
+  disparate impact: [impact ratio, bias audit]
+  four fifths: [four-fifths rule]
+  ll144: [bias audit]
+  local law 144: [bias audit]
+  greenhouse: [applicant tracking system]
+  lever: [applicant tracking system]
+  workday: [applicant tracking system]
+  post a job: [new job or internship, campus jobs]
+  job posting: [campus jobs]
+  campus recruiting: [campus drive]
+  placement drive: [campus drive]
+  interview day: [interview schedule]
+  on campus interview: [interview schedule]
+  booth: [career fairs]
+  hackathon: [challenge]
+  coding contest: [challenge]
+  talent pool: [résumé book]
+  resume book: [résumé book]
+  request access: [request access]
 
 checks:
   - { search: submit, as: student, first: hand-in-your-work }
@@ -101,3 +183,38 @@ checks:
   - { search: appeal, as: student, first: results-and-appeals }
   - { search: appeal, as: teacher, first: decide-and-appeals }
   - { search: contact support, first: help-and-support }
+  - { search: mock interview, as: member, first: interview-and-speaking-practice }
+  - { search: resume, as: member, first: member-resumes }
+  - { search: certificate, as: member, first: member-results-and-credentials }
+  - { search: career test, as: member, first: career-direction }
+  - { search: leaderboard, as: member, first: daily-practice }
+  - { search: streak, as: member, first: daily-practice }
+  - { search: exam, as: member, first: exams-and-challenges }
+  - { search: github, as: member, first: exams-and-challenges }
+  - { search: ask a question, as: member, first: ask-edulexa }
+  - { search: cover letter, as: member, first: member-resumes }
+  - { search: upgrade, as: member, first: member-getting-started }
+  - { search: appeal, as: member, first: member-results-and-credentials }
+  - { search: graduated, as: alumni, first: after-you-graduate }
+  - { search: become a mentor, as: alumni, first: be-a-mentor }
+  - { search: volunteer, as: mentor, first: be-a-mentor }
+  - { search: hand back, as: mentor, first: guidance-requests-for-you }
+  - { search: suggest an institute, as: mentor, first: advisor-desk }
+  - { search: crm, as: admissions, first: admissions-leads }
+  - { search: follow up, as: admissions, first: admissions-leads }
+  - { search: embed, as: admissions, first: guidance-forms }
+  - { search: counselling quiz, as: admissions, first: counseling-quiz }
+  - { search: add counselor, as: admissions, first: institute-setup }
+  - { search: invite candidate, as: recruiter, first: recruiter-send-an-assessment }
+  - { search: take home, as: recruiter, first: recruiter-send-an-assessment }
+  - { search: cheating, as: recruiter, first: recruiter-evidence-packs }
+  - { search: proctoring, as: recruiter, first: recruiter-results-and-proctoring }
+  - { search: extra time, as: recruiter, first: recruiter-appeals-and-accommodations }
+  - { search: appeal, as: recruiter, first: recruiter-appeals-and-accommodations }
+  - { search: adverse impact, as: recruiter, first: recruiter-validity-and-bias }
+  - { search: greenhouse, as: recruiter, first: recruiter-getting-started }
+  - { search: post a job, as: employer, first: employer-jobs-and-drives }
+  - { search: interview day, as: employer, first: employer-interviews-and-challenges }
+  - { search: hackathon, as: employer, first: employer-interviews-and-challenges }
+  - { search: resume, as: employer, first: employer-resume-books }
+  - { search: request access, as: employer, first: employer-getting-started }

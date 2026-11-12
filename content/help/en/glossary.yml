@@ -11,8 +11,13 @@
   means: The list of what the work is judged on, with the points for each part. Students can see it before they start.
   see: rubric-and-viva
 
+- term: evidence pack
+  also: [evidence packs]
+  means: Everything a recruiter needs to decide on a candidate's coding work, in one place, such as the tests, the code changes, AI use, integrity signals and the defense.
+  see: recruiter-evidence-packs
+
 - term: evidence
-  means: Everything a teacher looks at before deciding, such as the work handed in and the viva. For coding work, it also shows the tests and how the code was written.
+  means: Everything a teacher or reviewer looks at before deciding, such as the work handed in and the viva. For coding work, it also shows the tests and how the code was written.
   see: review-the-evidence
 
 - term: attempt
@@ -27,7 +32,7 @@
 
 - term: decision
   also: [decisions]
-  means: The teacher's result for a piece of work. The work passes, is sent back to be handed in again, or doesn't pass.
+  means: A person's result for a piece of work. A teacher passes the work, sends it back to be handed in again, or fails it. A recruiter advances a candidate, holds them, or declines them.
   see: results-and-appeals
 
 - term: appeal
@@ -87,10 +92,54 @@
 
 - term: campus drive
   also: [campus drives]
-  means: A company's hiring round at a college. Students apply, some are shortlisted and interviewed, and some get an offer.
+  means: A company's hiring round at a school. Students apply, some are shortlisted and interviewed, and some get an offer.
   see: campus-jobs-and-interviews
 
 - term: mentoring
   also: [mentor, mentors]
   means: Advice from someone with more experience, often a graduate of your school, over a few conversations. It's free.
   see: mentoring
+
+- term: voice defense
+  also: [voice defenses]
+  means: A short spoken conversation with an AI interviewer about code you wrote, such as why you made your choices and what you would change. It is graded, and passing can earn a credential.
+  see: exams-and-challenges
+
+- term: streak
+  also: [streaks]
+  means: The number of days in a row you have practiced on Edulexa. A streak freeze, earned by practicing 7 days in a row, covers one missed day.
+  see: daily-practice
+
+- term: lead
+  also: [leads]
+  means: Someone who asked a guidance institute about its courses or for career guidance, or sent its website form. The admissions team follows each one up.
+  see: admissions-leads
+
+- term: integrity signal
+  also: [integrity signals]
+  means: A pattern in a candidate's work worth talking about with them, such as text pasted from outside the editor. It isn't proof of cheating, and many have innocent explanations.
+  see: recruiter-evidence-packs
+
+- term: accommodation
+  also: [accommodations]
+  means: A change that makes an assessment fair for someone, such as extra time, or a written defense instead of a spoken one.
+
+- term: work trial
+  also: [work trials]
+  means: A private coding task made from a small part of a company's own code, with bugs put there on purpose for the candidate to find and fix.
+  see: recruiter-send-an-assessment
+
+- term: proctored
+  also: [proctoring]
+  means: Watched for fairness while it's taken. Edulexa records events such as switching tabs or pasting text, for a person to review. There's no face or gaze detection.
+  see: recruiter-results-and-proctoring
+
+- term: applicant tracking system
+  also: [ATS]
+  means: The system a company uses to manage job applicants, such as Greenhouse, Lever or Workday. Edulexa can send results to it.
+  see: recruiter-getting-started
+
+- term: impact ratio
+  also: [impact ratios]
+  means: One group's rate divided by the highest group's rate. Below 0.80 suggests one group may be treated less fairly, and should be looked into.
+  see: recruiter-validity-and-bias

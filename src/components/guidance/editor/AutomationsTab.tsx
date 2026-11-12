@@ -240,7 +240,7 @@ function AutomationEditor({ a, update, outcomes, match, team }: { a: Automation;
       {a.channel === "email" && replies && (
         <p className="text-muted-foreground">
           {replies.intoCrm ? (
-            en("Replies appear on the person's page in the CRM.")
+            en("Replies appear on the person's lead, in your admissions leads.")
           ) : replies.address ? (
             <>
               {en("Replies go to {address}.", { address: replies.address })}{" "}
@@ -274,7 +274,7 @@ function AutomationEditor({ a, update, outcomes, match, team }: { a: Automation;
             <input className={field} maxLength={10} value={a.templateLanguage ?? "en"} onChange={(e) => update({ templateLanguage: e.target.value })} />
           </label>
           <label className="block font-medium sm:col-span-2">
-            {en("Its variables, in order (one per line)")}
+            {en("What fills each blank in the template, in order (one per line)")}
             <textarea rows={3} className={field} value={(a.variables ?? []).join("\n")} onChange={(e) => update({ variables: e.target.value.split("\n").slice(0, 10) })} placeholder={en("{first_name}\n{report_link}")} />
           </label>
         </div>
@@ -289,7 +289,7 @@ function AutomationEditor({ a, update, outcomes, match, team }: { a: Automation;
       </div>
       {a.channel === "sms" && dltNeeded && (
         <label className="block font-medium">
-          {en("DLT template id ")}<span className="font-normal text-muted-foreground">{en("(India: the registered template this text matches)")}</span>
+          {en("DLT template ID ")}<span className="font-normal text-muted-foreground">{en("(India: the registered template this text matches)")}</span>
           <input className={field} maxLength={40} value={a.dltTemplateId ?? ""} onChange={(e) => update({ dltTemplateId: e.target.value })} />
         </label>
       )}
@@ -363,7 +363,7 @@ function Recipients({ a, update, team }: { a: Automation; update: (p: Partial<Au
       <label className="flex items-start gap-2">
         <input type="checkbox" className="mt-0.5" checked={toOwner} onChange={(e) => update({ toOwner: e.target.checked })} />
         <span>
-          {en("The lead's owner ")}<span className="text-muted-foreground">{en("(your CRM admins when nobody owns it yet)")}</span>
+          {en("The lead's owner ")}<span className="text-muted-foreground">{en("(your admissions admins when nobody owns it yet)")}</span>
         </span>
       </label>
       {team.length > 0 ? (
@@ -379,7 +379,7 @@ function Recipients({ a, update, team }: { a: Automation; update: (p: Partial<Au
           </div>
         </div>
       ) : (
-        <p className="text-muted-foreground">{en("Add your team in the CRM's Settings to choose people here.")}</p>
+        <p className="text-muted-foreground">{en("Add your team in Admissions settings to choose people here.")}</p>
       )}
       <label className="block font-medium">
         {en("Other email addresses ")}<span className="font-normal text-muted-foreground">{en("(one per line, up to 10, e.g. your admissions inbox)")}</span>

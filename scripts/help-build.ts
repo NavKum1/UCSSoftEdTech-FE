@@ -16,7 +16,7 @@
  *   - [shot: name] screenshots, described in content/help/shots.yml, taken into public/help/shots by scripts/help-shots.mjs.
  * Run: npx tsx scripts/help-build.ts            (writes the generated file)
  *      npx tsx scripts/help-build.ts --check    (fails when an article is wrong or the generated file is out of date)
- *      npx tsx scripts/help-build.ts --public <public site folder>   (also writes its src/content/help.json, English)
+ *      npx tsx scripts/help-build.ts --public <public site folder>   (also writes the site's help: see writePublic)
  */
 import fs from "node:fs";
 import path from "node:path";
@@ -334,8 +334,15 @@ for (const l of LANGS) {
 const walk = (d: string): string[] => fs.readdirSync(d, { withFileTypes: true }).flatMap((e) => (e.isDirectory() ? walk(path.join(d, e.name)) : /\.(tsx?|jsx?)$/.test(e.name) ? [path.join(d, e.name)] : []));
 for (const f of walk(path.join(ROOT, "src"))) {
   if (f === OUT) continue;
-  for (const m of fs.readFileSync(f, "utf8").matchAll(/(?:<HelpLink\b[^>]*\bslug|helpSlug)\s*[=:]\s*["']([a-z0-9-]+)["']/g))
+  const code = fs.readFileSync(f, "utf8");
+  for (const m of code.matchAll(/(?:<HelpLink\b[^>]*\bslug|helpSlug)\s*[=:]\s*["']([a-z0-9-]+)["']/g))
     if (!slugs.has(m[1])) fail(path.relative(ROOT, f), `help link to a missing article "${m[1]}"`);
+  // A shared page's article per audience: <HelpLink slug="resumes" forAudience={{ member: "member-resumes" }} />
+  for (const m of code.matchAll(/<HelpLink\b[^>]*\bforAudience=\{\{([^}]*)\}\}/g))
+    for (const [, role, slug] of m[1].matchAll(/([a-z]+)\s*:\s*["']([a-z0-9-]+)["']/g)) {
+      if (!slugs.has(slug)) fail(path.relative(ROOT, f), `help link to a missing article "${slug}"`);
+      else if (!forAudience(byLang.en.find((a) => a.slug === slug)!, role)) fail(path.relative(ROOT, f), `help link for ${role} opens "${slug}", which isn't for ${role}`);
+    }
 }
 
 const generated =
@@ -363,10 +370,30 @@ if (args.includes("--check")) {
   fs.writeFileSync(OUT, generated);
   console.log(`Help articles: ${byLang.en.length} English articles (${LANGS.slice(1).map((l) => `${l} ${byLang[l].length}`).join(", ")} reviewed) written.`);
   const pub = args[args.indexOf("--public") + 1];
-  if (args.includes("--public") && pub) {
-    const target = path.resolve(pub, "src", "content", "help.json");
-    fs.mkdirSync(path.dirname(target), { recursive: true });
-    fs.writeFileSync(target, JSON.stringify(byLang.en, null, 1) + "\n");
-    console.log(`Public site copy written to ${target}`);
+  if (args.includes("--public") && pub) writePublic(path.resolve(pub));
+}
+
+/**
+ * The public site (edulexa.com/help, plan item 10), in English:
+ *   - src/content/help.json: { articles, audiences (groups and "Your steps"), glossary ("Words we use"), words (search) };
+ *   - public/help/shots: the pictures the articles show (and no others);
+ *   - src/lib/help: this app's types.ts, search.ts and logic.ts, copied so search, groups, steps and "Next step" work the
+ *     same on both (the site's own files, not kept in two versions).
+ */
+function writePublic(site: string) {
+  const target = path.join(site, "src", "content", "help.json");
+  fs.mkdirSync(path.dirname(target), { recursive: true });
+  const data = { articles: byLang.en, audiences, glossary: glossaries.en ?? [], words: words.en ?? {} };
+  fs.writeFileSync(target, JSON.stringify(data, null, 1) + "\n");
+  const shotsDir = path.join(site, "public", "help", "shots");
+  fs.mkdirSync(shotsDir, { recursive: true });
+  for (const name of usedShots) fs.copyFileSync(path.join(SHOTS_DIR, `${name}.png`), path.join(shotsDir, `${name}.png`));
+  for (const f of fs.readdirSync(shotsDir)) if (f.endsWith(".png") && !usedShots.has(f.slice(0, -4))) fs.rmSync(path.join(shotsDir, f));
+  const libDir = path.join(site, "src", "lib", "help");
+  fs.mkdirSync(libDir, { recursive: true });
+  for (const f of ["types.ts", "search.ts", "logic.ts"]) {
+    const src = fs.readFileSync(path.join(ROOT, "src", "lib", "help", f), "utf8").replace(/\r\n/g, "\n");
+    fs.writeFileSync(path.join(libDir, f), `// Copied from the Edulexa web app (frontend/src/lib/help/${f}) by its scripts/help-build.ts --public: edit it there.\n${src}`);
   }
+  console.log(`Public site: ${target} (${byLang.en.length} guides), ${usedShots.size} pictures in ${shotsDir}, search and steps in ${libDir}`);
 }

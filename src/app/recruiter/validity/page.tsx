@@ -211,7 +211,7 @@ export default function ValidityPage() {
   const selectClass = "px-3 py-2 rounded-lg bg-card border border-border text-sm text-foreground shadow-sm";
   const sprintSelect = (value: string, onChange: (v: string) => void) => (
     <select className={selectClass} value={value} onChange={(e) => onChange(e.target.value)}>
-      <option value="">{en("All sprints")}</option>
+      <option value="">{en("All challenges")}</option>
       {sprints.map((s) => (
         <option key={s.sprintId} value={s.sprintId}>{s.title}</option>
       ))}
@@ -232,7 +232,7 @@ export default function ValidityPage() {
         <div className="flex flex-wrap items-center justify-between gap-3">
           <h2 className="text-lg font-semibold text-foreground">{en("Predictive validity")}</h2>
           <label className="flex items-center gap-2 text-sm text-muted-foreground">
-            {en("Sprint ")}{sprintSelect(reportSprint, setReportSprint)}
+            {en("Challenge ")}{sprintSelect(reportSprint, setReportSprint)}
           </label>
         </div>
 
@@ -253,10 +253,10 @@ export default function ValidityPage() {
                   <table className="w-full text-sm">
                     <thead>
                       <tr className="text-start text-xs text-muted-foreground border-b border-border">
-                        <th className="py-2 pe-3 text-start font-medium">{en("Predictor → outcome")}</th>
-                        <th className="py-2 pe-3 text-start font-medium">n</th>
+                        <th className="py-2 pe-3 text-start font-medium">{en("Score → outcome")}</th>
+                        <th className="py-2 pe-3 text-start font-medium">{en("Hires")}</th>
                         <th className="py-2 pe-3 text-start font-medium">{en("Correlation (r)")}</th>
-                        <th className="py-2 pe-3 text-start font-medium">{en("95% CI")}</th>
+                        <th className="py-2 pe-3 text-start font-medium">{en("Likely range (95%)")}</th>
                         <th className="py-2 text-start font-medium">{en("Interpretation")}</th>
                       </tr>
                     </thead>
@@ -330,7 +330,7 @@ export default function ValidityPage() {
         <div className="flex flex-wrap items-center justify-between gap-3">
           <h2 className="text-lg font-semibold text-foreground">{en("Bias audit data")}</h2>
           <div className="flex flex-wrap items-center gap-3">
-            <label className="flex items-center gap-2 text-sm text-muted-foreground">{en("Sprint ")}{sprintSelect(auditSprint, setAuditSprint)}</label>
+            <label className="flex items-center gap-2 text-sm text-muted-foreground">{en("Challenge ")}{sprintSelect(auditSprint, setAuditSprint)}</label>
             <label className="flex items-center gap-2 text-sm text-muted-foreground">
               {en("From ")}<input type="date" value={auditFrom} onChange={(e) => setAuditFrom(e.target.value)} className={selectClass} />
             </label>
@@ -381,7 +381,7 @@ export default function ValidityPage() {
                         <thead>
                           <tr className="text-start text-muted-foreground border-b border-border">
                             <th className="py-1.5 pe-2 text-start font-medium">{en("Group")}</th>
-                            <th className="py-1.5 pe-2 text-start font-medium">n</th>
+                            <th className="py-1.5 pe-2 text-start font-medium">{en("Candidates")}</th>
                             <th className="py-1.5 pe-2 text-start font-medium">{en("Selection rate")}</th>
                             <th className="py-1.5 pe-2 text-start font-medium">{en("Impact ratio")}</th>
                             <th className="py-1.5 pe-2 text-start font-medium">{en("Scoring rate")}</th>

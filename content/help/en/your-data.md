@@ -1,11 +1,11 @@
 ---
 title: Your data and privacy
 summary: See and control how your school uses your data, ask for a copy, a correction or deletion, and delete your account.
-roles: [student]
+roles: [student, alumni]
 group: Your data and privacy
 features: [career-privacy, member-privacy]
 order: 61
-checked: 2026-11-11
+checked: 2026-11-12
 ---
 ## At your school
 
@@ -19,4 +19,4 @@ If you're under the age your country sets, a parent or guardian may need to agre
 
 ## Your Edulexa account
 
-To download everything in your account, or delete it, go to [Privacy and your data](/settings/privacy). Deleting your account removes your own activity. Records your school holds about your class work, such as your attempts and documents, are the school's: your deletion sends the school a request to erase them, and the school completes it.
+To download everything in your account, or delete it, go to [Privacy and your data](/settings/privacy) (the steps are in [Download or delete your data](/help/download-or-delete-your-data)). Deleting your account removes your own activity. Records your school holds about your class work, such as your attempts and documents, are the school's: your deletion sends the school a request to erase them, and the school completes it.

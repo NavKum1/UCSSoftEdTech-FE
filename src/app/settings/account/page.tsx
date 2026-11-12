@@ -71,8 +71,8 @@ export default function AccountPage() {
 
   const name = me?.name ?? session?.user?.name ?? (dev ? dev.label : null);
   const email = me?.email ?? session?.user?.email ?? null;
-  // A school's student has the school's privacy page (consents and sharing as well); everyone else the member one
-  const student = (me?.memberships ?? []).some((m) => m.role === "Student" && m.status === "Active");
+  // A school's students and alumni have the school's privacy page (consents and sharing as well); everyone else the member one
+  const student = (me?.memberships ?? []).some((m) => (m.role === "Student" || m.role === "Alumni") && m.status === "Active");
   const others = roles.map((r) => OTHER_ROLES[r]).filter((r): r is string => !!r);
   const places = [
     ...(me?.memberships ?? []).map((m) => ({

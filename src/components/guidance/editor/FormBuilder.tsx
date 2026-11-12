@@ -418,7 +418,7 @@ export default function FormBuilder({ formId, backHref }: { formId: string; back
                   const outcome = r.outcomeEnabled ? r.outcomes.find((o) => o.name.trim()) : undefined;
                   const band = r.matchEnabled ? [...r.bands].sort((a, b) => b.from - a.from)[0] : undefined;
                   if (!outcome && !band) return <p className="text-muted-foreground">{en("Switch on an outcome or a match score to see an example.")}</p>;
-                  if (!r.showToPerson) return <p className="text-muted-foreground">{en("People see only your thank-you message; your team sees the results in the CRM.")}</p>;
+                  if (!r.showToPerson) return <p className="text-muted-foreground">{en("People see only your thank-you message; your team sees the results on the lead.")}</p>;
                   const example = {
                     outcomeTitle: r.outcomeTitle,
                     outcome: outcome ?? null,
@@ -696,7 +696,7 @@ function QuestionsEditor({
                             )}
                             {(q.rules?.length ?? 0) > 0 && (
                               <span className="inline-flex items-center gap-0.5 text-amber-800 dark:text-amber-300">
-                                <Tag aria-hidden="true" className="h-3 w-3" /> {" "}{en("{length} CRM rule{value}", { length: q.rules!.length, value: q.rules!.length > 1 ? "s" : "" })}
+                                <Tag aria-hidden="true" className="h-3 w-3" /> {" "}{en("{length} lead rule{value}", { length: q.rules!.length, value: q.rules!.length > 1 ? "s" : "" })}
                               </span>
                             )}
                           </span>
@@ -1054,7 +1054,7 @@ function QuestionEditor({
       {ruleTargets.length > 0 && !isPlatform && (
         <details className="rounded-lg border border-amber-500/30 bg-amber-500/5 p-2 text-xs" open={(q.rules?.length ?? 0) > 0}>
           <summary className="cursor-pointer font-medium">
-            <Tag aria-hidden="true" className="me-1 inline h-3.5 w-3.5" />{en(" CRM rules: what each answer does to the lead")}
+            <Tag aria-hidden="true" className="me-1 inline h-3.5 w-3.5" />{en(" Lead rules: what each answer does to the lead")}
           </summary>
           <table className="mt-2 w-full">
             <thead className="text-muted-foreground">
@@ -1089,7 +1089,7 @@ function QuestionEditor({
               ))}
             </tbody>
           </table>
-          {team.length === 0 && <p className="mt-1 text-muted-foreground">{en("Add your team in the CRM's Settings to assign leads automatically.")}</p>}
+          {team.length === 0 && <p className="mt-1 text-muted-foreground">{en("Add your team in Admissions settings to assign leads automatically.")}</p>}
           <p className="mt-1 text-muted-foreground">{en("Rules run when the inquiry arrives. An owner is set only if the lead has none.")}</p>
         </details>
       )}
@@ -1274,7 +1274,7 @@ function SectionReportEditor({ s, readOnly, update }: { s: Section; readOnly: bo
         </label>
         <div className="space-y-1 rounded-lg border border-emerald-600/30 bg-emerald-600/5 p-2">
           <p className="font-medium">
-            {en("Counsellor guide ")}<span className="font-normal text-muted-foreground">{en("(above this part's answers in the CRM's Insights summary; never shown to the person)")}</span>
+            {en("Counsellor guide ")}<span className="font-normal text-muted-foreground">{en("(above this part's answers on the lead; never shown to the person)")}</span>
           </p>
           <input
             maxLength={120}
@@ -1591,7 +1591,7 @@ function ResultsEditor({ def, onChange, readOnly, onFill }: { def: FormDef; onCh
       <section className="space-y-2 rounded-xl border border-border bg-card shadow-sm p-4 text-sm">
         <h2 className="text-sm font-semibold">{en("How results work")}</h2>
         <p className="text-xs text-muted-foreground">
-          {en("Switch on an outcome, a match score or both. Then, in the Questions tab, open a question with options, yes/no or a slider and set what each answer counts for. Your team sees the result on the lead in your CRM, with your note on how to talk with them.")}
+          {en("Switch on an outcome, a match score or both. Then, in the Questions tab, open a question with options, yes/no or a slider and set what each answer counts for. Your team sees the result on the lead, with your note on how to talk with them.")}
         </p>
         <p className="text-xs text-muted-foreground">
           {scored.length === 0 ? en("No question counts towards results yet.") : `${scored.length} question${scored.length > 1 ? "s count" : " counts"} towards results.`}
@@ -1600,7 +1600,7 @@ function ResultsEditor({ def, onChange, readOnly, onFill }: { def: FormDef; onCh
           checked={r.showToPerson}
           onChange={(v) => set({ showToPerson: v })}
           title={en("Show people their results after they send")}
-          detail="Off: only your team sees them, in the CRM."
+          detail="Off: only your team sees them, on the lead."
         />
       </section>
 
@@ -1631,7 +1631,7 @@ function ResultsEditor({ def, onChange, readOnly, onFill }: { def: FormDef; onCh
                     <textarea rows={2} className={input} value={o.summary ?? ""} maxLength={1500} onChange={(e) => setOutcome(i, { summary: e.target.value })} />
                   </label>
                   <label className="block text-xs font-medium text-muted-foreground">
-                    {en("Note for your counsellor ")}<span className="font-normal">{en("(only in the CRM)")}</span>
+                    {en("Note for your counsellor ")}<span className="font-normal">{en("(only your team sees it, on the lead)")}</span>
                     <textarea rows={2} className={input} value={o.coaching ?? ""} maxLength={1500} placeholder={en("e.g. Give facts and proof; don't rush them.")} onChange={(e) => setOutcome(i, { coaching: e.target.value })} />
                   </label>
                 </li>
@@ -1704,7 +1704,7 @@ function ResultsEditor({ def, onChange, readOnly, onFill }: { def: FormDef; onCh
                     <textarea rows={2} className={input} value={b.message ?? ""} maxLength={1000} onChange={(e) => setBand(i, { message: e.target.value })} />
                   </label>
                   <label className="block text-xs font-medium text-muted-foreground">
-                    {en("Note for your counsellor ")}<span className="font-normal">{en("(only in the CRM)")}</span>
+                    {en("Note for your counsellor ")}<span className="font-normal">{en("(only your team sees it, on the lead)")}</span>
                     <textarea rows={2} className={input} value={b.coaching ?? ""} maxLength={1000} onChange={(e) => setBand(i, { coaching: e.target.value })} />
                   </label>
                 </li>
@@ -2000,7 +2000,7 @@ function SettingsEditor({
           checked={!!s.savePartial}
           onChange={(v) => set({ savePartial: v })}
           title={en("Save answers as people go")}
-          detail="Once someone has given their email or phone and moves to the next step, what they've filled in reaches your CRM under Incomplete, even if they never press Send. If they finish later, it becomes a normal lead."
+          detail="Once someone has given their email or phone and moves to the next step, what they've filled in reaches your admissions leads under Incomplete, even if they never press Send. If they finish later, it becomes a normal lead."
         />
         {s.savePartial && (
           <div className="space-y-3 border-s-2 border-border ps-4">
@@ -2045,7 +2045,7 @@ function SettingsEditor({
               checked={!!s.notifyOnPartial}
               onChange={(v) => set({ notifyOnPartial: v })}
               title={en("Email my team when someone stops part way")}
-              detail="Your CRM admins (or the whole team if there are none) get an email with a link to the lead."
+              detail="Your admissions admins (or the whole team if there are none) get an email with a link to the lead."
             />
           </div>
         )}
@@ -2060,13 +2060,13 @@ function SettingsEditor({
           checked={s.requireEmailConfirmation !== false}
           onChange={(v) => set({ requireEmailConfirmation: v })}
           title={en("Confirm by email (recommended)")}
-          detail="Requests reach your CRM straight away, marked “Email not confirmed” until the person clicks the link in an email. Messages to them wait for it, so nothing goes to a mistyped or someone else's address."
+          detail="Requests reach your admissions leads straight away, marked “Email not confirmed” until the person clicks the link in an email. Messages to them wait for it, so nothing goes to a mistyped or someone else's address."
         />
         <Switch
           checked={!!s.requirePhoneCheck}
           onChange={(v) => set({ requirePhoneCheck: v, askPhone: v || s.askPhone, phoneRequired: v || s.phoneRequired })}
           title={en("Check the phone number by SMS code")}
-          detail={en("People enter a code we send to their phone. Needs your Pulse Relay connection (Career centre → Settings → Chat & SMS); each code is a normal SMS.")}
+          detail={en("People enter a code we send to their phone. Needs your Pulse Relay connection (Admissions settings → SMS and WhatsApp → Connect Pulse Relay); each code is a normal SMS.")}
         />
         <div className="rounded-lg bg-muted/40 p-3 text-xs text-muted-foreground">
           <p className="font-medium text-foreground">{en("Always on")}</p>
@@ -2075,7 +2075,7 @@ function SettingsEditor({
             <li>{en("Limits on how often one visitor can send, and on files.")}</li>
             <li>{en("An invisible human check by Cloudflare, once Edulexa has it switched on.")}</li>
             <li>
-              {en("A spam check (throwaway emails, links, random text, repeats): suspicious requests go to ")}<span className="font-medium text-foreground">{en("Possible spam")}</span>{en(" in your CRM, never deleted.")}
+              {en("A spam check (throwaway emails, links, random text, repeats): suspicious requests go to ")}<span className="font-medium text-foreground">{en("Possible spam")}</span>{en(" in your admissions leads, never deleted.")}
             </li>
           </ul>
         </div>

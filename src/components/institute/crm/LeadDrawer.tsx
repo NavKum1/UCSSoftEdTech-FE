@@ -922,7 +922,7 @@ function Composer({
             </p>
           )}
           {mode === "Sms" && dltNeeded && (
-            <input className={input} value={dlt} onChange={(e) => setDlt(e.target.value)} placeholder={en("DLT template id (needed for SMS in India)")} aria-label={en("DLT template id")} />
+            <input className={input} value={dlt} onChange={(e) => setDlt(e.target.value)} placeholder={en("DLT template ID (needed for SMS in India)")} aria-label={en("DLT template ID")} />
           )}
           {mode === "WhatsApp" && <p className="text-xs text-muted-foreground">{en("Opens WhatsApp with this message ready to send from your phone or WhatsApp Web.")}</p>}
           <div className="flex gap-2">

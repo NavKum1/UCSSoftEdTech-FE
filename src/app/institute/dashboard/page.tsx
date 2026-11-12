@@ -171,7 +171,7 @@ function Crm() {
       )}
 
       <Tabs<Tab>
-        label={en("CRM")}
+        label={en("Admissions")}
         value={tab}
         onChange={setTab}
         items={TABS.map(([k, label]) => ({ id: k, label: en(label), count: k === "followups" && overdue > 0 ? overdue : undefined }))}

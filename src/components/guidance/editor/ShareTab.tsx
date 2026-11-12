@@ -81,7 +81,7 @@ export default function ShareTab({
             </div>
           </div>
           <label className="block text-xs font-medium text-muted-foreground">
-            {en("Campaign (optional): shown as the lead's source in the CRM and in Insights")}
+            {en("Campaign (optional): shown as the lead's source, and in Insights")}
             <input value={campaign} onChange={(e) => setCampaign(e.target.value)} maxLength={60} placeholder={en("e.g. open-day-2027, instagram, school-visit")} className="mt-1 block w-full max-w-sm rounded-lg border border-border bg-background px-3 py-2 text-sm" />
           </label>
           <p className="text-xs text-muted-foreground">{en("People can save their answers and finish later, and see the form in their language when you've added it.")}</p>

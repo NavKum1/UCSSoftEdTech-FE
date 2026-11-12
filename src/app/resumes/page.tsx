@@ -16,6 +16,7 @@ import { AccessNotice, useLatestRef, useLegacyApi } from "@/lib/legacyApi";
 import { useEn } from "@/lib/english/EnglishProvider";
 import { Badge, Button, EmptyState, ErrorBanner, formatDate, Modal, PageHeader, SuccessBanner, Tabs } from "@/components/career/ui";
 import { HelpLink } from "@/components/help/HelpLink";
+import { COMMUNITY_INSTITUTE_ID } from "@/lib/community";
 
 interface Version {
   id: string;
@@ -81,6 +82,20 @@ export default function ResumesPage() {
   useEffect(() => {
     if (ready) void rulesRef.current();
   }, [ready, rulesRef]);
+  // Campus job applications, document review and interview sign-up are a school's: mention them only to its students and
+  // alumni (members with no school don't have them)
+  // null until known, so neither wording flashes up first
+  const [atSchool, setAtSchool] = useState<boolean | null>(null);
+  const meRef = useLatestRef(async () => {
+    const res = await apiFetch("/api/career/me");
+    if (!res.ok) return setAtSchool(false);
+    const me = (await res.json()) as { memberships?: { instituteId: string; role: string; status: string }[] };
+    // The Edulexa community (mentoring for people with no school) isn't a school
+    setAtSchool((me.memberships ?? []).some((m) => (m.role === "Student" || m.role === "Alumni") && m.status === "Active" && m.instituteId !== COMMUNITY_INSTITUTE_ID));
+  });
+  useEffect(() => {
+    if (ready) void meRef.current().catch(() => setAtSchool(false));
+  }, [ready, meRef]);
 
   /** A new built résumé (blank, from the person's record, or from an uploaded version), opened in the editor */
   const startBuilt = async (from: "blank" | "record" | "upload", versionId?: string, title?: string) => {
@@ -173,8 +188,14 @@ export default function ResumesPage() {
     <div className="space-y-6">
       <PageHeader
         title={en("Résumés")}
-        description={en("Keep your résumés in one place. Send them with campus job applications, document reviews and interview sign-ups.")}
-        actions={<div className="flex flex-wrap items-center gap-3"><HelpLink slug="resumes" />{
+        description={
+          atSchool === null
+            ? en("Keep your résumés in one place.")
+            : atSchool
+            ? en("Keep your résumés in one place. Send them with campus job applications, document reviews and interview sign-ups.")
+            : en("Keep your résumés in one place, check them against a job, and download them to send.")
+        }
+        actions={<div className="flex flex-wrap items-center gap-3"><HelpLink slug="resumes" forAudience={{ member: "member-resumes" }} />{
           <div className="flex flex-wrap gap-2">
             <Link href="/resumes/job-check" className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-2 text-sm font-medium hover:bg-muted">
               <ListChecks aria-hidden="true" className="h-4 w-4" />
@@ -206,7 +227,9 @@ export default function ResumesPage() {
           <div className="mt-4 grid gap-3 sm:grid-cols-2">
             <button type="button" className="rounded-lg border border-border p-4 text-start hover:bg-muted/50 disabled:opacity-60" disabled={busy === "new"} onClick={() => void startBuilt("record")}>
               <span className="block text-sm font-semibold">{en("Start from your record")}</span>
-              <span className="mt-1 block text-sm text-muted-foreground">{en("Your name and email, and the education your school holds, already verified.")}</span>
+              <span className="mt-1 block text-sm text-muted-foreground">
+                {atSchool ? en("Your name and email, and the education your school holds, already verified.") : en("Your name and email, already filled in.")}
+              </span>
             </button>
             <button type="button" className="rounded-lg border border-border p-4 text-start hover:bg-muted/50 disabled:opacity-60" disabled={busy === "new"} onClick={() => void startBuilt("blank")}>
               <span className="block text-sm font-semibold">{en("Start blank")}</span>
@@ -239,7 +262,11 @@ export default function ResumesPage() {
       ) : items.length === 0 ? (
         view === "library" ? (
           <EmptyState title={en("No résumés yet")}>
-            <p>{en("Upload your résumé to keep it in one place and send it with applications, document reviews and interview sign-ups.")}</p>
+            <p>
+              {atSchool
+                ? en("Upload your résumé to keep it in one place and send it with applications, document reviews and interview sign-ups.")
+                : en("Upload your résumé to keep it in one place, check it against a job and write cover letters from it.")}
+            </p>
             <p className="mt-1">{en("PDF or Word (.docx), up to 5 MB.")}</p>
           </EmptyState>
         ) : (

@@ -143,14 +143,14 @@ export default function ImportView({ getToken, onImported }: { getToken: GetToke
 
   const runImport = async () => {
     if (!file || !preview) return;
-    if (!window.confirm(`Import ${plural(preview.create, "new lead")}${duplicates === "note" && preview.duplicates ? ` and add ${plural(preview.duplicates, "note")} to people already in your CRM` : ""}? Nothing is sent to them.`)) return;
+    if (!window.confirm(`Import ${plural(preview.create, "new lead")}${duplicates === "note" && preview.duplicates ? ` and add ${plural(preview.duplicates, "note")} to people already in your leads` : ""}? Nothing is sent to them.`)) return;
     setBusy(true);
     setMessage(null);
     try {
       const r = (await send("/import", file, mapping)) as { created: number; noted: number; skipped: number; failed: number };
       setMessage({
         ok: true,
-        text: `Imported ${plural(r.created, "new lead")}` + (r.noted ? `, added ${plural(r.noted, "note")} to people already in your CRM` : "") + (r.skipped ? `, left out ${plural(r.skipped, "row")} for people already in your CRM` : "")
+        text: `Imported ${plural(r.created, "new lead")}` + (r.noted ? `, added ${plural(r.noted, "note")} to people already in your leads` : "") + (r.skipped ? `, left out ${plural(r.skipped, "row")} for people already in your leads` : "")
           + (r.failed ? `, and couldn't use ${plural(r.failed, "row")}` : "") + ".",
       });
       setFile(null);
@@ -203,7 +203,7 @@ export default function ImportView({ getToken, onImported }: { getToken: GetToke
           <label className="block font-medium">
             {en("Where the leads came from")}
             <input className={input} value={source} maxLength={40} onChange={(e) => setSource(e.target.value)} onBlur={() => check()} />
-            <span className="mt-1 block text-xs font-normal text-muted-foreground">{en("Their source in the CRM (unless the file has a source column) and a tag on each, so you can find them.")}</span>
+            <span className="mt-1 block text-xs font-normal text-muted-foreground">{en("Their source in your leads (unless the file has a source column) and a tag on each, so you can find them.")}</span>
           </label>
           <label className="block font-medium">
             {en("Dates like 03/04/2026 mean")}
@@ -213,7 +213,7 @@ export default function ImportView({ getToken, onImported }: { getToken: GetToke
             </select>
           </label>
           <fieldset className="md:col-span-2">
-            <legend className="font-medium">{en("Someone who is already in your CRM (same email or phone number)")}</legend>
+            <legend className="font-medium">{en("Someone who is already in your leads (same email or phone number)")}</legend>
             <div className="mt-1 flex flex-wrap gap-4">
               {(
                 [
@@ -276,7 +276,7 @@ export default function ImportView({ getToken, onImported }: { getToken: GetToke
             <h3 className="text-sm font-semibold">{en("What will happen")}</h3>
             <dl className="mt-3 grid grid-cols-2 gap-3 text-sm lg:grid-cols-4">
               <Count label={en("New leads")} value={preview.create} />
-              <Count label={duplicates === "note" ? en("Notes on people already in the CRM") : en("Rows left out: already in the CRM")} value={preview.duplicates} hint={preview.repeatedInFile ? `${plural(preview.repeatedInFile, "row")} repeat someone earlier in the file` : undefined} />
+              <Count label={duplicates === "note" ? en("Notes on people already in your leads") : en("Rows left out: already in your leads")} value={preview.duplicates} hint={preview.repeatedInFile ? `${plural(preview.repeatedInFile, "row")} repeat someone earlier in the file` : undefined} />
               <Count label={en("Rows that can't be used")} value={preview.failed} warn={preview.failed > 0} />
               <Count label={en("Marked do not contact")} value={preview.optOut} hint={en("They asked not to be contacted")} />
             </dl>
@@ -346,7 +346,7 @@ export default function ImportView({ getToken, onImported }: { getToken: GetToke
                       <td className="py-1.5 pe-3">{r.received ? new Date(r.received).toLocaleDateString(undefined, { dateStyle: "medium" }) : r.receivedText ? <span className="text-amber-800 dark:text-amber-300">{en("today (“{receivedText}” unreadable)", { receivedText: r.receivedText })}</span> : "today"}</td>
                       <td className="py-1.5 text-xs">
                         {r.problem ? <span className="text-red-700 dark:text-red-400">{en("Can't be used: {problem}", { problem: r.problem })}</span>
-                          : r.duplicate ? (duplicates === "note" ? en("A note on their existing lead") : en("Left out: already in your CRM"))
+                          : r.duplicate ? (duplicates === "note" ? en("A note on their existing lead") : en("Left out: already in your leads"))
                           : `New lead${r.answers ? `, ${plural(r.answers, "answer")}` : ""}`}
                       </td>
                     </tr>
@@ -376,7 +376,7 @@ export default function ImportView({ getToken, onImported }: { getToken: GetToke
               </button>
               {preview.create + (duplicates === "note" ? preview.duplicates : 0) === 0 ? (
                 <span className="text-xs text-muted-foreground">
-                  {preview.duplicates > 0 ? en("Everyone in this file is already in your CRM. Choose “Add the row to their lead as a note” to add their rows.") : en("None of the rows can be used.")}
+                  {preview.duplicates > 0 ? en("Everyone in this file is already in your leads. Choose “Add the row to their lead as a note” to add their rows.") : en("None of the rows can be used.")}
                 </span>
               ) : (
                 <span className="text-xs text-muted-foreground">{en("from {fileName} · tagged “{source}” · you can undo it below", { fileName: preview.fileName, source: preview.source })}</span>

@@ -424,17 +424,6 @@ function humanizeSlug(slug: string): string {
     .join(" ");
 }
 
-function formatChallengeId(sprintId: string): string {
-  if (!sprintId) return "CHLG-DEMO-01";
-  if (GUID_RE.test(sprintId)) return `CHLG-${sprintId.substring(0, 8).toUpperCase()}`;
-  const cleanSlug = sprintId
-    .replace(/-database$/i, "-DB")
-    .replace(/-architecture$/i, "-ARCH")
-    .replace(/-incident$/i, "-INC")
-    .toUpperCase();
-  return `CHLG-${cleanSlug}`;
-}
-
 function formatElapsed(ms: number): string {
   const total = Math.max(0, Math.floor(ms / 1000));
   const h = Math.floor(total / 3600);
@@ -556,14 +545,13 @@ function ElapsedClock({ baseMs, startedAt }: { baseMs: number; startedAt: number
   );
 }
 
+// No internal challenge code in the header (S4b plain words): people don't need it
 function WorkspaceHeader({
   title,
-  sprintId,
   badges,
   controls,
 }: {
   title: string;
-  sprintId: string;
   badges?: React.ReactNode;
   controls?: React.ReactNode;
 }) {
@@ -593,12 +581,6 @@ function WorkspaceHeader({
 
         <div className="flex items-center space-x-3">
           {controls}
-          <span
-            className="text-xs px-2 py-0.5 rounded-full bg-muted text-muted-foreground font-mono"
-            title={`Sprint Identifier: ${sprintId}`}
-          >
-            {en("ID: {amount}", { amount: formatChallengeId(sprintId) })}
-          </span>
         </div>
       </div>
     </header>
@@ -908,7 +890,6 @@ function GradedWorkspace({ sprintId }: { sprintId: string }) {
   const header = (
     <WorkspaceHeader
       title={title}
-      sprintId={sprintId}
       badges={
         attempt && (
           <>
@@ -1381,7 +1362,6 @@ function PracticeWorkspace({ sprintId }: { sprintId: string }) {
     <div className="flex flex-col font-sans">
       <WorkspaceHeader
         title={humanizeSlug(sprintId)}
-        sprintId={sprintId}
         badges={
           <span className="text-xs px-2 py-0.5 rounded-full bg-muted text-foreground font-medium">
             {en("Practice")}

@@ -82,10 +82,13 @@ export default function PricingPage() {
         <div>
           <PageHeader
             title={en("Plans and voice minutes")}
-            description={en("Voice defenses are billed by the minute of conversation. Every plan includes a monthly allowance, and you can add top-up minutes at any time.")}
+            description={en("Voice defenses and practice interviews are billed by the minutes you use, rounded up to the next whole minute. Every plan includes a monthly allowance, and you can add top-up minutes at any time.")}
           />
           <p className="-mt-3 inline-flex items-center gap-1.5 text-xs font-medium text-muted-foreground bg-muted/60 border border-border rounded-full px-3 py-1">
             <Clock className="w-3.5 h-3.5" />{" "}{en("Each voice session is capped at {maxSessionMinutes} minutes", { maxSessionMinutes: plans.maxSessionMinutes })}</p>
+          <p className="mt-2 text-xs text-muted-foreground max-w-2xl">
+            {en("When a practice interview starts, a whole session's minutes are set aside so you can't run out partway. When it ends, the minutes you didn't use go back to your balance. If no answers were recorded, no minutes are used.")}
+          </p>
         </div>
 
         {error && (
@@ -118,7 +121,7 @@ export default function PricingPage() {
                 <ul className="space-y-2 text-sm text-muted-foreground flex-1">
                   <li className="flex items-start gap-2">
                     <Check className="w-4 h-4 mt-0.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
-                    {en("{monthlyVoiceMinutes} voice-defense minutes per month", { monthlyVoiceMinutes: plan.monthlyVoiceMinutes })}
+                    {en("{monthlyVoiceMinutes} voice minutes per month, for voice defenses and practice interviews", { monthlyVoiceMinutes: plan.monthlyVoiceMinutes })}
                   </li>
                   <li className="flex items-start gap-2">
                     <Check className="w-4 h-4 mt-0.5 text-emerald-600 dark:text-emerald-400 shrink-0" />

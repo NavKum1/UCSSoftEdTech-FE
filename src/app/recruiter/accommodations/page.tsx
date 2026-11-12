@@ -142,7 +142,7 @@ export default function RecruiterAccommodationsPage() {
                 <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium border ${STATUS_STYLES[r.status] ?? ""}`}>{r.status.replace(/([a-z])([A-Z])/g, "$1 $2")}</span>
                 <span className="font-semibold text-foreground">{r.candidateName}</span>
                 <span className="text-xs text-muted-foreground">
-                  {en("{type} · {value} · requested {date}", { type: accommodationLabel(r.type), value: r.sprintTitle ?? r.scope, date: fmtDate(r.createdAt) })}
+                  {en("{type} · {value} · requested {date}", { type: en(accommodationLabel(r.type)), value: r.sprintTitle ?? r.scope, date: fmtDate(r.createdAt) })}
                 </span>
               </div>
               <p className="text-sm text-foreground whitespace-pre-wrap">{r.details}</p>

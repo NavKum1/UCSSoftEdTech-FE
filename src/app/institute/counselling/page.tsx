@@ -177,7 +177,7 @@ export default function InstituteCounsellingPage() {
         }
       />
 
-      <Tabs<Tab> label={en("Builder sections")} value={activeTab} onChange={setTab} items={tabs.map((t) => ({ id: t.key, label: en(t.label) }))} />
+      <Tabs<Tab> label={en("Quiz sections")} value={activeTab} onChange={setTab} items={tabs.map((t) => ({ id: t.key, label: en(t.label) }))} />
 
       {activeTab === "questions" && <QuestionsTab key={`q-${scope}`} scope={scope} apiFetch={apiFetch} canEdit={isAdmin} />}
       {activeTab === "courses" && scope && <CoursesTab key={`c-${scope}`} scope={scope} apiFetch={apiFetch} canEdit={isAdmin} isSuper={isSuper} />}
@@ -243,10 +243,10 @@ function QuestionsTab({ scope, apiFetch, canEdit }: { scope: string | null; apiF
   };
 
   const reset = async () => {
-    if (!window.confirm(en("Replace these questions with the platform question pool? Your own questions will be removed."))) return;
+    if (!window.confirm(en("Replace these questions with Edulexa's standard questions? Your own questions will be removed."))) return;
     const res = await apiFetch(`/api/quiz/counselling/questions/reset?${query.replace(/&$/, "")}`, { method: "POST" });
     if (res.ok) {
-      setMessage({ text: en("Replaced with the platform question pool.") });
+      setMessage({ text: en("Replaced with Edulexa's standard questions.") });
       await load();
     } else setMessage({ text: en("That didn't work. Please try again."), error: true });
   };
@@ -258,13 +258,13 @@ function QuestionsTab({ scope, apiFetch, canEdit }: { scope: string | null; apiF
     <section className="space-y-4">
       <div className={`${card} flex flex-wrap items-center justify-between gap-3 p-4`}>
         <p className="text-sm text-muted-foreground">
-          {en("{active} active question{value}; each member answers {value2} drawn at random.{value3} Members never see the areas or weights; give every area the same number of options and weights so none is favoured.", { active, value: active === 1 ? "" : "s", value2: Math.min(meta?.questionsPerAttempt ?? 15, active), value3: scope && meta && !meta.ownBank ? en(" This institute uses the platform question pool until you save your own.") : "" })}
+          {en("{active} active question{value}; each member answers {value2} drawn at random.{value3} Members never see the areas or weights; give every area the same number of options and weights so none is favoured.", { active, value: active === 1 ? "" : "s", value2: Math.min(meta?.questionsPerAttempt ?? 15, active), value3: scope && meta && !meta.ownBank ? en(" This institute uses Edulexa's standard questions until you save your own.") : "" })}
         </p>
         {canEdit && (
           <div className="flex gap-2">
             {scope && (
               <button type="button" className={button} onClick={() => void reset()}>
-                <RotateCcw aria-hidden="true" className="h-4 w-4" />{en(" Use the platform pool")}
+                <RotateCcw aria-hidden="true" className="h-4 w-4" />{en(" Use Edulexa's standard questions")}
               </button>
             )}
             <button
@@ -437,7 +437,7 @@ function CoursesTab({ scope, apiFetch, canEdit, isSuper }: { scope: string; apiF
     <section className="space-y-4">
       <div className={`${card} flex flex-wrap items-center justify-between gap-3 p-4`}>
         <p className="text-sm text-muted-foreground">
-          {en("Active courses are suggested to this institute's members with their quiz results, best match first.{value}", { value: listed ? en(" They are also suggested to members of the platform quiz.") : en(" They are not suggested to members of other institutes.") })}
+          {en("Active courses are suggested to this institute's members with their quiz results, best match first.{value}", { value: listed ? en(" They are also suggested to other people who take the quiz on Edulexa.") : en(" They are not suggested to members of other institutes.") })}
         </p>
         <div className="flex items-center gap-3">
           {isSuper && (

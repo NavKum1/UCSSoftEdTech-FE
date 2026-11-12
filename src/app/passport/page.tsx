@@ -97,7 +97,7 @@ export default function SkillPassportPage() {
     <div>
       <PageHeader
         title={en("Skill passport")}
-        description={en("Your verified record of skills and credentials, built from your graded results. You decide who sees it.")} actions={<HelpLink slug="credentials-and-passport" />} />
+        description={en("Your verified record of skills and credentials, built from your graded results. You decide who sees it.")} actions={<HelpLink slug="credentials-and-passport" forAudience={{ member: "member-results-and-credentials" }} />} />
 
       <div className="grid gap-6 lg:grid-cols-3">
         <div className="lg:col-span-2">

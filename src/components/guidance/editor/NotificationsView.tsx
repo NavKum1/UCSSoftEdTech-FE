@@ -249,7 +249,7 @@ export default function NotificationsView({ instituteId, forms, canEdit }: { ins
               )}
               {open.providerMessageId && (
                 <>
-                  <dt className="text-muted-foreground">{en("Pulse Relay id")}</dt>
+                  <dt className="text-muted-foreground">{en("Pulse Relay reference (for support)")}</dt>
                   <dd className="break-all font-mono text-xs">{open.providerMessageId}</dd>
                 </>
               )}

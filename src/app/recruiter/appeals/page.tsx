@@ -146,10 +146,10 @@ export default function RecruiterAppealsPage() {
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <div className="flex flex-wrap items-center gap-2 text-sm">
                   <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium border ${STATUS_STYLES[a.status] ?? ""}`}>
-                    {statusLabel(a.status)}
+                    {en(statusLabel(a.status))}
                   </span>
                   <span className="font-semibold text-foreground">{a.candidateName}</span>
-                  <span className="text-muted-foreground text-xs">{a.sprintTitle ?? "Submission"} · {categoryLabel(a.category)} · {fmtDate(a.createdAt)}</span>
+                  <span className="text-muted-foreground text-xs">{a.sprintTitle ?? en("Submission")} · {en(categoryLabel(a.category))} · {fmtDate(a.createdAt)}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Link href={`/recruiter/evidence/${a.submissionId}`} className="text-sm font-medium text-indigo-700 hover:underline dark:text-indigo-400">

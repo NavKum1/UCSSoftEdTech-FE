@@ -20,25 +20,25 @@ student:
   steps: [hand-in-your-work, the-viva, results-and-appeals]
 
 alumni:
-  groups: [Getting started, Career help, Jobs and internships, Your credentials, Account and settings, Your data and privacy]
+  groups: [Getting started, Career help, Jobs and internships, Your credentials, Mentoring, Account and settings, Your data and privacy]
   steps: []
 
 member:
-  groups: [Getting started, Account and settings, Your data and privacy]
-  steps: []
+  groups: [Getting started, Guidance, Practice, Prove your skills, Your record, Account and settings, Your data and privacy]
+  steps: [member-getting-started, career-direction, daily-practice, interview-and-speaking-practice, exams-and-challenges, member-results-and-credentials, member-resumes]
 
 recruiter:
-  groups: [Getting started, Account and settings, Your data and privacy]
-  steps: []
+  groups: [Getting started, Assessments, Reviewing candidates, Fairness, Account and settings, Your data and privacy]
+  steps: [recruiter-getting-started, recruiter-send-an-assessment, recruiter-results-and-proctoring, recruiter-evidence-packs, recruiter-appeals-and-accommodations, recruiter-validity-and-bias]
 
 employer:
-  groups: [Getting started, Account and settings, Your data and privacy]
-  steps: []
+  groups: [Getting started, Hiring, Account and settings, Your data and privacy]
+  steps: [employer-getting-started, employer-jobs-and-drives, employer-interviews-and-challenges, employer-resume-books]
 
 admissions:
-  groups: [Getting started, Account and settings, Your data and privacy]
-  steps: []
+  groups: [Getting started, Forms and the quiz, Leads, Account and settings, Your data and privacy]
+  steps: [institute-setup, guidance-forms, admissions-leads]
 
 mentor:
-  groups: [Getting started, Account and settings, Your data and privacy]
+  groups: [Getting started, Guidance requests, Mentoring, Account and settings, Your data and privacy]
   steps: []

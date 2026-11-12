@@ -23,31 +23,32 @@ interface EraseResult {
   sentToSchools?: { instituteId: string; school: string; records: string }[];
 }
 
+// S4b plain words (12 Nov 2026): what each part means to the person, not the names of the records
 const DELETED = [
-  "Editor activity recordings (keystroke and edit telemetry) and AI-assistant conversations",
-  "Interview transcripts and links to voice recordings",
-  "Voluntary self-identification (demographic) answers",
+  "What you typed and changed in the code editor, and your chats with the AI assistant",
+  "Interview transcripts and the links to their voice recordings",
+  "Your answers on the Fairness self-ID page",
   "Speaking-practice measurements (pace, filler words, pauses)",
-  "GitHub repository defenses, résumés and language preferences",
-  "Course referrals (providers are told to stop contact and delete your data)",
-  "Personalised feedback, accommodation requests and written-defense answers", // en() where shown
+  "Defenses of your GitHub work, your résumés and your language choices",
+  "Course referrals (the course providers are told to stop contacting you and to delete your data)",
+  "Feedback written for you, your accommodation requests and your written defense answers", // en() where shown
 ];
 
-const ANONYMISED = [
+const NAME_REMOVED = [
   "Your name becomes “Deleted user” and your email is replaced; your country and GitHub login are removed",
-  "Credentials you earned are revoked (verification links show them as revoked)",
+  "Credentials you earned are revoked: anyone who checks one sees that it was revoked",
   "The text of your appeals is removed; their outcome stays with the employer's decision record",
 ];
 
 const KEPT = [
-  "Submitted code, test results and defense scores",
-  "Integrity analyses and employers' human decisions (with their rationale)",
+  "Code you handed in, test results and defense scores",
+  "Integrity checks on your work, and the decisions people at employers made (with their reasons)",
 ];
 
 // Records others are responsible for, or the law requires us to keep (owner's rule of 9 Nov 2026)
 const ELSEWHERE = [
-  "Records a school holds about you (class work, class rosters, proctoring, LMS links): we send your school an erasure request, and the school decides",
-  "Records the law or security requires us to keep (access changes, call consents, tax records for mentor payouts): kept without your name and email until their time limit",
+  "Records a school holds about you (class work, class lists, exam monitoring, and links to the school's learning system such as Canvas): we ask your school to delete them, and the school decides",
+  "Records the law or security requires us to keep (changes to who can see what, your agreement to recorded calls, tax records for mentor payments): kept without your name and email until their time limit",
 ];
 
 export default function PrivacySettingsPage() {
@@ -131,7 +132,7 @@ export default function PrivacySettingsPage() {
             <Download className="w-4 h-4 text-muted-foreground" />{en(" Export your data")}
           </h2>
           <p className="text-sm text-muted-foreground">
-            {en("A file with your profile, assessment attempts and editor activity, AI-assistant conversations, submissions, interviews and transcripts, evaluations, credentials, referrals, repository defenses, self-identification answers, appeals, accommodations and speaking-practice measurements, your other practice and activity, and the records schools, employers and the law keep about you. Integrity-analysis details and reviewers' internal rationale are not included in the self-service export; the file explains why and how to request them.")}
+            {en("One file with everything in your account: your profile, your assessments and what you did in the code editor, your chats with the AI assistant, the work you handed in, interviews and their transcripts, scores and feedback, credentials, course referrals, defenses of your GitHub work, your fairness answers, appeals, accommodations, speaking-practice measurements, your other practice, and the records schools, employers and the law keep about you. Two things aren't in it: the details of integrity checks and reviewers' private notes. The file says why, and how to ask for them.")}
           </p>
           <Button onClick={downloadExport} busy={exporting}>
             {!exporting && <Download className="w-4 h-4" />}
@@ -148,7 +149,7 @@ export default function PrivacySettingsPage() {
           {result ? (
             <div className="space-y-3 text-sm">
               <p className="flex items-center gap-2 text-emerald-700 dark:text-emerald-400 font-semibold">
-                <CheckCircle2 className="w-4 h-4" />{en(" Your data has been deleted and your account anonymised.")}
+                <CheckCircle2 className="w-4 h-4" />{en(" Your data has been deleted, and your name has been removed from your account.")}
               </p>
               <ul className="text-xs text-muted-foreground list-disc ms-5 space-y-0.5">
                 {/* Plain totals: the API's keys are internal record names */}
@@ -165,7 +166,7 @@ export default function PrivacySettingsPage() {
                   <ul className="list-disc ms-5 mt-1 space-y-0.5">
                     {result.sentToSchools!.map((s) => (
                       <li key={s.instituteId}>
-                        {en("{school} got an erasure request for: {records}. The school decides, usually within the time its privacy notice gives.", { school: s.school, records: s.records })}
+                        {en("We asked {school} to delete: {records}. The school decides, usually within the time its privacy notice gives.", { school: s.school, records: s.records })}
                       </li>
                     ))}
                   </ul>
@@ -191,18 +192,18 @@ export default function PrivacySettingsPage() {
                   </ul>
                 </div>
                 <div>
-                  <p className="font-semibold text-foreground">{en("Anonymised")}</p>
+                  <p className="font-semibold text-foreground">{en("Your name removed")}</p>
                   <ul className="list-disc ms-5 mt-1 space-y-0.5 text-muted-foreground">
-                    {ANONYMISED.map((d) => <li key={d}>{en(d)}</li>)}
+                    {NAME_REMOVED.map((d) => <li key={d}>{en(d)}</li>)}
                   </ul>
                 </div>
                 <div>
-                  <p className="font-semibold text-foreground">{en("Kept, de-identified")}</p>
+                  <p className="font-semibold text-foreground">{en("Kept, without your name")}</p>
                   <ul className="list-disc ms-5 mt-1 space-y-0.5 text-muted-foreground">
                     {KEPT.map((d) => <li key={d}>{en(d)}</li>)}
                   </ul>
                   <p className="mt-1 text-muted-foreground">
-                    {en("Employers must be able to show how past hiring decisions were made, so these records stay, linked only to an anonymised account with no name, email, country or GitHub login.")}
+                    {en("Employers must be able to show how past hiring decisions were made, so these records stay, linked only to an account called “Deleted user”, with no name, email, country or GitHub login.")}
                   </p>
                 </div>
               </div>
@@ -216,7 +217,7 @@ export default function PrivacySettingsPage() {
               <div className="rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900 flex gap-2 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-200">
                 <AlertTriangle className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0" />
                 <span>
-                  {en("This cannot be undone. Download your data first if you want a copy. Your sign-in account is kept separately by our sign-in service: delete it from your account settings too, otherwise signing in again reconnects to the anonymised record.")}
+                  {en("This cannot be undone. Download your data first if you want a copy. Your sign-in (your e-mail address and password) is kept separately: to delete it too, contact Edulexa support. Until then, signing in again takes you back to the emptied account.")}
                 </span>
               </div>
 

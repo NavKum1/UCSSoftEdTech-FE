@@ -425,7 +425,7 @@ function FormStep({ s, setS, apiFetch }: StepProps) {
     <>
       <Heading
         title={en("Your first inquiry form")}
-        text={en("Families and students fill it in on your website. Each answer becomes a lead in your CRM, and each person gets a report with their results.")}
+        text={en("Families and students fill it in on your website. Each answer becomes a lead in your admissions leads, and each person gets a report with their results.")}
       />
       {own && (
         <div className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-950 dark:border-emerald-900 dark:bg-emerald-950/40 dark:text-emerald-100">

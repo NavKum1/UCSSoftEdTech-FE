@@ -384,14 +384,14 @@ export default function EvidencePackPage() {
           description={pack.candidate.email ? en("Evidence pack · {email}", { email: pack.candidate.email }) : en("Evidence pack")}
         />
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-          <Stat label={en("Task")} value={pack.task.title || "Untitled sprint"} />
+          <Stat label={en("Task")} value={pack.task.title || "Untitled challenge"} />
           <Stat label={en("Task type / language")} value={`${pack.task.taskType ?? "—"} · ${pack.task.language ?? "—"}`} />
           <Stat label={en("AI policy")} value={AI_POLICY_LABELS[pack.task.aiPolicy ?? ""] ?? pack.task.aiPolicy ?? "—"} />
           <Stat label={en("Submitted")} value={fmtDate(pack.timing.submittedAt)} />
           <Stat label={en("Attempt started")} value={fmtDate(pack.timing.attemptStartedAt)} />
           <Stat label={en("Elapsed")} value={pack.timing.elapsedMinutes != null ? `${pack.timing.elapsedMinutes} min` : "—"} />
           <Stat label={en("Active editing")} value={pack.timing.activeEditingMinutes != null ? `${pack.timing.activeEditingMinutes} min` : "—"} />
-          <Stat label={en("Evidence fingerprint")} value={<span className="font-mono text-xs break-all">{pack.evidenceHash.slice(0, 16)}…</span>} />
+          <Stat label={en("Evidence version")} value={<span className="font-mono text-xs break-all">{pack.evidenceHash.slice(0, 16)}…</span>} />
         </div>
       </div>
 
@@ -418,7 +418,7 @@ export default function EvidencePackPage() {
         <div className="rounded-xl border border-amber-300 bg-amber-50 dark:border-amber-900 dark:bg-amber-950/30 p-4">
           <h2 className="text-base font-semibold text-foreground flex items-center gap-2">
             <ShieldQuestion className="w-4 h-4 text-amber-600 dark:text-amber-400" />
-            {en("Implementation vs. explanation")}
+            {en("The code compared with the explanation")}
           </h2>
           <ul className="mt-2 space-y-1 text-sm text-foreground">
             {pack.consistencyNotes.map((n) => (
@@ -542,12 +542,12 @@ export default function EvidencePackPage() {
           />
           <Stat label={en("Signal score")} value={integrity.riskScore != null ? Math.round(integrity.riskScore) : "—"} />
           <Stat
-            label={en("Editor replay matches submission")}
+            label={en("Replay of the typing matches the handed-in code")}
             value={integrity.replayMatchesSubmission == null ? en("No replay recorded") : integrity.replayMatchesSubmission ? en("Yes") : en("No")}
           />
           <Stat label={en("Typed characters")} value={integrity.typedCharacters?.toLocaleString() ?? "—"} />
           <Stat label={en("Pasted from outside the editor")} value={integrity.externallyPastedCharacters?.toLocaleString() ?? "—"} />
-          <Stat label={en("Times focus left the editor")} value={integrity.focusLosses ?? "—"} />
+          <Stat label={en("Times they switched away from the editor")} value={integrity.focusLosses ?? "—"} />
           <Stat
             label={en("Highest similarity to another candidate")}
             value={
@@ -572,7 +572,7 @@ export default function EvidencePackPage() {
                 <div>
                   <p className="text-foreground">{s.detail}</p>
                   <p className="text-xs text-muted-foreground mt-0.5">
-                    <span className="font-mono">{s.code}</span>{" "}{en("· weight {weight}", { weight: s.weight })}
+                    {en("Adds {weight} to the signal score", { weight: s.weight })}
                   </p>
                 </div>
               </li>
@@ -601,7 +601,7 @@ export default function EvidencePackPage() {
               </audio>
             )}
             {defense.questionsAndAnswers.length === 0 ? (
-              <p className="text-xs text-muted-foreground">{en("No question and answer pairs could be extracted from the transcript.")}</p>
+              <p className="text-xs text-muted-foreground">{en("No questions and answers could be read from the transcript.")}</p>
             ) : (
               <ol className="space-y-2">
                 {defense.questionsAndAnswers.map((qa, i) => (

@@ -669,7 +669,7 @@ function TrialReview({
       "Changes saved."
     );
   const publish = (force: boolean) =>
-    run("publish", "/publish", { method: "POST", body: JSON.stringify(force ? { force: true, reason: forceReason.trim() } : {}) }, "Published as a private sprint.");
+    run("publish", "/publish", { method: "POST", body: JSON.stringify(force ? { force: true, reason: forceReason.trim() } : {}) }, "Published as a private coding task.");
   const discard = () => {
     const published = trial.status === "Published";
     if (
@@ -768,7 +768,7 @@ function TrialReview({
 
       {trial.status === "Published" && trial.inviteCode && candidateUrl && (
         <div className={sectionClass}>
-          <h2 className="text-base font-semibold text-foreground flex items-center gap-2"><ClipboardCheck className="w-4 h-4" />{en(" Published as a private sprint")}</h2>
+          <h2 className="text-base font-semibold text-foreground flex items-center gap-2"><ClipboardCheck className="w-4 h-4" />{en(" Published as a private coding task")}</h2>
           <p className="text-sm text-muted-foreground">
             {en("Share the link (or the invite code) with candidates. Submissions appear in Evidence packs, where a person reviews them and decides.{value}", { value: trial.forcePublishReason ? ` Published without a passing validation: "${trial.forcePublishReason}"` : "" })}
           </p>
@@ -1069,7 +1069,7 @@ export default function WorkTrialsPage() {
         description={
           <>
             <Badge tone="warn">{en("Beta")}</Badge>{" "}
-            {en("Point at a part of your codebase and get a private brownfield task: a small module from your code with planted defects and hidden tests, checked in the sandbox before you publish. Because each trial is generated from your code and kept private, it is harder to find answers online than for a reused take-home. AI output: always review it before publishing.")}
+            {en("Choose a part of your own code and get a private task: a small piece of your code with planted defects (bugs put there on purpose) and hidden tests, checked in a safe test area before you publish. Because each trial is made from your own code and kept private, answers are harder to find online than for a reused take-home task. AI output: always review it before publishing.")}
           </>
         }
         actions={

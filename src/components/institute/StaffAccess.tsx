@@ -30,16 +30,16 @@ export type StaffMember = {
 type AuditRow = { id: string; action: string; targetEmail: string; role: string | null; actorName: string; detail: string | null; createdAt: string };
 
 export const ROLE_LABEL: Record<string, string> = {
-  InstituteAdmin: "Institute admin",
+  InstituteAdmin: "Institute admin", // en() where shown
   Counselor: "Counsellor", // en() where shown
-  Faculty: "Faculty",
-  Recruiter: "Recruiter",
+  Faculty: "Faculty", // en() where shown
+  Recruiter: "Recruiter", // en() where shown
 };
 
 const ROLE_HELP: Record<string, string> = {
-  InstituteAdmin: "Everything at this institute, including staff access and settings",
-  Counselor: "Leads, follow-ups, meetings and guidance results",
-  Faculty: "Teaching tools for their own courses and students",
+  InstituteAdmin: "Everything at this institute, including staff access and settings", // en() where shown
+  Counselor: "Leads, follow-ups, meetings and guidance results", // en() where shown
+  Faculty: "Teaching tools for their own courses and students", // en() where shown
 };
 
 const ACTION_LABEL: Record<string, string> = {
