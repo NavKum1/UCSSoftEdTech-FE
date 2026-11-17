@@ -10,6 +10,7 @@
 #   show: main                          optional: the part of the screen (default: main)
 #   point: "button:has-text('Start')"   optional: the thing to ring
 #   width: 900                          optional: a narrower window, so a form stays readable in the side panel and on phones
+#   height: 620                         optional: crop lower than the 1000 px default, to show only the top of a list
 #   alt: The assessment page, with the Start attempt button   what the picture shows, for people who can't see it
 
 document-review-request:

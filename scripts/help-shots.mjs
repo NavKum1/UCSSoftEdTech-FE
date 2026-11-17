@@ -22,10 +22,12 @@ const opt = (name, fallback) => (args.includes(name) ? args[args.indexOf(name) +
 const BASE = opt("--base", "http://localhost:3000").replace(/\/$/, "");
 const PUBLIC = opt("--public", null);
 const only = args.filter((a, i) => !a.startsWith("--") && !(i > 0 && args[i - 1].startsWith("--")));
-const MAX_HEIGHT = 1000; // css pixels: a picture shows one part of a screen, not a whole long page
+const MAX_HEIGHT = 1000; // css pixels: a picture shows one part of a screen, not a whole long page ("height" in shots.yml: less)
 const MAX_WIDTH = 1600; // image pixels
 
-// The demo people (src/lib/devSession.ts DEV_PERSONAS): the token says who; school people work at the demo school
+// The demo people (src/lib/devSession.ts DEV_PERSONAS): the token says who; school people work at the demo school. The member
+// is the demo member the API seeds (backend Data/DevMemberSeeder.cs), and the recruiter works for the demo company
+// (Data/DevRecruiterSeeder.cs; "institute" goes into the session, which sends it as X-Institute-Id)
 const SCHOOL = "5c400100-0000-4000-8000-000000000001";
 const PEOPLE = {
   "school-admin-dev-token": { role: "CareerAdmin", label: "Career center admin", userId: "5c400100-0000-4000-8000-000000000011", school: true },
@@ -35,10 +37,12 @@ const PEOPLE = {
   "school-student-dev-token": { role: "Student", label: "Student", userId: "5c400100-0000-4000-8000-000000000015", school: true },
   "school-alumni-dev-token": { role: "Alumni", label: "Alumni", userId: "5c400100-0000-4000-8000-000000000016", school: true },
   "employer-dev-token": { role: "Employer", label: "Employer", userId: "5c400100-0000-4000-8000-000000000017", school: true },
-  "recruiter-dev-token": { role: "Recruiter", label: "Recruiter", userId: null, school: false },
+  "candidate-dev-token": { role: "Candidate", label: "Member", userId: "5c400200-0000-4000-8000-000000000001", school: false },
+  "recruiter-dev-token": { role: "Recruiter", label: "Recruiter", userId: null, school: false, institute: "5c400300-0000-4000-8000-000000000001" },
   "institute-admin-dev-token": { role: "InstituteAdmin", label: "Institute admin", userId: null, school: false },
   "institute-counsellor-dev-token": { role: "Counselor", label: "Institute counselor", userId: null, school: false },
   "mentor-dev-token": { role: "MentorReviewer", label: "Mentor reviewer", userId: null, school: false },
+  "advisor-dev-token": { role: "EdulexaAdvisor", label: "Edulexa advisor", userId: null, school: false },
 };
 
 const shots = yaml.load(fs.readFileSync(path.join(ROOT, "content", "help", "shots.yml"), "utf8")) ?? {};
@@ -57,13 +61,14 @@ let failed = 0;
 for (const name of names) {
   const sh = shots[name];
   // A narrower window ("width" in shots.yml) for a form or card, so the picture stays readable in the side panel and on phones
-  const ctx = await browser.newContext({ viewport: { width: sh.width ?? 1366, height: 900 }, deviceScaleFactor: 1.5, colorScheme: "light", locale: "en-US" });
+  // US Eastern time, so times and "today" read as they would for a US school whatever the machine's time zone
+  const ctx = await browser.newContext({ viewport: { width: sh.width ?? 1366, height: 900 }, deviceScaleFactor: 1.5, colorScheme: "light", locale: "en-US", timezoneId: "America/New_York" });
   const person = PEOPLE[sh.as];
   await ctx.addInitScript(
     ({ person, token, school }) => {
       try {
         localStorage.setItem("theme", "light");
-        localStorage.setItem("edulexa_dev_session", JSON.stringify({ role: person.role, label: person.label, token, userId: person.userId }));
+        localStorage.setItem("edulexa_dev_session", JSON.stringify({ role: person.role, label: person.label, token, userId: person.userId, ...(person.institute ? { institute: person.institute } : {}) }));
         if (person.school) localStorage.setItem("career.school", school);
         else localStorage.removeItem("career.school");
       } catch { /* no storage */ }
@@ -96,7 +101,7 @@ for (const name of names) {
     await page.waitForTimeout(200);
     const box = await area.evaluate((el) => { const r = el.getBoundingClientRect(); return { x: r.left + window.scrollX, y: r.top + window.scrollY, width: r.width, height: r.height }; });
     if (!box.width || !box.height) throw new Error(`"${sh.show ?? "main"}" isn't on the screen`);
-    const raw = await page.screenshot({ fullPage: true, clip: { x: box.x, y: box.y, width: Math.min(box.width, sh.width ?? 1366), height: Math.min(box.height, MAX_HEIGHT) } });
+    const raw = await page.screenshot({ fullPage: true, clip: { x: box.x, y: box.y, width: Math.min(box.width, sh.width ?? 1366), height: Math.min(box.height, sh.height ?? MAX_HEIGHT, MAX_HEIGHT) } });
     let img = sharp(raw);
     const meta = await img.metadata();
     if ((meta.width ?? 0) > MAX_WIDTH) img = img.resize({ width: MAX_WIDTH });

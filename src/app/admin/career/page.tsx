@@ -122,9 +122,11 @@ function WaitingForVerification({ onDecided }: { onDecided: (message: string) =>
                     decide(o, "Unverified");
                   }}
                 >
-                  <Field label="Reason the company sees" hint="Say what to fix, in a sentence.">
-                    {(p) => <input {...p} required maxLength={500} value={reason} onChange={(e) => setReason(e.target.value)} />}
-                  </Field>
+                  <div className="min-w-0 flex-1 sm:max-w-xl">
+                    <Field label="Reason the company sees" hint="Say what to fix, in a sentence.">
+                      {(p) => <input {...p} required maxLength={500} value={reason} onChange={(e) => setReason(e.target.value)} />}
+                    </Field>
+                  </div>
                   <Button type="submit" variant="danger" busy={busy === o.id + "Unverified"} disabled={!reason.trim()}>
                     Decline
                   </Button>
