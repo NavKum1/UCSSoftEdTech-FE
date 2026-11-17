@@ -11,7 +11,8 @@
  */
 
 import React from "react";
-import { BadgeCheck, Mic, ScanSearch, Shield } from "lucide-react";
+import { BadgeCheck, Mic, ScanSearch } from "lucide-react";
+import BrandMark from "@/components/brand/BrandMark";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { brandTextColors, accessibleBrandColor } from "@/components/career/brandColor";
 import type { AuthBrandState } from "@/components/auth/authBrand";
@@ -46,27 +47,11 @@ export function brandScopeStyle(state: AuthBrandState): React.CSSProperties {
   } as React.CSSProperties;
 }
 
-function EdulexaMark({ className = "h-9 w-9" }: { className?: string }) {
-  return (
-    <span
-      aria-hidden="true"
-      className={`${className} inline-flex shrink-0 items-center justify-center rounded-xl bg-linear-to-br from-indigo-500 via-violet-600 to-purple-700 text-white shadow-[inset_0_1px_0_rgb(255_255_255/0.25),0_8px_20px_-8px_rgb(79_70_229/0.7)] ring-1 ring-white/15`}
-    >
-      <Shield className="h-[55%] w-[55%]" strokeWidth={2.25} />
-    </span>
-  );
-}
-
 /** Brand name and mark. `tone="light"` sits on the dark brand panel; `"auto"` follows the page theme. */
 function Wordmark({ state, tone }: { state: AuthBrandState; tone: "light" | "auto" }) {
   const textClass = tone === "light" ? "text-white" : "text-foreground";
   if (state.kind === "edulexa") {
-    return (
-      <span className="inline-flex items-center gap-2.5">
-        <EdulexaMark className={tone === "light" ? "h-9 w-9" : "h-8 w-8"} />
-        <span className={`text-lg font-semibold tracking-tight ${textClass}`}>{state.brand.displayName}</span>
-      </span>
-    );
+    return <BrandMark width={tone === "light" ? 145 : 116} tone={tone === "light" ? "dark-surface" : "auto"} />;
   }
   if (state.kind === "white-label") {
     const { brand } = state;
@@ -103,7 +88,8 @@ function BrandPanel({ state }: { state: AuthBrandState }) {
   const en = useEn();
   const year = new Date().getFullYear();
   return (
-    <div
+    <aside
+      aria-label={en("About this product")}
       className="auth-panel relative hidden overflow-hidden text-white lg:flex lg:flex-col"
       data-brand={state.kind === "white-label" ? "white-label" : "platform"}
     >
@@ -128,7 +114,7 @@ function BrandPanel({ state }: { state: AuthBrandState }) {
               </p>
               <p className="text-4xl font-semibold leading-[1.1] tracking-tight xl:text-[2.75rem]">
                 <span className="block">{en("Build it.")}</span>
-                <span className="block bg-linear-to-r from-indigo-200 via-violet-200 to-fuchsia-200 bg-clip-text text-transparent">
+                <span className="block text-violet-200">
                   {en("Then defend it.")}
                 </span>
               </p>
@@ -182,7 +168,7 @@ function BrandPanel({ state }: { state: AuthBrandState }) {
           )}
         </div>
       </div>
-    </div>
+    </aside>
   );
 }
 
@@ -191,7 +177,7 @@ export default function AuthLayout({ state, children }: { state: AuthBrandState;
     <div className="auth-scope grid min-h-dvh w-full bg-background text-foreground lg:grid-cols-[minmax(0,1.05fr)_minmax(0,1fr)]" style={brandScopeStyle(state)}>
       <BrandPanel state={state} />
 
-      <div className="relative flex min-w-0 flex-col" style={{ backgroundImage: "var(--auth-page-tint)" }}>
+      <main id="main-content" className="relative flex min-w-0 flex-col" style={{ backgroundImage: "var(--auth-page-tint)" }}>
         <div className="flex items-center justify-between gap-3 px-4 pt-4 sm:px-6 sm:pt-5 lg:justify-end lg:px-8 lg:pt-6">
           <span className="lg:hidden">
             <Wordmark state={state} tone="auto" />
@@ -202,7 +188,7 @@ export default function AuthLayout({ state, children }: { state: AuthBrandState;
         <div className="flex flex-1 items-start justify-center px-4 pb-10 pt-8 sm:px-6 sm:pt-12 lg:items-center lg:pb-16 lg:pt-6">
           <div className="auth-rise w-full max-w-100">{children}</div>
         </div>
-      </div>
+      </main>
     </div>
   );
 }

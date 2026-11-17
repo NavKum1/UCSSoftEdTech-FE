@@ -13,6 +13,7 @@ import LanguagePicker from "@/components/career/i18n/LanguagePicker";
 import { accessibleBrandColor, brandCssVars } from "@/components/career/brandColor";
 import { FRAME, PAGE_Y } from "@/components/layout/Frame";
 import { HeaderControls } from "@/components/layout/AccountMenu";
+import BrandMark from "@/components/brand/BrandMark";
 import { useDataSaver } from "@/components/career/mobile/dataSaver";
 import { useEn } from "@/lib/english/EnglishProvider";
 import { SectionBar, SectionDrawerList, SectionTabs, findCurrent, type NavTab } from "@/components/layout/SectionNav";
@@ -171,6 +172,7 @@ export default function CareerShell({ persona, children }: { persona: CareerPers
 
   const reloadMe = useCallback(() => setVersion((v) => v + 1), []);
   const b = brand ?? FALLBACK_BRAND;
+  const platformWordmark = !b.isWhiteLabel && b.key === "edulexa" && !b.logoUrl;
   // White text sits on the brand color (active nav, primary buttons): darken it when the school's color is too light
   const brandSolid = accessibleBrandColor(b.primaryColor);
   // The Edulexa community (members without a school) offers mentoring only
@@ -260,8 +262,8 @@ export default function CareerShell({ persona, children }: { persona: CareerPers
             >
               {menuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
             </button>
-            <Link href={careerNav[persona][0]?.href ?? "/"} className="flex items-center gap-2 font-semibold">
-              {b.logoUrl ? (
+            <Link href={careerNav[persona][0]?.href ?? "/"} className="flex min-w-0 items-center gap-2 font-semibold">
+              {platformWordmark ? <BrandMark width={101} /> : b.logoUrl ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={b.logoUrl} alt="" className="h-7 w-7 rounded object-contain" />
               ) : (
@@ -269,8 +271,8 @@ export default function CareerShell({ persona, children }: { persona: CareerPers
                   {b.displayName.slice(0, 1)}
                 </span>
               )}
-              <span>{b.displayName}</span>
-              <span className="hidden text-sm font-normal text-muted-foreground sm:inline">· {nav.title}</span>
+              {!platformWordmark && <span className="truncate">{b.displayName}</span>}
+              <span className="hidden truncate text-sm font-normal text-muted-foreground sm:inline">· {nav.title}</span>
             </Link>
             <div className="ms-auto flex items-center gap-2">
               {schools.length > 1 && (
@@ -313,11 +315,9 @@ export default function CareerShell({ persona, children }: { persona: CareerPers
             label={t("navigation", { persona: nav.title })}
             className={`${FRAME} hidden !px-1 sm:!px-3 lg:block`}
           />
-          {menuOpen && (
-            <nav id="career-nav" aria-label={t("navigation", { persona: nav.title })} className="max-h-[calc(100dvh-3.5rem)] overflow-y-auto border-t border-border bg-card px-4 py-4 lg:hidden">
-              <SectionDrawerList tabs={tabs} current={currentPage} prefetch={prefetch} onNavigate={() => setMenuOpen(false)} />
-            </nav>
-          )}
+          <nav id="career-nav" hidden={!menuOpen} aria-label={t("navigation", { persona: nav.title })} className="max-h-[calc(100dvh-3.5rem)] overflow-y-auto border-t border-border bg-card px-4 py-4 lg:hidden">
+            {menuOpen && <SectionDrawerList tabs={tabs} current={currentPage} prefetch={prefetch} onNavigate={() => setMenuOpen(false)} />}
+          </nav>
         </header>
 
         <SectionBar tabs={tabs} tab={currentTab} current={currentPage} prefetch={prefetch} />

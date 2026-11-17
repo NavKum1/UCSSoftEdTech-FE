@@ -207,7 +207,7 @@ export function SectionTabs({
                 }}
                 type="button"
                 aria-expanded={isOpen}
-                aria-controls={`${idPrefix}-${t.key}`}
+                aria-controls={isOpen ? `${idPrefix}-${t.key}` : undefined}
                 aria-label={en("{name} pages", { name: t.label })}
                 onClick={() => setOpen(isOpen ? null : t.key)}
                 className="self-stretch pe-2 ps-0.5 text-muted-foreground hover:text-foreground"

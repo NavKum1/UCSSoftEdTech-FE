@@ -78,12 +78,34 @@
 }
 
 @layer base {
+  html {
+    scroll-padding-block-start: 7rem;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--brand);
+    outline-offset: 3px;
+  }
+
   body {
     @apply min-h-screen bg-background font-sans text-foreground antialiased selection:bg-cyan-300/40;
     font-feature-settings: "cv11", "ss01";
   }
   h1, h2, h3 {
     letter-spacing: -0.012em;
+  }
+}
+
+@media (forced-colors: active) {
+  :where(a[href], button, input, select, textarea, summary, [tabindex]):focus-visible {
+    outline: 2px solid Highlight !important;
+    outline-offset: 3px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wave-bar {
+    animation: none;
   }
 }
 

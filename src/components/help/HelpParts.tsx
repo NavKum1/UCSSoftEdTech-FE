@@ -87,6 +87,9 @@ export function HelpFrame({ from, children }: { from: string | null; children: R
   const back = backPath(from);
   return (
     <div className="min-h-screen bg-background text-foreground">
+      <a href="#help-main" className="sr-only focus:not-sr-only focus:fixed focus:start-2 focus:top-2 focus:z-50 focus:rounded-md focus:bg-card focus:px-3 focus:py-2">
+        {en("Skip to content")}
+      </a>
       <header className="sticky top-0 z-40 border-b border-border bg-card/80 backdrop-blur">
         <div className={`${FRAME} flex h-14 items-center gap-3`}>
           <Link href={back ?? "/"} className="flex items-center gap-2" aria-label={en("Edulexa home")}>
@@ -106,7 +109,7 @@ export function HelpFrame({ from, children }: { from: string | null; children: R
           </div>
         </div>
       </header>
-      <main id="help-main" className={`${FRAME} ${PAGE_Y}`}>
+      <main id="help-main" tabIndex={-1} className={`${FRAME} ${PAGE_Y}`}>
         {back && (
           <Link href={back} className="mb-4 inline-flex items-center gap-1.5 text-sm font-medium text-muted-foreground hover:text-foreground sm:hidden">
             <ArrowLeft aria-hidden="true" className="h-4 w-4 rtl:rotate-180" />

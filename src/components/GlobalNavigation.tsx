@@ -208,7 +208,7 @@ export default function GlobalNavigation() {
               className="rounded-lg p-2 text-muted-foreground hover:bg-muted hover:text-foreground lg:hidden"
               aria-label={en("Menu")}
               aria-expanded={mobileOpen}
-              aria-controls="mobile-navigation"
+              aria-controls={mobileOpen ? "mobile-navigation" : undefined}
             >
               {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
             </button>

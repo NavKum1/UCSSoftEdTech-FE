@@ -7,7 +7,7 @@
  * free, nothing charged today. The choices are kept in this tab (sessionStorage) across the sign-in round trip.
  */
 import { timeZoneOption } from "@/lib/timeZoneName";
-import React, { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Check, ChevronLeft, Loader2, Lock, Sparkles } from "lucide-react";
@@ -87,7 +87,7 @@ const slugOf = (name: string) =>
 export default function StartPage() {
   // The draft lives in this tab's storage, so the page renders on the client only
   const client = useSyncExternalStore(noSubscribe, () => true, () => false);
-  return client ? <Wizard /> : <div className="min-h-screen bg-slate-50 dark:bg-slate-950" />;
+  return client ? <Wizard /> : <main className="min-h-screen bg-slate-50 dark:bg-slate-950" aria-busy="true" />;
 }
 
 function Wizard() {
@@ -141,11 +141,18 @@ function Wizard() {
 
   // Signed in now: the account step is done
   const step = d.step === 3 && isSignedIn ? 4 : d.step;
+  const previousStep = useRef(step);
+  useEffect(() => {
+    if (previousStep.current === step) return;
+    const heading = document.getElementById(`s${step}`);
+    if (!heading) return;
+    previousStep.current = step;
+    heading.focus();
+  }, [step, plans]);
 
   const go = (next: number) => {
     setError(null);
     update({ step: next });
-    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const chooseSchool = async () => {
@@ -231,11 +238,9 @@ function Wizard() {
         <div aria-hidden="true" className="absolute -bottom-32 -start-16 h-80 w-80 rounded-full bg-indigo-400/20 blur-3xl" />
         <div className="relative">
           <Link href="/" className="inline-flex items-center gap-2.5 text-lg font-semibold text-white">
-            {/* The app's logo (components/brand/BrandMark.tsx); the wordmark is drawn here in white for the dark panel */}
-            <BrandMark size={36} wordmark={false} />
-            <span className="tracking-tight">edulexa</span>
+            <BrandMark width={146} tone="dark-surface" />
           </Link>
-          <h1 className="mt-14 text-[2rem] font-semibold leading-tight tracking-tight text-white">{en("Set up your school in about five minutes")}</h1>
+          <p className="mt-14 text-[2rem] font-semibold leading-tight tracking-tight text-white">{en("Set up your school in about five minutes")}</p>
           <p className="mt-3 text-[15px] leading-relaxed text-indigo-100/80">{en("Guidance forms, admissions CRM and career services for your students, ready to use today.")}</p>
           <ol className="mt-10 space-y-1">
             {STEPS.map((label, i) => {
@@ -267,11 +272,11 @@ function Wizard() {
         </div>
       </aside>
 
-      <main className="mx-auto w-full max-w-2xl px-4 py-8 sm:px-8 lg:py-14">
+      <main id="main-content" className="mx-auto w-full max-w-2xl px-4 py-8 sm:px-8 lg:py-14">
         {/* Phones: a compact progress line instead of the panel */}
         <div className="mb-6 lg:hidden">
-          <Link href="/" className="text-base font-semibold">
-            {en("Edulexa")}
+          <Link href="/" className="inline-flex">
+            <BrandMark />
           </Link>
           <p className="mt-4 text-sm text-slate-500 dark:text-slate-400">
             {en("Step {step} of 5: {value}", { step, value: en(STEPS[step - 1]) })}
@@ -289,9 +294,9 @@ function Wizard() {
 
         {step === 1 && (
           <section aria-labelledby="s1">
-            <h2 id="s1" className="text-2xl font-semibold tracking-tight sm:text-3xl">
+            <h1 id="s1" tabIndex={-1} className="text-2xl font-semibold tracking-tight sm:text-3xl">
               {en("Tell us about your school")}
-            </h2>
+            </h1>
             <p className="mt-2 text-slate-600 dark:text-slate-400">{en("Your country decides your currency and where your school's data is kept.")}</p>
             <label className="mt-8 block text-sm font-medium">
               {en("Country")}
@@ -354,24 +359,30 @@ function Wizard() {
 
         {step === 2 && plans && (
           <section aria-labelledby="s2">
-            <h2 id="s2" className="text-2xl font-semibold tracking-tight sm:text-3xl">
+            <h1 id="s2" tabIndex={-1} className="text-2xl font-semibold tracking-tight sm:text-3xl">
               {en("Choose a plan")}
-            </h2>
+            </h1>
             <p className="mt-2 text-slate-600 dark:text-slate-400">{en("Every plan starts with {trialDays} days free. You can change it any time.", { trialDays: plans.trialDays })}</p>
-            <div role="radiogroup" aria-label={en("Billing period")} className="mt-6 inline-flex rounded-xl border border-slate-200 bg-white p-1 dark:border-slate-800 dark:bg-slate-900">
-              {(["month", "year"] as const).map((i) => (
-                <button
-                  key={i}
-                  type="button"
-                  role="radio"
-                  aria-checked={d.interval === i}
-                  onClick={() => update({ interval: i })}
-                  className={`rounded-lg px-4 py-2 text-sm font-medium transition ${d.interval === i ? "bg-indigo-600 text-white" : "text-slate-600 hover:text-slate-900 dark:text-slate-400"}`}
-                >
-                  {i === "month" ? en("Monthly") : en("Yearly: 2 months free")}
-                </button>
-              ))}
-            </div>
+            <fieldset className="mt-6 min-w-0">
+              <legend className="sr-only">{en("Billing period")}</legend>
+              <div className="inline-flex max-w-full flex-wrap rounded-xl border border-slate-200 bg-white p-1 dark:border-slate-800 dark:bg-slate-900">
+                {(["month", "year"] as const).map((interval) => (
+                  <label key={interval} className="cursor-pointer">
+                    <input
+                      type="radio"
+                      name="billing-period"
+                      value={interval}
+                      checked={d.interval === interval}
+                      onChange={() => update({ interval })}
+                      className="peer sr-only"
+                    />
+                    <span className="block rounded-lg px-4 py-2 text-sm font-medium text-slate-700 peer-checked:bg-indigo-600 peer-checked:text-white peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-[var(--brand)] dark:text-slate-300 dark:peer-checked:text-white">
+                      {interval === "month" ? en("Monthly") : en("Yearly: 2 months free")}
+                    </span>
+                  </label>
+                ))}
+              </div>
+            </fieldset>
             <div className="mt-6 grid gap-3">
               {plans.plans.map((p) => (
                 <label
@@ -413,9 +424,9 @@ function Wizard() {
 
         {step === 3 && !isSignedIn && (
           <section aria-labelledby="s3">
-            <h2 id="s3" className="text-2xl font-semibold tracking-tight sm:text-3xl">
+            <h1 id="s3" tabIndex={-1} className="text-2xl font-semibold tracking-tight sm:text-3xl">
               {en("Create your account")}
-            </h2>
+            </h1>
             <p className="mt-2 text-slate-600 dark:text-slate-400">{en("You'll be your school's administrator. We'll ask you to confirm your e-mail address.")}</p>
             <div className="mt-8 flex flex-wrap gap-3">
               <button type="button" className={primary} disabled={!isLoaded} onClick={() => void keycloakSignIn("/start", { signUp: true })}>
@@ -435,9 +446,9 @@ function Wizard() {
 
         {step === 4 && (
           <section aria-labelledby="s4">
-            <h2 id="s4" className="text-2xl font-semibold tracking-tight sm:text-3xl">
+            <h1 id="s4" tabIndex={-1} className="text-2xl font-semibold tracking-tight sm:text-3xl">
               {en("Your school's details")}
-            </h2>
+            </h1>
             <form
               className="mt-8 space-y-5"
               onSubmit={(e) => {
@@ -511,9 +522,9 @@ function Wizard() {
 
         {step === 5 && plans && plan && (
           <section aria-labelledby="s5">
-            <h2 id="s5" className="text-2xl font-semibold tracking-tight sm:text-3xl">
+            <h1 id="s5" tabIndex={-1} className="text-2xl font-semibold tracking-tight sm:text-3xl">
               {en("Start your free trial")}
-            </h2>
+            </h1>
             <div className="mt-8 rounded-2xl border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-900">
               <dl className="grid gap-4 text-[15px] sm:grid-cols-2">
                 <div>

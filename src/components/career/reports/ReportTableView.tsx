@@ -82,8 +82,8 @@ export function ReportTableView({ table, onExport, exporting }: { table: ReportT
           </ul>
         </figure>
       ) : (
-        <ScrollArea>
-          <table className="w-full text-sm">
+        <ScrollArea label={table.title}>
+          <table aria-labelledby={headingId} className="w-full text-sm">
             <thead>
               <tr className="border-b border-border text-start text-xs text-muted-foreground [&_th]:text-start">
                 {table.columns.map((c, i) => (

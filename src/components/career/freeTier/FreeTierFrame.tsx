@@ -9,8 +9,11 @@ import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { API_BASE_URL } from "@/lib/apiClient";
 import { useCareerT } from "@/components/career/ui";
+import BrandMark from "@/components/brand/BrandMark";
 
 export interface FreeBrand {
+  key?: string;
+  isWhiteLabel?: boolean;
   displayName: string;
   logoUrl?: string | null;
 }
@@ -67,6 +70,7 @@ export function useFreeBrand(): FreeBrand | null {
 export default function FreeTierFrame({ children }: { children: React.ReactNode }) {
   const t = useCareerT("freeTier");
   const brand = useFreeBrand();
+  const platformWordmark = brand?.key === "edulexa" && !brand.isWhiteLabel && !brand.logoUrl;
   return (
     <div className="text-foreground">
       <a href="#free-main" className="sr-only focus:not-sr-only focus:absolute focus:start-2 focus:top-2 focus:z-50 focus:rounded focus:bg-card focus:px-3 focus:py-2">
@@ -77,7 +81,7 @@ export default function FreeTierFrame({ children }: { children: React.ReactNode 
           <Link href="/free" className="flex items-center gap-2 font-semibold">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             {brand?.logoUrl && <img src={brand.logoUrl} alt="" className="h-7 w-auto" />}
-            <span>{brand?.displayName ?? t("brandFallback")}</span>
+            {platformWordmark ? <BrandMark width={101} /> : <span>{brand?.displayName ?? t("brandFallback")}</span>}
           </Link>
           <nav aria-label={t("navLabel")} className="flex gap-4 text-sm">
             <Link href="/free" className="underline-offset-4 hover:underline">
@@ -89,7 +93,7 @@ export default function FreeTierFrame({ children }: { children: React.ReactNode 
           </nav>
         </div>
       </header>
-      <div id="free-main" className="space-y-6 pt-6">
+      <div id="free-main" tabIndex={-1} className="space-y-6 pt-6">
         {children}
       </div>
     </div>

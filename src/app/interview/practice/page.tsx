@@ -241,14 +241,15 @@ export default function MultiStreamInterviewPracticePage() {
   const audioContextRef = useRef<AudioContext | null>(null);
   const analyserRef = useRef<AnalyserNode | null>(null);
   const animFrameRef = useRef<number | null>(null);
-  const transcriptBottomRef = useRef<HTMLDivElement | null>(null);
+  const transcriptFeedRef = useRef<HTMLDivElement | null>(null);
 
 
   // Auto-scroll transcript container
   useEffect(() => {
-    if (autoScroll && transcriptBottomRef.current) {
-      transcriptBottomRef.current.scrollIntoView({ behavior: "smooth" });
-    }
+    const feed = transcriptFeedRef.current;
+    if (!autoScroll || !feed) return;
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    feed.scrollTo({ top: feed.scrollHeight, behavior: reduceMotion ? "instant" : "smooth" });
   }, [transcripts, currentAiInterim, currentCandidateInterim, autoScroll]);
 
   // The longest interview (the minutes set aside when one starts), for the note before starting
@@ -822,7 +823,10 @@ export default function MultiStreamInterviewPracticePage() {
 
                 <div className="flex items-center space-x-2">
                   <button
+                    type="button"
                     onClick={() => setAutoScroll(!autoScroll)}
+                    aria-label={en("Auto-scroll")}
+                    aria-pressed={autoScroll}
                     className={buttonClass("ghost")}
                     title={en("Toggle auto-scrolling as words arrive")}
                   >
@@ -843,7 +847,13 @@ export default function MultiStreamInterviewPracticePage() {
               </div>
 
               {/* Scrollable Message Bubbles Stream */}
-              <div className="flex-1 p-4 overflow-y-auto space-y-4 text-sm">
+              <div
+                ref={transcriptFeedRef}
+                role="log"
+                aria-label={en("Live transcript")}
+                tabIndex={0}
+                className="flex-1 space-y-4 overflow-y-auto overscroll-contain p-4 text-sm focus-visible:outline-offset-[-3px]"
+              >
                 {transcripts.length === 0 && !currentAiInterim && !currentCandidateInterim && (
                   <div className="h-full flex flex-col items-center justify-center text-center p-6 space-y-3 text-muted-foreground">
                     <MessageSquare className="w-8 h-8 opacity-40 text-primary" />
@@ -893,7 +903,7 @@ export default function MultiStreamInterviewPracticePage() {
 
                 {/* Active AI Streaming Delta Bubble */}
                 {currentAiInterim && (
-                  <div className="flex flex-col space-y-1 items-start">
+                  <div aria-hidden="true" className="flex flex-col space-y-1 items-start">
                     <div className="flex items-center space-x-1.5 text-xs text-muted-foreground px-1 font-medium">
                       <Bot className="w-3 h-3" />
                       <span>{en("AI interviewer speaking…")}</span>
@@ -907,7 +917,7 @@ export default function MultiStreamInterviewPracticePage() {
 
                 {/* Active Candidate Interim Speech Bubble */}
                 {currentCandidateInterim && (
-                  <div className="flex flex-col space-y-1 items-end">
+                  <div aria-hidden="true" className="flex flex-col space-y-1 items-end">
                     <div className="flex items-center space-x-1.5 text-xs text-muted-foreground px-1 font-medium">
                       <Mic className="w-3 h-3" />
                       <span>{en("Transcribing {candidateName}…", { candidateName })}</span>
@@ -919,7 +929,6 @@ export default function MultiStreamInterviewPracticePage() {
                   </div>
                 )}
 
-                <div ref={transcriptBottomRef} />
               </div>
 
             </div>
@@ -1154,10 +1163,11 @@ export default function MultiStreamInterviewPracticePage() {
                     <button
                       key={stream.id}
                       type="button"
+                      aria-pressed={selectedStream === stream.id}
                       onClick={() => setSelectedStream(stream.id)}
                       className={`p-4 rounded-xl border bg-card shadow-sm text-start transition-colors cursor-pointer ${
                         selectedStream === stream.id
-                          ? "border-primary ring-1 ring-primary"
+                          ? "border-[var(--brand)] ring-1 ring-[var(--brand)]"
                           : "border-border hover:bg-muted/50"
                       }`}
                     >
@@ -1187,10 +1197,11 @@ export default function MultiStreamInterviewPracticePage() {
                     <button
                       key={persona.id}
                       type="button"
+                      aria-pressed={selectedPersona === persona.id}
                       onClick={() => setSelectedPersona(persona.id)}
                       className={`p-4 rounded-xl border bg-card shadow-sm text-start transition-colors cursor-pointer ${
                         selectedPersona === persona.id
-                          ? "border-primary ring-1 ring-primary"
+                          ? "border-[var(--brand)] ring-1 ring-[var(--brand)]"
                           : "border-border hover:bg-muted/50"
                       }`}
                     >
@@ -1223,37 +1234,41 @@ export default function MultiStreamInterviewPracticePage() {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-sm font-medium text-foreground">
+                  <label htmlFor="interview-job-title" className="text-sm font-medium text-foreground">
                     {en("Job title")}
                   </label>
                   <input
+                    id="interview-job-title"
                     type="text"
+                    required
                     value={jobTitle}
                     onChange={(e) => setJobTitle(e.target.value)}
                     placeholder={en("e.g. Senior Backend Engineer")}
-                    className="w-full px-3 py-2 rounded-lg border border-border bg-card shadow-sm text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+                    className="w-full px-3 py-2 rounded-lg border border-border bg-card shadow-sm text-sm text-foreground"
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-sm font-medium text-foreground">
+                  <label htmlFor="interview-job-description" className="text-sm font-medium text-foreground">
                     {en("Job description or key requirements")}
                   </label>
                   <textarea
+                    id="interview-job-description"
                     rows={4}
                     value={jobDescription}
                     onChange={(e) => setJobDescription(e.target.value)}
                     placeholder={en("Paste the job requirements, tech stack, or responsibilities here...")}
-                    className="w-full px-3 py-2 rounded-lg border border-border bg-card shadow-sm text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary leading-relaxed"
+                    className="w-full px-3 py-2 rounded-lg border border-border bg-card shadow-sm text-sm text-foreground leading-relaxed"
                   />
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-1.5">
-                    <label className="text-sm font-medium text-foreground">
+                    <label htmlFor="interview-candidate-name" className="text-sm font-medium text-foreground">
                       {en("Your name")}
                     </label>
                     <input
+                      id="interview-candidate-name"
                       type="text"
                       value={candidateName}
                       onChange={(e) => setCandidateName(e.target.value)}
@@ -1262,10 +1277,11 @@ export default function MultiStreamInterviewPracticePage() {
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="text-sm font-medium text-foreground">
+                    <label htmlFor="interview-voice" className="text-sm font-medium text-foreground">
                       {en("Interviewer voice")}
                     </label>
                     <select
+                      id="interview-voice"
                       value={selectedVoice}
                       onChange={(e) => setSelectedVoice(e.target.value)}
                       className="w-full px-3 py-2 rounded-lg border border-border bg-card shadow-sm text-sm text-foreground cursor-pointer"
