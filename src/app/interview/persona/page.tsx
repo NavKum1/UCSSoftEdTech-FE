@@ -37,6 +37,9 @@ interface AdaptedPromptConfig {
   injectedSystemPrompt: string;
 }
 
+/** How hard the interviewer pushes, in plain words (the server's levels: Draconian, Balanced, Lenient). en() where shown. */
+const SCRUTINY_LABEL: Record<string, string> = { Draconian: "Very demanding", Balanced: "Practical", Lenient: "Supportive" };
+
 export default function PersonaSelectorPage() {
   const en = useEn();
   const { apiFetch, ready, access } = useLegacyApi();
@@ -188,7 +191,7 @@ export default function PersonaSelectorPage() {
                   <div className="flex items-center justify-between">
                     <div className="rounded-lg border border-border bg-muted p-2">{getPersonaIcon(persona.code)}</div>
                     <Badge tone={persona.scrutinyLevel === "Draconian" ? "bad" : persona.scrutinyLevel === "Lenient" ? "good" : "warn"}>
-                      {persona.scrutinyLevel}
+                      {en(SCRUTINY_LABEL[persona.scrutinyLevel] ?? "Demanding")}
                     </Badge>
                   </div>
 

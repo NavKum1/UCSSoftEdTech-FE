@@ -29,6 +29,7 @@ import {
 } from "lucide-react";
 import { useEn } from "@/lib/english/EnglishProvider";
 import { Button, PageHeader } from "@/components/career/ui";
+import { languageText, taskTypeText } from "@/lib/taskWords";
 
 interface IntegritySignal {
   code: string;
@@ -385,13 +386,13 @@ export default function EvidencePackPage() {
         />
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
           <Stat label={en("Task")} value={pack.task.title || "Untitled challenge"} />
-          <Stat label={en("Task type / language")} value={`${pack.task.taskType ?? "—"} · ${pack.task.language ?? "—"}`} />
+          <Stat label={en("Task and language")} value={`${pack.task.taskType ? en(taskTypeText(pack.task.taskType)!) : "—"} · ${languageText(pack.task.language) ?? "—"}`} />
           <Stat label={en("AI policy")} value={AI_POLICY_LABELS[pack.task.aiPolicy ?? ""] ?? pack.task.aiPolicy ?? "—"} />
           <Stat label={en("Submitted")} value={fmtDate(pack.timing.submittedAt)} />
           <Stat label={en("Attempt started")} value={fmtDate(pack.timing.attemptStartedAt)} />
           <Stat label={en("Elapsed")} value={pack.timing.elapsedMinutes != null ? `${pack.timing.elapsedMinutes} min` : "—"} />
           <Stat label={en("Active editing")} value={pack.timing.activeEditingMinutes != null ? `${pack.timing.activeEditingMinutes} min` : "—"} />
-          <Stat label={en("Evidence version")} value={<span className="font-mono text-xs break-all">{pack.evidenceHash.slice(0, 16)}…</span>} />
+          <Stat label={en("Reference code")} value={<span className="font-mono text-xs break-all" title={en("This code changes if anything in the pack changes, so two copies with the same code are the same.")}>{pack.evidenceHash.slice(0, 16)}…</span>} />
         </div>
       </div>
 

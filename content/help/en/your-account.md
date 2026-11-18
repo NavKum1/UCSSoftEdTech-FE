@@ -24,9 +24,9 @@ Select the circle with your initials at the top right. It shows your name and e-
 
 ## Language and spelling
 
-At the top of the page, next to the light and dark button, is the language list. It shows the language you're using, such as [ui: English (US)].
+At the top of the page, next to the light and dark button, is the language list. It shows the language you're using, such as **English (US)**.
 
-- Choose [ui: English (US)] or **English (UK)** for British spelling ("color" or "colour"). If you haven't chosen, you get your school's choice, or US English.
+- Choose **English (US)** or **English (UK)** for British spelling ("color" or "colour"). If you haven't chosen, you get your school's choice, or US English.
 - Spanish, Hindi and Arabic are being prepared. Each one is added to the list once a native speaker has checked it. If you see a language marked **(preview)**, it's a draft, and some words may be wrong.
 
 Your choice applies to every page, and this browser remembers it.

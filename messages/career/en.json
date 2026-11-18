@@ -6057,7 +6057,7 @@
       "connect": "Connect",
       "checkAndSave": "Check and save",
       "disconnect": "Disconnect",
-      "disconnectConfirm": "Disconnect Pulse Relay? WhatsApp and SMS updates stop for every student until you connect again.",
+      "disconnectConfirm": "Disconnect Pulse Relay? WhatsApp and SMS updates stop for every student, and admissions SMS stops too, until you connect again.",
       "connectionSaved": "Pulse Relay is connected.",
       "disconnected": "Pulse Relay is disconnected.",
       "adminOnly": "Only career-center admins can change the connection.",
@@ -6290,7 +6290,8 @@
       "jobDescription": "Description",
       "requiredDocuments": "Documents students must attach",
       "premiumVisibility": "Ask for premium visibility where schools offer it (no charge is made today)",
-      "saveDraft": "Save as draft"
+      "saveDraft": "Save as draft",
+      "payPerYear": "{amount} a year"
     },
     "employerJobDetail": {
       "noEmployer": "No employer profile yet",
@@ -6326,7 +6327,9 @@
       "driveDate": "Drive date",
       "mode": "Mode",
       "sent": "Sent. Each school reviews the drive before students see it.",
-      "send": "{count, plural, one {Send to {count} school} other {Send to {count} schools}}"
+      "send": "{count, plural, one {Send to {count} school} other {Send to {count} schools}}",
+      "stipendLine": "Stipend {amount} per month",
+      "payPerYear": "{amount} a year"
     },
     "employerDrive": {
       "noEmployer": "No employer profile yet",

@@ -27,6 +27,7 @@ import SignInRequired from "@/components/SignInRequired";
 import { useEn } from "@/lib/english/EnglishProvider";
 import { Loading, PageHeader, brandFill, buttonClass } from "@/components/career/ui";
 import { HelpLink } from "@/components/help/HelpLink";
+import { languageText, taskTypeText } from "@/lib/taskWords";
 
 type GetToken = () => Promise<string | null>;
 
@@ -654,8 +655,7 @@ function CredentialCard({
 }) {
   const en = useEn();
   // What kind of credential, in words (the API sends a type key)
-  const kindLabel = (t?: string | null) =>
-    t === "ClassAssessment" ? en("Class assessment") : t === "InternshipDefense" ? en("Internship defense") : t === "RealWork" ? en("Real-work defense") : t ?? null;
+  const kindLabel = (t?: string | null) => { const text = taskTypeText(t); return text ? en(text) : null; };
   const [showShares, setShowShares] = useState(false);
   const [jwsCopied, setJwsCopied] = useState(false);
   const [includeDecisionInJws, setIncludeDecisionInJws] = useState(false);
@@ -690,7 +690,7 @@ function CredentialCard({
           <h3 className="text-base font-semibold text-foreground">{credential.task.title}</h3>
           <p className="text-xs text-muted-foreground">
             {en("{value} · issued {date} · {value2}", {
-              value: [kindLabel(credential.task.taskType), credential.task.language].filter(Boolean).join(" · ") || en("Voice defense"),
+              value: [kindLabel(credential.task.taskType), languageText(credential.task.language)].filter(Boolean).join(" · ") || en("Voice defense"),
               date: formatDate(credential.issuedAt),
               value2:
                 credential.status === "Revoked"

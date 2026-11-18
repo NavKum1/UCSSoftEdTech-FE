@@ -14,6 +14,7 @@ import {
 } from "@/lib/credentialVerification";
 import { useEn } from "@/lib/english/EnglishProvider";
 import { Button, PageHeader } from "@/components/career/ui";
+import { languageText, taskTypeText } from "@/lib/taskWords";
 
 interface JwsVerifyResponse {
   valid: boolean;
@@ -228,7 +229,7 @@ export default function VerifyJwsPage() {
             <div className="rounded-xl border border-border bg-card p-5 shadow-sm grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
               <div><span className="text-muted-foreground">{en("Holder: ")}</span><span className="font-semibold">{claims.name}</span></div>
               <div><span className="text-muted-foreground">{en("Task: ")}</span>{claims.task.title}</div>
-              <div><span className="text-muted-foreground">{en("Type / language: ")}</span>{claims.task.taskType ?? "—"} · {claims.task.language ?? "—"}</div>
+              <div><span className="text-muted-foreground">{en("Task and language: ")}</span>{claims.task.taskType ? en(taskTypeText(claims.task.taskType)!) : "—"} · {languageText(claims.task.language) ?? "—"}</div>
               <div><span className="text-muted-foreground">{en("AI policy: ")}</span>{claims.task.aiPolicy ?? "—"}</div>
               <div>
                 <span className="text-muted-foreground">{en("Tests passed: ")}</span>

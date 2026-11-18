@@ -26,6 +26,11 @@ export function useJobTypeLabels(): Record<string, string> {
   return useCareerLabels("campusShared.jobType", JOB_TYPE_KEYS);
 }
 export const DOC_KIND_KEYS = ["Resume", "Transcript", "Marksheet", "CoverLetter", "IdProof", "Portfolio", "Other"];
+/** Marksheets and ID proof are asked for in India; elsewhere a transcript covers the marks and no ID is asked for when
+ * applying. A kind already chosen (an existing job, or the one picked) is kept so it still shows. */
+const INDIA_ONLY_DOC_KINDS = ["Marksheet", "IdProof"];
+export const docKindsFor = (india: boolean, keep: readonly string[] = []) =>
+  DOC_KIND_KEYS.filter((k) => india || !INDIA_ONLY_DOC_KINDS.includes(k) || keep.includes(k));
 export function useDocKindLabels(): Record<string, string> {
   return useCareerLabels("campusShared.docKind", DOC_KIND_KEYS);
 }

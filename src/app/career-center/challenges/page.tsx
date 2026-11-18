@@ -4,6 +4,8 @@ import React, { useState } from "react";
 import { useApi } from "@/lib/appAuth";
 import { useHasCareerRole } from "@/components/career/CareerShell";
 import { Badge, Button, Card, EmptyState, ErrorBanner, Field, Loading, PageHeader, SuccessBanner, formatDate, useLoad, useCareerT } from "@/components/career/ui";
+import { languageText, taskTypeText } from "@/lib/taskWords";
+import { useEn } from "@/lib/english/EnglishProvider";
 
 interface Row {
   status: string;
@@ -25,6 +27,7 @@ const TONES: Record<string, "neutral" | "good" | "warn" | "bad"> = { Pending: "w
 
 export default function CareerCenterChallengesPage() {
   const t = useCareerT("careerCenterChallenges");
+  const en = useEn();
   const api = useApi();
   // Career admins and employer relations staff approve challenges; only admins change the approval setting (as the API checks)
   const canDecide = useHasCareerRole("CareerAdmin", "EmployerRelations");
@@ -134,7 +137,7 @@ export default function CareerCenterChallengesPage() {
                     </div>
                     {c.description && <p className="whitespace-pre-line">{c.description}</p>}
                     <p className="text-muted-foreground">
-                      {t("assessmentTitle", { title: row.sprint?.title ?? "—" })}{" "}{row.sprint && `(${row.sprint.requiredLanguage}, ${row.sprint.taskType})`}
+                      {t("assessmentTitle", { title: row.sprint?.title ?? "—" })}{" "}{row.sprint && `(${languageText(row.sprint.requiredLanguage)}, ${en(taskTypeText(row.sprint.taskType)!)})`}
                       {" "}{t("for")}{" "}{c.degreeLevels.length ? c.degreeLevels.join(", ") : t("allLevels")}{c.majors.length ? `, ${c.majors.join(", ")}` : ""}
                       {c.maxParticipants ? t("upToMaxParticipants", { maxParticipants: c.maxParticipants }) : ""}
                     </p>

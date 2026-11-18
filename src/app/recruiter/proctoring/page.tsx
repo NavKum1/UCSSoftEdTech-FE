@@ -50,6 +50,9 @@ const EVENT_LABEL: Record<string, string> = {
   Other: "Other event",
 };
 
+/** A session's risk level as the filter tabs name it (the server's values). en() where shown. */
+const RISK_LABEL: Record<string, string> = { Clean: "Clean", Suspicious: "Suspicious", Flagged: "Flagged" };
+
 export default function SessionIntegrityPage() {
   const en = useEn();
   const { apiFetch, ready, access } = useLegacyApi();
@@ -99,6 +102,19 @@ export default function SessionIntegrityPage() {
   if (access) return <AccessNotice problem={access} feature="Proctored sessions" />;
 
   const shown = (rows ?? []).filter((r) => (filter === "all" ? true : filter === "review" ? r.needsReview : r.riskLevel === filter));
+  // The status of a session in plain words (shared by the phone cards and the table)
+  const statusOf = (r: (typeof shown)[number]) =>
+    r.isOverriddenByAdmin ? (
+      <span className="inline-flex items-center gap-1 text-emerald-700 dark:text-emerald-400">
+        <ShieldCheck aria-hidden="true" className="h-4 w-4" />{en("Reviewed")}
+      </span>
+    ) : r.needsReview ? (
+      <span className="inline-flex items-center gap-1 text-amber-700 dark:text-amber-400">
+        <ShieldAlert aria-hidden="true" className="h-4 w-4" />{en("Needs review")}
+      </span>
+    ) : (
+      <span>{en(RISK_LABEL[r.riskLevel] ?? r.riskLevel)}</span>
+    );
 
   return (
     <div className="space-y-6">
@@ -127,7 +143,27 @@ export default function SessionIntegrityPage() {
       ) : shown.length === 0 ? (
         <p className={`${card} p-6 text-sm text-muted-foreground`}>{rows.length === 0 ? en("No proctored sessions yet.") : en("No sessions match this filter.")}</p>
       ) : (
-        <div className={card}>
+        <>
+        {/* On a phone each session is a short card; the table from the sm breakpoint up */}
+        <ul className={`${card} divide-y divide-border sm:hidden`}>
+          {shown.map((r) => (
+            <li key={r.sessionId} className="space-y-1 p-4 text-sm">
+              <div className="flex items-start justify-between gap-3">
+                <span className="font-medium">{r.candidateName ?? <span className="text-muted-foreground">{en("Unnamed candidate")}</span>}</span>
+                <button type="button" onClick={() => void openReport(r.sessionId)} className="shrink-0 text-sm font-medium text-indigo-700 hover:underline dark:text-indigo-300">
+                  {en("Open")}
+                </button>
+              </div>
+              <p className="text-muted-foreground">{new Date(r.lastUpdatedAt).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" })}</p>
+              <p className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                <span>{en("Events: {count}", { count: r.totalViolations })}</span>
+                <span>{en("Integrity score: {score}", { score: r.integrityScore })}</span>
+                {statusOf(r)}
+              </p>
+            </li>
+          ))}
+        </ul>
+        <div className={`${card} hidden sm:block`}>
           <ScrollArea>
           <table className="w-full text-sm">
             <thead className="border-b border-border text-start text-xs text-muted-foreground">
@@ -148,17 +184,7 @@ export default function SessionIntegrityPage() {
                   <td className="p-3 text-end tabular-nums">{r.totalViolations}</td>
                   <td className="p-3 text-end tabular-nums">{r.integrityScore}</td>
                   <td className="p-3">
-                    {r.isOverriddenByAdmin ? (
-                      <span className="inline-flex items-center gap-1 text-emerald-700 dark:text-emerald-400">
-                        <ShieldCheck aria-hidden="true" className="h-4 w-4" />{en("Reviewed")}
-                      </span>
-                    ) : r.needsReview ? (
-                      <span className="inline-flex items-center gap-1 text-amber-700 dark:text-amber-400">
-                        <ShieldAlert aria-hidden="true" className="h-4 w-4" />{en("Needs review")}
-                      </span>
-                    ) : (
-                      r.riskLevel
-                    )}
+                    {statusOf(r)}
                   </td>
                   <td className="p-3 text-end">
                     <button type="button" onClick={() => void openReport(r.sessionId)} className="text-sm font-medium text-indigo-700 hover:underline dark:text-indigo-300">
@@ -171,6 +197,7 @@ export default function SessionIntegrityPage() {
           </table>
           </ScrollArea>
         </div>
+        </>
       )}
 
       {open && (

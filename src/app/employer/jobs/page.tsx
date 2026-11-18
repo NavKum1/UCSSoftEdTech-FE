@@ -14,7 +14,7 @@ import { label } from "@/components/career/placements/shared";
 import { CURRENCIES, useCountryWords } from "@/components/career/country";
 import { HireConnection } from "@/components/career/campus/HireConnection";
 import { AskVerification, type VerificationRequestState } from "@/components/career/AskVerification";
-import { DOC_KIND_KEYS, JOB_TYPE_KEYS, localToIso, toList, toNum, useDocKindLabels, useJobStatusLabels, useJobTypeLabels, type CampusJob } from "@/components/career/campus/shared";
+import { docKindsFor, JOB_TYPE_KEYS, localToIso, toList, toNum, useDocKindLabels, useJobStatusLabels, useJobTypeLabels, type CampusJob } from "@/components/career/campus/shared";
 
 interface Verification {
   verified: boolean;
@@ -191,7 +191,7 @@ function Jobs({ employerId, country }: { employerId: string; country: string | n
                     {j.title}
                   </Link>
                   <div className="text-sm text-muted-foreground">
-                    {label(TYPE, j.jobType)} · {j.jobType === "Internship" ? t("stipendLine", { amount: w.rules.moneyFullIn(j.stipendMonthly, j.currency) }) : w.rules.moneyFullIn(j.ctcAnnual, j.currency)} ·{" "}
+                    {label(TYPE, j.jobType)} · {j.jobType === "Internship" ? t("stipendLine", { amount: w.rules.moneyFullIn(j.stipendMonthly, j.currency) }) : t("payPerYear", { amount: w.rules.moneyFullIn(j.ctcAnnual, j.currency) })} ·{" "}
                     {t("deadline", { date: formatDate(j.applyDeadline) })}
                   </div>
                 </div>
@@ -269,7 +269,7 @@ function Jobs({ employerId, country }: { employerId: string; country: string | n
         <fieldset className="mt-3">
           <legend className="text-sm font-medium">{t("requiredDocuments")}</legend>
           <div className="mt-1 flex flex-wrap gap-3 text-sm">
-            {DOC_KIND_KEYS.map((k) => (
+            {docKindsFor(india, job.requiredDocuments).map((k) => (
               <label key={k} className="flex items-center gap-1">
                 <input
                   type="checkbox"

@@ -31,9 +31,9 @@ const LABELS: Record<string, string> = {
   Prohibited: "AI prohibited",
   Allowed: "AI allowed (logged)",
   Evaluated: "AI use evaluated",
-  Greenfield: "Greenfield (new code)",
-  Brownfield: "Brownfield (existing codebase)",
-  AgentSupervision: "Agent supervision",
+  Greenfield: "New code",
+  Brownfield: "Changes to existing code",
+  AgentSupervision: "Working with an AI agent",
 };
 
 const label = (key: string) => LABELS[key] ?? key;

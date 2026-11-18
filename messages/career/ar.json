@@ -2949,7 +2949,6 @@
    "keyKeepHint": "اتركه فارغًا للإبقاء على المفتاح المحفوظ.",
    "connect": "اتصال",
    "checkAndSave": "تحقّق واحفظ",
-   "disconnectConfirm": "هل تريد قطع الاتصال بـ Pulse Relay؟ ستتوقف تحديثات WhatsApp والرسائل النصية القصيرة لجميع الطلاب حتى تعيد الاتصال.",
    "connectionSaved": "تم الاتصال بـ Pulse Relay.",
    "disconnected": "تم قطع الاتصال بـ Pulse Relay.",
    "adminOnly": "يمكن لمسؤولي مركز المسار المهني فقط تغيير الاتصال.",
@@ -2986,7 +2985,8 @@
    "logTitle": "سجل الإرسال",
    "logHelp": "آخر 100 رسالة. لا يتضمن أرقام الهواتف (الأرقام الأخيرة فقط) ولا نص الرسالة.",
    "showLog": "عرض السجل",
-   "logEmpty": "لم يُرسل شيء بعد."
+   "logEmpty": "لم يُرسل شيء بعد.",
+   "disconnectConfirm": "هل تريد قطع الاتصال بـ Pulse Relay؟ ستتوقف تحديثات WhatsApp والرسائل النصية القصيرة لجميع الطلاب، كما ستتوقف الرسائل النصية القصيرة الخاصة بالقبول، حتى تعيد الاتصال."
   },
   "campusWorkspace": {
    "status": "الحالة",
@@ -3097,7 +3097,9 @@
    "requestSchools": "اطلب استقطاب الموظفين في كليات أخرى من صفحة <link>المدارس</link>.",
    "chooseColleges": "الكليات",
    "sent": "تم الإرسال. تراجع كل كلية حملة التوظيف قبل أن تظهر للطلاب.",
-   "send": "{count, plural, one {إرسال إلى {count} كلية} other {إرسال إلى {count} كليات}}"
+   "send": "{count, plural, one {إرسال إلى {count} كلية} other {إرسال إلى {count} كليات}}",
+   "payPerYear": "{amount} سنويًا",
+   "stipendLine": "مكافأة شهرية قدرها {amount}"
   },
   "campusHire": {
    "colStatus": "الحالة",
@@ -6160,7 +6162,8 @@
    "saveDraft": "حفظ كمسودة",
    "currency": "العملة",
    "currencyHint": "عملة الراتب والمخصص المالي. ترى الكليات المبالغ بهذه العملة.",
-   "verificationHelpOther": "يتحقق موظفو Edulexa من الشركات خارج الهند لأغراض التوظيف في الحرم الجامعي."
+   "verificationHelpOther": "يتحقق موظفو Edulexa من الشركات خارج الهند لأغراض التوظيف في الحرم الجامعي.",
+   "payPerYear": "{amount} سنويًا"
   },
   "studentChatSms": {
    "type": {

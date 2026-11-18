@@ -19,7 +19,7 @@ Open [ui: Evidence packs] under [ui: Review]. The [ui: Evidence review queue] sh
 
 ## What's in the pack
 
-- **At the top:** the task, its [ui: AI policy], when the work was handed in, how long the candidate spent editing, and the [ui: Evidence version].
+- **At the top:** the task, its [ui: AI policy], when the work was handed in, how long the candidate spent editing, and the [ui: Reference code], which changes if anything in the pack changes, so two copies with the same code are the same.
 - [ui: The code compared with the explanation]: whether the code and the defense tell the same story. For example, the code passes most tests but the candidate struggled to explain it.
 - **Tests:** which tests passed. For a work trial, [ui: Planted defects] shows which bugs the candidate fixed.
 - [ui: Code changes]: what the candidate changed, file by file.

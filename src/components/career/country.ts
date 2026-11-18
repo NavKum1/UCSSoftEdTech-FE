@@ -149,6 +149,12 @@ export function useCountryRules(explicit?: string | null): CountryRules {
   }, [country, locale]);
 }
 
+/** A GPA on the 4-point scale always shows one decimal ("3.0", not "3"); anything that isn't a number is shown as it is */
+const gpaText = (value: number | string) => {
+  const n = typeof value === "number" ? value : Number(value);
+  return Number.isFinite(n) && String(value).trim() !== "" ? n.toFixed(Math.max(1, (String(value).split(".")[1] ?? "").length)) : String(value);
+};
+
 /**
  * Words for schools outside India (Career.countryWords). India keeps each page's own words (CTC, CGPA, branches), so a
  * page picks: rules.india ? its own key : the neutral word from here.
@@ -174,10 +180,10 @@ export function useCountryWords(explicit?: string | null) {
       minGrade: gpa ? t("minGpa") : t("minGrade"),
       minGradeHint: gpa ? undefined : t("minGradeHint"),
       grade: gpa ? t("gpa") : t("grade"),
-      gradeAtLeast: (value: number | string) => (gpa ? t("gpaAtLeast", { value }) : t("gradeAtLeast", { value })),
-      applicantGrade: (grade: number | string) => (gpa ? t("applicantGpa", { grade }) : t("applicantGrade", { grade })),
+      gradeAtLeast: (value: number | string) => (gpa ? t("gpaAtLeast", { value: gpaText(value) }) : t("gradeAtLeast", { value })),
+      applicantGrade: (grade: number | string) => (gpa ? t("applicantGpa", { grade: gpaText(grade) }) : t("applicantGrade", { grade })),
       criteria: (programs: string, grade: number | string, batches: string) =>
-        gpa ? t("criteriaGpa", { programs, grade, batches }) : t("criteriaGrade", { programs, grade, batches }),
+        gpa ? t("criteriaGpa", { programs, grade: gpaText(grade), batches }) : t("criteriaGrade", { programs, grade, batches }),
       phoneHint: t("phoneHint", { example: rules.phoneExample }),
       /** The pay labels and hints for amounts in a given currency (a job's own, or the one chosen on a form) */
       payIn: (currency: string) => {

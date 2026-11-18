@@ -81,7 +81,7 @@ function Detail({ employerId, jobId, country }: { employerId: string; jobId: str
     <div>
       <PageHeader
         title={job.title}
-        description={`${label(TYPE, job.jobType)} · ${job.jobType === "Internship" ? w.rules.moneyFullIn(job.stipendMonthly, job.currency) : w.rules.moneyFullIn(job.ctcAnnual, job.currency)}`}
+        description={`${label(TYPE, job.jobType)} · ${job.jobType === "Internship" ? t("stipendLine", { amount: w.rules.moneyFullIn(job.stipendMonthly, job.currency) }) : t("payPerYear", { amount: w.rules.moneyFullIn(job.ctcAnnual, job.currency) })}`}
         actions={
           <>
             {(job.status === "Draft" || job.status === "Paused") && (

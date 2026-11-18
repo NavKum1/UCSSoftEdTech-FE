@@ -16,7 +16,7 @@ import { useCareerShell } from "@/components/career/CareerShell";
 import { Badge, Button, Card, EmptyState, ErrorBanner, Field, Loading, PageHeader, SuccessBanner, formatDate, useLoad, useCareerT } from "@/components/career/ui";
 import { label } from "@/components/career/placements/shared";
 import { useCountryWords } from "@/components/career/country";
-import { APP_TONE, DOC_KIND_KEYS, ELIG_TONE, useAppStatusLabels, useDocKindLabels, useEligLabels, useJobTypeLabels, useTierLabels, type Criteria } from "@/components/career/campus/shared";
+import { APP_TONE, docKindsFor, ELIG_TONE, useAppStatusLabels, useDocKindLabels, useEligLabels, useJobTypeLabels, useTierLabels, type Criteria } from "@/components/career/campus/shared";
 import { HelpLink } from "@/components/help/HelpLink";
 
 interface BoardCard {
@@ -262,7 +262,7 @@ function JobCard({ card: c, docs, expanded, onToggle, onUploaded, onApplied }: {
                   <Field label={t("kind")}>
                     {(p) => (
                       <select {...p} value={kind} onChange={(e) => setKind(e.target.value)}>
-                        {DOC_KIND_KEYS.map((k) => (
+                        {docKindsFor(india, [kind]).map((k) => (
                           <option key={k} value={k}>
                             {label(KIND, k)}
                           </option>

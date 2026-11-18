@@ -4190,7 +4190,8 @@
    "saveDraft": "Guardar como borrador",
    "currency": "Moneda",
    "currencyHint": "La moneda del salario y la beca. Las instituciones educativas ven los montos en esta moneda.",
-   "verificationHelpOther": "El personal de Edulexa verifica las empresas fuera de India para la contratación en campus."
+   "verificationHelpOther": "El personal de Edulexa verifica las empresas fuera de India para la contratación en campus.",
+   "payPerYear": "{amount} al año"
   },
   "studentChatSms": {
    "type": {
@@ -4298,7 +4299,6 @@
    "keyKeepHint": "Déjalo en blanco para conservar la clave guardada.",
    "connect": "Conectar",
    "checkAndSave": "Comprobar y guardar",
-   "disconnectConfirm": "¿Desconectar Pulse Relay? Se dejarán de enviar novedades por WhatsApp y SMS a todos los estudiantes hasta que vuelvas a conectarlo.",
    "connectionSaved": "Pulse Relay está conectado.",
    "disconnected": "Pulse Relay está desconectado.",
    "adminOnly": "Solo los administradores del centro de orientación profesional pueden cambiar la conexión.",
@@ -4336,7 +4336,8 @@
    "logHelp": "Los últimos 100 mensajes. Sin números de teléfono (solo los últimos dígitos) ni texto de los mensajes.",
    "showLog": "Mostrar registro",
    "logEmpty": "Todavía no se ha enviado nada.",
-   "colChannel": "Canal"
+   "colChannel": "Canal",
+   "disconnectConfirm": "¿Desconectar Pulse Relay? Se dejarán de enviar actualizaciones por WhatsApp y SMS a todos los estudiantes, y también se detendrán los SMS de admisiones, hasta que vuelvas a conectar."
   },
   "facultyFrameworks": {
    "outcomeAttainment": "Logro de resultados",
@@ -5850,7 +5851,9 @@
    "requestSchools": "Solicita reclutar en más instituciones desde la página <link>Escuelas</link>.",
    "chooseColleges": "Instituciones",
    "sent": "Enviado. Cada institución revisa la convocatoria antes de que la vean los estudiantes.",
-   "send": "{count, plural, one {Enviar a {count} universidad} other {Enviar a {count} universidades}}"
+   "send": "{count, plural, one {Enviar a {count} universidad} other {Enviar a {count} universidades}}",
+   "payPerYear": "{amount} al año",
+   "stipendLine": "Estipendio de {amount} al mes"
   },
   "campusHire": {
    "colStatus": "Estado",

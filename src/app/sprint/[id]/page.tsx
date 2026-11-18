@@ -565,22 +565,23 @@ function WorkspaceHeader({
           {en("No internet connection. Your edits stay in this tab and are saved when you reconnect.")}
         </div>
       )}
-      <div className="px-4 h-14 flex items-center justify-between">
-        <div className="flex items-center space-x-3 min-w-0">
+      {/* On a phone the controls (such as the language) wrap to a second line, so the title keeps its room */}
+      <div className="px-4 min-h-14 py-2 flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
+        <div className="flex flex-1 basis-56 items-center space-x-3 min-w-0">
           <Link
             href="/dashboard"
-            className="text-sm text-muted-foreground hover:text-foreground transition flex items-center gap-1"
+            className="shrink-0 text-sm text-muted-foreground hover:text-foreground transition flex items-center gap-1"
           >
             <span>←</span>{en(" Dashboard")}
           </Link>
           <span className="text-border">|</span>
           <div className="flex items-center space-x-2 min-w-0">
-            <span className="font-semibold text-sm text-foreground truncate">{title}</span>
+            <span className="font-semibold text-sm text-foreground truncate" title={title}>{title}</span>
             {badges}
           </div>
         </div>
 
-        <div className="flex items-center space-x-3">
+        <div className="flex shrink-0 items-center space-x-3">
           {controls}
         </div>
       </div>

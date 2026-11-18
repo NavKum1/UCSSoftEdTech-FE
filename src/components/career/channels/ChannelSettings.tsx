@@ -86,11 +86,13 @@ const PARAMS = ["brand", "link", "title"];
 
 type ConnectionSettings = Pick<Settings, "canEdit" | "wappr">;
 
-function ConnectionCard<T extends ConnectionSettings>({ s, onSaved, endpoint = "/api/career/channels/admin/wappr", readOnlyMessage }: {
+function ConnectionCard<T extends ConnectionSettings>({ s, onSaved, endpoint = "/api/career/channels/admin/wappr", readOnlyMessage, disconnectMessage }: {
   s: T;
   onSaved: (v: T) => void;
   endpoint?: string;
   readOnlyMessage?: string;
+  /** Asked before disconnecting, when the default question doesn't say enough */
+  disconnectMessage?: string;
 }) {
   const t = useCareerT("careerCenterChatSms");
   const api = useApi();
@@ -123,7 +125,7 @@ function ConnectionCard<T extends ConnectionSettings>({ s, onSaved, endpoint = "
   };
   const disconnect = () =>
     run("disconnect", async () => {
-      if (!window.confirm(t("disconnectConfirm"))) return;
+      if (!window.confirm(disconnectMessage ?? t("disconnectConfirm"))) return;
       onSaved(await api<T>(endpoint, { method: "DELETE" }));
       setMsg(t("disconnected"));
     });
@@ -183,7 +185,9 @@ export function AdmissionsConnection() {
 
   if (loading && !data) return <Loading />;
   if (!data) return <ErrorBanner error={error} onRetry={reload} />;
-  return <ConnectionCard s={data} onSaved={setData} endpoint={endpoint} readOnlyMessage={en("Your school is read-only. Go to Billing to restore the ability to change this connection.")} />;
+  return <ConnectionCard s={data} onSaved={setData} endpoint={endpoint} readOnlyMessage={en("Your school is read-only. Go to Billing to restore the ability to change this connection.")}
+      disconnectMessage={en("Disconnect Pulse Relay? SMS stops for admissions and for the career center too, because they share this connection.")}
+    />;
 }
 
 /** Career center: Pulse Relay connection, channels, allowed types, quiet hours, template mapping and the send log. */

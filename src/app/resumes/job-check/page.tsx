@@ -270,7 +270,7 @@ export default function JobCheckPage() {
                         {x.requirement} <Badge tone={x.mentioned ? "good" : "neutral"}>{x.mentioned ? en("Mentioned") : en("Not found")}</Badge>
                       </p>
                       {x.lines.map((l, i) => (
-                        <p key={i} className="mt-1 break-words text-sm text-muted-foreground">“{l}”</p>
+                        <p key={i} className="mt-1 break-words text-sm text-muted-foreground">“{l.replace(/^\s*[-•*–]\s+/, "")}”</p>
                       ))}
                     </div>
                   </li>

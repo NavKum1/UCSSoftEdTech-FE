@@ -275,7 +275,9 @@
    "requestSchools": "<link>स्कूल</link> पेज पर और कॉलेजों में भर्ती करने का अनुरोध करें।",
    "chooseColleges": "कॉलेज",
    "sent": "भेज दिया गया। छात्रों को दिखाने से पहले हर कॉलेज ड्राइव की समीक्षा करेगा।",
-   "send": "{count, plural, one { {count} कॉलेज को भेजें} other { {count} कॉलेजों को भेजें}}"
+   "send": "{count, plural, one { {count} कॉलेज को भेजें} other { {count} कॉलेजों को भेजें}}",
+   "payPerYear": "{amount} प्रति वर्ष",
+   "stipendLine": "हर महीने {amount} का वजीफ़ा"
   },
   "nationality": {
    "title": "राष्ट्रीयता (वैकल्पिक)",
@@ -2794,7 +2796,8 @@
    "saveDraft": "ड्राफ़्ट के रूप में सेव करें",
    "currency": "मुद्रा",
    "currencyHint": "वेतन और वजीफ़े की मुद्रा। कॉलेज इन राशियों को इसी मुद्रा में देखते हैं।",
-   "verificationHelpOther": "Edulexa के स्टाफ़ कैंपस में भर्ती के लिए भारत के बाहर की कंपनियों का सत्यापन करते हैं।"
+   "verificationHelpOther": "Edulexa के स्टाफ़ कैंपस में भर्ती के लिए भारत के बाहर की कंपनियों का सत्यापन करते हैं।",
+   "payPerYear": "{amount} प्रति वर्ष"
   },
   "careerCenterFairs": {
    "notSet": "सेट नहीं है",
@@ -4105,7 +4108,6 @@
    "keyKeepHint": "सेव की गई कुंजी रखने के लिए इसे खाली छोड़ें।",
    "connect": "कनेक्ट करें",
    "checkAndSave": "जाँचें और सेव करें",
-   "disconnectConfirm": "Pulse Relay डिस्कनेक्ट करें? दोबारा कनेक्ट करने तक सभी छात्रों के WhatsApp और SMS अपडेट बंद हो जाएँगे।",
    "connectionSaved": "Pulse Relay कनेक्ट है।",
    "disconnected": "Pulse Relay डिस्कनेक्ट है।",
    "adminOnly": "सिर्फ़ करियर केंद्र के एडमिन ही कनेक्शन बदल सकते हैं।",
@@ -4143,7 +4145,8 @@
    "logHelp": "पिछले 100 मैसेज। फ़ोन नंबर नहीं (सिर्फ़ आख़िरी अंक) और मैसेज का टेक्स्ट नहीं।",
    "showLog": "लॉग दिखाएँ",
    "logEmpty": "अभी तक कुछ नहीं भेजा गया।",
-   "colChannel": "माध्यम"
+   "colChannel": "माध्यम",
+   "disconnectConfirm": "Pulse Relay को डिस्कनेक्ट करें? हर छात्र के लिए WhatsApp और SMS अपडेट बंद हो जाएंगे, और दाख़िले से जुड़े SMS भी बंद हो जाएंगे, जब तक आप फिर से कनेक्ट नहीं करते।"
   },
   "campusShared": {
    "appStatus": {
