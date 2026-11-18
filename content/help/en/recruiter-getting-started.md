@@ -33,6 +33,8 @@ The menu at the top has four parts, in the order of the work:
 
 On a phone, select [ui: Menu] to see every page. The bell at the top opens your notifications.
 
+[shot: recruiter-candidates]
+
 ## Your team
 
 Open [ui: Team] under [ui: Settings]. It lists the recruiters at your company, each [ui: Joined] or [ui: Invited]. Everyone on the team sees the same candidates, reviews and settings.
@@ -42,6 +44,8 @@ If you manage the team, your name shows [ui: Manages the team], and you can invi
 1. Under [ui: Invite a colleague], fill in [ui: First name], [ui: Last name] and [ui: Work e-mail].
 2. Select [ui: Send invitation]. A new colleague gets an e-mail to set a password. Someone who already has an Edulexa account is added and told by e-mail.
 3. If an invitation got lost, select [ui: Resend].
+
+[shot: recruiter-team]
 
 To withdraw an invitation or remove a colleague, select the bin button next to their name. Someone you remove is signed out. Only Edulexa can change the access of the people who manage the team.
 

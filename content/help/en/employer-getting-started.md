@@ -27,6 +27,8 @@ Your home page shows how Edulexa checked your company:
 - [ui: Staff verified]: Edulexa staff checked and verified your company.
 - [ui: Under review]: you can't ask new schools until the review is finished.
 
+[shot: employer-home]
+
 ## Ask Edulexa to verify your company
 
 To post campus jobs, your company must be verified for campus hiring. Edulexa staff do this. A company in India can also verify itself with its GSTIN on the [ui: Campus jobs] page.

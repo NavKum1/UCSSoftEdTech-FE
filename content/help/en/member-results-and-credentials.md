@@ -48,6 +48,8 @@ To share one:
 3. Under [ui: Link expires after], choose from 1 to 90 days, then select [ui: Create link].
 4. Select [ui: Copy link]. The link is shown only once, but you can always create another.
 
+[shot: member-credential-share]
+
 Under each credential, the share links list how often each link was opened. Select [ui: Revoke] next to a link to stop it working.
 
 Other ways to use a credential:

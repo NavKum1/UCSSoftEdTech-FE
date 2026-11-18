@@ -19,6 +19,8 @@ The list opens on [ui: Waiting for an advisor]. Use the list above the requests 
 
 Each request shows the person's contact details, [ui: What they're unsure about:], their answers and any files they attached, and their counseling quiz result if they chose to share it.
 
+[shot: advisor-requests]
+
 ## Reply
 
 Write your reply and select [ui: Send]. The person gets it in Edulexa and by e-mail. If the request says reply-by-email isn't set up, people answer on their own page in Edulexa instead.

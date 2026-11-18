@@ -49,6 +49,8 @@ A new form can't be opened from outside Edulexa yet. In [ui: Share], select [ui:
 
 Each form's card shows whether its public link is on, its version, how many people sent it, and [ui: Unpublished changes] if you haven't published your latest changes. One form is [ui: Used for “Ask an advisor”]: Edulexa members who are signed in use it when they ask you for guidance. To change which one, select [ui: Use for “Ask an advisor”] on another form.
 
+[shot: guidance-forms-list]
+
 At the top of the page, [ui: Statistics] compares your forms, and [ui: Notifications] lists every automatic message sent.
 
 Below your forms, fill in [ui: Your institute's card] and select [ui: Save card]. It's shown when people on Edulexa choose an institute to talk to, with your real courses. Only what you fill in is shown.

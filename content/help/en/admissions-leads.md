@@ -24,6 +24,8 @@ Below them are four tabs:
 - [ui: Follow-ups]: the follow-ups due for you.
 - [ui: Insights]: leads per week, your funnel, and leads by source, course and owner.
 
+[shot: admissions-leads]
+
 ## Find leads
 
 Choose [ui: All leads], [ui: My leads] or a quick view such as [ui: Unassigned], [ui: High priority] or [ui: Possible spam]. Search by name, e-mail address, phone, course, source, tag or question. [ui: Filters] narrows the list further, and [ui: Save this view] keeps your choice for next time.
@@ -44,6 +46,8 @@ Select a lead to open it. At the top are their contact details and buttons for w
 Every e-mail has a link to stop further contact. If the person uses it, the lead is marked [ui: Do not contact], and e-mail, SMS and WhatsApp are blocked.
 
 Under the buttons, three tabs keep the history: [ui: Communication] (every call, message and note), [ui: Follow-ups] and [ui: What they shared] (their answers and results).
+
+[shot: admissions-lead-open]
 
 ## Stages, owners and follow-ups
 

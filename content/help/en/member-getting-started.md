@@ -24,6 +24,8 @@ You don't need a school to use Edulexa. On your own, you can practice real work,
 - [ui: Skills], [ui: Recent results] and [ui: Credentials]: these fill in as your work is graded.
 - [ui: Career track]: your career quiz result, or [ui: Take the quiz].
 
+[shot: member-dashboard]
+
 ## The menus
 
 - [ui: Practice]: interview and speaking practice, engineering drills, coding challenges, written exams and the leaderboard.

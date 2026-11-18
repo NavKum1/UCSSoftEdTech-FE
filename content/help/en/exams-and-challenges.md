@@ -5,7 +5,7 @@ roles: [member]
 group: Prove your skills
 features: [written-exams, coding-challenges, repo-defense]
 order: 10
-checked: 2026-11-12
+checked: 2026-11-18
 short:
   - Written exams are timed multiple-choice exams. Pass a credential exam, then select Claim verified credential.
   - In a coding challenge you write or fix code, hidden tests check it, and then you explain it in a voice defense.
@@ -45,6 +45,15 @@ For the real thing, pick a challenge from [ui: Graded challenges]. Challenges ma
 4. **Result:** if you pass, you get a credential. Sometimes a reviewer confirms it first; until then it shows as under review.
 
 > Your edits, pastes and switching away from the window are recorded, and reviewers see them with your work. The challenge also says whether AI tools are allowed: [ui: No AI tools], [ui: AI use reviewed] or [ui: AI allowed].
+
+### The session check
+
+Some challenges show [ui: This challenge has a session check] before you start. It's your choice:
+
+- Select [ui: Start in full screen] to turn it on. You work in full screen, and each time you leave full screen, it's noted for the reviewer. If you leave by mistake, select [ui: Return to full screen].
+- Select [ui: Continue without it] to work without it. Nothing extra is noted, and the reviewer sees no session check. You can still select [ui: Turn on the session check] later.
+
+The session check only notes leaving full screen. There's no camera, microphone or screen recording. A person reviews it, and no one is disqualified automatically. It isn't offered in every country, and full screen doesn't work on most phones; then the challenge goes on without it. How long it's kept is in [Download or delete your data](/help/download-or-delete-your-data).
 
 Your work is saved as you go. If you lose your connection, come back and pick up where you left off. Each result, with its feedback, is in [My results](/my/results).
 

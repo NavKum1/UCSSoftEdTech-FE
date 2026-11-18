@@ -30,6 +30,8 @@ Open [ui: Campus jobs] under [ui: Hiring]. [ui: Company verification] must show 
 5. Under [ui: How students respond], choose [ui: Apply with documents] and tick the [ui: Documents students must attach], or choose [ui: Opt in].
 6. Select [ui: Save as draft].
 
+[shot: employer-new-job]
+
 Open the job from [ui: Your jobs] and select [ui: Publish].
 
 ## Send it to schools
@@ -52,6 +54,8 @@ Applicants appear once the school approves the drive. You see the details studen
 - shortlist applicants, and select [ui: Record result for selected] after each round;
 - set [ui: Interview slots] for the shortlist;
 - [ui: Make an offer] to an applicant, who can accept or decline it, and issue [ui: Offer letters] for students to sign.
+
+[shot: employer-drive-applicants]
 
 ## Career fairs
 

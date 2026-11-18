@@ -109,3 +109,161 @@ suggested-scores:
   show: "xpath=//*[normalize-space()='Suggested scores']/ancestor::*[contains(@class,'rounded-xl')][1]"
   width: 1100
   alt: The Suggested scores on a student's evidence page, with a score and a short reason for each criterion, and quotes from the student's work and viva
+
+# ----- Batch 2: members (the demo member, DevMemberSeeder), recruiters (the demo company, DevRecruiterSeeder), employers,
+# alumni, admissions (the development institute, DevGuidanceSeeder) and mentors
+
+member-dashboard:
+  as: candidate-dev-token
+  open: /dashboard
+  show: "xpath=//*[normalize-space()='Current streak']/ancestor::*[contains(@class,'grid')][1]"
+  alt: The four cards at the top of a member's dashboard, with the current streak, active days, verified credentials and interview minutes left
+
+member-daily-practice:
+  as: candidate-dev-token
+  open: /daily
+  show: main
+  height: 615
+  alt: The Daily practice page, with the streak, this week's points and all-time points, and today's incident drill, code review and system design duel
+
+member-practice-interview:
+  as: candidate-dev-token
+  height: 455
+  open: /interview/practice
+  show: main
+  width: 1100
+  alt: The practice interview set-up, where you choose a track, an interviewer and the job
+
+member-credential-share:
+  as: candidate-dev-token
+  open: /credentials
+  click: ["main button:has-text('Share')"]
+  show: "[role=dialog] > div"
+  width: 900
+  alt: The Share this credential window, where you say who it's for, choose what to show with your results and how long the link lasts
+
+member-job-check:
+  as: candidate-dev-token
+  open: /resumes/job-check
+  click: ["button:has-text('Cloud Support Engineer')"]
+  show: "xpath=//*[contains(normalize-space(),'requirements are mentioned')]/ancestor::*[contains(@class,'rounded-xl')][1]"
+  width: 1100
+  alt: A job check result, saying 5 of 9 requirements are mentioned, with the résumé lines that mention each one and the requirements not found
+
+member-guidance-answered:
+  as: candidate-dev-token
+  open: /my/guidance
+  show: "xpath=//*[starts-with(normalize-space(),\"I've worked in IT support\")]/ancestor::*[contains(@class,'rounded-xl')][1]"
+  width: 1100
+  alt: An answered guidance request on My guidance requests, with the advisor's replies, the member's question back and the box to reply
+
+recruiter-candidates:
+  as: recruiter-dev-token
+  open: /recruiter/dashboard
+  show: main
+  height: 816
+  point: "button:has-text('Send an assessment')"
+  alt: The recruiter's Candidates page, with the counts waiting for review, in progress, advanced, on hold and declined, and the assessments sent
+
+recruiter-send-assessment:
+  as: recruiter-dev-token
+  open: /recruiter/dashboard
+  click: ["main button:has-text('Send an assessment')"]
+  show: "[role=dialog] > div"
+  width: 900
+  alt: The Send an assessment window, with the candidate's name and e-mail, the role, the written exam, the coding language and the voice defense topic
+
+recruiter-evidence-integrity:
+  as: recruiter-dev-token
+  open: /recruiter/evidence/5c400300-0000-4000-8000-000000000031
+  show: "xpath=//*[normalize-space()='Integrity signals']/ancestor::*[contains(@class,'rounded-xl')][1]"
+  width: 1100
+  alt: The Integrity signals in an evidence pack, with the signal level, what was typed and pasted, and the one pattern worth discussing
+
+recruiter-appeals:
+  as: recruiter-dev-token
+  open: /recruiter/appeals
+  show: "xpath=//*[normalize-space()='Evidence pack']/ancestor::*[contains(@class,'rounded-xl')][1]"
+  width: 1100
+  point: "button:has-text('Resolve')"
+  alt: An open appeal, with the candidate's reasons, the latest decision, a link to the evidence pack and the Resolve button
+
+recruiter-team:
+  as: recruiter-dev-token
+  height: 610
+  open: /recruiter/team
+  show: main
+  width: 1100
+  alt: The recruiter Team page, with the Invite a colleague form and the company's recruiters, one invited and waiting
+
+employer-home:
+  as: employer-dev-token
+  open: /employer
+  show: main
+  height: 560
+  alt: An employer's home page, with the company's verification and how many schools approved it
+
+employer-new-job:
+  as: employer-dev-token
+  open: /employer/jobs
+  show: "xpath=//*[normalize-space()='New job or internship']/ancestor::*[contains(@class,'rounded-xl')][1]"
+  width: 1100
+  alt: The New job or internship form, with the title, type, pay, locations, programs, graduation years, rounds, deadline and who receives it
+
+employer-drive-applicants:
+  as: employer-dev-token
+  open: /employer/drives/5c400500-0000-4000-8000-000000000021
+  show: "xpath=//td[contains(.,'Dana Brooks')]/ancestor::*[contains(@class,'rounded-xl')][1]"
+  alt: The applicants of a campus drive, with each student's academic record, status, result in each round, interview slot and résumé
+
+alumni-home:
+  as: school-alumni-dev-token
+  open: /alumni
+  show: main
+  height: 420
+  alt: The alumni home page, with Mentoring and Career services
+
+alumni-mentoring-requests:
+  as: school-alumni-dev-token
+  open: /alumni/mentoring
+  show: "xpath=//*[starts-with(normalize-space(),'Requests (')]/ancestor::*[contains(@class,'rounded-xl')][1]"
+  width: 1100
+  point: "button:text-is('Accept')"
+  alt: A mentoring request waiting for an answer, with the student's message, their goals, what you have in common, and Accept or Decline
+
+admissions-leads:
+  as: institute-admin-dev-token
+  height: 975
+  open: /institute/dashboard
+  show: "xpath=//*[normalize-space()='Admissions']/following::*[contains(@class,'grid')][1]/.."
+  alt: The Admissions page, with today's counts, the lead filters and the table of leads with each one's course, stage, owner and next follow-up
+
+admissions-lead-open:
+  as: institute-admin-dev-token
+  open: /institute/dashboard
+  click: ["main tbody tr:has-text('Olivia Martinez') >> text=Olivia Martinez"]
+  show: "[role=dialog]"
+  height: 820
+  alt: An open lead, with the contact details, the actions, stage, owner, next follow-up, tags, the pinned key facts and the history
+
+guidance-forms-list:
+  as: institute-admin-dev-token
+  open: /institute/guidance
+  show: main
+  height: 350
+  alt: The Career guidance forms page, with a form's Edit, Insights, Copy link, Put on your website and Duplicate buttons
+
+mentor-guidance-request:
+  as: mentor-dev-token
+  open: /mentor/guidance
+  show: "xpath=//*[normalize-space()='Hand back to the advisors']/ancestor::*[contains(@class,'rounded-xl')][1]"
+  width: 1100
+  alt: A guidance request handed to a mentor, with the person's question and answers, the advisor's note, the reply box and Hand back to the advisors
+
+advisor-requests:
+  as: advisor-dev-token
+  open: /advisor/guidance
+  click: ["main button:has-text('Brianna Scott')"]
+  show: main
+  height: 900
+  alt: The advisors' Guidance requests page, with the requests waiting for an advisor and one request open

@@ -212,7 +212,19 @@
    "youDeclinedStudentNameSRequest": "Rechazaste la solicitud de {studentName}.",
    "profileSaved": "Perfil guardado.",
    "profileSavedSubmitItFor": "Perfil guardado. Envíalo para su aprobación cuando esté listo.",
-   "jobTitle": "Cargo"
+   "jobTitle": "Cargo",
+   "volunteerInTheCommunity": "Ofrécete como mentor o mentora para personas de la comunidad de Edulexa. Tú eliges cuántas personas recibirán tu mentoría y cómo se reunirán.",
+   "noteToYourMenteeOptional": "Nota para las personas que reciben tu mentoría (opcional)",
+   "nameShownToMentees": "Nombre que verán las personas que reciben tu mentoría",
+   "oneLineOnHowYouCommunity": "Una frase sobre cómo puedes ayudar, por ejemplo: “Enfermero jefe que ayuda a otras personas a abrirse camino en el sector de la salud”.",
+   "n1To10PeopleCant": "De 1 a 10. Las personas no podrán solicitar tu mentoría cuando no tengas plazas disponibles.",
+   "sharedOnlyWithMenteesWhose": "Solo se comparte con las personas cuya mentoría está activa. Déjalo en blanco para usar el correo con el que inicias sesión.",
+   "theEdulexaTeamIsReviewing": "El equipo de Edulexa está revisando tu perfil. Recibirás una notificación cuando aparezca en el directorio.",
+   "theEdulexaTeamAskedFor": "El equipo de Edulexa solicitó cambios",
+   "peopleInTheCommunityCan": "Las personas de la comunidad de Edulexa pueden encontrarte. Hay {activeMentees} de {capacity} plazas ocupadas.",
+   "yourePausedPeopleCantSend": "Tu perfil está en pausa: las personas no pueden enviarte nuevas solicitudes. Esto no afecta a las personas que ya reciben tu mentoría.",
+   "yourProfileWasSuspendedByTeam": "El equipo de Edulexa suspendió tu perfil. Contacta con el soporte de Edulexa para obtener más información.",
+   "changesShowToMenteesRight": "Los cambios se muestran de inmediato a las personas que reciben tu mentoría"
   },
   "registrationForm": {
    "employer": "Empleador",
@@ -2280,7 +2292,8 @@
     "ocr_signup": "Nueva inscripción a una entrevista",
     "privacy_guardian": "Respuesta del tutor legal",
     "privacy_request": "Solicitud de privacidad",
-    "resumebook_removed": "Eliminado de un banco de currículums"
+    "resumebook_removed": "Eliminado de un banco de currículums",
+    "employer_verification": "Verificación de empresa"
    }
   },
   "nationalCredentials": {
@@ -4039,7 +4052,10 @@
    "signedInAsEmailIf": "Iniciaste sesión como {email}. Si tu correo usa el dominio de tu empresa (y no es de un servicio de correo gratuito), verificaremos la empresa automáticamente. Si un colega ya configuró tu empresa, pídele que te invite.",
    "reasonFlagReason": "Motivo: {flagReason}",
    "findAndRequestSchools": "Buscar escuelas y solicitar acceso",
-   "sizeBandEmployees": "{sizeBand} empleados"
+   "sizeBandEmployees": "{sizeBand} empleados",
+   "campusVerified": "Tu empresa está verificada para la contratación en campus.",
+   "needsStaffCheck": "Para publicar empleos en campus, el personal de Edulexa debe verificar tu empresa.",
+   "indiaGstin": "Una empresa de India también puede verificarse con su GSTIN en la página de <link>Empleos en campus</link>."
   },
   "employerSchools": {
    "schools": "Escuelas",
@@ -4173,7 +4189,8 @@
    "premiumVisibility": "Solicita visibilidad prémium cuando las instituciones la ofrezcan (hoy no se cobra nada)",
    "saveDraft": "Guardar como borrador",
    "currency": "Moneda",
-   "currencyHint": "La moneda del salario y la beca. Las instituciones educativas ven los montos en esta moneda."
+   "currencyHint": "La moneda del salario y la beca. Las instituciones educativas ven los montos en esta moneda.",
+   "verificationHelpOther": "El personal de Edulexa verifica las empresas fuera de India para la contratación en campus."
   },
   "studentChatSms": {
    "type": {
@@ -6931,6 +6948,15 @@
    "driveMessagesIntro": "Plantillas sugeridas de WhatsApp y textos SMS para los avisos de convocatorias en el campus. Cada mensaje incluye la marca y un enlace a la aplicación, nada más. Haz que aprueben las plantillas de WhatsApp en Pulse Relay y luego aplícalas aquí.",
    "smsText": "Texto SMS",
    "graduationYears": "Años de graduación"
+  },
+  "employerVerifyRequest": {
+   "ask": "Solicitar a Edulexa que nos verifique",
+   "askAgain": "Volver a solicitarlo",
+   "askedOn": "Solicitud enviada el {date}. Edulexa te enviará un correo electrónico cuando esté listo.",
+   "sent": "Enviado. Edulexa te enviará un correo electrónico cuando esté listo.",
+   "declinedOn": "El {date}, Edulexa no verificó tu empresa. Motivo: {reason}",
+   "fixThenAsk": "Corrige esto y vuelve a solicitarlo.",
+   "ownerAsks": "La persona propietaria de la cuenta de tu empresa puede pedir a Edulexa que la verifique."
   }
  }
 }

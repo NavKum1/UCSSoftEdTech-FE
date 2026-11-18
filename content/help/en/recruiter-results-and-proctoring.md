@@ -5,11 +5,11 @@ roles: [recruiter]
 group: Reviewing candidates
 features: [recruiter-assessments, proctoring, benchmark]
 order: 10
-checked: 2026-11-12
+checked: 2026-11-18
 short:
   - The tiles on Candidates count your candidates by review status. Select one to see only those candidates.
   - Scores and the AI summary are only for reference. You record each decision yourself.
-  - Proctored sessions list events such as switching tabs, for a person to review. No one is disqualified automatically.
+  - Proctored sessions from your company's challenges list each time the candidate left full screen, for a person to review. No one is disqualified automatically.
 ---
 ## Where each candidate stands
 
@@ -37,7 +37,11 @@ The [ui: Coding challenge submissions] tab lists work handed in for your coding 
 
 ## Proctored sessions
 
-Open [ui: Proctored sessions] under [ui: Review]. It lists proctored sessions with the events Edulexa recorded, such as switching tabs, leaving full screen, pasting text, or a camera or microphone changing. There's no gaze or face detection.
+Open [ui: Proctored sessions] under [ui: Review]. It lists the proctored sessions from your company's challenges: a candidate took one of your private coding challenges with the session check on. You don't see sessions from other companies' challenges.
+
+Before a coding challenge starts, the candidate chooses whether to turn on the session check. With it on, they work in full screen, and each time they leave full screen it's listed with its time. There's no camera, microphone or screen recording, and no gaze or face detection. If they carry on without it, there's no session for that challenge.
+
+What the candidate typed and pasted, and their time away from the editor, is in the evidence pack, not here, so nothing is counted twice. Sessions from before November 2026 may also list other events, such as switching tabs or pasting text.
 
 Each session starts with an [ui: Integrity score] of 100. Each event lowers it, by an amount set only by the kind of event. The status is [ui: Clean], [ui: Suspicious] or [ui: Flagged], and a very low score shows [ui: Needs review]. No one is disqualified automatically.
 

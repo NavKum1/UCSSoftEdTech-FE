@@ -5373,7 +5373,19 @@
    "youAcceptedStudentName": "لقد قبلت {studentName}.",
    "youDeclinedStudentNameSRequest": "لقد رفضت طلب {studentName}.",
    "profileSaved": "تم حفظ الملف.",
-   "profileSavedSubmitItFor": "تم حفظ الملف. أرسله للموافقة عندما تكون مستعدًا."
+   "profileSavedSubmitItFor": "تم حفظ الملف. أرسله للموافقة عندما تكون مستعدًا.",
+   "volunteerInTheCommunity": "تطوّع لتكون مرشدًا لأفراد مجتمع Edulexa. اختر عدد المسترشدين الذين يمكنك استقبالهم وطريقة لقائك بهم.",
+   "noteToYourMenteeOptional": "ملاحظة للمسترشد (اختياري)",
+   "nameShownToMentees": "الاسم الذي سيظهر للمسترشدين",
+   "oneLineOnHowYouCommunity": "اكتب في سطر واحد كيف يمكنك المساعدة، مثل: «مديرة تمريض تساعد الناس على دخول مجال الرعاية الصحية».",
+   "n1To10PeopleCant": "من 1 إلى 10. لن يتمكن الأشخاص من طلب إرشادك عندما تكتمل الأماكن.",
+   "sharedOnlyWithMenteesWhose": "تُشارك هذه المعلومات مع المسترشدين الذين يكون الإرشاد معهم نشطًا فقط. اترك الحقل فارغًا لاستخدام بريد تسجيل الدخول.",
+   "theEdulexaTeamIsReviewing": "يراجع فريق Edulexa ملفك الشخصي. ستصلك إشعارات عند إدراجه.",
+   "theEdulexaTeamAskedFor": "طلب فريق Edulexa إجراء تغييرات",
+   "peopleInTheCommunityCan": "يمكن لأفراد مجتمع Edulexa العثور عليك. تم شغل {activeMentees} من أصل {capacity} أماكن.",
+   "yourePausedPeopleCantSend": "أوقفتَ استقبال الطلبات مؤقتًا: لا يمكن للأشخاص إرسال طلبات جديدة إليك. لن يتأثر المسترشدون الحاليون.",
+   "yourProfileWasSuspendedByTeam": "أوقف فريق Edulexa ملفك الشخصي. تواصل مع دعم Edulexa لمعرفة التفاصيل.",
+   "changesShowToMenteesRight": "تظهر التغييرات للمسترشدين فورًا"
   },
   "registrationForm": {
    "employer": "صاحب العمل",
@@ -5700,7 +5712,8 @@
     "ocr_signup": "تسجيل جديد لمقابلة",
     "privacy_guardian": "إجابة ولي الأمر",
     "privacy_request": "طلب متعلق بالخصوصية",
-    "resumebook_removed": "تمت إزالتك من دليل السير الذاتية"
+    "resumebook_removed": "تمت إزالتك من دليل السير الذاتية",
+    "employer_verification": "التحقق من الشركة"
    }
   },
   "studentJobs": {
@@ -6086,7 +6099,10 @@
    "signedInAsEmailIf": "سجّلت الدخول باستخدام {email}. إذا كان بريدك الإلكتروني على نطاق شركتك (وليس عنوان بريد مجاني)، فسنتحقق من الشركة تلقائيًا. إذا كان أحد زملائك قد أعدّ ملف شركتك بالفعل، فاطلب منه دعوتك بدلًا من ذلك.",
    "reasonFlagReason": "السبب: {flagReason}",
    "findAndRequestSchools": "ابحث عن المدارس واطلب الوصول إليها",
-   "sizeBandEmployees": "{sizeBand} موظفًا"
+   "sizeBandEmployees": "{sizeBand} موظفًا",
+   "campusVerified": "تم التحقق من شركتك للتوظيف في الحرم الجامعي.",
+   "needsStaffCheck": "لنشر وظائف في الحرم الجامعي، يحتاج فريق Edulexa إلى التحقق من شركتك.",
+   "indiaGstin": "يمكن للشركة في الهند أيضًا التحقق من نفسها باستخدام رقم GSTIN الخاص بها في صفحة <link>وظائف الحرم الجامعي</link>."
   },
   "employerPicker": {
    "company": "الشركة"
@@ -6143,7 +6159,8 @@
    "premiumVisibility": "اطلب ظهورًا مميزًا حيث تتيحه الكليات (لن يتم تحصيل أي رسوم الآن)",
    "saveDraft": "حفظ كمسودة",
    "currency": "العملة",
-   "currencyHint": "عملة الراتب والمخصص المالي. ترى الكليات المبالغ بهذه العملة."
+   "currencyHint": "عملة الراتب والمخصص المالي. ترى الكليات المبالغ بهذه العملة.",
+   "verificationHelpOther": "يتحقق موظفو Edulexa من الشركات خارج الهند لأغراض التوظيف في الحرم الجامعي."
   },
   "studentChatSms": {
    "type": {
@@ -6931,6 +6948,15 @@
    "driveMessagesIntro": "قوالب مقترحة لرسائل WhatsApp والرسائل النصية القصيرة لإشعارات فعاليات التوظيف الجامعية. تتضمن كل رسالة العلامة التجارية ورابطًا للعودة إلى التطبيق، ولا شيء غير ذلك. اعتمد قوالب WhatsApp في Pulse Relay، ثم طبّقها هنا.",
    "smsText": "نص الرسالة القصيرة",
    "graduationYears": "سنوات التخرج"
+  },
+  "employerVerifyRequest": {
+   "ask": "اطلب من Edulexa التحقق من شركتنا",
+   "askAgain": "اطلب مرة أخرى",
+   "askedOn": "قدّمت الطلب في {date}. سترسل إليك Edulexa بريدًا إلكترونيًا عند اكتمال الإجراء.",
+   "sent": "تم الإرسال. سترسل إليك Edulexa بريدًا إلكترونيًا عند اكتمال الإجراء.",
+   "declinedOn": "في {date}، لم تتحقق Edulexa من شركتك. السبب: {reason}",
+   "fixThenAsk": "أصلح هذا، ثم اطلب مرة أخرى.",
+   "ownerAsks": "يمكن لمالك حساب شركتك أن يطلب من Edulexa التحقق من الشركة."
   }
  }
 }

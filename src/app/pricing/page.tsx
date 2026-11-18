@@ -87,7 +87,7 @@ export default function PricingPage() {
           <p className="-mt-3 inline-flex items-center gap-1.5 text-xs font-medium text-muted-foreground bg-muted/60 border border-border rounded-full px-3 py-1">
             <Clock className="w-3.5 h-3.5" />{" "}{en("Each voice session is capped at {maxSessionMinutes} minutes", { maxSessionMinutes: plans.maxSessionMinutes })}</p>
           <p className="mt-2 text-xs text-muted-foreground max-w-2xl">
-            {en("When a practice interview starts, a whole session's minutes are set aside so you can't run out partway. When it ends, the minutes you didn't use go back to your balance. If no answers were recorded, no minutes are used.")}
+            {en("When a practice interview starts, a whole session's minutes are set aside so you can't run out partway. When it ends, the minutes you didn't use go back to your balance. If you end it within the first minute without answering, no minutes are used.")}
           </p>
         </div>
 

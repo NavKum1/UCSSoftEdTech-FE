@@ -29,6 +29,8 @@ When you sign in, your [alumni home page](/alumni) opens. It shows two cards:
 - [ui: Mentoring]: help current students as a mentor. See [Be a mentor](/help/be-a-mentor).
 - [ui: Career services]: select [ui: Open career services] to open the career pages you used as a student.
 
+[shot: alumni-home]
+
 To come back to your alumni home page from the career pages, open your account menu (the circle with your initials, top right) and select [ui: My school] under [ui: Switch to].
 
 ## What you can still use

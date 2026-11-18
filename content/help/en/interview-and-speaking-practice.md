@@ -23,11 +23,13 @@ Open [ui: Interview practice] from the [ui: Practice] menu.
 4. Enter [ui: Your name] and choose an [ui: Interviewer voice].
 5. Select [ui: Start interview] and allow the microphone when your browser asks.
 
+[shot: member-practice-interview]
+
 Talk as you would in a real interview. The interviewer asks follow-up questions, and your words show in the [ui: Live transcript]. Use [ui: Mute] to pause your microphone. When you're done, select [ui: End and get my scorecard]. If you reach the time limit or your connection drops, the interview ends and you still get your scorecard. [ui: Cancel] ends it without a scorecard.
 
 The scorecard shows your [ui: Overall readiness], your [ui: Strengths], [ui: What to improve] and the whole [ui: Transcript]. You can copy or download the transcript. Select [ui: Practice again] for the same job, or [ui: Set up a new role].
 
-> You pay only for the minutes you use. When you start, a whole session's worth of your voice minutes is set aside, up to the session limit shown in [Pricing and minutes](/pricing), so you can't run out partway. When the interview ends, the minutes you didn't use go back to your balance, and the scorecard shows how many you used. Each interview counts in whole minutes, rounded up: a 4 minute 10 second interview uses 5 minutes. If no answers were recorded, or the interview didn't connect, no minutes are used. It's for practice only: it doesn't give a credential.
+> You pay only for the minutes you use. When you start, a whole session's worth of your voice minutes is set aside, up to the session limit shown in [Pricing and minutes](/pricing), so you can't run out partway. When the interview ends, the minutes you didn't use go back to your balance, and the scorecard shows how many you used. Each interview counts in whole minutes, rounded up: a 4 minute 10 second interview uses 5 minutes. If the interview didn't connect, or you end it within the first minute without answering, no minutes are used. It's for practice only: it doesn't give a credential.
 
 ## Speaking practice
 

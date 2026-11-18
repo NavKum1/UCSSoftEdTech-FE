@@ -179,9 +179,10 @@ function linkStatusClass(bundle: AssessmentBundle) {
   return bundle.linkStatus === "revoked" || bundle.linkStatus === "expired" ? "font-medium text-amber-700 dark:text-amber-400" : "text-muted-foreground";
 }
 
-/** Written / coding / voice scores, e.g. "W 80% · C --% · V 72%" */
-function stageScores(bundle: AssessmentBundle) {
-  return `W ${bundle.stage1Score ?? "--"}% · C ${bundle.stage2Score ?? "--"}% · V ${bundle.stage3Score ?? "--"}%`;
+/** Written, coding and voice scores, e.g. "Written 80% · Coding — · Voice 72%" (a dash: not taken yet) */
+function stageScores(bundle: AssessmentBundle, en: (t: string, v?: Record<string, string | number>) => string) {
+  const s = (v?: number | null) => (v == null ? "—" : `${v}%`);
+  return en("Written {written} · Coding {coding} · Voice {voice}", { written: s(bundle.stage1Score), coding: s(bundle.stage2Score), voice: s(bundle.stage3Score) });
 }
 
 const GUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -810,7 +811,7 @@ export default function RecruiterDashboardPage() {
                         <dl className="grid grid-cols-2 gap-x-3 gap-y-2 text-xs">
                           <div>
                             <dt className="text-muted-foreground">{en("Stage scores")}</dt>
-                            <dd className="mt-0.5 tabular-nums text-foreground">{stageScores(bundle)}</dd>
+                            <dd className="mt-0.5 tabular-nums text-foreground">{stageScores(bundle, en)}</dd>
                           </div>
                           <div>
                             <dt className="text-muted-foreground">{en("Composite")}</dt>
@@ -862,7 +863,7 @@ export default function RecruiterDashboardPage() {
                               </div>
                             </td>
                             <td className="px-3 py-3">
-                              <div className="whitespace-nowrap text-xs tabular-nums text-foreground">{stageScores(bundle)}</div>
+                              <div className="whitespace-nowrap text-xs tabular-nums text-foreground">{stageScores(bundle, en)}</div>
                               <div className="mt-0.5 max-w-[160px] truncate text-xs text-muted-foreground" title={bundle.examTitle}>
                                 {bundle.examTitle}
                               </div>

@@ -12,6 +12,7 @@ import { useAppAuth as useAuth } from "@/lib/appAuth";
 import { API_BASE_URL, authenticatedFetch } from "@/lib/apiClient";
 import { useAppAuth } from "@/lib/appAuth";
 import SignInRequired from "@/components/SignInRequired";
+import ProctoringHUD from "./components/ProctoringHUD";
 import { EditorTelemetry, type TelemetryState } from "@/lib/editorTelemetry";
 import {
   Code,
@@ -1056,6 +1057,12 @@ function GradedWorkspace({ sprintId }: { sprintId: string }) {
             )}
           </div>
         </div>
+
+        {/* The session check (proctoring): named after the submission, which takes the attempt id; it notes leaving full
+            screen only, and stops once the work is handed in. Not offered for a class assessment's task (the server decides) */}
+        {!classAssignment && (
+          <ProctoringHUD sessionId={attempt.attemptId} active={pipelineState === "editor" || pipelineState === "submitting"} />
+        )}
 
         {/* Pipeline Progress Bar */}
         <div className="rounded-xl border border-border bg-card shadow-sm p-4 flex items-center justify-between">

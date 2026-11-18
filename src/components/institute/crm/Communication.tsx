@@ -135,13 +135,13 @@ export default function Communication({
     <div className="space-y-4">
       {/* Summary */}
       <dl className="grid grid-cols-2 gap-2 text-xs sm:grid-cols-4">
-        <Fact label={en("Last contact")} value={lastOut ? `${CHANNEL[lastOut.kind]?.label ?? lastOut.kind} ${relative(lastOut.createdAt)}` : "Never"} sub={lastOut?.actorName} warn={!lastOut} />
-        <Fact label={en("Their last reply")} value={lastIn ? relative(lastIn.createdAt) : "None yet"} sub={awaiting ? "Waiting for your answer" : undefined} warn={awaiting} />
-        <Fact label={en("Calls")} value={String(calls.length)} sub={calls.length ? `${reached} answered` : undefined} />
+        <Fact label={en("Last contact")} value={lastOut ? `${CHANNEL[lastOut.kind]?.label ?? lastOut.kind} ${relative(lastOut.createdAt)}` : en("Never")} sub={lastOut?.actorName} warn={!lastOut} />
+        <Fact label={en("Their last reply")} value={lastIn ? relative(lastIn.createdAt) : en("None yet")} sub={awaiting ? en("Waiting for your answer") : undefined} warn={awaiting} />
+        <Fact label={en("Calls")} value={String(calls.length)} sub={calls.length ? en("{count} answered", { count: reached }) : undefined} />
         <Fact
           label={en("Messages")}
           value={String(items.filter((a) => OUT.includes(a.kind)).length)}
-          sub={`${items.filter((a) => a.kind === "EmailReply").length} replies`}
+          sub={(() => { const n = items.filter((a) => a.kind === "EmailReply").length; return n === 1 ? en("1 reply") : en("{count} replies", { count: n }); })()}
         />
       </dl>
 

@@ -6,12 +6,15 @@
  */
 
 import React, { useState } from "react";
+import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { Check, Pencil, Plus, Send, Trash2 } from "lucide-react";
 import { authenticatedFetch } from "@/lib/apiClient";
 import { crm, type GetToken, type Member, type Template } from "./api";
 import RichTextEditor from "./RichTextEditor";
 import WebhookEvents from "./WebhookEvents";
 import { useEn } from "@/lib/english/EnglishProvider";
+import { AdmissionsConnection } from "@/components/career/channels/ChannelSettings";
 
 const input = "w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:border-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-600/20";
 const primary = "inline-flex items-center gap-1.5 rounded-lg bg-indigo-700 px-3.5 py-2 text-sm font-medium text-white hover:bg-indigo-800 disabled:opacity-50";
@@ -31,7 +34,8 @@ export default function SettingsView({
   reload: () => void;
 }) {
   const en = useEn();
-  const [section, setSection] = useState<"team" | "templates" | "integrations">(team.length === 0 ? "team" : "team");
+  const requested = useSearchParams().get("section");
+  const section = requested === "templates" || requested === "integrations" ? requested : "team";
   return (
     <div className="grid gap-6 md:grid-cols-[12rem_1fr]">
       <nav aria-label={en("Settings")} className="flex gap-1 md:flex-col">
@@ -42,9 +46,9 @@ export default function SettingsView({
             ["integrations", "Connected apps"],
           ] as const
         ).map(([k, label]) => (
-          <button key={k} type="button" aria-current={section === k ? "page" : undefined} onClick={() => setSection(k)} className={`rounded-lg px-3 py-2 text-start text-sm ${section === k ? "bg-muted font-medium" : "text-muted-foreground hover:bg-muted/60"}`}>
-            {label}
-          </button>
+          <Link key={k} href={k === "team" ? "/institute/admissions-settings" : `/institute/admissions-settings?section=${k}`} scroll={false} aria-current={section === k ? "page" : undefined} className={`rounded-lg px-3 py-2 text-start text-sm ${section === k ? "bg-muted font-medium" : "text-muted-foreground hover:bg-muted/60"}`}>
+            {en(label)}
+          </Link>
         ))}
       </nav>
       <div>
@@ -338,14 +342,12 @@ function Integrations({ getToken, webhookUrl, reload }: { getToken: GetToken; we
 
       <OpenTracking getToken={getToken} />
 
-      <section className="space-y-1">
+      <section className="space-y-3">
         <h2 className="text-base font-semibold">{en("SMS and WhatsApp")}</h2>
         <p className="text-sm text-muted-foreground">
           {en("WhatsApp works without setup: it opens the chat with your message ready. To send SMS from Edulexa, connect your Pulse Relay workspace.")}
         </p>
-        <a href="/career-center/settings/chat-sms" className="inline-block text-sm text-indigo-700 hover:underline dark:text-indigo-400">
-          {en("Connect Pulse Relay")}
-        </a>
+        <AdmissionsConnection />
       </section>
     </div>
   );

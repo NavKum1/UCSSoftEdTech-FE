@@ -84,7 +84,14 @@ interface LogRow {
 
 const PARAMS = ["brand", "link", "title"];
 
-function ConnectionCard({ s, onSaved }: { s: Settings; onSaved: (v: Settings) => void }) {
+type ConnectionSettings = Pick<Settings, "canEdit" | "wappr">;
+
+function ConnectionCard<T extends ConnectionSettings>({ s, onSaved, endpoint = "/api/career/channels/admin/wappr", readOnlyMessage }: {
+  s: T;
+  onSaved: (v: T) => void;
+  endpoint?: string;
+  readOnlyMessage?: string;
+}) {
   const t = useCareerT("careerCenterChatSms");
   const api = useApi();
   const [workspaceId, setWorkspaceId] = useState(s.wappr.workspaceId ?? "");
@@ -109,7 +116,7 @@ function ConnectionCard({ s, onSaved }: { s: Settings; onSaved: (v: Settings) =>
   const save = (e: React.FormEvent) => {
     e.preventDefault();
     void run("save", async () => {
-      onSaved(await api<Settings>("/api/career/channels/admin/wappr", { method: "PUT", json: { workspaceId, key } }));
+      onSaved(await api<T>(endpoint, { method: "PUT", json: { workspaceId, key } }));
       setKey("");
       setMsg(t("connectionSaved"));
     });
@@ -117,7 +124,7 @@ function ConnectionCard({ s, onSaved }: { s: Settings; onSaved: (v: Settings) =>
   const disconnect = () =>
     run("disconnect", async () => {
       if (!window.confirm(t("disconnectConfirm"))) return;
-      onSaved(await api<Settings>("/api/career/channels/admin/wappr", { method: "DELETE" }));
+      onSaved(await api<T>(endpoint, { method: "DELETE" }));
       setMsg(t("disconnected"));
     });
 
@@ -149,23 +156,34 @@ function ConnectionCard({ s, onSaved }: { s: Settings; onSaved: (v: Settings) =>
                 {(p) => <input {...p} dir="ltr" type="password" autoComplete="off" value={key} onChange={(e) => setKey(e.target.value.trim())} required={!w.hasKey} />}
               </Field>
               <div className="flex flex-wrap gap-2">
-                <Button type="submit" busy={busy === "save"}>
+                <Button type="submit" busy={busy === "save"} disabled={busy != null}>
                   {w.connected ? t("checkAndSave") : t("connect")}
                 </Button>
                 {w.connected && (
-                  <Button type="button" variant="secondary" busy={busy === "disconnect"} onClick={() => void disconnect()}>
+                  <Button type="button" variant="secondary" busy={busy === "disconnect"} disabled={busy != null} onClick={() => void disconnect()}>
                     {t("disconnect")}
                   </Button>
                 )}
               </div>
             </form>
           ) : (
-            <p className="text-sm text-muted-foreground">{t("adminOnly")}</p>
+            <p className="text-sm text-muted-foreground">{readOnlyMessage ?? t("adminOnly")}</p>
           )}
         </div>
       )}
     </Card>
   );
+}
+
+export function AdmissionsConnection() {
+  const en = useEn();
+  const endpoint = "/api/career/channels/admissions/connection";
+  const api = useApi();
+  const { data, setData, loading, error, reload } = useLoad(() => api<ConnectionSettings>(endpoint), [api]);
+
+  if (loading && !data) return <Loading />;
+  if (!data) return <ErrorBanner error={error} onRetry={reload} />;
+  return <ConnectionCard s={data} onSaved={setData} endpoint={endpoint} readOnlyMessage={en("Your school is read-only. Go to Billing to restore the ability to change this connection.")} />;
 }
 
 /** Career center: Pulse Relay connection, channels, allowed types, quiet hours, template mapping and the send log. */

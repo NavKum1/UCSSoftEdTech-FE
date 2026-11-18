@@ -20,6 +20,8 @@ Every day there are two short drills: an incident drill and a code review. Both 
 - [ui: Streak]: the days in a row you've practiced. Every 7 days in a row earn a streak freeze (you can hold 2). A freeze covers one missed day for you.
 - [ui: This week] starts again each week, on the day the page shows. [ui: All time] counts every point since you started.
 
+[shot: member-daily-practice]
+
 ## The incident drill
 
 About 10 minutes. A service is failing, and you work out why.

@@ -24,6 +24,8 @@ Open [Guidance requests for you](/mentor/guidance). Each request shows:
 
 Files they attached are shown to the advisors only. A request leaves your list once it's resolved or handed back.
 
+[shot: mentor-guidance-request]
+
 ## Reply
 
 Write your reply and select [ui: Send]. The person gets it in Edulexa and by e-mail, and the request shows [ui: Answered].

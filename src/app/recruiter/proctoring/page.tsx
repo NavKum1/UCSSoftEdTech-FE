@@ -104,7 +104,7 @@ export default function SessionIntegrityPage() {
     <div className="space-y-6">
       <PageHeader
         title={en("Proctored sessions")}
-        description={en("What happened during each proctored session, such as switching tabs or pasting text, for a person to review. How serious an event is depends only on its kind. No one is disqualified automatically, and no gaze or face detection is performed.")}
+        description={en("What happened during each proctored session from your company's challenges, such as leaving full screen, for a person to review. How serious an event is depends only on its kind. No one is disqualified automatically, and no gaze or face detection is performed.")}
       />
 
       <Tabs<Filter>
@@ -144,7 +144,7 @@ export default function SessionIntegrityPage() {
               {shown.map((r) => (
                 <tr key={r.sessionId}>
                   <td className="p-3">{r.candidateName ?? <span className="text-muted-foreground">{en("Unnamed candidate")}</span>}</td>
-                  <td className="p-3 text-muted-foreground">{new Date(r.lastUpdatedAt).toLocaleString()}</td>
+                  <td className="p-3 text-muted-foreground">{new Date(r.lastUpdatedAt).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" })}</td>
                   <td className="p-3 text-end tabular-nums">{r.totalViolations}</td>
                   <td className="p-3 text-end tabular-nums">{r.integrityScore}</td>
                   <td className="p-3">
@@ -201,7 +201,7 @@ export default function SessionIntegrityPage() {
                 <span>
                   {en(EVENT_LABEL[e.eventType] ?? e.eventType)} <span className="text-xs text-muted-foreground">({e.severity})</span>
                 </span>
-                <span className="text-xs text-muted-foreground tabular-nums">{new Date(e.timestamp).toLocaleTimeString()}</span>
+                <span className="text-xs text-muted-foreground tabular-nums">{new Date(e.timestamp).toLocaleTimeString(undefined, { timeStyle: "short" })}</span>
               </li>
             ))}
           </ol>

@@ -54,6 +54,7 @@ interface Draft {
 
 const KEY = "edulexa.start";
 const EMPTY: Draft = { step: 1, country: "", kind: "", plan: "Growth", interval: "month", schoolName: "", website: "", size: "", timeZone: "", slug: "" };
+const PLAN_FROM_URL: Record<string, string> = { starter: "Starter", growth: "Growth", pro: "Pro" };
 const KINDS = SCHOOL_KINDS.map((k) => (k.value === "other" ? { ...k, text: "Tell us more after you sign up" } : k));
 const SIZES = [
   ["under-100", "Under 100 students"],
@@ -66,13 +67,29 @@ const STEPS = ["Your school", "Plan", "Account", "Details", "Start your trial"];
 // ISO 3166-1 alpha-2 codes; names come from Intl.DisplayNames
 
 const noSubscribe = () => () => {};
+function pricingSelection(params: URLSearchParams): Pick<Draft, "plan" | "interval"> | null {
+  const key = params.get("plan")?.toLowerCase();
+  if (!key || !Object.hasOwn(PLAN_FROM_URL, key)) return null;
+  return { plan: PLAN_FROM_URL[key], interval: params.get("interval") === "year" ? "year" : "month" };
+}
 const load = (): Draft => {
+  let draft = EMPTY;
   try {
     const raw = sessionStorage.getItem(KEY);
-    return raw ? { ...EMPTY, ...JSON.parse(raw) } : EMPTY;
+    if (raw) draft = { ...EMPTY, ...JSON.parse(raw) };
   } catch {
-    return EMPTY;
+    // The pricing link still supplies the selection when local storage is blocked.
   }
+  const selection = pricingSelection(new URLSearchParams(window.location.search));
+  if (!selection) return draft;
+  const chosen = { ...draft, ...selection, step: 1 };
+  try {
+    // Kept now, so the choice survives a reload after the link is removed from the address
+    sessionStorage.setItem(KEY, JSON.stringify(chosen));
+  } catch {
+    // storage blocked: the draft lives as long as the page
+  }
+  return chosen;
 };
 const money = (minor: number, currency: string) =>
   new Intl.NumberFormat(currency === "INR" ? "en-IN" : "en-US", { style: "currency", currency, maximumFractionDigits: minor % 100 === 0 ? 0 : 2 }).format(minor / 100);
@@ -110,6 +127,15 @@ function Wizard() {
       }
       return next;
     });
+  }, []);
+
+  useEffect(() => {
+    const url = new URL(window.location.href);
+    if (!pricingSelection(url.searchParams)) return;
+    // Consume the link once, so reloading preserves any later choice in the wizard.
+    url.searchParams.delete("plan");
+    url.searchParams.delete("interval");
+    window.history.replaceState(window.history.state, "", url);
   }, []);
 
   const countries = useMemo(() => countryList(), []);
@@ -176,6 +202,19 @@ function Wizard() {
     setSlugFree(res.ok ? Boolean((await res.json()).available) : null);
   };
 
+  const continueWithAccount = async (signUp: boolean) => {
+    setBusy(true);
+    setError(null);
+    try {
+      const failure = await keycloakSignIn("/start", { signUp });
+      if (!failure) return;
+    } catch {
+      // Keep the wizard and its choices available when the identity service is unreachable.
+    }
+    setError(en("We couldn't open the sign-in service. Please try again."));
+    setBusy(false);
+  };
+
   const start = async () => {
     setBusy(true);
     setError(null);
@@ -200,12 +239,16 @@ function Wizard() {
       );
       const body = await res.json().catch(() => null);
       if (!res.ok) throw new Error(body?.error ?? "Your school couldn't be set up. Please try again.");
-      const checkout = body.checkout as { provider: string; url: string | null; razorpay: RazorpayStart | null };
-      if (checkout.provider === "stripe" && checkout.url) {
+      const checkout = body?.checkout as { provider: string; url: string | null; razorpay: RazorpayStart | null } | undefined;
+      if (checkout?.provider === "stripe" && checkout.url) {
         window.location.assign(checkout.url);
         return;
       }
-      if (checkout.razorpay) await openRazorpay(body.signupId, checkout.razorpay);
+      if (checkout?.provider === "razorpay" && checkout.razorpay) {
+        await openRazorpay(body.signupId, checkout.razorpay);
+        return;
+      }
+      throw new Error(en("Checkout couldn't be started. Please try again."));
     } catch (e) {
       setError(e instanceof Error ? e.message : "Something went wrong.");
       setBusy(false);
@@ -344,7 +387,7 @@ function Wizard() {
               <div className="mt-6 rounded-2xl border border-indigo-200 bg-indigo-50 p-5 dark:border-indigo-900 dark:bg-indigo-950/40">
                 <p className="font-medium">{en("Schools in ")}{country}{en(" are hosted in our ")}{plans.region === "US" ? en("Americas") : plans.region === "IN" ? en("India") : plans.region} region.</p>
                 <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">{en("Your school will be set up there, so its data stays in that region.")}</p>
-                <a className={`${primary} mt-4`} href={`${plans.regionUrl}/start`}>
+                <a className={`${primary} mt-4`} href={`${plans.regionUrl}/start?plan=${encodeURIComponent(d.plan.toLowerCase())}&interval=${d.interval}`}>
                   {en("Continue there")}
                 </a>
               </div>
@@ -429,13 +472,13 @@ function Wizard() {
             </h1>
             <p className="mt-2 text-slate-600 dark:text-slate-400">{en("You'll be your school's administrator. We'll ask you to confirm your e-mail address.")}</p>
             <div className="mt-8 flex flex-wrap gap-3">
-              <button type="button" className={primary} disabled={!isLoaded} onClick={() => void keycloakSignIn("/start", { signUp: true })}>
+              <button type="button" className={primary} disabled={!isLoaded || busy} onClick={() => void continueWithAccount(true)}>
                 {en("Create my account")}
               </button>
               <button
                 type="button"
-                disabled={!isLoaded}
-                onClick={() => void keycloakSignIn("/start")}
+                disabled={!isLoaded || busy}
+                onClick={() => void continueWithAccount(false)}
                 className="inline-flex items-center rounded-xl border border-slate-300 bg-white px-5 py-3 text-[15px] font-semibold hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:hover:bg-slate-800"
               >
                 {en("I already have one")}
@@ -548,7 +591,7 @@ function Wizard() {
               </dl>
               <p className="mt-5 flex gap-2.5 rounded-xl bg-slate-50 p-4 text-sm text-slate-600 dark:bg-slate-800/60 dark:text-slate-300">
                 <Sparkles aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0 text-indigo-600" />
-                {en("Your {trialDays}-day trial starts now. We'll remind you 7 days before it ends. If you keep the plan, the first payment of {amount} is taken on day {value}; cancel before then and you won't be charged.", { trialDays: plans.trialDays, amount: price(plan), value: plans.trialDays + 1 })}
+                {en("Your {trialDays}-day trial begins after you add a payment method. We'll remind you 7 days before it ends. If you keep the plan, the first payment of {amount} is taken on day {value}. Cancel before then to avoid a charge.", { trialDays: plans.trialDays, amount: price(plan), value: plans.trialDays + 1 })}
               </p>
             </div>
             <button type="button" className={`${primary} mt-8 w-full sm:w-auto`} disabled={busy} onClick={start}>

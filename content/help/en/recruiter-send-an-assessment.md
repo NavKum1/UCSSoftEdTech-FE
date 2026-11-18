@@ -22,6 +22,8 @@ An assessment has three stages, taken in order: a written exam, a coding task, a
 5. Leave [ui: E-mail the link to the candidate] ticked if you want Edulexa to send it. It goes out in your company's name, and the candidate's replies come to you.
 6. Select [ui: Create and get link].
 
+[shot: recruiter-send-assessment]
+
 The candidate's link appears once. For security, the full link isn't shown again, so select [ui: Copy] now if you want to send it yourself. [ui: Preview as the candidate] shows you what the candidate will see.
 
 ## Look after the link

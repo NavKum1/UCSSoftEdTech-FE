@@ -5,7 +5,7 @@ roles: [admin, teacher, staff, member, recruiter, employer, admissions, mentor]
 group: Your data and privacy
 features: [member-privacy]
 order: 60
-checked: 2026-11-12
+checked: 2026-11-18
 short:
   - Open Privacy and your data, from your account menu or from Your account under More settings.
   - Select Download my data for a copy of everything in your account.
@@ -32,6 +32,8 @@ Download a copy first if you want one. Deleting can't be undone. The page shows 
 - [ui: Your name removed]: your name becomes "Deleted user", your e-mail address is replaced, and credentials you earned are revoked.
 - [ui: Kept, without your name]: the code you handed in, test results, defense scores and employers' decisions stay, because employers must be able to show how they decided. They no longer carry your name or e-mail address.
 - [ui: Handled by others, or kept by law]: we ask any school that holds records about you to delete them, and the school decides. Records the law requires us to keep stay, without your name, until their time is up.
+
+The result of a coding challenge's session check is kept for 3 years, without your name, for reviews and appeals. The list of times you left full screen is deleted, or, if you took the challenge through your school, your school is asked to delete it.
 
 To go ahead, type DELETE MY DATA in the box, exactly as shown, and select [ui: Delete my data]. The page then shows how many records were deleted, which schools were asked to delete theirs, and what this didn't cover. Then select [ui: Sign out].
 

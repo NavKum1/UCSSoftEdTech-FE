@@ -2066,7 +2066,7 @@ function SettingsEditor({
           checked={!!s.requirePhoneCheck}
           onChange={(v) => set({ requirePhoneCheck: v, askPhone: v || s.askPhone, phoneRequired: v || s.phoneRequired })}
           title={en("Check the phone number by SMS code")}
-          detail={en("People enter a code we send to their phone. Needs your Pulse Relay connection (Admissions settings → SMS and WhatsApp → Connect Pulse Relay); each code is a normal SMS.")}
+          detail={en("People enter a code we send to their phone. Connect Pulse Relay under Admissions settings → Connected apps. Each code is sent as an SMS.")}
         />
         <div className="rounded-lg bg-muted/40 p-3 text-xs text-muted-foreground">
           <p className="font-medium text-foreground">{en("Always on")}</p>

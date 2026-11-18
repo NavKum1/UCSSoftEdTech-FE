@@ -23,6 +23,8 @@ Candidates appeal from their own results page and say what went wrong: a technic
 4. Write the [ui: Response to the candidate (emailed to them)]. It needs at least 20 characters.
 5. Select [ui: Resolve appeal].
 
+[shot: recruiter-appeals]
+
 Someone other than the reviewer who recorded the latest decision must answer the appeal. If that was you, ask a colleague.
 
 If you overturn the result, open the evidence pack again and record a new decision. The earlier decision stays in the pack's history.

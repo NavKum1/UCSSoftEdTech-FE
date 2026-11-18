@@ -855,7 +855,7 @@ function Composer({
         <>
           {en("SMS isn't connected for your institute.")}{" "}
           {isAdmin ? (
-            <a className="underline" href="/career-center/settings/chat-sms">
+            <a className="underline" href="/institute/admissions-settings?section=integrations">
               {en("Connect Pulse Relay")}
             </a>
           ) : (

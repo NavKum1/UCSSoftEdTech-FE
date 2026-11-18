@@ -48,6 +48,8 @@ Each AI request uses one of your AI uses for the month. The page shows how many 
 
 Each requirement shows [ui: Mentioned] or [ui: Not found]. There's no score: a mention isn't proof, and add something missing only if it's true.
 
+[shot: member-job-check]
+
 ## Draft a cover letter
 
 1. In [ui: Cover letters], select [ui: Draft a cover letter].

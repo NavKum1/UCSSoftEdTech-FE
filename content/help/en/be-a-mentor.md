@@ -36,6 +36,8 @@ Need a break? Select [ui: Pause new requests]. Your current mentees aren't affec
 
 Each request under [ui: Requests] shows the person's message, their goals, and what you have in common. Add a note if you like ([ui: Note to the student (optional)] at a school, [ui: Note to your mentee (optional)] in the Edulexa community), then select **Accept** or **Decline**.
 
+[shot: alumni-mentoring-requests]
+
 When you accept, the mentorship becomes [ui: Active] and you both see each other's contact details. At some schools the career center confirms each match first, so it shows [ui: Waiting for career center] until they do.
 
 ## Look after your mentees

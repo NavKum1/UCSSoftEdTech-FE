@@ -4,7 +4,9 @@
  * developer sign-in: the API must run in Development, as scripts/dev.ps1 starts it), opens the page, clicks what is listed,
  * rings the thing to point at, and saves the part of the screen as public/help/shots/<name>.png (desktop, light theme,
  * English, compressed). Retake them all before each release (the release checklist), so they never show an old screen.
- * Run: node scripts/help-shots.mjs [name ...] [--base http://localhost:3000] [--public <public site folder>]
+ * Run: node scripts/help-shots.mjs [name ...] [--base http://localhost:3000] [--api http://localhost:5856] [--public <public site folder>]
+ * --api: send the page's API calls to another local API (one started on its own database for the pictures), when the web
+ * app that runs is set up for the usual one (only one "next dev" can run in this folder)
  */
 import fs from "node:fs";
 import path from "node:path";
@@ -21,6 +23,7 @@ const args = process.argv.slice(2);
 const opt = (name, fallback) => (args.includes(name) ? args[args.indexOf(name) + 1] : fallback);
 const BASE = opt("--base", "http://localhost:3000").replace(/\/$/, "");
 const PUBLIC = opt("--public", null);
+const API = opt("--api", null)?.replace(/\/$/, "") ?? null;
 const only = args.filter((a, i) => !a.startsWith("--") && !(i > 0 && args[i - 1].startsWith("--")));
 const MAX_HEIGHT = 1000; // css pixels: a picture shows one part of a screen, not a whole long page ("height" in shots.yml: less)
 const MAX_WIDTH = 1600; // image pixels
@@ -77,6 +80,15 @@ for (const name of names) {
   );
   if (sh.as !== "none" && !person) { console.error(`!! ${name}: unknown person "${sh.as}"`); failed++; await ctx.close(); continue; }
   const page = await ctx.newPage();
+  if (API) {
+    // API calls to the address the web app was started with go to --api instead; the answer comes back as if from that
+    // address, with the API's own headers (it allows any localhost page in Development)
+    const web = new URL(BASE).origin;
+    await page.route((u) => u.origin !== web && u.origin !== API && /^\/(api|hubs)\//.test(u.pathname), async (route) => {
+      const u = new URL(route.request().url());
+      try { await route.fulfill({ response: await route.fetch({ url: API + u.pathname + u.search }) }); } catch { await route.abort(); }
+    });
+  }
   try {
     await page.goto(BASE + sh.open, { waitUntil: "networkidle", timeout: 90000 });
     // The development tools' badge isn't part of the app

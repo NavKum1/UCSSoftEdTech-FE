@@ -32,6 +32,8 @@ Prefer to ask a particular institute? Select [ui: Talk to a specific institute],
 - If an advisor thinks an institute could help, the request says so. Select [ui: Yes, send it] to send them your request, or [ui: No, thanks].
 - To ask about something else, select [ui: Ask something new].
 
+[shot: member-guidance-answered]
+
 ## Find a mentor
 
 [ui: Mentoring] in the [ui: Guidance] menu is free mentoring from people in the Edulexa community. The Edulexa team reviews every mentor before you can see them.

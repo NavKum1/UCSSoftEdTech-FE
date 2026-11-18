@@ -29,6 +29,8 @@ Open [ui: Evidence packs] under [ui: Review]. The [ui: Evidence review queue] sh
 - [ui: Approved accommodations] and [ui: Candidate appeals], if there are any.
 - [ui: Decision history]: every decision recorded so far.
 
+[shot: recruiter-evidence-integrity]
+
 The pack never includes voice sentiment or emotion analysis. Demographic data is only used in combined bias audit figures.
 
 ## Record your decision
