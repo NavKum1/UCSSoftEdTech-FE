@@ -34,6 +34,10 @@ You can also reply to the e-mail you received about the request, when it says yo
 
 To leave a message only the advisors can read, tick [ui: Note for staff only (the person doesn't see it)], then select [ui: Add note].
 
+## Suggest an institute
+
+If an institute could help, choose it under [ui: Suggest an institute] and select [ui: Suggest]. [ui: Suggested for this person] lists institutes with courses in the area the person's quiz recommended, when they shared it. The person decides: nothing is sent to the institute unless they approve.
+
 ## Hand it back
 
 If you can't help, select [ui: Hand back to the advisors]. The request goes back to them straight away, and they're told by e-mail. Add a note for staff first if it helps them, for example who could help instead.

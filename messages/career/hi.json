@@ -4337,7 +4337,16 @@
     "SafetyConcern": "सुरक्षा से जुड़ी चिंता",
     "Other": "कुछ और"
    },
-   "keepItShortAndGeneral": "इसे छोटा और सामान्य रखें, जैसे “रिज़्यूमे के मसौदे की समीक्षा की”।"
+   "keepItShortAndGeneral": "इसे छोटा और सामान्य रखें, जैसे “रिज़्यूमे के मसौदे की समीक्षा की”।",
+   "andTheCareerCenterConfirmsCommunity": " और Edulexa टीम इस मिलान की पुष्टि करती है",
+   "privateMessagesBetweenYouAndCommunity": "आपके और {other} के बीच निजी संदेश। Edulexa टीम इन्हें तभी पढ़ सकती है, जब आप में से कोई समस्या की शिकायत करे।",
+   "privateNotesAreVisibleOnlyCommunity": "निजी नोट सिर्फ़ आपको और {other} को दिखते हैं। Edulexa टीम तारीखें, अवधि और आपके साझा करने के लिए चुना गया कोई भी सारांश देख सकती है।",
+   "sharedWithCareerCenterCommunity": "Edulexa टीम के साथ साझा किया गया:",
+   "summaryForTheCareerCenterCommunity": "Edulexa टीम के लिए सारांश (ज़रूरी नहीं)",
+   "yourRatingAndCommentGoCommunity": "आपकी रेटिंग और टिप्पणी Edulexa टीम को भेजी जाएगी, {other} को नहीं।",
+   "ifSomethingFeltWrongTellCommunity": "अगर कुछ ठीक नहीं लगा, तो Edulexa टीम को बताएं। वे हर शिकायत की समीक्षा करते हैं; इस बीच, जिस व्यक्ति की शिकायत की गई है, उसके लिए नए मिलान रोक दिए जाते हैं।",
+   "yourReportWasSentToCommunity": "आपकी शिकायत Edulexa टीम को भेज दी गई।",
+   "yourFeedbackGoesToTheCommunity": "आपकी प्रतिक्रिया सिर्फ़ Edulexa टीम को भेजी जाएगी।"
   },
   "careerCenterCaseloadSettings": {
    "notes": "नोट",

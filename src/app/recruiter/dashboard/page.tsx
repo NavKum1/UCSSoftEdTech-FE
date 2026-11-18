@@ -10,6 +10,7 @@ import {
   Layers, Brain, CheckCheck, X, MessageSquare, FileSearch, ChevronDown, Mail,
 } from "lucide-react";
 import { useEn } from "@/lib/english/EnglishProvider";
+import { CompanyChallenges, CreatedChallenge } from "@/components/recruiter/CompanyChallenges";
 
 interface TranscriptEntry {
   role: string;
@@ -257,6 +258,9 @@ export default function RecruiterDashboardPage() {
   const [newCompany, setNewCompany] = useState("");
   const [newInviteCode, setNewInviteCode] = useState("");
   const [createStatus, setCreateStatus] = useState<string | null>(null);
+  // The challenge just created (its link stays on screen to copy), and a counter that reloads Your coding challenges
+  const [created, setCreated] = useState<{ title: string; link: string; code: string } | null>(null);
+  const [challengesVersion, setChallengesVersion] = useState(0);
 
   // Bundle Modal & Form State
   const [showBundleModal, setShowBundleModal] = useState<boolean>(false);
@@ -355,16 +359,15 @@ export default function RecruiterDashboardPage() {
       });
 
       if (res.ok) {
-        const created = await res.json();
-        setCreateStatus(en("Created. Invite code: {code}", { code: created.inviteCode }));
-        setTimeout(() => {
-          setShowCreateModal(false);
-          setCreateStatus(null);
-          setNewTitle("");
-          setNewDescription("");
-          setNewInviteCode("");
-          fetchCandidates();
-        }, 2000);
+        const made = (await res.json()) as { sprintId: string; title: string; inviteCode: string };
+        // Owner, 18 Nov 2026: the link stays on screen until the recruiter closes the window
+        setCreated({ title: made.title, code: made.inviteCode, link: `/sprint/${made.sprintId}?invite=${encodeURIComponent(made.inviteCode)}` });
+        setCreateStatus(null);
+        setNewTitle("");
+        setNewDescription("");
+        setNewInviteCode("");
+        setChallengesVersion((v) => v + 1);
+        fetchCandidates();
       } else {
         setCreateStatus("We couldn't create the challenge. Please try again.");
       }
@@ -629,6 +632,11 @@ export default function RecruiterDashboardPage() {
         <Link href={evidenceHref(cand.submissionId)} className="inline-flex items-center gap-1 font-medium text-indigo-700 hover:underline dark:text-indigo-400">
           <FileSearch aria-hidden="true" className="h-3.5 w-3.5" />
           {evidenceHref(cand.submissionId) === "/recruiter/evidence" ? en("Review") : en("Evidence pack")}
+        </Link>
+      )}
+      {only !== "credential" && cand.submissionId && GUID_PATTERN.test(cand.submissionId) && (
+        <Link href={`/recruiter/benchmark?submission=${cand.submissionId}`} className="inline-flex items-center gap-1 font-medium text-indigo-700 hover:underline dark:text-indigo-400">
+          {en("Test results")}
         </Link>
       )}
       {only !== "evidence" &&
@@ -918,12 +926,14 @@ export default function RecruiterDashboardPage() {
               {en("Challenge scores, project work and integrity signals. Signals are prompts for a conversation, not proof; open the evidence pack to review and decide.")}
             </p>
 
+            <CompanyChallenges apiFetch={apiFetch} version={challengesVersion} />
+
             <ErrorBanner error={candidatesError} onRetry={fetchCandidates} />
             {loading && candidates.length === 0 ? (
               <Loading />
             ) : candidatesError ? null : candidates.length === 0 ? (
               <EmptyState title={en("No submissions yet")}>
-                {en("Create a coding challenge and share its invite code. Submissions show up here.")}
+                {en("Send candidates a challenge's link from Your coding challenges. Their submissions show up here.")}
               </EmptyState>
             ) : (
               <>
@@ -973,7 +983,7 @@ export default function RecruiterDashboardPage() {
                             {cand.evaluation?.finalScore ? `${cand.evaluation.finalScore}%` : en("Pending")}
                           </td>
                           <td className="px-3 py-3">{integrityBadge(cand)}</td>
-                          <td className="px-3 py-3">{candidateLinks(cand, "evidence")}</td>
+                          <td className="px-3 py-3"><div className="flex flex-wrap items-center gap-x-4 gap-y-1">{candidateLinks(cand, "evidence")}</div></td>
                           <td className="px-3 py-3 text-end">{candidateLinks(cand, "credential")}</td>
                         </tr>
                       ))}
@@ -1168,15 +1178,18 @@ export default function RecruiterDashboardPage() {
 
       {/* New coding challenge */}
       {showCreateModal && (
-        <Modal labelledBy="challenge-modal-title" onClose={() => setShowCreateModal(false)}>
+        <Modal labelledBy="challenge-modal-title" onClose={() => { setShowCreateModal(false); setCreated(null); }}>
           <div className={modalPanel("max-w-md")}>
             <div className="flex items-center justify-between gap-3 border-b border-border pb-3">
               <h2 id="challenge-modal-title" className="text-base font-semibold text-foreground">
                 {en("New coding challenge")}
               </h2>
-              <CloseButton onClick={() => setShowCreateModal(false)} label={en("Close")} />
+              <CloseButton onClick={() => { setShowCreateModal(false); setCreated(null); }} label={en("Close")} />
             </div>
 
+            {created ? (
+              <CreatedChallenge title={created.title} link={created.link} code={created.code} onDone={() => { setShowCreateModal(false); setCreated(null); }} />
+            ) : (
             <form onSubmit={handleCreateChallenge} className="space-y-4">
               <Field label={en("Company or team")}>
                 {(p) => (
@@ -1253,6 +1266,7 @@ export default function RecruiterDashboardPage() {
                 <Button type="submit">{en("Create challenge")}</Button>
               </div>
             </form>
+            )}
           </div>
         </Modal>
       )}
@@ -1280,7 +1294,7 @@ export default function RecruiterDashboardPage() {
             <Field label={en("Notes for your team (optional)")}>
               {(p) => <textarea {...p} rows={3} maxLength={1000} value={decisionNotes} onChange={(e) => setDecisionNotes(e.target.value)} />}
             </Field>
-            <p className="text-xs text-muted-foreground">{en("This records your decision in Edulexa. Nothing is sent to the candidate.")}</p>
+            <p className="text-xs text-muted-foreground">{en("This records your decision in Edulexa. Nothing is e-mailed to the candidate, but they see the outcome and its date when they open their assessment link, and in their data download. They never see your notes.")}</p>
             <ErrorBanner error={decisionError} />
             <div className="flex justify-end gap-2">
               <Button type="button" variant="secondary" onClick={() => setDecisionFor(null)}>{en("Cancel")}</Button>

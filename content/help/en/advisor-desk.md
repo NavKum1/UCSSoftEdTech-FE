@@ -35,7 +35,7 @@ To answer it yourself again, select [ui: Take back]. If the mentor hands it back
 
 ## Suggest an institute
 
-Under [ui: Suggest an institute], choose one of the institutes listed on Edulexa, add [ui: Why this institute (optional)], and select [ui: Suggest].
+Under [ui: Suggest an institute], choose one of the institutes listed on Edulexa, add [ui: Why this institute (optional)], and select [ui: Suggest]. If the person shared their quiz result, [ui: Suggested for this person] lists up to three institutes with courses in the area it recommended, so you can pick one without searching.
 
 The person decides. They're asked by e-mail and on their own page, and nothing is sent to the institute unless they approve. If they approve, the request shows [ui: Sent to an institute] and the institute contacts them. If they decline, it's waiting for an advisor again.
 

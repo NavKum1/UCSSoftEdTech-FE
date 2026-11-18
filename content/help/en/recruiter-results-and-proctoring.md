@@ -29,7 +29,7 @@ Select [ui: Details] to see the stage scores, an AI-written summary of the inter
 2. Choose [ui: Advanced to the next step], [ui: Hire] or [ui: Not moving forward].
 3. Add [ui: Notes for your team (optional)] and select [ui: Save decision].
 
-This records your decision in Edulexa. Nothing is sent to the candidate. To change it, select [ui: Change decision].
+This records your decision in Edulexa. Nothing is e-mailed to the candidate, but they see the outcome and its date when they open their assessment link, and in their data download. They never see your notes. To change it, select [ui: Change decision].
 
 ## Coding challenge submissions
 
@@ -54,3 +54,5 @@ The session then shows [ui: Reviewed]. A [ui: Flagged] session is shown as [ui: 
 ## Challenge results
 
 [ui: Challenge results] under [ui: Review] shows how candidates did on each coding challenge: the number of [ui: Candidates], the [ui: Median tests passed], the spread of each candidate's best result, and how many are [ui: For review]. It counts graded results only: the share of hidden tests passed, or a [ui: Mentor-adjusted score].
+
+To see one candidate's result, choose [ui: Test results] next to them under [ui: Coding challenge submissions] on the candidates page. It shows their score, the tests they passed, and any signals worth a second look.

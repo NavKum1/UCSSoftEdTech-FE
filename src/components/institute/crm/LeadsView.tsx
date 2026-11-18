@@ -28,7 +28,8 @@ import {
   type Member,
   type SavedView,
 } from "./api";
-import { useEn } from "@/lib/english/EnglishProvider";
+import { useEn, useEnglish } from "@/lib/english/EnglishProvider";
+import { inEnglish } from "@/lib/english";
 
 const input = "rounded-lg border border-border bg-background px-3 py-2 text-sm focus:border-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-600/20";
 
@@ -105,6 +106,7 @@ export default function LeadsView({
 }) {
   // The remembered layout is read from this browser only after hydration (the server always renders the table)
   const en = useEn();
+  const { english } = useEnglish();
   const layout = useSyncExternalStore(subscribeLayout, readLayout, () => "table" as const);
   const [more, setMore] = useState(false);
   const [selected, setSelected] = useState<Set<string>>(new Set());
@@ -289,7 +291,7 @@ export default function LeadsView({
             options={[["me", "Me"], ["none", "Unassigned"], ...activeTeam.map((m) => [m.id, m.name] as [string, string])]}
           />
           <Select label={en("Request")} value={filters.type ?? ""} onChange={(v) => setFilters({ ...filters, type: v || undefined })} options={[["course", "Course inquiry"], ["guidance", "Career guidance"]]} />
-          <Select label={en("Source")} value={filters.source ?? ""} onChange={(v) => setFilters({ ...filters, source: v || undefined })} options={(data?.sources ?? []).map((s) => [s, s])} />
+          <Select label={en("Source")} value={filters.source ?? ""} onChange={(v) => setFilters({ ...filters, source: v || undefined })} options={(data?.sources ?? []).map((s) => [s, inEnglish(english, s)])} />
           <Select
             label={en("Received")}
             value={RANGES.find((r) => r[2] === filters.from)?.[0] ?? (filters.from ? "custom" : "")}
@@ -409,7 +411,7 @@ export default function LeadsView({
                   </td>
                   <td className="px-3 py-2.5">
                     <span>{l.requestType === "guidance" ? en("Career guidance") : (l.course ?? "Course no longer listed")}</span>
-                    <div className="text-xs text-muted-foreground">{l.source}{l.quizShared ? en(" · quiz shared") : ""}</div>
+                    <div className="text-xs text-muted-foreground">{inEnglish(english, l.source ?? "")}{l.quizShared ? en(" · quiz shared") : ""}</div>
                   </td>
                   <td className="px-3 py-2.5" onClick={(e) => e.stopPropagation()}>
                     <StageMenu lead={l} onMove={move} />

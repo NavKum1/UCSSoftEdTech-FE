@@ -16,6 +16,13 @@ export interface GuidanceMessage {
   createdAt: string;
 }
 
+export interface SuggestedInstitute {
+  instituteId: string;
+  name: string;
+  city: string | null;
+  coursesInArea: number;
+}
+
 export interface GuidanceRequestView {
   id: string;
   name: string;
@@ -38,6 +45,10 @@ export interface GuidanceRequestView {
   suggestionNote: string | null;
   sentToInstitute: boolean;
   replyByEmail: boolean;
+  /** The person may send it to an institute themselves (nobody answered in two working days) */
+  canChoose?: boolean;
+  /** Institutes with courses in the area the person's quiz recommended (staff and mentors; the person when canChoose) */
+  suggestions?: SuggestedInstitute[];
   messages: GuidanceMessage[];
 }
 
@@ -165,5 +176,101 @@ export function RequestDetails({ r, files = false }: { r: GuidanceRequestView; /
         </details>
       )}
     </div>
+  );
+}
+
+const field = "w-full rounded-lg border border-border bg-background px-3 py-2 text-sm";
+
+/** One suggested institute, as a choice: its name, city and how many of its courses are in the person's area */
+function SuggestionLine({ s, area }: { s: SuggestedInstitute; area?: string | null }) {
+  const en = useEn();
+  return (
+    <>
+      <span className="font-medium">{s.name}</span>
+      <span className="text-xs text-muted-foreground">
+        {[s.city, area ? en(s.coursesInArea === 1 ? "1 course in {area}" : "{count} courses in {area}", { count: s.coursesInArea, area }) : null].filter(Boolean).join(" · ")}
+      </span>
+    </>
+  );
+}
+
+/**
+ * Advisors and mentors suggest an institute; the person decides, and nothing is sent unless they approve. The institutes
+ * suggested for this person (courses in the area their quiz recommended) are one click away; any listed institute can be chosen.
+ */
+export function SuggestInstitute({ r, institutes, onSuggest }: {
+  r: GuidanceRequestView;
+  institutes: { id: string; name: string }[];
+  onSuggest: (instituteId: string, note: string) => Promise<boolean>;
+}) {
+  const en = useEn();
+  const [pick, setPick] = useState("");
+  const [note, setNote] = useState("");
+  const suggested = r.suggestions ?? [];
+  return (
+    <div className="space-y-2">
+      <h3 className="text-sm font-semibold">{en("Suggest an institute")}</h3>
+      <p className="text-xs text-muted-foreground">{en("The person decides. Nothing is sent unless they approve.")}</p>
+      {suggested.length > 0 && (
+        <fieldset className="space-y-1">
+          <legend className="text-xs font-medium">{en("Suggested for this person")}</legend>
+          {suggested.map((s) => (
+            <label key={s.instituteId} className="flex cursor-pointer items-start gap-2 rounded-lg border border-border p-2 text-sm has-[:checked]:border-indigo-600">
+              <input type="radio" name={`suggest-${r.id}`} className="mt-1" checked={pick === s.instituteId} onChange={() => setPick(s.instituteId)} />
+              <span className="flex flex-col"><SuggestionLine s={s} area={r.quiz?.primaryTrack} /></span>
+            </label>
+          ))}
+        </fieldset>
+      )}
+      <select value={pick} onChange={(e) => setPick(e.target.value)} className={field} aria-label={en("Institute")}>
+        <option value="">{suggested.length > 0 ? en("Or choose another institute") : en("Choose an institute")}</option>
+        {institutes.map((i) => (
+          <option key={i.id} value={i.id}>
+            {i.name}
+          </option>
+        ))}
+      </select>
+      <input value={note} maxLength={1000} onChange={(e) => setNote(e.target.value)} placeholder={en("Why this institute (optional)")} className={field} />
+      <button
+        type="button"
+        disabled={!pick || r.sentToInstitute}
+        onClick={async () => {
+          if (await onSuggest(pick, note)) { setNote(""); setPick(""); }
+        }}
+        className="inline-flex items-center rounded-lg border border-border bg-card px-3 py-2 text-sm font-medium hover:bg-muted disabled:opacity-50"
+      >
+        {en("Suggest")}
+      </button>
+    </div>
+  );
+}
+
+/** The person sends their request to an institute themselves, when nobody has answered it in two working days */
+export function ChooseInstitute({ r, onChoose }: { r: GuidanceRequestView; onChoose: (instituteId: string) => Promise<boolean> }) {
+  const en = useEn();
+  const [busy, setBusy] = useState<string | null>(null);
+  if (!r.canChoose || !r.suggestions?.length) return null;
+  return (
+    <section aria-labelledby={`choose-${r.id}`} className="space-y-2 rounded-xl border border-border bg-muted/40 p-4">
+      <h3 id={`choose-${r.id}`} className="text-sm font-semibold">{en("Choose an institute yourself")}</h3>
+      <p className="text-sm text-muted-foreground">
+        {en("Nobody has answered yet. These institutes have courses in the area your quiz recommended. Send your request to one of them and they'll contact you, or keep waiting for an advisor.")}
+      </p>
+      <ul className="space-y-2">
+        {r.suggestions.map((s) => (
+          <li key={s.instituteId} className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-border bg-card p-3 text-sm">
+            <span className="flex flex-col"><SuggestionLine s={s} area={r.quiz?.primaryTrack} /></span>
+            <button
+              type="button"
+              disabled={busy != null}
+              onClick={async () => { setBusy(s.instituteId); await onChoose(s.instituteId); setBusy(null); }}
+              className="inline-flex items-center rounded-lg bg-indigo-700 px-3 py-2 text-sm font-medium text-white hover:bg-indigo-800 disabled:opacity-50"
+            >
+              {busy === s.instituteId ? en("Sending…") : en("Send my request to this institute")}
+            </button>
+          </li>
+        ))}
+      </ul>
+    </section>
   );
 }

@@ -9,6 +9,7 @@ import React, { useState } from "react";
 import { useApi } from "@/lib/appAuth";
 import { Badge, Button, Card, ErrorBanner, Field, Loading, SuccessBanner, formatDate, useLoad, useCareerT, useCareerLabels } from "@/components/career/ui";
 import MentorshipMessages from "@/components/career/messaging/MentorshipMessages";
+import { COMMUNITY_INSTITUTE_ID } from "@/lib/community";
 
 export interface MentoringOptions {
   topics: { key: string; label: string }[];
@@ -23,6 +24,8 @@ export interface MentoringOptions {
 
 export interface RelationshipSummary {
   id: string;
+  /** The school, or the Edulexa community (mentoring for people with no school) */
+  instituteId?: string;
   status: string;
   side: "Student" | "Mentor" | "Staff";
   mentorProfileId: string;
@@ -178,6 +181,9 @@ export function MentorshipPanel({ id, options, onChanged }: { id: string; option
   if (!detail.data) return <ErrorBanner error={detail.error} onRetry={detail.reload} />;
   const d = detail.data;
   const r = d.relationship;
+  // In the Edulexa community the Edulexa team, not a career center, confirms matches and reads reports
+  const community = r.instituteId === COMMUNITY_INSTITUTE_ID;
+  const trc = (key: string, values?: Parameters<typeof tr>[1]) => tr(community ? `${key}Community` : key, values);
   const isStudent = r.side === "Student";
   const other = isStudent ? r.mentorName : r.studentName;
   const base = `/api/career/mentoring/relationships/${id}`;
@@ -290,7 +296,7 @@ export function MentorshipPanel({ id, options, onChanged }: { id: string; option
             </p>
           </div>
         ) : (
-          <p className="text-sm text-muted-foreground">{tr("contactDetailsAreExchangedOnce")}{r.status === "PendingStaff" ? tr("andTheCareerCenterConfirms") : ""}.</p>
+          <p className="text-sm text-muted-foreground">{tr("contactDetailsAreExchangedOnce")}{r.status === "PendingStaff" ? trc("andTheCareerCenterConfirms") : ""}.</p>
         )}
       </Card>
 
@@ -298,7 +304,7 @@ export function MentorshipPanel({ id, options, onChanged }: { id: string; option
         <Card title={tr("messages")}>
           <p className="mb-3 text-xs text-muted-foreground">
             {r.status === "Active"
-              ? tr("privateMessagesBetweenYouAnd", { other })
+              ? trc("privateMessagesBetweenYouAnd", { other })
               : tr("thisMentorshipHasEndedSo")}
           </p>
           <MentorshipMessages mentorshipId={id} status={r.status} />
@@ -307,7 +313,7 @@ export function MentorshipPanel({ id, options, onChanged }: { id: string; option
 
       <Card title={tr("sessionLog")}>
         <p className="mb-3 text-xs text-muted-foreground">
-          {tr("privateNotesAreVisibleOnly", { other })}
+          {trc("privateNotesAreVisibleOnly", { other })}
         </p>
         {d.sessions.length === 0 ? (
           <p className="text-sm text-muted-foreground">{tr("noSessionsLoggedYet")}</p>
@@ -339,7 +345,7 @@ export function MentorshipPanel({ id, options, onChanged }: { id: string; option
                 )}
                 {s.sharedSummary && (
                   <p className="text-muted-foreground">
-                    <span className="font-medium">{tr("sharedWithCareerCenter")}{" "}</span>
+                    <span className="font-medium">{trc("sharedWithCareerCenter")}{" "}</span>
                     {s.sharedSummary}
                   </p>
                 )}
@@ -382,7 +388,7 @@ export function MentorshipPanel({ id, options, onChanged }: { id: string; option
               </Field>
             </div>
             <div className="sm:col-span-3">
-              <Field label={tr("summaryForTheCareerCenter")} hint={tr("keepItShortAndGeneral")}>
+              <Field label={trc("summaryForTheCareerCenter")} hint={tr("keepItShortAndGeneral")}>
                 {(p) => <input {...p} maxLength={1000} value={session.sharedSummary} onChange={(e) => setSession({ ...session, sharedSummary: e.target.value })} />}
               </Field>
             </div>
@@ -419,7 +425,7 @@ export function MentorshipPanel({ id, options, onChanged }: { id: string; option
         <Card title={tr("feedback")}>
           {d.myFeedback ? (
             <p className="text-sm">
-              {tr("youRatedThisMentorshipRating", { rating: d.myFeedback.rating })}{d.myFeedback.comment ? `: “${d.myFeedback.comment}”` : "."}{" "}{tr("yourFeedbackGoesToThe")}
+              {tr("youRatedThisMentorshipRating", { rating: d.myFeedback.rating })}{d.myFeedback.comment ? `: “${d.myFeedback.comment}”` : "."}{" "}{trc("yourFeedbackGoesToThe")}
             </p>
           ) : (
             <form
@@ -429,7 +435,7 @@ export function MentorshipPanel({ id, options, onChanged }: { id: string; option
                 void run("feedback", () => api(`${base}/feedback`, { json: { rating: Number(rating), comment } }), tr("thanksForYourFeedback"));
               }}
             >
-              <p className="text-xs text-muted-foreground">{tr("yourRatingAndCommentGo", { other })}</p>
+              <p className="text-xs text-muted-foreground">{trc("yourRatingAndCommentGo", { other })}</p>
               <Field label={tr("rating1Poor5Excellent")}>
                 {(p) => (
                   <select {...p} value={rating} onChange={(e) => setRating(e.target.value)}>
@@ -453,7 +459,7 @@ export function MentorshipPanel({ id, options, onChanged }: { id: string; option
       <Card title={tr("safety")}>
         {!report.open ? (
           <div className="text-sm">
-            <p className="mb-2">{tr("ifSomethingFeltWrongTell")}</p>
+            <p className="mb-2">{trc("ifSomethingFeltWrongTell")}</p>
             <Button variant="secondary" onClick={() => setReport({ ...report, open: true })}>
               {tr("reportAProblem")}
             </Button>
@@ -466,7 +472,7 @@ export function MentorshipPanel({ id, options, onChanged }: { id: string; option
               const ok = await run(
                 "report",
                 () => api(`${base}/report`, { json: { reason: report.reason, details: report.details, block: report.block } }),
-                tr("yourReportWasSentTo"),
+                trc("yourReportWasSentTo"),
               );
               if (ok) setReport({ open: false, reason: "Inappropriate", details: "", block: false });
             }}

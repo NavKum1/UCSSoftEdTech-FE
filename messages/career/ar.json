@@ -3365,7 +3365,16 @@
     "SafetyConcern": "مخاوف تتعلق بالسلامة",
     "Other": "سبب آخر"
    },
-   "keepItShortAndGeneral": "اجعلها موجزة وعامة، مثل “مراجعة مسودة السيرة الذاتية”."
+   "keepItShortAndGeneral": "اجعلها موجزة وعامة، مثل “مراجعة مسودة السيرة الذاتية”.",
+   "andTheCareerCenterConfirmsCommunity": " ويؤكد فريق Edulexa نجاح المطابقة",
+   "privateMessagesBetweenYouAndCommunity": "رسائل خاصة بينك وبين {other}. لا يستطيع فريق Edulexa قراءتها إلا إذا أبلغ أحدكما عن مشكلة.",
+   "privateNotesAreVisibleOnlyCommunity": "لا تظهر الملاحظات الخاصة إلا لك ولـ{other}. يرى فريق Edulexa التواريخ والمدة وأي ملخص تختار مشاركته.",
+   "sharedWithCareerCenterCommunity": "تمت المشاركة مع فريق Edulexa:",
+   "summaryForTheCareerCenterCommunity": "ملخص لفريق Edulexa (اختياري)",
+   "yourRatingAndCommentGoCommunity": "يصل تقييمك وتعليقك إلى فريق Edulexa، وليس إلى {other}.",
+   "ifSomethingFeltWrongTellCommunity": "إذا شعرت أن هناك خطبًا ما، فأخبر فريق Edulexa. يراجع الفريق كل البلاغات، ويُعلّق إرسال اقتراحات المطابقة الجديدة للشخص المُبلّغ عنه خلال ذلك.",
+   "yourReportWasSentToCommunity": "أُرسل بلاغك إلى فريق Edulexa.",
+   "yourFeedbackGoesToTheCommunity": "تصل ملاحظاتك إلى فريق Edulexa فقط."
   },
   "localisation": {
    "notes": "ملاحظات",

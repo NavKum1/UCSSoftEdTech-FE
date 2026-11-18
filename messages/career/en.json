@@ -4994,7 +4994,16 @@
         "Open": "Open",
         "Upheld": "Upheld",
         "Dismissed": "Dismissed"
-      }
+      },
+      "andTheCareerCenterConfirmsCommunity": " and the Edulexa team confirms the match",
+      "privateMessagesBetweenYouAndCommunity": "Private messages between you and {other}. The Edulexa team can read them only if one of you reports a problem.",
+      "privateNotesAreVisibleOnlyCommunity": "Private notes are visible only to you and {other}. The Edulexa team sees dates, length and any summary you choose to share.",
+      "sharedWithCareerCenterCommunity": "Shared with the Edulexa team:",
+      "summaryForTheCareerCenterCommunity": "Summary for the Edulexa team (optional)",
+      "yourRatingAndCommentGoCommunity": "Your rating and comment go to the Edulexa team, not to {other}.",
+      "ifSomethingFeltWrongTellCommunity": "If something felt wrong, tell the Edulexa team. They review every report; new matches for the reported person are paused meanwhile.",
+      "yourReportWasSentToCommunity": "Your report was sent to the Edulexa team.",
+      "yourFeedbackGoesToTheCommunity": "Your feedback goes to the Edulexa team only."
     },
     "campaignsPanel": {
       "campaignHistory": "Campaign history",

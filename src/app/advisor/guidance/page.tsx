@@ -9,7 +9,7 @@
 import React, { Suspense, useCallback, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { AccessNotice, useLatestRef, useLegacyApi } from "@/lib/legacyApi";
-import { Messages, ReplyBox, RequestDetails, STATUS_LABEL, type GuidanceRequestView } from "@/components/guidance/Conversation";
+import { Messages, ReplyBox, RequestDetails, STATUS_LABEL, SuggestInstitute, type GuidanceRequestView } from "@/components/guidance/Conversation";
 import { PageHeader, buttonClass } from "@/components/career/ui";
 import { useEn } from "@/lib/english/EnglishProvider";
 
@@ -58,8 +58,6 @@ function AdvisorDesk() {
   const [mentors, setMentors] = useState<Mentor[]>([]);
   const [institutes, setInstitutes] = useState<Institute[]>([]);
   const [mentorPick, setMentorPick] = useState("");
-  const [institutePick, setInstitutePick] = useState("");
-  const [note, setNote] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [forbidden, setForbidden] = useState(false);
 
@@ -210,29 +208,7 @@ function AdvisorDesk() {
                 </div>
               </div>
               <div className={card}>
-                <h3 className="text-sm font-semibold">{en("Suggest an institute")}</h3>
-                <p className="text-xs text-muted-foreground">{en("The person decides. Nothing is sent unless they approve.")}</p>
-                <div className="mt-2 space-y-2">
-                  <select value={institutePick} onChange={(e) => setInstitutePick(e.target.value)} className={`${select} w-full`} aria-label={en("Institute")}>
-                    <option value="">{en("Choose an institute")}</option>
-                    {institutes.map((i) => (
-                      <option key={i.id} value={i.id}>
-                        {i.name}
-                      </option>
-                    ))}
-                  </select>
-                  <input value={note} maxLength={1000} onChange={(e) => setNote(e.target.value)} placeholder={en("Why this institute (optional)")} className={`${select} w-full`} />
-                  <button
-                    type="button"
-                    disabled={!institutePick || item.sentToInstitute}
-                    onClick={async () => {
-                      if (await act("suggest", { instituteId: institutePick, note })) setNote("");
-                    }}
-                    className={buttonClass("secondary")}
-                  >
-                    {en("Suggest")}
-                  </button>
-                </div>
+                <SuggestInstitute key={item.id} r={item} institutes={institutes} onSuggest={(instituteId, note) => act("suggest", { instituteId, note })} />
               </div>
             </div>
 

@@ -199,7 +199,7 @@ checks:
   - { search: become a mentor, as: alumni, first: be-a-mentor }
   - { search: volunteer, as: mentor, first: be-a-mentor }
   - { search: hand back, as: mentor, first: guidance-requests-for-you }
-  - { search: suggest an institute, as: mentor, first: advisor-desk }
+  - { search: suggest an institute, as: mentor, first: guidance-requests-for-you }
   - { search: crm, as: admissions, first: admissions-leads }
   - { search: follow up, as: admissions, first: admissions-leads }
   - { search: embed, as: admissions, first: guidance-forms }

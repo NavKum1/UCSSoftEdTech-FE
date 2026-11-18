@@ -1864,7 +1864,16 @@
     "SafetyConcern": "Problema de seguridad",
     "Other": "Otro motivo"
    },
-   "keepItShortAndGeneral": "Procura que sea breve y general, por ejemplo: “Revisé el borrador del currículum”."
+   "keepItShortAndGeneral": "Procura que sea breve y general, por ejemplo: “Revisé el borrador del currículum”.",
+   "andTheCareerCenterConfirmsCommunity": " y el equipo de Edulexa confirma la compatibilidad",
+   "privateMessagesBetweenYouAndCommunity": "Mensajes privados entre tú y {other}. El equipo de Edulexa solo puede leerlos si alguno de ustedes reporta un problema.",
+   "privateNotesAreVisibleOnlyCommunity": "Las notas privadas solo son visibles para ti y {other}. El equipo de Edulexa ve las fechas, la duración y cualquier resumen que elijas compartir.",
+   "sharedWithCareerCenterCommunity": "Compartido con el equipo de Edulexa:",
+   "summaryForTheCareerCenterCommunity": "Resumen para el equipo de Edulexa (opcional)",
+   "yourRatingAndCommentGoCommunity": "Tu valoración y comentario se envían al equipo de Edulexa, no a {other}.",
+   "ifSomethingFeltWrongTellCommunity": "Si algo te pareció inadecuado, cuéntaselo al equipo de Edulexa. Revisan todos los reportes; mientras tanto, se pausan las nuevas coincidencias para la persona reportada.",
+   "yourReportWasSentToCommunity": "Tu reporte se envió al equipo de Edulexa.",
+   "yourFeedbackGoesToTheCommunity": "Tus comentarios solo se envían al equipo de Edulexa."
   },
   "messagingShared": {
    "messages": "Mensajes",

@@ -83,6 +83,8 @@ interface AssessmentBundle {
   verificationSignatureSha256?: string;
   expiresAt?: string;
   codeRunsRemaining?: number | null;
+  /** The hiring team's decision, when they've made one and share outcomes with candidates (owner, 18 Nov 2026) */
+  decision?: { outcome: "advance" | "hire" | "reject"; decidedAt: string | null } | null;
 }
 
 // The parts of the (prefixed) Web Speech API this page uses
@@ -501,6 +503,22 @@ export default function CandidateAssessmentBundlePage() {
           </div>
         </div>
       </header>
+
+      {bundle.decision && (
+        <section aria-label={en("Decision")} className={`mt-4 rounded-xl border p-4 text-sm ${bundle.decision.outcome === "reject" ? "border-border bg-muted/40" : "border-emerald-500/40 bg-emerald-500/5"}`}>
+          <p className="font-medium text-foreground">
+            {bundle.decision.outcome === "hire"
+              ? en("{company} would like to make you an offer.", { company: bundle.companyName })
+              : bundle.decision.outcome === "advance"
+                ? en("{company} has moved you to the next step.", { company: bundle.companyName })
+                : en("{company} has decided not to move forward with your application.", { company: bundle.companyName })}
+          </p>
+          <p className="mt-1 text-muted-foreground">
+            {bundle.decision.decidedAt ? en("Decided {date}. ", { date: new Date(bundle.decision.decidedAt).toLocaleDateString(undefined, { dateStyle: "medium" }) }) : ""}
+            {bundle.decision.outcome === "reject" ? en("A person made this decision; your scores are evidence for them, and nobody is turned down automatically.") : en("They'll contact you about what happens next.")}
+          </p>
+        </section>
+      )}
 
       {/* Progress steps */}
       <section className="py-4">

@@ -46,9 +46,11 @@ You see which requirements the résumé mentions, and the lines that mention the
 
 ## Coding challenges
 
-[ui: New coding challenge], under [ui: More actions], makes a private coding task for your company. Give it a [ui: Challenge title], a [ui: Language] and a [ui: Problem description], then select [ui: Create challenge]. Edulexa shows its invite code for a moment. Candidates need this code to start a private challenge, and their work shows on the [ui: Coding challenge submissions] tab.
+[ui: New coding challenge], under [ui: More actions], makes a private coding task for your company. Give it a [ui: Challenge title], a [ui: Language] and a [ui: Problem description], then select [ui: Create challenge].
 
-> To send a candidate a link they can open straight away, use [ui: Send an assessment] or a work trial.
+Edulexa then shows the challenge's link. It opens the challenge with its invite code, so the candidate can start straight away. Select [ui: Copy link] and send it to them. The invite code is shown too, in case you share it another way.
+
+Your challenges stay under [ui: Your coding challenges] on the [ui: Coding challenge submissions] tab, each with its number of submissions and [ui: Copy link], so you can send a challenge to more candidates later. Their work shows on the same tab.
 
 ## Work trials from your own code
 

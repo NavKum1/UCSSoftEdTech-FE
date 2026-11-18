@@ -85,14 +85,14 @@ function ChallengeResults() {
       setBenchmark(null);
       setSimilarity(null);
       if (!/^[0-9a-f-]{36}$/i.test(id.trim())) {
-        setLookupError("Enter a submission id.");
+        setLookupError(en("Enter a submission reference: Test results next to a candidate fills it in."));
         return;
       }
       setBusy(true);
       try {
         const res = await apiFetch(`/api/benchmark/submission/${id.trim()}`, {}, { quiet: true });
         if (res.ok) setBenchmark(((await res.json()) as { benchmark: Benchmark }).benchmark);
-        else setLookupError(en("No submission with this id in your organization."));
+        else setLookupError(en("There's no submission with this reference in your company."));
       } finally {
         setBusy(false);
       }
@@ -142,8 +142,9 @@ function ChallengeResults() {
 
       <section aria-labelledby="cr-lookup" className="rounded-xl border border-border bg-card p-5 shadow-sm">
         <h2 id="cr-lookup" className="text-base font-semibold">
-          {en("Look up a submission")}
+          {en("A submission's results")}
         </h2>
+        <p className="mt-1 text-sm text-muted-foreground">{en("Choose Test results next to a candidate under Candidates, Coding challenge submissions. Or paste a submission's reference here.")}</p>
         <form
           className="mt-3 flex flex-wrap gap-2"
           onSubmit={(e) => {
@@ -154,8 +155,8 @@ function ChallengeResults() {
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder={en("Submission id")}
-            aria-label={en("Submission id")}
+            placeholder={en("Submission reference")}
+            aria-label={en("Submission reference")}
             className="min-w-0 flex-1 rounded-lg border border-border bg-card px-3 py-2 font-mono text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-2 focus-visible:outline-offset-1"
           />
           <Button type="submit" disabled={busy}>

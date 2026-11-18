@@ -7,7 +7,7 @@
 
 import React, { useCallback, useEffect, useState } from "react";
 import { AccessNotice, useLatestRef, useLegacyApi } from "@/lib/legacyApi";
-import { Messages, ReplyBox, RequestDetails, STATUS_LABEL, type GuidanceRequestView } from "@/components/guidance/Conversation";
+import { Messages, ReplyBox, RequestDetails, STATUS_LABEL, SuggestInstitute, type GuidanceRequestView } from "@/components/guidance/Conversation";
 import { PageHeader, buttonClass } from "@/components/career/ui";
 import { useEn } from "@/lib/english/EnglishProvider";
 
@@ -16,10 +16,12 @@ export default function MentorGuidancePage() {
   const { apiFetch, ready, access } = useLegacyApi();
   const [items, setItems] = useState<GuidanceRequestView[] | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [institutes, setInstitutes] = useState<{ id: string; name: string }[]>([]);
 
   const load = useCallback(async () => {
-    const res = await apiFetch("/api/guidance/mentor");
+    const [res, inst] = await Promise.all([apiFetch("/api/guidance/mentor"), apiFetch("/api/guidance/desk/institutes", {}, { quiet: true })]);
     setItems(res.ok ? ((await res.json()) as GuidanceRequestView[]) : []);
+    if (inst.ok) setInstitutes((await inst.json()) as { id: string; name: string }[]);
   }, [apiFetch]);
   const loadRef = useLatestRef(load);
   useEffect(() => {
@@ -42,7 +44,7 @@ export default function MentorGuidancePage() {
     <div className="space-y-6">
       <PageHeader
         title={en("Guidance requests for you")}
-        description={en("Edulexa's advisors asked you to help these people choose an area or certification. Reply here or to the email. If you can't help, hand it back.")}
+        description={en("Edulexa's advisors asked you to help these people choose an area or certification. Reply here or to the email, or suggest an institute. If you can't help, hand it back.")}
       />
       {error && <p className="text-sm text-red-700 dark:text-red-400">{error}</p>}
       {!items ? (
@@ -59,6 +61,9 @@ export default function MentorGuidancePage() {
             <RequestDetails r={r} />
             <Messages messages={r.messages} />
             <ReplyBox allowInternal onSend={(body, internal) => post(`/api/guidance/mentor/${r.id}/messages`, { body, internal })} />
+            <div className="rounded-lg border border-border p-4">
+              <SuggestInstitute r={r} institutes={institutes} onSuggest={(instituteId, note) => post(`/api/guidance/mentor/${r.id}/suggest`, { instituteId, note })} />
+            </div>
             <button type="button" onClick={() => void post(`/api/guidance/mentor/${r.id}/hand-back`, { body: "" })} className={buttonClass("secondary")}>
               {en("Hand back to the advisors")}
             </button>

@@ -8,7 +8,7 @@
 import React, { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { AccessNotice, useLatestRef, useLegacyApi } from "@/lib/legacyApi";
-import { Messages, ReplyBox, STATUS_LABEL, type GuidanceRequestView } from "@/components/guidance/Conversation";
+import { ChooseInstitute, Messages, ReplyBox, STATUS_LABEL, type GuidanceRequestView } from "@/components/guidance/Conversation";
 import { useEn } from "@/lib/english/EnglishProvider";
 import { Badge, Button, buttonClass, ErrorBanner, PageHeader } from "@/components/career/ui";
 
@@ -78,6 +78,7 @@ export default function MyGuidancePage() {
                 </div>
               </div>
             )}
+            <ChooseInstitute r={r} onChoose={(instituteId) => post(`/api/guidance/requests/${r.id}/institute`, { instituteId })} />
             {r.status !== "Resolved" && <ReplyBox onSend={(body) => post(`/api/guidance/requests/${r.id}/messages`, { body })} />}
           </section>
         ))

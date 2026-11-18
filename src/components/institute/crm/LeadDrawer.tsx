@@ -44,7 +44,8 @@ import {
   type Template,
 } from "./api";
 import { Tabs } from "@/components/career/ui";
-import { useEn } from "@/lib/english/EnglishProvider";
+import { useEn, useEnglish } from "@/lib/english/EnglishProvider";
+import { inEnglish } from "@/lib/english";
 import { useSchoolCountry } from "@/components/institute/SchoolEnglish";
 
 type Mode = "Call" | "Email" | "Sms" | "WhatsApp" | "Note" | "Meeting";
@@ -100,6 +101,7 @@ export default function LeadDrawer({
   onChanged: () => void;
 }) {
   const en = useEn();
+  const { english } = useEnglish();
   const [lead, setLead] = useState<LeadFull | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
@@ -191,7 +193,7 @@ export default function LeadDrawer({
               </div>
               {lead && (
                 <p className="mt-0.5 text-xs text-muted-foreground">
-                  {en("{value} · {value2} · received {createdAt}", { value: lead.requestType === "guidance" ? en("Career guidance request") : (lead.course ?? en("Course no longer listed")), value2: lead.source ?? en("Edulexa"), createdAt: relative(lead.createdAt) })}
+                  {en("{value} · {value2} · received {createdAt}", { value: lead.requestType === "guidance" ? en("Career guidance request") : (lead.course ?? en("Course no longer listed")), value2: lead.source ? inEnglish(english, lead.source) : en("Edulexa"), createdAt: relative(lead.createdAt) })}
                 </p>
               )}
             </div>

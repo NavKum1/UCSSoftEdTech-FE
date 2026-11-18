@@ -43,7 +43,8 @@ export const DEV_PERSONAS: Record<string, { label: string; token: string; perUse
   // recruiter's review pages (evidence, work trials...) show that organization's data instead of "not linked to an institute".
   // A session with `institute` set to the demo company (DevSession.institute) gets the company's team page and demo data.
   Recruiter: { label: "Recruiter", token: "recruiter-dev-token", perUser: false, institute: "6c370735-4615-44f6-9d61-dbbb41d5d5cf" },
-  InstituteAdmin: { label: "Institute admin", token: "institute-admin-dev-token", perUser: false },
+  // Its school has admissions but no career center (like a school on Starter); "Career center admin" covers the career center
+  InstituteAdmin: { label: "Institute admin (admissions only)", token: "institute-admin-dev-token", perUser: false },
   Counselor: { label: "Institute counselor", token: "institute-counsellor-dev-token", perUser: false },
   EdulexaAdvisor: { label: "Edulexa advisor", token: "advisor-dev-token", perUser: false },
   MentorReviewer: { label: "Mentor reviewer", token: "mentor-dev-token", perUser: false },

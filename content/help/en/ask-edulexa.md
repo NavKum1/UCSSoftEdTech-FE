@@ -29,7 +29,8 @@ Prefer to ask a particular institute? Select [ui: Talk to a specific institute],
 [ui: My guidance requests] lists each question you've asked, with its replies and where it stands.
 
 - Write back in the box under a request and select [ui: Send], or reply to our e-mail. Both end up in the same place.
-- If an advisor thinks an institute could help, the request says so. Select [ui: Yes, send it] to send them your request, or [ui: No, thanks].
+- If an advisor or a mentor thinks an institute could help, the request says so. Select [ui: Yes, send it] to send them your request, or [ui: No, thanks].
+- If nobody has answered in two working days and you shared your quiz result, [ui: Choose an institute yourself] lists institutes with courses in the area it recommended. Select [ui: Send my request to this institute] and they contact you, or keep waiting for an advisor.
 - To ask about something else, select [ui: Ask something new].
 
 [shot: member-guidance-answered]

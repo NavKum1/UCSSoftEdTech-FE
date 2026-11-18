@@ -219,7 +219,7 @@ export default function MultiStreamInterviewPracticePage() {
   // Scorecard modal state
   const [completedReport, setCompletedReport] = useState<InterviewReport | null>(null);
   const [isEvaluating, setIsEvaluating] = useState<boolean>(false);
-  const [scoreFailure, setScoreFailure] = useState<{ message: string; transcripts: TranscriptMessage[] } | null>(null);
+  const [scoreFailure, setScoreFailure] = useState<{ message: string; transcripts: TranscriptMessage[]; practiceId: string } | null>(null);
   // An interview that ended without a score (no answers, interrupted): what the server said
   const [endNotice, setEndNotice] = useState<string | null>(null);
   // The minutes the last interview used and gave back, measured by the server
@@ -543,7 +543,8 @@ export default function MultiStreamInterviewPracticePage() {
 
   // P6 (5 Nov 2026): only a real score is shown. When scoring fails, the interview's transcript is kept so the person can
   // try scoring again or download it; nothing is guessed from keywords.
-  const scoreTranscripts = async (finalTranscripts: TranscriptMessage[], minutesUsed?: number) => {
+  // The score is for this practice interview: the server scores the transcript it kept (this one is shown alongside it)
+  const scoreTranscripts = async (practiceId: string, finalTranscripts: TranscriptMessage[], minutesUsed?: number) => {
     setScoreFailure(null);
     setIsEvaluating(true);
     try {
@@ -555,6 +556,7 @@ export default function MultiStreamInterviewPracticePage() {
           jobDescription,
           stream: selectedStream,
           personaCode: selectedPersona,
+          practiceId,
           durationMinutes: minutesUsed ?? minutesNote?.used ?? Math.max(1, Math.ceil(sessionDuration / 60)),
           transcripts: finalTranscripts,
         }),
@@ -569,6 +571,7 @@ export default function MultiStreamInterviewPracticePage() {
       setScoreFailure({
         message: err instanceof TypeError ? en("We couldn't reach Edulexa. Check your internet connection and try again.") : (err as Error).message,
         transcripts: finalTranscripts,
+        practiceId,
       });
     } finally {
       setIsEvaluating(false);
@@ -584,6 +587,7 @@ export default function MultiStreamInterviewPracticePage() {
     const p = practiceRef.current;
     if (!p || p.finishing) return;
     p.finishing = true;
+    const practiceId = p.id;
     const local = [...transcriptsRef.current];
     endSessionCleanup();
 
@@ -617,7 +621,7 @@ export default function MultiStreamInterviewPracticePage() {
           return { id: `srv-${i}`, role: t.role, text: t.text, timestamp: j >= 0 ? local[j].timestamp : "", isFinal: true };
         })
       : local;
-    await scoreTranscripts(turns, r?.status === "ended" ? r.minutesUsed : undefined);
+    await scoreTranscripts(practiceId, turns, r?.status === "ended" ? r.minutesUsed : undefined);
   };
 
   const endInterviewAndScore = () => finishInterview("score");
@@ -969,7 +973,7 @@ export default function MultiStreamInterviewPracticePage() {
               <p className="text-sm text-muted-foreground leading-relaxed">{en("Your answers are kept on this page. No score was given or saved.")}</p>
             </div>
             <div className="flex flex-wrap justify-center gap-2">
-              <Button onClick={() => scoreTranscripts(scoreFailure.transcripts)}>{en("Try scoring again")}</Button>
+              <Button onClick={() => scoreTranscripts(scoreFailure.practiceId, scoreFailure.transcripts)}>{en("Try scoring again")}</Button>
               <Button variant="secondary" onClick={() => handleDownloadTranscript(scoreFailure.transcripts)}>{en("Download transcript")}</Button>
               <Button variant="ghost" onClick={() => { setScoreFailure(null); setTranscripts([]); }}>{en("Start a new interview")}</Button>
             </div>
