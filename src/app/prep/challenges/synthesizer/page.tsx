@@ -126,7 +126,7 @@ export default function ChallengeSynthesizerPage() {
             <Link href="/prep/career" className={buttonClass("secondary")}>
               {en("Career path")}
             </Link>
-            <Link href="/practice/failover" className={buttonClass("secondary")}>
+            <Link href="/practice/workplace?track=failover" className={buttonClass("secondary")}>
               {en("Failover practice")}
             </Link>
           </>

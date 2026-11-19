@@ -93,10 +93,9 @@ export const careerNav: Record<CareerPersona, CareerNavItem[]> = {
     // pages, names and groups as the member menu (components/GlobalNavigation)
     { label: "Interview practice", href: "/interview/practice", module: "B2", ready: true, group: "Practice", sub: "Interviews" },
     { label: "Speaking practice", short: "Speaking", href: "/prep/delivery", module: "B2", ready: true, group: "Practice", sub: "Interviews" },
-    { label: "Leadership practice", short: "Leadership", href: "/leadership/simulator", module: "B3", ready: true, group: "Practice", sub: "Interviews" },
+    { label: "Workplace practice", short: "Workplace", href: "/practice/workplace", module: "B3", ready: true, group: "Practice", sub: "Interviews" },
     { label: "Code review drills", short: "Code review", href: "/daily/review", module: "B2", ready: true, group: "Practice", sub: "Engineering drills" },
     { label: "Incident drills", short: "Incidents", href: "/daily/incident", module: "B2", ready: true, group: "Practice", sub: "Engineering drills" },
-    { label: "Failover practice", short: "Failover", href: "/practice/failover", module: "B2", ready: true, group: "Practice", sub: "Engineering drills" },
     { label: "System design duels", short: "System design", href: "/duels/arena", module: "B2", ready: true, group: "Practice", sub: "Engineering drills" },
     { label: "Coding challenges", href: "/sprint/distributed-database", module: "B2", ready: true, group: "Practice", sub: "Prove your skills" },
     { label: "Written exams", href: "/prep/exam", module: "B2", ready: true, group: "Practice", sub: "Prove your skills" },

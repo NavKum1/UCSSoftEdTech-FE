@@ -36,10 +36,9 @@ const MENUS: NavTab[] = [
     pages: [
       { sub: "Interviews", label: "Interview practice", href: "/interview/practice", desc: "A spoken interview with an AI interviewer" },
       { sub: "Interviews", label: "Speaking practice", short: "Speaking", href: "/prep/delivery", desc: "Pace, filler words and pauses (private)" },
-      { sub: "Interviews", label: "Leadership practice", short: "Leadership", href: "/leadership/simulator", desc: "Hard conversations, scored with feedback" },
+      { sub: "Interviews", label: "Workplace practice", short: "Workplace", href: "/practice/workplace", match: ["/leadership/simulator", "/practice/failover", "/career/promotion-review"], desc: "Upset customers, conflict, pay and more, with feedback" },
       { sub: "Engineering drills", label: "Code review drills", short: "Code review", href: "/daily/review", desc: "Find the defect in a real-looking pull request" },
       { sub: "Engineering drills", label: "Incident drills", short: "Incidents", href: "/daily/incident", desc: "Find and fix a production problem" },
-      { sub: "Engineering drills", label: "Failover practice", short: "Failover", href: "/practice/failover", desc: "Lead the response to a failing region" },
       { sub: "Engineering drills", label: "System design duels", short: "System design", href: "/duels/arena", desc: "Design against practice bots, graded automatically" },
       { sub: "Prove your skills", label: "Coding challenges", href: "/sprint/distributed-database", match: ["/sprint"], desc: "Build a feature, then explain your code" },
       { sub: "Prove your skills", label: "Written exams", href: "/prep/exam", desc: "Timed exams; pass one to earn a credential" },

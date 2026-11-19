@@ -132,7 +132,7 @@ member-practice-interview:
   open: /interview/practice
   show: main
   width: 1100
-  alt: The practice interview set-up, where you choose a track, an interviewer and the job
+  alt: The practice interview set-up, where you search for your job, choose the round, add your résumé and the job ad, and see what the interview tests
 
 member-credential-share:
   as: candidate-dev-token
@@ -267,3 +267,11 @@ advisor-requests:
   show: main
   height: 900
   alt: The advisors' Guidance requests page, with the requests waiting for an advisor and one request open
+
+member-practice-coaching:
+  as: candidate-dev-token
+  height: 1060
+  open: /interview/practice/5c400200-0000-4000-8000-000000000031
+  show: main
+  width: 1100
+  alt: Coaching after a practice interview, with the result, the scores and, for each answer, what you said, what worked, what was missing and a stronger version

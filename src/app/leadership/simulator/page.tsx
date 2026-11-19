@@ -1,13 +1,6 @@
-import ScenarioPractice from "@/components/practice/ScenarioPractice";
+import { redirect } from "next/navigation";
 
-// Phase E (24 Oct 2026): leadership practice scenarios with real scoring. This page used to give fixed "promote to
-// Staff" scores whatever was written, with invented stakeholders.
-export default function LeadershipPracticePage() {
-  return (
-    <ScenarioPractice
-      track="leadership"
-      title="Leadership conversations"
-      intro="Hard conversations with product, operations and compliance leads after an outage or under a tight deadline."
-    />
-  );
+// B3 (18 Nov 2026): leadership practice is a track of Workplace practice.
+export default function Page() {
+  redirect("/practice/workplace?track=leadership");
 }

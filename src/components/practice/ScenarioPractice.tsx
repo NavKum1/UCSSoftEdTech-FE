@@ -81,7 +81,11 @@ function RevealedTurn({ r }: { r: Revealed }) {
   );
 }
 
-export default function ScenarioPractice({ track, title, intro }: { track: string; title: string; intro: string }) {
+// The result in plain words (B3, 18 Nov 2026). en() where shown.
+const resultLabel = (overall: number) => (overall >= 85 ? "Strong" : overall >= 70 ? "Good" : overall >= 50 ? "Getting there" : "Keep practicing");
+
+/** embedded: inside Workplace practice, which shows its own page header; this shows the track's title and intro smaller */
+export default function ScenarioPractice({ track, title, intro, embedded = false }: { track: string; title: string; intro: string; embedded?: boolean }) {
   const en = useEn();
   const { apiFetch, ready, access } = useLegacyApi();
   const [catalogue, setCatalogue] = useState<Catalogue | null>(null);
@@ -147,14 +151,21 @@ export default function ScenarioPractice({ track, title, intro }: { track: strin
 
   return (
     <div className="space-y-6">
-      <PageHeader
-        title={title}
-        description={
-          <>
-            {intro} {catalogue.note}
-          </>
-        }
-      />
+      {embedded ? (
+        <div className="space-y-1">
+          <h2 className="text-lg font-semibold">{title}</h2>
+          <p className="max-w-3xl text-sm text-muted-foreground">{intro} {catalogue.note}</p>
+        </div>
+      ) : (
+        <PageHeader
+          title={title}
+          description={
+            <>
+              {intro} {catalogue.note}
+            </>
+          }
+        />
+      )}
       <ErrorBanner error={error} />
 
       {!attempt && (
@@ -215,7 +226,7 @@ export default function ScenarioPractice({ track, title, intro }: { track: strin
 
           {attempt.result && (
             <div className="space-y-3 border-t border-border pt-4" aria-live="polite">
-              <h3 className="text-base font-semibold">{en("Your result: {overall}%", { overall: Math.round(attempt.result.overall) })}</h3>
+              <h3 className="text-base font-semibold">{en("Your result: {label} ({overall}%)", { label: en(resultLabel(attempt.result.overall)), overall: Math.round(attempt.result.overall) })}</h3>
               <dl className="grid gap-3 sm:grid-cols-2">
                 {dims.map((d) => (
                   <div key={d.key} className="rounded-xl bg-muted/60 p-3">

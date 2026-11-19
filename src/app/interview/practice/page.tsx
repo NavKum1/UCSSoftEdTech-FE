@@ -6,34 +6,27 @@ import {
   MicOff,
   PhoneOff,
   Volume2,
-  CheckCircle2,
-  ChevronRight,
-  RotateCcw,
   Award,
   AlertTriangle,
   Play,
   Compass,
   Copy,
   Check,
-  Download,
+  Trash2,
   MessageSquare,
   User,
-  Bot,
-  XCircle,
-  ShieldAlert
+  Bot
 } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { CancellationQuizModal } from "@/components/CancellationQuizModal";
-import { AccessNotice, useLegacyApi } from "@/lib/legacyApi";
+import JobPicker, { type PickedJob } from "@/components/interview/JobPicker";
+import PrivacyPreview from "@/components/interview/PrivacyPreview";
+import LibraryPicker from "@/components/resumes/LibraryPicker";
+import { AccessNotice, useLatestRef, useLegacyApi } from "@/lib/legacyApi";
 import { useEn } from "@/lib/english/EnglishProvider";
-import { Badge, Button, PageHeader, StatTile, buttonClass } from "@/components/career/ui";
+import { Badge, Button, PageHeader, buttonClass } from "@/components/career/ui";
 import { openRealtimeCall, type RealtimeCall, type RealtimeEvent } from "@/lib/realtimeCall";
-
-interface JobPreset {
-  stream: string;
-  title: string;
-  description: string;
-}
 
 interface TranscriptMessage {
   id: string;
@@ -41,27 +34,6 @@ interface TranscriptMessage {
   text: string;
   timestamp: string;
   isFinal?: boolean;
-}
-
-// Scorecard: the /api/interview/evaluate response (plus the session transcript), or the local fallback below.
-interface InterviewScoreDimension {
-  label: string;
-  score: number;
-}
-
-interface InterviewReport {
-  jobTitle: string;
-  stream: string;
-  durationMinutes: number;
-  overallScore: number;
-  candidateTurns?: number;
-  candidateWords?: number;
-  status?: string;
-  disqualificationReason?: string | null;
-  dimensions: InterviewScoreDimension[];
-  strengths: string[];
-  improvements: string[];
-  transcripts: TranscriptMessage[];
 }
 
 // A practice interview the server opened (12 Nov 2026: billed by the minutes used)
@@ -110,73 +82,62 @@ type BrowserSpeechWindow = Window & {
   webkitAudioContext?: typeof AudioContext;
 };
 
-const PERSONAS = [
-  {
-    id: "StaffArchitectFAANG",
-    name: "Staff systems architect",
-    companyTag: "Big-tech bar raiser",
-    scrutiny: "Very demanding",
-    description: "Asks how large systems stay correct and fast under heavy load, and keeps asking until a vague answer becomes a specific one.",
-  },
-  {
-    id: "StartupCTO",
-    name: "Fast-moving startup CTO",
-    companyTag: "Scale-up leader",
-    scrutiny: "Practical",
-    description: "Asks whether your design is more complex than it needs to be, what it costs to run, and how quickly you could ship it.",
-  },
-  {
-    id: "SecurityAuditor",
-    name: "Application security reviewer",
-    companyTag: "Security testing",
-    scrutiny: "Very demanding",
-    description: "Asks how your design stops attacks, such as someone slipping commands into a form or faking a sign-in, and how you would notice misuse.",
-  },
-  {
-    id: "EmpatheticMentor",
-    name: "Supportive tech lead",
-    companyTag: "Career coach",
-    scrutiny: "Supportive",
-    description: "Gives you hints when you are stuck and works through the tricky cases with you.",
-  }
+// B2 (18 Nov 2026): what the person practices for, from GET /api/interview/careers
+interface Career {
+  id: string;
+  kind: "career" | "admissions" | "scholarship" | "visa";
+  name: string;
+  roles: string[];
+  dimensions: { key: string; name: string; good: string }[];
+}
+
+// 19 Nov 2026 (interview coaching): the rounds of a real hiring process, for jobs. en() where shown.
+const ROUNDS = [
+  { id: "screening", label: "Screening call", description: "A short first call: your background, why this job, and what you expect." },
+  { id: "behavioral", label: "Behavioral", description: "Real situations from your past: what happened, what you did, and the result." },
+  { id: "hiring-manager", label: "Hiring manager", description: "Deeper questions about the job's own tasks and the judgment it needs." },
 ];
 
-const STREAM_OPTIONS = [
-  { id: "Technical", label: "Software and systems", desc: "Architecture, algorithms, concurrency & reliability" },
-  { id: "Behavioral", label: "HR and behavioral", desc: "STAR method, leadership principles & conflict resolution" },
-  { id: "ProductManagement", label: "Product management", desc: "Product sense, metric trade-offs & prioritization" },
-  { id: "Sales", label: "Enterprise sales", desc: "Objection handling, buyer discovery & value pitch" },
-  { id: "Finance", label: "Finance and banking", desc: "Financial modeling, DCF valuation & capital allocation" },
-  { id: "Healthcare", label: "Clinical and healthcare", desc: "Diagnostic reasoning, patient triage & empathy" },
+// A job's top tasks, for "What this interview tests"
+interface JobDetail {
+  code: string;
+  title: string;
+  tasks: { text: string }[];
+}
+
+// The person's saved interviews (GET /api/interview/practice/sessions)
+interface SessionItem {
+  id: string;
+  careerName?: string;
+  jobTitle: string;
+  roundName?: string | null;
+  createdAt: string;
+  coachedAt?: string | null;
+  status?: string | null;
+  deletesOn?: string | null;
+}
+
+interface KeepInfo {
+  planDays: number;
+  choice: number | null;
+  choices: number[];
+}
+
+// How the interviewer behaves; the career gives the questions. en() where shown.
+const STYLES = [
+  { id: "supportive", label: "Supportive", description: "Gives you hints when you're stuck and points out what went well." },
+  { id: "standard", label: "Standard", description: "Like a typical real interview: friendly, with a follow-up when an answer is vague." },
+  { id: "demanding", label: "Demanding", description: "Pushes back on vague answers and asks for specific examples and results." },
 ];
 
-const JOB_PRESETS: JobPreset[] = [
-  {
-    stream: "Technical",
-    title: "Senior Distributed Systems Engineer",
-    description: "Architecting real-time global dispatching microservices. Required skills: High-throughput concurrency, Go/Rust, Raft consensus, Kafka, low-latency API contracts."
-  },
-  {
-    stream: "ProductManagement",
-    title: "Associate Product Manager",
-    description: "Leading consumer feature discovery and metric experiments. Required skills: Data-driven decision making, user research, wireframing, A/B testing and RICE prioritization."
-  },
-  {
-    stream: "Behavioral",
-    title: "Engineering Manager / HR Business Partner",
-    description: "Assessing team dynamics, organizational health, and leadership through ambiguity. Required skills: Conflict resolution, inclusive leadership, feedback delivery."
-  },
-  {
-    stream: "Sales",
-    title: "Enterprise Account Executive",
-    description: "Selling observability and cloud security platforms to Fortune 500 CISOs and VP of Eng. Required skills: MEDDPICC qualification, objection handling, ROI modeling."
-  },
-  {
-    stream: "Finance",
-    title: "Corporate Finance & Investment Analyst",
-    description: "Analyzing M&A transactions, capital structure, and multi-asset financial models. Required skills: Three-statement modeling, DCF valuation, debt financing."
-  }
-];
+// The scorecard's plain results. en() where shown.
+const RESULTS: Record<string, { label: string; tone: "good" | "warn" | "bad" }> = {
+  strong: { label: "Strong", tone: "good" },
+  "interview-ready": { label: "Interview-ready", tone: "good" },
+  "getting-there": { label: "Getting there", tone: "warn" },
+  "keep-practicing": { label: "Keep practicing", tone: "bad" },
+  "not-enough": { label: "Not enough to score", tone: "bad" },
+};
 
 const VOICES = [
   { id: "verse", label: "Verse (Dynamic & Natural)" },
@@ -189,12 +150,26 @@ const VOICES = [
 export default function MultiStreamInterviewPracticePage() {
   const en = useEn();
   const { apiFetch, access, ready } = useLegacyApi();
-  const [selectedStream, setSelectedStream] = useState<string>("Technical");
-  const [jobTitle, setJobTitle] = useState<string>(JOB_PRESETS[0].title);
-  const [jobDescription, setJobDescription] = useState<string>(JOB_PRESETS[0].description);
+  const [careers, setCareers] = useState<Career[]>([]);
+  const [jobTitle, setJobTitle] = useState<string>("");
+  const [jobDescription, setJobDescription] = useState<string>("");
   const [selectedVoice, setSelectedVoice] = useState<string>("verse");
-  const [candidateName, setCandidateName] = useState<string>("Candidate");
-  const [selectedPersona, setSelectedPersona] = useState<string>("StaffArchitectFAANG");
+  const [selectedStyle, setSelectedStyle] = useState<string>("standard");
+  const candidateName = en("You");
+  const router = useRouter();
+  // 19 Nov 2026: a job from the job library (or the person's own title), the round, their résumé, lines they left out
+  const [job, setJob] = useState<PickedJob | null>(null);
+  const [jobDetail, setJobDetail] = useState<JobDetail | null>(null);
+  const [round, setRound] = useState<string>("behavioral");
+  const [resumeVersionId, setResumeVersionId] = useState<string | null>(null);
+  const [removedLines, setRemovedLines] = useState<string[]>([]);
+  const [sessions, setSessions] = useState<SessionItem[] | null>(null);
+  const [keep, setKeep] = useState<KeepInfo | null>(null);
+  const [credits, setCredits] = useState<string[]>([]);
+  // "job" for a job interview; otherwise admissions, scholarship or visa
+  const [practiceFor, setPracticeFor] = useState<string>("job");
+  const isJob = practiceFor === "job";
+  const career = (isJob ? careers.find((c) => c.id === (job?.family ?? "general")) : careers.find((c) => c.id === practiceFor)) ?? null;
 
   // Session state
   const [isSessionActive, setIsSessionActive] = useState<boolean>(false);
@@ -216,14 +191,9 @@ export default function MultiStreamInterviewPracticePage() {
   const [copiedTranscript, setCopiedTranscript] = useState<boolean>(false);
   const [audioLevel, setAudioLevel] = useState<number>(0);
 
-  // Scorecard modal state
-  const [completedReport, setCompletedReport] = useState<InterviewReport | null>(null);
   const [isEvaluating, setIsEvaluating] = useState<boolean>(false);
-  const [scoreFailure, setScoreFailure] = useState<{ message: string; transcripts: TranscriptMessage[]; practiceId: string } | null>(null);
   // An interview that ended without a score (no answers, interrupted): what the server said
   const [endNotice, setEndNotice] = useState<string | null>(null);
-  // The minutes the last interview used and gave back, measured by the server
-  const [minutesNote, setMinutesNote] = useState<{ used: number; back: number } | null>(null);
   const [cancelNote, setCancelNote] = useState<string | null>(null);
 
   // Cancellation modal
@@ -271,10 +241,87 @@ export default function MultiStreamInterviewPracticePage() {
     };
   }, [ready, apiFetch]);
 
-  const handleApplyPreset = (preset: JobPreset) => {
-    setSelectedStream(preset.stream);
-    setJobTitle(preset.title);
-    setJobDescription(preset.description);
+  // The interviews to choose from; the first role of the chosen one fills the job title until the person types their own
+  useEffect(() => {
+    if (!ready) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await apiFetch("/api/interview/careers", {}, { quiet: true });
+        if (!res.ok) return;
+        const list = (await res.json()) as Career[];
+        if (cancelled) return;
+        setCareers(list);
+      } catch {
+        // the page still lets the person search for a job
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [ready, apiFetch]);
+
+  // The person's saved interviews, how long they're kept, and the job library's credit lines
+  const loadSessions = async () => {
+    try {
+      const [s, k, c] = await Promise.all([
+        apiFetch("/api/interview/practice/sessions", {}, { quiet: true }),
+        apiFetch("/api/interview/practice/keep", {}, { quiet: true }),
+        apiFetch("/api/jobs/credits", {}, { quiet: true }),
+      ]);
+      if (s.ok) setSessions(((await s.json()) as { sessions: SessionItem[] }).sessions);
+      if (k.ok) setKeep((await k.json()) as KeepInfo);
+      if (c.ok) setCredits(((await c.json()) as { lines: string[] }).lines);
+    } catch {
+      setSessions((x) => x ?? []);
+    }
+  };
+  const loadSessionsRef = useLatestRef(loadSessions);
+  useEffect(() => {
+    if (ready) void loadSessionsRef.current();
+  }, [ready, loadSessionsRef]);
+
+  // A library job's most important tasks, for "What this interview tests"
+  useEffect(() => {
+    if (!ready || !job?.code) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await apiFetch(`/api/jobs/${encodeURIComponent(job.code!)}`, {}, { quiet: true });
+        if (res.ok && !cancelled) setJobDetail((await res.json()) as JobDetail);
+      } catch {
+        // the panel shows the scoring points only
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [ready, apiFetch, job?.code]);
+
+  const choosePracticeFor = (id: string) => {
+    setPracticeFor(id);
+    if (id !== "job") {
+      const c = careers.find((x) => x.id === id);
+      setJobTitle(c?.roles[0] ?? c?.name ?? "");
+    } else {
+      setJobTitle(job?.title ?? "");
+    }
+  };
+
+  const chooseJob = (j: PickedJob | null) => {
+    setJob(j);
+    setJobTitle(j?.title ?? "");
+  };
+
+  const deleteSession = async (id: string) => {
+    if (!window.confirm(en("Delete this interview, its coaching and its tries? This can't be undone."))) return;
+    const res = await apiFetch(`/api/interview/practice/${id}`, { method: "DELETE" }, { quiet: true });
+    if (res.ok) setSessions((list) => (list ?? []).filter((s) => s.id !== id));
+  };
+
+  const chooseKeep = async (choice: number | null) => {
+    const res = await apiFetch("/api/interview/practice/keep", { method: "PUT", body: JSON.stringify({ choice }) }, { quiet: true });
+    if (res.ok) await loadSessions();
   };
 
   // Setup Web Audio API volume meter for lively equalizer visualizer
@@ -404,10 +451,7 @@ export default function MultiStreamInterviewPracticePage() {
   const startInterview = async () => {
     setIsConnecting(true);
     setErrorMsg(null);
-    setCompletedReport(null);
-    setScoreFailure(null);
     setEndNotice(null);
-    setMinutesNote(null);
     setCancelNote(null);
     setTranscripts([]);
     transcriptsRef.current = [];
@@ -438,11 +482,16 @@ export default function MultiStreamInterviewPracticePage() {
           const res = await apiFetch(`/api/interview/practice/start`, {
             method: "POST",
             body: JSON.stringify({
-              stream: selectedStream,
+              career: isJob ? job?.family ?? "general" : practiceFor,
+              jobCode: isJob ? job?.code ?? null : null,
+              round: isJob ? round : null,
+              resumeVersionId,
+              removedLines,
+              style: selectedStyle,
               jobTitle,
-              jobDescription,
+              // A job ad pasted before switching to admissions, a scholarship or a visa isn't sent
+              jobDescription: isJob ? jobDescription : "",
               voice: selectedVoice,
-              personaCode: selectedPersona,
               sdpOffer,
             }),
           });
@@ -541,43 +590,6 @@ export default function MultiStreamInterviewPracticePage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // P6 (5 Nov 2026): only a real score is shown. When scoring fails, the interview's transcript is kept so the person can
-  // try scoring again or download it; nothing is guessed from keywords.
-  // The score is for this practice interview: the server scores the transcript it kept (this one is shown alongside it)
-  const scoreTranscripts = async (practiceId: string, finalTranscripts: TranscriptMessage[], minutesUsed?: number) => {
-    setScoreFailure(null);
-    setIsEvaluating(true);
-    try {
-      const res = await apiFetch(`/api/interview/evaluate`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          jobTitle,
-          jobDescription,
-          stream: selectedStream,
-          personaCode: selectedPersona,
-          practiceId,
-          durationMinutes: minutesUsed ?? minutesNote?.used ?? Math.max(1, Math.ceil(sessionDuration / 60)),
-          transcripts: finalTranscripts,
-        }),
-      });
-      if (!res.ok) {
-        const body = await res.json().catch(() => null);
-        throw new Error(body?.error || en("We couldn't score this interview just now. Please try again."));
-      }
-      const report = await res.json();
-      setCompletedReport({ ...report, transcripts: finalTranscripts });
-    } catch (err) {
-      setScoreFailure({
-        message: err instanceof TypeError ? en("We couldn't reach Edulexa. Check your internet connection and try again.") : (err as Error).message,
-        transcripts: finalTranscripts,
-        practiceId,
-      });
-    } finally {
-      setIsEvaluating(false);
-    }
-  };
-
   /**
    * Ends the interview, whichever way: "score" (you ended it, or it reached its time limit or the line dropped), "cancel"
    * (no scorecard) or "failed" (it never connected). The server ends the call, keeps the minutes used and gives the rest back;
@@ -588,7 +600,6 @@ export default function MultiStreamInterviewPracticePage() {
     if (!p || p.finishing) return;
     p.finishing = true;
     const practiceId = p.id;
-    const local = [...transcriptsRef.current];
     endSessionCleanup();
 
     if (mode === "cancel") {
@@ -611,17 +622,9 @@ export default function MultiStreamInterviewPracticePage() {
       else setEndNotice(r.message || en("This interview didn't record any answers, so no minutes were used."));
       return;
     }
-    if (r?.status === "ended") setMinutesNote({ used: r.minutesUsed, back: r.minutesGivenBack });
-    // The server's transcript, with the times you saw on the page where they match
-    const matched = new Set<number>();
-    const turns: TranscriptMessage[] = r?.transcript?.length
-      ? r.transcript.map((t, i) => {
-          const j = local.findIndex((m, k) => !matched.has(k) && m.role === t.role && m.text === t.text);
-          if (j >= 0) matched.add(j);
-          return { id: `srv-${i}`, role: t.role, text: t.text, timestamp: j >= 0 ? local[j].timestamp : "", isFinal: true };
-        })
-      : local;
-    await scoreTranscripts(practiceId, turns, r?.status === "ended" ? r.minutesUsed : undefined);
+    // 19 Nov 2026: the coaching page coaches each answer from the transcript the server kept
+    const minutes = r?.status === "ended" ? `?used=${r.minutesUsed}&back=${r.minutesGivenBack}` : "";
+    router.push(`/interview/practice/${practiceId}${minutes}`);
   };
 
   const endInterviewAndScore = () => finishInterview("score");
@@ -641,20 +644,6 @@ export default function MultiStreamInterviewPracticePage() {
     setTimeout(() => setCopiedTranscript(false), 2000);
   };
 
-  const handleDownloadTranscript = (items: TranscriptMessage[]) => {
-    const header = `Edulexa voice interview transcript\nJob Role: ${jobTitle}\nCandidate: ${candidateName}\nStream: ${selectedStream}\nDate: ${new Date().toLocaleString()}\n----------------------------------------\n\n`;
-    const body = items
-      .map(m => `[${m.timestamp}] ${m.role === "interviewer" ? "AI INTERVIEWER" : candidateName.toUpperCase()}:\n${m.text}\n`)
-      .join("\n");
-    const blob = new Blob([header + body], { type: "text/plain;charset=utf-8" });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = `Interview-Transcript-${jobTitle.replace(/[^a-zA-Z0-9]/g, "-")}.txt`;
-    link.click();
-    URL.revokeObjectURL(url);
-  };
-
   const formatDuration = (secs: number) => {
     const mins = Math.floor(secs / 60);
     const s = secs % 60;
@@ -667,7 +656,7 @@ export default function MultiStreamInterviewPracticePage() {
     <div className="text-foreground">
       <PageHeader
           title={en("Interview practice")}
-          description={en("Practice a spoken interview for a specific role with an AI interviewer, then get a scorecard and transcript.")}
+          description={en("Practice a spoken interview for a real job with an AI interviewer, then get coaching on each answer and try any question again.")}
           actions={
             <>
               <Link href="/prep/exam" className={buttonClass("secondary")}>
@@ -716,7 +705,7 @@ export default function MultiStreamInterviewPracticePage() {
 
               <div className="flex items-center justify-between relative z-10">
                 <div>
-                  <Badge tone="info">{en("Live session • {selectedStream}", { selectedStream })}</Badge>
+                  <Badge tone="info">{en("Live session • {name}", { name: career?.name ?? "" })}</Badge>
                   <h2 className="text-lg font-semibold text-foreground mt-2">
                     {jobTitle}
                   </h2>
@@ -800,7 +789,7 @@ export default function MultiStreamInterviewPracticePage() {
 
                 <Button type="button" onClick={endInterviewAndScore} className="w-full">
                   <Award className="w-4 h-4" />
-                  <span>{en("End and get my scorecard")}</span>
+                  <span>{en("End and get my coaching")}</span>
                 </Button>
               </div>
 
@@ -938,409 +927,248 @@ export default function MultiStreamInterviewPracticePage() {
             </div>
           </div>
         ) : isEvaluating ? (
-          /* ---------------------------------------------------- */
-          /* AI EVALUATION IN PROGRESS LOADER                     */
-          /* ---------------------------------------------------- */
           <div className="p-16 rounded-xl border border-border bg-card shadow-sm flex flex-col items-center justify-center text-center space-y-5">
-            <div className="w-12 h-12 rounded-full border-4 border-primary/20 border-t-primary animate-spin" />
+            <div className="w-12 h-12 rounded-full border-4 border-primary/20 border-t-primary animate-spin motion-reduce:animate-none" />
             <div className="space-y-1.5 max-w-lg">
-              <h2 className="text-lg font-semibold text-foreground">
-                {en("Scoring your interview")}
-              </h2>
-              <p className="text-sm text-muted-foreground leading-relaxed">
-                {en("Reviewing your answers for ")}<span className="font-medium text-foreground">{jobTitle}</span>{en(": relevance, depth, structure and trade-offs.")}
-              </p>
+              <h2 className="text-lg font-semibold text-foreground">{en("Ending your interview")}</h2>
+              <p className="text-sm text-muted-foreground leading-relaxed">{en("Next you'll see coaching on each of your answers.")}</p>
             </div>
           </div>
         ) : endNotice ? (
           <div role="status" className="p-10 rounded-xl border border-border bg-card shadow-sm flex flex-col items-center justify-center text-center space-y-4">
             <MessageSquare aria-hidden="true" className="w-8 h-8 text-muted-foreground" />
             <div className="space-y-1.5 max-w-lg">
-              <h2 className="text-lg font-semibold text-foreground">{en("No scorecard this time")}</h2>
+              <h2 className="text-lg font-semibold text-foreground">{en("No coaching this time")}</h2>
               <p className="text-sm text-muted-foreground leading-relaxed">{endNotice}</p>
             </div>
             <div className="flex flex-wrap justify-center gap-2">
               <Button onClick={startInterview} busy={isConnecting}>{en("Start again")}</Button>
-              <Button variant="secondary" onClick={() => setEndNotice(null)}>{en("Set up a new role")}</Button>
-            </div>
-          </div>
-        ) : scoreFailure ? (
-          <div role="alert" className="p-10 rounded-xl border border-border bg-card shadow-sm flex flex-col items-center justify-center text-center space-y-4">
-            <AlertTriangle aria-hidden="true" className="w-8 h-8 text-amber-600 dark:text-amber-400" />
-            <div className="space-y-1.5 max-w-lg">
-              <h2 className="text-lg font-semibold text-foreground">{en("We couldn't score this interview")}</h2>
-              <p className="text-sm text-muted-foreground leading-relaxed">{scoreFailure.message}</p>
-              <p className="text-sm text-muted-foreground leading-relaxed">{en("Your answers are kept on this page. No score was given or saved.")}</p>
-            </div>
-            <div className="flex flex-wrap justify-center gap-2">
-              <Button onClick={() => scoreTranscripts(scoreFailure.practiceId, scoreFailure.transcripts)}>{en("Try scoring again")}</Button>
-              <Button variant="secondary" onClick={() => handleDownloadTranscript(scoreFailure.transcripts)}>{en("Download transcript")}</Button>
-              <Button variant="ghost" onClick={() => { setScoreFailure(null); setTranscripts([]); }}>{en("Start a new interview")}</Button>
-            </div>
-          </div>
-        ) : completedReport ? (
-          /* ---------------------------------------------------- */
-          /* COMPLETED SCORECARD VIEW WITH FULL TRANSCRIPT LOG    */
-          /* ---------------------------------------------------- */
-          <div className="p-6 rounded-xl border border-border bg-card shadow-sm space-y-6">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-              <div className="space-y-1">
-                {completedReport.overallScore === 0 || completedReport.status === "DISQUALIFIED" ? (
-                  <Badge tone="bad"><XCircle className="me-1 w-3.5 h-3.5" />{en("Disqualified (0%)")}</Badge>
-                ) : completedReport.overallScore >= 85 ? (
-                  <Badge tone="good"><CheckCircle2 className="me-1 w-3.5 h-3.5" />{en("Exceptional ({overallScore}%)", { overallScore: completedReport.overallScore })}</Badge>
-                ) : completedReport.overallScore >= 70 ? (
-                  <Badge tone="good"><CheckCircle2 className="me-1 w-3.5 h-3.5" />{en("Ready ({overallScore}%)", { overallScore: completedReport.overallScore })}</Badge>
-                ) : completedReport.overallScore >= 50 ? (
-                  <Badge tone="warn"><AlertTriangle className="me-1 w-3.5 h-3.5" />{en("Developing: some gaps ({overallScore}%)", { overallScore: completedReport.overallScore })}</Badge>
-                ) : (
-                  <Badge tone="bad"><AlertTriangle className="me-1 w-3.5 h-3.5" />{en("Not ready yet ({overallScore}%)", { overallScore: completedReport.overallScore })}</Badge>
-                )}
-                <h2 className="text-xl font-semibold text-foreground pt-1">
-                  {en("Scorecard: {jobTitle}", { jobTitle: completedReport.jobTitle })}
-                </h2>
-                <p className="text-sm text-muted-foreground">
-                  {en("Track: ")}{completedReport.stream}{en(" • Length: ")}{completedReport.durationMinutes}{en(" min • Your answers: ")}{completedReport.candidateTurns}
-                </p>
-                {minutesNote && (
-                  <p className="text-sm text-muted-foreground">
-                    {minutesNote.back > 0
-                      ? en("This interview used {used} of your voice minutes. The other {back} went back to your balance.", { used: minutesNote.used, back: minutesNote.back })
-                      : en("This interview used {used} of your voice minutes.", { used: minutesNote.used })}
-                  </p>
-                )}
-              </div>
-
-              <div className="shrink-0 sm:w-48">
-                <StatTile
-                  label={en("Overall readiness")}
-                  value={`${completedReport.overallScore}%`}
-                  tone={completedReport.overallScore >= 70 && completedReport.status !== "DISQUALIFIED" ? "good" : "bad"}
-                />
-              </div>
-            </div>
-
-            {/* Zero-Tolerance Disqualification Banner */}
-            {completedReport.disqualificationReason && (
-              <div role="alert" className="p-4 rounded-lg border border-red-300 bg-red-50 text-red-800 dark:border-red-900 dark:bg-red-950/40 dark:text-red-300 space-y-1.5">
-                <div className="flex items-center gap-2 font-semibold text-sm">
-                  <ShieldAlert className="w-4 h-4 shrink-0" />
-                  <span>{en("Why this interview was disqualified")}</span>
-                </div>
-                <p className="text-sm leading-relaxed">
-                  {completedReport.disqualificationReason}
-                </p>
-              </div>
-            )}
-
-            {/* Dimension Breakdown */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
-              {completedReport.dimensions.map((dim: InterviewScoreDimension, i: number) => {
-                const isGood = dim.score >= 70;
-                return (
-                  <div key={i} className="p-4 rounded-lg border border-border bg-card space-y-1.5">
-                    <div className="flex justify-between text-sm">
-                      <span className="font-medium text-foreground">{dim.label}</span>
-                      <span className={`font-semibold tabular-nums ${isGood ? "text-foreground" : "text-red-700 dark:text-red-400"}`}>{dim.score}%</span>
-                    </div>
-                    <div className="w-full bg-muted h-1.5 rounded-full overflow-hidden">
-                      <div
-                        className={`h-1.5 rounded-full ${isGood ? "bg-indigo-500" : "bg-red-500"}`}
-                        style={{ width: `${Math.min(100, Math.max(5, dim.score))}%` }}
-                      />
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-
-            {/* Strengths & Improvements */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
-              <div className="p-4 rounded-lg border border-border bg-card space-y-2">
-                <span className="text-sm font-semibold text-foreground flex items-center gap-1.5">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-700 dark:text-emerald-400" />
-                  {en("Strengths")}
-                </span>
-                {completedReport.strengths && completedReport.strengths.length > 0 ? (
-                  <ul className="text-sm space-y-1.5 text-muted-foreground">
-                    {completedReport.strengths.map((str: string, i: number) => (
-                      <li key={i} className="flex items-start gap-2">
-                        <span className="text-emerald-500 mt-0.5">•</span>
-                        <span>{str}</span>
-                      </li>
-                    ))}
-                  </ul>
-                ) : (
-                  <p className="text-sm text-muted-foreground">
-                    {en("No demonstrated competencies met the evaluation standard for this role.")}
-                  </p>
-                )}
-              </div>
-
-              <div className="p-4 rounded-lg border border-border bg-card space-y-2">
-                <span className="text-sm font-semibold text-foreground flex items-center gap-1.5">
-                  <AlertTriangle className="w-4 h-4 text-amber-700 dark:text-amber-400" />
-                  {en("What to improve")}
-                </span>
-                <ul className="text-sm space-y-1.5 text-muted-foreground">
-                  {completedReport.improvements.map((imp: string, i: number) => (
-                    <li key={i} className="flex items-start gap-2">
-                      <span className="text-amber-500 mt-0.5">•</span>
-                      <span>{imp}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-
-            {/* Complete Session Transcript Review Box */}
-            {completedReport.transcripts && completedReport.transcripts.length > 0 && (
-              <div className="p-5 rounded-lg border border-border bg-card space-y-3">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 border-b border-border">
-                  <div className="flex items-center space-x-2">
-                    <h3 className="text-sm font-semibold text-foreground">{en("Transcript")}</h3>
-                    <span className="text-xs text-muted-foreground">{en("({length} exchanges)", { length: completedReport.transcripts.length })}</span>
-                  </div>
-
-                  <div className="flex items-center space-x-2">
-                    <button
-                      onClick={() => handleCopyTranscript(completedReport.transcripts)}
-                      className={buttonClass("secondary")}
-                    >
-                      {copiedTranscript ? <Check className="w-3 h-3 text-emerald-500" /> : <Copy className="w-3 h-3 text-muted-foreground" />}
-                      <span>{copiedTranscript ? en("Copied") : en("Copy")}</span>
-                    </button>
-
-                    <button
-                      onClick={() => handleDownloadTranscript(completedReport.transcripts)}
-                      className={buttonClass("secondary")}
-                    >
-                      <Download className="w-3 h-3" />
-                      <span>{en("Download .txt")}</span>
-                    </button>
-                  </div>
-                </div>
-
-                <div className="max-h-64 overflow-y-auto space-y-2.5 pe-1 text-sm">
-                  {completedReport.transcripts.map((m: TranscriptMessage, i: number) => {
-                    const isAi = m.role === "interviewer";
-                    return (
-                      <div key={i} className="p-2.5 rounded-lg bg-muted/40 border border-border space-y-1">
-                        <div className="flex items-center justify-between text-xs">
-                          <span className="font-medium text-foreground">
-                            {isAi ? en("AI interviewer ({selectedVoice})", { selectedVoice }) : candidateName}
-                          </span>
-                          <span className="font-mono text-muted-foreground">{m.timestamp}</span>
-                        </div>
-                        <p className="text-foreground leading-relaxed">{m.text}</p>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-
-            <div className="flex items-center gap-3 pt-4 border-t border-border">
-              <Button type="button" onClick={startInterview}>
-                <RotateCcw className="w-4 h-4" />
-                {en("Practice again")}
-              </Button>
-              <Button type="button" variant="secondary" onClick={() => setCompletedReport(null)}>
-                {en("Set up a new role")}
-              </Button>
+              <Button variant="secondary" onClick={() => setEndNotice(null)}>{en("Change the setup")}</Button>
             </div>
           </div>
         ) : (
           /* ---------------------------------------------------- */
-          /* CONFIGURATION STUDIO VIEW                            */
+          /* SETUP (19 Nov 2026: job, round, résumé, job ad)      */
           /* ---------------------------------------------------- */
+          <>
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Left 2 Cols: Form Config */}
             <div className="lg:col-span-2 space-y-6">
-              {/* Stream Selector */}
-              <div className="space-y-3">
-                <h2 className="text-base font-semibold text-foreground">
-                  {en("1. Choose a track")}
-                </h2>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  {STREAM_OPTIONS.map((stream) => (
+              {/* 1. What you're practicing for */}
+              <section className="space-y-3" aria-labelledby="setup-for">
+                <h2 id="setup-for" className="text-base font-semibold text-foreground">{en("1. What you're practicing for")}</h2>
+                <div className="flex flex-wrap gap-2" role="group" aria-label={en("What you're practicing for")}>
+                  {[{ id: "job", name: en("A job") }, ...careers.filter((c) => c.kind !== "career").map((c) => ({ id: c.id, name: c.name }))].map((o) => (
                     <button
-                      key={stream.id}
+                      key={o.id}
                       type="button"
-                      aria-pressed={selectedStream === stream.id}
-                      onClick={() => setSelectedStream(stream.id)}
-                      className={`p-4 rounded-xl border bg-card shadow-sm text-start transition-colors cursor-pointer ${
-                        selectedStream === stream.id
-                          ? "border-[var(--brand)] ring-1 ring-[var(--brand)]"
-                          : "border-border hover:bg-muted/50"
-                      }`}
+                      aria-pressed={practiceFor === o.id}
+                      onClick={() => choosePracticeFor(o.id)}
+                      className={`rounded-full border px-3 py-1.5 text-sm ${practiceFor === o.id ? "border-[var(--brand)] bg-muted font-medium text-foreground" : "border-border text-muted-foreground hover:bg-muted/50"}`}
                     >
-                      <p className="font-medium text-sm text-foreground mb-1">
-                        {en(stream.label)}
-                      </p>
-                      <p className="text-xs leading-relaxed text-muted-foreground">
-                        {en(stream.desc)}
-                      </p>
+                      {o.name}
                     </button>
                   ))}
                 </div>
-              </div>
+                {isJob ? (
+                  <JobPicker value={job} onChange={chooseJob} />
+                ) : (
+                  <p className="text-sm text-muted-foreground">{career?.name}</p>
+                )}
+                {career?.kind === "visa" && (
+                  <p className="text-xs text-muted-foreground">{en("This is practice only, not legal or immigration advice. Follow the official guidance for the country you're applying to.")}</p>
+                )}
+              </section>
 
-              {/* Persona Selector */}
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <h2 className="text-base font-semibold text-foreground">
-                    {en("2. Choose an interviewer")}
-                  </h2>
-                  <span className="text-xs text-muted-foreground">
-                    {en("How tough the questions are")}
-                  </span>
+              {/* 2. The round (jobs only) */}
+              {isJob && (
+                <section className="space-y-3" aria-labelledby="setup-round">
+                  <h2 id="setup-round" className="text-base font-semibold text-foreground">{en("2. The round")}</h2>
+                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                    {ROUNDS.map((r) => (
+                      <button
+                        key={r.id}
+                        type="button"
+                        aria-pressed={round === r.id}
+                        onClick={() => setRound(r.id)}
+                        className={`rounded-xl border bg-card p-4 text-start shadow-sm transition-colors ${round === r.id ? "border-[var(--brand)] ring-1 ring-[var(--brand)]" : "border-border hover:bg-muted/50"}`}
+                      >
+                        <p className="mb-1 text-sm font-medium text-foreground">{en(r.label)}</p>
+                        <p className="text-xs leading-relaxed text-muted-foreground">{en(r.description)}</p>
+                      </button>
+                    ))}
+                  </div>
+                </section>
+              )}
+
+              {/* 3. Your résumé and the job ad */}
+              <section className="space-y-4 rounded-xl border border-border bg-card p-5 shadow-sm" aria-labelledby="setup-you">
+                <div>
+                  <h2 id="setup-you" className="text-base font-semibold text-foreground">{isJob ? en("3. Your résumé and the job ad") : en("2. Your résumé")}</h2>
+                  <p className="text-xs text-muted-foreground">{en("Optional. With them, the interviewer asks about your own experience and this job.")}</p>
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  {PERSONAS.map((persona) => (
-                    <button
-                      key={persona.id}
-                      type="button"
-                      aria-pressed={selectedPersona === persona.id}
-                      onClick={() => setSelectedPersona(persona.id)}
-                      className={`p-4 rounded-xl border bg-card shadow-sm text-start transition-colors cursor-pointer ${
-                        selectedPersona === persona.id
-                          ? "border-[var(--brand)] ring-1 ring-[var(--brand)]"
-                          : "border-border hover:bg-muted/50"
-                      }`}
-                    >
-                      <div className="flex items-center justify-between mb-1.5">
-                        <Badge>{en(persona.companyTag)}</Badge>
-                        <span className="text-xs text-muted-foreground">
-                          {en(persona.scrutiny)}
-                        </span>
-                      </div>
-                      <p className="font-medium text-sm text-foreground mb-1">
-                        {en(persona.name)}
-                      </p>
-                      <p className="text-xs leading-relaxed text-muted-foreground">
-                        {en(persona.description)}
-                      </p>
+                <div className="space-y-2">
+                  <p className="text-sm font-medium text-foreground">{en("Your résumé")}</p>
+                  <LibraryPicker value={resumeVersionId} onChange={(v) => { setResumeVersionId(v); setRemovedLines([]); }} name="interview-resume" />
+                  {resumeVersionId && (
+                    <button type="button" onClick={() => { setResumeVersionId(null); setRemovedLines([]); }} className="text-xs font-medium text-muted-foreground underline-offset-2 hover:underline">
+                      {en("Don't use a résumé")}
                     </button>
-                  ))}
+                  )}
                 </div>
-              </div>
-
-              {/* Target Job Title & Description */}
-              <div className="space-y-4 p-5 rounded-xl border border-border bg-card shadow-sm">
-                <div className="flex items-center justify-between">
-                  <h2 className="text-base font-semibold text-foreground">
-                    {en("3. The job")}
-                  </h2>
-                  <span className="text-xs text-muted-foreground">
-                    {en("Paste details from any job post")}
-                  </span>
-                </div>
-
-                <div className="space-y-2">
-                  <label htmlFor="interview-job-title" className="text-sm font-medium text-foreground">
-                    {en("Job title")}
-                  </label>
-                  <input
-                    id="interview-job-title"
-                    type="text"
-                    required
-                    value={jobTitle}
-                    onChange={(e) => setJobTitle(e.target.value)}
-                    placeholder={en("e.g. Senior Backend Engineer")}
-                    className="w-full px-3 py-2 rounded-lg border border-border bg-card shadow-sm text-sm text-foreground"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <label htmlFor="interview-job-description" className="text-sm font-medium text-foreground">
-                    {en("Job description or key requirements")}
-                  </label>
-                  <textarea
-                    id="interview-job-description"
-                    rows={4}
-                    value={jobDescription}
-                    onChange={(e) => setJobDescription(e.target.value)}
-                    placeholder={en("Paste the job requirements, tech stack, or responsibilities here...")}
-                    className="w-full px-3 py-2 rounded-lg border border-border bg-card shadow-sm text-sm text-foreground leading-relaxed"
-                  />
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="space-y-1.5">
-                    <label htmlFor="interview-candidate-name" className="text-sm font-medium text-foreground">
-                      {en("Your name")}
-                    </label>
-                    <input
-                      id="interview-candidate-name"
-                      type="text"
-                      value={candidateName}
-                      onChange={(e) => setCandidateName(e.target.value)}
-                      className="w-full px-3 py-2 rounded-lg border border-border bg-card shadow-sm text-sm text-foreground"
+                {isJob && (
+                  <div className="space-y-2">
+                    <label htmlFor="interview-job-description" className="text-sm font-medium text-foreground">{en("The job ad (optional)")}</label>
+                    <textarea
+                      id="interview-job-description"
+                      rows={4}
+                      value={jobDescription}
+                      onChange={(e) => setJobDescription(e.target.value)}
+                      placeholder={en("Paste the job ad, or the main duties and requirements")}
+                      className="w-full px-3 py-2 rounded-lg border border-border bg-card shadow-sm text-sm text-foreground leading-relaxed"
                     />
                   </div>
+                )}
+                <PrivacyPreview resumeVersionId={resumeVersionId} jobDescription={isJob ? jobDescription : ""} removedLines={removedLines} onRemovedLinesChange={setRemovedLines} />
+              </section>
 
-                  <div className="space-y-1.5">
-                    <label htmlFor="interview-voice" className="text-sm font-medium text-foreground">
-                      {en("Interviewer voice")}
-                    </label>
-                    <select
-                      id="interview-voice"
-                      value={selectedVoice}
-                      onChange={(e) => setSelectedVoice(e.target.value)}
-                      className="w-full px-3 py-2 rounded-lg border border-border bg-card shadow-sm text-sm text-foreground cursor-pointer"
+              {/* 4. The interviewer */}
+              <section className="space-y-3" aria-labelledby="setup-style">
+                <h2 id="setup-style" className="text-base font-semibold text-foreground">{isJob ? en("4. The interviewer") : en("3. The interviewer")}</h2>
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                  {STYLES.map((st) => (
+                    <button
+                      key={st.id}
+                      type="button"
+                      aria-pressed={selectedStyle === st.id}
+                      onClick={() => setSelectedStyle(st.id)}
+                      className={`rounded-xl border bg-card p-4 text-start shadow-sm transition-colors ${selectedStyle === st.id ? "border-[var(--brand)] ring-1 ring-[var(--brand)]" : "border-border hover:bg-muted/50"}`}
                     >
-                      {VOICES.map((v) => (
-                        <option key={v.id} value={v.id}>
-                          {en(v.label)}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
+                      <p className="mb-1 text-sm font-medium text-foreground">{en(st.label)}</p>
+                      <p className="text-xs leading-relaxed text-muted-foreground">{en(st.description)}</p>
+                    </button>
+                  ))}
                 </div>
+                <div className="max-w-xs space-y-1.5">
+                  <label htmlFor="interview-voice" className="text-sm font-medium text-foreground">{en("Interviewer voice")}</label>
+                  <select
+                    id="interview-voice"
+                    value={selectedVoice}
+                    onChange={(e) => setSelectedVoice(e.target.value)}
+                    className="w-full px-3 py-2 rounded-lg border border-border bg-card shadow-sm text-sm text-foreground"
+                  >
+                    {VOICES.map((v) => (
+                      <option key={v.id} value={v.id}>{en(v.label)}</option>
+                    ))}
+                  </select>
+                </div>
+              </section>
 
+              <div className="space-y-3 rounded-xl border border-border bg-muted/30 p-4">
+                <p className="text-sm text-foreground">{en("Don't say your name or contact details during the interview. Speak as you would in the real one.")}</p>
                 <p className="text-xs text-muted-foreground leading-relaxed">
                   {sessionCapMinutes
                     ? en("You pay only for the minutes you use. Starting sets aside up to {limit} minutes, and the ones you don't use go back to your balance when you end.", { limit: sessionCapMinutes })
                     : en("You pay only for the minutes you use. Starting sets aside a whole interview's minutes, and the ones you don't use go back to your balance when you end.")}
                 </p>
-
-                <Button type="button" onClick={startInterview} disabled={!jobTitle.trim()} busy={isConnecting} className="h-10 w-full">
+                <Button type="button" onClick={startInterview} disabled={!jobTitle.trim() || (isJob && !job)} busy={isConnecting} className="h-10 w-full">
                   {!isConnecting && <Play className="w-4 h-4" />}
                   <span>{isConnecting ? en("Connecting…") : en("Start interview")}</span>
                 </Button>
               </div>
             </div>
 
-            {/* Right Col: Preset Library */}
-            <div className="space-y-4">
-              <h2 className="text-base font-semibold text-foreground">
-                {en("Example roles")}
-              </h2>
-
-              <div className="space-y-3">
-                {JOB_PRESETS.map((preset, idx) => (
-                  <button
-                    key={idx}
-                    type="button"
-                    onClick={() => handleApplyPreset(preset)}
-                    className="w-full p-4 rounded-xl border border-border bg-card shadow-sm hover:bg-muted/50 text-start transition-colors space-y-1.5 group cursor-pointer"
-                  >
-                    <div className="flex items-center justify-between">
-                      <Badge>{en(STREAM_OPTIONS.find((s) => s.id === preset.stream)?.label ?? preset.stream)}</Badge>
-                      <ChevronRight className="w-3.5 h-3.5 text-muted-foreground group-hover:text-primary transition-colors" />
-                    </div>
-                    <p className="text-sm font-medium text-foreground">
-                      {en(preset.title)}
-                    </p>
-                    <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">
-                      {en(preset.description)}
-                    </p>
-                  </button>
-                ))}
-              </div>
-            </div>
+            {/* What this interview tests */}
+            <aside className="space-y-4" aria-labelledby="setup-tests">
+              <h2 id="setup-tests" className="text-base font-semibold text-foreground">{en("What this interview tests")}</h2>
+              {jobDetail && jobDetail.code === job?.code && jobDetail.tasks.length > 0 && (
+                <div className="space-y-2 rounded-xl border border-border bg-card p-4 shadow-sm">
+                  <p className="text-xs font-medium text-muted-foreground">{en("The job's most important tasks")}</p>
+                  <ul className="space-y-1.5 text-sm text-foreground">
+                    {jobDetail.tasks.slice(0, 5).map((t) => (
+                      <li key={t.text} className="flex gap-2"><span aria-hidden="true" className="text-[var(--brand)]">•</span><span>{t.text}</span></li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              {career ? (
+                <ul className="space-y-3">
+                  {career.dimensions.map((d) => (
+                    <li key={d.key} className="space-y-1 rounded-xl border border-border bg-card p-4 shadow-sm">
+                      <p className="text-sm font-medium text-foreground">{d.name}</p>
+                      <p className="text-xs leading-relaxed text-muted-foreground">{d.good}</p>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="text-sm text-muted-foreground">{en("Choose a job to see what the interviewer listens for.")}</p>
+              )}
+              <p className="text-xs text-muted-foreground">{en("Six to eight questions, made for you from the job and your résumé. Afterwards you get coaching on each answer and can try any question again.")}</p>
+              {credits.length > 0 && (
+                <p className="text-[11px] leading-relaxed text-muted-foreground">
+                  {en("Job information from O*NET® and ESCO.")}{" "}
+                  <Link href="/help/job-information-sources" className="underline underline-offset-2 hover:text-foreground">{en("Sources and credits")}</Link>
+                </p>
+              )}
+            </aside>
           </div>
+
+          {/* Your interviews */}
+          <section className="space-y-3 border-t border-border pt-6" aria-labelledby="setup-sessions">
+            <div className="flex flex-wrap items-end justify-between gap-3">
+              <div>
+                <h2 id="setup-sessions" className="text-base font-semibold text-foreground">{en("Your interviews")}</h2>
+                <p className="text-xs text-muted-foreground">{en("Only you can see them.")}</p>
+              </div>
+              {keep && (
+                <div className="flex items-center gap-2 text-sm">
+                  <label htmlFor="interview-keep" className="text-muted-foreground">{en("Keep them for")}</label>
+                  <select
+                    id="interview-keep"
+                    value={keep.choice === null ? "" : String(keep.choice)}
+                    onChange={(e) => void chooseKeep(e.target.value === "" ? null : Number(e.target.value))}
+                    className="rounded-lg border border-border bg-card px-2 py-1 text-sm text-foreground"
+                  >
+                    <option value="">{keep.planDays === 0 ? en("Until I delete them (your plan)") : en("{days} days (your plan)", { days: keep.planDays })}</option>
+                    {keep.choices.filter((d) => d !== keep.planDays).map((d) => (
+                      <option key={d} value={d}>{d === 0 ? en("Until I delete them") : en("{days} days", { days: d })}</option>
+                    ))}
+                    <option value="-1">{en("A day after I see the coaching")}</option>
+                  </select>
+                </div>
+              )}
+            </div>
+            {sessions === null ? (
+              <div className="h-16 animate-pulse rounded-xl bg-muted motion-reduce:animate-none" aria-busy="true" />
+            ) : sessions.length === 0 ? (
+              <p className="text-sm text-muted-foreground">{en("Your interviews and their coaching will show here.")}</p>
+            ) : (
+              <ul className="divide-y divide-border overflow-hidden rounded-xl border border-border bg-card">
+                {sessions.slice(0, 10).map((s) => {
+                  const result = s.status ? RESULTS[s.status] : null;
+                  return (
+                    <li key={s.id} className="flex flex-wrap items-center gap-3 px-4 py-3">
+                      <Link href={`/interview/practice/${s.id}`} className="min-w-0 flex-1 hover:underline">
+                        <span className="block truncate text-sm font-medium text-foreground">{s.jobTitle}</span>
+                        <span className="block text-xs text-muted-foreground">
+                          {[s.roundName ? en(s.roundName) : null, new Date(s.createdAt).toLocaleDateString(), s.deletesOn ? en("deleted on {date}", { date: new Date(s.deletesOn + "T00:00:00").toLocaleDateString() }) : null].filter(Boolean).join(" · ")}
+                        </span>
+                      </Link>
+                      {result ? <Badge tone={result.tone}>{en(result.label)}</Badge> : <Badge tone="info">{en("Not coached yet")}</Badge>}
+                      <button
+                        type="button"
+                        onClick={() => void deleteSession(s.id)}
+                        aria-label={en("Delete the interview for {title}", { title: s.jobTitle })}
+                        className="rounded-md p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground"
+                      >
+                        <Trash2 aria-hidden="true" className="h-4 w-4" />
+                      </button>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+          </section>
+          </>
         )}
       </div>
 

@@ -9,7 +9,7 @@ checked: 2026-11-12
 short:
   - Two short drills a day, an incident and a code review. Your first try at each earns points; the answers show once you submit.
   - Practice on any day to keep your streak. Seven days in a row earn a streak freeze, which covers a missed day.
-  - Duels and the leadership and failover scenarios are practice only. They don't earn points.
+  - Duels and workplace practice are practice only. They don't earn points.
 ---
 Every day there are two short drills: an incident drill and a code review. Both are in the [ui: Practice] menu, under [ui: Incident drills] and [ui: Code review drills]. The [Daily practice](/daily) page shows both, with your streak and points.
 
@@ -56,9 +56,24 @@ In [ui: System design duels], you design a system against the clock, and your de
 
 You see each check your design passed or missed, and your new rating. Duels don't earn daily points.
 
-## Hard conversations and failover
+## Workplace practice
 
-[ui: Leadership practice] and [ui: Failover practice] are short scenarios. In each turn, choose your response. At the end you see how close each choice was to the strongest response. Only you see your result. Select [ui: Try again] or [ui: Other scenarios], and find earlier tries under [ui: Your past attempts].
+[ui: Workplace practice], in the [ui: Practice] menu, has short scenarios from everyday work, for any job:
+
+- an upset customer;
+- conflict in the team;
+- your first job;
+- asking for a raise or negotiating an offer;
+- giving bad news;
+- taking feedback.
+
+It also has leadership conversations, a promotion case and leading a failover.
+
+1. Choose a situation at the top of the page, then [ui: Start] a scenario.
+2. In each turn, choose how you'd respond. Straight away you see the feedback on your choice and the strongest response.
+3. At the end, [ui: Your result] shows how close your choices were to the strongest ones, overall and on the four things that situation is about: [ui: Strong], [ui: Good], [ui: Getting there] or [ui: Keep practicing].
+
+Only you see your results. Select [ui: Try again] or [ui: Other scenarios], and find earlier tries under [ui: Your past attempts].
 
 ## The leaderboard
 

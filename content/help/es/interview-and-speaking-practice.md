@@ -1,51 +1,75 @@
 ---
-title: Práctica de entrevistas y expresión oral
-summary: Haz una entrevista de práctica oral con un entrevistador de IA y recibe una ficha de evaluación, o practica responder en voz alta y revisa tu ritmo, tus muletillas y tus pausas.
+title: Entrevistas de práctica y práctica oral
+summary: Haz una entrevista oral de práctica para un empleo real, basada en tu currículum y el empleo. Después, recibe orientación sobre cada respuesta y vuelve a intentar cualquier pregunta. También puedes practicar tus respuestas en voz alta y ver tu ritmo, muletillas y pausas.
 roles: [member]
 group: Practice
 features: [interview-practice, speaking-practice]
 order: 20
-checked: 2026-11-12
+checked: 2026-11-19
 short:
-  - La práctica de entrevistas es una entrevista oral para el puesto que elijas, con una ficha de evaluación al final. Solo pagas por los minutos que usas.
-  - La práctica de expresión oral mide tu ritmo, tus muletillas y tus pausas. Solo tú ves los resultados.
-  - Ambas son solo prácticas. No otorgan una credencial.
+  - La práctica de entrevistas es una entrevista oral para un empleo real, o para la admisión a la universidad, una beca o una visa de estudiante. Después, recibes orientación sobre cada respuesta, con una versión mejorada en tus propias palabras, y puedes volver a intentar cualquier pregunta. Solo pagas por los minutos que usas.
+  - La práctica oral mide tu ritmo, tus muletillas y tus pausas. Solo tú ves los resultados.
+  - Ambos tipos de práctica son solo para practicar. No otorgan una credencial.
 reviewed: false
 ---
-Ambos tipos de práctica necesitan un micrófono. Si el tuyo no funciona, consulta [Cómo revisar el micrófono y el navegador](/help/microphone-and-browser).
+Ambos tipos de práctica necesitan un micrófono. Si el tuyo no funciona, consulta [Cómo comprobar el micrófono y el navegador](/help/microphone-and-browser).
 
 ## Una entrevista de práctica
 
 Abre [ui: Práctica de entrevistas] desde el menú [ui: Práctica].
 
-1. [ui: 1. Elige una ruta], como software, gestión de productos o ventas.
-2. [ui: 2. Elige a un entrevistador]. Cada opción indica [ui: Nivel de dificultad de las preguntas].
-3. En [ui: 3. El puesto], ingresa [ui: Nombre del puesto] y pega [ui: Descripción del puesto o requisitos clave] de cualquier oferta de trabajo. O selecciona una de las opciones [ui: Puestos de ejemplo].
-4. Ingresa [ui: Tu nombre] y elige una opción [ui: Voz del entrevistador].
-5. Selecciona [ui: Iniciar entrevista] y permite el acceso al micrófono cuando el navegador te lo solicite.
+1. En [ui: 1. Para qué estás practicando], elige [ui: Un empleo] y usa [ui: Busca el empleo], por ejemplo, «enfermero registrado», «electricista» o «contador». Elige tu empleo de la lista. Si no aparece, selecciona el botón para usar tu propio título del puesto. También puedes elegir una entrevista para la admisión a la universidad, una beca o una visa de estudiante.
+2. Para un empleo, elige [ui: 2. La ronda]: una entrevista [ui: Llamada de selección], una entrevista [ui: Conductual] sobre situaciones reales de tu pasado o una entrevista [ui: Responsable de contratación] sobre las tareas propias del empleo.
+3. En [ui: 3. Tu currículum y el anuncio de empleo], puedes elegir un currículum de tu biblioteca y pegar [ui: El anuncio de empleo (opcional)]. Así, las preguntas serán sobre tu experiencia y este empleo.
+4. En [ui: 4. La persona que entrevista], elige [ui: Comprensivo] (pistas cuando te quedes sin ideas), [ui: Estándar] o [ui: Exigente] (preguntas de seguimiento y cuestionamientos), y un [ui: Voz del entrevistador].
+5. Selecciona [ui: Iniciar entrevista] y permite el acceso al micrófono cuando el navegador te lo pida.
 
 [shot: member-practice-interview]
 
-Habla como lo harías en una entrevista real. El entrevistador hace preguntas de seguimiento y tus palabras aparecen en [ui: Transcripción en vivo]. Usa [ui: Silenciar] para pausar el micrófono. Cuando termines, selecciona [ui: Finalizar y obtener mi informe de evaluación]. Si llegas al límite de tiempo o se interrumpe tu conexión, la entrevista termina y de todas formas recibes la ficha de evaluación. [ui: Cancelar] la termina sin generar una ficha de evaluación.
+[ui: Qué evalúa esta entrevista] muestra las tareas más importantes del empleo y los cuatro aspectos que se evalúan. La información del empleo proviene de fuentes públicas. Consulta [De dónde proviene la información sobre empleos](/help/job-information-sources).
 
-La ficha de evaluación muestra [ui: Preparación general], [ui: Fortalezas], [ui: Qué mejorar] y [ui: Transcripción] completo. Puedes copiar o descargar la transcripción. Selecciona [ui: Practicar de nuevo] para el mismo puesto o [ui: Configurar un nuevo puesto].
+La entrevista para la visa de estudiante es solo una práctica, no es asesoría legal ni migratoria.
 
-> Solo pagas por los minutos que usas. Al comenzar, se reserva una sesión completa de tus minutos de voz, hasta el límite de la sesión que se muestra en [Precios y minutos](/pricing), para que no te quedes sin minutos a mitad de la entrevista. Cuando termina, los minutos que no usaste vuelven a tu saldo y la ficha de evaluación muestra cuántos usaste. Cada entrevista se cuenta en minutos enteros, redondeados hacia arriba: una entrevista de 4 minutos y 10 segundos usa 5 minutos. Si no se logra conectar o la terminas durante el primer minuto sin responder, no se usan minutos. Es solo para practicar: no otorga una credencial.
+### Qué ve el entrevistador de IA
 
-## Práctica de expresión oral
+Antes de enviar cualquier información a la IA, Edulexa elimina tu nombre, datos de contacto, dirección, fecha de nacimiento, nacionalidad, religión, situación migratoria, salario y referencias. Los nombres de tus empleadores, centros de estudio y lugares se reemplazan por nombres ficticios como [Empleador 1], y las fechas exactas se convierten en años. Abre [ui: Lo que verá el entrevistador de IA] para revisarlo y selecciona [ui: Omitir] en cualquier línea que no quieras que se use. Solo tú sabes qué significa cada nombre ficticio.
 
-[ui: Práctica de expresión oral] te ayuda a mejorar cómo hablas, no lo que dices. Mide tu ritmo (palabras por minuto), las muletillas como «eh», tus pausas y cuánto tardas en empezar. No evalúa tus emociones, estrés ni confianza.
+El entrevistador escucha lo que dices, así que no digas tu nombre ni tus datos de contacto durante la entrevista.
+
+### Durante la entrevista
+
+Habla como lo harías en una entrevista real. El entrevistador hace de seis a ocho preguntas y preguntas de seguimiento, y tus palabras aparecen en [ui: Transcripción en vivo]. Usa [ui: Silenciar] para pausar el micrófono. Cuando termines, selecciona [ui: Terminar y recibir mis comentarios]. Si llegas al límite de tiempo o se interrumpe tu conexión, la entrevista termina y aun así recibes orientación. [ui: Cancelar] la termina sin orientación.
+
+### Tu orientación
+
+Después de la entrevista, verás [ui: Tu resultado]: [ui: Sólido], [ui: Listo para la entrevista], [ui: Vas avanzando] o [ui: Sigue practicando], además de una puntuación para cada uno de los cuatro aspectos evaluados. Después aparece [ui: Respuesta por respuesta], con información sobre cada pregunta:
+
+- [ui: Dijiste]: tus propias palabras.
+- [ui: Qué funcionó] y [ui: Qué faltó].
+- [ui: Una versión mejorada, con tus propias palabras]. Se crea únicamente a partir de lo que dijiste y de tu currículum. Las partes resaltadas son datos que solo tú conoces, como cuántos pacientes atendiste: complétalas con lo que realmente pasó. Edulexa nunca inventa datos que no hayas proporcionado.
+
+Selecciona [ui: Volver a intentar esta pregunta] para responder una pregunta otra vez en una llamada breve. Recibirás orientación sobre tu intento, que aparecerá debajo de tu primera respuesta para que puedas ver qué cambió. Puedes intentar responder cada pregunta tres veces, y cada intento consume minutos de práctica. Las preguntas en [ui: No se llegó a esta pregunta] no afectan tu resultado.
+
+[shot: member-practice-coaching]
+
+Tus entrevistas aparecen en [ui: Tus entrevistas], en la página de práctica. Solo tú puedes verlas. Tu plan las conserva durante un período determinado, que aparece junto a cada una. En [ui: Conservarlos durante] puedes elegir un período más corto o [ui: Un día después de ver los comentarios]. Puedes eliminar cualquier entrevista en cualquier momento.
+
+> Solo pagas por los minutos que usas. Al comenzar, se reserva el total de minutos de voz de una sesión, hasta el límite indicado en [Precios y minutos](/pricing), para que no te quedes sin minutos a mitad de la sesión. Cuando termina la entrevista, los minutos que no usaste vuelven a tu saldo. Cada entrevista se cuenta en minutos completos, redondeados hacia arriba: una entrevista de 4 minutos y 10 segundos consume 5 minutos. Si no se pudo establecer la conexión o terminas la entrevista durante el primer minuto sin responder, no se consumen minutos. Es solo para practicar: no otorga una credencial y nadie más puede verla.
+
+## Práctica oral
+
+[ui: Práctica de expresión oral] te ayuda a mejorar cómo hablas, no lo que dices. Mide tu ritmo (palabras por minuto), tus muletillas como «eh», tus pausas y cuánto tardas en empezar. No evalúa tus emociones, estrés ni confianza.
 
 1. La primera vez, lee qué se mide y selecciona [ui: Activar la práctica oral].
 2. Elige un [ui: Pregunta] o escribe [ui: O escribe tu propia pregunta].
 3. Selecciona [ui: Start answering], responde en voz alta y luego selecciona [ui: Stop and see feedback].
 
-Recibirás comentarios de inmediato. [ui: En tus respuestas recientes] muestra tus promedios y [ui: Tus respuestas] los muestra uno por uno.
+Los comentarios aparecen de inmediato. [ui: En tus respuestas recientes] muestra tus promedios y [ui: Tus respuestas] los muestra uno por uno.
 
-- La grabación permanece en tu navegador. Para contar las palabras, el navegador convierte tu respuesta en texto, pero Edulexa no guarda ese texto. Chrome, Edge y Safari pueden contar las palabras. En otros navegadores, solo se miden las pausas y el tiempo que tardas en empezar.
-- Solo tú ves los resultados. Nunca se muestran a reclutadores ni a instituciones, ni se usan en ninguna calificación.
-- Tus mediciones se conservan durante 180 días. Selecciona [ui: Eliminar mis respuestas] en cualquier momento, o [ui: Desactivar la práctica oral] para dejar de medirlas y eliminarlas.
+- La grabación permanece en tu navegador. Para contar las palabras, el navegador convierte tu respuesta en texto, y Edulexa no conserva ese texto. Chrome, Edge y Safari pueden contar las palabras. En otros navegadores, solo se miden las pausas y el tiempo que tardas en empezar.
+- Solo tú ves los resultados. Nunca se muestran a reclutadores ni a instituciones, ni se usan para calcular puntuaciones.
+- Tus mediciones se conservan durante 180 días. Selecciona [ui: Eliminar mis respuestas] en cualquier momento o [ui: Desactivar la práctica oral] para detenerlas y eliminarlas.
 
-La práctica de expresión oral no está disponible en la UE ni en el EEE, donde la ley limita el análisis de voz con fines educativos. Tampoco está disponible cuando Edulexa no puede determinar en qué país estás.
+La práctica oral no está disponible en la UE ni en el EEE, donde la ley limita el análisis de voz en la educación. También está desactivada cuando Edulexa no puede determinar en qué país estás.
 
 Siguiente paso: demuestra tus habilidades en un examen o un desafío de programación. Consulta [Exámenes, desafíos de programación y tu trabajo en GitHub](/help/exams-and-challenges).

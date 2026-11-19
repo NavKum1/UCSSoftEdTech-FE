@@ -1,12 +1,6 @@
-import ScenarioPractice from "@/components/practice/ScenarioPractice";
+import { redirect } from "next/navigation";
 
-// Phase E (24 Oct 2026): failover incident-command practice with real scoring (replaces the simulated multi-cloud console).
-export default function FailoverPracticePage() {
-  return (
-    <ScenarioPractice
-      track="failover"
-      title="Failover incident practice"
-      intro="Lead the response when one region of a service starts failing: traffic, data, and keeping customers informed."
-    />
-  );
+// B3 (18 Nov 2026): failover practice is a track of Workplace practice.
+export default function Page() {
+  redirect("/practice/workplace?track=failover");
 }
