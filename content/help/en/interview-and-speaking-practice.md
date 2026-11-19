@@ -37,14 +37,14 @@ The interviewer hears what you say, so don't say your name or contact details du
 
 ### During the interview
 
-Talk as you would in a real interview. The interviewer asks six to eight questions and follow-ups, and your words show in the [ui: Live transcript]. Use [ui: Mute] to pause your microphone. When you're done, select [ui: End and get my coaching]. If you reach the time limit or your connection drops, the interview ends and you still get your coaching. [ui: Cancel] ends it without coaching.
+Talk as you would in a real interview. The interviewer asks six to eight questions and follow-ups, and your words show in the [ui: Live transcript]. Like a real interviewer, it may push back once on an answer that misses something important. It never asks about your age, religion, family, pregnancy, nationality, health or what you're paid now, because those questions aren't allowed in real job interviews in many places. Use [ui: Mute] to pause your microphone. When you're done, select [ui: End and get my coaching]. If you reach the time limit or your connection drops, the interview ends and you still get your coaching. [ui: Cancel] ends it without coaching.
 
 ### Your coaching
 
 After the interview you see [ui: Your result]: [ui: Strong], [ui: Interview-ready], [ui: Getting there] or [ui: Keep practicing], and a score for each of the four things you're scored on. Then [ui: Answer by answer] shows, for each question:
 
 - [ui: You said]: your own words.
-- [ui: What worked] and [ui: What was missing].
+- [ui: What worked] and [ui: What was missing], including any step of a good answer you skipped. For a question about something that happened, the steps are: the situation, what you did yourself, how it turned out, and what you learned.
 - [ui: A stronger version, in your words]. It's built only from what you said and your résumé. Highlighted parts are facts only you know, such as how many patients you had: fill them in with what really happened. Edulexa never writes facts you didn't give.
 
 Select [ui: Try this question again] to answer one question again in a short call. Your try is coached and shows under your first answer, so you can see what changed. You can try each question three times, and each try uses practice minutes. Questions under [ui: Not reached] don't count against your result.
