@@ -275,3 +275,11 @@ member-practice-coaching:
   show: main
   width: 1100
   alt: Coaching after a practice interview, with the result, the scores and, for each answer, what you said, what worked, what was missing and a stronger version
+
+member-practice-progress:
+  as: candidate-dev-token
+  height: 900
+  open: /interview/practice/progress
+  show: main
+  width: 1100
+  alt: Your interview practice page, with how each scoring point has moved, the two to focus on next, prep plans, debriefs and your stories

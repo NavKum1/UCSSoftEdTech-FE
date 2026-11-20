@@ -37,6 +37,8 @@ interface SessionView {
     plan: { fallback: boolean; questions: { text: string; focus: string }[] };
     /** Tries each question has used, counted by the server (the rule it checks) */
     triesUsed?: Record<string, number>;
+    /** "drill": one question at a time (stage 2) */
+    mode?: string;
   };
   coaching: Coaching | null;
 }
@@ -71,6 +73,7 @@ function PracticeCoaching() {
   const [coaching, setCoaching] = useState(false);
   const [tryState, setTryState] = useState<{ question: number; phase: "connecting" | "live" | "ending" | "coaching" } | null>(null);
   const [tryError, setTryError] = useState<string | null>(null);
+  const [savedStories, setSavedStories] = useState<number[]>([]);
   const callRef = useRef<RealtimeCall | null>(null);
   const micRef = useRef<MediaStream | null>(null);
   const tryIdRef = useRef<string | null>(null);
@@ -204,27 +207,43 @@ function PracticeCoaching() {
     };
   }, [leaveRef]);
 
+  // Stage 2: an answer saved as one of the person's stories, starting from the stronger version; they finish it on the progress page
+  const saveStory = async (a: AnswerCoachingData) => {
+    const res = await apiFetch("/api/interview/practice/stories", {
+      method: "POST",
+      body: JSON.stringify({ title: a.questionText.slice(0, 200), situation: "", action: a.stronger ?? a.answer, result: "", learned: "", sessionId: id, question: a.question }),
+    }, { quiet: true });
+    if (res.ok) setSavedStories((x) => [...x, a.question]);
+  };
+
   if (access) return <AccessNotice problem={access} feature="Interview practice" />;
   if (notFound)
     return (
       <div className="space-y-4">
         <PageHeader title={en("Interview coaching")} />
         <p className="text-sm text-muted-foreground">{en("That interview couldn't be found. It may have been deleted.")}</p>
-        <Link href="/interview/practice" className={buttonClass("primary")}>{en("Back to interview practice")}</Link>
+        <Link href="/interview/practice" className={buttonClass("secondary")}>{en("Back to interview practice")}</Link>
       </div>
     );
 
   const s = view?.session;
-  const c = view?.coaching ?? null;
+  // A stored record missing parts reads as empty ones
+  const raw = view?.coaching ?? null;
+  const c: Coaching | null = raw ? { ...raw, answers: (raw.answers ?? []).map((a) => ({ ...a, tries: a.tries ?? [], worked: a.worked ?? [], missing: a.missing ?? [] })), dimensions: raw.dimensions ?? [], strengths: raw.strengths ?? [], improvements: raw.improvements ?? [], notReached: raw.notReached ?? [], status: raw.status ?? "not-enough", overallScore: raw.overallScore ?? 0 } : null;
   const result = c ? RESULTS[c.status] : null;
   const answered = (c?.answers ?? []).filter((a) => a.question >= 0);
   const others = (c?.answers ?? []).filter((a) => a.question < 0);
   const busyTry = tryState !== null;
+  const drill = s?.mode === "drill";
+  const nextQuestion = drill ? c?.notReached[0] : undefined;
+  // The question in the "next" card isn't listed again under "Questions still to answer"
+  const nextShown = c != null && !coaching && drill && nextQuestion !== undefined && s != null && !tryState;
+  const stillToAnswer = (c?.notReached ?? []).filter((n) => !(nextShown && n === nextQuestion));
 
   return (
     <div className="space-y-6">
       <PageHeader
-        title={s ? en("Coaching: {title}", { title: s.jobTitle }) : en("Interview coaching")}
+        title={s ? (drill ? en("One question at a time: {title}", { title: s.jobTitle }) : en("Coaching: {title}", { title: s.jobTitle })) : en("Interview coaching")}
         description={s ? [s.careerName, s.roundName ? en(s.roundName) : null, new Date(s.createdAt).toLocaleDateString()].filter(Boolean).join(" · ") : undefined}
         actions={
           <Link href="/interview/practice" className={buttonClass("secondary")}>
@@ -260,8 +279,21 @@ function PracticeCoaching() {
         </div>
       )}
 
+      {c && !coaching && drill && nextQuestion !== undefined && s && !tryState && (
+        <section className="space-y-3 rounded-xl border border-[var(--brand)] bg-card p-6 shadow-sm" aria-labelledby="next-h">
+          <p className="text-xs font-medium text-muted-foreground">{en("Question {n} of {total}", { n: nextQuestion + 1, total: s.plan.questions.length })}</p>
+          <h2 id="next-h" className="text-lg font-semibold text-foreground">{s.plan.questions[nextQuestion]?.text}</h2>
+          <p className="text-sm text-muted-foreground">{en("Answer aloud in a short call. Your coaching shows here straight after.")}</p>
+          <Button onClick={() => void startTry(nextQuestion)}>
+            <Mic aria-hidden="true" className="h-4 w-4" />
+            {answered.length === 0 ? en("Answer the first question") : en("Next question")}
+          </Button>
+        </section>
+      )}
+
       {c && !coaching && (
         <>
+          {!(drill && answered.length === 0) && (
           <section className="space-y-5 rounded-xl border border-border bg-card p-6 shadow-sm" aria-labelledby="result-h">
             <div className="flex flex-wrap items-start justify-between gap-4">
               <div className="space-y-1">
@@ -310,6 +342,7 @@ function PracticeCoaching() {
               </div>
             )}
           </section>
+          )}
 
           {tryError && (
             <p role="alert" className="rounded-lg border border-red-300 bg-red-50 p-3 text-sm text-red-800 dark:border-red-900 dark:bg-red-950/40 dark:text-red-300">{tryError}</p>
@@ -340,24 +373,25 @@ function PracticeCoaching() {
             <section className="space-y-4" aria-labelledby="answers-h">
               <h2 id="answers-h" className="text-lg font-semibold text-foreground">{en("Answer by answer")}</h2>
               {answered.map((a, i) => (
-                <AnswerCoaching key={a.question} a={a} index={i} maxTries={MAX_TRIES} triesUsed={s?.triesUsed?.[String(a.question)] ?? a.tries.length} onTry={busyTry ? undefined : () => void startTry(a.question)} trying={tryState?.question === a.question} />
+                <AnswerCoaching key={a.question} a={a} index={i} maxTries={MAX_TRIES} triesUsed={drill ? Math.max(0, (s?.triesUsed?.[String(a.question)] ?? 1) - 1) : s?.triesUsed?.[String(a.question)] ?? a.tries.length}
+                  onSaveStory={() => void saveStory(a)} storySaved={savedStories.includes(a.question)} onTry={busyTry ? undefined : () => void startTry(a.question)} trying={tryState?.question === a.question} />
               ))}
             </section>
           )}
 
-          {c.notReached.length > 0 && s && (
+          {stillToAnswer.length > 0 && s && (
             <section className="space-y-3 rounded-xl border border-border bg-card p-5 shadow-sm" aria-labelledby="notreached-h">
               <div>
-                <h2 id="notreached-h" className="text-base font-semibold text-foreground">{en("Not reached")}</h2>
-                <p className="text-xs text-muted-foreground">{en("We didn't hear answers to these questions, so they don't count against your result.")}</p>
+                <h2 id="notreached-h" className="text-base font-semibold text-foreground">{drill ? en("Questions still to answer") : en("Not reached")}</h2>
+                <p className="text-xs text-muted-foreground">{drill ? en("Answer them in any order. Each one is coached straight after.") : en("We didn't hear answers to these questions, so they don't count against your result.")}</p>
               </div>
               <ul className="divide-y divide-border">
-                {c.notReached.map((n) => (
+                {stillToAnswer.map((n) => (
                   <li key={n} className="flex flex-wrap items-center gap-3 py-2.5">
                     <span className="min-w-0 flex-1 text-sm text-foreground">{s.plan.questions[n]?.text}</span>
                     <Button variant="ghost" onClick={() => void startTry(n)} disabled={busyTry}>
                       <Mic aria-hidden="true" className="h-4 w-4" />
-                      {en("Try it")}
+                      {drill ? en("Answer") : en("Try it")}
                     </Button>
                   </li>
                 ))}

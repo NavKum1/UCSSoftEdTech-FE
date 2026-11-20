@@ -7,7 +7,7 @@
  */
 
 import React from "react";
-import { RotateCcw } from "lucide-react";
+import { BookmarkPlus, RotateCcw } from "lucide-react";
 import { Badge, Button } from "@/components/career/ui";
 import { useEn } from "@/lib/english/EnglishProvider";
 
@@ -114,6 +114,8 @@ export default function AnswerCoaching({
   index,
   maxTries,
   triesUsed,
+  onSaveStory,
+  storySaved,
   onTry,
   trying,
 }: {
@@ -122,6 +124,9 @@ export default function AnswerCoaching({
   maxTries: number;
   /** Counted by the server, including tries that dropped or weren't coached */
   triesUsed?: number;
+  /** Stage 2: save this answer as one of the person's stories */
+  onSaveStory?: () => void;
+  storySaved?: boolean;
   onTry?: () => void;
   trying?: boolean;
 }) {
@@ -145,6 +150,12 @@ export default function AnswerCoaching({
             <RotateCcw aria-hidden="true" className="h-4 w-4" />
             {en("Try this question again")}
           </Button>
+          {onSaveStory && (
+            <Button variant="ghost" onClick={onSaveStory} disabled={storySaved}>
+              <BookmarkPlus aria-hidden="true" className="h-4 w-4" />
+              {storySaved ? en("Saved to your stories") : en("Save as one of my stories")}
+            </Button>
+          )}
           <span className="text-xs text-muted-foreground">
             {triesLeft > 0 ? en("{n} of {max} tries left · uses practice minutes", { n: triesLeft, max: maxTries }) : en("You've used all {max} tries for this question.", { max: maxTries })}
           </span>

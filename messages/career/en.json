@@ -6492,7 +6492,8 @@
       "acceptAndRelease": "Accept and release my earlier offer",
       "decline": "Decline",
       "withdrawn": "Application withdrawn. Your details are no longer shared with the employer.",
-      "withdraw": "Withdraw application"
+      "withdraw": "Withdraw application",
+      "prepare": "Prepare for this interview"
     },
     "channelDriveDefaults": {
       "title": "Campus drive messages: templates and DLT",

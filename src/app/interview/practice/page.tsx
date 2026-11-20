@@ -96,6 +96,7 @@ const ROUNDS = [
   { id: "screening", label: "Screening call", description: "A short first call: your background, why this job, and what you expect." },
   { id: "behavioral", label: "Behavioral", description: "Real situations from your past: what happened, what you did, and the result." },
   { id: "hiring-manager", label: "Hiring manager", description: "Deeper questions about the job's own tasks and the judgment it needs." },
+  { id: "skills", label: "Skills round", description: "A practical exercise from the job itself: talk it through, plan it or role-play it." },
 ];
 
 // A job's top tasks, for "What this interview tests"
@@ -168,6 +169,10 @@ export default function MultiStreamInterviewPracticePage() {
   const [credits, setCredits] = useState<string[]>([]);
   // "job" for a job interview; otherwise admissions, scholarship or visa
   const [practiceFor, setPracticeFor] = useState<string>("job");
+  // Stage 2: a full interview, or one question at a time; a step of a prep plan this practice is for
+  const [how, setHow] = useState<"interview" | "drill">("interview");
+  const [prepStep, setPrepStep] = useState<{ id: string; step: number; label: string } | null>(null);
+  const [drilling, setDrilling] = useState(false);
   const isJob = practiceFor === "job";
   const career = (isJob ? careers.find((c) => c.id === (job?.family ?? "general")) : careers.find((c) => c.id === practiceFor)) ?? null;
 
@@ -297,6 +302,26 @@ export default function MultiStreamInterviewPracticePage() {
       cancelled = true;
     };
   }, [ready, apiFetch, job?.code]);
+
+  const openPrepRef = useLatestRef(async () => {
+    const q = new URLSearchParams(window.location.search);
+    const id = q.get("prep");
+    const step = Number(q.get("step"));
+    if (!id || !Number.isInteger(step)) return;
+    const res = await apiFetch("/api/interview/practice/prep", {}, { quiet: true });
+    if (!res.ok) return;
+    const plan = ((await res.json()) as { plans: { id: string; jobTitle: string; jobCode?: string | null; career: string; steps: { round: string; label: string }[] }[] }).plans.find((p) => p.id === id);
+    const s = plan?.steps[step];
+    if (!plan || !s) return;
+    setPracticeFor("job");
+    setJob({ code: plan.jobCode ?? null, title: plan.jobTitle, family: plan.jobCode ? plan.career : null });
+    setJobTitle(plan.jobTitle);
+    setRound(s.round === "review" ? "behavioral" : s.round);
+    setPrepStep({ id: plan.id, step, label: s.label });
+  });
+  useEffect(() => {
+    if (ready) void openPrepRef.current();
+  }, [ready, openPrepRef]);
 
   const choosePracticeFor = (id: string) => {
     setPracticeFor(id);
@@ -485,6 +510,8 @@ export default function MultiStreamInterviewPracticePage() {
               career: isJob ? job?.family ?? "general" : practiceFor,
               jobCode: isJob ? job?.code ?? null : null,
               round: isJob ? round : null,
+              prepPlanId: prepStep?.id ?? null,
+              prepStep: prepStep?.step ?? null,
               resumeVersionId,
               removedLines,
               style: selectedStyle,
@@ -532,6 +559,27 @@ export default function MultiStreamInterviewPracticePage() {
       endSessionCleanup();
     } finally {
       setIsConnecting(false);
+    }
+  };
+
+  const startDrill = async () => {
+    setDrilling(true);
+    setErrorMsg(null);
+    try {
+      const res = await apiFetch("/api/interview/practice/drill/start", {
+        method: "POST",
+        body: JSON.stringify({
+          career: isJob ? job?.family ?? "general" : practiceFor, jobCode: isJob ? job?.code ?? null : null, round: isJob ? round : null,
+          prepPlanId: prepStep?.id ?? null, prepStep: prepStep?.step ?? null, resumeVersionId, removedLines, style: selectedStyle, jobTitle,
+          jobDescription: isJob ? jobDescription : "",
+        }),
+      });
+      const body = (await res.json().catch(() => null)) as { practiceId?: string; error?: string } | null;
+      if (!res.ok || !body?.practiceId) throw new Error(body?.error || en("We couldn't start the practice. Please try again."));
+      router.push(`/interview/practice/${body.practiceId}`);
+    } catch (err) {
+      setErrorMsg(err instanceof TypeError ? en("We couldn't reach Edulexa. Check your internet connection and try again.") : (err as Error).message);
+      setDrilling(false);
     }
   };
 
@@ -659,6 +707,9 @@ export default function MultiStreamInterviewPracticePage() {
           description={en("Practice a spoken interview for a real job with an AI interviewer, then get coaching on each answer and try any question again.")}
           actions={
             <>
+              <Link href="/interview/practice/progress" className={buttonClass("secondary")}>
+                {en("Your progress and stories")}
+              </Link>
               <Link href="/prep/exam" className={buttonClass("secondary")}>
                 {en("Written exam practice")}
               </Link>
@@ -1070,10 +1121,29 @@ export default function MultiStreamInterviewPracticePage() {
                     ? en("You pay only for the minutes you use. Starting sets aside up to {limit} minutes, and the ones you don't use go back to your balance when you end.", { limit: sessionCapMinutes })
                     : en("You pay only for the minutes you use. Starting sets aside a whole interview's minutes, and the ones you don't use go back to your balance when you end.")}
                 </p>
-                <Button type="button" onClick={startInterview} disabled={!jobTitle.trim() || (isJob && !job)} busy={isConnecting} className="h-10 w-full">
-                  {!isConnecting && <Play className="w-4 h-4" />}
-                  <span>{isConnecting ? en("Connecting…") : en("Start interview")}</span>
-                </Button>
+                {prepStep && (
+                  <p role="status" className="text-sm text-foreground">{en("From your prep plan: {step}", { step: en(prepStep.label) })}</p>
+                )}
+                <div className="flex flex-wrap gap-2" role="group" aria-label={en("How you'd like to practice")}>
+                  {([["interview", en("Full interview"), en("Like the real one, with coaching at the end")], ["drill", en("One question at a time"), en("Coaching straight after each answer")]] as const).map(([id, label, hint]) => (
+                    <button key={id} type="button" aria-pressed={how === id} onClick={() => setHow(id)}
+                      className={`flex-1 rounded-lg border px-3 py-2 text-start text-sm ${how === id ? "border-[var(--brand)] bg-card font-medium text-foreground ring-1 ring-[var(--brand)]" : "border-border text-muted-foreground hover:bg-muted/50"}`}>
+                      <span className="block">{label}</span>
+                      <span className="block text-xs font-normal text-muted-foreground">{hint}</span>
+                    </button>
+                  ))}
+                </div>
+                {how === "interview" ? (
+                  <Button type="button" onClick={startInterview} disabled={!jobTitle.trim() || (isJob && !job)} busy={isConnecting} className="h-10 w-full">
+                    {!isConnecting && <Play className="w-4 h-4" />}
+                    <span>{isConnecting ? en("Connecting…") : en("Start interview")}</span>
+                  </Button>
+                ) : (
+                  <Button type="button" onClick={() => void startDrill()} disabled={!jobTitle.trim() || (isJob && !job)} busy={drilling} className="h-10 w-full">
+                    {!drilling && <Play className="w-4 h-4" />}
+                    <span>{en("Start: one question at a time")}</span>
+                  </Button>
+                )}
               </div>
             </div>
 

@@ -2472,7 +2472,8 @@
    "acceptAndRelease": "Aceptar y renunciar a mi oferta anterior",
    "withdrawn": "Postulación retirada. El empleador ya no puede ver tus datos.",
    "withdraw": "Retirar postulación",
-   "accepted": "Oferta aceptada. Tu centro de orientación profesional tiene el registro."
+   "accepted": "Oferta aceptada. Tu centro de orientación profesional tiene el registro.",
+   "prepare": "Prepárate para esta entrevista"
   },
   "careerCenterCaseload": {
    "caseload": "Casos asignados",

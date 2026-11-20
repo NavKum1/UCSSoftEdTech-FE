@@ -109,6 +109,10 @@ export default function StudentApplicationsPage() {
                               {t("join")}
                             </a>
                           )}
+                          {" "}
+                          <Link className="underline" href={`/interview/practice/progress?prepDate=${encodeURIComponent(new Date(r.slot.startUtc).toLocaleDateString("en-CA"))}&prepTitle=${encodeURIComponent(a.title ?? "")}`}>
+                            {t("prepare")}
+                          </Link>
                         </p>
                       )}
                       {r.ocrLinked && r.result === "Pending" && (

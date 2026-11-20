@@ -5,7 +5,7 @@ roles: [member]
 group: Practice
 features: [interview-practice, speaking-practice]
 order: 20
-checked: 2026-11-19
+checked: 2026-11-20
 short:
   - Interview practice is a spoken interview for a real job, or for college admissions, a scholarship or a student visa. Afterwards you get coaching on each answer, with a stronger version in your own words, and you can try any question again. You pay only for the minutes you use.
   - Speaking practice measures your pace, filler words and pauses. Only you see the results.
@@ -18,10 +18,10 @@ Both kinds of practice need a microphone. If yours doesn't work, see [Check your
 Open [ui: Interview practice] from the [ui: Practice] menu.
 
 1. Under [ui: 1. What you're practicing for], choose [ui: A job] and use [ui: Search for your job], for example "registered nurse", "electrician" or "accountant". Pick your job from the list. If it isn't there, select the button to use your own job title. Or choose a college admissions, scholarship or student visa interview.
-2. For a job, choose [ui: 2. The round]: a [ui: Screening call], a [ui: Behavioral] interview about real situations from your past, or a [ui: Hiring manager] interview about the job's own tasks.
+2. For a job, choose [ui: 2. The round]: a [ui: Screening call], a [ui: Behavioral] interview about real situations from your past, a [ui: Hiring manager] interview about the job's own tasks, or a [ui: Skills round], a practical exercise from the job itself, like talking through a patient situation or handling a price objection.
 3. Under [ui: 3. Your résumé and the job ad], you can choose a résumé from your library and paste [ui: The job ad (optional)]. Then the questions are about your own experience and this job.
 4. Under [ui: 4. The interviewer], choose [ui: Supportive] (hints when you're stuck), [ui: Standard], or [ui: Demanding] (follow-up questions and pushback), and an [ui: Interviewer voice].
-5. Select [ui: Start interview] and allow the microphone when your browser asks.
+5. Choose [ui: Full interview], like the real one with coaching at the end, or [ui: One question at a time], with coaching straight after each answer. Then select the start button and allow the microphone when your browser asks.
 
 [shot: member-practice-interview]
 
@@ -51,9 +51,22 @@ Select [ui: Try this question again] to answer one question again in a short cal
 
 [shot: member-practice-coaching]
 
+With [ui: One question at a time], you answer one question in a short call and see its coaching straight away, then select [ui: Next question]. The minutes for all your answers are added up and rounded once, so short answers don't each cost a whole minute. Select [ui: Save as one of my stories] on a good answer to keep it.
+
 Your interviews are listed under [ui: Your interviews] on the practice page. Only you can see them. Your plan keeps them for a set time, shown next to each one. Under [ui: Keep them for] you can choose a shorter time, or [ui: A day after I see the coaching]. You can delete any interview at any time.
 
 > You pay only for the minutes you use. When you start, a whole session's worth of your voice minutes is set aside, up to the session limit shown in [Pricing and minutes](/pricing), so you can't run out partway. When the interview ends, the minutes you didn't use go back to your balance. Each interview counts in whole minutes, rounded up: a 4 minute 10 second interview uses 5 minutes. If the interview didn't connect, or you end it within the first minute without answering, no minutes are used. It's for practice only: it doesn't give a credential, and nobody else sees it.
+
+## Your progress, stories and real interviews
+
+Select [ui: Your progress and stories] on the practice page.
+
+- **How you're improving** shows each of your four scoring points over time, and the two your next interview will focus on.
+- **Before a real interview:** search for the job, add the [ui: Interview date] and select [ui: Make my prep plan]. You get a short practice for each day until then, and a reminder on the day. Select [ui: Practice] on a step to start it. Students with a campus interview slot can select [ui: Prepare for this interview] on their application.
+- **After a real interview:** note the questions you were asked and how each went, then select [ui: Save the debrief]. Your next practice for that kind of job asks them again, the hardest first. The company's name is never sent to the AI.
+- **Your stories** are real situations you can use in interviews: the situation, what you did, how it turned out, and what you learned. Only you see them, and they're never sent to the AI.
+
+[shot: member-practice-progress]
 
 ## Speaking practice
 
