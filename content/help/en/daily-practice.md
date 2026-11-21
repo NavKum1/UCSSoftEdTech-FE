@@ -5,7 +5,7 @@ roles: [member]
 group: Practice
 features: [daily-practice, code-review-drills, system-design-duels, practice-scenarios, leaderboard]
 order: 10
-checked: 2026-11-12
+checked: 2026-11-21
 short:
   - Two short drills a day, an incident and a code review. Your first try at each earns points; the answers show once you submit.
   - Practice on any day to keep your streak. Seven days in a row earn a streak freeze, which covers a missed day.
@@ -74,6 +74,22 @@ It also has leadership conversations, a promotion case and leading a failover.
 3. At the end, [ui: Your result] shows how close your choices were to the strongest ones, overall and on the four things that situation is about: [ui: Strong], [ui: Good], [ui: Getting there] or [ui: Keep practicing].
 
 Only you see your results. Select [ui: Try again] or [ui: Other scenarios], and find earlier tries under [ui: Your past attempts].
+
+### Talk it through
+
+You can also practice any situation out loud. Select [ui: Talk it through], and an AI plays the other person, such as the customer, your manager or a co-worker, in a short voice conversation.
+
+1. Choose how the other person behaves: [ui: Calm], [ui: Typical] or [ui: Difficult]. A difficult person interrupts and pushes back.
+2. Select [ui: Talk it through] on a situation. Allow your microphone, then talk as you would at work.
+3. Select [ui: End conversation] when you've finished. The conversation also ends by itself after 8 minutes.
+
+After the conversation, your coaching opens. It shows your result on the same four points, and coaching on each thing you said, with a stronger version in your own words. Select [ui: Try this moment again] to practice one part again, up to 3 times. After the written version, [ui: Now say it out loud] starts the same situation by voice.
+
+To practice a real conversation you have coming up, use [ui: Rehearse your own conversation]. Describe the conversation and who it's with, for example "my manager". Don't use real names. Contact details, your own name and names after a title, like Ms. or Dr., are removed before anything is sent to the AI.
+
+Conversations use your practice minutes, like practice interviews. Find them under [ui: Your conversations]. Only you see them.
+
+[shot: member-workplace-talk]
 
 ## The leaderboard
 

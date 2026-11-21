@@ -5,7 +5,7 @@ roles: [member]
 group: Practice
 features: [interview-practice, speaking-practice]
 order: 20
-checked: 2026-11-20
+checked: 2026-11-21
 short:
   - Interview practice is a spoken interview for a real job, or for college admissions, a scholarship or a student visa. Afterwards you get coaching on each answer, with a stronger version in your own words, and you can try any question again. You pay only for the minutes you use.
   - Speaking practice measures your pace, filler words and pauses. Only you see the results.
@@ -81,6 +81,8 @@ Your feedback shows straight away. [ui: Across your recent answers] shows your a
 - Your recording stays in your browser. To count words, your browser turns your answer into text, and Edulexa doesn't keep that text. Chrome, Edge and Safari can count words. In other browsers, only pauses and your start time are measured.
 - Only you see your results. They're never shown to recruiters or institutes, or used in any score.
 - Your measurements are kept for 180 days. Select [ui: Delete my answers] at any time, or [ui: Turn off speaking practice] to stop and delete them.
+
+When speaking practice is turned on, the coaching after a practice interview or a workplace conversation also shows [ui: How you spoke]: your filler words, your share of the talking and how long your answers were. It's counted from the words we heard, so a few sounds like "um" may be missing.
 
 Speaking practice isn't offered in the EU and EEA, where the law limits voice analysis in education. It's also off when Edulexa can't tell which country you're in.
 

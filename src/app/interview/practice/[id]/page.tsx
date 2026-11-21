@@ -4,17 +4,19 @@
  * Coaching on a practice interview (19 Nov 2026, docs/interview_coaching_job_library_plan.md): the result, the four scoring
  * points, and coaching on each answer with a stronger version in the person's own words. "Try this question again" opens a
  * short voice call with only that question; its coaching shows under the first answer. Practice only: nobody else sees it.
+ * Stage 3 (21 Nov 2026): Workplace practice's Talk it through conversations are coached here too, moment by moment, and
+ * "How you spoke" (Speaking practice's feedback, when it's turned on) shows for interviews and conversations.
  */
 
 import React, { Suspense, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useParams, useSearchParams } from "next/navigation";
-import { AlertTriangle, Mic, PhoneOff, Plus } from "lucide-react";
+import { AlertTriangle, ArrowLeft, Mic, PhoneOff, Plus } from "lucide-react";
 import AnswerCoaching, { type AnswerCoachingData } from "@/components/interview/AnswerCoaching";
 import { Badge, Button, PageHeader, buttonClass } from "@/components/career/ui";
 import { AccessNotice, useLatestRef, useLegacyApi } from "@/lib/legacyApi";
 import { useEn } from "@/lib/english/EnglishProvider";
-import { openRealtimeCall, type RealtimeCall } from "@/lib/realtimeCall";
+import { usePracticeCall } from "@/lib/usePracticeCall";
 
 interface Coaching {
   answers: AnswerCoachingData[];
@@ -37,10 +39,75 @@ interface SessionView {
     plan: { fallback: boolean; questions: { text: string; focus: string }[] };
     /** Tries each question has used, counted by the server (the rule it checks) */
     triesUsed?: Record<string, number>;
-    /** "drill": one question at a time (stage 2) */
+    /** "drill": one question at a time (stage 2); "situation": a Talk it through conversation (stage 3) */
     mode?: string;
+    style?: string;
+    /** Talk it through: the Workplace practice track, the situation's code ("own" for the person's own), who the AI played, and the situation */
+    track?: string | null;
+    scenario?: string | null;
+    otherPerson?: string | null;
+    situation?: string | null;
   };
   coaching: Coaching | null;
+  /** How you spoke (Speaking practice's feedback); null when it's off */
+  speaking?: Speaking | null;
+  /** Why it's off: "consent" (not turned on yet) or "region" (not offered where the person is) */
+  speakingOff?: string | null;
+}
+
+interface Speaking {
+  yourWords: number;
+  otherWords: number;
+  yourShare: number;
+  answers: number;
+  averageAnswerWords: number;
+  longestAnswerWords: number;
+  fillers: { total: number; per100Words: number; top: { word: string; count: number }[] };
+  tips: string[];
+  note: string;
+}
+
+// The other person's manner in a conversation (the interview styles). en() where shown.
+const MANNERS: Record<string, string> = { supportive: "Calm", standard: "Typical", demanding: "Difficult" };
+
+/** How you spoke: filler words, the person's share of the talking and how long their answers were */
+function HowYouSpoke({ sp, situation }: { sp: Speaking; situation: boolean }) {
+  const en = useEn();
+  return (
+    <section className="space-y-4 rounded-xl border border-border bg-card p-6 shadow-sm" aria-labelledby="spoke-h">
+      <h2 id="spoke-h" className="text-lg font-semibold text-foreground">{en("How you spoke")}</h2>
+      <dl className="grid gap-3 sm:grid-cols-3">
+        <div className="rounded-lg border border-border p-3">
+          <dt className="text-xs text-muted-foreground">{en("Filler words")}</dt>
+          <dd className="text-2xl font-semibold tabular-nums text-foreground">{sp.fillers.total}</dd>
+        </div>
+        <div className="rounded-lg border border-border p-3">
+          <dt className="text-xs text-muted-foreground">{en("Your share of the talking")}</dt>
+          <dd className="text-2xl font-semibold tabular-nums text-foreground">{sp.yourShare}%</dd>
+        </div>
+        <div className="rounded-lg border border-border p-3">
+          <dt className="text-xs text-muted-foreground">{situation ? en("Words in a reply, on average") : en("Words in an answer, on average")}</dt>
+          <dd className="text-2xl font-semibold tabular-nums text-foreground">{sp.averageAnswerWords}</dd>
+        </div>
+      </dl>
+      {sp.fillers.top.length > 0 && (
+        <p className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+          <span>{en("Most often:")}</span>
+          {sp.fillers.top.slice(0, 4).map((f) => (
+            <span key={f.word} className="rounded-full border border-border px-2 py-0.5 text-foreground">
+              “{f.word}” × {f.count}
+            </span>
+          ))}
+        </p>
+      )}
+      <ul className="space-y-1.5 text-sm text-foreground">
+        {sp.tips.map((t, i) => (
+          <li key={i} className="flex gap-2"><span aria-hidden="true" className="text-[var(--brand)]">•</span><span>{t}</span></li>
+        ))}
+      </ul>
+      <p className="text-xs text-muted-foreground">{sp.note}</p>
+    </section>
+  );
 }
 
 // The plain results. en() where shown.
@@ -74,9 +141,7 @@ function PracticeCoaching() {
   const [tryState, setTryState] = useState<{ question: number; phase: "connecting" | "live" | "ending" | "coaching" } | null>(null);
   const [tryError, setTryError] = useState<string | null>(null);
   const [savedStories, setSavedStories] = useState<number[]>([]);
-  const callRef = useRef<RealtimeCall | null>(null);
-  const micRef = useRef<MediaStream | null>(null);
-  const tryIdRef = useRef<string | null>(null);
+  const call = usePracticeCall(apiFetch);
   const endingRef = useRef(false);
 
   const used = Number(search.get("used") ?? NaN);
@@ -120,25 +185,16 @@ function PracticeCoaching() {
     if (ready && id) void startRef.current();
   }, [ready, id, startRef]);
 
-  const stopAudio = () => {
-    callRef.current?.close();
-    callRef.current = null;
-    micRef.current?.getTracks().forEach((t) => t.stop());
-    micRef.current = null;
-  };
-
   // Ends the try on the server (which settles its minutes), then coaches it; the coaching shows under the first answer
   const endTry = async () => {
     if (endingRef.current) return;
     endingRef.current = true;
-    stopAudio();
-    const tryId = tryIdRef.current;
     setTryState((s) => (s ? { ...s, phase: "ending" } : s));
     try {
-      if (tryId) {
-        await apiFetch(`/api/interview/practice/${tryId}/end`, { method: "POST", body: "{}" }, { quiet: true });
+      const ended = await call.end();
+      if (ended) {
         setTryState((s) => (s ? { ...s, phase: "coaching" } : s));
-        const res = await apiFetch(`/api/interview/practice/${tryId}/coach`, { method: "POST", body: "{}" }, { quiet: true });
+        const res = await apiFetch(`/api/interview/practice/${ended.id}/coach`, { method: "POST", body: "{}" }, { quiet: true });
         if (!res.ok) {
           const body = (await res.json().catch(() => null)) as { error?: string } | null;
           setTryError(body?.error ?? en("We couldn't coach this try just now."));
@@ -146,7 +202,6 @@ function PracticeCoaching() {
         await load();
       }
     } finally {
-      tryIdRef.current = null;
       endingRef.current = false;
       setTryState(null);
     }
@@ -155,57 +210,14 @@ function PracticeCoaching() {
   const startTry = async (question: number) => {
     setTryError(null);
     setTryState({ question, phase: "connecting" });
-    let mic: MediaStream;
-    try {
-      mic = await navigator.mediaDevices.getUserMedia({ audio: true });
-    } catch {
-      setTryError(en("We couldn't use your microphone. Allow microphone access in your browser, then try again."));
+    const started = await call.start(`/api/interview/practice/${id}/retry`, { question }, () => void endTry());
+    if ("error" in started) {
+      setTryError(started.error);
       setTryState(null);
       return;
     }
-    micRef.current = mic;
-    const audio = document.createElement("audio");
-    audio.autoplay = true;
-    try {
-      callRef.current = await openRealtimeCall({
-        mic,
-        audio,
-        exchange: async (sdpOffer) => {
-          const res = await apiFetch(`/api/interview/practice/${id}/retry`, { method: "POST", body: JSON.stringify({ question, sdpOffer }) });
-          const body = (await res.json().catch(() => null)) as { practiceId?: string; sdpAnswer?: string; error?: string } | null;
-          if (!res.ok || !body?.practiceId || !body.sdpAnswer) throw new Error(body?.error || en("We couldn't start the try. Please try again."));
-          tryIdRef.current = body.practiceId;
-          return body.sdpAnswer;
-        },
-        onEnded: () => void endTry(),
-      });
-      setTryState({ question, phase: "live" });
-    } catch (err) {
-      stopAudio();
-      if (tryIdRef.current) void apiFetch(`/api/interview/practice/${tryIdRef.current}/end`, { method: "POST", body: "{}" }, { quiet: true });
-      tryIdRef.current = null;
-      setTryError(err instanceof TypeError ? en("We couldn't reach Edulexa. Check your internet connection and try again.") : (err as Error).message);
-      setTryState(null);
-    }
+    setTryState({ question, phase: "live" });
   };
-
-  // Leaving the page during a try ends it on the server, so it's settled now and its unused minutes go back
-  const leaveRef = useLatestRef(() => {
-    const tryId = tryIdRef.current;
-    if (!tryId || endingRef.current) return;
-    callRef.current?.close();
-    micRef.current?.getTracks().forEach((t) => t.stop());
-    void apiFetch(`/api/interview/practice/${tryId}/end`, { method: "POST", body: "{}", keepalive: true }, { quiet: true });
-    tryIdRef.current = null;
-  });
-  useEffect(() => {
-    const leave = () => leaveRef.current();
-    window.addEventListener("pagehide", leave);
-    return () => {
-      window.removeEventListener("pagehide", leave);
-      leave();
-    };
-  }, [leaveRef]);
 
   // Stage 2: an answer saved as one of the person's stories, starting from the stronger version; they finish it on the progress page
   const saveStory = async (a: AnswerCoachingData) => {
@@ -230,11 +242,18 @@ function PracticeCoaching() {
   // A stored record missing parts reads as empty ones
   const raw = view?.coaching ?? null;
   const c: Coaching | null = raw ? { ...raw, answers: (raw.answers ?? []).map((a) => ({ ...a, tries: a.tries ?? [], worked: a.worked ?? [], missing: a.missing ?? [] })), dimensions: raw.dimensions ?? [], strengths: raw.strengths ?? [], improvements: raw.improvements ?? [], notReached: raw.notReached ?? [], status: raw.status ?? "not-enough", overallScore: raw.overallScore ?? 0 } : null;
-  const result = c ? RESULTS[c.status] : null;
+  // A conversation (stage 3) is "handled well", not "interview-ready"
+  const result = c ? (s?.mode === "situation" && c.status === "interview-ready" ? { label: "Handled well", tone: "good" as const } : RESULTS[c.status]) : null;
   const answered = (c?.answers ?? []).filter((a) => a.question >= 0);
   const others = (c?.answers ?? []).filter((a) => a.question < 0);
   const busyTry = tryState !== null;
   const drill = s?.mode === "drill";
+  const situation = s?.mode === "situation";
+  const own = situation && s?.scenario === "own";
+  const title = !s ? en("Interview coaching")
+    : own ? en("Your own conversation with {who}", { who: s.otherPerson ?? "" })
+    : situation ? en("Talk it through: {title}", { title: s.jobTitle })
+    : drill ? en("One question at a time: {title}", { title: s.jobTitle }) : en("Coaching: {title}", { title: s.jobTitle });
   const nextQuestion = drill ? c?.notReached[0] : undefined;
   // The question in the "next" card isn't listed again under "Questions still to answer"
   const nextShown = c != null && !coaching && drill && nextQuestion !== undefined && s != null && !tryState;
@@ -243,21 +262,28 @@ function PracticeCoaching() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title={s ? (drill ? en("One question at a time: {title}", { title: s.jobTitle }) : en("Coaching: {title}", { title: s.jobTitle })) : en("Interview coaching")}
-        description={s ? [s.careerName, s.roundName ? en(s.roundName) : null, new Date(s.createdAt).toLocaleDateString()].filter(Boolean).join(" · ") : undefined}
+        title={title}
+        description={s ? [s.careerName, situation ? en("{manner} other person", { manner: en(MANNERS[s.style ?? "standard"] ?? "Typical") }) : s.roundName ? en(s.roundName) : null, new Date(s.createdAt).toLocaleDateString()].filter(Boolean).join(" · ") : undefined}
         actions={
-          <Link href="/interview/practice" className={buttonClass("secondary")}>
-            <Plus aria-hidden="true" className="h-4 w-4" />
-            {en("New interview")}
-          </Link>
+          situation ? (
+            <Link href={`/practice/workplace${s?.track ? `?track=${encodeURIComponent(s.track)}` : ""}`} className={buttonClass("secondary")}>
+              <ArrowLeft aria-hidden="true" className="h-4 w-4" />
+              {en("Back to Workplace practice")}
+            </Link>
+          ) : (
+            <Link href="/interview/practice" className={buttonClass("secondary")}>
+              <Plus aria-hidden="true" className="h-4 w-4" />
+              {en("New interview")}
+            </Link>
+          )
         }
       />
 
       {Number.isFinite(used) && used > 0 && (
         <p role="status" className="text-sm text-muted-foreground">
           {Number.isFinite(back) && back > 0
-            ? en("This interview used {used} of your voice minutes. The other {back} went back to your balance.", { used, back })
-            : en("This interview used {used} of your voice minutes.", { used })}
+            ? (situation ? en("This conversation used {used} of your voice minutes. The other {back} went back to your balance.", { used, back }) : en("This interview used {used} of your voice minutes. The other {back} went back to your balance.", { used, back }))
+            : (situation ? en("This conversation used {used} of your voice minutes.", { used }) : en("This interview used {used} of your voice minutes.", { used }))}
         </p>
       )}
 
@@ -265,7 +291,7 @@ function PracticeCoaching() {
         <div className="flex flex-col items-center justify-center space-y-4 rounded-xl border border-border bg-card p-12 text-center shadow-sm" aria-busy="true">
           <div className="h-10 w-10 animate-spin rounded-full border-4 border-primary/20 border-t-primary motion-reduce:animate-none" />
           <div className="space-y-1">
-            <h2 className="text-lg font-semibold text-foreground">{en("Coaching each of your answers")}</h2>
+            <h2 className="text-lg font-semibold text-foreground">{situation ? en("Coaching each of your replies") : en("Coaching each of your answers")}</h2>
             <p className="text-sm text-muted-foreground">{en("This takes a few seconds.")}</p>
           </div>
         </div>
@@ -291,6 +317,14 @@ function PracticeCoaching() {
         </section>
       )}
 
+      {situation && s?.situation && (
+        <section className="space-y-1 rounded-xl border border-border bg-muted/30 p-4" aria-labelledby="situation-h">
+          <h2 id="situation-h" className="text-sm font-semibold text-foreground">{en("The situation")}</h2>
+          <p className="text-sm leading-relaxed text-muted-foreground">{s.situation}</p>
+          {s.otherPerson && <p className="text-xs text-muted-foreground">{en("You talked with: {who} (played by the AI)", { who: s.otherPerson })}</p>}
+        </section>
+      )}
+
       {c && !coaching && (
         <>
           {!(drill && answered.length === 0) && (
@@ -300,12 +334,12 @@ function PracticeCoaching() {
                 {result && <Badge tone={result.tone}>{en(result.label)}</Badge>}
                 <h2 id="result-h" className="pt-1 text-xl font-semibold text-foreground">{en("Your result")}</h2>
                 {c.reason && <p className="text-sm text-muted-foreground">{c.reason}</p>}
-                {s?.plan.fallback && <p className="text-xs text-muted-foreground">{en("This time the questions were the general ones for this kind of interview.")}</p>}
+                {s?.plan.fallback && !situation && <p className="text-xs text-muted-foreground">{en("This time the questions were the general ones for this kind of interview.")}</p>}
               </div>
               {c.status !== "not-enough" && (
                 <p className="text-end">
                   <span className="block text-4xl font-semibold tabular-nums text-foreground">{Math.round(c.overallScore)}<span className="text-xl text-muted-foreground">/100</span></span>
-                  <span className="text-xs text-muted-foreground">{en("Overall, for the questions you answered")}</span>
+                  <span className="text-xs text-muted-foreground">{situation ? en("Overall, for the moments you replied to") : en("Overall, for the questions you answered")}</span>
                 </p>
               )}
             </div>
@@ -344,6 +378,14 @@ function PracticeCoaching() {
           </section>
           )}
 
+          {view?.speaking && <HowYouSpoke sp={view.speaking} situation={situation} />}
+          {!view?.speaking && view?.speakingOff === "consent" && answered.length > 0 && (
+            <p className="rounded-lg border border-border bg-card p-4 text-sm text-muted-foreground">
+              {en("Want to see how you spoke: your filler words, your share of the talking and how long your answers were?")}{" "}
+              <Link href="/prep/delivery" className="font-medium text-[var(--brand)] underline-offset-2 hover:underline">{en("Turn on speaking feedback in Speaking practice")}</Link>
+            </p>
+          )}
+
           {tryError && (
             <p role="alert" className="rounded-lg border border-red-300 bg-red-50 p-3 text-sm text-red-800 dark:border-red-900 dark:bg-red-950/40 dark:text-red-300">{tryError}</p>
           )}
@@ -356,7 +398,7 @@ function PracticeCoaching() {
               </span>
               <div className="min-w-0 flex-1">
                 <p className="text-sm font-medium text-foreground">
-                  {tryState.phase === "connecting" ? en("Connecting…") : tryState.phase === "live" ? en("Answer aloud. End the try when you've finished.") : tryState.phase === "ending" ? en("Ending the try…") : en("Coaching your try…")}
+                  {tryState.phase === "connecting" ? en("Connecting…") : tryState.phase === "live" ? (situation ? en("Reply aloud. End the try when you've finished.") : en("Answer aloud. End the try when you've finished.")) : tryState.phase === "ending" ? en("Ending the try…") : en("Coaching your try…")}
                 </p>
                 <p className="truncate text-xs text-muted-foreground">{s?.plan.questions[tryState.question]?.text}</p>
               </div>
@@ -371,10 +413,11 @@ function PracticeCoaching() {
 
           {answered.length > 0 && (
             <section className="space-y-4" aria-labelledby="answers-h">
-              <h2 id="answers-h" className="text-lg font-semibold text-foreground">{en("Answer by answer")}</h2>
+              <h2 id="answers-h" className="text-lg font-semibold text-foreground">{situation ? en("Moment by moment") : en("Answer by answer")}</h2>
               {answered.map((a, i) => (
                 <AnswerCoaching key={a.question} a={a} index={i} maxTries={MAX_TRIES} triesUsed={drill ? Math.max(0, (s?.triesUsed?.[String(a.question)] ?? 1) - 1) : s?.triesUsed?.[String(a.question)] ?? a.tries.length}
-                  onSaveStory={() => void saveStory(a)} storySaved={savedStories.includes(a.question)} onTry={busyTry ? undefined : () => void startTry(a.question)} trying={tryState?.question === a.question} />
+                  wording={situation ? "situation" : "interview"}
+                  onSaveStory={situation ? undefined : () => void saveStory(a)} storySaved={savedStories.includes(a.question)} onTry={busyTry ? undefined : () => void startTry(a.question)} trying={tryState?.question === a.question} />
               ))}
             </section>
           )}
@@ -382,8 +425,8 @@ function PracticeCoaching() {
           {stillToAnswer.length > 0 && s && (
             <section className="space-y-3 rounded-xl border border-border bg-card p-5 shadow-sm" aria-labelledby="notreached-h">
               <div>
-                <h2 id="notreached-h" className="text-base font-semibold text-foreground">{drill ? en("Questions still to answer") : en("Not reached")}</h2>
-                <p className="text-xs text-muted-foreground">{drill ? en("Answer them in any order. Each one is coached straight after.") : en("We didn't hear answers to these questions, so they don't count against your result.")}</p>
+                <h2 id="notreached-h" className="text-base font-semibold text-foreground">{drill ? en("Questions still to answer") : situation ? en("Moments not reached") : en("Not reached")}</h2>
+                <p className="text-xs text-muted-foreground">{drill ? en("Answer them in any order. Each one is coached straight after.") : situation ? en("The conversation ended before these moments, so they don't count against your result.") : en("We didn't hear answers to these questions, so they don't count against your result.")}</p>
               </div>
               <ul className="divide-y divide-border">
                 {stillToAnswer.map((n) => (
@@ -401,8 +444,8 @@ function PracticeCoaching() {
 
           {others.length > 0 && (
             <section className="space-y-3" aria-labelledby="others-h">
-              <h2 id="others-h" className="text-base font-semibold text-foreground">{en("Other answers")}</h2>
-              {others.map((a, i) => <AnswerCoaching key={`o${i}`} a={a} index={answered.length + i} maxTries={0} />)}
+              <h2 id="others-h" className="text-base font-semibold text-foreground">{situation ? en("Other replies") : en("Other answers")}</h2>
+              {others.map((a, i) => <AnswerCoaching key={`o${i}`} a={a} index={answered.length + i} maxTries={0} wording={situation ? "situation" : "interview"} />)}
             </section>
           )}
 

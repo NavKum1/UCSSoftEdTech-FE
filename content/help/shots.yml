@@ -276,6 +276,14 @@ member-practice-coaching:
   width: 1100
   alt: Coaching after a practice interview, with the result, the scores and, for each answer, what you said, what worked, what was missing and a stronger version
 
+member-workplace-talk:
+  as: candidate-dev-token
+  height: 1000
+  open: /practice/workplace?track=customer
+  show: main
+  width: 1100
+  alt: Workplace practice for an upset customer, with the choice of a calm, typical or difficult other person, a Talk it through button on each situation, Rehearse your own conversation and your past conversations
+
 member-practice-progress:
   as: candidate-dev-token
   height: 900

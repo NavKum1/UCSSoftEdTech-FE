@@ -55,7 +55,7 @@ export function WithGaps({ text }: { text: string }) {
   );
 }
 
-function Body({ a, compact = false }: { a: AnswerCoachingData; compact?: boolean }) {
+function Body({ a, compact = false, situation = false }: { a: AnswerCoachingData; compact?: boolean; situation?: boolean }) {
   const en = useEn();
   const coached = a.level !== "";
   return (
@@ -100,6 +100,7 @@ function Body({ a, compact = false }: { a: AnswerCoachingData; compact?: boolean
             <p className="text-sm text-muted-foreground">
               {a.strongerDropped
                 ? en("Add your own example here: what happened, what you did, and how it turned out. We don't write facts you didn't give.")
+                : situation ? en("Say what you'll do and when next time, and we'll show you a stronger version of it.")
                 : en("Give a specific example next time, and we'll show you a stronger version of it.")}
             </p>
           )}
@@ -118,6 +119,7 @@ export default function AnswerCoaching({
   storySaved,
   onTry,
   trying,
+  wording = "interview",
 }: {
   a: AnswerCoachingData;
   index: number;
@@ -129,7 +131,10 @@ export default function AnswerCoaching({
   storySaved?: boolean;
   onTry?: () => void;
   trying?: boolean;
+  /** Stage 3: "situation" for a Talk it through conversation (moments instead of questions) */
+  wording?: "interview" | "situation";
 }) {
+  const situation = wording === "situation";
   const en = useEn();
   const level = LEVELS[a.level];
   const triesLeft = Math.max(0, maxTries - (triesUsed ?? a.tries.length));
@@ -137,18 +142,18 @@ export default function AnswerCoaching({
     <article className="space-y-4 rounded-xl border border-border bg-card p-5 shadow-sm" aria-labelledby={`answer-${index}`}>
       <header className="space-y-2">
         <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-          <span className="font-medium text-foreground">{a.question >= 0 ? en("Question {n}", { n: a.question + 1 }) : en("Another question")}</span>
+          <span className="font-medium text-foreground">{a.question >= 0 ? (situation ? en("Moment {n}", { n: a.question + 1 }) : en("Question {n}", { n: a.question + 1 })) : situation ? en("Something else you said") : en("Another question")}</span>
           {a.focus && <span className="rounded-full border border-border px-2 py-0.5">{en("tests: {focus}", { focus: a.focus })}</span>}
           {level && <span className="ms-auto"><Badge tone={level.tone}>{en(level.label)}</Badge></span>}
         </div>
         <h3 id={`answer-${index}`} className="text-base font-semibold leading-snug text-foreground">{a.questionText}</h3>
       </header>
-      <Body a={a} />
+      <Body a={a} situation={situation} />
       {a.question >= 0 && onTry && (
         <div className="flex flex-wrap items-center gap-3 border-t border-border pt-4">
           <Button variant="secondary" onClick={onTry} disabled={triesLeft === 0} busy={trying}>
             <RotateCcw aria-hidden="true" className="h-4 w-4" />
-            {en("Try this question again")}
+            {situation ? en("Try this moment again") : en("Try this question again")}
           </Button>
           {onSaveStory && (
             <Button variant="ghost" onClick={onSaveStory} disabled={storySaved}>
@@ -157,7 +162,7 @@ export default function AnswerCoaching({
             </Button>
           )}
           <span className="text-xs text-muted-foreground">
-            {triesLeft > 0 ? en("{n} of {max} tries left · uses practice minutes", { n: triesLeft, max: maxTries }) : en("You've used all {max} tries for this question.", { max: maxTries })}
+            {triesLeft > 0 ? en("{n} of {max} tries left · uses practice minutes", { n: triesLeft, max: maxTries }) : situation ? en("You've used all {max} tries for this moment.", { max: maxTries }) : en("You've used all {max} tries for this question.", { max: maxTries })}
           </span>
         </div>
       )}
@@ -170,7 +175,7 @@ export default function AnswerCoaching({
                 <span className="font-medium text-foreground">{en("Try {n}", { n: a.tries.length - i })}</span>
                 {LEVELS[t.level] && <Badge tone={LEVELS[t.level].tone}>{en(LEVELS[t.level].label)}</Badge>}
               </div>
-              <Body a={t} compact />
+              <Body a={t} compact situation={situation} />
             </div>
           ))}
         </div>
